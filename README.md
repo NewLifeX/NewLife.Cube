@@ -1,10 +1,9 @@
 ﻿## 魔方 NewLife.Cube
 魔方 是一个基于 ASP.NET MVC 的 用户权限管理平台，可作为各种信息管理系统的基础框架。
 
-演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](https://git.newlifex.com/Stone/CubeDemo)  
+源码： https://github.com/NewLifeX/NewLife.Cube  
 
-源码： https://git.newlifex.com/NewLife/X/Tree/master/NewLife.Cube  
-海外： https://github.com/NewLifeX/X/tree/master/NewLife.Cube  
+演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](https://git.newlifex.com/Stone/CubeDemo)  
 
 ---
 ### 特性
