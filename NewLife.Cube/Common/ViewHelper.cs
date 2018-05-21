@@ -509,6 +509,32 @@ namespace NewLife.Cube
 
             return _IsDevelop.Value;
         }
+
+        private static Dictionary<String, String> _logo_cache = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>获取指定名称的Logo图标</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static String GetLogo(String name)
+        {
+            if (_logo_cache.TryGetValue(name, out var logo)) return logo;
+
+            //var ico = "/Content/images/logo/{0}.png".F(mi.Name);
+            var paths = new[] { "/Content/images/logo/", "/Content/Logo/" };
+            foreach (var item in paths)
+            {
+                var ico = item.TrimStart("/").AsDirectory().GetAllFiles(name + ".*").FirstOrDefault();
+                if (ico != null && ico.Exists)
+                {
+                    logo = item + ico.Name;
+                    break;
+                }
+            }
+
+            // 缓存起来
+            _logo_cache[name] = logo;
+
+            return logo;
+        }
     }
 
     /// <summary>Bootstrap页面控制。允许继承</summary>

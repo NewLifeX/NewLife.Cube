@@ -12,7 +12,7 @@
     @using (Html.BeginForm("Login", "User", new { r = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "cube-login" }))
     {
         @Html.ValidationSummary()
-        <span class="heading text-primary">@SysConfig.Current.DisplayName 登录</span>
+        <span class="heading text-primary"><a href="~/">@SysConfig.Current.DisplayName</a> 登录</span>
         if (set.AllowLogin)
         {
             <div class="form-group">
