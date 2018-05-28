@@ -32,11 +32,10 @@ namespace NewLife.Reflection
             var proj = ".".AsDirectory().FullName.EnsureEnd("\\");
 
             Console.WriteLine("proj项目：{0}", proj);
-            string[] pathsplit = proj.Split("\\");
 
-            var name = pathsplit[pathsplit.Count() - 1];
+            var name = "NewLife.Cube";
             Console.WriteLine("项目：{0}", name);
-            proj = name + ".csproj";
+            proj = ".".AsDirectory().GetAllFiles("*.csproj").FirstOrDefault().FullName;
             var spec = name + ".nuspec";
 			var specFile = spec.GetFullPath();
             
