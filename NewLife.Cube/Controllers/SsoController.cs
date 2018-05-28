@@ -313,7 +313,15 @@ namespace NewLife.Cube.Controllers
             var sso = OAuthServer.Instance;
 
             var user = Provider?.Current;
-            if (user == null) throw new InvalidOperationException("未登录！");
+            //if (user == null) throw new InvalidOperationException("未登录！");
+            // 未登录时跳转到登录页面，重新认证
+            if (user == null)
+            {
+                var prov = Provider;
+                var url2 = prov.LoginUrl.AppendReturn("~/Sso/Auth2/" + id);
+
+                return Redirect(url2);
+            }
 
             // 返回给子系统的数据：
             // code 授权码，子系统凭借该代码来索取用户信息
