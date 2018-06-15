@@ -135,7 +135,9 @@ namespace NewLife.Cube
                     var exp = new WhereExpression();
                     foreach (var item in pks)
                     {
-                        exp &= item.Equal(Request[item.Name]);
+                        // 如果前端没有传值，则不要参与构造查询
+                        var val = Request[item.Name];
+                        if (val != null) exp &= item.Equal(val);
                     }
 
                     return Entity<TEntity>.Find(exp);
@@ -206,7 +208,7 @@ namespace NewLife.Cube
         public virtual ActionResult Detail(String id)
         {
             var entity = Find(id);
-            if (entity.IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
+            if (entity == null || entity.IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Select, false);
