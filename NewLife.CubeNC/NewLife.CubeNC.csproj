@@ -1,15 +1,679 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.8" />
+    <Compile Remove="Common\**" />
+    <Compile Remove="Precompiled\**" />
+    <Content Remove="Common\**" />
+    <Content Remove="Precompiled\**" />
+    <EmbeddedResource Remove="Common\**" />
+    <EmbeddedResource Remove="Precompiled\**" />
+    <None Remove="Common\**" />
+    <None Remove="Precompiled\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" />
+    <Content Remove="Views\CubeHome\Index.cshtml" />
+    <Content Remove="Views\Shared\CubeError.cshtml" />
+    <Content Remove="Views\Shared\Form.cshtml" />
+    <Content Remove="Views\Shared\List.cshtml" />
+    <Content Remove="Views\Shared\ListTree.cshtml" />
+    <Content Remove="Views\Shared\NoPermission.cshtml" />
+    <Content Remove="Views\Shared\ObjectForm.cshtml" />
+    <Content Remove="Views\Shared\_Ace_Layout.cshtml" />
+    <Content Remove="Views\Shared\_Ace_Layout_Nav.cshtml" />
+    <Content Remove="Views\Shared\_DateRange.cshtml" />
+    <Content Remove="Views\Shared\_Form_Action.cshtml" />
+    <Content Remove="Views\Shared\_Form_Body.cshtml" />
+    <Content Remove="Views\Shared\_Form_Footer.cshtml" />
+    <Content Remove="Views\Shared\_Form_Group.cshtml" />
+    <Content Remove="Views\Shared\_Form_Header.cshtml" />
+    <Content Remove="Views\Shared\_Form_Item.cshtml" />
+    <Content Remove="Views\Shared\_Layout_Footer.cshtml" />
+    <Content Remove="Views\Shared\_Layout_Header.cshtml" />
+    <Content Remove="Views\Shared\_ListTree_Data.cshtml" />
+    <Content Remove="Views\Shared\_List_Data_Action.cshtml" />
+    <Content Remove="Views\Shared\_List_Data_Item.cshtml" />
+    <Content Remove="Views\Shared\_List_Data_Item_First.cshtml" />
+    <Content Remove="Views\Shared\_List_Pager.cshtml" />
+    <Content Remove="Views\Shared\_List_Pager1.cshtml" />
+    <Content Remove="Views\Shared\_List_Search.cshtml" />
+    <Content Remove="Views\Shared\_List_Toolbar.cshtml" />
+    <Content Remove="Views\Shared\_List_Toolbar_Adv.cshtml" />
+    <Content Remove="Views\Shared\_List_Toolbar_Batch.cshtml" />
+    <Content Remove="Views\Shared\_List_Toolbar_Search.cshtml" />
+    <Content Remove="Views\Shared\_Object_Nav.cshtml" />
+    <Content Remove="Views\Shared\_StatLevel.cshtml" />
+    <Content Remove="wwwroot\Content\ace\css\ace-fonts.min.css" />
+    <Content Remove="wwwroot\Content\ace\css\ace-ie.min.css" />
+    <Content Remove="wwwroot\Content\ace\css\ace-part2.min.css" />
+    <Content Remove="wwwroot\Content\ace\css\ace-skins.min.css" />
+    <Content Remove="wwwroot\Content\ace\css\ace.min.css" />
+    <Content Remove="wwwroot\Content\ace\css\images\meteorshower2.jpg" />
+    <Content Remove="wwwroot\Content\ace\css\images\pattern.jpg" />
+    <Content Remove="wwwroot\Content\ace\fonts\OpenSans-300.woff" />
+    <Content Remove="wwwroot\Content\ace\fonts\OpenSans-400.woff" />
+    <Content Remove="wwwroot\Content\ace\js\ace-elements.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\ace-extra.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\ace.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\additional-methods.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\bootbox.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\chosen.jquery.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\dropzone.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\excanvas.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\fullcalendar.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\pace.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\prettify.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\select2.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\spin.min.js" />
+    <Content Remove="wwwroot\Content\ace\js\typeahead.jquery.min.js" />
+    <Content Remove="wwwroot\Content\artDialog\css\ui-dialog.css" />
+    <Content Remove="wwwroot\Content\artDialog\dist\dialog-min.js" />
+    <Content Remove="wwwroot\Content\artDialog\dist\dialog-plus-min.js" />
+    <Content Remove="wwwroot\Content\artDialog\dist\dialog.new.life.js" />
+    <Content Remove="wwwroot\Content\bootstrap-switch\bootstrap-switch.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap-switch\bootstrap-switch.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\css\bootstrap-multiselect.css" />
+    <Content Remove="wwwroot\Content\bootstrap\css\bootstrap-responsive.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap\css\bootstrap-theme.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap\css\bootstrap.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap\css\font-awesome.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.eot" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.svg" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.ttf" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.woff" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\FontAwesome.otf" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.eot" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.svg" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.woff" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap-colorpicker.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap-multiselect.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap-tag.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap-wysiwyg.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap.min.js" />
+    <Content Remove="wwwroot\Content\Cube.css" />
+    <Content Remove="wwwroot\Content\Cube.js" />
+    <Content Remove="wwwroot\Content\DateTimePicker\bootstrap-datetimepicker.css" />
+    <Content Remove="wwwroot\Content\DateTimePicker\bootstrap-datetimepicker.js" />
+    <Content Remove="wwwroot\Content\DateTimePicker\bootstrap-datetimepicker.min.css" />
+    <Content Remove="wwwroot\Content\DateTimePicker\bootstrap-datetimepicker.min.js" />
+    <Content Remove="wwwroot\Content\DateTimePicker\locales\bootstrap-datetimepicker.es.js" />
+    <Content Remove="wwwroot\Content\DateTimePicker\locales\bootstrap-datetimepicker.zh-CN.js" />
+    <Content Remove="wwwroot\Content\DateTimePicker\locales\bootstrap-datetimepicker.zh-TW.js" />
+    <Content Remove="wwwroot\Content\js\html5shiv.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery-2.1.3.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery-ui.custom.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery-ui.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.autosize.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.bootstrap-duallistbox.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.colorbox.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.easypiechart.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.gritter.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.hotkeys.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.inputlimiter.1.3.1.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.knob.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.maskedinput.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.mobile.custom.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.mousewheel.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.nestable.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.raty.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.slimscroll.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.sparkline.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.ui.touch-punch.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.validate.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery1x.min.js" />
+    <Content Remove="wwwroot\Content\js\respond.min.js" />
+    <Content Remove="wwwroot\Content\jweui\css\demos.css" />
+    <Content Remove="wwwroot\Content\jweui\css\jquery-weui.css" />
+    <Content Remove="wwwroot\Content\jweui\css\jquery-weui.min.css" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_actionSheet.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_article.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_button.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_calendar.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_cell.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_city.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_datetime.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_dialog.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_icons.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_msg.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_new.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_noti.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_panel.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_photo.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_picker.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_progress.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_ptr.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_search_bar.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_select.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_swiper.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_tab.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_toast.png" />
+    <Content Remove="wwwroot\Content\jweui\images\icon_nav_up.png" />
+    <Content Remove="wwwroot\Content\jweui\images\pic_160.png" />
+    <Content Remove="wwwroot\Content\jweui\images\pic_article.png" />
+    <Content Remove="wwwroot\Content\jweui\images\present.png" />
+    <Content Remove="wwwroot\Content\jweui\images\swiper-1.jpg" />
+    <Content Remove="wwwroot\Content\jweui\images\swiper-2.jpg" />
+    <Content Remove="wwwroot\Content\jweui\images\swiper-3.jpg" />
+    <Content Remove="wwwroot\Content\jweui\images\swiper-4.jpg" />
+    <Content Remove="wwwroot\Content\jweui\images\vcode.jpg" />
+    <Content Remove="wwwroot\Content\jweui\js\city-picker.js" />
+    <Content Remove="wwwroot\Content\jweui\js\city-picker.min.js" />
+    <Content Remove="wwwroot\Content\jweui\js\jquery-weui.js" />
+    <Content Remove="wwwroot\Content\jweui\js\jquery-weui.min.js" />
+    <Content Remove="wwwroot\Content\jweui\js\swiper.js" />
+    <Content Remove="wwwroot\Content\jweui\js\swiper.min.js" />
+    <Content Remove="wwwroot\Content\jweui\lib\fastclick.js" />
+    <Content Remove="wwwroot\Content\jweui\lib\jquery-2.1.4.js" />
+    <Content Remove="wwwroot\Content\jweui\lib\weui.css" />
+    <Content Remove="wwwroot\Content\jweui\lib\weui.min.css" />
+    <Content Remove="wwwroot\Content\jweui\lib\zepto.js" />
+    <Content Remove="wwwroot\favicon.ico" />
+    <Content Remove="wwwroot\Scripts\ApiClient.js" />
+    <Content Remove="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
+    <Content Remove="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
+    <Content Remove="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
+    <Content Remove="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
+    <Content Remove="wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Remove="wwwroot\Scripts\modernizr-2.6.2.js" />
+    <Content Remove="wwwroot\Scripts\WebSocketX.js" />
+    <Content Remove="wwwroot\Scripts\_references.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
+    <PackageReference Include="NewLife.XCode" Version="9.7.6722.39741" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Test\Data\" />
+    <Folder Include="Areas\Test\Models\" />
+    <Folder Include="Common\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs">
+      <Link>Areas\Admin\Models\DbItem.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs">
+      <Link>Areas\Admin\Models\FileItem.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\XCoder.cs">
+      <Link>Entity\XCoder.cs</Link>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>XCoder.tt</DependentUpon>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs">
+      <Link>Entity\用户令牌.Biz.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\用户令牌.cs">
+      <Link>Entity\用户令牌.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\用户链接.Biz.cs">
+      <Link>Entity\用户链接.Biz.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\用户链接.cs">
+      <Link>Entity\用户链接.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\NewLife.Cube\Entity\Cube.xml">
+      <Link>Entity\Cube.xml</Link>
+    </Content>
+    <Content Include="..\NewLife.Cube\Entity\XCoder.tt">
+      <Link>Entity\XCoder.tt</Link>
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>XCoder.cs</LastGenOutput>
+    </Content>
+    <Content Include="..\NewLife.Cube\Views\Home\Index.cshtml">
+      <Link>Views\Home\Index.cshtml</Link>
+    </Content>
+    <Content Include="..\NewLife.Cube\Views\Shared\_Layout.cshtml">
+      <Link>Views\Shared\_Layout.cshtml</Link>
+    </Content>
+    <Content Include="..\NewLife.Cube\Views\_ViewStart.cshtml">
+      <Link>Views\_ViewStart.cshtml</Link>
+    </Content>
+    <EmbeddedResource Include="wwwroot\favicon.ico" />
+    <None Include="Properties\PublishProfiles\Cube.pubxml" />
+    <None Include="Views\CubeHome\Index.cshtml">
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\CubeError.cshtml">
+      <LastGenOutput>CubeError.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\Form.cshtml">
+      <LastGenOutput>Form.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\List.cshtml">
+      <LastGenOutput>List.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\ListTree.cshtml">
+      <LastGenOutput>ListTree.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\NoPermission.cshtml">
+      <LastGenOutput>NoPermission.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\ObjectForm.cshtml">
+      <LastGenOutput>ObjectForm.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Ace_Layout.cshtml">
+      <LastGenOutput>_Ace_Layout.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Ace_Layout_Nav.cshtml">
+      <LastGenOutput>_Ace_Layout_Nav.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_DateRange.cshtml">
+      <LastGenOutput>_DateRange.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Form_Action.cshtml">
+      <LastGenOutput>_Form_Action.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Form_Body.cshtml">
+      <LastGenOutput>_Form_Body.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Form_Footer.cshtml">
+      <LastGenOutput>_Form_Footer.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Form_Group.cshtml">
+      <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Form_Header.cshtml">
+      <LastGenOutput>_Form_Header.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Form_Item.cshtml">
+      <LastGenOutput>_Form_Item.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Layout_Footer.cshtml">
+      <LastGenOutput>_Layout_Footer.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Layout_Header.cshtml">
+      <LastGenOutput>_Layout_Header.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_ListTree_Data.cshtml">
+      <LastGenOutput>_ListTree_Data.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Data_Action.cshtml">
+      <LastGenOutput>_List_Data_Action.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Data_Item.cshtml">
+      <LastGenOutput>_List_Data_Item.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Data_Item_First.cshtml">
+      <LastGenOutput>_List_Data_Item_First.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Pager.cshtml">
+      <LastGenOutput>_List_Pager.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Pager1.cshtml">
+      <LastGenOutput>_List_Pager1.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Search.cshtml">
+      <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Toolbar.cshtml">
+      <LastGenOutput>_List_Toolbar.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Toolbar_Adv.cshtml">
+      <LastGenOutput>_List_Toolbar_Adv.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Toolbar_Batch.cshtml">
+      <LastGenOutput>_List_Toolbar_Batch.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_List_Toolbar_Search.cshtml">
+      <LastGenOutput>_List_Toolbar_Search.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Object_Nav.cshtml">
+      <LastGenOutput>_Object_Nav.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_StatLevel.cshtml">
+      <LastGenOutput>_StatLevel.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="wwwroot\Content\ace\css\ace-fonts.min.css" />
+    <None Include="wwwroot\Content\ace\css\ace-ie.min.css" />
+    <None Include="wwwroot\Content\ace\css\ace-part2.min.css" />
+    <None Include="wwwroot\Content\ace\css\ace-skins.min.css" />
+    <None Include="wwwroot\Content\ace\css\ace.min.css" />
+    <None Include="wwwroot\Content\ace\css\images\meteorshower2.jpg" />
+    <None Include="wwwroot\Content\ace\css\images\pattern.jpg" />
+    <None Include="wwwroot\Content\ace\fonts\OpenSans-300.woff" />
+    <None Include="wwwroot\Content\ace\fonts\OpenSans-400.woff" />
+    <None Include="wwwroot\Content\ace\js\ace-elements.min.js" />
+    <None Include="wwwroot\Content\ace\js\ace-extra.min.js" />
+    <None Include="wwwroot\Content\ace\js\ace.min.js" />
+    <None Include="wwwroot\Content\ace\js\additional-methods.min.js" />
+    <None Include="wwwroot\Content\ace\js\bootbox.min.js" />
+    <None Include="wwwroot\Content\ace\js\chosen.jquery.min.js" />
+    <None Include="wwwroot\Content\ace\js\dropzone.min.js" />
+    <None Include="wwwroot\Content\ace\js\excanvas.min.js" />
+    <None Include="wwwroot\Content\ace\js\fullcalendar.min.js" />
+    <None Include="wwwroot\Content\ace\js\pace.min.js" />
+    <None Include="wwwroot\Content\ace\js\prettify.min.js" />
+    <None Include="wwwroot\Content\ace\js\select2.min.js" />
+    <None Include="wwwroot\Content\ace\js\spin.min.js" />
+    <None Include="wwwroot\Content\ace\js\typeahead.jquery.min.js" />
+    <None Include="wwwroot\Content\artDialog\css\ui-dialog.css" />
+    <None Include="wwwroot\Content\artDialog\dist\dialog-min.js" />
+    <None Include="wwwroot\Content\artDialog\dist\dialog-plus-min.js" />
+    <None Include="wwwroot\Content\artDialog\dist\dialog.new.life.js" />
+    <None Include="wwwroot\Content\bootstrap-switch\bootstrap-switch.min.css" />
+    <None Include="wwwroot\Content\bootstrap-switch\bootstrap-switch.min.js" />
+    <None Include="wwwroot\Content\bootstrap\css\bootstrap-multiselect.css" />
+    <None Include="wwwroot\Content\bootstrap\css\bootstrap-responsive.min.css" />
+    <None Include="wwwroot\Content\bootstrap\css\bootstrap-theme.min.css" />
+    <None Include="wwwroot\Content\bootstrap\css\bootstrap.min.css" />
+    <None Include="wwwroot\Content\bootstrap\css\font-awesome.min.css" />
+    <None Include="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.eot" />
+    <None Include="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.svg" />
+    <None Include="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.ttf" />
+    <None Include="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.woff" />
+    <None Include="wwwroot\Content\bootstrap\fonts\FontAwesome.otf" />
+    <None Include="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.eot" />
+    <None Include="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.svg" />
+    <None Include="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.ttf" />
+    <None Include="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.woff" />
+    <None Include="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.woff2" />
+    <None Include="wwwroot\Content\bootstrap\js\bootstrap-colorpicker.min.js" />
+    <None Include="wwwroot\Content\bootstrap\js\bootstrap-multiselect.min.js" />
+    <None Include="wwwroot\Content\bootstrap\js\bootstrap-tag.min.js" />
+    <None Include="wwwroot\Content\bootstrap\js\bootstrap-wysiwyg.min.js" />
+    <None Include="wwwroot\Content\bootstrap\js\bootstrap.js" />
+    <None Include="wwwroot\Content\bootstrap\js\bootstrap.min.js" />
+    <None Include="wwwroot\Content\Cube.css" />
+    <None Include="wwwroot\Content\Cube.js" />
+    <None Include="wwwroot\Content\DateTimePicker\bootstrap-datetimepicker.css" />
+    <None Include="wwwroot\Content\DateTimePicker\bootstrap-datetimepicker.js" />
+    <None Include="wwwroot\Content\DateTimePicker\bootstrap-datetimepicker.min.css" />
+    <None Include="wwwroot\Content\DateTimePicker\bootstrap-datetimepicker.min.js" />
+    <None Include="wwwroot\Content\DateTimePicker\locales\bootstrap-datetimepicker.es.js" />
+    <None Include="wwwroot\Content\DateTimePicker\locales\bootstrap-datetimepicker.zh-CN.js" />
+    <None Include="wwwroot\Content\DateTimePicker\locales\bootstrap-datetimepicker.zh-TW.js" />
+    <None Include="wwwroot\Content\js\html5shiv.min.js" />
+    <None Include="wwwroot\Content\js\jquery-2.1.3.min.js" />
+    <None Include="wwwroot\Content\js\jquery-ui.custom.min.js" />
+    <None Include="wwwroot\Content\js\jquery-ui.min.js" />
+    <None Include="wwwroot\Content\js\jquery.autosize.min.js" />
+    <None Include="wwwroot\Content\js\jquery.bootstrap-duallistbox.min.js" />
+    <None Include="wwwroot\Content\js\jquery.colorbox.min.js" />
+    <None Include="wwwroot\Content\js\jquery.easypiechart.min.js" />
+    <None Include="wwwroot\Content\js\jquery.gritter.min.js" />
+    <None Include="wwwroot\Content\js\jquery.hotkeys.min.js" />
+    <None Include="wwwroot\Content\js\jquery.inputlimiter.1.3.1.min.js" />
+    <None Include="wwwroot\Content\js\jquery.knob.min.js" />
+    <None Include="wwwroot\Content\js\jquery.maskedinput.min.js" />
+    <None Include="wwwroot\Content\js\jquery.min.js" />
+    <None Include="wwwroot\Content\js\jquery.mobile.custom.min.js" />
+    <None Include="wwwroot\Content\js\jquery.mousewheel.min.js" />
+    <None Include="wwwroot\Content\js\jquery.nestable.min.js" />
+    <None Include="wwwroot\Content\js\jquery.raty.min.js" />
+    <None Include="wwwroot\Content\js\jquery.slimscroll.min.js" />
+    <None Include="wwwroot\Content\js\jquery.sparkline.min.js" />
+    <None Include="wwwroot\Content\js\jquery.ui.touch-punch.min.js" />
+    <None Include="wwwroot\Content\js\jquery.validate.min.js" />
+    <None Include="wwwroot\Content\js\jquery1x.min.js" />
+    <None Include="wwwroot\Content\js\respond.min.js" />
+    <None Include="wwwroot\Content\jweui\css\demos.css" />
+    <None Include="wwwroot\Content\jweui\css\jquery-weui.css" />
+    <None Include="wwwroot\Content\jweui\css\jquery-weui.min.css" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_actionSheet.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_article.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_button.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_calendar.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_cell.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_city.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_datetime.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_dialog.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_icons.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_msg.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_new.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_noti.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_panel.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_photo.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_picker.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_progress.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_ptr.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_search_bar.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_select.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_swiper.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_tab.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_toast.png" />
+    <None Include="wwwroot\Content\jweui\images\icon_nav_up.png" />
+    <None Include="wwwroot\Content\jweui\images\pic_160.png" />
+    <None Include="wwwroot\Content\jweui\images\pic_article.png" />
+    <None Include="wwwroot\Content\jweui\images\present.png" />
+    <None Include="wwwroot\Content\jweui\images\swiper-1.jpg" />
+    <None Include="wwwroot\Content\jweui\images\swiper-2.jpg" />
+    <None Include="wwwroot\Content\jweui\images\swiper-3.jpg" />
+    <None Include="wwwroot\Content\jweui\images\swiper-4.jpg" />
+    <None Include="wwwroot\Content\jweui\images\vcode.jpg" />
+    <None Include="wwwroot\Content\jweui\js\city-picker.js" />
+    <None Include="wwwroot\Content\jweui\js\city-picker.min.js" />
+    <None Include="wwwroot\Content\jweui\js\jquery-weui.js" />
+    <None Include="wwwroot\Content\jweui\js\jquery-weui.min.js" />
+    <None Include="wwwroot\Content\jweui\js\swiper.js" />
+    <None Include="wwwroot\Content\jweui\js\swiper.min.js" />
+    <None Include="wwwroot\Content\jweui\lib\fastclick.js" />
+    <None Include="wwwroot\Content\jweui\lib\jquery-2.1.4.js" />
+    <None Include="wwwroot\Content\jweui\lib\weui.css" />
+    <None Include="wwwroot\Content\jweui\lib\weui.min.css" />
+    <None Include="wwwroot\Content\jweui\lib\zepto.js" />
+    <None Include="wwwroot\Scripts\ApiClient.js" />
+    <None Include="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
+    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
+    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
+    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
+    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
+    <None Include="wwwroot\Scripts\modernizr-2.6.2.js" />
+    <None Include="wwwroot\Scripts\WebSocketX.js" />
+    <None Include="wwwroot\Scripts\_references.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\CubeHome\Index.generated.cs">
+      <DependentUpon>Index.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\CubeError.generated.cs">
+      <DependentUpon>CubeError.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\Form.generated.cs">
+      <DependentUpon>Form.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\List.generated.cs">
+      <DependentUpon>List.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\ListTree.generated.cs">
+      <DependentUpon>ListTree.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\NoPermission.generated.cs">
+      <DependentUpon>NoPermission.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\ObjectForm.generated.cs">
+      <DependentUpon>ObjectForm.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Ace_Layout.generated.cs">
+      <DependentUpon>_Ace_Layout.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Ace_Layout_Nav.generated.cs">
+      <DependentUpon>_Ace_Layout_Nav.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_DateRange.generated.cs">
+      <DependentUpon>_DateRange.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Form_Action.generated.cs">
+      <DependentUpon>_Form_Action.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Form_Body.generated.cs">
+      <DependentUpon>_Form_Body.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Form_Footer.generated.cs">
+      <DependentUpon>_Form_Footer.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Form_Group.generated.cs">
+      <DependentUpon>_Form_Group.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Form_Header.generated.cs">
+      <DependentUpon>_Form_Header.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Form_Item.generated.cs">
+      <DependentUpon>_Form_Item.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Layout_Footer.generated.cs">
+      <DependentUpon>_Layout_Footer.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Layout_Header.generated.cs">
+      <DependentUpon>_Layout_Header.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_ListTree_Data.generated.cs">
+      <DependentUpon>_ListTree_Data.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Data.generated.cs">
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Data_Action.generated.cs">
+      <DependentUpon>_List_Data_Action.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Data_Item.generated.cs">
+      <DependentUpon>_List_Data_Item.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Data_Item_First.generated.cs">
+      <DependentUpon>_List_Data_Item_First.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Pager.generated.cs">
+      <DependentUpon>_List_Pager.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Pager1.generated.cs">
+      <DependentUpon>_List_Pager1.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Search.generated.cs">
+      <DependentUpon>_List_Search.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Toolbar.generated.cs">
+      <DependentUpon>_List_Toolbar.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Toolbar_Adv.generated.cs">
+      <DependentUpon>_List_Toolbar_Adv.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Toolbar_Batch.generated.cs">
+      <DependentUpon>_List_Toolbar_Batch.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_List_Toolbar_Search.generated.cs">
+      <DependentUpon>_List_Toolbar_Search.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_Object_Nav.generated.cs">
+      <DependentUpon>_Object_Nav.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Views\Shared\_StatLevel.generated.cs">
+      <DependentUpon>_StatLevel.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
   </ItemGroup>
 
 </Project>
