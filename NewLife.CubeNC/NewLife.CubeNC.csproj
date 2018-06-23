@@ -189,8 +189,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
-    <PackageReference Include="NewLife.XCode" Version="9.7.6722.39741" />
   </ItemGroup>
 
   <ItemGroup>
@@ -507,6 +507,14 @@
     <None Include="wwwroot\Scripts\modernizr-2.6.2.js" />
     <None Include="wwwroot\Scripts\WebSocketX.js" />
     <None Include="wwwroot\Scripts\_references.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NewLife.Core">
+      <HintPath>..\..\..\x-newlife-new\Bin\netstandard2.0\NewLife.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="XCode">
+      <HintPath>..\..\..\x-newlife-new\Bin\netstandard2.0\XCode.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\CubeHome\Index.generated.cs">
