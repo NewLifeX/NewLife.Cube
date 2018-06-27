@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.CubeNC.Com;
 using NewLife.CubeNC.Extensions;
+using NewLife.CubeNC.Membership;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -72,7 +77,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             var returnUrl = Request.GetRequestValue("r");
             // 如果已登录，直接跳转
-            if (ManageProvider.User != null)
+            if (DefaultManageProviderForCore.User != null)
             {
                 if (Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
@@ -116,8 +121,29 @@ namespace NewLife.Cube.Admin.Controllers
             try
             {
                 var provider = ManageProvider.Provider;
-                if (ModelState.IsValid && provider.Login(username, password, remember ?? false) != null)
+                if (ModelState.IsValid && provider.Login(username, password, remember ?? false, HttpContext.RequestServices) != null)
                 {
+                    //信息类型集合，比如姓名、性别、出生日期
+                    var claims = new[]
+                    {
+                        new Claim("UserName",username)
+                    };
+
+                    //信息类型集合组合成一张证件，比如身份证、驾照、护照
+                    var claimsIdentity = new ClaimsIdentity(claims,CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    //持有者，拥有以上证件的持有者，同时有身份证、驾照、护照、教师证的一个人
+                    var user = new ClaimsPrincipal(claimsIdentity);
+
+                    //注册改证件持有者
+                    HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme, 
+                        user,
+                        new AuthenticationProperties
+                        {
+                            IsPersistent = true,//session跨多个请求,否则
+                            ExpiresUtc = remember ?? false ? DateTimeOffset.Now.AddMilliseconds(60 * 2) : (DateTimeOffset?)null,//过期时间
+                        }).Wait();
 
                     //FormsAuthentication.SetAuthCookie(username, remember ?? false);
                     //FormsAuthentication.RedirectFromLoginPage(provider.Current + "", true);
@@ -152,7 +178,7 @@ namespace NewLife.Cube.Admin.Controllers
             var name = HttpContext.Session.GetString("Cube_Sso") + "";
             if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso", new { area = "", name, r = returnUrl });
 
-            ManageProvider.Provider.Logout();
+            DefaultManageProviderForCore.Provider.Logout();
 
             if (!returnUrl.IsNullOrEmpty()) return Redirect(returnUrl);
 
@@ -168,7 +194,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
 
-            var user = ManageProvider.User;
+            var user = DefaultManageProviderForCore.User;
             if (user == null) return RedirectToAction("Login");
 
             if (id.Value != user.ID) throw new Exception("禁止修改非当前登录用户资料");
@@ -197,7 +223,7 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult Info(UserX user)
         {
-            var cur = ManageProvider.User;
+            var cur = DefaultManageProviderForCore.User;
             if (cur == null) return RedirectToAction("Login");
 
             if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
@@ -258,7 +284,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Update)]
         public ActionResult ClearPassword(Int32 id)
         {
-            if (ManageProvider.User.RoleName != "管理员") throw new Exception("清除密码操作需要管理员权限，非法操作！");
+            if (DefaultManageProviderForCore.User.RoleName != "管理员") throw new Exception("清除密码操作需要管理员权限，非法操作！");
 
             // 前面表单可能已经清空密码
             var user = UserX.FindByID(id);

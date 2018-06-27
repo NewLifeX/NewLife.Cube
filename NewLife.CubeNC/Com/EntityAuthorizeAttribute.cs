@@ -69,7 +69,7 @@ namespace NewLife.CubeNC.Com
 
             // 只验证管辖范围
             var create = false;
-            //if (!AreaRegistrationBase.Contains(filterContext.ActionDescriptor.Controller))
+            if (ctrl.ControllerTypeInfo.CustomAttributes.FirstOrDefault(f=>f.AttributeType == typeof(AreaAttribute))?.ConstructorArguments?.FirstOrDefault().Value?.ToString() != "Admin")
             {
                 if (!hasAtt) return;
                 // 不属于魔方而又加了权限特性，需要创建菜单
@@ -100,15 +100,9 @@ namespace NewLife.CubeNC.Com
             var user = prv.TryLogin();
             if (user == null) return false;
 
-            var menu = ctx.Items["CurrentMenu"] as IMenu;
-
             // 判断权限
-            if (menu != null && user is IUser user2)
-            {
-                if (user2.Has(menu, Permission)) return true;
-            }
-
-            return false;
+            if (!(ctx.Items["CurrentMenu"] is IMenu menu) || !(user is IUser user2)) return false;
+            return user2.Has(menu, Permission);
         }
 
         /// <summary>未认证请求</summary>

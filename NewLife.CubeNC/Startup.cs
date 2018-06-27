@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Routing;
@@ -14,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NewLife.Cube.Controllers;
 using NewLife.CubeNC.Com;
+using NewLife.CubeNC.Membership;
 using NewLife.CubeNC.ViewsPreComplied;
 using NewLife.CubeNC.WebMiddleware;
 using NewLife.Log;
@@ -41,8 +44,15 @@ namespace NewLife.CubeNC
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            services.AddSession();
+
+            services.AddDefaultIdentity<IdentityUser>();
+
             services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
             services.AddSingleton<RazorViewEngine, CompositePrecompiledMvcEngine>();
+
+            //添加管理提供者
+            services.AddManageProvider();
 
             services.AddMvc(opt =>
                 {
@@ -62,6 +72,8 @@ namespace NewLife.CubeNC
                     opt.ViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
                     opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/{1}/{0}.cshtml");
                     opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/Shared/{0}.cshtml");
+                    opt.AreaViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
+                    opt.AreaViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
                 })
                 .AddViewOptions(opt =>
                 {
@@ -70,6 +82,9 @@ namespace NewLife.CubeNC
                     //opt.ViewEngines.Add(new CompositePrecompiledMvcEngine());
                 })
                 ;
+
+            //注册Cookie认证服务
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             //添加Http上下文访问器
             StaticHttpContextExtensions.AddHttpContextAccessor(services);
@@ -93,6 +108,9 @@ namespace NewLife.CubeNC
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseSession();
+
+            app.UseAuthentication();
 
             app.UseMvc(routes =>
             {
@@ -119,9 +137,9 @@ namespace NewLife.CubeNC
 
 
 
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                //routes.MapRoute(
+                //    name: "default",
+                //    template: "{controller=Home}/{action=Index}/{id?}");
             });
 
             //注册http模块中间件
@@ -130,10 +148,13 @@ namespace NewLife.CubeNC
             //配置静态Http上下文访问器
             app.UseStaticHttpContext();
 
+            //使用管理提供者
+            app.UseManagerProvider();
+
             // 自动检查并添加菜单
             XTrace.WriteLine("初始化权限管理体系");
             //var user = ManageProvider.User;
-            ManageProvider.Provider.GetService<IUser>();
+            //ManageProvider.Provider.GetService<IUser>();
         }
     }
 }

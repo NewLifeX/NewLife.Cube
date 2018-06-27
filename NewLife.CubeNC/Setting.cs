@@ -107,7 +107,7 @@ namespace NewLife.Cube
         {
             if (StartPage.IsNullOrEmpty()) StartPage = 
                 //HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") 
-                HttpContext.Current.Request.Host
+                HttpContext.Current.Request.PathBase.ToString().EnsureEnd("/")
                 + "Admin/Index/Main";
             //if (SecurityKey.IsNullOrEmpty()) SecurityKey = Rand.NextString(16);
 

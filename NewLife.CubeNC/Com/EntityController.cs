@@ -121,7 +121,7 @@ namespace NewLife.Cube
         protected virtual IEnumerable<TEntity> Search(Pager p)
         {
             // 缓存数据，用于后续导出
-            NewLife.Web.HttpContext.Current.Session.Set(CacheKey, p.ToBytes());
+            HttpContext.Session.Set(CacheKey, p.ToBytes());
 
             return Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
         }
@@ -159,7 +159,7 @@ namespace NewLife.Cube
         protected virtual IEnumerable<TEntity> ExportData()
         {
             // 跳过头部一些页数，导出当前页以及以后的数据
-            var p = new Pager(NewLife.Web.HttpContext.Current.Session.Get(CacheKey).GetObject<Pager>());
+            var p = new Pager(HttpContext.Session.Get(CacheKey).GetObject<Pager>());
             p.StartRow = (p.PageIndex - 1) * p.PageSize;
             p.PageSize = 100000;
             // 不要查记录数
@@ -182,7 +182,7 @@ namespace NewLife.Cube
             ViewBag.Page = p;
 
             // 缓存数据，用于后续导出
-            NewLife.Web.HttpContext.Current.Session.Set(CacheKey,p.ToBytes());
+            HttpContext.Session.Set(CacheKey,p.ToBytes());
 
             return IndexView(p);
         }
@@ -264,7 +264,7 @@ namespace NewLife.Cube
             Valid(entity, DataObjectMethodType.Insert, false);
 
             // 记下添加前的来源页，待会添加成功以后跳转
-            NewLife.Web.HttpContext.Current.Session.Set("Cube_Add_Referrer",Request.Headers["Referer"].FirstOrDefault().GetBytes());
+            HttpContext.Session.Set("Cube_Add_Referrer",Request.Headers["Referer"].FirstOrDefault().GetBytes());
 
             return FormView(entity);
         }

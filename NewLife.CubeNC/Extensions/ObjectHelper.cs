@@ -21,6 +21,7 @@ namespace NewLife.CubeNC.Extensions
 
         public static T GetObject<T>(this byte[] bytes) where T : class
         {
+            if (bytes == null) return null;
             using (var ms = new MemoryStream(bytes))
             {
                 var formatter = new BinaryFormatter();

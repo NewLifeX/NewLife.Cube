@@ -16,6 +16,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Areas\Admin\Views\Index\Assembly.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\Cache.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\Main.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\ProcessModules.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\ServerVar.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\Session.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\_Left.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\_Left_Item.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\_Navbar.cshtml" />
     <Content Remove="Views\CubeHome\Index.cshtml" />
     <Content Remove="Views\Shared\CubeError.cshtml" />
     <Content Remove="Views\Shared\Form.cshtml" />
@@ -191,6 +200,7 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
+    <PackageReference Include="MySql.Data" Version="8.0.11" />
   </ItemGroup>
 
   <ItemGroup>
@@ -245,6 +255,42 @@
       <Link>Views\_ViewStart.cshtml</Link>
     </Content>
     <EmbeddedResource Include="wwwroot\favicon.ico" />
+    <None Include="Areas\Admin\Views\Index\Assembly.cshtml">
+      <LastGenOutput>Assembly.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\Cache.cshtml">
+      <LastGenOutput>Cache.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\Main.cshtml">
+      <LastGenOutput>Main.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\ProcessModules.cshtml">
+      <LastGenOutput>ProcessModules.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\ServerVar.cshtml">
+      <LastGenOutput>ServerVar.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\Session.cshtml">
+      <LastGenOutput>Session.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\_Left.cshtml">
+      <LastGenOutput>_Left.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\_Left_Item.cshtml">
+      <LastGenOutput>_Left_Item.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\_Navbar.cshtml">
+      <LastGenOutput>_Navbar.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
     <None Include="Properties\PublishProfiles\Cube.pubxml" />
     <None Include="Views\CubeHome\Index.cshtml">
       <LastGenOutput>Index.generated.cs</LastGenOutput>
@@ -509,12 +555,8 @@
     <None Include="wwwroot\Scripts\_references.js" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="NewLife.Core">
-      <HintPath>..\..\..\x-newlife-new\Bin\netstandard2.0\NewLife.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="XCode">
-      <HintPath>..\..\..\x-newlife-new\Bin\netstandard2.0\XCode.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\..\x-newlife-new\x-newlife-new\NewLife.Core\NewLife.Core.Mixed.csproj" />
+    <ProjectReference Include="..\..\..\x-newlife-new\x-newlife-new\XCode\XCode.Mixed.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\CubeHome\Index.generated.cs">
@@ -682,6 +724,28 @@
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Areas\Admin\Views\Index\_Left.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Areas\Admin\Views\Index\Assembly.cshtml" />
+    <_ContentIncludedByDefault Remove="Areas\Admin\Views\Index\Cache.cshtml" />
+    <_ContentIncludedByDefault Remove="Areas\Admin\Views\Index\_Left.cshtml" />
+    <_ContentIncludedByDefault Remove="Areas\Admin\Views\Index\_Left_Item.cshtml" />
+    <_ContentIncludedByDefault Remove="Areas\Admin\Views\Index\_Navbar.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Areas\Admin\Views\Index\_Left_Item.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Areas\Admin\Views\Index\_Navbar.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Areas\Admin\Views\Index\Assembly.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Areas\Admin\Views\Index\Cache.cshtml" />
   </ItemGroup>
 
 </Project>

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.CubeNC.Com;
 using NewLife.CubeNC.Extensions;
+using ManagerProviderHelper = NewLife.CubeNC.Membership.ManagerProviderHelper;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -26,9 +27,16 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
+        public ManageProvider ManageProvider;
+
         static IndexController()
         {
             MenuOrder = 10;
+        }
+
+        public IndexController(ManageProvider manageProvider)
+        {
+            ManageProvider = manageProvider;
         }
 
         /// <summary>首页</summary>
@@ -37,7 +45,7 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult Index()
         {
-            var user = ManageProvider.Provider.TryLogin();
+            var user = ManagerProviderHelper.TryLogin(ManageProvider,HttpContext.RequestServices);
             if (user == null) return RedirectToAction("Login", "User", new { r = Request.GetEncodedPathAndQuery()
                 //.Url.PathAndQuery
             });
