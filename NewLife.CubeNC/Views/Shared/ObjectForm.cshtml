@@ -9,7 +9,7 @@
     var pis = ViewBag.Properties as IEnumerable<PropertyInfo>;
 }
 <div class="row">
-    @Html.Partial("_Object_Nav", Model)
+    @Html.PartialAsync("_Object_Nav", Model).Result
 </div>
 <div class="row">
     <div class="col-md-12">

@@ -1,14 +1,14 @@
 ﻿@using NewLife;
+@using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = Model as Pair;
-    var entity = pair.First as IEntity;
-    var item = pair.Second as FieldItem;
+    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var entity = pair.Item1;
+    var item = pair.Item2;
 
     var err = 0;
-    ModelState st = null;
-    if (ViewData.ModelState.TryGetValue(item.Name, out st) && st != null) { err = st.Errors.Count; }
+    if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
 
     var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
 
@@ -30,7 +30,7 @@
     //}
     var input = total - label - span;
 }
-<label class="control-label col-xs-@label col-sm-@label">@item.DisplayName</label>
+<label class="control-label col-xs-@(label) col-sm-@label">@item.DisplayName</label>
 <div class="input-group col-xs-@(total - label) col-sm-@input">
     @Html.ForEditor(item, entity)
 </div>

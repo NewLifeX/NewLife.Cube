@@ -1,4 +1,5 @@
-﻿@using XCode.Statistics;
+﻿@using NewLife.Cube
+@using XCode.Statistics;
 @{
     // 所有可用层级
     var vs = Model as StatLevels[];
@@ -10,9 +11,9 @@
         def = vs[0];
     }
 
-    var page = ViewBag.Page as Pager;
+    var pager = ViewBag.Page as Pager;
 
-    var n = page["Level"].ToInt(-1);
+    var n = pager["Level"].ToInt(-1);
     var level = n >= 0 ? (StatLevels)n : def;
     var formatStr = "";
     switch (level)
@@ -32,7 +33,7 @@
     <div class="form-group">
         <div class="input-group">
             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-            <input name="Time" id="Time" value="@page["Time"]" dateformat="@formatStr" class="form-control form_datetime" />
+            <input name="Time" id="Time" value="@pager["Time"]" dateformat="@formatStr" class="form-control form_datetime" />
         </div>
     </div>
 }

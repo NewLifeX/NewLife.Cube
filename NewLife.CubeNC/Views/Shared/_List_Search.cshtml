@@ -8,5 +8,5 @@
 }
 @if (fi != null)
 {
-    @Html.Partial("_DateRange")
+    @Html.PartialAsync("_DateRange").Result
 }

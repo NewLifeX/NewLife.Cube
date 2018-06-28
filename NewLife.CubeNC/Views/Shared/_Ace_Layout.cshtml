@@ -49,7 +49,7 @@
     <div class="panel panel-default">
         <div class="breadcrumbs" id="breadcrumbs">
             <ul class="breadcrumb">
-                @Html.Partial("_Ace_Layout_Nav")
+                @Html.PartialAsync("_Ace_Layout_Nav").Result
             </ul>
             <div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
         </div>

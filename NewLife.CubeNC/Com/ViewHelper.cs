@@ -134,12 +134,12 @@ namespace NewLife.Cube
                 }
                 @foreach (var item in fields)
                 {
-                    @Html.Partial(""_List_Data_Item"", new Pair(entity, item))
+                    @Html.PartialAsync(""_List_Data_Item"", new Pair(entity, item).Result)
                 }
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
                     <td class=""text-center"">
-                        @Html.Partial(""_List_Data_Action"", (Object)entity)
+                        @Html.PartialAsync(""_List_Data_Action"", (Object).Resultentity)
                     </td>
                 }
             </tr>
@@ -202,7 +202,7 @@ namespace NewLife.Cube
             {
                 // 缩进
                 sb.Append(ident);
-                //sb.AppendLine(@"@Html.Partial(""_List_Data_Item"", new Pair(entity, item))");
+                //sb.AppendLine(@"@Html.PartialAsync(""_List_Data_Item"", new Pair(entity, item).Result)");
                 if (item.PrimaryKey)
                     sb.AppendFormat(@"<td class=""text-center hidden-md hidden-sm hidden-xs"">@entity.{0}</td>", item.Name);
                 else
@@ -288,11 +288,11 @@ namespace NewLife.Cube
     if (!item.IsIdentity)
     {
         <div class=""@cls"">
-            @Html.Partial(""_Form_Item"", new Pair(entity, item))
+            @Html.PartialAsync(""_Form_Item"", new Pair(entity, item).Result)
         </div>
     }
 }
-@Html.Partial(""_Form_Footer"", entity)
+@Html.PartialAsync(""_Form_Footer"", entity).Result
 @if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
 {
     <div class=""clearfix form-actions col-sm-12 col-md-12"">
@@ -324,7 +324,7 @@ namespace NewLife.Cube
                 sb.AppendLine("</div>");
             }
 
-            var p = tmp.IndexOf(@"@Html.Partial(""_Form_Footer""");
+            var p = tmp.IndexOf(@"@Html.PartialAsync(""_Form_Footer""").Result;
             sb.Append(tmp.Substring(p));
 
             File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);

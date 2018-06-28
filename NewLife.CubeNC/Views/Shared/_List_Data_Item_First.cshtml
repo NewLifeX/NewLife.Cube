@@ -1,9 +1,10 @@
-﻿@using XCode;
+﻿@using Microsoft.AspNetCore.Routing
+@using XCode;
 @using XCode.Configuration;
 @{
-    var pair = Model as Pair;
-    var entity = pair.First as IEntity;
-    var item = pair.Second as FieldItem;
+    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var entity = pair.Item1;
+    var item = pair.Item2;
 }
 @if (item.IsIdentity)
 {

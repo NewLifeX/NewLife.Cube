@@ -11,7 +11,7 @@
 }
 
 <div class="form-horizontal">
-    @Html.Partial("_Form_Header", entity)
+    @Html.PartialAsync("_Form_Header", entity).Result
     @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv))
     {
         @Html.AntiForgeryToken()
@@ -26,6 +26,6 @@
                 }
             }
         </ul>
-        @Html.Partial("_Form_Body", entity)
+        @Html.PartialAsync("_Form_Body", entity).Result
     }
 </div>

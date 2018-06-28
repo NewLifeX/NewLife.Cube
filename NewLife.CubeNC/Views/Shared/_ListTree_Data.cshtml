@@ -1,4 +1,7 @@
-﻿@using NewLife;
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@using NewLife;
+@using NewLife.Cube
+@using NewLife.Reflection
 @using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
@@ -49,11 +52,11 @@
                 {
                     if (FirstFlag == 0)
                     {
-                        @Html.Partial("_List_Data_Item_First", new Pair(entity, item))
+                        @Html.PartialAsync("_List_Data_Item_First", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
                     }
                     else
                     {
-                        @Html.Partial("_List_Data_Item", new Pair(entity, item))
+                        @Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
                     }
 
                     FirstFlag++;
@@ -73,7 +76,7 @@
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
                     <td class="text-center">
-                        @Html.Partial("_List_Data_Action", (Object)entity)
+                        @Html.PartialAsync("_List_Data_Action", (Object)entity).Result
                     </td>
                 }
             </tr>

@@ -44,7 +44,7 @@ namespace NewLife.CubeNC.Membership
             (context?.GetService<IHttpContextAccessor>()?? Context)
                 ?.HttpContext
                 ?.Session
-                ?.Get<IManageUser>(SessionKey);
+                ?.Get<UserX>(SessionKey);
 
         /// <summary>设置当前用户</summary>
         /// <param name="user"></param>

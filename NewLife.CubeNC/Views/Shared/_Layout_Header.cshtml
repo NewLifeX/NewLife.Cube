@@ -1,8 +1,9 @@
-﻿@using NewLife.Common;
+﻿@using Microsoft.AspNetCore.Http.Extensions
+@using NewLife.Common;
 @{
     var cfg = NewLife.Common.SysConfig.Current;
     var user = ManageProvider.User;
-    var retUrl = Request.Url.PathAndQuery;
+    var retUrl = Context.Request.GetEncodedPathAndQuery();
 }
 <div class="navbar navbar-default">
     <div class="container">

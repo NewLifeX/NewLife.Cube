@@ -34,10 +34,10 @@
                 应用系统：
             </td>
             <td class="value">
-                @NewLife.Web.HttpContext.Current.Request.PathBase
+                @*据说此功能已被干掉*@
                 @*@HttpRuntime.AppDomainAppVirtualPath*@
                 &nbsp;
-                @if (this.Has((PermissionFlags)16))
+                @if (this.Has((PermissionFlags) 16))
                 {
                     <a href="@Url.Action("Restart")" onclick="return confirm('仅重启ASP.Net应用程序域，而不是操作系统！\n确认重启？')">重启应用系统</a>
                 }
@@ -57,7 +57,7 @@
             </td>
             <td class="value">
                 <span title="SERVER_NAME">@req.Headers["SERVER_NAME"]</span>，
-                <span title="LOCAl_ADDR">@req.Headers["LOCAl_ADDR"]:@req.Headers["Server_Port"]</span>
+                <span title="LOCAl_ADDR">@req.Headers["Host"]</span>
                 &nbsp;<span title="REMOTE_HOST">[@req.Headers["REMOTE_HOST"]]</span>
                 <a href="@Url.Action("Main/ServerVar")" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
             </td>

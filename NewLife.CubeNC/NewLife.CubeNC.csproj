@@ -4,6 +4,10 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netcoreapp2.1\NewLife.CubeNC.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Common\**" />
     <Compile Remove="Precompiled\**" />
@@ -16,8 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Areas\Admin\Views\Db\Index.cshtml" />
+    <Content Remove="Areas\Admin\Views\File\Index.cshtml" />
     <Content Remove="Areas\Admin\Views\Index\Assembly.cshtml" />
     <Content Remove="Areas\Admin\Views\Index\Cache.cshtml" />
+    <Content Remove="Areas\Admin\Views\Index\Index.cshtml" />
     <Content Remove="Areas\Admin\Views\Index\Main.cshtml" />
     <Content Remove="Areas\Admin\Views\Index\ProcessModules.cshtml" />
     <Content Remove="Areas\Admin\Views\Index\ServerVar.cshtml" />
@@ -25,7 +32,20 @@
     <Content Remove="Areas\Admin\Views\Index\_Left.cshtml" />
     <Content Remove="Areas\Admin\Views\Index\_Left_Item.cshtml" />
     <Content Remove="Areas\Admin\Views\Index\_Navbar.cshtml" />
+    <Content Remove="Areas\Admin\Views\Log\_List_Data.cshtml" />
+    <Content Remove="Areas\Admin\Views\Log\_List_Search.cshtml" />
+    <Content Remove="Areas\Admin\Views\Menu\_ListTree_Data.cshtml" />
+    <Content Remove="Areas\Admin\Views\Role\SetPermission.cshtml" />
+    <Content Remove="Areas\Admin\Views\Role\_Form_Group.cshtml" />
+    <Content Remove="Areas\Admin\Views\Role\_List_Data.cshtml" />
+    <Content Remove="Areas\Admin\Views\Shared\_Object_Nav.cshtml" />
+    <Content Remove="Areas\Admin\Views\UserOnline\_List_Data.cshtml" />
+    <Content Remove="Areas\Admin\Views\UserToken\_List_Data.cshtml" />
+    <Content Remove="Areas\Admin\Views\VisitStat\_List_Data.cshtml" />
+    <Content Remove="Areas\Admin\Views\VisitStat\_List_Search.cshtml" />
+    <Content Remove="Areas\Admin\Views\_ViewStart.cshtml" />
     <Content Remove="Views\CubeHome\Index.cshtml" />
+    <Content Remove="Views\Home\Index.cshtml" />
     <Content Remove="Views\Shared\CubeError.cshtml" />
     <Content Remove="Views\Shared\Form.cshtml" />
     <Content Remove="Views\Shared\List.cshtml" />
@@ -245,9 +265,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>XCoder.cs</LastGenOutput>
     </Content>
-    <Content Include="..\NewLife.Cube\Views\Home\Index.cshtml">
-      <Link>Views\Home\Index.cshtml</Link>
-    </Content>
     <Content Include="..\NewLife.Cube\Views\Shared\_Layout.cshtml">
       <Link>Views\Shared\_Layout.cshtml</Link>
     </Content>
@@ -255,12 +272,24 @@
       <Link>Views\_ViewStart.cshtml</Link>
     </Content>
     <EmbeddedResource Include="wwwroot\favicon.ico" />
+    <None Include="Areas\Admin\Views\Db\Index.cshtml">
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\File\Index.cshtml">
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
     <None Include="Areas\Admin\Views\Index\Assembly.cshtml">
       <LastGenOutput>Assembly.generated.cs</LastGenOutput>
       <Generator>RazorGenerator</Generator>
     </None>
     <None Include="Areas\Admin\Views\Index\Cache.cshtml">
       <LastGenOutput>Cache.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Index\Index.cshtml">
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
       <Generator>RazorGenerator</Generator>
     </None>
     <None Include="Areas\Admin\Views\Index\Main.cshtml">
@@ -291,8 +320,60 @@
       <LastGenOutput>_Navbar.generated.cs</LastGenOutput>
       <Generator>RazorGenerator</Generator>
     </None>
+    <None Include="Areas\Admin\Views\Log\_List_Data.cshtml">
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Log\_List_Search.cshtml">
+      <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Menu\_ListTree_Data.cshtml">
+      <LastGenOutput>_ListTree_Data.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Role\SetPermission.cshtml">
+      <LastGenOutput>SetPermission.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Role\_Form_Group.cshtml">
+      <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Role\_List_Data.cshtml">
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\Shared\_Object_Nav.cshtml">
+      <LastGenOutput>_Object_Nav.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\UserOnline\_List_Data.cshtml">
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\UserToken\_List_Data.cshtml">
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\VisitStat\_List_Data.cshtml">
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\VisitStat\_List_Search.cshtml">
+      <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Areas\Admin\Views\_ViewStart.cshtml">
+      <LastGenOutput>_ViewStart.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
     <None Include="Properties\PublishProfiles\Cube.pubxml" />
     <None Include="Views\CubeHome\Index.cshtml">
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Home\Index.cshtml">
       <LastGenOutput>Index.generated.cs</LastGenOutput>
       <Generator>RazorGenerator</Generator>
     </None>
@@ -410,10 +491,6 @@
     </None>
     <None Include="Views\Shared\_Object_Nav.cshtml">
       <LastGenOutput>_Object_Nav.generated.cs</LastGenOutput>
-      <Generator>RazorGenerator</Generator>
-    </None>
-    <None Include="Views\Shared\_StatLevel.cshtml">
-      <LastGenOutput>_StatLevel.generated.cs</LastGenOutput>
       <Generator>RazorGenerator</Generator>
     </None>
     <None Include="wwwroot\Content\ace\css\ace-fonts.min.css" />
@@ -559,6 +636,116 @@
     <ProjectReference Include="..\..\..\x-newlife-new\x-newlife-new\XCode\XCode.Mixed.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Areas\Admin\Views\Db\Index.generated.cs">
+      <DependentUpon>Index.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\File\Index.generated.cs">
+      <DependentUpon>Index.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\Assembly.generated.cs">
+      <DependentUpon>Assembly.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\Cache.generated.cs">
+      <DependentUpon>Cache.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\Main.generated.cs">
+      <DependentUpon>Main.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\ProcessModules.generated.cs">
+      <DependentUpon>ProcessModules.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\ServerVar.generated.cs">
+      <DependentUpon>ServerVar.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\Session.generated.cs">
+      <DependentUpon>Session.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\_Left.generated.cs">
+      <DependentUpon>_Left.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\_Left_Item.generated.cs">
+      <DependentUpon>_Left_Item.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Index\_Navbar.generated.cs">
+      <DependentUpon>_Navbar.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Log\_List_Data.generated.cs">
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Log\_List_Search.generated.cs">
+      <DependentUpon>_List_Search.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Menu\_ListTree_Data.generated.cs">
+      <DependentUpon>_ListTree_Data.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Role\SetPermission.generated.cs">
+      <DependentUpon>SetPermission.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Role\_Form_Group.generated.cs">
+      <DependentUpon>_Form_Group.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Role\_List_Data.generated.cs">
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\Shared\_Object_Nav.generated.cs">
+      <DependentUpon>_Object_Nav.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\UserOnline\_List_Data.generated.cs">
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\UserToken\_List_Data.generated.cs">
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\VisitStat\_List_Data.generated.cs">
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="Areas\Admin\Views\VisitStat\_List_Search.generated.cs">
+      <DependentUpon>_List_Search.cshtml</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="Views\CubeHome\Index.generated.cs">
       <DependentUpon>Index.cshtml</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -729,6 +916,8 @@
     <UpToDateCheckInput Remove="Areas\Admin\Views\Index\_Left.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="Areas\Admin\Views\Db\Index.cshtml" />
+    <_ContentIncludedByDefault Remove="Areas\Admin\Views\File\Index.cshtml" />
     <_ContentIncludedByDefault Remove="Areas\Admin\Views\Index\Assembly.cshtml" />
     <_ContentIncludedByDefault Remove="Areas\Admin\Views\Index\Cache.cshtml" />
     <_ContentIncludedByDefault Remove="Areas\Admin\Views\Index\_Left.cshtml" />
@@ -746,6 +935,12 @@
   </ItemGroup>
   <ItemGroup>
     <UpToDateCheckInput Remove="Areas\Admin\Views\Index\Cache.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Areas\Admin\Views\Db\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Areas\Admin\Views\File\Index.cshtml" />
   </ItemGroup>
 
 </Project>

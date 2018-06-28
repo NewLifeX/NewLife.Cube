@@ -15,7 +15,7 @@
 <table class="table table-bordered table-hover table-striped table-condensed">
     <tr>
         <th colspan="6">
-            Cache列表(@Cache.Count )
+            Cache列表(@*@Cache.Count*@ )
         </th>
     </tr>
     <tr>
@@ -23,12 +23,12 @@
         <th>类型</th>
         <th>数值</th>
     </tr>
-    @foreach (DictionaryEntry item in Cache)
+    @*@foreach (DictionaryEntry item in Cache)
         {
         <tr>
             <td>@item.Key</td>
             <td>@item.Value.GetType().FullName</td>
             <td>@item.Value</td>
         </tr>
-        }
+        }*@
 </table>
