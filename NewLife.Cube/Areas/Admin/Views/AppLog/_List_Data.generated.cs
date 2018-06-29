@@ -454,21 +454,21 @@ WriteLiteral(">");
 
             
             #line 53 "..\..\Areas\Admin\Views\AppLog\_List_Data.cshtml"
-                                  Write(provider.FindByID(entity.CreateUserID));
+                                  Write(UserX.FindByID(entity.CreateUserID));
 
             
             #line default
             #line hidden
 WriteLiteral("</td>\r\n                <td");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 2707), Tuple.Create("\"", 2745)
+WriteAttribute("title", Tuple.Create(" title=\"", 2704), Tuple.Create("\"", 2742)
             
             #line 54 "..\..\Areas\Admin\Views\AppLog\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2715), Tuple.Create<System.Object, System.Int32>(entity.CreateIP.IPToAddress()
+, Tuple.Create(Tuple.Create("", 2712), Tuple.Create<System.Object, System.Int32>(entity.CreateIP.IPToAddress()
             
             #line default
             #line hidden
-, 2715), false)
+, 2712), false)
 );
 
 WriteLiteral(">");

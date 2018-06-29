@@ -81,11 +81,11 @@ namespace NewLife.Cube.Entity
         public String Urls { get { return _Urls; } set { if (OnPropertyChanging(__.Urls, value)) { _Urls = value; OnPropertyChanged(__.Urls); } } }
 
         private Int32 _Auths;
-        /// <summary>验证次数</summary>
-        [DisplayName("验证次数")]
-        [Description("验证次数")]
+        /// <summary>次数</summary>
+        [DisplayName("次数")]
+        [Description("次数")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("Auths", "验证次数", "")]
+        [BindColumn("Auths", "次数", "")]
         public Int32 Auths { get { return _Auths; } set { if (OnPropertyChanging(__.Auths, value)) { _Auths = value; OnPropertyChanged(__.Auths); } } }
 
         private DateTime _LastAuth;
@@ -238,7 +238,7 @@ namespace NewLife.Cube.Entity
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
             public static readonly Field Urls = FindByName(__.Urls);
 
-            /// <summary>验证次数</summary>
+            /// <summary>次数</summary>
             public static readonly Field Auths = FindByName(__.Auths);
 
             /// <summary>最后请求</summary>
@@ -295,7 +295,7 @@ namespace NewLife.Cube.Entity
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
             public const String Urls = "Urls";
 
-            /// <summary>验证次数</summary>
+            /// <summary>次数</summary>
             public const String Auths = "Auths";
 
             /// <summary>最后请求</summary>
@@ -353,7 +353,7 @@ namespace NewLife.Cube.Entity
         /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
         String Urls { get; set; }
 
-        /// <summary>验证次数</summary>
+        /// <summary>次数</summary>
         Int32 Auths { get; set; }
 
         /// <summary>最后请求</summary>
