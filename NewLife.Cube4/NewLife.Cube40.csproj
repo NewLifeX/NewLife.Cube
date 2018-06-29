@@ -155,6 +155,9 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs">
       <Link>Areas\Admin\Models\FileItem.cs</Link>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Views\AppLog\_List_Data.generated.cs">
+      <Link>Areas\Admin\Views\AppLog\_List_Data.generated.cs</Link>
+    </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Views\App\_List_Search.generated.cs">
       <Link>Areas\Admin\Views\App\_List_Search.generated.cs</Link>
     </Compile>
@@ -735,6 +738,9 @@
     </Content>
     <Content Include="..\NewLife.Cube\Areas\Admin\Views\App\_List_Search.cshtml">
       <Link>Areas\Admin\Views\App\_List_Search.cshtml</Link>
+    </Content>
+    <Content Include="..\NewLife.Cube\Areas\Admin\Views\AppLog\_List_Data.cshtml">
+      <Link>Areas\Admin\Views\AppLog\_List_Data.cshtml</Link>
     </Content>
     <None Include="Global.asax" />
     <None Include="Areas\Admin\Views\Web.config" />

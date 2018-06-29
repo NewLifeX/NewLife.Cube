@@ -113,6 +113,11 @@
     <Compile Include="Areas\Admin\Index\IndexController.cs" />
     <Compile Include="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="Areas\Admin\Models\DbItem.cs" />
+    <Compile Include="Areas\Admin\Views\AppLog\_List_Data.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Areas\Admin\Views\Db\Index.generated.cs">
       <DependentUpon>Index.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -517,6 +522,10 @@
     <Compile Include="Web\SsoProvider.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Areas\Admin\Views\AppLog\_List_Data.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Areas\Admin\Views\Db\Index.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>

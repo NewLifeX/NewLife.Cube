@@ -44,7 +44,13 @@ namespace NewLife.Cube.Web
                 if (!response_type.EqualIgnoreCase("code")) throw new NotSupportedException(nameof(response_type));
 
                 var app = App.FindByName(appid);
-                if (app == null) throw new XException("未找到应用[{0}]", appid);
+                //if (app == null) throw new XException("未找到应用[{0}]", appid);
+                // 找不到应用时自动创建，但处于禁用状态
+                if (app == null)
+                {
+                    app = new App { Name = appid };
+                    app.Insert();
+                }
 
                 id = app.ID;
                 if (!app.Enable) throw new XException("应用[{0}]不可用", appid);
