@@ -92,6 +92,17 @@ Write(Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class 
             
             #line default
             #line hidden
+WriteLiteral("\r\n");
+
+WriteLiteral("    ");
+
+            
+            #line 11 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
+Write(Html.ActionLink("应用系统", "Index", "App", null, new { @class = "btn btn-success btn-sm" }));
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\r\n    <label");
 
 WriteLiteral(" for=\"RoleID\"");
@@ -103,7 +114,7 @@ WriteLiteral(">角色：</label>\r\n");
 WriteLiteral("    ");
 
             
-            #line 12 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
+            #line 13 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
 Write(Html.ForDropDownList("RoleID", Role.FindAllWithCache().Cast<IEntity>().ToList(), "全部", true));
 
             
