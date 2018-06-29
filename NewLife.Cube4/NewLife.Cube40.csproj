@@ -98,6 +98,12 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\AdminAreaRegistration.cs">
       <Link>Areas\Admin\AdminAreaRegistration.cs</Link>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs">
+      <Link>Areas\Admin\Controllers\AppController.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs">
+      <Link>Areas\Admin\Controllers\AppLogController.cs</Link>
+    </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs">
       <Link>Areas\Admin\Controllers\CoreController.cs</Link>
     </Compile>
@@ -148,6 +154,9 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs">
       <Link>Areas\Admin\Models\FileItem.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Views\App\_List_Search.generated.cs">
+      <Link>Areas\Admin\Views\App\_List_Search.generated.cs</Link>
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Views\Db\Index.generated.cs">
       <Link>Areas\Admin\Views\Db\Index.generated.cs</Link>
@@ -320,6 +329,18 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>XCoder.tt</DependentUpon>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs">
+      <Link>Entity\应用日志.Biz.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用日志.cs">
+      <Link>Entity\应用日志.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs">
+      <Link>Entity\应用系统.Biz.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用系统.cs">
+      <Link>Entity\应用系统.cs</Link>
+    </Compile>
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs">
       <Link>Entity\用户令牌.Biz.cs</Link>
     </Compile>
@@ -484,6 +505,9 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs">
       <Link>Web\OAuthHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Web\OAuthServer2.cs">
+      <Link>Web\OAuthServer2.cs</Link>
     </Compile>
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs">
       <Link>Web\SsoProvider.cs</Link>
@@ -708,6 +732,9 @@
     </Content>
     <Content Include="..\NewLife.Cube\Views\Shared\_Form_Body.cshtml">
       <Link>Views\Shared\_Form_Body.cshtml</Link>
+    </Content>
+    <Content Include="..\NewLife.Cube\Areas\Admin\Views\App\_List_Search.cshtml">
+      <Link>Areas\Admin\Views\App\_List_Search.cshtml</Link>
     </Content>
     <None Include="Global.asax" />
     <None Include="Areas\Admin\Views\Web.config" />

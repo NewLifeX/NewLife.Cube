@@ -80,6 +80,22 @@ namespace NewLife.Cube.Entity
         [BindColumn("Urls", "回调地址。用于限制回调地址安全性，多个地址逗号隔开", "")]
         public String Urls { get { return _Urls; } set { if (OnPropertyChanging(__.Urls, value)) { _Urls = value; OnPropertyChanged(__.Urls); } } }
 
+        private Int32 _Auths;
+        /// <summary>验证次数</summary>
+        [DisplayName("验证次数")]
+        [Description("验证次数")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("Auths", "验证次数", "")]
+        public Int32 Auths { get { return _Auths; } set { if (OnPropertyChanging(__.Auths, value)) { _Auths = value; OnPropertyChanged(__.Auths); } } }
+
+        private DateTime _LastAuth;
+        /// <summary>最后请求</summary>
+        [DisplayName("最后请求")]
+        [Description("最后请求")]
+        [DataObjectField(false, false, true, 0)]
+        [BindColumn("LastAuth", "最后请求", "")]
+        public DateTime LastAuth { get { return _LastAuth; } set { if (OnPropertyChanging(__.LastAuth, value)) { _LastAuth = value; OnPropertyChanged(__.LastAuth); } } }
+
         private String _Remark;
         /// <summary>内容</summary>
         [DisplayName("内容")]
@@ -155,6 +171,8 @@ namespace NewLife.Cube.Entity
                     case __.Black : return _Black;
                     case __.Enable : return _Enable;
                     case __.Urls : return _Urls;
+                    case __.Auths : return _Auths;
+                    case __.LastAuth : return _LastAuth;
                     case __.Remark : return _Remark;
                     case __.CreateUserID : return _CreateUserID;
                     case __.CreateTime : return _CreateTime;
@@ -177,6 +195,8 @@ namespace NewLife.Cube.Entity
                     case __.Black : _Black = Convert.ToString(value); break;
                     case __.Enable : _Enable = Convert.ToBoolean(value); break;
                     case __.Urls : _Urls = Convert.ToString(value); break;
+                    case __.Auths : _Auths = Convert.ToInt32(value); break;
+                    case __.LastAuth : _LastAuth = Convert.ToDateTime(value); break;
                     case __.Remark : _Remark = Convert.ToString(value); break;
                     case __.CreateUserID : _CreateUserID = Convert.ToInt32(value); break;
                     case __.CreateTime : _CreateTime = Convert.ToDateTime(value); break;
@@ -217,6 +237,12 @@ namespace NewLife.Cube.Entity
 
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
             public static readonly Field Urls = FindByName(__.Urls);
+
+            /// <summary>验证次数</summary>
+            public static readonly Field Auths = FindByName(__.Auths);
+
+            /// <summary>最后请求</summary>
+            public static readonly Field LastAuth = FindByName(__.LastAuth);
 
             /// <summary>内容</summary>
             public static readonly Field Remark = FindByName(__.Remark);
@@ -269,6 +295,12 @@ namespace NewLife.Cube.Entity
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
             public const String Urls = "Urls";
 
+            /// <summary>验证次数</summary>
+            public const String Auths = "Auths";
+
+            /// <summary>最后请求</summary>
+            public const String LastAuth = "LastAuth";
+
             /// <summary>内容</summary>
             public const String Remark = "Remark";
 
@@ -320,6 +352,12 @@ namespace NewLife.Cube.Entity
 
         /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
         String Urls { get; set; }
+
+        /// <summary>验证次数</summary>
+        Int32 Auths { get; set; }
+
+        /// <summary>最后请求</summary>
+        DateTime LastAuth { get; set; }
 
         /// <summary>内容</summary>
         String Remark { get; set; }

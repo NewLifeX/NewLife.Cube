@@ -1,0 +1,10 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+}
+<div class="form-group">
+    @Html.ActionLink("应用日志", "Index", "AppLog", null, new { @class = "btn btn-success btn-sm" })
+</div>

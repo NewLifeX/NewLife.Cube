@@ -60,6 +60,8 @@
       <Column Name="Black" DataType="String" Length="200" Description="黑名单。黑名单优先于白名单" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="Urls" DataType="String" Length="500" Description="回调地址。用于限制回调地址安全性，多个地址逗号隔开" />
+      <Column Name="Auths" DataType="Int32" Description="验证次数" />
+      <Column Name="LastAuth" DataType="DateTime" Description="最后请求" />
       <Column Name="Remark" DataType="String" Length="500" Description="内容" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
       <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
@@ -71,5 +73,17 @@
     <Indexes>
       <Index Columns="Name" Unique="True" />
     </Indexes>
+  </Table>
+  <Table Name="AppLog" Description="应用日志。用于OAuthServer的子系统" ConnName="Log">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="AppID" DataType="Int32" Description="应用" />
+      <Column Name="Action" DataType="String" Description="操作" />
+      <Column Name="Success" DataType="Boolean" Description="成功" />
+      <Column Name="Remark" DataType="String" Length="2000" Description="详细信息" />
+      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
+      <Column Name="CreateIP" DataType="String" Description="IP地址" />
+      <Column Name="CreateTime" DataType="DateTime" Description="时间" />
+    </Columns>
   </Table>
 </Tables>
