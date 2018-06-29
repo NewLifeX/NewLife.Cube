@@ -126,7 +126,9 @@ namespace NewLife.Cube.Web
 
                 id = app.ID;
                 if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
-                if (!app.Secret.EqualIgnoreCase(client_secret)) throw new XException("[{0}]密钥错误", client_id);
+
+                // 密钥为空时跳过验证
+                if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("[{0}]密钥错误", client_id);
 
                 // 验证来源地址
                 var ip = WebHelper.UserHost;
