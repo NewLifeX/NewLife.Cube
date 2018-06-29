@@ -43,14 +43,14 @@ namespace NewLife.Cube.Entity
         /// <summary>应用</summary>
         [XmlIgnore]
         //[ScriptIgnore]
-        public App App { get { return Extends.Get(nameof(App), k => App.FindByID(AppID)); } }
+        public App App => Extends.Get(nameof(App), k => App.FindByID(AppID));
 
         /// <summary>应用</summary>
         [XmlIgnore]
         //[ScriptIgnore]
         [DisplayName("应用")]
         [Map(__.AppID, typeof(App), "ID")]
-        public String AppName { get { return App?.Name; } }
+        public String AppName => App + "";
         #endregion
 
         #region 扩展查询
