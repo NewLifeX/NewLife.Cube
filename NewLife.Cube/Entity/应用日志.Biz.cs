@@ -88,7 +88,8 @@ namespace NewLife.Cube.Entity
                 AppID = appid,
                 Action = action,
                 Success = success,
-                Remark = remark
+                Remark = remark,
+                CreateTime = DateTime.Now,
             };
             log.SaveAsync();
 

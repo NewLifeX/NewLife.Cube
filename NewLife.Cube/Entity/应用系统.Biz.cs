@@ -38,6 +38,10 @@ namespace NewLife.Cube.Entity
 
             if (Secret.IsNullOrEmpty()) Secret = Rand.NextString(16).ToLower();
         }
+
+        /// <summary>已重载。显示系统名称</summary>
+        /// <returns></returns>
+        public override String ToString() => DisplayName.IsNullOrEmpty() ? Name : DisplayName;
         #endregion
 
         #region 扩展属性
