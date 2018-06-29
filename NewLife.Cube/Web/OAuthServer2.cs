@@ -60,14 +60,19 @@ namespace NewLife.Cube.Web
 
                 var key = base.Authorize(appid, redirect_uri, response_type, scope, state);
 
-                msg = $"key={key} redirect_uri={redirect_uri} scope={scope} state={state}";
+                msg = $"key={key},redirect_uri={redirect_uri},scope={scope},state={state}";
+
+                // 统计次数
+                app.Auths++;
+                app.LastAuth = DateTime.Now;
+                app.SaveAsync(5_000);
 
                 return key;
             }
             catch (Exception ex)
             {
                 rs = false;
-                msg = ex.GetMessage();
+                msg = ex.GetTrue()?.Message;
 
                 throw;
             }
@@ -90,14 +95,14 @@ namespace NewLife.Cube.Web
             {
                 var url = base.GetResult(key, user);
 
-                msg = $"key={key} user={user.ID}/{user} url={url}";
+                msg = $"key={key},user={user.ID}/{user},url={url}";
 
                 return url;
             }
             catch (Exception ex)
             {
                 rs = false;
-                msg = ex.GetMessage();
+                msg = ex.GetTrue()?.Message;
 
                 throw;
             }
@@ -119,14 +124,14 @@ namespace NewLife.Cube.Web
             {
                 var token = base.GetToken(code);
 
-                msg = $"code={code} access_token={token}";
+                msg = $"code={code},access_token={token}";
 
                 return token;
             }
             catch (Exception ex)
             {
                 rs = false;
-                msg = ex.GetMessage();
+                msg = ex.GetTrue()?.Message;
 
                 throw;
             }
