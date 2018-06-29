@@ -36,6 +36,8 @@ namespace NewLife.Cube.Entity
             Meta.Modules.Add<UserModule>();
             Meta.Modules.Add<TimeModule>();
             Meta.Modules.Add<IPModule>();
+
+            Meta.Table.DataTable.InsertOnly = true;
         }
         #endregion
 
