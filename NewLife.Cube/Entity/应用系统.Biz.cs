@@ -109,6 +109,14 @@ namespace NewLife.Cube.Entity
             // 判断地址是否以指定开头
             return url.StartsWithIgnoreCase(us);
         }
+
+        /// <summary>验证来源地址</summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public Boolean ValidSource(String source)
+        {
+            return true;
+        }
         #endregion
     }
 }

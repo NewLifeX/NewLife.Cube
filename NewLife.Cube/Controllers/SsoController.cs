@@ -352,6 +352,8 @@ namespace NewLife.Cube.Controllers
             if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code));
             if (grant_type.IsNullOrEmpty()) grant_type = "authorization_code";
 
+            if (!grant_type.EqualIgnoreCase("authorization_code")) throw new NotSupportedException(nameof(grant_type));
+
             // 返回给子系统的数据：
             // access_token 访问令牌
             // expires_in 有效期
@@ -360,7 +362,7 @@ namespace NewLife.Cube.Controllers
 
             try
             {
-                var rs = Provider.GetAccessToken(OAuth, code);
+                var rs = Provider.GetAccessToken(OAuth, client_id, client_secret, code);
 
                 // 返回UserInfo告知客户端可以请求用户信息
                 return Json(rs, JsonRequestBehavior.AllowGet);

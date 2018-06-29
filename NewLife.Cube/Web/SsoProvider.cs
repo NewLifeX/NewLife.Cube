@@ -253,11 +253,13 @@ namespace NewLife.Cube.Web
         #region 服务端
         /// <summary>获取访问令牌</summary>
         /// <param name="sso"></param>
+        /// <param name="client_id"></param>
+        /// <param name="client_secret"></param>
         /// <param name="code"></param>
         /// <returns></returns>
-        public virtual Object GetAccessToken(OAuthServer sso, String code)
+        public virtual Object GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code)
         {
-            var token = sso.GetToken(code);
+            var token = sso.GetToken(client_id, client_secret, code);
 
             return new
             {
