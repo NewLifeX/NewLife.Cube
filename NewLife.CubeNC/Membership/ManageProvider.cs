@@ -75,7 +75,7 @@ namespace NewLife.CubeNC.Membership
             }
         }
 
-        public override IManageUser Login(string name, string password, bool rememberme, IServiceProvider context = null)
+        public override IManageUser Login(string name, string password, bool rememberme)
         {
             var user = UserX.Login(name, password, rememberme);
             Current = user;
@@ -83,21 +83,20 @@ namespace NewLife.CubeNC.Membership
             var expire = TimeSpan.FromMinutes(60*2);//有效期两个小时
                 //TimeSpan.FromDays(0);
             if (rememberme && user != null) expire = TimeSpan.FromDays(365);
-            this.SaveCookie(user, expire, context);
+            this.SaveCookie(user, expire);
             return user;
         }
 
-        public override void Logout(IServiceProvider ctx = null)
+        public override void Logout()
         {
             // 注销时销毁所有Session
-            var context = ctx?.GetService<IHttpContextAccessor>()
-                ?.HttpContext;
+            var context = Context?.HttpContext;
             var ss = context?.Session;
             ss?.Clear();
 
             // 销毁Cookie
-            this.SaveCookie(null, TimeSpan.FromDays(-1), ctx);
-            base.Logout(ctx);
+            this.SaveCookie(null, TimeSpan.FromDays(-1), context);
+            base.Logout();
         }
 
         #endregion
@@ -207,11 +206,9 @@ namespace NewLife.CubeNC.Membership
         /// <param name="user">用户</param>
         /// <param name="expire">过期时间</param>
         /// <param name="context">Http上下文，兼容NetCore</param>
-        public static void SaveCookie(this IManageProvider provider, IManageUser user, TimeSpan expire, IServiceProvider context = null)
+        public static void SaveCookie(this IManageProvider provider, IManageUser user, TimeSpan expire, HttpContext httpContext)
         {
-            if (context == null) return;
-
-            var httpContext = context?.GetService<IHttpContextAccessor>()?.HttpContext;
+            if (httpContext == null) return;
 
             var req = httpContext?.Request;
             var res = httpContext?.Response;
@@ -235,7 +232,7 @@ namespace NewLife.CubeNC.Membership
             }
             else
             {
-                res.Cookies.Append(key, null, new CookieOptions()
+                res.Cookies.Append(key, "", new CookieOptions()
                 {
                     Expires = DateTime.Now.AddYears(-1)
                 });

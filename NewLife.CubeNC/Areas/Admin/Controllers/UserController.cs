@@ -121,7 +121,7 @@ namespace NewLife.Cube.Admin.Controllers
             try
             {
                 var provider = ManageProvider.Provider;
-                if (ModelState.IsValid && provider.Login(username, password, remember ?? false, HttpContext.RequestServices) != null)
+                if (ModelState.IsValid && provider.Login(username, password, remember ?? false) != null)
                 {
                     //信息类型集合，比如姓名、性别、出生日期
                     var claims = new[]

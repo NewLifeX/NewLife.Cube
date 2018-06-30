@@ -134,12 +134,12 @@ namespace NewLife.Cube
                 }
                 @foreach (var item in fields)
                 {
-                    @Html.PartialAsync(""_List_Data_Item"", new Pair(entity, item).Result)
+                    @Html.PartialAsync(""_List_Data_Item"", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
                 }
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
                     <td class=""text-center"">
-                        @Html.PartialAsync(""_List_Data_Action"", (Object).Resultentity)
+                        @Html.PartialAsync(""_List_Data_Action"", (Object)entity).Result
                     </td>
                 }
             </tr>
@@ -202,7 +202,6 @@ namespace NewLife.Cube
             {
                 // 缩进
                 sb.Append(ident);
-                //sb.AppendLine(@"@Html.PartialAsync(""_List_Data_Item"", new Pair(entity, item).Result)");
                 if (item.PrimaryKey)
                     sb.AppendFormat(@"<td class=""text-center hidden-md hidden-sm hidden-xs"">@entity.{0}</td>", item.Name);
                 else
@@ -288,7 +287,7 @@ namespace NewLife.Cube
     if (!item.IsIdentity)
     {
         <div class=""@cls"">
-            @Html.PartialAsync(""_Form_Item"", new Pair(entity, item).Result)
+            @Html.PartialAsync(""_Form_Item"", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
         </div>
     }
 }
@@ -324,7 +323,7 @@ namespace NewLife.Cube
                 sb.AppendLine("</div>");
             }
 
-            var p = tmp.IndexOf(@"@Html.PartialAsync(""_Form_Footer""").Result;
+            var p = tmp.IndexOf(@"@Html.PartialAsync(""_Form_Footer""");
             sb.Append(tmp.Substring(p));
 
             File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);

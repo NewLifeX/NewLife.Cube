@@ -182,8 +182,7 @@ namespace NewLife.Cube
             ViewBag.Page = p;
 
             // 缓存数据，用于后续导出
-            HttpContext.Session.Set(CacheKey,p.ToBytes());//该对象未标记为可序列化
-            //HttpContext.Items[nameof(Pager)] = p;
+            HttpContext.Session.Set(CacheKey, p.ToBytes());//该对象未标记为可序列化
 
             return IndexView(p);
         }
