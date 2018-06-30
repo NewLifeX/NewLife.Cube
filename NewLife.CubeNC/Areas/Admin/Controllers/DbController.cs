@@ -33,6 +33,7 @@ namespace NewLife.Cube.Admin.Controllers
             MenuOrder = 26;
         }
 
+        private DbController() { }
         public DbController(IConfiguration configuration)
         {
             Configuration = configuration;

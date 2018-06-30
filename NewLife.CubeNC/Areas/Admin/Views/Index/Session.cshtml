@@ -16,7 +16,7 @@
 <table class="table table-bordered table-hover table-striped table-condensed">
     <tr>
         <th colspan="6">
-            Session列表(@Session.Contents.Count )
+            Session列表(@*@Session.Contents.Count*@ )
         </th>
     </tr>
     <tr>
@@ -24,12 +24,12 @@
         <th>类型</th>
         <th>数值</th>
     </tr>
-    @foreach (String item in Session.Keys)
+    @*@foreach (String item in Session.Keys)
         {
         <tr>
             <td>@item</td>
             <td>@Session[item].GetType().FullName</td>
             <td>@Session[item]</td>
         </tr>
-        }
+        }*@
 </table>

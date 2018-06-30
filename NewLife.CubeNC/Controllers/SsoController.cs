@@ -49,11 +49,16 @@ namespace NewLife.Cube.Controllers
         /// <summary>当前提供者</summary>
         public static SsoProvider Provider { get; set; }
 
+        /// <summary>单点登录服务端</summary>
+        public static OAuthServer OAuth { get; set; }
+
         static SsoController()
         {
             // 注册单点登录
             var oc = ObjectContainer.Current;
             oc.Register<SsoProvider, SsoProvider>();
+            oc.AutoRegister<OAuthServer, OAuthServer2>();
+
 
             Provider = ObjectContainer.Current.ResolveInstance<SsoProvider>();
 

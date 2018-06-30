@@ -3,10 +3,6 @@
 @using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
-@using System.Web.Mvc;
-@using System.Web.Mvc.Ajax;
-@using System.Web.Mvc.Html;
-@using System.Web.Routing;
 @{
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
@@ -80,7 +76,7 @@
                         }
                     </td>
                     <td class="text-center">
-                        @Html.PartialAsync("_List_Data_Action", (Object).Resultentity)
+                        @Html.PartialAsync("_List_Data_Action", (Object)entity).Result
                     </td>
                 }
             </tr>

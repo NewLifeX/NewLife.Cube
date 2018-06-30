@@ -24,7 +24,7 @@
         <th>名称</th>
         <th>数值</th>
     </tr>
-    @foreach (var key in Request.ServerVariables.AllKeys)
+    @*@foreach (var key in Request.ServerVariables.AllKeys)
     {
         var v = Request.ServerVariables[key];
         v = v.Replace("\r\n", "</br>");
@@ -33,7 +33,7 @@
             <td>@key</td>
             <td>@Html.Raw(v)</td>
         </tr>
-    }
+    }*@
 </table>
 <table class="table table-bordered table-hover table-striped table-condensed">
     <tr>

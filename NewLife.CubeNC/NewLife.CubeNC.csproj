@@ -20,6 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\SsoController.cs" />
+    <Compile Remove="Web\OAuthServer2.cs" />
+    <Compile Remove="Web\SsoProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="App.config" />
     <Content Remove="Areas\Admin\Views\Db\Index.cshtml" />
     <Content Remove="Areas\Admin\Views\File\Index.cshtml" />
     <Content Remove="Areas\Admin\Views\Index\Assembly.cshtml" />
@@ -221,7 +228,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
     <PackageReference Include="MySql.Data" Version="8.0.11" />
-    <PackageReference Include="NewLife.XCode" Version="9.8.6755.22252" />
   </ItemGroup>
 
   <ItemGroup>
@@ -908,6 +914,9 @@
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="H:\Cache\Nuget\packages\newlife.xcode\9.8.2018.610\contentFiles\any\netstandard2.0\Build.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <UpToDateCheckInput Remove="Areas\Admin\Views\Index\_Left.cshtml" />
@@ -938,6 +947,14 @@
   </ItemGroup>
   <ItemGroup>
     <UpToDateCheckInput Remove="Areas\Admin\Views\File\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NewLife.Core">
+      <HintPath>..\..\..\x-newlife-new\Bin\netstandard2.0\NewLife.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="XCode">
+      <HintPath>..\..\..\x-newlife-new\Bin\netstandard2.0\XCode.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

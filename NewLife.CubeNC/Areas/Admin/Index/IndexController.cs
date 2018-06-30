@@ -34,6 +34,8 @@ namespace NewLife.Cube.Admin.Controllers
             MenuOrder = 10;
         }
 
+        private IndexController() { }
+
         public IndexController(ManageProvider manageProvider)
         {
             ManageProvider = manageProvider;

@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NewLife.Cube.Controllers;
 using NewLife.CubeNC.Com;
+using NewLife.CubeNC.Extensions;
 using NewLife.CubeNC.Membership;
 using NewLife.CubeNC.ViewsPreComplied;
 using NewLife.CubeNC.WebMiddleware;
@@ -155,6 +156,7 @@ namespace NewLife.CubeNC
             XTrace.WriteLine("初始化权限管理体系");
             //var user = ManageProvider.User;
             //ManageProvider.Provider.GetService<IUser>();
+            ScanControllerExtensions.ScanController();
         }
     }
 }

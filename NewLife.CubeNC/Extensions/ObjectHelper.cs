@@ -33,7 +33,7 @@ namespace NewLife.CubeNC.Extensions
             //}
 
             var binary = new Binary();
-            binary.EnableTrace();
+            //binary.EnableTrace();
             SetExt(binary);
             binary.Write(obj);
             var bytes1 = binary.GetBytes();

@@ -124,7 +124,16 @@ namespace NewLife.Cube.Web
                 user3.LastLoginIP = WebHelper.UserHost;
                 user3.Save();
             }
-            uc.Save();
+
+            try
+            {
+                uc.Save();
+            }
+            catch (Exception ex)
+            {
+                //为了防止某些特殊数据导致的无法正常登录，把所有异常记录到日志当中。忽略错误
+                XTrace.WriteException(ex);
+            }
 
             if (!user.Enable) throw new InvalidOperationException("用户已禁用！");
 
@@ -247,11 +256,13 @@ namespace NewLife.Cube.Web
         #region 服务端
         /// <summary>获取访问令牌</summary>
         /// <param name="sso"></param>
+        /// <param name="client_id"></param>
+        /// <param name="client_secret"></param>
         /// <param name="code"></param>
         /// <returns></returns>
-        public virtual Object GetAccessToken(OAuthServer sso, String code)
+        public virtual Object GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code)
         {
-            var token = sso.GetToken(code);
+            var token = sso.GetToken(client_id, client_secret, code);
 
             return new
             {
@@ -260,6 +271,7 @@ namespace NewLife.Cube.Web
                 scope = "basic,UserInfo",
             };
         }
+
 
         /// <summary>获取用户信息</summary>
         /// <param name="sso"></param>

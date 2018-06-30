@@ -3,6 +3,7 @@
 @using System.Reflection;
 @using System.Runtime.Versioning;
 @using NewLife.Common;
+@using NewLife.CubeNC.Extensions
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
 
@@ -13,7 +14,7 @@
     var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
     var ver = att.FrameworkDisplayName ?? att.FrameworkName;
 
-    var isAll = String.Equals("All", Request["Mode"], StringComparison.OrdinalIgnoreCase);
+    var isAll = String.Equals("All", Context.Request.GetRequestValue("Mode"), StringComparison.OrdinalIgnoreCase);
 
     var process = Process.GetCurrentProcess();
     var list = new List<ProcessModule>();
