@@ -221,6 +221,7 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.0" />
     <PackageReference Include="MySql.Data" Version="8.0.11" />
+    <PackageReference Include="NewLife.XCode" Version="9.8.6755.22252" />
   </ItemGroup>
 
   <ItemGroup>
@@ -630,10 +631,6 @@
     <None Include="wwwroot\Scripts\modernizr-2.6.2.js" />
     <None Include="wwwroot\Scripts\WebSocketX.js" />
     <None Include="wwwroot\Scripts\_references.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\x-newlife-new\x-newlife-new\NewLife.Core\NewLife.Core.Mixed.csproj" />
-    <ProjectReference Include="..\..\..\x-newlife-new\x-newlife-new\XCode\XCode.Mixed.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Areas\Admin\Views\Db\Index.generated.cs">
