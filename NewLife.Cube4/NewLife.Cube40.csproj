@@ -736,12 +736,12 @@
     <Content Include="..\NewLife.Cube\Views\Shared\_Form_Body.cshtml">
       <Link>Views\Shared\_Form_Body.cshtml</Link>
     </Content>
-    <Content Include="..\NewLife.Cube\Areas\Admin\Views\App\_List_Search.cshtml">
+    <None Include="..\NewLife.Cube\Areas\Admin\Views\App\_List_Search.cshtml">
       <Link>Areas\Admin\Views\App\_List_Search.cshtml</Link>
-    </Content>
-    <Content Include="..\NewLife.Cube\Areas\Admin\Views\AppLog\_List_Data.cshtml">
+    </None>
+    <None Include="..\NewLife.Cube\Areas\Admin\Views\AppLog\_List_Data.cshtml">
       <Link>Areas\Admin\Views\AppLog\_List_Data.cshtml</Link>
-    </Content>
+    </None>
     <None Include="Global.asax" />
     <None Include="Areas\Admin\Views\Web.config" />
     <None Include="Properties\PublishProfiles\Cube.pubxml" />
