@@ -3,7 +3,7 @@
 
 源码： https://github.com/NewLifeX/NewLife.Cube  
 
-演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](https://git.newlifex.com/Stone/CubeDemo)  
+演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](http://git.newlifex.com/Stone/CubeDemo)  
 
 ---
 ### 特性
@@ -22,7 +22,7 @@
 ---
 ### 安装
 * 在 *Visual Studio* 中新建MVC5项目
-* 通过 *NuGet* 引用`NewLife.Cube`，或自己编译最新的[X组件](https://git.newlifex.com/NewLife/X)源码
+* 通过 *NuGet* 引用`NewLife.Cube`，或自己编译最新的[魔方](https://github.com/NewLifeX/NewLife.Cube)源码
 * 在`Web.config`的`<connectionStrings>`段设置名为`Membership`的连接字符串，用户角色权限菜单等存储在该数据库
 * 系统自动识别数据库类型，默认`\<add name="Membership" connectionString="Data Source=~\App_Data\Membership.db" providerName="Sqlite"/>`
 * 编译项目，项目上点击鼠标右键，`查看`，`在浏览器中查看`，运行魔方平台
@@ -35,7 +35,7 @@
 ---
 ### 教程
 [【演示】教务系统](http://cube.newlifex.com)  
-[【源码】教务系统](https://git.newlifex.com/Stone/CubeDemo)  
+[【源码】教务系统](http://git.newlifex.com/Stone/CubeDemo)  
 
 [【教程】魔方平台NewLife.Cube基础教程（附例程源码）](http://www.newlifex.com/showtopic-1483.aspx)  
 [【教程】魔方平台NewLife.Cube模板结构详解](http://www.newlifex.com/showtopic-1491.aspx)  

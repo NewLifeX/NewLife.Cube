@@ -9,10 +9,10 @@
 {
     <div class="text-center">
         @*<div class="ui horizontal divider">
-            <span style="font-size: 22px;">
-                第三方登录
-            </span>
-        </div>*@
+                <span style="font-size: 22px;">
+                    第三方登录
+                </span>
+            </div>*@
         <div class="col-sm-12">
             <p style="font-size: 22px; position: relative; display: inline-block;width: 100%">
                 <span style="height: 1px; position: absolute; background-color: #928f8f; width: 28%; top: 50%; left:65%;"></span>
@@ -37,13 +37,12 @@
                     }
 
                     url = HttpRuntime.AppDomainAppVirtualPath + url;
-                    var ico = "/Content/images/logo/{0}.png".F(mi.Name);
-                    var ico2 = ico.TrimStart("/").GetFullPath();
+                    var logo = ViewHelper.GetLogo(mi.Name);
 
                     <a href="@url">
-                        @if (File.Exists(ico2))
+                        @if (!logo.IsNullOrEmpty())
                         {
-                            <text><img src="@ico" title="@nickName" /></text>
+                            <text><img src="@logo" title="@nickName" style="width: 64px; height: 64px;" /></text>
                         }
                         else
                         {

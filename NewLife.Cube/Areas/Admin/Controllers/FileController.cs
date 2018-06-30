@@ -106,6 +106,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 检查目录越界
             var root = Root.TrimEnd(Path.DirectorySeparatorChar);
+            if(di==null)di = Root.AsDirectory();
             if (!di.FullName.StartsWithIgnoreCase(root)) di = Root.AsDirectory();
 
             // 计算当前路径
@@ -142,12 +143,16 @@ namespace NewLife.Cube.Admin.Controllers
             // 在开头插入上一级目录
             if (!di.FullName.EqualIgnoreCase(Root, root))
             {
-                list.Insert(0, new FileItem
+                if (di.Parent!=null)
                 {
-                    Name = "../",
-                    Directory = true,
-                    FullName = GetFullName(di.Parent.FullName)
-                });
+                    list.Insert(0, new FileItem
+                    {
+                        Name = "../",
+                        Directory = true,
+                        FullName = GetFullName(di.Parent.FullName)
+                    });
+                }
+              
             }
 
             // 剪切板

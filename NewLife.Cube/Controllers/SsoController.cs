@@ -44,16 +44,21 @@ namespace NewLife.Cube.Controllers
         /// <summary>当前提供者</summary>
         public static SsoProvider Provider { get; set; }
 
+        /// <summary>单点登录服务端</summary>
+        public static OAuthServer OAuth { get; set; }
+
         static SsoController()
         {
             // 注册单点登录
             var oc = ObjectContainer.Current;
-            oc.Register<SsoProvider, SsoProvider>();
+            oc.AutoRegister<SsoProvider, SsoProvider>();
+            oc.AutoRegister<OAuthServer, OAuthServer2>();
 
             Provider = ObjectContainer.Current.ResolveInstance<SsoProvider>();
+            OAuth = ObjectContainer.Current.ResolveInstance<OAuthServer>();
 
             //OAuthServer.Instance.Log = XTrace.Log;
-            OAuthServer.Instance.Log = LogProvider.Provider.AsLog("OAuth");
+            OAuth.Log = LogProvider.Provider.AsLog("OAuth");
         }
 
         /// <summary>首页</summary>
@@ -284,8 +289,7 @@ namespace NewLife.Cube.Controllers
             if (response_type.IsNullOrEmpty()) response_type = "code";
 
             // 判断合法性，然后跳转到登录页面，登录完成后跳转回来
-            var sso = OAuthServer.Instance;
-            var key = sso.Authorize(client_id, redirect_uri, response_type, scope, state);
+            var key = OAuth.Authorize(client_id, redirect_uri, response_type, scope, state);
 
             var prov = Provider;
             var url = "";
@@ -293,7 +297,7 @@ namespace NewLife.Cube.Controllers
             // 如果已经登录，直接返回。否则跳到登录页面
             var user = prov?.Current;
             if (user != null)
-                url = sso.GetResult(key, user);
+                url = OAuth.GetResult(key, user);
             else
                 url = prov.LoginUrl.AppendReturn("~/Sso/Auth2/" + key);
 
@@ -310,16 +314,22 @@ namespace NewLife.Cube.Controllers
         {
             if (id <= 0) throw new ArgumentNullException(nameof(id));
 
-            var sso = OAuthServer.Instance;
-
             var user = Provider?.Current;
-            if (user == null) throw new InvalidOperationException("未登录！");
+            //if (user == null) throw new InvalidOperationException("未登录！");
+            // 未登录时跳转到登录页面，重新认证
+            if (user == null)
+            {
+                var prov = Provider;
+                var url2 = prov.LoginUrl.AppendReturn("~/Sso/Auth2/" + id);
+
+                return Redirect(url2);
+            }
 
             // 返回给子系统的数据：
             // code 授权码，子系统凭借该代码来索取用户信息
             // state 子系统传过来的用户状态数据，原样返回
 
-            var url = sso.GetResult(id, user);
+            var url = OAuth.GetResult(id, user);
 
             return Redirect(url);
         }
@@ -342,16 +352,17 @@ namespace NewLife.Cube.Controllers
             if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code));
             if (grant_type.IsNullOrEmpty()) grant_type = "authorization_code";
 
+            if (!grant_type.EqualIgnoreCase("authorization_code")) throw new NotSupportedException(nameof(grant_type));
+
             // 返回给子系统的数据：
             // access_token 访问令牌
             // expires_in 有效期
             // refresh_token 刷新令牌
             // openid 用户唯一标识
 
-            var sso = OAuthServer.Instance;
             try
             {
-                var rs = Provider.GetAccessToken(sso, code);
+                var rs = Provider.GetAccessToken(OAuth, client_id, client_secret, code);
 
                 // 返回UserInfo告知客户端可以请求用户信息
                 return Json(rs, JsonRequestBehavior.AllowGet);
@@ -372,7 +383,7 @@ namespace NewLife.Cube.Controllers
         {
             if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
 
-            var sso = OAuthServer.Instance;
+            var sso = OAuth;
             IManageUser user = null;
 
             var msg = "";

@@ -108,16 +108,23 @@ WriteLiteral("        <span");
 
 WriteLiteral(" class=\"heading text-primary\"");
 
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 667), Tuple.Create("\"", 676)
+, Tuple.Create(Tuple.Create("", 674), Tuple.Create<System.Object, System.Int32>(Href("~/")
+, 674), false)
+);
+
 WriteLiteral(">");
 
             
             #line 15 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
-                                      Write(SysConfig.Current.DisplayName);
+                                                   Write(SysConfig.Current.DisplayName);
 
             
             #line default
             #line hidden
-WriteLiteral(" 登录</span>\r\n");
+WriteLiteral("</a> 登录</span>\r\n");
 
             
             #line 16 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
@@ -236,7 +243,7 @@ WriteLiteral(">记住我</label>\r\n");
             #line hidden
 WriteLiteral("                        <div");
 
-WriteLiteral(" style=\"display: inline-block; margin-top: 5px;\"");
+WriteLiteral(" style=\"display: inline-block; margin-top: 5px; float: right;\"");
 
 WriteLiteral(">\r\n                            ");
 
@@ -274,6 +281,8 @@ WriteLiteral("                <button");
 WriteLiteral(" type=\"submit\"");
 
 WriteLiteral(" class=\"btn btn-default\"");
+
+WriteLiteral(" style=\"margin: 5px 0 15px 0;width: 100%;\"");
 
 WriteLiteral(">登录</button>\r\n            </div>\r\n");
 

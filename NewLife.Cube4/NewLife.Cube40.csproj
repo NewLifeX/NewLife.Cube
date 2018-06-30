@@ -53,8 +53,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=7.0.6712.2447, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.7.0.6712.2419\lib\net40\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=7.3.6755.22250, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.7.3.6755.22250\lib\net40\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -87,8 +87,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="XCode, Version=9.7.6712.2447, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.7.6712.2420\lib\net40\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.8.6755.22252, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.8.6755.22252\lib\net40\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +97,12 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\AdminAreaRegistration.cs">
       <Link>Areas\Admin\AdminAreaRegistration.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs">
+      <Link>Areas\Admin\Controllers\AppController.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs">
+      <Link>Areas\Admin\Controllers\AppLogController.cs</Link>
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs">
       <Link>Areas\Admin\Controllers\CoreController.cs</Link>
@@ -148,6 +154,12 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs">
       <Link>Areas\Admin\Models\FileItem.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Views\AppLog\_List_Data.generated.cs">
+      <Link>Areas\Admin\Views\AppLog\_List_Data.generated.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Views\App\_List_Search.generated.cs">
+      <Link>Areas\Admin\Views\App\_List_Search.generated.cs</Link>
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Views\Db\Index.generated.cs">
       <Link>Areas\Admin\Views\Db\Index.generated.cs</Link>
@@ -320,6 +332,18 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>XCoder.tt</DependentUpon>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs">
+      <Link>Entity\应用日志.Biz.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用日志.cs">
+      <Link>Entity\应用日志.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs">
+      <Link>Entity\应用系统.Biz.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用系统.cs">
+      <Link>Entity\应用系统.cs</Link>
+    </Compile>
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs">
       <Link>Entity\用户令牌.Biz.cs</Link>
     </Compile>
@@ -484,6 +508,9 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs">
       <Link>Web\OAuthHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.Cube\Web\OAuthServer2.cs">
+      <Link>Web\OAuthServer2.cs</Link>
     </Compile>
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs">
       <Link>Web\SsoProvider.cs</Link>
@@ -709,6 +736,12 @@
     <Content Include="..\NewLife.Cube\Views\Shared\_Form_Body.cshtml">
       <Link>Views\Shared\_Form_Body.cshtml</Link>
     </Content>
+    <None Include="..\NewLife.Cube\Areas\Admin\Views\App\_List_Search.cshtml">
+      <Link>Areas\Admin\Views\App\_List_Search.cshtml</Link>
+    </None>
+    <None Include="..\NewLife.Cube\Areas\Admin\Views\AppLog\_List_Data.cshtml">
+      <Link>Areas\Admin\Views\AppLog\_List_Data.cshtml</Link>
+    </None>
     <None Include="Global.asax" />
     <None Include="Areas\Admin\Views\Web.config" />
     <None Include="Properties\PublishProfiles\Cube.pubxml" />

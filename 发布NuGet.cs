@@ -1,4 +1,5 @@
 ﻿//assembly=..\Src\DLL\NuGet.exe
+//assembly=System.ComponentModel.DataAnnotations
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -32,11 +33,10 @@ namespace NewLife.Reflection
             var proj = ".".AsDirectory().FullName.EnsureEnd("\\");
 
             Console.WriteLine("proj项目：{0}", proj);
-            string[] pathsplit = proj.Split("\\");
 
-            var name = pathsplit[pathsplit.Count() - 1];
+            var name = "NewLife.Cube";
             Console.WriteLine("项目：{0}", name);
-            proj = name + ".csproj";
+            proj = ".".AsDirectory().GetAllFiles("*.csproj").FirstOrDefault().FullName;
             var spec = name + ".nuspec";
 			var specFile = spec.GetFullPath();
             
@@ -95,8 +95,8 @@ namespace NewLife.Reflection
             cfg.Metadata.Repository = rep;*/
             
             // 清空依赖
-            var dgs = cfg.Metadata?.DependencySets;
-            dgs?.Clear();
+            var dgs = cfg.Metadata.DependencySets;
+            if (dgs != null) dgs.Clear();
             //var dgs = cfg.Metadata.DependencyGroups;
             //dps.RemoveAll(e => e.Id == "SampleDependency");
 
@@ -149,7 +149,7 @@ namespace NewLife.Reflection
             //XTrace.WriteLine("目录：{0} 文件：{1}", src.AsDirectory().FullName, fs.Count);
             if(fs.Count == 0) return;
             
-            var dgs = cfg.Metadata?.DependencySets;
+            var dgs = cfg.Metadata.DependencySets;
             var dg = new ManifestDependencySet();
             switch(target.Substring(@"\"))
             {

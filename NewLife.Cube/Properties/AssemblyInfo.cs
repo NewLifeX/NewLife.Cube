@@ -12,7 +12,7 @@ using NewLife.Cube;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyProduct("NewLife.Cube")]
 [assembly: AssemblyCompany("新生命开发团队")]
-[assembly: AssemblyCopyright("©2002-2018 新生命开发团队 http://git.newlifex.com/NewLife/X/Tree/master/NewLife.Cube")]
+[assembly: AssemblyCopyright("©2002-2018 新生命开发团队 https://github.com/NewLifeX/NewLife.Cube")]
 [assembly: AssemblyTrademark("四叶草")]
 [assembly: AssemblyCulture("")]
 
@@ -36,10 +36,12 @@ using NewLife.Cube;
 //
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
-[assembly: AssemblyVersion("2.3.*")]
-[assembly: AssemblyFileVersion("2.3.2018.0403")]
+[assembly: AssemblyVersion("2.4.*")]
+[assembly: AssemblyFileVersion("2.4.2018.0630")]
 
 /*
+ * v2.4.2018.0630   OAuthServer支持回调地址和密钥验证
+ * 
  * v2.3.2018.0403   支持数据权限，控制器重载ValidPermission
  * 
  * v2.2.2018.0326   重构权限体系，支持多角色

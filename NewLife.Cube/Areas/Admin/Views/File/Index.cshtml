@@ -13,52 +13,61 @@
             <span class="input-group-addon">
                 <i class="ace-icon fa fa-check"></i>
             </span>
-            <input name="r" type="search" id="r" value="@r" class="form-control" placeholder="当前路径" />
+            <input name="r" type="search" id="r" value="@r" class="form-control" placeholder="目标路径" />
             <span class="input-group-btn">
-                <button type="submit" class="btn btn-primary btn-sm">
+                <button type="submit" class="btn btn-primary btn-sm" >
                     <span class="glyphicon glyphicon-folder-open icon-on-right bigger-110"></span>
                     打开
                 </button>
             </span>
         </div>
+
+       
         <div class="input-group">
-            <span class="input-group-addon">
-                <i class="glyphicon glyphicon-file"></i>
-            </span>
-            <input name="file" type="file" id="file" placeholder="上传文件" />
+            @*<span class="input-group-addon">
+            <i class="glyphicon glyphicon-file"></i>
+        </span>*@
+            <input name="ufile" type="text" id="ufile" value="" class="form-control" placeholder="文件" />
             <span class="input-group-btn">
-                <button type="submit" class="btn btn-success btn-sm" onclick="$('#tool').attr('action', '/Admin/File/Upload');$('#tool').attr('enctype', 'multipart/form-data'); return true;">
+                <button type="button" class="btn btn-success btn-sm" onclick="$('input[id=file]').click();">
+                    <span class="glyphicon glyphicon-cloud-upload icon-on-right bigger-110"></span>
+                    选择文件
+                </button>
+            </span>
+            <span class="input-group-btn">
+                <button style="margin-left:5px;" type="submit" class="btn btn-success btn-sm" onclick="$('#tool').attr('action', '/Admin/File/Upload');$('#tool').attr('enctype', 'multipart/form-data'); return true;">
                     <span class="glyphicon glyphicon-plus icon-on-right bigger-110"></span>
                     上传
                 </button>
             </span>
         </div>
+        <div style="display:none;">    <input name="file" type="file" id="file" placeholder="上传文件"  onchange="$('#ufile').val($('input[id=file]').val());"/></div>
         @if (clips.Count > 0)
-        {
-            <div class="input-group">
-                <span class="input-group-addon">
-                    <i class="glyphicon glyphicon-floppy-disk" title="剪切板共有 @clips.Count 项">@clips.Count</i>
-                </span>
-                <span class="input-group-btn">
-                    <button type="button" class="btn btn-pink btn-sm" onclick="location.href = '/Admin/File/Paste?r=@r';">
-                        <span class="glyphicon glyphicon-floppy-save icon-on-right bigger-110"></span>
-                        粘贴
-                    </button>
-                </span>
-                <span class="input-group-btn">
-                    <button type="button" class="btn btn-gray btn-sm" onclick="location.href = '/Admin/File/Move?r=@r';">
-                        <span class="glyphicon glyphicon-floppy-save icon-on-right bigger-110"></span>
-                        移动
-                    </button>
-                </span>
-                <span class="input-group-btn">
-                    <button type="button" class="btn btn-yellow btn-sm" onclick="location.href = '/Admin/File/ClearClipboard?r=@r';">
-                        <span class="glyphicon glyphicon-retweet icon-on-right bigger-110"></span>
-                        清空
-                    </button>
-                </span>
-            </div>
-        }
+    {
+        <div class="input-group">
+            <span class="input-group-addon">
+                <i class="glyphicon glyphicon-floppy-disk" title="剪切板共有 @clips.Count 项">@clips.Count</i>
+            </span>
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-pink btn-sm" onclick="location.href = '/Admin/File/Paste?r=@r';">
+                    <span class="glyphicon glyphicon-floppy-save icon-on-right bigger-110"></span>
+                    粘贴
+                </button>
+            </span>
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-gray btn-sm" onclick="location.href = '/Admin/File/Move?r=@r';">
+                    <span class="glyphicon glyphicon-floppy-save icon-on-right bigger-110"></span>
+                    移动
+                </button>
+            </span>
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-yellow btn-sm" onclick="location.href = '/Admin/File/ClearClipboard?r=@r';">
+                    <span class="glyphicon glyphicon-retweet icon-on-right bigger-110"></span>
+                    清空
+                </button>
+            </span>
+        </div>
+}
     </form>
 </div>
 <table class="table table-bordered table-hover table-striped table-condensed">
