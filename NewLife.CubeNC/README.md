@@ -1,13 +1,16 @@
 ﻿
 # asp.net core移植
 
+- 正在移植
+
 [TOC]
 
 ## 替换方案
 
 |Asp. Net Mvc | ASP. NET Core|说明|
 |:--|:--|:--:|
-|HttpRuntime.AppDomainAppVirtualPath|||
+|HttpRuntime.AppDomainAppVirtualPath||据说已被干掉，用不到|
+|HttpRuntime.AppDomainAppPath|(IHostingEnvironment)Env.ContentRootPath||
 |HttpPostedFileBase|IFormFile||
 |Request[key]|Request.Form[key] & Request.Query[key]|需要判断这两个，返回的类型StringValues，而不会是null|
 |Request.IsAjaxRequest()|Request.Headers["x-requested-with"]=="XMLHttpRequest"||
@@ -15,9 +18,10 @@
 |Request.RawUrl|Request.GetEncodedUrl()||
 |Request.RouteData.GetRequiredString()|HttpContext.GetRouteValue()||
 |Request.ServerVariables|Request.Headers||
+|Request.Url.PathAndQuery|Request.GetEncodedPathAndQuery()||
 |Request.UrlReferrer|Request.Headers["Referer"].FirstOrDefault()|
 |Response.Output|new StreamWriter(HttpContext.Response.Body)||
-||||
+|System.Runtime.Caching|Microsoft.Extensions.Caching.Memory||
 ||||
 ||||
 ||||
@@ -88,11 +92,14 @@ StaticHttpContextExtensions.AddHttpContextAccessor(services);
 app.UseStaticHttpContext();
 ```
 
-## 视图
+## Razor视图
 
 - [参考博客](https://www.cnblogs.com/tcjiaan/p/8412827.html)
--  @*<partial name="_Login_Login"/>*@
-                    @Html.PartialAsync("_Login_Login")@*登录页*@
+- 分部页替换：`<partial name="_Login_Login"/>`或`@Html.PartialAsync("_Login_Login").Result`
+
+### 导入命名空间
+
+- `Views`文件夹下的`_ViewImports.cshtml`
 
 ### RazorOptions
 
