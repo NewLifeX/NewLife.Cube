@@ -1,0 +1,11 @@
+﻿@using NewLife.CubeNC.Extensions
+<div class="form-group">
+    @Html.ActionLink("访问统计", "Index", "VisitStat", null, new { @class = "btn btn-success btn-sm" })
+    <label for="category" class="control-label">类别：</label>
+    @Html.ForDropDownList("category", Log.FindAllCategoryName(), Context.Request.GetRequestValue("category"), "全部", true)
+</div>
+@*<div class="form-group">
+    <label for="userid" class="control-label">用户：</label>
+    @Html.ForDropDownList("userid", UserX.FindAllWithCache().Cast<IEntity>().ToList(), "全部", true)
+</div>*@
+@Html.PartialAsync("_DateRange").Result
