@@ -3,7 +3,7 @@
 
 源码： https://github.com/NewLifeX/NewLife.Cube  
 
-演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](https://git.newlifex.com/Stone/CubeDemo)  
+演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](http://git.newlifex.com/Stone/CubeDemo)  
 
 ---
 ### 特性
@@ -35,7 +35,7 @@
 ---
 ### 教程
 [【演示】教务系统](http://cube.newlifex.com)  
-[【源码】教务系统](https://git.newlifex.com/Stone/CubeDemo)  
+[【源码】教务系统](http://git.newlifex.com/Stone/CubeDemo)  
 
 [【教程】魔方平台NewLife.Cube基础教程（附例程源码）](http://www.newlifex.com/showtopic-1483.aspx)  
 [【教程】魔方平台NewLife.Cube模板结构详解](http://www.newlifex.com/showtopic-1491.aspx)  
