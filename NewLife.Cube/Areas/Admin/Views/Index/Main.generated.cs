@@ -358,13 +358,13 @@ WriteLiteral(">\r\n                操作系统：\r\n            </td>\r\n     
 
 WriteLiteral(" class=\"value\"");
 
-WriteLiteral(">\r\n");
+WriteLiteral(">\r\n                ");
 
-WriteLiteral("                ");
+WriteLiteral(" ");
 
             
             #line 82 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(Runtime.OSName);
+                               Write(Environment.OSVersion);
 
             
             #line default
@@ -459,25 +459,9 @@ WriteLiteral(">\r\n                内存：\r\n            </td>\r\n           
 
 WriteLiteral(" class=\"value\"");
 
-WriteLiteral(">\r\n                物理内存：");
+WriteLiteral(">\r\n                ");
 
-            
-            #line 112 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                 Write(Runtime.AvailableMemory.ToString("n0"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("M / ");
-
-            
-            #line 112 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                                              Write(Runtime.PhysicalMemory.ToString("n0"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("M\r\n                工作集: ");
+WriteLiteral("\r\n                工作集: ");
 
             
             #line 113 "..\..\Areas\Admin\Views\Index\Main.cshtml"
@@ -506,14 +490,14 @@ WriteLiteral("M\r\n                GC: ");
             #line hidden
 WriteLiteral("M\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 3959), Tuple.Create("\"", 4000)
+WriteAttribute("href", Tuple.Create(" href=\"", 3990), Tuple.Create("\"", 4031)
             
             #line 116 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 3966), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/ProcessModules")
+, Tuple.Create(Tuple.Create("", 3997), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/ProcessModules")
             
             #line default
             #line hidden
-, 3966), false)
+, 3997), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
@@ -587,14 +571,14 @@ WriteLiteral(" 分钟，SessionID：");
             #line hidden
 WriteLiteral("\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 4558), Tuple.Create("\"", 4592)
+WriteAttribute("href", Tuple.Create(" href=\"", 4589), Tuple.Create("\"", 4623)
             
             #line 131 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 4565), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Session")
+, Tuple.Create(Tuple.Create("", 4596), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Session")
             
             #line default
             #line hidden
-, 4565), false)
+, 4596), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
@@ -631,14 +615,14 @@ WriteLiteral(" 个，可用：");
             #line hidden
 WriteLiteral("KB\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 4887), Tuple.Create("\"", 4919)
+WriteAttribute("href", Tuple.Create(" href=\"", 4918), Tuple.Create("\"", 4950)
             
             #line 138 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 4894), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Cache")
+, Tuple.Create(Tuple.Create("", 4925), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Cache")
             
             #line default
             #line hidden
-, 4894), false)
+, 4925), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
