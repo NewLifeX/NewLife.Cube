@@ -22,7 +22,7 @@
 ---
 ### 安装
 * 在 *Visual Studio* 中新建MVC5项目
-* 通过 *NuGet* 引用`NewLife.Cube`，或自己编译最新的[魔方](https://github.com/NewLifeX/NewLife.Cube)源码
+* 通过 *NuGet* 引用`NewLife.Cube`，或自己编译最新的[魔方](http://github.com/NewLifeX/NewLife.Cube)源码
 * 在`Web.config`的`<connectionStrings>`段设置名为`Membership`的连接字符串，用户角色权限菜单等存储在该数据库
 * 系统自动识别数据库类型，默认`\<add name="Membership" connectionString="Data Source=~\App_Data\Membership.db" providerName="Sqlite"/>`
 * 编译项目，项目上点击鼠标右键，`查看`，`在浏览器中查看`，运行魔方平台
