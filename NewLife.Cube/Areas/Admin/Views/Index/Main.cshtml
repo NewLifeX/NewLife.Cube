@@ -79,7 +79,7 @@
                 操作系统：
             </td>
             <td class="value">
-                @Runtime.OSName
+                @*@Runtime.OSName*@ @Environment.OSVersion
             </td>
             <td class="name">
                 Web服务器：
@@ -109,7 +109,7 @@
                 内存：
             </td>
             <td class="value">
-                物理内存：@(Runtime.AvailableMemory.ToString("n0"))M / @(Runtime.PhysicalMemory.ToString("n0"))M
+                @*物理内存：@(Runtime.AvailableMemory.ToString("n0"))M / @(Runtime.PhysicalMemory.ToString("n0"))M*@
                 工作集: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M
                 提交: @((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
                 GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M

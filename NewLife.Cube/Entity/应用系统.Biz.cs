@@ -98,6 +98,10 @@ namespace NewLife.Cube.Entity
             var p = url.IndexOf("://");
             if (p <= 0) return false;
 
+            // 特殊支持localhost
+            if (url.StartsWithIgnoreCase("http://localhost/", "https://localhost/")) return true;
+            if (url.StartsWithIgnoreCase("http://localhost:", "https://localhost:") && !url.Contains("@")) return true;
+
             var sch = url.Substring(0, p + 3);
 
             // 给没有头部的地址加上

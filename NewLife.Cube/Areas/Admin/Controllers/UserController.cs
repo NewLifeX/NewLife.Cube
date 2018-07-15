@@ -94,6 +94,9 @@ namespace NewLife.Cube.Admin.Controllers
                 }
             }
 
+            ViewBag.IsShowTip = UserX.Meta.Count == 1;
+
+
             ViewBag.ReturnUrl = returnUrl;
 
             return View();

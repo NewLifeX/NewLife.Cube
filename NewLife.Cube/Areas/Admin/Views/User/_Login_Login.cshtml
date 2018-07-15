@@ -11,6 +11,12 @@
     <!-- 登录-->
     @using (Html.BeginForm("Login", "User", new { r = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "cube-login" }))
     {
+        if (ViewBag.IsShowTip)
+        {
+        <div class="alert alert-block alert-success">
+            默认账号：<span class="orange">admin</span>；默认密码：<span class="orange">admin</span>
+        </div>
+        }
         @Html.ValidationSummary()
         <span class="heading text-primary"><a href="~/">@SysConfig.Current.DisplayName</a> 登录</span>
         if (set.AllowLogin)
