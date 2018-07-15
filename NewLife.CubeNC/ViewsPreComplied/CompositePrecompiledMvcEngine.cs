@@ -15,20 +15,21 @@ using Microsoft.Extensions.Options;
 
 namespace NewLife.CubeNC.ViewsPreComplied
 {
-    public class CompositePrecompiledMvcEngine: RazorViewEngine
+    public class CompositePrecompiledMvcEngine: RazorViewEngine, IRazorViewEngine
     {
         private readonly IRazorPageActivator _pageActivator;
         private readonly HtmlEncoder _htmlEncoder;
         private readonly DiagnosticSource _diagnosticSource;
 
-
-        public CompositePrecompiledMvcEngine(IRazorPageFactoryProvider pageFactory, 
-            IRazorPageActivator pageActivator, 
-            HtmlEncoder htmlEncoder, 
-            IOptions<RazorViewEngineOptions> optionsAccessor, 
-            RazorProjectFileSystem razorFileSystem, 
-            ILoggerFactory loggerFactory, 
-            DiagnosticSource diagnosticSource) 
+        //public CompositePrecompiledMvcEngine() { }
+        /// <inheritdoc />
+        public CompositePrecompiledMvcEngine(IRazorPageFactoryProvider pageFactory,
+            IRazorPageActivator pageActivator,
+            HtmlEncoder htmlEncoder,
+            IOptions<RazorViewEngineOptions> optionsAccessor,
+            RazorProjectFileSystem razorFileSystem,
+            ILoggerFactory loggerFactory,
+            DiagnosticSource diagnosticSource)
             : base(pageFactory, pageActivator, htmlEncoder, optionsAccessor, razorFileSystem, loggerFactory, diagnosticSource)
         {
             _pageActivator = pageActivator;
@@ -36,27 +37,46 @@ namespace NewLife.CubeNC.ViewsPreComplied
             _diagnosticSource = diagnosticSource;
         }
 
+    
         public new ViewEngineResult FindView(ActionContext context, String viewName, Boolean isMainPage)
         {
-            //return ViewEngineResult.Found(viewName,new RazorView(this,_pageActivator,null,null, _htmlEncoder, _diagnosticSource));
+            //return ViewEngineResult.Found(viewName,new PrecompiledMvcView(this,_pageActivator,null,null, _htmlEncoder, _diagnosticSource));
             return base.FindView(context, viewName, isMainPage);
         }
 
-        public new ViewEngineResult GetView(String executingFilePath, String viewPath, Boolean isMainPage)
-        {
-            return base.GetView(executingFilePath, viewPath, isMainPage);
-        }
+
+        //public String GetAbsolutePath(String executingFilePath, String pagePath)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public RazorPageResult GetPage(String executingFilePath, String pagePath)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        //public new ViewEngineResult GetView(String executingFilePath, String viewPath, Boolean isMainPage)
+        //{
+        //    //throw new NotImplementedException();
+
+        //    //return ViewEngineResult.Found(,);
+        //    //return base.GetView(executingFilePath, viewPath, isMainPage);
+        //}
     }
 
-    public class PrecompiledMvcView : RazorView
+    /// <inheritdoc cref="RazorView" />
+    public class PrecompiledMvcView : RazorView,IView
     {
         private readonly IRazorPageActivator _pageActivator;
 
+        /// <inheritdoc />
         public PrecompiledMvcView(IRazorViewEngine viewEngine, IRazorPageActivator pageActivator, IReadOnlyList<IRazorPage> viewStartPages, IRazorPage razorPage, HtmlEncoder htmlEncoder, DiagnosticSource diagnosticSource) 
             : base(viewEngine, pageActivator, viewStartPages, razorPage, htmlEncoder, diagnosticSource)
         {
+            _pageActivator = pageActivator;
         }
 
+        /// <inheritdoc />
         public new Task RenderAsync(ViewContext context)
         {
             _pageActivator.Activate(RazorPage,context);
@@ -65,17 +85,20 @@ namespace NewLife.CubeNC.ViewsPreComplied
         }
     }
 
+    /// <inheritdoc />
     public class RazorViewOPtionsSetup : IConfigureOptions<MvcViewOptions>
     {
-        private readonly RazorViewEngine _compositePrecompiledMvcEngine;
+        private readonly IRazorViewEngine _compositePrecompiledMvcEngine;
 
-        public RazorViewOPtionsSetup(RazorViewEngine razorViewEngine)
+        /// <inheritdoc />
+        public RazorViewOPtionsSetup(IRazorViewEngine razorViewEngine)
         {
             _compositePrecompiledMvcEngine = razorViewEngine;
         }
 
         void IConfigureOptions<MvcViewOptions>.Configure(MvcViewOptions options)
         {
+            //options.ViewEngines.Clear();
             options.ViewEngines.Add(_compositePrecompiledMvcEngine);
         }
 

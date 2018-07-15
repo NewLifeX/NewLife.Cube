@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,8 +50,10 @@ namespace NewLife.CubeNC
 
             services.AddDefaultIdentity<IdentityUser>();
 
-            services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
-            services.AddSingleton<RazorViewEngine, CompositePrecompiledMvcEngine>();
+            //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
+            //services.AddSingleton<IView, PrecompiledMvcView>();
+            
+
 
             //添加管理提供者
             services.AddManageProvider();
@@ -83,6 +86,9 @@ namespace NewLife.CubeNC
                     //opt.ViewEngines.Add(new CompositePrecompiledMvcEngine());
                 })
                 ;
+
+            //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
+            //services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
 
             //注册Cookie认证服务
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
