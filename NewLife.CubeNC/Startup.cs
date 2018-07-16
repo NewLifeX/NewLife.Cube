@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using NewLife.Cube;
 using NewLife.Cube.Controllers;
 using NewLife.CubeNC.Com;
 using NewLife.CubeNC.Extensions;
@@ -52,7 +53,7 @@ namespace NewLife.CubeNC
 
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
             //services.AddSingleton<IView, PrecompiledMvcView>();
-            
+
 
 
             //添加管理提供者
@@ -61,7 +62,7 @@ namespace NewLife.CubeNC
             services.AddMvc(opt =>
                 {
                     //模型绑定
-                    opt.ModelBinderProviders.Insert(0,new EntityModelBinderProvider());
+                    opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
                     //过滤器
                     opt.Filters.Add(new MvcHandleErrorAttribute());
 
@@ -110,7 +111,7 @@ namespace NewLife.CubeNC
                 app.UseHsts();
             }
 
-          
+
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -118,6 +119,11 @@ namespace NewLife.CubeNC
             app.UseSession();
 
             app.UseAuthentication();
+
+            //注册http模块中间件
+            app.UseErrorModuleMiddleware();
+            // 注册请求执行时间中间件
+            app.UseDbRunTimeModule();
 
             app.UseMvc(routes =>
             {
@@ -149,8 +155,7 @@ namespace NewLife.CubeNC
                 //    template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            //注册http模块中间件
-            app.UseErrorModuleMiddleware();
+
 
             //配置静态Http上下文访问器
             app.UseStaticHttpContext();

@@ -141,8 +141,8 @@ namespace NewLife.Cube.Admin.Controllers
                         user,
                         new AuthenticationProperties
                         {
-                            IsPersistent = true,//session跨多个请求,否则
-                            ExpiresUtc = remember ?? false ? DateTimeOffset.Now.AddMilliseconds(60 * 2) : (DateTimeOffset?)null,//过期时间
+                            IsPersistent = true,//session跨多个请求,否则只在当前请求有效
+                            ExpiresUtc = (remember ?? false) ? (DateTimeOffset?)null : DateTimeOffset.Now.AddMinutes(60 * 2),//过期时间，null表示不过期
                         }).Wait();
 
                     //FormsAuthentication.SetAuthCookie(username, remember ?? false);

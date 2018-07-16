@@ -1,4 +1,5 @@
 ﻿@using NewLife.Common;
+@using NewLife.Cube
 @*@using XCode.Web*@
 @{
     var set = NewLife.Cube.Setting.Current;
@@ -58,12 +59,12 @@
                 @RenderBody()
             </section>
         </div>
-        @*@if (DbRunTimeModule.Enable)
+        @if (DbRunTimeModule.Enable)
         {
             <div class="panel-footer">
                 @Html.Raw(DbRunTimeModule.GetInfo())
             </div>
-        }*@
+        }
     </div>
     <!-- 最早引入基本脚本 -->
     <script src="~/Content/bootstrap/js/bootstrap.min.js"></script>

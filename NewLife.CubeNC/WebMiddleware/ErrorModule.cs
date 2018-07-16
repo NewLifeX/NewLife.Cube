@@ -1,15 +1,21 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
 namespace NewLife.CubeNC.WebMiddleware
 {
-    public class ErrorModule
+    public class ErrorModuleMiddleware
     {
         private readonly RequestDelegate _next;
 
-        public ErrorModule(RequestDelegate next)
+        public ErrorModuleMiddleware(RequestDelegate next)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
             _next = next;
         }
 
@@ -25,9 +31,14 @@ namespace NewLife.CubeNC.WebMiddleware
 
     public static class ErrorModuleMiddlewareExtensions
     {
-        public static IApplicationBuilder UseErrorModuleMiddleware(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseErrorModuleMiddleware(this IApplicationBuilder app)
         {
-            return builder.UseMiddleware<ErrorModule>();
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseMiddleware<ErrorModuleMiddleware>();
         }
     }
 }
