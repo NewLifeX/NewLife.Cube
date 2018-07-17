@@ -15,7 +15,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("文件")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [Area("Admin")]
-    public class FileController : AdminBaseController
+    public class FileController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }

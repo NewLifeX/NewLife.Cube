@@ -68,6 +68,7 @@
     <Content Remove="Views\Shared\_Form_Group.cshtml" />
     <Content Remove="Views\Shared\_Form_Header.cshtml" />
     <Content Remove="Views\Shared\_Form_Item.cshtml" />
+    <Content Remove="Views\Shared\_Layout.cshtml" />
     <Content Remove="Views\Shared\_Layout_Footer.cshtml" />
     <Content Remove="Views\Shared\_Layout_Header.cshtml" />
     <Content Remove="Views\Shared\_ListTree_Data.cshtml" />
@@ -273,9 +274,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>XCoder.cs</LastGenOutput>
     </Content>
-    <Content Include="..\NewLife.Cube\Views\Shared\_Layout.cshtml">
-      <Link>Views\Shared\_Layout.cshtml</Link>
-    </Content>
     <Content Include="..\NewLife.Cube\Views\_ViewStart.cshtml">
       <Link>Views\_ViewStart.cshtml</Link>
     </Content>
@@ -443,6 +441,10 @@
     </None>
     <None Include="Views\Shared\_Form_Item.cshtml">
       <LastGenOutput>_Form_Item.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
+    <None Include="Views\Shared\_Layout.cshtml">
+      <LastGenOutput>_Layout.generated.cs</LastGenOutput>
       <Generator>RazorGenerator</Generator>
     </None>
     <None Include="Views\Shared\_Layout_Footer.cshtml">

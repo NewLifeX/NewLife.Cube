@@ -54,22 +54,23 @@ namespace NewLife.CubeNC.Com
              * 2，所有带有EntityAuthorize特性的控制器或动作
              */
             var act = filterContext.ActionDescriptor;
-            var ctrl = (Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)act;
+            var ctrl = (ControllerActionDescriptor)act;
 
             // 允许匿名访问时，直接跳过检查
             if (
-                //act.IsDefined(typeof(AllowAnonymousAttribute), true) || 
-                ctrl.ControllerTypeInfo.CustomAttributes.Any(a=>a.AttributeType==typeof(AllowAnonymousAttribute))) return;
+                ctrl.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)) ||
+                ctrl.ControllerTypeInfo.IsDefined(typeof(AllowAnonymousAttribute))) return;
 
             // 如果控制器或者Action放有该特性，则跳过全局
-            var hasAtt = 
-                //act.IsDefined(typeof(EntityAuthorizeAttribute), true) || 
-                ctrl.ControllerTypeInfo.CustomAttributes.Any(a => a.AttributeType == typeof(EntityAuthorizeAttribute));
+            var hasAtt =
+                ctrl.MethodInfo.IsDefined(typeof(EntityAuthorizeAttribute), true) || 
+                ctrl.ControllerTypeInfo.IsDefined(typeof(EntityAuthorizeAttribute));
+
             if (IsGlobal && hasAtt) return;
 
             // 只验证管辖范围
             var create = false;
-            if (ctrl.ControllerTypeInfo.CustomAttributes.FirstOrDefault(f=>f.AttributeType == typeof(AreaAttribute))?.ConstructorArguments?.FirstOrDefault().Value?.ToString() != "Admin")
+            if (!AreaBaseX.Contains(ctrl))
             {
                 if (!hasAtt) return;
                 // 不属于魔方而又加了权限特性，需要创建菜单
