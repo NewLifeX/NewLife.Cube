@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NewLife.Common;
 using NewLife.CubeNC.Extensions;
+using NewLife.Log;
 using NewLife.Model;
 using XCode.Membership;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
@@ -41,11 +42,25 @@ namespace NewLife.CubeNC.Membership
         /// <summary>获取当前用户</summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public override IManageUser GetCurrent(IServiceProvider context = null) => 
-            (context?.GetService<IHttpContextAccessor>()?? Context)
-                ?.HttpContext
-                ?.Session
-                ?.Get<UserX>(SessionKey);
+        public override IManageUser GetCurrent(IServiceProvider context = null)
+        {
+            var ctx = (context?.GetService<IHttpContextAccessor>() ?? Context)
+                ?.HttpContext;
+
+            try
+            {
+                return ctx
+                    ?.Session
+                    ?.Get<UserX>(SessionKey);
+            }
+            catch (Exception ex)
+            {
+                // 这里捕获一下，防止初始化应用中seesion还没初始化好报的异常
+                // 这里有个问题就是这里的ctx会有两个不同的值
+                XTrace.WriteException(ex);
+                return null;
+            }
+        }
 
         /// <summary>设置当前用户</summary>
         /// <param name="user"></param>

@@ -164,10 +164,10 @@ namespace NewLife.CubeNC
             app.UseManagerProvider();
 
             // 自动检查并添加菜单
-            XTrace.WriteLine("初始化权限管理体系");
+            //XTrace.WriteLine("初始化权限管理体系");
             //var user = ManageProvider.User;
             //ManageProvider.Provider.GetService<IUser>();
-            ScanControllerExtensions.ScanController();
+            //ScanControllerExtensions.ScanController();
         }
     }
 }

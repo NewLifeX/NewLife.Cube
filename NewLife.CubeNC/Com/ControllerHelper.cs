@@ -1,7 +1,9 @@
 ﻿using System;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using XCode.Membership;
 
 namespace NewLife.Cube
@@ -58,7 +60,11 @@ namespace NewLife.Cube
             {
                 ViewName = "NoPermission"
             };
-            //vr.Context = filterContext;
+            //vr.Context = filterContext;//不需要赋值Context，执行的时候会自己获取Context
+
+            vr.ViewData =
+                new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(new EmptyModelMetadataProvider(),
+                    filterContext.ModelState);
             vr.ViewData["Resource"] = res;
             vr.ViewData["Permission"] = pm;
             vr.ViewData["Menu"] = menu;
@@ -66,54 +72,59 @@ namespace NewLife.Cube
             return vr;
         }
 
-        ///// <summary>无权访问</summary>
-        ///// <param name="controller"></param>
-        ///// <param name="action"></param>
-        ///// <param name="pm"></param>
-        ///// <returns></returns>
-        //public static ActionResult NoPermission(this Controller controller, String action, PermissionFlags pm)
-        //{
-        //    var res = "[{0}/{1}]".F(controller.GetType().Name.TrimEnd("Controller"), action);
-        //    var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
-        //    LogProvider.Provider.WriteLog("访问", "拒绝", msg);
+        /// <summary>无权访问</summary>
+        /// <param name="controller"></param>
+        /// <param name="action"></param>
+        /// <param name="pm"></param>
+        /// <returns></returns>
+        public static ActionResult NoPermission(this Controller controller, String action, PermissionFlags pm)
+        {
+            var res = "[{0}/{1}]".F(controller.GetType().Name.TrimEnd("Controller"), action);
+            var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
+            LogProvider.Provider.WriteLog("访问", "拒绝", msg);
 
-        //    var ctx = controller.HttpContext;
-        //    var menu = ctx.Items["CurrentMenu"] as IMenu;
+            var ctx = controller.HttpContext;
+            var menu = ctx.Items["CurrentMenu"] as IMenu;
 
-        //    var vr = new ViewResult()
-        //    {
-        //        ViewName = "NoPermission"
-        //    };
-        //    vr.ViewBag.Resource = res;
-        //    vr.ViewBag.Permission = pm;
-        //    vr.ViewBag.Menu = menu;
+            var vr = new ViewResult()
+            {
+                ViewName = "NoPermission"
+            };
+            vr.ViewData = controller.ViewData;
+            vr.ViewData["Resource"] = res;
+            vr.ViewData["Permission"] = pm;
+            vr.ViewData["Menu"] = menu;
 
-        //    return vr;
-        //}
+            return vr;
+        }
 
-        ///// <summary>无权访问</summary>
-        ///// <param name="controller"></param>
-        ///// <param name="ex"></param>
-        ///// <returns></returns>
-        //public static ActionResult NoPermission(this ControllerBase controller, NoPermissionException ex)
-        //{
-        //    var ctx = controller.ControllerContext.HttpContext;
-        //    var res = ctx.Request.Url.AbsolutePath;
-        //    var pm = ex.Permission;
-        //    var msg = "无权访问数据[{0}]，没有该数据的 {1} 权限".F(res, pm.GetDescription());
-        //    LogProvider.Provider.WriteLog("访问", "拒绝", msg);
+        /// <summary>无权访问</summary>
+        /// <param name="controller"></param>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        public static ActionResult NoPermission(this ControllerBase controller, NoPermissionException ex)
+        {
+            var ctx = controller.ControllerContext.HttpContext;
+            var res = ctx.Request.GetEncodedUrl();
+            var pm = ex.Permission;
+            var msg = "无权访问数据[{0}]，没有该数据的 {1} 权限".F(res, pm.GetDescription());
+            LogProvider.Provider.WriteLog("访问", "拒绝", msg);
 
-        //    var menu = ctx.Items["CurrentMenu"] as IMenu;
+            var menu = ctx.Items["CurrentMenu"] as IMenu;
 
-        //    var vr = new ViewResult()
-        //    {
-        //        ViewName = "NoPermission"
-        //    };
-        //    vr.ViewBag.Resource = res;
-        //    vr.ViewBag.Permission = pm;
-        //    vr.ViewBag.Menu = menu;
+            var vr = new ViewResult()
+            {
+                ViewName = "NoPermission"
+            };
+            vr.ViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(controller.MetadataProvider,
+                    controller.ModelState)
+            {
+                ["Resource"] = res,
+                ["Permission"] = pm,
+                ["Menu"] = menu
+            };
 
-        //    return vr;
-        //}
+            return vr;
+        }
     }
 }
