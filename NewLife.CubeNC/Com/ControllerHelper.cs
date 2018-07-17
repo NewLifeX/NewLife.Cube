@@ -41,19 +41,19 @@ namespace NewLife.Cube
         #endregion
 
         /// <summary>无权访问</summary>
-        /// <param name="filterContext"></param>
+        /// <param name="actionContext"></param>
         /// <param name="pm"></param>
         /// <returns></returns>
-        public static ActionResult NoPermission(this AuthorizationFilterContext filterContext, PermissionFlags pm)
+        public static ActionResult NoPermission(this ActionContext actionContext, PermissionFlags pm)
         {
-            var act = (ControllerActionDescriptor)filterContext.ActionDescriptor;
+            var act = (ControllerActionDescriptor)actionContext.ActionDescriptor;
             //var ctrl = (ControllerActionDescriptor)act;
 
             var res = "[{0}/{1}]".F(act.ControllerName, act.ActionName);
             var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
             LogProvider.Provider.WriteLog("访问", "拒绝", msg);
 
-            var ctx = filterContext.HttpContext;
+            var ctx = actionContext.HttpContext;
             var menu = ctx.Items["CurrentMenu"] as IMenu;
 
             var vr = new ViewResult()
@@ -64,47 +64,49 @@ namespace NewLife.Cube
 
             vr.ViewData =
                 new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(new EmptyModelMetadataProvider(),
-                    filterContext.ModelState);
-            vr.ViewData["Resource"] = res;
-            vr.ViewData["Permission"] = pm;
-            vr.ViewData["Menu"] = menu;
+                    actionContext.ModelState)
+                {
+                    ["Resource"] = res,
+                    ["Permission"] = pm,
+                    ["Menu"] = menu
+                };
 
             return vr;
         }
 
+        ///// <summary>无权访问</summary>
+        ///// <param name="controller"></param>
+        ///// <param name="action"></param>
+        ///// <param name="pm"></param>
+        ///// <returns></returns>
+        //public static ActionResult NoPermission(this Controller controller, String action, PermissionFlags pm)
+        //{
+        //    var res = "[{0}/{1}]".F(controller.GetType().Name.TrimEnd("Controller"), action);
+        //    var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
+        //    LogProvider.Provider.WriteLog("访问", "拒绝", msg);
+
+        //    var ctx = controller.HttpContext;
+        //    var menu = ctx.Items["CurrentMenu"] as IMenu;
+
+        //    var vr = new ViewResult()
+        //    {
+        //        ViewName = "NoPermission"
+        //    };
+        //    vr.ViewData = controller.ViewData;
+        //    vr.ViewData["Resource"] = res;
+        //    vr.ViewData["Permission"] = pm;
+        //    vr.ViewData["Menu"] = menu;
+
+        //    return vr;
+        //}
+
         /// <summary>无权访问</summary>
-        /// <param name="controller"></param>
-        /// <param name="action"></param>
-        /// <param name="pm"></param>
-        /// <returns></returns>
-        public static ActionResult NoPermission(this Controller controller, String action, PermissionFlags pm)
-        {
-            var res = "[{0}/{1}]".F(controller.GetType().Name.TrimEnd("Controller"), action);
-            var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
-            LogProvider.Provider.WriteLog("访问", "拒绝", msg);
-
-            var ctx = controller.HttpContext;
-            var menu = ctx.Items["CurrentMenu"] as IMenu;
-
-            var vr = new ViewResult()
-            {
-                ViewName = "NoPermission"
-            };
-            vr.ViewData = controller.ViewData;
-            vr.ViewData["Resource"] = res;
-            vr.ViewData["Permission"] = pm;
-            vr.ViewData["Menu"] = menu;
-
-            return vr;
-        }
-
-        /// <summary>无权访问</summary>
-        /// <param name="controller"></param>
+        /// <param name="actionContext"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
-        public static ActionResult NoPermission(this ControllerBase controller, NoPermissionException ex)
+        public static ActionResult NoPermission(this ActionContext actionContext, NoPermissionException ex)
         {
-            var ctx = controller.ControllerContext.HttpContext;
+            var ctx = actionContext.HttpContext;
             var res = ctx.Request.GetEncodedUrl();
             var pm = ex.Permission;
             var msg = "无权访问数据[{0}]，没有该数据的 {1} 权限".F(res, pm.GetDescription());
@@ -116,8 +118,8 @@ namespace NewLife.Cube
             {
                 ViewName = "NoPermission"
             };
-            vr.ViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(controller.MetadataProvider,
-                    controller.ModelState)
+            vr.ViewData = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(new EmptyModelMetadataProvider(),
+                    actionContext.ModelState)
             {
                 ["Resource"] = res,
                 ["Permission"] = pm,

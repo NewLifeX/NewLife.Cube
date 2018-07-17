@@ -40,6 +40,8 @@ namespace NewLife.CubeNC
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //services.AddMvc(opt => opt.Filters.Add<MvcHandleErrorAttribute>());
+
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -64,7 +66,7 @@ namespace NewLife.CubeNC
                     //模型绑定
                     opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
                     //过滤器
-                    opt.Filters.Add(new MvcHandleErrorAttribute());
+                    opt.Filters.Add<MvcHandleErrorAttribute>();
 
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
@@ -120,7 +122,7 @@ namespace NewLife.CubeNC
 
             app.UseAuthentication();
 
-            //注册http模块中间件
+            //注册错误处理模块中间件
             app.UseErrorModuleMiddleware();
             // 注册请求执行时间中间件
             app.UseDbRunTimeModule();

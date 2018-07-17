@@ -19,6 +19,7 @@ using XCode.Membership;
 
 namespace NewLife.CubeNC.Com
 {
+    /// <summary>实体授权特性</summary>
     public class EntityAuthorizeAttribute: Attribute,IAuthorizationFilter
     {
         #region 属性
@@ -30,6 +31,11 @@ namespace NewLife.CubeNC.Com
         #endregion
 
         #region 构造
+        static EntityAuthorizeAttribute()
+        {
+            XTrace.WriteLine("注册过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
+        }
+
         /// <summary>实例化实体授权特性</summary>
         public EntityAuthorizeAttribute() { }
 
@@ -44,6 +50,8 @@ namespace NewLife.CubeNC.Com
         #endregion
 
         #region 方法
+
+       
         /// <summary>授权发生时触发</summary>
         /// <param name="filterContext"></param>
         public void OnAuthorization(AuthorizationFilterContext filterContext)
@@ -222,12 +230,6 @@ namespace NewLife.CubeNC.Com
 
             return true;
         }
-        #endregion
-
-        //public void OnAuthorization(AuthorizationFilterContext context)
-        //{
-        //    OnAuthorization(context);
-          
-        //}
+        #endregion 
     }
 }
