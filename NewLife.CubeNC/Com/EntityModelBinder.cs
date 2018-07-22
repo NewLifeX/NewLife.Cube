@@ -7,13 +7,15 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using NewLife.CubeNC.Extensions;
+using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
 using HttpContext = NewLife.Web.HttpContext;
 
 namespace NewLife.CubeNC.Com
 {
-    public class EntityModelBinder:IModelBinder
+    public class EntityModelBinder : IModelBinder
     {
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -96,33 +98,40 @@ namespace NewLife.CubeNC.Com
             else if (pks.Length > 0)
                 ckey = GetCacheKey(entity.GetType(), pks.Select(e => entity[e.Name]).ToArray());
 
-            using (var ms = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(ms, entity);
-                ctx.Session.Set(ckey, ms.GetBuffer());
-            }
+            ctx.Session.Set(ckey, entity.ToBytes());
         }
 
         private static IEntity GetEntity(Type type, params Object[] keys)
         {
             var ctx = HttpContext.Current;
             var ckey = GetCacheKey(type, keys);
-            var bytes = ctx.Session.Get(ckey);
-            using (var ms = new MemoryStream(bytes))
-            {
-                var formatter = new BinaryFormatter();
-                return formatter.Deserialize(ms) as IEntity;
-            }
+            return ctx.Session.Get<IEntity>(ckey);
         }
 
     }
 
 
-
+    /// <summary>实体模型绑定器提供者，为所有XCode实体类提供实体模型绑定器</summary>
     public class EntityModelBinderProvider : IModelBinderProvider
     {
+        /// <summary>
+        /// 获取绑定器
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public IModelBinder GetBinder(ModelBinderProviderContext context) => 
             context.Metadata.ModelType.As<IEntity>() ? new EntityModelBinder() : null;
+
+        static EntityModelBinderProvider()
+        {
+            XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);
+            //ModelBinderProviders.BinderProviders.Add(new EntityModelBinderProvider());
+        }
+
+        /// <summary>注册到全局模型绑定器提供者集合</summary>
+        public static void Register()
+        {
+            // 引发静态构造，只执行一次
+        }
     }
 }

@@ -16,6 +16,7 @@ using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceColl
 
 namespace NewLife.CubeNC.Membership
 {
+    /// <inheritdoc />
     public class DefaultManageProviderForCore : ManageProvider<UserX>
     {
 
@@ -98,7 +99,10 @@ namespace NewLife.CubeNC.Membership
             var expire = TimeSpan.FromMinutes(60*2);//有效期两个小时
                 //TimeSpan.FromDays(0);
             if (rememberme && user != null) expire = TimeSpan.FromDays(365);
-            this.SaveCookie(user, expire);
+
+            var context = Context?.HttpContext;
+            this.SaveCookie(user, expire, context);
+
             return user;
         }
 
@@ -225,12 +229,11 @@ namespace NewLife.CubeNC.Membership
         {
             if (httpContext == null) return;
 
-            var req = httpContext?.Request;
-            var res = httpContext?.Response;
+            var req = httpContext.Request;
+            var res = httpContext.Response;
             if (req == null || res == null) return;
 
             var key = GetCookieKey(provider);
-            var reqcookie = req.Cookies[key];
             if (user is IAuthUser au)
             {
                 var u = HttpUtility.UrlEncode(user.Name);

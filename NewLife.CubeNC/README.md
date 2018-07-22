@@ -1,8 +1,6 @@
 ﻿
 # asp.net core移植
 
-- 正在移植
-
 [TOC]
 
 ## 替换方案
@@ -19,7 +17,8 @@
 |Request.RouteData.GetRequiredString()|HttpContext.GetRouteValue()||
 |Request.ServerVariables|Request.Headers||
 |Request.Url.PathAndQuery|Request.GetEncodedPathAndQuery()||
-|Request.UrlReferrer|Request.Headers["Referer"].FirstOrDefault()|
+|Request.UrlReferrer|Request.Headers[HeaderNames.Referer]|
+|Request.UserAgent|Request.Headers[HeaderNames.UserAgent]||
 |Response.Output|new StreamWriter(HttpContext.Response.Body)||
 |System.Runtime.Caching|Microsoft.Extensions.Caching.Memory||
 ||||
