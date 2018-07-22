@@ -31,7 +31,7 @@ namespace NewLife.Cube
         ///// <summary>区域名称</summary>
         //public String AreaName { get; }
 
-        /// <summary>预编译引擎集合。便于外部设置属性</summary>
+        ///// <summary>预编译引擎集合。便于外部设置属性</summary>
         //public static PrecompiledViewAssembly[] PrecompiledEngines { get; private set; }
 
         /// <summary>所有区域类型</summary>

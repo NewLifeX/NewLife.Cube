@@ -515,11 +515,6 @@
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs">
       <Link>Web\SsoProvider.cs</Link>
     </Compile>
-    <Compile Include="Build.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
-    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

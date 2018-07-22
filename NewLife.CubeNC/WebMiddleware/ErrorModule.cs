@@ -31,7 +31,7 @@ namespace NewLife.CubeNC.WebMiddleware
 
     public static class ErrorModuleMiddlewareExtensions
     {
-        public static IApplicationBuilder UseErrorModuleMiddleware(this IApplicationBuilder app)
+        public static IApplicationBuilder UseErrorModule(this IApplicationBuilder app)
         {
             if (app == null)
             {
