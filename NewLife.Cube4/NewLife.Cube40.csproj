@@ -137,9 +137,6 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserOnlineController.cs">
       <Link>Areas\Admin\Controllers\UserOnlineController.cs</Link>
     </Compile>
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserTokenController.cs">
-      <Link>Areas\Admin\Controllers\UserTokenController.cs</Link>
-    </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\VisitStatController.cs">
       <Link>Areas\Admin\Controllers\VisitStatController.cs</Link>
     </Compile>
@@ -220,9 +217,6 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Views\UserOnline\_List_Data.generated.cs">
       <Link>Areas\Admin\Views\UserOnline\_List_Data.generated.cs</Link>
-    </Compile>
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Views\UserToken\_List_Data.generated.cs">
-      <Link>Areas\Admin\Views\UserToken\_List_Data.generated.cs</Link>
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Views\User\Info.generated.cs">
       <Link>Areas\Admin\Views\User\Info.generated.cs</Link>
@@ -515,11 +509,6 @@
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs">
       <Link>Web\SsoProvider.cs</Link>
     </Compile>
-    <Compile Include="Build.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
-    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -562,10 +551,6 @@
       <Link>Entity\XCoder.tt</Link>
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>XCoder.cs</LastGenOutput>
-    </Content>
-    <Content Include="Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.cs</LastGenOutput>
     </Content>
     <Content Include="favicon.ico" />
     <Content Include="..\NewLife.Cube\Areas\Admin\Views\User\Info.cshtml">
@@ -724,9 +709,6 @@
     <Content Include="..\NewLife.Cube\Areas\Admin\Views\UserOnline\_List_Data.cshtml">
       <Link>Areas\Admin\Views\UserOnline\_List_Data.cshtml</Link>
     </Content>
-    <Content Include="..\NewLife.Cube\Areas\Admin\Views\UserToken\_List_Data.cshtml">
-      <Link>Areas\Admin\Views\UserToken\_List_Data.cshtml</Link>
-    </Content>
     <Content Include="..\NewLife.Cube\Areas\Admin\Views\VisitStat\_List_Data.cshtml">
       <Link>Areas\Admin\Views\VisitStat\_List_Data.cshtml</Link>
     </Content>
@@ -754,7 +736,6 @@
     <None Include="Global.asax" />
     <None Include="Areas\Admin\Views\Web.config" />
     <None Include="Properties\PublishProfiles\Cube.pubxml" />
-    <Content Include="Model.xml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

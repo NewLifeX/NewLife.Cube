@@ -414,7 +414,8 @@ namespace NewLife.Cube
 
             try
             {
-                var user = UserToken.Valid(id);
+                //var user = UserToken.Valid(id);
+                var app = App.Valid(id);
 
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;

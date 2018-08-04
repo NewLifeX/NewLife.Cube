@@ -69,6 +69,8 @@ namespace NewLife.Cube.Entity
         /// <returns>实体对象</returns>
         public static App FindByName(String name)
         {
+            if (name.IsNullOrEmpty()) return null;
+
             // 实体缓存
             if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Name == name);
 
@@ -76,6 +78,19 @@ namespace NewLife.Cube.Entity
             //return Meta.SingleCache.GetItemWithSlaveKey(name) as App;
 
             return Find(_.Name == name);
+        }
+
+        /// <summary>根据密钥查找</summary>
+        /// <param name="appkey">密钥</param>
+        /// <returns>实体对象</returns>
+        public static App FindBySecret(String appkey)
+        {
+            if (appkey.IsNullOrEmpty()) return null;
+
+            // 实体缓存
+            if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Secret == appkey);
+
+            return Find(_.Secret == appkey);
         }
         #endregion
 
@@ -120,6 +135,17 @@ namespace NewLife.Cube.Entity
         public Boolean ValidSource(String source)
         {
             return true;
+        }
+
+        /// <summary>验证应用密钥是否有效</summary>
+        /// <param name="appkey"></param>
+        /// <returns></returns>
+        public static App Valid(String appkey)
+        {
+            var app = FindBySecret(appkey);
+            if (app == null || !app.Enable) throw new XException("非法授权！");
+
+            return app;
         }
         #endregion
     }
