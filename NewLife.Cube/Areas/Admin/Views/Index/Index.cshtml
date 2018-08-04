@@ -2,7 +2,11 @@
     Layout = null;
 
     var User = ViewBag.User;
-    var Config = ViewBag.Config;
+    var cfg = NewLife.Common.SysConfig.Current;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -12,7 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
 
-    <title>@ViewBag.Title - @Config.DisplayName</title>
+    <title>@title</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
     <!-- bootstrap & fontawesome -->
