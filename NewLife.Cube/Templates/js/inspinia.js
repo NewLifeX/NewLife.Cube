@@ -9,7 +9,7 @@ $(document).ready(function () {
 
     // Fast fix bor position issue with Propper.js
     // Will be fixed in Bootstrap 4.1 - https://github.com/twbs/bootstrap/pull/24092
-    Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
+    // Popper.Defaults.modifiers.computeStyle.gpuAcceleration = false;
 
 
     // Add body-small class if window less than 768px

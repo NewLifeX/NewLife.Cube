@@ -1,4 +1,5 @@
-﻿@using NewLife.Web;
+﻿@using NewLife.Common;
+@using NewLife.Web;
 @using XCode;
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
@@ -7,12 +8,40 @@
     var page = ViewBag.Page as Pager;
 }
 
-<div class="clearfix">
+
+<div class="row clearfix" style="padding:0 15px 10px 15px">
     @Html.Partial("_List_Toolbar")
 </div>
 <div class="table-responsive">
     @Html.Partial("_List_Data")
 </div>
-<div class="panel-footer">
+<div class="panel-footer" style="border-top:0px">
     @Html.Partial("_List_Pager")
 </div>
+
+
+@section css {
+}
+
+@section scripts {
+    <script type="text/javascript">
+        function DeleteList(id) {
+            swal({
+                title: "确定删除?",
+                //type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "确定",
+                cancelButtonText: "取消",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        swal({ title: "删除成功!", type: "success", timer: 1500 });
+                        setTimeout(function () { location = $("#delete_" + id).val(); }, 1000);
+                    }
+                });
+        }
+    </script>
+}

@@ -118,14 +118,12 @@ WriteLiteral("\r\n\r\n    <link");
 
 WriteLiteral(" rel=\"stylesheet\"");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 777), Tuple.Create("\"", 825)
-, Tuple.Create(Tuple.Create("", 784), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/css/bootstrap.min.css")
+WriteAttribute("href", Tuple.Create(" href=\"", 777), Tuple.Create("\"", 817)
+, Tuple.Create(Tuple.Create("", 784), Tuple.Create<System.Object, System.Int32>(Href("~/Templates/css/bootstrap.min.css")
 , 784), false)
 );
 
-WriteLiteral(" />\r\n    ");
-
-WriteLiteral("\r\n</head>\r\n<body>\r\n    ");
+WriteLiteral(" />\r\n</head>\r\n<body>\r\n    ");
 
 WriteLiteral("\r\n\r\n    ");
 
@@ -134,7 +132,7 @@ WriteLiteral("\r\n");
 WriteLiteral("    ");
 
             
-            #line 30 "..\..\Views\Shared\_Layout.cshtml"
+            #line 29 "..\..\Views\Shared\_Layout.cshtml"
 Write(RenderBody());
 
             
@@ -146,26 +144,24 @@ WriteLiteral("\r\n\r\n    ");
 
 WriteLiteral("\r\n\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1109), Tuple.Create("\"", 1147)
-, Tuple.Create(Tuple.Create("", 1115), Tuple.Create<System.Object, System.Int32>(Href("~/Content/js/jquery-2.1.3.min.js")
-, 1115), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 1007), Tuple.Create("\"", 1047)
+, Tuple.Create(Tuple.Create("", 1013), Tuple.Create<System.Object, System.Int32>(Href("~/Templates/js/jquery-3.1.1.min.js")
+, 1013), false)
 );
 
 WriteLiteral("></script>\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1171), Tuple.Create("\"", 1212)
-, Tuple.Create(Tuple.Create("", 1177), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/js/bootstrap.js")
-, 1177), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 1071), Tuple.Create("\"", 1108)
+, Tuple.Create(Tuple.Create("", 1077), Tuple.Create<System.Object, System.Int32>(Href("~/Templates/js/bootstrap.min.js")
+, 1077), false)
 );
 
-WriteLiteral("></script>\r\n    ");
-
-WriteLiteral("\r\n");
+WriteLiteral("></script>\r\n");
 
 WriteLiteral("    ");
 
             
-            #line 38 "..\..\Views\Shared\_Layout.cshtml"
+            #line 36 "..\..\Views\Shared\_Layout.cshtml"
 Write(RenderSection("scripts", required: false));
 
             

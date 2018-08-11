@@ -70,269 +70,209 @@ namespace ASP
             
             #line default
             #line hidden
-WriteLiteral("\r\n<!-- #section:basics/navbar.layout -->\r\n<div");
+WriteLiteral("\r\n<nav");
 
-WriteLiteral(" id=\"navbar\"");
-
-WriteLiteral(" class=\"navbar navbar-default\"");
-
-WriteLiteral(">\r\n    <script");
-
-WriteLiteral(" type=\"text/javascript\"");
-
-WriteLiteral(">\r\n        try { ace.settings.check(\'navbar\', \'fixed\') } catch (e) { }\r\n    </scr" +
-"ipt>\r\n\r\n    <div");
-
-WriteLiteral(" class=\"navbar-container\"");
-
-WriteLiteral(" id=\"navbar-container\"");
-
-WriteLiteral(">\r\n        <!-- #section:basics/sidebar.mobile.toggle -->\r\n        <button");
-
-WriteLiteral(" type=\"button\"");
-
-WriteLiteral(" class=\"navbar-toggle menu-toggler pull-left\"");
-
-WriteLiteral(" id=\"menu-toggler\"");
-
-WriteLiteral(" data-target=\"#sidebar\"");
-
-WriteLiteral(">\r\n            <span");
-
-WriteLiteral(" class=\"sr-only\"");
-
-WriteLiteral(">Toggle sidebar</span>\r\n            <span");
-
-WriteLiteral(" class=\"icon-bar\"");
-
-WriteLiteral("></span>\r\n            <span");
-
-WriteLiteral(" class=\"icon-bar\"");
-
-WriteLiteral("></span>\r\n            <span");
-
-WriteLiteral(" class=\"icon-bar\"");
-
-WriteLiteral("></span>\r\n        </button>\r\n\r\n        <!-- /section:basics/sidebar.mobile.toggle" +
-" -->\r\n        <div");
-
-WriteLiteral(" class=\"pull-left\"");
-
-WriteLiteral(">\r\n            <!-- #section:basics/navbar.layout.brand -->\r\n            <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 1203), Tuple.Create("\"", 1223)
-            
-            #line 33 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-, Tuple.Create(Tuple.Create("", 1210), Tuple.Create<System.Object, System.Int32>(ViewBag.Main
-            
-            #line default
-            #line hidden
-, 1210), false)
-);
-
-WriteLiteral(" class=\"navbar-brand\"");
-
-WriteLiteral(" target=\"main\"");
-
-WriteLiteral(">\r\n                <small>\r\n");
-
-WriteLiteral("                    ");
-
-            
-            #line 35 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-               Write(name);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                </small>\r\n            </a>\r\n        </div>\r\n\r\n        <!-- #sec" +
-"tion:basics/navbar.dropdown -->\r\n        <div");
-
-WriteLiteral(" class=\"navbar-buttons navbar-header pull-right\"");
+WriteLiteral(" class=\"navbar navbar-static-top  \"");
 
 WriteLiteral(" role=\"navigation\"");
 
-WriteLiteral(">\r\n            <ul");
+WriteLiteral(" style=\"margin-bottom: 0\"");
 
-WriteLiteral(" class=\"nav ace-nav\"");
+WriteLiteral(">\r\n    <div");
 
-WriteLiteral(">\r\n                <!-- #section:basics/navbar.user_menu -->\r\n                <li" +
-"");
+WriteLiteral(" class=\"navbar-header\"");
 
-WriteLiteral(" class=\"light-blue\"");
+WriteLiteral(">\r\n        <a");
 
-WriteLiteral(">\r\n                    <a");
+WriteLiteral(" class=\"navbar-minimalize minimalize-styl-2 \"");
+
+WriteLiteral(" style=\"color:white;\"");
+
+WriteLiteral(" href=\"#\"");
+
+WriteLiteral("><i");
+
+WriteLiteral(" class=\"fa fa-bars\"");
+
+WriteLiteral("></i> </a>\r\n        ");
+
+WriteLiteral("\r\n    </div>\r\n    <ul");
+
+WriteLiteral(" class=\"nav navbar-top-links navbar-right\"");
+
+WriteLiteral(">\r\n\r\n        <li");
+
+WriteLiteral(" class=\"dropdown\"");
+
+WriteLiteral(">\r\n            <a");
+
+WriteLiteral(" class=\"dropdown-toggle count-info\"");
 
 WriteLiteral(" data-toggle=\"dropdown\"");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1690), Tuple.Create("\"", 1719)
-, Tuple.Create(Tuple.Create("", 1697), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Info/")
-, 1697), false)
+WriteLiteral(" href=\"#\"");
+
+WriteLiteral(">\r\n                <i");
+
+WriteLiteral(" class=\"fa fa-envelope\"");
+
+WriteLiteral("></i> <span");
+
+WriteLiteral(" class=\"label label-warning\"");
+
+WriteLiteral("></span>\r\n            </a>\r\n            ");
+
+WriteLiteral("\r\n        </li>\r\n        <li");
+
+WriteLiteral(" class=\"dropdown\"");
+
+WriteLiteral(">\r\n            <a");
+
+WriteLiteral(" class=\"dropdown-toggle count-info\"");
+
+WriteLiteral(" data-toggle=\"dropdown\"");
+
+WriteLiteral(" href=\"#\"");
+
+WriteLiteral(">\r\n                <i");
+
+WriteLiteral(" class=\"fa fa-bell\"");
+
+WriteLiteral("></i> <span");
+
+WriteLiteral(" class=\"label label-primary\"");
+
+WriteLiteral("></span>\r\n            </a>\r\n            ");
+
+WriteLiteral("\r\n        </li>\r\n\r\n        <li");
+
+WriteLiteral(" class=\"dropdown\"");
+
+WriteLiteral(">\r\n            <a");
+
+WriteLiteral(" class=\"dropdown-toggle count-info\"");
+
+WriteLiteral(" data-toggle=\"dropdown\"");
+
+WriteLiteral(" href=\"empty_page.html#\"");
+
+WriteLiteral(">\r\n                <i");
+
+WriteLiteral(" class=\"fa fa-sign-out\"");
+
+WriteLiteral(">");
+
             
-            #line 45 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-, Tuple.Create(Tuple.Create("", 1715), Tuple.Create<System.Object, System.Int32>(uid
+            #line 81 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
+                                     Write(user);
+
             
             #line default
             #line hidden
-, 1715), false)
+WriteLiteral("</i> <span");
+
+WriteLiteral(" class=\"label label-primary\"");
+
+WriteLiteral("></span>\r\n            </a>\r\n            <ul");
+
+WriteLiteral(" class=\"dropdown-menu \"");
+
+WriteLiteral(">\r\n                <li>\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 3712), Tuple.Create("\"", 3721)
+, Tuple.Create(Tuple.Create("", 3719), Tuple.Create<System.Object, System.Int32>(Href("~/")
+, 3719), false)
 );
 
-WriteLiteral(" class=\"dropdown-toggle\"");
+WriteLiteral(">\r\n                        <i");
 
-WriteLiteral(" target=\"main\"");
+WriteLiteral(" class=\"fa fa-home\"");
 
-WriteLiteral(">\r\n");
-
-            
-            #line 46 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-                        
-            
-            #line default
-            #line hidden
-            
-            #line 46 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-                         if (user != null && !user.Avatar.IsNullOrEmpty())
-                        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                            <img");
-
-WriteLiteral(" class=\"nav-user-photo\"");
-
-WriteAttribute("src", Tuple.Create(" src=\"", 1919), Tuple.Create("\"", 1945)
-            
-            #line 48 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-, Tuple.Create(Tuple.Create("", 1925), Tuple.Create<System.Object, System.Int32>(user.GetAvatarUrl()
-            
-            #line default
-            #line hidden
-, 1925), false)
-);
-
-WriteAttribute("alt", Tuple.Create(" alt=\"", 1946), Tuple.Create("\"", 1957)
-            
-            #line 48 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-        , Tuple.Create(Tuple.Create("", 1952), Tuple.Create<System.Object, System.Int32>(user
-            
-            #line default
-            #line hidden
-, 1952), false)
-);
-
-WriteLiteral(" />\r\n");
-
-            
-            #line 49 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-                        }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                        <span");
-
-WriteLiteral(" class=\"user-info\"");
-
-WriteLiteral(">\r\n                            ");
-
-WriteLiteral("\r\n");
-
-WriteLiteral("                            ");
-
-            
-            #line 52 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-                       Write(user);
-
-            
-            #line default
-            #line hidden
-WriteLiteral(" <br /> [");
-
-            
-            #line 52 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-                                     Write(roleNames);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("]\r\n                        </span>\r\n\r\n                        <i");
-
-WriteLiteral(" class=\"ace-icon fa fa-caret-down\"");
-
-WriteLiteral("></i>\r\n                    </a>\r\n\r\n                    <ul");
-
-WriteLiteral(" class=\"user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-care" +
-"t dropdown-close\"");
-
-WriteLiteral(">\r\n                        <li>\r\n                            <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 2461), Tuple.Create("\"", 2470)
-, Tuple.Create(Tuple.Create("", 2468), Tuple.Create<System.Object, System.Int32>(Href("~/")
-, 2468), false)
-);
-
-WriteLiteral(" target=\"_blank\"");
-
-WriteLiteral(">\r\n                                <i");
-
-WriteLiteral(" class=\"ace-icon fa fa-cog\"");
-
-WriteLiteral("></i>\r\n                                网站首页\r\n                            </a>\r\n  " +
-"                      </li>\r\n\r\n                        ");
-
-WriteLiteral("\r\n\r\n                        <li>\r\n                            <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 3181), Tuple.Create("\"", 3210)
-, Tuple.Create(Tuple.Create("", 3188), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Info/")
-, 3188), false)
-            
-            #line 77 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-, Tuple.Create(Tuple.Create("", 3206), Tuple.Create<System.Object, System.Int32>(uid
-            
-            #line default
-            #line hidden
-, 3206), false)
-);
-
-WriteLiteral(" target=\"main\"");
-
-WriteLiteral(">\r\n                                <i");
-
-WriteLiteral(" class=\"ace-icon fa fa-user\"");
-
-WriteLiteral("></i>\r\n                                个人信息\r\n                            </a>\r\n  " +
-"                      </li>\r\n\r\n                        <li");
+WriteLiteral("></i> 网站首页\r\n                    </a>\r\n                </li>\r\n                <li");
 
 WriteLiteral(" class=\"divider\"");
 
-WriteLiteral("></li>\r\n\r\n                        <li>\r\n                            <a");
+WriteLiteral("></li>\r\n");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 3515), Tuple.Create("\"", 3541)
-, Tuple.Create(Tuple.Create("", 3522), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Logout")
-, 3522), false)
+            
+            #line 90 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
+                
+            
+            #line default
+            #line hidden
+            
+            #line 90 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
+                 if (user.Has("Admin/Sys", PermissionFlags.Detail))
+                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    <li>\r\n                        <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 4014), Tuple.Create("\"", 4032)
+, Tuple.Create(Tuple.Create("", 4021), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/Sys")
+, 4021), false)
 );
 
-WriteLiteral(">\r\n                                <i");
+WriteLiteral(" target=\"main\"");
 
-WriteLiteral(" class=\"ace-icon fa fa-power-off\"");
+WriteLiteral(">\r\n                            <i");
 
-WriteLiteral(@"></i>
-                                注销
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+WriteLiteral(" class=\"fa fa-cog\"");
 
-                <!-- /section:basics/navbar.user_menu -->
-            </ul>
-        </div>
+WriteLiteral("></i> 设置\r\n                        </a>\r\n                    </li>\r\n");
 
-        <!-- /section:basics/navbar.dropdown -->
-    </div>
-    <!-- /.navbar-container -->
-</div>
-<!-- /section:basics/navbar.layout -->");
+WriteLiteral("                    <li");
+
+WriteLiteral(" class=\"divider\"");
+
+WriteLiteral("></li>\r\n");
+
+            
+            #line 98 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
+                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                <li>\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 4277), Tuple.Create("\"", 4306)
+, Tuple.Create(Tuple.Create("", 4284), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Info/")
+, 4284), false)
+            
+            #line 101 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
+, Tuple.Create(Tuple.Create("", 4302), Tuple.Create<System.Object, System.Int32>(uid
+            
+            #line default
+            #line hidden
+, 4302), false)
+);
+
+WriteLiteral(">\r\n                        <i");
+
+WriteLiteral(" class=\"fa fa-user\"");
+
+WriteLiteral("></i> 个人信息\r\n                    </a>\r\n                </li>\r\n                <li");
+
+WriteLiteral(" class=\"divider\"");
+
+WriteLiteral("></li>\r\n                <li>\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 4503), Tuple.Create("\"", 4529)
+, Tuple.Create(Tuple.Create("", 4510), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Logout")
+, 4510), false)
+);
+
+WriteLiteral(">\r\n                        <i");
+
+WriteLiteral(" class=\"fa fa-power-off\"");
+
+WriteLiteral("></i> 注销\r\n                    </a>\r\n                </li>\r\n            </ul>\r\n   " +
+"     </li>\r\n\r\n        ");
+
+WriteLiteral("\r\n    </ul>\r\n</nav>");
 
         }
     }

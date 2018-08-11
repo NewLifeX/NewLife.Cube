@@ -10,22 +10,29 @@
     var rv = entity.GetRouteKey();
 }
 
-<div class="form-horizontal">
-    @Html.Partial("_Form_Header", entity)
-    @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv))
-    {
-        @Html.AntiForgeryToken()
-        @*@Html.ValidationSummary()*@
-        //解决主键为(0长度字符串"")的异常信息无法显示问题
-        <ul>
-            @foreach (var item in ViewData.ModelState.Values)
+<div class="col-lg-12" style="padding:0px">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>@ViewBag.HeaderContent</h5>
+        </div>
+        <div class="ibox-content">
+            @Html.Partial("_Form_Header", entity)
+            @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv))
             {
-                foreach (var error in item.Errors)
-                {
-                    <li>@error.Exception</li>
-                }
+                @Html.AntiForgeryToken()
+                @*@Html.ValidationSummary()*@
+                //解决主键为(0长度字符串"")的异常信息无法显示问题
+                <ul>
+                    @foreach (var item in ViewData.ModelState.Values)
+                    {
+                        foreach (var error in item.Errors)
+                        {
+                            <li>@error.Exception</li>
+                        }
+                    }
+                </ul>
+                @Html.Partial("_Form_Body", entity)
             }
-        </ul>
-        @Html.Partial("_Form_Body", entity)
-    }
+        </div>
+    </div>
 </div>

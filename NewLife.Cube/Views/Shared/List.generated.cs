@@ -27,16 +27,22 @@ namespace ASP
     using System.Web.UI;
     using System.Web.WebPages;
     using NewLife;
+    
+    #line 1 "..\..\Views\Shared\List.cshtml"
+    using NewLife.Common;
+    
+    #line default
+    #line hidden
     using NewLife.Cube;
     using NewLife.Reflection;
     
-    #line 1 "..\..\Views\Shared\List.cshtml"
+    #line 2 "..\..\Views\Shared\List.cshtml"
     using NewLife.Web;
     
     #line default
     #line hidden
     
-    #line 2 "..\..\Views\Shared\List.cshtml"
+    #line 3 "..\..\Views\Shared\List.cshtml"
     using XCode;
     
     #line default
@@ -53,7 +59,7 @@ namespace ASP
         public override void Execute()
         {
             
-            #line 3 "..\..\Views\Shared\List.cshtml"
+            #line 4 "..\..\Views\Shared\List.cshtml"
   
     Layout = NewLife.Cube.Setting.Current.Layout;
 
@@ -63,16 +69,18 @@ namespace ASP
             
             #line default
             #line hidden
-WriteLiteral("\r\n\r\n<div");
+WriteLiteral("\r\n\r\n\r\n<div");
 
-WriteLiteral(" class=\"clearfix\"");
+WriteLiteral(" class=\"row clearfix\"");
+
+WriteLiteral(" style=\"padding:0 15px 10px 15px\"");
 
 WriteLiteral(">\r\n");
 
 WriteLiteral("    ");
 
             
-            #line 11 "..\..\Views\Shared\List.cshtml"
+            #line 13 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Toolbar"));
 
             
@@ -87,7 +95,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 14 "..\..\Views\Shared\List.cshtml"
+            #line 16 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Data"));
 
             
@@ -97,18 +105,58 @@ WriteLiteral("\r\n</div>\r\n<div");
 
 WriteLiteral(" class=\"panel-footer\"");
 
+WriteLiteral(" style=\"border-top:0px\"");
+
 WriteLiteral(">\r\n");
 
 WriteLiteral("    ");
 
             
-            #line 17 "..\..\Views\Shared\List.cshtml"
+            #line 19 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Pager"));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n</div>");
+WriteLiteral("\r\n</div>\r\n\r\n\r\n");
+
+DefineSection("css", () => {
+
+WriteLiteral("\r\n");
+
+});
+
+WriteLiteral("\r\n");
+
+DefineSection("scripts", () => {
+
+WriteLiteral("\r\n    <script");
+
+WriteLiteral(" type=\"text/javascript\"");
+
+WriteLiteral(@">
+        function DeleteList(id) {
+            swal({
+                title: ""确定删除?"",
+                //type: ""warning"",
+                showCancelButton: true,
+                confirmButtonColor: ""#DD6B55"",
+                confirmButtonText: ""确定"",
+                cancelButtonText: ""取消"",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        swal({ title: ""删除成功!"", type: ""success"", timer: 1500 });
+                        setTimeout(function () { location = $(""#delete_"" + id).val(); }, 1000);
+                    }
+                });
+        }
+    </script>
+");
+
+});
 
         }
     }

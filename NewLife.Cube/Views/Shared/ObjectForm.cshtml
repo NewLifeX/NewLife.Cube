@@ -11,9 +11,9 @@
 <div class="row">
     @Html.Partial("_Object_Nav", Model)
 </div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="form-horizontal">
+<div class="col-lg-12" style="padding:0px;">
+    <div class="ibox float-e-margins">
+        <div class="ibox-content form-horizontal" style="padding-top:40px;">
             @using (Html.BeginForm("Update", null))
             {
                 @Html.AntiForgeryToken()

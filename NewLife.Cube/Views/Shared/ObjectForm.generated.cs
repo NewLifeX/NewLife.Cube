@@ -87,15 +87,19 @@ Write(Html.Partial("_Object_Nav", Model));
             #line hidden
 WriteLiteral("\r\n</div>\r\n<div");
 
-WriteLiteral(" class=\"row\"");
+WriteLiteral(" class=\"col-lg-12\"");
+
+WriteLiteral(" style=\"padding:0px;\"");
 
 WriteLiteral(">\r\n    <div");
 
-WriteLiteral(" class=\"col-md-12\"");
+WriteLiteral(" class=\"ibox float-e-margins\"");
 
 WriteLiteral(">\r\n        <div");
 
-WriteLiteral(" class=\"form-horizontal\"");
+WriteLiteral(" class=\"ibox-content form-horizontal\"");
+
+WriteLiteral(" style=\"padding-top:40px;\"");
 
 WriteLiteral(">\r\n");
 
@@ -160,14 +164,14 @@ WriteLiteral(">\r\n                        <label");
 
 WriteLiteral(" class=\"control-label col-xs-2 col-md-3 no-padding-left\"");
 
-WriteAttribute("for", Tuple.Create(" for=\"", 1268), Tuple.Create("\"", 1282)
+WriteAttribute("for", Tuple.Create(" for=\"", 1345), Tuple.Create("\"", 1359)
             
             #line 33 "..\..\Views\Shared\ObjectForm.cshtml"
-            , Tuple.Create(Tuple.Create("", 1274), Tuple.Create<System.Object, System.Int32>(pi.Name
+            , Tuple.Create(Tuple.Create("", 1351), Tuple.Create<System.Object, System.Int32>(pi.Name
             
             #line default
             #line hidden
-, 1274), false)
+, 1351), false)
 );
 
 WriteLiteral(">");

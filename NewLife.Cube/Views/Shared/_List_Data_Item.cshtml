@@ -71,6 +71,7 @@ else
         case TypeCode.String:
         default:
             {
+                // 首先处理外键映射的字段，此处存在跨Area编辑错误！
                 var val = value;
                 var map = item.Map;
                 if (map != null && map.Provider != null && val + "" != "")

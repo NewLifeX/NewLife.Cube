@@ -74,15 +74,38 @@ namespace ASP
             #line hidden
 WriteLiteral("\r\n\r\n<div");
 
-WriteLiteral(" class=\"form-horizontal\"");
+WriteLiteral(" class=\"col-lg-12\"");
+
+WriteLiteral(" style=\"padding:0px\"");
+
+WriteLiteral(">\r\n    <div");
+
+WriteLiteral(" class=\"ibox float-e-margins\"");
+
+WriteLiteral(">\r\n        <div");
+
+WriteLiteral(" class=\"ibox-title\"");
+
+WriteLiteral(">\r\n            <h5>");
+
+            
+            #line 16 "..\..\Views\Shared\Form.cshtml"
+           Write(ViewBag.HeaderContent);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</h5>\r\n        </div>\r\n        <div");
+
+WriteLiteral(" class=\"ibox-content\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("    ");
+WriteLiteral("            ");
 
             
-            #line 14 "..\..\Views\Shared\Form.cshtml"
-Write(Html.Partial("_Form_Header", entity));
+            #line 19 "..\..\Views\Shared\Form.cshtml"
+       Write(Html.Partial("_Form_Header", entity));
 
             
             #line default
@@ -90,64 +113,64 @@ Write(Html.Partial("_Form_Header", entity));
 WriteLiteral("\r\n");
 
             
-            #line 15 "..\..\Views\Shared\Form.cshtml"
-    
-            
-            #line default
-            #line hidden
-            
-            #line 15 "..\..\Views\Shared\Form.cshtml"
-     using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv))
-    {
-        
-            
-            #line default
-            #line hidden
-            
-            #line 17 "..\..\Views\Shared\Form.cshtml"
-   Write(Html.AntiForgeryToken());
-
-            
-            #line default
-            #line hidden
-            
-            #line 17 "..\..\Views\Shared\Form.cshtml"
-                                
-        
-            
-            #line default
-            #line hidden
-            
-            #line 18 "..\..\Views\Shared\Form.cshtml"
-                                     
-        //解决主键为(0长度字符串"")的异常信息无法显示问题
-
-            
-            #line default
-            #line hidden
-WriteLiteral("        <ul>\r\n");
-
-            
-            #line 21 "..\..\Views\Shared\Form.cshtml"
+            #line 20 "..\..\Views\Shared\Form.cshtml"
             
             
             #line default
             #line hidden
             
-            #line 21 "..\..\Views\Shared\Form.cshtml"
-             foreach (var item in ViewData.ModelState.Values)
+            #line 20 "..\..\Views\Shared\Form.cshtml"
+             using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv))
             {
-                foreach (var error in item.Errors)
-                {
+                
+            
+            #line default
+            #line hidden
+            
+            #line 22 "..\..\Views\Shared\Form.cshtml"
+           Write(Html.AntiForgeryToken());
 
             
             #line default
             #line hidden
-WriteLiteral("                    <li>");
+            
+            #line 22 "..\..\Views\Shared\Form.cshtml"
+                                        
+                
+            
+            #line default
+            #line hidden
+            
+            #line 23 "..\..\Views\Shared\Form.cshtml"
+                                             
+                //解决主键为(0长度字符串"")的异常信息无法显示问题
 
             
-            #line 25 "..\..\Views\Shared\Form.cshtml"
-                   Write(error.Exception);
+            #line default
+            #line hidden
+WriteLiteral("                <ul>\r\n");
+
+            
+            #line 26 "..\..\Views\Shared\Form.cshtml"
+                    
+            
+            #line default
+            #line hidden
+            
+            #line 26 "..\..\Views\Shared\Form.cshtml"
+                     foreach (var item in ViewData.ModelState.Values)
+                    {
+                        foreach (var error in item.Errors)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <li>");
+
+            
+            #line 30 "..\..\Views\Shared\Form.cshtml"
+                           Write(error.Exception);
 
             
             #line default
@@ -155,37 +178,37 @@ WriteLiteral("                    <li>");
 WriteLiteral("</li>\r\n");
 
             
-            #line 26 "..\..\Views\Shared\Form.cshtml"
-                }
+            #line 31 "..\..\Views\Shared\Form.cshtml"
+                        }
+                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                </ul>\r\n");
+
+            
+            #line 34 "..\..\Views\Shared\Form.cshtml"
+                
+            
+            #line default
+            #line hidden
+            
+            #line 34 "..\..\Views\Shared\Form.cshtml"
+           Write(Html.Partial("_Form_Body", entity));
+
+            
+            #line default
+            #line hidden
+            
+            #line 34 "..\..\Views\Shared\Form.cshtml"
+                                                   
             }
 
             
             #line default
             #line hidden
-WriteLiteral("        </ul>\r\n");
-
-            
-            #line 29 "..\..\Views\Shared\Form.cshtml"
-        
-            
-            #line default
-            #line hidden
-            
-            #line 29 "..\..\Views\Shared\Form.cshtml"
-   Write(Html.Partial("_Form_Body", entity));
-
-            
-            #line default
-            #line hidden
-            
-            #line 29 "..\..\Views\Shared\Form.cshtml"
-                                           
-    }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</div>\r\n");
+WriteLiteral("        </div>\r\n    </div>\r\n</div>\r\n");
 
         }
     }

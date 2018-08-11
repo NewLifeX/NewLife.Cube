@@ -167,15 +167,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Main.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Areas\Admin\Views\Index\_Left1.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Left.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Areas\Admin\Views\Index\_Left_Item.generated.cs">
       <DependentUpon>_Left_Item.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Areas\Admin\Views\Index\_Left.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>_Left.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Areas\Admin\Views\Index\_Navbar.generated.cs">
       <AutoGen>True</AutoGen>
@@ -348,6 +348,21 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Index.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Shared\_FooterBar.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_FooterBar.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Shared\_Inspinia_Layout.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Inspinia_Layout.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Shared\_Inspinia_Layout_Nav.generated.cs">
+      <DependentUpon>_Inspinia_Layout_Nav.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Views\Shared\_Form_Body.generated.cs">
       <DependentUpon>_Form_Body.cshtml</DependentUpon>
@@ -798,9 +813,12 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_ViewStart.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Image\Logo.png" />
     <Content Include="Templates\css\bootstrap.css.map" />
     <Content Include="Templates\css\bootstrap.min.css.map" />
     <Content Include="Templates\css\plugins\bootstrap-rtl\bootstrap-rtl.css.map" />
+    <Content Include="Templates\css\plugins\datetimepicker\bootstrap-datetimepicker.css" />
+    <Content Include="Templates\css\plugins\datetimepicker\bootstrap-datetimepicker.min.css" />
     <Content Include="Templates\css\plugins\footable\fonts\footable.eot" />
     <Content Include="Templates\css\plugins\footable\fonts\footable.ttf" />
     <Content Include="Templates\css\plugins\footable\fonts\footable.woff" />
@@ -810,6 +828,10 @@
     <Content Include="Templates\css\plugins\summernote\font\summernote.eot" />
     <Content Include="Templates\css\plugins\summernote\font\summernote.ttf" />
     <Content Include="Templates\css\plugins\summernote\font\summernote.woff" />
+    <Content Include="Templates\css\plugins\switch\bootstrap-switch.css" />
+    <Content Include="Templates\css\plugins\switch\bootstrap-switch.min.css" />
+    <Content Include="Templates\Cube.css" />
+    <Content Include="Templates\Cube.js" />
     <Content Include="Templates\font-awesome\fonts\fontawesome-webfont.eot" />
     <Content Include="Templates\font-awesome\fonts\fontawesome-webfont.ttf" />
     <Content Include="Templates\font-awesome\fonts\fontawesome-webfont.woff" />
@@ -884,10 +906,60 @@
     <Content Include="Templates\js\bootstrap.min.js.map" />
     <Content Include="Templates\js\plugins\chartist\chartist.min.js.map" />
     <Content Include="Templates\js\plugins\d3\LICENSE" />
+    <Content Include="Templates\js\plugins\datetimepicker\bootstrap-datetimepicker.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\bootstrap-datetimepicker.min.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ar.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.az.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.bg.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.bn.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ca.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.cs.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.da.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.de.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ee.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.el.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.es.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.fi.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.fr.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.he.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.hr.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.hu.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.hy.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.id.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.is.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.it.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ja.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ka.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ko.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.lt.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.lv.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ms.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.nb.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.nl.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.no.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.pl.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.pt-BR.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.pt.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ro.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.rs-latin.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.rs.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ru.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.sk.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.sl.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.sv.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.sw.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.th.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.tr.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.ua.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.uk.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.zh-CN.js" />
+    <Content Include="Templates\js\plugins\datetimepicker\locales\bootstrap-datetimepicker.zh-TW.js" />
     <Content Include="Templates\js\plugins\diff_match_patch\COPYING" />
     <Content Include="Templates\js\plugins\justified-gallery\README.md" />
     <Content Include="Templates\js\plugins\pdfjs\pdf.js.map" />
     <Content Include="Templates\js\plugins\pdfjs\pdf.worker.js.map" />
+    <Content Include="Templates\js\plugins\switch\bootstrap-switch.js" />
+    <Content Include="Templates\js\plugins\switch\bootstrap-switch.min.js" />
     <Content Include="Templates\js\plugins\topojson\LICENSE" />
     <Content Include="Templates\locales\en.json" />
     <Content Include="Templates\locales\es.json" />
@@ -899,10 +971,22 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Views\Shared\_Inspinia_Layout_Nav.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Inspinia_Layout_Nav.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Views\Shared\_FooterBar.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_FooterBar.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Views\Shared\_Form_Group.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Views\Shared\_Inspinia_Layout.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Inspinia_Layout.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Views\Shared\_Object_Nav.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Object_Nav.generated.cs</LastGenOutput>
@@ -941,7 +1025,7 @@
     </None>
     <None Include="Areas\Admin\Views\Index\_Left.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_Left.generated.cs</LastGenOutput>
+      <LastGenOutput>_Left1.generated.cs</LastGenOutput>
     </None>
     <None Include="Areas\Admin\Views\Index\_Navbar.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -1570,6 +1654,7 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v12.0</VSToolsPath>

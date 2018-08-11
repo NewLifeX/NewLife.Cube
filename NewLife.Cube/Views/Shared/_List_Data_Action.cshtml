@@ -2,16 +2,19 @@
     var entity = Model as IEntity;
 
     var rv = entity.GetRouteKey();
+    var deleteid = entity["ID"] + "";
 }
 @if (this.Has(PermissionFlags.Update))
 {
-    <i class="glyphicon glyphicon-edit" style="color: blue;"></i>
-    <a href="@Url.Action("Edit", rv)" class="editcell">编辑</a>
+    <a title="编辑" href="@Url.Action("Edit", rv)" class="editcell">
+        <i class="fa fa-pencil" style="color:#1c84c6;font-size:16px;padding:0px 5px 0px 0px;"></i>
+    </a>
 }
 else if (this.Has(PermissionFlags.Detail))
 {
-    <i class="glyphicon glyphicon-edit" style="color: blue;"></i>
-    <a href="@Url.Action("Detail", rv)" class="editcell">查看</a>
+    <a title="详细" href="@Url.Action("Detail", rv)" class="editcell">
+        <i class="fa fa-bars" style="color:#1ab394;font-size:16px;padding:0px 5px 0px 5px;"></i>
+    </a>
 }
 @if (this.Has(PermissionFlags.Delete))
 {
@@ -24,7 +27,9 @@ else if (this.Has(PermissionFlags.Detail))
     }
     else
     {
-        <i class="glyphicon glyphicon-remove" style="color: red;"></i>
-        <a href="@Url.Action("Delete", rv)" data-action="action" data-confirm="确认删除？">删除</a>
+        <input type="hidden" id="delete_@deleteid" value="@Url.Action("Delete", rv)" />
+        <a href="#" title="删除" onclick="DeleteList('@deleteid')">
+            <i class="fa fa-trash" style="color:red;font-size:16px;padding:0px 0px 0px 5px;"></i>
+        </a>
     }
 }

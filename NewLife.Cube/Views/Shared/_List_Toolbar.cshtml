@@ -16,7 +16,7 @@
             @if (this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
-                @Html.ActionLink("添加" + ViewContext.Controller.GetType().GetDisplayName(), "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
+                @Html.ActionLink("添加" + ViewContext.Controller.GetType().GetDisplayName(), "Add", null, new { @class = "btn btn-success btn-sm" })
             }
             @if (enableSelect)
             {

@@ -108,8 +108,8 @@ WriteLiteral(" type=\"image/x-icon\"");
 
 WriteLiteral(" />\r\n\r\n    <!-- 基本样式 -->\r\n    <link");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 515), Tuple.Create("\"", 563)
-, Tuple.Create(Tuple.Create("", 522), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/css/bootstrap.min.css")
+WriteAttribute("href", Tuple.Create(" href=\"", 515), Tuple.Create("\"", 555)
+, Tuple.Create(Tuple.Create("", 522), Tuple.Create<System.Object, System.Int32>(Href("~/Templates/css/bootstrap.min.css")
 , 522), false)
 );
 
@@ -117,9 +117,9 @@ WriteLiteral(" rel=\"stylesheet\"");
 
 WriteLiteral(" />\r\n    <!-- 自定义样式-->\r\n    <link");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 614), Tuple.Create("\"", 639)
-, Tuple.Create(Tuple.Create("", 621), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.css")
-, 621), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 606), Tuple.Create("\"", 633)
+, Tuple.Create(Tuple.Create("", 613), Tuple.Create<System.Object, System.Int32>(Href("~/Templates/Cube.css")
+, 613), false)
 );
 
 WriteLiteral(" rel=\"stylesheet\"");
@@ -279,16 +279,16 @@ WriteLiteral("                    ");
 WriteLiteral("\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <!-" +
 "- JQuery作为一等公民，页面内部随时可能使用 -->\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 8590), Tuple.Create("\"", 8628)
-, Tuple.Create(Tuple.Create("", 8596), Tuple.Create<System.Object, System.Int32>(Href("~/Content/js/jquery-2.1.3.min.js")
-, 8596), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 8584), Tuple.Create("\"", 8624)
+, Tuple.Create(Tuple.Create("", 8590), Tuple.Create<System.Object, System.Int32>(Href("~/Templates/js/jquery-3.1.1.min.js")
+, 8590), false)
 );
 
 WriteLiteral("></script>\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 8652), Tuple.Create("\"", 8697)
-, Tuple.Create(Tuple.Create("", 8658), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/js/bootstrap.min.js")
-, 8658), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 8648), Tuple.Create("\"", 8685)
+, Tuple.Create(Tuple.Create("", 8654), Tuple.Create<System.Object, System.Int32>(Href("~/Templates/js/bootstrap.min.js")
+, 8654), false)
 );
 
 WriteLiteral(@"></script>

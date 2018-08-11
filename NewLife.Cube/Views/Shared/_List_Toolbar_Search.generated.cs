@@ -84,11 +84,13 @@ WriteLiteral(">\r\n        <button");
 
 WriteLiteral(" type=\"submit\"");
 
-WriteLiteral(" class=\"btn btn-purple btn-sm\"");
+WriteLiteral(" class=\"btn btn-primary btn-sm\"");
+
+WriteLiteral(" style=\"margin-top:2px\"");
 
 WriteLiteral(">\r\n            <span");
 
-WriteLiteral(" class=\"ace-icon fa fa-search icon-on-right bigger-110\"");
+WriteLiteral(" class=\"fa fa-search icon-on-right bigger-110\"");
 
 WriteLiteral("></span>\r\n            查询\r\n        </button>\r\n    </span>\r\n</div>");
 

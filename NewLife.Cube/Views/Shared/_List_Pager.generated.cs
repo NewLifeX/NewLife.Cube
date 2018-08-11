@@ -54,6 +54,8 @@ namespace ASP
     //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
     // 没有总记录数的时候不显示分页，可以认为不启用分页
 
+    page.PageUrlTemplate = "<a class=\"\" href=\"{链接}\">{名称}</a>";
+
     var act = ViewBag.Action as String;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
@@ -63,59 +65,72 @@ namespace ASP
 WriteLiteral("\r\n");
 
             
-            #line 10 "..\..\Views\Shared\_List_Pager.cshtml"
+            #line 12 "..\..\Views\Shared\_List_Pager.cshtml"
  if (page.TotalCount > 0)
 {
-            
-            #line default
-            #line hidden
-WriteLiteral("<form");
 
-WriteAttribute("action", Tuple.Create(" action=\"", 341), Tuple.Create("\"", 390)
-            
-            #line 11 "..\..\Views\Shared\_List_Pager.cshtml"
-, Tuple.Create(Tuple.Create("", 350), Tuple.Create<System.Object, System.Int32>(act
             
             #line default
             #line hidden
-, 350), false)
-, Tuple.Create(Tuple.Create("", 354), Tuple.Create("?", 354), true)
+WriteLiteral("    ");
+
+WriteLiteral("\r\n        <form");
+
+WriteAttribute("action", Tuple.Create(" action=\"", 427), Tuple.Create("\"", 476)
             
-            #line 11 "..\..\Views\Shared\_List_Pager.cshtml"
-, Tuple.Create(Tuple.Create("", 355), Tuple.Create<System.Object, System.Int32>(page.GetBaseUrl(true, true, false)
+            #line 15 "..\..\Views\Shared\_List_Pager.cshtml"
+, Tuple.Create(Tuple.Create("", 436), Tuple.Create<System.Object, System.Int32>(act
             
             #line default
             #line hidden
-, 355), false)
+, 436), false)
+, Tuple.Create(Tuple.Create("", 440), Tuple.Create("?", 440), true)
+            
+            #line 15 "..\..\Views\Shared\_List_Pager.cshtml"
+, Tuple.Create(Tuple.Create("", 441), Tuple.Create<System.Object, System.Int32>(page.GetBaseUrl(true, true, false)
+            
+            #line default
+            #line hidden
+, 441), false)
 );
 
 WriteLiteral(" method=\"post\"");
 
 WriteLiteral(" role=\"form\"");
 
-WriteLiteral(">\r\n    共<span>");
+WriteLiteral(">\r\n            <div");
+
+WriteLiteral(" class=\"row\"");
+
+WriteLiteral(">\r\n                <div");
+
+WriteLiteral(" class=\"col-sm-5\"");
+
+WriteLiteral(" style=\"padding-top:5px;\"");
+
+WriteLiteral(">\r\n                    共<span>");
 
             
-            #line 12 "..\..\Views\Shared\_List_Pager.cshtml"
-      Write(page.TotalCount.ToString("n0"));
+            #line 18 "..\..\Views\Shared\_List_Pager.cshtml"
+                      Write(page.TotalCount.ToString("n0"));
 
             
             #line default
             #line hidden
-WriteLiteral("</span>条&nbsp;\r\n    每页<span>");
+WriteLiteral("</span>条&nbsp;\r\n                    每页<span>");
 
             
-            #line 13 "..\..\Views\Shared\_List_Pager.cshtml"
-       Write(page.PageSize);
+            #line 19 "..\..\Views\Shared\_List_Pager.cshtml"
+                       Write(page.PageSize);
 
             
             #line default
             #line hidden
-WriteLiteral("</span>条&nbsp;\r\n    当前第<span>");
+WriteLiteral("</span>条&nbsp;\r\n                    当前第<span>");
 
             
-            #line 14 "..\..\Views\Shared\_List_Pager.cshtml"
-        Write(page.PageIndex.ToString("n0"));
+            #line 20 "..\..\Views\Shared\_List_Pager.cshtml"
+                        Write(page.PageIndex.ToString("n0"));
 
             
             #line default
@@ -123,134 +138,161 @@ WriteLiteral("</span>条&nbsp;\r\n    当前第<span>");
 WriteLiteral("</span>页/共<span>");
 
             
-            #line 14 "..\..\Views\Shared\_List_Pager.cshtml"
-                                                      Write(page.PageCount.ToString("n0"));
+            #line 20 "..\..\Views\Shared\_List_Pager.cshtml"
+                                                                      Write(page.PageCount.ToString("n0"));
 
             
             #line default
             #line hidden
-WriteLiteral("</span>页&nbsp;\r\n");
+WriteLiteral("</span>页&nbsp;\r\n                </div>\r\n                <div");
 
-WriteLiteral("    ");
+WriteLiteral(" class=\"pull-right form-group\"");
 
-            
-            #line 15 "..\..\Views\Shared\_List_Pager.cshtml"
-Write(Html.Raw(page.GetPage("首页")));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("&nbsp;\r\n");
-
-WriteLiteral("    ");
-
-            
-            #line 16 "..\..\Views\Shared\_List_Pager.cshtml"
-Write(Html.Raw(page.GetPage("上一页")));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("&nbsp;\r\n");
-
-WriteLiteral("    ");
-
-            
-            #line 17 "..\..\Views\Shared\_List_Pager.cshtml"
-Write(Html.Raw(page.GetPage("下一页")));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("&nbsp;\r\n");
-
-WriteLiteral("    ");
-
-            
-            #line 18 "..\..\Views\Shared\_List_Pager.cshtml"
-Write(Html.Raw(page.GetPage("尾页")));
-
-            
-            #line default
-            #line hidden
-WriteLiteral(" &nbsp;\r\n    转到第<input");
-
-WriteLiteral(" name=\"PageIndex\"");
-
-WriteLiteral(" type=\"text\"");
-
-WriteAttribute("value", Tuple.Create(" value=\"", 834), Tuple.Create("\"", 857)
-            
-            #line 19 "..\..\Views\Shared\_List_Pager.cshtml"
-, Tuple.Create(Tuple.Create("", 842), Tuple.Create<System.Object, System.Int32>(page.PageIndex
-            
-            #line default
-            #line hidden
-, 842), false)
-);
-
-WriteLiteral(" class=\"input-sm\"");
-
-WriteLiteral(" style=\"width:40px;text-align:right;\"");
-
-WriteLiteral(" />页\r\n    <input");
-
-WriteLiteral(" type=\"submit\"");
-
-WriteLiteral(" value=\"GO\"");
-
-WriteLiteral(" class=\"btn btn-deafult btn-sm\"");
-
-WriteLiteral(" />\r\n    页大小\r\n    <select");
+WriteLiteral(">\r\n                    <select");
 
 WriteLiteral(" id=\"PageSize\"");
 
 WriteLiteral(" name=\"PageSize\"");
 
+WriteLiteral(" class=\"input-sm\"");
+
 WriteLiteral(" onchange=\"$(this).parents(\'form\').submit();\"");
 
-WriteLiteral(">\r\n        <option");
+WriteLiteral(" style=\"width:80px;float:left\"");
+
+WriteLiteral(">\r\n                        <option");
 
 WriteLiteral(" value=\"5\"");
 
-WriteLiteral(">5</option>\r\n        <option");
+WriteLiteral(">5</option>\r\n                        <option");
 
 WriteLiteral(" value=\"10\"");
 
-WriteLiteral(">10</option>\r\n        <option");
+WriteLiteral(">10</option>\r\n                        <option");
 
 WriteLiteral(" value=\"20\"");
 
-WriteLiteral(">20</option>\r\n        <option");
+WriteLiteral(">20</option>\r\n                        <option");
 
 WriteLiteral(" value=\"30\"");
 
-WriteLiteral(">30</option>\r\n        <option");
+WriteLiteral(">30</option>\r\n                        <option");
 
 WriteLiteral(" value=\"50\"");
 
-WriteLiteral(">50</option>\r\n        <option");
+WriteLiteral(">50</option>\r\n                        <option");
 
 WriteLiteral(" value=\"100\"");
 
-WriteLiteral(">100</option>\r\n    </select>\r\n    <script");
+WriteLiteral(">100</option>\r\n                    </select>\r\n                </div>\r\n           " +
+"     <div");
+
+WriteLiteral(" class=\"pull-right form-group\"");
+
+WriteLiteral(">\r\n                    页<input");
+
+WriteLiteral(" type=\"submit\"");
+
+WriteLiteral(" value=\"GO\"");
+
+WriteLiteral(" class=\"btn btn-deafult btn-white btn-sm\"");
+
+WriteLiteral(" />每页\r\n\r\n                </div>\r\n                <div");
+
+WriteLiteral(" class=\"pull-right form-group\"");
+
+WriteLiteral(">\r\n                    <input");
+
+WriteLiteral(" name=\"PageIndex\"");
+
+WriteLiteral(" type=\"search\"");
+
+WriteAttribute("value", Tuple.Create(" value=\"", 1764), Tuple.Create("\"", 1787)
+            
+            #line 37 "..\..\Views\Shared\_List_Pager.cshtml"
+, Tuple.Create(Tuple.Create("", 1772), Tuple.Create<System.Object, System.Int32>(page.PageIndex
+            
+            #line default
+            #line hidden
+, 1772), false)
+);
+
+WriteLiteral(" class=\"input-sm form-control\"");
+
+WriteLiteral(" style=\"width:40px;\"");
+
+WriteLiteral(" />\r\n                </div>\r\n                <div");
+
+WriteLiteral(" class=\"pull-right form-group\"");
+
+WriteLiteral(" style=\"padding-top:5px;\"");
+
+WriteLiteral(">\r\n");
+
+WriteLiteral("                    ");
+
+            
+            #line 40 "..\..\Views\Shared\_List_Pager.cshtml"
+               Write(Html.Raw(page.GetPage("首页")));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("&nbsp;\r\n");
+
+WriteLiteral("                    ");
+
+            
+            #line 41 "..\..\Views\Shared\_List_Pager.cshtml"
+               Write(Html.Raw(page.GetPage("上一页")));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("&nbsp;\r\n");
+
+WriteLiteral("                    ");
+
+            
+            #line 42 "..\..\Views\Shared\_List_Pager.cshtml"
+               Write(Html.Raw(page.GetPage("下一页")));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("&nbsp;\r\n");
+
+WriteLiteral("                    ");
+
+            
+            #line 43 "..\..\Views\Shared\_List_Pager.cshtml"
+               Write(Html.Raw(page.GetPage("尾页")));
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" &nbsp;\r\n                    转到第\r\n                </div>\r\n\r\n                <scri" +
+"pt");
 
 WriteLiteral(" type=\"text/javascript\"");
 
 WriteLiteral(">\r\n        $(function () {\r\n            $(\'#PageSize\').val(");
 
             
-            #line 32 "..\..\Views\Shared\_List_Pager.cshtml"
+            #line 49 "..\..\Views\Shared\_List_Pager.cshtml"
                           Write(page.PageSize);
 
             
             #line default
             #line hidden
-WriteLiteral(");\r\n        });\r\n    </script>\r\n</form>");
+WriteLiteral(");\r\n        });\r\n                </script>\r\n            </div>\r\n        </form>\r\n" +
+"    ");
+
+WriteLiteral("\r\n");
 
             
-            #line 35 "..\..\Views\Shared\_List_Pager.cshtml"
-              }
+            #line 55 "..\..\Views\Shared\_List_Pager.cshtml"
+}
             
             #line default
             #line hidden

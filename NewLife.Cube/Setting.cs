@@ -30,7 +30,7 @@ namespace NewLife.Cube
 
         /// <summary>布局页。</summary>
         [Description("布局页。")]
-        public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
+        public String Layout { get; set; } = "~/Views/Shared/_Inspinia_Layout.cshtml";
 
         /// <summary>默认角色。注册用户得到的角色，0使用认证中心角色，-1强制使用</summary>
         [Description("默认角色。注册用户得到的角色，0使用认证中心角色，-1强制使用")]

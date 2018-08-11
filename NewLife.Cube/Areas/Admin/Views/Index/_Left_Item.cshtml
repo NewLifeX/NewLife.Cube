@@ -12,24 +12,22 @@
 <li>
     @if (childs.Any())
     {
-        <a href="#" class="dropdown-toggle">
-            <i class="menu-icon fa fa-caret-right"></i>
+        <a href="#">
             @item.DisplayName
+            <span class="fa arrow"></span>
         </a>
-    }
-    else
-    {
-        <a href="@url" target="main">
-            <i class="menu-icon fa fa-caret-right"></i>
-            @item.DisplayName
-        </a>
-
-        <b class="arrow"></b>
-        <ul class="submenu">
+        <ul class="nav nav-third-level">
             @foreach (var menu in childs)
             {
                 @Html.Partial("_Left_Item", menu);
             }
         </ul>
+    }
+    else
+    {
+        <a href="@url" target="main">
+            @item.DisplayName
+        </a>
+
     }
 </li>

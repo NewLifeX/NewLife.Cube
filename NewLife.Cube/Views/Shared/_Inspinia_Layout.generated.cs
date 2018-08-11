@@ -253,7 +253,7 @@ WriteAttribute("href", Tuple.Create(" href=\"", 1726), Tuple.Create("\"", 1753)
 , 1733), false)
 );
 
-WriteLiteral(">\r\n    <!-- JQuery作为一等公民，页面内部随时可能使用 -->\r\n\r\n    <!-- Mainly scripts -->\r\n    <scri" +
+WriteLiteral(">\r\n\r\n    <!-- Mainly scripts -->\r\n    <!-- JQuery作为一等公民，页面内部随时可能使用 -->\r\n    <scri" +
 "pt");
 
 WriteAttribute("src", Tuple.Create(" src=\"", 1837), Tuple.Create("\"", 1877)

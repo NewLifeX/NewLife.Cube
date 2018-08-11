@@ -185,8 +185,8 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Views\Index\Session.generated.cs">
       <Link>Areas\Admin\Views\Index\Session.generated.cs</Link>
     </Compile>
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Views\Index\_Left.generated.cs">
-      <Link>Areas\Admin\Views\Index\_Left.generated.cs</Link>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Views\Index\_Left1.generated.cs">
+      <Link>Areas\Admin\Views\Index\_Left1.generated.cs</Link>
     </Compile>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Views\Index\_Left_Item.generated.cs">
       <Link>Areas\Admin\Views\Index\_Left_Item.generated.cs</Link>

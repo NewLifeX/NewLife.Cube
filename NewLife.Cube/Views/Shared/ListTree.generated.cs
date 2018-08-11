@@ -65,7 +65,7 @@ namespace ASP
             #line hidden
 WriteLiteral("\r\n\r\n<div");
 
-WriteLiteral(" class=\"clearfix\"");
+WriteLiteral(" class=\"clearfix p-xs\"");
 
 WriteLiteral(">\r\n");
 
@@ -108,7 +108,46 @@ Write(Html.Partial("_List_Pager"));
             
             #line default
             #line hidden
-WriteLiteral("\r\n</div>");
+WriteLiteral("\r\n</div>\r\n\r\n");
+
+DefineSection("css", () => {
+
+WriteLiteral("\r\n\r\n");
+
+});
+
+WriteLiteral("\r\n");
+
+DefineSection("scripts", () => {
+
+WriteLiteral("\r\n    <script");
+
+WriteLiteral(" type=\"text/javascript\"");
+
+WriteLiteral(@">
+
+        function DeleteList(id) {
+            swal({
+                title: ""确定删除?"",
+                //type: ""warning"",
+                showCancelButton: true,
+                confirmButtonColor: ""#DD6B55"",
+                confirmButtonText: ""确定"",
+                cancelButtonText: ""取消"",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        swal({ title: ""删除成功!"", type: ""success"", timer: 1500});
+                        setTimeout(function () { location = $(""#delete_"" + id).val(); }, 1000);
+                    }
+                });
+        }
+    </script>
+");
+
+});
 
         }
     }
