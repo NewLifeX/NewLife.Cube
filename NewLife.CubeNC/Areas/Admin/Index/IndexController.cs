@@ -1,4 +1,16 @@
-﻿using System;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.ComponentModel;
+//using System.Reflection;
+//using Microsoft.AspNetCore.Mvc;
+//using NewLife.Common;
+//using NewLife.CubeNC.Com;
+//using NewLife.Web;
+//using XCode;
+//using XCode.Membership;
+//using XCode.Statistics;
+
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +28,8 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.CubeNC.Com;
 using NewLife.CubeNC.Extensions;
 using ManagerProviderHelper = NewLife.CubeNC.Membership.ManagerProviderHelper;
+using NewLife.Model;
+using NewLife.CubeNC.ViewModels;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -47,8 +61,10 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult Index()
         {
-            var user = ManagerProviderHelper.TryLogin(ManageProvider,HttpContext.RequestServices);
-            if (user == null) return RedirectToAction("Login", "User", new { r = Request.GetEncodedPathAndQuery()
+            var user = ManagerProviderHelper.TryLogin(ManageProvider, HttpContext.RequestServices);
+            if (user == null) return RedirectToAction("Login", "User", new
+            {
+                r = Request.GetEncodedPathAndQuery()
                 //.Url.PathAndQuery
             });
 
@@ -60,6 +76,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (startPage.IsNullOrEmpty()) startPage = Setting.Current.StartPage;
 
             ViewBag.Main = startPage;
+            ViewBag.Menus = GetMenu();
 
             return View();
         }
@@ -151,5 +168,51 @@ namespace NewLife.Cube.Admin.Controllers
 
             return base.ScanActionMenu(menu);
         }
+
+        /// <summary>
+        /// 获取菜单树
+        /// </summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        public List<MenuTree> GetMenu()
+        {
+            var user = ManageProvider.User;
+
+            var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
+
+            var menus = fact.Root.Childs;
+            if (user?.Role != null)
+            {
+                menus = fact.GetMySubMenus(fact.Root.ID, user);
+            }
+
+            // 如果顶级只有一层，并且至少有三级目录，则提升一级
+            if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
+
+            menus = menus.Where(m => m.Visible).ToList();
+
+            var menuTree = MenuTree.GetMenuTree(pMenuTree =>
+            {
+                return fact.GetMySubMenus(pMenuTree.ID, user).Where(m => m.Visible).ToList();
+            }, list =>
+            {
+
+                var menuList = (from menu in list
+                                    // where m.Visible
+                                select new MenuTree
+                                {
+                                    ID = menu.ID,
+                                    DisplayName = menu.DisplayName,
+                                    Url = Url.Content(menu.Url),
+                                    Icon = menu.Icon,
+                                    Class = ""
+                                }).ToList();
+                return menuList.Count > 0 ? menuList : null;
+            }, menus.ToList());
+
+            var childs = menuTree[0].Children;
+            return menuTree;
+        }
+
     }
 }
