@@ -208,7 +208,7 @@ namespace NewLife.Cube
         public virtual ActionResult Detail(String id)
         {
             var entity = Find(id);
-            if (entity == null || entity.IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
+            if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Select, false);
@@ -327,7 +327,7 @@ namespace NewLife.Cube
         public virtual ActionResult Edit(String id)
         {
             var entity = Find(id);
-            if (entity.IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
+            if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Update, false);
