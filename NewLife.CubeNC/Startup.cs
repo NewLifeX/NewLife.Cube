@@ -162,6 +162,9 @@ namespace NewLife.Cube
                 //app.UseHsts();
             }
 
+            // 配置静态Http上下文访问器
+            app.UseStaticHttpContext();
+
             var set = NewLife.Cube.Setting.Current;
 
             // 添加自定义中间件
@@ -198,8 +201,6 @@ namespace NewLife.Cube
                 );
             });
 
-            // 配置静态Http上下文访问器
-            app.UseStaticHttpContext();
             // 使用管理提供者
             app.UseManagerProvider();
 

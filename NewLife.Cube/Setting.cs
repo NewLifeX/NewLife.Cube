@@ -103,7 +103,7 @@ namespace NewLife.Cube
         protected override void OnLoaded()
         {
 #if __CORE__
-            if (StartPage.IsNullOrEmpty()) StartPage = NewLife.Web.HttpContext.Current.Request.PathBase.ToString().EnsureEnd("/") + "Admin/Index/Main";
+            if (StartPage.IsNullOrEmpty()) StartPage = NewLife.Web.HttpContext.Current?.Request.PathBase.ToString().EnsureEnd("/") + "Admin/Index/Main";
 #else
             if (StartPage.IsNullOrEmpty()) StartPage = System.Web.HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/Index/Main";
 #endif

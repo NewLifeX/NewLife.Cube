@@ -10,9 +10,11 @@ namespace NewLife.Web
         private static IHttpContextAccessor _accessor;
 
         /// <summary>当前Http上下文</summary>
-        public static Microsoft.AspNetCore.Http.HttpContext Current => _accessor.HttpContext;
+        public static Microsoft.AspNetCore.Http.HttpContext Current => _accessor?.HttpContext;
 
-        internal static void Configure(IHttpContextAccessor accessor) => _accessor = accessor;
+        /// <summary>设置Http上下文访问器</summary>
+        /// <param name="accessor"></param>
+        public static void Configure(IHttpContextAccessor accessor) => _accessor = accessor;
     }
 
     /// <summary>Http上下文扩展</summary>
@@ -35,6 +37,7 @@ namespace NewLife.Web
             app.ApplicationServices.GetService<IHttpContextAccessor>();
             var httpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
             HttpContext.Configure(httpContextAccessor);
+
             return app;
         }
     }
