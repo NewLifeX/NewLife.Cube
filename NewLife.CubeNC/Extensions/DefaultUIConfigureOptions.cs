@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -44,11 +46,24 @@ namespace NewLife.Cube.Extensions
         }
     }
 
-    //public static class DefaultUIServiceCollectionExtensions
-    //{
-    //    public static void AddCubeDefaultUI(this IServiceCollection services)
-    //    {
-    //        services.ConfigureOptions<DefaultUIConfigureOptions>();
-    //    }
-    //}
+    /// <summary>Ui扩展</summary>
+    public static class DefaultUIServiceCollectionExtensions
+    {
+        /// <summary>添加魔方UI</summary>
+        /// <param name="services"></param>
+        public static void AddCubeDefaultUI(this IServiceCollection services, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+        {
+            //services.ConfigureOptions<DefaultUIConfigureOptions>();
+            var root = env.WebRootPath;
+            if (!Directory.Exists(root.CombinePath("Content")))
+            {
+                root = "wwwroot".GetFullPath();
+                if (Directory.Exists(root))
+                {
+                    env.WebRootPath = root;
+                    env.WebRootFileProvider = new PhysicalFileProvider(root);
+                }
+            }
+        }
+    }
 }

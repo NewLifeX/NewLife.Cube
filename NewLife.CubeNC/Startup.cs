@@ -67,6 +67,8 @@ namespace NewLife.Cube
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
             //services.AddSingleton<IView, PrecompiledMvcView>();
 
+            services.AddCubeDefaultUI(HostingEnvironment);
+
             services.AddMvc(opt =>
             {
                 // 模型绑定
@@ -101,7 +103,7 @@ namespace NewLife.Cube
             //services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
 
             // 注册Cookie认证服务
-            //services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             // 添加魔方模块
             // 添加管理提供者
@@ -110,7 +112,7 @@ namespace NewLife.Cube
             //// 添加Http上下文访问器
             //services.AddHttpContextAccessor();
 
-            //services.ConfigureOptions<DefaultUIConfigureOptions>();
+            //services.AddCubeDefaultUI(HostingEnvironment);
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
@@ -120,12 +122,6 @@ namespace NewLife.Cube
             var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
             if (manager == null) manager = new ApplicationPartManager();
 
-            //var list = new List<Assembly>
-            //{
-            //    GetType().Assembly,
-            //    typeof(Startup).Assembly,
-            //    Assembly.GetEntryAssembly()
-            //};
             var list = FindAllArea();
 
             foreach (var asm in list)
@@ -143,14 +139,22 @@ namespace NewLife.Cube
         static List<Assembly> FindAllArea()
         {
             var list = new List<Assembly>();
-            var Areas = typeof(RazorPage).GetAllSubclasses(false).ToArray();
-            foreach (var item in Areas)
+            var cs = typeof(ControllerBaseX).GetAllSubclasses(true).ToArray();
+            foreach (var item in cs)
             {
                 var asm = item.Assembly;
                 if (!list.Contains(asm))
                 {
                     list.Add(asm);
-                    //yield return asm;
+                }
+            }
+            cs = typeof(RazorPage).GetAllSubclasses(true).ToArray();
+            foreach (var item in cs)
+            {
+                var asm = item.Assembly;
+                if (!list.Contains(asm))
+                {
+                    list.Add(asm);
                 }
             }
 
