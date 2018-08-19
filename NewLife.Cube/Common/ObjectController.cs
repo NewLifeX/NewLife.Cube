@@ -3,9 +3,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Web.Mvc;
 using NewLife.Reflection;
 using XCode.Membership;
+#if __CORE__
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.Extensions;
+#else
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube
 {
@@ -20,7 +26,11 @@ namespace NewLife.Cube
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
+#if __CORE__
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
+#else
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
+#endif
         {
             base.OnActionExecuting(filterContext);
 
@@ -41,7 +51,11 @@ namespace NewLife.Cube
 
         /// <summary>执行后</summary>
         /// <param name="filterContext"></param>
+#if __CORE__
+        public override void OnActionExecuted(ActionExecutedContext filterContext)
+#else
         protected override void OnActionExecuted(ActionExecutedContext filterContext)
+#endif
         {
             base.OnActionExecuted(filterContext);
 
@@ -52,10 +66,7 @@ namespace NewLife.Cube
         /// <summary>显示对象</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
-        public ActionResult Index()
-        {
-            return View("ObjectForm", Value);
-        }
+        public ActionResult Index() => View("ObjectForm", Value);
 
         /// <summary>保存对象</summary>
         /// <param name="obj"></param>
@@ -68,7 +79,11 @@ namespace NewLife.Cube
             WriteLog(obj);
 
             // 反射处理内部复杂成员
+#if __CORE__
+            var keys = Request.Form.Keys;
+#else
             var keys = Request.Form.AllKeys;
+#endif
             foreach (var item in obj.GetType().GetProperties(true))
             {
                 if (Type.GetTypeCode(item.PropertyType) == TypeCode.Object)
@@ -97,7 +112,11 @@ namespace NewLife.Cube
 
         Boolean GetBool(String name)
         {
+#if __CORE__
+            var v = Request.GetRequestValue(name);
+#else
             var v = Request[name];
+#endif
             if (v.IsNullOrEmpty()) return false;
 
             v = v.Split(",")[0];

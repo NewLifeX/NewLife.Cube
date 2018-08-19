@@ -18,7 +18,7 @@ using XCode;
 using XCode.Membership;
 using ManagerProviderHelper = NewLife.Cube.Membership.ManagerProviderHelper;
 
-namespace NewLife.Cube.Com
+namespace NewLife.Cube
 {
     /// <summary>实体授权特性</summary>
     public class EntityAuthorizeAttribute: Attribute,IAuthorizationFilter

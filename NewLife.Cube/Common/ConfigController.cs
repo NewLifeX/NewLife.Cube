@@ -1,7 +1,12 @@
-﻿using System.Web.Mvc;
-using System.IO;
+﻿using System.IO;
 using System;
 using NewLife.Xml;
+#if __CORE__
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+#else
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube
 {
@@ -29,7 +34,11 @@ namespace NewLife.Cube
 
         /// <summary>已重载</summary>
         /// <param name="filterContext"></param>
+#if __CORE__
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
+#else
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
+#endif
         {
             var fi = XmlConfig<TConfig>._.ConfigFile;
             if (fi.IsNullOrEmpty() || !fi.AsFile().Exists) throw new Exception("无法找到配置文件 {0}".F(fi));
