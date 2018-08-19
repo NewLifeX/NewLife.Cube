@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Remove="Com\ConfigController.cs" />
     <Compile Remove="Com\ControllerBaseX.cs" />
+    <Compile Remove="Com\EntityTreeController.cs" />
     <Compile Remove="Com\ObjectController.cs" />
     <Compile Remove="Controllers\SsoController.cs" />
     <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
@@ -85,6 +86,7 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
+    <Compile Include="..\NewLife.Cube\Common\EntityTreeController.cs" Link="Common\EntityTreeController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ObjectController.cs" Link="Common\ObjectController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\XCoder.cs">
       <Link>Entity\XCoder.cs</Link>

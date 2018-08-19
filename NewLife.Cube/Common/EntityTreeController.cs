@@ -2,11 +2,16 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Web.Mvc;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
+#if __CORE__
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+#else
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube
 {
