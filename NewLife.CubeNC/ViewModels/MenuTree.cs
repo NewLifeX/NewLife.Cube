@@ -18,7 +18,7 @@ namespace NewLife.CubeNC.ViewModels
         /// 名称
         /// </summary>
         /// <value></value>
-        public string DisplayName { get; set; }
+        public string Name { get; set; }
         /// <summary>
         /// 链接
         /// </summary>

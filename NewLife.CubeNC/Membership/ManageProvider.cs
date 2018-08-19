@@ -77,7 +77,7 @@ namespace NewLife.CubeNC.Membership
             {
                 // 修改Session
                 ss.Remove(key);
-
+                // 下线功能暂时失效，通过接口取值报错
                 if (ss.Get<IAuthUser>(key) is IAuthUser au)
                 {
                     au.Online = false;

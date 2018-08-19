@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>fasle</GeneratePackageOnBuild>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -88,7 +89,7 @@
       <LastGenOutput>XCoder.cs</LastGenOutput>
     </Content>
     <Content Include="readme.txt" />
-    <EmbeddedResource Include="wwwroot\favicon.ico" />
+    <EmbeddedResource Include="wwwroot\**" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">

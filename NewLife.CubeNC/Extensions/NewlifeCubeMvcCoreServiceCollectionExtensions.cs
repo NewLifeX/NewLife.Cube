@@ -16,8 +16,9 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using NewLife.CubeNC.Com;
 using NewLife.CubeNC.Membership;
 using NewLife.Web;
+using NewLife.CubeNC.WebMiddleware;
 
-namespace NewLife.CubeNC.WebMiddleware
+namespace NewLife.CubeNC.Extensions
 {
     public static class NewlifeCubeMvcCoreExtensions
     {
@@ -53,7 +54,7 @@ namespace NewLife.CubeNC.WebMiddleware
         /// 添加魔方运行的默认配置
         /// </summary>
         /// <param name="services"></param>
-        public static void AddCubeDefaultServices(this IServiceCollection services)
+        public static void AddCubeDefaultServices(this IServiceCollection services, IHostingEnvironment env)
         {
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -108,6 +109,17 @@ namespace NewLife.CubeNC.WebMiddleware
 
 
             services.AddCubeModule();
+
+            //if (env.IsDevelopment())
+            //{
+
+            //}
+            //else
+            //{
+            //    services.AddCubeDefaultUI();
+            //}
+
+            
         }
         #endregion
 

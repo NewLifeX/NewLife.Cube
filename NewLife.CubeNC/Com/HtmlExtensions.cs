@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -146,7 +147,7 @@ namespace NewLife.Cube
                 var label = "<label class=\"\">{0}</label>".F(entity[field.Name]);
                 if (field.OriField != null) field = field.OriField;
                 var mhs = Html.ForEditor(field.Name, entity[field.Name], field.Type);
-                return new HtmlString(mhs.ToString() + label);
+                return new HtmlString(mhs.GetString() + label);
             }
 
             return Html.ForDropDownList(map.Name, map.Provider.GetDataSource(), entity[map.Name]);
@@ -198,9 +199,9 @@ namespace NewLife.Cube
                 var pname = "{0}_{1}".F(name, pi.Name);
 
                 sb.AppendLine("<div class=\"form-group\">");
-                sb.AppendLine(Html.Label(pi.Name, pi.GetDisplayName(), new { @class = "control-label col-md-2" }).ToString());
+                sb.AppendLine(Html.Label(pi.Name, pi.GetDisplayName(), new { @class = "control-label col-md-2" }).GetString());
                 sb.AppendLine("<div class=\"input-group col-md-8\">");
-                sb.AppendLine(Html.ForEditor(pi.Name, value.GetValue(pi), pi.PropertyType).ToString());
+                sb.AppendLine(Html.ForEditor(pi.Name, value.GetValue(pi), pi.PropertyType).GetString());
 
                 var des = pi.GetDescription();
                 if (!des.IsNullOrEmpty())
@@ -272,7 +273,7 @@ namespace NewLife.Cube
                 txt = Html.TextBox(name, value, atts);
             }
             var icog = "<div class=\"input-group\">{0}</div>";
-            var html = !String.IsNullOrWhiteSpace(ico) ? String.Format(icog, ico.ToString() + txt.ToString()) : txt.ToString();
+            var html = !String.IsNullOrWhiteSpace(ico) ? String.Format(icog, ico + txt.GetString()) : txt.GetString();
             return Html.Raw(html);
         }
 
@@ -320,7 +321,7 @@ namespace NewLife.Cube
             var txt = Html.TextBox(name, obj, format, atts);
             //var txt = BuildInput(InputType.Text, name, obj, atts);
 
-            return Html.Raw(ico.ToString() + txt);
+            return Html.Raw(ico.GetString() + txt.GetString());
         }
 
         /// <summary>时间日期输出</summary>
@@ -372,7 +373,7 @@ namespace NewLife.Cube
             var ico = Html.Raw("<span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-yen\"></i></span>");
             var txt = Html.TextBox(name, value, format, atts);
 
-            return Html.Raw(ico.ToString() + txt);
+            return Html.Raw(ico.GetString() + txt.GetString());
         }
 
         /// <summary>输出浮点数</summary>
@@ -581,5 +582,15 @@ namespace NewLife.Cube
             return Html.ListBox(name, new MultiSelectList(list.ToDictionary(), "Key", "Value", vs as IEnumerable), atts);
         }
         #endregion
+
+        #region 辅助方法
+        public static string GetString(this IHtmlContent htmlContent)
+        {
+            var writer = new System.IO.StringWriter();
+            htmlContent.WriteTo(writer, HtmlEncoder.Default);
+            return writer.ToString();
+        }
+        #endregion
+
     }
 }

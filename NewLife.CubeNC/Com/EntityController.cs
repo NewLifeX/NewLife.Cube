@@ -182,7 +182,7 @@ namespace NewLife.Cube
             ViewBag.Page = p;
 
             // 缓存数据，用于后续导出
-            HttpContext.Session.Set(CacheKey, p.ToBytes());//该对象未标记为可序列化
+            HttpContext.Session.Set(CacheKey, p.ToBytes());
 
             return IndexView(p);
         }
@@ -820,7 +820,7 @@ namespace NewLife.Cube
             get
             {
                 if (Request.ContentType.EqualIgnoreCase("application/json")) return true;
-                if (Request.Headers["AcceptTypes"].Any(e => e == "application/json")) return true;
+                if (Request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
                 if (Request.GetRequestValue("output").EqualIgnoreCase("json")) return true;
                 if ((RouteData.Values["output"] + "").EqualIgnoreCase("json")) return true;
 
