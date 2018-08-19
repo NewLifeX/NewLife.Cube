@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Com\ControllerBaseX.cs" />
     <Compile Remove="Controllers\SsoController.cs" />
     <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
     <Compile Remove="Web\OAuthServer2.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs">
       <Link>Areas\Admin\Models\FileItem.cs</Link>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
     <Compile Include="..\NewLife.Cube\Entity\XCoder.cs">
       <Link>Entity\XCoder.cs</Link>
       <AutoGen>True</AutoGen>

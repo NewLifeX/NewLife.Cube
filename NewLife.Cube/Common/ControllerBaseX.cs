@@ -2,10 +2,16 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using System.Web.Mvc;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using XCode.Membership;
+#if __CORE__
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Com;
+#else
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube
 {
