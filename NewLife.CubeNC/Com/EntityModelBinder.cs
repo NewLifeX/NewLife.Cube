@@ -7,6 +7,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NewLife.CubeNC.Extensions;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -15,9 +18,13 @@ using HttpContext = NewLife.Web.HttpContext;
 
 namespace NewLife.CubeNC.Com
 {
-    public class EntityModelBinder : IModelBinder
+    public class EntityModelBinder : ComplexTypeModelBinder
     {
-        public Task BindModelAsync(ModelBindingContext bindingContext)
+        public EntityModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders, ILoggerFactory loggerFactory) : base(propertyBinders, loggerFactory)
+        {
+        }
+
+        public new async Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var modelType = bindingContext.ModelType;
             var controllerContext = bindingContext.ActionContext;
@@ -48,9 +55,7 @@ namespace NewLife.CubeNC.Com
                             var exp = new WhereExpression();
                             foreach (var item in pks)
                             {
-                                exp &= item.Equal(
-                                    (req.Form[item.Name].Count > 0 ? req.Form[item.Name] : req.Query[item.Name])
-                                    .ChangeType(item.Type));
+                                exp &= item.Equal(req.GetRequestValue(item.Name).ChangeType(item.Type));
                             }
 
                             entity = fact.Find(exp);
@@ -70,12 +75,14 @@ namespace NewLife.CubeNC.Com
                         bindingContext.Result = ModelBindingResult.Success(entity);
                     }
 
-                    bindingContext.Result = ModelBindingResult.Success(fact.Create());
+                    if (entity == null )
+                    {
+                        bindingContext.Result = ModelBindingResult.Success(fact.Create());
+                    }
                 }
 
+               await base.BindModelAsync(bindingContext);
             }
-
-            return Task.CompletedTask;
         }
 
         private static String GetCacheKey(Type type, params Object[] keys)
@@ -105,9 +112,8 @@ namespace NewLife.CubeNC.Com
         {
             var ctx = HttpContext.Current;
             var ckey = GetCacheKey(type, keys);
-            return ctx.Session.Get<IEntity>(ckey);
+            return ctx.Session.Get(ckey, type) as IEntity;
         }
-
     }
 
 
@@ -119,8 +125,23 @@ namespace NewLife.CubeNC.Com
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public IModelBinder GetBinder(ModelBinderProviderContext context) => 
-            context.Metadata.ModelType.As<IEntity>() ? new EntityModelBinder() : null;
+        public new IModelBinder GetBinder(ModelBinderProviderContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (!context.Metadata.ModelType.As<IEntity>()) return null;
+            var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
+            foreach (var property in context.Metadata.Properties)
+            {
+                propertyBinders.Add(property, context.CreateBinder(property));
+            }
+
+            var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
+            return new EntityModelBinder(propertyBinders, loggerFactory);
+        }
 
         static EntityModelBinderProvider()
         {

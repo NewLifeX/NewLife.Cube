@@ -173,10 +173,10 @@ namespace NewLife.Cube.Admin.Controllers
         /// 获取菜单树
         /// </summary>
         /// <returns></returns>
-        [EntityAuthorize(PermissionFlags.Detail)]
+        // [EntityAuthorize(PermissionFlags.Detail)]
         public List<MenuTree> GetMenu()
         {
-            var user = ManageProvider.User;
+            var user = ManageProvider.User ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
 
             var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
 
@@ -202,7 +202,7 @@ namespace NewLife.Cube.Admin.Controllers
                                 select new MenuTree
                                 {
                                     ID = menu.ID,
-                                    DisplayName = menu.DisplayName,
+                                    Name = menu.DisplayName,
                                     Url = Url.Content(menu.Url),
                                     Icon = menu.Icon,
                                     Class = ""

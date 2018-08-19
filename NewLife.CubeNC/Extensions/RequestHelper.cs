@@ -18,13 +18,10 @@ namespace NewLife.CubeNC.Extensions
         public static string GetRequestValue(this HttpRequest request, String key)
         {
             var value = new StringValues();
-            try
+
+            if (request.HasFormContentType)
             {
                 value = request.Form[key];
-            }
-            catch (Exception e)
-            {
-
             }
 
             if (value.Count>0)

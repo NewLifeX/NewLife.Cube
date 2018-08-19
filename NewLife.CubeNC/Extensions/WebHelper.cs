@@ -18,7 +18,11 @@ namespace NewLife.Web
                 if (ctx.Items["Params"] is IDictionary<String, String> dic) return dic;
 
                 var req = ctx.Request;
-                var nvss = new IEnumerable<KeyValuePair<string, StringValues>>[] { req.Query, req.Form };
+                var nvss = new[]
+                {
+                    req.Query,
+                    req.HasFormContentType ? (IEnumerable<KeyValuePair<String, StringValues>>) req.Form : new List<KeyValuePair<string, StringValues>>()
+                };
 
                 // 这里必须用可空字典，否则直接通过索引查不到数据时会抛出异常
                 dic = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);

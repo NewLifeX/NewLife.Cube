@@ -31,7 +31,8 @@ namespace NewLife.CubeNC.Com
             var ex = ctx.Exception?.GetTrue();
             if (ex != null)
             {
-                //此异常不属于mvc流程，需要使用中间件拦截处理
+                //以下异常处理不属于mvc流程，需要使用中间件拦截处理！！！
+
                 //// 避免反复出现缺少文件
                 //if (ex is HttpException hex && (UInt32)hex.ErrorCode == 0x80004005)
                 //{

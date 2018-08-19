@@ -16,6 +16,7 @@ using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
+using ManagerProviderHelper = NewLife.CubeNC.Membership.ManagerProviderHelper;
 
 namespace NewLife.CubeNC.Com
 {
@@ -106,7 +107,7 @@ namespace NewLife.CubeNC.Com
             var ctx = httpContext;
 
             // 判断当前登录用户
-            var user = prv.TryLogin();
+            var user = ManagerProviderHelper.TryLogin(prv, httpContext.RequestServices);
             if (user == null) return false;
 
             // 判断权限
