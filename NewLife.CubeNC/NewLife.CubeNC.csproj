@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\SsoController.cs" />
+    <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
     <Compile Remove="Web\OAuthServer2.cs" />
     <Compile Remove="Web\SsoProvider.cs" />
   </ItemGroup>

@@ -4,58 +4,31 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.Extensions.DependencyInjection;
-using NewLife.Cube;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using NewLife.Cube;
 using NewLife.CubeNC.Com;
 using NewLife.CubeNC.Membership;
-using NewLife.Web;
 using NewLife.CubeNC.WebMiddleware;
+using NewLife.Web;
 
 namespace NewLife.CubeNC.Extensions
 {
+    /// <summary>魔方扩展</summary>
     public static class NewlifeCubeMvcCoreExtensions
     {
         #region ConfigureServices
-        /// <summary>
-        /// 添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分
-        /// </summary>
+        /// <summary>添加魔方运行的默认配置</summary>
         /// <param name="services"></param>
-        public static void AddCustomApplicationParts(this IServiceCollection services, Action<List<String>> addEntryAssemblyName = null)
-        {
-            var manager = GetServiceFromCollection<ApplicationPartManager>(services) ?? new ApplicationPartManager();
-
-            //var entryAssemblyName = ;//"NewLife.Cube";
-            var entryAssemblyNameList = new List<String>(4) { typeof(Program).Assembly.FullName };
-
-            addEntryAssemblyName?.Invoke(entryAssemblyNameList);
-
-            foreach (var entryAssemblyName in entryAssemblyNameList)
-            {
-                manager.PopulateCustomParts(entryAssemblyName);
-            }
-        }
-
-        public static void AddCubeModule(this IServiceCollection services)
-        {
-            //添加管理提供者
-            services.AddManageProvider();
-            //添加Http上下文访问器
-            StaticHttpContextExtensions.AddHttpContextAccessor(services);
-        }
-
-        /// <summary>
-        /// 添加魔方运行的默认配置
-        /// </summary>
-        /// <param name="services"></param>
+        /// <param name="env"></param>
         public static void AddCubeDefaultServices(this IServiceCollection services, IHostingEnvironment env)
         {
+            // 配置Cookie策略
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -63,8 +36,10 @@ namespace NewLife.CubeNC.Extensions
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            // 添加Session会话支持
             services.AddSession();
 
+            // 添加标识用户支持
             services.AddDefaultIdentity<IdentityUser>();
 
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
@@ -72,9 +47,9 @@ namespace NewLife.CubeNC.Extensions
 
             services.AddMvc(opt =>
             {
-                //模型绑定
+                // 模型绑定
                 opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
-                //过滤器
+                // 过滤器
                 opt.Filters.Add<MvcHandleErrorAttribute>();
 
             })
@@ -104,10 +79,10 @@ namespace NewLife.CubeNC.Extensions
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
             //services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
 
-            //注册Cookie认证服务
+            // 注册Cookie认证服务
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-
-
+            
+            // 添加魔方模块
             services.AddCubeModule();
 
             //if (env.IsDevelopment())
@@ -118,56 +93,38 @@ namespace NewLife.CubeNC.Extensions
             //{
             //    services.AddCubeDefaultUI();
             //}
+        }
 
-            
+        /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
+        /// <param name="services"></param>
+        /// <param name="addEntryAssemblyName"></param>
+        public static void AddCustomApplicationParts(this IServiceCollection services, Action<List<String>> addEntryAssemblyName = null)
+        {
+            var manager = GetServiceFromCollection<ApplicationPartManager>(services) ?? new ApplicationPartManager();
+
+            //var entryAssemblyName = ;//"NewLife.Cube";
+            var list = new List<String>(4) { typeof(Program).Assembly.FullName };
+
+            addEntryAssemblyName?.Invoke(list);
+
+            foreach (var entryAssemblyName in list)
+            {
+                manager.PopulateCustomParts(entryAssemblyName);
+            }
+        }
+
+        /// <summary>添加模块</summary>
+        /// <param name="services"></param>
+        public static void AddCubeModule(this IServiceCollection services)
+        {
+            //添加管理提供者
+            services.AddManageProvider();
+            //添加Http上下文访问器
+            StaticHttpContextExtensions.AddHttpContextAccessor(services);
         }
         #endregion
 
         #region Configure
-        /// <summary>
-        /// 添加魔方中间件，在<see cref="MvcApplicationBuilderExtensions.UseMvc(IApplicationBuilder)"/>调用前调用
-        /// </summary>
-        /// <param name="app"></param>
-        public static void UseCubeMiddlewares(this IApplicationBuilder app)
-        {
-            //注册错误处理模块中间件
-            app.UseErrorModule();
-            // 注册请求执行时间中间件
-            app.UseDbRunTimeModule();
-        }
-
-        /// <summary>
-        /// 配置魔方的MVC选项，在<see cref="MvcApplicationBuilderExtensions.UseMvc(IApplicationBuilder)"/>调用后调用
-        /// </summary>
-        /// <param name="app"></param>
-        public static void UseCubeMvc(this IApplicationBuilder app)
-        {
-            app.UseRouter(routes =>
-            {
-                if (routes.DefaultHandler == null)
-                {
-                    routes.DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>();
-                }
-                //区域路由注册
-                routes.MapRoute(
-                    name: "CubeAreas",
-                    template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"
-                );
-            });
-        }
-
-        /// <summary>
-        /// 添加其他魔方模块功能
-        /// </summary>
-        public static void UseCubeModule(this IApplicationBuilder app)
-        {
-            //配置静态Http上下文访问器
-            app.UseStaticHttpContext();
-
-            //使用管理提供者
-            app.UseManagerProvider();
-        }
-
         public static void UseCubeDefaultServices(this IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -212,6 +169,50 @@ namespace NewLife.CubeNC.Extensions
             //ManageProvider.Provider.GetService<IUser>();
             //ScanControllerExtensions.ScanController();
         }
+
+        /// <summary>
+        /// 添加魔方中间件，在<see cref="MvcApplicationBuilderExtensions.UseMvc(IApplicationBuilder)"/>调用前调用
+        /// </summary>
+        /// <param name="app"></param>
+        public static void UseCubeMiddlewares(this IApplicationBuilder app)
+        {
+            //注册错误处理模块中间件
+            app.UseErrorModule();
+            // 注册请求执行时间中间件
+            app.UseDbRunTimeModule();
+        }
+
+        /// <summary>
+        /// 配置魔方的MVC选项，在<see cref="MvcApplicationBuilderExtensions.UseMvc(IApplicationBuilder)"/>调用后调用
+        /// </summary>
+        /// <param name="app"></param>
+        public static void UseCubeMvc(this IApplicationBuilder app)
+        {
+            app.UseRouter(routes =>
+            {
+                if (routes.DefaultHandler == null)
+                {
+                    routes.DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>();
+                }
+                //区域路由注册
+                routes.MapRoute(
+                    name: "CubeAreas",
+                    template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"
+                );
+            });
+        }
+
+        /// <summary>
+        /// 添加其他魔方模块功能
+        /// </summary>
+        public static void UseCubeModule(this IApplicationBuilder app)
+        {
+            //配置静态Http上下文访问器
+            app.UseStaticHttpContext();
+
+            //使用管理提供者
+            app.UseManagerProvider();
+        }
         #endregion
 
         #region private methods
@@ -230,13 +231,13 @@ namespace NewLife.CubeNC.Extensions
 
             //foreach (var assembly in applicationAssemblies)
             //{
-                var assembly = entryAssembly;
-                var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
-                foreach (var part in partFactory.GetApplicationParts(assembly))
-                {
-                    if(!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
-                    ;
-                }
+            var assembly = entryAssembly;
+            var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+            foreach (var part in partFactory.GetApplicationParts(assembly))
+            {
+                if (!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
+                ;
+            }
             //}
         }
         #endregion
