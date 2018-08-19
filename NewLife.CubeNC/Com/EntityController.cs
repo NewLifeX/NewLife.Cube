@@ -211,7 +211,7 @@ namespace NewLife.Cube
         public virtual ActionResult Detail(String id)
         {
             var entity = Find(id);
-            if (entity.IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
+            if ((entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Select, false);
@@ -264,7 +264,7 @@ namespace NewLife.Cube
             Valid(entity, DataObjectMethodType.Insert, false);
 
             // 记下添加前的来源页，待会添加成功以后跳转
-            HttpContext.Session.Set("Cube_Add_Referrer",Request.Headers["Referer"].FirstOrDefault().GetBytes());
+            HttpContext.Session.Set("Cube_Add_Referrer", Request.Headers["Referer"].FirstOrDefault().GetBytes());
 
             return FormView(entity);
         }
@@ -330,7 +330,7 @@ namespace NewLife.Cube
         public virtual ActionResult Edit(String id)
         {
             var entity = Find(id);
-            if (entity.IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
+            if ((entity as IEntity).IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Update, false);
@@ -371,7 +371,7 @@ namespace NewLife.Cube
             {
                 err = ex.Message;
                 //ModelState.AddModelError("", ex.Message);
-                ModelState.AddModelError("",ex.Message);
+                ModelState.AddModelError("", ex.Message);
             }
 
             ViewBag.RowsAffected = rs;

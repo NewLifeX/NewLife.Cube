@@ -50,7 +50,7 @@ namespace NewLife.Cube
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
                     if (type.IsEnum)
-                        return Html.ForEnum(name, value, format);
+                        return Html.ForEnum(name, value ?? 0.ChangeType(type), format);
                     else
                         return Html.ForInt(name, Convert.ToInt64(value));
                 case TypeCode.String:
@@ -234,7 +234,7 @@ namespace NewLife.Cube
             MvcHtmlString txt = null;
             if (name.EqualIgnoreCase("Pass", "Password"))
             {
-                txt = Html.Password(name, (String)value, atts);
+                txt = Html.Password(name, value, atts);
             }
             else if (name.EqualIgnoreCase("Phone"))
             {

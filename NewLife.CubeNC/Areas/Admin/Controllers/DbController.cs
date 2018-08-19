@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Protocols;
 using NewLife.CubeNC.Com;
+using NewLife.Reflection;
 using NewLife.Web;
 using XCode.DataAccessLayer;
 using XCode.Membership;
@@ -134,7 +135,8 @@ namespace NewLife.Cube.Admin.Controllers
         public ActionResult Backup(String name)
         {
             var dal = DAL.Create(name);
-            var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, false);
+            //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, false);
+            var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
 
             WriteLog("备份", "备份数据库 {0} 到 {1}".F(name, bak));
 
@@ -148,7 +150,8 @@ namespace NewLife.Cube.Admin.Controllers
         public ActionResult BackupAndCompress(String name)
         {
             var dal = DAL.Create(name);
-            var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, true);
+            //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, true);
+            var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, true);
 
             WriteLog("备份", "备份数据库 {0} 并压缩到 {1}".F(name, bak));
 

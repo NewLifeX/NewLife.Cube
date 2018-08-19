@@ -2,7 +2,6 @@
 魔方 是一个基于 ASP.NET MVC 的 用户权限管理平台，可作为各种信息管理系统的基础框架。
 
 源码： https://github.com/NewLifeX/NewLife.Cube  
-
 演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](http://git.newlifex.com/Stone/CubeDemo)  
 
 ---
