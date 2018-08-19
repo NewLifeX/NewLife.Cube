@@ -16,6 +16,7 @@ using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Membership;
 using NewLife.Cube.WebMiddleware;
+using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
 
@@ -29,6 +30,11 @@ namespace NewLife.Cube
         /// <param name="env"></param>
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
+            XTrace.WriteLine("ApplicationName: {0}", env.ApplicationName);
+            XTrace.WriteLine("EnvironmentName: {0}", env.EnvironmentName);
+            XTrace.WriteLine("WebRootPath: {0}", env.WebRootPath);
+            XTrace.WriteLine("ContentRootPath: {0}", env.ContentRootPath);
+
             Configuration = configuration;
             HostingEnvironment = env;
         }
@@ -47,8 +53,8 @@ namespace NewLife.Cube
             // 配置Cookie策略
             services.Configure<CookiePolicyOptions>(options =>
             {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => false;//此项为true需要用户授权才能记录cookie
+                // 此项为true需要用户授权才能记录cookie
+                options.CheckConsentNeeded = context => false;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
@@ -104,7 +110,7 @@ namespace NewLife.Cube
             // 添加Http上下文访问器
             StaticHttpContextExtensions.AddHttpContextAccessor(services);
 
-            services.ConfigureOptions<DefaultUIConfigureOptions>();
+            //services.ConfigureOptions<DefaultUIConfigureOptions>();
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>

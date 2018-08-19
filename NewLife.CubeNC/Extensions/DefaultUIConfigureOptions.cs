@@ -37,8 +37,9 @@ namespace NewLife.Cube.Extensions
 
             options.FileProvider = options.FileProvider ?? Environment.ContentRootFileProvider;
 
-            //添加我们的文件提供者
-            var filesProvider = new ManifestEmbeddedFileProvider(GetType().Assembly, "wwwroot");// 第二个参数指定开始查找的文件夹，比如文件都放在wwwroot，就填“wwwroot”
+            // 添加我们的文件提供者
+            // 第二个参数指定开始查找的文件夹，比如文件都放在wwwroot，就填“wwwroot”
+            var filesProvider = new ManifestEmbeddedFileProvider(GetType().Assembly, "wwwroot");
             options.FileProvider = new CompositeFileProvider(options.FileProvider, filesProvider);
         }
     }

@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <GeneratePackageOnBuild>fasle</GeneratePackageOnBuild>
-    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方平台</AssemblyTitle>
@@ -123,7 +121,6 @@
       <LastGenOutput>XCoder.cs</LastGenOutput>
     </Content>
     <Content Include="readme.txt" />
-    <EmbeddedResource Include="wwwroot\**" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">

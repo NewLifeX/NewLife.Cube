@@ -676,7 +676,6 @@
     <None Include="Content\ace\css\ace-part2.min.css" />
     <None Include="Content\ace\css\ace-skins.min.css" />
     <None Include="Content\ace\css\ace.min.css" />
-    <None Include="Content\ace\css\images\meteorshower2.jpg" />
     <None Include="Content\ace\css\images\pattern.jpg" />
     <None Include="Content\ace\js\ace-elements.min.js" />
     <None Include="Content\ace\js\ace-extra.min.js" />

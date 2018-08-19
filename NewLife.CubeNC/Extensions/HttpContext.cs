@@ -34,9 +34,8 @@ namespace NewLife.Web
         /// <returns></returns>
         public static IApplicationBuilder UseStaticHttpContext(this IApplicationBuilder app)
         {
-            app.ApplicationServices.GetService<IHttpContextAccessor>();
-            var httpContextAccessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
-            HttpContext.Configure(httpContextAccessor);
+            var accessor = app.ApplicationServices.GetService<IHttpContextAccessor>();
+            HttpContext.Configure(accessor);
 
             return app;
         }
