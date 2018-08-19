@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewLife.Cube40", "NewLife.C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.CubeNC", "NewLife.CubeNC\NewLife.CubeNC.csproj", "{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebTest", "WebTest\WebTest.csproj", "{B84FDC66-1AD2-4BBD-BF42-6D0D306B9502}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebTest", "WebTest\WebTest.csproj", "{B84FDC66-1AD2-4BBD-BF42-6D0D306B9502}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
