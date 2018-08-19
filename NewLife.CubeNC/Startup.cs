@@ -76,18 +76,18 @@ namespace NewLife.Cube
 
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-            // 视图文件查找选项设置
-            .AddRazorOptions(opt =>
-            {
-                opt.ViewLocationFormats.Clear();
-                opt.AreaViewLocationFormats.Clear();
-                opt.ViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
-                opt.ViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
-                opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/{1}/{0}.cshtml");
-                opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/Shared/{0}.cshtml");
-                opt.AreaViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
-                opt.AreaViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
-            })
+            //// 视图文件查找选项设置
+            //.AddRazorOptions(opt =>
+            //{
+            //    opt.ViewLocationFormats.Clear();
+            //    opt.AreaViewLocationFormats.Clear();
+            //    opt.ViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
+            //    opt.ViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
+            //    opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/{1}/{0}.cshtml");
+            //    opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/Shared/{0}.cshtml");
+            //    opt.AreaViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
+            //    opt.AreaViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
+            //})
             .AddViewOptions(opt =>
             {
                 //opt.ViewEngines.Clear();
