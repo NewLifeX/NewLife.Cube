@@ -18,11 +18,16 @@ using HttpContext = NewLife.Web.HttpContext;
 
 namespace NewLife.Cube.Com
 {
-    public class EntityModelBinder : ComplexTypeModelBinder
+    public class EntityModelBinder : IModelBinder
     {
-        public EntityModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders, ILoggerFactory loggerFactory) : base(propertyBinders, loggerFactory)
+        public EntityModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders, ILoggerFactory loggerFactory)
         {
+            _propertyBinders = propertyBinders ?? throw new ArgumentNullException(nameof(propertyBinders));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
+
+        private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
+        private readonly ILoggerFactory _loggerFactory;
 
         public new async Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -41,7 +46,9 @@ namespace NewLife.Cube.Com
                     if (uk != null)
                     {
                         // 查询实体对象用于编辑
-                        if (rvs[uk.Name] != null) entity = GetEntity(fact.EntityType, rvs[uk.Name]) ?? fact.FindByKeyForEdit(rvs[uk.Name]);
+                        if (rvs[uk.Name] != null) entity = 
+                            //GetEntity(fact.EntityType, rvs[uk.Name]) ?? 
+                            fact.FindByKeyForEdit(rvs[uk.Name]); // 从session取回来的实体全部被设置了脏属性，每次保存所有数据，因此从数据查找
                         if (entity == null) entity = fact.Create();
                     }
                     else if (pks.Length > 0)
@@ -75,13 +82,15 @@ namespace NewLife.Cube.Com
                         bindingContext.Result = ModelBindingResult.Success(entity);
                     }
 
-                    if (entity == null )
+                    if (entity == null)
                     {
                         bindingContext.Result = ModelBindingResult.Success(fact.Create());
                     }
-                }
 
-               await base.BindModelAsync(bindingContext);
+                    bindingContext.Model = bindingContext.Result.Model;
+
+                   await BindProperty(bindingContext);
+                }
             }
         }
 
@@ -113,6 +122,13 @@ namespace NewLife.Cube.Com
             var ctx = HttpContext.Current;
             var ckey = GetCacheKey(type, keys);
             return ctx.Session.Get(ckey, type) as IEntity;
+        }
+
+        private async Task BindProperty(ModelBindingContext bindingContext)
+        {
+            var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
+
+            await complexTypeModelBinder.BindModelAsync(bindingContext);
         }
     }
 
