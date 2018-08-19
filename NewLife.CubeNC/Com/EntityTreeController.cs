@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.CubeNC.Com;
+using NewLife.Cube.Com;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;

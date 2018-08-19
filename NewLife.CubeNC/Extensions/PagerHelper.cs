@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using NewLife.Collections;
 using NewLife.Web;
 
-namespace NewLife.CubeNC.Extensions
+namespace NewLife.Cube.Extensions
 {
     public static class PagerHelper
     {

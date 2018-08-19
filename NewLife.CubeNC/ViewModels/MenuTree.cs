@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NewLife.CubeNC.ViewModels
+namespace NewLife.Cube.ViewModels
 {
     /// <summary>
     /// 菜单树

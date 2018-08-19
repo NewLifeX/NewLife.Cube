@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
-using NewLife.CubeNC.Com;
+using NewLife.Cube.Com;
 using NewLife.Web;
 using XCode.Membership;
 using XLog = XCode.Membership.Log;

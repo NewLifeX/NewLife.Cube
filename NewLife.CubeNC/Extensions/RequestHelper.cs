@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace NewLife.CubeNC.Extensions
+namespace NewLife.Cube.Extensions
 {
     public static class RequestHelper
     {

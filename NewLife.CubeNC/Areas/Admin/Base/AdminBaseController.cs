@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube;
 using NewLife.Cube.Admin;
 
-namespace NewLife.CubeNC.Areas.Admin.Base
+namespace NewLife.Cube.Areas.Admin.Base
 {
     [AdminArea]
     public class AdminBaseController : Controller

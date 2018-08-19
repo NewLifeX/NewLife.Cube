@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace NewLife.CubeNC.Extensions
+namespace NewLife.Cube.Extensions
 {
     public static class SessionExtensions
     {

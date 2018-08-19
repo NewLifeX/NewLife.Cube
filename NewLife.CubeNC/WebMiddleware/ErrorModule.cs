@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
-namespace NewLife.CubeNC.WebMiddleware
+namespace NewLife.Cube.WebMiddleware
 {
     public class ErrorModuleMiddleware
     {

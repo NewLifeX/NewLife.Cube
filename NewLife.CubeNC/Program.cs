@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace NewLife.CubeNC
+namespace NewLife.Cube
 {
     /// <summary>应用程序</summary>
     public class Program

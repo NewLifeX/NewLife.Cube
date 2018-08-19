@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.CubeNC.Com;
-using NewLife.CubeNC.Extensions;
+using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
 using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers

@@ -9,7 +9,7 @@ using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.CubeNC.Extensions
+namespace NewLife.Cube.Extensions
 {
     public static class ScanControllerExtensions
     {

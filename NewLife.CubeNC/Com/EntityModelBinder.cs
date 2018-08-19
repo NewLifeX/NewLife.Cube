@@ -10,13 +10,13 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NewLife.CubeNC.Extensions;
+using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
 using HttpContext = NewLife.Web.HttpContext;
 
-namespace NewLife.CubeNC.Com
+namespace NewLife.Cube.Com
 {
     public class EntityModelBinder : ComplexTypeModelBinder
     {

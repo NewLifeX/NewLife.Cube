@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using NewLife.Serialization;
 using NewLife.Web;
 
-namespace NewLife.CubeNC.Extensions
+namespace NewLife.Cube.Extensions
 {
     /// <summary>
     /// 对象助手

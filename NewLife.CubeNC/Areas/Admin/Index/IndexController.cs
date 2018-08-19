@@ -4,7 +4,7 @@
 //using System.Reflection;
 //using Microsoft.AspNetCore.Mvc;
 //using NewLife.Common;
-//using NewLife.CubeNC.Com;
+//using NewLife.Cube.Com;
 //using NewLife.Web;
 //using XCode;
 //using XCode.Membership;
@@ -25,11 +25,11 @@ using System.IO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.CubeNC.Com;
-using NewLife.CubeNC.Extensions;
-using ManagerProviderHelper = NewLife.CubeNC.Membership.ManagerProviderHelper;
+using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
+using ManagerProviderHelper = NewLife.Cube.Membership.ManagerProviderHelper;
 using NewLife.Model;
-using NewLife.CubeNC.ViewModels;
+using NewLife.Cube.ViewModels;
 
 namespace NewLife.Cube.Admin.Controllers
 {

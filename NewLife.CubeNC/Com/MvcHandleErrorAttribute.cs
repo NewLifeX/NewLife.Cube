@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using NewLife.Cube;
-using NewLife.CubeNC.Extensions;
+using NewLife.Cube.Extensions;
 using NewLife.Log;
 
-namespace NewLife.CubeNC.Com
+namespace NewLife.Cube.Com
 {
     /// <summary>拦截MVC流程错误的特性</summary>
     public class MvcHandleErrorAttribute : ExceptionFilterAttribute

@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.CubeNC.Com;
+using NewLife.Cube.Com;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using XCode.Membership;

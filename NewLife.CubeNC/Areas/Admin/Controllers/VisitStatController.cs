@@ -4,7 +4,7 @@
 //using System.Reflection;
 //using Microsoft.AspNetCore.Mvc;
 //using NewLife.Common;
-//using NewLife.CubeNC.Com;
+//using NewLife.Cube.Com;
 //using NewLife.Web;
 //using XCode;
 //using XCode.Membership;

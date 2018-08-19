@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NewLife.Common;
-using NewLife.CubeNC.Extensions;
+using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Model;
 using XCode.Membership;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
 
-namespace NewLife.CubeNC.Membership
+namespace NewLife.Cube.Membership
 {
     /// <inheritdoc />
     public class DefaultManageProviderForCore : ManageProvider<UserX>

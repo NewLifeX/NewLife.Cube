@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace NewLife.CubeNC.ViewsPreComplied
+namespace NewLife.Cube.ViewsPreComplied
 {
     public class CompositePrecompiledMvcEngine: RazorViewEngine, IRazorViewEngine
     {

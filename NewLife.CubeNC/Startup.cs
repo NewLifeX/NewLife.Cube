@@ -12,13 +12,12 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NewLife.Cube;
-using NewLife.CubeNC.Com;
-using NewLife.CubeNC.Membership;
-using NewLife.CubeNC.WebMiddleware;
+using NewLife.Cube.Com;
+using NewLife.Cube.Membership;
+using NewLife.Cube.WebMiddleware;
 using NewLife.Web;
 
-namespace NewLife.CubeNC
+namespace NewLife.Cube
 {
     /// <summary>魔方初始化</summary>
     public class Startup
@@ -43,7 +42,6 @@ namespace NewLife.CubeNC
         /// <param name="services"></param>
         public virtual void ConfigureServices(IServiceCollection services)
         {
-            var env = HostingEnvironment;
             // 配置Cookie策略
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -69,26 +67,25 @@ namespace NewLife.CubeNC
                 opt.Filters.Add<MvcHandleErrorAttribute>();
 
             })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                //视图文件查找选项设置
-                .AddRazorOptions(opt =>
-                {
-                    opt.ViewLocationFormats.Clear();
-                    opt.AreaViewLocationFormats.Clear();
-                    opt.ViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
-                    opt.ViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
-                    opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/{1}/{0}.cshtml");
-                    opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/Shared/{0}.cshtml");
-                    opt.AreaViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
-                    opt.AreaViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
-                })
-                .AddViewOptions(opt =>
-                {
-                    //opt.ViewEngines.Clear();
-                    //var item = services.
-                    //opt.ViewEngines.Add(new CompositePrecompiledMvcEngine());
-                })
-                ;
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+            // 视图文件查找选项设置
+            .AddRazorOptions(opt =>
+            {
+                opt.ViewLocationFormats.Clear();
+                opt.AreaViewLocationFormats.Clear();
+                opt.ViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
+                opt.ViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
+                opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/{1}/{0}.cshtml");
+                opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/Shared/{0}.cshtml");
+                opt.AreaViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
+                opt.AreaViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
+            })
+            .AddViewOptions(opt =>
+            {
+                //opt.ViewEngines.Clear();
+                //var item = services.
+                //opt.ViewEngines.Add(new CompositePrecompiledMvcEngine());
+            });
 
             AddCustomApplicationParts(services);
 
@@ -101,17 +98,9 @@ namespace NewLife.CubeNC
             // 添加魔方模块
             // 添加管理提供者
             services.AddManageProvider();
+
             // 添加Http上下文访问器
             StaticHttpContextExtensions.AddHttpContextAccessor(services);
-
-            //if (env.IsDevelopment())
-            //{
-
-            //}
-            //else
-            //{
-            //    services.AddCubeDefaultUI();
-            //}
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
@@ -173,13 +162,16 @@ namespace NewLife.CubeNC
                 //app.UseHsts();
             }
 
+            var set = NewLife.Cube.Setting.Current;
+
             // 添加自定义中间件
             // 注册错误处理模块中间件
             app.UseErrorModule();
             // 注册请求执行时间中间件
             app.UseDbRunTimeModule();
 
-            app.UseHttpsRedirection();
+            if (set.ForceSSL) app.UseHttpsRedirection();
+
             app.UseStaticFiles();
             app.UseCookiePolicy();
             app.UseSession();
@@ -187,23 +179,19 @@ namespace NewLife.CubeNC
 
             app.UseMvc(routes =>
             {
-                {
-                    // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
-                    routes.MapRoute(
-                        name: "Cube",
-                        template: "{controller=CubeHome}/{action=Index}/{id?}"
-                    );
-                }
+                // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
+                routes.MapRoute(
+                    name: "Cube",
+                    template: "{controller=CubeHome}/{action=Index}/{id?}"
+                );
             });
 
             // 配置魔方的MVC选项
             app.UseRouter(routes =>
             {
-                if (routes.DefaultHandler == null)
-                {
-                    routes.DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>();
-                }
-                //区域路由注册
+                if (routes.DefaultHandler == null) routes.DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>();
+
+                // 区域路由注册
                 routes.MapRoute(
                     name: "CubeAreas",
                     template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"

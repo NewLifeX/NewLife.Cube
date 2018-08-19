@@ -5,8 +5,8 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife.CubeNC.Com;
-using NewLife.CubeNC.Extensions;
+using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
 using NewLife.Reflection;
 using XCode.Membership;
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Protocols;
-using NewLife.CubeNC.Com;
+using NewLife.Cube.Com;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode.DataAccessLayer;

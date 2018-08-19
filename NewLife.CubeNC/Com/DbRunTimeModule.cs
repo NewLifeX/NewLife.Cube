@@ -6,7 +6,7 @@ using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using NewLife.Common;
-using NewLife.CubeNC.WebMiddleware;
+using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 using XCode.DataAccessLayer;
 
