@@ -15,7 +15,7 @@ namespace NewLife.CubeNC.Extensions
         /// <param name="request"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static string GetRequestValue(this HttpRequest request, String key)
+        public static String GetRequestValue(this HttpRequest request, String key)
         {
             var value = new StringValues();
 
@@ -38,7 +38,7 @@ namespace NewLife.CubeNC.Extensions
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static bool IsAjaxRequest(this HttpRequest request)
+        public static Boolean IsAjaxRequest(this HttpRequest request)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));

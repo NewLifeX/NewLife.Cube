@@ -12,28 +12,28 @@ namespace NewLife.CubeNC.ViewModels
         /// 
         /// </summary>
         /// <value></value>
-        public int ID { get; set; }
+        public Int32 ID { get; set; }
 
         /// <summary>
         /// 名称
         /// </summary>
         /// <value></value>
-        public string Name { get; set; }
+        public String Name { get; set; }
         /// <summary>
         /// 链接
         /// </summary>
         /// <value></value>
-        public string Url { get; set; }
+        public String Url { get; set; }
         /// <summary>
         /// 图标
         /// </summary>
         /// <value></value>
-        public string Icon { get; set; }
+        public String Icon { get; set; }
         /// <summary>
         /// 自定义样式类
         /// </summary>
         /// <value></value>
-        public string Class { get; set; }
+        public String Class { get; set; }
         /// <summary>
         /// 子菜单
         /// </summary>

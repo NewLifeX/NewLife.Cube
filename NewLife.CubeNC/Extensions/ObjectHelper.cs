@@ -19,7 +19,7 @@ namespace NewLife.CubeNC.Extensions
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static byte[] ToBytes(this Object obj)
+        public static Byte[] ToBytes(this Object obj)
         {
             if (obj == null) return null;
             var binary = new Binary();
@@ -38,7 +38,7 @@ namespace NewLife.CubeNC.Extensions
         /// <param name="bytes"></param>
         /// <param name="settingAction">反序列化设置，最常用的设置为设置本次反序列化需要忽略的属性</param>
         /// <returns></returns>
-        public static T GetObject<T>(this byte[] bytes, Action<IBinary> settingAction=null) where T : class
+        public static T GetObject<T>(this Byte[] bytes, Action<IBinary> settingAction=null) where T : class
             //, new()
         {
             var obj = (T)(Object)bytes.GetObject(typeof(T), settingAction);
@@ -52,7 +52,7 @@ namespace NewLife.CubeNC.Extensions
         /// <param name="type">反序列化的对象类型同时传了T和Type优先使用Type</param> 
         /// <param name="settingAction">反序列化设置，最常用的设置为设置本次反序列化需要忽略的属性</param>
         /// <returns></returns>
-        public static Object GetObject(this byte[] bytes, Type type , Action<IBinary> settingAction = null)
+        public static Object GetObject(this Byte[] bytes, Type type , Action<IBinary> settingAction = null)
         {
             if (bytes == null)
                 return null;

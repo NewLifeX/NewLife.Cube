@@ -91,7 +91,7 @@ namespace NewLife.CubeNC.Membership
             }
         }
 
-        public override IManageUser Login(string name, string password, bool rememberme)
+        public override IManageUser Login(String name, String password, Boolean rememberme)
         {
             var user = UserX.Login(name, password, rememberme);
             Current = user;

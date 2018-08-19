@@ -38,7 +38,7 @@ namespace NewLife.Cube
         public static Type[] Areas { get; private set; }
 
         /// <summary>实例化区域注册</summary>
-        public AreaBaseX(string areaName) : base(areaName)
+        public AreaBaseX(String areaName) : base(areaName)
         {
             //AreaName = GetType().Name.TrimEnd("Area");
         }

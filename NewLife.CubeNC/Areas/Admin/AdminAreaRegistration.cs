@@ -9,7 +9,7 @@ namespace NewLife.Cube.Admin
     [DisplayName("系统管理")]
     public class AdminArea : AreaBaseX
     {
-        public static string AreaName => nameof(AdminArea).TrimEnd("Area");
+        public static String AreaName => nameof(AdminArea).TrimEnd("Area");
 
         /// <inheritdoc />
         public AdminArea() : base(AreaName)

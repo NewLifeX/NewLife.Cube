@@ -16,7 +16,7 @@ namespace NewLife.CubeNC.Extensions
         /// <param name="key"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static T Get<T>(this ISession session, string key, Type type = null) where T:class
+        public static T Get<T>(this ISession session, String key, Type type = null) where T:class
             //, new() 
             => (T)(Object)session.Get(key, typeof(T));
 
@@ -27,6 +27,6 @@ namespace NewLife.CubeNC.Extensions
         /// <param name="key"></param>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static Object Get(this ISession session, string key, Type type) => session.Get(key).GetObject(type);
+        public static Object Get(this ISession session, String key, Type type) => session.Get(key).GetObject(type);
     }
 }

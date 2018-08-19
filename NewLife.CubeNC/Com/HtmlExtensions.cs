@@ -584,7 +584,7 @@ namespace NewLife.Cube
         #endregion
 
         #region 辅助方法
-        public static string GetString(this IHtmlContent htmlContent)
+        public static String GetString(this IHtmlContent htmlContent)
         {
             var writer = new System.IO.StringWriter();
             htmlContent.WriteTo(writer, HtmlEncoder.Default);

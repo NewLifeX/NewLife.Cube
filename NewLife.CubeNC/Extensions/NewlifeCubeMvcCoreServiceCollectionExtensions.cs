@@ -27,12 +27,12 @@ namespace NewLife.CubeNC.Extensions
         /// 添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分
         /// </summary>
         /// <param name="services"></param>
-        public static void AddCustomApplicationParts(this IServiceCollection services, Action<List<string>> addEntryAssemblyName = null)
+        public static void AddCustomApplicationParts(this IServiceCollection services, Action<List<String>> addEntryAssemblyName = null)
         {
             var manager = GetServiceFromCollection<ApplicationPartManager>(services) ?? new ApplicationPartManager();
 
             //var entryAssemblyName = ;//"NewLife.Cube";
-            var entryAssemblyNameList = new List<string>(4) { typeof(Program).Assembly.FullName };
+            var entryAssemblyNameList = new List<String>(4) { typeof(Program).Assembly.FullName };
 
             addEntryAssemblyName?.Invoke(entryAssemblyNameList);
 
@@ -222,7 +222,7 @@ namespace NewLife.CubeNC.Extensions
                 ?.ImplementationInstance;
         }
 
-        private static void PopulateCustomParts(this ApplicationPartManager manager, string entryAssemblyName)
+        private static void PopulateCustomParts(this ApplicationPartManager manager, String entryAssemblyName)
         {
             var entryAssembly = Assembly.Load(new AssemblyName(entryAssemblyName));
             //var assembliesProvider = new ApplicationAssembliesProvider();

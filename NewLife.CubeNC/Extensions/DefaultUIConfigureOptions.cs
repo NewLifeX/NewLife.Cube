@@ -19,7 +19,7 @@ namespace NewLife.CubeNC.Extensions
 
         public IHostingEnvironment Environment { get; }
 
-        public void PostConfigure(string name, StaticFileOptions options)
+        public void PostConfigure(String name, StaticFileOptions options)
         {
             name = name ?? throw new ArgumentException(nameof(name));
             options = options ?? throw new ArgumentException(nameof(options));

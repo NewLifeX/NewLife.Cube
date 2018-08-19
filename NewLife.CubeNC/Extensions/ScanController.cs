@@ -67,7 +67,7 @@ namespace NewLife.CubeNC.Extensions
         {
             var list = new List<Assembly>();
             var typeList = new List<Type>();
-            var areaDic = new Dictionary<string, Type>();
+            var areaDic = new Dictionary<String, Type>();
 
             var controllers = typeof(Controller).GetAllSubclasses(false).ToArray();
             foreach (var item in controllers)

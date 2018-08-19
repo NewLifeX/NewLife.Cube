@@ -253,7 +253,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 var dest = di.FullName.CombinePath(file.FileName);
                 WriteLog("上传", dest);
-                byte[] fileBytes = null;
+                Byte[] fileBytes = null;
                 using (var fileStream = file.OpenReadStream())
                 using (var ms = new MemoryStream())
                 {

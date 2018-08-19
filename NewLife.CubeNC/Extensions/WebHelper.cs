@@ -21,7 +21,7 @@ namespace NewLife.Web
                 var nvss = new[]
                 {
                     req.Query,
-                    req.HasFormContentType ? (IEnumerable<KeyValuePair<String, StringValues>>) req.Form : new List<KeyValuePair<string, StringValues>>()
+                    req.HasFormContentType ? (IEnumerable<KeyValuePair<String, StringValues>>) req.Form : new List<KeyValuePair<String, StringValues>>()
                 };
 
                 // 这里必须用可空字典，否则直接通过索引查不到数据时会抛出异常
