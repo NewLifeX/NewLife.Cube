@@ -9,7 +9,7 @@ namespace NewLife.Cube
     {
         /// <summary>入口主函数</summary>
         /// <param name="args"></param>
-        public static void Main(String[] args) => CreateWebHostBuilder(args).Build().Run();
+        public static void Main(String[] args) => CreateWebHostBuilder(args).UseUrls("http://*").Build().Run();
 
         static IWebHostBuilder CreateWebHostBuilder(String[] args) => WebHost.CreateDefaultBuilder(args).UseStartup<Startup>();
     }

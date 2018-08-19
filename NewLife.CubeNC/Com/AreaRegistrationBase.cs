@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Threading;
+using NewLife.Web;
 using XCode;
 using XCode.Membership;
 #if !NET4
@@ -88,7 +92,7 @@ namespace NewLife.Cube
             //);
 
             // 自动检查并下载魔方资源
-            //Task.Factory.StartNew(CheckContent, TaskCreationOptions.LongRunning).LogException();
+            Task.Factory.StartNew(CheckContent, TaskCreationOptions.LongRunning).LogException();
 
             XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
         }
@@ -125,45 +129,56 @@ namespace NewLife.Cube
             return list;
         }
 
-        //static void CheckContent()
-        //{
-        //    // 释放ico图标
-        //    var ico = "favicon.ico";
-        //    var ico2 = ico.GetFullPath();
-        //    if (!File.Exists(ico2))
-        //    {
-        //        // 延迟时间释放，给子系统覆盖的机会
-        //        TimerX.Delay(s =>
-        //        {
-        //            if (!File.Exists(ico2)) Assembly.GetExecutingAssembly().ReleaseFile(ico, ico2);
-        //        }, 15000);
-        //    }
+        static void CheckContent()
+        {
+            // 释放ico图标
+            var ico = "favicon.ico";
+            var ico2 = ("wwwroot/" + ico).GetFullPath();
+            if (!File.Exists(ico2))
+            {
+                // 延迟时间释放，给子系统覆盖的机会
+                TimerX.Delay(s =>
+                {
+                    if (!File.Exists(ico2))
+                    {
+                        //Assembly.GetExecutingAssembly().ReleaseFile(ico, ico2);
+                        var asm = Assembly.GetExecutingAssembly();
+                        var ns = asm.GetManifestResourceNames();
+                        var f = ns.FirstOrDefault(e => e.EndsWithIgnoreCase(ico));
+                        if (!f.IsNullOrEmpty())
+                        {
+                            var ms = asm.GetManifestResourceStream(f);
+                            File.WriteAllBytes(ico2, ms.ReadBytes());
+                        }
+                    }
+                }, 1000);
+            }
 
-        //    // 检查魔方样式
-        //    var js = "~/Content/Cube.js".GetFullPath();
-        //    var css = "~/Content/Cube.css".GetFullPath();
-        //    if (File.Exists(js) && File.Exists(css))
-        //    {
-        //        // 判断脚本时间
-        //        var dt = DateTime.MinValue;
-        //        var ss = File.ReadAllLines(js);
-        //        for (var i = 0; i < 5; i++)
-        //        {
-        //            if (DateTime.TryParse(ss[i].TrimStart("//").Trim(), out dt)) break;
-        //        }
-        //        // 要求脚本最小更新时间
-        //        if (dt >= "2017-12-07 00:00:00".ToDateTime()) return;
-        //    }
+            // 检查魔方样式
+            var js = "wwwroot/Content/Cube.js".GetFullPath();
+            var css = "wwwroot/Content/Cube.css".GetFullPath();
+            if (File.Exists(js) && File.Exists(css))
+            {
+                // 判断脚本时间
+                var dt = DateTime.MinValue;
+                var ss = File.ReadAllLines(js);
+                for (var i = 0; i < 5; i++)
+                {
+                    if (DateTime.TryParse(ss[i].TrimStart("//").Trim(), out dt)) break;
+                }
+                // 要求脚本最小更新时间
+                if (dt >= "2017-12-07 00:00:00".ToDateTime()) return;
+            }
 
-        //    var url = Setting.Current.PluginServer;
-        //    if (url.IsNullOrEmpty()) return;
+            var url = Setting.Current.PluginServer;
+            if (url.IsNullOrEmpty()) return;
 
-        //    var wc = new WebClientX(true, true)
-        //    {
-        //        Log = XTrace.Log
-        //    };
-        //    wc.DownloadLinkAndExtract(url, "Cube_Content", "~/Content".GetFullPath(), true);
-        //}
+            var wc = new WebClientX(true, true)
+            {
+                Log = XTrace.Log
+            };
+            wc.DownloadLinkAndExtract(url, "Cube_Content", "wwwroot/Content".GetFullPath(), true);
+        }
 
         /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>
         public static void RegisterArea<T>() where T : AreaBaseX
@@ -235,7 +250,7 @@ namespace NewLife.Cube
 
         /// <summary>自动扫描控制器，并添加到菜单</summary>
         /// <remarks>默认操作当前注册区域的下一级Controllers命名空间</remarks>
-        protected static void ScanController<T>() where T: AreaBaseX
+        protected static void ScanController<T>() where T : AreaBaseX
         {
             var areaType = typeof(T);
 
