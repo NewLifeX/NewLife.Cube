@@ -61,8 +61,8 @@ namespace NewLife.Cube
             // 添加Session会话支持
             services.AddSession();
 
-            // 添加标识用户支持
-            services.AddDefaultIdentity<IdentityUser>();
+            //// 添加标识用户支持
+            //services.AddDefaultIdentity<IdentityUser>();
 
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
             //services.AddSingleton<IView, PrecompiledMvcView>();
@@ -101,14 +101,14 @@ namespace NewLife.Cube
             //services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
 
             // 注册Cookie认证服务
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+            //services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             // 添加魔方模块
             // 添加管理提供者
             services.AddManageProvider();
 
-            // 添加Http上下文访问器
-            StaticHttpContextExtensions.AddHttpContextAccessor(services);
+            //// 添加Http上下文访问器
+            //services.AddHttpContextAccessor();
 
             //services.ConfigureOptions<DefaultUIConfigureOptions>();
         }
