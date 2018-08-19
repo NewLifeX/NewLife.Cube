@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Remove="Com\ConfigController.cs" />
     <Compile Remove="Com\ControllerBaseX.cs" />
+    <Compile Remove="Com\EntityController.cs" />
     <Compile Remove="Com\EntityTreeController.cs" />
     <Compile Remove="Com\FieldCollection.cs" />
     <Compile Remove="Com\MembershipExtensions.cs" />
@@ -78,6 +79,7 @@
     <Folder Include="Areas\Test\Models\" />
     <Folder Include="Common\" />
     <Folder Include="Models\" />
+    <Folder Include="Entity\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -89,17 +91,14 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
+    <Compile Include="..\NewLife.Cube\Common\EntityController.cs" Link="Common\EntityController.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityTreeController.cs" Link="Common\EntityTreeController.cs" />
     <Compile Include="..\NewLife.Cube\Common\FieldCollection.cs" Link="Common\FieldCollection.cs" />
     <Compile Include="..\NewLife.Cube\Common\MembershipExtensions.cs" Link="Common\MembershipExtensions.cs" />
     <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
     <Compile Include="..\NewLife.Cube\Common\ObjectController.cs" Link="Common\ObjectController.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\XCoder.cs">
-      <Link>Entity\XCoder.cs</Link>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>XCoder.tt</DependentUpon>
-    </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用系统.cs" Link="Entity\应用系统.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs">
       <Link>Entity\用户令牌.Biz.cs</Link>
     </Compile>

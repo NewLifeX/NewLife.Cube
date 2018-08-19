@@ -19,15 +19,9 @@ namespace NewLife.Cube.Extensions
         {
             var value = new StringValues();
 
-            if (request.HasFormContentType)
-            {
-                value = request.Form[key];
-            }
+            if (request.HasFormContentType) value = request.Form[key];
 
-            if (value.Count>0)
-            {
-                return value;
-            }
+            if (value.Count > 0) return value;
 
             value = request.Query[key];
             return value.Count > 0 ? value.ToString() : null;

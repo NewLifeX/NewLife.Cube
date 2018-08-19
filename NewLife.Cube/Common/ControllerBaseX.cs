@@ -9,6 +9,7 @@ using XCode.Membership;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
 #else
 using System.Web.Mvc;
 #endif
@@ -18,6 +19,42 @@ namespace NewLife.Cube
     /// <summary>控制器基类</summary>
     public class ControllerBaseX : Controller
     {
+        #region 兼容处理
+#if __CORE__
+        /// <summary>获取请求值</summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected virtual String GetRequest(String key) => Request.GetRequestValue(key);
+
+        /// <summary>获取Session值</summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected virtual T GetSession<T>(String key) where T : class => HttpContext.Session.Get<T>(key);
+
+        /// <summary>设置Session值</summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        protected virtual void SetSession(String key, Object value) => HttpContext.Session.Set(key, value.ToBytes());
+#else
+        /// <summary>获取请求值</summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected virtual String GetRequest(String key) => Request[key];
+
+        /// <summary>获取Session值</summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected virtual T GetSession<T>(String key) => (T)Session[key];
+
+        /// <summary>设置Session值</summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        protected virtual void SetSession(String key, Object value) => Session[key] = value;
+#endif
+        #endregion
+
         #region 权限菜单
         /// <summary>获取可用于生成权限菜单的Action集合</summary>
         /// <param name="menu">该控制器所在菜单</param>

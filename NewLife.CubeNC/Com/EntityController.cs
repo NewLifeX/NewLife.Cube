@@ -5,14 +5,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+using System.Web.Mvc;
 using NewLife.Common;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Com;
-using NewLife.Cube.Extensions;
 using NewLife.Serialization;
 using NewLife.Web;
 using NewLife.Xml;
@@ -50,7 +45,7 @@ namespace NewLife.Cube
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
-        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             // Ajax请求不需要设置ViewBag
             if (!Request.IsAjaxRequest())
@@ -59,7 +54,7 @@ namespace NewLife.Cube
                 ViewBag.Factory = Entity<TEntity>.Meta.Factory;
 
                 // 默认加上分页给前台
-                var ps = filterContext.ActionArguments.ToNullable();
+                var ps = filterContext.ActionParameters.ToNullable();
                 var p = ps["p"] as Pager ?? new Pager();
                 ViewBag.Page = p;
 
@@ -82,7 +77,7 @@ namespace NewLife.Cube
 
         /// <summary>执行后</summary>
         /// <param name="filterContext"></param>
-        public override void OnActionExecuted(ActionExecutedContext filterContext)
+        protected override void OnActionExecuted(ActionExecutedContext filterContext)
         {
             base.OnActionExecuted(filterContext);
 
@@ -90,28 +85,28 @@ namespace NewLife.Cube
             HttpContext.Items["Title"] = title;
         }
 
-        ///// <summary>触发异常时</summary>
-        ///// <param name="filterContext"></param>
-        //public override void OnException(ExceptionContext filterContext)
-        //{
-        //    if (!filterContext.ExceptionHandled)
-        //    {
-        //        var ex = filterContext.Exception;
-        //        // Json输出
-        //        if (IsJsonRequest)
-        //        {
-        //            filterContext.Result = JsonError(ex);
-        //            filterContext.ExceptionHandled = true;
-        //        }
-        //        //else if (ex is NoPermissionException nex)
-        //        //{
-        //        //    filterContext.Result = this.NoPermission(nex);
-        //        //    filterContext.ExceptionHandled = true;
-        //        //}
-        //    }
+        /// <summary>触发异常时</summary>
+        /// <param name="filterContext"></param>
+        protected override void OnException(ExceptionContext filterContext)
+        {
+            if (!filterContext.ExceptionHandled)
+            {
+                var ex = filterContext.Exception;
+                // Json输出
+                if (IsJsonRequest)
+                {
+                    filterContext.Result = JsonError(ex);
+                    filterContext.ExceptionHandled = true;
+                }
+                //else if (ex is NoPermissionException nex)
+                //{
+                //    filterContext.Result = this.NoPermission(nex);
+                //    filterContext.ExceptionHandled = true;
+                //}
+            }
 
-        //    base.OnException(filterContext);
-        //}
+            base.OnException(filterContext);
+        }
         #endregion
 
         #region 数据获取
@@ -121,7 +116,7 @@ namespace NewLife.Cube
         protected virtual IEnumerable<TEntity> Search(Pager p)
         {
             // 缓存数据，用于后续导出
-            HttpContext.Session.Set(CacheKey, p.ToBytes());
+            Session[CacheKey] = p;
 
             return Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
         }
@@ -140,7 +135,9 @@ namespace NewLife.Cube
                     var exp = new WhereExpression();
                     foreach (var item in pks)
                     {
-                        exp &= item.Equal(Request.GetRequestValue(item.Name));
+                        // 如果前端没有传值，则不要参与构造查询
+                        var val = Request[item.Name];
+                        if (val != null) exp &= item.Equal(val);
                     }
 
                     return Entity<TEntity>.Find(exp);
@@ -152,14 +149,14 @@ namespace NewLife.Cube
 
         /// <summary>获取选中键</summary>
         /// <returns></returns>
-        protected virtual String[] SelectKeys => Request.GetRequestValue("Keys").Split(",");
+        protected virtual String[] SelectKeys => Request["Keys"].Split(",");
 
         /// <summary>导出当前页以后的数据</summary>
         /// <returns></returns>
         protected virtual IEnumerable<TEntity> ExportData()
         {
             // 跳过头部一些页数，导出当前页以及以后的数据
-            var p = new Pager(HttpContext.Session.Get(CacheKey).GetObject<Pager>());
+            var p = new Pager(Session[CacheKey] as Pager);
             p.StartRow = (p.PageIndex - 1) * p.PageSize;
             p.PageSize = 100000;
             // 不要查记录数
@@ -182,7 +179,7 @@ namespace NewLife.Cube
             ViewBag.Page = p;
 
             // 缓存数据，用于后续导出
-            HttpContext.Session.Set(CacheKey, p.ToBytes());
+            Session[CacheKey] = p;
 
             return IndexView(p);
         }
@@ -211,7 +208,7 @@ namespace NewLife.Cube
         public virtual ActionResult Detail(String id)
         {
             var entity = Find(id);
-            if ((entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
+            if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Select, false);
@@ -229,7 +226,7 @@ namespace NewLife.Cube
         [DisplayName("删除{type}")]
         public virtual ActionResult Delete(Int32 id)
         {
-            var url = Request.Headers["Referer"].FirstOrDefault() + "";
+            var url = Request.UrlReferrer + "";
 
             var entity = Find(id);
             Valid(entity, DataObjectMethodType.Delete, true);
@@ -253,18 +250,18 @@ namespace NewLife.Cube
             var entity = Factory.Create() as TEntity;
 
             // 填充QueryString参数
-            var qs = Request.Query;
+            var qs = Request.QueryString;
             foreach (var item in Entity<TEntity>.Meta.Fields)
             {
                 var v = qs[item.Name];
-                if (v.Count > 0) entity[item.Name] = v;
+                if (!v.IsNullOrEmpty()) entity[item.Name] = v;
             }
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Insert, false);
 
             // 记下添加前的来源页，待会添加成功以后跳转
-            HttpContext.Session.Set("Cube_Add_Referrer", Request.Headers["Referer"].FirstOrDefault().GetBytes());
+            Session["Cube_Add_Referrer"] = Request.UrlReferrer.ToString();
 
             return FormView(entity);
         }
@@ -274,7 +271,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateInput(false)]
         public virtual ActionResult Add(TEntity entity)
         {
             // 检测避免乱用Add/id
@@ -314,7 +311,7 @@ namespace NewLife.Cube
 
             ViewBag.StatusMessage = "添加成功！";
 
-            var url = HttpContext.Session.GetString("Cube_Add_Referrer") + "";
+            var url = Session["Cube_Add_Referrer"] + "";
             if (!url.IsNullOrEmpty())
                 return Redirect(url);
             else
@@ -330,7 +327,7 @@ namespace NewLife.Cube
         public virtual ActionResult Edit(String id)
         {
             var entity = Find(id);
-            if ((entity as IEntity).IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
+            if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Update, false);
@@ -346,7 +343,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateInput(false)]
         public virtual ActionResult Edit(TEntity entity)
         {
             if (!Valid(entity, DataObjectMethodType.Update, true))
@@ -371,7 +368,7 @@ namespace NewLife.Cube
             {
                 err = ex.Message;
                 //ModelState.AddModelError("", ex.Message);
-                ModelState.AddModelError("", ex.Message);
+                ModelState.AddModelError("", ex);
             }
 
             ViewBag.RowsAffected = rs;
@@ -412,12 +409,13 @@ namespace NewLife.Cube
         [DisplayName("数据接口")]
         public virtual ActionResult Json(String id, Pager p)
         {
-            if (id.IsNullOrEmpty()) id = Request.GetRequestValue("token");
-            if (id.IsNullOrEmpty()) id = Request.GetRequestValue("key");
+            if (id.IsNullOrEmpty()) id = Request["token"];
+            if (id.IsNullOrEmpty()) id = Request["key"];
 
             try
             {
-                var user = UserToken.Valid(id);
+                //var user = UserToken.Valid(id);
+                var app = App.Valid(id);
 
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
@@ -468,7 +466,7 @@ namespace NewLife.Cube
             if (!ext.IsNullOrEmpty()) ext = ext.EnsureStart(".");
             name += ext;
             name = HttpUtility.UrlEncode(name, Encoding.UTF8);
-            Response.Headers.Add("Content-Disposition", "Attachment;filename=" + name);
+            Response.AddHeader("Content-Disposition", "Attachment;filename=" + name);
         }
 
         /// <summary>导入Xml</summary>
@@ -535,14 +533,14 @@ namespace NewLife.Cube
         private void ToExcel(String FileType, String FileName, String ExcelContent)
         {
             var rs = Response;
-            //rs.Charset = "UTF-8";
-            //rs.ContentEncoding = Encoding.UTF8;
-            //rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(FileName, Encoding.UTF8).ToString());
-            //rs.ContentType = FileType;
-            //var tw = new System.IO.StringWriter();
-            //rs.Body.Write(ExcelContent.ToString());
-            //rs.Flush();
-            //rs.End();
+            rs.Charset = "UTF-8";
+            rs.ContentEncoding = Encoding.UTF8;
+            rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(FileName, Encoding.UTF8).ToString());
+            rs.ContentType = FileType;
+            var tw = new System.IO.StringWriter();
+            rs.Output.Write(ExcelContent.ToString());
+            rs.Flush();
+            rs.End();
         }
 
         /// <summary>导出Excel，可重载修改要输出的结果集</summary>
@@ -631,10 +629,10 @@ namespace NewLife.Cube
         [DisplayName("删除全部")]
         public virtual ActionResult DeleteAll()
         {
-            var url = Request.Headers["Referer"].FirstOrDefault() + "";
+            var url = Request.UrlReferrer + "";
 
             var count = 0;
-            var p = new Pager(HttpContext.Session.Get(CacheKey).GetObject<Pager>());
+            var p = new Pager(Session[CacheKey] as Pager);
             if (p != null)
             {
                 p.PageIndex = 1;
@@ -672,7 +670,7 @@ namespace NewLife.Cube
         [DisplayName("清空")]
         public virtual ActionResult Clear()
         {
-            var url = Request.Headers["Referer"].FirstOrDefault() + "";
+            var url = Request.UrlReferrer + "";
 
             var count = Entity<TEntity>.Meta.Session.Truncate();
 
@@ -699,7 +697,7 @@ namespace NewLife.Cube
 
             var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
 
-            //Js.Alert("生成列表模版 {0} 成功！".F(vpath));
+            Js.Alert("生成列表模版 {0} 成功！".F(vpath));
 
             return Index();
         }
@@ -717,7 +715,7 @@ namespace NewLife.Cube
 
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
 
-            //Js.Alert("生成表单模版 {0} 成功！".F(vpath));
+            Js.Alert("生成表单模版 {0} 成功！".F(vpath));
 
             return Index();
         }
@@ -820,8 +818,8 @@ namespace NewLife.Cube
             get
             {
                 if (Request.ContentType.EqualIgnoreCase("application/json")) return true;
-                if (Request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
-                if (Request.GetRequestValue("output").EqualIgnoreCase("json")) return true;
+                if (Request.AcceptTypes.Any(e => e == "application/json")) return true;
+                if (Request["output"].EqualIgnoreCase("json")) return true;
                 if ((RouteData.Values["output"] + "").EqualIgnoreCase("json")) return true;
 
                 return false;
