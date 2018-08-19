@@ -1,24 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace NewLife.Cube.Extensions
 {
-    internal class DefaultUIConfigureOptions : IPostConfigureOptions<StaticFileOptions>
+    /// <summary>默认UI配置选项</summary>
+    public class DefaultUIConfigureOptions : IPostConfigureOptions<StaticFileOptions>
     {
+        /// <summary>实例化</summary>
+        /// <param name="environment"></param>
         public DefaultUIConfigureOptions(IHostingEnvironment environment)
         {
             Environment = environment;
         }
 
+        /// <summary>环境</summary>
         public IHostingEnvironment Environment { get; }
 
+        /// <summary>提交配置</summary>
+        /// <param name="name"></param>
+        /// <param name="options"></param>
         public void PostConfigure(String name, StaticFileOptions options)
         {
             name = name ?? throw new ArgumentException(nameof(name));
@@ -39,11 +43,11 @@ namespace NewLife.Cube.Extensions
         }
     }
 
-    public static class DefaultUIServiceCollectionExtensions
-    {
-        public static void AddCubeDefaultUI(this IServiceCollection services)
-        {
-            services.ConfigureOptions<DefaultUIConfigureOptions>();
-        }
-    }
+    //public static class DefaultUIServiceCollectionExtensions
+    //{
+    //    public static void AddCubeDefaultUI(this IServiceCollection services)
+    //    {
+    //        services.ConfigureOptions<DefaultUIConfigureOptions>();
+    //    }
+    //}
 }

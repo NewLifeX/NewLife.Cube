@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,11 +9,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
 using NewLife.Cube.Membership;
 using NewLife.Cube.WebMiddleware;
+using NewLife.Reflection;
 using NewLife.Web;
 
 namespace NewLife.Cube
@@ -101,48 +103,65 @@ namespace NewLife.Cube
 
             // 添加Http上下文访问器
             StaticHttpContextExtensions.AddHttpContextAccessor(services);
+
+            services.ConfigureOptions<DefaultUIConfigureOptions>();
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
         /// <param name="services"></param>
-        /// <param name="addEntryAssemblyName"></param>
-        public void AddCustomApplicationParts(IServiceCollection services, Action<List<String>> addEntryAssemblyName = null)
+        public void AddCustomApplicationParts(IServiceCollection services)
         {
-            var manager = GetServiceFromCollection<ApplicationPartManager>(services) ?? new ApplicationPartManager();
+            var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
+            if (manager == null) manager = new ApplicationPartManager();
 
-            //var entryAssemblyName = ;//"NewLife.Cube";
-            var list = new List<String>(4) { typeof(Program).Assembly.FullName };
-
-            addEntryAssemblyName?.Invoke(list);
-
-            foreach (var entryAssemblyName in list)
-            {
-                PopulateCustomParts(manager, entryAssemblyName);
-            }
-        }
-
-        private T GetServiceFromCollection<T>(IServiceCollection services)
-        {
-            return (T)services
-                .LastOrDefault(d => d.ServiceType == typeof(T))
-                ?.ImplementationInstance;
-        }
-
-        private void PopulateCustomParts(ApplicationPartManager manager, String entryAssemblyName)
-        {
-            var entryAssembly = Assembly.Load(new AssemblyName(entryAssemblyName));
-            //var assembliesProvider = new ApplicationAssembliesProvider();
-            //var applicationAssemblies = assembliesProvider.ResolveAssemblies(entryAssembly);//获取对应视图assembly
-
-            //foreach (var assembly in applicationAssemblies)
+            //var list = new List<Assembly>
             //{
-            var assembly = entryAssembly;
-            var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
-            foreach (var part in partFactory.GetApplicationParts(assembly))
+            //    GetType().Assembly,
+            //    typeof(Startup).Assembly,
+            //    Assembly.GetEntryAssembly()
+            //};
+            var list = FindAllArea();
+
+            foreach (var asm in list)
             {
-                if (!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
+                var factory = ApplicationPartFactory.GetApplicationPartFactory(asm);
+                foreach (var part in factory.GetApplicationParts(asm))
+                {
+                    if (!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
+                }
             }
-            //}
+        }
+
+        /// <summary>遍历所有引用了AreaRegistrationBase的程序集</summary>
+        /// <returns></returns>
+        static List<Assembly> FindAllArea()
+        {
+            var list = new List<Assembly>();
+            var Areas = typeof(RazorPage).GetAllSubclasses(false).ToArray();
+            foreach (var item in Areas)
+            {
+                var asm = item.Assembly;
+                if (!list.Contains(asm))
+                {
+                    list.Add(asm);
+                    //yield return asm;
+                }
+            }
+
+            // 为了能够实现模板覆盖，程序集相互引用需要排序，父程序集在前
+            list.Sort((x, y) =>
+            {
+                if (x == y) return 0;
+                if (x != null && y == null) return 1;
+                if (x == null && y != null) return -1;
+
+                //return x.GetReferencedAssemblies().Any(e => e.FullName == y.FullName) ? 1 : -1;
+                // 对程序集引用进行排序时，不能使用全名，当魔方更新而APP没有重新编译时，版本的不同将会导致全名不同，无法准确进行排序
+                var yname = y.GetName().Name;
+                return x.GetReferencedAssemblies().Any(e => e.Name == yname) ? 1 : -1;
+            });
+
+            return list;
         }
         #endregion
 

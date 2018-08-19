@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using NewLife.Log;
 using XCode.Membership;
-using System;
 
 namespace NewLife.Cube.Admin
 {
@@ -9,6 +9,7 @@ namespace NewLife.Cube.Admin
     [DisplayName("系统管理")]
     public class AdminArea : AreaBaseX
     {
+        /// <summary>区域名</summary>
         public static String AreaName => nameof(AdminArea).TrimEnd("Area");
 
         /// <inheritdoc />
