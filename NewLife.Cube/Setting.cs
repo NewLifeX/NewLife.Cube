@@ -1,7 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Web;
-using NewLife.Security;
 using NewLife.Xml;
 
 namespace NewLife.Cube
@@ -104,11 +102,14 @@ namespace NewLife.Cube
         /// <summary>加载时触发</summary>
         protected override void OnLoaded()
         {
-            if (StartPage.IsNullOrEmpty()) StartPage = HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/Index/Main";
-            //if (SecurityKey.IsNullOrEmpty()) SecurityKey = Rand.NextString(16);
+#if __CORE__
+            if (StartPage.IsNullOrEmpty()) StartPage = NewLife.Web.HttpContext.Current.Request.PathBase.ToString().EnsureEnd("/") + "Admin/Index/Main";
+#else
+            if (StartPage.IsNullOrEmpty()) StartPage = System.Web.HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/Index/Main";
+#endif
 
             base.OnLoaded();
         }
-        #endregion
+#endregion
     }
 }

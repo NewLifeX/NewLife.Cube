@@ -22,11 +22,13 @@
     <DocumentationFile>..\Bin\NewLife.Cube.xml</DocumentationFile>
     <WarningLevel>3</WarningLevel>
     <OutputPath>..\Bin</OutputPath>
+    <DefineConstants>TRACE;__CORE__</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\Bin</OutputPath>
     <DocumentationFile>..\Bin\NewLife.Cube.xml</DocumentationFile>
+    <DefineConstants>TRACE;__CORE__</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -96,6 +98,7 @@
     <Compile Include="..\NewLife.Cube\Entity\用户链接.cs">
       <Link>Entity\用户链接.cs</Link>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\NewLife.Cube\Entity\Cube.xml">
