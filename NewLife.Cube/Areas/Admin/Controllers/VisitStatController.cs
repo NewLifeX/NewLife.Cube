@@ -37,42 +37,19 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="entity"></param>
         /// <returns></returns>
         [DisplayName()]
-        public override ActionResult Add(VisitStat entity)
-        {
-            //return base.Save(entity);
-            throw new Exception("不允许添加/修改");
-        }
+        public override ActionResult Add(VisitStat entity) => throw new Exception("不允许添加/修改");
 
         /// <summary>不允许添加修改</summary>
         /// <param name="entity"></param>
         /// <returns></returns>
         [DisplayName()]
-        public override ActionResult Edit(VisitStat entity)
-        {
-            //return base.Save(entity);
-            throw new Exception("不允许添加/修改");
-        }
+        public override ActionResult Edit(VisitStat entity) => throw new Exception("不允许添加/修改");
 
         /// <summary>不允许删除</summary>
         /// <param name="id"></param>
         /// <returns></returns>
         [DisplayName()]
-        public override ActionResult Delete(Int32 id)
-        {
-            //return base.Delete(id);
-            throw new Exception("不允许删除");
-        }
-
-        ///// <summary>不允许删除</summary>
-        ///// <param name="id"></param>
-        ///// <returns></returns>
-        //[DisplayName()]
-        //public override JsonResult DeleteAjax(Int32 id)
-        //{
-        //    var url = Request.UrlReferrer + "";
-
-        //    return Json(new { msg = "不允许删除！", code = -1, url = url }, JsonRequestBehavior.AllowGet);
-        //}
+        public override ActionResult Delete(Int32 id) => throw new Exception("不允许删除");
 
         /// <summary>清空全表数据</summary>
         /// <returns></returns>

@@ -75,7 +75,7 @@ WriteLiteral("\r\n</div>\r\n");
 
             
             #line 8 "..\..\Areas\Admin\Views\VisitStat\_List_Search.cshtml"
-Write(Html.Partial("_StatLevel", new[] { StatLevels.All, StatLevels.Year, StatLevels.Month, StatLevels.Day }));
+Write(Html.Partial("_StatLevel", new[] { StatLevels.Year, StatLevels.Month, StatLevels.Day }));
 
             
             #line default

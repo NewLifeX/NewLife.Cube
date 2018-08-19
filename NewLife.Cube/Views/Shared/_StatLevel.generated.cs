@@ -65,15 +65,15 @@ namespace ASP
 
     var n = page["Level"].ToInt(-1);
     var level = n >= 0 ? (StatLevels)n : def;
-    var formatStr = "";
-    switch (level)
-    {
-        case StatLevels.Year: formatStr = "yyyy"; break;
-        case StatLevels.Month: formatStr = "yyyy-MM"; break;
-        case StatLevels.Day: formatStr = "yyyy-MM-dd"; break;
-        case StatLevels.Hour: formatStr = "yyyy-MM-dd HH"; break;
-        case StatLevels.Minute: formatStr = "yyyy-MM-dd HH:mm"; break;
-    }
+    //var formatStr = "";
+    //switch (level)
+    //{
+    //    case StatLevels.Year: formatStr = "yyyy"; break;
+    //    case StatLevels.Month: formatStr = "yyyy-MM"; break;
+    //    case StatLevels.Day: formatStr = "yyyy-MM-dd"; break;
+    //    case StatLevels.Hour: formatStr = "yyyy-MM-dd HH"; break;
+    //    case StatLevels.Minute: formatStr = "yyyy-MM-dd HH:mm"; break;
+    //}
 
             
             #line default
@@ -95,63 +95,12 @@ Write(Html.ForDropDownList("Level", ds, (Int32)level, null, true));
             #line hidden
 WriteLiteral("\r\n</div>\r\n");
 
-            
-            #line 30 "..\..\Views\Shared\_StatLevel.cshtml"
- if (level > StatLevels.All)
-{
+WriteLiteral("\r\n");
 
             
-            #line default
-            #line hidden
-WriteLiteral("    <div");
+            #line 36 "..\..\Views\Shared\_StatLevel.cshtml"
+Write(Html.Partial("_DateRange"));
 
-WriteLiteral(" class=\"form-group\"");
-
-WriteLiteral(">\r\n        <div");
-
-WriteLiteral(" class=\"input-group\"");
-
-WriteLiteral(">\r\n            <span");
-
-WriteLiteral(" class=\"input-group-addon\"");
-
-WriteLiteral("><i");
-
-WriteLiteral(" class=\"fa fa-calendar\"");
-
-WriteLiteral("></i></span>\r\n            <input");
-
-WriteLiteral(" name=\"Time\"");
-
-WriteLiteral(" id=\"Time\"");
-
-WriteAttribute("value", Tuple.Create(" value=\"", 1160), Tuple.Create("\"", 1181)
-            
-            #line 35 "..\..\Views\Shared\_StatLevel.cshtml"
-, Tuple.Create(Tuple.Create("", 1168), Tuple.Create<System.Object, System.Int32>(page["Time"]
-            
-            #line default
-            #line hidden
-, 1168), false)
-);
-
-WriteAttribute("dateformat", Tuple.Create(" dateformat=\"", 1182), Tuple.Create("\"", 1205)
-            
-            #line 35 "..\..\Views\Shared\_StatLevel.cshtml"
-, Tuple.Create(Tuple.Create("", 1195), Tuple.Create<System.Object, System.Int32>(formatStr
-            
-            #line default
-            #line hidden
-, 1195), false)
-);
-
-WriteLiteral(" class=\"form-control form_datetime\"");
-
-WriteLiteral(" />\r\n        </div>\r\n    </div>\r\n");
-
-            
-            #line 38 "..\..\Views\Shared\_StatLevel.cshtml"
-}
             
             #line default
             #line hidden
