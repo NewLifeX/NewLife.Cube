@@ -59,6 +59,7 @@
     <Content Remove="App.config" />
     <Content Remove="Areas\Admin\Views\VisitStat\_List_Search.cshtml" />
     <Content Remove="Views\Shared\_StatLevel.cshtml" />
+    <Content Remove="wwwroot\favicon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -121,6 +122,9 @@
       <LastGenOutput>XCoder.cs</LastGenOutput>
     </Content>
     <Content Include="readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
