@@ -46,16 +46,6 @@ namespace NewLife.Reflection
 				tar = tar.GetFullPath();
                 if (!File.Exists(tar))
                 {
-					tar = "..\\..\\Bin4\\" + name + ".exe";
-					tar = tar.GetFullPath();
-                }
-                if (!File.Exists(tar))
-                {
-					tar = "..\\..\\XCoder\\" + name + ".exe";
-					tar = tar.GetFullPath();
-                }
-                if (!File.Exists(tar))
-                {
 					Console.WriteLine("只能找项目文件了，总得做点啥不是");
 					//编译当前工程
 					"msbuild".Run(proj + " /t:Rebuild /p:Configuration=Release /p:VisualStudioVersion=15.0 /noconlog /nologo", 8000);
@@ -110,9 +100,9 @@ namespace NewLife.Reflection
             if (cfg.Files.Count == 0)
             {
                 AddFile(cfg, name, "dll;xml;pdb;exe", @"..\..\Bin", @"lib\net45");
-                AddFile(cfg, name, "dll;xml;pdb;exe", @"..\..\Bin2", @"lib\net20");
                 AddFile(cfg, name, "dll;xml;pdb;exe", @"..\..\Bin4", @"lib\net40");
-                AddFile(cfg, name, "dll;xml;pdb;exe", @"..\..\Bin\netstandard2.0", @"lib\netstandard2.0");
+                AddFile(cfg, name, "dll;xml;pdb;exe", @"..\Bin\netcoreapp2.1", @"lib\netcoreapp2.1");
+                AddFile(cfg, name + ".Views", "dll;xml;pdb;exe", @"..\Bin\netcoreapp2.1", @"lib\netcoreapp2.1");
 
                 if (name == "XCode") AddFile(cfg, null, "*.ps1", @"tools", @"tools");
             }
@@ -157,6 +147,7 @@ namespace NewLife.Reflection
                 case "net40": dg.TargetFramework = ".NETFramework4.0"; break;
                 case "net45": dg.TargetFramework = ".NETFramework4.5"; break;
                 case "netstandard2.0": dg.TargetFramework = ".NETStandard2.0"; break;
+                case "netcoreapp2.1": dg.TargetFramework = "netcoreapp2.1"; break;
             }
 
             dg.Dependencies = new List<ManifestDependency>();
