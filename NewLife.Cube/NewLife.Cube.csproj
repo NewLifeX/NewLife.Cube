@@ -518,6 +518,7 @@
     <Compile Include="Web\OAuthHelper.cs" />
     <Compile Include="Web\OAuthServer2.cs" />
     <Compile Include="Web\SsoProvider.cs" />
+    <Compile Include="Web\WebHelper2.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Areas\Admin\Views\AppLog\_List_Data.cshtml">

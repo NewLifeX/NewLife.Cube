@@ -464,7 +464,7 @@ namespace NewLife.Cube
             var dic = System.EnumHelper.GetDescriptions(typeof(T));
 
             IEnumerable values = null;
-            var vs = WebHelper1.Params[name].SplitAsInt();
+            var vs = WebHelper2.Params[name].SplitAsInt();
             if (vs != null && vs.Length > 0)
                 values = vs;
             else if (selectAll)
@@ -519,7 +519,7 @@ namespace NewLife.Cube
         public static IHtmlContent ForDropDownList(this IHtmlHelper Html, String name, IList<IEntity> list, String optionLabel = null, Boolean autoPostback = false)
         {
             var entity = Html.ViewData.Model as IEntity;
-            var selectedValue = entity == null ? WebHelper1.Params[name] : entity[name];
+            var selectedValue = entity == null ? WebHelper2.Params[name] : entity[name];
 
             var atts = new Dictionary<String, Object>();
             if (Setting.Current.BootstrapSelect)
@@ -566,7 +566,7 @@ namespace NewLife.Cube
         public static IHtmlContent ForListBox(this IHtmlHelper Html, String name, IList<IEntity> list, Boolean autoPostback = false)
         {
             var entity = Html.ViewData.Model as IEntity;
-            var vs = entity == null ? WebHelper1.Params[name] : entity[name];
+            var vs = entity == null ? WebHelper2.Params[name] : entity[name];
             // 如果是字符串，分割为整型数组，全局约定逗号分割
             if (vs is String) vs = (vs as String).SplitAsInt();
 

@@ -512,6 +512,9 @@
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs">
       <Link>Web\SsoProvider.cs</Link>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs">
+      <Link>Web\WebHelper2.cs</Link>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
