@@ -20,6 +20,14 @@ using TaskEx = System.Threading.Tasks.Task;
 
 namespace NewLife.Cube
 {
+    /// <summary>区域特性。兼容netcore</summary>
+    public class AreaAttribute : Attribute
+    {
+        /// <summary>实例化区域特性</summary>
+        /// <param name="areaName"></param>
+        public AreaAttribute(String areaName) { }
+    }
+
     /// <summary>区域注册基类</summary>
     /// <remarks>
     /// 提供以下功能：
