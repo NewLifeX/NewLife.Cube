@@ -1,4 +1,9 @@
-﻿using System.Web.Mvc;
+﻿#if __CORE__
+using Microsoft.AspNetCore.Mvc;
+#else
+using System.Web;
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube.Controllers
 {

@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web;
+#if __CORE__
+using Microsoft.AspNetCore.Http.Extensions;
 using NewLife.Web;
+#endif
 
 namespace NewLife.Cube.Web
 {
@@ -18,7 +19,11 @@ namespace NewLife.Cube.Web
             var url = "Sso/Login?name=" + name;
             if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
 
+#if __CORE__
+            url = HttpContext.Current.Request.Host + HttpContext.Current.Request.PathBase + url;
+#else
             url = HttpRuntime.AppDomainAppVirtualPath + url;
+#endif
 
             return url;
         }

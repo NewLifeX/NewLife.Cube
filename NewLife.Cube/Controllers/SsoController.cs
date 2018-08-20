@@ -1,13 +1,19 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Web.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Web;
 using XCode.Membership;
+#if __CORE__
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+#else
+using System.Web;
+using System.Web.Mvc;
+#endif
 
 /*
  * 魔方OAuth在禁用本地登录，且只设置一个第三方登录时，形成单点登录。
@@ -39,7 +45,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Controllers
 {
     /// <summary>单点登录控制器</summary>
-    public class SsoController : Controller
+    public class SsoController : ControllerBaseX
     {
         /// <summary>当前提供者</summary>
         public static SsoProvider Provider { get; set; }
@@ -66,6 +72,7 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public virtual ActionResult Index() => Redirect("~/");
 
+#if !__CORE__
         /// <summary>发生错误时</summary>
         /// <param name="filterContext"></param>
         protected override void OnException(ExceptionContext filterContext)
@@ -84,6 +91,7 @@ namespace NewLife.Cube.Controllers
 
             base.OnException(filterContext);
         }
+#endif
 
         #region 单点登录客户端
         /// <summary>第三方登录</summary>
@@ -97,7 +105,7 @@ namespace NewLife.Cube.Controllers
             var rurl = prov.GetReturnUrl(Request, true);
             var redirect = prov.GetRedirect(Request, rurl);
 
-            var state = Request["state"];
+            var state = GetRequest("state");
             if (!state.IsNullOrEmpty())
                 state = client.Name + "_" + state;
             else
@@ -160,11 +168,15 @@ namespace NewLife.Cube.Controllers
                 // 获取用户信息
                 if (!client.UserUrl.IsNullOrEmpty()) client.GetUserInfo();
 
+#if __CORE__
+                var url = prov.OnLogin(client, HttpContext.RequestServices);
+#else
                 var url = prov.OnLogin(client, HttpContext);
+#endif
 
                 // 标记登录提供商
-                Session["Cube_Sso"] = client.Name;
-                Session["Cube_Sso_Client"] = client;
+                SetSession("Cube_Sso", client.Name);
+                SetSession("Cube_Sso_Client", client);
 
                 if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
@@ -177,8 +189,12 @@ namespace NewLife.Cube.Controllers
 
                 if (!state.EqualIgnoreCase("refresh")) return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
 
+#if __CORE__
+                return View("CubeError", ex);
+#else
                 var inf = new HandleErrorInfo(ex, "Sso", nameof(LoginInfo));
                 return View("CubeError", inf);
+#endif
             }
         }
 
@@ -191,7 +207,7 @@ namespace NewLife.Cube.Controllers
         public virtual ActionResult Logout()
         {
             // 先读Session，待会会清空
-            var client = Session["Cube_Sso_Client"] as OAuthClient;
+            var client = GetSession<OAuthClient>("Cube_Sso_Client");
 
             var prv = Provider;
             prv?.Logout();
@@ -204,10 +220,10 @@ namespace NewLife.Cube.Controllers
                 if (!client.LogoutUrl.IsNullOrEmpty())
                 {
                     // 准备返回地址
-                    url = Request["r"];
+                    url = GetRequest("r");
                     if (url.IsNullOrEmpty()) url = prv.SuccessUrl;
 
-                    var state = Request["state"];
+                    var state = GetRequest("state");
                     if (!state.IsNullOrEmpty())
                         state = client.Name + "_" + state;
                     else
@@ -236,11 +252,16 @@ namespace NewLife.Cube.Controllers
             var user = prov.Current;
             if (user == null) throw new Exception("未登录！");
 
+#if __CORE__
+            var url = Request.Headers["Referer"].FirstOrDefault() + "";
+#else
+            var url = Request.UrlReferrer + "";
+#endif
             var client = prov.GetClient(id);
-            var redirect = prov.GetRedirect(Request, Request.UrlReferrer + "");
+            var redirect = prov.GetRedirect(Request, url);
             // 附加绑定动作
             redirect += "&sso_action=bind";
-            var url = client.Authorize(redirect, client.Name);
+            url = client.Authorize(redirect, client.Name);
 
             return Redirect(url);
         }
@@ -262,7 +283,11 @@ namespace NewLife.Cube.Controllers
                 uc.Save();
             }
 
+#if __CORE__
+            var url = Request.Headers["Referer"].FirstOrDefault() + "";
+#else
             var url = Request.UrlReferrer + "";
+#endif
             if (url.IsNullOrEmpty()) url = "/";
 
             return Redirect(url);
@@ -365,13 +390,21 @@ namespace NewLife.Cube.Controllers
                 var rs = Provider.GetAccessToken(OAuth, client_id, client_secret, code);
 
                 // 返回UserInfo告知客户端可以请求用户信息
+#if __CORE__
+                return Json(rs);
+#else
                 return Json(rs, JsonRequestBehavior.AllowGet);
+#endif
             }
             catch (Exception ex)
             {
                 XTrace.WriteLine($"Access_Token client_id={client_id} client_secret={client_secret} code={code}");
                 XTrace.WriteException(ex);
+#if __CORE__
+                return Json(new { error = ex.GetTrue().Message });
+#else
                 return Json(new { error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
+#endif
             }
         }
 
@@ -393,7 +426,11 @@ namespace NewLife.Cube.Controllers
                 if (user == null) throw new Exception("用户不存在");
 
                 var rs = Provider.GetUserInfo(sso, access_token, user);
+#if __CORE__
+                return Json(rs);
+#else
                 return Json(rs, JsonRequestBehavior.AllowGet);
+#endif
             }
             catch (Exception ex)
             {
@@ -401,7 +438,11 @@ namespace NewLife.Cube.Controllers
 
                 XTrace.WriteLine($"UserInfo {access_token}");
                 XTrace.WriteException(ex);
+#if __CORE__
+                return Json(new { error = ex.GetTrue().Message });
+#else
                 return Json(new { error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
+#endif
             }
             finally
             {

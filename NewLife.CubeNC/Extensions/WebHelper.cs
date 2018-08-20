@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using NewLife.Collections;
 
@@ -52,22 +53,22 @@ namespace NewLife.Web
             }
         }
 
-        ///// <summary>获取原始请求Url，支持反向代理</summary>
-        ///// <param name="req"></param>
-        ///// <returns></returns>
-        //public static Uri GetRawUrl(this HttpRequest req)
-        //{
-        //    var uri = req.Url;
+        /// <summary>获取原始请求Url，支持反向代理</summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        public static Uri GetRawUrl(this HttpRequest req)
+        {
+            var uri = req.Url;
 
-        //    var str = req.RawUrl;
-        //    if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
+            var str = req.RawUrl;
+            if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
 
-        //    str = req.ServerVariables["HTTP_X_REQUEST_URI"];
-        //    if (str.IsNullOrEmpty()) str = req.ServerVariables["X-Request-Uri"];
-        //    if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
+            str = req.Headers["HTTP_X_REQUEST_URI"];
+            if (str.IsNullOrEmpty()) str = req.Headers["X-Request-Uri"];
+            if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
 
-        //    return uri;
-        //}
+            return uri;
+        }
 
         ///// <summary>获取原始请求Url，支持反向代理</summary>
         ///// <param name="req"></param>

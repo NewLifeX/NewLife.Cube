@@ -11,6 +11,9 @@ using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Web;
 using XCode.Membership;
+#if __CORE__
+using HttpRequestBase = Microsoft.AspNetCore.Http.HttpRequest;
+#endif
 
 namespace NewLife.Cube.Web
 {
@@ -59,7 +62,14 @@ namespace NewLife.Cube.Web
         {
             var url = request["r"];
             if (url.IsNullOrEmpty()) url = request["redirect_uri"];
-            if (url.IsNullOrEmpty() && referr) url = request.UrlReferrer + "";
+            if (url.IsNullOrEmpty() && referr)
+            {
+#if __CORE__
+                var url = request.Headers["Referer"].FirstOrDefault() + "";
+#else
+                var url = request.UrlReferrer + "";
+#endif
+            }
             if (!url.IsNullOrEmpty() && url.StartsWithIgnoreCase("http"))
             {
                 var baseUri = request.GetRawUrl();
