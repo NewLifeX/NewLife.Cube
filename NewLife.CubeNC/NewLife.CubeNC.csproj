@@ -30,17 +30,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Admin\Views\UserToken\**" />
+    <Compile Remove="Areas\Test\**" />
     <Compile Remove="Common\**" />
     <Compile Remove="Precompiled\**" />
+    <Content Remove="Areas\Admin\Views\UserToken\**" />
+    <Content Remove="Areas\Test\**" />
     <Content Remove="Common\**" />
     <Content Remove="Precompiled\**" />
+    <EmbeddedResource Remove="Areas\Admin\Views\UserToken\**" />
+    <EmbeddedResource Remove="Areas\Test\**" />
     <EmbeddedResource Remove="Common\**" />
     <EmbeddedResource Remove="Precompiled\**" />
+    <None Remove="Areas\Admin\Views\UserToken\**" />
+    <None Remove="Areas\Test\**" />
     <None Remove="Common\**" />
     <None Remove="Precompiled\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Admin\Controllers\FileController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Remove="Com\ConfigController.cs" />
     <Compile Remove="Com\ControllerBaseX.cs" />
     <Compile Remove="Com\EntityController.cs" />
@@ -74,14 +84,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Test\Data\" />
-    <Folder Include="Areas\Test\Models\" />
     <Folder Include="Common\" />
     <Folder Include="Models\" />
     <Folder Include="Entity\" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Admin\Controllers\AppController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Admin\Controllers\AppLogController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Base\FileController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs">
       <Link>Areas\Admin\Models\DbItem.cs</Link>
     </Compile>
@@ -96,14 +107,10 @@
     <Compile Include="..\NewLife.Cube\Common\MembershipExtensions.cs" Link="Common\MembershipExtensions.cs" />
     <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
     <Compile Include="..\NewLife.Cube\Common\ObjectController.cs" Link="Common\ObjectController.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs" Link="Entity\应用日志.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.cs" Link="Entity\应用系统.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs">
-      <Link>Entity\用户令牌.Biz.cs</Link>
-    </Compile>
-    <Compile Include="..\NewLife.Cube\Entity\用户令牌.cs">
-      <Link>Entity\用户令牌.cs</Link>
-    </Compile>
     <Compile Include="..\NewLife.Cube\Entity\用户链接.Biz.cs">
       <Link>Entity\用户链接.Biz.cs</Link>
     </Compile>
