@@ -292,6 +292,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_ViewStart.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Common\AreaAttribute.cs" />
     <Compile Include="Common\BootstrapJs.cs" />
     <Compile Include="Common\ControllerHelper.cs" />
     <Compile Include="Common\EntityTreeController.cs" />

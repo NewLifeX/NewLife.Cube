@@ -49,6 +49,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Admin\Controllers\CoreController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\CubeController.cs" />
     <Compile Remove="Areas\Admin\Controllers\FileController.cs" />
     <Compile Remove="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Remove="Com\ConfigController.cs" />
@@ -92,6 +94,8 @@
   <ItemGroup>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Admin\Controllers\AppController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Admin\Controllers\AppLogController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Base\CoreController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Base\CubeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Base\FileController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs">
       <Link>Areas\Admin\Models\DbItem.cs</Link>
