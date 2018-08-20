@@ -2,15 +2,24 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using XCode;
 using XCode.Membership;
+#if __CORE__
+using Microsoft.AspNetCore.Http;
+using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
+#else
+using System.Web;
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>用户在线控制器</summary>
     [DisplayName("用户在线")]
     [Description("已登录系统的用户，操作情况。")]
+    [Area("Admin")]
     public class UserOnlineController : EntityController<UserOnline>
     {
         static UserOnlineController()

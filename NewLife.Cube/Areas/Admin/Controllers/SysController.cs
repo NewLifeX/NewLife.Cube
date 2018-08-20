@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using XCode;
 using XCode.Membership;
@@ -10,6 +11,7 @@ namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>系统设置控制器</summary>
     [DisplayName("系统设置")]
+    [Area("Admin")]
     public class SysController : ConfigController<SysConfig>
     {
         static SysController()

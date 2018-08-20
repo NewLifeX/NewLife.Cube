@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using XCode;
 using XCode.Membership;
@@ -11,6 +12,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>用户链接控制器</summary>
     [DisplayName("用户链接")]
     [Description("第三方登录信息")]
+    [Area("Admin")]
     public class UserConnectController : EntityController<UserConnect>
     {
         static UserConnectController()

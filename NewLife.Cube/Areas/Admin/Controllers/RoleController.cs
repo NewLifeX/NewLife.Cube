@@ -1,16 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
+#if __CORE__
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
+#else
+using System.Web;
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>角色控制器</summary>
     [DisplayName("角色")]
     [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
+    [Area("Admin")]
     public class RoleController : EntityController<Role>
     {
         static RoleController()
@@ -22,7 +32,11 @@ namespace NewLife.Cube.Admin.Controllers
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
+#if __CORE__
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
+#else
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
+#endif
         {
             ViewBag.HeaderTitle = "角色管理";
             //ViewBag.HeaderContent = "系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。";
@@ -97,14 +111,11 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         [DisplayName("打印")]
         [EntityAuthorize((PermissionFlags)16)]
-        public ActionResult Print()
-        {
-            return View();
-        }
+        public ActionResult Print() => View();
 
         Boolean GetBool(String name)
         {
-            var v = Request[name];
+            var v = GetRequest(name);
             if (v.IsNullOrEmpty()) return false;
 
             v = v.Split(",")[0];

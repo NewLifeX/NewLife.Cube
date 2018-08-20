@@ -52,7 +52,16 @@
     <Compile Remove="Areas\Admin\Controllers\CoreController.cs" />
     <Compile Remove="Areas\Admin\Controllers\CubeController.cs" />
     <Compile Remove="Areas\Admin\Controllers\FileController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\LogController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\MenuController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\RoleController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\SysController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\UserConnectController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\UserController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\UserOnlineController.cs" />
     <Compile Remove="Areas\Admin\Controllers\UserTokenController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\VisitStatController.cs" />
+    <Compile Remove="Areas\Admin\Controllers\XCodeController.cs" />
     <Compile Remove="Com\ConfigController.cs" />
     <Compile Remove="Com\ControllerBaseX.cs" />
     <Compile Remove="Com\EntityController.cs" />
@@ -97,6 +106,15 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Base\CoreController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Base\CubeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Base\FileController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\LogController.cs" Link="Areas\Admin\Base\LogController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\MenuController.cs" Link="Areas\Admin\Base\MenuController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Base\RoleController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Base\SysController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserConnectController.cs" Link="Areas\Admin\Base\UserConnectController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserController.cs" Link="Areas\Admin\Base\UserController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserOnlineController.cs" Link="Areas\Admin\Base\UserOnlineController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\VisitStatController.cs" Link="Areas\Admin\Base\VisitStatController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Base\XCodeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs">
       <Link>Areas\Admin\Models\DbItem.cs</Link>
     </Compile>

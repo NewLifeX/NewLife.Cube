@@ -4,18 +4,28 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Mvc;
-using System.Web.Security;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
+#if __CORE__
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
+#else
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Security;
+#endif
 
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>用户控制器</summary>
     [DisplayName("用户")]
     [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
+    [Area("Admin")]
     public class UserController : EntityController<UserX>
     {
         static UserController()
@@ -66,7 +76,7 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult Login()
         {
-            var returnUrl = Request["r"];
+            var returnUrl = GetRequest("r");
             // 如果已登录，直接跳转
             if (ManageProvider.User != null)
             {
@@ -95,8 +105,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             ViewBag.IsShowTip = UserX.Meta.Count == 1;
-
-
+            
             ViewBag.ReturnUrl = returnUrl;
 
             return View();
@@ -111,14 +120,13 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult Login(String username, String password, Boolean? remember)
         {
-            var returnUrl = Request["r"];
+            var returnUrl = GetRequest("r");
             try
             {
                 var provider = ManageProvider.Provider;
                 if (ModelState.IsValid && provider.Login(username, password, remember ?? false) != null)
                 {
-                    FormsAuthentication.SetAuthCookie(username, remember ?? false);
-                    //FormsAuthentication.RedirectFromLoginPage(provider.Current + "", true);
+                    //FormsAuthentication.SetAuthCookie(username, remember ?? false);
 
                     if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
 
@@ -144,10 +152,10 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult Logout()
         {
-            var returnUrl = Request["r"];
+            var returnUrl = GetRequest("r");
 
             // 如果是单点登录，则走单点登录注销
-            var name = Session["Cube_Sso"] + "";
+            var name = GetSession<String>("Cube_Sso");
             if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso", new { area = "", name, r = returnUrl });
 
             ManageProvider.Provider.Logout();
@@ -288,7 +296,7 @@ namespace NewLife.Cube.Admin.Controllers
         private ActionResult EnableOrDisableSelect(Boolean isEnable = true)
         {
             var count = 0;
-            var ids = Request["keys"].SplitAsInt();
+            var ids = GetRequest("keys").SplitAsInt();
             if (ids.Length > 0)
             {
                 Parallel.ForEach(ids, id =>

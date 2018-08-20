@@ -1,17 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Web;
 using XCode.Membership;
 using XLog = XCode.Membership.Log;
+#if __CORE__
+using Microsoft.AspNetCore.Http;
+using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
+#else
+using System.Web;
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>日志控制器</summary>
     [DisplayName("日志")]
     [Description("系统内重要操作均记录日志，便于审计。任何人都不能删除、修改或伪造操作日志。")]
+    [Area("Admin")]
     public class LogController : EntityController<XLog>
     {
         static LogController()
