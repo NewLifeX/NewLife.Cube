@@ -81,6 +81,8 @@
     <Compile Remove="Com\ObjectController.cs" />
     <Compile Remove="Controllers\SsoController.cs" />
     <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
+    <Compile Remove="Extensions\ObjectHelper.cs" />
+    <Compile Remove="Extensions\SessionExtensions.cs" />
     <Compile Remove="Extensions\WebHelper.cs" />
     <Compile Remove="Web\OAuthHelper.cs" />
     <Compile Remove="Web\OAuthServer2.cs" />

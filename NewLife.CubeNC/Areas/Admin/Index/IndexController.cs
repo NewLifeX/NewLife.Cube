@@ -162,7 +162,10 @@ namespace NewLife.Cube.Admin.Controllers
         {
             var user = _Provider.Current as IUser ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
 
-            var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
+            //var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
+            var fact = ManageProvider.Menu;
+            //fact.FindByID(1);
+            //(fact as IEntityOperate)?.FindByKey(1);
 
             var menus = fact.Root.Childs;
             if (user?.Role != null)
@@ -194,9 +197,8 @@ namespace NewLife.Cube.Admin.Controllers
                 return menuList.Count > 0 ? menuList : null;
             }, menus.ToList());
 
-            var childs = menuTree[0].Children;
+            //var childs = menuTree[0].Children;
             return menuTree;
         }
-
     }
 }

@@ -82,7 +82,7 @@ namespace NewLife.Cube
             else
             {
                 // 修改Session
-                ss.Set(key, user.ToBytes());
+                ss.Set(key, user);
             }
         }
 

@@ -114,7 +114,7 @@ namespace NewLife.Cube.Com
             else if (pks.Length > 0)
                 ckey = GetCacheKey(entity.GetType(), pks.Select(e => entity[e.Name]).ToArray());
 
-            ctx.Session.Set(ckey, entity.ToBytes());
+            ctx.Session.Set(ckey, entity);
         }
 
         private static IEntity GetEntity(Type type, params Object[] keys)

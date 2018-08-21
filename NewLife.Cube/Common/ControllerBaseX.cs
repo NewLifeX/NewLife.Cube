@@ -35,7 +35,7 @@ namespace NewLife.Cube
         /// <summary>设置Session值</summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        protected virtual void SetSession(String key, Object value) => HttpContext.Session.Set(key, value.ToBytes());
+        protected virtual void SetSession(String key, Object value) => HttpContext.Session.Set(key, value);
 #else
         /// <summary>获取请求值</summary>
         /// <param name="key"></param>

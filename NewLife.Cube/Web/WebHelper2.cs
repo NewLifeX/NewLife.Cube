@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using NewLife.Collections;
 using NewLife.Cube.Extensions;
+using NewLife.Serialization;
 #else
 using System.Web;
 #endif
@@ -27,13 +28,31 @@ namespace NewLife.Cube
         /// <param name="session"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static T Get<T>(this ISession session, String key) where T : class => session.Get<T>(key);
+        public static T Get<T>(this ISession session, String key) where T : class
+        {
+            if (!session.TryGetValue(key, out var buf)) return default(T);
+
+            return buf.ToStr().ToJsonEntity<T>();
+        }
+
+        /// <summary>获取Session值</summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="session"></param>
+        /// <param name="key"></param>
+        /// <param name="targetType"></param>
+        /// <returns></returns>
+        public static Object Get(this ISession session, String key, Type targetType)
+        {
+            if (!session.TryGetValue(key, out var buf)) return null;
+
+            return buf.ToStr().ToJsonEntity(targetType);
+        }
 
         /// <summary>设置Session值</summary>
         /// <param name="session"></param>
         /// <param name="key"></param>
         /// <param name="value"></param>
-        public static void Set(this ISession session, String key, Object value) => session.Set(key, value.ToBytes());
+        public static void Set(this ISession session, String key, Object value) => session.Set(key, value?.ToJson().GetBytes());
 
         /// <summary>获取原始请求Url，支持反向代理</summary>
         /// <param name="request"></param>
