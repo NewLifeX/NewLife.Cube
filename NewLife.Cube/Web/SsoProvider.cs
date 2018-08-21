@@ -12,8 +12,10 @@ using NewLife.Web;
 using XCode.Membership;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
+using IHttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
 #else
-using HttpRequest = System.Web.HttpRequestBase;
+using IHttpRequest = System.Web.HttpRequestBase;
+using HttpRequest = System.Web.HttpRequest;
 #endif
 
 namespace NewLife.Cube.Web
@@ -59,7 +61,7 @@ namespace NewLife.Cube.Web
         /// <param name="request">请求对象</param>
         /// <param name="referr">是否使用引用</param>
         /// <returns></returns>
-        public virtual String GetReturnUrl(HttpRequest request, Boolean referr)
+        public virtual String GetReturnUrl(IHttpRequest request, Boolean referr)
         {
             var url = request.Get("r");
             if (url.IsNullOrEmpty()) url = request.Get("redirect_uri");
@@ -86,7 +88,7 @@ namespace NewLife.Cube.Web
         /// <param name="request"></param>
         /// <param name="returnUrl"></param>
         /// <returns></returns>
-        public virtual String GetRedirect(HttpRequest request, String returnUrl = null)
+        public virtual String GetRedirect(IHttpRequest request, String returnUrl = null)
         {
             if (returnUrl.IsNullOrEmpty()) returnUrl = request.Get("r");
             // 过滤环回重定向

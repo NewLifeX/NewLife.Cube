@@ -152,7 +152,7 @@ namespace NewLife.Cube
         /// <summary>获取用户主机</summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static String GetUserHost(this HttpRequestBase request) => request.UserHostAddress;
+        public static String GetUserHost(this HttpRequestBase request) => request?.UserHostAddress;
 #endif
         #endregion
     }
