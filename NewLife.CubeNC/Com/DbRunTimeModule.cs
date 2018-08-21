@@ -56,7 +56,7 @@ namespace NewLife.Cube
         //    if (SysConfig.Current.Develop) ctx.Items["XCode_SQLList"] = new List<String>();
         //}
 
-        private static readonly Boolean _tip;
+        //private static readonly Boolean _tip;
         /// <summary>获取执行时间和查询次数等信息</summary>
         /// <returns></returns>
         public static String GetInfo()

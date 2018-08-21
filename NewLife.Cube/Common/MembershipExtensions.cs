@@ -1,6 +1,10 @@
 ﻿using System;
 using XCode.Membership;
 #if __CORE__
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Razor;
 #else
 using System.Web.Mvc;
@@ -88,6 +92,22 @@ namespace NewLife.Cube
 
             return user.Has(menu, flags);
         }
+
+        ///// <summary>添加管理提供者</summary>
+        ///// <param name="service"></param>
+        //public static void AddManageProvider(this IServiceCollection service)
+        //{
+        //    service.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        //    //service.AddSingleton<IManageProvider, ManageProvider>();
+        //    service.AddSingleton(ManageProvider.Provider);
+        //}
+
+        ///// <summary>使用管理提供者</summary>
+        ///// <param name="app"></param>
+        //public static void UseManagerProvider(this IApplicationBuilder app)
+        //{
+        //    //DefaultManageProviderForCore.Context = app.ApplicationServices.GetService<IHttpContextAccessor>();
+        //}
 #else
         /// <summary>用户只有拥有当前菜单的指定权限</summary>
         /// <param name="page">页面</param>

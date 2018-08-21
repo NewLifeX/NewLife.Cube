@@ -1,35 +1,20 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.ComponentModel;
-//using System.Reflection;
-//using Microsoft.AspNetCore.Mvc;
-//using NewLife.Common;
-//using NewLife.Cube.Com;
-//using NewLife.Web;
-//using XCode;
-//using XCode.Membership;
-//using XCode.Statistics;
-
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
-using System.Web;
-using NewLife.Common;
-using NewLife.Reflection;
-using XCode.Membership;
-using XCode;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Com;
+using NewLife.Common;
 using NewLife.Cube.Extensions;
-using ManagerProviderHelper = NewLife.Cube.Membership.ManagerProviderHelper;
-using NewLife.Model;
 using NewLife.Cube.ViewModels;
+using NewLife.Model;
+using NewLife.Reflection;
+using XCode;
+using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -41,7 +26,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
-        public ManageProvider ManageProvider;
+        private IManageProvider _Provider;
 
         static IndexController()
         {
@@ -50,10 +35,9 @@ namespace NewLife.Cube.Admin.Controllers
 
         private IndexController() { }
 
-        public IndexController(ManageProvider manageProvider)
-        {
-            ManageProvider = manageProvider;
-        }
+        /// <summary>实例化</summary>
+        /// <param name="manageProvider"></param>
+        public IndexController(IManageProvider manageProvider) => _Provider = manageProvider;
 
         /// <summary>首页</summary>
         /// <returns></returns>
@@ -61,14 +45,14 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult Index()
         {
-            var user = ManagerProviderHelper.TryLogin(ManageProvider, HttpContext.RequestServices);
+            var user = ManagerProviderHelper.TryLogin(_Provider, HttpContext.RequestServices);
             if (user == null) return RedirectToAction("Login", "User", new
             {
                 r = Request.GetEncodedPathAndQuery()
                 //.Url.PathAndQuery
             });
 
-            ViewBag.User = ManageProvider.User;
+            ViewBag.User = _Provider.Current;
             ViewBag.Config = SysConfig.Current;
 
             // 工作台页面
@@ -95,7 +79,7 @@ namespace NewLife.Cube.Admin.Controllers
             //}
 
             ViewBag.Act = id;
-            ViewBag.User = ManageProvider.User;
+            ViewBag.User = _Provider.Current;
             ViewBag.Config = SysConfig.Current;
 
             var name = Request.Headers["Server_SoftWare"];
@@ -176,7 +160,7 @@ namespace NewLife.Cube.Admin.Controllers
         // [EntityAuthorize(PermissionFlags.Detail)]
         public List<MenuTree> GetMenu()
         {
-            var user = ManageProvider.User ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
+            var user = _Provider.Current as IUser ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
 
             var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
 

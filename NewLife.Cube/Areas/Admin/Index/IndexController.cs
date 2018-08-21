@@ -1,17 +1,16 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Web;
 using System.Web.Mvc;
 using NewLife.Common;
 using NewLife.Reflection;
-using XCode.Membership;
 using XCode;
-using System.Web.Hosting;
-using System.IO;
+using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers
 {

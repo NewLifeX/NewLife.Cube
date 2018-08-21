@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -14,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.Membership;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -102,8 +100,8 @@ namespace NewLife.Cube
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
             //services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
 
-            // 注册Cookie认证服务
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+            //// 注册Cookie认证服务
+            //services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             // 添加魔方模块
             // 添加管理提供者

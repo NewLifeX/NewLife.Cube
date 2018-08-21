@@ -16,7 +16,7 @@ using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
-using ManagerProviderHelper = NewLife.Cube.Membership.ManagerProviderHelper;
+//using ManagerProviderHelper = NewLife.Cube.Membership.ManagerProviderHelper;
 
 namespace NewLife.Cube
 {
