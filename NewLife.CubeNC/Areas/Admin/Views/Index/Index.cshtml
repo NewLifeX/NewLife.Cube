@@ -49,7 +49,7 @@
     <script src="~/Content/js/jquery-2.1.3.min.js"></script>
 </head>
 <body class="skin-3 no-skin" style="overflow: hidden;">
-    @Html.PartialAsync("_Navbar").Result
+    @await Html.PartialAsync("_Navbar")
     <div class="main-container" id="main-container">
         <script type="text/javascript">
             $(function () {
@@ -65,7 +65,7 @@
                 });
             </script>
 
-            @Html.Partial("_Left")
+            @await Html.PartialAsync("_Left")
             <!-- #section:basics/sidebar.layout.minimize -->
             <div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
                 <i class="ace-icon fa fa-angle-double-left" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>

@@ -36,7 +36,6 @@ namespace NewLife.Cube
         }
 
         /// <summary>获取Session值</summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="session"></param>
         /// <param name="key"></param>
         /// <param name="targetType"></param>
