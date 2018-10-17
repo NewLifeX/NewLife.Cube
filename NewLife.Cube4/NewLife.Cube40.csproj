@@ -311,6 +311,9 @@
     <Compile Include="..\NewLife.Cube\Common\RazorViewEngineX.cs">
       <Link>Common\RazorViewEngineX.cs</Link>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Common\RequireSslAttribute.cs">
+      <Link>Common\RequireSslAttribute.cs</Link>
+    </Compile>
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs">
       <Link>Common\ViewHelper.cs</Link>
     </Compile>

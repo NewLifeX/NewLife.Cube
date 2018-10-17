@@ -4,6 +4,22 @@ using NewLife.Xml;
 
 namespace NewLife.Cube
 {
+    /// <summary>SSL模式</summary>
+    public enum SslModes
+    {
+        /// <summary>关闭</summary>
+        [Description("关闭")]
+        Disable = 0,
+
+        /// <summary>仅首页</summary>
+        [Description("仅首页")]
+        HomeOnly = 10,
+
+        /// <summary>所有请求</summary>
+        [Description("所有请求")]
+        Full = 9999,
+    }
+
     /// <summary>魔方设置</summary>
     [DisplayName("魔方设置")]
     [XmlConfigFile(@"Config\Cube.config", 15000)]
@@ -84,7 +100,7 @@ namespace NewLife.Cube
 
         /// <summary>强制SSL。强制使用https访问</summary>
         [Description("强制SSL。强制使用https访问")]
-        public Boolean ForceSSL { get; set; }
+        public SslModes SslMode { get; set; } = SslModes.Disable;
 
         /// <summary>头像目录。设定后下载远程头像到本地</summary>
         [Description("头像目录。设定后下载远程头像到本地")]

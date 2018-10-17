@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using NewLife.Web;
 
 namespace NewLife.Cube
@@ -21,17 +22,18 @@ namespace NewLife.Cube
         void OnRequest()
         {
             var set = Setting.Current;
-            if (set.ForceSSL)
+            if (set.SslMode >= SslModes.Full)
             {
                 var ctx = HttpContext.Current;
                 var req = ctx?.Request;
-                if (req != null && !req.IsSecureConnection)
+                if (!req.IsSecureConnection && !req.IsLocal && !req.IsAjaxRequest() && req.HttpMethod.EqualIgnoreCase("GET"))
                 {
                     // 有可能前端访问的是https，经反向代理后变成http
                     var uri = req.GetRawUrl();
                     if (!uri.Scheme.StartsWith("https"))
                     {
-                        var url = $"https://{uri.Host}{uri.PathAndQuery}";
+                        //var url = $"https://{uri.Host}{uri.PathAndQuery}";
+                        var url = "https://" + uri.Host + req.RawUrl;
 
                         ctx.Response.Redirect(url);
                         //ctx.Response.RedirectPermanent(url);

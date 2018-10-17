@@ -310,6 +310,7 @@
     <Compile Include="Common\MembershipExtensions.cs" />
     <Compile Include="Common\EntityController.cs" />
     <Compile Include="Common\ConfigController.cs" />
+    <Compile Include="Common\RequireSslAttribute.cs" />
     <Compile Include="Common\ViewHelper.cs" />
     <Compile Include="Common\EntityAuthorizeAttribute.cs" />
     <Compile Include="Common\MvcHandleErrorAttribute.cs" />

@@ -29,7 +29,7 @@ namespace NewLife.Cube
                 HttpApplication.RegisterModule(typeof(UserBehaviorModule));
             }
 
-            if (set.ForceSSL) HttpApplication.RegisterModule(typeof(CubeModule));
+            if (set.SslMode >= SslModes.Full) HttpApplication.RegisterModule(typeof(CubeModule));
 #endif
         }
     }

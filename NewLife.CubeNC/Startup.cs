@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -200,7 +199,7 @@ namespace NewLife.Cube
             // 注册请求执行时间中间件
             app.UseDbRunTimeModule();
 
-            if (set.ForceSSL) app.UseHttpsRedirection();
+            if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
 
             app.UseStaticFiles();
             app.UseCookiePolicy();

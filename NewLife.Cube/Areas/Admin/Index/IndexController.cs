@@ -30,6 +30,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         //[EntityAuthorize(PermissionFlags.Detail)]
         [AllowAnonymous]
+        [RequireSsl]
         public ActionResult Index()
         {
             var user = ManageProvider.Provider.TryLogin();

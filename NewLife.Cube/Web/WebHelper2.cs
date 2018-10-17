@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 #if __CORE__
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using NewLife.Collections;
@@ -152,6 +152,19 @@ namespace NewLife.Cube
         /// <param name="request"></param>
         /// <returns></returns>
         public static String GetUserHost(this HttpRequestBase request) => request?.UserHostAddress;
+
+        /// <summary>确定指定的 HTTP 请求是否为 AJAX 请求</summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static Boolean IsAjaxRequest(this HttpRequest request)
+        {
+            if (request == null) throw new ArgumentNullException(nameof(request));
+
+            if (request["X-Requested-With"] == "XMLHttpRequest") return true;
+            if (request.Headers?["X-Requested-With"] == "XMLHttpRequest") return true;
+
+            return false;
+        }
 #endif
         #endregion
     }
