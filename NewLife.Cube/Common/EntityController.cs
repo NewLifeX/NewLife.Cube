@@ -13,6 +13,8 @@ using NewLife.Xml;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
+using NewLife.IO;
+using System.IO;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -576,86 +578,71 @@ namespace NewLife.Cube
         [DisplayName("导出")]
         public virtual ActionResult ExportExcel()
         {
-            //throw new NotImplementedException();
-
             // 准备需要输出的列
-            var list = new List<FieldItem>();
+            var fs = new List<FieldItem>();
             foreach (var fi in Factory.AllFields)
             {
                 if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
 
-                list.Add(fi);
+                fs.Add(fi);
             }
 
-            var html = OnExportExcel(list);
             var name = GetType().GetDisplayName() ?? Factory.EntityType.GetDisplayName() ?? Factory.EntityType.Name;
 
-            ToExcel("application/ms-excel", "{0}_{1}.xls".F(name, DateTime.Now.ToString("yyyyMMddHHmmss")), html);
+            var fileName = "{0}_{1:yyyyMMddHHmmss}.csv".F(name, DateTime.Now);
+            //#if !__CORE__
+            //            var rs = Response;
+            //            rs.Charset = "UTF-8";
+            //            rs.ContentEncoding = Encoding.UTF8;
+            //            rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8));
+            //            rs.ContentType = "application/ms-excel";
 
-            return null;
-        }
+            //            var data = ExportData();
+            //            OnExportExcel(fs, data, rs.OutputStream);
 
-        private void ToExcel(String FileType, String FileName, String ExcelContent)
-        {
-#if !__CORE__
-            var rs = Response;
-            rs.Charset = "UTF-8";
-            rs.ContentEncoding = Encoding.UTF8;
-            rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(FileName, Encoding.UTF8).ToString());
-            rs.ContentType = FileType;
-            var tw = new System.IO.StringWriter();
-            rs.Output.Write(ExcelContent.ToString());
-            rs.Flush();
-            rs.End();
-#endif
-        }
+            //            rs.Flush();
+            //            rs.End();
+            //#endif
 
-        /// <summary>导出Excel，可重载修改要输出的结果集</summary>
-        /// <param name="fs"></param>
-        protected virtual String OnExportExcel(List<FieldItem> fs)
-        {
-            var list = ExportData();
+            var data = ExportData();
+            var ms = new MemoryStream();
+            OnExportExcel(fs, data, ms);
+            ms.Position = 0;
 
-            return OnExportExcel(fs, list);
+            return File(ms, "application/vnd.ms-excel", fileName);
         }
 
         /// <summary>导出Excel，可重载修改要输出的列</summary>
-        /// <param name="fs"></param>
-        /// <param name="list"></param>
-        protected virtual String OnExportExcel(List<FieldItem> fs, IEnumerable<TEntity> list)
+        /// <param name="fs">字段列表</param>
+        /// <param name="list">数据集</param>
+        /// <param name="output">输出流</param>
+        protected virtual void OnExportExcel(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
         {
-            var sb = new StringBuilder();
-            //下面这句解决中文乱码
-            sb.Append("<meta http-equiv='content-type' content='application/ms-excel; charset=utf-8'/>");
-            //打印表头
-            sb.Append("<table border='1' width='100%'>");
-            // 列头
+            using (var csv = new CsvFile(output))
             {
-                sb.Append("<tr>");
+                // 列头
+                var headers = new List<String>();
                 foreach (var fi in fs)
                 {
                     var name = fi.DisplayName;
                     if (name.IsNullOrEmpty()) name = fi.Description;
                     if (name.IsNullOrEmpty()) name = fi.Name;
-                    sb.Append(String.Format("<td>{0}</td>", name));
+
+                    headers.Add(name);
                 }
-                sb.Append("</tr>");
-            }
-            // 内容
-            foreach (var item in list)
-            {
-                sb.Append("<tr>");
-                foreach (var fi in fs)
+                csv.WriteLine(headers);
+
+                // 内容
+                foreach (var item in list)
                 {
-                    sb.Append(String.Format("<td>{0}</td>", "{0}".F(item[fi.Name])));
+                    var ds = new List<Object>();
+                    foreach (var fi in fs)
+                    {
+                        ds.Add(item[fi.Name]);
+                    }
+                    csv.WriteLine(ds);
                 }
-                sb.Append("</tr>");
             }
-
-            //打印表尾
-            sb.Append("</table>");
-
-            return sb.ToString();
         }
         #endregion
 
@@ -793,7 +780,7 @@ namespace NewLife.Cube
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
 
 #if !__CORE__
-           Js.Alert("生成表单模版 {0} 成功！".F(vpath));
+            Js.Alert("生成表单模版 {0} 成功！".F(vpath));
 #endif
 
             return Index();
