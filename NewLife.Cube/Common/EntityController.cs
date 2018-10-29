@@ -15,6 +15,7 @@ using XCode.Configuration;
 using XCode.Membership;
 using NewLife.IO;
 using System.IO;
+using System.Xml.Serialization;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -583,6 +584,11 @@ namespace NewLife.Cube
             foreach (var fi in Factory.AllFields)
             {
                 if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
+                if (!fi.IsDataObjectField)
+                {
+                    var pi = Factory.EntityType.GetProperty(fi.Name);
+                    if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
+                }
 
                 fs.Add(fi);
             }
