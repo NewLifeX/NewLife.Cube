@@ -1,13 +1,17 @@
 ﻿## 魔方 NewLife.Cube
 魔方 是一个基于 ASP.NET MVC 的 用户权限管理平台，可作为各种信息管理系统的基础框架。
 
-源码： https://github.com/NewLifeX/NewLife.Cube  
-演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](http://git.newlifex.com/Stone/CubeDemo)  
+源码： https://github.com/NewLifeX/NewLife.Cube
+演示：[http://cube.newlifex.com](http://cube.newlifex.com) [源码](http://git.newlifex.com/Stone/CubeDemo)
+
+国内文档中心：[http://doc.newlifex.com/](http://doc.newlifex.com/)
+
+国外文档中心：[https://newlifex.github.io/XDoc/](https://newlifex.github.io/XDoc/)
 
 ---
 ### 特性
 * 通用权限管理，用户、角色、菜单、权限，支持控制器Action权限控制
-* 多数据库，支持 `SQLite / Sql Server / Oracle / MySql / SqlCe / Access` 
+* 多数据库，支持 `SQLite / Sql Server / Oracle / MySql / SqlCe / Access`
 * 免部署，系统自动创建数据库表结构，以及初始化数据，无需人工干涉
 * 强大的视图引擎，支持子项目视图重写父项目相同位置视图，任意覆盖修改默认界面
 
@@ -33,9 +37,9 @@
 
 ---
 ### 教程
-[【演示】教务系统](http://cube.newlifex.com)  
-[【源码】教务系统](http://git.newlifex.com/Stone/CubeDemo)  
+[【演示】教务系统](http://cube.newlifex.com)
+[【源码】教务系统](http://git.newlifex.com/Stone/CubeDemo)
 
-[【教程】魔方平台NewLife.Cube基础教程（附例程源码）](http://www.newlifex.com/showtopic-1483.aspx)  
-[【教程】魔方平台NewLife.Cube模板结构详解](http://www.newlifex.com/showtopic-1491.aspx)  
+[【教程】魔方平台NewLife.Cube基础教程（附例程源码）](http://www.newlifex.com/showtopic-1483.aspx)
+[【教程】魔方平台NewLife.Cube模板结构详解](http://www.newlifex.com/showtopic-1491.aspx)
 
