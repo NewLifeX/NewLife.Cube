@@ -36,10 +36,12 @@ using NewLife.Cube;
 //
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
-[assembly: AssemblyVersion("2.4.*")]
-[assembly: AssemblyFileVersion("2.4.2018.0630")]
+[assembly: AssemblyVersion("2.5.*")]
+[assembly: AssemblyFileVersion("2.5.2018.1031")]
 
 /*
+ * v2.5.2018.1031   优化Excel导出为Csv导出，改善大数据量导出性能
+ * 
  * v2.4.2018.0630   OAuthServer支持回调地址和密钥验证
  * 
  * v2.3.2018.0403   支持数据权限，控制器重载ValidPermission
