@@ -184,17 +184,41 @@ namespace NewLife.Cube
 
         /// <summary>导出当前页以后的数据</summary>
         /// <returns></returns>
-        protected virtual IEnumerable<TEntity> ExportData()
+        protected virtual IEnumerable<TEntity> ExportData(Int32 max = 100_000)
         {
-            // 跳过头部一些页数，导出当前页以及以后的数据
-            var p = new Pager(GetSession<Pager>(CacheKey));
-            p.StartRow = (p.PageIndex - 1) * p.PageSize;
-            p.PageSize = 100000;
-            // 不要查记录数
-            //p.TotalCount = -1;
-            p.RetrieveTotalCount = false;
+            //// 跳过头部一些页数，导出当前页以及以后的数据
+            var p = new Pager(GetSession<Pager>(CacheKey))
+            {
+                //p.StartRow = (p.PageIndex - 1) * p.PageSize;
+                //p.PageSize = 1_000_000;
+                // 不要查记录数
+                //p.TotalCount = -1;
+                RetrieveTotalCount = false
+            };
 
-            return Search(p);
+            var size = 10_000;
+            if (size > max) size = max;
+
+            p.PageIndex = 1;
+            p.PageSize = size;
+
+            while (max > 0)
+            {
+                if (p.PageSize > max) p.PageSize = max;
+
+                var list = Search(p);
+
+                var count = list.Count();
+                if (count == 0) break;
+                max -= count;
+
+                foreach (var item in list)
+                {
+                    yield return item;
+                }
+
+                p.PageIndex++;
+            }
         }
         #endregion
 
@@ -506,8 +530,8 @@ namespace NewLife.Cube
                 xml = (obj as IEntity).ToXml();
             else if (obj is IList<TEntity>)
                 xml = (obj as IList<TEntity>).ToXml();
-            else
-                xml = obj.ToXml();
+            else if (obj is IEnumerable<TEntity> list)
+                xml = list.ToList().ToXml();
 
             SetAttachment(null, ".xml");
 
@@ -525,6 +549,7 @@ namespace NewLife.Cube
         {
             if (name.IsNullOrEmpty()) name = GetType().GetDisplayName();
             if (name.IsNullOrEmpty()) name = Factory.EntityType.GetDisplayName();
+            if (name.IsNullOrEmpty()) name = Factory.Table.DataTable.DisplayName;
             if (name.IsNullOrEmpty()) name = GetType().Name.TrimEnd("Controller");
             if (!ext.IsNullOrEmpty()) ext = ext.EnsureStart(".");
             name += ext;
@@ -550,14 +575,9 @@ namespace NewLife.Cube
         [DisplayName("导出")]
         public virtual ActionResult ExportJson()
         {
-            //var list = Entity<TEntity>.FindAll();
-            //var json = list.ToJson(true);
-            //var json = new Json().Serialize(list);
             var json = OnExportJson().ToJson(true);
 
             SetAttachment(null, ".json");
-
-            //return Json(list, JsonRequestBehavior.AllowGet);
 
             return Content(json, "application/json", Encoding.UTF8);
         }
@@ -593,29 +613,34 @@ namespace NewLife.Cube
                 fs.Add(fi);
             }
 
-            var name = GetType().GetDisplayName() ?? Factory.EntityType.GetDisplayName() ?? Factory.EntityType.Name;
+            var name = GetType().GetDisplayName()
+                ?? Factory.EntityType.GetDisplayName()
+                ?? Factory.Table.DataTable.DisplayName
+                ?? Factory.EntityType.Name;
 
             var fileName = "{0}_{1:yyyyMMddHHmmss}.csv".F(name, DateTime.Now);
-            //#if !__CORE__
-            //            var rs = Response;
-            //            rs.Charset = "UTF-8";
-            //            rs.ContentEncoding = Encoding.UTF8;
-            //            rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8));
-            //            rs.ContentType = "application/ms-excel";
+#if !__CORE__
+            var rs = Response;
+            rs.Charset = "UTF-8";
+            rs.ContentEncoding = Encoding.UTF8;
+            rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8));
+            rs.ContentType = "application/vnd.ms-excel";
 
-            //            var data = ExportData();
-            //            OnExportExcel(fs, data, rs.OutputStream);
+            var data = ExportData(1_000_000);
+            OnExportExcel(fs, data, rs.OutputStream);
 
-            //            rs.Flush();
-            //            rs.End();
-            //#endif
+            //rs.Flush();
+            //rs.End();
+#endif
 
-            var data = ExportData();
-            var ms = new MemoryStream();
-            OnExportExcel(fs, data, ms);
-            ms.Position = 0;
+            //var data = ExportData(1_000_000);
+            //var ms = new MemoryStream();
+            //OnExportExcel(fs, data, ms);
+            //ms.Position = 0;
 
-            return File(ms, "application/vnd.ms-excel", fileName);
+            //return File(ms, "application/vnd.ms-excel", fileName);
+
+            return new EmptyResult();
         }
 
         /// <summary>导出Excel，可重载修改要输出的列</summary>
