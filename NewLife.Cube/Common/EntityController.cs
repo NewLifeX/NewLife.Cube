@@ -16,6 +16,7 @@ using XCode.Membership;
 using NewLife.IO;
 using System.IO;
 using System.Xml.Serialization;
+using System.IO.Compression;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -90,6 +91,9 @@ namespace NewLife.Cube
                 //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)
                 //    txt = "这里是页头内容，来自于菜单备注，或者给控制器增加Description特性";
                 ViewBag.HeaderContent = txt;
+
+                // 启用压缩
+                if (Setting.Current.EnableCompress && filterContext.ActionDescriptor.ActionName != nameof(ExportExcel)) SetCompress();
             }
 
             base.OnActionExecuting(filterContext);
@@ -216,6 +220,8 @@ namespace NewLife.Cube
                 {
                     yield return item;
                 }
+
+                if (count < p.PageSize) break;
 
                 p.PageIndex++;
             }
@@ -533,6 +539,8 @@ namespace NewLife.Cube
             else if (obj is IEnumerable<TEntity> list)
                 xml = list.ToList().ToXml();
 
+            if (xml.Length > 4 * 1024) SetCompress();
+
             SetAttachment(null, ".xml");
 
             return Content(xml, "text/xml", Encoding.UTF8);
@@ -577,6 +585,8 @@ namespace NewLife.Cube
         {
             var json = OnExportJson().ToJson(true);
 
+            if (json.Length > 4 * 1024) SetCompress();
+
             SetAttachment(null, ".json");
 
             return Content(json, "application/json", Encoding.UTF8);
@@ -613,6 +623,21 @@ namespace NewLife.Cube
                 fs.Add(fi);
             }
 
+            // 要导出的数据超大时，启用流式输出
+            var buffer = true;
+            if (Factory.Count > 100_000)
+            {
+                var p = new Pager(GetSession<Pager>(CacheKey))
+                {
+                    PageSize = 1,
+                    RetrieveTotalCount = true
+                };
+                Search(p);
+
+                // 超过一万行
+                if (p.TotalCount > 10_000) buffer = false;
+            }
+
             var name = GetType().GetDisplayName()
                 ?? Factory.EntityType.GetDisplayName()
                 ?? Factory.Table.DataTable.DisplayName
@@ -626,11 +651,13 @@ namespace NewLife.Cube
             rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8));
             rs.ContentType = "application/vnd.ms-excel";
 
+            if (buffer) SetCompress();
+            rs.Buffer = buffer;
+
             var data = ExportData(1_000_000);
             OnExportExcel(fs, data, rs.OutputStream);
 
-            //rs.Flush();
-            //rs.End();
+            rs.Flush();
 #endif
 
             //var data = ExportData(1_000_000);
@@ -926,6 +953,31 @@ namespace NewLife.Cube
                 if ((RouteData.Values["output"] + "").EqualIgnoreCase("json")) return true;
 
                 return false;
+            }
+        }
+
+        /// <summary>启用压缩</summary>
+        protected virtual void SetCompress()
+        {
+            var ctx = HttpContext;
+            if (ctx.Items["Compress"].ToBoolean()) return;
+            ctx.Items["Compress"] = true;
+
+            var accept = Request.Headers["Accept-Encoding"];
+            if (!String.IsNullOrEmpty(accept))
+            {
+                var ps = accept.ToLower().Split(",", ";").Select(e => (e + "").Trim()).Where(e => !e.IsNullOrEmpty()).ToArray();
+                var rs = Response;
+                if (ps.Contains("deflate"))
+                {
+                    rs.AppendHeader("Content-encoding", "deflate");
+                    rs.Filter = new DeflateStream(rs.Filter, CompressionMode.Compress, true);
+                }
+                else if (ps.Contains("gzip"))
+                {
+                    rs.AppendHeader("Content-encoding", "gzip");
+                    rs.Filter = new GZipStream(rs.Filter, CompressionMode.Compress, true);
+                }
             }
         }
         #endregion

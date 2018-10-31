@@ -102,6 +102,10 @@ namespace NewLife.Cube
         [Description("强制SSL。强制使用https访问")]
         public SslModes SslMode { get; set; } = SslModes.Disable;
 
+        /// <summary>启用压缩。默认false</summary>
+        [Description("启用压缩。默认false")]
+        public Boolean EnableCompress { get; set; }
+
         /// <summary>头像目录。设定后下载远程头像到本地</summary>
         [Description("头像目录。设定后下载远程头像到本地")]
         public String AvatarPath { get; set; } = "..\\Avatars";
