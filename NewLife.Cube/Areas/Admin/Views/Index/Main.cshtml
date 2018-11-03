@@ -114,7 +114,7 @@
                 提交: @((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
                 GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
                 <a href="@Url.Action("Main/ProcessModules")" target="_blank" title="点击打开进程模块列表">模块列表</a>
-                <a href="@Url.Action("MemoryFree")" target="_blank" title="点击释放进程内存">释放内存</a>
+                <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
             </td>
             <td class="name">
                 进程时间：
