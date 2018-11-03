@@ -292,11 +292,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_ViewStart.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Build.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
-    </Compile>
     <Compile Include="Common\AreaAttribute.cs" />
     <Compile Include="Common\BootstrapJs.cs" />
     <Compile Include="Common\ControllerHelper.cs" />
@@ -648,10 +643,6 @@
     <None Include="Content\jweui\lib\weui.css" />
     <None Include="Content\jweui\lib\weui.min.css" />
     <None Include="Content\jweui\lib\zepto.js" />
-    <Content Include="Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.cs</LastGenOutput>
-    </Content>
     <Content Include="Content\images\logo\alipay.png" />
     <Content Include="Content\images\logo\Baidu.png" />
     <Content Include="Content\images\logo\github.png" />
@@ -884,7 +875,6 @@
     <None Include="Scripts\jquery.validate.unobtrusive.js" />
     <None Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <None Include="Scripts\modernizr-2.6.2.js" />
-    <Content Include="Model.xml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

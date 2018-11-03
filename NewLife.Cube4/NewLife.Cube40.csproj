@@ -518,11 +518,6 @@
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs">
       <Link>Web\WebHelper2.cs</Link>
     </Compile>
-    <Compile Include="Build.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
-    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -565,10 +560,6 @@
       <Link>Entity\XCoder.tt</Link>
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>XCoder.cs</LastGenOutput>
-    </Content>
-    <Content Include="Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.cs</LastGenOutput>
     </Content>
     <Content Include="favicon.ico" />
     <Content Include="..\NewLife.Cube\Areas\Admin\Views\User\Info.cshtml">
@@ -754,7 +745,6 @@
     <None Include="Global.asax" />
     <None Include="Areas\Admin\Views\Web.config" />
     <None Include="Properties\PublishProfiles\Cube.pubxml" />
-    <Content Include="Model.xml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
