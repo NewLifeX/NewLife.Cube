@@ -110,6 +110,9 @@ namespace NewLife.Cube
             //services.AddHttpContextAccessor();
 
             //services.AddCubeDefaultUI(HostingEnvironment);
+
+            // 添加压缩
+            services.AddResponseCompression();
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
@@ -191,11 +194,15 @@ namespace NewLife.Cube
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
 
-            var set = NewLife.Cube.Setting.Current;
+            var set = Setting.Current;
 
             // 添加自定义中间件
             // 注册错误处理模块中间件
             app.UseErrorModule();
+
+            // 压缩配置
+            if(Setting.Current.EnableCompress) app.UseResponseCompression();
+
             // 注册请求执行时间中间件
             app.UseDbRunTimeModule();
 

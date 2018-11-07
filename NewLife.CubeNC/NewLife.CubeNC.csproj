@@ -97,12 +97,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="NewLife.CubeNC.csproj.DotSettings" />
     <None Remove="readme.txt" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="NewLife.XCode" Version="9.9.6806.38809" />
+    <PackageReference Include="NewLife.XCode" Version="9.9.6881.41312" />
   </ItemGroup>
 
   <ItemGroup>

@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 #else
@@ -92,8 +93,11 @@ namespace NewLife.Cube
                 //    txt = "这里是页头内容，来自于菜单备注，或者给控制器增加Description特性";
                 ViewBag.HeaderContent = txt;
 
+#if !__CORE__
+                var actionName = filterContext.ActionDescriptor.ActionName;
                 // 启用压缩
-                if (Setting.Current.EnableCompress && filterContext.ActionDescriptor.ActionName != nameof(ExportExcel)) SetCompress();
+                if (Setting.Current.EnableCompress && actionName != nameof(ExportExcel)) SetCompress();
+#endif
             }
 
             base.OnActionExecuting(filterContext);
@@ -538,8 +542,9 @@ namespace NewLife.Cube
                 xml = (obj as IList<TEntity>).ToXml();
             else if (obj is IEnumerable<TEntity> list)
                 xml = list.ToList().ToXml();
-
+#if !__CORE__
             if (xml.Length > 4 * 1024) SetCompress();
+#endif
 
             SetAttachment(null, ".xml");
 
@@ -584,8 +589,9 @@ namespace NewLife.Cube
         public virtual ActionResult ExportJson()
         {
             var json = OnExportJson().ToJson(true);
-
+#if !__CORE__
             if (json.Length > 4 * 1024) SetCompress();
+#endif
 
             SetAttachment(null, ".json");
 
@@ -702,9 +708,9 @@ namespace NewLife.Cube
                 }
             }
         }
-        #endregion
+#endregion
 
-        #region 批量删除
+#region 批量删除
         /// <summary>删除选中</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
@@ -801,9 +807,9 @@ namespace NewLife.Cube
             else
                 return RedirectToAction("Index");
         }
-        #endregion
+#endregion
 
-        #region 模版Action
+#region 模版Action
         /// <summary>生成列表</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
@@ -843,9 +849,9 @@ namespace NewLife.Cube
 
             return Index();
         }
-        #endregion
+#endregion
 
-        #region 实体操作重载
+#region 实体操作重载
         /// <summary>添加实体对象</summary>
         /// <param name="entity"></param>
         /// <returns></returns>
@@ -888,9 +894,9 @@ namespace NewLife.Cube
         /// <param name="post">是否提交数据阶段</param>
         /// <returns></returns>
         protected virtual Boolean ValidPermission(TEntity entity, DataObjectMethodType type, Boolean post) => true;
-        #endregion
+#endregion
 
-        #region 列表字段和表单字段
+#region 列表字段和表单字段
         private static FieldCollection _ListFields;
         /// <summary>列表字段过滤</summary>
         protected static FieldCollection ListFields { get { return _ListFields ?? (_ListFields = new FieldCollection(Factory).SetRelation(false)); } set { _ListFields = value; } }
@@ -903,9 +909,9 @@ namespace NewLife.Cube
         /// <param name="isForm">是否是表单</param>
         /// <returns></returns>
         protected virtual IList<FieldItem> GetFields(Boolean isForm) => (isForm ? FormFields : ListFields) ?? Entity<TEntity>.Meta.Fields.ToList();
-        #endregion
+#endregion
 
-        #region 权限菜单
+#region 权限菜单
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
@@ -933,9 +939,9 @@ namespace NewLife.Cube
 
             return dic;
         }
-        #endregion
+#endregion
 
-        #region 辅助
+#region 辅助
         /// <summary>是否Json请求</summary>
         protected virtual Boolean IsJsonRequest
         {
@@ -955,7 +961,7 @@ namespace NewLife.Cube
                 return false;
             }
         }
-
+#if !__CORE__
         /// <summary>启用压缩</summary>
         protected virtual void SetCompress()
         {
@@ -980,6 +986,7 @@ namespace NewLife.Cube
                 }
             }
         }
-        #endregion
+#endif
+#endregion
     }
 }
