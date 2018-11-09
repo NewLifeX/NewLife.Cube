@@ -1,0 +1,58 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership
+@{
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as List<FieldItem>;
+}
+<table class="table table-bordered table-hover table-striped table-condensed">
+    <thead>
+        <tr>
+            <th class="text-center hidden-md hidden-sm hidden-xs"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ClassID"))">班级2</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Name"))">名称3</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Sex"))">性别4</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Age"))">年龄5</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Mobile"))">手机</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Address"))">地址</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">创建时间</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">创建地址</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateIP"))">更新地址</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">备注</a></th>
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            <tr>
+                <td class="text-center hidden-md hidden-sm hidden-xs">@entity.ID</td>
+                <td>@entity.ClassName</td>
+                <td>@entity.Name</td>
+                <td class="text-center">@entity.SexKind</td>
+                <td class="text-right">@entity.Age.ToString("n0")</td>
+                <td>@entity.Mobile</td>
+                <td>@entity.Address</td>
+                <td>@Utility.ToFullString(entity.CreateTime, "")</td>
+                <td>@entity.CreateIP</td>
+                <td>@Utility.ToFullString(entity.UpdateTime, "")</td>
+                <td>@entity.UpdateIP</td>
+                <td>@entity.Remark</td>
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td class="text-center">
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

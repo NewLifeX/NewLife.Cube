@@ -47,3 +47,4 @@ bld/
 /NewLife.Cube4/Build.cs
 /.vscode
 /WebTest/wwwroot
+/WebTest/Areas/School/Models/Config
