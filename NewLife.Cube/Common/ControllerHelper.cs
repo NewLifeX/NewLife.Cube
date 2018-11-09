@@ -1,5 +1,14 @@
 ﻿using System;
+#if __CORE__
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Http.Extensions;
+#else
 using System.Web.Mvc;
+#endif
 using XCode.Membership;
 
 namespace NewLife.Cube
@@ -14,19 +23,20 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static ActionResult JsonTips(Object data, String url = null)
         {
-            var vr = new JsonResult
+            object value;
+            if (data is Exception ex)
+                value = new { result = false, data = ex.GetTrue()?.Message, url };
+            else
+                value = new { result = true, data, url };
+#if __CORE__
+            var vr = new JsonResult(value);
+#else
+            var vr = new JsonResult()
             {
+                Data = value,
                 JsonRequestBehavior = JsonRequestBehavior.AllowGet
             };
-            //vr.Data = data;
-            //vr.ContentType = contentType;
-            //vr.ContentEncoding = contentEncoding;
-
-            if (data is Exception ex)
-                vr.Data = new { result = false, data = ex.GetTrue()?.Message, url };
-            else
-                vr.Data = new { result = true, data, url };
-
+#endif
             return vr;
         }
 
@@ -40,10 +50,18 @@ namespace NewLife.Cube
         /// <param name="filterContext"></param>
         /// <param name="pm"></param>
         /// <returns></returns>
+#if __CORE__
+        public static ActionResult NoPermission(this AuthorizationFilterContext filterContext, PermissionFlags pm)
+        {
+            var act = (ControllerActionDescriptor)filterContext.ActionDescriptor;
+            var ctrl = act;
+#else
         public static ActionResult NoPermission(this AuthorizationContext filterContext, PermissionFlags pm)
         {
             var act = filterContext.ActionDescriptor;
             var ctrl = act.ControllerDescriptor;
+#endif
+
 
             var res = "[{0}/{1}]".F(ctrl.ControllerName, act.ActionName);
             var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
@@ -56,11 +74,22 @@ namespace NewLife.Cube
             {
                 ViewName = "NoPermission"
             };
+#if __CORE__
+            //vr.Context = filterContext;//不需要赋值Context，执行的时候会自己获取Context
+            vr.ViewData =
+                new ViewDataDictionary(new EmptyModelMetadataProvider(),
+                    filterContext.ModelState)
+                {
+                    ["Resource"] = res,
+                    ["Permission"] = pm,
+                    ["Menu"] = menu
+                };
+#else
             vr.ViewBag.Context = filterContext;
             vr.ViewBag.Resource = res;
             vr.ViewBag.Permission = pm;
             vr.ViewBag.Menu = menu;
-
+#endif
             return vr;
         }
 
@@ -82,10 +111,16 @@ namespace NewLife.Cube
             {
                 ViewName = "NoPermission"
             };
+#if __CORE__
+            vr.ViewData = controller.ViewData;
+            vr.ViewData["Resource"] = res;
+            vr.ViewData["Permission"] = pm;
+            vr.ViewData["Menu"] = menu;
+#else
             vr.ViewBag.Resource = res;
             vr.ViewBag.Permission = pm;
             vr.ViewBag.Menu = menu;
-
+#endif
             return vr;
         }
 
@@ -93,10 +128,17 @@ namespace NewLife.Cube
         /// <param name="controller"></param>
         /// <param name="ex"></param>
         /// <returns></returns>
+#if __CORE__
+        public static ActionResult NoPermission(this ActionContext controller, NoPermissionException ex)
+        {
+            var ctx = controller.HttpContext;
+            var res = ctx.Request.GetEncodedUrl();
+#else
         public static ActionResult NoPermission(this ControllerBase controller, NoPermissionException ex)
         {
             var ctx = controller.ControllerContext.HttpContext;
             var res = ctx.Request.Url.AbsolutePath;
+#endif
             var pm = ex.Permission;
             var msg = "无权访问数据[{0}]，没有该数据的 {1} 权限".F(res, pm.GetDescription());
             LogProvider.Provider.WriteLog("访问", "拒绝", msg);
@@ -107,10 +149,19 @@ namespace NewLife.Cube
             {
                 ViewName = "NoPermission"
             };
+#if __CORE__
+            vr.ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider(),
+                    controller.ModelState)
+            {
+                ["Resource"] = res,
+                ["Permission"] = pm,
+                ["Menu"] = menu
+            };
+#else
             vr.ViewBag.Resource = res;
             vr.ViewBag.Permission = pm;
             vr.ViewBag.Menu = menu;
-
+#endif
             return vr;
         }
     }
