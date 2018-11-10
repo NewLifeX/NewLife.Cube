@@ -18,7 +18,7 @@
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
       <Column Name="ClassID" DataType="Int32" Description="班级" />
       <Column Name="Name" DataType="String" Master="True" Description="名称" />
-      <Column Name="Sex" DataType="Int32" Description="性别" />
+      <Column Name="Sex" DataType="Int32" Description="性别" Type="SexKind" />
       <Column Name="Age" DataType="Int32" Description="年龄" />
       <Column Name="Mobile" DataType="String" Description="手机" />
       <Column Name="Address" DataType="String" Description="地址" />

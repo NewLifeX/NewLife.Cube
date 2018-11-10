@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -23,6 +23,12 @@ using XCode.Membership;
 
 namespace NewLife.School.Entity
 {
+   public enum SexKind
+    {
+        女 = 0,
+        男 = 1,
+        未知 = 2
+    }
     /// <summary>学生</summary>
     public partial class Student : Entity<Student>
     {

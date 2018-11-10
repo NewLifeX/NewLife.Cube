@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Areas\Admin\Views\Index\Index.cshtml" />
     <Content Remove="Areas\School\Views\Class\_List_Data.cshtml" />
   </ItemGroup>
 
@@ -37,6 +38,13 @@
   <ItemGroup>
     <Folder Include="Areas\School\Data\" />
     <Folder Include="Areas\School\Views\Class\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Areas\Admin\Views\Index\Index.cshtml">
+      <LastGenOutput>Index.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
