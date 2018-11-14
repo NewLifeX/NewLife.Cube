@@ -48,3 +48,5 @@ bld/
 /.vscode
 /WebTest/wwwroot
 /WebTest/Areas/School/Models/Config
+/VuejsApp/node_modules
+/Web.Vue/wwwroot

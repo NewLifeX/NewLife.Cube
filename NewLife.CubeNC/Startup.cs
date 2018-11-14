@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.OData.Builder;
-using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -117,8 +115,8 @@ namespace NewLife.Cube
             // 添加压缩
             services.AddResponseCompression();
 
-            // 添加OData
-            services.AddOData();
+            //// 添加OData
+            //services.AddOData();
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
@@ -221,10 +219,10 @@ namespace NewLife.Cube
 
             app.UseMvc(routes =>
             {
-                var builder = new ODataConventionModelBuilder();
-                builder.EntitySet<UserX>("UserXs");
-                // OData路由放在最前面
-                routes.MapODataServiceRoute("ODataRoute","OData", builder.GetEdmModel());
+                //var builder = new ODataConventionModelBuilder();
+                //builder.EntitySet<UserX>("UserXs");
+                //// OData路由放在最前面
+                //routes.MapODataServiceRoute("ODataRoute","OData", builder.GetEdmModel());
 
                 // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
                 routes.MapRoute(
