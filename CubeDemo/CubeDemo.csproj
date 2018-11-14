@@ -100,6 +100,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Areas\School\Controllers\TradeController.cs" />
+    <Compile Include="Areas\School\Controllers\StudentController.cs" />
+    <Compile Include="Areas\School\Controllers\ClassController.cs" />
+    <Compile Include="Areas\School\SchoolAreaRegistration.cs" />
     <Compile Include="Entity\交易.Biz.cs" />
     <Compile Include="Entity\交易.cs" />
     <Compile Include="Entity\学生.Biz.cs" />
@@ -136,7 +140,13 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Build.tt</DependentUpon>
     </Content>
+    <Content Include="Areas\School\Views\web.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Areas\School\Models\" />
+    <Folder Include="Areas\School\Views\Class\" />
+    <Folder Include="Areas\School\Views\Shared\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

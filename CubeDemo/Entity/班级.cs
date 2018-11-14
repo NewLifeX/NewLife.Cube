@@ -28,7 +28,7 @@ namespace NewLife.School.Entity
         [DisplayName("名称")]
         [Description("名称")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("xxx_Name", "名称", "nvarchar(50)", Master = true)]
+        [BindColumn("xxx_Nameyyy", "名称", "nvarchar(50)", Master = true)]
         public String Name { get { return _Name; } set { if (OnPropertyChanging(__.Name, value)) { _Name = value; OnPropertyChanged(__.Name); } } }
 
         private Int32 _CreateUserID;

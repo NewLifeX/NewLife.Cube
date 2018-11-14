@@ -3,7 +3,7 @@
   <Table Name="Class" TableName="xxx_class" Description="班级" DbType="SqlServer">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-      <Column Name="Name" ColumnName="xxx_Name" DataType="String" Master="True" Description="名称" />
+      <Column Name="Name" ColumnName="xxx_Nameyyy" DataType="String" Master="True" Description="名称" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
       <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" />
