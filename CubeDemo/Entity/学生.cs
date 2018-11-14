@@ -40,13 +40,13 @@ namespace NewLife.School.Entity
         [BindColumn("Name", "名称", "nvarchar(50)", Master = true)]
         public String Name { get { return _Name; } set { if (OnPropertyChanging(__.Name, value)) { _Name = value; OnPropertyChanged(__.Name); } } }
 
-        private Int32 _Sex;
+        private XCode.Membership.SexKinds _Sex;
         /// <summary>性别</summary>
         [DisplayName("性别")]
         [Description("性别")]
         [DataObjectField(false, false, false, 0)]
         [BindColumn("Sex", "性别", "int")]
-        public Int32 Sex { get { return _Sex; } set { if (OnPropertyChanging(__.Sex, value)) { _Sex = value; OnPropertyChanged(__.Sex); } } }
+        public XCode.Membership.SexKinds Sex { get { return _Sex; } set { if (OnPropertyChanging(__.Sex, value)) { _Sex = value; OnPropertyChanged(__.Sex); } } }
 
         private Int32 _Age;
         /// <summary>年龄</summary>
@@ -163,7 +163,7 @@ namespace NewLife.School.Entity
                     case __.ID : _ID = Convert.ToInt32(value); break;
                     case __.ClassID : _ClassID = Convert.ToInt32(value); break;
                     case __.Name : _Name = Convert.ToString(value); break;
-                    case __.Sex : _Sex = Convert.ToInt32(value); break;
+                    case __.Sex : _Sex = (XCode.Membership.SexKinds)Convert.ToInt32(value); break;
                     case __.Age : _Age = Convert.ToInt32(value); break;
                     case __.Mobile : _Mobile = Convert.ToString(value); break;
                     case __.Address : _Address = Convert.ToString(value); break;
@@ -291,7 +291,7 @@ namespace NewLife.School.Entity
         String Name { get; set; }
 
         /// <summary>性别</summary>
-        Int32 Sex { get; set; }
+        XCode.Membership.SexKinds Sex { get; set; }
 
         /// <summary>年龄</summary>
         Int32 Age { get; set; }

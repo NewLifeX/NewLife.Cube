@@ -141,6 +141,7 @@
       <DependentUpon>Build.tt</DependentUpon>
     </Content>
     <Content Include="Areas\School\Views\web.config" />
+    <Content Include="Areas\School\Views\Student\_List_Data.cshtml" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
