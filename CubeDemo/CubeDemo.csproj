@@ -114,6 +114,16 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Areas\School\Views\Student\_Form_Body.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Form_Body.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Areas\School\Views\Student\_List_Data.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Areas\School\Views\Student\_List_Search.generated.cs">
       <DependentUpon>_List_Search.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -161,7 +171,10 @@
       <DependentUpon>Build.tt</DependentUpon>
     </Content>
     <Content Include="Areas\School\Views\web.config" />
-    <Content Include="Areas\School\Views\Student\_List_Data.cshtml" />
+    <Content Include="Areas\School\Views\Student\_List_Data.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+    </Content>
     <Content Include="Areas\School\Views\Student\_Ace_Layout_Nav.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Ace_Layout_Nav.generated.cs</LastGenOutput>
@@ -170,7 +183,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Ace_Layout_Nav.generated.cs</LastGenOutput>
     </Content>
-    <Content Include="Areas\School\Views\Student\_Form_Body.cshtml" />
+    <Content Include="Areas\School\Views\Student\_Form_Body.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Form_Body.generated.cs</LastGenOutput>
+    </Content>
     <Content Include="Areas\School\Views\Student\_List_Search.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
