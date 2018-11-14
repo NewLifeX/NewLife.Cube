@@ -1,0 +1,13 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using NewLife.School.Entity;
+@{
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+}
+<div class="form-group">
+    <label for="RoleID" class="control-label">班级：</label>
+    @Html.ForDropDownList("ClassID", Class.FindAllWithCache().Cast<IEntity>().ToList(), "全部", true)
+</div>
+@*@Html.Partial("_DateRange")*@
