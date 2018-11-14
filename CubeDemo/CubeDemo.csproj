@@ -100,6 +100,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entity\交易.Biz.cs" />
+    <Compile Include="Entity\交易.cs" />
+    <Compile Include="Entity\学生.Biz.cs" />
+    <Compile Include="Entity\学生.cs" />
+    <Compile Include="Entity\班级.Biz.cs" />
+    <Compile Include="Entity\班级.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -108,7 +114,7 @@
   <ItemGroup>
     <Content Include="Build.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.cs</LastGenOutput>
+      <LastGenOutput>Build.log</LastGenOutput>
     </Content>
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -121,8 +127,15 @@
       <DependentUpon>Web.config</DependentUpon>
     </Content>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Build.log">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build.tt</DependentUpon>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup>
