@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using NewLife.Data;
 using XCode;
 using XCode.Membership;
 
@@ -131,6 +132,14 @@ namespace NewLife.School.Entity
         #endregion
 
         #region 高级查询
+        public static IList<Student> Search(Int32 classid, String key, PageParameter page)
+        {
+            var exp = new WhereExpression();
+            if (classid > 0) exp &= _.ClassID == classid;
+            if (!key.IsNullOrEmpty()) exp &= _.Name.Contains(key);
+
+            return FindAll(exp, page);
+        }
         #endregion
 
         #region 业务操作
