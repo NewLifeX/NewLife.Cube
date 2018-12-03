@@ -104,7 +104,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="NewLife.XCode" Version="9.9.6881.41312" />
+    <PackageReference Include="NewLife.XCode" Version="9.9.6911.41890" />
   </ItemGroup>
 
   <ItemGroup>
