@@ -4,11 +4,20 @@ using System.ComponentModel;
 using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode.DataAccessLayer;
 using XCode.Membership;
+using XCode.Service;
+#if __CORE__
+using Microsoft.AspNetCore.Http;
+using NewLife.Cube.Com;
+using NewLife.Cube.Extensions;
+#else
+using System.Web;
+using System.Web.Mvc;
+#endif
 #if NET4
 using Task = System.Threading.Tasks.TaskEx;
 #endif
@@ -18,6 +27,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>数据库管理</summary>
     [DisplayName("数据库")]
     [EntityAuthorize(PermissionFlags.Detail)]
+    [Area("Admin")]
     public class DbController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
@@ -72,6 +82,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Update)]
         public ActionResult SetStatic(String name)
         {
+#if !__CORE__
             // 读取配置文件
             var css = ConfigurationManager.ConnectionStrings;
             var conns = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
@@ -106,7 +117,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             Js.Alert(msg);
-
+#endif
             return Index();
         }
 
@@ -154,11 +165,11 @@ namespace NewLife.Cube.Admin.Controllers
             return File(xml.GetBytes(), "application/xml", name + ".xml");
         }
 
-        #region 日志
+#region 日志
         private static void WriteLog(String action, String remark)
         {
             LogProvider.Provider.WriteLog(typeof(DbController), action, remark);
         }
-        #endregion
+#endregion
     }
 }
