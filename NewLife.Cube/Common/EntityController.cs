@@ -289,7 +289,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
         [DisplayName("删除{type}")]
-        public virtual ActionResult Delete(Int32 id)
+        public virtual ActionResult Delete(String id)
         {
 #if __CORE__
             var url = Request.Headers["Referer"].FirstOrDefault() + "";

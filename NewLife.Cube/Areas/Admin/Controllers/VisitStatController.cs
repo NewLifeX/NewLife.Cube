@@ -58,7 +58,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [DisplayName()]
-        public override ActionResult Delete(Int32 id) => throw new Exception("不允许删除");
+        public override ActionResult Delete(String id) => throw new Exception("不允许删除");
 
         /// <summary>清空全表数据</summary>
         /// <returns></returns>
