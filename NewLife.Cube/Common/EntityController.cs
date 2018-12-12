@@ -74,10 +74,11 @@ namespace NewLife.Cube
                 // 默认加上分页给前台
 #if __CORE__
                 var ps = filterContext.ActionArguments.ToNullable();
+                var p = ps["p"] as Pager ?? new Pager();
 #else
                 var ps = filterContext.ActionParameters.ToNullable();
+                var p = ps["p"] as Pager ?? new Pager { Params = WebHelper.Params };
 #endif
-                var p = ps["p"] as Pager ?? new Pager();
                 ViewBag.Page = p;
 
                 // 用于显示的列
@@ -239,8 +240,6 @@ namespace NewLife.Cube
         [DisplayName("{type}管理")]
         public virtual ActionResult Index(Pager p = null)
         {
-            if (p == null) p = new Pager();
-
             ViewBag.Page = p;
 
             // 缓存数据，用于后续导出

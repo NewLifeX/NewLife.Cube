@@ -1,5 +1,4 @@
-﻿using System.Web.Http;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using System.Web.Routing;
 using NewLife.Log;
 
@@ -23,7 +22,7 @@ namespace NewLife.Cube
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             //BundleConfig.RegisterBundles(BundleTable.Bundles);
             //XCode.Cache.CacheBase.Debug = true;
-            
+
 
             XTrace.WriteLine("系统启动完成");
         }

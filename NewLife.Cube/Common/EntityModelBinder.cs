@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Web;
 using XCode;
 
 namespace NewLife.Cube
@@ -68,6 +70,15 @@ namespace NewLife.Cube
                     return fact.Create();
                 }
             }
+            else if (modelType == typeof(Pager) || modelType == typeof(PageParameter))
+            {
+                var pager = new Pager
+                {
+                    Params = WebHelper.Params
+                };
+
+                return pager;
+            }
 
             return base.CreateModel(controllerContext, bindingContext, modelType);
         }
@@ -112,7 +123,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public IModelBinder GetBinder(Type modelType)
         {
-            if (modelType.As<IEntity>()) return new EntityModelBinder();
+            if (modelType.As<IEntity>() || modelType == typeof(Pager) || modelType == typeof(PageParameter)) return new EntityModelBinder();
 
             return null;
         }
