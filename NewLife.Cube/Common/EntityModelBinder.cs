@@ -70,15 +70,15 @@ namespace NewLife.Cube
                     return fact.Create();
                 }
             }
-            else if (modelType == typeof(Pager) || modelType == typeof(PageParameter))
-            {
-                var pager = new Pager
-                {
-                    Params = WebHelper.Params
-                };
+            //else if (modelType == typeof(Pager) || modelType == typeof(PageParameter))
+            //{
+            //    var pager = new Pager
+            //    {
+            //        Params = WebHelper.Params
+            //    };
 
-                return pager;
-            }
+            //    return pager;
+            //}
 
             return base.CreateModel(controllerContext, bindingContext, modelType);
         }
@@ -123,7 +123,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public IModelBinder GetBinder(Type modelType)
         {
-            if (modelType.As<IEntity>() || modelType == typeof(Pager) || modelType == typeof(PageParameter)) return new EntityModelBinder();
+            if (modelType.As<IEntity>() /*|| modelType == typeof(Pager) || modelType == typeof(PageParameter)*/) return new EntityModelBinder();
 
             return null;
         }
