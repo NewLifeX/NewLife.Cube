@@ -6,8 +6,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+#if __CORE__
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Extensions;
+#else
 using System.Web;
 using System.Web.Mvc;
+#endif
+
 using NewLife.Common;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -18,26 +26,58 @@ namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>首页</summary>
     [DisplayName("首页")]
+    [Area("Admin")]
     public class IndexController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; } = 10;
 
+#if __CORE__
+        private IManageProvider _Provider;
+
+        private IndexController() { }
+
+        /// <summary>实例化</summary>
+        /// <param name="manageProvider"></param>
+        public IndexController(IManageProvider manageProvider) => _Provider = manageProvider;
+#endif
+
         /// <summary>首页</summary>
         /// <returns></returns>
         //[EntityAuthorize(PermissionFlags.Detail)]
         [AllowAnonymous]
+#if !__CORE__
         [RequireSsl]
+#endif
         public ActionResult Index()
         {
+#if __CORE__
+            var user = ManagerProviderHelper.TryLogin(_Provider, HttpContext.RequestServices);
+#else
             var user = ManageProvider.Provider.TryLogin();
-            if (user == null) return RedirectToAction("Login", "User", new { r = Request.Url.PathAndQuery });
+#endif
+            if (user == null) return RedirectToAction("Login", "User", new
+            {
+#if __CORE__
+                r = Request.GetEncodedPathAndQuery()
+#else
+                r = Request.Url.PathAndQuery
+#endif
+            });
 
+#if __CORE__
+            ViewBag.User = _Provider.Current;
+#else
             ViewBag.User = ManageProvider.User;
+#endif
             ViewBag.Config = SysConfig.Current;
 
             // 工作台页面
+#if __CORE__
+            var startPage = Request.GetRequestValue("page");
+#else
             var startPage = Request["page"];
+#endif
             if (startPage.IsNullOrEmpty()) startPage = Setting.Current.StartPage;
 
             ViewBag.Main = startPage;
@@ -61,16 +101,21 @@ namespace NewLife.Cube.Admin.Controllers
             ViewBag.Act = id;
             //ViewBag.User = ManageProvider.User;
             ViewBag.Config = SysConfig.Current;
-
+#if __CORE__
+            var name = Request.Headers["Server_SoftWare"];
+#else
             var name = Request.ServerVariables["Server_SoftWare"];
+#endif
             if (String.IsNullOrEmpty(name)) name = Process.GetCurrentProcess().ProcessName;
 
+#if !__CORE__
             // 检测集成管道，低版本.Net不支持，请使用者根据情况自行注释
             try
             {
                 if (HttpRuntime.UsingIntegratedPipeline) name += " [集成管道]";
             }
             catch { }
+#endif
 
             ViewBag.WebServerName = name;
             ViewBag.MyAsms = AssemblyX.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();

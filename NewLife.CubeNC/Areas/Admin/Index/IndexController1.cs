@@ -21,23 +21,23 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>首页</summary>
     [DisplayName("首页")]
     [Area("Admin")]
-    public class IndexController : ControllerBaseX
+    public class IndexController1 : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
         private IManageProvider _Provider;
 
-        static IndexController()
+        static IndexController1()
         {
             MenuOrder = 10;
         }
 
-        private IndexController() { }
+        private IndexController1() { }
 
         /// <summary>实例化</summary>
         /// <param name="manageProvider"></param>
-        public IndexController(IManageProvider manageProvider) => _Provider = manageProvider;
+        public IndexController1(IManageProvider manageProvider) => _Provider = manageProvider;
 
         /// <summary>首页</summary>
         /// <returns></returns>
