@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.WebPages;
 using NewLife.Cube.Precompiled;
@@ -15,9 +14,6 @@ using NewLife.Threading;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
-#if !NET4
-using TaskEx = System.Threading.Tasks.Task;
-#endif
 
 namespace NewLife.Cube
 {
@@ -50,9 +46,9 @@ namespace NewLife.Cube
             XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
             Assembly.GetExecutingAssembly().WriteVersion();
 
+            var ioc = ObjectContainer.Current;
 #if !NET4
             // 外部管理提供者需要手工覆盖
-            var ioc = ObjectContainer.Current;
             ioc.Register<IManageProvider, DefaultManageProvider>();
 #endif
 
@@ -76,14 +72,39 @@ namespace NewLife.Cube
             VirtualPathFactoryManager.RegisterVirtualPathFactory(engine);
 
             // 注册绑定提供者
-            EntityModelBinderProvider.Register();
+            ioc.Register<IModelBinderProvider, EntityModelBinderProvider>("Entity");
+            ioc.Register<IModelBinderProvider, PagerModelBinderProvider>("Pager");
+            var providers = ModelBinderProviders.BinderProviders;
+            var prv = ioc.Resolve<IModelBinderProvider>("Entity");
+            if (prv != null)
+            {
+                XTrace.WriteLine("注册模型绑定器：{0}", prv.GetType().FullName);
+                providers.Add(prv);
+            }
+            prv = ioc.Resolve<IModelBinderProvider>("Pager");
+            if (prv != null)
+            {
+                XTrace.WriteLine("注册模型绑定器：{0}", prv.GetType().FullName);
+                providers.Add(prv);
+            }
 
             // 注册过滤器
-            XTrace.WriteLine("注册异常过滤器：{0}", typeof(MvcHandleErrorAttribute).FullName);
-            XTrace.WriteLine("注册授权过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
+            ioc.Register<HandleErrorAttribute, MvcHandleErrorAttribute>();
+            ioc.Register<AuthorizeAttribute, EntityAuthorizeAttribute>();
             var filters = GlobalFilters.Filters;
-            filters.Add(new MvcHandleErrorAttribute());
-            filters.Add(new EntityAuthorizeAttribute() { IsGlobal = true });
+            var f1 = ioc.Resolve<HandleErrorAttribute>();
+            if (f1 != null)
+            {
+                XTrace.WriteLine("注册异常过滤器：{0}", f1.GetType().FullName);
+                filters.Add(f1);
+            }
+            var f2 = ioc.Resolve<AuthorizeAttribute>();
+            if (f2 != null)
+            {
+                XTrace.WriteLine("注册授权过滤器：{0}", f2.GetType().FullName);
+                if (f2 is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
+                filters.Add(f2);
+            }
 
             // 从数据库或者资源文件加载模版页面的例子
             //HostingEnvironment.RegisterVirtualPathProvider(new ViewPathProvider());
@@ -231,17 +252,7 @@ namespace NewLife.Cube
             //routes.RouteExistingFiles = true;
 
             // 自动检查并添加菜单
-            TaskEx.Run(() =>
-            {
-                try
-                {
-                    ScanController();
-                }
-                catch (Exception ex)
-                {
-                    XTrace.WriteException(ex);
-                }
-            });
+            ThreadPoolX.QueueUserWorkItem(ScanController);
         }
 
         /// <summary>自动扫描控制器，并添加到菜单</summary>

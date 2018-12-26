@@ -2,10 +2,8 @@
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
-using NewLife.Web;
 using XCode;
 
 namespace NewLife.Cube
@@ -70,23 +68,11 @@ namespace NewLife.Cube
                     return fact.Create();
                 }
             }
-            //else if (modelType == typeof(Pager) || modelType == typeof(PageParameter))
-            //{
-            //    var pager = new Pager
-            //    {
-            //        Params = WebHelper.Params
-            //    };
-
-            //    return pager;
-            //}
 
             return base.CreateModel(controllerContext, bindingContext, modelType);
         }
 
-        private static String GetCacheKey(Type type, params Object[] keys)
-        {
-            return "CubeModel_{0}_{1}".F(type.FullName, keys.Join("_"));
-        }
+        private static String GetCacheKey(Type type, params Object[] keys) => "CubeModel_{0}_{1}".F(type.FullName, keys.Join("_"));
 
         /// <summary>呈现表单前，保存实体对象。提交时优先使用该对象而不是去数据库查找，避免脏写</summary>
         /// <param name="entity"></param>
@@ -123,21 +109,9 @@ namespace NewLife.Cube
         /// <returns></returns>
         public IModelBinder GetBinder(Type modelType)
         {
-            if (modelType.As<IEntity>() /*|| modelType == typeof(Pager) || modelType == typeof(PageParameter)*/) return new EntityModelBinder();
+            if (modelType.As<IEntity>()) return new EntityModelBinder();
 
             return null;
-        }
-
-        static EntityModelBinderProvider()
-        {
-            XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);
-            ModelBinderProviders.BinderProviders.Add(new EntityModelBinderProvider());
-        }
-
-        /// <summary>注册到全局模型绑定器提供者集合</summary>
-        public static void Register()
-        {
-            // 引发静态构造，只执行一次
         }
     }
 }
