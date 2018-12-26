@@ -1,5 +1,6 @@
 ﻿using System;
 using XCode.Membership;
+using System.Linq;
 #if __CORE__
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -24,7 +25,7 @@ namespace NewLife.Cube
         {
             if (user == null || user.Role == null) return false;
 
-            var menu = ManageProvider.Menu.Current;
+            var menu = CurrentMenu;
             if (menu == null) throw new Exception("无法定位当前权限菜单！");
 
             // 如果没有指定权限子项，则指判断是否拥有资源
@@ -43,6 +44,41 @@ namespace NewLife.Cube
                 }
             }
             return false;
+        }
+
+        /// <summary>当前请求所在菜单。自动根据当前请求的文件路径定位</summary>
+        static IMenu CurrentMenu
+        {
+#if !__CORE__
+            get
+            {
+                var context = System.Web.HttpContext.Current;
+                if (context == null) return null;
+
+                var menu = context.Items["CurrentMenu"] as IMenu;
+                if (menu == null && !context.Items.Contains("CurrentMenu"))
+                {
+                    var ss = context.Request.AppRelativeCurrentExecutionFilePath.Split("/");
+                    // 默认路由包括区域、控制器、动作，Url有时候会省略动作，再往后的就是参数了，动作和参数不参与菜单匹配
+                    var max = ss.Length - 1;
+                    if (ss[0] == "~") max++;
+
+                    var fact = ManageProvider.Menu;
+
+                    // 寻找当前所属菜单，路径倒序，从最长Url路径查起
+                    for (var i = max; i > 0 && menu == null; i--)
+                    {
+                        var url = ss.Take(i).Join("/");
+                        menu = fact.FindByUrl(url);
+                    }
+
+                    context.Items["CurrentMenu"] = menu;
+                }
+                return menu;
+            }
+#else
+            get { return null; }
+#endif
         }
 
         /// <summary>用户只有拥有当前菜单的指定权限</summary>

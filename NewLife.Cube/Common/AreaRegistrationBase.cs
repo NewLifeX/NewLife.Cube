@@ -9,6 +9,7 @@ using System.Web.WebPages;
 using NewLife.Cube.Precompiled;
 using NewLife.IO;
 using NewLife.Log;
+using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Threading;
 using NewLife.Web;
@@ -49,14 +50,19 @@ namespace NewLife.Cube
             XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
             Assembly.GetExecutingAssembly().WriteVersion();
 
+#if !NET4
+            // 外部管理提供者需要手工覆盖
+            var ioc = ObjectContainer.Current;
+            ioc.Register<IManageProvider, DefaultManageProvider>();
+#endif
+
             // 遍历所有引用了AreaRegistrationBase的程序集
             var list = new List<PrecompiledViewAssembly>();
             foreach (var asm in FindAllArea())
             {
                 XTrace.WriteLine("注册区域视图程序集：{0}", asm.FullName);
 
-                var pva = new PrecompiledViewAssembly(asm);
-                list.Add(pva);
+                list.Add(new PrecompiledViewAssembly(asm));
             }
             PrecompiledEngines = list.ToArray();
 
@@ -73,8 +79,8 @@ namespace NewLife.Cube
             EntityModelBinderProvider.Register();
 
             // 注册过滤器
-            XTrace.WriteLine("注册过滤器：{0}", typeof(MvcHandleErrorAttribute).FullName);
-            XTrace.WriteLine("注册过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
+            XTrace.WriteLine("注册异常过滤器：{0}", typeof(MvcHandleErrorAttribute).FullName);
+            XTrace.WriteLine("注册授权过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
             var filters = GlobalFilters.Filters;
             filters.Add(new MvcHandleErrorAttribute());
             filters.Add(new EntityAuthorizeAttribute() { IsGlobal = true });
@@ -94,7 +100,7 @@ namespace NewLife.Cube
             //);
 
             // 自动检查并下载魔方资源
-            Task.Factory.StartNew(CheckContent, TaskCreationOptions.LongRunning).LogException();
+            ThreadPoolX.QueueUserWorkItem(CheckContent);
 
             XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
         }
