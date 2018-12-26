@@ -42,7 +42,13 @@ namespace NewLife.Cube
             ctx.Items[_ExecuteTimes] = DAL.ExecuteTimes;
 
             // 设计时收集执行的SQL语句
-            if (SysConfig.Current.Develop) ctx.Items["XCode_SQLList"] = new List<String>();
+            //if (SysConfig.Current.Develop) ctx.Items["XCode_SQLList"] = new List<String>();
+            if (SysConfig.Current.Develop)
+            {
+                var list = new List<String>();
+                ctx.Items["XCode_SQLList"] = list;
+                DAL.LocalFilter = sql => list.Add(sql);
+            }
         }
 
         private static Boolean _tip;
@@ -72,6 +78,8 @@ namespace NewLife.Cube
             // 设计时收集执行的SQL语句
             if (SysConfig.Current.Develop)
             {
+                DAL.LocalFilter = null;
+
                 var list = ctx.Items["XCode_SQLList"] as List<String>;
                 if (list != null && list.Count > 0) inf += "<br />" + list.Select(e => HttpUtility.HtmlEncode(e)).Join("<br />" + Environment.NewLine);
             }
