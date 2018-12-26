@@ -4906,6 +4906,9 @@
         <member name="P:XCode.Membership.ManageProvider.Menu">
             <summary>菜单工厂</summary>
         </member>
+        <member name="P:XCode.Membership.ManageProvider.UserHost">
+            <summary>用户主机</summary>
+        </member>
         <member name="P:XCode.Membership.ManageProvider.Current">
             <summary>当前用户</summary>
         </member>
