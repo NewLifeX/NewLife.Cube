@@ -9170,50 +9170,6 @@
             <param name="target">目标对象</param>
             <returns></returns>
         </member>
-        <member name="T:NewLife.Reflection.PEImage">
-            <summary>PE镜像</summary>
-            <remarks>
-            
-            </remarks>
-        </member>
-        <member name="P:NewLife.Reflection.PEImage.Kind">
-            <summary>可执行文件类型</summary>
-        </member>
-        <member name="P:NewLife.Reflection.PEImage.ExecutableKind">
-            <summary>可执行文件代码特性</summary>
-        </member>
-        <member name="P:NewLife.Reflection.PEImage.Machine">
-            <summary>可执行文件的目标平台</summary>
-        </member>
-        <member name="P:NewLife.Reflection.PEImage.Characteristics">
-            <summary>标识特性</summary>
-        </member>
-        <member name="P:NewLife.Reflection.PEImage.Version">
-            <summary>版本</summary>
-        </member>
-        <member name="P:NewLife.Reflection.PEImage.IsNet">
-            <summary>是否.Net程序</summary>
-        </member>
-        <member name="M:NewLife.Reflection.PEImage.Read(System.String)">
-            <summary>读取镜像信息</summary>
-            <param name="file"></param>
-            <returns></returns>
-        </member>
-        <member name="M:NewLife.Reflection.PEImage.Read(System.IO.Stream)">
-            <summary>从数据流中读取PE文件头部</summary>
-            <param name="stream"></param>
-            <returns></returns>
-        </member>
-        <member name="M:NewLife.Reflection.PEImage.CanLoad(System.String,System.Version,System.Boolean)">
-            <summary>能否在指定版本下加载程序集</summary>
-            <remarks>
-            必须加强过滤，下面一旦只读加载，就再也不能删除文件
-            </remarks>
-            <param name="file">程序集文件</param>
-            <param name="ver">指定模版，默认空表示当前版本</param>
-            <param name="debug">是否输出调试日志</param>
-            <returns></returns>
-        </member>
         <member name="T:NewLife.Reflection.Reflect">
             <summary>反射工具类</summary>
         </member>
@@ -10214,18 +10170,11 @@
         <member name="P:NewLife.Setting.PluginServer">
             <summary>插件服务器。将从该网页上根据关键字分析链接并下载插件</summary>
         </member>
-        <member name="P:NewLife.Setting.PluginCache">
-            <summary>插件缓存目录。默认位于系统盘的X\Cache</summary>
-        </member>
         <member name="M:NewLife.Setting.OnLoaded">
             <summary>加载完成后</summary>
         </member>
         <member name="M:NewLife.Setting.GetPluginPath">
             <summary>获取插件目录</summary>
-            <returns></returns>
-        </member>
-        <member name="M:NewLife.Setting.GetPluginCache">
-            <summary>获取插件缓存目录</summary>
             <returns></returns>
         </member>
         <member name="T:NewLife.EventArgs`1">
@@ -10837,6 +10786,9 @@
         <member name="P:NewLife.Web.Link.Name">
             <summary>名称</summary>
         </member>
+        <member name="P:NewLife.Web.Link.FullName">
+            <summary>全名</summary>
+        </member>
         <member name="P:NewLife.Web.Link.Url">
             <summary>超链接</summary>
         </member>
@@ -10860,6 +10812,11 @@
             <param name="html">Html文本</param>
             <param name="baseurl">基础Url，用于生成超链接的完整Url</param>
             <param name="filter">用于基础过滤的过滤器</param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Web.Link.Parse(System.String)">
+            <summary>分解文件</summary>
+            <param name="file"></param>
             <returns></returns>
         </member>
         <member name="M:NewLife.Web.Link.ToString">

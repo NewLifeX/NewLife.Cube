@@ -25,11 +25,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class VisitStatController : EntityController<VisitStat>
     {
-        static VisitStatController()
-        {
-            MenuOrder = 50;
-        }
-
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>

@@ -13,11 +13,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class CoreController : ConfigController<NewLife.Setting>
     {
-        static CoreController()
-        {
-            MenuOrder = 39;
-        }
-
         /// <summary>菜单不可见</summary>
         /// <param name="menu"></param>
         /// <returns></returns>

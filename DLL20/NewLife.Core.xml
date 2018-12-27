@@ -10614,18 +10614,11 @@
         <member name="P:NewLife.Setting.PluginServer">
             <summary>插件服务器。将从该网页上根据关键字分析链接并下载插件</summary>
         </member>
-        <member name="P:NewLife.Setting.PluginCache">
-            <summary>插件缓存目录。默认位于系统盘的X\Cache</summary>
-        </member>
         <member name="M:NewLife.Setting.OnLoaded">
             <summary>加载完成后</summary>
         </member>
         <member name="M:NewLife.Setting.GetPluginPath">
             <summary>获取插件目录</summary>
-            <returns></returns>
-        </member>
-        <member name="M:NewLife.Setting.GetPluginCache">
-            <summary>获取插件缓存目录</summary>
             <returns></returns>
         </member>
         <member name="T:NewLife.Threading.ThreadPoolX">
@@ -10857,6 +10850,9 @@
         <member name="P:NewLife.Web.Link.Name">
             <summary>名称</summary>
         </member>
+        <member name="P:NewLife.Web.Link.FullName">
+            <summary>全名</summary>
+        </member>
         <member name="P:NewLife.Web.Link.Url">
             <summary>超链接</summary>
         </member>
@@ -10880,6 +10876,11 @@
             <param name="html">Html文本</param>
             <param name="baseurl">基础Url，用于生成超链接的完整Url</param>
             <param name="filter">用于基础过滤的过滤器</param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Web.Link.Parse(System.String)">
+            <summary>分解文件</summary>
+            <param name="file"></param>
             <returns></returns>
         </member>
         <member name="M:NewLife.Web.Link.ToString">

@@ -22,11 +22,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class UserOnlineController : EntityController<UserOnline>
     {
-        static UserOnlineController()
-        {
-            MenuOrder = 60;
-        }
-
         /// <summary>不允许添加修改日志</summary>
         /// <param name="entity"></param>
         /// <returns></returns>

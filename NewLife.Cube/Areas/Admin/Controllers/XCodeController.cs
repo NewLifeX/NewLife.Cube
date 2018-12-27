@@ -13,11 +13,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class XCodeController : ConfigController<XCode.Setting>
     {
-        static XCodeController()
-        {
-            MenuOrder = 36;
-        }
-
         /// <summary>菜单不可见</summary>
         /// <param name="menu"></param>
         /// <returns></returns>
