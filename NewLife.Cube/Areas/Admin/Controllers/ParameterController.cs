@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using NewLife.Cube.Entity;
-using XCode;
-using XCode.Membership;
+﻿using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -13,6 +8,13 @@ namespace NewLife.Cube.Admin.Controllers
         static ParameterController()
         {
             MenuOrder = 65;
+
+            ListFields.RemoveField("Ex1");
+            ListFields.RemoveField("Ex2");
+            ListFields.RemoveField("Ex3");
+            ListFields.RemoveField("Ex4");
+            ListFields.RemoveField("Ex5");
+            ListFields.RemoveField("Ex6");
         }
     }
 }

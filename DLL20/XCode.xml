@@ -9510,6 +9510,16 @@
             <summary>验证数据，通过抛出异常的方式提示验证失败。</summary>
             <param name="isNew">是否插入</param>
         </member>
+        <member name="M:XCode.Membership.Department`1.InitData">
+            <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
+        </member>
+        <member name="M:XCode.Membership.Department`1.Add(System.String,System.String,System.Int32)">
+            <summary>添加用户，如果存在则直接返回</summary>
+            <param name="name"></param>
+            <param name="code"></param>
+            <param name="parentid"></param>
+            <returns></returns>
+        </member>
         <member name="M:XCode.Membership.Department`1.FindByID(System.Int32)">
             <summary>根据编号查找</summary>
             <param name="id">编号</param>
