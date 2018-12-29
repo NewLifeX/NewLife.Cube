@@ -3289,9 +3289,11 @@
         <member name="M:NewLife.Log.TextFileLog.InitLog">
             <summary>初始化日志记录文件</summary>
         </member>
-        <member name="M:NewLife.Log.TextFileLog.WriteFile(System.Object)">
+        <member name="M:NewLife.Log.TextFileLog.WriteFile">
             <summary>写文件</summary>
-            <param name="state"></param>
+        </member>
+        <member name="M:NewLife.Log.TextFileLog.CloseFile">
+            <summary>关闭文件</summary>
         </member>
         <member name="M:NewLife.Log.TextFileLog.OnWrite(NewLife.Log.LogLevel,System.String,System.Object[])">
             <summary>写日志</summary>
@@ -4691,6 +4693,11 @@
         </member>
         <member name="T:NewLife.Net.ISocketRemote">
             <summary>远程通信Socket，仅具有收发功能</summary>
+        </member>
+        <member name="P:NewLife.Net.ISocketRemote.ID">
+            <summary>
+            标识
+            </summary>
         </member>
         <member name="P:NewLife.Net.ISocketRemote.Remote">
             <summary>远程地址</summary>
@@ -6106,6 +6113,9 @@
         </member>
         <member name="T:NewLife.Net.SessionBase">
             <summary>会话基类</summary>
+        </member>
+        <member name="P:NewLife.Net.SessionBase.ID">
+            <summary>标识</summary>
         </member>
         <member name="P:NewLife.Net.SessionBase.Name">
             <summary>名称</summary>

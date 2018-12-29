@@ -89,7 +89,7 @@ namespace NewLife.Cube
             }
 
             // 注册过滤器
-            ioc.Register<HandleErrorAttribute, MvcHandleErrorAttribute>();
+            //ioc.Register<HandleErrorAttribute, MvcHandleErrorAttribute>();
             ioc.Register<AuthorizeAttribute, EntityAuthorizeAttribute>();
             var filters = GlobalFilters.Filters;
             var f1 = ioc.Resolve<HandleErrorAttribute>();

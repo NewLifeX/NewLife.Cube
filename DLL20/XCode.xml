@@ -7553,6 +7553,12 @@
         <member name="P:XCode.Membership.User`1.LastLoginAddress">
             <summary>物理地址</summary>
         </member>
+        <member name="P:XCode.Membership.User`1.Department">
+            <summary>部门</summary>
+        </member>
+        <member name="P:XCode.Membership.User`1.DepartmentName">
+            <summary>部门</summary>
+        </member>
         <member name="M:XCode.Membership.User`1.FindByID(System.Int32)">
             <summary>根据编号查找</summary>
             <param name="id"></param>
@@ -9520,10 +9526,10 @@
             <param name="parentid">父级</param>
             <returns>实体对象</returns>
         </member>
-        <member name="M:XCode.Membership.Department`1.FindAllByCode(System.String)">
+        <member name="M:XCode.Membership.Department`1.FindByCode(System.String)">
             <summary>根据代码查找</summary>
             <param name="code">代码</param>
-            <returns>实体列表</returns>
+            <returns>实体对象</returns>
         </member>
         <member name="P:XCode.Membership.Department`1.ID">
             <summary>编号</summary>
