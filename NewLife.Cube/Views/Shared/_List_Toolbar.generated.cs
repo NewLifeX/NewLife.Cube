@@ -61,7 +61,7 @@ namespace ASP
             #line 4 "..\..\Views\Shared\_List_Toolbar.cshtml"
   
     var fact = ViewBag.Factory as IEntityOperate;
-    var page = ViewBag.Page as Pager ?? new Pager();
+    var page = ViewBag.Page as Pager;
 
     var act = ViewBag.Action as String;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
@@ -81,14 +81,14 @@ WriteLiteral(" class=\"form-inline\"");
 
 WriteLiteral(">\r\n        <form");
 
-WriteAttribute("action", Tuple.Create(" action=\"", 396), Tuple.Create("\"", 439)
+WriteAttribute("action", Tuple.Create(" action=\"", 381), Tuple.Create("\"", 424)
             
             #line 15 "..\..\Views\Shared\_List_Toolbar.cshtml"
-, Tuple.Create(Tuple.Create("", 405), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetFormAction(act))
+, Tuple.Create(Tuple.Create("", 390), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetFormAction(act))
             
             #line default
             #line hidden
-, 405), false)
+, 390), false)
 );
 
 WriteLiteral(" method=\"post\"");

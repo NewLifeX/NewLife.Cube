@@ -65,7 +65,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [DisplayName()]
-        public override ActionResult Delete(Int32 id)
+        public override ActionResult Delete(String id)
         {
             //return base.Delete(id);
             throw new Exception("不允许删除日志");

@@ -17,8 +17,6 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static UserConnectController()
         {
-            MenuOrder = 40;
-
             ListFields.RemoveField("AccessToken");
             ListFields.RemoveField("RefreshToken");
             ListFields.RemoveField("Avatar");

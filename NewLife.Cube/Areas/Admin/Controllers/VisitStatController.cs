@@ -25,11 +25,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class VisitStatController : EntityController<VisitStat>
     {
-        static VisitStatController()
-        {
-            MenuOrder = 50;
-        }
-
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>
@@ -58,7 +53,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [DisplayName()]
-        public override ActionResult Delete(Int32 id) => throw new Exception("不允许删除");
+        public override ActionResult Delete(String id) => throw new Exception("不允许删除");
 
         /// <summary>清空全表数据</summary>
         /// <returns></returns>

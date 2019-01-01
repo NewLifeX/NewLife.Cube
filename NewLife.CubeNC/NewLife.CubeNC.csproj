@@ -105,7 +105,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="NewLife.XCode" Version="9.9.6881.41312" />
   </ItemGroup>
 
   <ItemGroup>
@@ -181,6 +180,14 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="NewLife.Core">
+      <HintPath>..\DLL20\NewLife.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="XCode">
+      <HintPath>..\DLL20\XCode.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">

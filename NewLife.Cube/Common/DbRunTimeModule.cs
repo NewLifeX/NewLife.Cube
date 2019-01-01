@@ -5,6 +5,7 @@ using System.Web;
 using NewLife.Common;
 using NewLife.Log;
 using XCode.DataAccessLayer;
+using XCode.Membership;
 
 namespace NewLife.Cube
 {
@@ -21,12 +22,9 @@ namespace NewLife.Cube
             if (!Enable) return;
 
             context.BeginRequest += (s, e) => OnInit();
-            //context.PostReleaseRequestState += (s, e) => OnEnd();
+            context.PostReleaseRequestState += (s, e) => OnEnd();
         }
         #endregion
-
-        ///// <summary>上下文</summary>
-        //public static HttpContext Context { get { return HttpContext.Current; } }
 
         /// <summary>执行时间字符串</summary>
         public static String DbRunTimeFormat { get; set; } = "查询{0}次，执行{1}次，耗时{2:n0}毫秒";
@@ -42,7 +40,21 @@ namespace NewLife.Cube
             ctx.Items[_ExecuteTimes] = DAL.ExecuteTimes;
 
             // 设计时收集执行的SQL语句
-            if (SysConfig.Current.Develop) ctx.Items["XCode_SQLList"] = new List<String>();
+            //if (SysConfig.Current.Develop) ctx.Items["XCode_SQLList"] = new List<String>();
+            if (SysConfig.Current.Develop)
+            {
+                var list = new List<String>();
+                ctx.Items["XCode_SQLList"] = list;
+                DAL.LocalFilter = sql => list.Add(sql);
+            }
+
+            ManageProvider.UserHost = GetIP(ctx);
+        }
+
+        void OnEnd()
+        {
+            DAL.LocalFilter = null;
+            ManageProvider.UserHost = null;
         }
 
         private static Boolean _tip;
@@ -88,6 +100,22 @@ namespace NewLife.Cube
                 if (_Enable == null) _Enable = Setting.Current.ShowRunTime;
                 return _Enable.Value;
             }
+        }
+
+        String GetIP(HttpContext ctx)
+        {
+            var req = ctx.Request;
+            if (req == null) return null;
+
+            var ip = (String)ctx.Items["UserHostAddress"];
+            if (ip.IsNullOrEmpty()) ip = req.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            if (ip.IsNullOrEmpty()) ip = req.ServerVariables["X-Real-IP"];
+            if (ip.IsNullOrEmpty()) ip = req.ServerVariables["X-Forwarded-For"];
+            if (ip.IsNullOrEmpty()) ip = req.ServerVariables["REMOTE_ADDR"];
+            if (ip.IsNullOrEmpty()) ip = req.UserHostName;
+            if (ip.IsNullOrEmpty()) ip = req.UserHostAddress;
+
+            return ip;
         }
     }
 }

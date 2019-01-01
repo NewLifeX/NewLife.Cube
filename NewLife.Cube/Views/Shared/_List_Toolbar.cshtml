@@ -3,7 +3,7 @@
 @using XCode;
 @{
     var fact = ViewBag.Factory as IEntityOperate;
-    var page = ViewBag.Page as Pager ?? new Pager();
+    var page = ViewBag.Page as Pager;
 
     var act = ViewBag.Action as String;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }

@@ -74,10 +74,11 @@ namespace NewLife.Cube
                 // 默认加上分页给前台
 #if __CORE__
                 var ps = filterContext.ActionArguments.ToNullable();
+                var p = ps["p"] as Pager ?? new Pager();
 #else
                 var ps = filterContext.ActionParameters.ToNullable();
+                var p = ps["p"] as Pager ?? new Pager { Params = WebHelper.Params };
 #endif
-                var p = ps["p"] as Pager ?? new Pager();
                 ViewBag.Page = p;
 
                 // 用于显示的列
@@ -239,8 +240,6 @@ namespace NewLife.Cube
         [DisplayName("{type}管理")]
         public virtual ActionResult Index(Pager p = null)
         {
-            if (p == null) p = new Pager();
-
             ViewBag.Page = p;
 
             // 缓存数据，用于后续导出
@@ -289,7 +288,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
         [DisplayName("删除{type}")]
-        public virtual ActionResult Delete(Int32 id)
+        public virtual ActionResult Delete(String id)
         {
 #if __CORE__
             var url = Request.Headers["Referer"].FirstOrDefault() + "";
@@ -708,9 +707,9 @@ namespace NewLife.Cube
                 }
             }
         }
-#endregion
+        #endregion
 
-#region 批量删除
+        #region 批量删除
         /// <summary>删除选中</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
@@ -807,9 +806,9 @@ namespace NewLife.Cube
             else
                 return RedirectToAction("Index");
         }
-#endregion
+        #endregion
 
-#region 模版Action
+        #region 模版Action
         /// <summary>生成列表</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
@@ -849,9 +848,9 @@ namespace NewLife.Cube
 
             return Index();
         }
-#endregion
+        #endregion
 
-#region 实体操作重载
+        #region 实体操作重载
         /// <summary>添加实体对象</summary>
         /// <param name="entity"></param>
         /// <returns></returns>
@@ -894,9 +893,9 @@ namespace NewLife.Cube
         /// <param name="post">是否提交数据阶段</param>
         /// <returns></returns>
         protected virtual Boolean ValidPermission(TEntity entity, DataObjectMethodType type, Boolean post) => true;
-#endregion
+        #endregion
 
-#region 列表字段和表单字段
+        #region 列表字段和表单字段
         private static FieldCollection _ListFields;
         /// <summary>列表字段过滤</summary>
         protected static FieldCollection ListFields { get { return _ListFields ?? (_ListFields = new FieldCollection(Factory).SetRelation(false)); } set { _ListFields = value; } }
@@ -909,9 +908,9 @@ namespace NewLife.Cube
         /// <param name="isForm">是否是表单</param>
         /// <returns></returns>
         protected virtual IList<FieldItem> GetFields(Boolean isForm) => (isForm ? FormFields : ListFields) ?? Entity<TEntity>.Meta.Fields.ToList();
-#endregion
+        #endregion
 
-#region 权限菜单
+        #region 权限菜单
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
@@ -939,9 +938,9 @@ namespace NewLife.Cube
 
             return dic;
         }
-#endregion
+        #endregion
 
-#region 辅助
+        #region 辅助
         /// <summary>是否Json请求</summary>
         protected virtual Boolean IsJsonRequest
         {
@@ -987,6 +986,6 @@ namespace NewLife.Cube
             }
         }
 #endif
-#endregion
+        #endregion
     }
 }

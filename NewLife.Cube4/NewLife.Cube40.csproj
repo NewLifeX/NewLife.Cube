@@ -53,8 +53,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=7.4.6881.41311, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.7.4.6881.41311\lib\net40\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=7.4.6911.41889, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.7.4.6911.41889\lib\net40\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -87,8 +87,8 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="XCode, Version=9.9.6881.41313, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.9.6881.41312\lib\net40\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.9.6911.41890, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.9.6911.41890\lib\net40\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

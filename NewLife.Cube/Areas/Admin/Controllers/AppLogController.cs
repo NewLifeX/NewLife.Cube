@@ -10,11 +10,6 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>应用日志</summary>
     public class AppLogController : EntityController<AppLog>
     {
-        static AppLogController()
-        {
-            MenuOrder = 36;
-        }
-
         /// <summary>菜单不可见</summary>
         /// <param name="menu"></param>
         /// <returns></returns>
