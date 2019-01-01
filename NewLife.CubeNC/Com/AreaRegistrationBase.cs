@@ -92,7 +92,7 @@ namespace NewLife.Cube
             //);
 
             // 自动检查并下载魔方资源
-            Task.Factory.StartNew(CheckContent, TaskCreationOptions.LongRunning).LogException();
+            ThreadPoolX.QueueUserWorkItem(CheckContent);
 
             XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
         }

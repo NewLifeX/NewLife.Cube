@@ -3,9 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+#if __CORE__
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Routing;
+using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
+#else
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+#endif
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -23,7 +31,11 @@ namespace NewLife.Cube
         /// <summary>获取页面设置</summary>
         /// <param name="context"></param>
         /// <returns></returns>
+#if __CORE__
+        public static Bootstrap Bootstrap(this HttpContext context)
+#else
         public static Bootstrap Bootstrap(this HttpContextBase context)
+#endif
         {
             var bs = context.Items["Bootstrap"] as Bootstrap;
             if (bs == null)
@@ -35,11 +47,13 @@ namespace NewLife.Cube
             return bs;
         }
 
+#if __CORE__
+#else
         /// <summary>获取页面设置</summary>
         /// <param name="page"></param>
         /// <returns></returns>
         public static Bootstrap Bootstrap(this WebViewPage page) => Bootstrap(page.Context);
-
+#endif
         /// <summary>获取页面设置</summary>
         /// <param name="controller"></param>
         /// <returns></returns>
@@ -464,13 +478,17 @@ namespace NewLife.Cube
         /// <summary>是否启用多选</summary>
         /// <param name="page"></param>
         /// <returns></returns>
+#if __CORE__
+        public static Boolean EnableSelect(this IRazorPage page)
+#else
         public static Boolean EnableSelect(this WebViewPage page)
+#endif
         {
-            var fact = page.ViewBag.Factory as IEntityOperate;
+            var fact = page.ViewContext.ViewBag.Factory as IEntityOperate;
             var fk = fact?.Unique;
             if (fk == null) return false;
 
-            if (page.ViewData.ContainsKey("EnableSelect")) return (Boolean)page.ViewData["EnableSelect"];
+            if (page.ViewContext.ViewData.ContainsKey("EnableSelect")) return (Boolean)page.ViewContext.ViewData["EnableSelect"];
 
             return page.Has(PermissionFlags.Update, PermissionFlags.Delete);
 

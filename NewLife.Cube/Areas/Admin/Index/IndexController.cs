@@ -14,6 +14,7 @@ using NewLife.Cube.Extensions;
 #else
 using System.Web;
 using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 #endif
 
 using NewLife.Common;
@@ -21,6 +22,7 @@ using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
+using NewLife.Cube.ViewModels;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -81,6 +83,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (startPage.IsNullOrEmpty()) startPage = Setting.Current.StartPage;
 
             ViewBag.Main = startPage;
+            ViewBag.Menus = GetMenu();
 
             return View();
         }
@@ -189,6 +192,54 @@ namespace NewLife.Cube.Admin.Controllers
         }
         [DllImport("kernel32.dll")]
         static extern Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
+
+        /// <summary>
+        /// 获取菜单树
+        /// </summary>
+        /// <returns></returns>
+        // [EntityAuthorize(PermissionFlags.Detail)]
+        public List<MenuTree> GetMenu()
+        {
+            var user = _Provider.Current as IUser ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
+
+            //var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
+            var fact = ManageProvider.Menu;
+            //fact.FindByID(1);
+            //(fact as IEntityOperate)?.FindByKey(1);
+
+            var menus = fact.Root.Childs;
+            if (user?.Role != null)
+            {
+                menus = fact.GetMySubMenus(fact.Root.ID, user);
+            }
+
+            // 如果顶级只有一层，并且至少有三级目录，则提升一级
+            if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
+
+            menus = menus.Where(m => m.Visible).ToList();
+
+            var menuTree = MenuTree.GetMenuTree(pMenuTree =>
+            {
+                return fact.GetMySubMenus(pMenuTree.ID, user).Where(m => m.Visible).ToList();
+            }, list =>
+            {
+
+                var menuList = (from menu in list
+                                    // where m.Visible
+                                select new MenuTree
+                                {
+                                    ID = menu.ID,
+                                    Name = menu.DisplayName,
+                                    Url = Url.Content(menu.Url),
+                                    Icon = menu.Icon,
+                                    Class = ""
+                                }).ToList();
+                return menuList.Count > 0 ? menuList : null;
+            }, menus.ToList());
+
+            //var childs = menuTree[0].Children;
+            return menuTree;
+        }
 
         /// <summary>菜单不可见</summary>
         /// <param name="menu"></param>

@@ -7,15 +7,19 @@
   <ItemGroup>
     <Compile Remove="Areas\SchoolController\**" />
     <Compile Remove="Areas\School\Models\Config\**" />
+    <Compile Remove="Areas\School\Models\Entity\Config\**" />
     <Compile Remove="Areas\School\Models\Log\**" />
     <Content Remove="Areas\SchoolController\**" />
     <Content Remove="Areas\School\Models\Config\**" />
+    <Content Remove="Areas\School\Models\Entity\Config\**" />
     <Content Remove="Areas\School\Models\Log\**" />
     <EmbeddedResource Remove="Areas\SchoolController\**" />
     <EmbeddedResource Remove="Areas\School\Models\Config\**" />
+    <EmbeddedResource Remove="Areas\School\Models\Entity\Config\**" />
     <EmbeddedResource Remove="Areas\School\Models\Log\**" />
     <None Remove="Areas\SchoolController\**" />
     <None Remove="Areas\School\Models\Config\**" />
+    <None Remove="Areas\School\Models\Entity\Config\**" />
     <None Remove="Areas\School\Models\Log\**" />
   </ItemGroup>
 
@@ -45,6 +49,15 @@
       <LastGenOutput>Index.generated.cs</LastGenOutput>
       <Generator>RazorGenerator</Generator>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="NewLife.Core">
+      <HintPath>..\DLL20\NewLife.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="XCode">
+      <HintPath>..\DLL20\XCode.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

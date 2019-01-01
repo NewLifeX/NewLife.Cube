@@ -17,17 +17,26 @@ using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceColl
 namespace NewLife.Cube
 {
     /// <inheritdoc />
-    public class ManageProvider2 : ManageProvider<UserX>
+    public class ManageProvider2 : ManageProvider
     {
         #region 静态实例
         static ManageProvider2()
         {
             // 此处实例化会触发父类静态构造函数
             var ioc = ObjectContainer.Current;
-            ioc.Register<IManageProvider, ManageProvider2>();
+            ioc.Register<IManageProvider, ManageProvider2>()
+            .Register<IManageUser, UserX>();
         }
 
         internal static IHttpContextAccessor Context;
+        #endregion
+
+        #region 属性
+        /// <summary>保存于Cookie的凭证</summary>
+        public String CookieKey { get; set; } = "Admin";
+
+        /// <summary>保存于Session的凭证</summary>
+        public String SessionKey { get; set; } = "Admin";
         #endregion
 
         /// <summary>当前管理提供者</summary>
@@ -44,9 +53,10 @@ namespace NewLife.Cube
 
             try
             {
-                return ctx
-                    ?.Session
-                    ?.Get<UserX>(SessionKey);
+                var session = ctx?.Session;
+                var user = ObjectContainer.Current.Resolve<IManageUser>();
+
+                return session?.Get(SessionKey, user.GetType()) as IManageUser;
             }
             catch (Exception ex)
             {
@@ -170,7 +180,7 @@ namespace NewLife.Cube
         #region Cookie
         private static String GetCookieKey(IManageProvider provider)
         {
-            var key = (provider as ManageProvider)?.CookieKey;
+            var key = (provider as ManageProvider2)?.CookieKey;
             if (key.IsNullOrEmpty()) key = "cube_user";
 
             return key;
