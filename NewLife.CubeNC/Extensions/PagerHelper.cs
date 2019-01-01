@@ -24,7 +24,7 @@ namespace NewLife.Cube.Extensions
             {
                 forms = new HashSet<String>(req.Form.Select(s => s.Key), StringComparer.OrdinalIgnoreCase);
             }
-            var excludes = new HashSet<String>(new[] { pager._.Sort, pager._.Desc, pager._.PageIndex, pager._.PageSize }, StringComparer.OrdinalIgnoreCase);
+            var excludes = new HashSet<String>(new[] { "Sort", "Desc", "PageIndex", "PageSize" }, StringComparer.OrdinalIgnoreCase);
 
             var url = Pool.StringBuilder.Get();
             foreach (var item in query.Select(s=>s.Key))
