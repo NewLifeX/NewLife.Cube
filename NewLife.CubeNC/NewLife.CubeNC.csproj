@@ -132,7 +132,6 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserOnlineController.cs" Link="Areas\Admin\Controllers\UserOnlineController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\VisitStatController.cs" Link="Areas\Admin\Controllers\VisitStatController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Index\IndexController.cs" Link="Areas\Admin\Index\IndexController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs">
       <Link>Areas\Admin\Models\DbItem.cs</Link>
     </Compile>
