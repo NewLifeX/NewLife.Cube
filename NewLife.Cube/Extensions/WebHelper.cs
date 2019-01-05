@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using System.Web;
+#if __CORE__
 using Microsoft.Extensions.Primitives;
+#endif
+
 using NewLife.Collections;
 
 namespace NewLife.Web
