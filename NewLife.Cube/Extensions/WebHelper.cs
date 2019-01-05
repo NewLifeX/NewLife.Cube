@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using System.Web;
+using Microsoft.Extensions.Primitives;
 using NewLife.Collections;
 
 namespace NewLife.Web
@@ -58,9 +59,9 @@ namespace NewLife.Web
             }
         }
         #endregion
-
-#if !__CORE__
         #region Http请求
+#if !__CORE__
+
         /// <summary>返回请求字符串和表单的名值字段，过滤空值和ViewState，同名时优先表单</summary>
         public static IDictionary<String, String> Params
         {
@@ -133,9 +134,53 @@ namespace NewLife.Web
 
             return uri;
         }
-        #endregion
-#endif
+        
+#else
+        /// <summary>返回请求字符串和表单的名值字段，过滤空值和ViewState，同名时优先表单</summary>
+        public static IDictionary<String, String> Params
+        {
+            get
+            {
+                var ctx = HttpContext.Current;
+                if (ctx.Items["Params"] is IDictionary<String, String> dic) return dic;
 
+                var req = ctx.Request;
+                IEnumerable<KeyValuePair<String, StringValues>>[] nvss;
+                nvss = req.HasFormContentType ? 
+                    new IEnumerable<KeyValuePair<String, StringValues>>[] { req.Query, req.Form } : 
+                    new IEnumerable<KeyValuePair<String, StringValues>>[] { req.Query };
+
+
+                // 这里必须用可空字典，否则直接通过索引查不到数据时会抛出异常
+                dic = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+                foreach (var nvs in nvss)
+                {
+                    foreach (var kv in nvs)
+                    {
+                        var item = kv.Key;
+                        if (item.IsNullOrWhiteSpace()) continue;
+                        if (item.StartsWithIgnoreCase("__VIEWSTATE")) continue;
+
+                        // 空值不需要
+                        var value = kv.Value;
+                        if (value.Count == 0)
+                        {
+                            // 如果请求字符串里面有值而后面表单为空，则抹去
+                            if (dic.ContainsKey(item)) dic.Remove(item);
+                            continue;
+                        }
+
+                        // 同名时优先表单
+                        dic[item] = value.ToString().Trim();
+                    }
+                }
+                ctx.Items["Params"] = dic;
+
+                return dic;
+            }
+        }
+#endif
+        #endregion
         #region Url扩展
         /// <summary>追加Url参数，不为空时加与符号</summary>
         /// <param name="sb"></param>
