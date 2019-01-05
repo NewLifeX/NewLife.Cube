@@ -29,13 +29,17 @@ namespace NewLife.Cube
             ctx.Items[_RequestTimestamp] = DateTime.Now;
 
             // 设计时收集执行的SQL语句
-            if (SysConfig.Current.Develop) ctx.Items["XCode_SQLList"] = new List<String>();
+            if (SysConfig.Current.Develop)
+            {
+                var sqlList = new List<String>();
+                ctx.Items["XCode_SQLList"] = sqlList;
+                DAL.LocalFilter = s =>
+                {
+                    sqlList.Add(s);
+                };
+            }
 
             await _next.Invoke(ctx);
-
-            var i = 0;
-            i++;
-            var ts = DateTime.Now - (DateTime)ctx.Items[_RequestTimestamp];
         }
 
         /// <summary>执行时间字符串</summary>
