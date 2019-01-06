@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using System.Web;
-using Microsoft.Extensions.Primitives;
 using NewLife.Collections;
+#if __CORE__
+using Microsoft.Extensions.Primitives;
+#endif
 
 namespace NewLife.Web
 {
@@ -59,9 +61,9 @@ namespace NewLife.Web
             }
         }
         #endregion
+
         #region Http请求
 #if !__CORE__
-
         /// <summary>返回请求字符串和表单的名值字段，过滤空值和ViewState，同名时优先表单</summary>
         public static IDictionary<String, String> Params
         {
@@ -134,7 +136,6 @@ namespace NewLife.Web
 
             return uri;
         }
-        
 #else
         /// <summary>返回请求字符串和表单的名值字段，过滤空值和ViewState，同名时优先表单</summary>
         public static IDictionary<String, String> Params
@@ -181,6 +182,7 @@ namespace NewLife.Web
         }
 #endif
         #endregion
+
         #region Url扩展
         /// <summary>追加Url参数，不为空时加与符号</summary>
         /// <param name="sb"></param>
