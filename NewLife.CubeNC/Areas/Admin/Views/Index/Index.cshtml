@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
 
-    <title>@ViewBag.Title - @Config.DisplayName</title>
+    <title>@(ViewBag.Title!=null ? ViewBag.Title + " - " : "")@Config.DisplayName</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
     <!-- bootstrap & fontawesome -->
