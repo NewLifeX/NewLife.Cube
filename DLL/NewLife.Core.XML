@@ -4403,22 +4403,47 @@
             <summary>停止</summary>
             <param name="reason">关闭原因。便于日志分析</param>
         </member>
-        <member name="T:NewLife.Net.NetHandlerContext">
-            <summary>网络处理器上下文</summary>
+        <member name="T:NewLife.Net.Handlers.SplitDataCodec">
+            <summary>
+            按指定分割字节来处理粘包的处理器
+            </summary>
+            <remarks>
+            默认以"0x0D 0x0A"即换行来分割，分割的包包含分割字节本身，使用时请注意。
+            默认分割方式：ISocket.Add&lt;SplitDataCodec&gt;()
+            自定义分割方式：ISocket.Add(new SplitDataHandler { SplitData = 自定义分割字节数组 })
+            </remarks>
         </member>
-        <member name="P:NewLife.Net.NetHandlerContext.Session">
-            <summary>远程连接</summary>
+        <member name="P:NewLife.Net.Handlers.SplitDataCodec.SplitData">
+            <summary>
+            粘包分割字节数据（默认0x0D,0x0A）
+            </summary>
         </member>
-        <member name="P:NewLife.Net.NetHandlerContext.Data">
-            <summary>数据帧</summary>
-        </member>
-        <member name="M:NewLife.Net.NetHandlerContext.FireRead(System.Object)">
-            <summary>读取管道过滤后最终处理消息</summary>
+        <member name="M:NewLife.Net.Handlers.SplitDataCodec.Read(NewLife.Model.IHandlerContext,System.Object)">
+            <summary>读取数据</summary>
+            <param name="context"></param>
             <param name="message"></param>
+            <returns></returns>
         </member>
-        <member name="M:NewLife.Net.NetHandlerContext.FireWrite(System.Object)">
-            <summary>写入管道过滤后最终处理消息</summary>
-            <param name="message"></param>
+        <member name="M:NewLife.Net.Handlers.SplitDataCodec.Decode(NewLife.Model.IHandlerContext,NewLife.Data.Packet)">
+            <summary>解码</summary>
+            <param name="context"></param>
+            <param name="pk">包</param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Net.Handlers.SplitDataCodec.Parse(NewLife.Data.Packet,NewLife.Net.Handlers.CodecItem,System.Func{NewLife.Data.Packet,System.Int32},System.Int32)">
+            <summary>分析数据流，得到一帧数据</summary>
+            <param name="pk">待分析数据包</param>
+            <param name="codec">参数</param>
+            <param name="getLength">获取长度</param>
+            <param name="expire">缓存有效期</param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Net.Handlers.SplitDataCodec.GetLineLength(NewLife.Data.Packet)">
+            <summary>
+            获取包含分割字节在内的数据长度
+            </summary>
+            <param name="pk"></param>
+            <returns></returns>
         </member>
         <member name="T:NewLife.Net.Handlers.StandardCodec">
             <summary>标准网络封包。头部4字节定长</summary>
@@ -4582,6 +4607,23 @@
         <member name="M:NewLife.Net.Handlers.DefaultMatchQueue.Check(System.Object)">
             <summary>定时检查发送队列，超时未收到响应则重发</summary>
             <param name="state"></param>
+        </member>
+        <member name="T:NewLife.Net.NetHandlerContext">
+            <summary>网络处理器上下文</summary>
+        </member>
+        <member name="P:NewLife.Net.NetHandlerContext.Session">
+            <summary>远程连接</summary>
+        </member>
+        <member name="P:NewLife.Net.NetHandlerContext.Data">
+            <summary>数据帧</summary>
+        </member>
+        <member name="M:NewLife.Net.NetHandlerContext.FireRead(System.Object)">
+            <summary>读取管道过滤后最终处理消息</summary>
+            <param name="message"></param>
+        </member>
+        <member name="M:NewLife.Net.NetHandlerContext.FireWrite(System.Object)">
+            <summary>写入管道过滤后最终处理消息</summary>
+            <param name="message"></param>
         </member>
         <member name="T:NewLife.Net.INetSession">
             <summary>网络服务会话接口</summary>
@@ -5601,9 +5643,6 @@
         </member>
         <member name="T:NewLife.Net.TcpSession">
             <summary>增强TCP客户端</summary>
-        </member>
-        <member name="P:NewLife.Net.TcpSession.ID">
-            <summary>会话编号</summary>
         </member>
         <member name="P:NewLife.Net.TcpSession.DisconnectWhenEmptyData">
             <summary>收到空数据时抛出异常并断开连接。默认true</summary>

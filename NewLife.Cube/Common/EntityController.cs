@@ -497,12 +497,12 @@ namespace NewLife.Cube
         #endregion
 
         #region 高级Action
-        /// <summary>数据接口</summary>
+        /// <summary>Json接口</summary>
         /// <param name="id">令牌</param>
         /// <param name="p">分页</param>
         /// <returns></returns>
         [AllowAnonymous]
-        [DisplayName("数据接口")]
+        [DisplayName("Json接口")]
         public virtual ActionResult Json(String id, Pager p)
         {
             if (id.IsNullOrEmpty()) id = GetRequest("token");
@@ -525,6 +525,47 @@ namespace NewLife.Cube
             {
                 return JsonError(ex.GetTrue());
             }
+        }
+
+        /// <summary>Xml接口</summary>
+        /// <param name="id">令牌</param>
+        /// <param name="p">分页</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [DisplayName("Xml接口")]
+        public virtual ActionResult Xml(String id, Pager p)
+        {
+            if (id.IsNullOrEmpty()) id = GetRequest("token");
+            if (id.IsNullOrEmpty()) id = GetRequest("key");
+
+            var xml = "";
+            try
+            {
+                //var user = UserToken.Valid(id);
+                var app = App.Valid(id);
+
+                // 需要总记录数来分页
+                p.RetrieveTotalCount = true;
+
+                var list = Search(p) as IList<TEntity>;
+
+                var rs = new Root { Result = false, Data = list, Pager = p };
+                xml = rs.ToXml(null, false, true);
+            }
+            catch (Exception ex)
+            {
+                var rs = new { result = false, data=ex.GetTrue().Message };
+                xml = rs.ToXml(null, false, false);
+            }
+
+                 return Content(xml, "application/xml");
+       }
+
+        class Root
+        {
+            public Boolean Result { get; set; }
+            public IList<TEntity> Data { get; set; }
+            public Pager Pager { get; set; }
         }
 
         /// <summary>导出Xml</summary>
