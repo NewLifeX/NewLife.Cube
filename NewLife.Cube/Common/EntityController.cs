@@ -240,7 +240,7 @@ namespace NewLife.Cube
         [DisplayName("{type}管理")]
         public virtual ActionResult Index(Pager p = null)
         {
-            ViewBag.Page = p;
+            if (p == null) p = ViewBag.Page as Pager;
 
             // 缓存数据，用于后续导出
             SetSession(CacheKey, p);

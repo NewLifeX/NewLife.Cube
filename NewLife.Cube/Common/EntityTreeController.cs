@@ -67,7 +67,6 @@ namespace NewLife.Cube
         {
             // 一页显示全部菜单，取自缓存
             p.PageSize = 10000;
-            ViewBag.Page = p;
 
             var list = EntityTree<TEntity>.Root.AllChilds;
 
