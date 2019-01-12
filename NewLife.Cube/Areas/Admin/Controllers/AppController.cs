@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using XCode;
 using XCode.Membership;
@@ -8,6 +10,8 @@ using XCode.Membership;
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>应用系统</summary>
+    [DisplayName("应用系统")]
+    [Area("Admin")]
     public class AppController : EntityController<App>
     {
         static AppController()
