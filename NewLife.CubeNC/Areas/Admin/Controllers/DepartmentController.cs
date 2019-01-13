@@ -22,7 +22,6 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.RemoveField("Ex4");
             ListFields.RemoveField("Ex5");
             ListFields.RemoveField("Ex6");
-
             ListFields.RemoveUpdateField();
             ListFields.RemoveCreateField();
         }

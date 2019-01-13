@@ -6,6 +6,7 @@ using Microsoft.Extensions.Primitives;
 using NewLife.Collections;
 using NewLife.Cube.Extensions;
 using NewLife.Serialization;
+using Microsoft.AspNetCore.Http.Extensions;
 #else
 using System.Web;
 #endif
@@ -58,16 +59,8 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static Uri GetRawUrl(this HttpRequest request)
         {
-            var uri = new Uri(request.Headers["Url"] + "");
-
-            var str = request.Headers["RawUrl"] + "";
-            if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
-
-            str = request.Headers["HTTP_X_REQUEST_URI"];
-            if (str.IsNullOrEmpty()) str = request.Headers["X-Request-Uri"];
-            if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
-
-            return uri;
+            var url = request.GetEncodedUrl();
+            return new Uri(url);
         }
 
         /// <summary>获取用户主机</summary>
