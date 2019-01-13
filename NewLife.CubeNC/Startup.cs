@@ -69,8 +69,12 @@ namespace NewLife.Cube
 
             services.AddMvc(opt =>
             {
+                // 分页器绑定
+                opt.ModelBinderProviders.Insert(0, new PagerModelBinderProvider());
+
                 // 模型绑定
                 opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
+
                 // 过滤器
                 opt.Filters.Add<MvcHandleErrorAttribute>();
 

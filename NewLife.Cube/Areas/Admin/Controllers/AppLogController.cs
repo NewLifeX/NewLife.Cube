@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using XCode;
 using XCode.Membership;
@@ -8,6 +10,8 @@ using XCode.Membership;
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>应用日志</summary>
+    [DisplayName("应用日志")]
+    [Area("Admin")]
     public class AppLogController : EntityController<AppLog>
     {
         /// <summary>菜单不可见</summary>

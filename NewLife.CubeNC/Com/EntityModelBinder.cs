@@ -46,7 +46,7 @@ namespace NewLife.Cube.Com
                     if (uk != null)
                     {
                         // 查询实体对象用于编辑
-                        if (rvs[uk.Name] != null) entity = 
+                        if (rvs[uk.Name] != null) entity =
                             //GetEntity(fact.EntityType, rvs[uk.Name]) ?? 
                             fact.FindByKeyForEdit(rvs[uk.Name]); // 从session取回来的实体全部被设置了脏属性，每次保存所有数据，因此从数据查找
                         if (entity == null) entity = fact.Create();
@@ -72,12 +72,17 @@ namespace NewLife.Cube.Com
 
                     if (entity != null)
                     {
-                        var fs = controllerContext.HttpContext.Request.Form;
-                        // 提前填充动态字段的扩展属性
-                        foreach (var item in fact.Fields)
+                        var req = controllerContext.HttpContext.Request;
+                        if (req.HasFormContentType)
                         {
-                            if (item.IsDynamic && fs.ContainsKey(item.Name)) entity.SetItem(item.Name, fs[item.Name]);
+                            var fs = req.Form;
+                            // 提前填充动态字段的扩展属性
+                            foreach (var item in fact.Fields)
+                            {
+                                if (item.IsDynamic && fs.ContainsKey(item.Name)) entity.SetItem(item.Name, fs[item.Name]);
+                            }
                         }
+
 
                         bindingContext.Result = ModelBindingResult.Success(entity);
                     }
@@ -87,9 +92,11 @@ namespace NewLife.Cube.Com
                         bindingContext.Result = ModelBindingResult.Success(fact.Create());
                     }
 
+                    // 为Model赋值，为下面BindProperty方法做准备
                     bindingContext.Model = bindingContext.Result.Model;
 
-                   await BindProperty(bindingContext);
+                    // 使用复杂类型模型绑定器ComplexTypeModelBinder填充Model
+                    await BindProperty(bindingContext);
                 }
             }
         }

@@ -38,6 +38,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>Bin\NewLife.Cube.XML</DocumentationFile>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
@@ -130,6 +131,11 @@
     </Compile>
     <Compile Include="Areas\Admin\Views\Db\Index.generated.cs">
       <DependentUpon>Index.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Areas\Admin\Views\Department\_List_Data_Item.generated.cs">
+      <DependentUpon>_List_Data_Item.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -546,6 +552,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Areas\Admin\Views\Department\_List_Data_Item.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Data_Item.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Areas\Admin\Views\Role\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>

@@ -7124,9 +7124,6 @@
         <member name="T:NewLife.Net.TcpSession">
             <summary>增强TCP客户端</summary>
         </member>
-        <member name="P:NewLife.Net.TcpSession.ID">
-            <summary>会话编号</summary>
-        </member>
         <member name="P:NewLife.Net.TcpSession.DisconnectWhenEmptyData">
             <summary>收到空数据时抛出异常并断开连接。默认true</summary>
         </member>
