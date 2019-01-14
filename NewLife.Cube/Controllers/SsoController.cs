@@ -72,27 +72,6 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public virtual ActionResult Index() => Redirect("~/");
 
-#if !__CORE__
-        /// <summary>发生错误时</summary>
-        /// <param name="filterContext"></param>
-        protected override void OnException(ExceptionContext filterContext)
-        {
-            if (!filterContext.ExceptionHandled)
-            {
-                var vr = new ViewResult
-                {
-                    ViewName = "CubeError"
-                };
-                vr.ViewBag.Context = filterContext;
-
-                filterContext.Result = vr;
-                filterContext.ExceptionHandled = true;
-            }
-
-            base.OnException(filterContext);
-        }
-#endif
-
         #region 单点登录客户端
         /// <summary>第三方登录</summary>
         /// <param name="name"></param>
@@ -185,16 +164,10 @@ namespace NewLife.Cube.Controllers
             catch (Exception ex)
             {
                 XTrace.WriteException(ex.GetTrue());
-                //throw;
 
                 if (!state.EqualIgnoreCase("refresh")) return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
 
-#if __CORE__
-                return View("CubeError", ex);
-#else
-                var inf = new HandleErrorInfo(ex, "Sso", nameof(LoginInfo));
-                return View("CubeError", inf);
-#endif
+                throw;
             }
         }
 
