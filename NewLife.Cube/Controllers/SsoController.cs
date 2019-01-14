@@ -437,7 +437,7 @@ namespace NewLife.Cube.Controllers
             if (prv == null) throw new ArgumentNullException(nameof(Provider));
 
             var set = Setting.Current;
-            var av = set.AvatarPath.CombinePath(id + "").GetFullPath();
+            var av = set.AvatarPath.CombinePath(id + ".png").GetFullPath();
             if (!System.IO.File.Exists(av))
             {
                 var user = prv.Provider?.FindByID(id);
@@ -447,7 +447,7 @@ namespace NewLife.Cube.Controllers
             }
             if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
 
-            return File(av, "image");
+            return File(av, "image/png");
         }
         #endregion
     }
