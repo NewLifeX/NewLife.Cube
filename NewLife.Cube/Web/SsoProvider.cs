@@ -116,7 +116,11 @@ namespace NewLife.Cube.Web
 
             // 强行绑定，把第三方账号强行绑定到当前已登录账号
             var forceBind = false;
+#if __CORE__
+            var req = context.GetService<IHttpContextAccessor>().HttpContext.Request;
+#else
             var req = context.GetService<HttpRequest>();
+#endif
             if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
 
             // 检查绑定，新用户的uc.UserID为0
