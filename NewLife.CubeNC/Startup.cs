@@ -223,7 +223,7 @@ namespace NewLife.Cube
             app.UseErrorModule();
 
             // 压缩配置
-            if(Setting.Current.EnableCompress) app.UseResponseCompression();
+            if(set.EnableCompress) app.UseResponseCompression();
 
             // 注册请求执行时间中间件
             app.UseDbRunTimeModule();
