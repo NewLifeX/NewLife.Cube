@@ -66,7 +66,7 @@ namespace NewLife.Cube
         /// <summary>获取用户主机</summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static String GetUserHost(this HttpRequest request) => request.Headers["Host"] + "";
+        public static String GetUserHost(this HttpRequest request) => request?.Headers["Host"] + "";
 
         /// <summary>返回请求字符串和表单的名值字段，过滤空值和ViewState，同名时优先表单</summary>
         public static IDictionary<String, String> Params

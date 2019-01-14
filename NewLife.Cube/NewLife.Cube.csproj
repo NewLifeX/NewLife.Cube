@@ -326,7 +326,6 @@
     <Compile Include="Common\RequireSslAttribute.cs" />
     <Compile Include="Common\ViewHelper.cs" />
     <Compile Include="Common\EntityAuthorizeAttribute.cs" />
-    <Compile Include="Common\MvcHandleErrorAttribute.cs" />
     <Compile Include="Common\WeuiJS.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
@@ -403,11 +402,6 @@
       <DependentUpon>NoPermission.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Views\Shared\CubeError.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>CubeError.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Views\Shared\Form.generated.cs">
       <AutoGen>True</AutoGen>
@@ -963,10 +957,6 @@
     <None Include="Views\_ViewStart.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_ViewStart.generated.cs</LastGenOutput>
-    </None>
-    <None Include="Views\Shared\CubeError.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>CubeError.generated.cs</LastGenOutput>
     </None>
     <None Include="Views\Shared\_List_Pager.cshtml">
       <Generator>RazorGenerator</Generator>

@@ -348,7 +348,7 @@ namespace NewLife.Cube.Web
 
             // 不要扩展名
             var set = Setting.Current;
-            av = set.AvatarPath.CombinePath(user.ID + "").GetFullPath();
+            av = set.AvatarPath.CombinePath(user.ID + ".png").GetFullPath();
 
             // 头像是否已存在
             if (File.Exists(av)) return false;

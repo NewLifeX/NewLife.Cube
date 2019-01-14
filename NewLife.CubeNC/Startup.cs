@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +12,8 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.WebEncoders;
+using NewLife.Common;
 using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
@@ -76,7 +80,7 @@ namespace NewLife.Cube
                 opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
 
                 // 过滤器
-                opt.Filters.Add<MvcHandleErrorAttribute>();
+                //opt.Filters.Add<MvcHandleErrorAttribute>();
 
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
@@ -119,8 +123,18 @@ namespace NewLife.Cube
             // 添加压缩
             services.AddResponseCompression();
 
+            // 防止汉字被自动编码
+            services.Configure<WebEncoderOptions>(options =>
+            {
+                options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
+            });
+
             //// 添加OData
             //services.AddOData();
+
+            // 修正系统名，确保可运行
+            var set = SysConfig.Current;
+            if (set.IsNew || set.Name == "NewLife.Cube.Views") set.Name = "NewLife.Cube";
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
@@ -209,7 +223,7 @@ namespace NewLife.Cube
             app.UseErrorModule();
 
             // 压缩配置
-            if(Setting.Current.EnableCompress) app.UseResponseCompression();
+            if(set.EnableCompress) app.UseResponseCompression();
 
             // 注册请求执行时间中间件
             app.UseDbRunTimeModule();
