@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NewLife.Common;
 using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
@@ -121,6 +122,10 @@ namespace NewLife.Cube
 
             //// 添加OData
             //services.AddOData();
+
+            // 修正系统名，确保可运行
+            var set = SysConfig.Current;
+            if (set.IsNew || set.Name == "NewLife.Cube.Views") set.Name = "NewLife.Cube";
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
