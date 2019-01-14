@@ -79,6 +79,7 @@
     <Compile Remove="Com\EntityTreeController.cs" />
     <Compile Remove="Com\FieldCollection.cs" />
     <Compile Remove="Com\MembershipExtensions.cs" />
+    <Compile Remove="Com\MvcHandleErrorAttribute.cs" />
     <Compile Remove="Com\NoPermissionException.cs" />
     <Compile Remove="Com\ObjectController.cs" />
     <Compile Remove="Com\ViewHelper.cs" />
@@ -95,6 +96,7 @@
   <ItemGroup>
     <Content Remove="App.config" />
     <Content Remove="Areas\Admin\Views\VisitStat\_List_Search.cshtml" />
+    <Content Remove="Views\Shared\CubeError.cshtml" />
     <Content Remove="Views\Shared\_StatLevel.cshtml" />
     <Content Remove="wwwroot\favicon.ico" />
   </ItemGroup>

@@ -76,7 +76,7 @@ namespace NewLife.Cube
                 opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
 
                 // 过滤器
-                opt.Filters.Add<MvcHandleErrorAttribute>();
+                //opt.Filters.Add<MvcHandleErrorAttribute>();
 
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
