@@ -5038,7 +5038,7 @@
             <summary>获取长度的委托</summary>
         </member>
         <member name="P:NewLife.Messaging.PacketCodec.Last">
-            <summary>最后一次接收</summary>
+            <summary>最后一次解包成功，而不是最后一次接收</summary>
         </member>
         <member name="P:NewLife.Messaging.PacketCodec.Expire">
             <summary>缓存有效期。超过该时间后仍未匹配数据包的缓存数据将被抛弃</summary>
