@@ -30,6 +30,14 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IServiceCollection AddCube(this IServiceCollection services)
         {
+            // 修正系统名，确保可运行
+            var set = SysConfig.Current;
+            if (set.IsNew || set.Name == "NewLife.Cube.Views")
+            {
+                set.Name = "NewLife.Cube";
+                set.Save();
+            }
+
             // 配置Cookie策略
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -64,6 +72,7 @@ namespace NewLife.Cube
                 //opt.Filters.Add<MvcHandleErrorAttribute>();
 
             })
+            // 添加版本兼容性，显示声明当前应用版本为2.1
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
             //// 视图文件查找选项设置
             //.AddRazorOptions(opt =>
@@ -84,7 +93,7 @@ namespace NewLife.Cube
                 //opt.ViewEngines.Add(new CompositePrecompiledMvcEngine());
             });
 
-            AddCustomApplicationParts(services);
+            services.AddCustomApplicationParts();
 
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
             //services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
@@ -113,16 +122,12 @@ namespace NewLife.Cube
             //// 添加OData
             //services.AddOData();
 
-            // 修正系统名，确保可运行
-            var set = SysConfig.Current;
-            if (set.IsNew || set.Name == "NewLife.Cube.Views") set.Name = "NewLife.Cube";
-
             return services;
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
         /// <param name="services"></param>
-        public static void AddCustomApplicationParts(IServiceCollection services)
+        public static void AddCustomApplicationParts(this IServiceCollection services)
         {
             var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
             if (manager == null) manager = new ApplicationPartManager();
