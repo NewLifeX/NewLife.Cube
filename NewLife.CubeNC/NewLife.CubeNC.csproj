@@ -14,6 +14,9 @@
     <Version>2.5.2018.1031</Version>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -88,6 +91,8 @@
     <Compile Remove="Extensions\ObjectHelper.cs" />
     <Compile Remove="Extensions\SessionExtensions.cs" />
     <Compile Remove="Extensions\WebHelper.cs" />
+    <Compile Remove="Program.cs" />
+    <Compile Remove="Startup.cs" />
     <Compile Remove="Web\OAuthHelper.cs" />
     <Compile Remove="Web\OAuthServer2.cs" />
     <Compile Remove="Web\SsoProvider.cs" />
