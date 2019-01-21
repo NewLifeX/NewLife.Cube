@@ -16,13 +16,15 @@ namespace CubeDemoNC
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseCube();
-
+            // 使用Cube前添加自己的管道
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCube();
+
+            // mvc之后的管道不会被执行
             app.Run(async (context) =>
             {
                 await context.Response.WriteAsync("Hello World!");
