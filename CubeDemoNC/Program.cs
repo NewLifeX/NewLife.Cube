@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace WebTest
+namespace CubeDemoNC
 {
     public class Program
     {
@@ -19,6 +19,6 @@ namespace WebTest
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<MyStartup>();
+                .UseStartup<Startup>();
     }
 }
