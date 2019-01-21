@@ -75,17 +75,6 @@
     <Compile Remove="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Remove="Areas\Admin\Controllers\VisitStatController.cs" />
     <Compile Remove="Areas\Admin\Controllers\XCodeController.cs" />
-    <Compile Remove="Com\ConfigController.cs" />
-    <Compile Remove="Com\ControllerBaseX.cs" />
-    <Compile Remove="Com\ControllerHelper.cs" />
-    <Compile Remove="Com\EntityController.cs" />
-    <Compile Remove="Com\EntityTreeController.cs" />
-    <Compile Remove="Com\FieldCollection.cs" />
-    <Compile Remove="Com\MembershipExtensions.cs" />
-    <Compile Remove="Com\MvcHandleErrorAttribute.cs" />
-    <Compile Remove="Com\NoPermissionException.cs" />
-    <Compile Remove="Com\ObjectController.cs" />
-    <Compile Remove="Com\ViewHelper.cs" />
     <Compile Remove="Controllers\SsoController.cs" />
     <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
     <Compile Remove="Extensions\ObjectHelper.cs" />
@@ -117,7 +106,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\" />
     <Folder Include="Controllers\" />
     <Folder Include="Models\" />
     <Folder Include="Entity\" />
@@ -177,6 +165,12 @@
     <Compile Include="..\NewLife.Cube\Web\OAuthServer2.cs" Link="Web\OAuthServer2.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
+    <Compile Include="Common\AreaRegistrationBase.cs" />
+    <Compile Include="Common\DbRunTimeModule.cs" />
+    <Compile Include="Common\EntityAuthorizeAttribute.cs" />
+    <Compile Include="Common\EntityModelBinder.cs" />
+    <Compile Include="Common\HtmlExtensions.cs" />
+    <Compile Include="Common\PagerModelBinder.cs" />
     <Compile Include="Membership\ManageProvider.cs" />
   </ItemGroup>
   <ItemGroup>

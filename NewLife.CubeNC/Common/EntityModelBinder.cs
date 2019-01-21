@@ -16,7 +16,7 @@ using NewLife.Reflection;
 using XCode;
 using HttpContext = NewLife.Web.HttpContext;
 
-namespace NewLife.Cube.Com
+namespace NewLife.Cube
 {
     public class EntityModelBinder : IModelBinder
     {

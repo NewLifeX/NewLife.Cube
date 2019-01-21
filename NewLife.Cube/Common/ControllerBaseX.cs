@@ -8,7 +8,6 @@ using XCode.Membership;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 #else
 using System.Web.Mvc;

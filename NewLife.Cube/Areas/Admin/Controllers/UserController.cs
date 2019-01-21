@@ -12,7 +12,6 @@ using XCode.Membership;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 #else
 using System.Web;

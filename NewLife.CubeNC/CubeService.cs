@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
-using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Reflection;

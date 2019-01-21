@@ -23,7 +23,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 #else
 using System.Web.Mvc;
