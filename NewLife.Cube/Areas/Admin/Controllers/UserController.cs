@@ -104,7 +104,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             ViewBag.IsShowTip = UserX.Meta.Count == 1;
-            
+
             ViewBag.ReturnUrl = returnUrl;
 
             return View();
@@ -155,9 +155,13 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 如果是单点登录，则走单点登录注销
             var name = GetSession<String>("Cube_Sso");
-            if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso"
-                ,new { area = "./", name, r = returnUrl } //不指定区域名或者为空字符串，区域部分默认使用该上下文所在区域
-                );
+            if (!name.IsNullOrEmpty()) return RedirectToRoute("Cube", new
+            {
+                controller = "Sso",
+                action = "Logout",
+                name,
+                r = returnUrl
+            });
 
             ManageProvider.Provider.Logout();
 

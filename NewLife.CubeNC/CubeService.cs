@@ -220,25 +220,19 @@ namespace NewLife.Cube
                 //// OData路由放在最前面
                 //routes.MapODataServiceRoute("ODataRoute","OData", builder.GetEdmModel());
 
+                // 区域路由注册
+                routes.MapRoute(
+                    name: "CubeAreas",
+                    template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"
+                );
+
                 // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
                 routes.MapRoute(
                     name: "Cube",
                     template: "{controller=CubeHome}/{action=Index}/{id?}"
                 );
             });
-
-            // 配置魔方的MVC选项
-            app.UseRouter(routes =>
-            {
-                if (routes.DefaultHandler == null) routes.DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>();
-
-                // 区域路由注册
-                routes.MapRoute(
-                    name: "CubeAreas",
-                    template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"
-                );
-            });
-
+            
             // 使用管理提供者
             app.UseManagerProvider();
 
