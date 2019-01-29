@@ -180,7 +180,14 @@ namespace NewLife.Cube.Controllers
         public virtual ActionResult Logout()
         {
             // 先读Session，待会会清空
+#if __CORE__
+            var prov = Provider;
+            var name = GetSession<String>("Cube_Sso");
+            var client = prov.GetClient(name);
+            //var client = GetSession<OAuthClient>("Cube_Sso_Client");
+#else
             var client = GetSession<OAuthClient>("Cube_Sso_Client");
+#endif
 
             var prv = Provider;
             prv?.Logout();
