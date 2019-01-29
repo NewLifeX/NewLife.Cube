@@ -17,6 +17,7 @@ using NewLife.IO;
 using System.IO;
 using System.Xml.Serialization;
 using System.IO.Compression;
+using Microsoft.Net.Http.Headers;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -689,7 +690,19 @@ namespace NewLife.Cube
                 ?? Factory.EntityType.Name;
 
             var fileName = "{0}_{1:yyyyMMddHHmmss}.csv".F(name, DateTime.Now);
-#if !__CORE__
+
+
+#if __CORE__
+            var rs = Response;
+            var headers = rs.Headers;
+            headers[HeaderNames.ContentEncoding] = "UTF8";
+            headers[HeaderNames.ContentDisposition] = 
+                "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8);
+            headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+            
+            var data = ExportData(1_000_000);
+            OnExportExcel(fs, data, rs.Body);
+#else
             var rs = Response;
             rs.Charset = "UTF-8";
             rs.ContentEncoding = Encoding.UTF8;

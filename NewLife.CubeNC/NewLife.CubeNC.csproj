@@ -103,6 +103,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
+    <PackageReference Include="NewLife.XCode" Version="9.10.6965.42078" />
   </ItemGroup>
 
   <ItemGroup>
@@ -186,14 +187,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\favicon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="NewLife.Core">
-      <HintPath>..\DLL20\NewLife.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="XCode">
-      <HintPath>..\DLL20\XCode.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
