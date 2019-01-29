@@ -58,9 +58,9 @@ namespace NewLife.Cube
 
                 return session?.Get(SessionKey, user.GetType()) as IManageUser;
             }
-            catch (Exception ex)
+            catch (System.InvalidOperationException ex)
             {
-                // 这里捕获一下，防止初始化应用中seesion还没初始化好报的异常
+                // 这里捕获一下，防止初始化应用中session还没初始化好报的异常
                 // 这里有个问题就是这里的ctx会有两个不同的值
                 XTrace.WriteException(ex);
                 return null;

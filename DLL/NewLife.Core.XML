@@ -4,6 +4,20 @@
         <name>NewLife.Core</name>
     </assembly>
     <members>
+        <member name="T:NewLife.Agent.AgentService">
+            <summary>代理服务例子。自定义服务程序可参照该类实现。</summary>
+        </member>
+        <member name="M:NewLife.Agent.AgentService.#ctor">
+            <summary>实例化一个代理服务</summary>
+        </member>
+        <member name="M:NewLife.Agent.AgentService.StartWork(System.String)">
+            <summary>开始工作</summary>
+            <param name="reason"></param>
+        </member>
+        <member name="M:NewLife.Agent.AgentService.StopWork(System.String)">
+            <summary>停止服务</summary>
+            <param name="reason"></param>
+        </member>
         <member name="T:NewLife.Agent.AgentServiceBase`1">
             <typeparam name="TService">服务类型</typeparam>
         </member>
@@ -2101,7 +2115,8 @@
             <param name="seg"></param>
         </member>
         <member name="M:NewLife.Data.Packet.#ctor(System.IO.Stream)">
-            <summary>从可扩展内存流实例化</summary>
+            <summary>从可扩展内存流实例化，尝试窃取内存流内部的字节数组，失败后拷贝</summary>
+            <remarks>因数据包内数组窃取自内存流，需要特别小心，避免多线程共用</remarks>
             <param name="stream"></param>
         </member>
         <member name="P:NewLife.Data.Packet.Item(System.Int32)">
@@ -2766,6 +2781,25 @@
             <summary>指定配置文件名和重新加载时间（毫秒）</summary>
             <param name="fileName"></param>
             <param name="reloadTime"></param>
+        </member>
+        <member name="T:NewLife.Json.JsonConfigTest">
+            <summary>
+            测试Json配置文件功能
+            </summary>
+        </member>
+        <member name="M:NewLife.Json.JsonConfigTest.Start">
+            <summary>
+            开始测试
+            </summary>
+        </member>
+        <member name="P:NewLife.Json.TestJsonConfig.Title">
+            <summary>标题</summary>
+        </member>
+        <member name="P:NewLife.Json.TestJsonConfig.Width">
+            <summary>宽度</summary>
+        </member>
+        <member name="P:NewLife.Json.TestJsonConfig.Height">
+            <summary>高度</summary>
         </member>
         <member name="T:NewLife.Log.ActionLog">
             <summary>依托于动作的日志类</summary>
@@ -3771,6 +3805,32 @@
         <member name="P:NewLife.Messaging.MessageEventArgs.UserState">
             <summary>用户数据。比如远程地址等</summary>
         </member>
+        <member name="T:NewLife.Messaging.PacketCodec">
+            <summary>数据包编码器</summary>
+        </member>
+        <member name="P:NewLife.Messaging.PacketCodec.Stream">
+            <summary>缓存流</summary>
+        </member>
+        <member name="P:NewLife.Messaging.PacketCodec.GetLength">
+            <summary>获取长度的委托</summary>
+        </member>
+        <member name="P:NewLife.Messaging.PacketCodec.Last">
+            <summary>最后一次解包成功，而不是最后一次接收</summary>
+        </member>
+        <member name="P:NewLife.Messaging.PacketCodec.Expire">
+            <summary>缓存有效期。超过该时间后仍未匹配数据包的缓存数据将被抛弃</summary>
+        </member>
+        <member name="P:NewLife.Messaging.PacketCodec.MaxCache">
+            <summary>最大缓存待处理数据。默认0无限制</summary>
+        </member>
+        <member name="M:NewLife.Messaging.PacketCodec.Parse(NewLife.Data.Packet)">
+            <summary>分析数据流，得到一帧数据</summary>
+            <param name="pk">待分析数据包</param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Messaging.PacketCodec.CheckCache">
+            <summary>检查缓存</summary>
+        </member>
         <member name="T:NewLife.Model.IActor">
             <summary>无锁并行编程模型</summary>
             <remarks>
@@ -4411,11 +4471,18 @@
             默认以"0x0D 0x0A"即换行来分割，分割的包包含分割字节本身，使用时请注意。
             默认分割方式：ISocket.Add&lt;SplitDataCodec&gt;()
             自定义分割方式：ISocket.Add(new SplitDataHandler { SplitData = 自定义分割字节数组 })
+            自定义最大缓存大小方式：ISocket.Add(new SplitDataHandler { MaxCacheDataLength = 2048 })
+            自定义方式：ISocket.Add(new SplitDataHandler { MaxCacheDataLength = 2048, SplitData = 自定义分割字节数组 })
             </remarks>
         </member>
         <member name="P:NewLife.Net.Handlers.SplitDataCodec.SplitData">
             <summary>
             粘包分割字节数据（默认0x0D,0x0A）
+            </summary>
+        </member>
+        <member name="P:NewLife.Net.Handlers.SplitDataCodec.MaxCacheDataLength">
+            <summary>
+            最大缓存待处理数据（字节）
             </summary>
         </member>
         <member name="M:NewLife.Net.Handlers.SplitDataCodec.Read(NewLife.Model.IHandlerContext,System.Object)">
@@ -4428,14 +4495,6 @@
             <summary>解码</summary>
             <param name="context"></param>
             <param name="pk">包</param>
-            <returns></returns>
-        </member>
-        <member name="M:NewLife.Net.Handlers.SplitDataCodec.Parse(NewLife.Data.Packet,NewLife.Net.Handlers.CodecItem,System.Func{NewLife.Data.Packet,System.Int32},System.Int32)">
-            <summary>分析数据流，得到一帧数据</summary>
-            <param name="pk">待分析数据包</param>
-            <param name="codec">参数</param>
-            <param name="getLength">获取长度</param>
-            <param name="expire">缓存有效期</param>
             <returns></returns>
         </member>
         <member name="M:NewLife.Net.Handlers.SplitDataCodec.GetLineLength(NewLife.Data.Packet)">
@@ -4544,29 +4603,12 @@
             <param name="response"></param>
             <returns></returns>
         </member>
-        <member name="M:NewLife.Net.Handlers.MessageCodec`1.Parse(NewLife.Data.Packet,NewLife.Net.Handlers.CodecItem,System.Func{NewLife.Data.Packet,System.Int32},System.Int32)">
-            <summary>分析数据流，得到一帧数据</summary>
-            <param name="pk">待分析数据包</param>
-            <param name="codec">参数</param>
-            <param name="getLength">获取长度</param>
-            <param name="expire">缓存有效期</param>
-            <returns></returns>
-        </member>
         <member name="M:NewLife.Net.Handlers.MessageCodec`1.GetLength(NewLife.Data.Packet,System.Int32,System.Int32)">
             <summary>从数据流中获取整帧数据长度</summary>
             <param name="pk"></param>
             <param name="offset"></param>
             <param name="size"></param>
             <returns>数据帧长度（包含头部长度位）</returns>
-        </member>
-        <member name="T:NewLife.Net.Handlers.CodecItem">
-            <summary>消息编码参数</summary>
-        </member>
-        <member name="F:NewLife.Net.Handlers.CodecItem.Stream">
-            <summary>缓存流</summary>
-        </member>
-        <member name="F:NewLife.Net.Handlers.CodecItem.Last">
-            <summary>最后一次接收</summary>
         </member>
         <member name="T:NewLife.Net.Handlers.IMatchQueue">
             <summary>消息匹配队列接口。用于把响应数据包配对到请求包</summary>
@@ -6807,6 +6849,12 @@
         <member name="P:NewLife.Remoting.ApiServer.StatPeriod">
             <summary>显示统计信息的周期。默认600秒，0表示不显示统计信息</summary>
         </member>
+        <member name="T:NewLife.Remoting.ApiTest">
+            <summary>Rpc测试</summary>
+        </member>
+        <member name="M:NewLife.Remoting.ApiTest.Main">
+            <summary>测试主函数</summary>
+        </member>
         <member name="T:NewLife.Remoting.ApiController">
             <summary>API控制器</summary>
         </member>
@@ -7895,6 +7943,12 @@
             <param name="value"></param>
             <returns></returns>
         </member>
+        <member name="T:NewLife.Serialization.BinaryTest">
+            <summary>Binary测试</summary>
+        </member>
+        <member name="M:NewLife.Serialization.BinaryTest.Start">
+            <summary>开始测试</summary>
+        </member>
         <member name="T:NewLife.Serialization.IMemberAccessor">
             <summary>成员序列化访问器。接口实现者可以在这里完全自定义序列化行为</summary>
         </member>
@@ -8423,6 +8477,12 @@
             <param name="value"></param>
             <returns></returns>
         </member>
+        <member name="T:NewLife.Serialization.JsonTest">
+            <summary>Json测试</summary>
+        </member>
+        <member name="M:NewLife.Serialization.JsonTest.Start">
+            <summary>开始测试</summary>
+        </member>
         <member name="T:NewLife.Serialization.JsonWriter">
             <summary>Json写入器</summary>
         </member>
@@ -8913,6 +8973,9 @@
             <param name="binder"></param>
             <param name="result"></param>
             <returns></returns>
+        </member>
+        <member name="M:NewLife.Reflection.DynamicXml.Test">
+            <summary>测试</summary>
         </member>
         <member name="T:NewLife.Reflection.IReflect">
             <summary>反射接口</summary>

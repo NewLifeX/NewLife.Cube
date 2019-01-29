@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -10,48 +11,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
-using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
-using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
-using XCode.Membership;
 
 namespace NewLife.Cube
 {
-    /// <summary>魔方初始化</summary>
-    public class Startup
+    /// <summary>魔方服务</summary>
+    public static class CubeService
     {
-        /// <summary>初始化配置</summary>
-        /// <param name="configuration"></param>
-        /// <param name="env"></param>
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
-        {
-            XTrace.WriteLine("ApplicationName: {0}", env.ApplicationName);
-            XTrace.WriteLine("EnvironmentName: {0}", env.EnvironmentName);
-            XTrace.WriteLine("WebRootPath: {0}", env.WebRootPath);
-            XTrace.WriteLine("ContentRootPath: {0}", env.ContentRootPath);
-
-            Configuration = configuration;
-            HostingEnvironment = env;
-        }
-
-        /// <summary>配置</summary>
-        public IConfiguration Configuration { get; }
-
-        /// <summary>主机环境</summary>
-        public IHostingEnvironment HostingEnvironment { get; }
-
-        #region ConfigureServices
-        /// <summary>添加服务到容器。运行时调用</summary>
+        #region 配置魔方
+        /// <summary>添加魔方</summary>
         /// <param name="services"></param>
-        public virtual void ConfigureServices(IServiceCollection services)
+        /// <returns></returns>
+        public static IServiceCollection AddCube(this IServiceCollection services)
         {
+            // 修正系统名，确保可运行
+            var set = SysConfig.Current;
+            if (set.IsNew || set.Name == "NewLife.Cube.Views")
+            {
+                set.Name = "NewLife.Cube";
+                set.Save();
+            }
+
             // 配置Cookie策略
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -69,7 +55,10 @@ namespace NewLife.Cube
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
             //services.AddSingleton<IView, PrecompiledMvcView>();
 
-            services.AddCubeDefaultUI(HostingEnvironment);
+            var provider = services.BuildServiceProvider();
+            //var env = provider.GetService<IHostingEnvironment>();
+            var env = provider.GetService(typeof(IHostingEnvironment)) as IHostingEnvironment;
+            if (env != null) services.AddCubeDefaultUI(env);
 
             services.AddMvc(opt =>
             {
@@ -83,6 +72,7 @@ namespace NewLife.Cube
                 //opt.Filters.Add<MvcHandleErrorAttribute>();
 
             })
+            // 添加版本兼容性，显示声明当前应用版本为2.1
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
             //// 视图文件查找选项设置
             //.AddRazorOptions(opt =>
@@ -103,7 +93,7 @@ namespace NewLife.Cube
                 //opt.ViewEngines.Add(new CompositePrecompiledMvcEngine());
             });
 
-            AddCustomApplicationParts(services);
+            services.AddCustomApplicationParts();
 
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
             //services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
@@ -132,14 +122,12 @@ namespace NewLife.Cube
             //// 添加OData
             //services.AddOData();
 
-            // 修正系统名，确保可运行
-            var set = SysConfig.Current;
-            if (set.IsNew || set.Name == "NewLife.Cube.Views") set.Name = "NewLife.Cube";
+            return services;
         }
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
         /// <param name="services"></param>
-        public void AddCustomApplicationParts(IServiceCollection services)
+        public static void AddCustomApplicationParts(this IServiceCollection services)
         {
             var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
             if (manager == null) manager = new ApplicationPartManager();
@@ -197,22 +185,12 @@ namespace NewLife.Cube
         }
         #endregion
 
-        #region Configure
-        /// <summary>配置Http请求管道。运行时调用</summary>
+        #region 使用魔方
+        /// <summary>使用魔方</summary>
         /// <param name="app"></param>
-        /// <param name="env"></param>
-        public virtual void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        /// <returns></returns>
+        public static IApplicationBuilder UseCube(this IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                //app.UseExceptionHandler("/Home/Error");
-                //app.UseHsts();
-            }
-
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
 
@@ -223,7 +201,7 @@ namespace NewLife.Cube
             app.UseErrorModule();
 
             // 压缩配置
-            if(set.EnableCompress) app.UseResponseCompression();
+            if (set.EnableCompress) app.UseResponseCompression();
 
             // 注册请求执行时间中间件
             app.UseDbRunTimeModule();
@@ -242,25 +220,19 @@ namespace NewLife.Cube
                 //// OData路由放在最前面
                 //routes.MapODataServiceRoute("ODataRoute","OData", builder.GetEdmModel());
 
+                // 区域路由注册
+                routes.MapRoute(
+                    name: "CubeAreas",
+                    template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"
+                );
+
                 // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
                 routes.MapRoute(
                     name: "Cube",
                     template: "{controller=CubeHome}/{action=Index}/{id?}"
                 );
             });
-
-            // 配置魔方的MVC选项
-            app.UseRouter(routes =>
-            {
-                if (routes.DefaultHandler == null) routes.DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>();
-
-                // 区域路由注册
-                routes.MapRoute(
-                    name: "CubeAreas",
-                    template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"
-                );
-            });
-
+            
             // 使用管理提供者
             app.UseManagerProvider();
 
@@ -269,7 +241,9 @@ namespace NewLife.Cube
             //var user = ManageProvider.User;
             //ManageProvider.Provider.GetService<IUser>();
             //ScanControllerExtensions.ScanController();
-            Admin.AdminArea.RegisterArea<Admin.AdminArea>();
+            AreaBaseX.RegisterArea<Admin.AdminArea>();
+
+            return app;
         }
         #endregion
     }

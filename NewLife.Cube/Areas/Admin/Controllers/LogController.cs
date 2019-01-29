@@ -8,7 +8,6 @@ using XCode.Membership;
 using XLog = XCode.Membership.Log;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
-using NewLife.Cube.Com;
 using NewLife.Cube.Extensions;
 #else
 using System.Web;

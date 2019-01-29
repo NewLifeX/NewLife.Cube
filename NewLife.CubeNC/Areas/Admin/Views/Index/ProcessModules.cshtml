@@ -8,11 +8,6 @@
     Layout = NewLife.Cube.Setting.Current.Layout;
 
     ViewBag.Title = "进程模块";
-    var Act = ViewBag.Act;
-
-    var asm = Assembly.GetExecutingAssembly();
-    var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
-    var ver = att.FrameworkDisplayName ?? att.FrameworkName;
 
     var isAll = String.Equals("All", Context.Request.GetRequestValue("Mode"), StringComparison.OrdinalIgnoreCase);
 

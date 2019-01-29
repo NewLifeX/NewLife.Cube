@@ -72,27 +72,6 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public virtual ActionResult Index() => Redirect("~/");
 
-#if !__CORE__
-        /// <summary>发生错误时</summary>
-        /// <param name="filterContext"></param>
-        protected override void OnException(ExceptionContext filterContext)
-        {
-            if (!filterContext.ExceptionHandled)
-            {
-                var vr = new ViewResult
-                {
-                    ViewName = "CubeError"
-                };
-                vr.ViewBag.Context = filterContext;
-
-                filterContext.Result = vr;
-                filterContext.ExceptionHandled = true;
-            }
-
-            base.OnException(filterContext);
-        }
-#endif
-
         #region 单点登录客户端
         /// <summary>第三方登录</summary>
         /// <param name="name"></param>
@@ -185,16 +164,10 @@ namespace NewLife.Cube.Controllers
             catch (Exception ex)
             {
                 XTrace.WriteException(ex.GetTrue());
-                //throw;
 
                 if (!state.EqualIgnoreCase("refresh")) return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
 
-#if __CORE__
-                return View("CubeError", ex);
-#else
-                var inf = new HandleErrorInfo(ex, "Sso", nameof(LoginInfo));
-                return View("CubeError", inf);
-#endif
+                throw;
             }
         }
 
@@ -207,7 +180,14 @@ namespace NewLife.Cube.Controllers
         public virtual ActionResult Logout()
         {
             // 先读Session，待会会清空
+#if __CORE__
+            var prov = Provider;
+            var name = GetSession<String>("Cube_Sso");
+            var client = prov.GetClient(name);
+            //var client = GetSession<OAuthClient>("Cube_Sso_Client");
+#else
             var client = GetSession<OAuthClient>("Cube_Sso_Client");
+#endif
 
             var prv = Provider;
             prv?.Logout();
@@ -464,17 +444,23 @@ namespace NewLife.Cube.Controllers
             if (prv == null) throw new ArgumentNullException(nameof(Provider));
 
             var set = Setting.Current;
-            var av = set.AvatarPath.CombinePath(id + "").GetFullPath();
-            if (!System.IO.File.Exists(av))
+            var av = set.AvatarPath.CombinePath(id + ".png");
+            var av2 = av.GetFullPath();
+            if (!System.IO.File.Exists(av2))
             {
                 var user = prv.Provider?.FindByID(id);
                 if (user == null) throw new Exception("用户不存在 " + id);
 
                 prv.FetchAvatar(user);
             }
-            if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
+            if (!System.IO.File.Exists(av2)) throw new Exception("用户头像不存在 " + id);
 
-            return File(av, "image");
+#if __CORE__
+            var vs = System.IO.File.ReadAllBytes(av2);
+            return File(vs, "image/png");
+#else
+            return File(av2, "image/png");
+#endif
         }
         #endregion
     }

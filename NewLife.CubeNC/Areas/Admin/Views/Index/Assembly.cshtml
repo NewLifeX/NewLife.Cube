@@ -7,10 +7,6 @@
     Layout = NewLife.Cube.Setting.Current.Layout;
 
     ViewBag.Title = "程序集列表";
-
-    var asm = Assembly.GetExecutingAssembly();
-    var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
-    var ver = att.FrameworkDisplayName ?? att.FrameworkName;
 }
 
 <table class="table table-bordered table-hover table-striped table-condensed">
@@ -53,5 +49,5 @@
                 @location
             </td>
         </tr>
-                    }
+    }
 </table>

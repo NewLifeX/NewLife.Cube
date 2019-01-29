@@ -8,12 +8,15 @@
     <Description>Mvc权限管理后台，支持模版视图重载覆盖</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2018 新生命开发团队</Copyright>
-    <FileVersion>2.4.2018.0630</FileVersion>
-    <AssemblyVersion>2.4.*</AssemblyVersion>
+    <FileVersion>2.5.2018.1031</FileVersion>
+    <AssemblyVersion>2.5.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
-    <Version>2.4.2018.0630</Version>
+    <Version>2.5.2018.1031</Version>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -72,21 +75,13 @@
     <Compile Remove="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Remove="Areas\Admin\Controllers\VisitStatController.cs" />
     <Compile Remove="Areas\Admin\Controllers\XCodeController.cs" />
-    <Compile Remove="Com\ConfigController.cs" />
-    <Compile Remove="Com\ControllerBaseX.cs" />
-    <Compile Remove="Com\ControllerHelper.cs" />
-    <Compile Remove="Com\EntityController.cs" />
-    <Compile Remove="Com\EntityTreeController.cs" />
-    <Compile Remove="Com\FieldCollection.cs" />
-    <Compile Remove="Com\MembershipExtensions.cs" />
-    <Compile Remove="Com\NoPermissionException.cs" />
-    <Compile Remove="Com\ObjectController.cs" />
-    <Compile Remove="Com\ViewHelper.cs" />
     <Compile Remove="Controllers\SsoController.cs" />
     <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
     <Compile Remove="Extensions\ObjectHelper.cs" />
     <Compile Remove="Extensions\SessionExtensions.cs" />
     <Compile Remove="Extensions\WebHelper.cs" />
+    <Compile Remove="Program.cs" />
+    <Compile Remove="Startup.cs" />
     <Compile Remove="Web\OAuthHelper.cs" />
     <Compile Remove="Web\OAuthServer2.cs" />
     <Compile Remove="Web\SsoProvider.cs" />
@@ -95,6 +90,7 @@
   <ItemGroup>
     <Content Remove="App.config" />
     <Content Remove="Areas\Admin\Views\VisitStat\_List_Search.cshtml" />
+    <Content Remove="Views\Shared\CubeError.cshtml" />
     <Content Remove="Views\Shared\_StatLevel.cshtml" />
     <Content Remove="wwwroot\favicon.ico" />
   </ItemGroup>
@@ -107,10 +103,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
+    <PackageReference Include="NewLife.XCode" Version="9.10.6965.42078" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\" />
     <Folder Include="Controllers\" />
     <Folder Include="Models\" />
     <Folder Include="Entity\" />
@@ -170,6 +166,12 @@
     <Compile Include="..\NewLife.Cube\Web\OAuthServer2.cs" Link="Web\OAuthServer2.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
+    <Compile Include="Common\AreaRegistrationBase.cs" />
+    <Compile Include="Common\DbRunTimeModule.cs" />
+    <Compile Include="Common\EntityAuthorizeAttribute.cs" />
+    <Compile Include="Common\EntityModelBinder.cs" />
+    <Compile Include="Common\HtmlExtensions.cs" />
+    <Compile Include="Common\PagerModelBinder.cs" />
     <Compile Include="Membership\ManageProvider.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -185,14 +187,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\favicon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="NewLife.Core">
-      <HintPath>..\DLL20\NewLife.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="XCode">
-      <HintPath>..\DLL20\XCode.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
