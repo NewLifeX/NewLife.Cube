@@ -17,13 +17,13 @@ using NewLife.IO;
 using System.IO;
 using System.Xml.Serialization;
 using System.IO.Compression;
-using Microsoft.Net.Http.Headers;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Net.Http.Headers;
 using NewLife.Cube.Extensions;
 #else
 using System.Web.Mvc;
