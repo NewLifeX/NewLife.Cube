@@ -6,6 +6,7 @@ using System.Threading;
 using System.Web;
 using NewLife.Common;
 using NewLife.Model;
+using NewLife.Cube;
 #if !__CORE__
 using System.Web.SessionState;
 #endif
@@ -212,7 +213,7 @@ namespace XCode.Membership
             if (autologin)
             {
                 mu.SaveLogin(null);
-                LogProvider.Provider.WriteLog("用户", "自动登录", $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "");
+                LogProvider.Provider.WriteLog("用户", "自动登录", $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "",ip: req.GetUserHost());
             }
 
             return u;

@@ -151,5 +151,13 @@ namespace NewLife.Cube
         /// <returns></returns>
         protected virtual String OnJsonSerialize(Object data) => data.ToJson();
         #endregion
+
+        #region 常用属性
+        /// <summary>
+        /// 用户主机
+        /// </summary>
+        public String UserHost => HttpContext.Request.GetUserHost();
+
+        #endregion
     }
 }
