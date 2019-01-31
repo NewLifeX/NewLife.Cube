@@ -94,7 +94,17 @@ namespace XCode.Membership
             if (user == null) return null;
 
             var expire = TimeSpan.FromDays(0);
-            if (rememberme && user != null) expire = TimeSpan.FromDays(365);
+            if (rememberme)
+            {
+                expire = TimeSpan.FromDays(365);
+            }
+            else
+            {
+                var set = NewLife.Cube.Setting.Current;
+                if (set.SessionTimeout > 0)
+                    expire = TimeSpan.FromSeconds(set.SessionTimeout);
+            }
+
             this.SaveCookie(user, expire);
 
             return user;
@@ -213,7 +223,7 @@ namespace XCode.Membership
             if (autologin)
             {
                 mu.SaveLogin(null);
-                LogProvider.Provider.WriteLog("用户", "自动登录", $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "",ip: req.GetUserHost());
+                LogProvider.Provider.WriteLog("用户", "自动登录", $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "", ip: req.GetUserHost());
             }
 
             return u;

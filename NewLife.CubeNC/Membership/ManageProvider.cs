@@ -107,7 +107,16 @@ namespace NewLife.Cube
             Current = user;
 
             var expire = TimeSpan.FromMinutes(0);
-            if (rememberme && user != null) expire = TimeSpan.FromDays(365);
+            if (rememberme && user != null)
+            {
+                expire = TimeSpan.FromDays(365);
+            }
+            else
+            {
+                var set = Setting.Current;
+                if (set.SessionTimeout > 0)
+                    expire = TimeSpan.FromSeconds(set.SessionTimeout);
+            }
 
             var context = Context?.HttpContext;
             this.SaveCookie(user, expire, context);
