@@ -90,7 +90,6 @@
   <ItemGroup>
     <Content Remove="App.config" />
     <Content Remove="Areas\Admin\Views\VisitStat\_List_Search.cshtml" />
-    <Content Remove="Views\Shared\CubeError.cshtml" />
     <Content Remove="Views\Shared\_StatLevel.cshtml" />
     <Content Remove="wwwroot\favicon.ico" />
   </ItemGroup>
