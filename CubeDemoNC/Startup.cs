@@ -27,6 +27,10 @@ namespace CubeDemoNC
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
             app.UseCube();
         }

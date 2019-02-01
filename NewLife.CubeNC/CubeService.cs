@@ -9,11 +9,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
+using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Reflection;
@@ -122,8 +123,24 @@ namespace NewLife.Cube
             //// 添加OData
             //services.AddOData();
 
+            //services.AddSingleton<ILogger, Logger>();
+            services.AddLogging(configure =>
+            {
+                configure.AddFilter((str1, str2, level) =>
+                {
+                    return true;
+                })
+                    .AddConsole(cfg =>
+                    {
+                        cfg.DisableColors = true;
+                    })
+                    .AddProvider(new CubeLoggerProvider());
+            });
+
             return services;
         }
+
+
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
         /// <param name="services"></param>
@@ -191,6 +208,9 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IApplicationBuilder UseCube(this IApplicationBuilder app)
         {
+            //var loggerFactory = app.ApplicationServices.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
+            //loggerFactory.CreateLogger("");
+
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
 
@@ -232,7 +252,7 @@ namespace NewLife.Cube
                     template: "{controller=CubeHome}/{action=Index}/{id?}"
                 );
             });
-            
+
             // 使用管理提供者
             app.UseManagerProvider();
 

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using NewLife.Cube.Extensions;
 #else
 using System.Web;
@@ -24,6 +25,7 @@ using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
 using NewLife.Cube.ViewModels;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -38,15 +40,21 @@ namespace NewLife.Cube.Admin.Controllers
 #if __CORE__
         private IManageProvider _provider;
         private IApplicationLifetime _applicationLifetime { get; set; }
+        private ILogger<IndexController> _logger { get; set; }
+
+
 
         private IndexController() { }
 
         /// <summary>实例化</summary>
         /// <param name="manageProvider"></param>
-        public IndexController(IManageProvider manageProvider, IApplicationLifetime appLifetime)
+        public IndexController(IManageProvider manageProvider, IApplicationLifetime appLifetime
+            , ILogger<IndexController> logger)
         {
             _provider = manageProvider;
             _applicationLifetime = appLifetime;
+            _logger = logger;
+            _logger.Log(LogLevel.Information, 1, "Index");
         }
 #endif
 

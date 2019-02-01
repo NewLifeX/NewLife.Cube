@@ -166,6 +166,7 @@
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
     <Compile Include="Common\AreaRegistrationBase.cs" />
+    <Compile Include="Common\CubeLogger.cs" />
     <Compile Include="Common\DbRunTimeModule.cs" />
     <Compile Include="Common\EntityAuthorizeAttribute.cs" />
     <Compile Include="Common\EntityModelBinder.cs" />
