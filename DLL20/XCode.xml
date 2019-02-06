@@ -5116,6 +5116,9 @@
         <member name="P:XCode.EntityExtend.Expire">
             <summary>过期时间。单位是秒</summary>
         </member>
+        <member name="P:XCode.EntityExtend.Keys">
+            <summary>键集合</summary>
+        </member>
         <member name="M:XCode.EntityExtend.#ctor">
             <summary>实例化一个不区分键大小写的实体扩展</summary>
         </member>

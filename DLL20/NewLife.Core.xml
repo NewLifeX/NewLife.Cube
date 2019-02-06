@@ -2225,9 +2225,10 @@
         <member name="P:NewLife.Caching.Redis.Pool">
             <summary>连接池</summary>
         </member>
-        <member name="M:NewLife.Caching.Redis.Execute``1(System.Func{NewLife.Caching.RedisClient,``0},System.Boolean)">
+        <member name="M:NewLife.Caching.Redis.Execute``1(System.String,System.Func{NewLife.Caching.RedisClient,``0},System.Boolean)">
             <summary>执行命令</summary>
             <typeparam name="TResult">返回类型</typeparam>
+            <param name="key">命令key，用于选择集群节点</param>
             <param name="func">回调函数</param>
             <param name="write">是否写入操作</param>
             <returns></returns>
@@ -3522,7 +3523,7 @@
             <summary>获取封包的数据流形式</summary>
             <returns></returns>
         </member>
-        <member name="M:NewLife.Data.Packet.WriteTo(System.IO.Stream)">
+        <member name="M:NewLife.Data.Packet.CopyTo(System.IO.Stream)">
             <summary>把封包写入到数据流</summary>
             <param name="stream"></param>
         </member>
@@ -4091,7 +4092,7 @@
             <summary>状态码</summary>
         </member>
         <member name="P:NewLife.Http.TinyHttpClient.Timeout">
-            <summary>超时时间。默认15000ms</summary>
+            <summary>超时时间。默认15s</summary>
         </member>
         <member name="P:NewLife.Http.TinyHttpClient.Headers">
             <summary>头部集合</summary>
@@ -4100,15 +4101,27 @@
             <summary>销毁</summary>
             <param name="disposing"></param>
         </member>
-        <member name="M:NewLife.Http.TinyHttpClient.SendDataAsync(NewLife.Net.NetUri,NewLife.Data.Packet)">
+        <member name="M:NewLife.Http.TinyHttpClient.SendDataAsync(System.Uri,NewLife.Data.Packet)">
             <summary>异步请求</summary>
-            <param name="remote"></param>
+            <param name="uri"></param>
             <param name="request"></param>
             <returns></returns>
         </member>
-        <member name="M:NewLife.Http.TinyHttpClient.SendAsync(System.String,System.Byte[])">
+        <member name="M:NewLife.Http.TinyHttpClient.SendAsync(System.Uri,System.Byte[])">
             <summary>异步发出请求，并接收响应</summary>
-            <param name="url"></param>
+            <param name="uri"></param>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Http.TinyHttpClient.SendData(System.Uri,NewLife.Data.Packet)">
+            <summary>同步请求</summary>
+            <param name="uri"></param>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Http.TinyHttpClient.Send(System.Uri,System.Byte[])">
+            <summary>异步发出请求，并接收响应</summary>
+            <param name="uri"></param>
             <param name="data"></param>
             <returns></returns>
         </member>
@@ -4123,9 +4136,19 @@
             <param name="rs"></param>
             <returns></returns>
         </member>
-        <member name="M:NewLife.Http.TinyHttpClient.GetAsync(System.String)">
+        <member name="M:NewLife.Http.TinyHttpClient.GetPool(System.String)">
+            <summary>根据主机获取对象池</summary>
+            <param name="host"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Http.TinyHttpClient.GetStringAsync(System.String)">
             <summary>异步获取</summary>
             <param name="url">地址</param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Http.TinyHttpClient.GetString(System.String)">
+            <summary>同步获取</summary>
+            <param name="url"></param>
             <returns></returns>
         </member>
         <member name="T:NewLife.IO.CsvFile">
@@ -8935,9 +8958,6 @@
         <member name="F:NewLife.Security.Crc16.CrcTable">
             <summary>CRC16表</summary>
         </member>
-        <member name="F:NewLife.Security.Crc16.crc">
-            <summary>校验值</summary>
-        </member>
         <member name="P:NewLife.Security.Crc16.Value">
             <summary>校验值</summary>
         </member>
@@ -8952,15 +8972,10 @@
         </member>
         <member name="M:NewLife.Security.Crc16.Update(System.Byte[],System.Int32,System.Int32)">
             <summary>添加字节数组进行校验  CRC16-CCITT x16+x12+x5+1 1021  ISO HDLC, ITU X.25, V.34/V.41/V.42, PPP-FCS</summary>
-            <param name = "buffer">
-            The buffer which contains the data
-            </param>
-            <param name = "offset">
-            The offset in the buffer where the data starts
-            </param>
-            <param name = "count">
-            The number of data bytes to update the CRC with.
-            </param>
+            <remarks>字符串123456789的Crc16是31C3</remarks>
+            <param name = "buffer">数据缓冲区</param>
+            <param name = "offset">偏移量</param>
+            <param name = "count">字节个数</param>
         </member>
         <member name="M:NewLife.Security.Crc16.Update(System.IO.Stream,System.Int64)">
             <summary>添加数据流进行校验  CRC-16 x16+x15+x2+1 8005 IBM SDLC</summary>
@@ -9098,6 +9113,17 @@
             <param name="buf"></param>
             <param name="pukKey"></param>
             <param name="rgbSignature"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Security.DSAHelper.FromXmlStringX(System.Security.Cryptography.DSACryptoServiceProvider,System.String)">
+            <summary>从Xml加载DSA密钥</summary>
+            <param name="rsa"></param>
+            <param name="xmlString"></param>
+        </member>
+        <member name="M:NewLife.Security.DSAHelper.ToXmlStringX(System.Security.Cryptography.DSACryptoServiceProvider,System.Boolean)">
+            <summary>保存DSA密钥到Xml</summary>
+            <param name="rsa"></param>
+            <param name="includePrivateParameters"></param>
             <returns></returns>
         </member>
         <member name="T:NewLife.Security.Rand">
