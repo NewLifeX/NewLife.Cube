@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using NewLife.Log;
@@ -25,24 +24,17 @@ namespace NewLife.Cube
     /// 2，静态构造注册一次视图引擎、绑定提供者、过滤器
     /// 3，注册区域默认路由
     /// </remarks>
-    public class AreaBaseX : AreaAttribute
+    public class AreaBase : AreaAttribute
     {
-        ///// <summary>区域名称</summary>
-        //public String AreaName { get; }
-
-        ///// <summary>预编译引擎集合。便于外部设置属性</summary>
-        //public static PrecompiledViewAssembly[] PrecompiledEngines { get; private set; }
-
         /// <summary>所有区域类型</summary>
         public static Type[] Areas { get; private set; }
 
         /// <summary>实例化区域注册</summary>
-        public AreaBaseX(String areaName) : base(areaName)
+        public AreaBase(String areaName) : base(areaName)
         {
-            //AreaName = GetType().Name.TrimEnd("Area");
         }
 
-        static AreaBaseX()
+        static AreaBase()
         {
             XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
             Assembly.GetExecutingAssembly().WriteVersion();
@@ -56,40 +48,6 @@ namespace NewLife.Cube
                 //var pva = new PrecompiledViewAssembly(asm);
                 //list.Add(pva);
             }
-            //PrecompiledEngines = list.ToArray();
-
-            //var engine = new CompositePrecompiledMvcEngine(PrecompiledEngines);
-            //XTrace.WriteLine("注册复合预编译引擎，共有视图程序集{0}个", list.Count);
-            //ViewEngines.Engines.Insert(0, engine);
-            // 预编译引擎滞后，让其它引擎先工作
-            //ViewEngines.Engines.Add(engine);
-
-            // StartPage lookups are done by WebPages. 
-            //VirtualPathFactoryManager.RegisterVirtualPathFactory(engine);
-
-            // 注册绑定提供者
-            //EntityModelBinderProvider.Register();
-
-            // 注册过滤器
-            //XTrace.WriteLine("注册过滤器：{0}", typeof(MvcHandleErrorAttribute).FullName);
-            //XTrace.WriteLine("注册过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
-            //var filters = GlobalFilters.Filters;
-            //filters.Add(new MvcHandleErrorAttribute());
-            //filters.Add(new EntityAuthorizeAttribute() { IsGlobal = true });
-
-            // 从数据库或者资源文件加载模版页面的例子
-            //HostingEnvironment.RegisterVirtualPathProvider(new ViewPathProvider());
-
-            //var routes = RouteTable.Routes;
-            //routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-            //routes.MapMvcAttributeRoutes();
-
-            //routes.MapRoute(
-            //    name: "Virtual",
-            //    url: "{*viewName}",
-            //    defaults: new { controller = "Frontend", action = "Default" },
-            //    constraints: new { controller = "Frontend", action = "Default" }
-            //);
 
             // 自动检查并下载魔方资源
             ThreadPoolX.QueueUserWorkItem(CheckContent);
@@ -102,7 +60,7 @@ namespace NewLife.Cube
         static List<Assembly> FindAllArea()
         {
             var list = new List<Assembly>();
-            Areas = typeof(AreaBaseX).GetAllSubclasses(false).ToArray();
+            Areas = typeof(AreaBase).GetAllSubclasses(false).ToArray();
             foreach (var item in Areas)
             {
                 var asm = item.Assembly;
@@ -181,58 +139,12 @@ namespace NewLife.Cube
         }
 
         /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>
-        public static void RegisterArea<T>() where T : AreaBaseX
+        public static void RegisterArea<T>() where T : AreaBase
         {
             var areaType = typeof(T);
             var ns = areaType.Namespace + ".Controllers";
             var areaName = areaType.Name.TrimEnd("Area");
             XTrace.WriteLine("开始注册权限管理区域[{0}]，控制器命名空间[{1}]", areaName, ns);
-
-            // 注册本区域默认路由
-
-            // Json输出，需要配置web.config
-            //context.MapRoute(
-            //    AreaName + "_Data",
-            //    AreaName + "/{controller}.json/",
-            //    new { controller = "Index", action = "Index", id = UrlParameter.Optional, output = "json" },
-            //    new[] { ns }
-            //);
-            // Json输出，不需要配置web.config
-            //context.MapRoute(
-            //    AreaName + "_Json",
-            //    AreaName + "/{controller}Json/{action}/{id}",
-            //    new { controller = "Index", action = "Export", id = UrlParameter.Optional, output = "json" },
-            //    new[] { ns }
-            //);
-            //context.MapRoute(
-            //    AreaName + "_Detail",
-            //    AreaName + "/{controller}/{id}",
-            //    new { controller = "Index", action = "Detail" },
-            //    new[] { ns }
-            //);
-            //context.MapRoute(
-            //    AreaName + "_Detail_Json",
-            //    AreaName + "/{controller}/{id}/Json",
-            //    new { controller = "Index", action = "Detail", output = "json" },
-            //    new { id = @"\d+" },
-            //    new[] { ns }
-            //);
-            //context.MapRoute(
-            //    AreaName + "_Json",
-            //    AreaName + "/{controller}/Json",
-            //    new { controller = "Index", action = "Index", output = "json" },
-            //    new[] { ns }
-            //);
-            // 本区域默认配置
-            //context.MapRoute(
-            //    AreaName,
-            //    AreaName + "/{controller}/{action}/{id}",
-            //    new { controller = "Index", action = "Index", id = UrlParameter.Optional },
-            //    new[] { ns }
-            //);
-
-            // 所有已存在文件的请求都交给Mvc处理，比如Admin目录
-            //routes.RouteExistingFiles = true;
 
             // 自动检查并添加菜单
             TaskEx.Run(() =>
@@ -250,7 +162,7 @@ namespace NewLife.Cube
 
         /// <summary>自动扫描控制器，并添加到菜单</summary>
         /// <remarks>默认操作当前注册区域的下一级Controllers命名空间</remarks>
-        protected static void ScanController<T>() where T : AreaBaseX
+        protected static void ScanController<T>() where T : AreaBase
         {
             var areaType = typeof(T);
 

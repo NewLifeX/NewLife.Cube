@@ -79,7 +79,7 @@ namespace NewLife.Cube
 
             // 只验证管辖范围
             var create = false;
-            if (!AreaBaseX.Contains(ctrl))
+            if (!AreaBase.Contains(ctrl))
             {
                 if (!hasAtt) return;
                 // 不属于魔方而又加了权限特性，需要创建菜单
