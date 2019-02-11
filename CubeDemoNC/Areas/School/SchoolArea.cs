@@ -1,23 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using NewLife.Cube;
 
 namespace WebTest.Areas.School
 {
     [DisplayName("教务系统")]
-    public class SchoolArea : AreaBaseX
+    public class SchoolArea : AreaBase
     {
-        public static string AreaName => nameof(SchoolArea).TrimEnd("Area");
-        public SchoolArea() : base(AreaName)
-        {
-        }
+        public SchoolArea() : base(nameof(SchoolArea).TrimEnd("Area")) { }
 
-        static SchoolArea()
-        {
-            RegisterArea<SchoolArea>();
-        }
+        static SchoolArea() => RegisterArea<SchoolArea>();
     }
 }

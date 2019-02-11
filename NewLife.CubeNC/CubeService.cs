@@ -252,7 +252,7 @@ namespace NewLife.Cube
             //var user = ManageProvider.User;
             //ManageProvider.Provider.GetService<IUser>();
             //ScanControllerExtensions.ScanController();
-            AreaBaseX.RegisterArea<Admin.AdminArea>();
+            AreaBase.RegisterArea<Admin.AdminArea>();
 
             return app;
         }

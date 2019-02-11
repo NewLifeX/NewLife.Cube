@@ -15,7 +15,7 @@
 |Request.QueryString[key]|Request.Query[key]||
 |Request.RawUrl|Request.GetEncodedUrl()||
 |Request.RouteData.GetRequiredString()|HttpContext.GetRouteValue()||
-|Request.ServerVariables|Request.Headers||
+|Request.ServerVariables|Request.Headers|ASP.NET Core中没有ServerVariables的对应实现，有的可以在HttpContext.Request.Headers中获取|
 |Request.Url.PathAndQuery|Request.GetEncodedPathAndQuery()||
 |Request.UrlReferrer|Request.Headers[HeaderNames.Referer]|
 |Request.UserAgent|Request.Headers[HeaderNames.UserAgent]||
