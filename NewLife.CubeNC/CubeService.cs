@@ -123,18 +123,9 @@ namespace NewLife.Cube
             //// 添加OData
             //services.AddOData();
 
-            //services.AddSingleton<ILogger, Logger>();
             services.AddLogging(configure =>
             {
-                configure.AddFilter((str1, str2, level) =>
-                {
-                    return true;
-                })
-                    .AddConsole(cfg =>
-                    {
-                        cfg.DisableColors = true;
-                    })
-                    .AddProvider(new CubeLoggerProvider());
+                configure.AddProvider(new CubeLoggerProvider());
             });
 
             return services;

@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.Routing;
 using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Serialization;
+using Microsoft.Extensions.Logging;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace NewLife.Cube.WebMiddleware
 {
@@ -27,7 +29,7 @@ namespace NewLife.Cube.WebMiddleware
             _next = next ?? throw new ArgumentNullException(nameof(next));
         }
 
-        public async Task Invoke(HttpContext context, IRazorViewEngine viewEngine)
+        public async Task Invoke(HttpContext context, IRazorViewEngine viewEngine, ILogger<ErrorModuleMiddleware> logger)
         {
             try
             {
@@ -35,9 +37,11 @@ namespace NewLife.Cube.WebMiddleware
             }
             catch (Exception e)
             {
+                XTrace.WriteException(e);
+                logger.Log(LogLevel.Error, 1, e, e, null);
+
                 if (context.Response.HasStarted)
                 {
-                    XTrace.WriteException(e);
                     throw;
                 }
 

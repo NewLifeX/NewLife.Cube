@@ -40,7 +40,6 @@ namespace NewLife.Cube.Admin.Controllers
 #if __CORE__
         private IManageProvider _provider;
         private IApplicationLifetime _applicationLifetime { get; set; }
-        private ILogger<IndexController> _logger { get; set; }
 
 
 
@@ -53,8 +52,6 @@ namespace NewLife.Cube.Admin.Controllers
         {
             _provider = manageProvider;
             _applicationLifetime = appLifetime;
-            _logger = logger;
-            _logger.Log(LogLevel.Information, 1, "Index");
         }
 #endif
 
