@@ -38,7 +38,7 @@ namespace NewLife.Cube.WebMiddleware
             catch (Exception e)
             {
                 XTrace.WriteException(e);
-                logger.Log(LogLevel.Error, 1, e, e, null);
+                logger.Log(LogLevel.Error, 1, e, e, (e1, e2) => e.ToString());
 
                 if (context.Response.HasStarted)
                 {
