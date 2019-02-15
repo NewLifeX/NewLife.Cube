@@ -484,11 +484,12 @@ namespace NewLife.Cube
         public static Boolean EnableSelect(this WebViewPage page)
 #endif
         {
-            var fact = page.ViewContext.ViewBag.Factory as IEntityOperate;
-            var fk = fact?.Unique;
-            if (fk == null) return false;
+            // 是否启用多选，仅取决于更新删除权限，不要求必须有唯一主键，方便前端对多主键灵活控制
+            //var fact = page.ViewContext.ViewBag.Factory as IEntityOperate;
+            //var fk = fact?.Unique;
+            //if (fk == null) return false;
 
-            if (page.ViewContext.ViewData.ContainsKey("EnableSelect")) return (Boolean)page.ViewContext.ViewData["EnableSelect"];
+            if (page.ViewContext.ViewData.TryGetValue("EnableSelect", out var rs)) return (Boolean)rs;
 
             return page.Has(PermissionFlags.Update, PermissionFlags.Delete);
 
