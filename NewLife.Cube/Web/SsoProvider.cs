@@ -124,8 +124,11 @@ namespace NewLife.Cube.Web
 #endif
             if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
 
-            // 检查绑定，新用户的uc.UserID为0
+            // 可能因为初始化顺序的问题，导致前面没能给Provider赋值
             var prv = Provider;
+            if (prv == null) prv = Provider = ManageProvider.Provider;
+
+            // 检查绑定，新用户的uc.UserID为0
             var user = prv.FindByID(uc.UserID);
             if (forceBind || user == null || !uc.Enable) user = OnBind(uc, client);
 
@@ -268,7 +271,7 @@ namespace NewLife.Cube.Web
 
         /// <summary>注销</summary>
         /// <returns></returns>
-        public virtual void Logout() => Provider.Logout();
+        public virtual void Logout() => Provider?.Logout();
         #endregion
 
         #region 服务端
