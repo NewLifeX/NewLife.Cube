@@ -18,6 +18,23 @@ namespace NewLife.Cube
     /// <summary>控制器基类</summary>
     public class ControllerBaseX : Controller
     {
+        #region 属性
+
+        /// <summary>页面设置</summary>
+        public PageSetting PageSetting { get; set; }
+        #endregion
+
+        #region 构造
+        /// <summary>实例化控制器</summary>
+        public ControllerBaseX()
+        {
+            // 页面设置
+            var set = PageSetting = PageSetting.Global.Clone();
+            ViewBag.PageSetting = set;
+
+        }
+        #endregion
+
         #region 兼容处理
 #if __CORE__
         /// <summary>获取请求值</summary>

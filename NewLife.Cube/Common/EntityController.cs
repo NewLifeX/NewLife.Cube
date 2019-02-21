@@ -40,9 +40,6 @@ namespace NewLife.Cube
         /// <summary>实体工厂</summary>
         public static IEntityOperate Factory => Entity<TEntity>.Meta.Factory;
 
-        /// <summary>页面设置</summary>
-        public PageSetting PageSetting { get; set; }
-
         private String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
         #endregion
 
@@ -58,10 +55,6 @@ namespace NewLife.Cube
         {
             var title = Entity<TEntity>.Meta.Table.DataTable.DisplayName + "管理";
             ViewBag.Title = title;
-
-            // 页面设置
-            var set = PageSetting = PageSetting.Global.Clone();
-            ViewBag.PageSetting = set;
         }
 
         /// <summary>动作执行前</summary>
