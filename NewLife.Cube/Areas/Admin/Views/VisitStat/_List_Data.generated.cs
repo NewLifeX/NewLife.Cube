@@ -407,14 +407,14 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 2506), Tuple.Create("\"", 2524)
+WriteAttribute("value", Tuple.Create(" value=\"", 2530), Tuple.Create("\"", 2548)
             
             #line 54 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 2514), Tuple.Create<System.Object, System.Int32>(entity.ID
+      , Tuple.Create(Tuple.Create("", 2538), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2514), false)
+, 2538), false)
 );
 
 WriteLiteral(" /></td>\r\n");
@@ -610,6 +610,177 @@ WriteLiteral("            </tr>\r\n");
 
             
             #line 75 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        ");
+
+            
+            #line 76 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+         if (page.State != null)
+        {
+            var entity = page.State as VisitStat;
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            <tr>\r\n");
+
+            
+            #line 80 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                
+            
+            #line default
+            #line hidden
+            
+            #line 80 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                 if (enableSelect)
+                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    <td></td>\r\n");
+
+            
+            #line 83 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                <td");
+
+WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+
+WriteLiteral(">总计</td>\r\n                <td></td>\r\n                <td></td>\r\n                <" +
+"td></td>\r\n                <td");
+
+WriteLiteral(" class=\"text-right\"");
+
+WriteLiteral(">");
+
+            
+            #line 88 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                                  Write(entity.Times.ToString("n0"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-right\"");
+
+WriteLiteral(">");
+
+            
+            #line 89 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                                  Write(entity.Users.ToString("n0"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-right\"");
+
+WriteLiteral(">");
+
+            
+            #line 90 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                                  Write(entity.IPs.ToString("n0"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-right\"");
+
+WriteLiteral(">");
+
+            
+            #line 91 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                                  Write(entity.Error.ToString("n0"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-right\"");
+
+WriteLiteral(">");
+
+            
+            #line 92 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                                  Write(entity.Cost.ToString("n0"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ms</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-right\"");
+
+WriteLiteral(">");
+
+            
+            #line 93 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                                  Write(entity.MaxCost.ToString("n0"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ms</td>\r\n                <td>");
+
+            
+            #line 94 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+               Write(entity.CreateTime.ToFullString(""));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td>");
+
+            
+            #line 95 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+               Write(entity.UpdateTime.ToFullString(""));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+            
+            #line 96 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                
+            
+            #line default
+            #line hidden
+            
+            #line 96 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                 if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    <td></td>\r\n");
+
+            
+            #line 99 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
+                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            </tr>\r\n");
+
+            
+            #line 101 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
         }
 
             

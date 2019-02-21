@@ -73,5 +73,31 @@
                 }
             </tr>
         }
+        @if (page.State != null)
+        {
+            var entity = page.State as VisitStat;
+            <tr>
+                @if (enableSelect)
+                {
+                    <td></td>
+                }
+                <td class="text-center hidden-md hidden-sm hidden-xs">总计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="text-right">@entity.Times.ToString("n0")</td>
+                <td class="text-right">@entity.Users.ToString("n0")</td>
+                <td class="text-right">@entity.IPs.ToString("n0")</td>
+                <td class="text-right">@entity.Error.ToString("n0")</td>
+                <td class="text-right">@entity.Cost.ToString("n0") ms</td>
+                <td class="text-right">@entity.MaxCost.ToString("n0") ms</td>
+                <td>@entity.CreateTime.ToFullString("")</td>
+                <td>@entity.UpdateTime.ToFullString("")</td>
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td></td>
+                }
+            </tr>
+        }
     </tbody>
 </table>
