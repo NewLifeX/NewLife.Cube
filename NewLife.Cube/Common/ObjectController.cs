@@ -128,6 +128,7 @@ namespace NewLife.Cube
 
         /// <summary>写日志</summary>
         /// <param name="obj"></param>
+        /// <param name="ip"></param>
         protected virtual void WriteLog(TObject obj, String ip = null)
         {
             // 构造修改日志
