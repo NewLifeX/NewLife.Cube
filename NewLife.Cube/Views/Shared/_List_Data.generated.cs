@@ -382,6 +382,31 @@ WriteLiteral("            </tr>\r\n");
             
             #line default
             #line hidden
+WriteLiteral("        ");
+
+            
+            #line 60 "..\..\Views\Shared\_List_Data.cshtml"
+         if (page.State != null)
+        {
+            
+            
+            #line default
+            #line hidden
+            
+            #line 62 "..\..\Views\Shared\_List_Data.cshtml"
+       Write(Html.Partial("_List_Data_Stat", page.State));
+
+            
+            #line default
+            #line hidden
+            
+            #line 62 "..\..\Views\Shared\_List_Data.cshtml"
+                                                        
+        }
+
+            
+            #line default
+            #line hidden
 WriteLiteral("    </tbody>\r\n</table>");
 
         }

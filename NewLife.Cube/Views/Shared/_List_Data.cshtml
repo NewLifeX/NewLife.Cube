@@ -57,5 +57,9 @@
                 }
             </tr>
         }
+        @if (page.State != null)
+        {
+            @Html.Partial("_List_Data_Stat", page.State)
+        }
     </tbody>
 </table>
