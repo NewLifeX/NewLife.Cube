@@ -316,6 +316,7 @@
     <Compile Include="Common\DbRunTimeModule.cs" />
     <Compile Include="Common\FieldCollection.cs" />
     <Compile Include="Common\HtmlExtensions.cs" />
+    <Compile Include="Common\PageSetting.cs" />
     <Compile Include="Common\RazorViewEngineX.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Common\AreaRegistrationBase.cs" />
