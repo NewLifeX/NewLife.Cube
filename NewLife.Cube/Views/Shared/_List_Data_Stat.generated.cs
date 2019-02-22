@@ -229,121 +229,14 @@ WriteLiteral("</td>\r\n");
                     break;
                 case TypeCode.String:
                 default:
-                    {
-                        var val = value;
-                        var map = item.Map;
-                        if (map != null && map.Provider != null && val + "" != "")
-                        {
-                            var dic = new RouteValueDictionary();
-                            var key = map.Provider.Key;
-                            if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
 
             
             #line default
             #line hidden
-WriteLiteral("                            <td>");
+WriteLiteral("                    <td></td>\r\n");
 
             
-            #line 70 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                           Write(Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n");
-
-            
-            #line 71 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                        }
-                        else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
-                        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                            <td");
-
-WriteAttribute("title", Tuple.Create(" title=\"", 2572), Tuple.Create("\"", 2607)
-            
-            #line 74 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-, Tuple.Create(Tuple.Create("", 2580), Tuple.Create<System.Object, System.Int32>((value+"").IPToAddress()
-            
-            #line default
-            #line hidden
-, 2580), false)
-);
-
-WriteLiteral(">");
-
-            
-            #line 74 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                                                               Write(value);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n");
-
-            
-            #line 75 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                        }
-                        else if (item.Name.EqualIgnoreCase("Remark", "Description"))
-                        {
-                            //防止内容过长
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                            <td");
-
-WriteLiteral(" style=\"max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellips" +
-"is;\"");
-
-WriteAttribute("title", Tuple.Create(" title=\"", 2916), Tuple.Create("\"", 2930)
-            
-            #line 79 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                                            , Tuple.Create(Tuple.Create("", 2924), Tuple.Create<System.Object, System.Int32>(value
-            
-            #line default
-            #line hidden
-, 2924), false)
-);
-
-WriteLiteral(">");
-
-            
-            #line 79 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                                                                                                                               Write(value);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n");
-
-            
-            #line 80 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                        }
-                        else
-                        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                            <td>");
-
-            
-            #line 83 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                           Write(value);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n");
-
-            
-            #line 84 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                        }
-                    }
+            #line 63 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     break;
             }
         }
@@ -355,7 +248,7 @@ WriteLiteral("</td>\r\n");
 WriteLiteral("    ");
 
             
-            #line 90 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 67 "..\..\Views\Shared\_List_Data_Stat.cshtml"
      if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
     {
 
@@ -365,7 +258,7 @@ WriteLiteral("    ");
 WriteLiteral("        <td></td>\r\n");
 
             
-            #line 93 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 70 "..\..\Views\Shared\_List_Data_Stat.cshtml"
     }
 
             

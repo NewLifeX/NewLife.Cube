@@ -158,6 +158,21 @@ namespace NewLife.Cube
                 }
             </tr>
         }
+        @if (page.State != null)
+        {
+            var entity = page.State as IEntity;
+            <tr>
+                @if (enableSelect)
+                {
+                    <td></td>
+                }
+                @Html.Partial(""_List_Data_Stat"", page.State)
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td></td>
+                }
+            </tr>
+        }
     </tbody>
 </table>";
             var sb = new StringBuilder();
@@ -165,6 +180,8 @@ namespace NewLife.Cube
 
             sb.AppendFormat("@model IList<{0}>", entityType.FullName);
             sb.AppendLine();
+
+            tmp = tmp.Replace("page.State as IEntity", "page.State as " + entityType.Name);
 
             var str = tmp.Substring(null, "            @foreach");
             // 如果有用户字段，则启用provider
@@ -275,8 +292,16 @@ namespace NewLife.Cube
                 sb.AppendLine();
             }
 
+            // 构造统计
+            str = BuildStat(fields);
+
             sb.Append("                @if");
-            sb.Append(tmp.Substring("                @if", null, ps[1]));
+            var str2 = tmp.Substring("                @if", null, ps[1]);
+            str = str2.Replace("                @Html.Partial(\"_List_Data_Stat\", page.State)", str);
+            sb.Append(str);
+
+            //sb.Append("@if (page.State != null)");
+            //sb.Append(tmp.Substring("@if (page.State != null)", null, ps[1]));
 
             File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
 
@@ -286,6 +311,58 @@ namespace NewLife.Cube
         private static void BuildUser(FieldItem item, StringBuilder sb) => sb.AppendFormat(@"<td class=""text-right"">@provider.FindByID(entity.{0})</td>", item.Name);
 
         private static void BuildIP(FieldItem item, StringBuilder sb) => sb.AppendFormat(@"<td title=""@entity.{0}.IPToAddress()"">@entity.{0}</td>", item.Name);
+
+        private static String BuildStat(IList<FieldItem> fields)
+        {
+            var ident = new String(' ', 4 * 4);
+            var sb = new StringBuilder();
+            foreach (var item in fields)
+            {
+                // 缩进
+                sb.Append(ident);
+                if (item.PrimaryKey)
+                    sb.AppendFormat(@"<td class=""text-center hidden-md hidden-sm hidden-xs"">总计</td>");
+                else
+                {
+                    switch (Type.GetTypeCode(item.Type))
+                    {
+                        case TypeCode.Boolean:
+                        case TypeCode.DateTime:
+                            sb.Append(@"<td></td>");
+                            break;
+                        case TypeCode.Decimal:
+                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0:n2}</td>", item.Name);
+                            break;
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0:n2}</td>", item.Name);
+                            break;
+                        case TypeCode.Byte:
+                        case TypeCode.Int16:
+                        case TypeCode.Int32:
+                        case TypeCode.Int64:
+                        case TypeCode.UInt16:
+                        case TypeCode.UInt32:
+                        case TypeCode.UInt64:
+                            // 特殊处理枚举
+                            if (item.Type.IsEnum)
+                                sb.Append(@"<td></td>");
+                            else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+                                sb.Append(@"<td></td>");
+                            else
+                                sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n0"")</td>", item.Name);
+                            break;
+                        case TypeCode.String:
+                        default:
+                            sb.Append(@"<td></td>");
+                            break;
+                    }
+                }
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
 
         internal static Boolean MakeFormView(Type entityType, String vpath, List<FieldItem> fields)
         {

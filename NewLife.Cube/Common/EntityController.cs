@@ -876,10 +876,10 @@ namespace NewLife.Cube
             var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
 
 #if !__CORE__
-            Js.Alert("生成列表模版 {0} 成功！".F(vpath));
+            //Js.Alert("生成列表模版 {0} 成功！".F(vpath));
 #endif
 
-            return Index();
+            return RedirectToAction("Index");
         }
 
         /// <summary>生成表单</summary>
@@ -896,10 +896,10 @@ namespace NewLife.Cube
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
 
 #if !__CORE__
-            Js.Alert("生成表单模版 {0} 成功！".F(vpath));
+            //Js.Alert("生成表单模版 {0} 成功！".F(vpath));
 #endif
 
-            return Index();
+            return RedirectToAction("Index");
         }
         #endregion
 
