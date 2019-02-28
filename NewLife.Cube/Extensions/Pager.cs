@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Web;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Collections;
+using NewLife.Cube;
 using NewLife.Data;
+using NewLife.Log;
+using NewLife.Serialization;
 
 namespace NewLife.Web
 {
@@ -110,6 +114,9 @@ namespace NewLife.Web
         {
             var sb = new StringBuilder();
             var dic = Params;
+            // 过滤
+            dic = PagerHelper.FilterSpecialChar(dic);
+
             // 先构造基本条件，再排序到分页
             if (where) sb.UrlParamsExcept(dic, _.Sort, _.Desc, _.PageIndex, _.PageSize);
             if (order) sb.UrlParams(dic, _.Sort, _.Desc);
