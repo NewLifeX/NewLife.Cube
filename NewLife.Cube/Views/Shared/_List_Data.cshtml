@@ -22,9 +22,10 @@
             @foreach (var item in fields)
             {
                 var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+                var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
                 if (item.Type == typeof(DateTime))
                 {
-                    <th class="text-center" style="min-width:134px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                    <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                 }
                 else
                 {

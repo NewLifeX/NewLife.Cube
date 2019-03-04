@@ -207,7 +207,10 @@ namespace NewLife.Cube
 
                 // 固定宽度
                 if (item.Type == typeof(DateTime))
-                    sb.AppendFormat(@" style=""min-width:134px;""");
+                {
+                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                    sb.AppendFormat(@" style=""min-width:{0}px;""", width);
+                }
 
                 // 备注
                 if (!item.Description.IsNullOrEmpty() && item.Description != des) sb.AppendFormat(@" title=""{0}""", item.Description);
@@ -249,7 +252,10 @@ namespace NewLife.Cube
                             sb.Append(@"</td>");
                             break;
                         case TypeCode.DateTime:
-                            sb.AppendFormat(@"<td>@entity.{0}.ToFullString("""")</td>", item.Name);
+                            if (item.Name.EndsWithIgnoreCase("Date"))
+                                sb.AppendFormat(@"<td>@entity.{0}.ToString(""yyyy-MM-dd"")</td>", item.Name);
+                            else
+                                sb.AppendFormat(@"<td>@entity.{0}.ToFullString("""")</td>", item.Name);
                             break;
                         case TypeCode.Decimal:
                             sb.AppendFormat(@"<td class=""text-right"">@entity.{0:n2}</td>", item.Name);

@@ -31,14 +31,22 @@ else
             break;
         case TypeCode.DateTime:
             var dt = (DateTime)value;
-            <td>@dt.ToFullString("")</td>
+            if (item.Name.EndsWithIgnoreCase("Date"))
+            {
+                <td>@dt.ToString("yyyy-MM-dd")</td>
+            }
+            else
+            {
+                <td>@dt.ToFullString("")</td>
+            }
             break;
         case TypeCode.Decimal:
-            <td>@value</td>
+            var dc = (Decimal)value;
+            <td class="text-right">@dc.ToString("n2")</td>
             break;
         case TypeCode.Single:
         case TypeCode.Double:
-            <td>@value</td>
+            <td class="text-right">@value</td>
             break;
         case TypeCode.Byte:
         case TypeCode.Int16:
