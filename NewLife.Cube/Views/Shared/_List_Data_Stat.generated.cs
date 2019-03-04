@@ -134,35 +134,20 @@ WriteLiteral("                    <td></td>\r\n");
             #line 31 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     break;
                 case TypeCode.Decimal:
+                    var dc = (Decimal)value;
 
             
             #line default
             #line hidden
-WriteLiteral("                    <td>");
+WriteLiteral("                    <td");
 
-            
-            #line 33 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                   Write(value);
+WriteLiteral(" class=\"text-right\"");
 
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n");
+WriteLiteral(">");
 
             
             #line 34 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                    break;
-                case TypeCode.Single:
-                case TypeCode.Double:
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                    <td>");
-
-            
-            #line 37 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                   Write(value);
+                                      Write(dc.ToString("n2"));
 
             
             #line default
@@ -170,7 +155,59 @@ WriteLiteral("                    <td>");
 WriteLiteral("</td>\r\n");
 
             
-            #line 38 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 35 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+                    break;
+                case TypeCode.Single:
+                case TypeCode.Double:
+                    var dd = (Double)value;
+                    if (item.Name.EndsWithIgnoreCase("Rate"))
+                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <td");
+
+WriteLiteral(" class=\"text-right\"");
+
+WriteLiteral(">");
+
+            
+            #line 41 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+                                          Write(dd.ToString("p2"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+            
+            #line 42 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+                    }
+                    else
+                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <td");
+
+WriteLiteral(" class=\"text-right\"");
+
+WriteLiteral(">");
+
+            
+            #line 45 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+                                          Write(dd.ToString("n2"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+            
+            #line 46 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+                    }
                     break;
                 case TypeCode.Byte:
                 case TypeCode.Int16:
@@ -189,9 +226,9 @@ WriteLiteral("</td>\r\n");
 WriteLiteral("                        <td></td>\r\n");
 
             
-            #line 50 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 59 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     }
-                    else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+                    else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID") || item.Name.EndsWith("ID"))
                     {
 
             
@@ -200,7 +237,7 @@ WriteLiteral("                        <td></td>\r\n");
 WriteLiteral("                        <td></td>\r\n");
 
             
-            #line 54 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 63 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     }
                     else
                     {
@@ -215,7 +252,7 @@ WriteLiteral(" class=\"text-right\"");
 WriteLiteral(">");
 
             
-            #line 57 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 66 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                                           Write(Convert.ToInt64(value).ToString("n0"));
 
             
@@ -224,7 +261,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n");
 
             
-            #line 58 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 67 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     }
                     break;
                 case TypeCode.String:
@@ -236,7 +273,7 @@ WriteLiteral("</td>\r\n");
 WriteLiteral("                    <td></td>\r\n");
 
             
-            #line 63 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 72 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     break;
             }
         }
@@ -248,7 +285,7 @@ WriteLiteral("                    <td></td>\r\n");
 WriteLiteral("    ");
 
             
-            #line 67 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 76 "..\..\Views\Shared\_List_Data_Stat.cshtml"
      if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
     {
 
@@ -258,7 +295,7 @@ WriteLiteral("    ");
 WriteLiteral("        <td></td>\r\n");
 
             
-            #line 70 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 79 "..\..\Views\Shared\_List_Data_Stat.cshtml"
     }
 
             

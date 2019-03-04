@@ -46,7 +46,15 @@ else
             break;
         case TypeCode.Single:
         case TypeCode.Double:
-            <td class="text-right">@value</td>
+            var dd = (Double)value;
+            if (item.Name.EndsWithIgnoreCase("Rate"))
+            {
+                <td class="text-right">@dd.ToString("p2")</td>
+            }
+            else
+            {
+                <td class="text-right">@dd.ToString("n2")</td>
+            }
             break;
         case TypeCode.Byte:
         case TypeCode.Int16:

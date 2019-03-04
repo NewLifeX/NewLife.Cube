@@ -30,11 +30,20 @@
                     <td></td>
                     break;
                 case TypeCode.Decimal:
-                    <td>@value</td>
+                    var dc = (Decimal)value;
+                    <td class="text-right">@dc.ToString("n2")</td>
                     break;
                 case TypeCode.Single:
                 case TypeCode.Double:
-                    <td>@value</td>
+                    var dd = (Double)value;
+                    if (item.Name.EndsWithIgnoreCase("Rate"))
+                    {
+                        <td class="text-right">@dd.ToString("p2")</td>
+                    }
+                    else
+                    {
+                        <td class="text-right">@dd.ToString("n2")</td>
+                    }
                     break;
                 case TypeCode.Byte:
                 case TypeCode.Int16:
@@ -48,7 +57,7 @@
                     {
                         <td></td>
                     }
-                    else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+                    else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID") || item.Name.EndsWith("ID"))
                     {
                         <td></td>
                     }
