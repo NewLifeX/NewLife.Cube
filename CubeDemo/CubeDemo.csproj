@@ -45,11 +45,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="NewLife.Core, Version=7.3.6870.42457, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.7.3.6870.42457\lib\net45\NewLife.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="NewLife.Cube, Version=2.4.6871.461, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Cube.2.4.6871.461\lib\net45\NewLife.Cube.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.0.6965.42074, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLL\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -95,8 +93,9 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest">
     </Reference>
-    <Reference Include="XCode, Version=9.9.6870.42458, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.9.6870.42458\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.10.6965.42078, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\DLL\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -113,11 +112,6 @@
       <DependentUpon>_Ace_Layout_Nav.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Areas\School\Views\Student\_Form_Body.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>_Form_Body.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Areas\School\Views\Student\_List_Data.generated.cs">
       <AutoGen>True</AutoGen>
@@ -165,11 +159,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Build.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
-    </Content>
     <Content Include="Areas\School\Views\web.config" />
     <Content Include="Areas\School\Views\Student\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -183,13 +172,14 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Ace_Layout_Nav.generated.cs</LastGenOutput>
     </Content>
-    <Content Include="Areas\School\Views\Student\_Form_Body.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_Form_Body.generated.cs</LastGenOutput>
-    </Content>
     <Content Include="Areas\School\Views\Student\_List_Search.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Build.log">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build.tt</DependentUpon>
     </Content>
     <None Include="packages.config" />
     <Content Include="Views\Shared\_Ace_Layout_Nav.cshtml">
@@ -200,6 +190,12 @@
   <ItemGroup>
     <Folder Include="Areas\School\Models\" />
     <Folder Include="Areas\School\Views\Class\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NewLife.Cube\NewLife.Cube.csproj">
+      <Project>{7ac0e99b-cfd8-4b59-8838-503eaa30523f}</Project>
+      <Name>NewLife.Cube</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

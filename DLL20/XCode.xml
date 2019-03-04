@@ -5077,7 +5077,7 @@
         <member name="P:XCode.EntityBase.Extends">
             <summary>扩展属性</summary>
         </member>
-        <member name="P:XCode.EntityBase.Addition">
+        <member name="P:XCode.EntityBase.XCode#IEntity#Addition">
             <summary>累加</summary>
         </member>
         <member name="P:XCode.EntityBase.XCode#IEntity#IsNullKey">
@@ -5256,7 +5256,10 @@
             <typeparam name="T">实体类型</typeparam>
             <param name="list">实体列表</param>
             <param name="columns">要插入的字段，默认所有字段</param>
-            <returns></returns>
+            <returns>
+            Oracle：当批量插入操作中有一条记录无法正常写入，则本次写入的所有数据都不会被写入（可以理解为自带事物）
+            MySQL：当批量插入操作中有一条记录无法正常写入，则本次写入的所有数据都不会被写入（可以理解为自带事物）
+            </returns>
         </member>
         <member name="M:XCode.EntityExtension.BatchUpdate``1(System.Collections.Generic.IEnumerable{``0},XCode.DataAccessLayer.IDataColumn[],System.Collections.Generic.ICollection{System.String},System.Collections.Generic.ICollection{System.String})">
             <summary>批量更新</summary>
@@ -5279,7 +5282,13 @@
             <param name="columns">要插入的字段，默认所有字段</param>
             <param name="updateColumns">要更新的字段，默认脏数据</param>
             <param name="addColumns">要累加更新的字段，默认累加</param>
-            <returns></returns>
+            <returns>
+            MySQL返回值：返回值相当于流程执行次数，及时insert失败也会累计一次执行（所以不建议通过该返回值确定操作记录数）
+            do insert success = 1次; 
+            do update success =2次(insert 1次+update 1次)，
+            简单来说：对于一行记录，如果Insert 成功则返回1，如果需要执行的是update 则返回2
+            Oracle返回值：无论是插入还是更新返回的都始终为-1
+            </returns>
         </member>
         <member name="M:XCode.EntityExtension.InsertOrUpdate``1(System.Collections.Generic.IEnumerable{``0},XCode.DataAccessLayer.IDataColumn[],System.Collections.Generic.ICollection{System.String},System.Collections.Generic.ICollection{System.String})">
             <summary>批量插入或更新</summary>
@@ -5296,7 +5305,12 @@
             <param name="columns">要插入的字段，默认所有字段</param>
             <param name="updateColumns">主键已存在时，要更新的字段</param>
             <param name="addColumns">主键已存在时，要累加更新的字段</param>
-            <returns></returns>
+            <returns>
+            MySQL返回值：返回值相当于流程执行次数，及时insert失败也会累计一次执行（所以不建议通过该返回值确定操作记录数）
+            do insert success = 1次; 
+            do update success =2次(insert 1次+update 1次)，
+            简单来说：如果Insert 成功则返回1，如果需要执行的是update 则返回2，
+            </returns>
         </member>
         <member name="M:XCode.EntityExtension.ToTable``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>转为DbTable</summary>
@@ -5404,9 +5418,6 @@
         <member name="P:XCode.EntityQueue.Speed">
             <summary>保存速度，每秒保存多少个实体</summary>
         </member>
-        <member name="E:XCode.EntityQueue.Error">
-            <summary>错误发生时</summary>
-        </member>
         <member name="M:XCode.EntityQueue.#ctor(XCode.IEntitySession)">
             <summary>实例化实体队列</summary>
         </member>
@@ -5418,6 +5429,11 @@
         </member>
         <member name="F:XCode.EntityQueue._count">
             <summary>当前缓存个数</summary>
+        </member>
+        <member name="M:XCode.EntityQueue.OnError(System.Collections.Generic.IList{XCode.IEntity},System.Exception)">
+            <summary>发生错误</summary>
+            <param name="list"></param>
+            <param name="ex"></param>
         </member>
         <member name="T:XCode.EntitySession`1">
             <summary>实体会话。每个实体类、连接名和表名形成一个实体会话</summary>
@@ -5684,6 +5700,9 @@
         <member name="P:XCode.IEntity.IsFromDatabase">
             <summary>是否来自数据库。设置相同属性值时不改变脏数据</summary>
         </member>
+        <member name="P:XCode.IEntity.Addition">
+            <summary>累加</summary>
+        </member>
         <member name="P:XCode.IEntity.IsNullKey">
             <summary>主键是否为空</summary>
         </member>
@@ -5769,6 +5788,22 @@
         <member name="M:XCode.EntityAddition.Set(System.Collections.Generic.IEnumerable{System.String})">
             <summary>设置累加字段</summary>
             <param name="names">字段集合</param>
+        </member>
+        <member name="M:XCode.EntityAddition.Get">
+            <summary>获取累加备份</summary>
+            <returns></returns>
+        </member>
+        <member name="M:XCode.EntityAddition.Reset(System.Collections.Generic.IDictionary{System.String,System.Object[]})">
+            <summary>重置累加备份</summary>
+            <param name="dfs"></param>
+        </member>
+        <member name="M:XCode.EntityAddition.SetField(System.Collections.Generic.IEnumerable{XCode.IEntity})">
+            <summary>设置累加备份</summary>
+            <param name="list"></param>
+        </member>
+        <member name="M:XCode.EntityAddition.SetField(XCode.IEntity)">
+            <summary>设置累加备份</summary>
+            <param name="entity"></param>
         </member>
         <member name="T:XCode.IEntityModule">
             <summary>实体处理模块</summary>
@@ -9895,6 +9930,31 @@
             <param name="value">数值</param>
             <returns></returns>
         </member>
+        <member name="T:XCode.Model.EntityDeferredQueue">
+            <summary>实体延迟队列。缓冲合并对象，批量处理</summary>
+        </member>
+        <member name="P:XCode.Model.EntityDeferredQueue.BatchSave">
+            <summary>是否批量保存。默认true，使用数据库批量更新操作</summary>
+        </member>
+        <member name="M:XCode.Model.EntityDeferredQueue.Process(System.Collections.Generic.IList{System.Object})">
+            <summary>处理一批</summary>
+            <param name="list"></param>
+        </member>
+        <member name="T:XCode.Model.XCodeService">
+            <summary>XCode服务对象提供者</summary>
+        </member>
+        <member name="P:XCode.Model.XCodeService.Container">
+            <summary>当前对象容器</summary>
+        </member>
+        <member name="M:XCode.Model.XCodeService.CreateTable">
+            <summary>创建模型数据表</summary>
+            <returns></returns>
+        </member>
+        <member name="M:XCode.Model.XCodeService.CreateDataRowEntityAccessor(System.Type)">
+            <summary>创建实体类的数据行访问器</summary>
+            <param name="entityType"></param>
+            <returns></returns>
+        </member>
         <member name="T:XCode.Expression">
             <summary>表达式基类</summary>
         </member>
@@ -10101,21 +10161,6 @@
         <member name="M:XCode.WhereExpression.Flatten(XCode.Expression)">
             <summary>拉平表达式，避免空子项</summary>
             <param name="exp"></param>
-            <returns></returns>
-        </member>
-        <member name="T:XCode.Model.XCodeService">
-            <summary>XCode服务对象提供者</summary>
-        </member>
-        <member name="P:XCode.Model.XCodeService.Container">
-            <summary>当前对象容器</summary>
-        </member>
-        <member name="M:XCode.Model.XCodeService.CreateTable">
-            <summary>创建模型数据表</summary>
-            <returns></returns>
-        </member>
-        <member name="M:XCode.Model.XCodeService.CreateDataRowEntityAccessor(System.Type)">
-            <summary>创建实体类的数据行访问器</summary>
-            <param name="entityType"></param>
             <returns></returns>
         </member>
         <member name="T:XCode.Service.DbClient">

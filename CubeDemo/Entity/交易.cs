@@ -20,7 +20,7 @@ namespace NewLife.School.Entity
         [DisplayName("订单编号")]
         [Description("订单编号")]
         [DataObjectField(true, true, false, 0)]
-        [BindColumn("ID", "订单编号", "int")]
+        [BindColumn("ID", "订单编号", "")]
         public Int32 ID { get { return _ID; } set { if (OnPropertyChanging(__.ID, value)) { _ID = value; OnPropertyChanged(__.ID); } } }
 
         private Int32 _NodeID;
@@ -28,7 +28,7 @@ namespace NewLife.School.Entity
         [DisplayName("节点号")]
         [Description("节点号")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("NodeID", "节点号", "int")]
+        [BindColumn("NodeID", "节点号", "")]
         public Int32 NodeID { get { return _NodeID; } set { if (OnPropertyChanging(__.NodeID, value)) { _NodeID = value; OnPropertyChanged(__.NodeID); } } }
 
         private String _Tid;
@@ -36,7 +36,7 @@ namespace NewLife.School.Entity
         [DisplayName("订单号")]
         [Description("订单号")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Tid", "订单号", "nvarchar(50)")]
+        [BindColumn("Tid", "订单号", "")]
         public String Tid { get { return _Tid; } set { if (OnPropertyChanging(__.Tid, value)) { _Tid = value; OnPropertyChanged(__.Tid); } } }
 
         private Int32 _Status;
@@ -44,7 +44,7 @@ namespace NewLife.School.Entity
         [DisplayName("状态")]
         [Description("状态")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("Status", "状态", "int")]
+        [BindColumn("Status", "状态", "")]
         public Int32 Status { get { return _Status; } set { if (OnPropertyChanging(__.Status, value)) { _Status = value; OnPropertyChanged(__.Status); } } }
 
         private Int32 _PayStatus;
@@ -52,7 +52,7 @@ namespace NewLife.School.Entity
         [DisplayName("是否支付")]
         [Description("是否支付")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("PayStatus", "是否支付", "int")]
+        [BindColumn("PayStatus", "是否支付", "")]
         public Int32 PayStatus { get { return _PayStatus; } set { if (OnPropertyChanging(__.PayStatus, value)) { _PayStatus = value; OnPropertyChanged(__.PayStatus); } } }
 
         private Int32 _ShipStatus;
@@ -60,7 +60,7 @@ namespace NewLife.School.Entity
         [DisplayName("是否发货")]
         [Description("是否发货")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("ShipStatus", "是否发货", "int")]
+        [BindColumn("ShipStatus", "是否发货", "")]
         public Int32 ShipStatus { get { return _ShipStatus; } set { if (OnPropertyChanging(__.ShipStatus, value)) { _ShipStatus = value; OnPropertyChanged(__.ShipStatus); } } }
 
         private String _CreateIPReceiverPhone;
@@ -68,7 +68,7 @@ namespace NewLife.School.Entity
         [DisplayName("收货人电话")]
         [Description("收货人电话")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("CreateIPReceiverPhone", "收货人电话", "nvarchar(50)")]
+        [BindColumn("CreateIPReceiverPhone", "收货人电话", "")]
         public String CreateIPReceiverPhone { get { return _CreateIPReceiverPhone; } set { if (OnPropertyChanging(__.CreateIPReceiverPhone, value)) { _CreateIPReceiverPhone = value; OnPropertyChanged(__.CreateIPReceiverPhone); } } }
 
         private String _ReceiverMobile;
@@ -76,7 +76,7 @@ namespace NewLife.School.Entity
         [DisplayName("收货人手机号")]
         [Description("收货人手机号")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("ReceiverMobile", "收货人手机号", "nvarchar(50)")]
+        [BindColumn("ReceiverMobile", "收货人手机号", "")]
         public String ReceiverMobile { get { return _ReceiverMobile; } set { if (OnPropertyChanging(__.ReceiverMobile, value)) { _ReceiverMobile = value; OnPropertyChanged(__.ReceiverMobile); } } }
 
         private String _ReceiverState;
@@ -84,7 +84,7 @@ namespace NewLife.School.Entity
         [DisplayName("收货省")]
         [Description("收货省")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("ReceiverState", "收货省", "nvarchar(50)")]
+        [BindColumn("ReceiverState", "收货省", "")]
         public String ReceiverState { get { return _ReceiverState; } set { if (OnPropertyChanging(__.ReceiverState, value)) { _ReceiverState = value; OnPropertyChanged(__.ReceiverState); } } }
 
         private String _ReceiverCity;
@@ -92,7 +92,7 @@ namespace NewLife.School.Entity
         [DisplayName("收货人区")]
         [Description("收货人区")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("ReceiverCity", "收货人区", "nvarchar(50)")]
+        [BindColumn("ReceiverCity", "收货人区", "")]
         public String ReceiverCity { get { return _ReceiverCity; } set { if (OnPropertyChanging(__.ReceiverCity, value)) { _ReceiverCity = value; OnPropertyChanged(__.ReceiverCity); } } }
 
         private String _ReceiverDistrict;
@@ -100,7 +100,7 @@ namespace NewLife.School.Entity
         [DisplayName("收货区")]
         [Description("收货区")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Receiver_District", "收货区", "nvarchar(50)")]
+        [BindColumn("Receiver_District", "收货区", "")]
         public String ReceiverDistrict { get { return _ReceiverDistrict; } set { if (OnPropertyChanging(__.ReceiverDistrict, value)) { _ReceiverDistrict = value; OnPropertyChanged(__.ReceiverDistrict); } } }
 
         private String _ReceiverAddress;
@@ -108,7 +108,7 @@ namespace NewLife.School.Entity
         [DisplayName("收货地址")]
         [Description("收货地址")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("ReceiverAddress", "收货地址", "nvarchar(50)")]
+        [BindColumn("ReceiverAddress", "收货地址", "")]
         public String ReceiverAddress { get { return _ReceiverAddress; } set { if (OnPropertyChanging(__.ReceiverAddress, value)) { _ReceiverAddress = value; OnPropertyChanged(__.ReceiverAddress); } } }
 
         private String _BuyerName;
@@ -116,7 +116,7 @@ namespace NewLife.School.Entity
         [DisplayName("买家昵称")]
         [Description("买家昵称")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("BuyerName", "买家昵称", "nvarchar(50)")]
+        [BindColumn("BuyerName", "买家昵称", "")]
         public String BuyerName { get { return _BuyerName; } set { if (OnPropertyChanging(__.BuyerName, value)) { _BuyerName = value; OnPropertyChanged(__.BuyerName); } } }
 
         private Int32 _Created;
@@ -124,7 +124,7 @@ namespace NewLife.School.Entity
         [DisplayName("创建时间")]
         [Description("创建时间")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("Created", "创建时间", "int")]
+        [BindColumn("Created", "创建时间", "")]
         public Int32 Created { get { return _Created; } set { if (OnPropertyChanging(__.Created, value)) { _Created = value; OnPropertyChanged(__.Created); } } }
 
         private Int32 _Modified;
@@ -132,7 +132,7 @@ namespace NewLife.School.Entity
         [DisplayName("是否发送过")]
         [Description("是否发送过")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("Modified", "是否发送过", "int")]
+        [BindColumn("Modified", "是否发送过", "")]
         public Int32 Modified { get { return _Modified; } set { if (OnPropertyChanging(__.Modified, value)) { _Modified = value; OnPropertyChanged(__.Modified); } } }
 
         private Int32 _IsSend;
@@ -140,7 +140,7 @@ namespace NewLife.School.Entity
         [DisplayName("更新者")]
         [Description("更新者")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("IsSend", "更新者", "int")]
+        [BindColumn("IsSend", "更新者", "")]
         public Int32 IsSend { get { return _IsSend; } set { if (OnPropertyChanging(__.IsSend, value)) { _IsSend = value; OnPropertyChanged(__.IsSend); } } }
 
         private String _ErrorMsg;
@@ -148,7 +148,7 @@ namespace NewLife.School.Entity
         [DisplayName("错误原因")]
         [Description("错误原因")]
         [DataObjectField(false, false, true, 200)]
-        [BindColumn("ErrorMsg", "错误原因", "nvarchar(200)")]
+        [BindColumn("ErrorMsg", "错误原因", "")]
         public String ErrorMsg { get { return _ErrorMsg; } set { if (OnPropertyChanging(__.ErrorMsg, value)) { _ErrorMsg = value; OnPropertyChanged(__.ErrorMsg); } } }
         #endregion
 
@@ -186,12 +186,12 @@ namespace NewLife.School.Entity
             {
                 switch (name)
                 {
-                    case __.ID : _ID = Convert.ToInt32(value); break;
-                    case __.NodeID : _NodeID = Convert.ToInt32(value); break;
+                    case __.ID : _ID = value.ToInt(); break;
+                    case __.NodeID : _NodeID = value.ToInt(); break;
                     case __.Tid : _Tid = Convert.ToString(value); break;
-                    case __.Status : _Status = Convert.ToInt32(value); break;
-                    case __.PayStatus : _PayStatus = Convert.ToInt32(value); break;
-                    case __.ShipStatus : _ShipStatus = Convert.ToInt32(value); break;
+                    case __.Status : _Status = value.ToInt(); break;
+                    case __.PayStatus : _PayStatus = value.ToInt(); break;
+                    case __.ShipStatus : _ShipStatus = value.ToInt(); break;
                     case __.CreateIPReceiverPhone : _CreateIPReceiverPhone = Convert.ToString(value); break;
                     case __.ReceiverMobile : _ReceiverMobile = Convert.ToString(value); break;
                     case __.ReceiverState : _ReceiverState = Convert.ToString(value); break;
@@ -199,9 +199,9 @@ namespace NewLife.School.Entity
                     case __.ReceiverDistrict : _ReceiverDistrict = Convert.ToString(value); break;
                     case __.ReceiverAddress : _ReceiverAddress = Convert.ToString(value); break;
                     case __.BuyerName : _BuyerName = Convert.ToString(value); break;
-                    case __.Created : _Created = Convert.ToInt32(value); break;
-                    case __.Modified : _Modified = Convert.ToInt32(value); break;
-                    case __.IsSend : _IsSend = Convert.ToInt32(value); break;
+                    case __.Created : _Created = value.ToInt(); break;
+                    case __.Modified : _Modified = value.ToInt(); break;
+                    case __.IsSend : _IsSend = value.ToInt(); break;
                     case __.ErrorMsg : _ErrorMsg = Convert.ToString(value); break;
                     default: base[name] = value; break;
                 }

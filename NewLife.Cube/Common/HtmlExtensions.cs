@@ -33,14 +33,14 @@ namespace NewLife.Cube
             switch (Type.GetTypeCode(type))
             {
                 case TypeCode.Boolean:
-                    return Html.ForBoolean(name, value.ToBoolean());
+                    return Html.ForBoolean(name, value.ToBoolean(), htmlAttributes);
                 case TypeCode.DateTime:
-                    return Html.ForDateTime(name, value.ToDateTime());
+                    return Html.ForDateTime(name, value.ToDateTime(), format, htmlAttributes);
                 case TypeCode.Decimal:
-                    return Html.ForDecimal(name, Convert.ToDecimal(value));
+                    return Html.ForDecimal(name, Convert.ToDecimal(value), format, htmlAttributes);
                 case TypeCode.Single:
                 case TypeCode.Double:
-                    return Html.ForDouble(name, value.ToDouble());
+                    return Html.ForDouble(name, value.ToDouble(), format, htmlAttributes);
                 case TypeCode.Byte:
                 case TypeCode.SByte:
                 case TypeCode.Int16:
@@ -52,9 +52,9 @@ namespace NewLife.Cube
                     if (type.IsEnum)
                         return Html.ForEnum(name, value ?? 0.ChangeType(type), format);
                     else
-                        return Html.ForInt(name, Convert.ToInt64(value));
+                        return Html.ForInt(name, Convert.ToInt64(value), format, htmlAttributes);
                 case TypeCode.String:
-                    return Html.ForString(name, value + "");
+                    return Html.ForString(name, value + "", 0, htmlAttributes);
                 default:
                     return Html.ForObject(name, value);
             }
@@ -132,19 +132,19 @@ namespace NewLife.Cube
         private static MvcHtmlString ForMap(HtmlHelper Html, FieldItem field, IEntity entity)
         {
             var map = field.Map;
+            if (map == null) return null;
+
+            // 如果没有外部关联，输出数字编辑框和标签
+            if (map.Provider == null)
+            {
+                var label = "&nbsp;<label class=\"\">{0}</label>".F(entity[field.Name]);
+                if (field.OriField != null) field = field.OriField;
+                var mhs = Html.ForEditor(field.Name, entity[field.Name], field.Type, null, new { @class = "aa" });
+                return new MvcHtmlString(mhs.ToString() + label);
+            }
+
             // 为该字段创建下拉菜单
             if (map == null || map.Provider == null) return null;
-
-            //// 如果映射目标列表项过多，不能使用下拉
-            //var fact = EntityFactory.CreateOperate(map.Provider.EntityType);
-            //if (fact != null && fact.Count > 30)
-            //{
-            //    // 输出数字编辑框和标签
-            //    var label = "<label class=\"\">{0}</label>".F(entity[field.Name]);
-            //    if (field.OriField != null) field = field.OriField;
-            //    var mhs = Html.ForEditor(field.Name, entity[field.Name], field.Type);
-            //    return new MvcHtmlString(mhs.ToString() + label);
-            //}
 
             return Html.ForDropDownList(map.Name, map.Provider.GetDataSource(), entity[map.Name]);
         }

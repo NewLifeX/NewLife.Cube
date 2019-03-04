@@ -20,7 +20,7 @@ namespace NewLife.School.Entity
         [DisplayName("编号")]
         [Description("编号")]
         [DataObjectField(true, true, false, 0)]
-        [BindColumn("ID", "编号", "int")]
+        [BindColumn("ID", "编号", "")]
         public Int32 ID { get { return _ID; } set { if (OnPropertyChanging(__.ID, value)) { _ID = value; OnPropertyChanged(__.ID); } } }
 
         private String _Name;
@@ -28,7 +28,7 @@ namespace NewLife.School.Entity
         [DisplayName("名称")]
         [Description("名称")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("xxx_Nameyyy", "名称", "nvarchar(50)", Master = true)]
+        [BindColumn("xxx_Nameyyy", "名称", "", Master = true)]
         public String Name { get { return _Name; } set { if (OnPropertyChanging(__.Name, value)) { _Name = value; OnPropertyChanged(__.Name); } } }
 
         private Int32 _CreateUserID;
@@ -36,7 +36,7 @@ namespace NewLife.School.Entity
         [DisplayName("创建者")]
         [Description("创建者")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("CreateUserID", "创建者", "int")]
+        [BindColumn("CreateUserID", "创建者", "")]
         public Int32 CreateUserID { get { return _CreateUserID; } set { if (OnPropertyChanging(__.CreateUserID, value)) { _CreateUserID = value; OnPropertyChanged(__.CreateUserID); } } }
 
         private DateTime _CreateTime;
@@ -44,7 +44,7 @@ namespace NewLife.School.Entity
         [DisplayName("创建时间")]
         [Description("创建时间")]
         [DataObjectField(false, false, true, 0)]
-        [BindColumn("CreateTime", "创建时间", "datetime")]
+        [BindColumn("CreateTime", "创建时间", "")]
         public DateTime CreateTime { get { return _CreateTime; } set { if (OnPropertyChanging(__.CreateTime, value)) { _CreateTime = value; OnPropertyChanged(__.CreateTime); } } }
 
         private String _CreateIP;
@@ -52,7 +52,7 @@ namespace NewLife.School.Entity
         [DisplayName("创建地址")]
         [Description("创建地址")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("CreateIP", "创建地址", "nvarchar(50)")]
+        [BindColumn("CreateIP", "创建地址", "")]
         public String CreateIP { get { return _CreateIP; } set { if (OnPropertyChanging(__.CreateIP, value)) { _CreateIP = value; OnPropertyChanged(__.CreateIP); } } }
 
         private Int32 _UpdateUserID;
@@ -60,7 +60,7 @@ namespace NewLife.School.Entity
         [DisplayName("更新者")]
         [Description("更新者")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("UpdateUserID", "更新者", "int")]
+        [BindColumn("UpdateUserID", "更新者", "")]
         public Int32 UpdateUserID { get { return _UpdateUserID; } set { if (OnPropertyChanging(__.UpdateUserID, value)) { _UpdateUserID = value; OnPropertyChanged(__.UpdateUserID); } } }
 
         private DateTime _UpdateTime;
@@ -68,7 +68,7 @@ namespace NewLife.School.Entity
         [DisplayName("更新时间")]
         [Description("更新时间")]
         [DataObjectField(false, false, true, 0)]
-        [BindColumn("UpdateTime", "更新时间", "datetime")]
+        [BindColumn("UpdateTime", "更新时间", "")]
         public DateTime UpdateTime { get { return _UpdateTime; } set { if (OnPropertyChanging(__.UpdateTime, value)) { _UpdateTime = value; OnPropertyChanged(__.UpdateTime); } } }
 
         private String _UpdateIP;
@@ -76,7 +76,7 @@ namespace NewLife.School.Entity
         [DisplayName("更新地址")]
         [Description("更新地址")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("UpdateIP", "更新地址", "nvarchar(50)")]
+        [BindColumn("UpdateIP", "更新地址", "")]
         public String UpdateIP { get { return _UpdateIP; } set { if (OnPropertyChanging(__.UpdateIP, value)) { _UpdateIP = value; OnPropertyChanged(__.UpdateIP); } } }
 
         private String _Remark;
@@ -84,7 +84,7 @@ namespace NewLife.School.Entity
         [DisplayName("备注")]
         [Description("备注")]
         [DataObjectField(false, false, true, 200)]
-        [BindColumn("Remark", "备注", "nvarchar(200)")]
+        [BindColumn("Remark", "备注", "")]
         public String Remark { get { return _Remark; } set { if (OnPropertyChanging(__.Remark, value)) { _Remark = value; OnPropertyChanged(__.Remark); } } }
         #endregion
 
@@ -114,13 +114,13 @@ namespace NewLife.School.Entity
             {
                 switch (name)
                 {
-                    case __.ID : _ID = Convert.ToInt32(value); break;
+                    case __.ID : _ID = value.ToInt(); break;
                     case __.Name : _Name = Convert.ToString(value); break;
-                    case __.CreateUserID : _CreateUserID = Convert.ToInt32(value); break;
-                    case __.CreateTime : _CreateTime = Convert.ToDateTime(value); break;
+                    case __.CreateUserID : _CreateUserID = value.ToInt(); break;
+                    case __.CreateTime : _CreateTime = value.ToDateTime(); break;
                     case __.CreateIP : _CreateIP = Convert.ToString(value); break;
-                    case __.UpdateUserID : _UpdateUserID = Convert.ToInt32(value); break;
-                    case __.UpdateTime : _UpdateTime = Convert.ToDateTime(value); break;
+                    case __.UpdateUserID : _UpdateUserID = value.ToInt(); break;
+                    case __.UpdateTime : _UpdateTime = value.ToDateTime(); break;
                     case __.UpdateIP : _UpdateIP = Convert.ToString(value); break;
                     case __.Remark : _Remark = Convert.ToString(value); break;
                     default: base[name] = value; break;
