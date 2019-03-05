@@ -102,6 +102,8 @@ namespace NewLife.Cube
 @using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
+@using XCode.Membership;
+@using NewLife.Cube;
 @using System.Web.Mvc;
 @using System.Web.Mvc.Ajax;
 @using System.Web.Mvc.Html;
@@ -181,7 +183,7 @@ namespace NewLife.Cube
             sb.AppendFormat("@model IList<{0}>", entityType.FullName);
             sb.AppendLine();
 
-            tmp = tmp.Replace("page.State as IEntity", "page.State as " + entityType.Name);
+            tmp = tmp.Replace("page.State as IEntity", "page.State as " + entityType.FullName);
 
             var str = tmp.Substring(null, "            @foreach");
             // 如果有用户字段，则启用provider
