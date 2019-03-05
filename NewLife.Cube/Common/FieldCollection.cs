@@ -208,10 +208,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public FieldCollection RemoveCreateField()
         {
-            var rs = RemoveAll(e => e.Name.EqualIgnoreCase("CreateUserID"));
-            if (rs > 0) RemoveAll(e => e.Name.EqualIgnoreCase("CreateTime"));
-
-            RemoveAll(e => e.Name.EqualIgnoreCase("CreateIP"));
+            RemoveAll(e => e.Name.EqualIgnoreCase("CreateUserID", "CreateUserID", "CreateTime", "CreateIP"));
 
             return this;
         }
@@ -220,10 +217,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public FieldCollection RemoveUpdateField()
         {
-            var rs = RemoveAll(e => e.Name.EqualIgnoreCase("UpdateUserID"));
-            if (rs > 0) RemoveAll(e => e.Name.EqualIgnoreCase("UpdateTime"));
-
-            RemoveAll(e => e.Name.EqualIgnoreCase("UpdateIP"));
+            RemoveAll(e => e.Name.EqualIgnoreCase("UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"));
 
             return this;
         }
