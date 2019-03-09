@@ -550,10 +550,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </None>
-    <Content Include="Areas\Admin\Views\Department\_List_Data_Item.cshtml">
+    <None Include="Areas\Admin\Views\Department\_List_Data_Item.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data_Item.generated.cs</LastGenOutput>
-    </Content>
+    </None>
     <None Include="Areas\Admin\Views\Role\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
@@ -574,10 +574,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
     </None>
-    <Content Include="Areas\Admin\Views\User\_List_Data.cshtml">
+    <None Include="Areas\Admin\Views\User\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
-    </Content>
+    </None>
     <None Include="Areas\Admin\Views\VisitStat\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
@@ -832,10 +832,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
     </None>
-    <Content Include="Views\Shared\_List_Data_Stat.cshtml">
+    <None Include="Views\Shared\_List_Data_Stat.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data_Stat.generated.cs</LastGenOutput>
-    </Content>
+    </None>
     <None Include="Views\Shared\_Object_Nav.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Object_Nav.generated.cs</LastGenOutput>
