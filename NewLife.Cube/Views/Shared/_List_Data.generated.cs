@@ -70,7 +70,7 @@ namespace ASP
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
     var fk = fact.Unique;
-    var enableSelect = this.EnableSelect();
+    var set = ViewBag.PageSetting as PageSetting;
 
     var hasUser = fields.Any(f => f.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"));
     if (hasUser && ViewData["Provider"] == null) { ViewData["Provider"] = ManageProvider.Provider; }
@@ -93,7 +93,7 @@ WriteLiteral(">\r\n    <thead>\r\n        <tr>\r\n");
             #line hidden
             
             #line 18 "..\..\Views\Shared\_List_Data.cshtml"
-             if (enableSelect)
+             if (set.EnableSelect)
             {
 
             
@@ -140,38 +140,38 @@ WriteLiteral("                    <th");
 
 WriteLiteral(" class=\"text-center\"");
 
-WriteAttribute("style", Tuple.Create(" style=\"", 1172), Tuple.Create("\"", 1201)
-, Tuple.Create(Tuple.Create("", 1180), Tuple.Create("min-width:", 1180), true)
+WriteAttribute("style", Tuple.Create(" style=\"", 1182), Tuple.Create("\"", 1211)
+, Tuple.Create(Tuple.Create("", 1190), Tuple.Create("min-width:", 1190), true)
             
             #line 28 "..\..\Views\Shared\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1190), Tuple.Create<System.Object, System.Int32>(width
+, Tuple.Create(Tuple.Create("", 1200), Tuple.Create<System.Object, System.Int32>(width
             
             #line default
             #line hidden
-, 1190), false)
-, Tuple.Create(Tuple.Create("", 1198), Tuple.Create("px;", 1198), true)
+, 1200), false)
+, Tuple.Create(Tuple.Create("", 1208), Tuple.Create("px;", 1208), true)
 );
 
-WriteAttribute("title", Tuple.Create(" title=\"", 1202), Tuple.Create("\"", 1227)
+WriteAttribute("title", Tuple.Create(" title=\"", 1212), Tuple.Create("\"", 1237)
             
             #line 28 "..\..\Views\Shared\_List_Data.cshtml"
- , Tuple.Create(Tuple.Create("", 1210), Tuple.Create<System.Object, System.Int32>(item.Description
+ , Tuple.Create(Tuple.Create("", 1220), Tuple.Create<System.Object, System.Int32>(item.Description
             
             #line default
             #line hidden
-, 1210), false)
+, 1220), false)
 );
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1231), Tuple.Create("\"", 1256)
+WriteAttribute("href", Tuple.Create(" href=\"", 1241), Tuple.Create("\"", 1266)
             
             #line 28 "..\..\Views\Shared\_List_Data.cshtml"
-                             , Tuple.Create(Tuple.Create("", 1238), Tuple.Create<System.Object, System.Int32>(Html.Raw(sortUrl)
+                             , Tuple.Create(Tuple.Create("", 1248), Tuple.Create<System.Object, System.Int32>(Html.Raw(sortUrl)
             
             #line default
             #line hidden
-, 1238), false)
+, 1248), false)
 );
 
 WriteLiteral(">");
@@ -198,26 +198,26 @@ WriteLiteral("                    <th");
 
 WriteLiteral(" class=\"text-center\"");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 1389), Tuple.Create("\"", 1414)
+WriteAttribute("title", Tuple.Create(" title=\"", 1399), Tuple.Create("\"", 1424)
             
             #line 32 "..\..\Views\Shared\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1397), Tuple.Create<System.Object, System.Int32>(item.Description
+, Tuple.Create(Tuple.Create("", 1407), Tuple.Create<System.Object, System.Int32>(item.Description
             
             #line default
             #line hidden
-, 1397), false)
+, 1407), false)
 );
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1418), Tuple.Create("\"", 1443)
+WriteAttribute("href", Tuple.Create(" href=\"", 1428), Tuple.Create("\"", 1453)
             
             #line 32 "..\..\Views\Shared\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1425), Tuple.Create<System.Object, System.Int32>(Html.Raw(sortUrl)
+, Tuple.Create(Tuple.Create("", 1435), Tuple.Create<System.Object, System.Int32>(Html.Raw(sortUrl)
             
             #line default
             #line hidden
-, 1425), false)
+, 1435), false)
 );
 
 WriteLiteral(">");
@@ -290,7 +290,7 @@ WriteLiteral("            <tr>\r\n");
             #line hidden
             
             #line 45 "..\..\Views\Shared\_List_Data.cshtml"
-                 if (enableSelect)
+                 if (set.EnableSelect)
                 {
 
             
@@ -306,14 +306,14 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 1955), Tuple.Create("\"", 1979)
+WriteAttribute("value", Tuple.Create(" value=\"", 1969), Tuple.Create("\"", 1993)
             
             #line 47 "..\..\Views\Shared\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 1963), Tuple.Create<System.Object, System.Int32>(entity[fk.Name]
+      , Tuple.Create(Tuple.Create("", 1977), Tuple.Create<System.Object, System.Int32>(entity[fk.Name]
             
             #line default
             #line hidden
-, 1963), false)
+, 1977), false)
 );
 
 WriteLiteral(" /></td>\r\n");

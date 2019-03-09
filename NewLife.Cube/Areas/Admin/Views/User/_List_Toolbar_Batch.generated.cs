@@ -53,7 +53,7 @@ namespace ASP
   
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var fact = ViewBag.Factory as IEntityOperate;
-    var enableSelect = this.EnableSelect();
+    var set = ViewBag.PageSetting as PageSetting;
 
             
             #line default
@@ -62,7 +62,7 @@ WriteLiteral("\r\n");
 
             
             #line 7 "..\..\Areas\Admin\Views\User\_List_Toolbar_Batch.cshtml"
- if (enableSelect)
+ if (set.EnableSelect)
 {
 
             

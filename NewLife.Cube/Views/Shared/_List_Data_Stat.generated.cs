@@ -70,7 +70,7 @@ namespace ASP
 
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
-    var enableSelect = this.EnableSelect();
+    var set = ViewBag.PageSetting as PageSetting;
 
             
             #line default
@@ -85,7 +85,7 @@ WriteLiteral("\r\n<tr>\r\n");
             #line hidden
             
             #line 13 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-     if (enableSelect)
+     if (set.EnableSelect)
     {
 
             

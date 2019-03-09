@@ -110,13 +110,13 @@ namespace NewLife.Cube
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
-    var enableSelect = this.EnableSelect();
+    var set = ViewBag.PageSetting as PageSetting;
     //var provider = ManageProvider.Provider;
 }
 <table class=""table table-bordered table-hover table-striped table-condensed"">
     <thead>
         <tr>
-            @if (enableSelect)
+            @if (set.EnableSelect)
             {
                 <th class=""text-center"" style=""width:10px;""><input type=""checkbox"" id=""chkAll"" title=""全选"" /></th>
             }
@@ -142,7 +142,7 @@ namespace NewLife.Cube
         @foreach (var entity in Model)
         {
             <tr>
-                @if (enableSelect)
+                @if (set.EnableSelect)
                 {
                     <td class=""text-center""><input type=""checkbox"" name=""keys"" value=""@entity.ID"" /></td>
                 }
@@ -162,7 +162,7 @@ namespace NewLife.Cube
         {
             var entity = page.State as IEntity;
             <tr>
-                @if (enableSelect)
+                @if (set.EnableSelect)
                 {
                     <td></td>
                 }

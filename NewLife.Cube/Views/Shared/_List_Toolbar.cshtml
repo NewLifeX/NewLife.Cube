@@ -9,7 +9,6 @@
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
     var set = ViewBag.PageSetting as PageSetting;
-    var enableSelect = this.EnableSelect();
 }
 <div class="tableTools-container">
     <div class="form-inline">
@@ -19,7 +18,7 @@
                 var rv = page.GetRouteValue();
                 @Html.ActionLink("添加" + ViewContext.Controller.GetType().GetDisplayName(), "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
             }
-            @if (enableSelect)
+            @if (set.EnableSelect)
             {
                 <div class="form-group toolbar-batch">
                     @Html.Partial("_List_Toolbar_Batch")
@@ -33,7 +32,7 @@
         </form>
     </div>
 </div>
-@if (enableSelect)
+@if (set.EnableSelect)
 {
     <script>
         $(function () {
