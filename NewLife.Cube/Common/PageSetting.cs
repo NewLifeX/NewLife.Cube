@@ -13,6 +13,9 @@ namespace NewLife.Cube
         #region 属性
         /// <summary>启用导航栏。默认true</summary>
         public Boolean EnableNavbar { get; set; } = true;
+
+        /// <summary>启用添加按钮。默认true</summary>
+        public Boolean EnableAdd { get; set; } = true;
         #endregion
 
         #region 构造
@@ -25,7 +28,8 @@ namespace NewLife.Cube
         {
             var set = new PageSetting
             {
-                EnableNavbar = EnableNavbar
+                EnableNavbar = EnableNavbar,
+                EnableAdd = EnableAdd,
             };
 
             return set;

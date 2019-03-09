@@ -66,6 +66,7 @@ namespace ASP
     var act = ViewBag.Action as String;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
+    var set = ViewBag.PageSetting as PageSetting;
     var enableSelect = this.EnableSelect();
 
             
@@ -81,14 +82,14 @@ WriteLiteral(" class=\"form-inline\"");
 
 WriteLiteral(">\r\n        <form");
 
-WriteAttribute("action", Tuple.Create(" action=\"", 381), Tuple.Create("\"", 424)
+WriteAttribute("action", Tuple.Create(" action=\"", 432), Tuple.Create("\"", 475)
             
-            #line 15 "..\..\Views\Shared\_List_Toolbar.cshtml"
-, Tuple.Create(Tuple.Create("", 390), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetFormAction(act))
+            #line 16 "..\..\Views\Shared\_List_Toolbar.cshtml"
+, Tuple.Create(Tuple.Create("", 441), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetFormAction(act))
             
             #line default
             #line hidden
-, 390), false)
+, 441), false)
 );
 
 WriteLiteral(" method=\"post\"");
@@ -98,14 +99,14 @@ WriteLiteral(" role=\"form\"");
 WriteLiteral(">\r\n");
 
             
-            #line 16 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 17 "..\..\Views\Shared\_List_Toolbar.cshtml"
             
             
             #line default
             #line hidden
             
-            #line 16 "..\..\Views\Shared\_List_Toolbar.cshtml"
-             if (this.Has(PermissionFlags.Insert))
+            #line 17 "..\..\Views\Shared\_List_Toolbar.cshtml"
+             if (set.EnableAdd && this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
                 
@@ -113,14 +114,14 @@ WriteLiteral(">\r\n");
             #line default
             #line hidden
             
-            #line 19 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 20 "..\..\Views\Shared\_List_Toolbar.cshtml"
            Write(Html.ActionLink("添加" + ViewContext.Controller.GetType().GetDisplayName(), "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary()));
 
             
             #line default
             #line hidden
             
-            #line 19 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 20 "..\..\Views\Shared\_List_Toolbar.cshtml"
                                                                                                                                                                
             }
 
@@ -130,7 +131,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("            ");
 
             
-            #line 21 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 22 "..\..\Views\Shared\_List_Toolbar.cshtml"
              if (enableSelect)
             {
 
@@ -146,7 +147,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("                    ");
 
             
-            #line 24 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 25 "..\..\Views\Shared\_List_Toolbar.cshtml"
                Write(Html.Partial("_List_Toolbar_Batch"));
 
             
@@ -155,7 +156,7 @@ WriteLiteral("                    ");
 WriteLiteral("\r\n                </div>\r\n");
 
             
-            #line 26 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 27 "..\..\Views\Shared\_List_Toolbar.cshtml"
             }
 
             
@@ -170,7 +171,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("                ");
 
             
-            #line 28 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 29 "..\..\Views\Shared\_List_Toolbar.cshtml"
            Write(Html.Partial("_List_Search"));
 
             
@@ -181,7 +182,7 @@ WriteLiteral("\r\n");
 WriteLiteral("                ");
 
             
-            #line 29 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 30 "..\..\Views\Shared\_List_Toolbar.cshtml"
            Write(Html.Partial("_List_Toolbar_Search"));
 
             
@@ -192,7 +193,7 @@ WriteLiteral("\r\n");
 WriteLiteral("                ");
 
             
-            #line 30 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 31 "..\..\Views\Shared\_List_Toolbar.cshtml"
            Write(Html.Partial("_List_Toolbar_Adv"));
 
             
@@ -201,7 +202,7 @@ WriteLiteral("                ");
 WriteLiteral("\r\n            </div>\r\n        </form>\r\n    </div>\r\n</div>\r\n");
 
             
-            #line 35 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 36 "..\..\Views\Shared\_List_Toolbar.cshtml"
  if (enableSelect)
 {
 
@@ -230,7 +231,7 @@ WriteLiteral("    <script>\r\n        $(function () {\r\n            var $toolba
 ", false);\r\n                }\r\n            });\r\n        })\r\n    </script>\r\n");
 
             
-            #line 73 "..\..\Views\Shared\_List_Toolbar.cshtml"
+            #line 74 "..\..\Views\Shared\_List_Toolbar.cshtml"
 }
             
             #line default
