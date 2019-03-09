@@ -1,0 +1,80 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model as IEntity;
+
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var enableSelect = this.EnableSelect();
+}
+<tr>
+    @if (enableSelect)
+    {
+        <td></td>
+    }
+    @foreach (var item in fields)
+    {
+        if (item.IsIdentity)
+        {
+            <td>总计</td>
+        }
+        else
+        {
+            var value = entity[item.Name];
+            switch (Type.GetTypeCode(item.Type))
+            {
+                case TypeCode.Boolean:
+                case TypeCode.DateTime:
+                    <td></td>
+                    break;
+                case TypeCode.Decimal:
+                    var dc = (Decimal)value;
+                    <td class="text-right">@dc.ToString("n2")</td>
+                    break;
+                case TypeCode.Single:
+                case TypeCode.Double:
+                    var dd = (Double)value;
+                    if (item.Name.EndsWithIgnoreCase("Rate"))
+                    {
+                        <td class="text-right">@dd.ToString("p2")</td>
+                    }
+                    else
+                    {
+                        <td class="text-right">@dd.ToString("n2")</td>
+                    }
+                    break;
+                case TypeCode.Byte:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                    //特殊处理枚举
+                    if (item.Type.IsEnum)
+                    {
+                        <td></td>
+                    }
+                    else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID") || item.Name.EndsWith("ID"))
+                    {
+                        <td></td>
+                    }
+                    else
+                    {
+                        <td class="text-right">@Convert.ToInt64(value).ToString("n0")</td>
+                    }
+                    break;
+                case TypeCode.String:
+                default:
+                    <td></td>
+                    break;
+            }
+        }
+    }
+    @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+    {
+        <td></td>
+    }
+</tr>

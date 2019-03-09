@@ -4,17 +4,19 @@
     var pair = Model as Pair;
     var entity = pair.First as IEntity;
     var item = pair.Second as FieldItem;
+
+    var value = entity[item.Name];
 }
 @if (item.IsIdentity)
 {
-    <td class="text-center hidden-md hidden-sm hidden-xs">@entity[item.Name]</td>
+    <td class="text-center hidden-md hidden-sm hidden-xs">@value</td>
 }
 else
 {
     switch (Type.GetTypeCode(item.Type))
     {
         case TypeCode.Boolean:
-            if ((Boolean)entity[item.Name])
+            if ((Boolean)value)
             {
                 <td class="text-center hidden-md hidden-sm hidden-xs">
                     <i class="glyphicon glyphicon-ok" style="color: green;"></i>
@@ -28,10 +30,10 @@ else
             }
             break;
         case TypeCode.DateTime:
-            var dt = (DateTime)entity[item.Name];
+            var dt = (DateTime)value;
             if (dt > DateTime.MinValue && dt.Year > 1900)
             {
-                <td class="text-center hidden-md hidden-sm hidden-xs">@(((DateTime)entity[item.Name]).ToFullString(""))</td>
+                <td class="text-center hidden-md hidden-sm hidden-xs">@(((DateTime)value).ToFullString(""))</td>
             }
             else
             {
@@ -39,11 +41,11 @@ else
             }
             break;
         case TypeCode.Decimal:
-            <td class="text-center hidden-md hidden-sm hidden-xs">@entity[item.Name]</td>
+            <td class="text-center hidden-md hidden-sm hidden-xs">@value</td>
             break;
         case TypeCode.Single:
         case TypeCode.Double:
-            <td class="text-center hidden-md hidden-sm hidden-xs">@entity[item.Name]</td>
+            <td class="text-center hidden-md hidden-sm hidden-xs">@value</td>
             break;
         case TypeCode.Byte:
         case TypeCode.Int16:
@@ -55,7 +57,7 @@ else
             //特殊处理枚举
             if (item.Type.IsEnum)
             {
-                var v = entity[item.Name];
+                var v = value;
                 var val = v + "";
                 try
                 {
@@ -66,29 +68,28 @@ else
             }
             else
             {
-                <td class="text-center hidden-md hidden-sm hidden-xs">@Convert.ToInt64(entity[item.Name]).ToString("n0")</td>
+                <td class="text-center hidden-md hidden-sm hidden-xs">@Convert.ToInt64(value).ToString("n0")</td>
             }
             break;
         case TypeCode.String:
         default:
             {
-                var val = entity[item.Name];
                 var map = item.Map;
-                if (map != null && map.Provider != null && val + "" != "")
+                if (map != null && map.Provider != null && value + "" != "")
                 {
                     var dic = new RouteValueDictionary();
                     var key = map.Provider.Key;
                     if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
-                    <td class="text-center hidden-md hidden-sm hidden-xs">@Html.ActionLink(entity[item.Name] + "", "Edit", map.Provider.EntityType.Name, dic, null)</td>
+                    <td class="text-center hidden-md hidden-sm hidden-xs">@Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null)</td>
                 }
                 else
                 {
-                    <td class="text-center hidden-md hidden-sm hidden-xs">@entity[item.Name]</td>
+                    <td class="text-center hidden-md hidden-sm hidden-xs">@value</td>
                 }
             }
             break;
             @*default:
-                <td>@entity[item.Name]</td>
+                <td>@value</td>
                 break;*@
     }
 }

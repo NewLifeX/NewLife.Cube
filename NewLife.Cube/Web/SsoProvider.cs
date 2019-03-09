@@ -117,14 +117,18 @@ namespace NewLife.Cube.Web
             // 强行绑定，把第三方账号强行绑定到当前已登录账号
             var forceBind = false;
 #if __CORE__
-            var req = context.GetService<IHttpContextAccessor>().HttpContext.Request;
+            var httpContext = context.GetService<IHttpContextAccessor>().HttpContext;
+            var req = httpContext.Request;
 #else
             var req = context.GetService<HttpRequest>();
 #endif
             if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
 
-            // 检查绑定，新用户的uc.UserID为0
+            // 可能因为初始化顺序的问题，导致前面没能给Provider赋值
             var prv = Provider;
+            if (prv == null) prv = Provider = ManageProvider.Provider;
+
+            // 检查绑定，新用户的uc.UserID为0
             var user = prv.FindByID(uc.UserID);
             if (forceBind || user == null || !uc.Enable) user = OnBind(uc, client);
 
@@ -157,9 +161,12 @@ namespace NewLife.Cube.Web
             // 单点登录不要保存Cookie，让它在Session过期时请求认证中心
             //prv.SaveCookie(user);
             var set = Setting.Current;
-            if (set.SessionTimeout > 0) prv.SaveCookie(user, TimeSpan.FromSeconds(set.SessionTimeout), context);
-
-            LogProvider.Provider.WriteLog(user.GetType(), client.Name, "单点登录", user.ID, user + "", req.GetUserHost());
+            if (set.SessionTimeout > 0)
+#if __CORE__
+                ManagerProviderHelper.SaveCookie(prv, user, TimeSpan.FromSeconds(set.SessionTimeout), httpContext);
+#else
+                prv.SaveCookie(user, TimeSpan.FromSeconds(set.SessionTimeout), context);
+#endif
 
             return SuccessUrl;
         }
@@ -264,7 +271,7 @@ namespace NewLife.Cube.Web
 
         /// <summary>注销</summary>
         /// <returns></returns>
-        public virtual void Logout() => Provider.Logout();
+        public virtual void Logout() => Provider?.Logout();
         #endregion
 
         #region 服务端

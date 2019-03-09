@@ -78,19 +78,19 @@ namespace NewLife.Cube
             var prv = ioc.Resolve<IModelBinderProvider>("Entity");
             if (prv != null)
             {
-                XTrace.WriteLine("注册模型绑定器：{0}", prv.GetType().FullName);
+                XTrace.WriteLine("注册实体模型绑定器：{0}", prv.GetType().FullName);
                 providers.Add(prv);
             }
             prv = ioc.Resolve<IModelBinderProvider>("Pager");
             if (prv != null)
             {
-                XTrace.WriteLine("注册模型绑定器：{0}", prv.GetType().FullName);
+                XTrace.WriteLine("注册页面模型绑定器：{0}", prv.GetType().FullName);
                 providers.Add(prv);
             }
 
             // 注册过滤器
             //ioc.Register<HandleErrorAttribute, MvcHandleErrorAttribute>();
-            ioc.Register<AuthorizeAttribute, EntityAuthorizeAttribute>();
+            ioc.Register<AuthorizeAttribute, EntityAuthorizeAttribute>("Cube");
             var filters = GlobalFilters.Filters;
             var f1 = ioc.Resolve<HandleErrorAttribute>();
             if (f1 != null)
@@ -98,12 +98,19 @@ namespace NewLife.Cube
                 XTrace.WriteLine("注册异常过滤器：{0}", f1.GetType().FullName);
                 filters.Add(f1);
             }
-            var f2 = ioc.Resolve<AuthorizeAttribute>();
-            if (f2 != null)
+            //var f2 = ioc.Resolve<AuthorizeAttribute>();
+            //if (f2 != null)
+            //{
+            //    XTrace.WriteLine("注册授权过滤器：{0}", f2.GetType().FullName);
+            //    if (f2 is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
+            //    filters.Add(f2);
+            //}
+            foreach (var item in ioc.ResolveAll(typeof(AuthorizeAttribute)))
             {
-                XTrace.WriteLine("注册授权过滤器：{0}", f2.GetType().FullName);
-                if (f2 is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
-                filters.Add(f2);
+                var auth = item.Instance;
+                XTrace.WriteLine("注册[{0}]授权过滤器：{1}",item.Identity, auth.GetType().FullName);
+                if (auth is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
+                filters.Add(auth);
             }
 
             // 从数据库或者资源文件加载模版页面的例子

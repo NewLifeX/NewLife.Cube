@@ -76,7 +76,7 @@ namespace NewLife.Cube
         [EntityAuthorize(PermissionFlags.Update)]
         public ActionResult Update(TObject obj)
         {
-            WriteLog(obj);
+            WriteLog(obj, UserHost);
 
             // 反射处理内部复杂成员
 #if __CORE__
@@ -128,7 +128,8 @@ namespace NewLife.Cube
 
         /// <summary>写日志</summary>
         /// <param name="obj"></param>
-        protected virtual void WriteLog(TObject obj)
+        /// <param name="ip"></param>
+        protected virtual void WriteLog(TObject obj, String ip = null)
         {
             // 构造修改日志
             var sb = new StringBuilder();
@@ -148,7 +149,7 @@ namespace NewLife.Cube
                     sb.AppendFormat("{0}:{1}=>{2}", name, v2, v1);
                 }
             }
-            LogProvider.Provider.WriteLog(obj.GetType(), "修改", sb.ToString());
+            LogProvider.Provider.WriteLog(obj.GetType(), "修改", sb.ToString(), ip: ip);
         }
 
         /// <summary>获取要显示编辑的成员</summary>

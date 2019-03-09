@@ -1,6 +1,7 @@
 ﻿@using NewLife.Common;
 @{
     var set = NewLife.Cube.Setting.Current;
+    var set2 = ViewBag.PageSetting as PageSetting;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -46,12 +47,15 @@
 </head>
 <body>
     <div class="panel panel-default">
-        <div class="breadcrumbs" id="breadcrumbs">
-            <ul class="breadcrumb">
-                @Html.Partial("_Ace_Layout_Nav")
-            </ul>
-            <div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
-        </div>
+        @if (set2.EnableNavbar)
+        {
+            <div class="breadcrumbs" id="breadcrumbs">
+                <ul class="breadcrumb">
+                    @Html.Partial("_Ace_Layout_Nav")
+                </ul>
+                <div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
+            </div>
+        }
         <div class="page-content">
             <section class="content-wrapper main-content clear-fix">
                 @RenderBody()

@@ -9,11 +9,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
+using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Reflection;
@@ -122,8 +123,15 @@ namespace NewLife.Cube
             //// 添加OData
             //services.AddOData();
 
+            services.AddLogging(configure =>
+            {
+                configure.AddProvider(new CubeLoggerProvider());
+            });
+
             return services;
         }
+
+
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
         /// <param name="services"></param>
@@ -191,6 +199,9 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IApplicationBuilder UseCube(this IApplicationBuilder app)
         {
+            //var loggerFactory = app.ApplicationServices.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
+            //loggerFactory.CreateLogger("");
+
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
 
@@ -220,22 +231,16 @@ namespace NewLife.Cube
                 //// OData路由放在最前面
                 //routes.MapODataServiceRoute("ODataRoute","OData", builder.GetEdmModel());
 
-                // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
-                routes.MapRoute(
-                    name: "Cube",
-                    template: "{controller=CubeHome}/{action=Index}/{id?}"
-                );
-            });
-
-            // 配置魔方的MVC选项
-            app.UseRouter(routes =>
-            {
-                if (routes.DefaultHandler == null) routes.DefaultHandler = app.ApplicationServices.GetRequiredService<MvcRouteHandler>();
-
                 // 区域路由注册
                 routes.MapRoute(
                     name: "CubeAreas",
                     template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"
+                );
+
+                // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
+                routes.MapRoute(
+                    name: "Cube",
+                    template: "{controller=CubeHome}/{action=Index}/{id?}"
                 );
             });
 
@@ -247,7 +252,7 @@ namespace NewLife.Cube
             //var user = ManageProvider.User;
             //ManageProvider.Provider.GetService<IUser>();
             //ScanControllerExtensions.ScanController();
-            Admin.AdminArea.RegisterArea<Admin.AdminArea>();
+            AreaBase.RegisterArea<Admin.AdminArea>();
 
             return app;
         }

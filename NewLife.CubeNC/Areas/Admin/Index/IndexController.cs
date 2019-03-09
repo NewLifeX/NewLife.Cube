@@ -9,7 +9,9 @@ using System.Runtime.InteropServices;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using NewLife.Cube.Extensions;
 #else
 using System.Web;
@@ -23,6 +25,7 @@ using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
 using NewLife.Cube.ViewModels;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -35,13 +38,21 @@ namespace NewLife.Cube.Admin.Controllers
         protected static Int32 MenuOrder { get; set; } = 10;
 
 #if __CORE__
-        private IManageProvider _Provider;
+        private IManageProvider _provider;
+        private IApplicationLifetime _applicationLifetime { get; set; }
+
+
 
         private IndexController() { }
 
         /// <summary>实例化</summary>
         /// <param name="manageProvider"></param>
-        public IndexController(IManageProvider manageProvider) => _Provider = manageProvider;
+        public IndexController(IManageProvider manageProvider, IApplicationLifetime appLifetime
+            , ILogger<IndexController> logger)
+        {
+            _provider = manageProvider;
+            _applicationLifetime = appLifetime;
+        }
 #endif
 
         /// <summary>首页</summary>
@@ -54,7 +65,7 @@ namespace NewLife.Cube.Admin.Controllers
         public ActionResult Index()
         {
 #if __CORE__
-            var user = ManagerProviderHelper.TryLogin(_Provider, HttpContext.RequestServices);
+            var user = ManagerProviderHelper.TryLogin(_provider, HttpContext.RequestServices);
 #else
             var user = ManageProvider.Provider.TryLogin();
 #endif
@@ -68,7 +79,7 @@ namespace NewLife.Cube.Admin.Controllers
             });
 
 #if __CORE__
-            ViewBag.User = _Provider.Current;
+            ViewBag.User = _provider.Current;
 #else
             ViewBag.User = ManageProvider.User;
 #endif
@@ -145,25 +156,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize((PermissionFlags)16)]
         public ActionResult Restart()
         {
-            //System.Web.HttpContext.Current.User = null;
-            //try
-            //{
-            //    Process.GetCurrentProcess().Kill();
-            //}
-            //catch { }
-            //try
-            {
-                //AppDomain.Unload(AppDomain.CurrentDomain);
-                //HttpContext.User = null;
-                //HttpRuntime.UnloadAppDomain();
-                //HostingEnvironment.InitiateShutdown();
-                //ApplicationManager.GetApplicationManager().ShutdownAll();
-                // 通过修改web.config时间来重启站点，稳定可靠
-                var wc = "web.config".GetFullPath();
-                System.IO.File.SetLastWriteTime(wc, DateTime.Now);
-            }
-            //catch { }
-
+            _applicationLifetime.StopApplication();
             return RedirectToAction(nameof(Main));
         }
 
@@ -200,7 +193,7 @@ namespace NewLife.Cube.Admin.Controllers
         // [EntityAuthorize(PermissionFlags.Detail)]
         public List<MenuTree> GetMenu()
         {
-            var user = _Provider.Current as IUser ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
+            var user = _provider.Current as IUser ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
 
             //var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
             var fact = ManageProvider.Menu;

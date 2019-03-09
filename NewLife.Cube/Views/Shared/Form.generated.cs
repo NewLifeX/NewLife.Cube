@@ -105,14 +105,7 @@ WriteLiteral("\r\n");
             #line hidden
             
             #line 17 "..\..\Views\Shared\Form.cshtml"
-   Write(Html.AntiForgeryToken());
-
-            
-            #line default
-            #line hidden
-            
-            #line 17 "..\..\Views\Shared\Form.cshtml"
-                                
+                                    
         
             
             #line default

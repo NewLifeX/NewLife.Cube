@@ -316,6 +316,7 @@
     <Compile Include="Common\DbRunTimeModule.cs" />
     <Compile Include="Common\FieldCollection.cs" />
     <Compile Include="Common\HtmlExtensions.cs" />
+    <Compile Include="Common\PageSetting.cs" />
     <Compile Include="Common\RazorViewEngineX.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Common\AreaRegistrationBase.cs" />
@@ -377,6 +378,11 @@
       <DependentUpon>_Form_Group.cshtml</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="Views\Shared\_List_Data_Stat.generated.cs">
+      <DependentUpon>_List_Data_Stat.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Views\Shared\_Object_Nav.generated.cs">
       <DependentUpon>_Object_Nav.cshtml</DependentUpon>
@@ -570,6 +576,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Areas\Admin\Views\User\_List_Data.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Areas\Admin\Views\VisitStat\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
@@ -609,10 +619,6 @@
     <None Include="Areas\Admin\Views\User\_Login_Login3.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Login_Login3.generated.cs</LastGenOutput>
-    </None>
-    <None Include="Areas\Admin\Views\User\_List_Data.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
     </None>
     <None Include="Content\jweui\css\demos.css" />
     <None Include="Content\jweui\css\jquery-weui.css" />
@@ -828,6 +834,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Views\Shared\_List_Data_Stat.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Data_Stat.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Views\Shared\_Object_Nav.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Object_Nav.generated.cs</LastGenOutput>

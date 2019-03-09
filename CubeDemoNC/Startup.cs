@@ -9,8 +9,14 @@ namespace CubeDemoNC
 {
     public class Startup
     {
+        public Startup()
+        {
+
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddCube();
         }
 
@@ -21,14 +27,12 @@ namespace CubeDemoNC
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
             app.UseCube();
-
-            // mvc之后的管道不会被执行
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
         }
     }
 }

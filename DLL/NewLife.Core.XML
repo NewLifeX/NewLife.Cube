@@ -4,20 +4,6 @@
         <name>NewLife.Core</name>
     </assembly>
     <members>
-        <member name="T:NewLife.Agent.AgentService">
-            <summary>代理服务例子。自定义服务程序可参照该类实现。</summary>
-        </member>
-        <member name="M:NewLife.Agent.AgentService.#ctor">
-            <summary>实例化一个代理服务</summary>
-        </member>
-        <member name="M:NewLife.Agent.AgentService.StartWork(System.String)">
-            <summary>开始工作</summary>
-            <param name="reason"></param>
-        </member>
-        <member name="M:NewLife.Agent.AgentService.StopWork(System.String)">
-            <summary>停止服务</summary>
-            <param name="reason"></param>
-        </member>
         <member name="T:NewLife.Agent.AgentServiceBase`1">
             <typeparam name="TService">服务类型</typeparam>
         </member>
@@ -115,6 +101,15 @@
             检查指定的任务是否已经停止，如果已经停止，则启动它。
             </remarks>
         </member>
+        <member name="M:NewLife.Agent.AgentServiceBase.Install(System.Boolean)">
+            <summary>安装、卸载 服务</summary>
+            <param name="isinstall">是否安装</param>
+        </member>
+        <member name="M:NewLife.Agent.AgentServiceBase.GetBinPath(System.String)">
+            <summary>获取安装服务的命令参数</summary>
+            <param name="exe"></param>
+            <returns></returns>
+        </member>
         <member name="P:NewLife.Agent.AgentServiceBase.Log">
             <summary>日志</summary>
         </member>
@@ -128,11 +123,6 @@
         </member>
         <member name="P:NewLife.Agent.ServiceHelper.ExeName">
             <summary>Exe程序名</summary>
-        </member>
-        <member name="M:NewLife.Agent.ServiceHelper.Install(NewLife.Agent.AgentServiceBase,System.Boolean)">
-            <summary>安装、卸载 服务</summary>
-            <param name="service">服务对象</param>
-            <param name="isinstall">是否安装</param>
         </member>
         <member name="M:NewLife.Agent.ServiceHelper.ControlService(NewLife.Agent.AgentServiceBase,System.Boolean)">
             <summary>启动、停止 服务</summary>
@@ -910,9 +900,10 @@
         <member name="P:NewLife.Caching.Redis.Pool">
             <summary>连接池</summary>
         </member>
-        <member name="M:NewLife.Caching.Redis.Execute``1(System.Func{NewLife.Caching.RedisClient,``0},System.Boolean)">
+        <member name="M:NewLife.Caching.Redis.Execute``1(System.String,System.Func{NewLife.Caching.RedisClient,``0},System.Boolean)">
             <summary>执行命令</summary>
             <typeparam name="TResult">返回类型</typeparam>
+            <param name="key">命令key，用于选择集群节点</param>
             <param name="func">回调函数</param>
             <param name="write">是否写入操作</param>
             <returns></returns>
@@ -2166,7 +2157,7 @@
             <summary>获取封包的数据流形式</summary>
             <returns></returns>
         </member>
-        <member name="M:NewLife.Data.Packet.WriteTo(System.IO.Stream)">
+        <member name="M:NewLife.Data.Packet.CopyTo(System.IO.Stream)">
             <summary>把封包写入到数据流</summary>
             <param name="stream"></param>
         </member>
@@ -2530,7 +2521,7 @@
             <summary>状态码</summary>
         </member>
         <member name="P:NewLife.Http.TinyHttpClient.Timeout">
-            <summary>超时时间。默认15000ms</summary>
+            <summary>超时时间。默认15s</summary>
         </member>
         <member name="P:NewLife.Http.TinyHttpClient.Headers">
             <summary>头部集合</summary>
@@ -2539,15 +2530,27 @@
             <summary>销毁</summary>
             <param name="disposing"></param>
         </member>
-        <member name="M:NewLife.Http.TinyHttpClient.SendDataAsync(NewLife.Net.NetUri,NewLife.Data.Packet)">
+        <member name="M:NewLife.Http.TinyHttpClient.SendDataAsync(System.Uri,NewLife.Data.Packet)">
             <summary>异步请求</summary>
-            <param name="remote"></param>
+            <param name="uri"></param>
             <param name="request"></param>
             <returns></returns>
         </member>
-        <member name="M:NewLife.Http.TinyHttpClient.SendAsync(System.String,System.Byte[])">
+        <member name="M:NewLife.Http.TinyHttpClient.SendAsync(System.Uri,System.Byte[])">
             <summary>异步发出请求，并接收响应</summary>
-            <param name="url"></param>
+            <param name="uri"></param>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Http.TinyHttpClient.SendData(System.Uri,NewLife.Data.Packet)">
+            <summary>同步请求</summary>
+            <param name="uri"></param>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Http.TinyHttpClient.Send(System.Uri,System.Byte[])">
+            <summary>异步发出请求，并接收响应</summary>
+            <param name="uri"></param>
             <param name="data"></param>
             <returns></returns>
         </member>
@@ -2562,9 +2565,19 @@
             <param name="rs"></param>
             <returns></returns>
         </member>
-        <member name="M:NewLife.Http.TinyHttpClient.GetAsync(System.String)">
+        <member name="M:NewLife.Http.TinyHttpClient.GetPool(System.String)">
+            <summary>根据主机获取对象池</summary>
+            <param name="host"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Http.TinyHttpClient.GetStringAsync(System.String)">
             <summary>异步获取</summary>
             <param name="url">地址</param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Http.TinyHttpClient.GetString(System.String)">
+            <summary>同步获取</summary>
+            <param name="url"></param>
             <returns></returns>
         </member>
         <member name="T:NewLife.IO.CsvFile">
@@ -2689,6 +2702,11 @@
             <param name="filename"></param>
             <returns></returns>
         </member>
+        <member name="M:NewLife.Extension.SpeakProvider.SpeakAsyncCancelAll">
+            <summary>
+            停止话音播报
+            </summary>
+        </member>
         <member name="T:NewLife.Json.JsonConfig`1">
             <summary>Json配置文件基类</summary>
             <remarks>
@@ -2781,25 +2799,6 @@
             <summary>指定配置文件名和重新加载时间（毫秒）</summary>
             <param name="fileName"></param>
             <param name="reloadTime"></param>
-        </member>
-        <member name="T:NewLife.Json.JsonConfigTest">
-            <summary>
-            测试Json配置文件功能
-            </summary>
-        </member>
-        <member name="M:NewLife.Json.JsonConfigTest.Start">
-            <summary>
-            开始测试
-            </summary>
-        </member>
-        <member name="P:NewLife.Json.TestJsonConfig.Title">
-            <summary>标题</summary>
-        </member>
-        <member name="P:NewLife.Json.TestJsonConfig.Width">
-            <summary>宽度</summary>
-        </member>
-        <member name="P:NewLife.Json.TestJsonConfig.Height">
-            <summary>高度</summary>
         </member>
         <member name="T:NewLife.Log.ActionLog">
             <summary>依托于动作的日志类</summary>
@@ -3917,6 +3916,97 @@
         <member name="M:NewLife.Model.Actor.Receive(NewLife.Model.ActorContext[])">
             <summary>批量处理消息</summary>
             <param name="contexts">上下文集合</param>
+        </member>
+        <member name="T:NewLife.Model.DeferredQueue">
+            <summary>延迟队列。缓冲合并对象，批量处理</summary>
+            <remarks>
+            借助实体字典，缓冲实体对象，定期给字典换新，实现批量处理。
+            
+            有可能外部拿到对象后，正在修改，内部恰巧执行批量处理，导致外部的部分修改未能得到处理。
+            解决办法是增加一个提交机制，外部用完后提交修改，内部需要处理时，等待一个时间。
+            </remarks>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.Name">
+            <summary>名称</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.Entities">
+            <summary>实体字典</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.TraceCount">
+            <summary>跟踪数。达到该值时输出跟踪日志，默认1000</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.Period">
+            <summary>周期。默认10_000毫秒</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.MaxEntity">
+            <summary>最大个数。超过该个数时，进入队列将产生堵塞。默认100_000</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.BatchSize">
+            <summary>批大小。默认5_000</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.WaitForBusy">
+            <summary>等待借出对象确认修改的时间，默认3000ms</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.Speed">
+            <summary>保存速度，每秒保存多少个实体</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.Async">
+            <summary>是否异步处理。true表示异步处理，共用DQ定时调度；false表示同步处理，独立线程</summary>
+        </member>
+        <member name="P:NewLife.Model.DeferredQueue.Times">
+            <summary>合并保存的总次数</summary>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.#ctor">
+            <summary>实例化</summary>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.OnDispose(System.Boolean)">
+            <summary>销毁。统计队列销毁时保存数据</summary>
+            <param name="disposing"></param>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.Init">
+            <summary>初始化</summary>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.OnInit">
+            <summary>初始化</summary>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.TryAdd(System.String,System.Object)">
+            <summary>尝试添加</summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.GetOrAdd``1(System.String,System.Func{System.String,``0})">
+            <summary>获取 或 添加 实体对象，在外部修改对象值</summary>
+            <remarks>
+            外部正在修改对象时，内部不允许执行批量处理
+            </remarks>
+            <typeparam name="T"></typeparam>
+            <param name="key"></param>
+            <param name="valueFactory"></param>
+            <returns></returns>
+        </member>
+        <member name="F:NewLife.Model.DeferredQueue._busy">
+            <summary>等待确认修改的借出对象数</summary>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.Commit(System.String)">
+            <summary>提交对象的修改，外部不再使用该对象</summary>
+            <param name="key"></param>
+        </member>
+        <member name="F:NewLife.Model.DeferredQueue._count">
+            <summary>当前缓存个数</summary>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.ProcessAll(System.Collections.Generic.ICollection{System.Object})">
+            <summary>定时处理全部数据</summary>
+            <param name="list"></param>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.Process(System.Collections.Generic.IList{System.Object})">
+            <summary>处理一批</summary>
+            <param name="list"></param>
+        </member>
+        <member name="M:NewLife.Model.DeferredQueue.OnError(System.Collections.Generic.IList{System.Object},System.Exception)">
+            <summary>发生错误</summary>
+            <param name="list"></param>
+            <param name="ex"></param>
         </member>
         <member name="T:NewLife.Model.IFactory`1">
             <summary>用于创建对象的工厂接口</summary>
@@ -6849,12 +6939,6 @@
         <member name="P:NewLife.Remoting.ApiServer.StatPeriod">
             <summary>显示统计信息的周期。默认600秒，0表示不显示统计信息</summary>
         </member>
-        <member name="T:NewLife.Remoting.ApiTest">
-            <summary>Rpc测试</summary>
-        </member>
-        <member name="M:NewLife.Remoting.ApiTest.Main">
-            <summary>测试主函数</summary>
-        </member>
         <member name="T:NewLife.Remoting.ApiController">
             <summary>API控制器</summary>
         </member>
@@ -7943,12 +8027,6 @@
             <param name="value"></param>
             <returns></returns>
         </member>
-        <member name="T:NewLife.Serialization.BinaryTest">
-            <summary>Binary测试</summary>
-        </member>
-        <member name="M:NewLife.Serialization.BinaryTest.Start">
-            <summary>开始测试</summary>
-        </member>
         <member name="T:NewLife.Serialization.IMemberAccessor">
             <summary>成员序列化访问器。接口实现者可以在这里完全自定义序列化行为</summary>
         </member>
@@ -8477,12 +8555,6 @@
             <param name="value"></param>
             <returns></returns>
         </member>
-        <member name="T:NewLife.Serialization.JsonTest">
-            <summary>Json测试</summary>
-        </member>
-        <member name="M:NewLife.Serialization.JsonTest.Start">
-            <summary>开始测试</summary>
-        </member>
         <member name="T:NewLife.Serialization.JsonWriter">
             <summary>Json写入器</summary>
         </member>
@@ -8973,9 +9045,6 @@
             <param name="binder"></param>
             <param name="result"></param>
             <returns></returns>
-        </member>
-        <member name="M:NewLife.Reflection.DynamicXml.Test">
-            <summary>测试</summary>
         </member>
         <member name="T:NewLife.Reflection.IReflect">
             <summary>反射接口</summary>
@@ -9963,9 +10032,6 @@
         <member name="F:NewLife.Security.Crc16.CrcTable">
             <summary>CRC16表</summary>
         </member>
-        <member name="F:NewLife.Security.Crc16.crc">
-            <summary>校验值</summary>
-        </member>
         <member name="P:NewLife.Security.Crc16.Value">
             <summary>校验值</summary>
         </member>
@@ -9980,15 +10046,10 @@
         </member>
         <member name="M:NewLife.Security.Crc16.Update(System.Byte[],System.Int32,System.Int32)">
             <summary>添加字节数组进行校验  CRC16-CCITT x16+x12+x5+1 1021  ISO HDLC, ITU X.25, V.34/V.41/V.42, PPP-FCS</summary>
-            <param name = "buffer">
-            The buffer which contains the data
-            </param>
-            <param name = "offset">
-            The offset in the buffer where the data starts
-            </param>
-            <param name = "count">
-            The number of data bytes to update the CRC with.
-            </param>
+            <remarks>字符串123456789的Crc16是31C3</remarks>
+            <param name = "buffer">数据缓冲区</param>
+            <param name = "offset">偏移量</param>
+            <param name = "count">字节个数</param>
         </member>
         <member name="M:NewLife.Security.Crc16.Update(System.IO.Stream,System.Int64)">
             <summary>添加数据流进行校验  CRC-16 x16+x15+x2+1 8005 IBM SDLC</summary>
@@ -10039,6 +10100,17 @@
             <param name="buf"></param>
             <param name="pukKey"></param>
             <param name="rgbSignature"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NewLife.Security.DSAHelper.FromXmlStringX(System.Security.Cryptography.DSACryptoServiceProvider,System.String)">
+            <summary>从Xml加载DSA密钥</summary>
+            <param name="rsa"></param>
+            <param name="xmlString"></param>
+        </member>
+        <member name="M:NewLife.Security.DSAHelper.ToXmlStringX(System.Security.Cryptography.DSACryptoServiceProvider,System.Boolean)">
+            <summary>保存DSA密钥到Xml</summary>
+            <param name="rsa"></param>
+            <param name="includePrivateParameters"></param>
             <returns></returns>
         </member>
         <member name="T:NewLife.Security.Rand">
@@ -12795,6 +12867,12 @@
         </member>
         <member name="M:System.StringHelper.SpeechTip(System.String)">
             <summary>语音提示操作</summary>
+            <param name="value"></param>
+        </member>
+        <member name="M:System.StringHelper.SpeakAsyncCancelAll(System.String)">
+            <summary>
+            停止所有语音播报
+            </summary>
             <param name="value"></param>
         </member>
         <member name="M:System.StringHelper.Run(System.String,System.String,System.Int32,System.Action{System.String},System.Action{System.Diagnostics.Process})">

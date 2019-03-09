@@ -101,6 +101,8 @@ WriteAttribute("dateformat", Tuple.Create(" dateformat=\"", 366), Tuple.Create("
 
 WriteLiteral(" class=\"form-control form_datetime\"");
 
+WriteLiteral(" autocomplete=\"off\"");
+
 WriteLiteral(" />\r\n    </div>\r\n</div>\r\n<div");
 
 WriteLiteral(" class=\"form-group\"");
@@ -129,27 +131,29 @@ WriteLiteral(" name=\"dtEnd\"");
 
 WriteLiteral(" id=\"dtEnd\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 680), Tuple.Create("\"", 699)
+WriteAttribute("value", Tuple.Create(" value=\"", 699), Tuple.Create("\"", 718)
             
             #line 16 "..\..\Views\Shared\_DateRange.cshtml"
-, Tuple.Create(Tuple.Create("", 688), Tuple.Create<System.Object, System.Int32>(p["dtEnd"]
+, Tuple.Create(Tuple.Create("", 707), Tuple.Create<System.Object, System.Int32>(p["dtEnd"]
             
             #line default
             #line hidden
-, 688), false)
+, 707), false)
 );
 
-WriteAttribute("dateformat", Tuple.Create(" dateformat=\"", 700), Tuple.Create("\"", 723)
+WriteAttribute("dateformat", Tuple.Create(" dateformat=\"", 719), Tuple.Create("\"", 742)
             
             #line 16 "..\..\Views\Shared\_DateRange.cshtml"
-, Tuple.Create(Tuple.Create("", 713), Tuple.Create<System.Object, System.Int32>(formatStr
+, Tuple.Create(Tuple.Create("", 732), Tuple.Create<System.Object, System.Int32>(formatStr
             
             #line default
             #line hidden
-, 713), false)
+, 732), false)
 );
 
 WriteLiteral(" class=\"form-control form_datetime\"");
+
+WriteLiteral(" autocomplete=\"off\"");
 
 WriteLiteral(" />\r\n    </div>\r\n</div>");
 

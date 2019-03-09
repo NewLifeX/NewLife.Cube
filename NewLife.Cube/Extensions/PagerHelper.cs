@@ -45,6 +45,7 @@ namespace NewLife.Cube
 
             // 表单提交，不需要排序、分页，不需要表单提交上来的数据，只要请求字符串过来的数据
             var query = req.QueryString;
+
             var forms = new HashSet<String>(req.Form.AllKeys, StringComparer.OrdinalIgnoreCase);
             var excludes = new HashSet<String>(new[] { _.Sort, _.Desc, _.PageIndex, _.PageSize }, StringComparer.OrdinalIgnoreCase);
 
@@ -58,16 +59,36 @@ namespace NewLife.Cube
                 if (excludes.Contains(item)) continue;
 
                 // 内容为空也不要
-                var v = query[item];
+                var v = HttpUtility.UrlEncode(query[item]);
                 if (v.IsNullOrEmpty()) continue;
 
-                url.UrlParam(item, v);
+                var key = HttpUtility.UrlEncode(item);
+                url.UrlParam(key, v);
             }
 
             if (url.Length == 0) return action;
             if (!action.Contains('?')) action += '?';
 
             return action + url.Put(true);
+        }
+
+        /// <summary>过滤特殊字符，避免注入</summary>
+        /// <param name="dic"></param>
+        /// <returns></returns>
+        public static Dictionary<String, String> FilterSpecialChar(IDictionary<String, String> dic)
+        {
+            // 过滤部分特殊字符避免XSS
+            var ndic = new Dictionary<String, String>();
+
+            foreach (var kv in dic)
+            {
+                var value = HttpUtility.UrlEncode(kv.Value);
+                var key = HttpUtility.UrlEncode(kv.Key); ;
+
+                ndic.Add(key, value);
+            }
+
+            return ndic;
         }
     }
 }

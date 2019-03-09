@@ -33,6 +33,8 @@ namespace NewLife.Cube.Admin.Controllers
             model.Fill(p.Params, StatLevels.Day);
             model.Page = p["p"];
 
+            p.RetrieveState = true;
+
             return VisitStat.Search(model, p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p);
         }
 

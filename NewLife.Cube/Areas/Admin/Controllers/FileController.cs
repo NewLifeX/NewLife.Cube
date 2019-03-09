@@ -177,7 +177,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (fi != null)
             {
                 p = GetFullName(fi.Directory.FullName);
-                WriteLog("删除", fi.FullName);
+                WriteLog("删除", fi.FullName ,UserHost);
                 fi.Delete();
             }
             else
@@ -186,7 +186,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (di == null) throw new Exception("找不到文件或目录！");
 
                 p = GetFullName(di.Parent.FullName);
-                WriteLog("删除", di.FullName);
+                WriteLog("删除", di.FullName, UserHost);
                 di.Delete(true);
             }
 
@@ -209,7 +209,7 @@ namespace NewLife.Cube.Admin.Controllers
                 p = GetFullName(fi.Directory.FullName);
                 var dst = "{0}_{1:yyyyMMddHHmmss}.zip".F(fi.Name, DateTime.Now);
                 dst = fi.Directory.FullName.CombinePath(dst);
-                WriteLog("压缩", "{0} => {1}".F(fi.FullName, dst));
+                WriteLog("压缩", "{0} => {1}".F(fi.FullName, dst), UserHost);
                 fi.Compress(dst);
             }
             else
@@ -220,7 +220,7 @@ namespace NewLife.Cube.Admin.Controllers
                 p = GetFullName(di.Parent.FullName);
                 var dst = "{0}_{1:yyyyMMddHHmmss}.zip".F(di.Name, DateTime.Now);
                 dst = di.Parent.FullName.CombinePath(dst);
-                WriteLog("压缩", "{0} => {1}".F(di.FullName, dst));
+                WriteLog("压缩", "{0} => {1}".F(di.FullName, dst), UserHost);
                 di.Compress(dst);
             }
 
@@ -237,7 +237,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (fi == null) throw new Exception("找不到文件！");
 
             var p = GetFullName(fi.Directory.FullName);
-            WriteLog("解压缩", fi.FullName);
+            WriteLog("解压缩", fi.FullName, UserHost);
             fi.Extract(fi.Directory.FullName, true);
 
             return RedirectToAction("Index", new { r = p });
@@ -259,7 +259,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (di == null) throw new Exception("找不到目录！");
 
                 var dest = di.FullName.CombinePath(file.FileName);
-                WriteLog("上传", dest);
+                WriteLog("上传", dest, UserHost);
                 System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes());
             }
 
@@ -296,7 +296,7 @@ namespace NewLife.Cube.Admin.Controllers
             var fi = GetFile(r);
             if (fi == null) throw new Exception("找不到文件！");
 
-            WriteLog("下载", fi.FullName);
+            WriteLog("下载", fi.FullName, UserHost);
 
             return File(fi.FullName, "application/octet-stream", fi.Name);
         }
@@ -359,7 +359,7 @@ namespace NewLife.Cube.Admin.Controllers
             foreach (var item in list)
             {
                 var dst = di.FullName.CombinePath(item.Name);
-                WriteLog("复制", "{0} => {1}".F(item.Raw, dst));
+                WriteLog("复制", "{0} => {1}".F(item.Raw, dst), UserHost);
                 if (item.Directory)
                     item.Raw.AsDirectory().CopyTo(dst);
                 else
@@ -383,7 +383,7 @@ namespace NewLife.Cube.Admin.Controllers
             foreach (var item in list)
             {
                 var dst = di.FullName.CombinePath(item.Name);
-                WriteLog("移动", "{0} => {1}".F(item.Raw, dst));
+                WriteLog("移动", "{0} => {1}".F(item.Raw, dst), UserHost);
                 if (item.Directory)
                     Directory.Move(item.Raw, dst);
                 else
@@ -407,9 +407,9 @@ namespace NewLife.Cube.Admin.Controllers
         #endregion
 
         #region 日志
-        private static void WriteLog(String action, String remark)
+        private static void WriteLog(String action, String remark, String ip = null)
         {
-            LogProvider.Provider.WriteLog(typeof(FileController), action, remark);
+            LogProvider.Provider.WriteLog(typeof(FileController), action, remark, ip:ip);
         }
         #endregion
     }

@@ -37,7 +37,7 @@
                 @*据说此功能已被干掉*@
                 @*@HttpRuntime.AppDomainAppVirtualPath*@
                 &nbsp;
-                @if (this.Has((PermissionFlags) 16))
+                @if (this.Has((PermissionFlags)16))
                 {
                     <a href="@Url.Action("Restart")" onclick="return confirm('仅重启ASP.Net应用程序域，而不是操作系统！\n确认重启？')">重启应用系统</a>
                 }
@@ -59,7 +59,7 @@
                 <span title="SERVER_NAME">@req.Headers["SERVER_NAME"]</span>，
                 <span title="LOCAl_ADDR">@req.Headers["Host"]</span>
                 &nbsp;<span title="REMOTE_HOST">[@req.Headers["REMOTE_HOST"]]</span>
-                <a href="@Url.Action("Main/ServerVar")" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
+                <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
             </td>
             <td class="name">
                 计算机用户：
@@ -74,7 +74,7 @@
             </td>
             <td class="value">
                 @AppDomain.CurrentDomain.FriendlyName
-                <a href="@Url.Action("Main/Assembly")" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
+                <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
             </td>
             <td class="name">
                 .Net 版本：
@@ -123,7 +123,7 @@
                 工作集: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M
                 提交: @((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
                 GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
-                <a href="@Url.Action("Main/ProcessModules")" target="_blank" title="点击打开进程模块列表">模块列表</a>
+                <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
             </td>
             <td class="name">
                 进程时间：
@@ -138,14 +138,14 @@
             </td>
             <td class="value">
                 @httpContext.Session.Keys.Count() 个，@httpContext.Session.IsAvailable Timeout 分钟，SessionID：@httpContext.Session.Id
-                <a href="@Url.Action("Main/Session")" target="_blank" title="点击打开Session列表">Session列表</a>
+                <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
             </td>
             <td class="name">
                 Cache：
             </td>
             <td class="value">
                 @*@HttpContext.Cache.Count 个，可用：@((Cache.EffectivePrivateBytesLimit / 1024).ToString("n0"))KB*@
-                <a href="@Url.Action("Main/Cache")" target="_blank" title="点击打开Cache列表">Cache列表</a>
+                <a href="@Url.Action("Main", new{ id = "Cache" })" target="_blank" title="点击打开Cache列表">Cache列表</a>
             </td>
         </tr>
     </tbody>

@@ -2,20 +2,25 @@
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime.Versioning;
+@using Microsoft.Extensions.Caching.Memory
 @using NewLife.Common;
+@inject IMemoryCache Cache
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
 
     ViewBag.Title = "Cache列表";
 
-    var asm = Assembly.GetExecutingAssembly();
-    var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
-    var ver = att.FrameworkDisplayName ?? att.FrameworkName;
+    // 如果自己实现了IMemoryCache，手动修改此处
+    var cache = Cache as MemoryCache;
+    if (cache == null)
+    {
+        cache = new MemoryCache(new MemoryCacheOptions());
+    }
 }
 <table class="table table-bordered table-hover table-striped table-condensed">
     <tr>
         <th colspan="6">
-            Cache列表(@*@Cache.Count*@ )
+            Cache列表(@cache.Count )
         </th>
     </tr>
     <tr>
@@ -23,7 +28,7 @@
         <th>类型</th>
         <th>数值</th>
     </tr>
-    @*@foreach (DictionaryEntry item in Cache)
+    @*@foreach (DictionaryEntry item in cache)
         {
         <tr>
             <td>@item.Key</td>

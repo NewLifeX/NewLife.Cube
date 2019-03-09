@@ -13,7 +13,7 @@ namespace NewLife.Cube
         public RazorViewEngineX()
         {
             var list = new List<String>();
-            list.Add("~/{2}/Views/{1}/{0}.cshtml");
+            //list.Add("~/{2}/Views/{1}/{0}.cshtml");
             list.Add("~/{2}/Views/Shared/{0}.cshtml");
             list.Add("~/Areas/{2}/Views/{1}/{0}.cshtml");
             list.Add("~/Areas/{2}/Views/Shared/{0}.cshtml");
