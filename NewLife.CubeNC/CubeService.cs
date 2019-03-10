@@ -123,17 +123,18 @@ namespace NewLife.Cube
             //// 添加OData
             //services.AddOData();
 
-            services.AddLogging(configure =>
-            {
-                configure.AddProvider(new CubeLoggerProvider());
-            });
+            // 添加实时日志查看
+            //services.AddLogging(configure =>
+            //{
+            //    configure.AddProvider(new CubeLoggerProvider());
+            //});
 
             return services;
         }
 
 
 
-        /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assemly，作为本应用的一部分</summary>
+        /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assembly，作为本应用的一部分</summary>
         /// <param name="services"></param>
         public static void AddCustomApplicationParts(this IServiceCollection services)
         {
