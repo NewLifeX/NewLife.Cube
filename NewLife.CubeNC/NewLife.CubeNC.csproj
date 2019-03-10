@@ -103,7 +103,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
-    <PackageReference Include="NewLife.XCode" Version="9.10.7007.22736" />
+    <PackageReference Include="NewLife.Core" Version="8.1.2019.310" />
+    <PackageReference Include="NewLife.XCode" Version="9.11.2019.311" />
   </ItemGroup>
 
   <ItemGroup>

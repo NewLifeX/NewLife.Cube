@@ -115,7 +115,7 @@ namespace NewLife.Cube.Admin.Controllers
                 }
             }
 
-            Js.Alert(msg);
+            //Js.Alert(msg);
 #endif
             return Index();
         }
