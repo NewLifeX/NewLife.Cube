@@ -78,6 +78,7 @@
     <Compile Remove="Controllers\SsoController.cs" />
     <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
     <Compile Remove="Extensions\ObjectHelper.cs" />
+    <Compile Remove="Extensions\PagerHelper.cs" />
     <Compile Remove="Extensions\SessionExtensions.cs" />
     <Compile Remove="Extensions\WebHelper.cs" />
     <Compile Remove="Program.cs" />
@@ -102,7 +103,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
-    <PackageReference Include="NewLife.XCode" Version="9.10.6965.42078" />
+    <PackageReference Include="NewLife.Core" Version="8.1.2019.310" />
+    <PackageReference Include="NewLife.XCode" Version="9.11.2019.311" />
   </ItemGroup>
 
   <ItemGroup>
@@ -160,6 +162,7 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Extensions\ManageProvider.cs" Link="Extensions\ManageProvider.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
+    <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
     <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />

@@ -7,10 +7,10 @@
 
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
-    var enableSelect = this.EnableSelect();
+    var set = ViewBag.PageSetting as PageSetting;
 }
 <tr>
-    @if (enableSelect)
+    @if (set.EnableSelect)
     {
         <td></td>
     }

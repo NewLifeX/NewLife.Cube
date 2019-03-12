@@ -8,17 +8,17 @@
     var act = ViewBag.Action as String;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
-    var enableSelect = this.EnableSelect();
+    var set = ViewBag.PageSetting as PageSetting;
 }
 <div class="tableTools-container">
     <div class="form-inline">
         <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
-            @if (this.Has(PermissionFlags.Insert))
+            @if (set.EnableAdd && this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
                 @Html.ActionLink("添加" + ViewContext.Controller.GetType().GetDisplayName(), "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
             }
-            @if (enableSelect)
+            @if (set.EnableSelect)
             {
                 <div class="form-group toolbar-batch">
                     @Html.Partial("_List_Toolbar_Batch")
@@ -32,7 +32,7 @@
         </form>
     </div>
 </div>
-@if (enableSelect)
+@if (set.EnableSelect)
 {
     <script>
         $(function () {

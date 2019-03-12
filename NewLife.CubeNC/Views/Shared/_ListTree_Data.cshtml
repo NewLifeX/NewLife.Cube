@@ -10,12 +10,12 @@
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
     var fk = fact.Unique;
-    var enableSelect = this.EnableSelect();
+        var set = ViewBag.PageSetting as PageSetting;
 }
 <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
     <thead>
         <tr>
-            @if (enableSelect)
+            @if (set.EnableSelect)
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
             }
@@ -44,7 +44,7 @@
             }
             var id = entity["ID"];
             <tr>
-                @if (enableSelect)
+                @if (set.EnableSelect)
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity[fk.Name]" /></td>
                 }

@@ -66,7 +66,7 @@ namespace ASP
     var act = ViewBag.Action as String;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
-    var enableSelect = this.EnableSelect();
+    var set = ViewBag.PageSetting as PageSetting;
 
             
             #line default
@@ -81,14 +81,14 @@ WriteLiteral(" class=\"form-inline\"");
 
 WriteLiteral(">\r\n        <form");
 
-WriteAttribute("action", Tuple.Create(" action=\"", 381), Tuple.Create("\"", 424)
+WriteAttribute("action", Tuple.Create(" action=\"", 387), Tuple.Create("\"", 430)
             
             #line 15 "..\..\Views\Shared\_List_Toolbar.cshtml"
-, Tuple.Create(Tuple.Create("", 390), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetFormAction(act))
+, Tuple.Create(Tuple.Create("", 396), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetFormAction(act))
             
             #line default
             #line hidden
-, 390), false)
+, 396), false)
 );
 
 WriteLiteral(" method=\"post\"");
@@ -105,7 +105,7 @@ WriteLiteral(">\r\n");
             #line hidden
             
             #line 16 "..\..\Views\Shared\_List_Toolbar.cshtml"
-             if (this.Has(PermissionFlags.Insert))
+             if (set.EnableAdd && this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
                 
@@ -131,7 +131,7 @@ WriteLiteral("            ");
 
             
             #line 21 "..\..\Views\Shared\_List_Toolbar.cshtml"
-             if (enableSelect)
+             if (set.EnableSelect)
             {
 
             
@@ -202,7 +202,7 @@ WriteLiteral("\r\n            </div>\r\n        </form>\r\n    </div>\r\n</div>\
 
             
             #line 35 "..\..\Views\Shared\_List_Toolbar.cshtml"
- if (enableSelect)
+ if (set.EnableSelect)
 {
 
             

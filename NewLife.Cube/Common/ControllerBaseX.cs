@@ -31,7 +31,30 @@ namespace NewLife.Cube
             // 页面设置
             var set = PageSetting = PageSetting.Global.Clone();
             ViewBag.PageSetting = set;
+        }
 
+        /// <summary>动作执行前</summary>
+        /// <param name="filterContext"></param>
+#if __CORE__
+        public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext filterContext)
+#else
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+#endif
+        {
+            // 没有用户时无权
+            var user = ManageProvider.User;
+            if (user != null)
+            {
+                // 没有菜单时不做权限控制
+                //var menu = ManageProvider.Menu;
+                var ctx = filterContext.HttpContext;
+                if (ctx.Items["CurrentMenu"] is IMenu menu)
+                {
+                    PageSetting.EnableSelect = user.Has(menu, PermissionFlags.Update, PermissionFlags.Delete);
+                }
+            }
+
+            base.OnActionExecuting(filterContext);
         }
         #endregion
 

@@ -85,8 +85,17 @@ namespace NewLife.Cube
 
             // 优先处理映射。因为映射可能是字符串
             {
-                var mhs = ForMap(Html, field, entity);
-                if (mhs != null) return mhs;
+
+                try
+                {
+                    var mhs = ForMap(Html, field, entity);
+                    if (mhs != null) return mhs;
+                }
+                catch
+                {
+
+                }
+
             }
 
             if (field.ReadOnly)
