@@ -233,14 +233,22 @@ WriteLiteral(">50</option>\r\n        <option");
 
 WriteLiteral(" value=\"100\"");
 
-WriteLiteral(">100</option>\r\n    </select>\r\n    <script");
+WriteLiteral(">100</option>\r\n        <option");
+
+WriteLiteral(" value=\"500\"");
+
+WriteLiteral(">500</option>\r\n        <option");
+
+WriteLiteral(" value=\"1000\"");
+
+WriteLiteral(">1000</option>\r\n    </select>\r\n    <script");
 
 WriteLiteral(" type=\"text/javascript\"");
 
 WriteLiteral(">\r\n        $(function () {\r\n            $(\'#PageSize\').val(");
 
             
-            #line 32 "..\..\Views\Shared\_List_Pager.cshtml"
+            #line 34 "..\..\Views\Shared\_List_Pager.cshtml"
                           Write(page.PageSize);
 
             
@@ -249,7 +257,7 @@ WriteLiteral(">\r\n        $(function () {\r\n            $(\'#PageSize\').val("
 WriteLiteral(");\r\n        });\r\n    </script>\r\n</form>");
 
             
-            #line 35 "..\..\Views\Shared\_List_Pager.cshtml"
+            #line 37 "..\..\Views\Shared\_List_Pager.cshtml"
               }
             
             #line default
