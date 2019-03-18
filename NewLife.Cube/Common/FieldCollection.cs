@@ -43,15 +43,15 @@ namespace NewLife.Cube
                 // 长字段和密码字段不显示
                 NoPass();
             }
-            else
-            {
-                RemoveCreateField();
-                RemoveUpdateField();
-                RemoveRemarkField();
-            }
+            //else
+            //{
+            //    RemoveCreateField();
+            //    RemoveUpdateField();
+            //    RemoveRemarkField();
+            //}
 
-            // IP地址字段
-            ProcessIP();
+            //// IP地址字段
+            //ProcessIP();
 
             return this;
         }
@@ -117,20 +117,20 @@ namespace NewLife.Cube
             }
         }
 
-        void ProcessIP()
-        {
-            for (var i = Count - 1; i >= 0; i--)
-            {
-                if (this[i].Name.EndsWithIgnoreCase("IP", "Uri"))
-                {
-                    var name = this[i].Name.TrimEnd("IP", "Uri");
-                    name += "Address";
-                    var addr = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
-                    // 加到后面
-                    if (addr != null) Insert(i + 1, addr);
-                }
-            }
-        }
+        //void ProcessIP()
+        //{
+        //    for (var i = Count - 1; i >= 0; i--)
+        //    {
+        //        if (this[i].Name.EndsWithIgnoreCase("IP", "Uri"))
+        //        {
+        //            var name = this[i].Name.TrimEnd("IP", "Uri");
+        //            name += "Address";
+        //            var addr = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+        //            // 加到后面
+        //            if (addr != null) Insert(i + 1, addr);
+        //        }
+        //    }
+        //}
         #endregion
 
         #region 添加删除替换
@@ -165,11 +165,14 @@ namespace NewLife.Cube
         }
 
         /// <summary>删除字段</summary>
-        /// <param name="name"></param>
+        /// <param name="names"></param>
         /// <returns></returns>
-        public FieldCollection RemoveField(String name)
+        public FieldCollection RemoveField(params String[] names)
         {
-            RemoveAll(e => e.Name.EqualIgnoreCase(name) || e.ColumnName.EqualIgnoreCase(name));
+            foreach (var item in names)
+            {
+                if (!item.IsNullOrEmpty()) RemoveAll(e => e.Name.EqualIgnoreCase(item) || e.ColumnName.EqualIgnoreCase(item));
+            }
 
             return this;
         }
@@ -208,7 +211,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public FieldCollection RemoveCreateField()
         {
-            RemoveAll(e => e.Name.EqualIgnoreCase("CreateUserID", "CreateUserID", "CreateTime", "CreateIP"));
+            RemoveAll(e => e.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP"));
 
             return this;
         }
