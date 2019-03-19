@@ -29,8 +29,7 @@ namespace NewLife.Cube
         public ControllerBaseX()
         {
             // 页面设置
-            var set = PageSetting = PageSetting.Global.Clone();
-            ViewBag.PageSetting = set;
+            PageSetting = PageSetting.Global.Clone();
         }
 
         /// <summary>动作执行前</summary>
@@ -41,6 +40,9 @@ namespace NewLife.Cube
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
 #endif
         {
+            // 页面设置
+            ViewBag.PageSetting = PageSetting;
+
             // 没有用户时无权
             var user = ManageProvider.User;
             if (user != null)
