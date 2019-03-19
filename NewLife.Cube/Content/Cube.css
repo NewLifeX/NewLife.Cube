@@ -60,3 +60,13 @@
 .cube-login .main-checkbox input[type=checkbox]:checked + label:after { opacity: 1; }
 .cube-login .text { float: left; margin-left: 7px; line-height: 20px; padding-top: 5px; text-transform: capitalize; }
 .cube-login .btn { float: right; font-size: 14px; color: #fff; background: #00b4ef; border-radius: 30px; padding: 8px 50px; border: none; text-transform: capitalize; transition: all 0.5s ease 0s; }
+
+/* 2019-03-15 表格禁止折行，避免拥挤 */
+.table-responsive > .table > tbody > tr > td,
+.table-responsive > .table > tbody > tr > th,
+.table-responsive > .table > tfoot > tr > td,
+.table-responsive > .table > tfoot > tr > th,
+.table-responsive > .table > thead > tr > td,
+.table-responsive > .table > thead > tr > th {
+    white-space: nowrap
+}
