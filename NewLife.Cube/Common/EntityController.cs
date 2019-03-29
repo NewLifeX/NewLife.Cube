@@ -775,18 +775,19 @@ namespace NewLife.Cube
             {
                 using (var tran = Entity<TEntity>.Meta.CreateTrans())
                 {
+                    var list = new List<IEntity>();
                     foreach (var item in keys)
                     {
                         var entity = Entity<TEntity>.FindByKey(item);
                         if (entity != null)
                         {
                             // 验证数据权限
-                            Valid(entity, DataObjectMethodType.Delete, true);
+                            if (Valid(entity, DataObjectMethodType.Delete, true)) list.Add(entity);
 
-                            entity.Delete();
                             count++;
                         }
                     }
+                    list.Delete();
                     tran.Commit();
                 }
             }
@@ -819,13 +820,13 @@ namespace NewLife.Cube
                 //list.Delete();
                 using (var tran = Entity<TEntity>.Meta.CreateTrans())
                 {
+                    var list2 = new List<IEntity>();
                     foreach (var entity in list)
                     {
                         // 验证数据权限
-                        Valid(entity, DataObjectMethodType.Delete, true);
-
-                        entity.Delete();
+                        if (Valid(entity, DataObjectMethodType.Delete, true)) list2.Add(entity);
                     }
+                    list2.Delete();
                     tran.Commit();
                 }
             }
