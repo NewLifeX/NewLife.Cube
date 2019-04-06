@@ -547,7 +547,7 @@ namespace NewLife.Cube
         #region 模版Action
         /// <summary>生成列表</summary>
         /// <returns></returns>
-        [EntityAuthorize(PermissionFlags.Delete)]
+        [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("生成列表")]
         public ActionResult MakeList()
         {
@@ -567,7 +567,7 @@ namespace NewLife.Cube
 
         /// <summary>生成表单</summary>
         /// <returns></returns>
-        [EntityAuthorize(PermissionFlags.Delete)]
+        [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("生成表单")]
         public ActionResult MakeForm()
         {
