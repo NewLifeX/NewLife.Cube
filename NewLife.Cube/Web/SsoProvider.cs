@@ -188,19 +188,23 @@ namespace NewLife.Cube.Web
                 if (user2.Code.IsNullOrEmpty() && dic.TryGetValue("code", out var code)) user2.Code = code;
                 if (user2.Sex == SexKinds.未知 && dic.TryGetValue("sex", out var sex)) user2.Sex = (SexKinds)sex.ToInt();
 
-                // 如果默认角色为0，则使用认证中心提供的角色
                 var set = Setting.Current;
-                var rid = set.DefaultRole;
-                //if (rid == 0 && dic.TryGetValue("roleid", out var roleid) && roleid.ToInt() > 0) user2.RoleID = roleid.ToInt();
-                if (rid <= 0)
+
+                // 使用认证中心的角色
+                var roleId = GetRole(dic, true);
+                if (roleId > 0)
                 {
-                    // 0使用认证中心角色，-1强制使用
-                    if (user2.RoleID <= 0 || rid < 0)
-                    {
-                        user2.RoleID = GetRole(dic, rid <= -1);
-                        user2.RoleIDs = GetRoles(client.Items, rid <= -1).Join();
-                    }
+                    user2.RoleID = roleId;
+
+                    var ids = GetRoles(client.Items, true).ToList();
+                    if (ids.Contains(roleId)) ids.Remove(roleId);
+                    if (ids.Count == 0)
+                        user2.RoleIDs = null;
+                    else
+                        user2.RoleIDs = "," + ids.OrderBy(e => e).Join() + ",";
                 }
+                else if (user2.RoleID <= 0 && set.DefaultRole > 0)
+                    user2.RoleID = set.DefaultRole;
 
                 // 头像
                 if (user2.Avatar.IsNullOrEmpty()) user2.Avatar = client.Avatar;

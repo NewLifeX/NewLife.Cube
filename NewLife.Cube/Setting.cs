@@ -46,9 +46,9 @@ namespace NewLife.Cube
         [Description("布局页。")]
         public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
 
-        /// <summary>默认角色。注册用户得到的角色，0使用认证中心角色，-1强制使用</summary>
-        [Description("默认角色。注册用户得到的角色，0使用认证中心角色，-1强制使用")]
-        public Int32 DefaultRole { get; set; } = 0;
+        /// <summary>默认角色。默认普通用户3</summary>
+        [Description("默认角色。默认普通用户3")]
+        public Int32 DefaultRole { get; set; } = 3;
 
         /// <summary>启用密码登录。允许输入用户名密码进行登录</summary>
         [Description("启用密码登录。允许输入用户名密码进行登录")]
@@ -102,8 +102,8 @@ namespace NewLife.Cube
         [Description("强制SSL。强制使用https访问")]
         public SslModes SslMode { get; set; } = SslModes.Disable;
 
-        /// <summary>启用压缩。默认false</summary>
-        [Description("启用压缩。默认false")]
+        /// <summary>启用压缩。主要用于Json输出压缩，默认false</summary>
+        [Description("启用压缩。主要用于Json输出压缩，默认false")]
         public Boolean EnableCompress { get; set; }
 
         /// <summary>头像目录。设定后下载远程头像到本地</summary>
@@ -130,6 +130,8 @@ namespace NewLife.Cube
 #else
             if (StartPage.IsNullOrEmpty()) StartPage = System.Web.HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/Index/Main";
 #endif
+
+            if (DefaultRole <= 0) DefaultRole = 3;
 
             base.OnLoaded();
         }
