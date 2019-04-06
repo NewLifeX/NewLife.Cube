@@ -92,14 +92,14 @@ namespace NewLife.School.Entity
         /// <summary>班级</summary>
         [XmlIgnore]
         //[ScriptIgnore]
-        public Class Class { get { return Extends.Get(nameof(Class), k => Class.FindByID(ClassID)); } }
+        public Class Class => Extends.Get(nameof(Class), k => Class.FindByID(ClassID));
 
         /// <summary>班级</summary>
         [XmlIgnore]
         //[ScriptIgnore]
         [DisplayName("班级")]
         [Map(__.ClassID, typeof(Class), "ID")]
-        public String ClassName { get { return Class?.Name; } }
+        public String ClassName => Class?.Name;
         #endregion
 
         #region 扩展查询
