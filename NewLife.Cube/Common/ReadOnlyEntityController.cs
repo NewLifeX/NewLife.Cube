@@ -31,7 +31,7 @@ using System.Web.Mvc;
 
 namespace NewLife.Cube
 {
-    /// <summary>实体控制器基类</summary>
+    /// <summary>只读实体控制器基类</summary>
     /// <typeparam name="TEntity"></typeparam>
     public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity : Entity<TEntity>, new()
     {

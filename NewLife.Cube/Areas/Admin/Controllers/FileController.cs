@@ -24,10 +24,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
-        static FileController()
-        {
-            MenuOrder = 28;
-        }
+        static FileController() => MenuOrder = 28;
 
         #region 基础
         private String Root => "../".GetFullPath();
@@ -53,19 +50,6 @@ namespace NewLife.Cube.Admin.Controllers
 
             return di;
         }
-
-        //private FileSystemInfo Get(String r)
-        //{
-        //    var fi = GetFile(r);
-        //    if (fi != null)
-        //        fi.Delete();
-        //    else
-        //    {
-        //        var di = GetDirectory(r);
-        //        if (di == null) throw new Exception("找不到文件或目录！");
-        //        di.Delete(true);
-        //    }
-        //}
 
         private FileItem GetItme(String r)
         {
@@ -407,10 +391,7 @@ namespace NewLife.Cube.Admin.Controllers
         #endregion
 
         #region 日志
-        private static void WriteLog(String action, String remark, String ip = null)
-        {
-            LogProvider.Provider.WriteLog(typeof(FileController), action, remark, ip:ip);
-        }
+        private static void WriteLog(String action, String remark, String ip = null) => LogProvider.Provider.WriteLog(typeof(FileController), action, remark, ip: ip);
         #endregion
     }
 }

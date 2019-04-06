@@ -6,19 +6,14 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Reflection;
-using NewLife.Web;
 using XCode.DataAccessLayer;
 using XCode.Membership;
-using XCode.Service;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using NewLife.Cube.Extensions;
 #else
 using System.Web;
 using System.Web.Mvc;
-#endif
-#if NET4
-using Task = System.Threading.Tasks.TaskEx;
 #endif
 
 namespace NewLife.Cube.Admin.Controllers
@@ -32,10 +27,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
-        static DbController()
-        {
-            MenuOrder = 26;
-        }
+        static DbController() => MenuOrder = 26;
 
         /// <summary>数据库列表</summary>
         /// <returns></returns>
@@ -165,10 +157,7 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         #region 日志
-        private static void WriteLog(String action, String remark, String ip = null)
-        {
-            LogProvider.Provider.WriteLog(typeof(DbController), action, remark, ip: ip);
-        }
+        private static void WriteLog(String action, String remark, String ip = null) => LogProvider.Provider.WriteLog(typeof(DbController), action, remark, ip: ip);
         #endregion
     }
 }

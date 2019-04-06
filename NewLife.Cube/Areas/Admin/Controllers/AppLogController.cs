@@ -12,7 +12,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>应用日志</summary>
     [DisplayName("应用日志")]
     [Area("Admin")]
-    public class AppLogController : EntityController<AppLog>
+    public class AppLogController : ReadOnlyEntityController<AppLog>
     {
         /// <summary>菜单不可见</summary>
         /// <param name="menu"></param>

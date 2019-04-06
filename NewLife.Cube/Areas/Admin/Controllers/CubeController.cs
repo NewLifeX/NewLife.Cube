@@ -8,9 +8,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class CubeController : ConfigController<Setting>
     {
-        static CubeController()
-        {
-            MenuOrder = 34;
-        }
+        static CubeController() => MenuOrder = 34;
     }
 }
