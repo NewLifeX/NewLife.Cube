@@ -296,7 +296,7 @@ namespace NewLife.Cube
             if (p != null)
             {
                 p.PageIndex = 1;
-                p.PageSize = 100000;
+                p.PageSize = 100_000;
                 // 不要查记录数
                 p.RetrieveTotalCount = false;
 
@@ -335,6 +335,9 @@ namespace NewLife.Cube
 #else
             var url = Request.UrlReferrer + "";
 #endif
+
+            var p = new Pager(GetSession<Pager>(CacheKey));
+            if (p != null && p.Params.Count > 0) return JsonError("当前带有查询参数，为免误解，禁止全表清空！");
 
             var count = Entity<TEntity>.Meta.Session.Truncate();
 
