@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Web;
+using XCode;
 using XLog = XCode.Membership.Log;
 
 namespace NewLife.Cube.Admin.Controllers
@@ -26,6 +27,30 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        protected override IEnumerable<XLog> Search(Pager p) => XLog.Search(p["Q"], p["userid"].ToInt(-1), p["category"], p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p);
+        protected override IEnumerable<XLog> Search(Pager p)
+        {
+            var key = p["Q"];
+            var userid = p["userid"].ToInt(-1);
+            var category = p["category"];
+            var start = p["dtStart"].ToDateTime();
+            var end = p["dtEnd"].ToDateTime();
+
+            // 附近日志
+            if (key.IsNullOrEmpty() && userid < 0 && category.IsNullOrEmpty() && start.Year < 2000 && end.Year < 2000)
+            {
+                var id = p["id"].ToInt();
+                var act = p["act"];
+                if (act == "near" && id > 0)
+                {
+                    var range = p["range"].ToInt();
+                    if (range <= 0) range = 10;
+
+                    var exp = XLog._.ID >= id - range & XLog._.ID < id + range;
+                    return XLog.FindAll(exp, p);
+                }
+            }
+
+            return XLog.Search(key, userid, category, start, end, p);
+        }
     }
 }

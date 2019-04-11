@@ -283,16 +283,20 @@ WriteAttribute("href", Tuple.Create(" href=\"", 1595), Tuple.Create("\"", 1642)
 , 1602), false)
 );
 
-WriteLiteral(">时间</a></th>\r\n");
+WriteLiteral(">时间</a></th>\r\n            <th");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">附近</th>\r\n");
 
             
-            #line 32 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 33 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
             
             
             #line default
             #line hidden
             
-            #line 32 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 33 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
              if (this.Has(PermissionFlags.Detail))
             {
 
@@ -308,7 +312,7 @@ WriteLiteral(" style=\"min-width:100px;\"");
 WriteLiteral(">操作</th>\r\n");
 
             
-            #line 35 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 36 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
             }
 
             
@@ -317,13 +321,13 @@ WriteLiteral(">操作</th>\r\n");
 WriteLiteral("        </tr>\r\n    </thead>\r\n    <tbody>\r\n");
 
             
-            #line 39 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 40 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
         
             
             #line default
             #line hidden
             
-            #line 39 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 40 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
          foreach (var entity in Model)
         {
 
@@ -333,13 +337,13 @@ WriteLiteral("        </tr>\r\n    </thead>\r\n    <tbody>\r\n");
 WriteLiteral("            <tr>\r\n");
 
             
-            #line 42 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 43 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                 
             
             #line default
             #line hidden
             
-            #line 42 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 43 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                  if (set.EnableSelect)
                 {
 
@@ -356,20 +360,20 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 2061), Tuple.Create("\"", 2079)
+WriteAttribute("value", Tuple.Create(" value=\"", 2106), Tuple.Create("\"", 2124)
             
-            #line 44 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 2069), Tuple.Create<System.Object, System.Int32>(entity.ID
+            #line 45 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+      , Tuple.Create(Tuple.Create("", 2114), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2069), false)
+, 2114), false)
 );
 
 WriteLiteral(" /></td>\r\n");
 
             
-            #line 45 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 46 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                 }
 
             
@@ -382,7 +386,7 @@ WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
 WriteLiteral(">");
 
             
-            #line 46 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 47 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                                                                  Write(entity.ID);
 
             
@@ -391,7 +395,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 47 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 48 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.Category);
 
             
@@ -400,7 +404,7 @@ WriteLiteral("</td>\r\n                <td>");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 48 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 49 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.Action);
 
             
@@ -411,20 +415,20 @@ WriteLiteral("</td>\r\n                <td");
 WriteLiteral(" style=\"max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellips" +
 "is;\"");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 2384), Tuple.Create("\"", 2406)
+WriteAttribute("title", Tuple.Create(" title=\"", 2429), Tuple.Create("\"", 2451)
             
-            #line 49 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-                                , Tuple.Create(Tuple.Create("", 2392), Tuple.Create<System.Object, System.Int32>(entity.Remark
+            #line 50 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+                                , Tuple.Create(Tuple.Create("", 2437), Tuple.Create<System.Object, System.Int32>(entity.Remark
             
             #line default
             #line hidden
-, 2392), false)
+, 2437), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 49 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 50 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                                                                                                                            Write(entity.Remark);
 
             
@@ -437,7 +441,7 @@ WriteLiteral(" class=\"text-right\"");
 WriteLiteral(">");
 
             
-            #line 50 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 51 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                                   Write(entity.LinkID.ToString("n0"));
 
             
@@ -446,7 +450,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 51 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 52 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.UserName);
 
             
@@ -455,7 +459,7 @@ WriteLiteral("</td>\r\n                <td>");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 52 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 53 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.CreateIP);
 
             
@@ -464,7 +468,7 @@ WriteLiteral("</td>\r\n                <td>");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 53 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 54 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.CreateIP.IPToAddress());
 
             
@@ -479,22 +483,42 @@ WriteLiteral(" style=\"max-width:150px\"");
 WriteLiteral(">");
 
             
-            #line 54 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 55 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                                                            Write(entity.CreateTime.ToFullString(""));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n");
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 2862), Tuple.Create("\"", 2901)
+, Tuple.Create(Tuple.Create("", 2869), Tuple.Create("?act=near&id=", 2869), true)
+            
+            #line 57 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 2882), Tuple.Create<System.Object, System.Int32>(entity.ID
+            
+            #line default
+            #line hidden
+, 2882), false)
+, Tuple.Create(Tuple.Create("", 2892), Tuple.Create("&range=10", 2892), true)
+);
+
+WriteLiteral(" title=\"前后10行日志\"");
+
+WriteLiteral(">附近</a>\r\n                </td>\r\n");
 
             
-            #line 55 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 59 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                 
             
             #line default
             #line hidden
             
-            #line 55 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 59 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                  if (this.Has(PermissionFlags.Detail))
                 {
 
@@ -512,7 +536,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("                        ");
 
             
-            #line 58 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 62 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                    Write(Html.Partial("_List_Data_Action", (Object)entity));
 
             
@@ -521,7 +545,7 @@ WriteLiteral("                        ");
 WriteLiteral("\r\n                    </td>\r\n");
 
             
-            #line 60 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 64 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                 }
 
             
@@ -530,7 +554,7 @@ WriteLiteral("\r\n                    </td>\r\n");
 WriteLiteral("            </tr>\r\n");
 
             
-            #line 62 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 66 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
         }
 
             
