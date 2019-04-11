@@ -17,14 +17,14 @@
             <a href="@Url.Action("ExportXml")">导出Xml</a>
         </li>
         @*<li>
-                <a href="@Url.Action("ImportXml")">导入Xml</a>
-            </li>*@
+            <a href="@Url.Action("ImportXml")">导入Xml</a>
+        </li>*@
         <li>
             <a href="@Url.Action("ExportJson")">导出Json</a>
         </li>
         @*<li>
-                <a href="@Url.Action("ImportJson")">导入Json</a>
-            </li>*@
+            <a href="@Url.Action("ImportJson")">导入Json</a>
+        </li>*@
         @if (this.Has(PermissionFlags.Delete))
         {
             <li class="divider"></li>
@@ -37,6 +37,15 @@
         }
         @if (SysConfig.Current.Develop)
         {
+            if (User.IsInRole("管理员"))
+            {
+                <li>
+                    <a href="@Url.Action("Backup")">备份</a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Restore")">还原</a>
+                </li>
+            }
             <li class="divider"></li>
             if (User.IsInRole("管理员") && (page == null || page.Params.Count == 0))
             {

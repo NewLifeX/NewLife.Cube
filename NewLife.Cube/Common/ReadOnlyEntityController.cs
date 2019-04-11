@@ -17,6 +17,7 @@ using NewLife.IO;
 using System.IO;
 using System.Xml.Serialization;
 using System.IO.Compression;
+using XCode.DataAccessLayer;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -382,7 +383,7 @@ namespace NewLife.Cube
             if (xml.Length > 4 * 1024) SetCompress();
 #endif
 
-            SetAttachment(null, ".xml");
+            SetAttachment(null, ".xml", true);
 
             return Content(xml, "text/xml", Encoding.UTF8);
         }
@@ -394,13 +395,17 @@ namespace NewLife.Cube
         /// <summary>设置附件响应方式</summary>
         /// <param name="name"></param>
         /// <param name="ext"></param>
-        protected void SetAttachment(String name, String ext)
+        /// <param name="includeTime">包含时间戳</param>
+        protected virtual void SetAttachment(String name, String ext, Boolean includeTime)
         {
             if (name.IsNullOrEmpty()) name = GetType().GetDisplayName();
             if (name.IsNullOrEmpty()) name = Factory.EntityType.GetDisplayName();
             if (name.IsNullOrEmpty()) name = Factory.Table.DataTable.DisplayName;
             if (name.IsNullOrEmpty()) name = GetType().Name.TrimEnd("Controller");
             if (!ext.IsNullOrEmpty()) ext = ext.EnsureStart(".");
+
+            if (includeTime) name += "_{0:yyyyMMddHHmmss}".F(DateTime.Now);
+
             name += ext;
             name = HttpUtility.UrlEncode(name, Encoding.UTF8);
 
@@ -422,7 +427,7 @@ namespace NewLife.Cube
             if (json.Length > 4 * 1024) SetCompress();
 #endif
 
-            SetAttachment(null, ".json");
+            SetAttachment(null, ".json", true);
 
             return Content(json, "application/json", Encoding.UTF8);
         }
@@ -466,20 +471,20 @@ namespace NewLife.Cube
                 if (p.TotalCount > 10_000) buffer = false;
             }
 
-            var name = GetType().GetDisplayName()
-                ?? Factory.EntityType.GetDisplayName()
-                ?? Factory.Table.DataTable.DisplayName
-                ?? Factory.EntityType.Name;
+            //var name = GetType().GetDisplayName()
+            //    ?? Factory.EntityType.GetDisplayName()
+            //    ?? Factory.Table.DataTable.DisplayName
+            //    ?? Factory.EntityType.Name;
 
-            var fileName = "{0}_{1:yyyyMMddHHmmss}.csv".F(name, DateTime.Now);
-
+            //var fileName = "{0}_{1:yyyyMMddHHmmss}.csv".F(name, DateTime.Now);
+            SetAttachment(null, ".csv", true);
 
 #if __CORE__
             var rs = Response;
             var headers = rs.Headers;
             headers[HeaderNames.ContentEncoding] = "UTF8";
-            headers[HeaderNames.ContentDisposition] = 
-                "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8);
+            //headers[HeaderNames.ContentDisposition] = 
+            //    "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8);
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
             
             var data = ExportData(1_000_000);
@@ -488,7 +493,7 @@ namespace NewLife.Cube
             var rs = Response;
             rs.Charset = "UTF-8";
             rs.ContentEncoding = Encoding.UTF8;
-            rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8));
+            //rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8));
             rs.ContentType = "application/vnd.ms-excel";
 
             if (buffer) SetCompress();
@@ -541,6 +546,34 @@ namespace NewLife.Cube
                     csv.WriteLine(ds);
                 }
             }
+        }
+
+        /// <summary>导出Json</summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        [DisplayName("导出")]
+        public virtual ActionResult Backup()
+        {
+            var fact = Factory;
+            var dal = fact.Session.Dal;
+
+            SetAttachment(null, ".zip", true);
+
+            //todo 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
+            //var ms = Response.OutputStream;
+            //using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
+            //{
+            //    dal.Backup(fact.FormatedTableName, gs);
+            //}
+            var ms = new MemoryStream();
+            dal.Backup(fact.FormatedTableName, ms);
+
+            ms.Position = 0;
+            var ms2 = ms.CompressGZip();
+
+            ms2.Position = 0;
+            return File(ms2,"application/gzip");
+            //return new EmptyResult();
         }
         #endregion
 

@@ -105,14 +105,14 @@ WriteLiteral(">导出Xml</a>\r\n        </li>\r\n        ");
 
 WriteLiteral("\r\n        <li>\r\n            <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 747), Tuple.Create("\"", 779)
+WriteAttribute("href", Tuple.Create(" href=\"", 739), Tuple.Create("\"", 771)
             
             #line 23 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 754), Tuple.Create<System.Object, System.Int32>(Url.Action("ExportJson")
+, Tuple.Create(Tuple.Create("", 746), Tuple.Create<System.Object, System.Int32>(Url.Action("ExportJson")
             
             #line default
             #line hidden
-, 754), false)
+, 746), false)
 );
 
 WriteLiteral(">导出Json</a>\r\n        </li>\r\n        ");
@@ -141,14 +141,14 @@ WriteLiteral("></li>\r\n");
 
 WriteLiteral("            <li>\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1043), Tuple.Create("\"", 1077)
+WriteAttribute("href", Tuple.Create(" href=\"", 1027), Tuple.Create("\"", 1061)
             
             #line 32 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 1050), Tuple.Create<System.Object, System.Int32>(Url.Action("DeleteSelect")
+, Tuple.Create(Tuple.Create("", 1034), Tuple.Create<System.Object, System.Int32>(Url.Action("DeleteSelect")
             
             #line default
             #line hidden
-, 1050), false)
+, 1034), false)
 );
 
 WriteLiteral(" data-action=\"action\"");
@@ -163,14 +163,14 @@ WriteLiteral(">删除选中</a>\r\n            </li>\r\n");
 
 WriteLiteral("            <li>\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1236), Tuple.Create("\"", 1267)
+WriteAttribute("href", Tuple.Create(" href=\"", 1220), Tuple.Create("\"", 1251)
             
             #line 35 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 1243), Tuple.Create<System.Object, System.Int32>(Url.Action("DeleteAll")
+, Tuple.Create(Tuple.Create("", 1227), Tuple.Create<System.Object, System.Int32>(Url.Action("DeleteAll")
             
             #line default
             #line hidden
-, 1243), false)
+, 1227), false)
 );
 
 WriteLiteral(" data-action=\"action\"");
@@ -194,6 +194,43 @@ WriteLiteral("        ");
             #line 38 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
          if (SysConfig.Current.Develop)
         {
+            if (User.IsInRole("管理员"))
+            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                <li>\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 1526), Tuple.Create("\"", 1554)
+            
+            #line 43 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 1533), Tuple.Create<System.Object, System.Int32>(Url.Action("Backup")
+            
+            #line default
+            #line hidden
+, 1533), false)
+);
+
+WriteLiteral(">备份</a>\r\n                </li>\r\n");
+
+WriteLiteral("                <li>\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 1631), Tuple.Create("\"", 1660)
+            
+            #line 46 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 1638), Tuple.Create<System.Object, System.Int32>(Url.Action("Restore")
+            
+            #line default
+            #line hidden
+, 1638), false)
+);
+
+WriteLiteral(">还原</a>\r\n                </li>\r\n");
+
+            
+            #line 48 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+            }
 
             
             #line default
@@ -205,7 +242,7 @@ WriteLiteral(" class=\"divider\"");
 WriteLiteral("></li>\r\n");
 
             
-            #line 41 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+            #line 50 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
             if (User.IsInRole("管理员") && (page == null || page.Params.Count == 0))
             {
 
@@ -214,14 +251,14 @@ WriteLiteral("></li>\r\n");
             #line hidden
 WriteLiteral("                <li>\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1625), Tuple.Create("\"", 1652)
+WriteAttribute("href", Tuple.Create(" href=\"", 1889), Tuple.Create("\"", 1916)
             
-            #line 44 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 1632), Tuple.Create<System.Object, System.Int32>(Url.Action("Clear")
+            #line 53 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 1896), Tuple.Create<System.Object, System.Int32>(Url.Action("Clear")
             
             #line default
             #line hidden
-, 1632), false)
+, 1896), false)
 );
 
 WriteLiteral(" data-action=\"action\"");
@@ -233,7 +270,7 @@ WriteLiteral(" title=\"删除数据表所有数据\"");
 WriteLiteral(">清空数据表</a>\r\n                </li>\r\n");
 
             
-            #line 46 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+            #line 55 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
             }
             if (ViewHelper.IsDevelop())
             {
@@ -243,34 +280,34 @@ WriteLiteral(">清空数据表</a>\r\n                </li>\r\n");
             #line hidden
 WriteLiteral("                <li>\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1882), Tuple.Create("\"", 1912)
+WriteAttribute("href", Tuple.Create(" href=\"", 2146), Tuple.Create("\"", 2176)
             
-            #line 50 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 1889), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeList")
+            #line 59 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 2153), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeList")
             
             #line default
             #line hidden
-, 1889), false)
+, 2153), false)
 );
 
 WriteLiteral(">生成列表</a>\r\n                </li>\r\n");
 
 WriteLiteral("                <li>\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1991), Tuple.Create("\"", 2021)
+WriteAttribute("href", Tuple.Create(" href=\"", 2255), Tuple.Create("\"", 2285)
             
-            #line 53 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 1998), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeForm")
+            #line 62 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 2262), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeForm")
             
             #line default
             #line hidden
-, 1998), false)
+, 2262), false)
 );
 
 WriteLiteral(">生成表单</a>\r\n                </li>\r\n");
 
             
-            #line 55 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+            #line 64 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
             }
         }
 
