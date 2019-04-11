@@ -114,14 +114,14 @@ WriteLiteral(">\r\n");
             #line hidden
             
             #line 19 "..\..\Views\Shared\_List_Toolbar.cshtml"
-           Write(Html.ActionLink("添加" + ViewContext.Controller.GetType().GetDisplayName(), "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary()));
+           Write(Html.ActionLink("添加", "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary()));
 
             
             #line default
             #line hidden
             
             #line 19 "..\..\Views\Shared\_List_Toolbar.cshtml"
-                                                                                                                                                               
+                                                                                                           
             }
 
             
