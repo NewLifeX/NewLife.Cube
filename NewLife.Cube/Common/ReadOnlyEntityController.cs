@@ -548,11 +548,42 @@ namespace NewLife.Cube
             }
         }
 
-        /// <summary>导出Json</summary>
+        /// <summary>备份到服务器本地目录</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
-        [DisplayName("导出")]
+        [DisplayName("备份")]
         public virtual ActionResult Backup()
+        {
+            var fact = Factory;
+            var dal = fact.Session.Dal;
+
+            var name = fact.EntityType.Name;
+            var fileName = "{0}_{1:yyyyMMddHHmmss}.zip".F(name, DateTime.Now);
+
+            //todo 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
+            //var ms = Response.OutputStream;
+            //using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
+            //{
+            //    dal.Backup(fact.FormatedTableName, gs);
+            //}
+            try
+            {
+                var bak = XCode.Setting.Current.BackupPath.CombinePath(fileName);
+                var rs = dal.Backup(bak);
+
+                return JsonOK($"备份[{fileName}]（{rs:n0}字节）成功！");
+            }
+            catch (Exception ex)
+            {
+                return JsonError(null, ex);
+            }
+        }
+
+        /// <summary>从服务器本地目录还原</summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Insert)]
+        [DisplayName("还原")]
+        public virtual ActionResult Restore()
         {
             var fact = Factory;
             var dal = fact.Session.Dal;
@@ -572,7 +603,36 @@ namespace NewLife.Cube
             var ms2 = ms.CompressGZip();
 
             ms2.Position = 0;
-            return File(ms2,"application/gzip");
+            return File(ms2, "application/gzip");
+            //return new EmptyResult();
+        }
+
+        /// <summary>备份导出</summary>
+        /// <remarks>备份并下载</remarks>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        [DisplayName("导出")]
+        public virtual ActionResult BackupAndExport()
+        {
+            var fact = Factory;
+            var dal = fact.Session.Dal;
+
+            SetAttachment(null, ".zip", true);
+
+            //todo 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
+            //var ms = Response.OutputStream;
+            //using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
+            //{
+            //    dal.Backup(fact.FormatedTableName, gs);
+            //}
+            var ms = new MemoryStream();
+            dal.Backup(fact.FormatedTableName, ms);
+
+            ms.Position = 0;
+            var ms2 = ms.CompressGZip();
+
+            ms2.Position = 0;
+            return File(ms2, "application/gzip");
             //return new EmptyResult();
         }
         #endregion
