@@ -18,6 +18,7 @@ using System.IO;
 using System.Xml.Serialization;
 using System.IO.Compression;
 using XCode.DataAccessLayer;
+using NewLife.Log;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -573,10 +574,11 @@ namespace NewLife.Cube
                     rs = dal.Backup(fact.FormatedTableName, gs);
                 }
 
-                return JsonOK($"备份[{fileName}]（{rs:n0}字节）成功！");
+                return JsonOK($"备份[{fileName}]（{rs:n0}行）成功！");
             }
             catch (Exception ex)
             {
+                XTrace.WriteException(ex);
                 return JsonError(ex);
             }
         }
@@ -587,26 +589,32 @@ namespace NewLife.Cube
         [DisplayName("还原")]
         public virtual ActionResult Restore()
         {
-            var fact = Factory;
-            var dal = fact.Session.Dal;
+            try
+            {
+                var fact = Factory;
+                var dal = fact.Session.Dal;
 
-            SetAttachment(null, ".zip", true);
+                var name = fact.EntityType.Name;
+                var fileName = "{0}_*.gz".F(name);
 
-            //todo 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
-            //var ms = Response.OutputStream;
-            //using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
-            //{
-            //    dal.Backup(fact.FormatedTableName, gs);
-            //}
-            var ms = new MemoryStream();
-            dal.Backup(fact.FormatedTableName, ms);
+                var di = XCode.Setting.Current.BackupPath.AsDirectory();
+                var fi = di?.GetFiles(fileName)?.LastOrDefault();
+                if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
 
-            ms.Position = 0;
-            var ms2 = ms.CompressGZip();
+                var rs = 0;
+                using (var fs = fi.OpenRead())
+                using (var gs = new GZipStream(fs, CompressionMode.Decompress))
+                {
+                    rs = dal.Restore(gs, fact.Table.DataTable);
+                }
 
-            ms2.Position = 0;
-            return File(ms2, "application/gzip");
-            //return new EmptyResult();
+                return JsonOK($"恢复[{fileName}]（{rs:n0}行）成功！");
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+                return JsonError(ex);
+            }
         }
 
         /// <summary>备份导出</summary>
@@ -642,6 +650,7 @@ namespace NewLife.Cube
             }
             catch (Exception ex)
             {
+                XTrace.WriteException(ex);
                 return JsonError(ex);
             }
         }

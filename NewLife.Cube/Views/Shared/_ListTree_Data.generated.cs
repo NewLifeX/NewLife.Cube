@@ -399,7 +399,7 @@ WriteLiteral(">\r\n");
             #line hidden
             
             #line 71 "..\..\Views\Shared\_ListTree_Data.cshtml"
-                     if (p != null && entity != p.Childs[p.Childs.Count - 1])
+                     if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[p.Childs.Count - 1])
                     {
 
             
@@ -407,14 +407,14 @@ WriteLiteral(">\r\n");
             #line hidden
 WriteLiteral("                        <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 3028), Tuple.Create("\"", 3066)
+WriteAttribute("href", Tuple.Create(" href=\"", 3070), Tuple.Create("\"", 3108)
             
             #line 73 "..\..\Views\Shared\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 3035), Tuple.Create<System.Object, System.Int32>(Url.Action("Down", new { id })
+, Tuple.Create(Tuple.Create("", 3077), Tuple.Create<System.Object, System.Int32>(Url.Action("Down", new { id })
             
             #line default
             #line hidden
-, 3035), false)
+, 3077), false)
 );
 
 WriteLiteral("><span");
