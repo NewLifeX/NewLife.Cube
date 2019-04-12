@@ -554,28 +554,30 @@ namespace NewLife.Cube
         [DisplayName("备份")]
         public virtual ActionResult Backup()
         {
-            var fact = Factory;
-            var dal = fact.Session.Dal;
-
-            var name = fact.EntityType.Name;
-            var fileName = "{0}_{1:yyyyMMddHHmmss}.zip".F(name, DateTime.Now);
-
-            //todo 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
-            //var ms = Response.OutputStream;
-            //using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
-            //{
-            //    dal.Backup(fact.FormatedTableName, gs);
-            //}
             try
             {
-                var bak = XCode.Setting.Current.BackupPath.CombinePath(fileName);
-                var rs = dal.Backup(bak);
+                var fact = Factory;
+                if (fact.Count > 10_000_000) throw new XException($"数据量[{fact.Count:n0}>10_000_000]，禁止备份！");
+
+                var dal = fact.Session.Dal;
+
+                var name = fact.EntityType.Name;
+                var fileName = "{0}_{1:yyyyMMddHHmmss}.gz".F(name, DateTime.Now);
+                var bak = XCode.Setting.Current.BackupPath.CombinePath(fileName).GetFullPath();
+                bak.EnsureDirectory(true);
+
+                var rs = 0;
+                using (var fs = new FileStream(bak, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
+                using (var gs = new GZipStream(fs, CompressionLevel.Optimal))
+                {
+                    rs = dal.Backup(fact.FormatedTableName, gs);
+                }
 
                 return JsonOK($"备份[{fileName}]（{rs:n0}字节）成功！");
             }
             catch (Exception ex)
             {
-                return JsonError(null, ex);
+                return JsonError(ex);
             }
         }
 
@@ -614,26 +616,34 @@ namespace NewLife.Cube
         [DisplayName("导出")]
         public virtual ActionResult BackupAndExport()
         {
-            var fact = Factory;
-            var dal = fact.Session.Dal;
+            try
+            {
+                var fact = Factory;
+                if (fact.Count > 10_000_000) throw new XException($"数据量[{fact.Count:n0}>10_000_000]，禁止备份！");
+                var dal = fact.Session.Dal;
 
-            SetAttachment(null, ".zip", true);
+                SetAttachment(null, ".gz", true);
 
-            //todo 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
-            //var ms = Response.OutputStream;
-            //using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
-            //{
-            //    dal.Backup(fact.FormatedTableName, gs);
-            //}
-            var ms = new MemoryStream();
-            dal.Backup(fact.FormatedTableName, ms);
+                // 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
+                var ms = Response.OutputStream;
+                using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
+                {
+                    dal.Backup(fact.FormatedTableName, gs);
+                }
+                //var ms = new MemoryStream();
+                //dal.Backup(fact.FormatedTableName, ms);
 
-            ms.Position = 0;
-            var ms2 = ms.CompressGZip();
+                //ms.Position = 0;
+                //var ms2 = ms.CompressGZip();
 
-            ms2.Position = 0;
-            return File(ms2, "application/gzip");
-            //return new EmptyResult();
+                //ms2.Position = 0;
+                //return File(ms2, "application/gzip");
+                return new EmptyResult();
+            }
+            catch (Exception ex)
+            {
+                return JsonError(ex);
+            }
         }
         #endregion
 

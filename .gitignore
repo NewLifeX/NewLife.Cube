@@ -53,3 +53,9 @@ bld/
 /CubeDemo/Config
 /CubeDemo/Content
 /CubeDemo/Plugins
+/CubeDemo/Entity/Model.xml
+/CubeDemo/Entity/Build.tt
+/CubeDemo/Entity/Build.cs
+/NewLife.Cube/Entity/Build.cs
+/NewLife.Cube/Entity/Model.xml
+/NewLife.Cube/Entity/Build.tt

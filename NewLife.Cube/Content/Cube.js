@@ -89,7 +89,7 @@ function doAction(methodName, actionUrl, actionParamter) {
         dataType: 'json',
         data: actionParamter,
         error: function (ex) {
-            tips('请求异常！', 0, 1000);
+            tips('请求异常！' + ex, 0, 2000);
             //console.log(ex);
         },
         beforeSend: function () {
@@ -101,7 +101,7 @@ function doAction(methodName, actionUrl, actionParamter) {
         complete: function (result) {
             var rs = result.responseJSON;
             if (rs.data && rs.data.length > 0) {
-                tips(rs.data, 0, 1000);
+                tips(rs.data, 0, 3000);
             }
             if (rs.url && rs.url.length > 0) {
                 if (rs.url == '[refresh]') {
