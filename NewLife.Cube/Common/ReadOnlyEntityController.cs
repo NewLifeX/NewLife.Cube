@@ -487,7 +487,7 @@ namespace NewLife.Cube
             //headers[HeaderNames.ContentDisposition] = 
             //    "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8);
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
-            
+
             var data = ExportData(1_000_000);
             OnExportExcel(fs, data, rs.Body);
 #else
@@ -633,7 +633,11 @@ namespace NewLife.Cube
                 SetAttachment(null, ".gz", true);
 
                 // 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
+#if __CORE__
+                var ms = Response.Body;
+#else
                 var ms = Response.OutputStream;
+#endif
                 using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
                 {
                     dal.Backup(fact.FormatedTableName, gs);

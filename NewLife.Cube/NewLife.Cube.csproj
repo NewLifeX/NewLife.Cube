@@ -58,7 +58,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NewLife.Core, Version=8.1.7041.18565, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.1.2019.412\lib\net45\NewLife.Core.dll</HintPath>
+      <HintPath>..\packages\NewLife.Core.8.1.2019.415\lib\net45\NewLife.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -94,7 +96,9 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="XCode, Version=9.11.7041.18582, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.11.2019.412\lib\net45\XCode.dll</HintPath>
+      <HintPath>..\packages\NewLife.XCode.9.11.2019.415\lib\net45\XCode.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -686,7 +690,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>XCoder.log</LastGenOutput>
     </None>
-    <Content Include="libman.json" />
     <None Include="Scripts\ApiClient.js" />
     <None Include="Scripts\WebSocketX.js" />
     <None Include="Areas\Admin\Views\File\Index.cshtml">
