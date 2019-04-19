@@ -119,13 +119,22 @@ namespace NewLife.School.Entity
             return Find(_.ID == id);
         }
 
+        /// <summary>根据名称查找</summary>
+        /// <param name="name"></param>
+        /// <returns>学生对象</returns>
+        public static Student FindByName(String name)
+        {
+            if (name.IsNullOrEmpty()) return null;
+
+            return Find(_.Name == name);
+        }
+
         /// <summary>根据班级查找</summary>
         /// <param name="classid">班级</param>
-        /// <returns>实体列表</returns>
+        /// <returns>实体列表，没有数据时返回空列表而不是null</returns>
         public static IList<Student> FindAllByClassID(Int32 classid)
         {
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.ClassID == classid);
+            if (classid <= 0) return new List<Student>();
 
             return FindAll(_.ClassID == classid);
         }
