@@ -106,6 +106,16 @@
     <Compile Include="Areas\School\Controllers\StudentController.cs" />
     <Compile Include="Areas\School\Controllers\ClassController.cs" />
     <Compile Include="Areas\School\SchoolAreaRegistration.cs" />
+    <Compile Include="Areas\School\Views\Trade\_List_Toolbar_Batch.generated.cs">
+      <DependentUpon>_List_Toolbar_Batch.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Areas\School\Views\Class\_List_Toolbar_Batch.generated.cs">
+      <DependentUpon>_List_Toolbar_Batch.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Areas\School\Views\Shared\_Ace_Layout_Nav.generated.cs">
       <DependentUpon>_Ace_Layout_Nav.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -123,6 +133,11 @@
     </Compile>
     <Compile Include="Areas\School\Views\Student\_List_Search.generated.cs">
       <DependentUpon>_List_Search.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Areas\School\Views\Student\_List_Toolbar_Batch.generated.cs">
+      <DependentUpon>_List_Toolbar_Batch.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -172,6 +187,18 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
     </Content>
+    <Content Include="Areas\School\Views\Class\_List_Toolbar_Batch.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Toolbar_Batch.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Areas\School\Views\Student\_List_Toolbar_Batch.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Toolbar_Batch.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Areas\School\Views\Trade\_List_Toolbar_Batch.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Toolbar_Batch.generated.cs</LastGenOutput>
+    </Content>
     <None Include="packages.config" />
     <Content Include="Views\Shared\_Ace_Layout_Nav.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -181,7 +208,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\School\Models\" />
-    <Folder Include="Areas\School\Views\Class\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NewLife.Cube\NewLife.Cube.csproj">

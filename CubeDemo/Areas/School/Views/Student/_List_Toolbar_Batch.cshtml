@@ -1,0 +1,7 @@
+﻿@using NewLife.Common;
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var fact = ViewBag.Factory as IEntityOperate;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+@Html.ActionLink("生成模拟数据", "MakeData", null, new { @class = "btn btn-purple btn-sm" })
