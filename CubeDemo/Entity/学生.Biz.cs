@@ -21,6 +21,11 @@ namespace NewLife.School.Entity
             Meta.Modules.Add<UserModule>();
             Meta.Modules.Add<TimeModule>();
             Meta.Modules.Add<IPModule>();
+
+            // 设置从键缓存
+            var sc = Meta.SingleCache;
+            sc.FindSlaveKeyMethod = k => Find(_.Name == k);
+            sc.GetSlaveKeyMethod = e => e.Name;
         }
 
         /// <summary>验证数据，通过抛出异常的方式提示验证失败。</summary>
@@ -126,7 +131,10 @@ namespace NewLife.School.Entity
         {
             if (name.IsNullOrEmpty()) return null;
 
-            return Find(_.Name == name);
+            // 单对象缓存
+            return Meta.SingleCache.GetItemWithSlaveKey(name) as Student;
+
+            //return Find(_.Name == name);
         }
 
         /// <summary>根据班级查找</summary>
