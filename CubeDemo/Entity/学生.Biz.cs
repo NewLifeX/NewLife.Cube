@@ -149,6 +149,15 @@ namespace NewLife.School.Entity
 
             return FindAll(exp, page);
         }
+
+        public static IList<Student> Search(SexKinds sex, String className, PageParameter page)
+        {
+            var exp = new WhereExpression();
+            if (sex >= SexKinds.未知) exp &= _.Sex == sex;
+            if (!className.IsNullOrEmpty()) exp &= _.ClassID.In(Class.FindSQLWithKey(Class._.Name == className));
+
+            return FindAll(exp, page);
+        }
         #endregion
 
         #region 业务操作
