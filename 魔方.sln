@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Others", "Others", "{32891F65-FBA1-42B2-918E-61F3A9623F2A}"
 	ProjectSection(SolutionItems) = preProject
@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.CubeNC", "NewLife.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CubeDemo", "CubeDemo\CubeDemo.csproj", "{188BFE7C-542D-4C9B-98BB-EFEA95C2CCDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CubeDemoNC", "CubeDemoNC\CubeDemoNC.csproj", "{C9830F6C-8EB3-4115-A7CA-821F02349E3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CubeDemoNC", "CubeDemoNC\CubeDemoNC.csproj", "{C9830F6C-8EB3-4115-A7CA-821F02349E3B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{C9830F6C-8EB3-4115-A7CA-821F02349E3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9830F6C-8EB3-4115-A7CA-821F02349E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9830F6C-8EB3-4115-A7CA-821F02349E3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

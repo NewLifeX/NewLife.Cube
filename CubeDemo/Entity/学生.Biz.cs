@@ -114,9 +114,9 @@ namespace NewLife.School.Entity
             if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
 
             // 单对象缓存
-            //return Meta.SingleCache[id];
+            return Meta.SingleCache[id];
 
-            return Find(_.ID == id);
+            //return Find(_.ID == id);
         }
 
         /// <summary>根据名称查找</summary>
