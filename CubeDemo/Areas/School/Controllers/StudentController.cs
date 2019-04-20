@@ -32,7 +32,10 @@ namespace CubeDemo.Areas.School.Controllers
             {
                 var entity = new Student
                 {
-                    Name = Rand.NextString(8)
+                    ClassID = Rand.Next(5),
+                    Name = Rand.NextString(8),
+                    Sex = (SexKinds)Rand.Next(1, 3),
+                    Age = Rand.Next(100),
                 };
 
                 list.Add(entity);
