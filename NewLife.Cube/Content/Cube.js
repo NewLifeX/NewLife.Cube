@@ -46,16 +46,26 @@ $(function () {
 
 function doClickAction($this) {
     var fields = $this.data('fields');
+    // 自定义属性
+    var customdata = $this.data('cdata');
+    var datalength = 0;
     //参数
     var parameter = '';
     if (fields && fields.length > 0) {
         var fieldArr = fields.split(',');
         for (var i = 0; i < fieldArr.length; i++) {
             var detailArr = $('[name=' + fieldArr[i] + ']');
+            var params = detailArr.serialize();
+            datalength = params.split('&').length;
             //不对name容器标签进行限制，直接进行序列化
             //如果有特殊需求，可以再指定筛选器进行筛选
-            parameter += ((parameter.length > 0 ? '&' : '') + detailArr.serialize());
+            parameter += ((parameter.length > 0 ? '&' : '') + params);
         }
+    }
+    // 设置自定义数据
+    if (customdata) {
+        datalength += customdata.split('&').length;
+        parameter += ((parameter.length > 0 ? '&' : '') + customdata);
     }
 
     //method
@@ -72,20 +82,24 @@ function doClickAction($this) {
             curl = $this.attr('href');
         }
     }
-    doAction(method, curl, parameter);
+    doAction(method, curl, parameter, datalength);
 }
 
 //ajax请求 methodName 指定GET与POST
-function doAction(methodName, actionUrl, actionParamter) {
+function doAction(methodName, actionUrl, actionParamter, datalength) {
     if (!methodName || methodName.length <= 0 || !actionUrl || actionUrl.length <= 0) {
         tips('请求参数异常，请保证请求的地址跟参数正确！', 0, 1000);
         return;
     }
+    var methodKind = datalength > 10 ? 'post' : 'get';
+    console.log('长度' + datalength);
+    console.log(methodKind);
 
     $.ajax({
         url: actionUrl,
         type: methodName,
         async: false,
+        method: methodKind,
         dataType: 'json',
         data: actionParamter,
         error: function (ex) {
