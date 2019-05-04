@@ -8,6 +8,17 @@
     var menus = Menu.Root.AllChilds;
     //var pfs = EnumHelper.GetDescriptions<PermissionFlags>().Where(e => e.Key > PermissionFlags.None);
 }
+<script type="text/javascript">
+    $(function () {
+        $('input.authorize').on('change', function () {
+            var $this = $(this);
+            var status = $this.prop('checked');
+            var childkey = $this.attr('child');
+            // 规避change 需要在失去焦点时触发的问题，设置值完成后手工再次触发该事件
+            $('input[parentkey="' + childkey + '"]').prop('checked', status).change();
+        });
+    });
+</script>
 <div class="form-group col-md-12">
     <label class="control-label col-md-2">授权</label>
     <div class="input-group col-md-10">
@@ -26,14 +37,14 @@
                     <tr>
                         <td>@entity.TreeNodeName</td>
                         <td>@entity.DisplayName</td>
-                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID))</td>
+                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID })</td>
                         <td>
                             @if (entity.Childs.Count == 0)
                             {
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
                                 {
                                     var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key))
+                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID })
                                     @Html.Label(id, item.Value)
                                     <text>&nbsp;</text>
                                 }

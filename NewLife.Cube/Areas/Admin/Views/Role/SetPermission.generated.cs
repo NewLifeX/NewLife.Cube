@@ -71,7 +71,22 @@ namespace ASP
             
             #line default
             #line hidden
-WriteLiteral("\r\n<div");
+WriteLiteral("\r\n<script");
+
+WriteLiteral(" type=\"text/javascript\"");
+
+WriteLiteral(@">
+    $(function () {
+        $('input.authorize').on('change', function () {
+            var $this = $(this);
+            var status = $this.prop('checked');
+            var childkey = $this.attr('child');
+            // 规避change 需要在失去焦点时触发的问题，设置值完成后手工再次触发该事件
+            $('input[parentkey=""' + childkey + '""]').prop('checked', status).change();
+        });
+    });
+</script>
+<div");
 
 WriteLiteral(" class=\"form-group col-md-12\"");
 
@@ -93,13 +108,13 @@ WriteLiteral(">\r\n            <thead>\r\n                <tr>\r\n              
 "ody>\r\n");
 
             
-            #line 24 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 35 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                 
             
             #line default
             #line hidden
             
-            #line 24 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 35 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                  foreach (var entity in menus)
                 {
 
@@ -109,7 +124,7 @@ WriteLiteral(">\r\n            <thead>\r\n                <tr>\r\n              
 WriteLiteral("                    <tr>\r\n                        <td>");
 
             
-            #line 27 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 38 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                        Write(entity.TreeNodeName);
 
             
@@ -118,7 +133,7 @@ WriteLiteral("                    <tr>\r\n                        <td>");
 WriteLiteral("</td>\r\n                        <td>");
 
             
-            #line 28 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 39 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                        Write(entity.DisplayName);
 
             
@@ -127,8 +142,8 @@ WriteLiteral("</td>\r\n                        <td>");
 WriteLiteral("</td>\r\n                        <td>");
 
             
-            #line 29 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
-                       Write(Html.CheckBox("p" + entity.ID, role.Has(entity.ID)));
+            #line 40 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+                       Write(Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID }));
 
             
             #line default
@@ -136,13 +151,13 @@ WriteLiteral("</td>\r\n                        <td>");
 WriteLiteral("</td>\r\n                        <td>\r\n");
 
             
-            #line 31 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 42 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                             
             
             #line default
             #line hidden
             
-            #line 31 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 42 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                              if (entity.Childs.Count == 0)
                             {
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
@@ -153,28 +168,28 @@ WriteLiteral("</td>\r\n                        <td>\r\n");
             #line default
             #line hidden
             
-            #line 36 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
-                               Write(Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key)));
+            #line 47 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+                               Write(Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID }));
 
             
             #line default
             #line hidden
             
-            #line 36 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
-                                                                                                      
+            #line 47 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+                                                                                                                                                     
                                     
             
             #line default
             #line hidden
             
-            #line 37 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 48 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                                Write(Html.Label(id, item.Value));
 
             
             #line default
             #line hidden
             
-            #line 37 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 48 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                                                                
 
             
@@ -187,7 +202,7 @@ WriteLiteral("&nbsp;");
 WriteLiteral("\r\n");
 
             
-            #line 39 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 50 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                                 }
                             }
 
@@ -197,7 +212,7 @@ WriteLiteral("\r\n");
 WriteLiteral("                        </td>\r\n                    </tr>\r\n");
 
             
-            #line 43 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
+            #line 54 "..\..\Areas\Admin\Views\Role\SetPermission.cshtml"
                 }
 
             
