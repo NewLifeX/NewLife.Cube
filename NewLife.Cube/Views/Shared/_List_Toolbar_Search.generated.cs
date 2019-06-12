@@ -42,19 +42,45 @@ namespace ASP
         }
         public override void Execute()
         {
-WriteLiteral("<div");
+            
+            #line 1 "..\..\Views\Shared\_List_Toolbar_Search.cshtml"
+  
+    var set = ViewBag.PageSetting as PageSetting;
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n<div");
 
 WriteLiteral(" class=\"input-group\"");
 
-WriteLiteral(">\r\n    <span");
+WriteLiteral(">\r\n");
+
+            
+            #line 5 "..\..\Views\Shared\_List_Toolbar_Search.cshtml"
+    
+            
+            #line default
+            #line hidden
+            
+            #line 5 "..\..\Views\Shared\_List_Toolbar_Search.cshtml"
+     if (set.EnableKey)
+    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        <span");
 
 WriteLiteral(" class=\"input-group-addon\"");
 
-WriteLiteral(">\r\n        <i");
+WriteLiteral(">\r\n            <i");
 
 WriteLiteral(" class=\"ace-icon fa fa-check\"");
 
-WriteLiteral("></i>\r\n    </span>\r\n    <input");
+WriteLiteral("></i>\r\n        </span>\r\n");
+
+WriteLiteral("        <input");
 
 WriteLiteral(" name=\"q\"");
 
@@ -62,21 +88,30 @@ WriteLiteral(" type=\"search\"");
 
 WriteLiteral(" id=\"q\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 164), Tuple.Create("\"", 185)
+WriteAttribute("value", Tuple.Create(" value=\"", 270), Tuple.Create("\"", 291)
             
-            #line 5 "..\..\Views\Shared\_List_Toolbar_Search.cshtml"
-, Tuple.Create(Tuple.Create("", 172), Tuple.Create<System.Object, System.Int32>(Request["q"]
+            #line 10 "..\..\Views\Shared\_List_Toolbar_Search.cshtml"
+, Tuple.Create(Tuple.Create("", 278), Tuple.Create<System.Object, System.Int32>(Request["q"]
             
             #line default
             #line hidden
-, 172), false)
+, 278), false)
 );
 
 WriteLiteral(" class=\"form-control\"");
 
 WriteLiteral(" placeholder=\"搜索关键字\"");
 
-WriteLiteral(" />\r\n    <span");
+WriteLiteral(" />\r\n");
+
+            
+            #line 11 "..\..\Views\Shared\_List_Toolbar_Search.cshtml"
+    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <span");
 
 WriteLiteral(" class=\"input-group-btn\"");
 
