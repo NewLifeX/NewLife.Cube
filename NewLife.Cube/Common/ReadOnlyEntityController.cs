@@ -537,14 +537,83 @@ namespace NewLife.Cube
                 csv.WriteLine(headers);
 
                 // 内容
-                foreach (var item in list)
+                foreach (var entity in list)
                 {
-                    var ds = new List<Object>();
-                    foreach (var fi in fs)
-                    {
-                        ds.Add(item[fi.Name]);
-                    }
-                    csv.WriteLine(ds);
+                    csv.WriteLine(fs.Select(e => entity[e.Name]));
+                }
+            }
+        }
+
+        /// <summary>导出Csv</summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        [DisplayName("导出")]
+        public virtual ActionResult ExportCsv()
+        {
+            // 准备需要输出的列
+            var fs = Factory.Fields.ToList();
+
+            // 要导出的数据超大时，启用流式输出
+            var buffer = true;
+            if (Factory.Count > 100_000)
+            {
+                var p = new Pager(GetSession<Pager>(CacheKey))
+                {
+                    PageSize = 1,
+                    RetrieveTotalCount = true
+                };
+                Search(p);
+
+                // 超过一万行
+                if (p.TotalCount > 10_000) buffer = false;
+            }
+
+            var name = GetType().Name.TrimEnd("Controller");
+            SetAttachment(name, ".csv", true);
+
+#if __CORE__
+            var rs = Response;
+            var headers = rs.Headers;
+            headers[HeaderNames.ContentEncoding] = "UTF8";
+            //headers[HeaderNames.ContentDisposition] = 
+            //    "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8);
+            headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+
+            var data = ExportData(1_000_000);
+            OnExportCsv(fs, data, rs.Body);
+#else
+            var rs = Response;
+            rs.Charset = "UTF-8";
+            rs.ContentEncoding = Encoding.UTF8;
+            rs.ContentType = "application/vnd.ms-excel";
+
+            if (buffer) SetCompress();
+            rs.Buffer = buffer;
+
+            var data = ExportData(1_000_000);
+            OnExportCsv(fs, data, rs.OutputStream);
+
+            rs.Flush();
+#endif
+
+            return new EmptyResult();
+        }
+
+        /// <summary>导出Csv，可重载修改要输出的列</summary>
+        /// <param name="fs">字段列表</param>
+        /// <param name="list">数据集</param>
+        /// <param name="output">输出流</param>
+        protected virtual void OnExportCsv(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
+        {
+            using (var csv = new CsvFile(output))
+            {
+                // 列头
+                csv.WriteLine(fs.Select(e => e.Name));
+
+                // 内容
+                foreach (var entity in list)
+                {
+                    csv.WriteLine(fs.Select(e => entity[e.Name]));
                 }
             }
         }

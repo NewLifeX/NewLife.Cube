@@ -11,7 +11,10 @@
 
     <ul class="dropdown-menu dropdown-info dropdown-menu-right">
         <li>
-            <a href="@Url.Action("ExportExcel")">导出Excel</a>
+            <a href="@Url.Action("ExportExcel")" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据">导出Excel</a>
+        </li>
+        <li>
+            <a href="@Url.Action("ExportCsv")" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输">导出Csv</a>
         </li>
         <li>
             <a href="@Url.Action("ExportXml")">导出Xml</a>
