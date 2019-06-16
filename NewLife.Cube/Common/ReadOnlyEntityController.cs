@@ -17,7 +17,6 @@ using NewLife.IO;
 using System.IO;
 using System.Xml.Serialization;
 using System.IO.Compression;
-using XCode.DataAccessLayer;
 using NewLife.Log;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -455,6 +454,21 @@ namespace NewLife.Cube
                 }
 
                 fs.Add(fi);
+            }
+
+            // 基本属性与扩展属性对调顺序
+            for (var i = 0; i < fs.Count; i++)
+            {
+                var fi = fs[i];
+                if (fi.OriField != null)
+                {
+                    var k = fs.IndexOf(fi.OriField);
+                    if (k >= 0)
+                    {
+                        fs[i] = fs[k];
+                        fs[k] = fi;
+                    }
+                }
             }
 
             // 要导出的数据超大时，启用流式输出
