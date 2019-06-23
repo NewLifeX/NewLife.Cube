@@ -37,9 +37,11 @@ using NewLife.Cube;
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
 [assembly: AssemblyVersion("2.8.*")]
-[assembly: AssemblyFileVersion("2.8.2019.0618")]
+[assembly: AssemblyFileVersion("2.8.2019.0623")]
 
 /*
+ * v2.8.2019.0623   增加Csv导出
+ * 
  * v2.8.2019.0602   支持备份与恢复数据
  * 
  * v2.7.2019.0406   拆分只读实体控制器，用于只读数据展示
