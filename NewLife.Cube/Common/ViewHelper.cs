@@ -353,6 +353,10 @@ namespace NewLife.Cube
             var sb = new StringBuilder();
             foreach (var item in fields)
             {
+                // 第二名称，去掉后面的数字，便于模式匹配
+                var name2 = item.Name;
+                while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) name2 = name2.Substring(0, name2.Length - 1);
+
                 // 缩进
                 sb.Append(ident);
                 if (item.PrimaryKey)
@@ -366,11 +370,25 @@ namespace NewLife.Cube
                             sb.Append(@"<td></td>");
                             break;
                         case TypeCode.Decimal:
-                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0:n2}</td>", item.Name);
+                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n2"")</td>", item.Name);
                             break;
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0:n2}</td>", item.Name);
+                            if (name2.EndsWith("Rate"))
+                            {
+                                var des = item.Description + "";
+                                if (des.Contains("百分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("万分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
+                                else
+                                    sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
+                            }
+                            else
+                            {
+                                sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n2"")</td>", item.Name);
+                            }
+                            //sb.AppendFormat(@"<td class=""text-right"">@entity.{0:n2}</td>", item.Name);
                             break;
                         case TypeCode.Byte:
                         case TypeCode.Int16:
@@ -384,6 +402,16 @@ namespace NewLife.Cube
                                 sb.Append(@"<td></td>");
                             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                                 sb.Append(@"<td></td>");
+                            else if (name2.EndsWith("Rate"))
+                            {
+                                var des = item.Description + "";
+                                if (des.Contains("百分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("万分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
+                                else
+                                    sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
+                            }
                             else
                                 sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n0"")</td>", item.Name);
                             break;

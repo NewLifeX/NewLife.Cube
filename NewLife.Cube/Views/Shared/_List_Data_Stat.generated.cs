@@ -119,6 +119,10 @@ WriteLiteral("            <td>总计</td>\r\n");
         }
         else
         {
+            // 第二名称，去掉后面的数字，便于模式匹配
+            var name2 = item.Name;
+            while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) { name2 = name2.Substring(0, name2.Length - 1); }
+
             var value = entity[item.Name];
             switch (Type.GetTypeCode(item.Type))
             {
@@ -131,7 +135,7 @@ WriteLiteral("            <td>总计</td>\r\n");
 WriteLiteral("                    <td></td>\r\n");
 
             
-            #line 31 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 35 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     break;
                 case TypeCode.Decimal:
                     var dc = (Decimal)value;
@@ -146,7 +150,7 @@ WriteLiteral(" class=\"text-right\"");
 WriteLiteral(">");
 
             
-            #line 34 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 38 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                                       Write(dc.ToString("n2"));
 
             
@@ -155,26 +159,30 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n");
 
             
-            #line 35 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 39 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     break;
                 case TypeCode.Single:
                 case TypeCode.Double:
-                    var dd = (Double)value;
-                    if (item.Name.EndsWithIgnoreCase("Rate"))
+                    if (name2.EndsWith("Rate"))
                     {
+                        var dd = (Double)value;
+                        var des = item.Description + "";
+                        if (des.Contains("百分之一")) { dd /= 100; }
+                        if (des.Contains("万分之一")) { dd /= 10000; }
+
 
             
             #line default
             #line hidden
 WriteLiteral("                        <td");
 
-WriteLiteral(" class=\"text-right\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
-            #line 41 "..\..\Views\Shared\_List_Data_Stat.cshtml"
-                                          Write(dd.ToString("p2"));
+            #line 49 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+                                           Write(dd.ToString("p2"));
 
             
             #line default
@@ -182,10 +190,11 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n");
 
             
-            #line 42 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 50 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     }
                     else
                     {
+                        var dd = (Double)value;
 
             
             #line default
@@ -197,7 +206,7 @@ WriteLiteral(" class=\"text-right\"");
 WriteLiteral(">");
 
             
-            #line 45 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 54 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                                           Write(dd.ToString("n2"));
 
             
@@ -206,7 +215,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n");
 
             
-            #line 46 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 55 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     }
                     break;
                 case TypeCode.Byte:
@@ -226,7 +235,7 @@ WriteLiteral("</td>\r\n");
 WriteLiteral("                        <td></td>\r\n");
 
             
-            #line 59 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 68 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     }
                     else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID") || item.Name.EndsWith("ID"))
                     {
@@ -237,7 +246,36 @@ WriteLiteral("                        <td></td>\r\n");
 WriteLiteral("                        <td></td>\r\n");
 
             
-            #line 63 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 72 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+                    }
+                    else if (name2.EndsWith("Rate"))
+                    {
+                        var dd = (Double)value;
+                        var des = item.Description + "";
+                        if (des.Contains("百分之一")) { dd /= 100; }
+                        if (des.Contains("万分之一")) { dd /= 10000; }
+
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">");
+
+            
+            #line 80 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+                                           Write(dd.ToString("p2"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+            
+            #line 81 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     }
                     else
                     {
@@ -252,7 +290,7 @@ WriteLiteral(" class=\"text-right\"");
 WriteLiteral(">");
 
             
-            #line 66 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 84 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                                           Write(Convert.ToInt64(value).ToString("n0"));
 
             
@@ -261,7 +299,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n");
 
             
-            #line 67 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 85 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     }
                     break;
                 case TypeCode.String:
@@ -273,7 +311,7 @@ WriteLiteral("</td>\r\n");
 WriteLiteral("                    <td></td>\r\n");
 
             
-            #line 72 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 90 "..\..\Views\Shared\_List_Data_Stat.cshtml"
                     break;
             }
         }
@@ -285,7 +323,7 @@ WriteLiteral("                    <td></td>\r\n");
 WriteLiteral("    ");
 
             
-            #line 76 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 94 "..\..\Views\Shared\_List_Data_Stat.cshtml"
      if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
     {
 
@@ -295,7 +333,7 @@ WriteLiteral("    ");
 WriteLiteral("        <td></td>\r\n");
 
             
-            #line 79 "..\..\Views\Shared\_List_Data_Stat.cshtml"
+            #line 97 "..\..\Views\Shared\_List_Data_Stat.cshtml"
     }
 
             
