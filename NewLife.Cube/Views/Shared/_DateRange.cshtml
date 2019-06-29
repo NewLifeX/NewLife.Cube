@@ -1,20 +1,20 @@
 ﻿@{
     var fmt = Model as String;
     var formatStr = !fmt.IsNullOrEmpty() ? fmt : "yyyy-MM-dd";
-    var name = fmt == "yyyy-MM-dd" ? "日期" : "时间";
+    //var name = fmt == "yyyy-MM-dd" ? "日期" : "时间";
     var p = ViewBag.Page as Pager;
 }
 <div class="form-group">
-    <label for="dtStart" class="control-label">@name：</label>
+    @*<label for="dtStart" class="control-label">@name：</label>*@
     <div class="input-group">
         <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
         <input name="dtStart" id="dtStart" value="@p["dtStart"]" dateformat="@formatStr" class="form-control form_datetime" autocomplete="off" />
     </div>
 </div>
 <div class="form-group">
-    <label for="dtEnd" class="control-label">至</label>
+    <label for="dtEnd" class="control-label">~</label>
     <div class="input-group">
-        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+        @*<span class="input-group-addon"><i class="fa fa-calendar"></i></span>*@
         <input name="dtEnd" id="dtEnd" value="@p["dtEnd"]" dateformat="@formatStr" class="form-control form_datetime" autocomplete="off" />
     </div>
 </div>
