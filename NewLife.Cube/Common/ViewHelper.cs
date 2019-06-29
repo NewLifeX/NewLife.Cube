@@ -236,6 +236,10 @@ namespace NewLife.Cube
             ident = new String(' ', 4 * 4);
             foreach (var item in fields)
             {
+                // 第二名称，去掉后面的数字，便于模式匹配
+                var name2 = item.Name;
+                while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) name2 = name2.Substring(0, name2.Length - 1);
+
                 // 缩进
                 sb.Append(ident);
                 //sb.AppendLine(@"@Html.Partial(""_List_Data_Item"", new Pair(entity, item))");
@@ -254,7 +258,7 @@ namespace NewLife.Cube
                             sb.Append(@"</td>");
                             break;
                         case TypeCode.DateTime:
-                            if (item.Name.EndsWithIgnoreCase("Date"))
+                            if (name2.EndsWith("Date"))
                                 sb.AppendFormat(@"<td>@entity.{0}.ToString(""yyyy-MM-dd"")</td>", item.Name);
                             else
                                 sb.AppendFormat(@"<td>@entity.{0}.ToFullString("""")</td>", item.Name);
@@ -264,7 +268,20 @@ namespace NewLife.Cube
                             break;
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n2"")</td>", item.Name);
+                            if (name2.EndsWith("Rate"))
+                            {
+                                var des = item.Description + "";
+                                if (des.Contains("百分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("万分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
+                                else
+                                    sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
+                            }
+                            else
+                            {
+                                sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n2"")</td>", item.Name);
+                            }
                             break;
                         case TypeCode.Byte:
                         case TypeCode.Int16:
@@ -278,6 +295,16 @@ namespace NewLife.Cube
                                 sb.AppendFormat(@"<td class=""text-center"">@entity.{0}</td>", item.Name);
                             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                                 BuildUser(item, sb);
+                            else if (name2.EndsWith("Rate"))
+                            {
+                                var des = item.Description + "";
+                                if (des.Contains("百分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("万分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
+                                else
+                                    sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
+                            }
                             else
                                 sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n0"")</td>", item.Name);
                             break;
@@ -614,7 +641,7 @@ namespace NewLife.Cube
             return _IsDevelop.Value;
         }
 
-        private static Dictionary<String, String> _logo_cache = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<String, String> _logo_cache = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
         /// <summary>获取指定名称的Logo图标</summary>
         /// <param name="name"></param>
         /// <returns></returns>

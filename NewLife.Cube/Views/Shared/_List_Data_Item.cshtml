@@ -6,6 +6,11 @@
     var item = pair.Second as FieldItem;
 
     var value = entity[item.Name];
+
+    // 第二名称，去掉后面的数字，便于模式匹配
+    var name2 = item.Name;
+    while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) { name2 = name2.Substring(0, name2.Length - 1); }
+
 }
 @if (item.IsIdentity)
 {
@@ -31,7 +36,7 @@ else
             break;
         case TypeCode.DateTime:
             var dt = (DateTime)value;
-            if (item.Name.EndsWithIgnoreCase("Date"))
+            if (name2.EndsWith("Date"))
             {
                 <td>@dt.ToString("yyyy-MM-dd")</td>
             }
@@ -46,13 +51,18 @@ else
             break;
         case TypeCode.Single:
         case TypeCode.Double:
-            var dd = (Double)value;
-            if (item.Name.EndsWithIgnoreCase("Rate"))
+            if (name2.EndsWith("Rate"))
             {
-                <td class="text-right">@dd.ToString("p2")</td>
+                var dd = (Double)value;
+                var des = item.Description + "";
+                if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("万分之一")) { dd /= 10000; }
+
+                <td class="text-center">@dd.ToString("p2")</td>
             }
             else
             {
+                var dd = (Double)value;
                 <td class="text-right">@dd.ToString("n2")</td>
             }
             break;
@@ -78,6 +88,15 @@ else
             {
                 var provider = ViewData["Provider"] as IManageProvider;
                 <td>@provider.FindByID(value)</td>
+            }
+            else if (name2.EndsWith("Rate"))
+            {
+                var dd = (Double)value;
+                var des = item.Description + "";
+                if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("万分之一")) { dd /= 10000; }
+
+                <td class="text-center">@dd.ToString("p2")</td>
             }
             else
             {
