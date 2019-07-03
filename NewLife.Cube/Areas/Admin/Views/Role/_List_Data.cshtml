@@ -21,7 +21,7 @@
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
             }
-            <th class="text-center hidden-md hidden-sm hidden-xs"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
             <th class="text-center" title="系统。系统角色用于业务系统开发使用，禁止修改名称或删除"><a href="@Html.Raw(page.GetSortUrl("IsSystem"))">系统</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">说明</a></th>
@@ -42,7 +42,7 @@
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                 }
-                <td class="text-center hidden-md hidden-sm hidden-xs">@entity.ID</td>
+                <td class="text-center">@entity.ID</td>
                 <td>@entity.Name</td>
                 <td class="text-center">
                     <i class="glyphicon glyphicon-@(entity.IsSystem ? "ok" : "remove")" style="color: @(entity.IsSystem ? "green" : "red");"></i>

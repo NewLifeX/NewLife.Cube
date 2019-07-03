@@ -139,18 +139,18 @@ WriteLiteral(" /></th>\r\n");
             #line hidden
 WriteLiteral("            <th");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 787), Tuple.Create("\"", 826)
+WriteAttribute("href", Tuple.Create(" href=\"", 757), Tuple.Create("\"", 796)
             
             #line 23 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 794), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("ID"))
+, Tuple.Create(Tuple.Create("", 764), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("ID"))
             
             #line default
             #line hidden
-, 794), false)
+, 764), false)
 );
 
 WriteLiteral(">编号</a></th>\r\n            <th");
@@ -159,14 +159,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 879), Tuple.Create("\"", 928)
+WriteAttribute("href", Tuple.Create(" href=\"", 849), Tuple.Create("\"", 898)
             
             #line 24 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 886), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("TreeNodeName"))
+, Tuple.Create(Tuple.Create("", 856), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("TreeNodeName"))
             
             #line default
             #line hidden
-, 886), false)
+, 856), false)
 );
 
 WriteLiteral(">节点名</a></th>\r\n            <th");
@@ -175,14 +175,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 982), Tuple.Create("\"", 1030)
+WriteAttribute("href", Tuple.Create(" href=\"", 952), Tuple.Create("\"", 1000)
             
             #line 25 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 989), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("DisplayName"))
+, Tuple.Create(Tuple.Create("", 959), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("DisplayName"))
             
             #line default
             #line hidden
-, 989), false)
+, 959), false)
 );
 
 WriteLiteral(">显示名</a></th>\r\n            <th");
@@ -191,14 +191,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1084), Tuple.Create("\"", 1124)
+WriteAttribute("href", Tuple.Create(" href=\"", 1054), Tuple.Create("\"", 1094)
             
             #line 26 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1091), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Url"))
+, Tuple.Create(Tuple.Create("", 1061), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Url"))
             
             #line default
             #line hidden
-, 1091), false)
+, 1061), false)
 );
 
 WriteLiteral(">链接</a></th>\r\n            <th");
@@ -207,14 +207,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1177), Tuple.Create("\"", 1218)
+WriteAttribute("href", Tuple.Create(" href=\"", 1147), Tuple.Create("\"", 1188)
             
             #line 27 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1184), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Sort"))
+, Tuple.Create(Tuple.Create("", 1154), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Sort"))
             
             #line default
             #line hidden
-, 1184), false)
+, 1154), false)
 );
 
 WriteLiteral(">排序</a></th>\r\n            ");
@@ -225,14 +225,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1369), Tuple.Create("\"", 1413)
+WriteAttribute("href", Tuple.Create(" href=\"", 1339), Tuple.Create("\"", 1383)
             
             #line 29 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1376), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Visible"))
+, Tuple.Create(Tuple.Create("", 1346), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Visible"))
             
             #line default
             #line hidden
-, 1376), false)
+, 1346), false)
 );
 
 WriteLiteral(">可见</a></th>\r\n            <th");
@@ -243,14 +243,14 @@ WriteLiteral(" title=\"必要。必要的菜单，必须至少有角色拥有这
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1512), Tuple.Create("\"", 1558)
+WriteAttribute("href", Tuple.Create(" href=\"", 1482), Tuple.Create("\"", 1528)
             
             #line 30 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-           , Tuple.Create(Tuple.Create("", 1519), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Necessary"))
+           , Tuple.Create(Tuple.Create("", 1489), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Necessary"))
             
             #line default
             #line hidden
-, 1519), false)
+, 1489), false)
 );
 
 WriteLiteral(">必要</a></th>\r\n            <th");
@@ -261,14 +261,14 @@ WriteLiteral(" title=\"权限子项。逗号分隔，每个权限子项名值竖
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1642), Tuple.Create("\"", 1689)
+WriteAttribute("href", Tuple.Create(" href=\"", 1612), Tuple.Create("\"", 1659)
             
             #line 31 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1649), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Permission"))
+, Tuple.Create(Tuple.Create("", 1619), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Permission"))
             
             #line default
             #line hidden
-, 1649), false)
+, 1619), false)
 );
 
 WriteLiteral(">权限子项</a></th>\r\n");
@@ -362,14 +362,14 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 2466), Tuple.Create("\"", 2484)
+WriteAttribute("value", Tuple.Create(" value=\"", 2436), Tuple.Create("\"", 2454)
             
             #line 52 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 2474), Tuple.Create<System.Object, System.Int32>(entity.ID
+      , Tuple.Create(Tuple.Create("", 2444), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2474), false)
+, 2444), false)
 );
 
 WriteLiteral(" /></td>\r\n");
@@ -383,13 +383,13 @@ WriteLiteral(" /></td>\r\n");
             #line hidden
 WriteLiteral("                <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 54 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-                                                                 Write(entity.ID);
+                                   Write(entity.ID);
 
             
             #line default
@@ -442,28 +442,28 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">\r\n                    <i");
 
-WriteAttribute("class", Tuple.Create(" class=\"", 2912), Tuple.Create("\"", 2975)
-, Tuple.Create(Tuple.Create("", 2920), Tuple.Create("glyphicon", 2920), true)
-, Tuple.Create(Tuple.Create(" ", 2929), Tuple.Create("glyphicon-", 2930), true)
+WriteAttribute("class", Tuple.Create(" class=\"", 2852), Tuple.Create("\"", 2915)
+, Tuple.Create(Tuple.Create("", 2860), Tuple.Create("glyphicon", 2860), true)
+, Tuple.Create(Tuple.Create(" ", 2869), Tuple.Create("glyphicon-", 2870), true)
             
             #line 61 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2940), Tuple.Create<System.Object, System.Int32>(entity.Visible ? "ok" : "remove"
+, Tuple.Create(Tuple.Create("", 2880), Tuple.Create<System.Object, System.Int32>(entity.Visible ? "ok" : "remove"
             
             #line default
             #line hidden
-, 2940), false)
+, 2880), false)
 );
 
-WriteAttribute("style", Tuple.Create(" style=\"", 2976), Tuple.Create("\"", 3027)
-, Tuple.Create(Tuple.Create("", 2984), Tuple.Create("color:", 2984), true)
+WriteAttribute("style", Tuple.Create(" style=\"", 2916), Tuple.Create("\"", 2967)
+, Tuple.Create(Tuple.Create("", 2924), Tuple.Create("color:", 2924), true)
             
             #line 61 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-                     , Tuple.Create(Tuple.Create(" ", 2990), Tuple.Create<System.Object, System.Int32>(entity.Visible ? "green" : "red"
+                     , Tuple.Create(Tuple.Create(" ", 2930), Tuple.Create<System.Object, System.Int32>(entity.Visible ? "green" : "red"
             
             #line default
             #line hidden
-, 2991), false)
-, Tuple.Create(Tuple.Create("", 3026), Tuple.Create(";", 3026), true)
+, 2931), false)
+, Tuple.Create(Tuple.Create("", 2966), Tuple.Create(";", 2966), true)
 );
 
 WriteLiteral("></i>\r\n                </td>\r\n                <td");
@@ -472,28 +472,28 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">\r\n                    <i");
 
-WriteAttribute("class", Tuple.Create(" class=\"", 3122), Tuple.Create("\"", 3187)
-, Tuple.Create(Tuple.Create("", 3130), Tuple.Create("glyphicon", 3130), true)
-, Tuple.Create(Tuple.Create(" ", 3139), Tuple.Create("glyphicon-", 3140), true)
+WriteAttribute("class", Tuple.Create(" class=\"", 3062), Tuple.Create("\"", 3127)
+, Tuple.Create(Tuple.Create("", 3070), Tuple.Create("glyphicon", 3070), true)
+, Tuple.Create(Tuple.Create(" ", 3079), Tuple.Create("glyphicon-", 3080), true)
             
             #line 64 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 3150), Tuple.Create<System.Object, System.Int32>(entity.Necessary ? "ok" : "remove"
+, Tuple.Create(Tuple.Create("", 3090), Tuple.Create<System.Object, System.Int32>(entity.Necessary ? "ok" : "remove"
             
             #line default
             #line hidden
-, 3150), false)
+, 3090), false)
 );
 
-WriteAttribute("style", Tuple.Create(" style=\"", 3188), Tuple.Create("\"", 3241)
-, Tuple.Create(Tuple.Create("", 3196), Tuple.Create("color:", 3196), true)
+WriteAttribute("style", Tuple.Create(" style=\"", 3128), Tuple.Create("\"", 3181)
+, Tuple.Create(Tuple.Create("", 3136), Tuple.Create("color:", 3136), true)
             
             #line 64 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-                       , Tuple.Create(Tuple.Create(" ", 3202), Tuple.Create<System.Object, System.Int32>(entity.Necessary ? "green" : "red"
+                       , Tuple.Create(Tuple.Create(" ", 3142), Tuple.Create<System.Object, System.Int32>(entity.Necessary ? "green" : "red"
             
             #line default
             #line hidden
-, 3203), false)
-, Tuple.Create(Tuple.Create("", 3240), Tuple.Create(";", 3240), true)
+, 3143), false)
+, Tuple.Create(Tuple.Create("", 3180), Tuple.Create(";", 3180), true)
 );
 
 WriteLiteral("></i>\r\n                </td>\r\n                <td>");
@@ -543,14 +543,14 @@ WriteLiteral(">\r\n");
             #line hidden
 WriteLiteral("                            <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 3651), Tuple.Create("\"", 3687)
+WriteAttribute("href", Tuple.Create(" href=\"", 3591), Tuple.Create("\"", 3627)
             
             #line 72 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 3658), Tuple.Create<System.Object, System.Int32>(Url.Action("Up", new { id })
+, Tuple.Create(Tuple.Create("", 3598), Tuple.Create<System.Object, System.Int32>(Url.Action("Up", new { id })
             
             #line default
             #line hidden
-, 3658), false)
+, 3598), false)
 );
 
 WriteLiteral("><span");
@@ -592,14 +592,14 @@ WriteLiteral(">\r\n");
             #line hidden
 WriteLiteral("                            <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 4007), Tuple.Create("\"", 4045)
+WriteAttribute("href", Tuple.Create(" href=\"", 3947), Tuple.Create("\"", 3985)
             
             #line 78 "..\..\Areas\Admin\Views\Menu\_ListTree_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 4014), Tuple.Create<System.Object, System.Int32>(Url.Action("Down", new { id })
+, Tuple.Create(Tuple.Create("", 3954), Tuple.Create<System.Object, System.Int32>(Url.Action("Down", new { id })
             
             #line default
             #line hidden
-, 4014), false)
+, 3954), false)
 );
 
 WriteLiteral("><span");

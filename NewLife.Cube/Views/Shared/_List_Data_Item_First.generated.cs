@@ -77,13 +77,13 @@ WriteLiteral("\r\n");
             #line hidden
 WriteLiteral("    <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 12 "..\..\Views\Shared\_List_Data_Item_First.cshtml"
-                                                     Write(value);
+                       Write(value);
 
             
             #line default
@@ -106,7 +106,7 @@ else
             #line hidden
 WriteLiteral("                <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">\r\n                    <i");
 
@@ -127,7 +127,7 @@ WriteLiteral("></i>\r\n                </td>\r\n");
             #line hidden
 WriteLiteral("                <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">\r\n                    <i");
 
@@ -151,13 +151,13 @@ WriteLiteral("></i>\r\n                </td>\r\n");
             #line hidden
 WriteLiteral("                <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 36 "..\..\Views\Shared\_List_Data_Item_First.cshtml"
-                                                                  Write(((DateTime)value).ToFullString(""));
+                                    Write(((DateTime)value).ToFullString(""));
 
             
             #line default
@@ -175,7 +175,7 @@ WriteLiteral("</td>\r\n");
             #line hidden
 WriteLiteral("                <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("></td>\r\n");
 
@@ -190,13 +190,13 @@ WriteLiteral("></td>\r\n");
             #line hidden
 WriteLiteral("            <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 44 "..\..\Views\Shared\_List_Data_Item_First.cshtml"
-                                                             Write(value);
+                               Write(value);
 
             
             #line default
@@ -214,13 +214,13 @@ WriteLiteral("</td>\r\n");
             #line hidden
 WriteLiteral("            <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 48 "..\..\Views\Shared\_List_Data_Item_First.cshtml"
-                                                             Write(value);
+                               Write(value);
 
             
             #line default
@@ -253,13 +253,13 @@ WriteLiteral("</td>\r\n");
             #line hidden
 WriteLiteral("                <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 67 "..\..\Views\Shared\_List_Data_Item_First.cshtml"
-                                                                 Write(val);
+                                   Write(val);
 
             
             #line default
@@ -277,13 +277,13 @@ WriteLiteral("</td>\r\n");
             #line hidden
 WriteLiteral("                <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 71 "..\..\Views\Shared\_List_Data_Item_First.cshtml"
-                                                                 Write(Convert.ToInt64(value).ToString("n0"));
+                                   Write(Convert.ToInt64(value).ToString("n0"));
 
             
             #line default
@@ -309,13 +309,13 @@ WriteLiteral("</td>\r\n");
             #line hidden
 WriteLiteral("                    <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 83 "..\..\Views\Shared\_List_Data_Item_First.cshtml"
-                                                                     Write(Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null));
+                                       Write(Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null));
 
             
             #line default
@@ -333,13 +333,13 @@ WriteLiteral("</td>\r\n");
             #line hidden
 WriteLiteral("                    <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
             #line 87 "..\..\Views\Shared\_List_Data_Item_First.cshtml"
-                                                                     Write(value);
+                                       Write(value);
 
             
             #line default

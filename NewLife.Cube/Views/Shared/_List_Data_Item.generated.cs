@@ -154,11 +154,15 @@ WriteLiteral("></i>\r\n                </td>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                <td>");
+WriteLiteral("                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">");
 
             
             #line 41 "..\..\Views\Shared\_List_Data_Item.cshtml"
-               Write(dt.ToString("yyyy-MM-dd"));
+                                   Write(dt.ToString("yyyy-MM-dd"));
 
             
             #line default
@@ -174,11 +178,15 @@ WriteLiteral("</td>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                <td>");
+WriteLiteral("                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">");
 
             
             #line 45 "..\..\Views\Shared\_List_Data_Item.cshtml"
-               Write(dt.ToFullString(""));
+                                   Write(dt.ToFullString(""));
 
             
             #line default
@@ -315,11 +323,15 @@ WriteLiteral("</td>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                <td>");
+WriteLiteral("                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">");
 
             
             #line 90 "..\..\Views\Shared\_List_Data_Item.cshtml"
-               Write(provider.FindByID(value));
+                                   Write(provider.FindByID(value));
 
             
             #line default
@@ -388,20 +400,26 @@ WriteLiteral("</td>\r\n");
             {
                 var val = value;
                 var map = item.Map;
-                if (map != null && map.Provider != null && val + "" != "")
+                if (map != null && val + "" != "")
                 {
-                    var dic = new RouteValueDictionary();
-                    var key = map.Provider.Key;
-                    if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
+                    if (map.Provider != null)
+                    {
+                        var dic = new RouteValueDictionary();
+                        var key = map.Provider.Key;
+                        if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
 
             
             #line default
             #line hidden
-WriteLiteral("                    <td>");
+WriteLiteral("                        <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">");
 
             
-            #line 116 "..\..\Views\Shared\_List_Data_Item.cshtml"
-                   Write(Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null));
+            #line 118 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                                           Write(Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null));
 
             
             #line default
@@ -409,7 +427,32 @@ WriteLiteral("                    <td>");
 WriteLiteral("</td>\r\n");
 
             
-            #line 117 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 119 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                    }
+                    else
+                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">");
+
+            
+            #line 122 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                                           Write(value);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+            
+            #line 123 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                    }
                 }
                 else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
                 {
@@ -419,21 +462,23 @@ WriteLiteral("</td>\r\n");
             #line hidden
 WriteLiteral("                    <td");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 4008), Tuple.Create("\"", 4043)
+WriteLiteral(" class=\"text-center\"");
+
+WriteAttribute("title", Tuple.Create(" title=\"", 4326), Tuple.Create("\"", 4361)
             
-            #line 120 "..\..\Views\Shared\_List_Data_Item.cshtml"
-, Tuple.Create(Tuple.Create("", 4016), Tuple.Create<System.Object, System.Int32>((value+"").IPToAddress()
+            #line 127 "..\..\Views\Shared\_List_Data_Item.cshtml"
+, Tuple.Create(Tuple.Create("", 4334), Tuple.Create<System.Object, System.Int32>((value+"").IPToAddress()
             
             #line default
             #line hidden
-, 4016), false)
+, 4334), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 120 "..\..\Views\Shared\_List_Data_Item.cshtml"
-                                                       Write(value);
+            #line 127 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                                                                           Write(value);
 
             
             #line default
@@ -441,7 +486,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n");
 
             
-            #line 121 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 128 "..\..\Views\Shared\_List_Data_Item.cshtml"
                 }
                 else if (item.Name.EqualIgnoreCase("Remark", "Description"))
                 {
@@ -455,20 +500,20 @@ WriteLiteral("                    <td");
 WriteLiteral(" style=\"max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellips" +
 "is;\"");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 4312), Tuple.Create("\"", 4326)
+WriteAttribute("title", Tuple.Create(" title=\"", 4630), Tuple.Create("\"", 4644)
             
-            #line 125 "..\..\Views\Shared\_List_Data_Item.cshtml"
-                                    , Tuple.Create(Tuple.Create("", 4320), Tuple.Create<System.Object, System.Int32>(value
+            #line 132 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                                    , Tuple.Create(Tuple.Create("", 4638), Tuple.Create<System.Object, System.Int32>(value
             
             #line default
             #line hidden
-, 4320), false)
+, 4638), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 125 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 132 "..\..\Views\Shared\_List_Data_Item.cshtml"
                                                                                                                        Write(value);
 
             
@@ -477,7 +522,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n");
 
             
-            #line 126 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 133 "..\..\Views\Shared\_List_Data_Item.cshtml"
                 }
                 else
                 {
@@ -488,7 +533,7 @@ WriteLiteral("</td>\r\n");
 WriteLiteral("                    <td>");
 
             
-            #line 129 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 136 "..\..\Views\Shared\_List_Data_Item.cshtml"
                    Write(value);
 
             
@@ -497,7 +542,7 @@ WriteLiteral("                    <td>");
 WriteLiteral("</td>\r\n");
 
             
-            #line 130 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 137 "..\..\Views\Shared\_List_Data_Item.cshtml"
                 }
             }
             break;
@@ -506,7 +551,7 @@ WriteLiteral("</td>\r\n");
             #line default
             #line hidden
             
-            #line 135 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 142 "..\..\Views\Shared\_List_Data_Item.cshtml"
                         
     }
 }

@@ -16,7 +16,7 @@
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
             }
-            <th class="text-center hidden-md hidden-sm hidden-xs"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Times"))">次数</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Status"))">状态</a></th>
@@ -39,7 +39,7 @@
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                 }
-                <td class="text-center hidden-md hidden-sm hidden-xs">@entity.ID</td>
+                <td class="text-center">@entity.ID</td>
                 <td>@entity.Name</td>
                 <td class="text-right">@entity.Times.ToString("n0")</td>
                 <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Status">@entity.Status</td>

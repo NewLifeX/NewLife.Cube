@@ -38,11 +38,11 @@ else
             var dt = (DateTime)value;
             if (name2.EndsWith("Date"))
             {
-                <td>@dt.ToString("yyyy-MM-dd")</td>
+                <td class="text-center">@dt.ToString("yyyy-MM-dd")</td>
             }
             else
             {
-                <td>@dt.ToFullString("")</td>
+                <td class="text-center">@dt.ToFullString("")</td>
             }
             break;
         case TypeCode.Decimal:
@@ -87,7 +87,7 @@ else
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
                 var provider = ViewData["Provider"] as IManageProvider;
-                <td>@provider.FindByID(value)</td>
+                <td class="text-center">@provider.FindByID(value)</td>
             }
             else if (name2.EndsWith("Rate"))
             {
@@ -108,16 +108,23 @@ else
             {
                 var val = value;
                 var map = item.Map;
-                if (map != null && map.Provider != null && val + "" != "")
+                if (map != null && val + "" != "")
                 {
-                    var dic = new RouteValueDictionary();
-                    var key = map.Provider.Key;
-                    if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
-                    <td>@Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null)</td>
+                    if (map.Provider != null)
+                    {
+                        var dic = new RouteValueDictionary();
+                        var key = map.Provider.Key;
+                        if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
+                        <td class="text-center">@Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null)</td>
+                    }
+                    else
+                    {
+                        <td class="text-center">@value</td>
+                    }
                 }
                 else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
                 {
-                    <td title="@((value+"").IPToAddress())">@value</td>
+                    <td class="text-center" title="@((value+"").IPToAddress())">@value</td>
                 }
                 else if (item.Name.EqualIgnoreCase("Remark", "Description"))
                 {

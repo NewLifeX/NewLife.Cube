@@ -129,9 +129,9 @@ WriteLiteral("            ");
              foreach (var item in fields)
             {
                 var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
-                var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
                 if (item.Type == typeof(DateTime))
                 {
+                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
 
             
             #line default
@@ -140,38 +140,38 @@ WriteLiteral("                    <th");
 
 WriteLiteral(" class=\"text-center\"");
 
-WriteAttribute("style", Tuple.Create(" style=\"", 1182), Tuple.Create("\"", 1211)
-, Tuple.Create(Tuple.Create("", 1190), Tuple.Create("min-width:", 1190), true)
+WriteAttribute("style", Tuple.Create(" style=\"", 1186), Tuple.Create("\"", 1215)
+, Tuple.Create(Tuple.Create("", 1194), Tuple.Create("min-width:", 1194), true)
             
             #line 28 "..\..\Views\Shared\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1200), Tuple.Create<System.Object, System.Int32>(width
+, Tuple.Create(Tuple.Create("", 1204), Tuple.Create<System.Object, System.Int32>(width
             
             #line default
             #line hidden
-, 1200), false)
-, Tuple.Create(Tuple.Create("", 1208), Tuple.Create("px;", 1208), true)
+, 1204), false)
+, Tuple.Create(Tuple.Create("", 1212), Tuple.Create("px;", 1212), true)
 );
 
-WriteAttribute("title", Tuple.Create(" title=\"", 1212), Tuple.Create("\"", 1237)
+WriteAttribute("title", Tuple.Create(" title=\"", 1216), Tuple.Create("\"", 1241)
             
             #line 28 "..\..\Views\Shared\_List_Data.cshtml"
- , Tuple.Create(Tuple.Create("", 1220), Tuple.Create<System.Object, System.Int32>(item.Description
+ , Tuple.Create(Tuple.Create("", 1224), Tuple.Create<System.Object, System.Int32>(item.Description
             
             #line default
             #line hidden
-, 1220), false)
+, 1224), false)
 );
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1241), Tuple.Create("\"", 1266)
+WriteAttribute("href", Tuple.Create(" href=\"", 1245), Tuple.Create("\"", 1270)
             
             #line 28 "..\..\Views\Shared\_List_Data.cshtml"
-                             , Tuple.Create(Tuple.Create("", 1248), Tuple.Create<System.Object, System.Int32>(Html.Raw(sortUrl)
+                             , Tuple.Create(Tuple.Create("", 1252), Tuple.Create<System.Object, System.Int32>(Html.Raw(sortUrl)
             
             #line default
             #line hidden
-, 1248), false)
+, 1252), false)
 );
 
 WriteLiteral(">");
@@ -198,26 +198,26 @@ WriteLiteral("                    <th");
 
 WriteLiteral(" class=\"text-center\"");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 1399), Tuple.Create("\"", 1424)
+WriteAttribute("title", Tuple.Create(" title=\"", 1403), Tuple.Create("\"", 1428)
             
             #line 32 "..\..\Views\Shared\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1407), Tuple.Create<System.Object, System.Int32>(item.Description
+, Tuple.Create(Tuple.Create("", 1411), Tuple.Create<System.Object, System.Int32>(item.Description
             
             #line default
             #line hidden
-, 1407), false)
+, 1411), false)
 );
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1428), Tuple.Create("\"", 1453)
+WriteAttribute("href", Tuple.Create(" href=\"", 1432), Tuple.Create("\"", 1457)
             
             #line 32 "..\..\Views\Shared\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1435), Tuple.Create<System.Object, System.Int32>(Html.Raw(sortUrl)
+, Tuple.Create(Tuple.Create("", 1439), Tuple.Create<System.Object, System.Int32>(Html.Raw(sortUrl)
             
             #line default
             #line hidden
-, 1435), false)
+, 1439), false)
 );
 
 WriteLiteral(">");
@@ -252,8 +252,6 @@ WriteLiteral("            ");
 WriteLiteral("                <th");
 
 WriteLiteral(" class=\"text-center\"");
-
-WriteLiteral(" style=\"min-width:100px;\"");
 
 WriteLiteral(">操作</th>\r\n");
 
@@ -306,14 +304,14 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 1969), Tuple.Create("\"", 1993)
+WriteAttribute("value", Tuple.Create(" value=\"", 1948), Tuple.Create("\"", 1972)
             
             #line 47 "..\..\Views\Shared\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 1977), Tuple.Create<System.Object, System.Int32>(entity[fk.Name]
+      , Tuple.Create(Tuple.Create("", 1956), Tuple.Create<System.Object, System.Int32>(entity[fk.Name]
             
             #line default
             #line hidden
-, 1977), false)
+, 1956), false)
 );
 
 WriteLiteral(" /></td>\r\n");

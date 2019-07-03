@@ -22,7 +22,7 @@
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
             }
-            <th class="text-center hidden-md hidden-sm hidden-xs"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Time"))">时间</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Page"))">页面</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Title"))">标题</a></th>
@@ -53,7 +53,7 @@
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                 }
-                <td class="text-center hidden-md hidden-sm hidden-xs">@entity.ID</td>
+                <td class="text-center">@entity.ID</td>
                 <td class="text-right">@st</td>
                 <td>@entity.Page</td>
                 <td>@entity.Title</td>
@@ -81,7 +81,7 @@
                 {
                     <td></td>
                 }
-                <td class="text-center hidden-md hidden-sm hidden-xs">总计</td>
+                <td class="text-center">总计</td>
                 <td></td>
                 <td></td>
                 <td></td>

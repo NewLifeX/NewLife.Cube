@@ -125,18 +125,11 @@ namespace NewLife.Cube
             @foreach(var item in fields)
             {
                 var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
-                if (item.PrimaryKey)
-                {
-                    <th class=""text-center hidden-md hidden-sm hidden-xs""><a href=""@Html.Raw(sortUrl)"">@item.DisplayName</a></th>
-                }
-                else
-                {
-                    <th class=""text-center""><a href=""@Html.Raw(sortUrl)"">@item.DisplayName</a></th>
-                }
+                <th class=""text-center""><a href=""@Html.Raw(sortUrl)"">@item.DisplayName</a></th>
             }
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
             {
-                <th class=""text-center"" style=""min-width:100px;"">操作</th>
+                <th class=""text-center"">操作</th>
             }
         </tr>
     </thead>
@@ -202,10 +195,7 @@ namespace NewLife.Cube
                 var des = item.DisplayName ?? item.Name;
 
                 // 样式
-                if (item.PrimaryKey)
-                    sb.Append(@"<th class=""text-center hidden-md hidden-sm hidden-xs""");
-                else
-                    sb.Append(@"<th class=""text-center""");
+                sb.Append(@"<th class=""text-center""");
 
                 // 固定宽度
                 if (item.Type == typeof(DateTime))
@@ -244,7 +234,7 @@ namespace NewLife.Cube
                 sb.Append(ident);
                 //sb.AppendLine(@"@Html.Partial(""_List_Data_Item"", new Pair(entity, item))");
                 if (item.PrimaryKey)
-                    sb.AppendFormat(@"<td class=""text-center hidden-md hidden-sm hidden-xs"">@entity.{0}</td>", item.Name);
+                    sb.AppendFormat(@"<td class=""text-center"">@entity.{0}</td>", item.Name);
                 else
                 {
                     switch (Type.GetTypeCode(item.Type))
@@ -259,9 +249,9 @@ namespace NewLife.Cube
                             break;
                         case TypeCode.DateTime:
                             if (name2.EndsWith("Date"))
-                                sb.AppendFormat(@"<td>@entity.{0}.ToString(""yyyy-MM-dd"")</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""yyyy-MM-dd"")</td>", item.Name);
                             else
-                                sb.AppendFormat(@"<td>@entity.{0}.ToFullString("""")</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToFullString("""")</td>", item.Name);
                             break;
                         case TypeCode.Decimal:
                             sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n2"")</td>", item.Name);
@@ -309,10 +299,17 @@ namespace NewLife.Cube
                                 sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n0"")</td>", item.Name);
                             break;
                         case TypeCode.String:
-                            if (item.Map != null && item.Map.Provider != null)
+                            if (item.Map != null)
                             {
-                                var prv = item.Map.Provider;
-                                sb.AppendFormat(@"<td><a href=""{1}?{2}=@entity.{3}"">@entity.{0}</a></td>", item.Name, prv.EntityType.Name, prv.Key, item.OriField?.Name);
+                                if (item.Map.Provider != null)
+                                {
+                                    var prv = item.Map.Provider;
+                                    sb.AppendFormat(@"<td><a href=""{1}?{2}=@entity.{3}"">@entity.{0}</a></td>", item.Name, prv.EntityType.Name, prv.Key, item.OriField?.Name);
+                                }
+                                else
+                                {
+                                    sb.AppendFormat(@"<td class=""text-center"">@entity.{0}</td>", item.Name);
+                                }
                             }
                             else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
                                 BuildIP(item, sb);
@@ -343,9 +340,9 @@ namespace NewLife.Cube
             return true;
         }
 
-        private static void BuildUser(FieldItem item, StringBuilder sb) => sb.AppendFormat(@"<td class=""text-right"">@provider.FindByID(entity.{0})</td>", item.Name);
+        private static void BuildUser(FieldItem item, StringBuilder sb) => sb.AppendFormat(@"<td class=""text-center"" class=""text-right"">@provider.FindByID(entity.{0})</td>", item.Name);
 
-        private static void BuildIP(FieldItem item, StringBuilder sb) => sb.AppendFormat(@"<td title=""@entity.{0}.IPToAddress()"">@entity.{0}</td>", item.Name);
+        private static void BuildIP(FieldItem item, StringBuilder sb) => sb.AppendFormat(@"<td class=""text-center"" title=""@entity.{0}.IPToAddress()"">@entity.{0}</td>", item.Name);
 
         private static String BuildStat(IList<FieldItem> fields)
         {
@@ -360,7 +357,7 @@ namespace NewLife.Cube
                 // 缩进
                 sb.Append(ident);
                 if (item.PrimaryKey)
-                    sb.AppendFormat(@"<td class=""text-center hidden-md hidden-sm hidden-xs"">总计</td>");
+                    sb.AppendFormat(@"<td class=""text-center"">总计</td>");
                 else
                 {
                     switch (Type.GetTypeCode(item.Type))

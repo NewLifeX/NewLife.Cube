@@ -22,9 +22,9 @@
             @foreach (var item in fields)
             {
                 var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
-                var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
                 if (item.Type == typeof(DateTime))
                 {
+                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
                     <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                 }
                 else
@@ -34,7 +34,7 @@
             }
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
             {
-                <th class="text-center" style="min-width:100px;">操作</th>
+                <th class="text-center">操作</th>
             }
         </tr>
     </thead>

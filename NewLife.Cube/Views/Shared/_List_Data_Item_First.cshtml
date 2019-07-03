@@ -9,7 +9,7 @@
 }
 @if (item.IsIdentity)
 {
-    <td class="text-center hidden-md hidden-sm hidden-xs">@value</td>
+    <td class="text-center">@value</td>
 }
 else
 {
@@ -18,13 +18,13 @@ else
         case TypeCode.Boolean:
             if ((Boolean)value)
             {
-                <td class="text-center hidden-md hidden-sm hidden-xs">
+                <td class="text-center">
                     <i class="glyphicon glyphicon-ok" style="color: green;"></i>
                 </td>
             }
             else
             {
-                <td class="text-center hidden-md hidden-sm hidden-xs">
+                <td class="text-center">
                     <i class="glyphicon glyphicon-remove" style="color: red;"></i>
                 </td>
             }
@@ -33,19 +33,19 @@ else
             var dt = (DateTime)value;
             if (dt > DateTime.MinValue && dt.Year > 1900)
             {
-                <td class="text-center hidden-md hidden-sm hidden-xs">@(((DateTime)value).ToFullString(""))</td>
+                <td class="text-center">@(((DateTime)value).ToFullString(""))</td>
             }
             else
             {
-                <td class="text-center hidden-md hidden-sm hidden-xs"></td>
+                <td class="text-center"></td>
             }
             break;
         case TypeCode.Decimal:
-            <td class="text-center hidden-md hidden-sm hidden-xs">@value</td>
+            <td class="text-center">@value</td>
             break;
         case TypeCode.Single:
         case TypeCode.Double:
-            <td class="text-center hidden-md hidden-sm hidden-xs">@value</td>
+            <td class="text-center">@value</td>
             break;
         case TypeCode.Byte:
         case TypeCode.Int16:
@@ -64,11 +64,11 @@ else
                     val = System.EnumHelper.GetDescription((Enum)v) ?? v + "";
                 }
                 catch { }
-                <td class="text-center hidden-md hidden-sm hidden-xs">@val</td>
+                <td class="text-center">@val</td>
             }
             else
             {
-                <td class="text-center hidden-md hidden-sm hidden-xs">@Convert.ToInt64(value).ToString("n0")</td>
+                <td class="text-center">@Convert.ToInt64(value).ToString("n0")</td>
             }
             break;
         case TypeCode.String:
@@ -80,11 +80,11 @@ else
                     var dic = new RouteValueDictionary();
                     var key = map.Provider.Key;
                     if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
-                    <td class="text-center hidden-md hidden-sm hidden-xs">@Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null)</td>
+                    <td class="text-center">@Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null)</td>
                 }
                 else
                 {
-                    <td class="text-center hidden-md hidden-sm hidden-xs">@value</td>
+                    <td class="text-center">@value</td>
                 }
             }
             break;

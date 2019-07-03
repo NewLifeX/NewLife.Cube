@@ -21,7 +21,7 @@
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
             }
-            <th class="text-center hidden-md hidden-sm hidden-xs"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
             <th class="text-center" title="名称。AppID"><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">显示名</a></th>
             <th class="text-center" title="密钥。AppSecret"><a href="@Html.Raw(page.GetSortUrl("Secret"))">密钥</a></th>
@@ -46,7 +46,7 @@
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                 }
-                <td class="text-center hidden-md hidden-sm hidden-xs">@entity.ID</td>
+                <td class="text-center">@entity.ID</td>
                 <td>@entity.Name</td>
                 <td>@entity.DisplayName</td>
                 <td>@entity.Secret</td>
