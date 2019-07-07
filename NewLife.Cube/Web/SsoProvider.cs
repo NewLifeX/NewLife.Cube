@@ -10,6 +10,7 @@ using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Web;
 using XCode.Membership;
+using System.Net.Http;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using IHttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
@@ -368,11 +369,16 @@ namespace NewLife.Cube.Web
 
             try
             {
-                var wc = new WebClientX(true, true);
-                Task.Factory.StartNew(() => wc.DownloadFileAsync(url, av)).Wait(5000);
+                //var wc = new WebClientX();
+                //Task.Factory.StartNew(() => wc.DownloadFileAsync(url, av)).Wait(5000);
 
-                //// 更新头像
-                //user.SetValue("Avatar", "/Sso/Avatar/" + user.ID);
+                var client = new HttpClient();
+                var rs = client.GetAsync(url).Result;
+                var buf = rs.Content.ReadAsByteArrayAsync().Result;
+                File.WriteAllBytes(av, buf);
+
+                // 更新头像
+                user.SetValue("Avatar", "/Sso/Avatar/" + user.ID);
 
                 return true;
             }

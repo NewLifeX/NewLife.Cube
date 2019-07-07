@@ -198,7 +198,7 @@ namespace NewLife.Cube
             var url = Setting.Current.PluginServer;
             if (url.IsNullOrEmpty()) return;
 
-            var wc = new WebClientX(true, true)
+            var wc = new WebClientX()
             {
                 Log = XTrace.Log
             };
