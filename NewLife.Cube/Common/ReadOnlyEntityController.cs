@@ -188,15 +188,12 @@ namespace NewLife.Cube
 
         /// <summary>导出当前页以后的数据</summary>
         /// <returns></returns>
-        protected virtual IEnumerable<TEntity> ExportData(Int32 max = 100_000)
+        protected virtual IEnumerable<TEntity> ExportData(Int32 max = 10_000_000)
         {
-            //// 跳过头部一些页数，导出当前页以及以后的数据
+            // 跳过头部一些页数，导出当前页以及以后的数据
             var p = new Pager(GetSession<Pager>(CacheKey))
             {
-                //p.StartRow = (p.PageIndex - 1) * p.PageSize;
-                //p.PageSize = 1_000_000;
                 // 不要查记录数
-                //p.TotalCount = -1;
                 RetrieveTotalCount = false
             };
 
@@ -206,8 +203,14 @@ namespace NewLife.Cube
             p.PageIndex = 1;
             p.PageSize = size;
 
+            var rs = Response;
             while (max > 0)
             {
+#if __CORE__
+                //if (!rs.IsClientConnected) yield break;
+#else
+                if (!rs.IsClientConnected) yield break;
+#endif
                 if (p.PageSize > max) p.PageSize = max;
 
                 var list = Search(p);
@@ -486,46 +489,30 @@ namespace NewLife.Cube
                 if (p.TotalCount > 10_000) buffer = false;
             }
 
-            //var name = GetType().GetDisplayName()
-            //    ?? Factory.EntityType.GetDisplayName()
-            //    ?? Factory.Table.DataTable.DisplayName
-            //    ?? Factory.EntityType.Name;
-
-            //var fileName = "{0}_{1:yyyyMMddHHmmss}.csv".F(name, DateTime.Now);
-            SetAttachment(null, ".csv", true);
+            SetAttachment(null, ".xls", true);
 
 #if __CORE__
             var rs = Response;
             var headers = rs.Headers;
             headers[HeaderNames.ContentEncoding] = "UTF8";
-            //headers[HeaderNames.ContentDisposition] = 
-            //    "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8);
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
-            var data = ExportData(1_000_000);
+            var data = ExportData();
             OnExportExcel(fs, data, rs.Body);
 #else
             var rs = Response;
             rs.Charset = "UTF-8";
             rs.ContentEncoding = Encoding.UTF8;
-            //rs.AppendHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8));
             rs.ContentType = "application/vnd.ms-excel";
 
             if (buffer) SetCompress();
             rs.Buffer = buffer;
 
-            var data = ExportData(1_000_000);
+            var data = ExportData();
             OnExportExcel(fs, data, rs.OutputStream);
 
             rs.Flush();
 #endif
-
-            //var data = ExportData(1_000_000);
-            //var ms = new MemoryStream();
-            //OnExportExcel(fs, data, ms);
-            //ms.Position = 0;
-
-            //return File(ms, "application/vnd.ms-excel", fileName);
 
             return new EmptyResult();
         }
@@ -589,11 +576,9 @@ namespace NewLife.Cube
             var rs = Response;
             var headers = rs.Headers;
             headers[HeaderNames.ContentEncoding] = "UTF8";
-            //headers[HeaderNames.ContentDisposition] = 
-            //    "attachment;filename=" + HttpUtility.UrlEncode(fileName, Encoding.UTF8);
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
-            var data = ExportData(1_000_000);
+            var data = ExportData();
             OnExportCsv(fs, data, rs.Body);
 #else
             var rs = Response;
@@ -604,7 +589,7 @@ namespace NewLife.Cube
             if (buffer) SetCompress();
             rs.Buffer = buffer;
 
-            var data = ExportData(1_000_000);
+            var data = ExportData();
             OnExportCsv(fs, data, rs.OutputStream);
 
             rs.Flush();
@@ -725,14 +710,7 @@ namespace NewLife.Cube
                 {
                     dal.Backup(fact.FormatedTableName, gs);
                 }
-                //var ms = new MemoryStream();
-                //dal.Backup(fact.FormatedTableName, ms);
 
-                //ms.Position = 0;
-                //var ms2 = ms.CompressGZip();
-
-                //ms2.Position = 0;
-                //return File(ms2, "application/gzip");
                 return new EmptyResult();
             }
             catch (Exception ex)
