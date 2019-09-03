@@ -208,6 +208,11 @@ namespace NewLife.Cube
             {
 #if __CORE__
                 //if (!rs.IsClientConnected) yield break;
+                if (!HttpContext.RequestAborted.IsCancellationRequested)
+                {
+                    yield break;
+                }
+
 #else
                 if (!rs.IsClientConnected) yield break;
 #endif
