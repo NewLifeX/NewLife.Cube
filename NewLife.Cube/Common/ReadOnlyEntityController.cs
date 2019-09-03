@@ -198,6 +198,7 @@ namespace NewLife.Cube
                 PageSize = 1,
             };
             Search(p);
+            p.PageSize = 20_000;
 
             //!!! 数据量很大，且有时间条件时，采用时间分片导出。否则统一分页导出
             //if (Factory.Count > 100_000)
@@ -212,7 +213,7 @@ namespace NewLife.Cube
                     // 计算步进，80%数据集中在20%时间上，凑够每页10000
                     //var speed = (p.TotalCount * 0.8) / (24 * 3600 * 0.2);
                     var speed = (Double)p.TotalCount / (24 * 3600);
-                    var step = 10000 / speed;
+                    var step = p.PageSize / speed;
 
                     XTrace.WriteLine("[{0}]导出数据[{1:n0}]，时间区间（{2},{3}），分片步进{4:n0}秒", Factory.EntityType.FullName, p.TotalCount, start, end, step);
 
@@ -220,10 +221,9 @@ namespace NewLife.Cube
                 }
             }
 
-            p.PageSize = 10_000;
             XTrace.WriteLine("[{0}]导出数据[{1:n0}]，共[{2:n0}]页", Factory.EntityType.FullName, p.TotalCount, p.PageCount);
 
-            return ExportDataByPage(10_000, max);
+            return ExportDataByPage(p.PageSize, max);
         }
 
         /// <summary>分页导出数据</summary>
@@ -267,6 +267,9 @@ namespace NewLife.Cube
 
                 p.PageIndex++;
             }
+
+            // 回收内存
+            GC.Collect();
         }
 
         /// <summary>时间分片导出数据</summary>
@@ -317,12 +320,12 @@ namespace NewLife.Cube
                     yield return item;
                 }
 
-                // 回收内存
-                GC.Collect(0);
-
                 dt = dt2;
                 max -= count;
             }
+
+            // 回收内存
+            GC.Collect();
         }
         #endregion
 
