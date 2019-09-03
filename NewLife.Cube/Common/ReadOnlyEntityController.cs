@@ -207,12 +207,7 @@ namespace NewLife.Cube
             while (max > 0)
             {
 #if __CORE__
-                //if (!rs.IsClientConnected) yield break;
-                if (!HttpContext.RequestAborted.IsCancellationRequested)
-                {
-                    yield break;
-                }
-
+                if (!HttpContext.RequestAborted.IsCancellationRequested) yield break;
 #else
                 if (!rs.IsClientConnected) yield break;
 #endif
