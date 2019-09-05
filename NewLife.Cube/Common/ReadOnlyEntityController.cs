@@ -186,9 +186,51 @@ namespace NewLife.Cube
         /// <returns></returns>
         protected virtual String[] SelectKeys => GetRequest("Keys").Split(",");
 
-        /// <summary>导出当前页以后的数据</summary>
+        /// <summary>多次导出数据</summary>
         /// <returns></returns>
         protected virtual IEnumerable<TEntity> ExportData(Int32 max = 10_000_000)
+        {
+            // 计算目标数据量
+            var p = new Pager(GetSession<Pager>(CacheKey))
+            {
+                RetrieveTotalCount = true,
+                PageIndex = 1,
+                PageSize = 1,
+            };
+            Search(p);
+            p.PageSize = 20_000;
+
+            //!!! 数据量很大，且有时间条件时，采用时间分片导出。否则统一分页导出
+            //if (Factory.Count > 100_000)
+            if (p.TotalCount > 100_000)
+            {
+                var start = p["dtStart"].ToDateTime();
+                var end = p["dtEnd"].ToDateTime();
+                if (start.Year > 2000 /*&& end.Year > 2000*/)
+                {
+                    if (end.Year < 2000) end = DateTime.Now;
+
+                    // 计算步进，80%数据集中在20%时间上，凑够每页10000
+                    //var speed = (p.TotalCount * 0.8) / (24 * 3600 * 0.2);
+                    var speed = (Double)p.TotalCount / (24 * 3600);
+                    var step = p.PageSize / speed;
+
+                    XTrace.WriteLine("[{0}]导出数据[{1:n0}]，时间区间（{2},{3}），分片步进{4:n0}秒", Factory.EntityType.FullName, p.TotalCount, start, end, step);
+
+                    return ExportDataByDatetime((Int32)step, max);
+                }
+            }
+
+            XTrace.WriteLine("[{0}]导出数据[{1:n0}]，共[{2:n0}]页", Factory.EntityType.FullName, p.TotalCount, p.PageCount);
+
+            return ExportDataByPage(p.PageSize, max);
+        }
+
+        /// <summary>分页导出数据</summary>
+        /// <param name="pageSize">页大小。默认10_000</param>
+        /// <param name="max">最大行数。默认10_000_000</param>
+        /// <returns></returns>
+        protected virtual IEnumerable<TEntity> ExportDataByPage(Int32 pageSize, Int32 max)
         {
             // 跳过头部一些页数，导出当前页以及以后的数据
             var p = new Pager(GetSession<Pager>(CacheKey))
@@ -197,22 +239,14 @@ namespace NewLife.Cube
                 RetrieveTotalCount = false
             };
 
-            var size = 10_000;
-            if (size > max) size = max;
-
             p.PageIndex = 1;
-            p.PageSize = size;
+            p.PageSize = pageSize;
 
             var rs = Response;
             while (max > 0)
             {
 #if __CORE__
-                //if (!rs.IsClientConnected) yield break;
-                if (!HttpContext.RequestAborted.IsCancellationRequested)
-                {
-                    yield break;
-                }
-
+                if (!HttpContext.RequestAborted.IsCancellationRequested) yield break;
 #else
                 if (!rs.IsClientConnected) yield break;
 #endif
@@ -233,6 +267,65 @@ namespace NewLife.Cube
 
                 p.PageIndex++;
             }
+
+            // 回收内存
+            GC.Collect();
+        }
+
+        /// <summary>时间分片导出数据</summary>
+        /// <param name="step">分片不仅。默认60</param>
+        /// <param name="max">最大行数。默认10_000_000</param>
+        /// <returns></returns>
+        protected virtual IEnumerable<TEntity> ExportDataByDatetime(Int32 step, Int32 max)
+        {
+            // 跳过头部一些页数，导出当前页以及以后的数据
+            var p = new Pager(GetSession<Pager>(CacheKey))
+            {
+                // 不要查记录数
+                RetrieveTotalCount = false,
+                PageIndex = 1,
+                PageSize = 0,
+            };
+
+            var rs = Response;
+            var start = p["dtStart"].ToDateTime();
+            var end = p["dtEnd"].ToDateTime();
+            if (end.Year < 2000) end = DateTime.Now;
+
+            //!!! 前后同一天必须查跨天
+            if (start == start.Date && end == end.Date) end = end.AddDays(1);
+
+            var dt = start;
+            while (max > 0 && dt < end)
+            {
+#if __CORE__
+                if (!HttpContext.RequestAborted.IsCancellationRequested) yield break;
+#else
+                if (!rs.IsClientConnected) yield break;
+#endif
+
+                var dt2 = dt.AddSeconds(step);
+                if (dt2 > end) dt2 = end;
+
+                p["dtStart"] = dt.ToFullString();
+                p["dtEnd"] = dt2.ToFullString();
+
+                var list = Search(p);
+
+                var count = list.Count();
+                //if (count == 0) break;
+
+                foreach (var item in list)
+                {
+                    yield return item;
+                }
+
+                dt = dt2;
+                max -= count;
+            }
+
+            // 回收内存
+            GC.Collect();
         }
         #endregion
 
