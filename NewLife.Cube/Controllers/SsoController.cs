@@ -209,8 +209,10 @@ namespace NewLife.Cube.Controllers
                     else
                         state = client.Name;
 
+                    url = url.AsUri(Request.GetRawUrl()) + "";
+
                     // 跳转到验证中心注销地址
-                    url = client.Logout(url, state, Request.GetRawUrl());
+                    url = client.Logout(url, state);
 
                     return Redirect(url);
                 }
