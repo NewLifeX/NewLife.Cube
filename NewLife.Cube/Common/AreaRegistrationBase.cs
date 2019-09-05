@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Mvc;
 using System.Web.WebPages;
+using NewLife.Cube.Controllers;
 using NewLife.Cube.Precompiled;
 using NewLife.IO;
 using NewLife.Log;
@@ -254,6 +255,18 @@ namespace NewLife.Cube
                 new { controller = "Index", action = "Index", id = UrlParameter.Optional },
                 new[] { ns }
             );
+
+            var routes = context.Routes;
+            if (routes["Cube"] == null)
+            {
+                // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
+                routes.MapRoute(
+                    name: "Cube",
+                    url: "{controller}/{action}/{id}",
+                    defaults: new { controller = "CubeHome", action = "Index", id = UrlParameter.Optional },
+                    namespaces: new[] { typeof(CubeHomeController).Namespace }
+                    );
+            }
 
             // 所有已存在文件的请求都交给Mvc处理，比如Admin目录
             //routes.RouteExistingFiles = true;

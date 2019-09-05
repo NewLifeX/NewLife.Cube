@@ -157,10 +157,10 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 如果是单点登录，则走单点登录注销
             var name = GetSession<String>("Cube_Sso");
-            if (!name.IsNullOrEmpty()) return RedirectToRoute("Cube", new
+            //if (!name.IsNullOrEmpty()) return Redirect($"~/Sso/Logout?name={name}&r={returnUrl}");
+            if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso", new
             {
-                controller = "Sso",
-                action = "Logout",
+                area = "",
                 name,
                 r = returnUrl
             });
