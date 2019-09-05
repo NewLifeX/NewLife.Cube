@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Web.Mvc;
+using System.Web.Routing;
 using System.Web.WebPages;
 using NewLife.Cube.Controllers;
 using NewLife.Cube.Precompiled;
@@ -109,7 +110,7 @@ namespace NewLife.Cube
             foreach (var item in ioc.ResolveAll(typeof(AuthorizeAttribute)))
             {
                 var auth = item.Instance;
-                XTrace.WriteLine("注册[{0}]授权过滤器：{1}",item.Identity, auth.GetType().FullName);
+                XTrace.WriteLine("注册[{0}]授权过滤器：{1}", item.Identity, auth.GetType().FullName);
                 if (auth is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
                 filters.Add(auth);
             }
@@ -127,6 +128,27 @@ namespace NewLife.Cube
             //    defaults: new { controller = "Frontend", action = "Default" },
             //    constraints: new { controller = "Frontend", action = "Default" }
             //);
+
+            var routes = RouteTable.Routes;
+            if (routes["Cube"] == null)
+            {
+                // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
+                routes.MapRoute(
+                    name: "Cube",
+                    url: "CubeHome/{action}/{id}",
+                    defaults: new { controller = "CubeHome", action = "Index", id = UrlParameter.Optional },
+                    namespaces: new[] { typeof(CubeHomeController).Namespace }
+                    );
+            }
+            if (routes["Sso"] == null)
+            {
+                routes.MapRoute(
+                    name: "Sso",
+                    url: "Sso/{action}/{id}",
+                    defaults: new { controller = "Sso", action = "Index", id = UrlParameter.Optional },
+                    namespaces: new[] { typeof(CubeHomeController).Namespace }
+                    );
+            }
 
             // 自动检查并下载魔方资源
             ThreadPoolX.QueueUserWorkItem(CheckContent);
@@ -256,17 +278,17 @@ namespace NewLife.Cube
                 new[] { ns }
             );
 
-            var routes = context.Routes;
-            if (routes["Cube"] == null)
-            {
-                // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
-                routes.MapRoute(
-                    name: "Cube",
-                    url: "{controller}/{action}/{id}",
-                    defaults: new { controller = "CubeHome", action = "Index", id = UrlParameter.Optional },
-                    namespaces: new[] { typeof(CubeHomeController).Namespace }
-                    );
-            }
+            //var routes = context.Routes;
+            //if (routes["Cube"] == null)
+            //{
+            //    // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
+            //    routes.MapRoute(
+            //        name: "Cube",
+            //        url: "{controller}/{action}/{id}",
+            //        defaults: new { controller = "CubeHome", action = "Index", id = UrlParameter.Optional },
+            //        namespaces: new[] { typeof(CubeHomeController).Namespace }
+            //        );
+            //}
 
             // 所有已存在文件的请求都交给Mvc处理，比如Admin目录
             //routes.RouteExistingFiles = true;
