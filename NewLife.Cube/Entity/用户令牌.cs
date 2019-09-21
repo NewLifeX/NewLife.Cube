@@ -179,21 +179,21 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case __.ID : _ID = value.ToInt(); break;
+                    case __.ID : _ID = Convert.ToInt32(value); break;
                     case __.Token : _Token = Convert.ToString(value); break;
                     case __.Url : _Url = Convert.ToString(value); break;
-                    case __.UserID : _UserID = value.ToInt(); break;
-                    case __.Expire : _Expire = value.ToDateTime(); break;
-                    case __.Enable : _Enable = value.ToBoolean(); break;
-                    case __.Times : _Times = value.ToInt(); break;
+                    case __.UserID : _UserID = Convert.ToInt32(value); break;
+                    case __.Expire : _Expire = Convert.ToDateTime(value); break;
+                    case __.Enable : _Enable = Convert.ToBoolean(value); break;
+                    case __.Times : _Times = Convert.ToInt32(value); break;
                     case __.LastIP : _LastIP = Convert.ToString(value); break;
-                    case __.LastTime : _LastTime = value.ToDateTime(); break;
-                    case __.CreateUserID : _CreateUserID = value.ToInt(); break;
+                    case __.LastTime : _LastTime = Convert.ToDateTime(value); break;
+                    case __.CreateUserID : _CreateUserID = Convert.ToInt32(value); break;
                     case __.CreateIP : _CreateIP = Convert.ToString(value); break;
-                    case __.CreateTime : _CreateTime = value.ToDateTime(); break;
-                    case __.UpdateUserID : _UpdateUserID = value.ToInt(); break;
+                    case __.CreateTime : _CreateTime = Convert.ToDateTime(value); break;
+                    case __.UpdateUserID : _UpdateUserID = Convert.ToInt32(value); break;
                     case __.UpdateIP : _UpdateIP = Convert.ToString(value); break;
-                    case __.UpdateTime : _UpdateTime = value.ToDateTime(); break;
+                    case __.UpdateTime : _UpdateTime = Convert.ToDateTime(value); break;
                     case __.Remark : _Remark = Convert.ToString(value); break;
                     default: base[name] = value; break;
                 }

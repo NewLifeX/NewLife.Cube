@@ -57,7 +57,7 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.3.7194.25592, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="NewLife.Core, Version=8.3.7191.34914, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NewLife.Core.8.3.2019.822\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -93,7 +93,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=9.14.7194.25595, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="XCode, Version=9.14.7191.34921, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NewLife.XCode.9.14.2019.822\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -672,20 +672,10 @@
     <Content Include="Content\images\logo\Taobao.png" />
     <Content Include="Content\images\logo\Weibo.png" />
     <Content Include="Content\images\logo\Weixin.png" />
-    <Content Include="Entity\Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.log</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Model.xml" />
     <Content Include="Entity\XCoder.log">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>XCoder.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
     </Content>
     <None Include="index.html" />
     <None Include="Content\bootstrap\js\bootstrap.js" />
