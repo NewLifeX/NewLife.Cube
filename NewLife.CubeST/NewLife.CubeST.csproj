@@ -1,0 +1,159 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;__CORE__</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Areas\Admin\Views\UserToken\**" />
+    <Content Remove="Areas\Admin\Views\UserToken\**" />
+    <EmbeddedResource Remove="Areas\Admin\Views\UserToken\**" />
+    <None Remove="Areas\Admin\Views\UserToken\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\NewLife.CubeNC\Areas\Admin\Index\IndexController.cs" Link="Areas\Admin\Index\IndexController.cs" />
+    <Compile Include="..\NewLife.CubeNC\Areas\Admin\Index\IndexController1.cs" Link="Areas\Admin\Index\IndexController1.cs" />
+    <Compile Include="..\NewLife.CubeNC\Common\AreaRegistrationBase.cs" Link="Common\AreaRegistrationBase.cs" />
+    <Compile Include="..\NewLife.CubeNC\Common\DbRunTimeModule.cs" Link="Common\DbRunTimeModule.cs" />
+    <Compile Include="..\NewLife.CubeNC\Common\EntityAuthorizeAttribute.cs" Link="Common\EntityAuthorizeAttribute.cs" />
+    <Compile Include="..\NewLife.CubeNC\Common\EntityModelBinder.cs" Link="Common\EntityModelBinder.cs" />
+    <Compile Include="..\NewLife.CubeNC\Common\PagerModelBinder.cs" Link="Common\PagerModelBinder.cs" />
+    <Compile Include="..\NewLife.CubeNC\Extensions\DefaultUIConfigureOptions.cs" Link="Extensions\DefaultUIConfigureOptions.cs" />
+    <Compile Include="..\NewLife.CubeNC\Extensions\HttpContext.cs" Link="Extensions\HttpContext.cs" />
+    <Compile Include="..\NewLife.CubeNC\Extensions\RequestHelper.cs" Link="Extensions\RequestHelper.cs" />
+    <Compile Include="..\NewLife.CubeNC\Extensions\ScanController.cs" Link="Extensions\ScanController.cs" />
+    <Compile Include="..\NewLife.CubeNC\Membership\ManageProvider.cs" Link="Membership\ManageProvider.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\MenuTree.cs" Link="ViewModels\MenuTree.cs" />
+    <Compile Include="..\NewLife.CubeNC\WebMiddleware\ErrorModule.cs" Link="WebMiddleware\ErrorModule.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Admin\Controllers\AppController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Admin\Controllers\AppLogController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Controllers\CoreController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Controllers\CubeController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DbController.cs" Link="Areas\Admin\Controllers\DbController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Controllers\FileController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\LogController.cs" Link="Areas\Admin\Controllers\LogController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\MenuController.cs" Link="Areas\Admin\Controllers\MenuController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Controllers\RoleController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserConnectController.cs" Link="Areas\Admin\Controllers\UserConnectController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserController.cs" Link="Areas\Admin\Controllers\UserController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserOnlineController.cs" Link="Areas\Admin\Controllers\UserOnlineController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\VisitStatController.cs" Link="Areas\Admin\Controllers\VisitStatController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs" Link="Areas\Admin\Models\DbItem.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs" Link="Areas\Admin\Models\FileItem.cs" />
+    <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
+    <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
+    <Compile Include="..\NewLife.Cube\Common\ControllerHelper.cs" Link="Common\ControllerHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Common\EntityController.cs" Link="Common\EntityController.cs" />
+    <Compile Include="..\NewLife.Cube\Common\EntityTreeController.cs" Link="Common\EntityTreeController.cs" />
+    <Compile Include="..\NewLife.Cube\Common\FieldCollection.cs" Link="Common\FieldCollection.cs" />
+    <Compile Include="..\NewLife.Cube\Common\MembershipExtensions.cs" Link="Common\MembershipExtensions.cs" />
+    <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
+    <Compile Include="..\NewLife.Cube\Common\ObjectController.cs" Link="Common\ObjectController.cs" />
+    <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
+    <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController.cs" Link="Common\ReadOnlyEntityController.cs" />
+    <Compile Include="..\NewLife.Cube\Controllers\HomeController.cs" Link="Controllers\HomeController.cs" />
+    <Compile Include="..\NewLife.Cube\Controllers\ODataController.cs" Link="Controllers\ODataController.cs" />
+    <Compile Include="..\NewLife.Cube\Controllers\SsoController.cs" Link="Controllers\SsoController.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\XCoder.cs" Link="Entity\XCoder.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs" Link="Entity\应用日志.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用系统.cs" Link="Entity\应用系统.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户链接.Biz.cs" Link="Entity\用户链接.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户链接.cs" Link="Entity\用户链接.cs" />
+    <Compile Include="..\NewLife.Cube\Extensions\ManageProvider.cs" Link="Extensions\ManageProvider.cs" />
+    <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
+    <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuthServer2.cs" Link="Web\OAuthServer2.cs" />
+    <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
+    <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\NewLife.Cube\Entity\Cube.xml" Link="Entity\Cube.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
+    <PackageReference Include="NewLife.Core" Version="8.3.2019.923" />
+    <PackageReference Include="NewLife.XCode" Version="9.14.2019.923" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\Admin\Controllers\" />
+    <Folder Include="Areas\Admin\Models\" />
+    <Folder Include="Areas\Admin\Index\" />
+    <Folder Include="Controllers\" />
+    <Folder Include="Models\" />
+    <Folder Include="ViewModels\" />
+    <Folder Include="Views\Home\" />
+    <Folder Include="Views\Shared\" />
+    <Folder Include="Entity\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Membership\" />
+    <Folder Include="Views\CubeHome\" />
+    <Folder Include="Web\" />
+    <Folder Include="WebMiddleware\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\NewLife.CubeNC\Views\CubeHome\Index.cshtml" Link="Views\CubeHome\Index.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Home\Index.cshtml" Link="Views\Home\Index.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\CubeError.cshtml" Link="Views\Shared\CubeError.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\Form.cshtml" Link="Views\Shared\Form.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\List.cshtml" Link="Views\Shared\List.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\ListTree.cshtml" Link="Views\Shared\ListTree.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\NoPermission.cshtml" Link="Views\Shared\NoPermission.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\ObjectForm.cshtml" Link="Views\Shared\ObjectForm.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Ace_Layout.cshtml" Link="Views\Shared\_Ace_Layout.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Ace_Layout_Nav.cshtml" Link="Views\Shared\_Ace_Layout_Nav.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_DateRange.cshtml" Link="Views\Shared\_DateRange.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Form_Action.cshtml" Link="Views\Shared\_Form_Action.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Form_Body.cshtml" Link="Views\Shared\_Form_Body.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Form_Footer.cshtml" Link="Views\Shared\_Form_Footer.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Form_Group.cshtml" Link="Views\Shared\_Form_Group.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Form_Header.cshtml" Link="Views\Shared\_Form_Header.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Form_Item.cshtml" Link="Views\Shared\_Form_Item.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Layout.cshtml" Link="Views\Shared\_Layout.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Layout_Footer.cshtml" Link="Views\Shared\_Layout_Footer.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Layout_Header.cshtml" Link="Views\Shared\_Layout_Header.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_ListTree_Data.cshtml" Link="Views\Shared\_ListTree_Data.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Data.cshtml" Link="Views\Shared\_List_Data.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Data_Action.cshtml" Link="Views\Shared\_List_Data_Action.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Data_Item.cshtml" Link="Views\Shared\_List_Data_Item.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Data_Item_First.cshtml" Link="Views\Shared\_List_Data_Item_First.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Pager.cshtml" Link="Views\Shared\_List_Pager.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Pager1.cshtml" Link="Views\Shared\_List_Pager1.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Search.cshtml" Link="Views\Shared\_List_Search.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Toolbar.cshtml" Link="Views\Shared\_List_Toolbar.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Toolbar_Adv.cshtml" Link="Views\Shared\_List_Toolbar_Adv.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Toolbar_Batch.cshtml" Link="Views\Shared\_List_Toolbar_Batch.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_List_Toolbar_Search.cshtml" Link="Views\Shared\_List_Toolbar_Search.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_Object_Nav.cshtml" Link="Views\Shared\_Object_Nav.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_StatLevel.cshtml" Link="Views\Shared\_StatLevel.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\Shared\_ValidationScriptsPartial.cshtml" Link="Views\Shared\_ValidationScriptsPartial.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\_ViewImports.cshtml" Link="Views\_ViewImports.cshtml" />
+    <None Include="..\NewLife.CubeNC\Views\_ViewStart.cshtml" Link="Views\_ViewStart.cshtml" />
+    <None Include="..\NewLife.Cube\Entity\XCoder.tt" Link="Entity\XCoder.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+  </ItemGroup>
+
+</Project>

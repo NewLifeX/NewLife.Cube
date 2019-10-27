@@ -1,0 +1,25 @@
+﻿@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var entity = pair.Item1;
+    var item = pair.Item2;
+
+    var set = NewLife.Cube.Setting.Current;
+    var cls = set.FormGroupClass;
+    if (cls.IsNullOrEmpty()) { cls = "form-group col-xs-12 col-sm-6 col-lg-4"; }
+}
+@if (item.Name == "Permission")
+{
+    if (!entity.IsNullKey)
+    {
+        @Html.PartialAsync("SetPermission", new { Role = entity }).Result
+    }
+}
+else
+{
+    <div class="@cls">
+        @Html.PartialAsync("_Form_Item", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
+    </div>
+}

@@ -1,0 +1,41 @@
+﻿@using NewLife.Model;
+@using NewLife.Cube.ViewModels;
+@{
+    String[] icos = new String[] { "fa-tachometer", "fa-desktop", "fa-list", "fa-pencil-square-o", "fa-list-alt", "fa-calendar", "fa-picture-o", "fa-tag", "fa-file-o" };
+    Int32 _idx = 0;
+    var Menus = ViewBag.Menus as List<MenuTree>;
+}
+<ul class="nav nav-list">
+    @foreach (var menu in Menus)
+    {
+        var childs = menu.Children ?? new List<MenuTree>();
+        if (_idx >= icos.Length) { _idx = 0; }
+        <li @Html.Raw(menu == Menus[0] ? "class=\"active open\"" : "")>
+            <a href="#" class="dropdown-toggle">
+                <i class="menu-icon fa @icos[_idx++]"></i>
+                <span class="menu-text">@menu.Name</span>
+
+                <b class="arrow fa fa-angle-down"></b>
+            </a>
+            @if (childs.Any())
+            {
+                <b class="arrow"></b>
+
+                <ul @Html.Raw(menu == Menus[0] ? "class=\"submenu nav-show\" style=\"display:block;\"" : "class=\"submenu nav-hide\" style=\"display:none;\"")>
+                    @foreach (var menu2 in childs)
+                    {
+                        @Html.PartialAsync("_Left_Item", menu2).Result;
+                    }
+                </ul>
+
+                @*<ul class="submenu">
+                        @foreach (IMenu menu2 in childs)
+                        {
+                            @Html.PartialAsync("_Left_Item", menu2).Result;
+                        }
+                    </ul>*@
+            }
+        </li>
+    }
+</ul>
+<!-- /.nav-list -->
