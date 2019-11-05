@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -155,5 +158,9 @@
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="md &quot;$(ProjectDir)..\..\Bin\netstandard3.0&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName)&quot;.* &quot;$(ProjectDir)..\..\Bin\netstandard3.0\&quot; /y" />
+  </Target>
 
 </Project>
