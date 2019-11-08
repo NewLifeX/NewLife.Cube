@@ -68,7 +68,7 @@ WriteLiteral("\r\n");
             #line hidden
 WriteLiteral("    <div");
 
-WriteLiteral(" class=\"clearfix form-actions col-sm-12 col-md-12\"");
+WriteLiteral(" class=\"clearfix form-actions col-xs-12 col-sm-12 col-md-12\"");
 
 WriteLiteral(">\r\n        <a");
 
