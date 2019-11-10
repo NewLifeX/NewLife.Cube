@@ -36,10 +36,12 @@ using NewLife.Cube;
 //
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
-[assembly: AssemblyVersion("2.8.*")]
-[assembly: AssemblyFileVersion("2.8.2019.0910")]
+[assembly: AssemblyVersion("2.9.*")]
+[assembly: AssemblyFileVersion("2.9.2019.1110")]
 
 /*
+ * v2.9.2019.1110   优化单点登录和Csv导出，界面调整
+ * 
  * v2.8.2019.0623   增加Csv导出
  * 
  * v2.8.2019.0602   支持备份与恢复数据

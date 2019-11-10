@@ -8,10 +8,10 @@
     <Description>Mvc权限管理后台，支持模版视图重载覆盖</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2019 新生命开发团队</Copyright>
-    <FileVersion>2.8.2019.0910</FileVersion>
-    <AssemblyVersion>2.8.*</AssemblyVersion>
+    <FileVersion>2.9.2019.1110</FileVersion>
+    <AssemblyVersion>2.9.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
-    <Version>2.8.2019.0910</Version>
+    <Version>2.9.2019.1110</Version>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <ApplicationIcon />
