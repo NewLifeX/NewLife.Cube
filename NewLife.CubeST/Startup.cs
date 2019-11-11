@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NewLife.Cube;
 
 namespace NewLife.CubeST
 {
@@ -24,6 +25,9 @@ namespace NewLife.CubeST
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+
+            // 添加管理提供者
+            services.AddManageProvider();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,9 +52,15 @@ namespace NewLife.CubeST
 
             app.UseEndpoints(endpoints =>
             {
+                // 区域路由注册
+                endpoints.MapAreaControllerRoute(
+                    name: "CubeAreas",
+                    areaName: "Admin",
+                    pattern: "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
+
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=CubeHome}/{action=Index}/{id?}");
             });
         }
     }
