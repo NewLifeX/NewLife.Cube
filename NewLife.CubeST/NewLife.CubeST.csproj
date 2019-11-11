@@ -125,7 +125,7 @@
   <ItemGroup>
     <Content Include="..\NewLife.CubeNC\Views\CubeHome\Index.cshtml" Link="Views\CubeHome\Index.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Home\Index.cshtml" Link="Views\Home\Index.cshtml" />
-    <!--<Content Include="..\NewLife.CubeNC\Views\Shared\CubeError.cshtml" Link="Views\Shared\CubeError.cshtml" />
+   <Content Include="..\NewLife.CubeNC\Views\Shared\CubeError.cshtml" Link="Views\Shared\CubeError.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\Form.cshtml" Link="Views\Shared\Form.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\List.cshtml" Link="Views\Shared\List.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\ListTree.cshtml" Link="Views\Shared\ListTree.cshtml" />
@@ -140,7 +140,7 @@
     <Content Include="..\NewLife.CubeNC\Views\Shared\_Form_Group.cshtml" Link="Views\Shared\_Form_Group.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\_Form_Header.cshtml" Link="Views\Shared\_Form_Header.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\_Form_Item.cshtml" Link="Views\Shared\_Form_Item.cshtml" />
-    <Content Include="..\NewLife.CubeNC\Views\Shared\_Layout.cshtml" Link="Views\Shared\_Layout.cshtml" />
+     <Content Include="..\NewLife.CubeNC\Views\Shared\_Layout.cshtml" Link="Views\Shared\_Layout.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\_Layout_Footer.cshtml" Link="Views\Shared\_Layout_Footer.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\_Layout_Header.cshtml" Link="Views\Shared\_Layout_Header.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\_ListTree_Data.cshtml" Link="Views\Shared\_ListTree_Data.cshtml" />
@@ -159,7 +159,7 @@
     <Content Include="..\NewLife.CubeNC\Views\Shared\_StatLevel.cshtml" Link="Views\Shared\_StatLevel.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\Shared\_ValidationScriptsPartial.cshtml" Link="Views\Shared\_ValidationScriptsPartial.cshtml" />
     <Content Include="..\NewLife.CubeNC\Views\_ViewImports.cshtml" Link="Views\_ViewImports.cshtml" />
-    <Content Include="..\NewLife.CubeNC\Views\_ViewStart.cshtml" Link="Views\_ViewStart.cshtml" />-->
+    <Content Include="..\NewLife.CubeNC\Views\_ViewStart.cshtml" Link="Views\_ViewStart.cshtml" />
     <None Include="..\NewLife.Cube\Entity\XCoder.tt" Link="Entity\XCoder.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>

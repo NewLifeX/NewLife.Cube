@@ -19,13 +19,13 @@
                 end = end > pager.PageCount ? pager.PageCount : end;
                 if (pager.PageIndex <= 1)
                 {
-                    <li class="paginItem current"><a href="#">|<</a></li>
-                    <li class="paginItem current"><a href="#"><</a></li>
+                    <li class="paginItem current"><a href="#">&Iota;&lt;</a></li>
+                    <li class="paginItem current"><a href="#">&lt;</a></li>
                 }
                 else
                 {
-                    <li class="paginItem"><a href="@pager.GetPageUrl("首页", 1)">|<</a></li>
-                    <li class="paginItem"><a href="@pager.GetPageUrl("上一页", pager.PageIndex-1)"><</a></li>
+                    <li class="paginItem"><a href="@pager.GetPageUrl("首页", 1)">&Iota;&lt;</a></li>
+                    <li class="paginItem"><a href="@pager.GetPageUrl(" 上一页", pager.PageIndex-1)">&lt;</a></li>
                 }
 
                 for (int i = start; i <= end; i++)

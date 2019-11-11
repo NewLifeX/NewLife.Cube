@@ -62,3 +62,5 @@ bld/
 /BinTest
 /Test/Entity
 /CubeDemoNC/Properties/PublishProfiles/FolderProfile.pubxml
+/NewLife.CubeST/wwwroot/Content
+/NewLife.CubeST/wwwroot/Scripts
