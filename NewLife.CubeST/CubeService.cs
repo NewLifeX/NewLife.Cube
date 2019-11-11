@@ -56,8 +56,7 @@ namespace NewLife.Cube
 
             var provider = services.BuildServiceProvider();
             //var env = provider.GetService<IHostingEnvironment>();
-            var env = provider.GetService(typeof(IWebHostEnvironment)) as IWebHostEnvironment;
-            if (env != null) services.AddCubeDefaultUI(env);
+            if (provider.GetService(typeof(IWebHostEnvironment)) is IWebHostEnvironment env) services.AddCubeDefaultUI(env);
 
             services.AddMvc(opt =>
             {
@@ -69,6 +68,8 @@ namespace NewLife.Cube
 
                 // 过滤器
                 //opt.Filters.Add<MvcHandleErrorAttribute>();
+
+                opt.EnableEndpointRouting = false;
 
             })
             // 添加版本兼容性，显示声明当前应用版本为2.1
