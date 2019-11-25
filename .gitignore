@@ -62,3 +62,8 @@ bld/
 /BinTest
 /Test/Entity
 /CubeDemoNC/Properties/PublishProfiles/FolderProfile.pubxml
+/CubeDemoST/Areas/School/Models/Entity/Config
+/CubeDemoST/Areas/School/Models/Config
+/CubeDemoST/wwwroot/lib
+/CubeDemoST/wwwroot/js
+/CubeDemoST/wwwroot/css

@@ -26,6 +26,7 @@ using XCode;
 using XCode.Membership;
 using NewLife.Cube.ViewModels;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
+using Microsoft.Extensions.Hosting;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -39,15 +40,13 @@ namespace NewLife.Cube.Admin.Controllers
 
 #if __CORE__
         private IManageProvider _provider;
-        private IApplicationLifetime _applicationLifetime { get; set; }
-
-
+        private IHostApplicationLifetime _applicationLifetime { get; set; }
 
         private IndexController() { }
 
         /// <summary>实例化</summary>
         /// <param name="manageProvider"></param>
-        public IndexController(IManageProvider manageProvider, IApplicationLifetime appLifetime
+        public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime
             , ILogger<IndexController> logger)
         {
             _provider = manageProvider;
