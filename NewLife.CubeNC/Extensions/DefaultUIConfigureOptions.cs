@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -15,13 +14,13 @@ namespace NewLife.Cube.Extensions
     {
         /// <summary>实例化</summary>
         /// <param name="environment"></param>
-        public DefaultUIConfigureOptions(IWebHostEnvironment environment)
+        public DefaultUIConfigureOptions(IHostingEnvironment environment)
         {
             Environment = environment;
         }
 
         /// <summary>环境</summary>
-        public IWebHostEnvironment Environment { get; }
+        public IHostingEnvironment Environment { get; }
 
         /// <summary>提交配置</summary>
         /// <param name="name"></param>
@@ -52,7 +51,7 @@ namespace NewLife.Cube.Extensions
     {
         /// <summary>添加魔方UI</summary>
         /// <param name="services"></param>
-        public static void AddCubeDefaultUI(this IServiceCollection services, Microsoft.AspNetCore.Hosting.IWebHostEnvironment env)
+        public static void AddCubeDefaultUI(this IServiceCollection services, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
         {
             //services.ConfigureOptions<DefaultUIConfigureOptions>();
             var root = env.WebRootPath;

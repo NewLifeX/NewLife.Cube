@@ -56,7 +56,8 @@ namespace NewLife.Cube
 
             var provider = services.BuildServiceProvider();
             //var env = provider.GetService<IHostingEnvironment>();
-            if (provider.GetService(typeof(IWebHostEnvironment)) is IWebHostEnvironment env) services.AddCubeDefaultUI(env);
+            var env = provider.GetService(typeof(IHostingEnvironment)) as IHostingEnvironment;
+            if (env != null) services.AddCubeDefaultUI(env);
 
             services.AddMvc(opt =>
             {
