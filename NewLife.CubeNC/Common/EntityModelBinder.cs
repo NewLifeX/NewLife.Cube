@@ -29,7 +29,7 @@ namespace NewLife.Cube
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
         private readonly ILoggerFactory _loggerFactory;
 
-        public new async Task BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var modelType = bindingContext.ModelType;
             var controllerContext = bindingContext.ActionContext;
@@ -95,10 +95,12 @@ namespace NewLife.Cube
                     // 为Model赋值，为下面BindProperty方法做准备
                     bindingContext.Model = bindingContext.Result.Model;
 
-                    // 使用复杂类型模型绑定器ComplexTypeModelBinder填充Model
-                    await BindProperty(bindingContext);
+                    //// 使用复杂类型模型绑定器ComplexTypeModelBinder填充Model
+                    //await BindProperty(bindingContext);
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         private static String GetCacheKey(Type type, params Object[] keys)
@@ -131,14 +133,13 @@ namespace NewLife.Cube
             return ctx.Session.Get(ckey, type) as IEntity;
         }
 
-        private async Task BindProperty(ModelBindingContext bindingContext)
-        {
-            var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
+        //private async Task BindProperty(ModelBindingContext bindingContext)
+        //{
+        //    var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
 
-            await complexTypeModelBinder.BindModelAsync(bindingContext);
-        }
+        //    await complexTypeModelBinder.BindModelAsync(bindingContext);
+        //}
     }
-
 
     /// <summary>实体模型绑定器提供者，为所有XCode实体类提供实体模型绑定器</summary>
     public class EntityModelBinderProvider : IModelBinderProvider
