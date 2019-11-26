@@ -28,7 +28,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\Bin</OutputPath>
-    <DocumentationFile>..\Bin\netcoreapp2.1\NewLife.Cube.xml</DocumentationFile>
+    <DocumentationFile>..\Bin\netcoreapp3.0\NewLife.Cube.xml</DocumentationFile>
     <DefineConstants>TRACE;__CORE__</DefineConstants>
   </PropertyGroup>
 
