@@ -32,15 +32,9 @@ namespace CubeDemoNC
                 app.UseDeveloperExceptionPage();
             else
                 app.UseExceptionHandler("/Home/Error");
-
+            // 启用https
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.UseCube();
 
             app.UseCube();
         }
