@@ -177,7 +177,7 @@ namespace NewLife.Cube
 
             var set = Setting.Current;
 
-            // 添加自定义中间件
+            // 添加自定义中间件（3.0开始采用netcore原生版本错误页面）
             // 注册错误处理模块中间件
             //app.UseErrorModule();
 
@@ -200,9 +200,6 @@ namespace NewLife.Cube
                 endpoints.MapControllerRoute(
                     "CubeAreas",
                     "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
-                endpoints.MapControllerRoute(
-                    "Cube",
-                    "{controller=Index}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             })
             .Build();

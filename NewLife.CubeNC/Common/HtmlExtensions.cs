@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -71,8 +70,8 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForEditor<TModel, TProperty>(this IHtmlHelper<TModel> Html, Expression<Func<TModel, TProperty>> expression, Object htmlAttributes = null)
         {
-            var meta = ExpressionMetadataProvider.FromLambdaExpression(expression, Html.ViewData,Html.MetadataProvider).Metadata;
-            var name = meta.PropertyName;
+            //var meta = ExpressionMetadataProvider.FromLambdaExpression(expression, Html.ViewData, Html.MetadataProvider).Metadata;
+            var name = "";
             var pi = typeof(TModel).GetProperty(name);
 
             return Html.ForEditor(name, Html.ViewData.Model.GetValue(pi), pi.PropertyType, null, htmlAttributes);
@@ -334,11 +333,11 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForDateTime<TModel, TProperty>(this IHtmlHelper<TModel> Html, Expression<Func<TModel, TProperty>> expression, String format = null, Object htmlAttributes = null)
         {
-            var meta = ExpressionMetadataProvider.FromLambdaExpression(expression, Html.ViewData, Html.MetadataProvider).Metadata;
+            //var meta = ExpressionMetadataProvider.FromLambdaExpression(expression, Html.ViewData, Html.MetadataProvider).Metadata;
             var entity = Html.ViewData.Model as IEntity;
-            var value = (DateTime)entity[meta.PropertyName];
+            var value = (DateTime)entity[""];
 
-            return Html.ForDateTime(meta.PropertyName, value, format, htmlAttributes);
+            return Html.ForDateTime("", value, format, htmlAttributes);
         }
 
         /// <summary>输出布尔型</summary>
