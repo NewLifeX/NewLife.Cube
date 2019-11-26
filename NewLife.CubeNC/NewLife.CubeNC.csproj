@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>..\Bin\netcoreapp2.1\NewLife.Cube.xml</DocumentationFile>
+    <DocumentationFile>..\Bin\netcoreapp3.0\NewLife.Cube.xml</DocumentationFile>
     <WarningLevel>3</WarningLevel>
     <OutputPath>..\Bin</OutputPath>
     <DefineConstants>TRACE;__CORE__</DefineConstants>
@@ -197,7 +197,7 @@
     </Content>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="md &quot;$(ProjectDir)..\..\Bin\netstandard2.0&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName)&quot;.* &quot;$(ProjectDir)..\..\Bin\netstandard2.0\&quot; /y" />
+    <Exec Command="md &quot;$(ProjectDir)..\..\Bin\netstandard3.0&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName)&quot;.* &quot;$(ProjectDir)..\..\Bin\netstandard3.0\&quot; /y" />
   </Target>
 
 </Project>
