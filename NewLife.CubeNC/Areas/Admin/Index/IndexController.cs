@@ -40,13 +40,13 @@ namespace NewLife.Cube.Admin.Controllers
 
 #if __CORE__
         private IManageProvider _provider;
-        //private IHostApplicationLifetime _applicationLifetime { get; set; }
+        private IHostApplicationLifetime _applicationLifetime { get; set; }
 
         private IndexController() { }
 
         /// <summary>实例化</summary>
         /// <param name="manageProvider"></param>
-        public IndexController(IManageProvider manageProvider/*, IHostApplicationLifetime appLifetime*/
+        public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime
             , ILogger<IndexController> logger)
         {
             _provider = manageProvider;

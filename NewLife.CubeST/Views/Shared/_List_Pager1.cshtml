@@ -1,0 +1,56 @@
+﻿@using NewLife.Web;
+@{
+    var pager = ViewBag.Page as Pager;
+    pager.PageUrlTemplate = Url.Action("Index") + "{链接}";
+    // 没有总记录数的时候不显示分页，可以认为不启用分页
+}
+
+@if (pager.TotalCount > 0)
+{
+    <div class="pagin">
+        <div class="message">共<i class="blue">@pager.TotalCount</i>条记录，当前显示第&nbsp;<i class="blue">@pager.PageIndex&nbsp;</i>页/共&nbsp;<i class="blue">@pager.PageCount&nbsp;</i>页</div>
+        <ul class="paginList">
+            @{
+                var len = 8;
+                int left = (len - 1) / 2, right = len - left - 1;
+                int start = pager.PageIndex - left;//开始页数
+                Int64 end = pager.PageIndex + right;//结束页数
+                start = start < 1 ? 1 : start;
+                end = end > pager.PageCount ? pager.PageCount : end;
+                if (pager.PageIndex <= 1)
+                {
+                    <li class="paginItem current"><a href="#">|&lt;</a></li>
+                    <li class="paginItem current"><a href="#">&lt;</a></li>
+                }
+                else
+                {
+                    <li class="paginItem"><a href="@pager.GetPageUrl("首页", 1)">|&lt;</a></li>
+                    <li class="paginItem"><a href="@pager.GetPageUrl("上一页", pager.PageIndex-1)">&lt;</a></li>
+                }
+
+                for (int i = start; i <= end; i++)
+                {
+                    if (i == pager.PageIndex)
+                    {
+                        <li class="paginItem current"><a href="javascript:;">@i</a></li>
+                    }
+                    else
+                    {
+                        <li class="paginItem"><a href="@pager.GetPageUrl(i.ToString(), i)">@i</a></li>
+                    }
+                }
+
+                if (pager.PageIndex >= pager.PageCount)
+                {
+                    <li class="paginItem current"><a href="#">></a></li>
+                    <li class="paginItem current"><a href="#">>|</a></li>
+                }
+                else
+                {
+                    <li class="paginItem"><a href="@pager.GetPageUrl("下一页", pager.PageIndex + 1)">></a></li>
+                    <li class="paginItem"><a href="@pager.GetPageUrl("未页", pager.PageCount)">>|</a></li>
+                }
+            }
+        </ul>
+    </div>
+}

@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CubeDemoNC", "CubeDemoNC\Cu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewLife.CubeST", "NewLife.CubeST\NewLife.CubeST.csproj", "{BA42AB84-4D07-4B5D-8559-D74B48641DA5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.CubeST", "NewLife.CubeST\NewLife.CubeST.csproj", "{BA42AB84-4D07-4B5D-8559-D74B48641DA5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CubeDemoST", "CubeDemoST\CubeDemoST.csproj", "{58427FEC-02E5-4497-B0A2-2C7905C63270}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{BA42AB84-4D07-4B5D-8559-D74B48641DA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA42AB84-4D07-4B5D-8559-D74B48641DA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA42AB84-4D07-4B5D-8559-D74B48641DA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58427FEC-02E5-4497-B0A2-2C7905C63270}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58427FEC-02E5-4497-B0A2-2C7905C63270}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58427FEC-02E5-4497-B0A2-2C7905C63270}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58427FEC-02E5-4497-B0A2-2C7905C63270}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
