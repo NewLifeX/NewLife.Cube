@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using NewLife.Data;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
+using XCode.Cache;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity
@@ -140,6 +142,23 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 高级查询
+        /// <summary>高级查询</summary>
+        /// <param name="provider"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="key"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        public static IList<UserConnect> Search(String provider, DateTime start, DateTime end, String key, PageParameter p)
+        {
+            var exp = new WhereExpression();
+
+            if (!provider.IsNullOrEmpty()) exp &= _.Provider == provider;
+            exp &= _.UpdateTime.Between(start, end);
+            if (!key.IsNullOrEmpty()) exp &= _.NickName.Contains(key) | _.OpenID.Contains(key);
+
+            return FindAll(exp, p);
+        }
         #endregion
 
         #region 业务操作
@@ -159,6 +178,12 @@ namespace NewLife.Cube.Entity
 
             if (client.Items != null) uc.Remark = client.Items.ToJson();
         }
+
+        static FieldCache<UserConnect> ProviderCache = new FieldCache<UserConnect>(_.Provider);
+
+        /// <summary>获取所有提供商名称</summary>
+        /// <returns></returns>
+        public static IDictionary<String, String> FindAllProviderName() => ProviderCache.FindAllName();
         #endregion
     }
 }

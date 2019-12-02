@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
@@ -34,6 +35,19 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             return base.ScanActionMenu(menu);
+        }
+
+        /// <summary>搜索数据集</summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        protected override IEnumerable<UserConnect> Search(Pager p)
+        {
+            var key = p["Q"];
+            var provider = p["provider"];
+            var start = p["dtStart"].ToDateTime();
+            var end = p["dtEnd"].ToDateTime();
+
+            return UserConnect.Search(provider, start, end, key, p);
         }
     }
 }
