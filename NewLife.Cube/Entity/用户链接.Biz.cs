@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 using NewLife.Data;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -98,6 +101,13 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 扩展属性
+        /// <summary>用户</summary>
+        [XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        public UserX User => Extends.Get(nameof(User), k => UserX.FindByID(UserID));
+
+        /// <summary>用户</summary>
+        [Map(__.UserID)]
+        public String UserName => User + "";
         #endregion
 
         #region 扩展查询
