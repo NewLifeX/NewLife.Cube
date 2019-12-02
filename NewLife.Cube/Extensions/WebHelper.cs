@@ -115,6 +115,14 @@ namespace NewLife.Web
 
             str = req.ServerVariables["HTTP_X_REQUEST_URI"];
             if (str.IsNullOrEmpty()) str = req.ServerVariables["X-Request-Uri"];
+
+            // 阿里云CDN默认支持 X-Client-Scheme: https
+            if (str.IsNullOrEmpty())
+            {
+                var scheme = req.ServerVariables["X-Client-Scheme"];
+                if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
+            }
+            
             if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
 
             return uri;
@@ -132,6 +140,14 @@ namespace NewLife.Web
 
             str = req.ServerVariables["HTTP_X_REQUEST_URI"];
             if (str.IsNullOrEmpty()) str = req.ServerVariables["X-Request-Uri"];
+
+            // 阿里云CDN默认支持 X-Client-Scheme: https
+            if (str.IsNullOrEmpty())
+            {
+                var scheme = req.ServerVariables["X-Client-Scheme"];
+                if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
+            }
+
             if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
 
             return uri;
