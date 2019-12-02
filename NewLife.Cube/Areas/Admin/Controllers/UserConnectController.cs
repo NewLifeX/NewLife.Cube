@@ -43,11 +43,12 @@ namespace NewLife.Cube.Admin.Controllers
         protected override IEnumerable<UserConnect> Search(Pager p)
         {
             var key = p["Q"];
+            var userid = p["userid"].ToInt();
             var provider = p["provider"];
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
 
-            return UserConnect.Search(provider, start, end, key, p);
+            return UserConnect.Search(provider, userid, start, end, key, p);
         }
     }
 }

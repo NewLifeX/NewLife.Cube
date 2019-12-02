@@ -155,16 +155,18 @@ namespace NewLife.Cube.Entity
         #region 高级查询
         /// <summary>高级查询</summary>
         /// <param name="provider"></param>
+        /// <param name="userid"></param>
         /// <param name="start"></param>
         /// <param name="end"></param>
         /// <param name="key"></param>
         /// <param name="p"></param>
         /// <returns></returns>
-        public static IList<UserConnect> Search(String provider, DateTime start, DateTime end, String key, PageParameter p)
+        public static IList<UserConnect> Search(String provider, Int32 userid, DateTime start, DateTime end, String key, PageParameter p)
         {
             var exp = new WhereExpression();
 
             if (!provider.IsNullOrEmpty()) exp &= _.Provider == provider;
+            if (userid > 0) exp &= _.UserID == userid;
             exp &= _.UpdateTime.Between(start, end);
             if (!key.IsNullOrEmpty()) exp &= _.NickName.Contains(key) | _.OpenID.Contains(key);
 
