@@ -106,7 +106,8 @@ namespace NewLife.Cube.Entity
         public UserX User => Extends.Get(nameof(User), k => UserX.FindByID(UserID));
 
         /// <summary>用户</summary>
-        [Map(__.UserID, typeof(UserX), "ID")]
+        //[Map(__.UserID, typeof(UserX), "ID")]
+        [Map(__.UserID)]
         public String UserName => User + "";
         #endregion
 
