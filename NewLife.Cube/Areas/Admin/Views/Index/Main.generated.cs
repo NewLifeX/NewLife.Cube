@@ -367,13 +367,13 @@ WriteLiteral(">\r\n                操作系统：\r\n            </td>\r\n     
 
 WriteLiteral(" class=\"value\"");
 
-WriteLiteral(">\r\n                ");
+WriteLiteral(">\r\n");
 
-WriteLiteral(" ");
+WriteLiteral("                ");
 
             
             #line 86 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                               Write(Environment.OSVersion);
+           Write(Environment.OSVersion);
 
             
             #line default
@@ -508,14 +508,14 @@ WriteLiteral("M\r\n                GC: ");
             #line hidden
 WriteLiteral("M\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 4130), Tuple.Create("\"", 4171)
+WriteAttribute("href", Tuple.Create(" href=\"", 4110), Tuple.Create("\"", 4151)
             
             #line 120 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 4137), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/ProcessModules")
+, Tuple.Create(Tuple.Create("", 4117), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/ProcessModules")
             
             #line default
             #line hidden
-, 4137), false)
+, 4117), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
@@ -524,14 +524,14 @@ WriteLiteral(" title=\"点击打开进程模块列表\"");
 
 WriteLiteral(">模块列表</a>\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 4236), Tuple.Create("\"", 4268)
+WriteAttribute("href", Tuple.Create(" href=\"", 4216), Tuple.Create("\"", 4248)
             
             #line 121 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 4243), Tuple.Create<System.Object, System.Int32>(Url.Action("MemoryFree")
+, Tuple.Create(Tuple.Create("", 4223), Tuple.Create<System.Object, System.Int32>(Url.Action("MemoryFree")
             
             #line default
             #line hidden
-, 4243), false)
+, 4223), false)
 );
 
 WriteLiteral(" title=\"点击释放进程内存\"");
@@ -603,14 +603,14 @@ WriteLiteral(" 分钟，SessionID：");
             #line hidden
 WriteLiteral("\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 4808), Tuple.Create("\"", 4842)
+WriteAttribute("href", Tuple.Create(" href=\"", 4788), Tuple.Create("\"", 4822)
             
             #line 136 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 4815), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Session")
+, Tuple.Create(Tuple.Create("", 4795), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Session")
             
             #line default
             #line hidden
-, 4815), false)
+, 4795), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
@@ -647,14 +647,14 @@ WriteLiteral(" 个，可用：");
             #line hidden
 WriteLiteral("KB\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 5137), Tuple.Create("\"", 5169)
+WriteAttribute("href", Tuple.Create(" href=\"", 5117), Tuple.Create("\"", 5149)
             
             #line 143 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 5144), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Cache")
+, Tuple.Create(Tuple.Create("", 5124), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Cache")
             
             #line default
             #line hidden
-, 5144), false)
+, 5124), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
