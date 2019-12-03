@@ -194,6 +194,15 @@
     <EmbeddedResource Include="wwwroot\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Content Update="Areas\Admin\Views\AppLog\_List_Data.cshtml">
+      <Generator></Generator>
+    </Content>
+    <Content Update="Areas\Admin\Views\App\_List_Data.cshtml">
+      <Generator></Generator>
+    </Content>
+    <Content Update="Areas\Admin\Views\App\_List_Search.cshtml">
+      <Generator></Generator>
+    </Content>
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
