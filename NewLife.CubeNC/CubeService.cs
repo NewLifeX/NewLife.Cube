@@ -200,6 +200,10 @@ namespace NewLife.Cube
                 endpoints.MapControllerRoute(
                     "CubeAreas",
                     "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(
+                    "Default",
+                    "{controller=Index}/{action=Index}/{id?}"
+                    );
                 endpoints.MapRazorPages();
             })
             .Build();
