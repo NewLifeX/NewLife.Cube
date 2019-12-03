@@ -9,6 +9,7 @@ using NewLife.Cube.Entity;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
+using System.Web;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -95,12 +96,12 @@ namespace NewLife.Cube.Admin.Controllers
                 // 只有一个，跳转
                 if (ms.Count == 1)
                 {
-                    //var url = $"~/Sso/Login?name={ms[0].Name}";
-                    //if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
+                    var url = $"~/Sso/Login?name={ms[0].Name}";
+                    if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
 
-                    //return Redirect(url);
+                    return Redirect(url);
 
-                    return RedirectToAction("Login", "Sso", new { area = "", name = ms[0].Name, r = returnUrl });
+                    //return RedirectToAction("Login", "Sso", new { area = "", name = ms[0].Name, r = returnUrl });
                 }
             }
 
