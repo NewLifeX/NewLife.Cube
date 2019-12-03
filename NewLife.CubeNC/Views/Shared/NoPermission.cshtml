@@ -8,6 +8,7 @@
     var Permission = (PermissionFlags)ViewBag.Permission;
     var pm = Permission.GetDescription();
     var menu = ViewBag.Menu as IMenu;
+    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
 
     ViewBag.Title = String.Format("没有访问资源[{0}]的权限[{1}]", Resource, pm);
 }

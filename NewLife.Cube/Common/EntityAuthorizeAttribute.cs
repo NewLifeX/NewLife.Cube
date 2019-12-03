@@ -87,13 +87,8 @@ namespace NewLife.Cube
             var user = prv.TryLogin();
             if (user == null) return false;
 
-            var menu = ctx.Items["CurrentMenu"] as IMenu;
-
             // 判断权限
-            if (menu != null && user is IUser user2)
-            {
-                if (user2.Has(menu, Permission)) return true;
-            }
+            if (ctx.Items["CurrentMenu"] is IMenu menu && user is IUser user2 && user2.Has(menu, Permission)) return true;
 
             return false;
         }

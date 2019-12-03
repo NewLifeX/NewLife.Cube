@@ -51,8 +51,6 @@ namespace NewLife.Cube
         #endregion
 
         #region 方法
-
-       
         /// <summary>授权发生时触发</summary>
         /// <param name="filterContext"></param>
         public void OnAuthorization(AuthorizationFilterContext filterContext)
@@ -111,8 +109,9 @@ namespace NewLife.Cube
             if (user == null) return false;
 
             // 判断权限
-            if (!(ctx.Items["CurrentMenu"] is IMenu menu) || !(user is IUser user2)) return false;
-            return user2.Has(menu, Permission);
+            if (ctx.Items["CurrentMenu"] is IMenu menu && user is IUser user2) return user2.Has(menu, Permission);
+
+            return false;
         }
 
         /// <summary>未认证请求</summary>

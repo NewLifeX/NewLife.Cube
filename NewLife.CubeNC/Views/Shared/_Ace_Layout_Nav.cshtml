@@ -3,6 +3,7 @@
 @{
     //var menu = ManageProvider.Menu.Current;
     var menu = ViewBag.Menu as IMenu;
+    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
 }
 <li>
     <i class="ace-icon fa fa-home home-icon"></i>
