@@ -1,4 +1,4 @@
-﻿//assembly=..\Src\DLL\NuGet.exe
+﻿//assembly=..\X\DLL\NuGet.exe
 //assembly=System.ComponentModel.DataAnnotations
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace NewLife.Reflection
             XTrace.UseConsole();
 			
 			// 查找NuGet.exe
-			var ng = "..\\..\\Src\\DLL\\NuGet.exe".GetFullPath();
+			var ng = "..\\..\\X\\DLL\\NuGet.exe".GetFullPath();
 			
             //"cmd".Run("/c del *.nuspec /f/q");
 			foreach(var item in ".".AsDirectory().GetAllFiles("*.nuspec"))

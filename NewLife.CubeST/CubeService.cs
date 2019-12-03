@@ -56,7 +56,7 @@ namespace NewLife.Cube
 
             var provider = services.BuildServiceProvider();
             //var env = provider.GetService<IHostingEnvironment>();
-            var env = provider.GetService(typeof(IHostingEnvironment)) as IHostingEnvironment;
+            var env = provider.GetService(typeof(IWebHostEnvironment)) as IWebHostEnvironment;
             if (env != null) services.AddCubeDefaultUI(env);
 
             services.AddMvc(opt =>
@@ -74,25 +74,8 @@ namespace NewLife.Cube
 
             })
             // 添加版本兼容性，显示声明当前应用版本为2.1
-            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
-            //// 视图文件查找选项设置
-            //.AddRazorOptions(opt =>
-            //{
-            //    opt.ViewLocationFormats.Clear();
-            //    opt.AreaViewLocationFormats.Clear();
-            //    opt.ViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
-            //    opt.ViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
-            //    opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/{1}/{0}.cshtml");
-            //    opt.AreaViewLocationFormats.Add("~/Areas/{2}/Views/Shared/{0}.cshtml");
-            //    opt.AreaViewLocationFormats.Add("~/Views/{1}/{0}.cshtml");
-            //    opt.AreaViewLocationFormats.Add("~/Views/Shared/{0}.cshtml");
-            //})
-            .AddViewOptions(opt =>
-            {
-                //opt.ViewEngines.Clear();
-                //var item = services.
-                //opt.ViewEngines.Add(new CompositePrecompiledMvcEngine());
-            });
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+
 
             services.AddCustomApplicationParts();
 
@@ -120,19 +103,8 @@ namespace NewLife.Cube
                 options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
             });
 
-            //// 添加OData
-            //services.AddOData();
-
-            // 添加实时日志查看
-            //services.AddLogging(configure =>
-            //{
-            //    configure.AddProvider(new CubeLoggerProvider());
-            //});
-
             return services;
         }
-
-
 
         /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assembly，作为本应用的一部分</summary>
         /// <param name="services"></param>
@@ -200,17 +172,14 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IApplicationBuilder UseCube(this IApplicationBuilder app)
         {
-            //var loggerFactory = app.ApplicationServices.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
-            //loggerFactory.CreateLogger("");
-
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
 
             var set = Setting.Current;
 
-            // 添加自定义中间件
+            // 添加自定义中间件（3.0开始采用netcore原生版本错误页面）
             // 注册错误处理模块中间件
-            app.UseErrorModule();
+            //app.UseErrorModule();
 
             // 压缩配置
             if (set.EnableCompress) app.UseResponseCompression();
@@ -225,34 +194,20 @@ namespace NewLife.Cube
             app.UseSession();
             app.UseAuthentication();
 
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                //var builder = new ODataConventionModelBuilder();
-                //builder.EntitySet<UserX>("UserXs");
-                //// OData路由放在最前面
-                //routes.MapODataServiceRoute("ODataRoute","OData", builder.GetEdmModel());
-
-                // 区域路由注册
-                routes.MapRoute(
-                    name: "CubeAreas",
-                    template: "{area=Admin}/{controller=Index}/{action=Index}/{id?}"
-                );
-
-                // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
-                routes.MapRoute(
-                    name: "Cube",
-                    template: "{controller=CubeHome}/{action=Index}/{id?}"
-                );
-            });
+                endpoints.MapControllerRoute(
+                    "CubeAreas",
+                    "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            })
+            .Build();
 
             // 使用管理提供者
             app.UseManagerProvider();
 
             // 自动检查并添加菜单
-            //XTrace.WriteLine("初始化权限管理体系");
-            //var user = ManageProvider.User;
-            //ManageProvider.Provider.GetService<IUser>();
-            //ScanControllerExtensions.ScanController();
             AreaBase.RegisterArea<Admin.AdminArea>();
 
             return app;

@@ -37,14 +37,14 @@
                     <tr>
                         <td>@entity.TreeNodeName</td>
                         <td>@entity.DisplayName</td>
-                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID })</td>
+                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID))</td>
                         <td>
                             @if (entity.Childs.Count == 0)
                             {
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
                                 {
                                     var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID })
+                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key))
                                     @Html.Label(id, item.Value)
                                     <text>&nbsp;</text>
                                 }

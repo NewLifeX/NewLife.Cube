@@ -25,8 +25,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Program.cs" />
+    <Compile Remove="Startup.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\Shared\CubeError.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\NewLife.CubeNC\Areas\Admin\Index\IndexController.cs" Link="Areas\Admin\Index\IndexController.cs" />
-    <Compile Include="..\NewLife.CubeNC\Areas\Admin\Index\IndexController1.cs" Link="Areas\Admin\Index\IndexController1.cs" />
     <Compile Include="..\NewLife.CubeNC\Common\AreaRegistrationBase.cs" Link="Common\AreaRegistrationBase.cs" />
     <Compile Include="..\NewLife.CubeNC\Common\DbRunTimeModule.cs" Link="Common\DbRunTimeModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Common\EntityAuthorizeAttribute.cs" Link="Common\EntityAuthorizeAttribute.cs" />
@@ -93,14 +101,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
     <PackageReference Include="NewLife.Core" Version="8.4.2019.1109" />
     <PackageReference Include="NewLife.XCode" Version="9.14.2019.1109" />
   </ItemGroup>
@@ -112,12 +112,9 @@
     <Folder Include="Controllers\" />
     <Folder Include="Models\" />
     <Folder Include="ViewModels\" />
-    <Folder Include="Views\Home\" />
-    <Folder Include="Views\Shared\" />
     <Folder Include="Entity\" />
     <Folder Include="Extensions\" />
     <Folder Include="Membership\" />
-    <Folder Include="Views\CubeHome\" />
     <Folder Include="Web\" />
     <Folder Include="WebMiddleware\" />
   </ItemGroup>
@@ -163,6 +160,39 @@
     <None Include="..\NewLife.Cube\Entity\XCoder.tt" Link="Entity\XCoder.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
+    <None Include="Views\CubeHome\Index.cshtml" />
+    <None Include="Views\Home\Index.cshtml" />
+    <None Include="Views\Shared\Form.cshtml" />
+    <None Include="Views\Shared\List.cshtml" />
+    <None Include="Views\Shared\ListTree.cshtml" />
+    <None Include="Views\Shared\NoPermission.cshtml" />
+    <None Include="Views\Shared\ObjectForm.cshtml" />
+    <None Include="Views\Shared\_Ace_Layout.cshtml" />
+    <None Include="Views\Shared\_DateRange.cshtml" />
+    <None Include="Views\Shared\_Form_Action.cshtml" />
+    <None Include="Views\Shared\_Form_Body.cshtml" />
+    <None Include="Views\Shared\_Form_Footer.cshtml" />
+    <None Include="Views\Shared\_Form_Group.cshtml" />
+    <None Include="Views\Shared\_Form_Header.cshtml" />
+    <None Include="Views\Shared\_Form_Item.cshtml" />
+    <None Include="Views\Shared\_Layout.cshtml" />
+    <None Include="Views\Shared\_Layout_Footer.cshtml" />
+    <None Include="Views\Shared\_Layout_Header.cshtml" />
+    <None Include="Views\Shared\_ListTree_Data.cshtml" />
+    <None Include="Views\Shared\_List_Data.cshtml" />
+    <None Include="Views\Shared\_List_Data_Action.cshtml" />
+    <None Include="Views\Shared\_List_Data_Item.cshtml" />
+    <None Include="Views\Shared\_List_Data_Item_First.cshtml" />
+    <None Include="Views\Shared\_List_Pager.cshtml" />
+    <None Include="Views\Shared\_List_Pager1.cshtml" />
+    <None Include="Views\Shared\_List_Search.cshtml" />
+    <None Include="Views\Shared\_List_Toolbar.cshtml" />
+    <None Include="Views\Shared\_List_Toolbar_Adv.cshtml" />
+    <None Include="Views\Shared\_List_Toolbar_Batch.cshtml" />
+    <None Include="Views\Shared\_List_Toolbar_Search.cshtml" />
+    <None Include="Views\Shared\_Object_Nav.cshtml" />
+    <None Include="Views\Shared\_StatLevel.cshtml" />
+    <None Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
