@@ -1,8 +1,7 @@
 ﻿@using NewLife.Common;
-@using NewLife.Cube
-@*@using XCode.Web*@
 @{
     var set = NewLife.Cube.Setting.Current;
+    var set2 = ViewBag.PageSetting as PageSetting;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -18,7 +17,7 @@
     <!-- 页面内联样式 -->
     @RenderSection("css", required: false)
 
-    @if (set.BootstrapSelect)
+    @if (set != null && set.BootstrapSelect)
     {
         <link rel="stylesheet" href="~/Content/bootstrap/css/bootstrap-multiselect.css">
     }
@@ -48,12 +47,15 @@
 </head>
 <body>
     <div class="panel panel-default">
-        <div class="breadcrumbs" id="breadcrumbs">
-            <ul class="breadcrumb">
-                @Html.PartialAsync("_Ace_Layout_Nav").Result
-            </ul>
-            <div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
-        </div>
+        @if (set2 != null && set2.EnableNavbar)
+        {
+            <div class="breadcrumbs" id="breadcrumbs">
+                <ul class="breadcrumb">
+                    @Html.PartialAsync("_Ace_Layout_Nav").Result
+                </ul>
+                <div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
+            </div>
+        }
         <div class="page-content">
             <section class="content-wrapper main-content clear-fix">
                 @RenderBody()
@@ -68,7 +70,7 @@
     </div>
     <!-- 最早引入基本脚本 -->
     <script src="~/Content/bootstrap/js/bootstrap.min.js"></script>
-    @if (set.BootstrapSelect)
+    @if (set != null && set.BootstrapSelect)
     {
         <script src="~/Content/bootstrap/js/bootstrap-multiselect.min.js"></script>
     }
@@ -143,7 +145,7 @@
                     minView: parseInt($(this).attr('minview'))
                 });
             });
-            @if (set.BootstrapSelect) {<text>
+            @if (set != null && set.BootstrapSelect) {<text>
             $('.multiselect').each(function () {
                 $(this).multiselect({
                     // 下拉列表仅在列表项比较多时显示过滤框

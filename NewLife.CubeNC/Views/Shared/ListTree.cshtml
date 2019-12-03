@@ -8,11 +8,11 @@
 }
 
 <div class="clearfix">
-    @Html.PartialAsync("_List_Toolbar").Result
+    @await Html.PartialAsync("_List_Toolbar")
 </div>
 <div class="table-responsive">
-    @Html.PartialAsync("_ListTree_Data").Result
+    @await Html.PartialAsync("_ListTree_Data")
 </div>
 <div class="panel-footer">
-    @Html.PartialAsync("_List_Pager").Result
+    @await Html.PartialAsync("_List_Pager")
 </div>

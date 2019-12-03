@@ -1,38 +1,33 @@
 ﻿@using NewLife;
-@using NewLife.Cube
-@using NewLife.Cube.Extensions
 @using NewLife.Web;
 @using XCode;
-@using XCode.Membership
-@using Microsoft.AspNetCore.Mvc.Controllers
 @{
     var fact = ViewBag.Factory as IEntityOperate;
-    var page = ViewBag.Page as Pager ?? new Pager();
+    var page = ViewBag.Page as Pager;
 
     var act = ViewBag.Action as String;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
-        var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting;
 }
 <div class="tableTools-container">
     <div class="form-inline">
         <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
-            @if (this.Has(PermissionFlags.Insert))
+            @if (set.EnableAdd && this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
-                @Html.ActionLink("添加" + ((ControllerActionDescriptor)ViewContext.ActionDescriptor).ControllerTypeInfo.GetDisplayName(),
-                    "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
+                @Html.ActionLink("添加", "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
             }
             @if (set.EnableSelect)
             {
                 <div class="form-group toolbar-batch">
-                    @Html.PartialAsync("_List_Toolbar_Batch").Result
+                    @await Html.PartialAsync("_List_Toolbar_Batch")
                 </div>
             }
             <div class="pull-right form-group">
-                @Html.PartialAsync("_List_Search").Result
-                @Html.PartialAsync("_List_Toolbar_Search").Result
-                @Html.PartialAsync("_List_Toolbar_Adv").Result
+                @await Html.PartialAsync("_List_Search")
+                @await Html.PartialAsync("_List_Toolbar_Search")
+                @await Html.PartialAsync("_List_Toolbar_Adv")
             </div>
         </form>
     </div>
@@ -62,7 +57,7 @@
                     // 启用禁用批量操作区
                     $batchButtons.prop('disabled', false);
                     //需要判断当前页面所有行的checkbox是否都选中，以此来决定是否需要改变checkbox#chkAll 的状态
-                    if (allbox.length === selecteds.length) {
+                    if (allbox.length == selecteds.length) {
                         $table.find('#chkAll').prop('checked', true);
                     } else {
                         $table.find('#chkAll').prop('checked', false);

@@ -8,9 +8,6 @@
     var fields = ViewBag.Fields as IList<FieldItem>;
     var fk = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
-
-    var hasUser = fields.Any(f => f.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"));
-    if (hasUser && ViewData["Provider"] == null) { ViewData["Provider"] = ManageProvider.Provider; }
 }
 <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
     <thead>

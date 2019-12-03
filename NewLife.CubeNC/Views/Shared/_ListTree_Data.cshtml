@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNetCore.Mvc.Rendering
-@using NewLife;
+﻿@using NewLife;
 @using NewLife.Cube
 @using NewLife.Reflection
 @using NewLife.Web;
@@ -10,7 +9,7 @@
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
     var fk = fact.Unique;
-        var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting;
 }
 <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
     <thead>
@@ -51,11 +50,11 @@
                 {
                     if (FirstFlag == 0)
                     {
-                        @Html.PartialAsync("_List_Data_Item_First", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
+                        @await Html.PartialAsync("_List_Data_Item_First", new ValueTuple<IEntity, FieldItem>(entity, item))
                     }
                     else
                     {
-                        @Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
+                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
                     }
 
                     FirstFlag++;
@@ -67,7 +66,7 @@
                     }
                 </td>
                 <td class="text-center">
-                    @if (p != null && entity != p.Childs[p.Childs.Count - 1])
+                    @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[p.Childs.Count - 1])
                     {
                         <a href="@Url.Action("Down", new { id })"><span class="glyphicon glyphicon-arrow-down" style="color: red;"></span></a>
                     }
@@ -75,7 +74,7 @@
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
                     <td class="text-center">
-                        @Html.PartialAsync("_List_Data_Action", (Object)entity).Result
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                     </td>
                 }
             </tr>

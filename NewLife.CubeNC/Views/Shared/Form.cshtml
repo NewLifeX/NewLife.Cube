@@ -1,5 +1,4 @@
 ﻿@using System.Reflection
-@using NewLife.Cube
 @using XCode
 @using XCode.Configuration
 @{
@@ -12,10 +11,10 @@
 }
 
 <div class="form-horizontal">
-    @Html.PartialAsync("_Form_Header", entity).Result
+    @await Html.PartialAsync("_Form_Header", entity)
     @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv))
     {
-        @Html.AntiForgeryToken()
+        @*@Html.AntiForgeryToken()*@
         @*@Html.ValidationSummary()*@
         //解决主键为(0长度字符串"")的异常信息无法显示问题
         <ul>
@@ -27,6 +26,6 @@
                 }
             }
         </ul>
-        @Html.PartialAsync("_Form_Body", entity).Result
+        @await Html.PartialAsync("_Form_Body", entity)
     }
 </div>

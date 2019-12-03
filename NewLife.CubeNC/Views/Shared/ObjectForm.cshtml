@@ -1,7 +1,6 @@
 ﻿@model Object
 @using System.ComponentModel;
 @using System.Reflection;
-@using NewLife.Cube
 @using NewLife.Reflection;
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
@@ -10,7 +9,7 @@
     var pis = ViewBag.Properties as IEnumerable<PropertyInfo>;
 }
 <div class="row">
-    @Html.PartialAsync("_Object_Nav", Model).Result
+    @await Html.PartialAsync("_Object_Nav", Model)
 </div>
 <div class="row">
     <div class="col-md-12">
