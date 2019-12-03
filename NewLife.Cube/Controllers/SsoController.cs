@@ -165,7 +165,7 @@ namespace NewLife.Cube.Controllers
             {
                 XTrace.WriteException(ex.GetTrue());
 
-                if (!state.EqualIgnoreCase("refresh")) return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
+                //if (!state.EqualIgnoreCase("refresh")) return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
 
                 throw;
             }
@@ -241,9 +241,9 @@ namespace NewLife.Cube.Controllers
 #endif
             var client = prov.GetClient(id);
             var redirect = prov.GetRedirect(Request, url);
-            // 附加绑定动作
-            redirect += "&sso_action=bind";
-            url = client.Authorize(redirect, client.Name);
+            //// 附加绑定动作
+            //redirect += "&sso_action=bind";
+            url = client.Authorize(redirect, client.Name + "_bind");
 
             return Redirect(url);
         }

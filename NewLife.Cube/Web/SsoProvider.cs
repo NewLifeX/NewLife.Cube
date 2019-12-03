@@ -123,7 +123,8 @@ namespace NewLife.Cube.Web
 #else
             var req = context.GetService<HttpRequest>();
 #endif
-            if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
+            //if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
+            if (req != null) forceBind = req.Get("state").EndsWithIgnoreCase("_bind");
 
             // 可能因为初始化顺序的问题，导致前面没能给Provider赋值
             var prv = Provider;
