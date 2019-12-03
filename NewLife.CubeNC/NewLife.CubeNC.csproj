@@ -14,22 +14,19 @@
     <Deterministic>false</Deterministic>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <ApplicationIcon />
     <OutputType>Library</OutputType>
-    <StartupObject />
+    <OutputPath>..\Bin</OutputPath>
+    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE;__CORE__</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>..\Bin\netcoreapp3.0\NewLife.Cube.xml</DocumentationFile>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
     <WarningLevel>3</WarningLevel>
-    <OutputPath>..\Bin</OutputPath>
-    <DefineConstants>TRACE;__CORE__</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\Bin</OutputPath>
-    <DocumentationFile>..\Bin\netcoreapp3.0\NewLife.Cube.xml</DocumentationFile>
-    <DefineConstants>TRACE;__CORE__</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
