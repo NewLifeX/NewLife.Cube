@@ -42,12 +42,12 @@ namespace NewLife.Cube.Admin.Controllers
         private IManageProvider _provider;
         private IHostApplicationLifetime _applicationLifetime { get; set; }
 
-        private IndexController() { }
+        private IndexController() => PageSetting.EnableNavbar = false;
 
         /// <summary>实例化</summary>
         /// <param name="manageProvider"></param>
         public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime
-            , ILogger<IndexController> logger)
+            , ILogger<IndexController> logger) : this()
         {
             _provider = manageProvider;
             //_applicationLifetime = appLifetime;

@@ -30,10 +30,11 @@ namespace NewLife.Cube
         {
             // 修正系统名，确保可运行
             var set = SysConfig.Current;
-            if (set.IsNew || set.Name == "NewLife.Cube.Views")
+            if (set.IsNew || set.Name == "NewLife.Cube.Views" || set.DisplayName == "NewLife.Cube.Views")
             {
                 set.Name = "NewLife.Cube";
-                set.Save();
+                set.DisplayName = "魔方平台";
+                set.SaveAsync();
             }
 
             // 配置Cookie策略
