@@ -7,7 +7,7 @@
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
-        var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting;
 }
 <table class="table table-bordered table-hover table-striped table-condensed">
     <thead>
@@ -25,6 +25,7 @@
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">IP地址</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
             <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
+            <th class="text-center">附近</th>
             @if (this.Has(PermissionFlags.Detail))
             {
                 <th class="text-center" style="min-width:100px;">操作</th>
@@ -48,10 +49,13 @@
                 <td>@entity.CreateIP</td>
                 <td>@entity.CreateIP.IPToAddress()</td>
                 <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("")</td>
+                <td class="text-center">
+                    <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
+                </td>
                 @if (this.Has(PermissionFlags.Detail))
                 {
                     <td class="text-center" style="width: 90px;">
-                        @Html.PartialAsync("_List_Data_Action", (Object)entity).Result
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                     </td>
                 }
             </tr>
