@@ -1,8 +1,12 @@
-﻿using XCode.Membership;
+﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc;
+using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>字典参数</summary>
+    [DisplayName("字典参数")]
+    [Area("Admin")]
     public class ParameterController : EntityController<Parameter>
     {
         static ParameterController()
