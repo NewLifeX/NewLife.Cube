@@ -1,4 +1,4 @@
-﻿@*@model IList<XCode.Membership.VisitStat>*@
+﻿@model IList<XCode.Membership.VisitStat>
 @using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -7,9 +7,9 @@
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
-        var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting;
 
-    /* var level = (XCode.Statistics.StatLevels)page["Level"].ToInt();*/
+    var level = (XCode.Statistics.StatLevels)page["Level"].ToInt();
 }
 <table class="table table-bordered table-hover table-striped table-condensed">
     <thead>
@@ -39,18 +39,18 @@
     <tbody>
         @foreach (var entity in Model)
         {
-            //var st = new VisitStatModel
-            //{
-            //    Level = level,
-            //    Time = entity.Time
-            //};
+            var st = new VisitStatModel
+            {
+                Level = level,
+                Time = entity.Time
+            };
             <tr>
                 @if (set.EnableSelect)
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                 }
                 <td class="text-center">@entity.ID</td>
-                @*<td class="text-right">@st</td>*@
+                <td class="text-right">@st</td>
                 <td>@entity.Page</td>
                 <td>@entity.Title</td>
                 <td class="text-right">@entity.Times.ToString("n0")</td>
@@ -64,8 +64,34 @@
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
                     <td class="text-center">
-                        @Html.PartialAsync("_List_Data_Action", (Object)entity).Result
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                     </td>
+                }
+            </tr>
+        }
+        @if (page.State != null)
+        {
+            var entity = page.State as VisitStat;
+            <tr>
+                @if (set.EnableSelect)
+                {
+                    <td></td>
+                }
+                <td class="text-center">总计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="text-right">@entity.Times.ToString("n0")</td>
+                <td class="text-right">@entity.Users.ToString("n0")</td>
+                <td class="text-right">@entity.IPs.ToString("n0")</td>
+                <td class="text-right">@entity.Error.ToString("n0")</td>
+                <td class="text-right">@entity.Cost.ToString("n0") ms</td>
+                <td class="text-right">@entity.MaxCost.ToString("n0") ms</td>
+                <td>@entity.CreateTime.ToFullString("")</td>
+                <td>@entity.UpdateTime.ToFullString("")</td>
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td></td>
                 }
             </tr>
         }

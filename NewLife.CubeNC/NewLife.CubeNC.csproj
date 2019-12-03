@@ -8,8 +8,8 @@
     <Description>Mvc权限管理后台，支持模版视图重载覆盖</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2019 新生命开发团队</Copyright>
-    <Version>2.9.2019.1203</Version>
-    <FileVersion>2.9.2019.1203</FileVersion>
+    <Version>2.9.2019.1204</Version>
+    <FileVersion>2.9.2019.1204</FileVersion>
     <AssemblyVersion>2.9.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
@@ -87,7 +87,6 @@
 
   <ItemGroup>
     <Content Remove="App.config" />
-    <Content Remove="Areas\Admin\Views\VisitStat\_List_Search.cshtml" />
     <Content Remove="wwwroot\favicon.ico" />
   </ItemGroup>
 
@@ -189,6 +188,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Areas\Admin\Views\UserConnect\_List_Search.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Areas\Admin\Views\AppLog\_List_Data.cshtml">
