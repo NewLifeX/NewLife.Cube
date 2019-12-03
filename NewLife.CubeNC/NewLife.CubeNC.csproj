@@ -169,12 +169,13 @@
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
     <Compile Include="Common\AreaRegistrationBase.cs" />
-    <Compile Include="Common\CubeLogger.cs" />
+    <Compile Include="Common\DateTimeConverter.cs" />
     <Compile Include="Common\DbRunTimeModule.cs" />
     <Compile Include="Common\EntityAuthorizeAttribute.cs" />
     <Compile Include="Common\EntityModelBinder.cs" />
     <Compile Include="Common\HtmlExtensions.cs" />
     <Compile Include="Common\PagerModelBinder.cs" />
+    <Compile Include="Common\XLogger.cs" />
     <Compile Include="Membership\ManageProvider.cs" />
   </ItemGroup>
   <ItemGroup>

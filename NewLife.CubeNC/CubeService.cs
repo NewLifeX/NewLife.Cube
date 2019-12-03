@@ -11,12 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
-using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.WebMiddleware;
 using NewLife.Reflection;
 using NewLife.Web;
 
