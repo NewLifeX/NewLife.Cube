@@ -88,7 +88,7 @@ else
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
                 var provider = ViewData["Provider"] as IManageProvider;
-                <td class="text-center">@provider.FindByID(value)</td>
+                <td class="text-center">@provider?.FindByID(value)</td>
             }
             else if (name2.EndsWith("Rate"))
             {
