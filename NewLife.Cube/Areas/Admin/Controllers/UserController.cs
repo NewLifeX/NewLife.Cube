@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using NewLife.Cube.Extensions;
 #else
-using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 #endif
