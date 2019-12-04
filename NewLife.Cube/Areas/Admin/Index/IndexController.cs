@@ -90,6 +90,7 @@ namespace NewLife.Cube.Admin.Controllers
                 case "session": return View("Session");
                 case "cache": return View("Cache");
                 case "servervar": return View("ServerVar");
+                case "memoryfree": return View("MemoryFree");
                 default: return View();
             }
         }

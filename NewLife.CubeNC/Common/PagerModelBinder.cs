@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NewLife.Data;
@@ -16,6 +15,9 @@ namespace NewLife.Cube
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
         private readonly ILoggerFactory _loggerFactory;
 
+        /// <summary>实例化分页模型绑定器</summary>
+        /// <param name="propertyBinders"></param>
+        /// <param name="loggerFactory"></param>
         public PagerModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders, ILoggerFactory loggerFactory)
         {
             _propertyBinders = propertyBinders ?? throw new ArgumentNullException(nameof(propertyBinders));

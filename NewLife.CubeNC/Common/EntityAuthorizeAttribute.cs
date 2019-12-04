@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife.Cube;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
-//using ManagerProviderHelper = NewLife.Cube.Membership.ManagerProviderHelper;
 
 namespace NewLife.Cube
 {

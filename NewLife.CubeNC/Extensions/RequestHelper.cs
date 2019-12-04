@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace NewLife.Cube.Extensions
 {
+    /// <summary>请求助手类</summary>
     public static class RequestHelper
     {
         /// <summary>

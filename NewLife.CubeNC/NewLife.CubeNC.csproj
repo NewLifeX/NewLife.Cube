@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方平台</AssemblyTitle>
@@ -76,6 +76,7 @@
     <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
     <Compile Remove="Extensions\ObjectHelper.cs" />
     <Compile Remove="Extensions\PagerHelper.cs" />
+    <Compile Remove="Extensions\ScanController.cs" />
     <Compile Remove="Extensions\SessionExtensions.cs" />
     <Compile Remove="Extensions\WebHelper.cs" />
     <Compile Remove="Program.cs" />

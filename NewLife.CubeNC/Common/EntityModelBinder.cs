@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NewLife.Cube.Extensions;
@@ -18,8 +13,12 @@ using HttpContext = NewLife.Web.HttpContext;
 
 namespace NewLife.Cube
 {
+    /// <summary>实体模型绑定器</summary>
     public class EntityModelBinder : IModelBinder
     {
+        /// <summary>实例化实体模型绑定器</summary>
+        /// <param name="propertyBinders"></param>
+        /// <param name="loggerFactory"></param>
         public EntityModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders, ILoggerFactory loggerFactory)
         {
             _propertyBinders = propertyBinders ?? throw new ArgumentNullException(nameof(propertyBinders));
@@ -29,6 +28,9 @@ namespace NewLife.Cube
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
         private readonly ILoggerFactory _loggerFactory;
 
+        /// <summary>异步绑定模型</summary>
+        /// <param name="bindingContext"></param>
+        /// <returns></returns>
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var modelType = bindingContext.ModelType;
@@ -149,7 +151,7 @@ namespace NewLife.Cube
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public new IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {

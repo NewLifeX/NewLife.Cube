@@ -583,6 +583,9 @@ namespace NewLife.Cube
         #endregion
 
         #region 辅助方法
+        /// <summary>获取HTML字符串</summary>
+        /// <param name="htmlContent"></param>
+        /// <returns></returns>
         public static String GetString(this IHtmlContent htmlContent)
         {
             var writer = new System.IO.StringWriter();
@@ -590,6 +593,5 @@ namespace NewLife.Cube
             return writer.ToString();
         }
         #endregion
-
     }
 }

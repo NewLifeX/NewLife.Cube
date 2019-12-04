@@ -52,6 +52,7 @@ namespace NewLife.Cube.Extensions
     {
         /// <summary>添加魔方UI</summary>
         /// <param name="services"></param>
+        /// <param name="env"></param>
         public static void AddCubeDefaultUI(this IServiceCollection services, IWebHostEnvironment env)
         {
             //services.ConfigureOptions<DefaultUIConfigureOptions>();
