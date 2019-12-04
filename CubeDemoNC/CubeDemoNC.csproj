@@ -18,16 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
+    <PackageReference Include="NewLife.Core" Version="8.4.2019.1203" />
+    <PackageReference Include="NewLife.XCode" Version="9.14.2019.1203" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="NewLife.Core">
-      <HintPath>..\DLL20\NewLife.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="XCode">
-      <HintPath>..\DLL20\XCode.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
   </ItemGroup>
 
   <ItemGroup>
