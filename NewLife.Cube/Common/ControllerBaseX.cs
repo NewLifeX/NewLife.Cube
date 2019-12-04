@@ -5,6 +5,7 @@ using System.Text;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using XCode.Membership;
+using NewLife.Remoting;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,11 +33,11 @@ namespace NewLife.Cube
         }
 
         /// <summary>动作执行前</summary>
-        /// <param name="filterContext"></param>
+        /// <param name="context"></param>
 #if __CORE__
-        public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext filterContext)
+        public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
 #else
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        protected override void OnActionExecuting(ActionExecutingContext context)
 #endif
         {
             // 页面设置
@@ -48,14 +49,40 @@ namespace NewLife.Cube
             {
                 // 没有菜单时不做权限控制
                 //var menu = ManageProvider.Menu;
-                var ctx = filterContext.HttpContext;
+                var ctx = context.HttpContext;
                 if (ctx.Items["CurrentMenu"] is IMenu menu)
                 {
                     PageSetting.EnableSelect = user.Has(menu, PermissionFlags.Update, PermissionFlags.Delete);
                 }
             }
 
-            base.OnActionExecuting(filterContext);
+            base.OnActionExecuting(context);
+        }
+
+        /// <summary>动作执行后</summary>
+        /// <param name="context"></param>
+#if __CORE__
+        public override void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context)
+#else
+        protected override void OnActionExecuted(ActionExecutedContext context)
+#endif
+        {
+            var ex = context.Exception?.GetTrue();
+            if (ex != null && !context.ExceptionHandled)
+            {
+                var code = 500;
+                var message = ex.Message;
+                if (ex is ApiException aex)
+                {
+                    code = aex.Code;
+                    message = aex.Message;
+                }
+
+                context.Result = Json(code, message, null);
+                context.ExceptionHandled = true;
+            }
+
+            base.OnActionExecuted(context);
         }
         #endregion
 
@@ -137,10 +164,42 @@ namespace NewLife.Cube
         #endregion
 
         #region Json结果
+        /// <summary>响应Json结果</summary>
+        /// <param name="code">代码。0成功，其它为错误代码</param>
+        /// <param name="message">消息，成功或失败时的文本消息</param>
+        /// <param name="data">数据对象</param>
+        /// <param name="extend">扩展数据</param>
+        /// <returns></returns>
+        [NonAction]
+        public virtual ActionResult Json(Int32 code, String message, Object data = null, Object extend = null)
+        {
+            if (data is Exception ex)
+            {
+                if (code == 0) code = 500;
+                if (message.IsNullOrEmpty()) message = ex.GetTrue()?.Message;
+                data = null;
+            }
+
+            Object rs = new { code, message, data };
+            if (extend != null)
+            {
+                var dic = rs.ToDictionary();
+                dic.Merge(extend);
+                rs = dic;
+            }
+
+#if __CORE__
+            return new JsonResult(rs);
+#else
+            return Content(OnJsonSerialize(rs), "application/json", Encoding.UTF8);
+#endif
+        }
+
         /// <summary>返回Json数据</summary>
         /// <param name="data">数据对象，作为data成员返回</param>
         /// <param name="extend">与data并行的其它顶级成员</param>
         /// <returns></returns>
+        [Obsolete("=>Json(code,message,data)")]
         protected virtual ActionResult JsonOK(Object data, Object extend = null)
         {
             var rs = new { result = true, data };
@@ -162,6 +221,7 @@ namespace NewLife.Cube
         /// <param name="data">数据对象或异常对象，作为data成员返回</param>
         /// <param name="extend">与data并行的其它顶级成员</param>
         /// <returns></returns>
+        [Obsolete("=>Json(code,message,data)")]
         protected virtual ActionResult JsonError(Object data, Object extend = null)
         {
             if (data is Exception ex) data = ex.GetTrue().Message;

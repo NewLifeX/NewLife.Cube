@@ -129,7 +129,7 @@ namespace NewLife.Cube
                 // Json输出
                 if (IsJsonRequest)
                 {
-                    filterContext.Result = JsonError(ex);
+                    filterContext.Result = Json(0, null, ex);
                     filterContext.ExceptionHandled = true;
                 }
                 //else if (ex is NoPermissionException nex)
@@ -355,7 +355,7 @@ namespace NewLife.Cube
             var list = Search(p);
 
             // Json输出
-            if (IsJsonRequest) return JsonOK(list, new { pager = p });
+            if (IsJsonRequest) return Json(0, null, list, new { pager = p });
 
             return View("List", list);
         }
@@ -374,7 +374,7 @@ namespace NewLife.Cube
             Valid(entity, DataObjectMethodType.Select, false);
 
             // Json输出
-            if (IsJsonRequest) return JsonOK(entity, new { id });
+            if (IsJsonRequest) return Json(0, null, entity);
 
             return FormView(entity);
         }
@@ -417,11 +417,11 @@ namespace NewLife.Cube
                 var list = Search(p);
 
                 // Json输出
-                return JsonOK(list, new { pager = p });
+                return Json(0, null, list, new { pager = p });
             }
             catch (Exception ex)
             {
-                return JsonError(ex.GetTrue());
+                return Json(0, null, ex);
             }
         }
 
@@ -740,12 +740,12 @@ namespace NewLife.Cube
                     rs = dal.Backup(fact.FormatedTableName, gs);
                 }
 
-                return JsonOK($"备份[{fileName}]（{rs:n0}行）成功！");
+                return Json(0, $"备份[{fileName}]（{rs:n0}行）成功！");
             }
             catch (Exception ex)
             {
                 XTrace.WriteException(ex);
-                return JsonError(ex);
+                return Json(0, null, ex);
             }
         }
 
@@ -774,12 +774,12 @@ namespace NewLife.Cube
                     rs = dal.Restore(gs, fact.Table.DataTable);
                 }
 
-                return JsonOK($"恢复[{fileName}]（{rs:n0}行）成功！");
+                return Json(0, $"恢复[{fileName}]（{rs:n0}行）成功！");
             }
             catch (Exception ex)
             {
                 XTrace.WriteException(ex);
-                return JsonError(ex);
+                return Json(0, null, ex);
             }
         }
 
@@ -814,7 +814,7 @@ namespace NewLife.Cube
             catch (Exception ex)
             {
                 XTrace.WriteException(ex);
-                return JsonError(ex);
+                return Json(0, null, ex);
             }
         }
         #endregion

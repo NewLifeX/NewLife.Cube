@@ -170,7 +170,7 @@ namespace NewLife.Cube
             Valid(entity, DataObjectMethodType.Update, false);
 
             // Json输出
-            if (IsJsonRequest) return JsonOK(entity, new { id });
+            if (IsJsonRequest) return Json(0, null, entity);
 
             return FormView(entity);
         }
@@ -337,7 +337,7 @@ namespace NewLife.Cube
 #endif
 
             var p = new Pager(GetSession<Pager>(CacheKey));
-            if (p != null && p.Params.Count > 0) return JsonError("当前带有查询参数，为免误解，禁止全表清空！");
+            if (p != null && p.Params.Count > 0) return Json(500, "当前带有查询参数，为免误解，禁止全表清空！");
 
             var count = Entity<TEntity>.Meta.Session.Truncate();
 
