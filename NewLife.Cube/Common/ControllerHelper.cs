@@ -17,33 +17,33 @@ namespace NewLife.Cube
     public static class ControllerHelper
     {
         #region Json响应
-        /// <summary>返回结果并跳转</summary>
-        /// <param name="data">结果。可以是错误文本、成功文本、其它结构化数据</param>
-        /// <param name="url">提示信息后跳转的目标地址，[refresh]表示刷新当前页</param>
-        /// <returns></returns>
-        public static ActionResult JsonTips(Object data, String url = null)
-        {
-            object value;
-            if (data is Exception ex)
-                value = new { result = false, data = ex.GetTrue()?.Message, url };
-            else
-                value = new { result = true, data, url };
-#if __CORE__
-            var vr = new JsonResult(value);
-#else
-            var vr = new JsonResult()
-            {
-                Data = value,
-                JsonRequestBehavior = JsonRequestBehavior.AllowGet
-            };
-#endif
-            return vr;
-        }
+        //        /// <summary>返回结果并跳转</summary>
+        //        /// <param name="data">结果。可以是错误文本、成功文本、其它结构化数据</param>
+        //        /// <param name="url">提示信息后跳转的目标地址，[refresh]表示刷新当前页</param>
+        //        /// <returns></returns>
+        //        public static ActionResult JsonTips(Object data, String url = null)
+        //        {
+        //            object value;
+        //            if (data is Exception ex)
+        //                value = new { result = false, data = ex.GetTrue()?.Message, url };
+        //            else
+        //                value = new { result = true, data, url };
+        //#if __CORE__
+        //            var vr = new JsonResult(value);
+        //#else
+        //            var vr = new JsonResult()
+        //            {
+        //                Data = value,
+        //                JsonRequestBehavior = JsonRequestBehavior.AllowGet
+        //            };
+        //#endif
+        //            return vr;
+        //        }
 
-        /// <summary>返回结果并刷新</summary>
-        /// <param name="data">消息</param>
-        /// <returns></returns>
-        public static ActionResult JsonRefresh(Object data) => JsonTips(data, "[refresh]");
+        //        /// <summary>返回结果并刷新</summary>
+        //        /// <param name="data">消息</param>
+        //        /// <returns></returns>
+        //        public static ActionResult JsonRefresh(Object data) => JsonTips(data, "[refresh]");
         #endregion
 
         /// <summary>无权访问</summary>

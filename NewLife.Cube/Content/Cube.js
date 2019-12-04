@@ -1,5 +1,5 @@
 ﻿// 以下时间用于魔方判断是否需要更新脚本
-// 2019-03-15 00:00:00
+// 2019-12-05 00:00:00
 
 $(function () {
 
@@ -114,8 +114,8 @@ function doAction(methodName, actionUrl, actionParamter, datalength) {
         },
         complete: function (result) {
             var rs = result.responseJSON;
-            if (rs.data && rs.data.length > 0) {
-                tips(rs.data, 0, 3000);
+            if (rs.message && rs.message.length > 0) {
+                tips(rs.message, 0, 3000);
             }
             if (rs.url && rs.url.length > 0) {
                 if (rs.url == '[refresh]') {

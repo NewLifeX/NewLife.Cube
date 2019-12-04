@@ -155,12 +155,12 @@ namespace NewLife.Cube
         /// <param name="data">结果。可以是错误文本、成功文本、其它结构化数据</param>
         /// <param name="url">提示信息后跳转的目标地址，[refresh]表示刷新当前页</param>
         /// <returns></returns>
-        protected virtual ActionResult JsonTips(Object data, String url = null) => ControllerHelper.JsonTips(data, url);
+        protected virtual ActionResult JsonTips(Object data, String url = null) => Json(0, data as String, data, new { url });
 
         /// <summary>返回结果并刷新</summary>
         /// <param name="data">消息</param>
         /// <returns></returns>
-        protected virtual ActionResult JsonRefresh(Object data) => ControllerHelper.JsonRefresh(data);
+        protected virtual ActionResult JsonRefresh(Object data) => Json(0, data as String, data, new { url = "[refresh]" });
         #endregion
 
         #region Json结果
