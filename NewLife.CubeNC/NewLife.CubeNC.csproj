@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
+    <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
@@ -8,20 +9,31 @@
     <Description>Mvc权限管理后台，支持模版视图重载覆盖</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2019 新生命开发团队</Copyright>
-    <Version>2.9.2019.1204</Version>
-    <FileVersion>2.9.2019.1204</FileVersion>
-    <AssemblyVersion>2.9.*</AssemblyVersion>
+    <Version>3.0.2019.1205</Version>
+    <FileVersion>3.0.2019.1205</FileVersion>
+    <AssemblyVersion>3.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
-    <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <OutputType>Library</OutputType>
     <OutputPath>..\Bin</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <DefineConstants>TRACE;__CORE__</DefineConstants>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>NewLife.Cube.Core</PackageId>
+    <Authors>$(Company)</Authors>
+    <ProjectUrl>https://github.com/NewLifeX</ProjectUrl>
+    <PackageIconUrl>http://www.NewLifeX.com/favicon.ico</PackageIconUrl>
+    <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
+    <PackageReleaseNotes>Mvc权限管理后台，支持模版视图重载覆盖</PackageReleaseNotes>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSource>true</IncludeSource>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
     <DebugType>full</DebugType>
@@ -88,12 +100,43 @@
 
   <ItemGroup>
     <Content Remove="App.config" />
+    <Content Remove="appsettings.json" />
+    <Content Remove="wwwroot\Content\js\html5shiv.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery-2.1.3.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery-ui.custom.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery-ui.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.autosize.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.bootstrap-duallistbox.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.colorbox.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.easypiechart.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.gritter.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.hotkeys.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.inputlimiter.1.3.1.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.knob.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.maskedinput.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.mobile.custom.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.mousewheel.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.nestable.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.raty.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.slimscroll.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.sparkline.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.ui.touch-punch.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery.validate.min.js" />
+    <Content Remove="wwwroot\Content\js\jquery1x.min.js" />
+    <Content Remove="wwwroot\Content\js\respond.min.js" />
     <Content Remove="wwwroot\favicon.ico" />
+    <Content Remove="wwwroot\Scripts\ApiClient.js" />
+    <Content Remove="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
+    <Content Remove="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
+    <Content Remove="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
+    <Content Remove="wwwroot\Scripts\modernizr-2.6.2.js" />
+    <Content Remove="wwwroot\Scripts\WebSocketX.js" />
+    <Content Remove="wwwroot\Scripts\_references.js" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="NewLife.CubeNC.csproj.DotSettings" />
-    <None Remove="readme.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -177,21 +220,54 @@
     <Compile Include="Membership\ManageProvider.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\NewLife.Cube\Entity\Cube.xml">
+    <None Include="..\NewLife.Cube\Entity\Cube.xml">
       <Link>Entity\Cube.xml</Link>
-    </Content>
-    <Content Include="..\NewLife.Cube\Entity\XCoder.tt">
+    </None>
+    <None Include="..\NewLife.Cube\Entity\XCoder.tt">
       <Link>Entity\XCoder.tt</Link>
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>XCoder.cs</LastGenOutput>
-    </Content>
-    <Content Include="readme.txt" />
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="appsettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="wwwroot\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Areas\Admin\Views\UserConnect\_List_Search.cshtml" />
+    <None Include="wwwroot\Content\js\html5shiv.min.js" />
+    <None Include="wwwroot\Content\js\jquery-2.1.3.min.js" />
+    <None Include="wwwroot\Content\js\jquery-ui.custom.min.js" />
+    <None Include="wwwroot\Content\js\jquery-ui.min.js" />
+    <None Include="wwwroot\Content\js\jquery.autosize.min.js" />
+    <None Include="wwwroot\Content\js\jquery.bootstrap-duallistbox.min.js" />
+    <None Include="wwwroot\Content\js\jquery.colorbox.min.js" />
+    <None Include="wwwroot\Content\js\jquery.easypiechart.min.js" />
+    <None Include="wwwroot\Content\js\jquery.gritter.min.js" />
+    <None Include="wwwroot\Content\js\jquery.hotkeys.min.js" />
+    <None Include="wwwroot\Content\js\jquery.inputlimiter.1.3.1.min.js" />
+    <None Include="wwwroot\Content\js\jquery.knob.min.js" />
+    <None Include="wwwroot\Content\js\jquery.maskedinput.min.js" />
+    <None Include="wwwroot\Content\js\jquery.min.js" />
+    <None Include="wwwroot\Content\js\jquery.mobile.custom.min.js" />
+    <None Include="wwwroot\Content\js\jquery.mousewheel.min.js" />
+    <None Include="wwwroot\Content\js\jquery.nestable.min.js" />
+    <None Include="wwwroot\Content\js\jquery.raty.min.js" />
+    <None Include="wwwroot\Content\js\jquery.slimscroll.min.js" />
+    <None Include="wwwroot\Content\js\jquery.sparkline.min.js" />
+    <None Include="wwwroot\Content\js\jquery.ui.touch-punch.min.js" />
+    <None Include="wwwroot\Content\js\jquery.validate.min.js" />
+    <None Include="wwwroot\Content\js\jquery1x.min.js" />
+    <None Include="wwwroot\Content\js\respond.min.js" />
+    <None Include="wwwroot\Scripts\ApiClient.js" />
+    <None Include="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
+    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
+    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
+    <None Include="wwwroot\Scripts\modernizr-2.6.2.js" />
+    <None Include="wwwroot\Scripts\WebSocketX.js" />
+    <None Include="wwwroot\Scripts\_references.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="Areas\Admin\Views\AppLog\_List_Data.cshtml">
@@ -207,8 +283,5 @@
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="md &quot;$(ProjectDir)..\..\Bin\netstandard3.0&quot;&#xD;&#xA;copy &quot;$(TargetDir)$(TargetName)&quot;.* &quot;$(ProjectDir)..\..\Bin\netstandard3.0\&quot; /y" />
-  </Target>
 
 </Project>
