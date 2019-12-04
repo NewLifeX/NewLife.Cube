@@ -31,7 +31,8 @@ namespace NewLife.Cube
                     if (uk != null)
                     {
                         // 查询实体对象用于编辑
-                        if (rvs[uk.Name] != null) entity = GetEntity(fact.EntityType, rvs[uk.Name]) ?? fact.FindByKeyForEdit(rvs[uk.Name]);
+                        var id = rvs[uk.Name];
+                        if (id != null) entity = GetEntity(fact.EntityType, id) ?? fact.FindByKeyForEdit(id);
                         if (entity == null) entity = fact.Create();
                     }
                     else if (pks.Length > 0)
