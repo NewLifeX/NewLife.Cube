@@ -155,7 +155,7 @@ namespace NewLife.Cube.Controllers
 
                 // 标记登录提供商
                 SetSession("Cube_Sso", client.Name);
-                SetSession("Cube_Sso_Client", client);
+                //SetSession("Cube_Sso_Client", client);
 
                 if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
@@ -180,14 +180,14 @@ namespace NewLife.Cube.Controllers
         public virtual ActionResult Logout()
         {
             // 先读Session，待会会清空
-#if __CORE__
+            //#if __CORE__
             var prov = Provider;
             var name = GetSession<String>("Cube_Sso");
             var client = prov.GetClient(name);
             //var client = GetSession<OAuthClient>("Cube_Sso_Client");
-#else
-            var client = GetSession<OAuthClient>("Cube_Sso_Client");
-#endif
+            //#else
+            //var client = GetSession<OAuthClient>("Cube_Sso_Client");
+            //#endif
 
             var prv = Provider;
             prv?.Logout();
