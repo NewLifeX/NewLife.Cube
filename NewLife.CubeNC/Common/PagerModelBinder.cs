@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NewLife.Data;
@@ -27,7 +28,7 @@ namespace NewLife.Cube
         /// <summary>创建模型。对于有Key的请求，使用FindByKeyForEdit方法先查出来数据，而不是直接反射实例化实体对象</summary>
         /// <param name="bindingContext"></param>
         /// <returns></returns>
-        public Task BindModelAsync(ModelBindingContext bindingContext)
+        public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
             var modelType = bindingContext.ModelType;
             //var controllerContext = bindingContext.ActionContext;
@@ -38,16 +39,16 @@ namespace NewLife.Cube
                     Params = WebHelper.Params
                 };
 
-                //var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
+                var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
 
                 bindingContext.Model = pager;
 
-                //await complexTypeModelBinder.BindModelAsync(bindingContext);
+                await complexTypeModelBinder.BindModelAsync(bindingContext);
 
                 bindingContext.Result = ModelBindingResult.Success(pager);
             }
 
-            return Task.CompletedTask;
+            //return Task.CompletedTask;
         }
     }
 
