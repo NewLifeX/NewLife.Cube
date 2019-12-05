@@ -6,6 +6,7 @@ using NewLife.Reflection;
 using NewLife.Serialization;
 using XCode.Membership;
 using NewLife.Remoting;
+using System.Linq;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -67,19 +68,22 @@ namespace NewLife.Cube
         protected override void OnActionExecuted(ActionExecutedContext context)
 #endif
         {
-            var ex = context.Exception?.GetTrue();
-            if (ex != null && !context.ExceptionHandled)
+            if (IsJsonRequest)
             {
-                var code = 500;
-                var message = ex.Message;
-                if (ex is ApiException aex)
+                var ex = context.Exception?.GetTrue();
+                if (ex != null && !context.ExceptionHandled)
                 {
-                    code = aex.Code;
-                    message = aex.Message;
-                }
+                    var code = 500;
+                    var message = ex.Message;
+                    if (ex is ApiException aex)
+                    {
+                        code = aex.Code;
+                        message = aex.Message;
+                    }
 
-                context.Result = Json(code, message, null);
-                context.ExceptionHandled = true;
+                    context.Result = Json(code, message, null);
+                    context.ExceptionHandled = true;
+                }
             }
 
             base.OnActionExecuted(context);
@@ -161,6 +165,26 @@ namespace NewLife.Cube
         /// <param name="data">消息</param>
         /// <returns></returns>
         protected virtual ActionResult JsonRefresh(Object data) => Json(0, data as String, data, new { url = "[refresh]" });
+
+        /// <summary>是否Json请求</summary>
+        protected virtual Boolean IsJsonRequest
+        {
+            get
+            {
+                if (Request.ContentType.EqualIgnoreCase("application/json")) return true;
+
+#if __CORE__
+                if (Request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
+#else
+                if (Request.AcceptTypes.Any(e => e == "application/json")) return true;
+#endif
+
+                if (GetRequest("output").EqualIgnoreCase("json")) return true;
+                if ((RouteData.Values["output"] + "").EqualIgnoreCase("json")) return true;
+
+                return false;
+            }
+        }
         #endregion
 
         #region Json结果

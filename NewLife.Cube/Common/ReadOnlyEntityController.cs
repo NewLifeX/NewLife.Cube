@@ -247,7 +247,7 @@ namespace NewLife.Cube
             while (max > 0)
             {
 #if __CORE__
-                if (!HttpContext.RequestAborted.IsCancellationRequested) yield break;
+                if (HttpContext.RequestAborted.IsCancellationRequested) yield break;
 #else
                 if (!rs.IsClientConnected) yield break;
 #endif
@@ -300,7 +300,7 @@ namespace NewLife.Cube
             while (max > 0 && dt < end)
             {
 #if __CORE__
-                if (!HttpContext.RequestAborted.IsCancellationRequested) yield break;
+                if (HttpContext.RequestAborted.IsCancellationRequested) yield break;
 #else
                 if (!rs.IsClientConnected) yield break;
 #endif
@@ -596,6 +596,10 @@ namespace NewLife.Cube
             headers[HeaderNames.ContentEncoding] = "UTF8";
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
+            // 允许同步IO，便于CsvFile刷数据Flush
+            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            if (ft != null) ft.AllowSynchronousIO = true;
+
             var data = ExportData();
             OnExportExcel(fs, data, rs.Body);
 #else
@@ -676,6 +680,10 @@ namespace NewLife.Cube
             var headers = rs.Headers;
             headers[HeaderNames.ContentEncoding] = "UTF8";
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+
+            // 允许同步IO，便于CsvFile刷数据Flush
+            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            if (ft != null) ft.AllowSynchronousIO = true;
 
             var data = ExportData();
             OnExportCsv(fs, data, rs.Body);
@@ -938,25 +946,6 @@ namespace NewLife.Cube
         #endregion
 
         #region 辅助
-        /// <summary>是否Json请求</summary>
-        protected virtual Boolean IsJsonRequest
-        {
-            get
-            {
-                if (Request.ContentType.EqualIgnoreCase("application/json")) return true;
-
-#if __CORE__
-                if (Request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
-#else
-                if (Request.AcceptTypes.Any(e => e == "application/json")) return true;
-#endif
-
-                if (GetRequest("output").EqualIgnoreCase("json")) return true;
-                if ((RouteData.Values["output"] + "").EqualIgnoreCase("json")) return true;
-
-                return false;
-            }
-        }
 #if !__CORE__
         /// <summary>启用压缩</summary>
         protected virtual void SetCompress()
