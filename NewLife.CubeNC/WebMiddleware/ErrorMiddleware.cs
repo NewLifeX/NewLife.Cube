@@ -107,18 +107,4 @@ namespace NewLife.Cube.WebMiddleware
         //    }
         //}
     }
-
-    /// <summary>异常处理中间件扩展</summary>
-    public static class ErrorMiddlewareExtensions
-    {
-        /// <summary>使用异常处理中间件</summary>
-        /// <param name="app"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseError(this IApplicationBuilder app)
-        {
-            if (app == null) throw new ArgumentNullException(nameof(app));
-
-            return app.UseMiddleware<ErrorMiddleware>();
-        }
-    }
 }

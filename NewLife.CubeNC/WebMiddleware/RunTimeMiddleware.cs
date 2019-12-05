@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using NewLife.Collections;
 using NewLife.Common;
+using NewLife.Log;
+using NewLife.Model;
+using NewLife.Threading;
 using XCode.DataAccessLayer;
 using XCode.Membership;
 
@@ -46,12 +51,17 @@ namespace NewLife.Cube.WebMiddleware
                 DAL.LocalFilter = s => inf.Sqls.Add(s);
             }
 
-            await _next.Invoke(ctx);
+            try
+            {
+                await _next.Invoke(ctx);
+            }
+            finally
+            {
+                sw.Stop();
 
-            sw.Stop();
-
-            DAL.LocalFilter = null;
-            ManageProvider.UserHost = null;
+                DAL.LocalFilter = null;
+                ManageProvider.UserHost = null;
+            }
         }
 
         /// <summary>执行时间字符串</summary>
@@ -62,24 +72,17 @@ namespace NewLife.Cube.WebMiddleware
         /// <returns></returns>
         public static String GetInfo(HttpContext ctx)
         {
-            //var ctx = NewLife.Web.HttpContext.Current;
-            //var ts = DateTime.Now - (DateTime)ctx.Items[_RequestTimestamp];
-
-            //var startQueryTimes = (Int32)ctx.Items[_QueryTimes];
-            //var startExecuteTimes = (Int32)ctx.Items[_ExecuteTimes];
-
             var rtinf = ctx.Items[nameof(RunTimeInfo)] as RunTimeInfo;
             if (rtinf == null) return null;
 
             var inf = String.Format(DbRunTimeFormat,
                                     DAL.QueryTimes - rtinf.QueryTimes,
                                     DAL.ExecuteTimes - rtinf.ExecuteTimes,
-                                    rtinf.Watch.Elapsed.TotalMilliseconds);
+                                    rtinf.Watch.ElapsedMilliseconds);
 
             // 设计时收集执行的SQL语句
             if (SysConfig.Current.Develop)
             {
-                //var list = ctx.Items["XCode_SQLList"] as List<String>;
                 var list = rtinf.Sqls;
                 if (list != null && list.Count > 0) inf += "<br />" + list.Select(e => HttpUtility.HtmlEncode(e)).Join("<br />" + Environment.NewLine);
             }
@@ -102,19 +105,5 @@ namespace NewLife.Cube.WebMiddleware
 
         /// <summary>查询次数</summary>
         public IList<String> Sqls { get; set; }
-    }
-
-    /// <summary>中间件扩展</summary>
-    public static class RunTimeMiddlewareExtensions
-    {
-        /// <summary>使用执行时间模块</summary>
-        /// <param name="app"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseRunTime(this IApplicationBuilder app)
-        {
-            if (app == null) throw new ArgumentNullException(nameof(app));
-
-            return app.UseMiddleware<RunTimeMiddleware>();
-        }
     }
 }
