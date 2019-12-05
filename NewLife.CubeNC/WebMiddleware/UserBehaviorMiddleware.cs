@@ -58,7 +58,8 @@ namespace NewLife.Cube.WebMiddleware
             var req = ctx.Request;
             if (req == null) return;
 
-            var user = ctx.User?.Identity as IManageUser ?? ManageProvider.User as IManageUser;
+            //var user = ctx.User?.Identity as IManageUser ?? ManageProvider.User as IManageUser;
+            var user = ctx.User?.Identity as IManageUser;
 
             //var sid = ctx.Session?.Id;
             var sid = ctx.User?.Identity?.Name;

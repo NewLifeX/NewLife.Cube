@@ -50,15 +50,22 @@ namespace NewLife.Cube
         {
             var ctx = (context?.GetService<IHttpContextAccessor>() ?? Context)
                 ?.HttpContext;
+            if (ctx == null) return null;
 
             try
             {
-                var session = ctx?.Session;
-                var user = ObjectContainer.Current.Resolve<IManageUser>();
+                var user = ctx.Items["Current_User"] as IManageUser;
+                if (user != null) return user;
 
-                return session?.Get(SessionKey, user.GetType()) as IManageUser;
+                var session = ctx.Session;
+                var type = ObjectContainer.Current.ResolveType<IManageUser>();
+
+                user = session?.Get(SessionKey, type) as IManageUser;
+                ctx.Items["Current_User"] = user;
+
+                return user;
             }
-            catch (System.InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 // 这里捕获一下，防止初始化应用中session还没初始化好报的异常
                 // 这里有个问题就是这里的ctx会有两个不同的值
@@ -72,8 +79,13 @@ namespace NewLife.Cube
         /// <param name="context"></param>
         public override void SetCurrent(IManageUser user, IServiceProvider context = null)
         {
-            var ss = ((context)?.GetService<IHttpContextAccessor>() ?? Context)
-                ?.HttpContext.Session;
+            var ctx = (context?.GetService<IHttpContextAccessor>() ?? Context)
+                ?.HttpContext;
+            if (ctx == null) return;
+
+            ctx.Items["Current_User"] = user;
+
+            var ss = ctx.Session;
             if (ss == null) return;
 
             var key = SessionKey;
@@ -136,7 +148,6 @@ namespace NewLife.Cube
             this.SaveCookie(null, TimeSpan.FromDays(-1), context);
             base.Logout();
         }
-
         #endregion
     }
 

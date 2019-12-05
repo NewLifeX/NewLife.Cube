@@ -1,4 +1,5 @@
 ﻿using System;
+using XCode;
 #if __CORE__
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
@@ -45,7 +46,10 @@ namespace NewLife.Cube
         {
             if (!session.TryGetValue(key, out var buf)) return null;
 
-            return buf.ToStr().ToJsonEntity(targetType);
+            var rs = buf.ToStr().ToJsonEntity(targetType);
+            if (rs is IEntity entity && entity.HasDirty) entity.Dirtys.Clear();
+
+            return rs;
         }
 
         /// <summary>设置Session值</summary>
