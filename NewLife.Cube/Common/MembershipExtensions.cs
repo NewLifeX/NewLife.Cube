@@ -124,6 +124,7 @@ namespace NewLife.Cube
 
             // 没有菜单时不做权限控制
             var menu = page.ViewContext.ViewBag.Menu as IMenu;
+            if (menu == null) menu = page.ViewContext.HttpContext.Items["CurrentMenu"] as IMenu;
             if (menu == null) return true;
 
             return user.Has(menu, flags);

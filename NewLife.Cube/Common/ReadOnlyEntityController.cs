@@ -88,6 +88,7 @@ namespace NewLife.Cube
 
                 var txt = (String)ViewBag.HeaderContent;
                 if (txt.IsNullOrEmpty()) txt = (ViewBag.Menu as IMenu)?.Remark;
+                if (txt.IsNullOrEmpty()) txt = (HttpContext.Items["CurrentMenu"] as IMenu)?.Remark;
                 if (txt.IsNullOrEmpty()) txt = GetType().GetDescription();
                 if (txt.IsNullOrEmpty()) txt = Entity<TEntity>.Meta.Table.Description;
                 //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)

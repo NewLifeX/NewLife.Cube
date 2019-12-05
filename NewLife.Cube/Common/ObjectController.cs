@@ -43,6 +43,7 @@ namespace NewLife.Cube
 
             var txt = "";
             if (txt.IsNullOrEmpty()) txt = (ViewBag.Menu as IMenu)?.Remark;
+            if (txt.IsNullOrEmpty()) txt = (HttpContext.Items["CurrentMenu"] as IMenu)?.Remark;
             if (txt.IsNullOrEmpty()) txt = des;
             ViewBag.HeaderContent = txt;
 
