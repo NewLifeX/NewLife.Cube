@@ -48,7 +48,7 @@ namespace NewLife.Cube
                 DAL.LocalFilter = sql => list.Add(sql);
             }
 
-            ManageProvider.UserHost = GetIP(ctx);
+            ManageProvider.UserHost = ctx.Request.RequestContext.HttpContext.GetUserHost();
         }
 
         void OnEnd()
@@ -102,20 +102,20 @@ namespace NewLife.Cube
             }
         }
 
-        String GetIP(HttpContext ctx)
-        {
-            var req = ctx.Request;
-            if (req == null) return null;
+        //String GetIP(HttpContext ctx)
+        //{
+        //    var req = ctx.Request;
+        //    if (req == null) return null;
 
-            var ip = (String)ctx.Items["UserHostAddress"];
-            if (ip.IsNullOrEmpty()) ip = req.ServerVariables["HTTP_X_FORWARDED_FOR"];
-            if (ip.IsNullOrEmpty()) ip = req.ServerVariables["X-Real-IP"];
-            if (ip.IsNullOrEmpty()) ip = req.ServerVariables["X-Forwarded-For"];
-            if (ip.IsNullOrEmpty()) ip = req.ServerVariables["REMOTE_ADDR"];
-            if (ip.IsNullOrEmpty()) ip = req.UserHostName;
-            if (ip.IsNullOrEmpty()) ip = req.UserHostAddress;
+        //    var ip = (String)ctx.Items["UserHostAddress"];
+        //    if (ip.IsNullOrEmpty()) ip = req.ServerVariables["HTTP_X_FORWARDED_FOR"];
+        //    if (ip.IsNullOrEmpty()) ip = req.ServerVariables["X-Real-IP"];
+        //    if (ip.IsNullOrEmpty()) ip = req.ServerVariables["X-Forwarded-For"];
+        //    if (ip.IsNullOrEmpty()) ip = req.ServerVariables["REMOTE_ADDR"];
+        //    if (ip.IsNullOrEmpty()) ip = req.UserHostName;
+        //    if (ip.IsNullOrEmpty()) ip = req.UserHostAddress;
 
-            return ip;
-        }
+        //    return ip;
+        //}
     }
 }

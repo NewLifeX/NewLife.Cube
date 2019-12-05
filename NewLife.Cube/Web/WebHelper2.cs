@@ -64,9 +64,22 @@ namespace NewLife.Cube
         }
 
         /// <summary>获取用户主机</summary>
-        /// <param name="request"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        public static String GetUserHost(this HttpRequest request) => request?.Headers["Host"] + "";
+        public static String GetUserHost(this HttpContext context)
+        {
+            var request = context.Request;
+
+            var str = "";
+            if (str.IsNullOrEmpty()) str = request.Headers["HTTP_X_FORWARDED_FOR"];
+            if (str.IsNullOrEmpty()) str = request.Headers["X-Real-IP"];
+            if (str.IsNullOrEmpty()) str = request.Headers["X-Forwarded-For"];
+            if (str.IsNullOrEmpty()) str = request.Headers["REMOTE_ADDR"];
+            //if (str.IsNullOrEmpty()) str = request.Headers["Host"];
+            if (str.IsNullOrEmpty()) str = context.Connection?.RemoteIpAddress + "";
+
+            return str;
+        }
 
         /// <summary>返回请求字符串和表单的名值字段，过滤空值和ViewState，同名时优先表单</summary>
         public static IDictionary<String, String> Params
@@ -136,16 +149,29 @@ namespace NewLife.Cube
         /// <param name="value"></param>
         public static void Set(this HttpSessionStateBase session, String key, Object value) => session[key] = value;
 
-        /// <summary>获取用户主机</summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public static String GetUserHost(this HttpRequest request) => request.UserHostAddress;
+        ///// <summary>获取用户主机</summary>
+        ///// <param name="request"></param>
+        ///// <returns></returns>
+        //public static String GetUserHost(this HttpRequest request) => request.UserHostAddress;
 
         /// <summary>获取用户主机</summary>
-        /// <param name="request"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        public static String GetUserHost(this HttpRequestBase request) => request?.UserHostAddress;
+        public static String GetUserHost(this HttpContextBase context)
+        {
+            var request = context.Request;
 
+            var str = "";
+            if (str.IsNullOrEmpty()) str = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            if (str.IsNullOrEmpty()) str = request.ServerVariables["X-Real-IP"];
+            if (str.IsNullOrEmpty()) str = request.ServerVariables["X-Forwarded-For"];
+            if (str.IsNullOrEmpty()) str = request.ServerVariables["REMOTE_ADDR"];
+            if (str.IsNullOrEmpty()) str = request.UserHostName;
+            if (str.IsNullOrEmpty()) str = request.UserHostAddress;
+
+            return str;
+        }
+        
         /// <summary>确定指定的 HTTP 请求是否为 AJAX 请求</summary>
         /// <param name="request"></param>
         /// <returns></returns>

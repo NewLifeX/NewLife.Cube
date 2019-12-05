@@ -66,7 +66,7 @@ namespace NewLife.Cube
 
             var res = "[{0}/{1}]".F(ctrl.ControllerName, act.ActionName);
             var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
-            LogProvider.Provider.WriteLog("访问", "拒绝", msg, ip: ctx.Request.GetUserHost());
+            LogProvider.Provider.WriteLog("访问", "拒绝", msg, ip: ctx.GetUserHost());
 
             var menu = ctx.Items["CurrentMenu"] as IMenu;
 
@@ -102,7 +102,7 @@ namespace NewLife.Cube
         {
             var res = "[{0}/{1}]".F(controller.GetType().Name.TrimEnd("Controller"), action);
             var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
-            LogProvider.Provider.WriteLog("访问", "拒绝", msg, ip: controller.HttpContext.Request.GetUserHost());
+            LogProvider.Provider.WriteLog("访问", "拒绝", msg, ip: controller.HttpContext.GetUserHost());
 
             var ctx = controller.HttpContext;
             var menu = ctx.Items["CurrentMenu"] as IMenu;
@@ -141,7 +141,7 @@ namespace NewLife.Cube
 #endif
             var pm = ex.Permission;
             var msg = "无权访问数据[{0}]，没有该数据的 {1} 权限".F(res, pm.GetDescription());
-            LogProvider.Provider.WriteLog("访问", "拒绝", msg, ip: ctx.Request.GetUserHost());
+            LogProvider.Provider.WriteLog("访问", "拒绝", msg, ip: ctx.GetUserHost());
 
             var menu = ctx.Items["CurrentMenu"] as IMenu;
 

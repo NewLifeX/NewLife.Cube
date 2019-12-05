@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using NewLife.Common;
 using XCode.DataAccessLayer;
+using XCode.Membership;
 
 namespace NewLife.Cube.WebMiddleware
 {
@@ -24,6 +25,8 @@ namespace NewLife.Cube.WebMiddleware
         /// <returns></returns>
         public async Task Invoke(HttpContext ctx)
         {
+            ManageProvider.UserHost = ctx.GetUserHost();
+
             ctx.Items[_QueryTimes] = DAL.QueryTimes;
             ctx.Items[_ExecuteTimes] = DAL.ExecuteTimes;
             ctx.Items[_RequestTimestamp] = DateTime.Now;
@@ -40,6 +43,9 @@ namespace NewLife.Cube.WebMiddleware
             }
 
             await _next.Invoke(ctx);
+
+            DAL.LocalFilter = null;
+            ManageProvider.UserHost = null;
         }
 
         /// <summary>执行时间字符串</summary>

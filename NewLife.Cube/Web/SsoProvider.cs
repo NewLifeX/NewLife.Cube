@@ -120,8 +120,10 @@ namespace NewLife.Cube.Web
 #if __CORE__
             var httpContext = context.GetService<IHttpContextAccessor>().HttpContext;
             var req = httpContext.Request;
+            var ip = httpContext.GetUserHost();
 #else
             var req = context.GetService<HttpRequest>();
+            var ip = req.RequestContext.HttpContext.GetUserHost();
 #endif
             //if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
             if (req != null) forceBind = req.Get("state").EndsWithIgnoreCase("_bind");
@@ -141,7 +143,7 @@ namespace NewLife.Cube.Web
             {
                 user3.Logins++;
                 user3.LastLogin = DateTime.Now;
-                user3.LastLoginIP = WebHelper.UserHost;
+                user3.LastLoginIP = ip;
                 user3.Save();
             }
 

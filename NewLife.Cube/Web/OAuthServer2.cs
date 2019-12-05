@@ -8,17 +8,6 @@ namespace NewLife.Cube.Web
     /// <summary>单点登录服务端</summary>
     public class OAuthServer2 : OAuthServer
     {
-        #region 静态
-        ///// <summary>初始化</summary>
-        //public static void Init()
-        //{
-        //    if (!(Instance is OAuthServer2))
-        //    {
-        //        Instance = new OAuthServer2();
-        //    }
-        //}
-        #endregion
-
         #region 方法
         /// <summary>验证用户身份</summary>
         /// <remarks>

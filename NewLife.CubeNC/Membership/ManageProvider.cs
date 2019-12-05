@@ -232,7 +232,9 @@ namespace NewLife.Cube
             if (autologin)
             {
                 mu.SaveLogin(null);
-                LogProvider.Provider.WriteLog("用户", "自动登录", $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "", ip: req.GetUserHost());
+
+                var ctx = req.HttpContext;
+                LogProvider.Provider.WriteLog("用户", "自动登录", $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "", ip: ctx.GetUserHost());
             }
 
             return u;

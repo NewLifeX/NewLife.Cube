@@ -251,7 +251,7 @@ namespace NewLife.Cube
         /// <summary>
         /// 用户主机
         /// </summary>
-        public String UserHost => HttpContext.Request.GetUserHost();
+        public String UserHost => HttpContext.GetUserHost();
         #endregion
     }
 }
