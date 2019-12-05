@@ -157,6 +157,10 @@ namespace NewLife.Cube.Web
                 XTrace.WriteException(ex);
             }
 
+            // 写日志
+            var log = LogProvider.Provider;
+            log?.WriteLog(typeof(UserX), "SSO登录", $"[{user}]从[{client.Name}]的[{client.UserName}]登录", user.ID, user + "");
+
             if (!user.Enable) throw new InvalidOperationException("用户已禁用！");
 
             // 登录成功，保存当前用户
@@ -191,6 +195,8 @@ namespace NewLife.Cube.Web
                 if (user2.Mobile.IsNullOrEmpty() && dic.TryGetValue("mobile", out var mobile)) user2.Mobile = mobile;
                 if (user2.Code.IsNullOrEmpty() && dic.TryGetValue("code", out var code)) user2.Code = code;
                 if (user2.Sex == SexKinds.未知 && dic.TryGetValue("sex", out var sex)) user2.Sex = (SexKinds)sex.ToInt();
+                if (user2.Remark.IsNullOrEmpty()) user2.Remark = client.Detail;
+                if (user2.Remark.IsNullOrEmpty() && dic.TryGetValue("detail", out var detail)) user2.Remark = detail;
 
                 var set = Setting.Current;
 
@@ -274,6 +280,10 @@ namespace NewLife.Cube.Web
             uc.UserID = user.ID;
             uc.Enable = true;
 
+            // 写日志
+            var log = LogProvider.Provider;
+            log?.WriteLog(typeof(UserX), "绑定", $"[{user}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
+
             return user;
         }
 
@@ -338,6 +348,7 @@ namespace NewLife.Cube.Web
                     roleids = user2.RoleIDs,
                     rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
                     avatar = user2.Avatar,
+                    detail = user2.Remark,
                 };
             else
                 return new
