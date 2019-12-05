@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
 
@@ -73,34 +71,6 @@ namespace NewLife.Cube
 
             return base.CreateModel(controllerContext, bindingContext, modelType);
         }
-
-        //private static String GetCacheKey(Type type, params Object[] keys) => "CubeModel_{0}_{1}".F(type.FullName, keys.Join("_"));
-
-        ///// <summary>呈现表单前，保存实体对象。提交时优先使用该对象而不是去数据库查找，避免脏写</summary>
-        ///// <param name="entity"></param>
-        //internal static void SetEntity(IEntity entity)
-        //{
-        //    var ctx = HttpContext.Current;
-        //    var fact = EntityFactory.CreateOperate(entity.GetType());
-
-        //    var ckey = "";
-        //    var pks = fact.Table.PrimaryKeys;
-        //    var uk = fact.Unique;
-        //    if (uk != null)
-        //        ckey = GetCacheKey(entity.GetType(), entity[uk.Name]);
-        //    else if (pks.Length > 0)
-        //        ckey = GetCacheKey(entity.GetType(), pks.Select(e => entity[e.Name]).ToArray());
-
-        //    ctx.Session[ckey] = entity;
-        //}
-
-        //private static IEntity GetEntity(Type type, params Object[] keys)
-        //{
-        //    var ctx = HttpContext.Current;
-        //    var ckey = GetCacheKey(type, keys);
-
-        //    return ctx.Session[ckey] as IEntity;
-        //}
     }
 
     /// <summary>实体模型绑定器提供者，为所有XCode实体类提供实体模型绑定器</summary>
