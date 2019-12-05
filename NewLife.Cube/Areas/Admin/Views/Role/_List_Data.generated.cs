@@ -274,8 +274,6 @@ WriteLiteral("                <th");
 
 WriteLiteral(" class=\"text-center\"");
 
-WriteLiteral(" style=\"min-width:100px;\"");
-
 WriteLiteral(">操作</th>\r\n");
 
             
@@ -327,14 +325,14 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 1963), Tuple.Create("\"", 1981)
+WriteAttribute("value", Tuple.Create(" value=\"", 1938), Tuple.Create("\"", 1956)
             
             #line 43 "..\..\Areas\Admin\Views\Role\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 1971), Tuple.Create<System.Object, System.Int32>(entity.ID
+      , Tuple.Create(Tuple.Create("", 1946), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 1971), false)
+, 1946), false)
 );
 
 WriteLiteral(" /></td>\r\n");
@@ -374,28 +372,28 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">\r\n                    <i");
 
-WriteAttribute("class", Tuple.Create(" class=\"", 2171), Tuple.Create("\"", 2235)
-, Tuple.Create(Tuple.Create("", 2179), Tuple.Create("glyphicon", 2179), true)
-, Tuple.Create(Tuple.Create(" ", 2188), Tuple.Create("glyphicon-", 2189), true)
+WriteAttribute("class", Tuple.Create(" class=\"", 2146), Tuple.Create("\"", 2210)
+, Tuple.Create(Tuple.Create("", 2154), Tuple.Create("glyphicon", 2154), true)
+, Tuple.Create(Tuple.Create(" ", 2163), Tuple.Create("glyphicon-", 2164), true)
             
             #line 48 "..\..\Areas\Admin\Views\Role\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2199), Tuple.Create<System.Object, System.Int32>(entity.IsSystem ? "ok" : "remove"
+, Tuple.Create(Tuple.Create("", 2174), Tuple.Create<System.Object, System.Int32>(entity.IsSystem ? "ok" : "remove"
             
             #line default
             #line hidden
-, 2199), false)
+, 2174), false)
 );
 
-WriteAttribute("style", Tuple.Create(" style=\"", 2236), Tuple.Create("\"", 2288)
-, Tuple.Create(Tuple.Create("", 2244), Tuple.Create("color:", 2244), true)
+WriteAttribute("style", Tuple.Create(" style=\"", 2211), Tuple.Create("\"", 2263)
+, Tuple.Create(Tuple.Create("", 2219), Tuple.Create("color:", 2219), true)
             
             #line 48 "..\..\Areas\Admin\Views\Role\_List_Data.cshtml"
-                      , Tuple.Create(Tuple.Create(" ", 2250), Tuple.Create<System.Object, System.Int32>(entity.IsSystem ? "green" : "red"
+                      , Tuple.Create(Tuple.Create(" ", 2225), Tuple.Create<System.Object, System.Int32>(entity.IsSystem ? "green" : "red"
             
             #line default
             #line hidden
-, 2251), false)
-, Tuple.Create(Tuple.Create("", 2287), Tuple.Create(";", 2287), true)
+, 2226), false)
+, Tuple.Create(Tuple.Create("", 2262), Tuple.Create(";", 2262), true)
 );
 
 WriteLiteral("></i>\r\n                </td>\r\n                <td>");
@@ -422,14 +420,14 @@ WriteLiteral(">");
             #line hidden
 WriteLiteral("</td>\r\n                <td");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 2464), Tuple.Create("\"", 2502)
+WriteAttribute("title", Tuple.Create(" title=\"", 2439), Tuple.Create("\"", 2477)
             
             #line 52 "..\..\Areas\Admin\Views\Role\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2472), Tuple.Create<System.Object, System.Int32>(entity.UpdateIP.IPToAddress()
+, Tuple.Create(Tuple.Create("", 2447), Tuple.Create<System.Object, System.Int32>(entity.UpdateIP.IPToAddress()
             
             #line default
             #line hidden
-, 2472), false)
+, 2447), false)
 );
 
 WriteLiteral(">");

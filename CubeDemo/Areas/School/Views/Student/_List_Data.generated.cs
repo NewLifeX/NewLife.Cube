@@ -321,8 +321,6 @@ WriteLiteral("                <th");
 
 WriteLiteral(" class=\"text-center\"");
 
-WriteLiteral(" style=\"min-width:100px;\"");
-
 WriteLiteral(">操作</th>\r\n");
 
             
@@ -374,14 +372,14 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 2246), Tuple.Create("\"", 2264)
+WriteAttribute("value", Tuple.Create(" value=\"", 2221), Tuple.Create("\"", 2239)
             
             #line 46 "..\..\Areas\School\Views\Student\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 2254), Tuple.Create<System.Object, System.Int32>(entity.ID
+      , Tuple.Create(Tuple.Create("", 2229), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2254), false)
+, 2229), false)
 );
 
 WriteLiteral(" /></td>\r\n");
@@ -408,15 +406,15 @@ WriteLiteral(">");
             #line hidden
 WriteLiteral("</td>\r\n                <td><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 2403), Tuple.Create("\"", 2434)
-, Tuple.Create(Tuple.Create("", 2410), Tuple.Create("Class?ID=", 2410), true)
+WriteAttribute("href", Tuple.Create(" href=\"", 2378), Tuple.Create("\"", 2409)
+, Tuple.Create(Tuple.Create("", 2385), Tuple.Create("Class?ID=", 2385), true)
             
             #line 49 "..\..\Areas\School\Views\Student\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2419), Tuple.Create<System.Object, System.Int32>(entity.ClassID
+, Tuple.Create(Tuple.Create("", 2394), Tuple.Create<System.Object, System.Int32>(entity.ClassID
             
             #line default
             #line hidden
-, 2419), false)
+, 2394), false)
 );
 
 WriteLiteral(">");
@@ -509,14 +507,14 @@ WriteLiteral("</td>\r\n                <td>");
             #line hidden
 WriteLiteral("</td>\r\n                <td");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 2902), Tuple.Create("\"", 2940)
+WriteAttribute("title", Tuple.Create(" title=\"", 2877), Tuple.Create("\"", 2915)
             
             #line 57 "..\..\Areas\School\Views\Student\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2910), Tuple.Create<System.Object, System.Int32>(entity.UpdateIP.IPToAddress()
+, Tuple.Create(Tuple.Create("", 2885), Tuple.Create<System.Object, System.Int32>(entity.UpdateIP.IPToAddress()
             
             #line default
             #line hidden
-, 2910), false)
+, 2885), false)
 );
 
 WriteLiteral(">");

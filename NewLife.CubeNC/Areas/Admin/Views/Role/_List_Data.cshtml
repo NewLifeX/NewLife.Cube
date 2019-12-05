@@ -26,7 +26,7 @@
             <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
             {
-                <th class="text-center" style="min-width:100px;">操作</th>
+                <th class="text-center">操作</th>
             }
         </tr>
     </thead>

@@ -307,8 +307,6 @@ WriteLiteral("                <th");
 
 WriteLiteral(" class=\"text-center\"");
 
-WriteLiteral(" style=\"min-width:100px;\"");
-
 WriteLiteral(">操作</th>\r\n");
 
             
@@ -360,14 +358,14 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 2076), Tuple.Create("\"", 2094)
+WriteAttribute("value", Tuple.Create(" value=\"", 2051), Tuple.Create("\"", 2069)
             
             #line 45 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 2084), Tuple.Create<System.Object, System.Int32>(entity.ID
+      , Tuple.Create(Tuple.Create("", 2059), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2084), false)
+, 2059), false)
 );
 
 WriteLiteral(" /></td>\r\n");
@@ -415,14 +413,14 @@ WriteLiteral("</td>\r\n                <td");
 WriteLiteral(" style=\"max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellips" +
 "is;\"");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 2369), Tuple.Create("\"", 2391)
+WriteAttribute("title", Tuple.Create(" title=\"", 2344), Tuple.Create("\"", 2366)
             
             #line 50 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-                                , Tuple.Create(Tuple.Create("", 2377), Tuple.Create<System.Object, System.Int32>(entity.Remark
+                                , Tuple.Create(Tuple.Create("", 2352), Tuple.Create<System.Object, System.Int32>(entity.Remark
             
             #line default
             #line hidden
-, 2377), false)
+, 2352), false)
 );
 
 WriteLiteral(">");
@@ -495,16 +493,16 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 2802), Tuple.Create("\"", 2841)
-, Tuple.Create(Tuple.Create("", 2809), Tuple.Create("?act=near&id=", 2809), true)
+WriteAttribute("href", Tuple.Create(" href=\"", 2777), Tuple.Create("\"", 2816)
+, Tuple.Create(Tuple.Create("", 2784), Tuple.Create("?act=near&id=", 2784), true)
             
             #line 57 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2822), Tuple.Create<System.Object, System.Int32>(entity.ID
+, Tuple.Create(Tuple.Create("", 2797), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2822), false)
-, Tuple.Create(Tuple.Create("", 2832), Tuple.Create("&range=10", 2832), true)
+, 2797), false)
+, Tuple.Create(Tuple.Create("", 2807), Tuple.Create("&range=10", 2807), true)
 );
 
 WriteLiteral(" title=\"前后10行日志\"");
