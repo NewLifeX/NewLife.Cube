@@ -387,8 +387,8 @@ namespace NewLife.Cube
             // 用于显示的列
             ViewBag.Fields = GetFields(true);
 
-            // 呈现表单前，保存实体对象。提交时优先使用该对象而不是去数据库查找，避免脏写
-            EntityModelBinder.SetEntity(entity);
+            //// 呈现表单前，保存实体对象。提交时优先使用该对象而不是去数据库查找，避免脏写
+            //EntityModelBinder.SetEntity(entity);
 
             return View("Form", entity);
         }

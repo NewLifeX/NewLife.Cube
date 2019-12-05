@@ -126,25 +126,27 @@ namespace NewLife.Cube
                     {
                         // 查询实体对象用于编辑
                         var id = rvs[uk.Name];
-                        if (id != null) entity = GetEntity(fact.EntityType, id) ?? fact.FindByKeyForEdit(id);
+                        //if (id != null) entity = GetEntity(fact.EntityType, id) ?? fact.FindByKeyForEdit(id);
+                        if (id != null) entity = fact.FindByKeyForEdit(id);
                         if (entity == null) entity = fact.Create();
                     }
                     else if (pks.Length > 0)
                     {
                         // 查询实体对象用于编辑
-                        var vs = pks.Select(e => rvs[e.Name]).ToArray();
-                        entity = GetEntity(fact.EntityType, vs);
-                        if (entity == null)
+                        //var vs = pks.Select(e => rvs[e.Name]).ToArray();
+                        //entity = GetEntity(fact.EntityType, vs);
+                        //if (entity == null)
+                        //{
+                        var req = bindingContext.HttpContext.Request.Query;
+                        var exp = new WhereExpression();
+                        foreach (var item in pks)
                         {
-                            var req = bindingContext.HttpContext.Request.Query;
-                            var exp = new WhereExpression();
-                            foreach (var item in pks)
-                            {
-                                exp &= item.Equal(req[item.Name].ChangeType(item.Type));
-                            }
-
-                            entity = fact.Find(exp);
+                            var v = req[item.Name].FirstOrDefault();
+                            exp &= item.Equal(v.ChangeType(item.Type));
                         }
+
+                        entity = fact.Find(exp);
+                        //}
                         if (entity == null) entity = fact.Create();
                     }
 
@@ -167,35 +169,35 @@ namespace NewLife.Cube
             return base.CreateModel(bindingContext);
         }
 
-        private static String GetCacheKey(Type type, params Object[] keys)
-        {
-            return "CubeModel_{0}_{1}".F(type.FullName, keys.Join("_"));
-        }
+        //private static String GetCacheKey(Type type, params Object[] keys)
+        //{
+        //    return "CubeModel_{0}_{1}".F(type.FullName, keys.Join("_"));
+        //}
 
-        /// <summary>呈现表单前，保存实体对象。提交时优先使用该对象而不是去数据库查找，避免脏写</summary>
-        /// <param name="entity"></param>
-        internal static void SetEntity(IEntity entity)
-        {
-            var ctx = HttpContext.Current;
-            var fact = EntityFactory.CreateOperate(entity.GetType());
+        ///// <summary>呈现表单前，保存实体对象。提交时优先使用该对象而不是去数据库查找，避免脏写</summary>
+        ///// <param name="entity"></param>
+        //internal static void SetEntity(IEntity entity)
+        //{
+        //    var ctx = HttpContext.Current;
+        //    var fact = EntityFactory.CreateOperate(entity.GetType());
 
-            var ckey = "";
-            var pks = fact.Table.PrimaryKeys;
-            var uk = fact.Unique;
-            if (uk != null)
-                ckey = GetCacheKey(entity.GetType(), entity[uk.Name]);
-            else if (pks.Length > 0)
-                ckey = GetCacheKey(entity.GetType(), pks.Select(e => entity[e.Name]).ToArray());
+        //    var ckey = "";
+        //    var pks = fact.Table.PrimaryKeys;
+        //    var uk = fact.Unique;
+        //    if (uk != null)
+        //        ckey = GetCacheKey(entity.GetType(), entity[uk.Name]);
+        //    else if (pks.Length > 0)
+        //        ckey = GetCacheKey(entity.GetType(), pks.Select(e => entity[e.Name]).ToArray());
 
-            ctx.Session.Set(ckey, entity);
-        }
+        //    ctx.Session.Set(ckey, entity);
+        //}
 
-        private static IEntity GetEntity(Type type, params Object[] keys)
-        {
-            var ctx = HttpContext.Current;
-            var ckey = GetCacheKey(type, keys);
-            return ctx.Session.Get(ckey, type) as IEntity;
-        }
+        //private static IEntity GetEntity(Type type, params Object[] keys)
+        //{
+        //    var ctx = HttpContext.Current;
+        //    var ckey = GetCacheKey(type, keys);
+        //    return ctx.Session.Get(ckey, type) as IEntity;
+        //}
 
         //private async Task BindProperty(ModelBindingContext bindingContext)
         //{
