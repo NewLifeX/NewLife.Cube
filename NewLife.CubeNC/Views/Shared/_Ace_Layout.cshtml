@@ -1,7 +1,10 @@
 ﻿@using NewLife.Common;
+@using NewLife.Cube.WebMiddleware;
 @{
     var set = NewLife.Cube.Setting.Current;
     var set2 = ViewBag.PageSetting as PageSetting;
+
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -61,10 +64,10 @@
                 @RenderBody()
             </section>
         </div>
-        @if (DbRunTimeModule.Enable)
+        @if (set.ShowRunTime)
         {
             <div class="panel-footer">
-                @Html.Raw(DbRunTimeModule.GetInfo())
+                @Html.Raw(runInfo)
             </div>
         }
     </div>

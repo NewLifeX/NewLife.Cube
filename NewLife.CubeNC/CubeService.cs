@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.WebMiddleware;
 using NewLife.Reflection;
 using NewLife.Web;
 
@@ -177,15 +178,12 @@ namespace NewLife.Cube
 
             var set = Setting.Current;
 
-            // 添加自定义中间件（3.0开始采用netcore原生版本错误页面）
-            // 注册错误处理模块中间件
-            //app.UseErrorModule();
-
             // 压缩配置
             if (set.EnableCompress) app.UseResponseCompression();
 
-            // 注册请求执行时间中间件
-            app.UseDbRunTimeModule();
+            // 注册中间件
+            app.UseError();
+            app.UseRunTime();
 
             if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
 

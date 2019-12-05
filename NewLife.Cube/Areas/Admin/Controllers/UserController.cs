@@ -53,7 +53,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (entity != null) list.Add(entity);
                 return list;
             }
-            p.RetrieveState = true;
+            //p.RetrieveState = true;
 
             return UserX.Search(p["Q"], p["RoleID"].ToInt(-1), null, p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p);
         }
