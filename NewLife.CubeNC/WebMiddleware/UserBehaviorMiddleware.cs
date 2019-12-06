@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using NewLife.Collections;
 using NewLife.Log;
@@ -38,6 +37,8 @@ namespace NewLife.Cube.WebMiddleware
             catch (Exception ex)
             {
                 error = ex;
+
+                throw;
             }
             finally
             {
