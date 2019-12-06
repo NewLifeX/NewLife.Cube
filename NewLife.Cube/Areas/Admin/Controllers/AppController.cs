@@ -27,7 +27,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (menu.Visible && !menu.Necessary)
             {
                 menu.Visible = false;
-                (menu as IEntity).Save();
+                (menu as IEntity).Update();
             }
 
             return base.ScanActionMenu(menu);

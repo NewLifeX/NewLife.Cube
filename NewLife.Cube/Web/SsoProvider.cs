@@ -11,6 +11,7 @@ using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Security;
+using XCode;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using IHttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
@@ -144,7 +145,8 @@ namespace NewLife.Cube.Web
                 user3.Logins++;
                 user3.LastLogin = DateTime.Now;
                 user3.LastLoginIP = ip;
-                user3.Save();
+                //user3.Save();
+                (user3 as IEntity).Update();
             }
 
             try

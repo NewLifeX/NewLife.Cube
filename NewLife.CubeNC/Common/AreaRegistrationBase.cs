@@ -188,7 +188,7 @@ namespace NewLife.Cube
                     if (!dis.IsNullOrEmpty()) menu.DisplayName = dis;
                     if (!des.IsNullOrEmpty()) menu.Remark = des;
 
-                    (menu as IEntity).Save();
+                    (menu as IEntity).Update();
                 }
 
                 tran.Commit();

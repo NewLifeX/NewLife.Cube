@@ -262,7 +262,7 @@ namespace NewLife.Cube.Controllers
             if (uc != null)
             {
                 uc.Enable = false;
-                uc.Save();
+                uc.Update();
             }
 
 #if __CORE__

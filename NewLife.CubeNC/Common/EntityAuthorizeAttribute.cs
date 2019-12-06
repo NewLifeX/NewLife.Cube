@@ -188,7 +188,7 @@ namespace NewLife.Cube
             if (root != null)
             {
                 root.Url = "~";
-                (root as IEntity).Save();
+                (root as IEntity).Update();
             }
 
             // 遍历菜单，设置权限项
@@ -220,7 +220,7 @@ namespace NewLife.Cube
 
                 controller.Url = "~/" + ctype.Name.TrimEnd("Controller");
 
-                (controller as IEntity).Save();
+                (controller as IEntity).Update();
             }
 
             return true;

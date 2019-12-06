@@ -68,11 +68,11 @@ namespace XCode.Membership
                 // 修改Session
                 ss.Remove(key);
 
-                if (ss[key] is IAuthUser au)
-                {
-                    au.Online = false;
-                    au.Save();
-                }
+                //if (ss[key] is IAuthUser au)
+                //{
+                //    au.Online = false;
+                //    au.Save();
+                //}
             }
             else
             {

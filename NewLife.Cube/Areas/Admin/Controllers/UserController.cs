@@ -312,7 +312,7 @@ namespace NewLife.Cube.Admin.Controllers
                     if (user != null && user.Enable != isEnable)
                     {
                         user.Enable = isEnable;
-                        user.Save();
+                        user.Update();
 
                         Interlocked.Increment(ref count);
                     }
