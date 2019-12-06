@@ -195,8 +195,10 @@ namespace NewLife.Cube.Controllers
             var url = "";
 
             // 准备跳转到验证中心
-            if (client != null)
+            var set = Setting.Current;
+            if (client != null && set.LogoutAll)
             {
+                if (client.LogoutUrl.IsNullOrEmpty() && name.EqualIgnoreCase("NewLife")) client.LogoutUrl = "logout?client_id={key}&redirect_uri={redirect}&state={state}";
                 if (!client.LogoutUrl.IsNullOrEmpty())
                 {
                     // 准备返回地址

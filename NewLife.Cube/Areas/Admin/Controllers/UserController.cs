@@ -155,15 +155,19 @@ namespace NewLife.Cube.Admin.Controllers
         {
             var returnUrl = GetRequest("r");
 
-            // 如果是单点登录，则走单点登录注销
-            var name = GetSession<String>("Cube_Sso");
-            //if (!name.IsNullOrEmpty()) return Redirect($"~/Sso/Logout?name={name}&r={returnUrl}");
-            if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso", new
+            var set = Setting.Current;
+            if (set.LogoutAll)
             {
-                area = "",
-                name,
-                r = returnUrl
-            });
+                // 如果是单点登录，则走单点登录注销
+                var name = GetSession<String>("Cube_Sso");
+                if (!name.IsNullOrEmpty()) return Redirect($"~/Sso/Logout?name={name}&r={HttpUtility.UrlEncode(returnUrl)}");
+                //if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso", new
+                //{
+                //    area = "",
+                //    name,
+                //    r = returnUrl
+                //});
+            }
 
             ManageProvider.Provider.Logout();
 
