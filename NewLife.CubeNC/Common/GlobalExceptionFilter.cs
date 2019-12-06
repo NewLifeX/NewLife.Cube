@@ -17,6 +17,9 @@ namespace NewLife.Cube
             var ex = context.Exception;
             if (ex != null)
             {
+                //context.HttpContext.Items["GlobalException"] = ex;
+                context.HttpContext.Items["ExceptionContext"] = context;
+
                 var act = context.ActionDescriptor;
                 if (act != null)
                 {

@@ -18,7 +18,7 @@ namespace CubeDemoNC
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
             else
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/CubeHome/Error");
 
             //// 启用https
             //app.UseHttpsRedirection();

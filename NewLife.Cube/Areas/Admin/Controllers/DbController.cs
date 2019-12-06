@@ -67,51 +67,6 @@ namespace NewLife.Cube.Admin.Controllers
             return View("Index", list);
         }
 
-        /// <summary>持久化连接</summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult SetStatic(String name)
-        {
-#if !__CORE__
-            // 读取配置文件
-            var css = ConfigurationManager.ConnectionStrings;
-            var conns = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
-            foreach (ConnectionStringSettings set in css)
-            {
-                if (!conns.Contains(set.Name)) conns.Add(set.Name);
-            }
-
-            var msg = "";
-            if (!DAL.ConnStrs.ContainsKey(name))
-                msg = "找不到连接{0}".F(name);
-            else if (conns.Contains(name))
-                msg = "连接 {0} 已经存在于配置文件".F(name);
-            else
-            {
-                try
-                {
-                    var dal = DAL.Create(name);
-                    var set = new ConnectionStringSettings(name, dal.ConnStr);
-                    //css.Add(set);
-
-                    var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    config.ConnectionStrings.ConnectionStrings.Add(set);
-                    config.Save();
-
-                    msg = "持久化连接 {0} 成功".F(name);
-                }
-                catch (Exception ex)
-                {
-                    msg = "持久化连接 {0} 失败 {1}".F(name, ex.Message);
-                }
-            }
-
-            //Js.Alert(msg);
-#endif
-            return Index();
-        }
-
         /// <summary>备份数据库</summary>
         /// <param name="name"></param>
         /// <returns></returns>
