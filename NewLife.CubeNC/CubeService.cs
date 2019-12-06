@@ -69,7 +69,7 @@ namespace NewLife.Cube
                 opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
 
                 // 过滤器
-                //opt.Filters.Add<MvcHandleErrorAttribute>();
+                opt.Filters.Add<GlobalExceptionFilter>();
 
                 //opt.EnableEndpointRouting = false;
 
@@ -182,7 +182,7 @@ namespace NewLife.Cube
             if (set.EnableCompress) app.UseResponseCompression();
 
             // 注册中间件
-            app.UseMiddleware<ErrorMiddleware>();
+            //app.UseMiddleware<ErrorMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
             if (set.WebOnline || set.WebBehavior || set.WebStatistics) app.UseMiddleware<UserBehaviorMiddleware>();
 
