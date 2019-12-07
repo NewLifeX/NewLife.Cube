@@ -80,7 +80,7 @@ namespace NewLife.Cube
             if (str.IsNullOrEmpty()) str = request.Headers["X-Forwarded-For"];
             if (str.IsNullOrEmpty()) str = request.Headers["REMOTE_ADDR"];
             //if (str.IsNullOrEmpty()) str = request.Headers["Host"];
-            if (str.IsNullOrEmpty()) str = context.Connection?.RemoteIpAddress + "";
+            if (str.IsNullOrEmpty()) str = context.Connection?.RemoteIpAddress?.MapToIPv4() + "";
 
             return str;
         }
