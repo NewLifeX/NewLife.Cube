@@ -113,7 +113,7 @@
                 时间：
             </td>
             <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
-                @DateTime.Now，开机@(new TimeSpan(0, 0, 0, 0, Environment.TickCount))
+                @DateTime.Now.ToFullString()，开机@(new TimeSpan(0, 0, 0, 0, Environment.TickCount))
             </td>
         </tr>
         <tr>
