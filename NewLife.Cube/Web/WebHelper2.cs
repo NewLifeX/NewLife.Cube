@@ -1,5 +1,6 @@
 ﻿using System;
 using XCode;
+using System.IO;
 #if __CORE__
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
@@ -126,6 +127,25 @@ namespace NewLife.Cube
 
                 return dic;
             }
+        }
+
+        /// <summary>获取Linux发行版名称</summary>
+        /// <returns></returns>
+        public static String GetLinuxName()
+        {
+            var fr = "/etc/redhat-release";
+            var dr = "/etc/debian-release";
+            if (File.Exists(fr))
+                return File.ReadAllText(fr).Trim();
+            else if (File.Exists(dr))
+                return File.ReadAllText(dr).Trim();
+            else
+            {
+                var sr = "/etc/os-release";
+                if (File.Exists(sr)) return File.ReadAllText(sr).SplitAsDictionary("=", "\n", true)["PRETTY_NAME"].Trim();
+            }
+
+            return null;
         }
 #else
         /// <summary>获取请求值</summary>

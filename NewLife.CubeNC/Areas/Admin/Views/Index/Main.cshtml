@@ -14,6 +14,8 @@
 
     ViewBag.Title = "服务器信息";
 
+    var os = Environment.OSVersion + "";
+    if (Runtime.Linux) os = WebHelper2.GetLinuxName();
     var asm = Assembly.GetExecutingAssembly();
     var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
     var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
@@ -94,7 +96,7 @@
                 操作系统：
             </td>
             <td class="value">
-                @Environment.OSVersion
+                @os
             </td>
             <td class="name">
                 Web服务器：
