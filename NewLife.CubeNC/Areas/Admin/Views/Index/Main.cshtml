@@ -20,6 +20,7 @@
     var httpContext = HttpContextAccessor.HttpContext;
     var req = httpContext.Request;
     //var req = NewLife.Web.HttpContext.Current.Request;
+    var conn = httpContext.Connection;
 
     // GC设置
     var gc = "IsServerGC={0},LatencyMode={1}".F(GCSettings.IsServerGC, GCSettings.LatencyMode);
@@ -60,9 +61,10 @@
                 域名地址：
             </td>
             <td class="value">
-                <span title="SERVER_NAME">@req.Headers["SERVER_NAME"]</span>，
-                <span title="LOCAl_ADDR">@req.Headers["LOCAl_ADDR"]:@req.Headers["Server_Port"]</span>
-                &nbsp;<span title="REMOTE_HOST">[@req.Headers["REMOTE_HOST"]]</span>
+                <span title="主机">@req.Headers["Host"]</span>，
+                <span title="本地">@conn.LocalIpAddress.MapToIPv4():@conn.LocalPort</span>
+                &nbsp;<span title="远程">[@conn.RemoteIpAddress.MapToIPv4():@conn.RemotePort]</span>
+                &nbsp;<span title="真实">[@httpContext.GetUserHost()]</span>
                 <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
             </td>
             <td class="name">
