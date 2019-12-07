@@ -83,7 +83,7 @@ namespace NewLife.Cube.WebMiddleware
                     if (set.WebOnline && !sid.IsNullOrEmpty()) UserOnline.SetWebStatus(sid, page, msg, user, ip);
 
                     // 记录用户访问的Url
-                    if (set.WebBehavior) SaveBehavior(user, ip, page, msg);
+                    if (set.WebBehavior) SaveBehavior(user, ip, page, msg, error);
 
                     // 每个页面的访问统计
                     if (set.WebStatistics) SaveStatistics(ctx, user, ip, page, title, error, sw);
@@ -143,11 +143,14 @@ namespace NewLife.Cube.WebMiddleware
             ".woff", ".woff2", ".svg", ".ttf", ".otf", ".eot"   // 字体
         };
 
-        void SaveBehavior(IManageUser user, String ip, String page, String msg)
+        void SaveBehavior(IManageUser user, String ip, String page, String msg, Exception error)
         {
             if (page.IsNullOrEmpty()) return;
 
-            LogProvider.Provider?.WriteLog("访问", "记录", msg, user?.ID ?? 0, user + "", ip);
+            if (error != null)
+                LogProvider.Provider?.WriteLog("访问", "错误", msg, user?.ID ?? 0, user + "", ip);
+            else
+                LogProvider.Provider?.WriteLog("访问", "记录", msg, user?.ID ?? 0, user + "", ip);
         }
 
         void SaveStatistics(HttpContext ctx, IManageUser user, String ip, String page, String title, Exception error, Stopwatch sw)

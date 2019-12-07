@@ -133,7 +133,7 @@ namespace NewLife.Cube.Admin.Controllers
 #endif
 
             ViewBag.WebServerName = name;
-            ViewBag.MyAsms = AssemblyX.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+            ViewBag.MyAsms = GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
 
             var Asms = AssemblyX.GetAssemblies(null).ToArray();
             Asms = Asms.OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
@@ -149,6 +149,45 @@ namespace NewLife.Cube.Admin.Controllers
                 case "servervar": return View("ServerVar");
                 default: return View();
             }
+        }
+
+        /// <summary>获取当前应用程序的所有程序集，不包括系统程序集，仅限本目录</summary>
+        /// <returns></returns>
+        public static List<AssemblyX> GetMyAssemblies()
+        {
+            var list = new List<AssemblyX>();
+            var hs = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+            var cur = AppDomain.CurrentDomain.BaseDirectory;
+            foreach (var asmx in AssemblyX.GetAssemblies())
+            {
+                // 加载程序集列表很容易抛出异常，全部屏蔽
+                try
+                {
+                    if (asmx.FileVersion.IsNullOrEmpty()) continue;
+
+                    var file = asmx.Asm.CodeBase;
+                    if (file.IsNullOrEmpty()) file = asmx.Asm.Location;
+                    if (file.IsNullOrEmpty()) continue;
+
+                    if (file.StartsWith("file:///"))
+                    {
+                        file = file.TrimStart("file:///");
+                        if (Path.DirectorySeparatorChar == '\\')
+                            file = file.Replace('/', '\\');
+                        else
+                            file = file.Replace('\\', '/').EnsureStart("/");
+                    }
+                    if (!file.StartsWithIgnoreCase(cur)) continue;
+
+                    if (!hs.Contains(file))
+                    {
+                        hs.Add(file);
+                        list.Add(asmx);
+                    }
+                }
+                catch { }
+            }
+            return list;
         }
 
         /// <summary>重启</summary>
