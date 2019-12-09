@@ -432,7 +432,7 @@ namespace NewLife.Cube.Web
         {
             if (dic.TryGetValue("RoleNames", out var roleNames))
             {
-                var names = roleNames.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                var names = roleNames.Split(',');
                 var rs = new List<Int32>();
                 foreach (var item in names)
                 {
