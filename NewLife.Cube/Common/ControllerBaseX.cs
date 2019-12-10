@@ -21,6 +21,17 @@ namespace NewLife.Cube
     public class ControllerBaseX : Controller
     {
         #region 属性
+#if __CORE__
+        /// <summary></summary>
+        static readonly SessionProvider _sessionProvider = new SessionProvider();
+
+        /// <summary>临时会话扩展信息</summary>
+        public IDictionary<String, Object> Session { get; private set; }
+#endif
+
+        /// <summary>用户主机</summary>
+        public String UserHost => HttpContext.GetUserHost();
+
         /// <summary>页面设置</summary>
         public PageSetting PageSetting { get; set; }
         #endregion
@@ -43,6 +54,19 @@ namespace NewLife.Cube
         {
             // 页面设置
             ViewBag.PageSetting = PageSetting;
+
+#if __CORE__
+            // 准备Session
+            var ss = context.HttpContext.Session;
+            if (ss != null)
+            {
+                try
+                {
+                    Session = _sessionProvider.GetSession(ss.Id);
+                }
+                catch { }
+            }
+#endif
 
             // 没有用户时无权
             var user = ManageProvider.User;
@@ -269,13 +293,6 @@ namespace NewLife.Cube
         /// <param name="data"></param>
         /// <returns></returns>
         protected virtual String OnJsonSerialize(Object data) => data.ToJson();
-        #endregion
-
-        #region 常用属性
-        /// <summary>
-        /// 用户主机
-        /// </summary>
-        public String UserHost => HttpContext.GetUserHost();
         #endregion
     }
 }

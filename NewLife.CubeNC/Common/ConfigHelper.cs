@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 
-namespace NewLife.Cube.Common
+namespace NewLife.Cube
 {
     /// <summary>Appsetting配置文件帮助类</summary>
     public class ConfigHelper
