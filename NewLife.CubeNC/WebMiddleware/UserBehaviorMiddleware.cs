@@ -139,7 +139,7 @@ namespace NewLife.Cube.WebMiddleware
 
         /// <summary>忽略的后缀</summary>
         public static HashSet<String> ExcludeSuffixes { get; set; } = new HashSet<String>(StringComparer.OrdinalIgnoreCase) {
-            ".js", ".css", ".png", ".jpg", ".gif", ".ico",  // 脚本样式图片
+            ".js", ".css", ".png", ".jpg", ".gif", ".ico", ".map",  // 脚本样式图片
             ".woff", ".woff2", ".svg", ".ttf", ".otf", ".eot"   // 字体
         };
 
