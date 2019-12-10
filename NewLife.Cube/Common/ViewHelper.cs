@@ -99,7 +99,9 @@ namespace NewLife.Cube
         internal static Boolean MakeListView(Type entityType, String vpath, List<FieldItem> fields)
         {
 #if __CORE__
-            var tmp = @"@using NewLife;
+            var tmp = @"@model IList<{EntityType}>
+@using {Namespace}
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
@@ -152,7 +154,7 @@ namespace NewLife.Cube
         }
         @if (page.State != null)
         {
-            var entity = page.State as IEntity;
+            var entity = page.State as {EntityType};
             <tr>
                 @if (set.EnableSelect)
                 {
@@ -168,7 +170,9 @@ namespace NewLife.Cube
     </tbody>
 </table>";
 #else
-            var tmp = @"@using NewLife;
+            var tmp = @"@model IList<{EntityType}>
+@using {Namespace}
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
@@ -244,10 +248,13 @@ namespace NewLife.Cube
             var sb = new StringBuilder();
             var fact = EntityFactory.CreateOperate(entityType);
 
-            sb.AppendFormat("@model IList<{0}>", entityType.FullName);
-            sb.AppendLine();
+            tmp = tmp.Replace("{EntityType}", entityType.Name);
+            tmp = tmp.Replace("{Namespace}", entityType.Namespace);
 
-            tmp = tmp.Replace("page.State as IEntity", "page.State as " + entityType.FullName);
+            //sb.AppendFormat("@model IList<{0}>", entityType.FullName);
+            //sb.AppendLine();
+
+            //tmp = tmp.Replace("page.State as IEntity", "page.State as " + entityType.FullName);
 
             var str = tmp.Substring(null, "            @foreach");
             // 如果有用户字段，则启用provider
@@ -502,9 +509,14 @@ namespace NewLife.Cube
         internal static Boolean MakeFormView(Type entityType, String vpath, List<FieldItem> fields)
         {
 #if __CORE__
-            var tmp = @"@using NewLife;
+            var tmp = @"@model {EntityType}
+@using {Namespace}
+@using NewLife;
+@using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
+@using XCode.Membership;
+@using NewLife.Cube;
 @{
     var entity = Model;
     var fields = ViewBag.Fields as IList<FieldItem>;
@@ -529,9 +541,14 @@ namespace NewLife.Cube
     </div>
 }";
 #else
-            var tmp = @"@using NewLife;
+            var tmp = @"@model {EntityType}
+@using {Namespace}
+@using NewLife;
+@using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
+@using XCode.Membership;
+@using NewLife.Cube;
 @{
     var entity = Model;
     var fields = ViewBag.Fields as IList<FieldItem>;
@@ -560,7 +577,10 @@ namespace NewLife.Cube
             var sb = new StringBuilder();
             var fact = EntityFactory.CreateOperate(entityType);
 
-            sb.AppendLine($"@model {entityType.FullName}");
+            tmp = tmp.Replace("{EntityType}", entityType.Name);
+            tmp = tmp.Replace("{Namespace}", entityType.Namespace);
+
+            //sb.AppendLine($"@model {entityType.FullName}");
 
             var str = tmp.Substring(null, "@foreach");
             sb.Append(str);
