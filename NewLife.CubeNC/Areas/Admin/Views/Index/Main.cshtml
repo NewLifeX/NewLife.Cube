@@ -63,11 +63,16 @@
                 域名地址：
             </td>
             <td class="value">
+                @{ 
+                    var addrLocal = conn.LocalIpAddress;
+                    var addrRemote = conn.RemoteIpAddress;
+                    if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+                    if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+                }
                 <span title="主机">@req.Headers["Host"]</span>，
-                <span title="本地">@conn.LocalIpAddress.MapToIPv4():@conn.LocalPort</span>
-                &nbsp;<span title="远程">[@conn.RemoteIpAddress.MapToIPv4():@conn.RemotePort]</span>
+                <span title="本地">@addrLocal:@conn.LocalPort</span>
+                &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
                 &nbsp;<span title="真实">[@httpContext.GetUserHost()]</span>
-                <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
             </td>
             <td class="name">
                 计算机用户：
@@ -83,6 +88,7 @@
             <td class="value">
                 @AppDomain.CurrentDomain.FriendlyName
                 <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
+                <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
             </td>
             <td class="name">
                 .Net 版本：
