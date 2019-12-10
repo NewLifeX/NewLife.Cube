@@ -400,6 +400,7 @@ namespace NewLife.Cube.Web
 
                 // 更新头像
                 user.SetValue("Avatar", "/Sso/Avatar/" + user.ID);
+                (user as IEntity)?.Update();
 
                 return true;
             }
