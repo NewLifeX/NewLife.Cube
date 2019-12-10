@@ -57,10 +57,10 @@ namespace NewLife.Cube
                 var user = ctx.Items["Current_User"] as IManageUser;
                 if (user != null) return user;
 
-                var session = ctx.Session;
+                var session = ctx.Items["Session"] as IDictionary<String, Object>;
                 var type = ObjectContainer.Current.ResolveType<IManageUser>();
 
-                user = session?.Get(SessionKey, type) as IManageUser;
+                user = session?[SessionKey] as IManageUser;
                 ctx.Items["Current_User"] = user;
 
                 return user;
@@ -85,15 +85,15 @@ namespace NewLife.Cube
 
             ctx.Items["Current_User"] = user;
 
-            var ss = ctx.Session;
-            if (ss == null) return;
+            var session = ctx.Items["Session"] as IDictionary<String, Object>;
+            if (session == null) return;
 
             var key = SessionKey;
             // 特殊处理注销
             if (user == null)
             {
                 // 修改Session
-                ss.Remove(key);
+                session.Remove(key);
 
                 //// 下线功能暂时失效，通过接口取值报错
                 //if (ss.Get<IAuthUser>(key) is IAuthUser au)
@@ -105,7 +105,7 @@ namespace NewLife.Cube
             else
             {
                 // 修改Session
-                ss.Set(key, user);
+                session[key] = user;
             }
         }
 
@@ -142,8 +142,8 @@ namespace NewLife.Cube
         {
             // 注销时销毁所有Session
             var context = Context?.HttpContext;
-            var ss = context?.Session;
-            ss?.Clear();
+            var session = context.Items["Session"] as IDictionary<String, Object>;
+            session?.Clear();
 
             // 销毁Cookie
             this.SaveCookie(null, TimeSpan.FromDays(-1), context);

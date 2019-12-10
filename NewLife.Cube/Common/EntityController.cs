@@ -94,7 +94,7 @@ namespace NewLife.Cube
 #else
             var url = Request.UrlReferrer + "";
 #endif
-            SetSession("Cube_Add_Referrer", url);
+            Session["Cube_Add_Referrer"] = url;
 
             return FormView(entity);
         }
@@ -148,7 +148,7 @@ namespace NewLife.Cube
 
             ViewBag.StatusMessage = "添加成功！";
 
-            var url = GetSession<String>("Cube_Add_Referrer");
+            var url = Session["Cube_Add_Referrer"] as String;
             if (!url.IsNullOrEmpty())
                 return Redirect(url);
             else

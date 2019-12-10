@@ -7,6 +7,8 @@ using NewLife.Serialization;
 using XCode.Membership;
 using NewLife.Remoting;
 using System.Linq;
+using NewLife.Security;
+using Microsoft.AspNetCore.Http;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,16 +59,24 @@ namespace NewLife.Cube
 
 #if __CORE__
             // 准备Session
-            var ss = context.HttpContext.Session;
-            if (ss != null)
+            //var ss = context.HttpContext.Session;
+            //if (ss != null)
+            var token = Request.Cookies["Token"];
+            if (token.IsNullOrEmpty())
             {
-                try
-                {
-                    Session = _sessionProvider.GetSession(ss.Id);
-                    context.HttpContext.Items["Session"] = Session;
-                }
-                catch { }
+                token = Rand.NextString(16);
+                Response.Cookies.Append("Token", token, new CookieOptions { });
             }
+
+            try
+            {
+                //ss.Set("abcd", "efgh");
+
+                //Session = _sessionProvider.GetSession(ss.Id);
+                Session = _sessionProvider.GetSession(token);
+                context.HttpContext.Items["Session"] = Session;
+            }
+            catch { }
 #endif
 
             // 没有用户时无权

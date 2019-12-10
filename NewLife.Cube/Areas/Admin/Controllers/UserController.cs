@@ -159,7 +159,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (set.LogoutAll)
             {
                 // 如果是单点登录，则走单点登录注销
-                var name = GetSession<String>("Cube_Sso");
+                var name = Session["Cube_Sso"] as String;
                 if (!name.IsNullOrEmpty()) return Redirect($"~/Sso/Logout?name={name}&r={HttpUtility.UrlEncode(returnUrl)}");
                 //if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso", new
                 //{
@@ -290,19 +290,13 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="keys"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult EnableSelect(String keys)
-        {
-            return EnableOrDisableSelect();
-        }
+        public ActionResult EnableSelect(String keys) => EnableOrDisableSelect();
 
         /// <summary>批量禁用</summary>
         /// <param name="keys"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult DisableSelect(String keys)
-        {
-            return EnableOrDisableSelect(false);
-        }
+        public ActionResult DisableSelect(String keys) => EnableOrDisableSelect(false);
 
         private ActionResult EnableOrDisableSelect(Boolean isEnable = true)
         {

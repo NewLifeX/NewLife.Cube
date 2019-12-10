@@ -161,7 +161,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (fi != null)
             {
                 p = GetFullName(fi.Directory.FullName);
-                WriteLog("删除", fi.FullName ,UserHost);
+                WriteLog("删除", fi.FullName, UserHost);
                 fi.Delete();
             }
             else
@@ -290,8 +290,8 @@ namespace NewLife.Cube.Admin.Controllers
         private const String CLIPKEY = "File_Clipboard";
         private List<FileItem> GetClip()
         {
-            var list = GetSession<List<FileItem>>(CLIPKEY);
-            if (list == null) SetSession(CLIPKEY, list = new List<FileItem>());
+            var list = Session[CLIPKEY] as List<FileItem>;
+            if (list == null) Session[CLIPKEY] = list = new List<FileItem>();
 
             return list;
         }
