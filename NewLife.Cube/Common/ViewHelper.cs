@@ -98,6 +98,76 @@ namespace NewLife.Cube
 
         internal static Boolean MakeListView(Type entityType, String vpath, List<FieldItem> fields)
         {
+#if __CORE__
+            var tmp = @"@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
+@using NewLife.Cube;
+@{
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var set = ViewBag.PageSetting as PageSetting;
+    //var provider = ManageProvider.Provider;
+}
+<table class=""table table-bordered table-hover table-striped table-condensed"">
+    <thead>
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <th class=""text-center"" style=""width:10px;""><input type=""checkbox"" id=""chkAll"" title=""全选"" /></th>
+            }
+            @foreach(var item in fields)
+            {
+                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+                <th class=""text-center""><a href=""@Html.Raw(sortUrl)"">@item.DisplayName</a></th>
+            }
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <th class=""text-center"">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            <tr>
+                @if (set.EnableSelect)
+                {
+                    <td class=""text-center""><input type=""checkbox"" name=""keys"" value=""@entity.ID"" /></td>
+                }
+                @foreach (var item in fields)
+                {
+                    @await Html.PartialAsync(""_List_Data_Item"", new ValueTuple<IEntity, FieldItem>(entity, item))
+                }
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td class=""text-center"">
+                        @await Html.PartialAsync(""_List_Data_Action"", (Object)entity)
+                    </td>
+                }
+            </tr>
+        }
+        @if (page.State != null)
+        {
+            var entity = page.State as IEntity;
+            <tr>
+                @if (set.EnableSelect)
+                {
+                    <td></td>
+                }
+                @await Html.PartialAsync(""_List_Data_Stat"", page.State)
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td></td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>";
+#else
             var tmp = @"@using NewLife;
 @using NewLife.Web;
 @using XCode;
@@ -170,6 +240,7 @@ namespace NewLife.Cube
         }
     </tbody>
 </table>";
+#endif
             var sb = new StringBuilder();
             var fact = EntityFactory.CreateOperate(entityType);
 
@@ -329,7 +400,11 @@ namespace NewLife.Cube
 
             sb.Append("                @if");
             var str2 = tmp.Substring("                @if", null, ps[1]);
+#if __CORE__
+            str = str2.Replace("                @await Html.PartialAsync(\"_List_Data_Stat\", page.State)", str);
+#else
             str = str2.Replace("                @Html.Partial(\"_List_Data_Stat\", page.State)", str);
+#endif
             sb.Append(str);
 
             //sb.Append("@if (page.State != null)");
@@ -426,6 +501,34 @@ namespace NewLife.Cube
 
         internal static Boolean MakeFormView(Type entityType, String vpath, List<FieldItem> fields)
         {
+#if __CORE__
+            var tmp = @"@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var isNew = (entity as IEntity).IsNullKey;
+}
+@foreach (var item in fields)
+{
+    if (!item.IsIdentity)
+    {
+        <div class=""@cls"">
+            @await Html.PartialAsync(""_Form_Item"", new Pair(entity, item))
+        </div>
+    }
+}
+@await Html.PartialAsync(""_Form_Footer"", entity)
+@if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
+{
+    <div class=""clearfix form-actions col-sm-12 col-md-12"">
+        <label class=""control-label col-xs-4 col-sm-5 col-md-5""></label>
+        <button type=""submit"" class=""btn btn-success btn-sm""><i class=""glyphicon glyphicon-@(isNew ? ""plus"" : ""save"")""></i><strong>@(isNew ? ""新增"" : ""保存"")</strong></button>
+        <button type=""button"" class=""btn btn-danger btn-sm"" onclick=""history.go(-1);""><i class=""glyphicon glyphicon-remove""></i><strong>取消</strong></button>
+    </div>
+}";
+#else
             var tmp = @"@using NewLife;
 @using XCode;
 @using XCode.Configuration;
@@ -452,6 +555,7 @@ namespace NewLife.Cube
         <button type=""button"" class=""btn btn-danger btn-sm"" onclick=""history.go(-1);""><i class=""glyphicon glyphicon-remove""></i><strong>取消</strong></button>
     </div>
 }";
+#endif
 
             var sb = new StringBuilder();
             var fact = EntityFactory.CreateOperate(entityType);
@@ -475,7 +579,11 @@ namespace NewLife.Cube
                 sb.AppendLine("</div>");
             }
 
+#if __CORE__
+            var p = tmp.IndexOf(@"@await Html.PartialAsync(""_Form_Footer""");
+#else
             var p = tmp.IndexOf(@"@Html.Partial(""_Form_Footer""");
+#endif
             sb.Append(tmp.Substring(p));
 
             File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
@@ -696,15 +804,15 @@ namespace NewLife.Cube
     /// <summary>Bootstrap页面控制。允许继承</summary>
     public class Bootstrap
     {
-        #region 属性
+#region 属性
         /// <summary>最大列数</summary>
         public Int32 MaxColumn { get; set; } //= 2;
 
         /// <summary>默认标签宽度</summary>
         public Int32 LabelWidth { get; set; }// = 4;
-        #endregion
+#endregion
 
-        #region 当前项
+#region 当前项
         ///// <summary>当前项</summary>
         //public FieldItem Item { get; set; }
 
@@ -724,18 +832,18 @@ namespace NewLife.Cube
             Type = item.Type;
             Length = item.Length;
         }
-        #endregion
+#endregion
 
-        #region 构造
+#region 构造
         /// <summary>实例化一个页面助手</summary>
         public Bootstrap()
         {
             MaxColumn = 2;
             LabelWidth = 4;
         }
-        #endregion
+#endregion
 
-        #region 方法
+#region 方法
         /// <summary>获取分组宽度</summary>
         /// <returns></returns>
         public virtual Int32 GetGroupWidth()
@@ -747,6 +855,6 @@ namespace NewLife.Cube
 
             return 12;
         }
-        #endregion
+#endregion
     }
 }
