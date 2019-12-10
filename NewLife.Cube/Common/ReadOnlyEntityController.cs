@@ -152,7 +152,8 @@ namespace NewLife.Cube
         protected virtual IEnumerable<TEntity> Search(Pager p)
         {
             // 缓存数据，用于后续导出
-            SetSession(CacheKey, p);
+            //SetSession(CacheKey, p);
+            Session[CacheKey] = p;
 
             return Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
         }
@@ -192,7 +193,8 @@ namespace NewLife.Cube
         protected virtual IEnumerable<TEntity> ExportData(Int32 max = 10_000_000)
         {
             // 计算目标数据量
-            var p = new Pager(GetSession<Pager>(CacheKey))
+            var p = Session[CacheKey] as Pager;
+            p = new Pager(p)
             {
                 RetrieveTotalCount = true,
                 PageIndex = 1,
@@ -234,7 +236,8 @@ namespace NewLife.Cube
         protected virtual IEnumerable<TEntity> ExportDataByPage(Int32 pageSize, Int32 max)
         {
             // 跳过头部一些页数，导出当前页以及以后的数据
-            var p = new Pager(GetSession<Pager>(CacheKey))
+            var p = Session[CacheKey] as Pager;
+            p = new Pager(p)
             {
                 // 不要查记录数
                 RetrieveTotalCount = false
@@ -280,7 +283,8 @@ namespace NewLife.Cube
         protected virtual IEnumerable<TEntity> ExportDataByDatetime(Int32 step, Int32 max)
         {
             // 跳过头部一些页数，导出当前页以及以后的数据
-            var p = new Pager(GetSession<Pager>(CacheKey))
+            var p = Session[CacheKey] as Pager;
+            p = new Pager(p)
             {
                 // 不要查记录数
                 RetrieveTotalCount = false,
@@ -340,7 +344,8 @@ namespace NewLife.Cube
             if (p == null) p = ViewBag.Page as Pager;
 
             // 缓存数据，用于后续导出
-            SetSession(CacheKey, p);
+            //SetSession(CacheKey, p);
+            Session[CacheKey] = p;
 
             return IndexView(p);
         }
@@ -577,7 +582,8 @@ namespace NewLife.Cube
             var buffer = true;
             if (Factory.Count > 100_000)
             {
-                var p = new Pager(GetSession<Pager>(CacheKey))
+                var p = Session[CacheKey] as Pager;
+                p = new Pager(p)
                 {
                     PageSize = 1,
                     RetrieveTotalCount = true
@@ -661,7 +667,8 @@ namespace NewLife.Cube
             var buffer = true;
             if (Factory.Count > 100_000)
             {
-                var p = new Pager(GetSession<Pager>(CacheKey))
+                var p = Session[CacheKey] as Pager;
+                p = new Pager(p)
                 {
                     PageSize = 1,
                     RetrieveTotalCount = true

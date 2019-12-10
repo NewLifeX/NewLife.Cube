@@ -292,7 +292,8 @@ namespace NewLife.Cube
 #endif
 
             var count = 0;
-            var p = new Pager(GetSession<Pager>(CacheKey));
+            var p = Session[CacheKey] as Pager;
+            p = new Pager(p);
             if (p != null)
             {
                 p.PageIndex = 1;
@@ -336,7 +337,8 @@ namespace NewLife.Cube
             var url = Request.UrlReferrer + "";
 #endif
 
-            var p = new Pager(GetSession<Pager>(CacheKey));
+            var p = Session[CacheKey] as Pager;
+            p = new Pager(p);
             if (p != null && p.Params.Count > 0) return Json(500, "当前带有查询参数，为免误解，禁止全表清空！");
 
             var count = Entity<TEntity>.Meta.Session.Truncate();
