@@ -218,11 +218,13 @@ namespace NewLife.Cube.Web
                 else if (user2.RoleID <= 0 && set.DefaultRole > 0)
                     user2.RoleID = set.DefaultRole;
 
-                // 头像
-                if (user2.Avatar.IsNullOrEmpty()) user2.Avatar = client.Avatar;
+                // 头像。有可能是相对路径，需要转为绝对路径
+                var av = client.Avatar;
+                if (av.StartsWith("/") && !client.UserUrl.IsNullOrEmpty()) av = new Uri(new Uri(client.UserUrl), av) + "";
+                if (user2.Avatar.IsNullOrEmpty()) user2.Avatar = av;
 
                 // 下载远程头像到本地，Avatar还是保存远程头像地址
-                if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user));
+                if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user, av));
             }
         }
 
@@ -365,24 +367,26 @@ namespace NewLife.Cube.Web
         #region 辅助
         /// <summary>抓取远程头像</summary>
         /// <param name="user"></param>
+        /// <param name="url"></param>
         /// <returns></returns>
-        public virtual Boolean FetchAvatar(IManageUser user)
+        public virtual Boolean FetchAvatar(IManageUser user, String url = null)
         {
-            var av = user.GetValue("Avatar") as String;
+            if (url.IsNullOrEmpty()) url = user.GetValue("Avatar") as String;
             //if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
-            if (av.IsNullOrEmpty()) return false;
+            if (url.IsNullOrEmpty()) return false;
 
-            var url = av;
             if (!url.StartsWithIgnoreCase("http")) return false;
 
             // 不要扩展名
             var set = Setting.Current;
-            av = set.AvatarPath.CombinePath(user.ID + ".png").GetFullPath();
+            var dest = set.AvatarPath.CombinePath(user.ID + ".png").GetFullPath();
 
-            // 头像是否已存在
-            if (File.Exists(av)) return false;
+            //// 头像是否已存在
+            //if (File.Exists(dest)) return false;
 
-            av.EnsureDirectory(true);
+            LogProvider.Provider?.WriteLog(user.GetType(), "抓取头像", $"{url} => {dest}", user.ID, user + "");
+
+            dest.EnsureDirectory(true);
 
             try
             {
@@ -392,7 +396,7 @@ namespace NewLife.Cube.Web
                 var client = new HttpClient();
                 var rs = client.GetAsync(url).Result;
                 var buf = rs.Content.ReadAsByteArrayAsync().Result;
-                File.WriteAllBytes(av, buf);
+                File.WriteAllBytes(dest, buf);
 
                 // 更新头像
                 user.SetValue("Avatar", "/Sso/Avatar/" + user.ID);
