@@ -20,14 +20,14 @@
             <a href="@Url.Action("ExportXml")">导出Xml</a>
         </li>
         @*<li>
-            <a href="@Url.Action("ImportXml")">导入Xml</a>
-        </li>*@
+                <a href="@Url.Action("ImportXml")">导入Xml</a>
+            </li>*@
         <li>
             <a href="@Url.Action("ExportJson")">导出Json</a>
         </li>
         @*<li>
-            <a href="@Url.Action("ImportJson")">导入Json</a>
-        </li>*@
+                <a href="@Url.Action("ImportJson")">导入Json</a>
+            </li>*@
         @if (this.Has(PermissionFlags.Delete))
         {
             <li class="divider"></li>
@@ -60,15 +60,12 @@
                     <a href="@Url.Action("Clear")" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" title="删除数据表所有数据">清空数据表</a>
                 </li>
             }
-            if (ViewHelper.IsDevelop())
-            {
-                <li>
-                    <a href="@Url.Action("MakeList")">生成列表</a>
-                </li>
-                <li>
-                    <a href="@Url.Action("MakeForm")">生成表单</a>
-                </li>
-            }
+            <li>
+                <a href="@Url.Action("MakeList")">生成列表</a>
+            </li>
+            <li>
+                <a href="@Url.Action("MakeForm")">生成表单</a>
+            </li>
         }
     </ul>
 </div><!-- /.btn-group -->
