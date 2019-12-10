@@ -63,6 +63,7 @@ namespace NewLife.Cube
                 try
                 {
                     Session = _sessionProvider.GetSession(ss.Id);
+                    context.HttpContext.Items["Session"] = Session;
                 }
                 catch { }
             }
