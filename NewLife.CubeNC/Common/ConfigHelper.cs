@@ -17,7 +17,7 @@ namespace NewLife.Cube.Common
         /// <param name="path"></param>
         /// <param name="reloadOnChange"></param>
         /// <returns></returns>
-        public IConfigurationRoot GetRoot(String path = "appsettings.json", Boolean reloadOnChange = true)
+        public static IConfigurationRoot GetRoot(String path = "appsettings.json", Boolean reloadOnChange = true)
         {
             var conf = new ConfigurationBuilder()
              .Add(new JsonConfigurationSource { Path = "appsettings.json", ReloadOnChange = true })
