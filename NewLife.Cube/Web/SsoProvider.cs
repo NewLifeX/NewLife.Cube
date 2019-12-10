@@ -222,7 +222,7 @@ namespace NewLife.Cube.Web
                 if (user2.Avatar.IsNullOrEmpty()) user2.Avatar = client.Avatar;
 
                 // 下载远程头像到本地，Avatar还是保存远程头像地址
-                if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) FetchAvatar(user);
+                if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user));
             }
         }
 
@@ -369,7 +369,8 @@ namespace NewLife.Cube.Web
         public virtual Boolean FetchAvatar(IManageUser user)
         {
             var av = user.GetValue("Avatar") as String;
-            if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
+            //if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
+            if (av.IsNullOrEmpty()) return false;
 
             var url = av;
             if (!url.StartsWithIgnoreCase("http")) return false;
