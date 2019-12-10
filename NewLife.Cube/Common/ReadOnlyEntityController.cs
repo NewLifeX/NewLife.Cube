@@ -837,11 +837,16 @@ namespace NewLife.Cube
         {
             if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
 
+            // 找到项目根目录
+            var root = GetProjectRoot();
+
             // 视图路径，Areas/区域/Views/控制器/_List_Data.cshtml
-            var vpath = "Areas/{0}/Views/{1}/_List_Data.cshtml".F(RouteData.DataTokens["area"], GetType().Name.TrimEnd("Controller"));
+            var vpath = "Areas/{0}/Views/{1}/_List_Data.cshtml".F(RouteData.Values["area"], GetType().Name.TrimEnd("Controller"));
+            if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
             var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
 
+            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成列表", vpath);
 #if !__CORE__
             //Js.Alert("生成列表模版 {0} 成功！".F(vpath));
 #endif
@@ -857,16 +862,35 @@ namespace NewLife.Cube
         {
             if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
 
+            // 找到项目根目录
+            var root = GetProjectRoot();
+
             // 视图路径，Areas/区域/Views/控制器/_Form_Body.cshtml
-            var vpath = "Areas/{0}/Views/{1}/_Form_Body.cshtml".F(RouteData.DataTokens["area"], GetType().Name.TrimEnd("Controller"));
+            var vpath = "Areas/{0}/Views/{1}/_Form_Body.cshtml".F(RouteData.Values["area"], GetType().Name.TrimEnd("Controller"));
+            if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
 
+            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成表单", vpath);
 #if !__CORE__
             //Js.Alert("生成表单模版 {0} 成功！".F(vpath));
 #endif
 
             return RedirectToAction("Index");
+        }
+
+        private String GetProjectRoot()
+        {
+            var asm = GetType().Assembly;
+
+            var ps = new[] { "./", "../../", "../../" + asm.GetName().Name };
+            foreach (var item in ps)
+            {
+                var fis = item.AsDirectory().GetFiles("*.csproj", SearchOption.TopDirectoryOnly);
+                if (fis != null && fis.Length > 0) return item;
+            }
+
+            return null;
         }
         #endregion
 
