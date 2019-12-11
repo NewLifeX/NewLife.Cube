@@ -8,9 +8,9 @@ using XCode.Membership;
 using NewLife.Remoting;
 using System.Linq;
 using NewLife.Security;
-using Microsoft.AspNetCore.Http;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
 #else
