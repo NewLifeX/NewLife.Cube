@@ -123,7 +123,6 @@
     <Compile Include="..\NewLife.Cube\Entity\用户链接.cs">
       <Link>Entity\用户链接.cs</Link>
     </Compile>
-    <Compile Include="..\NewLife.Cube\Extensions\ManageProvider.cs" Link="Extensions\ManageProvider.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
