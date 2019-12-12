@@ -11,6 +11,7 @@ using NewLife.Collections;
 using NewLife.Common;
 using NewLife.Log;
 using NewLife.Model;
+using NewLife.Security;
 using NewLife.Threading;
 using XCode.DataAccessLayer;
 using XCode.Membership;
@@ -22,6 +23,9 @@ namespace NewLife.Cube.WebMiddleware
     {
         private readonly RequestDelegate _next;
 
+        /// <summary>会话提供者</summary>
+        static readonly SessionProvider _sessionProvider = new SessionProvider();
+
         /// <summary>实例化</summary>
         /// <param name="next"></param>
         public RunTimeMiddleware(RequestDelegate next) => _next = next ?? throw new ArgumentNullException(nameof(next));
@@ -32,6 +36,9 @@ namespace NewLife.Cube.WebMiddleware
         public async Task Invoke(HttpContext ctx)
         {
             ManageProvider.UserHost = ctx.GetUserHost();
+
+            // 创建Session集合
+            CreateSession(ctx);
 
             var inf = new RunTimeInfo();
             ctx.Items[nameof(RunTimeInfo)] = inf;
@@ -88,6 +95,26 @@ namespace NewLife.Cube.WebMiddleware
             }
 
             return inf;
+        }
+
+        private static void CreateSession(HttpContext ctx)
+        {
+            // 准备Session
+            var ss = ctx.Session;
+            if (ss != null)
+            {
+                //var token = Request.Cookies["Token"];
+                var token = ss.GetString("Cube_Token");
+                if (token.IsNullOrEmpty())
+                {
+                    token = Rand.NextString(16);
+                    //Response.Cookies.Append("Token", token, new CookieOptions { });
+                    ss.SetString("Cube_Token", token);
+                }
+
+                //Session = _sessionProvider.GetSession(ss.Id);
+                ctx.Items["Session"] = _sessionProvider.GetSession(token);
+            }
         }
     }
 

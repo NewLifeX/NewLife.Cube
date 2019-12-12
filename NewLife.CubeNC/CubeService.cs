@@ -185,15 +185,16 @@ namespace NewLife.Cube
             if (set.EnableCompress) app.UseResponseCompression();
 
             // 注册中间件
+            app.UseStaticFiles();
+            app.UseCookiePolicy();
+            app.UseSession();
+
             //app.UseMiddleware<ErrorMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
             if (set.WebOnline || set.WebBehavior || set.WebStatistics) app.UseMiddleware<UserBehaviorMiddleware>();
 
             if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
 
-            app.UseStaticFiles();
-            app.UseCookiePolicy();
-            app.UseSession();
             app.UseAuthentication();
 
             app.UseRouting();

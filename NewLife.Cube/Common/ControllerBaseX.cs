@@ -24,8 +24,8 @@ namespace NewLife.Cube
     {
         #region 属性
 #if __CORE__
-        /// <summary></summary>
-        static readonly SessionProvider _sessionProvider = new SessionProvider();
+        ///// <summary></summary>
+        //static readonly SessionProvider _sessionProvider = new SessionProvider();
 
         /// <summary>临时会话扩展信息</summary>
         public IDictionary<String, Object> Session { get; private set; }
@@ -58,23 +58,25 @@ namespace NewLife.Cube
             ViewBag.PageSetting = PageSetting;
 
 #if __CORE__
-            // 准备Session
-            var ss = context.HttpContext.Session;
-            if (ss != null)
-            {
-                //var token = Request.Cookies["Token"];
-                var token = ss.GetString("Cube_Token");
-                if (token.IsNullOrEmpty())
-                {
-                    token = Rand.NextString(16);
-                    //Response.Cookies.Append("Token", token, new CookieOptions { });
-                    ss.SetString("Cube_Token", token);
-                }
+            //// 准备Session
+            //var ss = context.HttpContext.Session;
+            //if (ss != null)
+            //{
+            //    //var token = Request.Cookies["Token"];
+            //    var token = ss.GetString("Cube_Token");
+            //    if (token.IsNullOrEmpty())
+            //    {
+            //        token = Rand.NextString(16);
+            //        //Response.Cookies.Append("Token", token, new CookieOptions { });
+            //        ss.SetString("Cube_Token", token);
+            //    }
 
-                //Session = _sessionProvider.GetSession(ss.Id);
-                Session = _sessionProvider.GetSession(token);
-                context.HttpContext.Items["Session"] = Session;
-            }
+            //    //Session = _sessionProvider.GetSession(ss.Id);
+            //    Session = _sessionProvider.GetSession(token);
+            //    context.HttpContext.Items["Session"] = Session;
+            //}
+
+            Session = context.HttpContext.Items["Session"] as IDictionary<String, Object>;
 #endif
 
             // 没有用户时无权
