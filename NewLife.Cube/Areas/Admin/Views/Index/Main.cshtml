@@ -4,6 +4,7 @@
 @using System.Runtime;
 @using System.Runtime.Versioning;
 @using NewLife.Common;
+@using NewLife.Cube;
 @using NewLife.Web;
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
@@ -14,6 +15,9 @@
     var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
     var ver = att.FrameworkDisplayName ?? att.FrameworkName;
     var req = HttpContext.Current.Request;
+    var httpContext = req.RequestContext.HttpContext;
+
+    var mi = MachineInfo.Current ?? new MachineInfo();
 
     // GC设置
     var gc = "IsServerGC={0},LatencyMode={1}".F(GCSettings.IsServerGC, GCSettings.LatencyMode);
@@ -54,12 +58,14 @@
                 <span title="SERVER_NAME">@Request.ServerVariables["SERVER_NAME"]</span>，
                 <span title="LOCAl_ADDR">@Request.ServerVariables["LOCAl_ADDR"]:@Request.ServerVariables["Server_Port"]</span>
                 &nbsp;<span title="REMOTE_HOST">[@Request.ServerVariables["REMOTE_HOST"]]</span>
+                &nbsp;<span title="真实">[@httpContext.GetUserHost()]</span>
                 <a href="@Url.Action("Main/ServerVar")" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
             </td>
             <td class="name">
                 计算机用户：
             </td>
             <td class="value">
+                @mi.Product，
                 @Environment.UserName/@Environment.MachineName
             </td>
         </tr>
@@ -83,7 +89,7 @@
                 操作系统：
             </td>
             <td class="value">
-                @Environment.OSVersion
+                @mi.OSName @mi.OSVersion
             </td>
             <td class="name">
                 Web服务器：
@@ -97,14 +103,15 @@
                 处理器：
             </td>
             <td class="value">
+                @mi.Processor，
                 @Environment.ProcessorCount
-                核心，@gc
+                核心，@mi.CpuRate.ToString("p0")，@gc
             </td>
             <td class="name">
                 时间：
             </td>
             <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
-                @DateTime.Now，开机@(new TimeSpan(0, 0, 0, 0, Environment.TickCount))
+                @DateTime.Now.ToFullString()，开机@(new TimeSpan(0, 0, 0, 0, Environment.TickCount))，@mi.Temperature ℃
             </td>
         </tr>
         <tr>
@@ -113,10 +120,10 @@
                 内存：
             </td>
             <td class="value">
-                @*物理内存：@(Runtime.AvailableMemory.ToString("n0"))M / @(Runtime.PhysicalMemory.ToString("n0"))M*@
-                工作集: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M
-                提交: @((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
-                GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
+                物理内存：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
+                工作集: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M，
+                提交: @((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M，
+                GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M，
                 <a href="@Url.Action("Main/ProcessModules")" target="_blank" title="点击打开进程模块列表">模块列表</a>
                 <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
             </td>

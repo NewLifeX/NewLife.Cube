@@ -42,6 +42,8 @@ namespace NewLife.Cube.Admin.Controllers
         private IManageProvider _provider;
         private IHostApplicationLifetime _applicationLifetime { get; set; }
 
+        static IndexController() => MachineInfo.RegisterAsync();
+
         private IndexController() => PageSetting.EnableNavbar = false;
 
         /// <summary>实例化</summary>
