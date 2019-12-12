@@ -59,24 +59,22 @@ namespace NewLife.Cube
 
 #if __CORE__
             // 准备Session
-            //var ss = context.HttpContext.Session;
-            //if (ss != null)
-            var token = Request.Cookies["Token"];
-            if (token.IsNullOrEmpty())
+            var ss = context.HttpContext.Session;
+            if (ss != null)
             {
-                token = Rand.NextString(16);
-                Response.Cookies.Append("Token", token, new CookieOptions { });
-            }
-
-            try
-            {
-                //ss.Set("abcd", "efgh");
+                //var token = Request.Cookies["Token"];
+                var token = ss.GetString("Cube_Token");
+                if (token.IsNullOrEmpty())
+                {
+                    token = Rand.NextString(16);
+                    //Response.Cookies.Append("Token", token, new CookieOptions { });
+                    ss.SetString("Cube_Token", token);
+                }
 
                 //Session = _sessionProvider.GetSession(ss.Id);
                 Session = _sessionProvider.GetSession(token);
                 context.HttpContext.Items["Session"] = Session;
             }
-            catch { }
 #endif
 
             // 没有用户时无权

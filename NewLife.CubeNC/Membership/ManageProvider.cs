@@ -54,14 +54,14 @@ namespace NewLife.Cube
 
             try
             {
-                var user = ctx.Items["Current_User"] as IManageUser;
+                var user = ctx.Items["CurrentUser"] as IManageUser;
                 if (user != null) return user;
 
                 var session = ctx.Items["Session"] as IDictionary<String, Object>;
-                var type = ObjectContainer.Current.ResolveType<IManageUser>();
+                //var type = ObjectContainer.Current.ResolveType<IManageUser>();
 
                 user = session?[SessionKey] as IManageUser;
-                ctx.Items["Current_User"] = user;
+                ctx.Items["CurrentUser"] = user;
 
                 return user;
             }
@@ -83,7 +83,7 @@ namespace NewLife.Cube
                 ?.HttpContext;
             if (ctx == null) return;
 
-            ctx.Items["Current_User"] = user;
+            ctx.Items["CurrentUser"] = user;
 
             var session = ctx.Items["Session"] as IDictionary<String, Object>;
             if (session == null) return;

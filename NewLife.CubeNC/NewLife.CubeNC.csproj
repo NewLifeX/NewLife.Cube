@@ -63,8 +63,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="8.4.2019.1203" />
-    <PackageReference Include="NewLife.XCode" Version="9.14.2019.1203" />
+    <PackageReference Include="NewLife.Core" Version="8.4.2019.1212" />
+    <PackageReference Include="NewLife.XCode" Version="9.14.2019.1212" />
   </ItemGroup>
 
   <ItemGroup>
