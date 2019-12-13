@@ -48,6 +48,10 @@ namespace NewLife.Cube.Entity
             //if (isNew && !Dirtys[nameof(CreateIP)]) nameof(CreateIP) = WebHelper.UserHost;
             //if (!Dirtys[nameof(UpdateIP)]) nameof(UpdateIP) = WebHelper.UserHost;
 
+            // 备注字段超长截取
+            var len = _.Remark.Length;
+            if (!Remark.IsNullOrEmpty() && len > 0 && Remark.Length > len) Remark = Remark.Substring(0, len);
+
             // 检查唯一索引
             // CheckExist(isNew, __.Provider, __.UserID);
         }

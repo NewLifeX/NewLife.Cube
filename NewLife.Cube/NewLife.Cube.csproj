@@ -627,6 +627,11 @@
     <Content Include="Content\images\logo\Taobao.png" />
     <Content Include="Content\images\logo\Weibo.png" />
     <Content Include="Content\images\logo\Weixin.png" />
+    <Content Include="Entity\XCoder.log">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>XCoder.tt</DependentUpon>
+    </Content>
     <None Include="index.html" />
     <None Include="Content\bootstrap\js\bootstrap.js" />
     <None Include="Entity\Cube.xml">

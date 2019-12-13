@@ -105,14 +105,14 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case __.ID : _ID = Convert.ToInt32(value); break;
-                    case __.AppID : _AppID = Convert.ToInt32(value); break;
+                    case __.ID : _ID = value.ToInt(); break;
+                    case __.AppID : _AppID = value.ToInt(); break;
                     case __.Action : _Action = Convert.ToString(value); break;
-                    case __.Success : _Success = Convert.ToBoolean(value); break;
+                    case __.Success : _Success = value.ToBoolean(); break;
                     case __.Remark : _Remark = Convert.ToString(value); break;
-                    case __.CreateUserID : _CreateUserID = Convert.ToInt32(value); break;
+                    case __.CreateUserID : _CreateUserID = value.ToInt(); break;
                     case __.CreateIP : _CreateIP = Convert.ToString(value); break;
-                    case __.CreateTime : _CreateTime = Convert.ToDateTime(value); break;
+                    case __.CreateTime : _CreateTime = value.ToDateTime(); break;
                     default: base[name] = value; break;
                 }
             }

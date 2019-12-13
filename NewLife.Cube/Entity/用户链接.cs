@@ -157,7 +157,7 @@ namespace NewLife.Cube.Entity
         /// <summary>备注</summary>
         [DisplayName("备注")]
         [Description("备注")]
-        [DataObjectField(false, false, true, 500)]
+        [DataObjectField(false, false, true, 2000)]
         [BindColumn("Remark", "备注", "")]
         public String Remark { get { return _Remark; } set { if (OnPropertyChanging(__.Remark, value)) { _Remark = value; OnPropertyChanged(__.Remark); } } }
         #endregion
@@ -197,23 +197,23 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case __.ID : _ID = Convert.ToInt32(value); break;
+                    case __.ID : _ID = value.ToInt(); break;
                     case __.Provider : _Provider = Convert.ToString(value); break;
-                    case __.UserID : _UserID = Convert.ToInt32(value); break;
+                    case __.UserID : _UserID = value.ToInt(); break;
                     case __.OpenID : _OpenID = Convert.ToString(value); break;
-                    case __.LinkID : _LinkID = Convert.ToInt64(value); break;
+                    case __.LinkID : _LinkID = value.ToLong(); break;
                     case __.NickName : _NickName = Convert.ToString(value); break;
                     case __.Avatar : _Avatar = Convert.ToString(value); break;
                     case __.AccessToken : _AccessToken = Convert.ToString(value); break;
                     case __.RefreshToken : _RefreshToken = Convert.ToString(value); break;
-                    case __.Expire : _Expire = Convert.ToDateTime(value); break;
-                    case __.Enable : _Enable = Convert.ToBoolean(value); break;
-                    case __.CreateUserID : _CreateUserID = Convert.ToInt32(value); break;
+                    case __.Expire : _Expire = value.ToDateTime(); break;
+                    case __.Enable : _Enable = value.ToBoolean(); break;
+                    case __.CreateUserID : _CreateUserID = value.ToInt(); break;
                     case __.CreateIP : _CreateIP = Convert.ToString(value); break;
-                    case __.CreateTime : _CreateTime = Convert.ToDateTime(value); break;
-                    case __.UpdateUserID : _UpdateUserID = Convert.ToInt32(value); break;
+                    case __.CreateTime : _CreateTime = value.ToDateTime(); break;
+                    case __.UpdateUserID : _UpdateUserID = value.ToInt(); break;
                     case __.UpdateIP : _UpdateIP = Convert.ToString(value); break;
-                    case __.UpdateTime : _UpdateTime = Convert.ToDateTime(value); break;
+                    case __.UpdateTime : _UpdateTime = value.ToDateTime(); break;
                     case __.Remark : _Remark = Convert.ToString(value); break;
                     default: base[name] = value; break;
                 }
