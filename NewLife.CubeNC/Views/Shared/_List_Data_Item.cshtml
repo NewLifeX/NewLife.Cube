@@ -132,6 +132,11 @@ else
                     //防止内容过长
                     <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td>
                 }
+                else if (item.Length >= 500)
+                {
+                    //防止内容过长
+                    <td style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td>
+                }
                 else
                 {
                     <td>@value</td>

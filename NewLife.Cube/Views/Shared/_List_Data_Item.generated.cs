@@ -524,6 +524,42 @@ WriteLiteral("</td>\r\n");
             
             #line 133 "..\..\Views\Shared\_List_Data_Item.cshtml"
                 }
+                else if (item.Length >= 500)
+                {
+                    //防止内容过长
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    <td");
+
+WriteLiteral(" style=\"max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellips" +
+"is;\"");
+
+WriteAttribute("title", Tuple.Create(" title=\"", 4881), Tuple.Create("\"", 4895)
+            
+            #line 137 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                                    , Tuple.Create(Tuple.Create("", 4889), Tuple.Create<System.Object, System.Int32>(value
+            
+            #line default
+            #line hidden
+, 4889), false)
+);
+
+WriteLiteral(">");
+
+            
+            #line 137 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                                                                                                                       Write(value);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+            
+            #line 138 "..\..\Views\Shared\_List_Data_Item.cshtml"
+                }
                 else
                 {
 
@@ -533,7 +569,7 @@ WriteLiteral("</td>\r\n");
 WriteLiteral("                    <td>");
 
             
-            #line 136 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 141 "..\..\Views\Shared\_List_Data_Item.cshtml"
                    Write(value);
 
             
@@ -542,7 +578,7 @@ WriteLiteral("                    <td>");
 WriteLiteral("</td>\r\n");
 
             
-            #line 137 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 142 "..\..\Views\Shared\_List_Data_Item.cshtml"
                 }
             }
             break;
@@ -551,7 +587,7 @@ WriteLiteral("</td>\r\n");
             #line default
             #line hidden
             
-            #line 142 "..\..\Views\Shared\_List_Data_Item.cshtml"
+            #line 147 "..\..\Views\Shared\_List_Data_Item.cshtml"
                         
     }
 }
