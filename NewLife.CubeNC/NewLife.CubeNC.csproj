@@ -50,6 +50,7 @@
 
   <ItemGroup>
     <Content Remove="appsettings.json" />
+    <Content Remove="Properties\launchSettings.json" />
     <Content Remove="wwwroot\favicon.ico" />
     <Content Remove="wwwroot\Scripts\ApiClient.js" />
     <Content Remove="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
@@ -150,6 +151,7 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <None Include="Areas\Admin\Views\UserConnect\_List_Search.cshtml" />
+    <None Include="Properties\launchSettings.json" />
     <None Include="wwwroot\Scripts\ApiClient.js" />
     <None Include="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
     <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
