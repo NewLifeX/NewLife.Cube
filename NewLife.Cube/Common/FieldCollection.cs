@@ -108,7 +108,7 @@ namespace NewLife.Cube
                 var fi = this[i];
                 if (fi.IsDataObjectField && fi.Type == typeof(String))
                 {
-                    if (fi.Length <= 0 || fi.Length > 200 ||
+                    if (fi.Length <= 0 || fi.Length > 1000 ||
                         fi.Name.EqualIgnoreCase("password", "pass"))
                     {
                         RemoveAt(i);
