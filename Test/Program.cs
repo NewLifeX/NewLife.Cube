@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using NewLife.Log;
 using NewLife.School.Entity;
 using NewLife.Security;
@@ -23,7 +24,7 @@ namespace Test
 
             try
             {
-                Test1();
+                Test2();
             }
             catch (Exception ex)
             {
@@ -55,6 +56,18 @@ namespace Test
 
             var ms = sw.Elapsed.TotalMilliseconds;
             Console.WriteLine("查询[{0:n0}]次，耗时{1:n0}ms，速度{2:n0}qps", count, ms, count * 1000L / ms);
+        }
+
+        static void Test2()
+        {
+            for (var i = 0; i < 1000; i++)
+            {
+                var ticks = Environment.TickCount;
+                var ts = TimeSpan.FromMilliseconds(ticks);
+                Console.WriteLine(ts);
+
+                Thread.Sleep(1000);
+            }
         }
     }
 }

@@ -50,7 +50,7 @@
                 {
                     <a href="@Url.Action("Restart")" onclick="return confirm('仅重启ASP.Net应用程序域，而不是操作系统！\n确认重启？')">重启应用系统</a>
                 }
-                &nbsp;&nbsp;&nbsp;&nbsp;@req.GetEncodedUrl()
+                &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
             </td>
             <td class="name">
                 目录：
@@ -70,27 +70,31 @@
                     var addrRemote = conn.RemoteIpAddress;
                     if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
                     if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+                    var userHost = httpContext.GetUserHost();
                 }
                 <span title="主机">@req.Headers["Host"]</span>，
                 <span title="本地">@addrLocal:@conn.LocalPort</span>
                 &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
-                &nbsp;<span title="真实">[@httpContext.GetUserHost()]</span>
+                @if (addrRemote + "" != userHost)
+                {
+                    <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
+                }
             </td>
             <td class="name">
-                计算机用户：
+                应用程序：
             </td>
             <td class="value">
-                @mi.Product，
-                @Environment.UserName/@Environment.MachineName
+                <span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span>
             </td>
         </tr>
         <tr>
             <td class="name">
-                应用程序域：
+                应用域：
             </td>
             <td class="value">
                 @AppDomain.CurrentDomain.FriendlyName
                 <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
+                <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
                 <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
             </td>
             <td class="name">
@@ -108,10 +112,14 @@
                 @mi.OSName @mi.OSVersion
             </td>
             <td class="name">
-                Web服务器：
+                机器用户：
             </td>
             <td class="value">
-                @ViewBag.WebServerName
+                @if (!mi.Product.IsNullOrEmpty())
+                {
+                    <apan>@mi.Product，</apan>
+                }
+                @Environment.UserName/@Environment.MachineName
             </td>
         </tr>
         <tr>
@@ -121,13 +129,21 @@
             <td class="value">
                 @mi.Processor，
                 @Environment.ProcessorCount
-                核心，@mi.CpuRate.ToString("p0")，@gc
+                核心，@mi.CpuRate.ToString("p0")
+                @if (mi.Temperature > 0)
+                {
+                    <span>，@mi.Temperature ℃</span>
+                }
             </td>
             <td class="name">
                 时间：
             </td>
+            @{
+                //var uptime = TimeSpan.FromTicks(Environment.TickCount64);
+                var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+            }
             <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
-                @DateTime.Now.ToFullString()，开机@(new TimeSpan(0, 0, 0, 0, Environment.TickCount))，@mi.Temperature ℃
+                @DateTime.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))
             </td>
         </tr>
         <tr>
@@ -136,11 +152,9 @@
                 内存：
             </td>
             <td class="value">
-                物理内存：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
-                工作集: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M，
-                提交: @((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M，
+                物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
+                工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M，
                 GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
-                <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
                 <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
             </td>
             <td class="name">
@@ -155,15 +169,16 @@
                 Session：
             </td>
             <td class="value">
-                @httpContext.Session.Keys.Count() 个，SessionID：@httpContext.Session.Id
+                @httpContext.Session.Keys.Count() 个
                 <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
+                ，@gc
             </td>
             <td class="name">
                 Cache：
             </td>
             <td class="value">
                 @*@HttpContext.Cache.Count 个，可用：@((Cache.EffectivePrivateBytesLimit / 1024).ToString("n0"))KB*@
-                <a href="@Url.Action("Main", new{ id = "Cache" })" target="_blank" title="点击打开Cache列表">Cache列表</a>
+                @*<a href="@Url.Action("Main", new{ id = "Cache" })" target="_blank" title="点击打开Cache列表">Cache列表</a>*@
             </td>
         </tr>
     </tbody>

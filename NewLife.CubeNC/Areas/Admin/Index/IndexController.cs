@@ -118,23 +118,6 @@ namespace NewLife.Cube.Admin.Controllers
             ViewBag.Act = id;
             //ViewBag.User = ManageProvider.User;
             ViewBag.Config = SysConfig.Current;
-#if __CORE__
-            var name = Request.Headers["Server_SoftWare"];
-#else
-            var name = Request.ServerVariables["Server_SoftWare"];
-#endif
-            if (String.IsNullOrEmpty(name)) name = Process.GetCurrentProcess().ProcessName;
-
-#if !__CORE__
-            // 检测集成管道，低版本.Net不支持，请使用者根据情况自行注释
-            try
-            {
-                if (HttpRuntime.UsingIntegratedPipeline) name += " [集成管道]";
-            }
-            catch { }
-#endif
-
-            ViewBag.WebServerName = name;
             ViewBag.MyAsms = GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
 
             var Asms = AssemblyX.GetAssemblies(null).ToArray();
