@@ -740,6 +740,58 @@ namespace NewLife.Cube
             sb.AppendLine($"        {txt}");
         }
 
+        internal static Boolean MakeSearchView(Type entityType, String vpath, List<FieldItem> fields)
+        {
+#if __CORE__
+            var tmp = @"@using {Namespace}
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+}
+@*<div class=""form - group"">
+    @Html.ActionLink(""用户链接"", ""Index"", ""UserConnect"", null, new { @class = ""btn btn-success btn-sm"" })
+    @Html.ActionLink(""用户在线"", ""Index"", ""UserOnline"", null, new { @class = ""btn btn-success btn-sm"" })
+    <label for=""RoleID"" class=""control-label"">角色：</label>
+    @Html.ForDropDownList(""RoleID"", Role.FindAllWithCache().Cast<IEntity>().ToList(), page[""roldId""], ""全部"", true)
+    @Html.ForDropDownList(""p"", VisitStat.FindAllPageName(), page[""p""], ""全部页面"", true)
+</div>*@
+@*@await Html.PartialAsync(""_DateRange"")*@";
+#else
+            var tmp = @"@using {Namespace}
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+}
+@*<div class=""form - group"">
+    @Html.ActionLink(""用户链接"", ""Index"", ""UserConnect"", null, new { @class = ""btn btn-success btn-sm"" })
+    @Html.ActionLink(""用户在线"", ""Index"", ""UserOnline"", null, new { @class = ""btn btn-success btn-sm"" })
+    <label for=""RoleID"" class=""control-label"">角色：</label>
+    @Html.ForDropDownList(""RoleID"", Role.FindAllWithCache().Cast<IEntity>().ToList(), page[""roldId""], ""全部"", true)
+    @Html.ForDropDownList(""p"", VisitStat.FindAllPageName(), page[""p""], ""全部页面"", true)
+</div>*@
+@*@Html.Partial(""_DateRange"")*@";
+#endif
+
+            //var sb = new StringBuilder();
+            //var fact = EntityFactory.CreateOperate(entityType);
+
+            tmp = tmp.Replace("{EntityType}", entityType.Name);
+            tmp = tmp.Replace("{Namespace}", entityType.Namespace);
+
+            //sb.Append(tmp.Substring(p));
+            //tmp = sb.ToString();
+
+            File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), tmp, Encoding.UTF8);
+
+            return true;
+        }
+
         /// <summary>是否启用多选</summary>
         /// <param name="page"></param>
         /// <returns></returns>
@@ -824,15 +876,15 @@ namespace NewLife.Cube
     /// <summary>Bootstrap页面控制。允许继承</summary>
     public class Bootstrap
     {
-#region 属性
+        #region 属性
         /// <summary>最大列数</summary>
         public Int32 MaxColumn { get; set; } //= 2;
 
         /// <summary>默认标签宽度</summary>
         public Int32 LabelWidth { get; set; }// = 4;
-#endregion
+        #endregion
 
-#region 当前项
+        #region 当前项
         ///// <summary>当前项</summary>
         //public FieldItem Item { get; set; }
 
@@ -852,18 +904,18 @@ namespace NewLife.Cube
             Type = item.Type;
             Length = item.Length;
         }
-#endregion
+        #endregion
 
-#region 构造
+        #region 构造
         /// <summary>实例化一个页面助手</summary>
         public Bootstrap()
         {
             MaxColumn = 2;
             LabelWidth = 4;
         }
-#endregion
+        #endregion
 
-#region 方法
+        #region 方法
         /// <summary>获取分组宽度</summary>
         /// <returns></returns>
         public virtual Int32 GetGroupWidth()
@@ -875,6 +927,6 @@ namespace NewLife.Cube
 
             return 12;
         }
-#endregion
+        #endregion
     }
 }

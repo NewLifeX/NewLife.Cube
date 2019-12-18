@@ -352,8 +352,22 @@ WriteAttribute("href", Tuple.Create(" href=\"", 2674), Tuple.Create("\"", 2704)
 
 WriteLiteral(">生成表单</a>\r\n                </li>\r\n");
 
+WriteLiteral("                <li>\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 2783), Tuple.Create("\"", 2815)
             
-            #line 71 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+            #line 72 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 2790), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeSearch")
+            
+            #line default
+            #line hidden
+, 2790), false)
+);
+
+WriteLiteral(">生成搜索</a>\r\n                </li>\r\n");
+
+            
+            #line 74 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
             }
         }
 

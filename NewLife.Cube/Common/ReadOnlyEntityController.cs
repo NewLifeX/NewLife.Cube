@@ -886,6 +886,28 @@ namespace NewLife.Cube
             return RedirectToAction("Index");
         }
 
+        /// <summary>生成搜索</summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        [DisplayName("生成搜索")]
+        public ActionResult MakeSearch()
+        {
+            if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+
+            // 找到项目根目录
+            var root = GetProjectRoot();
+
+            // 视图路径，Areas/区域/Views/控制器/_List_Search.cshtml
+            var vpath = "Areas/{0}/Views/{1}/_List_Search.cshtml".F(RouteData.Values["area"], GetType().Name.TrimEnd("Controller"));
+            if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
+
+            var rs = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
+
+            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成搜索", vpath);
+
+            return RedirectToAction("Index");
+        }
+
         private String GetProjectRoot()
         {
             var asm = GetType().Assembly;

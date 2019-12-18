@@ -9,6 +9,6 @@
 }
 <div class="form-group">
     <label for="provider" class="control-label">提供商：</label>
-    @Html.ForDropDownList("provider", UserConnect.FindAllProviderName(), Context.Request.GetRequestValue("provider"), "全部", true)
+    @Html.ForDropDownList("provider", UserConnect.FindAllProviderName(), page["provider"], "全部", true)
 </div>
 @*@Html.Partial("_DateRange")*@

@@ -20,14 +20,14 @@
             <a href="@Url.Action("ExportXml")">导出Xml</a>
         </li>
         @*<li>
-                <a href="@Url.Action("ImportXml")">导入Xml</a>
-            </li>*@
+            <a href="@Url.Action("ImportXml")">导入Xml</a>
+        </li>*@
         <li>
             <a href="@Url.Action("ExportJson")">导出Json</a>
         </li>
         @*<li>
-                <a href="@Url.Action("ImportJson")">导入Json</a>
-            </li>*@
+            <a href="@Url.Action("ImportJson")">导入Json</a>
+        </li>*@
         @if (this.Has(PermissionFlags.Delete))
         {
             <li class="divider"></li>
@@ -65,6 +65,9 @@
             </li>
             <li>
                 <a href="@Url.Action("MakeForm")">生成表单</a>
+            </li>
+            <li>
+                <a href="@Url.Action("MakeSearch")">生成搜索</a>
             </li>
         }
     </ul>
