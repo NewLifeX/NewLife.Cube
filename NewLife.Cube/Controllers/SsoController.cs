@@ -102,6 +102,10 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public virtual ActionResult LoginInfo(String code, String state)
         {
+#if __CORE__
+            if (code.IsNullOrEmpty()) return BadRequest("code is null");
+#endif
+
             var name = state + "";
             var p = name.IndexOf('_');
             if (p > 0)
