@@ -51,7 +51,7 @@ namespace NewLife.Cube.Admin.Controllers
             return di;
         }
 
-        private FileItem GetItme(String r)
+        private FileItem GetItem(String r)
         {
             var inf = GetFile(r) as FileSystemInfo ?? GetDirectory(r);
             if (inf == null) return null;
@@ -109,7 +109,7 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 if (item.Attributes.Has(FileAttributes.Hidden)) continue;
 
-                var fi = GetItme(item.FullName);
+                var fi = GetItem(item.FullName);
 
                 list.Add(fi);
             }
@@ -239,7 +239,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             if (file != null)
             {
-                var di = GetDirectory(r);
+                var di = GetDirectory(r) ?? Root.AsDirectory();
                 if (di == null) throw new Exception("找不到目录！");
 
                 var dest = di.FullName.CombinePath(file.FileName);
@@ -259,7 +259,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             if (file != null)
             {
-                var di = GetDirectory(r);
+                var di = GetDirectory(r) ?? Root.AsDirectory();
                 if (di == null) throw new Exception("找不到目录！");
 
                 var dest = di.FullName.CombinePath(file.FileName);
@@ -303,7 +303,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Detail)]
         public ActionResult Copy(String r, String f)
         {
-            var fi = GetItme(f);
+            var fi = GetItem(f);
             if (fi == null) throw new Exception("找不到文件或目录！");
 
             var list = GetClip();
@@ -320,7 +320,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Detail)]
         public ActionResult CancelCopy(String r, String f)
         {
-            var fi = GetItme(f);
+            var fi = GetItem(f);
             if (fi == null) throw new Exception("找不到文件或目录！");
 
             var list = GetClip();
