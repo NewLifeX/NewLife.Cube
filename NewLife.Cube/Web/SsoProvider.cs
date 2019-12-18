@@ -373,8 +373,17 @@ namespace NewLife.Cube.Web
         {
             if (url.IsNullOrEmpty()) url = user.GetValue("Avatar") as String;
             //if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
-            if (url.IsNullOrEmpty()) return false;
 
+            // 尝试从用户链接获取头像地址
+            if (url.IsNullOrEmpty() || !url.StartsWithIgnoreCase("http"))
+            {
+                var list = UserConnect.FindAllByUserID(user.ID);
+                url = list.OrderByDescending(e => e.UpdateTime)
+                    .Where(e => !e.Avatar.IsNullOrEmpty() && e.Avatar.StartsWithIgnoreCase("http"))
+                    .FirstOrDefault()?.Avatar;
+            }
+
+            if (url.IsNullOrEmpty()) return false;
             if (!url.StartsWithIgnoreCase("http")) return false;
 
             // 不要扩展名
