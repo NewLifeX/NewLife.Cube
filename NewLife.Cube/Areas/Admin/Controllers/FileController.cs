@@ -35,6 +35,15 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 默认根目录
             var fi = Root.CombinePath(r).AsFile();
+
+            var root = Root.EnsureEnd(Path.DirectorySeparatorChar + "");
+            if (!fi.FullName.StartsWithIgnoreCase(root))
+            {
+                WriteLog("Valid", $"文件[{fi.FullName}]非法越界！", UserHost);
+
+                return null;
+            }
+
             if (!fi.Exists) return null;
 
             return fi;
@@ -46,6 +55,15 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 默认根目录
             var di = Root.CombinePath(r).AsDirectory();
+
+            var root = Root.EnsureEnd(Path.DirectorySeparatorChar + "");
+            if (!di.FullName.StartsWithIgnoreCase(root))
+            {
+                WriteLog("Valid", $"目录[{di.FullName}]非法越界！", UserHost);
+
+                return null;
+            }
+
             if (!di.Exists) return null;
 
             return di;
@@ -92,11 +110,6 @@ namespace NewLife.Cube.Admin.Controllers
         {
             var di = GetDirectory(r) ?? Root.AsDirectory();
 
-            // 检查目录越界
-            var root = Root.TrimEnd(Path.DirectorySeparatorChar);
-            if (di == null) di = Root.AsDirectory();
-            if (!di.FullName.StartsWithIgnoreCase(root)) di = Root.AsDirectory();
-
             // 计算当前路径
             var fd = di.FullName;
             if (fd.StartsWith(Root)) fd = fd.Substring(Root.Length);
@@ -129,6 +142,7 @@ namespace NewLife.Cube.Admin.Controllers
                     break;
             }
             // 在开头插入上一级目录
+            var root = Root.TrimEnd(Path.DirectorySeparatorChar);
             if (!di.FullName.EqualIgnoreCase(Root, root))
             {
                 if (di.Parent != null)
@@ -140,7 +154,6 @@ namespace NewLife.Cube.Admin.Controllers
                         FullName = GetFullName(di.Parent.FullName)
                     });
                 }
-
             }
 
             // 剪切板
