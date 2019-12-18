@@ -7,6 +7,7 @@ using NewLife.Log;
 using NewLife.Model;
 using NewLife.Web;
 using XCode.Membership;
+using Microsoft.AspNetCore.Http.Extensions;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -103,7 +104,12 @@ namespace NewLife.Cube.Controllers
         public virtual ActionResult LoginInfo(String code, String state)
         {
 #if __CORE__
-            if (code.IsNullOrEmpty()) return BadRequest("code is null");
+            if (code.IsNullOrEmpty())
+            {
+                XTrace.WriteLine("LoginInfo code==null {0} {1}", Request.Method, Request.GetEncodedUrl());
+
+                return BadRequest("code is null");
+            }
 #endif
 
             var name = state + "";
