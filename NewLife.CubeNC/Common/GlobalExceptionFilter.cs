@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Log;
+using XCode.Membership;
 
 namespace NewLife.Cube
 {
@@ -15,17 +14,24 @@ namespace NewLife.Cube
         public void OnException(ExceptionContext context)
         {
             var ex = context.Exception;
-            if (ex != null)
+            if (ex != null && !context.ExceptionHandled)
             {
                 //context.HttpContext.Items["GlobalException"] = ex;
                 context.HttpContext.Items["ExceptionContext"] = context;
 
                 var act = context.ActionDescriptor;
-                if (act != null)
-                {
-                    XTrace.Log.Error("[{0}]的错误[{1}]",  act.DisplayName, context.ExceptionHandled ? "已处理" : "未处理");
-                }
+                var action = act?.DisplayName;
+
+                var cad = act as ControllerActionDescriptor;
+                if (cad != null) action = $"{cad.ControllerName}/{cad.ActionName}";
+
+                XTrace.Log.Error("[{0}]的错误[{1}]", action, context.ExceptionHandled ? "已处理" : "未处理");
+
+                if (cad != null) LogProvider.Provider?.WriteLog(cad.ControllerName, cad.ActionName, ex.GetTrue().Message);
+
                 XTrace.WriteException(ex);
+
+                context.ExceptionHandled = true;
             }
         }
     }
