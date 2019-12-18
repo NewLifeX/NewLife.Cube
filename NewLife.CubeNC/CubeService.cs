@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
@@ -173,8 +174,9 @@ namespace NewLife.Cube
         #region 使用魔方
         /// <summary>使用魔方</summary>
         /// <param name="app"></param>
+        /// <param name="env"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseCube(this IApplicationBuilder app)
+        public static IApplicationBuilder UseCube(this IApplicationBuilder app, IWebHostEnvironment env = null)
         {
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
@@ -217,6 +219,15 @@ namespace NewLife.Cube
 
             // 自动检查并添加菜单
             AreaBase.RegisterArea<Admin.AdminArea>();
+
+            // 使用Cube前添加自己的管道
+            if (env != null)
+            {
+                if (!env.IsDevelopment())
+                    app.UseDeveloperExceptionPage();
+                else
+                    app.UseExceptionHandler("/CubeHome/Error");
+            }
 
             return app;
         }

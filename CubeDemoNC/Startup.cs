@@ -25,7 +25,7 @@ namespace CubeDemoNC
 
             app.UseStaticFiles();
 
-            app.UseCube();
+            app.UseCube(env);
         }
     }
 }
