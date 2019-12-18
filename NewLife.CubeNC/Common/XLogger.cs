@@ -93,6 +93,8 @@ namespace NewLife.Cube
             var txt = formatter(state, exception);
             if (txt.IsNullOrEmpty() && exception == null) return;
 
+            if (exception != null) txt = exception.GetTrue()?.Message;
+
             switch (logLevel)
             {
                 case LogLevel.Trace:
@@ -117,7 +119,7 @@ namespace NewLife.Cube
                     break;
             }
 
-            if (exception != null) Logger.Error("{0}", exception);
+            //if (exception != null) Logger.Error("{0}", exception);
         }
     }
 }

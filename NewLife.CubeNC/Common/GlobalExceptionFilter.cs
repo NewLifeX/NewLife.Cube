@@ -31,7 +31,7 @@ namespace NewLife.Cube
 
                 XTrace.WriteException(ex);
 
-                context.ExceptionHandled = true;
+                //context.ExceptionHandled = true;
             }
         }
     }

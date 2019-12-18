@@ -46,6 +46,7 @@
     <Compile Remove="Extensions\ObjectHelper.cs" />
     <Compile Remove="Extensions\ScanController.cs" />
     <Compile Remove="Extensions\SessionExtensions.cs" />
+    <Compile Remove="WebMiddleware\ErrorMiddleware.cs" />
   </ItemGroup>
 
   <ItemGroup>

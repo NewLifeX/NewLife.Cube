@@ -6,7 +6,8 @@
     //Layout = NewLife.Cube.Setting.Current.Layout;
     ViewBag.Title = "处理你的请求时出错";
 
-    var ex = ViewBag.Exception ?? (Model == null ? null : Model.Exception);
+    //var ex = ViewBag.Exception ?? (Model == null ? null : Model.Exception);
+    Exception ex = null;
 
     var info = "";
     var error = "没有捕捉到异常信息";
@@ -15,15 +16,15 @@
     {
         // 由于nginx的配置导致出现奇葩错误
         ex = context.Exception;
-        info = context.ActionDescriptor.DisplayName;
+        info = context.ActionDescriptor?.DisplayName;
     }
     if (NewLife.Cube.Setting.Current.Debug)
     {
-        error = ex.ToString();
+        error = ex + "";
     }
     else
     {
-        error = ((Exception)ex)?.GetTrue().Message;
+        error = ex?.GetTrue().Message;
     }
     error = error?.Replace("--->", "--->" + Environment.NewLine);
 }
