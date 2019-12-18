@@ -197,9 +197,12 @@ namespace NewLife.Web
             {
                 // 阿里云CDN默认支持 X-Client-Scheme: https
                 var scheme = headers("HTTP_X_CLIENT_SCHEME");
-                //if (scheme.IsNullOrEmpty()) scheme = req.ServerVariables["X-Client-Scheme"];
+                if (scheme.IsNullOrEmpty()) scheme = headers("X-Client-Scheme");
+
                 // nginx
+                if (scheme.IsNullOrEmpty()) scheme = headers("HTTP_X_FORWARDED_PROTO");
                 if (scheme.IsNullOrEmpty()) scheme = headers("X-Forwarded-Proto");
+
                 if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
             }
 
