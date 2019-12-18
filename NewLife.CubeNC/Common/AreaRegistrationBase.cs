@@ -106,7 +106,7 @@ namespace NewLife.Cube
                         if (!f.IsNullOrEmpty())
                         {
                             var ms = asm.GetManifestResourceStream(f);
-                            File.WriteAllBytes(ico2, ms.ReadBytes());
+                            File.WriteAllBytes(ico2.EnsureDirectory(true), ms.ReadBytes());
                         }
                     }
                 }, 1000);

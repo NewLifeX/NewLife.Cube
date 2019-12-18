@@ -23,6 +23,8 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; } = 10;
 
+        static IndexController() => MachineInfo.RegisterAsync();
+
         /// <summary>实例化</summary>
         public IndexController() => PageSetting.EnableNavbar = false;
 
