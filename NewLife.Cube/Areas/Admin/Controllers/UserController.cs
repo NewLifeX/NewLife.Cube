@@ -249,7 +249,11 @@ namespace NewLife.Cube.Admin.Controllers
                 if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
                 if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
 
-                var user = new UserX()
+                // 去重判断
+                var user = UserX.FindByName(username);
+                if (user != null) throw new ArgumentException("usename", $"用户[{username}]已存在！");
+
+                user = new UserX()
                 {
                     Name = username,
                     Password = password.MD5(),
