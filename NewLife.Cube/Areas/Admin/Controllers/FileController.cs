@@ -234,6 +234,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="r"></param>
         /// <param name="file"></param>
         /// <returns></returns>
+        [HttpPost]
         [EntityAuthorize(PermissionFlags.Insert)]
         public ActionResult Upload(String r, IFormFile file)
         {
