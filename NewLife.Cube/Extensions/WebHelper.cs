@@ -6,6 +6,8 @@ using System.Web;
 using NewLife.Collections;
 using NewLife.Log;
 #if __CORE__
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
 #endif
 
@@ -114,20 +116,7 @@ namespace NewLife.Web
             var str = req.RawUrl;
             if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
 
-            str = req.ServerVariables["HTTP_X_REQUEST_URI"];
-            if (str.IsNullOrEmpty()) str = req.ServerVariables["X-Request-Uri"];
-
-            // 阿里云CDN默认支持 X-Client-Scheme: https
-            if (str.IsNullOrEmpty())
-            {
-                var scheme = req.ServerVariables["HTTP_X_CLIENT_SCHEME"];
-                //if (scheme.IsNullOrEmpty()) scheme = req.ServerVariables["X-Client-Scheme"];
-                if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
-            }
-
-            if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
-
-            return uri;
+            return GetRawUrl(uri, k => req.ServerVariables[k]);
         }
 
         /// <summary>获取原始请求Url，支持反向代理</summary>
@@ -140,20 +129,7 @@ namespace NewLife.Web
             var str = req.RawUrl;
             if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
 
-            str = req.ServerVariables["HTTP_X_REQUEST_URI"];
-            if (str.IsNullOrEmpty()) str = req.ServerVariables["X-Request-Uri"];
-
-            // 阿里云CDN默认支持 X-Client-Scheme: https
-            if (str.IsNullOrEmpty())
-            {
-                var scheme = req.ServerVariables["HTTP_X_CLIENT_SCHEME"];
-                //if (scheme.IsNullOrEmpty()) scheme = req.ServerVariables["X-Client-Scheme"];
-                if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
-            }
-
-            if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
-
-            return uri;
+            return GetRawUrl(uri, k => req.ServerVariables[k]);
         }
 #else
         /// <summary>返回请求字符串和表单的名值字段，过滤空值和ViewState，同名时优先表单</summary>
@@ -166,8 +142,8 @@ namespace NewLife.Web
 
                 var req = ctx.Request;
                 IEnumerable<KeyValuePair<String, StringValues>>[] nvss;
-                nvss = req.HasFormContentType ? 
-                    new IEnumerable<KeyValuePair<String, StringValues>>[] { req.Query, req.Form } : 
+                nvss = req.HasFormContentType ?
+                    new IEnumerable<KeyValuePair<String, StringValues>>[] { req.Query, req.Form } :
                     new IEnumerable<KeyValuePair<String, StringValues>>[] { req.Query };
 
 
@@ -199,7 +175,38 @@ namespace NewLife.Web
                 return dic;
             }
         }
+
+        /// <summary>获取原始请求Url，支持反向代理</summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static Uri GetRawUrl(this HttpRequest request)
+        {
+            var url = request.GetEncodedUrl();
+            var uri = new Uri(url);
+
+            return GetRawUrl(uri, k => request.Headers[k]);
+        }
 #endif
+
+        private static Uri GetRawUrl(Uri uri, Func<String, String> headers)
+        {
+            var str = headers("HTTP_X_REQUEST_URI");
+            if (str.IsNullOrEmpty()) str = headers("X-Request-Uri");
+
+            if (str.IsNullOrEmpty())
+            {
+                // 阿里云CDN默认支持 X-Client-Scheme: https
+                var scheme = headers("HTTP_X_CLIENT_SCHEME");
+                //if (scheme.IsNullOrEmpty()) scheme = req.ServerVariables["X-Client-Scheme"];
+                // nginx
+                if (scheme.IsNullOrEmpty()) scheme = headers("X-Forwarded-Proto");
+                if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
+            }
+
+            if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
+
+            return uri;
+        }
         #endregion
 
         #region Url扩展

@@ -19,7 +19,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "urls": "http://*:5000"
+        "urls": "http://*:5000;https://*:5001"
       },
       "applicationUrl": "http://localhost:5000"
     }

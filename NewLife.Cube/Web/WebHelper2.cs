@@ -59,15 +59,6 @@ namespace NewLife.Cube
         /// <param name="value"></param>
         public static void Set(this ISession session, String key, Object value) => session.Set(key, value?.ToJson().GetBytes());
 
-        /// <summary>获取原始请求Url，支持反向代理</summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public static Uri GetRawUrl(this HttpRequest request)
-        {
-            var url = request.GetEncodedUrl();
-            return new Uri(url);
-        }
-
         /// <summary>获取用户主机</summary>
         /// <param name="context"></param>
         /// <returns></returns>
