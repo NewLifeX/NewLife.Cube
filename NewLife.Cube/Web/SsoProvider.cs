@@ -220,7 +220,7 @@ namespace NewLife.Cube.Web
 
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;
-                if (av.StartsWith("/") && !client.UserUrl.IsNullOrEmpty()) av = new Uri(new Uri(client.UserUrl), av) + "";
+                if (av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http")) av = new Uri(new Uri(client.Server), av) + "";
                 if (user2.Avatar.IsNullOrEmpty()) user2.Avatar = av;
 
                 // 下载远程头像到本地，Avatar还是保存远程头像地址
