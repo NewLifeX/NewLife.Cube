@@ -258,6 +258,8 @@ namespace NewLife.Cube.Admin.Controllers
 
                 var dest = di.FullName.CombinePath(file.FileName);
                 WriteLog("上传", dest, UserHost);
+
+                dest.EnsureDirectory(true);
                 System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes());
             }
 
@@ -278,6 +280,8 @@ namespace NewLife.Cube.Admin.Controllers
 
                 var dest = di.FullName.CombinePath(file.FileName);
                 WriteLog("上传", dest);
+
+                dest.EnsureDirectory(true);
                 file.SaveAs(dest);
             }
 
