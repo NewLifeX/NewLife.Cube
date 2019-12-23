@@ -205,10 +205,10 @@ namespace NewLife.Cube
             {
                 endpoints.MapControllerRoute(
                     "CubeAreas",
-                    "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
+                    "{area}/{controller=Index}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute(
                     "Default",
-                    "{controller=Index}/{action=Index}/{id?}"
+                    "{controller=CubeHome}/{action=Index}/{id?}"
                     );
                 endpoints.MapRazorPages();
             })
