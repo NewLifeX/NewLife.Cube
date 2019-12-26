@@ -114,6 +114,9 @@ namespace NewLife.Cube
         [Description("头像目录。设定后下载远程头像到本地")]
         public String AvatarPath { get; set; } = "..\\Avatars";
 
+        [Description("静态资源文件目录")]
+        public String StaticPath { get; set; } = "wwwroot";
+
         ///// <summary>安全密钥。用于加密Cookie等通信内容</summary>
         //[Description("安全密钥。用于加密Cookie等通信内容")]
         //public String SecurityKey { get; set; }
