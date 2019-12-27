@@ -103,22 +103,22 @@ function doAction(methodName, actionUrl, actionParamter) {
         complete: function (result) {
             var rs = result.responseJSON;
             
-            if (rs.message) {
-                tips(rs.message, 0, 1000);
+            if (rs.message || rs.data) {
+                tips(rs.message || rs.data, 0, 1000);
             }
-            var data = rs.data
-            if (data.url && data.url.length > 0) {
-                if (data.url == '[refresh]') {
-                    if(data.time && +data.time > 0){
+            
+            if (rs.url && rs.url.length > 0) {
+                if (rs.url == '[refresh]') {
+                    if(rs.time && +rs.time > 0){
                         setTimeout(function () {
                             location.reload(false)
-                        }, Math.min(+data.time, 10) * 1000) //不能大于10秒，
+                        }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
                     }else {
                         //刷新页面但不重新加载页面的所有静态资源
                         location.reload(false);
                     }
                 } else {
-                    window.location.href = data.url;
+                    window.location.href = rs.url;
                 }
             }
         }
