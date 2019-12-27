@@ -48,7 +48,7 @@
                 &nbsp;
                 @if (this.Has((PermissionFlags)16))
                 {
-                    <a href="@Url.Action("Restart")" onclick="return confirm('仅重启ASP.Net应用程序域，而不是操作系统！\n确认重启？')">重启应用系统</a>
+                    <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>
                 }
                 &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
             </td>
@@ -161,7 +161,7 @@
                 进程时间：
             </td>
             <td class="value">
-                @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToFullString()
+                @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
             </td>
         </tr>
         <tr>
@@ -174,12 +174,28 @@
                 ，@gc
             </td>
             <td class="name">
+            @{ var app = ApplicationManager.Load();}
+                应用启动时间：
+            </td>
+            <td class="value">
+                启动于 @app.StartTime.ToLocalTime().ToFullString()
+            </td>
+        </tr>
+        <tr>
+            
+            <td class="name">
                 Cache：
             </td>
             <td class="value">
                 @*@HttpContext.Cache.Count 个，可用：@((Cache.EffectivePrivateBytesLimit / 1024).ToString("n0"))KB*@
                 @*<a href="@Url.Action("Main", new{ id = "Cache" })" target="_blank" title="点击打开Cache列表">Cache列表</a>*@
             </td>
+            <td class="name">
+                        
+                        </td>
+                        <td class="value">
+                            
+                        </td>
         </tr>
         <tr>
             <td class="name">
