@@ -150,6 +150,32 @@
                 <a href="@Url.Action("Main/Cache")" target="_blank" title="点击打开Cache列表">Cache列表</a>
             </td>
         </tr>
+        <tr>
+            <td class="name">
+                机器用户Guid：
+            </td>
+            <td class="value">
+                @mi.Guid
+            </td>
+            <td class="name">
+                操作系统UUID：
+            </td>
+            <td class="value">
+                @mi.UUID
+            </td>
+        </tr>
+        <tr>
+            <td class="name">
+                处理器ID：
+            </td>
+            <td class="value">
+                @mi.CpuID
+            </td>
+            <td class="name">
+            </td>
+            <td class="value">
+            </td>
+        </tr>
     </tbody>
 </table>
 <table class="table table-bordered table-hover table-striped table-condensed">
