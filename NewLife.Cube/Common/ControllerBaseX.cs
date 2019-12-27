@@ -200,6 +200,14 @@ namespace NewLife.Cube
         /// <param name="data">消息</param>
         /// <returns></returns>
         protected virtual ActionResult JsonRefresh(Object data) => Json(0, data as String, data, new { url = "[refresh]" });
+        
+        /// <summary>
+        /// 返回结果并刷新
+        /// </summary>
+        /// <param name="data">消息</param>
+        /// <param name="time">延迟刷新秒数</param>
+        /// <returns></returns>
+        protected virtual ActionResult JsonRefresh(Object data, Int32 time) => Json(0, data as String, data, new { url = "[refresh]", time});
 
         /// <summary>是否Json请求</summary>
         protected virtual Boolean IsJsonRequest
