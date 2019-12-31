@@ -298,7 +298,7 @@ namespace XCode.Membership
 
             public void Write(HttpCookie cookie, String key)
             {
-                cookie.HttpOnly = true;
+                //cookie.HttpOnly = true;
                 cookie["u"] = UserName;
                 cookie["p"] = Password;
 

@@ -320,7 +320,7 @@ namespace NewLife.Cube
             {
                 var cookieOptions = new CookieOptions
                 {
-                    HttpOnly = true,
+                    //HttpOnly = true,
                     Expires = Expire
                 };
 
