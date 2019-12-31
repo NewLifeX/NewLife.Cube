@@ -646,7 +646,7 @@ namespace NewLife.Cube
             else if (field.Type == typeof(String))
                 BuildStringItem(field, sb);
             else if (fact.EntityType.As<IEntityTree>() && fact.EntityType.GetValue("Setting") is IEntityTreeSetting set && set?.Parent == field.Name)
-                sb.AppendLine($"        @Html.ForTreeEditor({fact.EntityType.Name}._.{field.Name}, entity)");
+                sb.AppendLine($"        @Html.ForEditor({fact.EntityType.Name}._.{field.Name}, entity)");
             else
             {
                 switch (field.Type.GetTypeCode())
