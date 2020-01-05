@@ -125,11 +125,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Areas\Admin\Views\Department\_List_Data_Item.generated.cs">
-      <DependentUpon>_List_Data_Item.cshtml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Areas\Admin\Views\File\Index.generated.cs">
       <DependentUpon>Index.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -301,7 +296,6 @@
       <DependentUpon>_ViewStart.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Common\AreaAttribute.cs" />
-    <Compile Include="Common\ControllerHelper.cs" />
     <Compile Include="Common\ReadOnlyEntityController.cs" />
     <Compile Include="Common\PagerModelBinder.cs" />
     <Compile Include="Common\EntityTreeController.cs" />
@@ -546,10 +540,6 @@
     <None Include="Areas\Admin\Views\Db\Index.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
-    </None>
-    <None Include="Areas\Admin\Views\Department\_List_Data_Item.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_List_Data_Item.generated.cs</LastGenOutput>
     </None>
     <None Include="Areas\Admin\Views\Role\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>

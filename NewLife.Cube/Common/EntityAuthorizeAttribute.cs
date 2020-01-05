@@ -108,8 +108,36 @@ namespace NewLife.Cube
             }
             else
             {
-                filterContext.Result = filterContext.NoPermission(Permission);
+                filterContext.Result = NoPermission(filterContext, Permission);
             }
+        }
+
+        /// <summary>无权访问</summary>
+        /// <param name="filterContext"></param>
+        /// <param name="pm"></param>
+        /// <returns></returns>
+        public static ActionResult NoPermission(AuthorizationContext filterContext, PermissionFlags pm)
+        {
+            var act = filterContext.ActionDescriptor;
+            var ctrl = act.ControllerDescriptor;
+
+            var ctx = filterContext.HttpContext;
+
+            var res = "[{0}/{1}]".F(ctrl.ControllerName, act.ActionName);
+            var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
+            LogProvider.Provider.WriteLog("访问", "拒绝", msg, ip: ctx.GetUserHost());
+
+            var menu = ctx.Items["CurrentMenu"] as IMenu;
+
+            var vr = new ViewResult()
+            {
+                ViewName = "NoPermission"
+            };
+            vr.ViewBag.Context = filterContext;
+            vr.ViewBag.Resource = res;
+            vr.ViewBag.Permission = pm;
+            vr.ViewBag.Menu = menu;
+            return vr;
         }
 
         private IMenu GetMenu(AuthorizationContext filterContext, Boolean create)

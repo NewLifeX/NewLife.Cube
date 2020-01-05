@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -16,7 +18,7 @@ using XCode.Membership;
 namespace NewLife.Cube
 {
     /// <summary>实体授权特性</summary>
-    public class EntityAuthorizeAttribute: Attribute,IAuthorizationFilter
+    public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     {
         #region 属性
         /// <summary>授权项</summary>
@@ -65,7 +67,7 @@ namespace NewLife.Cube
 
             // 如果控制器或者Action放有该特性，则跳过全局
             var hasAtt =
-                ctrl.MethodInfo.IsDefined(typeof(EntityAuthorizeAttribute), true) || 
+                ctrl.MethodInfo.IsDefined(typeof(EntityAuthorizeAttribute), true) ||
                 ctrl.ControllerTypeInfo.IsDefined(typeof(EntityAuthorizeAttribute));
 
             if (IsGlobal && hasAtt) return;
@@ -94,7 +96,7 @@ namespace NewLife.Cube
         /// <summary>授权核心</summary>
         /// <param name="httpContext"></param>
         /// <returns></returns>
-        protected  Boolean AuthorizeCore(Microsoft.AspNetCore.Http.HttpContext httpContext)
+        protected Boolean AuthorizeCore(Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
             var prv = ManageProvider.Provider;
             var ctx = httpContext;
@@ -118,15 +120,49 @@ namespace NewLife.Cube
             if (prv?.Current == null)
             {
                 var retUrl = filterContext.HttpContext.Request.GetEncodedPathAndQuery();
-                    //.Host.ToString();//.Url?.PathAndQuery;
+                //.Host.ToString();//.Url?.PathAndQuery;
 
                 var rurl = "~/Admin/User/Login".AppendReturn(retUrl);
                 filterContext.Result = new RedirectResult(rurl);
             }
             else
             {
-                filterContext.Result = filterContext.NoPermission(Permission);
+                filterContext.Result = NoPermission(filterContext, Permission);
             }
+        }
+
+        /// <summary>无权访问</summary>
+        /// <param name="filterContext"></param>
+        /// <param name="pm"></param>
+        /// <returns></returns>
+        public static ActionResult NoPermission(AuthorizationFilterContext filterContext, PermissionFlags pm)
+        {
+            var act = (ControllerActionDescriptor)filterContext.ActionDescriptor;
+            var ctrl = act;
+
+            var ctx = filterContext.HttpContext;
+
+            var res = "[{0}/{1}]".F(ctrl.ControllerName, act.ActionName);
+            var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
+            LogProvider.Provider.WriteLog("访问", "拒绝", msg, ip: ctx.GetUserHost());
+
+            var menu = ctx.Items["CurrentMenu"] as IMenu;
+
+            var vr = new ViewResult()
+            {
+                ViewName = "NoPermission"
+            };
+
+            //vr.Context = filterContext;//不需要赋值Context，执行的时候会自己获取Context
+            vr.ViewData =
+                new ViewDataDictionary(new EmptyModelMetadataProvider(),
+                    filterContext.ModelState)
+                {
+                    ["Resource"] = res,
+                    ["Permission"] = pm,
+                    ["Menu"] = menu
+                };
+            return vr;
         }
 
         private IMenu GetMenu(AuthorizationFilterContext filterContext, Boolean create)

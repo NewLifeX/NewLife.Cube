@@ -102,7 +102,6 @@
     </Compile>
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
-    <Compile Include="..\NewLife.Cube\Common\ControllerHelper.cs" Link="Common\ControllerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityController.cs" Link="Common\EntityController.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityTreeController.cs" Link="Common\EntityTreeController.cs" />
     <Compile Include="..\NewLife.Cube\Common\FieldCollection.cs" Link="Common\FieldCollection.cs" />
