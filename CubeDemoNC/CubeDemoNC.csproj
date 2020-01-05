@@ -42,7 +42,7 @@
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="http://json.schemastore.org/behat" /></VisualStudio></ProjectExtensions>
 
 <!--  <Target Name="PostBuild" AfterTargets="PostBuildEvent">-->
 <!--    <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q" />-->
