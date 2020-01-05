@@ -57,14 +57,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Detail)]
         public ActionResult Main(String id)
         {
-            //if (id == "Restart")
-            //{
-            //    HttpRuntime.UnloadAppDomain();
-            //    id = null;
-            //}
-
             ViewBag.Act = id;
-            //ViewBag.User = ManageProvider.User;
             ViewBag.Config = SysConfig.Current;
 
             var name = Request.ServerVariables["Server_SoftWare"];
@@ -103,12 +96,6 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize((PermissionFlags)16)]
         public ActionResult Restart()
         {
-            //System.Web.HttpContext.Current.User = null;
-            //try
-            //{
-            //    Process.GetCurrentProcess().Kill();
-            //}
-            //catch { }
             //try
             {
                 //AppDomain.Unload(AppDomain.CurrentDomain);

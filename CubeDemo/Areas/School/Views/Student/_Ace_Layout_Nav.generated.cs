@@ -46,7 +46,6 @@ namespace ASP
             
             #line 1 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
   
-    //var menu = ManageProvider.Menu.Current;
     var menu = ViewBag.Menu as IMenu;
 
             
@@ -59,13 +58,13 @@ WriteLiteral(" class=\"ace-icon fa fa-home home-icon\"");
 WriteLiteral("></i>\r\n");
 
             
-            #line 7 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
+            #line 6 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
     
             
             #line default
             #line hidden
             
-            #line 7 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
+            #line 6 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
      if (menu != null)
     {
         foreach (IMenu item in (menu as IEntityTree).AllParents)
@@ -78,20 +77,20 @@ WriteLiteral("></i>\r\n");
             #line hidden
 WriteLiteral("                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 322), Tuple.Create("\"", 373)
+WriteAttribute("href", Tuple.Create(" href=\"", 275), Tuple.Create("\"", 326)
             
-            #line 13 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
-, Tuple.Create(Tuple.Create("", 329), Tuple.Create<System.Object, System.Int32>(item.Url!=null? Url.Content(item.Url):"#"
+            #line 12 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
+, Tuple.Create(Tuple.Create("", 282), Tuple.Create<System.Object, System.Int32>(item.Url!=null? Url.Content(item.Url):"#"
             
             #line default
             #line hidden
-, 329), false)
+, 282), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 13 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
+            #line 12 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
                                                                   Write(item.DisplayName);
 
             
@@ -100,7 +99,7 @@ WriteLiteral(">");
 WriteLiteral("</a>\r\n");
 
             
-            #line 14 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
+            #line 13 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
 
             }
         }
@@ -111,20 +110,20 @@ WriteLiteral("</a>\r\n");
             #line hidden
 WriteLiteral("</li>\r\n\r\n<li>\r\n    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 454), Tuple.Create("\"", 481)
+WriteAttribute("href", Tuple.Create(" href=\"", 407), Tuple.Create("\"", 434)
             
-            #line 21 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
-, Tuple.Create(Tuple.Create("", 461), Tuple.Create<System.Object, System.Int32>(Url.Action("Index")
+            #line 20 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
+, Tuple.Create(Tuple.Create("", 414), Tuple.Create<System.Object, System.Int32>(Url.Action("Index")
             
             #line default
             #line hidden
-, 461), false)
+, 414), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 21 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
+            #line 20 "..\..\Areas\School\Views\Student\_Ace_Layout_Nav.cshtml"
                                Write(menu != null ? menu.DisplayName : ViewBag.Title);
 
             

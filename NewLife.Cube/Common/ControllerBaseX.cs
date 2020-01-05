@@ -84,7 +84,6 @@ namespace NewLife.Cube
             if (user != null)
             {
                 // 没有菜单时不做权限控制
-                //var menu = ManageProvider.Menu;
                 var ctx = context.HttpContext;
                 if (ctx.Items["CurrentMenu"] is IMenu menu)
                 {

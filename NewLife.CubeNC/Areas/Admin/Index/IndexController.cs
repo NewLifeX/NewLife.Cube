@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices; 
+using System.Runtime.InteropServices;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -54,7 +54,7 @@ namespace NewLife.Cube.Admin.Controllers
             , ILogger<IndexController> logger) : this()
         {
             _provider = manageProvider;
-           // _applicationLifetime = appLifetime;
+            // _applicationLifetime = appLifetime;
         }
 #endif
 
@@ -109,14 +109,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Detail)]
         public ActionResult Main(String id)
         {
-            //if (id == "Restart")
-            //{
-            //    HttpRuntime.UnloadAppDomain();
-            //    id = null;
-            //}
-
             ViewBag.Act = id;
-            //ViewBag.User = ManageProvider.User;
             ViewBag.Config = SysConfig.Current;
             ViewBag.MyAsms = GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
 
@@ -182,8 +175,8 @@ namespace NewLife.Cube.Admin.Controllers
         public ActionResult Restart()
         {
             ApplicationManager.Load().Restart();
-                //_applicationLifetime.StopApplication();  
-            return JsonRefresh( "重启成功", 2 );
+            //_applicationLifetime.StopApplication();  
+            return JsonRefresh("重启成功", 2);
         }
 
         /// <summary>
