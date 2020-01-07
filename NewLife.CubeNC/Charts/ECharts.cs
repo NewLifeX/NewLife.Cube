@@ -52,21 +52,20 @@ namespace NewLife.Cube.Charts
 
         /// <summary>添加系列数据</summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="field"></param>
-        /// <param name="type"></param>
-        /// <param name="smooth"></param>
+        /// <param name="list">实体列表</param>
+        /// <param name="field">要使用数据的字段</param>
+        /// <param name="type">图表类型，默认折线图line</param>
+        /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
         /// <returns></returns>
-        public Series Add<T>(IList<T> list, FieldItem field, String type = "line", Boolean smooth = false) where T : IEntity
+        public Series Add<T>(IList<T> list, FieldItem field, String type = "line", Func<T, Object> selector = null) where T : IEntity
         {
             if (type.IsNullOrEmpty()) type = "line";
 
             var sr = new Series
             {
-                Name = field.DisplayName ?? field.Name,
+                Name = field?.DisplayName ?? field.Name,
                 Type = type,
-                Data = list.Select(e => e[field.Name]).ToArray(),
-                Smooth = smooth,
+                Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
             };
 
             Add(sr);
@@ -123,6 +122,11 @@ namespace NewLife.Cube.Charts
                     }
                 },
             };
+        }
+
+        public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IEntity
+        {
+            Legend = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();
         }
 
         /// <summary>构建选项Json</summary>

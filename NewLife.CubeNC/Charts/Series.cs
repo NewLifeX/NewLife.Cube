@@ -19,6 +19,7 @@ namespace NewLife.Cube.Charts
         /// <summary>数据</summary>
         public Object Data { get; set; }
 
+        /// <summary>折线光滑</summary>
         public Boolean Smooth { get; set; }
         #endregion
     }

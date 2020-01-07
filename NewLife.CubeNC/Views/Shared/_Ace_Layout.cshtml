@@ -8,6 +8,7 @@
     var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 
     var charts = ViewBag.Charts as ECharts[];
+    var charts2 = ViewBag.Charts2 as ECharts[];
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -50,7 +51,7 @@
     <link rel="stylesheet" href="~/Content/Cube.css?v=2.0.2017.1126">
     <!-- JQuery作为一等公民，页面内部随时可能使用 -->
     <script src="~/Content/js/jquery-2.1.3.min.js"></script>
-    @if (charts != null && charts.Length > 0)
+    @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
     {
         <script src="~/Content/echarts.min.js"></script>
     }
