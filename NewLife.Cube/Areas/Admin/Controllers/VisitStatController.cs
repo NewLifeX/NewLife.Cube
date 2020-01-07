@@ -37,57 +37,14 @@ namespace NewLife.Cube.Admin.Controllers
 #if __CORE__
             if (list.Count > 0)
             {
-                var chart = new ECharts
-                {
-                    //Title = new ChartTitle { Text = "每个页面每天的访问统计信息" },
-                    Legend = new[] { "次数", "用户", "IP", "错误" },
-                    //XAxis = list.Select(e => e.Page).ToArray(),
-                    XAxis = list.Select(e => e.Time.ToString("yy-MM-dd")).ToArray(),
-                    //YAxis = new[] { _.Times.DisplayName, _.Users.DisplayName, _.IPs.DisplayName, _.Error.DisplayName },
-                    YAxis = new { type = "value" },
+                var chart = new ECharts();
 
-                    Tooltip = new
-                    {
-                        trigger = "axis",
-                        axisPointer = new
-                        {
-                            type = "cross",
-                            label = new
-                            {
-                                backgroundColor = "#6a7985"
-                            }
-                        },
-                    },
-                };
-
-                chart.Add(new Series
-                {
-                    Name = "次数",
-                    Type = "line",
-                    Data = list.Select(e => e.Times).ToArray(),
-                    Smooth = true,
-                });
-
-                chart.Add(new Series
-                {
-                    Name = "用户",
-                    Type = "line",
-                    Data = list.Select(e => e.Users).ToArray(),
-                });
-
-                chart.Add(new Series
-                {
-                    Name = "IP",
-                    Type = "line",
-                    Data = list.Select(e => e.IPs).ToArray(),
-                });
-
-                chart.Add(new Series
-                {
-                    Name = "错误",
-                    Type = "line",
-                    Data = list.Select(e => e.Error).ToArray(),
-                });
+                chart.SetX(list, _.Time, e => e.Time.ToString("yyyy-MM-dd"));
+                chart.Add(list, _.Times, "line", true);
+                chart.Add(list, _.Users);
+                chart.Add(list, _.IPs);
+                chart.Add(list, _.Error);
+                chart.SetTooltip();
 
                 ViewBag.Charts = new[] { chart };
             }
