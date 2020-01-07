@@ -51,11 +51,7 @@ namespace NewLife.Cube
         }
 
         /// <summary>构造函数</summary>
-        public ReadOnlyEntityController()
-        {
-            var title = Entity<TEntity>.Meta.Table.DataTable.DisplayName + "管理";
-            ViewBag.Title = title;
-        }
+        public ReadOnlyEntityController() { }
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
@@ -65,6 +61,9 @@ namespace NewLife.Cube
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
 #endif
         {
+            var title = GetType().GetDisplayName() ?? typeof(TEntity).GetDisplayName() ?? Entity<TEntity>.Meta.Table.DataTable.DisplayName;
+            ViewBag.Title = title;
+
             // Ajax请求不需要设置ViewBag
             if (!Request.IsAjaxRequest())
             {

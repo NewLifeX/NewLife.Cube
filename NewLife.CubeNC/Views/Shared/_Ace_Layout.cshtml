@@ -4,6 +4,12 @@
 @{
     var set = NewLife.Cube.Setting.Current;
     var set2 = ViewBag.PageSetting as PageSetting;
+    var cfg = NewLife.Common.SysConfig.Current;
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
+    var title2 = ViewBag.Title2 as String;
+    if (!title2.IsNullOrEmpty()) { title += " - " + title2; }
 
     var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 
@@ -18,7 +24,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="新生命团队,NewLife,魔方,Cube,XCode" />
     @*上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！*@
-    <title>@ViewBag.Title - @SysConfig.Current.DisplayName</title>
+    <title>@title</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon">
 
     <!-- 页面内联样式 -->
