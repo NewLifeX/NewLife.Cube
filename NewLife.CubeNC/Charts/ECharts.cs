@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NewLife.Security;
 using NewLife.Serialization;
 using XCode;
 using XCode.Configuration;
@@ -12,7 +13,7 @@ namespace NewLife.Cube.Charts
     {
         #region 属性
         /// <summary>名称</summary>
-        public String Name { get; set; } = "c1";
+        public String Name { get; set; } = Rand.NextString(8);
 
         /// <summary>宽度。单位px，负数表示百分比，默认-100</summary>
         public Int32 Width { get; set; } = -100;
@@ -79,8 +80,24 @@ namespace NewLife.Cube.Charts
         /// <param name="selector"></param>
         public void SetX<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IEntity
         {
-            XAxis = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();
-            YAxis = new { type = "value" };
+            XAxis = new
+            {
+                data = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray()
+            };
+        }
+
+        /// <summary>设置Y轴</summary>
+        /// <param name="name"></param>
+        /// <param name="type">
+        /// 坐标轴类型。
+        /// value 数值轴，适用于连续数据。
+        /// category 类目轴，适用于离散的类目数据，为该类型时必须通过 data 设置类目数据。
+        /// time 时间轴，适用于连续的时序数据，与数值轴相比时间轴带有时间的格式化，在刻度计算上也有所不同，例如会根据跨度的范围来决定使用月，星期，日还是小时范围的刻度。
+        /// log 对数轴。适用于对数数据。
+        /// </param>
+        public void SetY(String name, String type = "value")
+        {
+            YAxis = new { name = name, type = type };
         }
 
         /// <summary>设置工具栏</summary>
