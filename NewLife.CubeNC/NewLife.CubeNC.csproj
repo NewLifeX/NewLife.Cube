@@ -152,6 +152,7 @@
     </EmbeddedResource>
     <None Include="Areas\Admin\Views\UserConnect\_List_Search.cshtml" />
     <None Include="Properties\launchSettings.json" />
+    <None Include="wwwroot\Content\echarts.min.js" />
     <None Include="wwwroot\Scripts\ApiClient.js" />
     <None Include="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
     <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
@@ -174,6 +175,9 @@
     </Content>
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="wwwroot\Content\echarts.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
