@@ -9,16 +9,24 @@
     var chartName = "chart_" + name;
     var optionName = "option_" + name;
     var setOption = $"chart_{name}.setOption(option_{name})";
+
+    var style = "";
+    if (chart.Width > 0)
+        style += $"width: {chart.Width}px;";
+    else if (chart.Width < 0)
+        style += $"width: {-chart.Width}%;";
+
+    if (chart.Height > 0)
+        style += $"height: {chart.Height}px;";
+    else if (chart.Height < 0)
+        style += $"height: {-chart.Height}%;";
+
 }
-<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
-<div id="@name" style="width: 600px;height:400px;"></div>
+<div id="@name" style="@style"></div>
 <script type="text/javascript">
-    // 基于准备好的dom，初始化echarts实例
     var @chartName = echarts.init(document.getElementById('@name'));
 
-    // 指定图表的配置项和数据
     var @optionName = @Html.Raw(chart.Build());
 
-    // 使用刚指定的配置项和数据显示图表。
     @setOption;
 </script>

@@ -7,7 +7,7 @@ namespace NewLife.Cube.Charts
     {
         #region 属性
         /// <summary>显示</summary>
-        public Boolean Show { get; set; } = true;
+        public Boolean Show { get; set; }
 
         /// <summary>一级层叠控制</summary>
         /// <remarks>
@@ -18,7 +18,7 @@ namespace NewLife.Cube.Charts
 
         /// <summary>二级层叠控制</summary>
         /// <remarks>同一个canvas（相同zlevel）上z越高约靠顶层。</remarks>
-        public Int32 Z { get; set; } = 6;
+        public Int32 Z { get; set; }
 
         /// <summary>主标题文本，'\n'指定换行</summary>
         public String Text { get; set; }
@@ -99,7 +99,5 @@ namespace NewLife.Cube.Charts
         /// </summary>
         public Object OffsetCenter { get; set; }
         #endregion
-
-
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using NewLife.Serialization;
 
 namespace NewLife.Cube.Charts
@@ -13,11 +11,17 @@ namespace NewLife.Cube.Charts
         /// <summary>名称</summary>
         public String Name { get; set; } = "c1";
 
+        /// <summary>宽度。单位px，负数表示百分比，默认-100</summary>
+        public Int32 Width { get; set; } = -100;
+
+        /// <summary>高度。单位px，负数表示百分比，默认300px</summary>
+        public Int32 Height { get; set; } = 300;
+
         /// <summary>标题。字符串或匿名对象</summary>
         public ChartTitle Title { get; set; }
 
         /// <summary>提示</summary>
-        public Object Tooltip { get; set; }
+        public Object Tooltip { get; set; } = new Object();
 
         /// <summary>提示</summary>
         public Object Legend { get; set; }
