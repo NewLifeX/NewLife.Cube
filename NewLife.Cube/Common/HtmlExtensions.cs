@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web.Mvc;
 using System.Web.Mvc.Html;
 using System.Web.Routing;
+using NewLife.Collections;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -85,17 +87,8 @@ namespace NewLife.Cube
 
             // 优先处理映射。因为映射可能是字符串
             {
-
-                try
-                {
-                    var mhs = ForMap(Html, field, entity);
-                    if (mhs != null) return mhs;
-                }
-                catch
-                {
-
-                }
-
+                var mhs = ForMap(Html, field, entity);
+                if (mhs != null) return mhs;
             }
 
             if (field.ReadOnly)
@@ -144,7 +137,9 @@ namespace NewLife.Cube
             if (map == null) return null;
 
             // 如果没有外部关联，输出数字编辑框和标签
-            if (map.Provider == null)
+            // 如果映射目标列表项过多，不能使用下拉
+            var fact = EntityFactory.CreateOperate(map.Provider.EntityType);
+            if (map.Provider == null || fact != null && fact.Count > Setting.Current.MaxDropDownList)
             {
                 var label = "&nbsp;<label class=\"\">{0}</label>".F(entity[field.Name]);
                 if (field.OriField != null) field = field.OriField;
@@ -157,18 +152,6 @@ namespace NewLife.Cube
 
             return Html.ForDropDownList(map.Name, map.Provider.GetDataSource(), entity[map.Name]);
         }
-
-        //private static MvcHtmlString ForRelation(HtmlHelper Html, FieldItem field, IEntity entity)
-        //{
-        //    var dr = field.Table.DataTable.Relations.FirstOrDefault(e => e.Column.EqualIgnoreCase(field.Name));
-        //    // 为该字段创建下拉菜单
-        //    if (dr == null) return null;
-
-        //    var rt = EntityFactory.CreateOperate(dr.RelationTable);
-        //    var list = rt.FindAllWithCache();
-        //    var data = new SelectList(list, dr.RelationColumn, rt.Master.Name, entity[field.Name]);
-        //    return Html.DropDownList(field.Name, data, field.IsNullable ? "无" : null, new { @class = "multiselect" });
-        //}
 
         /// <summary>输出编辑框</summary>
         /// <param name="Html"></param>
@@ -197,7 +180,7 @@ namespace NewLife.Cube
             var pis = value.GetType().GetProperties(true);
             pis = pis.Where(pi => pi.CanWrite).ToArray();
 
-            var sb = new StringBuilder();
+            var sb = Pool.StringBuilder.Get();
             var txt = Html.Label(name);
             foreach (var pi in pis)
             {
@@ -219,7 +202,7 @@ namespace NewLife.Cube
                 sb.AppendLine("</div>");
             }
 
-            return new MvcHtmlString(sb.ToString());
+            return new MvcHtmlString(sb.Put(true));
         }
 
         #region 基础属性
@@ -278,7 +261,7 @@ namespace NewLife.Cube
                 txt = Html.TextBox(name, value, atts);
             }
             var icog = "<div class=\"input-group\">{0}</div>";
-            var html = !String.IsNullOrWhiteSpace(ico) ? String.Format(icog, ico.ToString() + txt.ToString()) : txt.ToString();
+            var html = !String.IsNullOrWhiteSpace(ico) ? String.Format(icog, ico + txt.ToString()) : txt.ToString();
             return new MvcHtmlString(html);
         }
 
@@ -487,7 +470,7 @@ namespace NewLife.Cube
         /// <param name="Html"></param>
         /// <param name="name"></param>
         /// <param name="items"></param>
-        /// <param name="selectedValue"></param>
+        /// <param name="selectedValue">已选择项</param>
         /// <param name="optionLabel">默认空项的文本。此参数可以为 null。</param>
         /// <param name="autoPostback">自动回发</param>
         /// <returns></returns>
@@ -518,13 +501,14 @@ namespace NewLife.Cube
         /// <param name="Html"></param>
         /// <param name="name"></param>
         /// <param name="list"></param>
+        /// <param name="selectedValue">已选择项</param>
         /// <param name="optionLabel"></param>
         /// <param name="autoPostback">自动回发</param>
         /// <returns></returns>
-        public static MvcHtmlString ForDropDownList(this HtmlHelper Html, String name, IList<IEntity> list, String optionLabel = null, Boolean autoPostback = false)
+        public static MvcHtmlString ForDropDownList<T>(this HtmlHelper Html, String name, IList<T> list, Object selectedValue = null, String optionLabel = null, Boolean autoPostback = false) where T : IEntity
         {
             var entity = Html.ViewData.Model as IEntity;
-            var selectedValue = entity == null ? WebHelper.Params[name] : entity[name];
+            //var selectedValue = entity == null ? WebHelper.Params[name] : entity[name];
 
             var atts = new Dictionary<String, Object>();
             if (Setting.Current.BootstrapSelect)
@@ -536,7 +520,12 @@ namespace NewLife.Cube
             //if (autoPostback) atts.Add("onchange", "$(':submit').click();");
             if (autoPostback) atts.Add("onchange", "$(this).parents('form').submit();");
 
-            var data = new SelectList(list.ToDictionary(), "Key", "Value", selectedValue);
+            var fact = typeof(T).AsFactory();
+            var uk = fact?.Unique;
+            if (uk == null) throw new InvalidDataException($"实体类[{typeof(T).FullName}]缺少唯一主键，无法使用下拉！");
+
+            var master = fact.Master;
+            var data = new SelectList(list, uk.Name, master?.Name, selectedValue + "");
             return Html.DropDownList(name, data, optionLabel, atts);
         }
 

@@ -102,6 +102,10 @@ namespace NewLife.Cube
         [Description("下拉选择框。使用Bootstrap，美观，但有呈现方面的性能损耗")]
         public Boolean BootstrapSelect { get; set; } = true;
 
+        /// <summary>最大下拉个数。表单页关联下拉列表最大允许个数，默认50，超过时显示文本数字框</summary>
+        [Description("最大下拉个数。表单页关联下拉列表最大允许个数，默认50，超过时显示文本数字框")]
+        public Int32 MaxDropDownList { get; set; } = 50;
+
         /// <summary>强制SSL。强制使用https访问</summary>
         [Description("强制SSL。强制使用https访问")]
         public SslModes SslMode { get; set; } = SslModes.Disable;
@@ -114,7 +118,8 @@ namespace NewLife.Cube
         [Description("头像目录。设定后下载远程头像到本地")]
         public String AvatarPath { get; set; } = "..\\Avatars";
 
-        [Description("静态资源文件目录")]
+        /// <summary>静态资源目录。默认wwwroot</summary>
+        [Description("静态资源目录。默认wwwroot")]
         public String StaticPath { get; set; } = "wwwroot";
 
         ///// <summary>安全密钥。用于加密Cookie等通信内容</summary>

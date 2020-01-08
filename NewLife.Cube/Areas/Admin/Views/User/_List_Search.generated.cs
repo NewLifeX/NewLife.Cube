@@ -94,7 +94,7 @@ Write(Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class 
             #line hidden
 WriteLiteral("\r\n    <label");
 
-WriteLiteral(" for=\"RoleID\"");
+WriteLiteral(" for=\"roleId\"");
 
 WriteLiteral(" class=\"control-label\"");
 
@@ -104,7 +104,7 @@ WriteLiteral("    ");
 
             
             #line 12 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
-Write(Html.ForDropDownList("RoleID", Role.FindAllWithCache().Cast<IEntity>().ToList(), "全部", true));
+Write(Html.ForDropDownList("roleId", Role.FindAllWithCache(), page["roleId"], "全部", true));
 
             
             #line default

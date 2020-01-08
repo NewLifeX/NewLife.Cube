@@ -8,6 +8,6 @@
 }
 <div class="form-group">
     <label for="RoleID" class="control-label">班级：</label>
-    @Html.ForDropDownList("ClassID", Class.FindAllWithCache().Cast<IEntity>().ToList(), "全部", true)
+    @Html.ForDropDownList("ClassID", Class.FindAllWithCache(), page["classId"], "全部", true)
 </div>
 @*@Html.Partial("_DateRange")*@

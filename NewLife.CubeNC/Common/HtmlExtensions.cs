@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using NewLife.Collections;
 using NewLife.Reflection;
-using NewLife.Web;
 using XCode;
 using XCode.Configuration;
 
@@ -53,7 +53,7 @@ namespace NewLife.Cube
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
                     if (type.IsEnum)
-                        return Html.ForEnum(name, value, format);
+                        return Html.ForEnum(name, value ?? 0.ChangeType(type), format);
                     else
                         return Html.ForInt(name, Convert.ToInt64(value));
                 case TypeCode.String:
@@ -61,20 +61,6 @@ namespace NewLife.Cube
                 default:
                     return Html.ForObject(name, value);
             }
-        }
-
-        /// <summary>输出编辑框</summary>
-        /// <param name="Html"></param>
-        /// <param name="expression"></param>
-        /// <param name="htmlAttributes"></param>
-        /// <returns></returns>
-        public static IHtmlContent ForEditor<TModel, TProperty>(this IHtmlHelper<TModel> Html, Expression<Func<TModel, TProperty>> expression, Object htmlAttributes = null)
-        {
-            //var meta = ExpressionMetadataProvider.FromLambdaExpression(expression, Html.ViewData, Html.MetadataProvider).Metadata;
-            var name = "";
-            var pi = typeof(TModel).GetProperty(name);
-
-            return Html.ForEditor(name, Html.ViewData.Model.GetValue(pi), pi.PropertyType, null, htmlAttributes);
         }
 
         /// <summary>输出编辑框</summary>
@@ -135,34 +121,24 @@ namespace NewLife.Cube
         private static IHtmlContent ForMap(IHtmlHelper Html, FieldItem field, IEntity entity)
         {
             var map = field.Map;
-            // 为该字段创建下拉菜单
-            if (map == null || map.Provider == null) return null;
+            if (map == null) return null;
 
+            // 如果没有外部关联，输出数字编辑框和标签
             // 如果映射目标列表项过多，不能使用下拉
             var fact = EntityFactory.CreateOperate(map.Provider.EntityType);
-            if (fact != null && fact.Count > 30)
+            if (map.Provider == null || fact != null && fact.Count > Setting.Current.MaxDropDownList)
             {
-                // 输出数字编辑框和标签
-                var label = "<label class=\"\">{0}</label>".F(entity[field.Name]);
+                var label = "&nbsp;<label class=\"\">{0}</label>".F(entity[field.Name]);
                 if (field.OriField != null) field = field.OriField;
                 var mhs = Html.ForEditor(field.Name, entity[field.Name], field.Type);
                 return new HtmlString(mhs.GetString() + label);
             }
 
+            // 为该字段创建下拉菜单
+            if (map == null || map.Provider == null) return null;
+
             return Html.ForDropDownList(map.Name, map.Provider.GetDataSource(), entity[map.Name]);
         }
-
-        //private static IHtmlContent ForRelation(IHtmlHelper Html, FieldItem field, IEntity entity)
-        //{
-        //    var dr = field.Table.DataTable.Relations.FirstOrDefault(e => e.Column.EqualIgnoreCase(field.Name));
-        //    // 为该字段创建下拉菜单
-        //    if (dr == null) return null;
-
-        //    var rt = EntityFactory.CreateOperate(dr.RelationTable);
-        //    var list = rt.FindAllWithCache();
-        //    var data = new SelectList(list, dr.RelationColumn, rt.Master.Name, entity[field.Name]);
-        //    return Html.DropDownList(field.Name, data, field.IsNullable ? "无" : null, new { @class = "multiselect" });
-        //}
 
         /// <summary>输出编辑框</summary>
         /// <param name="Html"></param>
@@ -191,7 +167,7 @@ namespace NewLife.Cube
             var pis = value.GetType().GetProperties(true);
             pis = pis.Where(pi => pi.CanWrite).ToArray();
 
-            var sb = new StringBuilder();
+            var sb = Pool.StringBuilder.Get();
             var txt = Html.Label(name);
             foreach (var pi in pis)
             {
@@ -213,7 +189,7 @@ namespace NewLife.Cube
                 sb.AppendLine("</div>");
             }
 
-            return new HtmlString(sb.ToString());
+            return new HtmlString(sb.Put(true));
         }
 
         #region 基础属性
@@ -237,7 +213,7 @@ namespace NewLife.Cube
             IHtmlContent txt = null;
             if (name.EqualIgnoreCase("Pass", "Password"))
             {
-                txt = Html.Password(name, (String)value, atts);
+                txt = Html.Password(name, value, atts);
             }
             else if (name.EqualIgnoreCase("Phone"))
             {
@@ -321,23 +297,6 @@ namespace NewLife.Cube
             //var txt = BuildInput(InputType.Text, name, obj, atts);
 
             return Html.Raw(ico.GetString() + txt.GetString());
-        }
-
-        /// <summary>时间日期输出</summary>
-        /// <typeparam name="TModel"></typeparam>
-        /// <typeparam name="TProperty"></typeparam>
-        /// <param name="Html"></param>
-        /// <param name="expression"></param>
-        /// <param name="format"></param>
-        /// <param name="htmlAttributes"></param>
-        /// <returns></returns>
-        public static IHtmlContent ForDateTime<TModel, TProperty>(this IHtmlHelper<TModel> Html, Expression<Func<TModel, TProperty>> expression, String format = null, Object htmlAttributes = null)
-        {
-            //var meta = ExpressionMetadataProvider.FromLambdaExpression(expression, Html.ViewData, Html.MetadataProvider).Metadata;
-            var entity = Html.ViewData.Model as IEntity;
-            var value = (DateTime)entity[""];
-
-            return Html.ForDateTime("", value, format, htmlAttributes);
         }
 
         /// <summary>输出布尔型</summary>
@@ -481,7 +440,7 @@ namespace NewLife.Cube
         /// <param name="Html"></param>
         /// <param name="name"></param>
         /// <param name="items"></param>
-        /// <param name="selectedValue"></param>
+        /// <param name="selectedValue">已选择项</param>
         /// <param name="optionLabel">默认空项的文本。此参数可以为 null。</param>
         /// <param name="autoPostback">自动回发</param>
         /// <returns></returns>
@@ -512,13 +471,14 @@ namespace NewLife.Cube
         /// <param name="Html"></param>
         /// <param name="name"></param>
         /// <param name="list"></param>
+        /// <param name="selectedValue">已选择项</param>
         /// <param name="optionLabel"></param>
         /// <param name="autoPostback">自动回发</param>
         /// <returns></returns>
-        public static IHtmlContent ForDropDownList(this IHtmlHelper Html, String name, IList<IEntity> list, String optionLabel = null, Boolean autoPostback = false)
+        public static IHtmlContent ForDropDownList<T>(this IHtmlHelper Html, String name, IList<T> list, Object selectedValue = null, String optionLabel = null, Boolean autoPostback = false) where T : IEntity
         {
-            var entity = Html.ViewData.Model as IEntity;
-            var selectedValue = entity == null ? WebHelper2.Params[name] : entity[name];
+            //var entity = Html.ViewData.Model as IEntity;
+            //var selectedValue = entity == null ? WebHelper2.Params[name] : entity[name];
 
             var atts = new Dictionary<String, Object>();
             if (Setting.Current.BootstrapSelect)
@@ -530,7 +490,12 @@ namespace NewLife.Cube
             //if (autoPostback) atts.Add("onchange", "$(':submit').click();");
             if (autoPostback) atts.Add("onchange", "$(this).parents('form').submit();");
 
-            var data = new SelectList(list.ToDictionary(), "Key", "Value", selectedValue);
+            var fact = typeof(T).AsFactory();
+            var uk = fact?.Unique;
+            if (uk == null) throw new InvalidDataException($"实体类[{typeof(T).FullName}]缺少唯一主键，无法使用下拉！");
+
+            var master = fact.Master;
+            var data = new SelectList(list, uk.Name, master?.Name, selectedValue + "");
             return Html.DropDownList(name, data, optionLabel, atts);
         }
 
