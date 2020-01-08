@@ -64,7 +64,7 @@
             <td class="name">
                 计算机用户：
             </td>
-            <td class="value">
+            <td class="value" title="@mi.UUID">
                 @mi.Product，
                 @Environment.UserName/@Environment.MachineName
             </td>
@@ -88,7 +88,7 @@
             <td class="name">
                 操作系统：
             </td>
-            <td class="value">
+            <td class="value" title="@mi.Guid">
                 @mi.OSName @mi.OSVersion
             </td>
             <td class="name">
@@ -102,7 +102,7 @@
             <td class="name">
                 处理器：
             </td>
-            <td class="value">
+            <td class="value" title="@mi.CpuID">
                 @mi.Processor，
                 @Environment.ProcessorCount
                 核心，@mi.CpuRate.ToString("p0")，@gc
@@ -111,7 +111,7 @@
                 时间：
             </td>
             <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
-                @DateTime.Now.ToFullString()，开机@(new TimeSpan(0, 0, 0, 0, Environment.TickCount))，@mi.Temperature ℃
+                @DateTimeOffset.Now，开机@(new TimeSpan(0, 0, 0, 0, Environment.TickCount))，@mi.Temperature ℃
             </td>
         </tr>
         <tr>
@@ -148,32 +148,6 @@
             <td class="value">
                 @Cache.Count 个，可用：@((Cache.EffectivePrivateBytesLimit / 1024).ToString("n0"))KB
                 <a href="@Url.Action("Main/Cache")" target="_blank" title="点击打开Cache列表">Cache列表</a>
-            </td>
-        </tr>
-        <tr>
-            <td class="name">
-                机器用户Guid：
-            </td>
-            <td class="value">
-                @mi.Guid
-            </td>
-            <td class="name">
-                操作系统UUID：
-            </td>
-            <td class="value">
-                @mi.UUID
-            </td>
-        </tr>
-        <tr>
-            <td class="name">
-                处理器ID：
-            </td>
-            <td class="value">
-                @mi.CpuID
-            </td>
-            <td class="name">
-            </td>
-            <td class="value">
             </td>
         </tr>
     </tbody>
