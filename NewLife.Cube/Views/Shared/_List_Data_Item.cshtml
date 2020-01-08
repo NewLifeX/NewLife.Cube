@@ -6,6 +6,7 @@
     var item = pair.Second as FieldItem;
 
     var value = entity[item.Name];
+    var provider = ManageProvider.Provider;
 
     // 第二名称，去掉后面的数字，便于模式匹配
     var name2 = item.Name;
@@ -86,7 +87,7 @@ else
             }
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
-                var provider = ViewData["Provider"] as IManageProvider;
+                //var provider = ViewData["Provider"] as IManageProvider;
                 <td class="text-center">@provider.FindByID(value)</td>
             }
             else if (name2.EndsWith("Rate"))
