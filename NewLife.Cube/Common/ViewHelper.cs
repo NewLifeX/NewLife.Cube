@@ -751,7 +751,7 @@ namespace NewLife.Cube
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
 }
-@*<div class=""form - group"">
+@*<div class=""form-group"">
     @Html.ActionLink(""用户链接"", ""Index"", ""UserConnect"", null, new { @class = ""btn btn-success btn-sm"" })
     @Html.ActionLink(""用户在线"", ""Index"", ""UserOnline"", null, new { @class = ""btn btn-success btn-sm"" })
     <label for=""RoleID"" class=""control-label"">角色：</label>
@@ -768,7 +768,7 @@ namespace NewLife.Cube
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
 }
-@*<div class=""form - group"">
+@*<div class=""form-group"">
     @Html.ActionLink(""用户链接"", ""Index"", ""UserConnect"", null, new { @class = ""btn btn-success btn-sm"" })
     @Html.ActionLink(""用户在线"", ""Index"", ""UserOnline"", null, new { @class = ""btn btn-success btn-sm"" })
     <label for=""RoleID"" class=""control-label"">角色：</label>
