@@ -35,7 +35,7 @@ namespace NewLife.Cube.Admin.Controllers
         public ActionResult Index()
         {
             var list = new List<DbItem>();
-            var dir = XCode.Setting.Current.BackupPath.AsDirectory();
+            var dir = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
 
             // 读取配置文件
             foreach (var item in DAL.ConnStrs.ToArray())

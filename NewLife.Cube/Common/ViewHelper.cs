@@ -826,7 +826,7 @@ namespace NewLife.Cube
             if (user == null || user.Avatar.IsNullOrEmpty()) return null;
 
             var set = Setting.Current;
-            var av = set.AvatarPath.CombinePath(user.ID + ".png").GetFullPath();
+            var av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
 
             if (File.Exists(av)) return "/Sso/Avatar/" + user.ID;
 

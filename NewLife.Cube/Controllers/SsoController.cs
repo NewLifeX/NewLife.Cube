@@ -460,7 +460,7 @@ namespace NewLife.Cube.Controllers
 
             var set = Setting.Current;
             var av = set.AvatarPath.CombinePath(id + ".png");
-            var av2 = av.GetFullPath();
+            var av2 = av.GetBasePath();
             if (!System.IO.File.Exists(av2))
             {
                 var user = prv.Provider?.FindByID(id);

@@ -745,7 +745,7 @@ namespace NewLife.Cube
 
                 var name = fact.EntityType.Name;
                 var fileName = "{0}_{1:yyyyMMddHHmmss}.gz".F(name, DateTime.Now);
-                var bak = XCode.Setting.Current.BackupPath.CombinePath(fileName).GetFullPath();
+                var bak = NewLife.Setting.Current.BackupPath.CombinePath(fileName).GetBasePath();
                 bak.EnsureDirectory(true);
 
                 var rs = 0;
@@ -778,7 +778,7 @@ namespace NewLife.Cube
                 var name = fact.EntityType.Name;
                 var fileName = "{0}_*.gz".F(name);
 
-                var di = XCode.Setting.Current.BackupPath.AsDirectory();
+                var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
                 var fi = di?.GetFiles(fileName)?.LastOrDefault();
                 if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
 

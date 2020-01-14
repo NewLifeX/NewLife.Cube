@@ -12,7 +12,7 @@ using NewLife.Cube;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyProduct("NewLife.Cube")]
 [assembly: AssemblyCompany("新生命开发团队")]
-[assembly: AssemblyCopyright("©2002-2018 新生命开发团队 https://github.com/NewLifeX/NewLife.Cube")]
+[assembly: AssemblyCopyright("©2002-2020 新生命开发团队 https://github.com/NewLifeX/NewLife.Cube")]
 [assembly: AssemblyTrademark("四叶草")]
 [assembly: AssemblyCulture("")]
 
@@ -36,10 +36,12 @@ using NewLife.Cube;
 //
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
-[assembly: AssemblyVersion("3.0.*")]
-[assembly: AssemblyFileVersion("3.0.2020.0101")]
+[assembly: AssemblyVersion("3.1.*")]
+[assembly: AssemblyFileVersion("3.1.2020.0115")]
 
 /*
+ * v3.1.2020.0115   X组件内部目录统一使用BasePath，支持命令行参数与环境变量，便于函数计算
+ * 
  * v3.0.2019.1212   独立发布netcore版本魔方，并作为主线维护
  * 
  * v2.9.2019.1110   优化单点登录和Csv导出，界面调整

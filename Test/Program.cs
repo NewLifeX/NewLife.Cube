@@ -18,7 +18,7 @@ namespace Test
             var set = XCode.Setting.Current;
             if (set.IsNew)
             {
-                set.SQLiteDbPath = "..\\Data";
+                //set.SQLiteDbPath = "..\\Data";
                 set.SaveAsync();
             }
 
