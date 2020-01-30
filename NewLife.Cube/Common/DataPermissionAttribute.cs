@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using XCode.Membership;
 
 namespace NewLife.Cube
@@ -23,13 +21,17 @@ namespace NewLife.Cube
             SystemRoles = systemRoles;
             Expression = expression;
 
-            _srs = systemRoles.Split(',', ';');
+            //_srs = systemRoles.Split(',', ';');
         }
 
-        private String[] _srs;
+        //private String[] _srs;
         /// <summary>验证是否系统角色</summary>
         /// <param name="roles"></param>
         /// <returns></returns>
-        public Boolean Valid(IRole[] roles) => roles.Any(e => _srs.Contains(e.Name));
+        public Boolean Valid(IRole[] roles)
+        {
+            var _srs = SystemRoles.Split(',', ';');
+            return roles.Any(e => _srs.Contains(e.Name));
+        }
     }
 }
