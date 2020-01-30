@@ -10,7 +10,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>部门</summary>
     [DisplayName("部门")]
     [Area("Admin")]
-    public class DepartmentController : EntityTreeController<Department>
+    public class DepartmentController : EntityController<Department>
     {
         static DepartmentController()
         {
