@@ -120,7 +120,7 @@ namespace NewLife.Cube
 
         /// <summary>静态资源目录。默认wwwroot</summary>
         [Description("静态资源目录。默认wwwroot")]
-        public String StaticPath { get; set; } = "wwwroot";
+        public String WebRootPath { get; set; } = "wwwroot";
 
         ///// <summary>安全密钥。用于加密Cookie等通信内容</summary>
         //[Description("安全密钥。用于加密Cookie等通信内容")]

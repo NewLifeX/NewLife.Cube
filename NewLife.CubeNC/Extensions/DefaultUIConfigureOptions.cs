@@ -42,7 +42,7 @@ namespace NewLife.Cube.Extensions
 
             // 添加我们的文件提供者
             // 第二个参数指定开始查找的文件夹，比如文件都放在wwwroot，就填“wwwroot”
-            var filesProvider = new ManifestEmbeddedFileProvider(GetType().Assembly, Setting.Current.StaticPath);
+            var filesProvider = new ManifestEmbeddedFileProvider(GetType().Assembly, Setting.Current.WebRootPath);
             options.FileProvider = new CompositeFileProvider(options.FileProvider, filesProvider);
         }
     }
@@ -59,7 +59,7 @@ namespace NewLife.Cube.Extensions
             var root = env.WebRootPath;
             if (!Directory.Exists(root.CombinePath("Content")))
             {
-                root = Setting.Current.StaticPath.GetFullPath();
+                root = Setting.Current.WebRootPath.GetFullPath();
                 if (Directory.Exists(root))
                 {
                     env.WebRootPath = root;

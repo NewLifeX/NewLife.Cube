@@ -91,7 +91,7 @@ namespace NewLife.Cube
         {
             // 释放ico图标
             var ico = "favicon.ico";
-            var wwwroot = Setting.Current.StaticPath;
+            var wwwroot = Setting.Current.WebRootPath;
             var ico2 = wwwroot.CombinePath(ico).GetFullPath();
             if (!File.Exists(ico2))
             {
@@ -114,7 +114,7 @@ namespace NewLife.Cube
             }
 
             // 检查魔方样式
-            var content = Setting.Current.StaticPath.CombinePath("Content");
+            var content = Setting.Current.WebRootPath.CombinePath("Content");
             var js = content.CombinePath("Cube.js").GetFullPath();
             var css = content.CombinePath("Cube.css").GetFullPath();
             if (File.Exists(js) && File.Exists(css))

@@ -860,7 +860,7 @@ namespace NewLife.Cube
             {
                 var p = item.TrimStart("/");
 #if __CORE__
-                p = Setting.Current.StaticPath.CombinePath(p);
+                p = Setting.Current.WebRootPath.CombinePath(p);
 #endif
                 var ico = p.AsDirectory().GetAllFiles(name + ".*").FirstOrDefault();
                 if (ico != null && ico.Exists)
