@@ -165,17 +165,8 @@ namespace NewLife.Cube
             //Session[CacheKey] = p;
 
             // 数据权限
-            var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
-            if (att != null)
-            {
-                // 判断系统角色
-                var user = ManageProvider.User;
-                if (user != null && (user.Roles.Any(e => e.IsSystem) || !att.Valid(user.Roles)))
-                {
-                    // 注入
-                    p.State = CreateWhere(att.Expression);
-                }
-            }
+            var builder = CreateWhere();
+            if (builder != null) p.State = builder;
 
             return Search(p);
         }
@@ -216,32 +207,28 @@ namespace NewLife.Cube
             if (entity != null)
             {
                 // 数据权限
-                var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
-                if (att != null)
-                {
-                    // 判断系统角色
-                    var user = ManageProvider.User;
-                    if (user != null && (user.Roles.Any(e => e.IsSystem) || !att.Valid(user.Roles)))
-                    {
-                        // 判断
-                        var builder = CreateWhere(att.Expression);
-                        if (!builder.Eval(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
-                    }
-                }
+                var builder = CreateWhere();
+                if (builder != null && !builder.Eval(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
             }
 
             return entity;
         }
 
         /// <summary>创建查询条件构造器，主要用于数据权限</summary>
-        /// <param name="expression">权限表达式</param>
         /// <returns></returns>
-        protected virtual WhereBuilder CreateWhere(String expression)
+        protected virtual WhereBuilder CreateWhere()
         {
+            var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
+            if (att == null) return null;
+
+            // 判断系统角色
+            var user = ManageProvider.User;
+            if (user == null || user.Roles.Any(e => e.IsSystem) || att.Valid(user.Roles)) return null;
+
             var builder = new WhereBuilder
             {
                 Factory = Factory,
-                Expression = expression,
+                Expression = att.Expression,
 #if __CORE__
                 //Data = Session,
 #endif
