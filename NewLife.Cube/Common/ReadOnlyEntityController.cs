@@ -166,7 +166,11 @@ namespace NewLife.Cube
 
             // 数据权限
             var builder = CreateWhere();
-            if (builder != null) p.State = builder;
+            if (builder != null)
+            {
+                builder.Data2 = p;
+                p.State = builder;
+            }
 
             return Search(p);
         }

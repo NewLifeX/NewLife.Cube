@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
@@ -10,7 +12,7 @@ using NewLife.Data;
 namespace NewLife.Web
 {
     /// <summary>分页器。包含分页排序参数，支持构造Url的功能</summary>
-    public class Pager : PageParameter
+    public class Pager : PageParameter, IExtend
     {
         #region 名称
         /// <summary>名称类。用户可根据需要修改Url参数名</summary>
@@ -187,6 +189,15 @@ namespace NewLife.Web
 
             return name;
         }
+        #endregion
+
+        #region IExtend接口
+        /// <summary>参数集合</summary>
+        [XmlIgnore, ScriptIgnore]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public IDictionary<String, Object> Items => Params.ToDictionary(e => e.Key, e => (Object)e.Value);
+
+        Object IExtend.this[String key] { get => Params[key]; set => Params[key] = value == null ? null : value + ""; }
         #endregion
     }
 }
