@@ -45,7 +45,7 @@ namespace NewLife.Cube
             var url = Request.UrlReferrer + "";
 #endif
 
-            var entity = Find(id);
+            var entity = FindData(id);
             Valid(entity, DataObjectMethodType.Delete, true);
 
             OnDelete(entity);
@@ -163,7 +163,7 @@ namespace NewLife.Cube
         [DisplayName("更新{type}")]
         public virtual ActionResult Edit(String id)
         {
-            var entity = Find(id);
+            var entity = FindData(id);
             if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
 
             // 验证数据权限

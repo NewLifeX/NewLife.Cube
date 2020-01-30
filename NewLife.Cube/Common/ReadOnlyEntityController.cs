@@ -19,6 +19,7 @@ using System.Xml.Serialization;
 using System.IO.Compression;
 using NewLife.Log;
 using XCode.Model;
+using NewLife.Data;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -154,7 +155,7 @@ namespace NewLife.Cube
             return Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
         }
 
-        /// <summary>搜索数据</summary>
+        /// <summary>搜索数据，支持数据权限</summary>
         /// <param name="p"></param>
         /// <returns></returns>
         protected IEnumerable<TEntity> SearchData(Pager p)
@@ -169,7 +170,7 @@ namespace NewLife.Cube
             {
                 // 判断系统角色
                 var user = ManageProvider.User;
-                if (user != null && !att.Valid(user.Roles))
+                if (user != null && (user.Roles.Any(e => e.IsSystem) || !att.Valid(user.Roles)))
                 {
                     // 注入
                     p.State = CreateWhere(att.Expression);
@@ -205,6 +206,33 @@ namespace NewLife.Cube
             return Entity<TEntity>.FindByKeyForEdit(key);
         }
 
+        /// <summary>查找单行数据，并判断数据权限</summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected TEntity FindData(Object key)
+        {
+            // 先查出来，再判断数据权限
+            var entity = Find(key);
+            if (entity != null)
+            {
+                // 数据权限
+                var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
+                if (att != null)
+                {
+                    // 判断系统角色
+                    var user = ManageProvider.User;
+                    if (user != null && (user.Roles.Any(e => e.IsSystem) || !att.Valid(user.Roles)))
+                    {
+                        // 判断
+                        var builder = CreateWhere(att.Expression);
+                        if (!builder.Eval(entity)) throw new InvalidOperationException($"非法访问数据[{key}]");
+                    }
+                }
+            }
+
+            return entity;
+        }
+
         /// <summary>创建查询条件构造器，主要用于数据权限</summary>
         /// <param name="expression">权限表达式</param>
         /// <returns></returns>
@@ -212,14 +240,33 @@ namespace NewLife.Cube
         {
             var builder = new WhereBuilder
             {
+                Factory = Factory,
                 Expression = expression,
 #if __CORE__
-                Data = Session,
+                //Data = Session,
 #endif
             };
+#if __CORE__
+            builder.SetData(Session);
+#else
+            builder.Data = new SessionExtend { Session = Session };
+#endif
 
             return builder;
         }
+
+#if !__CORE__
+        class SessionExtend : IExtend
+        {
+            public HttpSessionStateBase Session { get; set; }
+
+            public Object this[String key]
+            {
+                get => Session[key];
+                set => Session[key] = value;
+            }
+        }
+#endif
 
         /// <summary>获取选中键</summary>
         /// <returns></returns>
@@ -410,7 +457,7 @@ namespace NewLife.Cube
         [DisplayName("查看{type}")]
         public virtual ActionResult Detail(String id)
         {
-            var entity = Find(id);
+            var entity = FindData(id);
             if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
 
             // 验证数据权限
