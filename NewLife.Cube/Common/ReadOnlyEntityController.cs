@@ -18,6 +18,7 @@ using System.IO;
 using System.Xml.Serialization;
 using System.IO.Compression;
 using NewLife.Log;
+using XCode.Model;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -150,11 +151,32 @@ namespace NewLife.Cube
         /// <returns></returns>
         protected virtual IEnumerable<TEntity> Search(Pager p)
         {
+            return Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
+        }
+
+        /// <summary>搜索数据</summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        protected IEnumerable<TEntity> SearchData(Pager p)
+        {
             // 缓存数据，用于后续导出
             //SetSession(CacheKey, p);
-            Session[CacheKey] = p;
+            //Session[CacheKey] = p;
 
-            return Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
+            // 数据权限
+            var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
+            if (att != null)
+            {
+                // 判断系统角色
+                var user = ManageProvider.User;
+                if (user != null && !att.Valid(user.Roles))
+                {
+                    // 注入
+                    p.State = CreateWhere(att.Expression);
+                }
+            }
+
+            return Search(p);
         }
 
         /// <summary>查找单行数据</summary>
@@ -183,6 +205,22 @@ namespace NewLife.Cube
             return Entity<TEntity>.FindByKeyForEdit(key);
         }
 
+        /// <summary>创建查询条件构造器，主要用于数据权限</summary>
+        /// <param name="expression">权限表达式</param>
+        /// <returns></returns>
+        protected virtual WhereBuilder CreateWhere(String expression)
+        {
+            var builder = new WhereBuilder
+            {
+                Expression = expression,
+#if __CORE__
+                Data = Session,
+#endif
+            };
+
+            return builder;
+        }
+
         /// <summary>获取选中键</summary>
         /// <returns></returns>
         protected virtual String[] SelectKeys => GetRequest("Keys").Split(",");
@@ -199,7 +237,7 @@ namespace NewLife.Cube
                 PageIndex = 1,
                 PageSize = 1,
             };
-            Search(p);
+            SearchData(p);
             p.PageSize = 20_000;
 
             //!!! 数据量很大，且有时间条件时，采用时间分片导出。否则统一分页导出
@@ -255,7 +293,7 @@ namespace NewLife.Cube
 #endif
                 if (p.PageSize > max) p.PageSize = max;
 
-                var list = Search(p);
+                var list = SearchData(p);
 
                 var count = list.Count();
                 if (count == 0) break;
@@ -314,7 +352,7 @@ namespace NewLife.Cube
                 p["dtStart"] = dt.ToFullString();
                 p["dtEnd"] = dt2.ToFullString();
 
-                var list = Search(p);
+                var list = SearchData(p);
 
                 var count = list.Count();
                 //if (count == 0) break;
@@ -357,7 +395,7 @@ namespace NewLife.Cube
             // 需要总记录数来分页
             p.RetrieveTotalCount = true;
 
-            var list = Search(p);
+            var list = SearchData(p);
 
             // Json输出
             if (IsJsonRequest) return Json(0, null, list, new { pager = p });
@@ -419,7 +457,7 @@ namespace NewLife.Cube
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
 
-                var list = Search(p);
+                var list = SearchData(p);
 
                 // Json输出
                 return Json(0, null, list, new { pager = p });
@@ -450,7 +488,7 @@ namespace NewLife.Cube
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
 
-                var list = Search(p) as IList<TEntity>;
+                var list = SearchData(p) as IList<TEntity>;
 
                 var rs = new Root { Result = false, Data = list, Pager = p };
                 xml = rs.ToXml(null, false, true);
@@ -587,7 +625,7 @@ namespace NewLife.Cube
                     PageSize = 1,
                     RetrieveTotalCount = true
                 };
-                Search(p);
+                SearchData(p);
 
                 // 超过一万行
                 if (p.TotalCount > 10_000) buffer = false;
@@ -672,7 +710,7 @@ namespace NewLife.Cube
                     PageSize = 1,
                     RetrieveTotalCount = true
                 };
-                Search(p);
+                SearchData(p);
 
                 // 超过一万行
                 if (p.TotalCount > 10_000) buffer = false;

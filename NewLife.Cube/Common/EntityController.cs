@@ -301,7 +301,7 @@ namespace NewLife.Cube
                 // 不要查记录数
                 p.RetrieveTotalCount = false;
 
-                var list = Search(p).ToList();
+                var list = SearchData(p).ToList();
                 count += list.Count;
                 //list.Delete();
                 using (var tran = Entity<TEntity>.Meta.CreateTrans())

@@ -12,6 +12,7 @@ using XLog = XCode.Membership.Log;
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>审计日志控制器</summary>
+    [DataPermission("管理员", "CreateUserID={$Admin.Id}")]
     [DisplayName("审计日志")]
     [Description("系统内重要操作均记录日志，便于审计。任何人都不能删除、修改或伪造操作日志。")]
     [Area("Admin")]
@@ -51,24 +52,6 @@ namespace NewLife.Cube.Admin.Controllers
                     var exp = XLog._.ID >= id - range & XLog._.ID < id + range;
                     return XLog.FindAll(exp, p);
                 }
-            }
-
-            // 数据权限
-            var user = ManageProvider.User;
-            if (!user.Roles.Any(e => e.IsSystem))
-            {
-                var dic = new Dictionary<String, Object>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["user"] = user
-                };
-                var builder = new WhereBuilder
-                {
-                    Expression = "CreateUserID={$user.Id}",
-                    Data = dic,
-                };
-
-                // 注入
-                p.State = builder;
             }
 
             return XLog.Search(key, userid, category, start, end, p);
