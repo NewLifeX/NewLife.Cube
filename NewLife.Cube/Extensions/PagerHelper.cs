@@ -110,7 +110,7 @@ namespace NewLife.Cube
             foreach (var kv in dic)
             {
                 var value = HttpUtility.UrlEncode(kv.Value);
-                var key = HttpUtility.UrlEncode(kv.Key); ;
+                var key = HttpUtility.UrlEncode(kv.Key);
 
                 ndic.Add(key, value);
             }

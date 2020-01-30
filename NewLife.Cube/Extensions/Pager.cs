@@ -108,16 +108,28 @@ namespace NewLife.Web
         /// <param name="where">查询条件，不包含排序和分页</param>
         /// <param name="order">排序</param>
         /// <param name="page">分页</param>
+        /// <param name="excludes">要排除的参数</param>
         /// <returns></returns>
-        public virtual StringBuilder GetBaseUrl(Boolean where, Boolean order, Boolean page)
+        public virtual StringBuilder GetBaseUrl(Boolean where, Boolean order, Boolean page, String[] excludes = null)
         {
             var sb = new StringBuilder();
             var dic = Params;
-            // 过滤
-            dic = PagerHelper.FilterSpecialChar(dic);
+            //// 过滤
+            //dic = PagerHelper.FilterSpecialChar(dic);
 
             // 先构造基本条件，再排序到分页
-            if (where) sb.UrlParamsExcept(dic, _.Sort, _.Desc, _.PageIndex, _.PageSize);
+            if (where)
+            {
+                var ex = new List<String>
+                {
+                    _.Sort,
+                    _.Desc,
+                    _.PageIndex,
+                    _.PageSize,
+                };
+                if (excludes != null && excludes.Length > 0) ex.AddRange(excludes);
+                sb.UrlParamsExcept(dic, ex.ToArray());
+            }
             if (order) sb.UrlParams(dic, _.Sort, _.Desc);
             if (page) sb.UrlParams(dic, _.PageIndex, _.PageSize);
 

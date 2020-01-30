@@ -241,7 +241,7 @@ namespace NewLife.Web
             if (name.IsNullOrWhiteSpace()) return sb;
 
             // 必须注意，value可能是时间类型
-            return UrlParam(sb, "{0}={1}".F(name, value));
+            return UrlParam(sb, "{0}={1}".F(HttpUtility.UrlEncode(name), HttpUtility.UrlEncode("{0}".F(value))));
         }
 
         /// <summary>把一个参数字典追加Url参数，指定包含的参数</summary>
@@ -253,7 +253,7 @@ namespace NewLife.Web
         {
             foreach (var item in pms)
             {
-                if (item.Key.EqualIgnoreCase(includes))
+                if (!item.Value.IsNullOrEmpty() && item.Key.EqualIgnoreCase(includes))
                     sb.UrlParam(item.Key, item.Value);
             }
             return sb;
@@ -268,7 +268,7 @@ namespace NewLife.Web
         {
             foreach (var item in pms)
             {
-                if (!item.Key.EqualIgnoreCase(excludes))
+                if (!item.Value.IsNullOrEmpty() && !item.Key.EqualIgnoreCase(excludes))
                     sb.UrlParam(item.Key, item.Value);
             }
             return sb;

@@ -50,6 +50,9 @@ namespace ASP
     //var name = fmt == "yyyy-MM-dd" ? "日期" : "时间";
     var p = ViewBag.Page as Pager;
 
+    var dtStart = p["dtStart"].ToDateTime();
+    var dtEnd = p["dtEnd"].ToDateTime();
+
             
             #line default
             #line hidden
@@ -63,7 +66,60 @@ WriteLiteral("\r\n    <div");
 
 WriteLiteral(" class=\"input-group\"");
 
-WriteLiteral(">\r\n        <span");
+WriteLiteral(">\r\n");
+
+            
+            #line 13 "..\..\Views\Shared\_DateRange.cshtml"
+        
+            
+            #line default
+            #line hidden
+            
+            #line 13 "..\..\Views\Shared\_DateRange.cshtml"
+         if (formatStr == "yyyy-MM-dd" && (dtStart.Year > 2000 || dtEnd.Year > 2000))
+        {
+            var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
+            if (dtStart.Year > 2000) { url.UrlParam("dtStart", dtStart.AddDays(-1).ToString("yyyy-MM-dd")); }
+            if (dtEnd.Year > 2000) { url.UrlParam("dtEnd", dtEnd.AddDays(-1).ToString("yyyy-MM-dd")); }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            <span");
+
+WriteLiteral(" class=\"input-group-addon\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 851), Tuple.Create("\"", 873)
+, Tuple.Create(Tuple.Create("", 858), Tuple.Create("?", 858), true)
+            
+            #line 18 "..\..\Views\Shared\_DateRange.cshtml"
+, Tuple.Create(Tuple.Create("", 859), Tuple.Create<System.Object, System.Int32>(Html.Raw(url)
+            
+            #line default
+            #line hidden
+, 859), false)
+);
+
+WriteLiteral(" title=\"前一天\"");
+
+WriteLiteral("><i");
+
+WriteLiteral(" class=\"fa fa-calendar\"");
+
+WriteLiteral("></i></a></span>\r\n");
+
+            
+            #line 19 "..\..\Views\Shared\_DateRange.cshtml"
+        }
+        else
+        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            <span");
 
 WriteLiteral(" class=\"input-group-addon\"");
 
@@ -71,30 +127,39 @@ WriteLiteral("><i");
 
 WriteLiteral(" class=\"fa fa-calendar\"");
 
-WriteLiteral("></i></span>\r\n        <input");
+WriteLiteral("></i></span>\r\n");
+
+            
+            #line 23 "..\..\Views\Shared\_DateRange.cshtml"
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        <input");
 
 WriteLiteral(" name=\"dtStart\"");
 
 WriteLiteral(" id=\"dtStart\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 437), Tuple.Create("\"", 458)
+WriteAttribute("value", Tuple.Create(" value=\"", 1102), Tuple.Create("\"", 1123)
             
-            #line 11 "..\..\Views\Shared\_DateRange.cshtml"
-, Tuple.Create(Tuple.Create("", 445), Tuple.Create<System.Object, System.Int32>(p["dtStart"]
+            #line 24 "..\..\Views\Shared\_DateRange.cshtml"
+, Tuple.Create(Tuple.Create("", 1110), Tuple.Create<System.Object, System.Int32>(p["dtStart"]
             
             #line default
             #line hidden
-, 445), false)
+, 1110), false)
 );
 
-WriteAttribute("dateformat", Tuple.Create(" dateformat=\"", 459), Tuple.Create("\"", 482)
+WriteAttribute("dateformat", Tuple.Create(" dateformat=\"", 1124), Tuple.Create("\"", 1147)
             
-            #line 11 "..\..\Views\Shared\_DateRange.cshtml"
-, Tuple.Create(Tuple.Create("", 472), Tuple.Create<System.Object, System.Int32>(formatStr
+            #line 24 "..\..\Views\Shared\_DateRange.cshtml"
+, Tuple.Create(Tuple.Create("", 1137), Tuple.Create<System.Object, System.Int32>(formatStr
             
             #line default
             #line hidden
-, 472), false)
+, 1137), false)
 );
 
 WriteLiteral(" class=\"form-control form_datetime\"");
@@ -105,13 +170,73 @@ WriteLiteral(" />\r\n    </div>\r\n</div>\r\n<div");
 
 WriteLiteral(" class=\"form-group\"");
 
-WriteLiteral(">\r\n    <label");
+WriteLiteral(">\r\n");
+
+            
+            #line 28 "..\..\Views\Shared\_DateRange.cshtml"
+    
+            
+            #line default
+            #line hidden
+            
+            #line 28 "..\..\Views\Shared\_DateRange.cshtml"
+     if (formatStr == "yyyy-MM-dd" && (dtStart.Year > 2000 || dtEnd.Year > 2000))
+    {
+        var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
+        if (dtStart.Year > 2000) { url.UrlParam("dtStart", dtStart.AddDays(1).ToString("yyyy-MM-dd")); }
+        if (dtEnd.Year > 2000) { url.UrlParam("dtEnd", dtEnd.AddDays(1).ToString("yyyy-MM-dd")); }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        <label");
 
 WriteLiteral(" for=\"dtEnd\"");
 
 WriteLiteral(" class=\"control-label\"");
 
-WriteLiteral(">~</label>\r\n    <div");
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 1681), Tuple.Create("\"", 1703)
+, Tuple.Create(Tuple.Create("", 1688), Tuple.Create("?", 1688), true)
+            
+            #line 33 "..\..\Views\Shared\_DateRange.cshtml"
+, Tuple.Create(Tuple.Create("", 1689), Tuple.Create<System.Object, System.Int32>(Html.Raw(url)
+            
+            #line default
+            #line hidden
+, 1689), false)
+);
+
+WriteLiteral(" title=\"后一天\"");
+
+WriteLiteral(">~</a></label>\r\n");
+
+            
+            #line 34 "..\..\Views\Shared\_DateRange.cshtml"
+    }
+    else
+    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        <label");
+
+WriteLiteral(" for=\"dtEnd\"");
+
+WriteLiteral(" class=\"control-label\"");
+
+WriteLiteral(">~</label>\r\n");
+
+            
+            #line 38 "..\..\Views\Shared\_DateRange.cshtml"
+    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <div");
 
 WriteLiteral(" class=\"input-group\"");
 
@@ -123,24 +248,24 @@ WriteLiteral(" name=\"dtEnd\"");
 
 WriteLiteral(" id=\"dtEnd\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 796), Tuple.Create("\"", 815)
+WriteAttribute("value", Tuple.Create(" value=\"", 1975), Tuple.Create("\"", 1994)
             
-            #line 18 "..\..\Views\Shared\_DateRange.cshtml"
-, Tuple.Create(Tuple.Create("", 804), Tuple.Create<System.Object, System.Int32>(p["dtEnd"]
+            #line 41 "..\..\Views\Shared\_DateRange.cshtml"
+, Tuple.Create(Tuple.Create("", 1983), Tuple.Create<System.Object, System.Int32>(p["dtEnd"]
             
             #line default
             #line hidden
-, 804), false)
+, 1983), false)
 );
 
-WriteAttribute("dateformat", Tuple.Create(" dateformat=\"", 816), Tuple.Create("\"", 839)
+WriteAttribute("dateformat", Tuple.Create(" dateformat=\"", 1995), Tuple.Create("\"", 2018)
             
-            #line 18 "..\..\Views\Shared\_DateRange.cshtml"
-, Tuple.Create(Tuple.Create("", 829), Tuple.Create<System.Object, System.Int32>(formatStr
+            #line 41 "..\..\Views\Shared\_DateRange.cshtml"
+, Tuple.Create(Tuple.Create("", 2008), Tuple.Create<System.Object, System.Int32>(formatStr
             
             #line default
             #line hidden
-, 829), false)
+, 2008), false)
 );
 
 WriteLiteral(" class=\"form-control form_datetime\"");

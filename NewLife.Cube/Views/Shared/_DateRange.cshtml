@@ -3,16 +3,39 @@
     var formatStr = !fmt.IsNullOrEmpty() ? fmt : "yyyy-MM-dd";
     //var name = fmt == "yyyy-MM-dd" ? "日期" : "时间";
     var p = ViewBag.Page as Pager;
+
+    var dtStart = p["dtStart"].ToDateTime();
+    var dtEnd = p["dtEnd"].ToDateTime();
 }
 <div class="form-group">
     @*<label for="dtStart" class="control-label">@name：</label>*@
     <div class="input-group">
-        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+        @if (formatStr == "yyyy-MM-dd" && (dtStart.Year > 2000 || dtEnd.Year > 2000))
+        {
+            var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
+            if (dtStart.Year > 2000) { url.UrlParam("dtStart", dtStart.AddDays(-1).ToString("yyyy-MM-dd")); }
+            if (dtEnd.Year > 2000) { url.UrlParam("dtEnd", dtEnd.AddDays(-1).ToString("yyyy-MM-dd")); }
+            <span class="input-group-addon"><a href="?@Html.Raw(url)" title="前一天"><i class="fa fa-calendar"></i></a></span>
+        }
+        else
+        {
+            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+        }
         <input name="dtStart" id="dtStart" value="@p["dtStart"]" dateformat="@formatStr" class="form-control form_datetime" autocomplete="off" />
     </div>
 </div>
 <div class="form-group">
-    <label for="dtEnd" class="control-label">~</label>
+    @if (formatStr == "yyyy-MM-dd" && (dtStart.Year > 2000 || dtEnd.Year > 2000))
+    {
+        var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
+        if (dtStart.Year > 2000) { url.UrlParam("dtStart", dtStart.AddDays(1).ToString("yyyy-MM-dd")); }
+        if (dtEnd.Year > 2000) { url.UrlParam("dtEnd", dtEnd.AddDays(1).ToString("yyyy-MM-dd")); }
+        <label for="dtEnd" class="control-label"><a href="?@Html.Raw(url)" title="后一天">~</a></label>
+    }
+    else
+    {
+        <label for="dtEnd" class="control-label">~</label>
+    }
     <div class="input-group">
         @*<span class="input-group-addon"><i class="fa fa-calendar"></i></span>*@
         <input name="dtEnd" id="dtEnd" value="@p["dtEnd"]" dateformat="@formatStr" class="form-control form_datetime" autocomplete="off" />
