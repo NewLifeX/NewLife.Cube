@@ -858,7 +858,11 @@ namespace NewLife.Cube
             var paths = new[] { "/Content/images/logo/", "/Content/Logo/" };
             foreach (var item in paths)
             {
-                var ico = item.TrimStart("/").AsDirectory().GetAllFiles(name + ".*").FirstOrDefault();
+                var p = item.TrimStart("/");
+#if __CORE__
+                p = Setting.Current.StaticPath.CombinePath(p);
+#endif
+                var ico = p.AsDirectory().GetAllFiles(name + ".*").FirstOrDefault();
                 if (ico != null && ico.Exists)
                 {
                     logo = item + ico.Name;
