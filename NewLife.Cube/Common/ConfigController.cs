@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System;
 using NewLife.Xml;
+using NewLife.Configuration;
+using NewLife.Reflection;
 #if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -11,24 +13,26 @@ using System.Web.Mvc;
 namespace NewLife.Cube
 {
     /// <summary>设置控制器</summary>
-    public class ConfigController<TConfig> : ObjectController<TConfig> where TConfig : XmlConfig<TConfig>, new()
+    public class ConfigController<TConfig> : ObjectController<TConfig> where TConfig : Config<TConfig>, new()
     {
         /// <summary>要展现和修改的对象</summary>
         protected override TConfig Value
         {
             get
             {
-                return XmlConfig<TConfig>.Current;
+                return Config<TConfig>.Current;
             }
             set
             {
                 if (value != null)
                 {
-                    var cfg = XmlConfig<TConfig>.Current;
-                    value.ConfigFile = cfg.ConfigFile;
-                    value.Save();
+                    var cfg = Config<TConfig>.Current;
+                    //value.ConfigFile = cfg.ConfigFile;
+                    //value.Save();
+                    cfg.Copy(value);
+                    cfg.Save();
                 }
-                XmlConfig<TConfig>.Current = value;
+                //Config<TConfig>.Current = value;
             }
         }
 
@@ -40,8 +44,8 @@ namespace NewLife.Cube
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
 #endif
         {
-            var fi = XmlConfig<TConfig>._.ConfigFile;
-            if (fi.IsNullOrEmpty() || !fi.AsFile().Exists) throw new Exception("无法找到配置文件 {0}".F(fi));
+            //var fi = XmlConfig<TConfig>._.ConfigFile;
+            //if (fi.IsNullOrEmpty() || !fi.AsFile().Exists) throw new Exception("无法找到配置文件 {0}".F(fi));
 
             var bs = this.Bootstrap();
             bs.MaxColumn = 1;

@@ -654,7 +654,9 @@ namespace NewLife.Cube
             }
 
             // 要导出的数据超大时，启用流式输出
+#if !__CORE__
             var buffer = true;
+#endif
             if (Factory.Count > 100_000)
             {
                 var p = Session[CacheKey] as Pager;
@@ -665,8 +667,10 @@ namespace NewLife.Cube
                 };
                 SearchData(p);
 
+#if !__CORE__
                 // 超过一万行
                 if (p.TotalCount > 10_000) buffer = false;
+#endif
             }
 
             SetAttachment(null, ".xls", true);
@@ -738,8 +742,10 @@ namespace NewLife.Cube
             // 准备需要输出的列
             var fs = Factory.Fields.ToList();
 
+#if !__CORE__
             // 要导出的数据超大时，启用流式输出
             var buffer = true;
+#endif
             if (Factory.Count > 100_000)
             {
                 var p = Session[CacheKey] as Pager;
@@ -750,8 +756,10 @@ namespace NewLife.Cube
                 };
                 SearchData(p);
 
+#if !__CORE__
                 // 超过一万行
                 if (p.TotalCount > 10_000) buffer = false;
+#endif
             }
 
             var name = GetType().Name.TrimEnd("Controller");

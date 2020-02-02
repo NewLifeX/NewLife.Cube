@@ -1,0 +1,13 @@
+{
+    "OSName": "Windows 10 企业版",
+    "OSVersion": "10.0.19041.0",
+    "Product": "To be filled by O.E.M.",
+    "Processor": "AMD FX(tm)-8300 Eight-Core Processor           ",
+    "CpuID": "178BFBFF00600F20",
+    "UUID": "03000200-0400-0500-0006-000700080009",
+    "Guid": "",
+    "Memory": 8572125184,
+    "AvailableMemory": 873910272,
+    "CpuRate": 0.7143994,
+    "Temperature": 0
+}

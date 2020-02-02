@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using NewLife.Xml;
+using NewLife.Configuration;
 
 namespace NewLife.Cube
 {
@@ -22,8 +22,8 @@ namespace NewLife.Cube
 
     /// <summary>魔方设置</summary>
     [DisplayName("魔方设置")]
-    [XmlConfigFile(@"Config\Cube.config", 15000)]
-    public class Setting : XmlConfig<Setting>
+    [Config("Cube")]
+    public class Setting : Config<Setting>
     {
         #region 属性
         /// <summary>是否启用调试。默认为不启用</summary>
