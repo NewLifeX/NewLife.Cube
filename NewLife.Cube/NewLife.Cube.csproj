@@ -359,6 +359,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Index.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Shared\_Enable.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Enable.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Shared\_Form_Body.generated.cs">
       <DependentUpon>_Form_Body.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -776,6 +781,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Views\Shared\_Enable.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Enable.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Views\Shared\_Form_Group.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>

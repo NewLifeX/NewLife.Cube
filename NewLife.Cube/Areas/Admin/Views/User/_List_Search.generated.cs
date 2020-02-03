@@ -111,6 +111,15 @@ Write(Html.ForDropDownList("roleId", Role.FindAllWithCache(), page["roleId"], "å
             #line hidden
 WriteLiteral("\r\n</div>\r\n");
 
+            
+            #line 14 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
+Write(Html.Partial("_Enable"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n");
+
         }
     }
 }

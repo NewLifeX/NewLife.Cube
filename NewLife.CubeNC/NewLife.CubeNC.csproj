@@ -177,6 +177,10 @@
     <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Shared\_Enable.cshtml">
+      <LastGenOutput>_Enable.generated.cs</LastGenOutput>
+      <Generator>RazorGenerator</Generator>
+    </Content>
     <Content Update="wwwroot\Content\echarts.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

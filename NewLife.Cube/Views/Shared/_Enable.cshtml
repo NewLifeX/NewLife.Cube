@@ -1,0 +1,15 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using System.Linq;
+@{
+    var page = ViewBag.Page as Pager;
+
+    var dic = new Dictionary<Int32, String>();
+    dic.Add(1, "启用");
+    dic.Add(0, "禁用");
+}
+<div class="form-group">
+    <label for="enable" class="control-label">状态：</label>
+    @Html.ForDropDownList("enable", dic, page["enable"], "全部", true)
+</div>
