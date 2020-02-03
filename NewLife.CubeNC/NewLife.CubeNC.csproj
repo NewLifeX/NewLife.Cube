@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Admin\Controllers\AppController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Admin\Controllers\AppLogController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AreaController.cs" Link="Areas\Admin\Controllers\AreaController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Controllers\CoreController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Controllers\CubeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DbController.cs" Link="Areas\Admin\Controllers\DbController.cs" />

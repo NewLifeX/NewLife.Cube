@@ -55,10 +55,12 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             var enable = p["enable"]?.ToBoolean();
+            var start = p["dtStart"].ToDateTime();
+            var end = p["dtEnd"].ToDateTime();
 
             //p.RetrieveState = true;
 
-            return UserX.Search(p["Q"], p["RoleID"].ToInt(-1), enable, p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p);
+            return UserX.Search(p["Q"], p["RoleID"].ToInt(-1), enable, start, end, p);
         }
 
         /// <summary>表单页视图。</summary>
