@@ -46,9 +46,9 @@ namespace NewLife.Cube
         [Description("布局页。")]
         public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
 
-        /// <summary>默认角色。默认普通用户3</summary>
-        [Description("默认角色。默认普通用户3")]
-        public Int32 DefaultRole { get; set; } = 3;
+        /// <summary>默认角色。默认普通用户</summary>
+        [Description("默认角色。默认普通用户")]
+        public String DefaultRole { get; set; } = "普通用户";
 
         /// <summary>启用密码登录。允许输入用户名密码进行登录</summary>
         [Description("启用密码登录。允许输入用户名密码进行登录")]
@@ -143,7 +143,7 @@ namespace NewLife.Cube
             if (StartPage.IsNullOrEmpty()) StartPage = System.Web.HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/Index/Main";
 #endif
 
-            if (DefaultRole <= 0) DefaultRole = 3;
+            if (DefaultRole.IsNullOrEmpty() || DefaultRole == "3") DefaultRole = "普通用户";
 
             base.OnLoaded();
         }

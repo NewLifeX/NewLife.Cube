@@ -215,8 +215,8 @@ namespace NewLife.Cube.Web
                     else
                         user2.RoleIDs = "," + ids.OrderBy(e => e).Join() + ",";
                 }
-                else if (user2.RoleID <= 0 && set.DefaultRole > 0)
-                    user2.RoleID = set.DefaultRole;
+                else if (user2.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
+                    user2.RoleID = Role.GetOrAdd(set.DefaultRole).ID;
 
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;
@@ -271,7 +271,7 @@ namespace NewLife.Cube.Web
                 if (user == null)
                 {
                     // 新注册用户采用魔方默认角色
-                    var rid = set.DefaultRole;
+                    var rid = Role.GetOrAdd(set.DefaultRole).ID;
                     //if (rid == 0 && client.Items.TryGetValue("roleid", out var roleid)) rid = roleid.ToInt();
                     //if (rid <= 0) rid = GetRole(client.Items, rid < -1);
 

@@ -253,12 +253,14 @@ namespace NewLife.Cube.Admin.Controllers
                 var user = UserX.FindByName(username);
                 if (user != null) throw new ArgumentException("usename", $"用户[{username}]已存在！");
 
+                var r = Role.GetOrAdd(set.DefaultRole);
+
                 user = new UserX()
                 {
                     Name = username,
                     Password = password.MD5(),
                     Mail = email,
-                    RoleID = set.DefaultRole,
+                    RoleID = r.ID,
                     Enable = true
                 };
                 user.Register();
