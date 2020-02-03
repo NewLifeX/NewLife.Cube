@@ -8,7 +8,6 @@ using NewLife.Model;
 using NewLife.Web;
 using XCode.Membership;
 #if __CORE__
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;

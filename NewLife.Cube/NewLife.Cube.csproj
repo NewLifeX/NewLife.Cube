@@ -319,6 +319,7 @@
     <Compile Include="Common\RequireSslAttribute.cs" />
     <Compile Include="Common\ViewHelper.cs" />
     <Compile Include="Common\EntityAuthorizeAttribute.cs" />
+    <Compile Include="Controllers\CubeController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Controllers\SsoController.cs" />

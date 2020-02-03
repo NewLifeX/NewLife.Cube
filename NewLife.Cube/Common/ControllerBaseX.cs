@@ -199,14 +199,14 @@ namespace NewLife.Cube
         /// <param name="data">消息</param>
         /// <returns></returns>
         protected virtual ActionResult JsonRefresh(Object data) => Json(0, data as String, data, new { url = "[refresh]" });
-        
+
         /// <summary>
         /// 返回结果并刷新
         /// </summary>
         /// <param name="data">消息</param>
         /// <param name="time">延迟刷新秒数</param>
         /// <returns></returns>
-        protected virtual ActionResult JsonRefresh(Object data, Int32 time) => Json(0, data as String, data, new { url = "[refresh]", time});
+        protected virtual ActionResult JsonRefresh(Object data, Int32 time) => Json(0, data as String, data, new { url = "[refresh]", time });
 
         /// <summary>是否Json请求</summary>
         protected virtual Boolean IsJsonRequest
@@ -254,11 +254,11 @@ namespace NewLife.Cube
                 rs = dic;
             }
 
-#if __CORE__
-            return new JsonResult(rs);
-#else
+            //#if __CORE__
+            //            return new JsonResult(rs);
+            //#else
             return Content(OnJsonSerialize(rs), "application/json", Encoding.UTF8);
-#endif
+            //#endif
         }
 
         /// <summary>返回Json数据</summary>
