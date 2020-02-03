@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Threading;
@@ -52,13 +53,15 @@ namespace NewLife.Cube.Admin.Controllers
             Boolean? enable = null;
             if (!p["enable"].IsNullOrEmpty()) enable = p["enable"].ToBoolean();
 
-            var parentid = p["parentid"].ToInt(-1);
             var idstart = p["idStart"].ToInt(-1);
             var idend = p["idEnd"].ToInt(-1);
 
-            var prov = p["ProvinceID"].ToInt(-1);
-            var city = p["CityID"].ToInt(-1);
-            var dist = p["DistrictID"].ToInt(-1);
+            var parentid = p["parentid"].ToInt(-1);
+            if (parentid < 0)
+            {
+                var areaId = p["AreaID"];
+                parentid = ("-1/" + areaId).SplitAsInt("/").LastOrDefault();
+            }
 
             var level = p["Level"].ToInt(-1);
             var start = p["dtStart"].ToDateTime();

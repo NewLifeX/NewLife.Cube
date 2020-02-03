@@ -3,54 +3,15 @@
 @using XCode;
 @using System.Linq;
 @{
-    var prefix = (Object)Model + "";//用户自定义标识，用户区分一个列表是多个控件
-    var fact = ViewBag.Factory as IEntityOperate;
+    var prefix = (Object)Model + "";
     var page = ViewBag.Page as Pager;
 
-    // 名称
-    var pkey = prefix + "ProvinceID";
-    var ckey = prefix + "CityID";
-    var dkey = prefix + "DistrictID";
-
-    // 地区
-    var provid = page[pkey].ToInt(-1);
-    var cityid = page[ckey].ToInt(-1);
-    var distid = page[dkey].ToInt(-1);
-
-    // 是否改变了上级
-    var city = Area.FindByID(cityid);
-    if (provid == 0 || city != null && !city.AllParents.Any(r => r.ID == provid))
-    {
-        cityid = 0;
-        distid = 0;
-    }
-    var dist = Area.FindByID(distid);
-    if (cityid == 0 || dist != null && !dist.AllParents.Any(r => r.ID == cityid))
-    {
-        distid = 0;
-    }
-
-    var provs = Area.Root.Childs.ToDictionary(r => r.ID, r => r.FullName); ;
-    var cities = new Dictionary<Int32, String>();
-    if (provid > 0)
-    {
-        cities = Area.FindByID(provid).Childs.ToDictionary(r => r.ID, r => r.FullName);
-    }
-    var dists = new Dictionary<Int32, String>();
-    if (cityid > 0)
-    {
-        dists = Area.FindByID(cityid).Childs.ToDictionary(r => r.ID, r => r.FullName);
-    }
-
-    // 已选中的地区
-    var area = Area.FindByID(distid) ?? Area.FindByID(cityid) ?? Area.FindByID(provid) ?? Area.Root;
-    var rs = new List<Area>(area.AllParents.Where(e => e.ID > 0));
-    rs.Add(area);
+    var areaId = page[prefix + "AreaID"];
 }
 <link href="~/Content/city-picker/city-picker.css" rel="stylesheet">
 <div class="form-group" style="position:relative">
     <div>
-        <input readonly type="text" id="@(prefix)AreaID" value="@rs.Join("/", r=>r.ID)" data-toggle="city-picker" placeholder="请选择省/市/区" data-level="district" data-autoPost="false" data-perfix="@prefix">
+        <input readonly type="text" id="@(prefix)AreaID" value="@areaId" data-toggle="city-picker" placeholder="请选择省/市/区" data-level="district" data-autoPost="false" data-perfix="@prefix">
     </div>
 </div>
 <script src="~/Content/city-picker/city-picker.js"></script>

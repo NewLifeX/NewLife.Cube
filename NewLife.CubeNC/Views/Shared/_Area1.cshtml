@@ -4,30 +4,18 @@
 @using System.Linq;
 @{
     var prefix = (Object)Model + "";
-    var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
 
-    // 名称
-    var pkey = prefix + "ProvinceID";
-
-    // 地区
-    var provid = page[pkey].ToInt(-1);
-
-    var provs = Area.Root.Childs.ToDictionary(r => r.ID, r => r.FullName); ;
-
-    // 已选中的地区
-    var area = Area.FindByID(provid) ?? Area.Root;
-    var rs = new List<Area>(area.AllParents.Where(e => e.ID > 0));
-    rs.Add(area);
+    var areaId = page[prefix + "AreaID"];
 }
-<link href="~/Content/city-picker/css/city-picker.css" rel="stylesheet">
+<link href="~/Content/city-picker/city-picker.css" rel="stylesheet">
 <div class="form-group" style="position:relative">
     @*@Html.ForDropDownList(pkey, provs, provid, "全国", true)*@
     <div>
-        <input readonly type="text" id="@(prefix)AreaID" value="@rs.Join("/", r=>r.ID)" data-toggle="city-picker" placeholder="请选择省" data-level="province">
+        <input readonly type="text" id="@(prefix)AreaID" value="@areaId" data-toggle="city-picker" placeholder="请选择省" data-level="province">
     </div>
 </div>
-<script src="~/Content/city-picker/js/city-picker.js"></script>
+<script src="~/Content/city-picker/city-picker.js"></script>
 <script>
     $.fn.citypicker.Constructor.DEFAULTS.dataUrl = '/Cube/AreaChilds?id=';
     $.fn.citypicker.Constructor.DEFAULTS.areaParents = '/Cube/AreaParents?id=';
