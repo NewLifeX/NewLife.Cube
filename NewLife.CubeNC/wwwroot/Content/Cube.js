@@ -1,5 +1,5 @@
 ﻿// 以下时间用于魔方判断是否需要更新脚本
-// 2017-12-07 00:00:00
+// 2020-02-04 00:00:00
 
 $(function () {
 
@@ -118,10 +118,15 @@ function doAction(methodName, actionUrl, actionParamter) {
                         location.reload(false);
                     }
                 } else {
-                    window.location.href = rs.url;
+                    if (rs.time && +rs.time > 0) {
+                        setTimeout(function () {
+                            window.location.href = rs.url;
+                        }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
+                    } else {
+                        window.location.href = rs.url;
+                    }
                 }
             }
         }
     });
 }
-
