@@ -171,7 +171,7 @@ namespace NewLife.Cube.Controllers
                 e.Code,
                 e.Name,
                 e.DisplayName,
-                e.DepartmentID,
+                //e.DepartmentID,
                 DepartmentName = e.Department?.ToString(),
             }).ToArray());
         }
@@ -202,7 +202,7 @@ namespace NewLife.Cube.Controllers
                 e.Code,
                 e.Name,
                 e.FullName,
-                e.ManagerID,
+                //e.ManagerID,
                 Manager = UserX.FindByID(e.ManagerID)?.ToString(),
             }));
         }

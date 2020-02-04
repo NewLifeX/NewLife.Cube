@@ -12,5 +12,5 @@
         <label for="userid" class="control-label">用户：</label>
         @Html.ForDropDownList("userid", UserX.FindAllWithCache().Cast<IEntity>().ToList(), "全部", true)
     </div>*@
-@await Html.PartialAsync("_SelectUser")
+@await Html.PartialAsync("_SelectUser", "userId")
 @await Html.PartialAsync("_DateRange")
