@@ -204,7 +204,7 @@ namespace NewLife.Cube.Controllers
                 e.FullName,
                 //e.ManagerID,
                 Manager = UserX.FindByID(e.ManagerID)?.ToString(),
-            }));
+            }).ToArray());
         }
         #endregion
 

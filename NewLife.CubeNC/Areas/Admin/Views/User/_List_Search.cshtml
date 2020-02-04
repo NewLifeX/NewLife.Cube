@@ -12,4 +12,5 @@
     @Html.ForDropDownList("RoleID", Role.FindAllWithCache(), page["roleId"], "全部", true)
 </div>
 @await Html.PartialAsync("_Enable")
-@*@Html.PartialAsync("_DateRange").Result*@
+@await Html.PartialAsync("_SelectDepartment", "departmentId")
+@await Html.PartialAsync("_DateRange")
