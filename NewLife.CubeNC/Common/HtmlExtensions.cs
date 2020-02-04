@@ -125,7 +125,7 @@ namespace NewLife.Cube
 
             // 如果没有外部关联，输出数字编辑框和标签
             // 如果映射目标列表项过多，不能使用下拉
-            var fact = EntityFactory.CreateOperate(map.Provider.EntityType);
+            var fact = map.Provider == null ? null : EntityFactory.CreateOperate(map.Provider.EntityType);
             if (map.Provider == null || fact != null && fact.Count > Setting.Current.MaxDropDownList)
             {
                 var label = "&nbsp;<label class=\"\">{0}</label>".F(entity[field.Name]);

@@ -1,0 +1,16 @@
+﻿@using NewLife.Cube.Entity
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+}
+@*<div class="form-group">
+    @Html.ActionLink("用户链接", "Index", "UserConnect", null, new { @class = "btn btn-success btn-sm" })
+    @Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class = "btn btn-success btn-sm" })
+    <label for="RoleID" class="control-label">角色：</label>
+    @Html.ForDropDownList("RoleID", Role.FindAllWithCache().Cast<IEntity>().ToList(), page["roldId"], "全部", true)
+    @Html.ForDropDownList("p", VisitStat.FindAllPageName(), page["p"], "全部页面", true)
+</div>*@
+@*@await Html.PartialAsync("_DateRange")*@

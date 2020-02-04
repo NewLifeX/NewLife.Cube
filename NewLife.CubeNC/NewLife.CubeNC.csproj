@@ -157,6 +157,7 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <None Include="Areas\Admin\Views\UserConnect\_List_Search.cshtml" />
+    <None Include="Areas\Admin\Views\UserToken\_List_Data.cshtml" />
     <None Include="Properties\launchSettings.json" />
     <None Include="wwwroot\Content\city-picker\city-picker.js" />
     <None Include="wwwroot\Content\echarts.min.js" />

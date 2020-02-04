@@ -951,8 +951,8 @@ namespace NewLife.Cube
 
             // 构造url
             var act = ControllerContext.ActionDescriptor;
-            var url = $"/{act.ControllerName}/Json";
-            if (act.RouteValues.TryGetValue("Area", out var area)) url = $"/{area}/{act.ControllerName}/Json";
+            var url = $"/{act.ControllerName}";
+            if (act.RouteValues.TryGetValue("Area", out var area)) url = $"/{area}/{act.ControllerName}";
             var sb = p.GetBaseUrl(true, true, true);
             if (sb.Length > 0) url += "?" + sb;
 
