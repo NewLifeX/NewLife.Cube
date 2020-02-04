@@ -5,7 +5,7 @@
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
 
-    var act = ViewBag.Action as String;
+    var act = Context.Request.Path;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
     var set = ViewBag.PageSetting as PageSetting;

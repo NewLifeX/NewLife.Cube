@@ -404,8 +404,14 @@ namespace NewLife.Cube
             //if (fact == null) throw new ArgumentNullException(nameof(id), "未找到模型 " + id);
 
             // 找到控制器，以识别动作地址
+#if __CORE__
             var act = ControllerContext.ActionDescriptor;
             var action = act.ControllerName;
+#else
+            var ctrl = RouteData.Values["controller"];
+            var action = ctrl;
+            if (RouteData.Values.TryGetValue("Area", out var area)) action = $"{area}/{ctrl}";
+#endif
             if (!mds.Contains(action)) throw new InvalidOperationException($"[{action}]未配置为允许同步 Sync:Models");
 
             // 创建客户端，准备发起请求

@@ -4,7 +4,7 @@
     //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
     // 没有总记录数的时候不显示分页，可以认为不启用分页
 
-    var act = ViewBag.Action as String;
+    var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 }
 @if (pager.TotalCount > 0)

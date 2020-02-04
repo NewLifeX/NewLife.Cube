@@ -54,7 +54,7 @@ namespace ASP
     //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
     // 没有总记录数的时候不显示分页，可以认为不启用分页
 
-    var act = ViewBag.Action as String;
+    var act = Context.Request.Path;
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
             
@@ -71,22 +71,22 @@ WriteLiteral("\r\n");
             #line hidden
 WriteLiteral("<form");
 
-WriteAttribute("action", Tuple.Create(" action=\"", 341), Tuple.Create("\"", 390)
+WriteAttribute("action", Tuple.Create(" action=\"", 337), Tuple.Create("\"", 386)
             
             #line 11 "..\..\Views\Shared\_List_Pager.cshtml"
-, Tuple.Create(Tuple.Create("", 350), Tuple.Create<System.Object, System.Int32>(act
+, Tuple.Create(Tuple.Create("", 346), Tuple.Create<System.Object, System.Int32>(act
             
             #line default
             #line hidden
-, 350), false)
-, Tuple.Create(Tuple.Create("", 354), Tuple.Create("?", 354), true)
+, 346), false)
+, Tuple.Create(Tuple.Create("", 350), Tuple.Create("?", 350), true)
             
             #line 11 "..\..\Views\Shared\_List_Pager.cshtml"
-, Tuple.Create(Tuple.Create("", 355), Tuple.Create<System.Object, System.Int32>(page.GetBaseUrl(true, true, false)
+, Tuple.Create(Tuple.Create("", 351), Tuple.Create<System.Object, System.Int32>(page.GetBaseUrl(true, true, false)
             
             #line default
             #line hidden
-, 355), false)
+, 351), false)
 );
 
 WriteLiteral(" method=\"post\"");
@@ -179,14 +179,14 @@ WriteLiteral(" name=\"PageIndex\"");
 
 WriteLiteral(" type=\"text\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 834), Tuple.Create("\"", 857)
+WriteAttribute("value", Tuple.Create(" value=\"", 830), Tuple.Create("\"", 853)
             
             #line 19 "..\..\Views\Shared\_List_Pager.cshtml"
-, Tuple.Create(Tuple.Create("", 842), Tuple.Create<System.Object, System.Int32>(page.PageIndex
+, Tuple.Create(Tuple.Create("", 838), Tuple.Create<System.Object, System.Int32>(page.PageIndex
             
             #line default
             #line hidden
-, 842), false)
+, 838), false)
 );
 
 WriteLiteral(" class=\"input-sm\"");
