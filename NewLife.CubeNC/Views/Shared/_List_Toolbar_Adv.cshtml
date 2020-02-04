@@ -20,14 +20,21 @@
             <a href="@Url.Action("ExportXml")">导出Xml</a>
         </li>
         @*<li>
-            <a href="@Url.Action("ImportXml")">导入Xml</a>
-        </li>*@
+                <a href="@Url.Action("ImportXml")">导入Xml</a>
+            </li>*@
         <li>
             <a href="@Url.Action("ExportJson")">导出Json</a>
         </li>
         @*<li>
-            <a href="@Url.Action("ImportJson")">导入Json</a>
-        </li>*@
+                <a href="@Url.Action("ImportJson")">导入Json</a>
+            </li>*@
+        <li class="divider"></li>
+        <li>
+            <a href="@Url.Action("Share")" data-action="action" title="把当前页数据分享给其他人">分享</a>
+        </li>
+        <li>
+            <a href="@Url.Action("Sync")" data-action="action" data-confirm="该操作将清空数据并不可恢复！确认同步？" title="清空并从主服务器同步数据">同步</a>
+        </li>
         @if (this.Has(PermissionFlags.Delete))
         {
             <li class="divider"></li>

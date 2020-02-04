@@ -21,6 +21,7 @@ using XCode;
 using XCode.Configuration;
 using XCode.Membership;
 using XCode.Model;
+using NewLife.Security;
 
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -927,6 +928,46 @@ namespace NewLife.Cube
                 XTrace.WriteException(ex);
                 return Json(0, null, ex);
             }
+        }
+
+        /// <summary>分享数据</summary>
+        /// <remarks>
+        /// 为当前url创建用户令牌
+        /// </remarks>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        [DisplayName("分享{type}")]
+        public virtual ActionResult Share()
+        {
+            // 当前用户所有令牌
+            var userId = ManageProvider.User.ID;
+            var list = UserToken.Search(null, userId, true, DateTime.Now, DateTime.MinValue, null);
+
+            var p = Session[CacheKey] as Pager;
+            p = new Pager(p)
+            {
+                RetrieveTotalCount = false,
+            };
+
+            // 构造url
+            var act = ControllerContext.ActionDescriptor;
+            var url = $"/{act.ControllerName}/Json";
+            if (act.RouteValues.TryGetValue("Area", out var area)) url = $"/{area}/{act.ControllerName}/Json";
+            var sb = p.GetBaseUrl(true, true, true);
+            if (sb.Length > 0) url += "?" + sb;
+
+            // 如果该url已存在，则延长有效期
+            var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url));
+            if (ut == null) ut = new UserToken { UserID = userId, Url = url };
+
+            if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(16);
+            ut.Enable = true;
+            ut.Expire = DateTime.Now.AddHours(2);
+            ut.Save();
+
+            var url2 = $"/Admin/UserToken?q={ut.Token}";
+
+            return Json(0, "分享成功！" + url, null, new { url = url2, time = 3 });
         }
         #endregion
 

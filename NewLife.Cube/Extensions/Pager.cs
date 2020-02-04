@@ -130,8 +130,18 @@ namespace NewLife.Web
                 if (excludes != null && excludes.Length > 0) ex.AddRange(excludes);
                 sb.UrlParamsExcept(dic, ex.ToArray());
             }
-            if (order) sb.UrlParams(dic, _.Sort, _.Desc);
-            if (page) sb.UrlParams(dic, _.PageIndex, _.PageSize);
+            if (order)
+            {
+                sb.UrlParams(dic, _.Sort, _.Desc);
+                if (!dic.ContainsKey(_.Sort) && !Sort.IsNullOrEmpty()) sb.UrlParam(_.Sort, Sort);
+                if (!dic.ContainsKey(_.Desc) && Desc) sb.UrlParam(_.Desc, Desc);
+            }
+            if (page)
+            {
+                sb.UrlParams(dic, _.PageIndex, _.PageSize);
+                if (!dic.ContainsKey(_.PageIndex) && PageIndex > 1) sb.UrlParam(_.PageIndex, PageIndex);
+                if (!dic.ContainsKey(_.PageSize) && PageSize > 0 && PageSize != 20) sb.UrlParam(_.PageSize, PageSize);
+            }
 
             return sb;
         }
