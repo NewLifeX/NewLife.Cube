@@ -4,10 +4,13 @@ using System.ComponentModel;
 using System.Linq;
 using NewLife.Log;
 using XCode.Membership;
-using AreaX = XCode.Membership.Area;
 using System.Diagnostics;
 using NewLife.Reflection;
 using System.Reflection;
+using AreaX = XCode.Membership.Area;
+using XCode;
+using NewLife.Data;
+
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -138,6 +141,70 @@ namespace NewLife.Cube.Controllers
                 GC1 = GC.GetGeneration(1),
                 GC2 = GC.GetGeneration(2),
             };
+        }
+        #endregion
+
+        #region 用户
+        /// <summary>用户搜索</summary>
+        /// <param name="roleId"></param>
+        /// <param name="departmentId"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public ActionResult UserSearch(Int32 roleId = 0, Int32 departmentId = 0, String key = null)
+        {
+            var exp = new WhereExpression();
+            if (roleId > 0) exp &= UserX._.RoleID == roleId;
+            if (departmentId > 0) exp &= UserX._.DepartmentID == departmentId;
+            exp &= UserX._.Enable == true;
+            if (!key.IsNullOrEmpty()) exp &= UserX._.Code.StartsWith(key) | UserX._.Name.StartsWith(key) | UserX._.DisplayName.StartsWith(key) | UserX._.Mobile.StartsWith(key);
+
+            var page = new PageParameter { PageSize = 20 };
+
+            // 默认排序
+            if (page.Sort.IsNullOrEmpty()) page.Sort = UserX._.Name;
+
+            var list = UserX.FindAll(exp, page);
+
+            return Json(0, null, list.Select(e => new
+            {
+                e.ID,
+                e.Code,
+                e.Name,
+                e.DisplayName,
+                e.DepartmentID,
+                DepartmentName = e.Department?.ToString(),
+            }).ToArray());
+        }
+        #endregion
+
+        #region 部门
+        /// <summary>网点搜索</summary>
+        /// <param name="parentid"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public ActionResult DepartmentSearch(Int32 parentid = -1, String key = null)
+        {
+            var exp = new WhereExpression();
+            if (parentid >= 0) exp &= Department._.ParentID == parentid;
+            exp &= Department._.Enable == true & Department._.Visible == true;
+            if (!key.IsNullOrEmpty()) exp &= Department._.Code.StartsWith(key) | Department._.Name.StartsWith(key) | Department._.FullName.StartsWith(key);
+
+            var page = new PageParameter { PageSize = 20 };
+
+            // 默认排序
+            if (page.Sort.IsNullOrEmpty()) page.Sort = Department._.Name;
+
+            var list = Department.FindAll(exp, page);
+
+            return Json(0, null, list.Select(e => new
+            {
+                e.ID,
+                e.Code,
+                e.Name,
+                e.FullName,
+                e.ManagerID,
+                Manager = UserX.FindByID(e.ManagerID)?.ToString(),
+            }));
         }
         #endregion
 
