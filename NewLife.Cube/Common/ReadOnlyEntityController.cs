@@ -965,9 +965,11 @@ namespace NewLife.Cube
             ut.Expire = DateTime.Now.AddHours(2);
             ut.Save();
 
-            var url2 = $"/Admin/UserToken?q={ut.Token}";
+            //var url2 = $"/Admin/UserToken?q={ut.Token}";
 
-            return Json(0, "分享成功！" + url, null, new { url = url2, time = 3 });
+            //return Json(0, "分享成功！" + url, null, new { url = url2, time = 3 });
+
+            return RedirectToAction("Index", "UserToken", new { area = "Admin", q = ut.Token });
         }
         #endregion
 
