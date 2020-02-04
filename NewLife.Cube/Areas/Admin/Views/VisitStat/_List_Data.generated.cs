@@ -619,7 +619,7 @@ WriteLiteral("        ");
 
             
             #line 76 "..\..\Areas\Admin\Views\VisitStat\_List_Data.cshtml"
-         if (page.State != null)
+         if (page.State is VisitStat)
         {
             var entity = page.State as VisitStat;
 

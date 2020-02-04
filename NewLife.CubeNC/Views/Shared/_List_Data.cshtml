@@ -55,9 +55,9 @@
                 }
             </tr>
         }
-        @if (page.State != null)
+        @if (page.State is IEntity entity2)
         {
-            @await Html.PartialAsync("_List_Data_Stat", page.State)
+            @await Html.PartialAsync("_List_Data_Stat", entity2)
         }
     </tbody>
 </table>

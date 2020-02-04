@@ -69,7 +69,7 @@
                 }
             </tr>
         }
-        @if (page.State != null)
+        @if (page.State is VisitStat)
         {
             var entity = page.State as VisitStat;
             <tr>

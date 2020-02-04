@@ -55,7 +55,7 @@
                 }
             </tr>
         }
-        @if (page.State != null)
+        @if (page.State is IEntity)
         {
             @Html.Partial("_List_Data_Stat", page.State)
         }

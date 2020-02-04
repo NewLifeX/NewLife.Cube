@@ -392,7 +392,7 @@ WriteLiteral("        ");
 
             
             #line 58 "..\..\Views\Shared\_List_Data.cshtml"
-         if (page.State != null)
+         if (page.State is IEntity)
         {
             
             
