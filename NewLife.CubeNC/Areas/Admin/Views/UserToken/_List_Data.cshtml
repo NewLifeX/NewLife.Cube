@@ -63,10 +63,10 @@
                 }
                 <td class="text-center">@entity.ID</td>
                 <td>@entity.Token</td>
-                <td>@entity.Url</td>
-                <td><a href="@(url+query)" target="_blank">页面</a></td>
-                <td><a href="@(url+"/Json"+query)" target="_blank">Json数据</a></td>
-                <td><a href="@(url+"/Xml"+query)" target="_blank">Json数据</a></td>
+                <td style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Url">@entity.Url</td>
+                <td class="text-center"><a href="@(url+query)" target="_blank">页面</a></td>
+                <td class="text-center"><a href="@(url+"/Json"+query)" target="_blank">Json数据</a></td>
+                <td class="text-center"><a href="@(url+"/Xml"+query)" target="_blank">Xml数据</a></td>
                 <td class="text-center">@entity.UserName</td>
                 <td class="text-center">@entity.Expire.ToFullString("")</td>
                 <td class="text-center">
