@@ -387,7 +387,8 @@ namespace NewLife.Cube
             //if (id.IsNullOrEmpty()) return RedirectToAction(nameof(Index));
 
             // 读取系统配置
-            var ps = Parameter.FindAll(); // UserID=0 && Category=Sync
+            var ps = Parameter.FindAllByUserID(ManageProvider.User.ID); // UserID=0 && Category=Sync
+            ps = ps.Where(e => e.Category == "Sync").ToList();
             var server = ps.FirstOrDefault(e => e.Name == "Server")?.Value;
             var token = ps.FirstOrDefault(e => e.Name == "Token")?.Value;
             var models = ps.FirstOrDefault(e => e.Name == "Models")?.Value;
