@@ -1,0 +1,53 @@
+﻿@{
+    var containid = "";
+    var showvalue = "";
+    var showid = "";
+
+    if (Model is String)
+    {
+        containid = Model;
+    }
+    if (containid.IsNullOrEmpty())
+    {
+        containid = "userId";
+    }
+}
+
+<div class="form-group" style="position:relative">
+    <div class="col-lg-12">
+        <div class="input-group">
+            <input type="hidden" name="@containid" id="@containid" value="@showid" />
+            <input type="text" class="form-control" id="@(containid)_select" placeholder="搜索用户" value="@showvalue">
+            <div class="input-group-btn">
+                <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/Content/bootstrap-suggest.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#@(containid)_select").bsSuggest({
+            url: "/cube/UserSearch?key=",
+            getDataMethod:"url",
+            effectiveFieldsAlias: { ID:"编号",Code:"代码",Name: "名称",DisplayName:'昵称',DepartmentName:'部门'},
+            ignorecase: true,
+            showHeader: true,
+            delayUntilKeyup: true, //获取数据的方式为 firstByUrl 时，延迟到有输入/获取到焦点时才请求数据
+            idField: "ID",
+            showBtn: false,
+            keyField: "Name",
+            clearable: true,
+            searchingTip: '搜索中...',
+            allowNoKeyword: false,
+            delay: 500,
+            emptyTip: '无数据',
+            containerValueId:'@containid'
+        }).on('onSetSelectValue', function (e, keyword, data) {
+            $('#@containid').val(keyword.id);
+        }).on('onUnsetSelectValue', function () {
+            $('#@containid').val('');
+        });
+    });
+</script>
