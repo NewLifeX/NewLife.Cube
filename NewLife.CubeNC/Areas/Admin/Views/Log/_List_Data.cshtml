@@ -50,7 +50,7 @@
                 <td>@entity.CreateIP.IPToAddress()</td>
                 <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("")</td>
                 <td class="text-center">
-                    <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
+                    <a href="?act=near&id=@entity.ID&range=10&@(page.GetBaseUrl(true,false,false))" title="前后10行日志">附近</a>
                 </td>
                 @if (this.Has(PermissionFlags.Detail))
                 {

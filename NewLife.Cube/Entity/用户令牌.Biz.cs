@@ -18,7 +18,7 @@ namespace NewLife.Cube.Entity
         static UserToken()
         {
             // 累加字段
-            //Meta.Factory.AdditionalFields.Add(__.Logins);
+            Meta.Factory.AdditionalFields.Add(__.Times);
 
             // 过滤器 UserModule、TimeModule、IPModule
             Meta.Modules.Add<UserModule>();

@@ -466,17 +466,42 @@ namespace NewLife.Cube
         #endregion
 
         #region 高级Action
+        /// <summary>页面</summary>
+        /// <param name="token">令牌</param>
+        /// <param name="p">分页</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [DisplayName("页面")]
+        public virtual ActionResult Html(String token, Pager p)
+        {
+            try
+            {
+                var issuer = ValidToken(token);
+
+                // 需要总记录数来分页
+                p.RetrieveTotalCount = true;
+
+                var list = SearchData(p);
+
+                return View("List", list);
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.Message);
+            }
+        }
+
         /// <summary>Json接口</summary>
-        /// <param name="id">令牌</param>
+        /// <param name="token">令牌</param>
         /// <param name="p">分页</param>
         /// <returns></returns>
         [AllowAnonymous]
         [DisplayName("Json接口")]
-        public virtual ActionResult Json(String id, Pager p)
+        public virtual ActionResult Json(String token, Pager p)
         {
             try
             {
-                var issuer = ValidToken(id);
+                var issuer = ValidToken(token);
 
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
@@ -522,17 +547,17 @@ namespace NewLife.Cube
         }
 
         /// <summary>Xml接口</summary>
-        /// <param name="id">令牌</param>
+        /// <param name="token">令牌</param>
         /// <param name="p">分页</param>
         /// <returns></returns>
         [AllowAnonymous]
         [DisplayName("Xml接口")]
-        public virtual ActionResult Xml(String id, Pager p)
+        public virtual ActionResult Xml(String token, Pager p)
         {
             var xml = "";
             try
             {
-                var issuer = ValidToken(id);
+                var issuer = ValidToken(token);
 
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
