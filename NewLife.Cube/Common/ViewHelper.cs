@@ -152,15 +152,14 @@ namespace NewLife.Cube
                 }
             </tr>
         }
-        @if (page.State != null)
+        @if (page.State is {EntityType} entity)
         {
-            var entity = page.State as {EntityType};
             <tr>
                 @if (set.EnableSelect)
                 {
                     <td></td>
                 }
-                @await Html.PartialAsync(""_List_Data_Stat"", page.State)
+                @await Html.PartialAsync(""_List_Data_Stat"", entity)
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
                     <td></td>
@@ -227,7 +226,7 @@ namespace NewLife.Cube
                 }
             </tr>
         }
-        @if (page.State != null)
+        @if (page.State is IEntity)
         {
             var entity = page.State as IEntity;
             <tr>
@@ -235,7 +234,7 @@ namespace NewLife.Cube
                 {
                     <td></td>
                 }
-                @Html.Partial(""_List_Data_Stat"", page.State)
+                @Html.Partial(""_List_Data_Stat"", entity)
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
                     <td></td>
@@ -250,11 +249,6 @@ namespace NewLife.Cube
 
             tmp = tmp.Replace("{EntityType}", entityType.Name);
             tmp = tmp.Replace("{Namespace}", entityType.Namespace);
-
-            //sb.AppendFormat("@model IList<{0}>", entityType.FullName);
-            //sb.AppendLine();
-
-            //tmp = tmp.Replace("page.State as IEntity", "page.State as " + entityType.FullName);
 
             var str = tmp.Substring(null, "            @foreach");
             // 如果有用户字段，则启用provider
@@ -408,14 +402,11 @@ namespace NewLife.Cube
             sb.Append("                @if");
             var str2 = tmp.Substring("                @if", null, ps[1]);
 #if __CORE__
-            str = str2.Replace("                @await Html.PartialAsync(\"_List_Data_Stat\", page.State)", str);
+            str = str2.Replace("                @await Html.PartialAsync(\"_List_Data_Stat\", entity)", str);
 #else
-            str = str2.Replace("                @Html.Partial(\"_List_Data_Stat\", page.State)", str);
+            str = str2.Replace("                @Html.Partial(\"_List_Data_Stat\", entity)", str);
 #endif
             sb.Append(str);
-
-            //sb.Append("@if (page.State != null)");
-            //sb.Append(tmp.Substring("@if (page.State != null)", null, ps[1]));
 
             File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
 

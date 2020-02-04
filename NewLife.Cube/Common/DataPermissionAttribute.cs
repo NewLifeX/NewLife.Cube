@@ -30,7 +30,10 @@ namespace NewLife.Cube
         /// <returns></returns>
         public Boolean Valid(IRole[] roles)
         {
-            var _srs = SystemRoles.Split(',', ';');
+            var rs = SystemRoles;
+            if (rs == null || rs.Length == 0) return false;
+
+            var _srs = rs.Split(',', ';');
             return roles.Any(e => _srs.Contains(e.Name));
         }
     }

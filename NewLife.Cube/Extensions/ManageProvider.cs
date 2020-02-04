@@ -7,9 +7,7 @@ using System.Web;
 using NewLife.Common;
 using NewLife.Model;
 using NewLife.Cube;
-#if !__CORE__
 using System.Web.SessionState;
-#endif
 
 namespace XCode.Membership
 {
@@ -39,16 +37,12 @@ namespace XCode.Membership
         /// <returns></returns>
         public override IManageUser GetCurrent(IServiceProvider context = null)
         {
-#if !__CORE__
             if (context == null) context = HttpContext.Current;
             var ss = context.GetService<HttpSessionState>();
             if (ss == null) return null;
 
             // 从Session中获取
             return ss[SessionKey] as IManageUser;
-#else
-            return null;
-#endif
         }
 
         /// <summary>设置当前用户</summary>
@@ -56,7 +50,6 @@ namespace XCode.Membership
         /// <param name="context"></param>
         public override void SetCurrent(IManageUser user, IServiceProvider context = null)
         {
-#if !__CORE__
             if (context == null) context = HttpContext.Current;
             var ss = context.GetService<HttpSessionState>();
             if (ss == null) return;
@@ -79,8 +72,6 @@ namespace XCode.Membership
                 // 修改Session
                 ss[key] = user;
             }
-#else
-#endif
         }
 
         /// <summary>登录</summary>
@@ -115,12 +106,10 @@ namespace XCode.Membership
         {
             base.Logout();
 
-#if !__CORE__
             // 注销时销毁所有Session
             var context = HttpContext.Current;
             var ss = context?.Session;
             ss?.Clear();
-#endif
 
             // 销毁Cookie
             this.SaveCookie(null, TimeSpan.FromDays(-1));
@@ -136,7 +125,6 @@ namespace XCode.Membership
         /// <param name="context">Http上下文，兼容NetCore</param>
         public static void SetPrincipal(this IManageProvider provider, IServiceProvider context = null)
         {
-#if !__CORE__
             //var ctx = context as Microsoft.AspNetCore.Http.HttpContext;
             var ctx = context as HttpContext ?? HttpContext.Current;
             if (ctx == null) return;
@@ -153,7 +141,6 @@ namespace XCode.Membership
             var up = new GenericPrincipal(id, roles.ToArray());
             ctx.User = up;
             Thread.CurrentPrincipal = up;
-#endif
         }
 
         /// <summary>尝试登录。如果Session未登录则借助Cookie</summary>
@@ -192,7 +179,6 @@ namespace XCode.Membership
         /// <returns></returns>
         public static IManageUser LoadCookie(this IManageProvider provider, Boolean autologin = true, IServiceProvider context = null)
         {
-#if !__CORE__
             var key = GetCookieKey(provider);
 
             if (context == null) context = HttpContext.Current;
@@ -227,9 +213,6 @@ namespace XCode.Membership
             }
 
             return u;
-#else
-            return null;
-#endif
         }
 
         /// <summary>保存用户信息到Cookie</summary>
@@ -239,7 +222,6 @@ namespace XCode.Membership
         /// <param name="context">Http上下文，兼容NetCore</param>
         public static void SaveCookie(this IManageProvider provider, IManageUser user, TimeSpan expire, IServiceProvider context = null)
         {
-#if !__CORE__
             if (context == null) context = HttpContext.Current;
 
             var req = context?.GetService<HttpRequest>();
@@ -247,7 +229,7 @@ namespace XCode.Membership
             if (req == null || res == null) return;
 
             var key = GetCookieKey(provider);
-            var reqcookie = req.Cookies[key];
+            //var reqcookie = req.Cookies[key];
             if (user is IAuthUser au)
             {
                 var u = HttpUtility.UrlEncode(user.Name);
@@ -268,10 +250,8 @@ namespace XCode.Membership
                 cookie.Value = null;
                 cookie.Expires = DateTime.Now.AddYears(-1);
             }
-#endif
         }
 
-#if !__CORE__
         class CookieModel
         {
             #region 属性
@@ -316,7 +296,6 @@ namespace XCode.Membership
             }
             #endregion
         }
-#endif
         #endregion
     }
 }

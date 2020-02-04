@@ -92,20 +92,13 @@ namespace NewLife.Cube
             // 特殊处理注销
             if (user == null)
             {
-                // 修改Session
                 session.Remove(key);
-
-                //// 下线功能暂时失效，通过接口取值报错
-                //if (ss.Get<IAuthUser>(key) is IAuthUser au)
-                //{
-                //    au.Online = false;
-                //    au.Save();
-                //}
+                session.Remove("userId");
             }
             else
             {
-                // 修改Session
                 session[key] = user;
+                session["userId"] = user.ID;
             }
         }
 

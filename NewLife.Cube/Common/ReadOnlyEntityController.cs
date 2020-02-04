@@ -1,25 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Web;
+using System.Xml.Serialization;
 using NewLife.Common;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
+using NewLife.Data;
+using NewLife.IO;
+using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web;
 using NewLife.Xml;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
-using NewLife.IO;
-using System.IO;
-using System.Xml.Serialization;
-using System.IO.Compression;
-using NewLife.Log;
 using XCode.Model;
-using NewLife.Data;
+
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +29,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Net.Http.Headers;
-using NewLife.Cube.Extensions;
 #else
 using System.Web.Mvc;
 #endif
@@ -168,7 +169,7 @@ namespace NewLife.Cube
             var builder = CreateWhere();
             if (builder != null)
             {
-                builder.Data2 = p;
+                if (builder.Data2 == null) builder.Data2 = p;
                 p.State = builder;
             }
 
@@ -242,22 +243,10 @@ namespace NewLife.Cube
 #else
             builder.Data = new SessionExtend { Session = Session };
 #endif
+            builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
 
             return builder;
         }
-
-#if !__CORE__
-        class SessionExtend : IExtend
-        {
-            public HttpSessionStateBase Session { get; set; }
-
-            public Object this[String key]
-            {
-                get => Session[key];
-                set => Session[key] = value;
-            }
-        }
-#endif
 
         /// <summary>获取选中键</summary>
         /// <returns></returns>

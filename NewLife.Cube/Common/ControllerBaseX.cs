@@ -83,6 +83,9 @@ namespace NewLife.Cube
             var user = ManageProvider.User;
             if (user != null)
             {
+                // 设置变量，数据权限使用
+                HttpContext.Items["userId"] = user.ID;
+
                 // 没有菜单时不做权限控制
                 var ctx = context.HttpContext;
                 if (ctx.Items["CurrentMenu"] is IMenu menu)
