@@ -203,19 +203,23 @@ namespace NewLife.Cube.Web
                 var set = Setting.Current;
 
                 // 使用认证中心的角色
-                var roleId = GetRole(dic, true);
-                if (roleId > 0)
+                if (set.UseSsoRole)
                 {
-                    user2.RoleID = roleId;
+                    var roleId = GetRole(dic, true);
+                    if (roleId > 0)
+                    {
+                        user2.RoleID = roleId;
 
-                    var ids = GetRoles(client.Items, true).ToList();
-                    if (ids.Contains(roleId)) ids.Remove(roleId);
-                    if (ids.Count == 0)
-                        user2.RoleIDs = null;
-                    else
-                        user2.RoleIDs = "," + ids.OrderBy(e => e).Join() + ",";
+                        var ids = GetRoles(client.Items, true).ToList();
+                        if (ids.Contains(roleId)) ids.Remove(roleId);
+                        if (ids.Count == 0)
+                            user2.RoleIDs = null;
+                        else
+                            user2.RoleIDs = "," + ids.OrderBy(e => e).Join() + ",";
+                    }
                 }
-                else if (user2.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
+                // 使用本地角色
+                if (user2.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
                     user2.RoleID = Role.GetOrAdd(set.DefaultRole).ID;
 
                 // 头像。有可能是相对路径，需要转为绝对路径

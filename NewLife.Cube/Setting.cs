@@ -77,25 +77,35 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public String DefaultRole { get; set; } = "普通用户";
 
-        /// <summary>启用密码登录。允许输入用户名密码进行登录</summary>
-        [Description("启用密码登录。允许输入用户名密码进行登录")]
+        /// <summary>允许密码登录。允许输入用户名密码进行登录</summary>
+        [Description("允许密码登录。允许输入用户名密码进行登录")]
         [Category("用户登录")]
         public Boolean AllowLogin { get; set; } = true;
 
-        /// <summary>启用注册。允许输入用户名密码进行注册</summary>
-        [Description("启用注册。允许输入用户名密码进行注册")]
+        /// <summary>允许注册。允许输入用户名密码进行注册</summary>
+        [Description("允许注册。允许输入用户名密码进行注册")]
         [Category("用户登录")]
         public Boolean AllowRegister { get; set; } = true;
 
-        /// <summary>自动注册。第三方登录后，如果本地未登录，自动注册新用户</summary>
-        [Description("自动注册。第三方登录后，如果本地未登录，自动注册新用户")]
+        /// <summary>自动注册。SSO登录后，如果本地未登录，自动注册新用户</summary>
+        [Description("自动注册。SSO登录后，如果本地未登录，自动注册新用户")]
         [Category("用户登录")]
         public Boolean AutoRegister { get; set; } = true;
 
-        /// <summary>强行绑定用户。根据OAuth登录返回用户名强项绑定本地同名用户，而不需要增加提供者前缀</summary>
-        [Description("强行绑定用户。根据OAuth登录返回用户名强项绑定本地同名用户，而不需要增加提供者前缀")]
+        /// <summary>强行绑定用户。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
+        [Description("强行绑定用户。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
         [Category("用户登录")]
         public Boolean ForceBindUser { get; set; }
+
+        ///// <summary>添加Sso角色。把SSO角色添加到本地，默认true</summary>
+        //[Description("添加Sso角色。把SSO角色添加到本地，默认true")]
+        //[Category("用户登录")]
+        //public Boolean AddSsoRole { get; set; } = true;
+
+        /// <summary>使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole</summary>
+        [Description("使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole")]
+        [Category("用户登录")]
+        public Boolean UseSsoRole { get; set; } = true;
 
         /// <summary>注销所有系统。默认false仅注销本系统，true时注销SsoServer</summary>
         [Description("注销所有系统。默认false仅注销本系统，true时注销SsoServer")]
