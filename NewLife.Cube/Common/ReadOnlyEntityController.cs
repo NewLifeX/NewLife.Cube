@@ -517,6 +517,9 @@ namespace NewLife.Cube
             }
         }
 
+        /// <summary>验证令牌是否有效</summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         protected virtual String ValidToken(String token)
         {
             if (token.IsNullOrEmpty()) token = GetRequest("token");
@@ -531,13 +534,22 @@ namespace NewLife.Cube
             }
             else
             {
-                var user = UserToken.Valid(token, UserHost);
+                var ut = UserToken.Valid(token, UserHost);
+                var user = ut.User;
 
                 // 定位菜单页面
                 var menu = ManageProvider.Menu.FindByFullName(GetType().FullName);
 
                 // 判断权限
-                if (menu == null || !user.Has(menu, PermissionFlags.Detail)) throw new Exception($"[{user}]无权访问[{menu}]");
+                if (menu == null || !user.Has(menu, PermissionFlags.Detail)) throw new Exception($"该用户[{user}]无权访问[{menu}]");
+
+                // 锁定页面
+                if (!ut.Url.IsNullOrEmpty())
+                {
+                    var url = ut.Url;
+                    if (url.Contains("?")) url = url.Substring(null, "?");
+                    if (!url.StartsWithIgnoreCase(menu.Url.TrimStart("~"))) throw new Exception($"该令牌[{user}]无权访问[{menu}]，仅限于[{url}]");
+                }
 
                 // 设置当前用户，用于数据权限控制
                 HttpContext.Items["userId"] = user.ID;

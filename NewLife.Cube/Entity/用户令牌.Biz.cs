@@ -118,7 +118,7 @@ namespace NewLife.Cube.Entity
         /// <param name="token"></param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public static IUser Valid(String token, String ip)
+        public static UserToken Valid(String token, String ip)
         {
             if (token.IsNullOrEmpty()) throw new Exception("缺少令牌token");
 
@@ -139,13 +139,14 @@ namespace NewLife.Cube.Entity
 
             if (ut.Expire.Year > 2000 && ut.Expire < DateTime.Now) throw new Exception("令牌已过期");
 
-            var user = ManageProvider.Provider.FindByID(ut.UserID) as IUser;
+            //var user = ManageProvider.Provider.FindByID(ut.UserID) as IUser;
+            var user = ut.User;
             if (user == null || !user.Enable) throw new Exception("无效令牌身份");
 
             //// 拥有系统角色
             //if (!user.Roles.Any(r => r.IsSystem)) throw new Exception("无权查看该数据");
 
-            return user;
+            return ut;
         }
         #endregion
     }
