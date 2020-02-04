@@ -66,8 +66,10 @@ namespace NewLife.Web
                     return PageIndex + "";
                 else if (key.EqualIgnoreCase(_.PageSize))
                     return PageSize + "";
-                else
-                    return Params[key];
+
+                // 为了布尔型取空字符串时得到null。var enable = p["enable"]?.ToBoolean()
+                var v = Params[key];
+                return v.IsNullOrEmpty() ? null : v;
             }
             set
             {

@@ -55,13 +55,16 @@ namespace NewLife.Cube.Admin.Controllers
                 return list;
             }
 
+            var roleId = p["roleId"].ToInt(-1);
+            var departmentId = p["departmentId"].ToInt(-1);
             var enable = p["enable"]?.ToBoolean();
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
 
             //p.RetrieveState = true;
 
-            return UserX.Search(p["Q"], p["RoleID"].ToInt(-1), enable, start, end, p);
+            //return UserX.Search(p["Q"], p["RoleID"].ToInt(-1), enable, start, end, p);
+            return UserX.Search(roleId, departmentId, enable, start, end, p["q"], p);
         }
 
         /// <summary>表单页视图。</summary>

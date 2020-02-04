@@ -42,7 +42,11 @@ namespace NewLife.Cube.Admin.Controllers
                 return list;
             }
 
-            return Department.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
+            var parentId = p["parentId"].ToInt(-1);
+            var enable = p["enable"]?.ToBoolean();
+            var visible = p["visible"]?.ToBoolean();
+
+            return Department.Search(parentId, enable, visible, p["Q"], p);
         }
     }
 }
