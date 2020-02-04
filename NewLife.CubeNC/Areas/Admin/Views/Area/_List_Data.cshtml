@@ -1,0 +1,77 @@
+﻿@model IList<Area>
+@using XCode.Membership
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
+@using NewLife.Cube;
+@{
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var set = ViewBag.PageSetting as PageSetting;
+    var provider = ManageProvider.Provider;
+}
+<table class="table table-bordered table-hover table-striped table-condensed">
+    <thead>
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+            }
+            <th class="text-center" title="编码。行政区划编码"><a href="@Html.Raw(page.GetSortUrl("ID"))">编码</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("FullName"))">全名</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ParentID"))">父级</a></th>
+            <th class="text-center">下级</th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Level"))">层级</a></th>
+            @*<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Longitude"))">经度</a></th>
+                <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Latitude"))">纬度</a></th>*@
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateUser"))">更新者</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateUserID"))">更新用户</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateIP"))">更新地址</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">备注</a></th>
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            var pstr = entity.Parent != null ? (entity.Parent + "") : (entity.ParentID + "");
+            <tr>
+                @if (set.EnableSelect)
+                {
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                }
+                <td class="text-center">@entity.ID</td>
+                <td>@entity.Name</td>
+                <td>@entity.FullName</td>
+                <td class="text-center"><a href="?Id=@entity.ParentID">@pstr</a></td>
+                <td class="text-center"><a href="?parentId=@entity.ID">下级</a></td>
+                <td class="text-center">@entity.Level</td>
+                @*<td class="text-right">@entity.Longitude.ToString("n2")</td>
+                    <td class="text-right">@entity.Latitude.ToString("n2")</td>*@
+                <td class="text-center">
+                    <i class="glyphicon glyphicon-@(entity.Enable ? "ok" : "remove")" style="color: @(entity.Enable ? "green" : "red");"></i>
+                </td>
+                <td>@entity.UpdateUser</td>
+                <td class="text-center">@provider.FindByID(entity.UpdateUserID)</td>
+                <td class="text-center" title="@entity.UpdateIP.IPToAddress()">@entity.UpdateIP</td>
+                <td class="text-center">@entity.UpdateTime.ToFullString("")</td>
+                <td>@entity.Remark</td>
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td class="text-center">
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
