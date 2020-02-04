@@ -160,7 +160,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Build.cs</LastGenOutput>
     </Content>
-    <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Model.xml" />
   </ItemGroup>

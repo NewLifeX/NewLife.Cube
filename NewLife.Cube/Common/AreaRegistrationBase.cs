@@ -134,10 +134,16 @@ namespace NewLife.Cube
             {
                 // 为魔方注册默认首页，启动魔方站点时能自动跳入后台，同时为Home预留默认过度视图页面
                 routes.MapRoute(
-                    name: "Cube",
+                    name: "CubeHome",
                     url: "CubeHome/{action}/{id}",
                     defaults: new { controller = "CubeHome", action = "Index", id = UrlParameter.Optional },
                     namespaces: new[] { typeof(CubeHomeController).Namespace }
+                    );
+                routes.MapRoute(
+                    name: "Cube",
+                    url: "Cube/{action}/{id}",
+                    defaults: new { controller = "Cube", action = "Info", id = UrlParameter.Optional },
+                    namespaces: new[] { typeof(CubeController).Namespace }
                     );
             }
             if (routes["Sso"] == null)

@@ -121,6 +121,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_List_Data.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Areas\Admin\Views\Area\_List_Data.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_List_Data.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Areas\Admin\Views\Area\_List_Search.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_List_Search.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Areas\Admin\Views\Db\Index.generated.cs">
       <DependentUpon>Index.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -361,6 +371,21 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Index.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Shared\_Area1.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Area1.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Shared\_Area2.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Area2.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Shared\_Area3.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Area3.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Shared\_Enable.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -544,6 +569,14 @@
     <None Include="Areas\Admin\Views\App\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Areas\Admin\Views\Area\_List_Data.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Areas\Admin\Views\Area\_List_Search.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
     </None>
     <None Include="Areas\Admin\Views\Db\Index.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -787,6 +820,18 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Enable.generated.cs</LastGenOutput>
     </Content>
+    <None Include="Views\Shared\_Area1.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Area1.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Views\Shared\_Area2.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Area2.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Views\Shared\_Area3.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Area3.generated.cs</LastGenOutput>
+    </None>
     <None Include="Views\Shared\_Form_Group.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
