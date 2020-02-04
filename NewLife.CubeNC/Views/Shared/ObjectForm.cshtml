@@ -7,6 +7,15 @@
 
     var Obj = Model as Object;
     var pis = ViewBag.Properties as IEnumerable<PropertyInfo>;
+    var dic = new Dictionary<String, List<PropertyInfo>>();
+    foreach (var pi in pis)
+    {
+        var cat = pi.GetCustomAttribute<CategoryAttribute>();
+        var category = cat?.Category ?? "";
+        if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<PropertyInfo>();
+
+        list.Add(pi);
+    }
 }
 <div class="row">
     @await Html.PartialAsync("_Object_Nav", Model)
@@ -18,25 +27,36 @@
             {
                 @Html.AntiForgeryToken()
                 @Html.ValidationSummary(true)
-                foreach (var pi in pis)
+                foreach (var item in dic)
                 {
-                    var name = pi.Name;
-                    var dis = pi.GetDisplayName();
-                    var des = pi.GetDescription();
-                    if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
-                    if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
+                    if (dic.Count > 1)
                     {
-                        des = dis.Substring("。");
-                        dis = dis.Substring(null, "。");
-                    }
-                    <div class="form-group col-sm-12 col-md-12">
-                        <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@pi.Name">@(dis ?? pi.Name)</label>
-                        <div class="input-group col-xs-10 col-md-4">
-                            @Html.ForEditor(pi.Name, Obj.GetValue(pi), pi.PropertyType)
-                            @Html.ValidationMessage(pi.Name)
+                        <div class="form-group col-sm-12 col-md-12 col-xd-12">
+                            <label class="control-label col-xs-2 col-md-3 no-padding-left">
+                                <h2>@item.Key</h2>
+                            </label>
                         </div>
-                        <span class="hidden-xs col-md-5">&nbsp; @des</span>
-                    </div>
+                    }
+                    foreach (var pi in item.Value)
+                    {
+                        var name = pi.Name;
+                        var dis = pi.GetDisplayName();
+                        var des = pi.GetDescription();
+                        if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
+                        if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
+                        {
+                            des = dis.Substring("。");
+                            dis = dis.Substring(null, "。");
+                        }
+                        <div class="form-group col-sm-12 col-md-12">
+                            <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@pi.Name">@(dis ?? pi.Name)</label>
+                            <div class="input-group col-xs-10 col-md-4">
+                                @Html.ForEditor(pi.Name, Obj.GetValue(pi), pi.PropertyType)
+                                @Html.ValidationMessage(pi.Name)
+                            </div>
+                            <span class="hidden-xs col-md-5">&nbsp; @des</span>
+                        </div>
+                    }
                 }
                 if (this.Has(PermissionFlags.Update))
                 {

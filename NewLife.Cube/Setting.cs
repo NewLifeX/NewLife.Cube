@@ -38,46 +38,6 @@ namespace NewLife.Cube
         [Description("扩展插件服务器。将从该网页上根据关键字分析链接并下载插件")]
         public String PluginServer { get; set; } = "http://x.newlifex.com/";
 
-        /// <summary>工作台页面。进入后台的第一个内容页</summary>
-        [Description("工作台页面。进入后台的第一个内容页")]
-        public String StartPage { get; set; }
-
-        /// <summary>布局页。</summary>
-        [Description("布局页。")]
-        public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
-
-        /// <summary>默认角色。默认普通用户</summary>
-        [Description("默认角色。默认普通用户")]
-        public String DefaultRole { get; set; } = "普通用户";
-
-        /// <summary>启用密码登录。允许输入用户名密码进行登录</summary>
-        [Description("启用密码登录。允许输入用户名密码进行登录")]
-        public Boolean AllowLogin { get; set; } = true;
-
-        /// <summary>启用注册。允许输入用户名密码进行注册</summary>
-        [Description("启用注册。允许输入用户名密码进行注册")]
-        public Boolean AllowRegister { get; set; } = true;
-
-        /// <summary>自动注册。第三方登录后，如果本地未登录，自动注册新用户</summary>
-        [Description("自动注册。第三方登录后，如果本地未登录，自动注册新用户")]
-        public Boolean AutoRegister { get; set; } = true;
-
-        /// <summary>强行绑定用户。根据OAuth登录返回用户名强项绑定本地同名用户，而不需要增加提供者前缀</summary>
-        [Description("强行绑定用户。根据OAuth登录返回用户名强项绑定本地同名用户，而不需要增加提供者前缀")]
-        public Boolean ForceBindUser { get; set; }
-
-        /// <summary>注销所有系统。默认false仅注销本系统，true时注销SsoServer</summary>
-        [Description("注销所有系统。默认false仅注销本系统，true时注销SsoServer")]
-        public Boolean LogoutAll { get; set; } = false;
-
-        /// <summary>会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s</summary>
-        [Description("会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s")]
-        public Int32 SessionTimeout { get; set; } = 0;
-
-        /// <summary>登录提示。留空表示不显示登录提示信息</summary>
-        [Description("登录提示。留空表示不显示登录提示信息")]
-        public String LoginTip { get; set; }
-
         /// <summary>用户在线。记录用户在线状态</summary>
         [Description("用户在线。记录用户在线状态")]
         public Boolean WebOnline { get; set; } = true;
@@ -89,22 +49,6 @@ namespace NewLife.Cube
         /// <summary>访问统计。统计页面访问量</summary>
         [Description("访问统计。统计页面访问量")]
         public Boolean WebStatistics { get; set; } = true;
-
-        ///// <summary>捕获所有异常。默认false只捕获魔方区域异常</summary>
-        //[Description("捕获所有异常。默认false只捕获魔方区域异常")]
-        //public Boolean CatchAllException { get; set; }
-
-        /// <summary>表单组样式。大中小屏幕分别3/2/1列</summary>
-        [Description("表单组样式。大中小屏幕分别3/2/1列")]
-        public String FormGroupClass { get; set; } = "form-group col-xs-12 col-sm-6 col-lg-4";
-
-        /// <summary>下拉选择框。使用Bootstrap，美观，但有呈现方面的性能损耗</summary>
-        [Description("下拉选择框。使用Bootstrap，美观，但有呈现方面的性能损耗")]
-        public Boolean BootstrapSelect { get; set; } = true;
-
-        /// <summary>最大下拉个数。表单页关联下拉列表最大允许个数，默认50，超过时显示文本数字框</summary>
-        [Description("最大下拉个数。表单页关联下拉列表最大允许个数，默认50，超过时显示文本数字框")]
-        public Int32 MaxDropDownList { get; set; } = 50;
 
         /// <summary>强制SSL。强制使用https访问</summary>
         [Description("强制SSL。强制使用https访问")]
@@ -125,6 +69,75 @@ namespace NewLife.Cube
         ///// <summary>安全密钥。用于加密Cookie等通信内容</summary>
         //[Description("安全密钥。用于加密Cookie等通信内容")]
         //public String SecurityKey { get; set; }
+        #endregion
+
+        #region 用户登录
+        /// <summary>默认角色。默认普通用户</summary>
+        [Description("默认角色。默认普通用户")]
+        [Category("用户登录")]
+        public String DefaultRole { get; set; } = "普通用户";
+
+        /// <summary>启用密码登录。允许输入用户名密码进行登录</summary>
+        [Description("启用密码登录。允许输入用户名密码进行登录")]
+        [Category("用户登录")]
+        public Boolean AllowLogin { get; set; } = true;
+
+        /// <summary>启用注册。允许输入用户名密码进行注册</summary>
+        [Description("启用注册。允许输入用户名密码进行注册")]
+        [Category("用户登录")]
+        public Boolean AllowRegister { get; set; } = true;
+
+        /// <summary>自动注册。第三方登录后，如果本地未登录，自动注册新用户</summary>
+        [Description("自动注册。第三方登录后，如果本地未登录，自动注册新用户")]
+        [Category("用户登录")]
+        public Boolean AutoRegister { get; set; } = true;
+
+        /// <summary>强行绑定用户。根据OAuth登录返回用户名强项绑定本地同名用户，而不需要增加提供者前缀</summary>
+        [Description("强行绑定用户。根据OAuth登录返回用户名强项绑定本地同名用户，而不需要增加提供者前缀")]
+        [Category("用户登录")]
+        public Boolean ForceBindUser { get; set; }
+
+        /// <summary>注销所有系统。默认false仅注销本系统，true时注销SsoServer</summary>
+        [Description("注销所有系统。默认false仅注销本系统，true时注销SsoServer")]
+        [Category("用户登录")]
+        public Boolean LogoutAll { get; set; } = false;
+
+        /// <summary>会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s</summary>
+        [Description("会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s")]
+        [Category("用户登录")]
+        public Int32 SessionTimeout { get; set; } = 0;
+        #endregion
+
+        #region 界面配置
+        /// <summary>工作台页面。进入后台的第一个内容页</summary>
+        [Description("工作台页面。进入后台的第一个内容页")]
+        [Category("界面配置")]
+        public String StartPage { get; set; }
+
+        /// <summary>布局页。</summary>
+        [Description("布局页。")]
+        [Category("界面配置")]
+        public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
+
+        /// <summary>登录提示。留空表示不显示登录提示信息</summary>
+        [Description("登录提示。留空表示不显示登录提示信息")]
+        [Category("界面配置")]
+        public String LoginTip { get; set; }
+
+        /// <summary>表单组样式。大中小屏幕分别3/2/1列</summary>
+        [Description("表单组样式。大中小屏幕分别3/2/1列")]
+        [Category("界面配置")]
+        public String FormGroupClass { get; set; } = "form-group col-xs-12 col-sm-6 col-lg-4";
+
+        /// <summary>下拉选择框。使用Bootstrap，美观，但有呈现方面的性能损耗</summary>
+        [Description("下拉选择框。使用Bootstrap，美观，但有呈现方面的性能损耗")]
+        [Category("界面配置")]
+        public Boolean BootstrapSelect { get; set; } = true;
+
+        /// <summary>最大下拉个数。表单页关联下拉列表最大允许个数，默认50，超过时显示文本数字框</summary>
+        [Description("最大下拉个数。表单页关联下拉列表最大允许个数，默认50，超过时显示文本数字框")]
+        [Category("界面配置")]
+        public Int32 MaxDropDownList { get; set; } = 50;
         #endregion
 
         #region 方法
