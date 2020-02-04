@@ -83,12 +83,14 @@ namespace NewLife.Cube.Controllers
             {
                 Server = asmx?.Name,
                 asmx?.Version,
+                asmx?.Compile,
                 OS = _OS,
                 MachineName = _MachineName,
                 UserName = _UserName,
                 ApiVersion = asmx2?.Version,
 
-                LocalIP = _LocalIP,
+                UserHost = ip + "",
+                Local = _LocalIP,
                 Remote = ip + "",
                 State = state,
                 Time = DateTime.Now,
@@ -98,12 +100,23 @@ namespace NewLife.Cube.Controllers
             var dic = rs.ToDictionary();
 
 #if __CORE__
+            // 完整显示地址和端口
             var conn = HttpContext.Connection;
-            dic["Port"] = conn.LocalPort;
+            if (conn != null)
+            {
+                var addr = conn.LocalIpAddress;
+                if (addr != null && addr.IsIPv4MappedToIPv6) addr = addr.MapToIPv4();
+                dic["Local"] = $"{addr}:{conn.LocalPort}";
+
+                addr = conn.RemoteIpAddress;
+                if (addr != null && addr.IsIPv4MappedToIPv6) addr = addr.MapToIPv4();
+                dic["Remote"] = $"{addr}:{conn.RemotePort}";
+            }
 #endif
 
-            // 进程
-            dic["Process"] = GetProcess();
+            // 登录后，系统角色可以看看到进程
+            var user = ManageProvider.User;
+            if (user != null && user.Roles.Any(r => r.IsSystem)) dic["Process"] = GetProcess();
 
             return Json(0, null, dic);
         }
