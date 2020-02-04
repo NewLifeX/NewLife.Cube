@@ -473,24 +473,9 @@ namespace NewLife.Cube
         [DisplayName("Json接口")]
         public virtual ActionResult Json(String id, Pager p)
         {
-            if (id.IsNullOrEmpty()) id = GetRequest("token");
-            if (id.IsNullOrEmpty()) id = GetRequest("key");
-
             try
             {
-                IUser user = null;
-                var app = App.FindBySecret(id);
-                if (app != null)
-                {
-                    if (!app.Enable) throw new XException("非法授权！");
-                }
-                else
-                {
-                    user = UserToken.Valid(id, UserHost);
-
-                    // 设置当前用户，用于数据权限控制
-                    HttpContext.Items["userId"] = user.ID;
-                }
+                var issuer = ValidToken(id);
 
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
@@ -498,16 +483,40 @@ namespace NewLife.Cube
                 var list = SearchData(p);
 
                 // Json输出
-                if (app != null)
-                    return Json(0, null, list, new { app = app?.ToString(), pager = p });
-                else if (user != null)
-                    return Json(0, null, list, new { user = user?.ToString(), pager = p });
-                else
-                    return Json(0, null, list, new { pager = p });
+                return Json(0, null, list, new { issuer, pager = p });
             }
             catch (Exception ex)
             {
                 return Json(0, null, ex);
+            }
+        }
+
+        protected virtual String ValidToken(String token)
+        {
+            if (token.IsNullOrEmpty()) token = GetRequest("token");
+            if (token.IsNullOrEmpty()) token = GetRequest("key");
+
+            var app = App.FindBySecret(token);
+            if (app != null)
+            {
+                if (!app.Enable) throw new XException("非法授权！");
+
+                return app?.ToString();
+            }
+            else
+            {
+                var user = UserToken.Valid(token, UserHost);
+
+                // 定位菜单页面
+                var menu = ManageProvider.Menu.FindByFullName(GetType().FullName);
+
+                // 判断权限
+                if (menu == null || !user.Has(menu, PermissionFlags.Detail)) throw new Exception($"[{user}]无权访问[{menu}]");
+
+                // 设置当前用户，用于数据权限控制
+                HttpContext.Items["userId"] = user.ID;
+
+                return user?.ToString();
             }
         }
 
@@ -519,36 +528,19 @@ namespace NewLife.Cube
         [DisplayName("Xml接口")]
         public virtual ActionResult Xml(String id, Pager p)
         {
-            if (id.IsNullOrEmpty()) id = GetRequest("token");
-            if (id.IsNullOrEmpty()) id = GetRequest("key");
-
             var xml = "";
             try
             {
-                IUser user = null;
-                var app = App.FindBySecret(id);
-                if (app != null)
-                {
-                    if (!app.Enable) throw new XException("非法授权！");
-                }
-                else
-                {
-                    user = UserToken.Valid(id, UserHost);
-
-                    // 设置当前用户，用于数据权限控制
-                    HttpContext.Items["userId"] = user.ID;
-                }
+                var issuer = ValidToken(id);
 
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
 
                 var list = SearchData(p) as IList<TEntity>;
 
-                var rs = new Root { Result = false, Data = list, Pager = p };
-                if (app != null) rs.App = app?.ToString();
-                if (user != null) rs.User = user?.ToString();
+                var rs = new Root { Result = false, Data = list, Pager = p, Issuer = issuer };
 
-                xml = rs.ToXml(null, false, true);
+                xml = rs.ToXml(null, false, false);
             }
             catch (Exception ex)
             {
@@ -564,8 +556,7 @@ namespace NewLife.Cube
             public Boolean Result { get; set; }
             public IList<TEntity> Data { get; set; }
             public Pager Pager { get; set; }
-            public String App { get; set; }
-            public String User { get; set; }
+            public String Issuer { get; set; }
         }
 
         /// <summary>导出Xml</summary>
