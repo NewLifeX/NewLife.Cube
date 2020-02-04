@@ -11,6 +11,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>用户链接控制器</summary>
+    [DataPermission(null, "UserID={#userId}")]
     [DisplayName("用户链接")]
     [Description("第三方登录信息")]
     [Area("Admin")]

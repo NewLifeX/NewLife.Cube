@@ -16,6 +16,7 @@ using System.Web.Mvc;
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>用户在线控制器</summary>
+    [DataPermission(null, "UserID={#userId}")]
     [DisplayName("用户在线")]
     [Description("已登录系统的用户，操作情况。")]
     [Area("Admin")]

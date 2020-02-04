@@ -8,6 +8,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>部门</summary>
+    [DataPermission(null, "ManagerID={#userId}")]
     [DisplayName("部门")]
     [Area("Admin")]
     public class DepartmentController : EntityController<Department>
