@@ -152,8 +152,9 @@ namespace NewLife.Cube
                 }
             </tr>
         }
-        @if (page.State is {EntityType} entity)
+        @if (page.State is {EntityType})
         {
+            var entity = page.State as {EntityType};
             <tr>
                 @if (set.EnableSelect)
                 {
@@ -226,9 +227,9 @@ namespace NewLife.Cube
                 }
             </tr>
         }
-        @if (page.State is IEntity)
+        @if (page.State is {EntityType})
         {
-            var entity = page.State as IEntity;
+            var entity = page.State as {EntityType};
             <tr>
                 @if (set.EnableSelect)
                 {
