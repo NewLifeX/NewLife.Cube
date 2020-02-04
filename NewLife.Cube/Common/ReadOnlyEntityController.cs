@@ -226,9 +226,9 @@ namespace NewLife.Cube
             var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
             if (att == null) return null;
 
-            // 判断系统角色
+            // 已登录用户判断系统角色，未登录时不判断
             var user = ManageProvider.User;
-            if (user == null || user.Roles.Any(e => e.IsSystem) || att.Valid(user.Roles)) return null;
+            if (user != null && (user.Roles.Any(e => e.IsSystem) || att.Valid(user.Roles))) return null;
 
             var builder = new WhereBuilder
             {
@@ -478,8 +478,19 @@ namespace NewLife.Cube
 
             try
             {
-                //var user = UserToken.Valid(id);
-                var app = App.Valid(id);
+                IUser user = null;
+                var app = App.FindBySecret(id);
+                if (app != null)
+                {
+                    if (!app.Enable) throw new XException("非法授权！");
+                }
+                else
+                {
+                    user = UserToken.Valid(id, UserHost);
+
+                    // 设置当前用户，用于数据权限控制
+                    HttpContext.Items["userId"] = user.ID;
+                }
 
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
@@ -487,7 +498,12 @@ namespace NewLife.Cube
                 var list = SearchData(p);
 
                 // Json输出
-                return Json(0, null, list, new { pager = p });
+                if (app != null)
+                    return Json(0, null, list, new { app = app?.ToString(), pager = p });
+                else if (user != null)
+                    return Json(0, null, list, new { user = user?.ToString(), pager = p });
+                else
+                    return Json(0, null, list, new { pager = p });
             }
             catch (Exception ex)
             {
@@ -509,8 +525,19 @@ namespace NewLife.Cube
             var xml = "";
             try
             {
-                //var user = UserToken.Valid(id);
-                var app = App.Valid(id);
+                IUser user = null;
+                var app = App.FindBySecret(id);
+                if (app != null)
+                {
+                    if (!app.Enable) throw new XException("非法授权！");
+                }
+                else
+                {
+                    user = UserToken.Valid(id, UserHost);
+
+                    // 设置当前用户，用于数据权限控制
+                    HttpContext.Items["userId"] = user.ID;
+                }
 
                 // 需要总记录数来分页
                 p.RetrieveTotalCount = true;
@@ -518,6 +545,9 @@ namespace NewLife.Cube
                 var list = SearchData(p) as IList<TEntity>;
 
                 var rs = new Root { Result = false, Data = list, Pager = p };
+                if (app != null) rs.App = app?.ToString();
+                if (user != null) rs.User = user?.ToString();
+
                 xml = rs.ToXml(null, false, true);
             }
             catch (Exception ex)
@@ -534,6 +564,8 @@ namespace NewLife.Cube
             public Boolean Result { get; set; }
             public IList<TEntity> Data { get; set; }
             public Pager Pager { get; set; }
+            public String App { get; set; }
+            public String User { get; set; }
         }
 
         /// <summary>导出Xml</summary>

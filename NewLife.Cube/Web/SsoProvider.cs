@@ -306,8 +306,9 @@ namespace NewLife.Cube.Web
         /// <param name="client_id"></param>
         /// <param name="client_secret"></param>
         /// <param name="code"></param>
+        /// <param name="ip"></param>
         /// <returns></returns>
-        public virtual Object GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code)
+        public virtual Object GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
         {
             var token = sso.GetToken(client_id, client_secret, code);
 

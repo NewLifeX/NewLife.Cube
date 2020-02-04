@@ -39,53 +39,6 @@ namespace NewLife.Cube.Entity
             var len = _.Remark.Length;
             if (!Remark.IsNullOrEmpty() && len > 0 && Remark.Length > len) Remark = Remark.Substring(0, len);
         }
-
-        ///// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
-        //[EditorBrowsable(EditorBrowsableState.Never)]
-        //protected override void InitData()
-        //{
-        //    // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
-        //    if (Meta.Session.Count > 0) return;
-
-        //    if (XTrace.Debug) XTrace.WriteLine("开始初始化UserConnect[用户链接]数据……");
-
-        //    var entity = new UserConnect();
-        //    entity.ID = 0;
-        //    entity.Provider = "abc";
-        //    entity.UserID = 0;
-        //    entity.OpenID = "abc";
-        //    entity.LinkID = 0;
-        //    entity.NickName = "abc";
-        //    entity.Avatar = "abc";
-        //    entity.AccessToken = "abc";
-        //    entity.RefreshToken = "abc";
-        //    entity.Expire = DateTime.Now;
-        //    entity.Enable = true;
-        //    entity.CreateUserID = 0;
-        //    entity.CreateIP = "abc";
-        //    entity.CreateTime = DateTime.Now;
-        //    entity.UpdateUserID = 0;
-        //    entity.UpdateIP = "abc";
-        //    entity.UpdateTime = DateTime.Now;
-        //    entity.Remark = "abc";
-        //    entity.Insert();
-
-        //    if (XTrace.Debug) XTrace.WriteLine("完成初始化UserConnect[用户链接]数据！");
-        //}
-
-        ///// <summary>已重载。基类先调用Valid(true)验证数据，然后在事务保护内调用OnInsert</summary>
-        ///// <returns></returns>
-        //public override Int32 Insert()
-        //{
-        //    return base.Insert();
-        //}
-
-        ///// <summary>已重载。在事务保护范围内处理业务，位于Valid之后</summary>
-        ///// <returns></returns>
-        //protected override Int32 OnDelete()
-        //{
-        //    return base.OnDelete();
-        //}
         #endregion
 
         #region 扩展属性
@@ -94,9 +47,8 @@ namespace NewLife.Cube.Entity
         public UserX User => Extends.Get(nameof(User), k => UserX.FindByID(UserID));
 
         /// <summary>用户</summary>
-        //[Map(__.UserID, typeof(UserX), "ID")]
         [Map(__.UserID)]
-        public String UserName => User + "";
+        public String UserName => User?.ToString();
         #endregion
 
         #region 扩展查询

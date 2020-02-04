@@ -2,6 +2,7 @@
 using NewLife.Cube.Entity;
 using NewLife.Model;
 using NewLife.Web;
+using XCode.Membership;
 
 namespace NewLife.Cube.Web
 {
@@ -120,7 +121,7 @@ namespace NewLife.Cube.Web
                 if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("[{0}]密钥错误", client_id);
 
                 // 验证来源地址
-                var ip = WebHelper.UserHost;
+                var ip = ManageProvider.UserHost;
                 if (!ip.IsNullOrEmpty() && !app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);
 
                 var token = base.GetToken(client_id, client_secret, code);

@@ -7,13 +7,13 @@ using XCode.DataAccessLayer;
 
 namespace NewLife.Cube.Entity
 {
-    /// <summary>用户令牌。授权其他人直接拥有指定用户的身份，支持有效期，支持数据接口</summary>
+    /// <summary>用户令牌。授权指定用户访问接口数据，支持有效期</summary>
     [Serializable]
     [DataObject]
-    [Description("用户令牌。授权其他人直接拥有指定用户的身份，支持有效期，支持数据接口")]
+    [Description("用户令牌。授权指定用户访问接口数据，支持有效期")]
     [BindIndex("IU_UserToken_Token", true, "Token")]
     [BindIndex("IX_UserToken_UserID", false, "UserID")]
-    [BindTable("UserToken", Description = "用户令牌。授权其他人直接拥有指定用户的身份，支持有效期，支持数据接口", ConnName = "Membership", DbType = DatabaseType.None)]
+    [BindTable("UserToken", Description = "用户令牌。授权指定用户访问接口数据，支持有效期", ConnName = "Membership", DbType = DatabaseType.None)]
     public partial class UserToken : IUserToken
     {
         #region 属性
@@ -72,6 +72,22 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, false, 0)]
         [BindColumn("Times", "次数。该令牌使用次数", "")]
         public Int32 Times { get { return _Times; } set { if (OnPropertyChanging(__.Times, value)) { _Times = value; OnPropertyChanged(__.Times); } } }
+
+        private String _FirstIP;
+        /// <summary>首次地址</summary>
+        [DisplayName("首次地址")]
+        [Description("首次地址")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("FirstIP", "首次地址", "")]
+        public String FirstIP { get { return _FirstIP; } set { if (OnPropertyChanging(__.FirstIP, value)) { _FirstIP = value; OnPropertyChanged(__.FirstIP); } } }
+
+        private DateTime _FirstTime;
+        /// <summary>首次时间</summary>
+        [DisplayName("首次时间")]
+        [Description("首次时间")]
+        [DataObjectField(false, false, true, 0)]
+        [BindColumn("FirstTime", "首次时间", "")]
+        public DateTime FirstTime { get { return _FirstTime; } set { if (OnPropertyChanging(__.FirstTime, value)) { _FirstTime = value; OnPropertyChanged(__.FirstTime); } } }
 
         private String _LastIP;
         /// <summary>最后地址</summary>
@@ -163,6 +179,8 @@ namespace NewLife.Cube.Entity
                     case __.Expire : return _Expire;
                     case __.Enable : return _Enable;
                     case __.Times : return _Times;
+                    case __.FirstIP : return _FirstIP;
+                    case __.FirstTime : return _FirstTime;
                     case __.LastIP : return _LastIP;
                     case __.LastTime : return _LastTime;
                     case __.CreateUserID : return _CreateUserID;
@@ -186,6 +204,8 @@ namespace NewLife.Cube.Entity
                     case __.Expire : _Expire = value.ToDateTime(); break;
                     case __.Enable : _Enable = value.ToBoolean(); break;
                     case __.Times : _Times = value.ToInt(); break;
+                    case __.FirstIP : _FirstIP = Convert.ToString(value); break;
+                    case __.FirstTime : _FirstTime = value.ToDateTime(); break;
                     case __.LastIP : _LastIP = Convert.ToString(value); break;
                     case __.LastTime : _LastTime = value.ToDateTime(); break;
                     case __.CreateUserID : _CreateUserID = value.ToInt(); break;
@@ -225,6 +245,12 @@ namespace NewLife.Cube.Entity
 
             /// <summary>次数。该令牌使用次数</summary>
             public static readonly Field Times = FindByName(__.Times);
+
+            /// <summary>首次地址</summary>
+            public static readonly Field FirstIP = FindByName(__.FirstIP);
+
+            /// <summary>首次时间</summary>
+            public static readonly Field FirstTime = FindByName(__.FirstTime);
 
             /// <summary>最后地址</summary>
             public static readonly Field LastIP = FindByName(__.LastIP);
@@ -280,6 +306,12 @@ namespace NewLife.Cube.Entity
             /// <summary>次数。该令牌使用次数</summary>
             public const String Times = "Times";
 
+            /// <summary>首次地址</summary>
+            public const String FirstIP = "FirstIP";
+
+            /// <summary>首次时间</summary>
+            public const String FirstTime = "FirstTime";
+
             /// <summary>最后地址</summary>
             public const String LastIP = "LastIP";
 
@@ -310,7 +342,7 @@ namespace NewLife.Cube.Entity
         #endregion
     }
 
-    /// <summary>用户令牌。授权其他人直接拥有指定用户的身份，支持有效期，支持数据接口接口</summary>
+    /// <summary>用户令牌。授权指定用户访问接口数据，支持有效期接口</summary>
     public partial interface IUserToken
     {
         #region 属性
@@ -334,6 +366,12 @@ namespace NewLife.Cube.Entity
 
         /// <summary>次数。该令牌使用次数</summary>
         Int32 Times { get; set; }
+
+        /// <summary>首次地址</summary>
+        String FirstIP { get; set; }
+
+        /// <summary>首次时间</summary>
+        DateTime FirstTime { get; set; }
 
         /// <summary>最后地址</summary>
         String LastIP { get; set; }

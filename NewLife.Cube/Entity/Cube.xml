@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Tables Version="9.14.7276.41290" NameSpace="NewLife.Cube.Entity" ConnName="Cube" Output="" BaseClass="Entity" NameIgnoreCase="true" ChineseFileName="True">
+<Tables Version="9.14.7338.38849" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="http://www.newlifex.com http://www.newlifex.com/Model2020.xsd" NameSpace="NewLife.Cube.Entity" ConnName="Cube" Output="" BaseClass="Entity" ChineseFileName="True" IgnoreNameCase="True" xmlns="http://www.newlifex.com/Model2020.xsd">
   <Table Name="UserConnect" Description="用户链接。第三方绑定" ConnName="Membership">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
@@ -26,7 +26,7 @@
       <Index Columns="UserID" />
     </Indexes>
   </Table>
-  <Table Name="UserToken" Description="用户令牌。授权其他人直接拥有指定用户的身份，支持有效期，支持数据接口" ConnName="Membership">
+  <Table Name="UserToken" Description="用户令牌。授权指定用户访问接口数据，支持有效期" ConnName="Membership">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
       <Column Name="Token" DataType="String" Description="令牌" />
@@ -35,6 +35,8 @@
       <Column Name="Expire" DataType="DateTime" Description="过期时间" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="Times" DataType="Int32" Description="次数。该令牌使用次数" />
+      <Column Name="FirstIP" DataType="String" Description="首次地址" />
+      <Column Name="FirstTime" DataType="DateTime" Description="首次时间" />
       <Column Name="LastIP" DataType="String" Description="最后地址" />
       <Column Name="LastTime" DataType="DateTime" Description="最后时间" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建用户" />

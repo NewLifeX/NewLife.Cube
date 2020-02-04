@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Web;
 using XCode;
@@ -14,13 +15,14 @@ namespace NewLife.Cube.Admin.Controllers
     [DataPermission(null, "UserID={#userId}")]
     [DisplayName("用户令牌")]
     [Description("授权指定用户访问接口数据，支持有效期")]
+    [Area("Admin")]
     public class UserTokenController : EntityController<UserToken>
     {
         static UserTokenController()
         {
             MenuOrder = 40;
 
-            FormFields.RemoveField("UserID");
+            //FormFields.RemoveField("UserID");
         }
 
         /// <summary>搜索数据集</summary>

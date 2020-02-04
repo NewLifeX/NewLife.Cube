@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -38,6 +41,13 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 扩展属性
+        /// <summary>用户</summary>
+        [XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        public UserX User => Extends.Get(nameof(User), k => UserX.FindByID(UserID));
+
+        /// <summary>用户</summary>
+        [Map(__.UserID)]
+        public String UserName => User?.ToString();
         #endregion
 
         #region 扩展查询
@@ -106,16 +116,22 @@ namespace NewLife.Cube.Entity
         #region 业务操作
         /// <summary>验证token是否可用</summary>
         /// <param name="token"></param>
+        /// <param name="ip"></param>
         /// <returns></returns>
-        public static IUser Valid(String token)
+        public static IUser Valid(String token, String ip)
         {
             if (token.IsNullOrEmpty()) throw new Exception("缺少令牌token");
 
-            var ut = UserToken.FindByToken(token);
+            var ut = FindByToken(token);
             if (ut == null) throw new Exception("无效令牌token");
 
             ut.Times++;
-            ut.LastIP = WebHelper.UserHost;
+            if (ut.FirstTime.Year < 2000)
+            {
+                ut.FirstIP = ip;
+                ut.FirstTime = DateTime.Now;
+            }
+            ut.LastIP = ip;
             ut.LastTime = DateTime.Now;
             ut.SaveAsync(5000);
 
@@ -126,8 +142,8 @@ namespace NewLife.Cube.Entity
             var user = ManageProvider.Provider.FindByID(ut.UserID) as IUser;
             if (user == null || !user.Enable) throw new Exception("无效令牌身份");
 
-            // 拥有系统角色
-            if (!user.Roles.Any(r => r.IsSystem)) throw new Exception("无权查看该数据");
+            //// 拥有系统角色
+            //if (!user.Roles.Any(r => r.IsSystem)) throw new Exception("无权查看该数据");
 
             return user;
         }

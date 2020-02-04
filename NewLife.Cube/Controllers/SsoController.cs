@@ -381,7 +381,7 @@ namespace NewLife.Cube.Controllers
 
             try
             {
-                var rs = Provider.GetAccessToken(OAuth, client_id, client_secret, code);
+                var rs = Provider.GetAccessToken(OAuth, client_id, client_secret, code, UserHost);
 
                 // 返回UserInfo告知客户端可以请求用户信息
 #if __CORE__
