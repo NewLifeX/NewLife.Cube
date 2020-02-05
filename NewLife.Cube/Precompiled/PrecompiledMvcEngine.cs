@@ -8,6 +8,7 @@ using System.Web.Compilation;
 using System.Web.Hosting;
 using System.Web.Mvc;
 using System.Web.WebPages;
+using NewLife.Log;
 using NewLife.Reflection;
 
 namespace NewLife.Cube.Precompiled
@@ -222,6 +223,18 @@ namespace NewLife.Cube.Precompiled
         /// <returns></returns>
         public static IDictionary<String, Type> GetTypeMappings(Assembly asm, String baseVirtualPath)
         {
+            // 部分程序集反射时容易抛出异常，这里吃掉异常，避免影响魔方启动
+            Type[] types = null;
+            try
+            {
+                types = asm.GetTypes();
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+            }
+            if (types == null || types.Length == 0) return new Dictionary<String, Type>();
+
             return (
                 from type in asm.GetTypes()
                 where type.As<WebPageRenderingBase>()
