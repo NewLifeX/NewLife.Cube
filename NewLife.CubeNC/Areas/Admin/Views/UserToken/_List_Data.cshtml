@@ -48,7 +48,7 @@
             var p = url.IndexOf('?');
             if (p >= 0)
             {
-                query = url.Substring(p + 1);
+                query = url.Substring(p);
                 url = url.Substring(0, p);
             }
             if (!query.IsNullOrEmpty())

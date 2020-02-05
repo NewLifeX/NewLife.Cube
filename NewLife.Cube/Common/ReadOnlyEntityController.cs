@@ -1005,7 +1005,7 @@ namespace NewLife.Cube
 
             if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(16);
             ut.Enable = true;
-            ut.Expire = DateTime.Now.AddHours(2);
+            ut.Expire = DateTime.Now.AddSeconds(Setting.Current.ShareExpire);
             ut.Save();
 
             //var url2 = $"/Admin/UserToken?q={ut.Token}";

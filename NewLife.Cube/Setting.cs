@@ -66,9 +66,9 @@ namespace NewLife.Cube
         [Description("静态资源目录。默认wwwroot")]
         public String WebRootPath { get; set; } = "wwwroot";
 
-        ///// <summary>安全密钥。用于加密Cookie等通信内容</summary>
-        //[Description("安全密钥。用于加密Cookie等通信内容")]
-        //public String SecurityKey { get; set; }
+        /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
+        [Description("分享有效期。分享令牌的有效期，默认7200秒")]
+        public Int32 ShareExpire { get; set; } = 7200;
         #endregion
 
         #region 用户登录
