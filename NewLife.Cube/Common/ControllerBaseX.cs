@@ -221,7 +221,7 @@ namespace NewLife.Cube
 #if __CORE__
                 if (Request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
 #else
-                if (Request.AcceptTypes.Any(e => e == "application/json")) return true;
+                if (Request.AcceptTypes != null && Request.AcceptTypes.Any(e => e == "application/json")) return true;
 #endif
 
                 if (GetRequest("output").EqualIgnoreCase("json")) return true;
