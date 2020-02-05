@@ -42,38 +42,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Extensions\NewlifeCubeMvcCoreServiceCollectionExtensions.cs" />
-    <Compile Remove="Extensions\ObjectHelper.cs" />
-    <Compile Remove="Extensions\ScanController.cs" />
-    <Compile Remove="Extensions\SessionExtensions.cs" />
-    <Compile Remove="WebMiddleware\ErrorMiddleware.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="appsettings.json" />
-    <Content Remove="Properties\launchSettings.json" />
-    <Content Remove="wwwroot\favicon.ico" />
-    <Content Remove="wwwroot\Scripts\ApiClient.js" />
-    <Content Remove="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
-    <Content Remove="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
-    <Content Remove="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
-    <Content Remove="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
-    <Content Remove="wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Remove="wwwroot\Scripts\modernizr-2.6.2.js" />
-    <Content Remove="wwwroot\Scripts\WebSocketX.js" />
-    <Content Remove="wwwroot\Scripts\_references.js" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="8.6.2020.204" />
     <PackageReference Include="NewLife.XCode" Version="9.15.2020.204" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Models\" />
-    <Folder Include="Entity\" />
-    <Folder Include="Web\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -139,6 +109,13 @@
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\favicon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="appsettings.json" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="..\NewLife.Cube\Entity\Cube.xml">
       <Link>Entity\Cube.xml</Link>
@@ -148,48 +125,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>XCoder.cs</LastGenOutput>
     </None>
+    <None Include="appsettings.json" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="wwwroot\favicon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="appsettings.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <None Include="Areas\Admin\Views\UserConnect\_List_Search.cshtml" />
-    <None Include="Areas\Admin\Views\UserToken\_List_Data.cshtml" />
-    <None Include="Properties\launchSettings.json" />
-    <None Include="wwwroot\Content\city-picker\city-picker.js" />
-    <None Include="wwwroot\Content\echarts.min.js" />
-    <None Include="wwwroot\Scripts\ApiClient.js" />
-    <None Include="wwwroot\Scripts\jquery-1.8.2.intellisense.js" />
-    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
-    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
-    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
-    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
-    <None Include="wwwroot\Scripts\modernizr-2.6.2.js" />
-    <None Include="wwwroot\Scripts\WebSocketX.js" />
-    <None Include="wwwroot\Scripts\_references.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="Areas\Admin\Views\AppLog\_List_Data.cshtml">
-      <Generator></Generator>
-    </Content>
-    <Content Update="Areas\Admin\Views\App\_List_Data.cshtml">
-      <Generator></Generator>
-    </Content>
-    <Content Update="Areas\Admin\Views\App\_List_Search.cshtml">
-      <Generator></Generator>
-    </Content>
-    <Content Update="Areas\Admin\Views\_ViewImports.cshtml">
-      <Pack>$(IncludeRazorContentInPack)</Pack>
-    </Content>
-    <Content Update="Views\Shared\_Enable.cshtml">
-      <Generator></Generator>
-    </Content>
-    <Content Update="wwwroot\Content\echarts.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>
