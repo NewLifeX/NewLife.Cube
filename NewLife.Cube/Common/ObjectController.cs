@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using NewLife.Reflection;
 using XCode.Membership;
+using System.Collections.Generic;
 #if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -47,7 +48,20 @@ namespace NewLife.Cube
             if (txt.IsNullOrEmpty()) txt = des;
             ViewBag.HeaderContent = txt;
 
-            if (Value != null) ViewBag.Properties = GetMembers(Value);
+            if (Value != null)
+            {
+                var pis = GetMembers(Value);
+                var dic = new Dictionary<String, List<PropertyInfo>>();
+                foreach (var pi in pis)
+                {
+                    var cat = pi.GetCustomAttribute<CategoryAttribute>();
+                    var category = cat?.Category ?? "";
+                    if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<PropertyInfo>();
+
+                    list.Add(pi);
+                }
+                ViewBag.Properties = dic;
+            }
         }
 
         /// <summary>执行后</summary>

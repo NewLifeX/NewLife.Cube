@@ -65,7 +65,7 @@ namespace ASP
     Layout = NewLife.Cube.Setting.Current.Layout;
 
     var Obj = Model as Object;
-    var pis = ViewBag.Properties as IEnumerable<PropertyInfo>;
+    var dic = ViewBag.Properties as Dictionary<String, List<PropertyInfo>>;
 
             
             #line default
@@ -137,91 +137,122 @@ WriteLiteral(">\r\n");
             
             #line 20 "..\..\Views\Shared\ObjectForm.cshtml"
                                              
-                foreach (var pi in pis)
+                foreach (var item in dic)
                 {
-                    var name = pi.Name;
-                    var dis = pi.GetDisplayName();
-                    var des = pi.GetDescription();
-                    if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
-                    if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
+                    if (dic.Count > 1)
                     {
-                        des = dis.Substring("。");
-                        dis = dis.Substring(null, "。");
-                    }
 
             
             #line default
             #line hidden
-WriteLiteral("                    <div");
+WriteLiteral("                        <div");
 
-WriteLiteral(" class=\"form-group col-sm-12 col-md-12\"");
+WriteLiteral(" class=\"form-group col-sm-12 col-md-12 col-xd-12\"");
 
-WriteLiteral(">\r\n                        <label");
+WriteLiteral(">\r\n                            <label");
 
 WriteLiteral(" class=\"control-label col-xs-2 col-md-3 no-padding-left\"");
 
-WriteAttribute("for", Tuple.Create(" for=\"", 1268), Tuple.Create("\"", 1282)
+WriteLiteral(">\r\n                                <h2>");
+
             
-            #line 33 "..\..\Views\Shared\ObjectForm.cshtml"
-            , Tuple.Create(Tuple.Create("", 1274), Tuple.Create<System.Object, System.Int32>(pi.Name
+            #line 27 "..\..\Views\Shared\ObjectForm.cshtml"
+                               Write(item.Key);
+
             
             #line default
             #line hidden
-, 1274), false)
+WriteLiteral("</h2>\r\n                            </label>\r\n                        </div>\r\n");
+
+            
+            #line 30 "..\..\Views\Shared\ObjectForm.cshtml"
+                    }
+                    foreach (var pi in item.Value)
+                    {
+                        var name = pi.Name;
+                        var dis = pi.GetDisplayName();
+                        var des = pi.GetDescription();
+                        if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
+                        if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
+                        {
+                            des = dis.Substring("。");
+                            dis = dis.Substring(null, "。");
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <div");
+
+WriteLiteral(" class=\"form-group col-sm-12 col-md-12\"");
+
+WriteLiteral(">\r\n                            <label");
+
+WriteLiteral(" class=\"control-label col-xs-2 col-md-3 no-padding-left\"");
+
+WriteAttribute("for", Tuple.Create(" for=\"", 1783), Tuple.Create("\"", 1797)
+            
+            #line 43 "..\..\Views\Shared\ObjectForm.cshtml"
+                , Tuple.Create(Tuple.Create("", 1789), Tuple.Create<System.Object, System.Int32>(pi.Name
+            
+            #line default
+            #line hidden
+, 1789), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 33 "..\..\Views\Shared\ObjectForm.cshtml"
-                                                                                                  Write(dis ?? pi.Name);
+            #line 43 "..\..\Views\Shared\ObjectForm.cshtml"
+                                                                                                      Write(dis ?? pi.Name);
 
             
             #line default
             #line hidden
-WriteLiteral("</label>\r\n                        <div");
+WriteLiteral("</label>\r\n                            <div");
 
 WriteLiteral(" class=\"input-group col-xs-10 col-md-4\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                            ");
+WriteLiteral("                                ");
 
             
-            #line 35 "..\..\Views\Shared\ObjectForm.cshtml"
-                       Write(Html.ForEditor(pi.Name, Obj.GetValue(pi), pi.PropertyType));
+            #line 45 "..\..\Views\Shared\ObjectForm.cshtml"
+                           Write(Html.ForEditor(pi.Name, Obj.GetValue(pi), pi.PropertyType));
 
             
             #line default
             #line hidden
 WriteLiteral("\r\n");
 
-WriteLiteral("                            ");
+WriteLiteral("                                ");
 
             
-            #line 36 "..\..\Views\Shared\ObjectForm.cshtml"
-                       Write(Html.ValidationMessage(pi.Name));
+            #line 46 "..\..\Views\Shared\ObjectForm.cshtml"
+                           Write(Html.ValidationMessage(pi.Name));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </div>\r\n                        <span");
+WriteLiteral("\r\n                            </div>\r\n                            <span");
 
 WriteLiteral(" class=\"hidden-xs col-md-5\"");
 
 WriteLiteral(">&nbsp; ");
 
             
-            #line 38 "..\..\Views\Shared\ObjectForm.cshtml"
-                                                           Write(des);
+            #line 48 "..\..\Views\Shared\ObjectForm.cshtml"
+                                                               Write(des);
 
             
             #line default
             #line hidden
-WriteLiteral("</span>\r\n                    </div>\r\n");
+WriteLiteral("</span>\r\n                        </div>\r\n");
 
             
-            #line 40 "..\..\Views\Shared\ObjectForm.cshtml"
+            #line 50 "..\..\Views\Shared\ObjectForm.cshtml"
+                    }
                 }
                 if (this.Has(PermissionFlags.Update))
                 {
@@ -262,7 +293,7 @@ WriteLiteral(" class=\"glyphicon glyphicon-remove\"");
 WriteLiteral("></i><strong>取消</strong></button>\r\n                    </div>\r\n");
 
             
-            #line 48 "..\..\Views\Shared\ObjectForm.cshtml"
+            #line 59 "..\..\Views\Shared\ObjectForm.cshtml"
                 }
             }
 

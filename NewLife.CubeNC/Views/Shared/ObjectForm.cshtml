@@ -6,16 +6,7 @@
     Layout = NewLife.Cube.Setting.Current.Layout;
 
     var Obj = Model as Object;
-    var pis = ViewBag.Properties as IEnumerable<PropertyInfo>;
-    var dic = new Dictionary<String, List<PropertyInfo>>();
-    foreach (var pi in pis)
-    {
-        var cat = pi.GetCustomAttribute<CategoryAttribute>();
-        var category = cat?.Category ?? "";
-        if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<PropertyInfo>();
-
-        list.Add(pi);
-    }
+    var dic = ViewBag.Properties as Dictionary<String, List<PropertyInfo>>;
 }
 <div class="row">
     @await Html.PartialAsync("_Object_Nav", Model)
