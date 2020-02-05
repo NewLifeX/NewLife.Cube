@@ -315,5 +315,30 @@ namespace NewLife.Cube
         /// <returns></returns>
         protected virtual String OnJsonSerialize(Object data) => data.ToJson();
         #endregion
+
+        #region 辅助
+        /// <summary>获取控制器名称</summary>
+        /// <returns></returns>
+        protected virtual String[] GetControllerAction()
+        {
+#if __CORE__
+            var act = ControllerContext.ActionDescriptor;
+            var controller = act.ControllerName;
+            var action = act.ActionName;
+            act.RouteValues.TryGetValue("Area", out var area);
+#else
+            var area = (String)RouteData.Values["area"];
+            if (area.IsNullOrEmpty()) area = (String)RouteData.DataTokens["area"];
+
+            var controller = (String)RouteData.Values["controller"];
+            if (controller.IsNullOrEmpty()) controller = (String)RouteData.DataTokens["controller"];
+
+            var action = (String)RouteData.Values["action"];
+            if (action.IsNullOrEmpty()) controller = (String)RouteData.DataTokens["action"];
+#endif
+
+            return new[] { area, controller, action };
+        }
+        #endregion
     }
 }

@@ -989,15 +989,8 @@ namespace NewLife.Cube
             };
 
             // 构造url
-#if __CORE__
-            var act = ControllerContext.ActionDescriptor;
-            var url = $"/{act.ControllerName}";
-            if (act.RouteValues.TryGetValue("Area", out var area)) url = $"/{area}/{act.ControllerName}";
-#else
-            var ctrl = RouteData.Values["controller"];
-            var url = $"/{ctrl}";
-            if (RouteData.Values.TryGetValue("Area", out var area)) url = $"/{area}/{ctrl}";
-#endif
+            var cs = GetControllerAction();
+            var url = cs[0].IsNullOrEmpty() ? $"/{cs[1]}" : $"/{cs[0]}/{cs[1]}";
             var sb = p.GetBaseUrl(true, true, true);
             if (sb.Length > 0) url += "?" + sb;
 
@@ -1031,7 +1024,8 @@ namespace NewLife.Cube
             var root = GetProjectRoot();
 
             // 视图路径，Areas/区域/Views/控制器/_List_Data.cshtml
-            var vpath = "Areas/{0}/Views/{1}/_List_Data.cshtml".F(RouteData.Values["area"], GetType().Name.TrimEnd("Controller"));
+            var cs = GetControllerAction();
+            var vpath = "Areas/{0}/Views/{1}/_List_Data.cshtml".F(cs[0], cs[1]);
             if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
             var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
@@ -1056,7 +1050,8 @@ namespace NewLife.Cube
             var root = GetProjectRoot();
 
             // 视图路径，Areas/区域/Views/控制器/_Form_Body.cshtml
-            var vpath = "Areas/{0}/Views/{1}/_Form_Body.cshtml".F(RouteData.Values["area"], GetType().Name.TrimEnd("Controller"));
+            var cs = GetControllerAction();
+            var vpath = "Areas/{0}/Views/{1}/_Form_Body.cshtml".F(cs[0], cs[1]);
             if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
@@ -1081,7 +1076,8 @@ namespace NewLife.Cube
             var root = GetProjectRoot();
 
             // 视图路径，Areas/区域/Views/控制器/_List_Search.cshtml
-            var vpath = "Areas/{0}/Views/{1}/_List_Search.cshtml".F(RouteData.Values["area"], GetType().Name.TrimEnd("Controller"));
+            var cs = GetControllerAction();
+            var vpath = "Areas/{0}/Views/{1}/_List_Search.cshtml".F(cs[0], cs[1]);
             if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
             var rs = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);

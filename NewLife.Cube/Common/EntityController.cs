@@ -405,21 +405,17 @@ namespace NewLife.Cube
             //if (fact == null) throw new ArgumentNullException(nameof(id), "未找到模型 " + id);
 
             // 找到控制器，以识别动作地址
-#if __CORE__
-            var act = ControllerContext.ActionDescriptor;
-            var action = act.ControllerName;
-#else
-            var ctrl = RouteData.Values["controller"];
-            var action = ctrl;
-            if (RouteData.Values.TryGetValue("Area", out var area)) action = $"{area}/{ctrl}";
-#endif
-            if (!mds.Contains(action)) throw new InvalidOperationException($"[{action}]未配置为允许同步 Sync:Models");
+            var cs = GetControllerAction();
+            var ctrl = cs[0].IsNullOrEmpty() ? cs[1] : $"{cs[0]}/{cs[1]}";
+            if (!mds.Contains(ctrl)) throw new InvalidOperationException($"[{ctrl}]未配置为允许同步 Sync:Models");
 
             // 创建客户端，准备发起请求
-            var url = server.EnsureEnd("/") + $"{action}/Json/{token}?PageSize=100000";
+            var url = server.EnsureEnd("/") + $"{ctrl}/Json/{token}?PageSize=100000";
 
-            var http = new HttpClient();
-            http.BaseAddress = new Uri(url);
+            var http = new HttpClient
+            {
+                BaseAddress = new Uri(url)
+            };
 
             var sw = Stopwatch.StartNew();
 
