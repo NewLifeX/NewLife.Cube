@@ -251,7 +251,7 @@ WriteLiteral(" />\r\n\r\n    <!-- 自定义样式 -->\r\n    <link");
 WriteLiteral(" rel=\"stylesheet\"");
 
 WriteAttribute("href", Tuple.Create(" href=\"", 1734), Tuple.Create("\"", 1775)
-, Tuple.Create(Tuple.Create("", 1741), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.css?v=2.0.2017.1126")
+, Tuple.Create(Tuple.Create("", 1741), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.css?v=3.2.2020.0204")
 , 1741), false)
 );
 
@@ -621,7 +621,7 @@ WriteLiteral("></script>\r\n    ");
 WriteLiteral("\r\n    <script");
 
 WriteAttribute("src", Tuple.Create(" src=\"", 8082), Tuple.Create("\"", 8121)
-, Tuple.Create(Tuple.Create("", 8088), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.js?v=2.0.2017.1126")
+, Tuple.Create(Tuple.Create("", 8088), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.js?v=3.2.2020.0204")
 , 8088), false)
 );
 

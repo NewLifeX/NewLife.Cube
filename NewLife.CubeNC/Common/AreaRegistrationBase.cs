@@ -127,7 +127,7 @@ namespace NewLife.Cube
                     if (DateTime.TryParse(ss[i].TrimStart("//").Trim(), out dt)) break;
                 }
                 // 要求脚本最小更新时间
-                if (dt >= "2017-12-07 00:00:00".ToDateTime()) return;
+                if (dt >= "2020-02-04 00:00:00".ToDateTime()) return;
             }
 
             var url = Setting.Current.PluginServer;
