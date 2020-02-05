@@ -67,6 +67,7 @@ namespace ASP
     var page = ViewBag.Page as Pager;
 
     var charts = ViewBag.Charts as ECharts[];
+    var charts2 = ViewBag.Charts2 as ECharts[];
 
             
             #line default
@@ -80,7 +81,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 14 "..\..\Views\Shared\List.cshtml"
+            #line 15 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Toolbar"));
 
             
@@ -89,7 +90,7 @@ Write(Html.Partial("_List_Toolbar"));
 WriteLiteral("\r\n</div>\r\n");
 
             
-            #line 16 "..\..\Views\Shared\List.cshtml"
+            #line 17 "..\..\Views\Shared\List.cshtml"
  if (charts != null && charts.Length > 0)
 {
 
@@ -103,13 +104,13 @@ WriteLiteral(" class=\"clearfix\"");
 WriteLiteral(">\r\n");
 
             
-            #line 19 "..\..\Views\Shared\List.cshtml"
+            #line 20 "..\..\Views\Shared\List.cshtml"
         
             
             #line default
             #line hidden
             
-            #line 19 "..\..\Views\Shared\List.cshtml"
+            #line 20 "..\..\Views\Shared\List.cshtml"
          foreach (var item in charts)
         {
             
@@ -117,14 +118,14 @@ WriteLiteral(">\r\n");
             #line default
             #line hidden
             
-            #line 21 "..\..\Views\Shared\List.cshtml"
+            #line 22 "..\..\Views\Shared\List.cshtml"
        Write(Html.Partial("_ECharts", item));
 
             
             #line default
             #line hidden
             
-            #line 21 "..\..\Views\Shared\List.cshtml"
+            #line 22 "..\..\Views\Shared\List.cshtml"
                                            
         }
 
@@ -134,7 +135,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("    </div>\r\n");
 
             
-            #line 24 "..\..\Views\Shared\List.cshtml"
+            #line 25 "..\..\Views\Shared\List.cshtml"
 }
 
             
@@ -149,7 +150,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 26 "..\..\Views\Shared\List.cshtml"
+            #line 27 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Data"));
 
             
@@ -164,14 +165,65 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 29 "..\..\Views\Shared\List.cshtml"
+            #line 30 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Pager"));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n</div>");
+WriteLiteral("\r\n</div>\r\n");
 
+            
+            #line 32 "..\..\Views\Shared\List.cshtml"
+ if (charts2 != null && charts2.Length > 0)
+{
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <div");
+
+WriteLiteral(" class=\"clearfix\"");
+
+WriteLiteral(">\r\n");
+
+            
+            #line 35 "..\..\Views\Shared\List.cshtml"
+        
+            
+            #line default
+            #line hidden
+            
+            #line 35 "..\..\Views\Shared\List.cshtml"
+         foreach (var item in charts2)
+        {
+            
+            
+            #line default
+            #line hidden
+            
+            #line 37 "..\..\Views\Shared\List.cshtml"
+       Write(Html.Partial("_ECharts", item));
+
+            
+            #line default
+            #line hidden
+            
+            #line 37 "..\..\Views\Shared\List.cshtml"
+                                           
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    </div>\r\n");
+
+            
+            #line 40 "..\..\Views\Shared\List.cshtml"
+}
+            
+            #line default
+            #line hidden
         }
     }
 }

@@ -69,18 +69,26 @@ namespace ASP
     var name = chart.Name;
     var chartName = "chart_" + name;
     var optionName = "option_" + name;
-    var setOption = $"chart_{name}.setOption(option_{name})";
+    var setOption = "chart_{0}.setOption(option_{0})".F(name);
 
     var style = "";
     if (chart.Width > 0)
-        style += $"width: {chart.Width}px;";
+    {
+        style += "width: {0}px;".F(chart.Width);
+    }
     else if (chart.Width < 0)
-        style += $"width: {-chart.Width}%;";
+    {
+        style += "width: {0}%;".F(-chart.Width);
+    }
 
     if (chart.Height > 0)
-        style += $"height: {chart.Height}px;";
+    {
+        style += "height: {0}px;".F(chart.Height);
+    }
     else if (chart.Height < 0)
-        style += $"height: {-chart.Height}%;";
+    {
+        style += "height: {0}%;".F(-chart.Height);
+    }
 
 
             
@@ -88,24 +96,24 @@ namespace ASP
             #line hidden
 WriteLiteral("\r\n<div");
 
-WriteAttribute("id", Tuple.Create(" id=\"", 646), Tuple.Create("\"", 656)
+WriteAttribute("id", Tuple.Create(" id=\"", 719), Tuple.Create("\"", 729)
             
-            #line 25 "..\..\Views\Shared\_ECharts.cshtml"
-, Tuple.Create(Tuple.Create("", 651), Tuple.Create<System.Object, System.Int32>(name
+            #line 33 "..\..\Views\Shared\_ECharts.cshtml"
+, Tuple.Create(Tuple.Create("", 724), Tuple.Create<System.Object, System.Int32>(name
             
             #line default
             #line hidden
-, 651), false)
+, 724), false)
 );
 
-WriteAttribute("style", Tuple.Create(" style=\"", 657), Tuple.Create("\"", 671)
+WriteAttribute("style", Tuple.Create(" style=\"", 730), Tuple.Create("\"", 744)
             
-            #line 25 "..\..\Views\Shared\_ECharts.cshtml"
-, Tuple.Create(Tuple.Create("", 665), Tuple.Create<System.Object, System.Int32>(style
+            #line 33 "..\..\Views\Shared\_ECharts.cshtml"
+, Tuple.Create(Tuple.Create("", 738), Tuple.Create<System.Object, System.Int32>(style
             
             #line default
             #line hidden
-, 665), false)
+, 738), false)
 );
 
 WriteLiteral("></div>\r\n<script");
@@ -115,7 +123,7 @@ WriteLiteral(" type=\"text/javascript\"");
 WriteLiteral(">\r\n    var ");
 
             
-            #line 27 "..\..\Views\Shared\_ECharts.cshtml"
+            #line 35 "..\..\Views\Shared\_ECharts.cshtml"
    Write(chartName);
 
             
@@ -124,7 +132,7 @@ WriteLiteral(">\r\n    var ");
 WriteLiteral(" = echarts.init(document.getElementById(\'");
 
             
-            #line 27 "..\..\Views\Shared\_ECharts.cshtml"
+            #line 35 "..\..\Views\Shared\_ECharts.cshtml"
                                                       Write(name);
 
             
@@ -133,7 +141,7 @@ WriteLiteral(" = echarts.init(document.getElementById(\'");
 WriteLiteral("\'));\r\n\r\n    var ");
 
             
-            #line 29 "..\..\Views\Shared\_ECharts.cshtml"
+            #line 37 "..\..\Views\Shared\_ECharts.cshtml"
    Write(optionName);
 
             
@@ -142,7 +150,7 @@ WriteLiteral("\'));\r\n\r\n    var ");
 WriteLiteral(" = ");
 
             
-            #line 29 "..\..\Views\Shared\_ECharts.cshtml"
+            #line 37 "..\..\Views\Shared\_ECharts.cshtml"
                  Write(Html.Raw(chart.Build()));
 
             
@@ -153,7 +161,7 @@ WriteLiteral(";\r\n\r\n");
 WriteLiteral("    ");
 
             
-            #line 31 "..\..\Views\Shared\_ECharts.cshtml"
+            #line 39 "..\..\Views\Shared\_ECharts.cshtml"
 Write(setOption);
 
             

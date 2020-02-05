@@ -8,10 +8,8 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 using XCode.Statistics;
-#if __CORE__
 using NewLife.Cube.Charts;
 using static XCode.Membership.VisitStat;
-#endif
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -34,7 +32,6 @@ namespace NewLife.Cube.Admin.Controllers
 
             var list = VisitStat.Search(model, p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p);
 
-#if __CORE__
             if (list.Count > 0)
             {
                 var chart = new ECharts();
@@ -53,7 +50,6 @@ namespace NewLife.Cube.Admin.Controllers
                 ViewBag.Charts = new[] { chart };
                 ViewBag.Charts2 = new[] { chart2 };
             }
-#endif
 
             return list;
         }

@@ -68,7 +68,7 @@
         {
             <div class="breadcrumbs" id="breadcrumbs">
                 <ul class="breadcrumb">
-                    @Html.PartialAsync("_Ace_Layout_Nav").Result
+                    @await Html.PartialAsync("_Ace_Layout_Nav")
                 </ul>
                 <div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
             </div>

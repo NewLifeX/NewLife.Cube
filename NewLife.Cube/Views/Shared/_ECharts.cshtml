@@ -8,18 +8,26 @@
     var name = chart.Name;
     var chartName = "chart_" + name;
     var optionName = "option_" + name;
-    var setOption = $"chart_{name}.setOption(option_{name})";
+    var setOption = "chart_{0}.setOption(option_{0})".F(name);
 
     var style = "";
     if (chart.Width > 0)
-        style += $"width: {chart.Width}px;";
+    {
+        style += "width: {0}px;".F(chart.Width);
+    }
     else if (chart.Width < 0)
-        style += $"width: {-chart.Width}%;";
+    {
+        style += "width: {0}%;".F(-chart.Width);
+    }
 
     if (chart.Height > 0)
-        style += $"height: {chart.Height}px;";
+    {
+        style += "height: {0}px;".F(chart.Height);
+    }
     else if (chart.Height < 0)
-        style += $"height: {-chart.Height}%;";
+    {
+        style += "height: {0}%;".F(-chart.Height);
+    }
 
 }
 <div id="@name" style="@style"></div>
