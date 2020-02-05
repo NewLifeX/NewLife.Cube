@@ -26,9 +26,9 @@ namespace NewLife.Cube
     public class Setting : Config<Setting>
     {
         #region 属性
-        /// <summary>是否启用调试。默认为不启用</summary>
+        /// <summary>是否启用调试。默认true</summary>
         [Description("调试")]
-        public Boolean Debug { get; set; }
+        public Boolean Debug { get; set; } = true;
 
         /// <summary>显示运行时间</summary>
         [Description("显示运行时间")]
@@ -44,7 +44,7 @@ namespace NewLife.Cube
 
         /// <summary>用户行为。记录用户所有操作</summary>
         [Description("用户行为。记录用户所有操作")]
-        public Boolean WebBehavior { get; set; }
+        public Boolean WebBehavior { get; set; } = true;
 
         /// <summary>访问统计。统计页面访问量</summary>
         [Description("访问统计。统计页面访问量")]
