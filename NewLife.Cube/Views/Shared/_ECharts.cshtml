@@ -1,0 +1,32 @@
+﻿@model NewLife.Cube.Charts.ECharts
+@using NewLife;
+@using NewLife.Web;
+@using NewLife.Cube;
+@using XCode;
+@{
+    var chart = Model;
+    var name = chart.Name;
+    var chartName = "chart_" + name;
+    var optionName = "option_" + name;
+    var setOption = $"chart_{name}.setOption(option_{name})";
+
+    var style = "";
+    if (chart.Width > 0)
+        style += $"width: {chart.Width}px;";
+    else if (chart.Width < 0)
+        style += $"width: {-chart.Width}%;";
+
+    if (chart.Height > 0)
+        style += $"height: {chart.Height}px;";
+    else if (chart.Height < 0)
+        style += $"height: {-chart.Height}%;";
+
+}
+<div id="@name" style="@style"></div>
+<script type="text/javascript">
+    var @chartName = echarts.init(document.getElementById('@name'));
+
+    var @optionName = @Html.Raw(chart.Build());
+
+    @setOption;
+</script>

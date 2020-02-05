@@ -28,6 +28,12 @@ namespace ASP
     using System.Web.WebPages;
     using NewLife;
     using NewLife.Cube;
+    
+    #line 3 "..\..\Views\Shared\List.cshtml"
+    using NewLife.Cube.Charts;
+    
+    #line default
+    #line hidden
     using NewLife.Reflection;
     
     #line 1 "..\..\Views\Shared\List.cshtml"
@@ -53,12 +59,14 @@ namespace ASP
         public override void Execute()
         {
             
-            #line 3 "..\..\Views\Shared\List.cshtml"
+            #line 4 "..\..\Views\Shared\List.cshtml"
   
     Layout = NewLife.Cube.Setting.Current.Layout;
 
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
+
+    var charts = ViewBag.Charts as ECharts[];
 
             
             #line default
@@ -72,13 +80,67 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 11 "..\..\Views\Shared\List.cshtml"
+            #line 14 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Toolbar"));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n</div>\r\n<div");
+WriteLiteral("\r\n</div>\r\n");
+
+            
+            #line 16 "..\..\Views\Shared\List.cshtml"
+ if (charts != null && charts.Length > 0)
+{
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <div");
+
+WriteLiteral(" class=\"clearfix\"");
+
+WriteLiteral(">\r\n");
+
+            
+            #line 19 "..\..\Views\Shared\List.cshtml"
+        
+            
+            #line default
+            #line hidden
+            
+            #line 19 "..\..\Views\Shared\List.cshtml"
+         foreach (var item in charts)
+        {
+            
+            
+            #line default
+            #line hidden
+            
+            #line 21 "..\..\Views\Shared\List.cshtml"
+       Write(Html.Partial("_ECharts", item));
+
+            
+            #line default
+            #line hidden
+            
+            #line 21 "..\..\Views\Shared\List.cshtml"
+                                           
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    </div>\r\n");
+
+            
+            #line 24 "..\..\Views\Shared\List.cshtml"
+}
+
+            
+            #line default
+            #line hidden
+WriteLiteral("<div");
 
 WriteLiteral(" class=\"table-responsive\"");
 
@@ -87,7 +149,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 14 "..\..\Views\Shared\List.cshtml"
+            #line 26 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Data"));
 
             
@@ -102,7 +164,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 17 "..\..\Views\Shared\List.cshtml"
+            #line 29 "..\..\Views\Shared\List.cshtml"
 Write(Html.Partial("_List_Pager"));
 
             

@@ -1,15 +1,27 @@
 ﻿@using NewLife.Web;
 @using XCode;
+@using NewLife.Cube.Charts;
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
 
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
+
+    var charts = ViewBag.Charts as ECharts[];
 }
 
 <div class="clearfix">
     @Html.Partial("_List_Toolbar")
 </div>
+@if (charts != null && charts.Length > 0)
+{
+    <div class="clearfix">
+        @foreach (var item in charts)
+        {
+            @Html.Partial("_ECharts", item)
+        }
+    </div>
+}
 <div class="table-responsive">
     @Html.Partial("_List_Data")
 </div>

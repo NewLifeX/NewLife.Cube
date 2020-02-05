@@ -88,6 +88,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\NewLife.CubeNC\Charts\ChartTitle.cs">
+      <Link>Charts\ChartTitle.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.CubeNC\Charts\ECharts.cs">
+      <Link>Charts\ECharts.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.CubeNC\Charts\Series.cs">
+      <Link>Charts\Series.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.CubeNC\Charts\SeriesTypes.cs">
+      <Link>Charts\SeriesTypes.cs</Link>
+    </Compile>
+    <Compile Include="..\NewLife.CubeNC\Charts\TextStyle.cs">
+      <Link>Charts\TextStyle.cs</Link>
+    </Compile>
     <Compile Include="App_Start\ODataConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\AreaController.cs" />
@@ -390,6 +405,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>_Area3.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Shared\_ECharts.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_ECharts.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Views\Shared\_Enable.generated.cs">
       <AutoGen>True</AutoGen>
@@ -821,10 +841,14 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </None>
-    <Content Include="Views\Shared\_Enable.cshtml">
+    <None Include="Views\Shared\_ECharts.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_ECharts.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Views\Shared\_Enable.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Enable.generated.cs</LastGenOutput>
-    </Content>
+    </None>
     <None Include="Views\Shared\_Area1.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Area1.generated.cs</LastGenOutput>

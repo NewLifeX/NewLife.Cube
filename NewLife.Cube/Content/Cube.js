@@ -1,5 +1,5 @@
 ﻿// 以下时间用于魔方判断是否需要更新脚本
-// 2019-12-05 00:00:00
+// 2020-02-04 00:00:00
 
 $(function () {
 
@@ -23,7 +23,9 @@ $(function () {
             var cf = $this.data('confirm');
 
             if (cf && cf.length > 0) {
-                confirmDialog(cf, () => doClickAction($this));
+                confirmDialog(cf,function () {
+                    doClickAction($this)
+                } );
                 return false;
             }
 
@@ -46,26 +48,16 @@ $(function () {
 
 function doClickAction($this) {
     var fields = $this.data('fields');
-    // 自定义属性
-    var customdata = $this.data('cdata');
-    var datalength = 0;
     //参数
     var parameter = '';
     if (fields && fields.length > 0) {
         var fieldArr = fields.split(',');
         for (var i = 0; i < fieldArr.length; i++) {
             var detailArr = $('[name=' + fieldArr[i] + ']');
-            var params = detailArr.serialize();
-            datalength = params.split('&').length;
             //不对name容器标签进行限制，直接进行序列化
             //如果有特殊需求，可以再指定筛选器进行筛选
-            parameter += ((parameter.length > 0 ? '&' : '') + params);
+            parameter += ((parameter.length > 0 ? '&' : '') + detailArr.serialize());
         }
-    }
-    // 设置自定义数据
-    if (customdata) {
-        datalength += customdata.split('&').length;
-        parameter += ((parameter.length > 0 ? '&' : '') + customdata);
     }
 
     //method
@@ -76,34 +68,30 @@ function doClickAction($this) {
     }
 
     //url
-    var curl = $this.data('url');
+    var curl = $this.data('url') || $this.data('href');
     if (!curl || curl.length <= 0) {
         if ($this[0].tagName == 'A') {
             curl = $this.attr('href');
         }
     }
-    doAction(method, curl, parameter, datalength);
+    doAction(method, curl, parameter);
 }
 
 //ajax请求 methodName 指定GET与POST
-function doAction(methodName, actionUrl, actionParamter, datalength) {
+function doAction(methodName, actionUrl, actionParamter) {
     if (!methodName || methodName.length <= 0 || !actionUrl || actionUrl.length <= 0) {
         tips('请求参数异常，请保证请求的地址跟参数正确！', 0, 1000);
         return;
     }
-    var methodKind = datalength > 10 ? 'post' : 'get';
-    console.log('长度' + datalength);
-    console.log(methodKind);
 
     $.ajax({
         url: actionUrl,
         type: methodName,
         async: false,
-        method: methodKind,
         dataType: 'json',
         data: actionParamter,
         error: function (ex) {
-            tips('请求异常！' + ex, 0, 2000);
+            tips('请求异常！', 0, 1000);
             //console.log(ex);
         },
         beforeSend: function () {
@@ -114,18 +102,31 @@ function doAction(methodName, actionUrl, actionParamter, datalength) {
         },
         complete: function (result) {
             var rs = result.responseJSON;
-            if (rs.message && rs.message.length > 0) {
-                tips(rs.message, 0, 3000);
+            
+            if (rs.message || rs.data) {
+                tips(rs.message || rs.data, 0, 1000);
             }
+            
             if (rs.url && rs.url.length > 0) {
                 if (rs.url == '[refresh]') {
-                    //刷新页面但不重新加载页面的所有静态资源
-                    location.reload(false);
+                    if(rs.time && +rs.time > 0){
+                        setTimeout(function () {
+                            location.reload(false)
+                        }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
+                    }else {
+                        //刷新页面但不重新加载页面的所有静态资源
+                        location.reload(false);
+                    }
                 } else {
-                    window.location.href = rs.url;
+                    if (rs.time && +rs.time > 0) {
+                        setTimeout(function () {
+                            window.location.href = rs.url;
+                        }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
+                    } else {
+                        window.location.href = rs.url;
+                    }
                 }
             }
         }
     });
 }
-

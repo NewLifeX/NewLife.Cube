@@ -1,7 +1,10 @@
 ﻿@using NewLife.Common;
+@using NewLife.Cube.Charts;
 @{
     var set = NewLife.Cube.Setting.Current;
     var set2 = ViewBag.PageSetting as PageSetting;
+
+    var charts = ViewBag.Charts as ECharts[];
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -44,6 +47,10 @@
     <link rel="stylesheet" href="~/Content/Cube.css?v=3.2.2020.0204">
     <!-- JQuery作为一等公民，页面内部随时可能使用 -->
     <script src="~/Content/js/jquery-2.1.3.min.js"></script>
+    @if (charts != null && charts.Length > 0)
+    {
+        <script src="~/Content/echarts.min.js"></script>
+    }
 </head>
 <body>
     <div class="panel panel-default">
