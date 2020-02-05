@@ -1003,7 +1003,7 @@ namespace NewLife.Cube
             var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url));
             if (ut == null) ut = new UserToken { UserID = userId, Url = url };
 
-            if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(16);
+            if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(8);
             ut.Enable = true;
             ut.Expire = DateTime.Now.AddSeconds(Setting.Current.ShareExpire);
             ut.Save();
