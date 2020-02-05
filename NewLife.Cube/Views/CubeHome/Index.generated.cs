@@ -108,7 +108,16 @@ WriteLiteral("        ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n    </div>\r\n</body>\r\n</html>");
+WriteLiteral("\r\n    </div>\r\n</body>\r\n");
+
+            
+            #line 23 "..\..\Views\CubeHome\Index.cshtml"
+Write(Html.Partial("_Footer"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n</html>");
 
         }
     }

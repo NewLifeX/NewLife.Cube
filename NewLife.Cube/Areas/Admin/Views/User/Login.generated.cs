@@ -54,6 +54,8 @@ namespace ASP
     Layout = null;
     ViewBag.Title = "登录";
 
+    var set = NewLife.Cube.Setting.Current;
+
             
             #line default
             #line hidden
@@ -80,7 +82,7 @@ WriteLiteral(" content=\"width=device-width, initial-scale=1\"");
 WriteLiteral(" />\r\n    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->\r\n\r\n    <title>");
 
             
-            #line 14 "..\..\Areas\Admin\Views\User\Login.cshtml"
+            #line 16 "..\..\Areas\Admin\Views\User\Login.cshtml"
       Write(ViewBag.Title);
 
             
@@ -89,7 +91,7 @@ WriteLiteral(" />\r\n    <!-- 上述3个meta标签*必须*放在最前面，任�
 WriteLiteral(" - ");
 
             
-            #line 14 "..\..\Areas\Admin\Views\User\Login.cshtml"
+            #line 16 "..\..\Areas\Admin\Views\User\Login.cshtml"
                        Write(SysConfig.Current.DisplayName);
 
             
@@ -97,9 +99,9 @@ WriteLiteral(" - ");
             #line hidden
 WriteLiteral("</title>\r\n    <link");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 419), Tuple.Create("\"", 439)
-, Tuple.Create(Tuple.Create("", 426), Tuple.Create<System.Object, System.Int32>(Href("~/favicon.ico")
-, 426), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 466), Tuple.Create("\"", 486)
+, Tuple.Create(Tuple.Create("", 473), Tuple.Create<System.Object, System.Int32>(Href("~/favicon.ico")
+, 473), false)
 );
 
 WriteLiteral(" rel=\"shortcut icon\"");
@@ -108,18 +110,18 @@ WriteLiteral(" type=\"image/x-icon\"");
 
 WriteLiteral(" />\r\n\r\n    <!-- 基本样式 -->\r\n    <link");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 515), Tuple.Create("\"", 563)
-, Tuple.Create(Tuple.Create("", 522), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/css/bootstrap.min.css")
-, 522), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 562), Tuple.Create("\"", 610)
+, Tuple.Create(Tuple.Create("", 569), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/css/bootstrap.min.css")
+, 569), false)
 );
 
 WriteLiteral(" rel=\"stylesheet\"");
 
 WriteLiteral(" />\r\n    <!-- 自定义样式-->\r\n    <link");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 614), Tuple.Create("\"", 639)
-, Tuple.Create(Tuple.Create("", 621), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.css")
-, 621), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 661), Tuple.Create("\"", 686)
+, Tuple.Create(Tuple.Create("", 668), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.css")
+, 668), false)
 );
 
 WriteLiteral(" rel=\"stylesheet\"");
@@ -237,7 +239,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("                    ");
 
             
-            #line 231 "..\..\Areas\Admin\Views\User\Login.cshtml"
+            #line 233 "..\..\Areas\Admin\Views\User\Login.cshtml"
                Write(Html.Partial("_Login_Login"));
 
             
@@ -248,7 +250,7 @@ WriteLiteral("\r\n");
 WriteLiteral("                    ");
 
             
-            #line 232 "..\..\Areas\Admin\Views\User\Login.cshtml"
+            #line 234 "..\..\Areas\Admin\Views\User\Login.cshtml"
                Write(Html.Partial("_Login_Forgot"));
 
             
@@ -259,7 +261,7 @@ WriteLiteral("\r\n");
 WriteLiteral("                    ");
 
             
-            #line 233 "..\..\Areas\Admin\Views\User\Login.cshtml"
+            #line 235 "..\..\Areas\Admin\Views\User\Login.cshtml"
                Write(Html.Partial("_Login_Register"));
 
             
@@ -270,7 +272,7 @@ WriteLiteral("\r\n");
 WriteLiteral("                    ");
 
             
-            #line 234 "..\..\Areas\Admin\Views\User\Login.cshtml"
+            #line 236 "..\..\Areas\Admin\Views\User\Login.cshtml"
                Write(Html.Partial("_Login_Login3"));
 
             
@@ -279,16 +281,16 @@ WriteLiteral("                    ");
 WriteLiteral("\r\n                </div>\r\n            </div>\r\n        </div>\r\n    </div>\r\n    <!-" +
 "- JQuery作为一等公民，页面内部随时可能使用 -->\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 8590), Tuple.Create("\"", 8628)
-, Tuple.Create(Tuple.Create("", 8596), Tuple.Create<System.Object, System.Int32>(Href("~/Content/js/jquery-2.1.3.min.js")
-, 8596), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 8637), Tuple.Create("\"", 8675)
+, Tuple.Create(Tuple.Create("", 8643), Tuple.Create<System.Object, System.Int32>(Href("~/Content/js/jquery-2.1.3.min.js")
+, 8643), false)
 );
 
 WriteLiteral("></script>\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 8652), Tuple.Create("\"", 8697)
-, Tuple.Create(Tuple.Create("", 8658), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/js/bootstrap.min.js")
-, 8658), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 8699), Tuple.Create("\"", 8744)
+, Tuple.Create(Tuple.Create("", 8705), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/js/bootstrap.min.js")
+, 8705), false)
 );
 
 WriteLiteral(@"></script>
@@ -299,7 +301,16 @@ WriteLiteral(@"></script>
     <![endif]-->
 
 </body>
-</html>");
+");
+
+            
+            #line 251 "..\..\Areas\Admin\Views\User\Login.cshtml"
+Write(Html.Partial("_Footer"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n</html>");
 
         }
     }

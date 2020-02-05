@@ -108,7 +108,16 @@ WriteLiteral("        ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n    </div>\r\n</body>\r\n</html>");
+WriteLiteral("\r\n    </div>\r\n</body>\r\n");
+
+            
+            #line 22 "..\..\Views\Home\Index.cshtml"
+Write(Html.Partial("_Footer"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n</html>");
 
         }
     }

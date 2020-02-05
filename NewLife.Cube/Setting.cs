@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reflection;
 using NewLife.Configuration;
 
 namespace NewLife.Cube
@@ -148,6 +149,16 @@ namespace NewLife.Cube
         [Description("最大下拉个数。表单页关联下拉列表最大允许个数，默认50，超过时显示文本数字框")]
         [Category("界面配置")]
         public Int32 MaxDropDownList { get; set; } = 50;
+
+        /// <summary>版权。留空表示不显示版权信息</summary>
+        [Description("版权。留空表示不显示版权信息")]
+        [Category("界面配置")]
+        public String Copyright { get; set; }
+
+        /// <summary>备案号。留空表示不显示备案信息</summary>
+        [Description("备案号。留空表示不显示备案信息")]
+        [Category("界面配置")]
+        public String Registration { get; set; } = "粤ICP备10000000号";
         #endregion
 
         #region 方法
@@ -165,12 +176,25 @@ namespace NewLife.Cube
 #else
             if (StartPage.IsNullOrEmpty()) StartPage = System.Web.HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/Index/Main";
 #endif
-           
+
             var web = Runtime.IsWeb;
 
             if (AvatarPath.IsNullOrEmpty()) AvatarPath = web ? "..\\Avatars" : "Avatars";
-
             if (DefaultRole.IsNullOrEmpty() || DefaultRole == "3") DefaultRole = "普通用户";
+
+            // 取版权信息
+            if (Copyright.IsNullOrEmpty())
+            {
+                var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+                if (asm != null)
+                {
+                    var att = asm.GetCustomAttribute<AssemblyCopyrightAttribute>();
+                    if (att != null)
+                    {
+                        Copyright = att.Copyright;
+                    }
+                }
+            }
 
             base.OnLoaded();
         }
