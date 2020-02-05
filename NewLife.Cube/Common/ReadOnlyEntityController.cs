@@ -228,7 +228,8 @@ namespace NewLife.Cube
             if (att == null) return null;
 
             // 已登录用户判断系统角色，未登录时不判断
-            var user = ManageProvider.User;
+            var user = HttpContext.Items["CurrentUser"] as IUser;
+            if (user == null) user = ManageProvider.User;
             if (user != null && (user.Roles.Any(e => e.IsSystem) || att.Valid(user.Roles))) return null;
 
             var builder = new WhereBuilder
@@ -553,6 +554,7 @@ namespace NewLife.Cube
 
                 // 设置当前用户，用于数据权限控制
                 HttpContext.Items["userId"] = user.ID;
+                HttpContext.Items["CurrentUser"] = user;
 
                 return user?.ToString();
             }
