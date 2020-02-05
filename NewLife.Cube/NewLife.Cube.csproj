@@ -446,6 +446,16 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Views\Shared\_SelectDepartment.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_SelectDepartment.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Shared\_SelectUser.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_SelectUser.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Shared\_StatLevel.generated.cs">
       <DependentUpon>_StatLevel.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -889,6 +899,14 @@
     <None Include="Views\Shared\_Form_Body.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Body.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Views\Shared\_SelectDepartment.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_SelectDepartment.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Views\Shared\_SelectUser.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_SelectUser.generated.cs</LastGenOutput>
     </None>
     <None Include="Views\Shared\_StatLevel.cshtml">
       <Generator>RazorGenerator</Generator>

@@ -28,6 +28,12 @@ namespace ASP
     using System.Web.WebPages;
     using NewLife;
     using NewLife.Cube;
+    
+    #line 1 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
+    using NewLife.Cube.Extensions;
+    
+    #line default
+    #line hidden
     using NewLife.Reflection;
     using NewLife.Web;
     using XCode;
@@ -42,7 +48,16 @@ namespace ASP
         }
         public override void Execute()
         {
-WriteLiteral("<div");
+            
+            #line 2 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
+  
+    var fact = ViewBag.Factory as IEntityOperate;
+    var page = ViewBag.Page as Pager;
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n<div");
 
 WriteLiteral(" class=\"form-group\"");
 
@@ -51,7 +66,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 2 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
+            #line 7 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
 Write(Html.ActionLink("访问统计", "Index", "VisitStat", null, new { @class = "btn btn-success btn-sm" }));
 
             
@@ -68,18 +83,25 @@ WriteLiteral(">类别：</label>\r\n");
 WriteLiteral("    ");
 
             
-            #line 4 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
-Write(Html.ForDropDownList("category", Log.FindAllCategoryName(), Request["category"], "全部", true));
+            #line 9 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
+Write(Html.ForDropDownList("category", Log.FindAllCategoryName(), page["category"], "全部", true));
 
             
             #line default
             #line hidden
 WriteLiteral("\r\n</div>\r\n");
 
+            
+            #line 11 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
+Write(Html.Partial("_SelectUser", "userId"));
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\r\n");
 
             
-            #line 10 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
+            #line 12 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
 Write(Html.Partial("_DateRange"));
 
             
