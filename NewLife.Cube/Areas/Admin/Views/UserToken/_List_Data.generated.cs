@@ -19,64 +19,60 @@ namespace ASP
     using System.Text;
     using System.Web;
     using System.Web.Helpers;
-    
-    #line 6 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
     using System.Web.Mvc;
-    
-    #line default
-    #line hidden
-    
-    #line 7 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
     using System.Web.Mvc.Ajax;
+    using System.Web.Mvc.Html;
+    using System.Web.Routing;
+    using System.Web.Security;
+    using System.Web.UI;
+    using System.Web.WebPages;
+    
+    #line 3 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+    using NewLife;
     
     #line default
     #line hidden
     
     #line 8 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-    using System.Web.Mvc.Html;
+    using NewLife.Cube;
     
     #line default
     #line hidden
-    
-    #line 9 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-    using System.Web.Routing;
-    
-    #line default
-    #line hidden
-    using System.Web.Security;
-    using System.Web.UI;
-    using System.Web.WebPages;
     
     #line 2 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-    using NewLife;
+    using NewLife.Cube.Entity;
     
     #line default
     #line hidden
-    using NewLife.Cube;
     using NewLife.Reflection;
     
-    #line 3 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+    #line 4 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
     using NewLife.Web;
     
     #line default
     #line hidden
     
-    #line 4 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+    #line 5 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
     using XCode;
     
     #line default
     #line hidden
     
-    #line 5 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+    #line 6 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
     using XCode.Configuration;
     
     #line default
     #line hidden
+    
+    #line 7 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
     using XCode.Membership;
+    
+    #line default
+    #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     [System.Web.WebPages.PageVirtualPathAttribute("~/Areas/Admin/Views/UserToken/_List_Data.cshtml")]
-    public partial class _Areas_Admin_Views_UserToken__List_Data_cshtml : System.Web.Mvc.WebViewPage<IList<NewLife.Cube.Entity.UserToken>>
+    public partial class _Areas_Admin_Views_UserToken__List_Data_cshtml : System.Web.Mvc.WebViewPage<IList<UserToken>>
     {
         public _Areas_Admin_Views_UserToken__List_Data_cshtml()
         {
@@ -84,12 +80,12 @@ namespace ASP
         public override void Execute()
         {
             
-            #line 10 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 9 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
   
     var fact = ViewBag.Factory as IEntityOperate;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
-    var enableSelect = this.EnableSelect();
+    var set = ViewBag.PageSetting as PageSetting;
     var provider = ManageProvider.Provider;
 
             
@@ -102,14 +98,14 @@ WriteLiteral(" class=\"table table-bordered table-hover table-striped table-cond
 WriteLiteral(">\r\n    <thead>\r\n        <tr>\r\n");
 
             
-            #line 20 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 19 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
             
             
             #line default
             #line hidden
             
-            #line 20 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-             if (enableSelect)
+            #line 19 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+             if (set.EnableSelect)
             {
 
             
@@ -132,7 +128,7 @@ WriteLiteral(" title=\"全选\"");
 WriteLiteral(" /></th>\r\n");
 
             
-            #line 23 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 22 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
             }
 
             
@@ -140,18 +136,18 @@ WriteLiteral(" /></th>\r\n");
             #line hidden
 WriteLiteral("            <th");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 830), Tuple.Create("\"", 869)
+WriteAttribute("href", Tuple.Create(" href=\"", 756), Tuple.Create("\"", 795)
             
-            #line 24 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 837), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("ID"))
+            #line 23 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 763), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("ID"))
             
             #line default
             #line hidden
-, 837), false)
+, 763), false)
 );
 
 WriteLiteral(">编号</a></th>\r\n            <th");
@@ -160,14 +156,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 922), Tuple.Create("\"", 964)
+WriteAttribute("href", Tuple.Create(" href=\"", 848), Tuple.Create("\"", 890)
             
-            #line 25 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 929), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Token"))
+            #line 24 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 855), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Token"))
             
             #line default
             #line hidden
-, 929), false)
+, 855), false)
 );
 
 WriteLiteral(">令牌</a></th>\r\n            <th");
@@ -178,17 +174,29 @@ WriteLiteral(" title=\"地址。锁定该令牌只能访问该资源路径\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1043), Tuple.Create("\"", 1083)
+WriteAttribute("href", Tuple.Create(" href=\"", 969), Tuple.Create("\"", 1009)
             
-            #line 26 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1050), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Url"))
+            #line 25 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 976), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Url"))
             
             #line default
             #line hidden
-, 1050), false)
+, 976), false)
 );
 
 WriteLiteral(">地址</a></th>\r\n            <th");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">页面</th>\r\n            <th");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">Json数据</th>\r\n            <th");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">Xml数据</th>\r\n            <th");
 
 WriteLiteral(" class=\"text-center\"");
 
@@ -196,14 +204,14 @@ WriteLiteral(" title=\"用户。本地用户\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1152), Tuple.Create("\"", 1195)
+WriteAttribute("href", Tuple.Create(" href=\"", 1220), Tuple.Create("\"", 1263)
             
-            #line 27 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1159), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UserID"))
+            #line 29 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1227), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UserID"))
             
             #line default
             #line hidden
-, 1159), false)
+, 1227), false)
 );
 
 WriteLiteral(">用户</a></th>\r\n            <th");
@@ -214,17 +222,33 @@ WriteLiteral(" style=\"min-width:134px;\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1273), Tuple.Create("\"", 1316)
+WriteAttribute("href", Tuple.Create(" href=\"", 1341), Tuple.Create("\"", 1384)
             
-            #line 28 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1280), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Expire"))
+            #line 30 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1348), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Expire"))
             
             #line default
             #line hidden
-, 1280), false)
+, 1348), false)
 );
 
 WriteLiteral(">过期时间</a></th>\r\n            <th");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 1439), Tuple.Create("\"", 1482)
+            
+            #line 31 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1446), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Enable"))
+            
+            #line default
+            #line hidden
+, 1446), false)
+);
+
+WriteLiteral(">启用</a></th>\r\n            <th");
 
 WriteLiteral(" class=\"text-center\"");
 
@@ -232,14 +256,14 @@ WriteLiteral(" title=\"次数。该令牌使用次数\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1390), Tuple.Create("\"", 1432)
+WriteAttribute("href", Tuple.Create(" href=\"", 1554), Tuple.Create("\"", 1596)
             
-            #line 29 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1397), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Times"))
+            #line 32 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1561), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Times"))
             
             #line default
             #line hidden
-, 1397), false)
+, 1561), false)
 );
 
 WriteLiteral(">次数</a></th>\r\n            <th");
@@ -248,46 +272,48 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1485), Tuple.Create("\"", 1528)
+WriteAttribute("href", Tuple.Create(" href=\"", 1649), Tuple.Create("\"", 1692)
             
-            #line 30 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1492), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Enable"))
+            #line 33 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1656), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("LastIP"))
             
             #line default
             #line hidden
-, 1492), false)
+, 1656), false)
 );
 
-WriteLiteral(">启用</a></th>\r\n            <th");
+WriteLiteral(">最后地址</a></th>\r\n            <th");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(" style=\"min-width:134px;\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 1772), Tuple.Create("\"", 1817)
+            
+            #line 34 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1779), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("LastTime"))
+            
+            #line default
+            #line hidden
+, 1779), false)
+);
+
+WriteLiteral(">最后时间</a></th>\r\n            <th");
 
 WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1581), Tuple.Create("\"", 1630)
+WriteAttribute("href", Tuple.Create(" href=\"", 1872), Tuple.Create("\"", 1917)
             
-            #line 31 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1588), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UpdateUserID"))
-            
-            #line default
-            #line hidden
-, 1588), false)
-);
-
-WriteLiteral(">更新用户</a></th>\r\n            <th");
-
-WriteLiteral(" class=\"text-center\"");
-
-WriteLiteral("><a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 1685), Tuple.Create("\"", 1730)
-            
-            #line 32 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1692), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UpdateIP"))
+            #line 35 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1879), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UpdateIP"))
             
             #line default
             #line hidden
-, 1692), false)
+, 1879), false)
 );
 
 WriteLiteral(">更新地址</a></th>\r\n            <th");
@@ -298,26 +324,26 @@ WriteLiteral(" style=\"min-width:134px;\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1810), Tuple.Create("\"", 1857)
+WriteAttribute("href", Tuple.Create(" href=\"", 1997), Tuple.Create("\"", 2044)
             
-            #line 33 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1817), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UpdateTime"))
+            #line 36 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 2004), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UpdateTime"))
             
             #line default
             #line hidden
-, 1817), false)
+, 2004), false)
 );
 
 WriteLiteral(">更新时间</a></th>\r\n");
 
             
-            #line 34 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 37 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
             
             
             #line default
             #line hidden
             
-            #line 34 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 37 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
              if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
             {
 
@@ -328,12 +354,10 @@ WriteLiteral("                <th");
 
 WriteLiteral(" class=\"text-center\"");
 
-WriteLiteral(" style=\"min-width:100px;\"");
-
 WriteLiteral(">操作</th>\r\n");
 
             
-            #line 37 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 40 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
             }
 
             
@@ -342,15 +366,32 @@ WriteLiteral(">操作</th>\r\n");
 WriteLiteral("        </tr>\r\n    </thead>\r\n    <tbody>\r\n");
 
             
-            #line 41 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 44 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
         
             
             #line default
             #line hidden
             
-            #line 41 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 44 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
          foreach (var entity in Model)
         {
+            var url = entity.Url + "";
+            var query = "";
+            var p = url.IndexOf('?');
+            if (p >= 0)
+            {
+                query = url.Substring(p);
+                url = url.Substring(0, p);
+            }
+            if (!query.IsNullOrEmpty())
+            {
+                query += "&token=" + entity.Token;
+            }
+            else
+            {
+                query += "?token=" + entity.Token;
+            }
+
 
             
             #line default
@@ -358,14 +399,14 @@ WriteLiteral("        </tr>\r\n    </thead>\r\n    <tbody>\r\n");
 WriteLiteral("            <tr>\r\n");
 
             
-            #line 44 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 64 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
                 
             
             #line default
             #line hidden
             
-            #line 44 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-                 if (enableSelect)
+            #line 64 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                 if (set.EnableSelect)
                 {
 
             
@@ -381,20 +422,20 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 2322), Tuple.Create("\"", 2340)
+WriteAttribute("value", Tuple.Create(" value=\"", 2963), Tuple.Create("\"", 2981)
             
-            #line 46 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 2330), Tuple.Create<System.Object, System.Int32>(entity.ID
+            #line 66 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+      , Tuple.Create(Tuple.Create("", 2971), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2330), false)
+, 2971), false)
 );
 
 WriteLiteral(" /></td>\r\n");
 
             
-            #line 47 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 67 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
                 }
 
             
@@ -402,13 +443,13 @@ WriteLiteral(" /></td>\r\n");
             #line hidden
 WriteLiteral("                <td");
 
-WriteLiteral(" class=\"text-center hidden-md hidden-sm hidden-xs\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
-            #line 48 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-                                                                 Write(entity.ID);
+            #line 68 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                   Write(entity.ID);
 
             
             #line default
@@ -416,52 +457,112 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 49 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 69 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
                Write(entity.Token);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>");
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" style=\"max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellips" +
+"is;\"");
+
+WriteAttribute("title", Tuple.Create(" title=\"", 3212), Tuple.Create("\"", 3231)
+            
+            #line 70 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                , Tuple.Create(Tuple.Create("", 3220), Tuple.Create<System.Object, System.Int32>(entity.Url
+            
+            #line default
+            #line hidden
+, 3220), false)
+);
+
+WriteLiteral(">");
 
             
-            #line 50 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-               Write(entity.Url);
+            #line 70 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                                                                                                        Write(entity.Url);
 
             
             #line default
             #line hidden
 WriteLiteral("</td>\r\n                <td");
 
-WriteLiteral(" class=\"text-right\"");
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 3293), Tuple.Create("\"", 3320)
+            
+            #line 71 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 3300), Tuple.Create<System.Object, System.Int32>(url+"/Html"+query
+            
+            #line default
+            #line hidden
+, 3300), false)
+);
+
+WriteLiteral(" target=\"_blank\"");
+
+WriteLiteral(">页面</a></td>\r\n                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 3393), Tuple.Create("\"", 3420)
+            
+            #line 72 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 3400), Tuple.Create<System.Object, System.Int32>(url+"/Json"+query
+            
+            #line default
+            #line hidden
+, 3400), false)
+);
+
+WriteLiteral(" target=\"_blank\"");
+
+WriteLiteral(">Json数据</a></td>\r\n                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 3497), Tuple.Create("\"", 3523)
+            
+            #line 73 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 3504), Tuple.Create<System.Object, System.Int32>(url+"/Xml"+query
+            
+            #line default
+            #line hidden
+, 3504), false)
+);
+
+WriteLiteral(" target=\"_blank\"");
+
+WriteLiteral(">Xml数据</a></td>\r\n                <td");
+
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
-            #line 51 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-                                  Write(entity.UserID.ToString("n0"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                <td>");
-
-            
-            #line 52 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-               Write(entity.Expire.ToFullString(""));
+            #line 74 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                   Write(entity.UserName);
 
             
             #line default
             #line hidden
 WriteLiteral("</td>\r\n                <td");
 
-WriteLiteral(" class=\"text-right\"");
+WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">");
 
             
-            #line 53 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-                                  Write(entity.Times.ToString("n0"));
+            #line 75 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                   Write(entity.Expire.ToFullString(""));
 
             
             #line default
@@ -472,28 +573,28 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">\r\n                    <i");
 
-WriteAttribute("class", Tuple.Create(" class=\"", 2806), Tuple.Create("\"", 2868)
-, Tuple.Create(Tuple.Create("", 2814), Tuple.Create("glyphicon", 2814), true)
-, Tuple.Create(Tuple.Create(" ", 2823), Tuple.Create("glyphicon-", 2824), true)
+WriteAttribute("class", Tuple.Create(" class=\"", 3762), Tuple.Create("\"", 3824)
+, Tuple.Create(Tuple.Create("", 3770), Tuple.Create("glyphicon", 3770), true)
+, Tuple.Create(Tuple.Create(" ", 3779), Tuple.Create("glyphicon-", 3780), true)
             
-            #line 55 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2834), Tuple.Create<System.Object, System.Int32>(entity.Enable ? "ok" : "remove"
+            #line 77 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 3790), Tuple.Create<System.Object, System.Int32>(entity.Enable ? "ok" : "remove"
             
             #line default
             #line hidden
-, 2834), false)
+, 3790), false)
 );
 
-WriteAttribute("style", Tuple.Create(" style=\"", 2869), Tuple.Create("\"", 2919)
-, Tuple.Create(Tuple.Create("", 2877), Tuple.Create("color:", 2877), true)
+WriteAttribute("style", Tuple.Create(" style=\"", 3825), Tuple.Create("\"", 3875)
+, Tuple.Create(Tuple.Create("", 3833), Tuple.Create("color:", 3833), true)
             
-            #line 55 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-                    , Tuple.Create(Tuple.Create(" ", 2883), Tuple.Create<System.Object, System.Int32>(entity.Enable ? "green" : "red"
+            #line 77 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                    , Tuple.Create(Tuple.Create(" ", 3839), Tuple.Create<System.Object, System.Int32>(entity.Enable ? "green" : "red"
             
             #line default
             #line hidden
-, 2884), false)
-, Tuple.Create(Tuple.Create("", 2918), Tuple.Create(";", 2918), true)
+, 3840), false)
+, Tuple.Create(Tuple.Create("", 3874), Tuple.Create(";", 3874), true)
 );
 
 WriteLiteral("></i>\r\n                </td>\r\n                <td");
@@ -503,29 +604,8 @@ WriteLiteral(" class=\"text-right\"");
 WriteLiteral(">");
 
             
-            #line 57 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-                                  Write(provider.FindByID(entity.UpdateUserID));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                <td");
-
-WriteAttribute("title", Tuple.Create(" title=\"", 3054), Tuple.Create("\"", 3092)
-            
-            #line 58 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 3062), Tuple.Create<System.Object, System.Int32>(entity.UpdateIP.IPToAddress()
-            
-            #line default
-            #line hidden
-, 3062), false)
-);
-
-WriteLiteral(">");
-
-            
-            #line 58 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-                                                      Write(entity.UpdateIP);
+            #line 79 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                  Write(entity.Times.ToString("n0"));
 
             
             #line default
@@ -533,8 +613,66 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 59 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
-               Write(entity.UpdateTime.ToFullString(""));
+            #line 80 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+               Write(entity.LastIP);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">");
+
+            
+            #line 81 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                   Write(entity.LastTime.ToFullString(""));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral(">");
+
+            
+            #line 82 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                   Write(provider.FindByID(entity.UpdateUserID));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteAttribute("title", Tuple.Create(" title=\"", 4226), Tuple.Create("\"", 4264)
+            
+            #line 83 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 4234), Tuple.Create<System.Object, System.Int32>(entity.UpdateIP.IPToAddress()
+            
+            #line default
+            #line hidden
+, 4234), false)
+);
+
+WriteLiteral(">");
+
+            
+            #line 83 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+                                                                          Write(entity.UpdateIP);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td>");
+
+            
+            #line 84 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+               Write(entity.Remark);
 
             
             #line default
@@ -542,13 +680,13 @@ WriteLiteral("</td>\r\n                <td>");
 WriteLiteral("</td>\r\n");
 
             
-            #line 60 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 85 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
                 
             
             #line default
             #line hidden
             
-            #line 60 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 85 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
                  if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
 
@@ -564,7 +702,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("                        ");
 
             
-            #line 63 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 88 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
                    Write(Html.Partial("_List_Data_Action", (Object)entity));
 
             
@@ -573,7 +711,7 @@ WriteLiteral("                        ");
 WriteLiteral("\r\n                    </td>\r\n");
 
             
-            #line 65 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 90 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
                 }
 
             
@@ -582,7 +720,7 @@ WriteLiteral("\r\n                    </td>\r\n");
 WriteLiteral("            </tr>\r\n");
 
             
-            #line 67 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
+            #line 92 "..\..\Areas\Admin\Views\UserToken\_List_Data.cshtml"
         }
 
             
