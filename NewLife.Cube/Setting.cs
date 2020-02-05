@@ -58,9 +58,9 @@ namespace NewLife.Cube
         [Description("启用压缩。主要用于Json输出压缩，默认false")]
         public Boolean EnableCompress { get; set; }
 
-        /// <summary>头像目录。设定后下载远程头像到本地</summary>
-        [Description("头像目录。设定后下载远程头像到本地")]
-        public String AvatarPath { get; set; } = "..\\Avatars";
+        /// <summary>头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars</summary>
+        [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars")]
+        public String AvatarPath { get; set; } = "";
 
         /// <summary>静态资源目录。默认wwwroot</summary>
         [Description("静态资源目录。默认wwwroot")]
@@ -165,6 +165,10 @@ namespace NewLife.Cube
 #else
             if (StartPage.IsNullOrEmpty()) StartPage = System.Web.HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/Index/Main";
 #endif
+           
+            var web = Runtime.IsWeb;
+
+            if (AvatarPath.IsNullOrEmpty()) AvatarPath = web ? "..\\Avatars" : "Avatars";
 
             if (DefaultRole.IsNullOrEmpty() || DefaultRole == "3") DefaultRole = "普通用户";
 
