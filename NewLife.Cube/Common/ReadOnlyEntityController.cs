@@ -668,7 +668,7 @@ namespace NewLife.Cube
 
         /// <summary>要导出Json的对象</summary>
         /// <returns></returns>
-        protected virtual Object OnExportJson() => ExportData();
+        protected virtual Object OnExportJson() => ExportData().ToList();
 
         /// <summary>导出Excel</summary>
         /// <returns></returns>
