@@ -134,22 +134,25 @@ namespace NewLife.Cube.Controllers
             try
             {
                 // 获取访问令牌
-                var html = client.GetAccessToken(code);
-
-                // 如果拿不到访问令牌或用户信息，则重新跳转
-                if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0)
+                if (!client.AccessUrl.IsNullOrEmpty())
                 {
-                    // 如果拿不到访问令牌，刷新一次，然后报错
-                    if (state.EqualIgnoreCase("refresh"))
+                    var html = client.GetAccessToken(code);
+
+                    // 如果拿不到访问令牌或用户信息，则重新跳转
+                    if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0)
                     {
-                        if (client.Log == null) XTrace.WriteLine(html);
+                        // 如果拿不到访问令牌，刷新一次，然后报错
+                        if (state.EqualIgnoreCase("refresh"))
+                        {
+                            if (client.Log == null) XTrace.WriteLine(html);
 
-                        throw new InvalidOperationException("内部错误，无法获取令牌");
+                            throw new InvalidOperationException("内部错误，无法获取令牌");
+                        }
+
+                        XTrace.WriteLine("拿不到访问令牌，重新跳转 code={0} state={1}", code, state);
+
+                        return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
                     }
-
-                    XTrace.WriteLine("拿不到访问令牌，重新跳转 code={0} state={1}", code, state);
-
-                    return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
                 }
 
                 // 获取OpenID。部分提供商不需要
