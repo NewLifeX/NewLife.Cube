@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using NewLife.Log;
 using NewLife.School.Entity;
 using NewLife.Security;
+using NewLife.Serialization;
 
 namespace Test
 {
@@ -58,16 +60,27 @@ namespace Test
             Console.WriteLine("查询[{0:n0}]次，耗时{1:n0}ms，速度{2:n0}qps", count, ms, count * 1000L / ms);
         }
 
-        static void Test2()
+        static async void Test2()
         {
-            for (var i = 0; i < 1000; i++)
-            {
-                var ticks = Environment.TickCount;
-                var ts = TimeSpan.FromMilliseconds(ticks);
-                Console.WriteLine(ts);
+            var key = "dingbvcq0mz3pidpwtch";
+            var secret = "7OTdnimQwf5LJnVp8e0udX1wPxKyCsspLqM2YcBDawvg3BlIkzxIsOs1YhDjiOxj";
+            var url = "https://oapi.dingtalk.com/gettoken?appkey={key}&appsecret={secret}";
 
-                Thread.Sleep(1000);
-            }
+            url = url.Replace("{key}", key).Replace("{secret}", secret);
+
+            var http = new HttpClient();
+            var html = await http.GetStringAsync(url);
+            XTrace.WriteLine(html);
+
+            var js = new JsonParser(html).Decode() as IDictionary<String, Object>;
+            var token = js["access_token"] as String;
+            XTrace.WriteLine("token: {0}", token);
+
+            var url2 = "https://oapi.dingtalk.com/user/listbypage?access_token={token}&department_id=1&offset=0&size=100";
+            url2 = url2.Replace("{token}", token);
+
+            var html2 = await http.GetStringAsync(url2);
+            XTrace.WriteLine(html2);
         }
     }
 }
