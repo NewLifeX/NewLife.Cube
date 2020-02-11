@@ -82,10 +82,16 @@ namespace NewLife.Web
         /// <returns></returns>
         public static Uri GetRawUrl(this HttpRequestBase req)
         {
-            var uri = req.Url;
+            Uri uri = null;
 
-            var str = req.RawUrl;
-            if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
+            // 配置
+            var set = OAuthConfig.Current;
+            if (!set.AppUrl.IsNullOrEmpty()) uri = new Uri(set.AppUrl);
+
+            // 取请求头
+            if (uri == null && !req.RawUrl.IsNullOrEmpty()) uri = new Uri(uri, req.RawUrl);
+
+            if (uri == null) uri = req.Url;
 
             return GetRawUrl(uri, k => req.ServerVariables[k]);
         }
@@ -139,8 +145,18 @@ namespace NewLife.Web
         /// <returns></returns>
         public static Uri GetRawUrl(this HttpRequest request)
         {
-            var url = request.GetEncodedUrl();
-            var uri = new Uri(url);
+            Uri uri = null;
+
+            // 配置
+            var set = OAuthConfig.Current;
+            if (!set.AppUrl.IsNullOrEmpty()) uri = new Uri(set.AppUrl);
+
+            // 取请求头
+            if (uri == null)
+            {
+                var url = request.GetEncodedUrl();
+                uri = new Uri(url);
+            }
 
             return GetRawUrl(uri, k => request.Headers[k]);
         }
