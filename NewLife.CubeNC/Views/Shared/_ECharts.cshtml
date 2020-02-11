@@ -8,9 +8,8 @@
     var name = chart.Name;
     var chartName = "chart_" + name;
     var optionName = "option_" + name;
-    var setOption = $"chart_{name}.setOption(option_{name})";
 
-    var style = "";
+    var style = chart.Style;
     if (chart.Width > 0)
         style += $"width: {chart.Width}px;";
     else if (chart.Width < 0)
@@ -20,13 +19,10 @@
         style += $"height: {chart.Height}px;";
     else if (chart.Height < 0)
         style += $"height: {-chart.Height}%;";
-
 }
-<div id="@name" style="@style"></div>
+<div id="@name" style="@style" class="@chart.Class"></div>
 <script type="text/javascript">
     var @chartName = echarts.init(document.getElementById('@name'));
-
     var @optionName = @Html.Raw(chart.Build());
-
-    @setOption;
+    @(chartName).setOption(@optionName);
 </script>

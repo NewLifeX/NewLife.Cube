@@ -21,6 +21,12 @@ namespace NewLife.Cube.Charts
         /// <summary>高度。单位px，负数表示百分比，默认300px</summary>
         public Int32 Height { get; set; } = 300;
 
+        /// <summary>CSS样式</summary>
+        public String Style { get; set; }
+
+        /// <summary>CSS类</summary>
+        public String Class { get; set; }
+
         /// <summary>标题。字符串或匿名对象</summary>
         public ChartTitle Title { get; set; }
 
