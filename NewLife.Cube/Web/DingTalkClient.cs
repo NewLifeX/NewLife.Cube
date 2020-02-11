@@ -71,7 +71,7 @@ namespace NewLife.Cube.Web
             var url = AccessUrl;
             if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(UserUrl), "未设置用户信息地址");
 
-            var ts = DateTime.Now.ToLong() + "";
+            var ts = DateTime.UtcNow.ToLong() + "";
             var sign = ts.GetBytes().SHA256(Secret.GetBytes()).ToBase64();
             url = url.Replace("{timestamp}", ts).Replace("{signature}", HttpUtility.UrlEncode(sign));
 
