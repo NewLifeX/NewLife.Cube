@@ -51,7 +51,8 @@ namespace NewLife.Cube
             {
                 forms = new HashSet<String>(req.Form.Select(s => s.Key), StringComparer.OrdinalIgnoreCase);
             }
-            var excludes = new HashSet<String>(new[] { "Sort", "Desc", "PageIndex", "PageSize" }, StringComparer.OrdinalIgnoreCase);
+            // 只排除分页序号，不排除页大小和排序
+            var excludes = new HashSet<String>(new[] { _.PageIndex }, StringComparer.OrdinalIgnoreCase);
 
             var url = Pool.StringBuilder.Get();
             foreach (var item in query.Select(s => s.Key))
@@ -72,7 +73,8 @@ namespace NewLife.Cube
             var query = req.QueryString;
 
             var forms = new HashSet<String>(req.Form.AllKeys, StringComparer.OrdinalIgnoreCase);
-            var excludes = new HashSet<String>(new[] { _.Sort, _.Desc, _.PageIndex, _.PageSize }, StringComparer.OrdinalIgnoreCase);
+            // 只排除分页序号，不排除页大小和排序
+            var excludes = new HashSet<String>(new[] { _.PageIndex }, StringComparer.OrdinalIgnoreCase);
 
             var url = Pool.StringBuilder.Get();
             foreach (var item in query.AllKeys)

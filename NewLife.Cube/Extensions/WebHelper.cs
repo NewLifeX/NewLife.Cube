@@ -89,7 +89,7 @@ namespace NewLife.Web
             if (!set.AppUrl.IsNullOrEmpty()) uri = new Uri(set.AppUrl);
 
             // 取请求头
-            if (uri == null && !req.RawUrl.IsNullOrEmpty()) uri = new Uri(uri, req.RawUrl);
+            if (uri == null && !req.RawUrl.IsNullOrEmpty()) uri = new Uri(req.Url, req.RawUrl);
 
             if (uri == null) uri = req.Url;
 
