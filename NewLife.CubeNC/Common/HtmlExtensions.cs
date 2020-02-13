@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -95,12 +93,6 @@ namespace NewLife.Cube
                 var mhs = ForTreeEditor(Html, field, entity as IEntityTree);
                 if (mhs != null) return mhs;
             }
-            //// 如果有表间关系，且是当前字段，则产生关联下拉
-            //if (field.Table.DataTable.Relations.Count > 0)
-            //{
-            //    var mhs = ForRelation(Html, field, entity);
-            //    if (mhs != null) return mhs;
-            //}
 
             return Html.ForEditor(field.Name, entity[field.Name], field.Type);
         }
@@ -277,10 +269,6 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForDateTime(this IHtmlHelper Html, String name, DateTime value, String format = null, Object htmlAttributes = null)
         {
-            //var fullHtmlFieldName = Html.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            //if (String.IsNullOrEmpty(fullHtmlFieldName))
-            //    throw new ArgumentException("", "name");
-
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
             //if (!atts.ContainsKey("type")) atts.Add("type", "date");
             if (!atts.ContainsKey("class")) atts.Add("class", "form-control date form_datetime");
@@ -477,9 +465,6 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForDropDownList<T>(this IHtmlHelper Html, String name, IList<T> list, Object selectedValue = null, String optionLabel = null, Boolean autoPostback = false) where T : IEntity
         {
-            //var entity = Html.ViewData.Model as IEntity;
-            //var selectedValue = entity == null ? WebHelper2.Params[name] : entity[name];
-
             var atts = new Dictionary<String, Object>();
             if (Setting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");

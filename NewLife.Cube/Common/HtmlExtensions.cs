@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Web.Mvc;
 using System.Web.Mvc.Html;
 using System.Web.Routing;
@@ -108,12 +107,6 @@ namespace NewLife.Cube
                 var mhs = ForTreeEditor(Html, field, entity as IEntityTree);
                 if (mhs != null) return mhs;
             }
-            //// 如果有表间关系，且是当前字段，则产生关联下拉
-            //if (field.Table.DataTable.Relations.Count > 0)
-            //{
-            //    var mhs = ForRelation(Html, field, entity);
-            //    if (mhs != null) return mhs;
-            //}
 
             return Html.ForEditor(field.Name, entity[field.Name], field.Type);
         }
@@ -138,12 +131,12 @@ namespace NewLife.Cube
 
             // 如果没有外部关联，输出数字编辑框和标签
             // 如果映射目标列表项过多，不能使用下拉
-            var fact = EntityFactory.CreateOperate(map.Provider.EntityType);
+            var fact = map.Provider == null ? null : EntityFactory.CreateOperate(map.Provider.EntityType);
             if (map.Provider == null || fact != null && fact.Count > Setting.Current.MaxDropDownList)
             {
                 var label = "&nbsp;<label class=\"\">{0}</label>".F(entity[field.Name]);
                 if (field.OriField != null) field = field.OriField;
-                var mhs = Html.ForEditor(field.Name, entity[field.Name], field.Type, null, new { @class = "aa" });
+                var mhs = Html.ForEditor(field.Name, entity[field.Name], field.Type);
                 return new MvcHtmlString(mhs.ToString() + label);
             }
 
@@ -290,10 +283,6 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static MvcHtmlString ForDateTime(this HtmlHelper Html, String name, DateTime value, String format = null, Object htmlAttributes = null)
         {
-            //var fullHtmlFieldName = Html.ViewContext.ViewData.TemplateInfo.GetFullHtmlFieldName(name);
-            //if (String.IsNullOrEmpty(fullHtmlFieldName))
-            //    throw new ArgumentException("", "name");
-
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
             //if (!atts.ContainsKey("type")) atts.Add("type", "date");
             if (!atts.ContainsKey("class")) atts.Add("class", "form-control date form_datetime");
@@ -507,9 +496,6 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static MvcHtmlString ForDropDownList<T>(this HtmlHelper Html, String name, IList<T> list, Object selectedValue = null, String optionLabel = null, Boolean autoPostback = false) where T : IEntity
         {
-            var entity = Html.ViewData.Model as IEntity;
-            //var selectedValue = entity == null ? WebHelper.Params[name] : entity[name];
-
             var atts = new Dictionary<String, Object>();
             if (Setting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
