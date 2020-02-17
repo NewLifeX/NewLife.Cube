@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Web.Script.Serialization;
+using NewLife.Collections;
+using NewLife.Data;
 
 namespace NewLife.Cube.Charts
 {
     /// <summary>标题，主副标题</summary>
-    public class ChartTitle
+    public class ChartTitle : IExtend3
     {
         #region 属性
         /// <summary>显示</summary>
@@ -98,6 +102,15 @@ namespace NewLife.Cube.Charts
         /// 用于标题定位，数组为横纵相对仪表盘圆心坐标偏移，支持百分比（相对外半径）
         /// </summary>
         public Object OffsetCenter { get; set; }
+
+        /// <summary>扩展字典</summary>
+        [ScriptIgnore]
+        public IDictionary<String, Object> Items { get; set; } = new NullableDictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>扩展数据</summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public Object this[String key] { get => Items[key]; set => Items[key] = value; }
         #endregion
     }
 }

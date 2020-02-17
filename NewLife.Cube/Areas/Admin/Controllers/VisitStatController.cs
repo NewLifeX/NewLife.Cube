@@ -37,15 +37,14 @@ namespace NewLife.Cube.Admin.Controllers
                 var chart = new ECharts();
                 chart.SetX(list, _.Time, e => e.Time.ToString("yyyy-MM-dd"));
                 chart.SetY(_.Times);
-                var sr = chart.Add(list, _.Times, "line", null);
-                sr.Smooth = true;
+                chart.AddLine(list, _.Times, null, true);
                 chart.Add(list, _.Users);
                 chart.Add(list, _.IPs);
                 chart.Add(list, _.Error);
                 chart.SetTooltip();
 
                 var chart2 = new ECharts();
-                chart2.Add(list, _.Times, "pie", e => new { name = e.Time.ToString("yyyy-MM-dd"), value = e.Times });
+                chart2.AddPie(list, _.Times, e => new { name = e.Time.ToString("yyyy-MM-dd"), value = e.Times });
 
                 ViewBag.Charts = new[] { chart };
                 ViewBag.Charts2 = new[] { chart2 };

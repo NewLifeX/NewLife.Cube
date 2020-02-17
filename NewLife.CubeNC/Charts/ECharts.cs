@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Script.Serialization;
+using NewLife.Collections;
+using NewLife.Data;
 using NewLife.Security;
 using NewLife.Serialization;
 using XCode;
@@ -9,7 +12,7 @@ using XCode.Configuration;
 namespace NewLife.Cube.Charts
 {
     /// <summary>ECharts实例</summary>
-    public class ECharts
+    public class ECharts : IExtend3
     {
         #region 属性
         /// <summary>名称</summary>
@@ -44,6 +47,15 @@ namespace NewLife.Cube.Charts
 
         /// <summary>系列数据</summary>
         public IList<Series> Series { get; set; }
+
+        /// <summary>扩展字典</summary>
+        [ScriptIgnore]
+        public IDictionary<String, Object> Items { get; set; } = new NullableDictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>扩展数据</summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public Object this[String key] { get => Items[key]; set => Items[key] = value; }
         #endregion
 
         #region 方法
@@ -71,6 +83,46 @@ namespace NewLife.Cube.Charts
             {
                 Name = field?.DisplayName ?? field.Name,
                 Type = type,
+                Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
+            };
+
+            Add(sr);
+            return sr;
+        }
+
+        /// <summary>添加曲线系列数据</summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">实体列表</param>
+        /// <param name="field">要使用数据的字段</param>
+        /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
+        /// <param name="smooth">折线光滑</param>
+        /// <returns></returns>
+        public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IEntity
+        {
+            var sr = new Series
+            {
+                Name = field?.DisplayName ?? field.Name,
+                Type = "line",
+                Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
+                Smooth = smooth,
+            };
+
+            Add(sr);
+            return sr;
+        }
+
+        /// <summary>添加曲线系列数据</summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">实体列表</param>
+        /// <param name="field">要使用数据的字段</param>
+        /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
+        /// <returns></returns>
+        public Series AddPie<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IEntity
+        {
+            var sr = new Series
+            {
+                Name = field?.DisplayName ?? field.Name,
+                Type = "pie",
                 Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
             };
 

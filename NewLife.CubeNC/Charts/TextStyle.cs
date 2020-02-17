@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Web.Script.Serialization;
+using NewLife.Collections;
+using NewLife.Data;
 
 namespace NewLife.Cube.Charts
 {
     /// <summary>文字样式</summary>
-    public class TextStyle
+    public class TextStyle : IExtend3
     {
         /// <summary>
         /// 颜色
@@ -49,5 +53,14 @@ namespace NewLife.Cube.Charts
         /// 粗细，可选为：'normal' | 'bold' | 'bolder' | 'lighter' | 100 | 200 |... | 900  
         /// </summary>
         public String FontWeight { get; set; }
+
+        /// <summary>扩展字典</summary>
+        [ScriptIgnore]
+        public IDictionary<String, Object> Items { get; set; } = new NullableDictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>扩展数据</summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public Object this[String key] { get => Items[key]; set => Items[key] = value; }
     }
 }
