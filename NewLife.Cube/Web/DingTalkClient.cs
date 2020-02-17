@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
 
@@ -80,7 +81,10 @@ namespace NewLife.Cube.Web
 
             var tmp_code = new { tmp_auth_code = code };
 
+            // 请求OpenId
             var http = new HttpClient();
+            var rs = http.InvokeAsync<Object>(HttpMethod.Post, url, tmp_code, null, "user_info");
+
             var content = new StringContent(tmp_code.ToJson(), Encoding.UTF8, "application/json");
             var response = http.PostAsync(url, content).Result;
 
@@ -97,12 +101,10 @@ namespace NewLife.Cube.Web
                 if (dic != null)
                 {
                     NickName = dic["nick"] as String;
-                    var openid = dic["openid"] as String;
-                    var unionid = dic["unionid"] as String;
+                    OpenID = dic["openid"] as String;
+                    UnionID = dic["unionid"] as String;
 
-                    if (!openid.IsNullOrEmpty()) this.SetValue("OpenID", openid);
-
-                    this.SetValue("Items", dic.ToDictionary(e => e.Key, e => e.Value as String));
+                    Items = dic.ToDictionary(e => e.Key, e => e.Value as String);
                 }
             }
 
