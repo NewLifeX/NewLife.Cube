@@ -182,6 +182,11 @@ namespace NewLife.Cube.Charts
             };
         }
 
+        /// <summary>设置提示</summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="field"></param>
+        /// <param name="selector"></param>
         public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IEntity
         {
             Legend = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();

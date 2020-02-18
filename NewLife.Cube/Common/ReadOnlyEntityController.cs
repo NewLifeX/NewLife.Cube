@@ -879,17 +879,12 @@ namespace NewLife.Cube
 
                 var dal = fact.Session.Dal;
 
-                var name = fact.EntityType.Name;
+                var name = GetType().Name.TrimEnd("Controller");
                 var fileName = "{0}_{1:yyyyMMddHHmmss}.gz".F(name, DateTime.Now);
                 var bak = NewLife.Setting.Current.BackupPath.CombinePath(fileName).GetBasePath();
                 bak.EnsureDirectory(true);
 
-                var rs = 0;
-                using (var fs = new FileStream(bak, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
-                using (var gs = new GZipStream(fs, CompressionLevel.Optimal))
-                {
-                    rs = dal.Backup(fact.FormatedTableName, gs);
-                }
+                var rs = dal.Backup(fact.Table.DataTable, bak);
 
                 return Json(0, $"备份[{fileName}]（{rs:n0}行）成功！");
             }
@@ -911,19 +906,14 @@ namespace NewLife.Cube
                 var fact = Factory;
                 var dal = fact.Session.Dal;
 
-                var name = fact.EntityType.Name;
+                var name = GetType().Name.TrimEnd("Controller");
                 var fileName = "{0}_*.gz".F(name);
 
                 var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
                 var fi = di?.GetFiles(fileName)?.LastOrDefault();
                 if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
 
-                var rs = 0;
-                using (var fs = fi.OpenRead())
-                using (var gs = new GZipStream(fs, CompressionMode.Decompress))
-                {
-                    rs = dal.Restore(gs, fact.Table.DataTable);
-                }
+                var rs = dal.Restore(fi.FullName, fact.Table.DataTable);
 
                 return Json(0, $"恢复[{fileName}]（{rs:n0}行）成功！");
             }
@@ -941,32 +931,35 @@ namespace NewLife.Cube
         [DisplayName("导出")]
         public virtual ActionResult BackupAndExport()
         {
-            try
-            {
-                var fact = Factory;
-                if (fact.Count > 10_000_000) throw new XException($"数据量[{fact.Count:n0}>10_000_000]，禁止备份！");
-                var dal = fact.Session.Dal;
+            var fact = Factory;
+            if (fact.Count > 10_000_000) throw new XException($"数据量[{fact.Count:n0}>10_000_000]，禁止备份！");
+            var dal = fact.Session.Dal;
 
-                SetAttachment(fact.EntityType.Name, ".gz", true);
+            var name = GetType().Name.TrimEnd("Controller");
+            SetAttachment(name, ".gz", true);
 
-                // 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
+            var rs = Response;
+
+            // 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
 #if __CORE__
-                var ms = Response.Body;
-#else
-                var ms = Response.OutputStream;
-#endif
-                using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
-                {
-                    dal.Backup(fact.FormatedTableName, gs);
-                }
+            // 允许同步IO，便于CsvFile刷数据Flush
+            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            if (ft != null) ft.AllowSynchronousIO = true;
 
-                return new EmptyResult();
-            }
-            catch (Exception ex)
+            var ms = rs.Body;
+#else
+            // 要导出的数据超大时，启用流式输出
+            var buffer = true;
+            if (Factory.Count > 100_000) buffer = false;
+            rs.Buffer = buffer;
+            var ms = rs.OutputStream;
+#endif
+            using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
             {
-                XTrace.WriteException(ex);
-                return Json(0, null, ex);
+                dal.Backup(fact.Table.DataTable, gs);
             }
+
+            return Index();
         }
 
         /// <summary>分享数据</summary>

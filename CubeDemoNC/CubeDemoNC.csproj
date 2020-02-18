@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="8.6.2020.217-beta" />
-    <PackageReference Include="NewLife.XCode" Version="9.15.2020.217-beta" />
+    <PackageReference Include="NewLife.XCode" Version="9.15.2020.218-beta" />
   </ItemGroup>
 
   <ItemGroup>
