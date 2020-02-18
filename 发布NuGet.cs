@@ -1,4 +1,4 @@
-﻿//assembly=..\X\DLL\NuGet.exe
+﻿//assembly=DLL\NuGet.exe
 //assembly=System.ComponentModel.DataAnnotations
 using System;
 using System.Collections.Generic;
