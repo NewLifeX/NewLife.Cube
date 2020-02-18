@@ -947,7 +947,7 @@ namespace NewLife.Cube
                 if (fact.Count > 10_000_000) throw new XException($"数据量[{fact.Count:n0}>10_000_000]，禁止备份！");
                 var dal = fact.Session.Dal;
 
-                SetAttachment(null, ".gz", true);
+                SetAttachment(fact.EntityType.Name, ".gz", true);
 
                 // 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
 #if __CORE__
