@@ -9,8 +9,8 @@
     <Description>Mvc权限管理后台，支持模版视图重载覆盖</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2020 NewLife</Copyright>
-    <Version>3.2.2020.0205</Version>
-    <FileVersion>3.2.2020.0205</FileVersion>
+    <Version>3.2.2020.0219-beta</Version>
+    <FileVersion>3.2.2020.0219-beta</FileVersion>
     <AssemblyVersion>3.2.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
@@ -28,7 +28,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>支持数据权限、用户部门地区选择、用户分享令牌授权</PackageReleaseNotes>
+    <PackageReleaseNotes>高性能备份导出百万级数据</PackageReleaseNotes>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
