@@ -117,5 +117,43 @@ namespace NewLife.Cube.Web
 
             return null;
         }
+
+        #region 服务端Api
+        /// <summary>企业内部应用获取凭证，有效期7200秒</summary>
+        /// <param name="appkey"></param>
+        /// <param name="appsecret"></param>
+        /// <returns></returns>
+        public static String GetToken(String appkey, String appsecret)
+        {
+            var url = $"https://oapi.dingtalk.com/gettoken?appkey={appkey}&appsecret={appsecret}";
+
+            var http = new HttpClient();
+            return Task.Run(() => http.InvokeAsync<String>(HttpMethod.Get, url, null, null, "access_token")).Result;
+        }
+
+        /// <summary>企业内部应用获取用户信息</summary>
+        /// <param name="access_token"></param>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        public static String GetUserInfo(String access_token, String code)
+        {
+            var url = $"https://oapi.dingtalk.com/user/getuserinfo?access_token={access_token}&code={code}";
+
+            var http = new HttpClient();
+            return Task.Run(() => http.InvokeAsync<String>(HttpMethod.Get, url, null, null, "userid")).Result;
+        }
+        #endregion
     }
+
+    //public class DingTalkServer
+    //{
+    //    #region 属性
+    //    public String Key { get; set; }
+
+    //    public String Secret { get; set; }
+    //    #endregion
+
+    //    #region 方法
+    //    #endregion
+    //}
 }

@@ -146,6 +146,34 @@ namespace NewLife.Cube.Controllers
 
             var returnUrl = prov.GetReturnUrl(Request, false);
 
+            //// 特殊处理钉钉
+            //if (client is DingTalkClient ding)
+            //{
+            //    var ps = Parameter.FindAllByUserID(0).Where(e => e.Category == "钉钉").ToList();
+            //    var key = ps.FirstOrDefault(e => e.Name == "appkey");
+            //    if (key == null)
+            //    {
+            //        key = new Parameter { Category = "钉钉", Name = "appkey", Enable = true };
+            //        key.Insert();
+            //    }
+            //    var secret = ps.FirstOrDefault(e => e.Name == "appsecret");
+            //    if (secret == null)
+            //    {
+            //        secret = new Parameter { Category = "钉钉", Name = "appsecret", Enable = true };
+            //        secret.Insert();
+            //    }
+
+            //    if (!key.Value.IsNullOrEmpty() && !secret.Value.IsNullOrEmpty())
+            //    {
+            //        var token = DingTalkClient.GetToken(key.Value, secret.Value);
+            //        if (!token.IsNullOrEmpty())
+            //        {
+            //            var userid = DingTalkClient.GetUserInfo(token, code);
+            //            client.UserID = userid.ToInt();
+            //        }
+            //    }
+            //}
+
             try
             {
                 // 获取访问令牌
@@ -158,7 +186,7 @@ namespace NewLife.Cube.Controllers
                     {
                         XTrace.WriteLine("拿不到访问令牌 code={0} state={1}", code, state);
                         XTrace.WriteLine(Request.GetRawUrl() + "");
-                        XTrace.WriteLine(html);
+                        if (!html.IsNullOrEmpty()) XTrace.WriteLine(html);
 
                         throw new InvalidOperationException($"内部错误，无法获取令牌 code={code}");
                     }
