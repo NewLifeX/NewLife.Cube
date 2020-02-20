@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using NewLife.Log;
 using NewLife.Remoting;
@@ -58,12 +59,12 @@ namespace NewLife.Cube.Web
                 // 密码登录
                 case "snsapi_login":
                     Server = "https://oapi.dingtalk.com/connect/oauth2/";
-                    AuthUrl = "sns_authorize?appid={key}&response_type=code&scope={scope}&state={state}&redirect_uri={redirect}";
+                    AuthUrl = "sns_authorize?appid={key}&response_type=code&scope=snsapi_login&state={state}&redirect_uri={redirect}";
                     break;
                 // 钉钉内免登
                 case "snsapi_auth":
                     Server = "https://oapi.dingtalk.com/connect/oauth2/";
-                    AuthUrl = "sns_authorize?appid={key}&response_type=code&scope={scope}&state={state}&redirect_uri={redirect}";
+                    AuthUrl = "sns_authorize?appid={key}&response_type=code&scope=snsapi_auth&state={state}&redirect_uri={redirect}";
                     break;
                 default:
                     break;
@@ -89,32 +90,32 @@ namespace NewLife.Cube.Web
 
             // 请求OpenId
             var http = new HttpClient();
-            var rs = http.InvokeAsync<Object>(HttpMethod.Post, url, tmp_code, null, "user_info");
+            var dic = Task.Run(() => http.InvokeAsync<IDictionary<String, Object>>(HttpMethod.Post, url, tmp_code, null, "user_info")).Result;
 
-            var content = new StringContent(tmp_code.ToJson(), Encoding.UTF8, "application/json");
-            var response = http.PostAsync(url, content).Result;
+            //var content = new StringContent(tmp_code.ToJson(), Encoding.UTF8, "application/json");
+            //var response = http.PostAsync(url, content).Result;
 
-            var html = response.Content.ReadAsStringAsync().Result;
-            if (html.IsNullOrEmpty()) return null;
+            //var html = response.Content.ReadAsStringAsync().Result;
+            //if (html.IsNullOrEmpty()) return null;
 
-            html = html.Trim();
-            if (Log != null && Log.Enable) WriteLog(html);
+            //html = html.Trim();
+            //if (Log != null && Log.Enable) WriteLog(html);
 
-            var dic = new JsonParser(html).Decode() as IDictionary<String, Object>;
+            //var dic = new JsonParser(html).Decode() as IDictionary<String, Object>;
             if (dic != null)
             {
-                dic = dic["user_info"] as IDictionary<String, Object>;
-                if (dic != null)
-                {
-                    NickName = dic["nick"] as String;
-                    OpenID = dic["openid"] as String;
-                    UnionID = dic["unionid"] as String;
+                //dic = dic["user_info"] as IDictionary<String, Object>;
+                //if (dic != null)
+                //{
+                NickName = dic["nick"] as String;
+                OpenID = dic["openid"] as String;
+                UnionID = dic["unionid"] as String;
 
-                    Items = dic.ToDictionary(e => e.Key, e => e.Value as String);
-                }
+                Items = dic.ToDictionary(e => e.Key, e => e.Value as String);
+                //}
             }
 
-            return html;
+            return null;
         }
     }
 }
