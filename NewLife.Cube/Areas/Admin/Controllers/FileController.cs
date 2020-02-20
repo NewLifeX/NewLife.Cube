@@ -300,7 +300,11 @@ namespace NewLife.Cube.Admin.Controllers
 
             WriteLog("下载", fi.FullName, UserHost);
 
+#if __CORE__
+            return PhysicalFile(fi.FullName, "application/octet-stream", fi.Name, true);
+#else
             return File(fi.FullName, "application/octet-stream", fi.Name);
+#endif
         }
         #endregion
 
