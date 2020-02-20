@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using NewLife.Log;
-using NewLife.Reflection;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -28,6 +26,7 @@ namespace NewLife.Cube.Web
         /// <summary>实例化</summary>
         public DingTalkClient()
         {
+            Name = "Ding";
             Server = "https://oapi.dingtalk.com/connect/oauth2/";
 
             AuthUrl = "sns_authorize?appid={key}&response_type=code&scope={scope}&state={state}&redirect_uri={redirect}";

@@ -151,6 +151,7 @@ namespace NewLife.Cube.Web
 
             try
             {
+                uc.UpdateTime = DateTime.Now;
                 uc.Save();
             }
             catch (Exception ex)

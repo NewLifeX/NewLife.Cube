@@ -139,19 +139,13 @@ namespace NewLife.Cube.Controllers
                     var html = client.GetAccessToken(code);
 
                     // 如果拿不到访问令牌或用户信息，则重新跳转
-                    if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0)
+                    if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0 && client.UserName.IsNullOrEmpty())
                     {
-                        // 如果拿不到访问令牌，刷新一次，然后报错
-                        if (state.EqualIgnoreCase("refresh"))
-                        {
-                            if (client.Log == null) XTrace.WriteLine(html);
+                        XTrace.WriteLine("拿不到访问令牌 code={0} state={1}", code, state);
+                        XTrace.WriteLine(Request.GetRawUrl() + "");
+                        XTrace.WriteLine(html);
 
-                            throw new InvalidOperationException("内部错误，无法获取令牌");
-                        }
-
-                        XTrace.WriteLine("拿不到访问令牌，重新跳转 code={0} state={1}", code, state);
-
-                        return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
+                        throw new InvalidOperationException($"内部错误，无法获取令牌 code={code}");
                     }
                 }
 
@@ -177,8 +171,6 @@ namespace NewLife.Cube.Controllers
             catch (Exception ex)
             {
                 XTrace.WriteException(ex.GetTrue());
-
-                //if (!state.EqualIgnoreCase("refresh")) return RedirectToAction("Login", new { name = client.Name, r = returnUrl, state = "refresh" });
 
                 throw;
             }

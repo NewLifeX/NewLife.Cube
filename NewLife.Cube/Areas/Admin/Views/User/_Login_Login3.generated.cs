@@ -54,7 +54,7 @@ namespace ASP
     var set = NewLife.Cube.Setting.Current;
     var returnUrl = ViewBag.ReturnUrl as String;
     var ms = NewLife.Web.OAuthConfig.Current.Items.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
-    var dic = "NewLife=新生命,Baidu=百度,Weixin=微信,Taobao=淘宝".SplitAsDictionary("=", ",");
+    var dic = "NewLife=新生命,Baidu=百度,Weixin=微信,Taobao=淘宝,Ding=钉钉".SplitAsDictionary("=", ",");
 
             
             #line default
@@ -134,14 +134,14 @@ WriteLiteral(">\r\n");
             #line hidden
 WriteLiteral("                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1587), Tuple.Create("\"", 1598)
+WriteAttribute("href", Tuple.Create(" href=\"", 1595), Tuple.Create("\"", 1606)
             
             #line 37 "..\..\Areas\Admin\Views\User\_Login_Login3.cshtml"
-, Tuple.Create(Tuple.Create("", 1594), Tuple.Create<System.Object, System.Int32>(url
+, Tuple.Create(Tuple.Create("", 1602), Tuple.Create<System.Object, System.Int32>(url
             
             #line default
             #line hidden
-, 1594), false)
+, 1602), false)
 );
 
 WriteLiteral(">\r\n");
@@ -164,24 +164,24 @@ WriteLiteral("                            ");
 
 WriteLiteral("<img");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1720), Tuple.Create("\"", 1731)
+WriteAttribute("src", Tuple.Create(" src=\"", 1728), Tuple.Create("\"", 1739)
             
             #line 40 "..\..\Areas\Admin\Views\User\_Login_Login3.cshtml"
-, Tuple.Create(Tuple.Create("", 1726), Tuple.Create<System.Object, System.Int32>(logo
+, Tuple.Create(Tuple.Create("", 1734), Tuple.Create<System.Object, System.Int32>(logo
             
             #line default
             #line hidden
-, 1726), false)
+, 1734), false)
 );
 
-WriteAttribute("title", Tuple.Create(" title=\"", 1732), Tuple.Create("\"", 1749)
+WriteAttribute("title", Tuple.Create(" title=\"", 1740), Tuple.Create("\"", 1757)
             
             #line 40 "..\..\Areas\Admin\Views\User\_Login_Login3.cshtml"
-, Tuple.Create(Tuple.Create("", 1740), Tuple.Create<System.Object, System.Int32>(nickName
+, Tuple.Create(Tuple.Create("", 1748), Tuple.Create<System.Object, System.Int32>(nickName
             
             #line default
             #line hidden
-, 1740), false)
+, 1748), false)
 );
 
 WriteLiteral(" style=\"width: 64px; height: 64px;\"");
