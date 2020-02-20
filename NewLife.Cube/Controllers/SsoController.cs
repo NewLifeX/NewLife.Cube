@@ -146,33 +146,6 @@ namespace NewLife.Cube.Controllers
 
             var returnUrl = prov.GetReturnUrl(Request, false);
 
-            //// 特殊处理钉钉
-            //if (client is DingTalkClient ding)
-            //{
-            //    var ps = Parameter.FindAllByUserID(0).Where(e => e.Category == "钉钉").ToList();
-            //    var key = ps.FirstOrDefault(e => e.Name == "appkey");
-            //    if (key == null)
-            //    {
-            //        key = new Parameter { Category = "钉钉", Name = "appkey", Enable = true };
-            //        key.Insert();
-            //    }
-            //    var secret = ps.FirstOrDefault(e => e.Name == "appsecret");
-            //    if (secret == null)
-            //    {
-            //        secret = new Parameter { Category = "钉钉", Name = "appsecret", Enable = true };
-            //        secret.Insert();
-            //    }
-
-            //    if (!key.Value.IsNullOrEmpty() && !secret.Value.IsNullOrEmpty())
-            //    {
-            //        var token = DingTalkClient.GetToken(key.Value, secret.Value);
-            //        if (!token.IsNullOrEmpty())
-            //        {
-            //            var userid = DingTalkClient.GetUserInfo(token, code);
-            //            client.UserID = userid.ToInt();
-            //        }
-            //    }
-            //}
 
             try
             {
@@ -191,6 +164,9 @@ namespace NewLife.Cube.Controllers
                         throw new InvalidOperationException($"内部错误，无法获取令牌 code={code}");
                     }
                 }
+
+                // 特殊处理钉钉
+                if (client is DingTalkClient ding) DoDingDing(ding);
 
                 // 获取OpenID。部分提供商不需要
                 if (!client.OpenIDUrl.IsNullOrEmpty()) client.GetOpenID();
@@ -216,6 +192,53 @@ namespace NewLife.Cube.Controllers
                 XTrace.WriteException(ex.GetTrue());
 
                 throw;
+            }
+        }
+
+        private static String _ding_access_token;
+        private static DateTime _ding_expire;
+        private void DoDingDing(DingTalkClient client)
+        {
+            if (client == null || client.UnionID.IsNullOrEmpty()) return;
+
+            // 如果配置了企业级账号，可以获取更详细信息
+            var token = _ding_access_token;
+            if (token.IsNullOrEmpty() || _ding_expire < DateTime.Now)
+            {
+                var ps = Parameter.FindAllByUserID(0).Where(e => e.Category == "钉钉").ToList();
+                var key = ps.FirstOrDefault(e => e.Name == "appkey");
+                if (key == null)
+                {
+                    key = new Parameter { Category = "钉钉", Name = "appkey", Enable = true };
+                    key.Insert();
+                }
+                var secret = ps.FirstOrDefault(e => e.Name == "appsecret");
+                if (secret == null)
+                {
+                    secret = new Parameter { Category = "钉钉", Name = "appsecret", Enable = true };
+                    secret.Insert();
+                }
+
+                _ding_access_token = null;
+                if (!key.Value.IsNullOrEmpty() && !secret.Value.IsNullOrEmpty())
+                {
+                    token = _ding_access_token = DingTalkClient.GetToken(key.Value, secret.Value);
+                }
+
+                _ding_expire = DateTime.Now.AddSeconds(7200 - 60);
+            }
+
+            if (!token.IsNullOrEmpty())
+            {
+                // 根据UnionId换取员工Id
+                var userid = DingTalkClient.GetUseridByUnionid(token, client.UnionID);
+                if (!userid.IsNullOrEmpty())
+                {
+                    // 钉钉Id一般不是自己设置的，很乱，不可取
+                    //client.UserName = userid;
+
+                    client.GetUserInfo(token, userid);
+                }
             }
         }
 

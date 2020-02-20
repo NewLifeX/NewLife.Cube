@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using NewLife.Log;
+using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
+using XCode.Membership;
 
 namespace NewLife.Cube.Web
 {
@@ -92,27 +93,13 @@ namespace NewLife.Cube.Web
             var http = new HttpClient();
             var dic = Task.Run(() => http.InvokeAsync<IDictionary<String, Object>>(HttpMethod.Post, url, tmp_code, null, "user_info")).Result;
 
-            //var content = new StringContent(tmp_code.ToJson(), Encoding.UTF8, "application/json");
-            //var response = http.PostAsync(url, content).Result;
-
-            //var html = response.Content.ReadAsStringAsync().Result;
-            //if (html.IsNullOrEmpty()) return null;
-
-            //html = html.Trim();
-            //if (Log != null && Log.Enable) WriteLog(html);
-
-            //var dic = new JsonParser(html).Decode() as IDictionary<String, Object>;
             if (dic != null)
             {
-                //dic = dic["user_info"] as IDictionary<String, Object>;
-                //if (dic != null)
-                //{
                 NickName = dic["nick"] as String;
                 OpenID = dic["openid"] as String;
                 UnionID = dic["unionid"] as String;
 
                 Items = dic.ToDictionary(e => e.Key, e => e.Value as String);
-                //}
             }
 
             return null;
@@ -133,27 +120,60 @@ namespace NewLife.Cube.Web
 
         /// <summary>企业内部应用获取用户信息</summary>
         /// <param name="access_token"></param>
-        /// <param name="code"></param>
+        /// <param name="userid">员工id</param>
         /// <returns></returns>
-        public static String GetUserInfo(String access_token, String code)
+        public IDictionary<String, Object> GetUserInfo(String access_token, String userid)
         {
-            var url = $"https://oapi.dingtalk.com/user/getuserinfo?access_token={access_token}&code={code}";
+            var url = $"https://oapi.dingtalk.com/user/get?access_token={access_token}&userid={userid}";
+
+            var http = new HttpClient();
+            var buf = Task.Run(() => http.GetAsync<Byte[]>(url)).Result;
+            var str = buf.ToStr();
+            var js = new JsonParser(str).Decode() as IDictionary<String, Object>;
+
+            UserName = js["name"] + "";
+            NickName = js["nick"] + "";
+            Avatar = js["avatar"] + "";
+
+            // 合并字典
+            var dic = Items;
+            if (dic == null)
+                Items = js.ToDictionary(e => e.Key, e => e.Value as String);
+            else
+            {
+                foreach (var item in js)
+                {
+                    if (!dic.ContainsKey(item.Key)) dic[item.Key] = item.Value as String;
+                }
+            }
+
+            return js;
+        }
+
+        public override void Fill(IManageUser user)
+        {
+            var dic = Items;
+            if (dic != null && user is UserX user2)
+            {
+                if (user2.Mail.IsNullOrEmpty() && dic.TryGetValue("email", out var email)) user2.Mail = email;
+                if (user2.Mobile.IsNullOrEmpty() && dic.TryGetValue("mobile", out var mobile)) user2.Mobile = mobile;
+                if (user2.Code.IsNullOrEmpty() && dic.TryGetValue("jobnumber", out var code)) user2.Code = code;
+            }
+
+            base.Fill(user);
+        }
+
+        /// <summary>根据unionid获取userid</summary>
+        /// <param name="access_token"></param>
+        /// <param name="unionId">员工在当前开发者企业账号范围内的唯一标识，系统生成，固定值，不会改变</param>
+        /// <returns></returns>
+        public static String GetUseridByUnionid(String access_token, String unionId)
+        {
+            var url = $"https://oapi.dingtalk.com/user/getUseridByUnionid?access_token={access_token}&unionid={unionId}";
 
             var http = new HttpClient();
             return Task.Run(() => http.InvokeAsync<String>(HttpMethod.Get, url, null, null, "userid")).Result;
         }
         #endregion
     }
-
-    //public class DingTalkServer
-    //{
-    //    #region 属性
-    //    public String Key { get; set; }
-
-    //    public String Secret { get; set; }
-    //    #endregion
-
-    //    #region 方法
-    //    #endregion
-    //}
 }
