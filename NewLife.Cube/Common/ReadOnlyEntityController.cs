@@ -959,7 +959,7 @@ namespace NewLife.Cube
                 dal.Backup(fact.Table.DataTable, gs);
             }
 
-            return Index();
+            return new EmptyResult();
         }
 
         /// <summary>分享数据</summary>
