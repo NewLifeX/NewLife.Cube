@@ -91,6 +91,21 @@ namespace NewLife.Cube.Controllers
             else
                 state = client.Name;
 
+            // 钉钉内打开时，自动切换为应用内免登
+            if (client is DingTalkClient ding)
+            {
+#if __CORE__
+                var agent = Request.Headers["User-Agent"] + "";
+#else
+                var agent = Request.UserAgent;
+#endif
+                if (!agent.IsNullOrEmpty() && agent.Contains("DingTalk"))
+                {
+                    ding.Scope = "snsapi_auth";
+                    ding.SetMode(ding.Scope);
+                }
+            }
+
             var url = client.Authorize(redirect, state);
 
             return Redirect(url);

@@ -41,7 +41,14 @@ namespace NewLife.Cube.Web
         {
             base.Apply(mi);
 
-            switch (Scope)
+            SetMode(Scope);
+        }
+
+        /// <summary>设置工作模式</summary>
+        /// <param name="mode"></param>
+        public virtual void SetMode(String mode)
+        {
+            switch (mode)
             {
                 // 扫码登录
                 case "snsapi_qrlogin":
@@ -76,9 +83,9 @@ namespace NewLife.Cube.Web
             url = url.Replace("{timestamp}", ts).Replace("{signature}", HttpUtility.UrlEncode(sign));
 
             url = GetUrl(url);
-            WriteLog("GetUserInfo {0}", url);
 
             var tmp_code = new { tmp_auth_code = code };
+            WriteLog("GetUserInfo {0} {1}", url, tmp_code.ToJson());
 
             // 请求OpenId
             var http = new HttpClient();
