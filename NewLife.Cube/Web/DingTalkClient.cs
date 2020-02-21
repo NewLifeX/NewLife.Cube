@@ -150,6 +150,8 @@ namespace NewLife.Cube.Web
             return js;
         }
 
+        /// <summary>填充信息</summary>
+        /// <param name="user"></param>
         public override void Fill(IManageUser user)
         {
             var dic = Items;

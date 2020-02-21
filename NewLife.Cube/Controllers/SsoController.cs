@@ -7,6 +7,7 @@ using NewLife.Log;
 using NewLife.Model;
 using NewLife.Web;
 using XCode.Membership;
+using NewLife.Remoting;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -230,14 +231,22 @@ namespace NewLife.Cube.Controllers
 
             if (!token.IsNullOrEmpty())
             {
-                // 根据UnionId换取员工Id
-                var userid = DingTalkClient.GetUseridByUnionid(token, client.UnionID);
-                if (!userid.IsNullOrEmpty())
+                try
                 {
-                    // 钉钉Id一般不是自己设置的，很乱，不可取
-                    //client.UserName = userid;
+                    // 根据UnionId换取员工Id
+                    var userid = DingTalkClient.GetUseridByUnionid(token, client.UnionID);
+                    if (!userid.IsNullOrEmpty())
+                    {
+                        // 钉钉Id一般不是自己设置的，很乱，不可取
+                        //client.UserName = userid;
 
-                    client.GetUserInfo(token, userid);
+                        client.GetUserInfo(token, userid);
+                    }
+                }
+                catch (AggregateException ex)
+                {
+                    // 某些用户不是本团队成员，此处会抛出异常
+                    if (!(ex.GetTrue() is ApiException)) throw;
                 }
             }
         }
