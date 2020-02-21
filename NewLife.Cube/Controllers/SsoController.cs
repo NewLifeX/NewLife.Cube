@@ -8,6 +8,7 @@ using NewLife.Model;
 using NewLife.Web;
 using XCode.Membership;
 using NewLife.Remoting;
+using NewLife.Collections;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -55,6 +56,13 @@ namespace NewLife.Cube.Controllers
         /// <summary>单点登录服务端</summary>
         public static OAuthServer OAuth { get; set; }
 
+        /// <summary>存储最近用过的code，避免用户刷新页面</summary>
+        private static DictionaryCache<String, String> _codeCache = new DictionaryCache<string, string>()
+        {
+            Expire = 600,
+            Period = 60
+        };
+
         static SsoController()
         {
             // 注册单点登录
@@ -84,13 +92,20 @@ namespace NewLife.Cube.Controllers
             var prov = Provider;
             var client = prov.GetClient(name);
             var rurl = prov.GetReturnUrl(Request, true);
-            var redirect = prov.GetRedirect(Request, rurl);
 
             var state = GetRequest("state");
             if (!state.IsNullOrEmpty())
                 state = client.Name + "_" + state;
             else
                 state = client.Name;
+
+            return base.Redirect(OnLogin(client, state, rurl));
+        }
+
+        private String OnLogin(OAuthClient client, String state, String returnUrl)
+        {
+            var prov = Provider;
+            var redirect = prov.GetRedirect(Request, returnUrl);
 
             // 钉钉内打开时，自动切换为应用内免登
             if (client is DingTalkClient ding)
@@ -107,9 +122,7 @@ namespace NewLife.Cube.Controllers
                 }
             }
 
-            var url = client.Authorize(redirect, state);
-
-            return Redirect(url);
+            return client.Authorize(redirect, state);
         }
 
         /// <summary>第三方登录完成后跳转到此</summary>
@@ -119,15 +132,6 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public virtual ActionResult LoginInfo(String code, String state)
         {
-#if __CORE__
-            if (code.IsNullOrEmpty())
-            {
-                XTrace.WriteLine("LoginInfo code==null {0} {1}", Request.Method, Request.GetEncodedUrl());
-
-                return BadRequest("code is null");
-            }
-#endif
-
             var name = state + "";
             var p = name.IndexOf('_');
             if (p > 0)
@@ -139,14 +143,26 @@ namespace NewLife.Cube.Controllers
             var prov = Provider;
             var client = prov.GetClient(name);
 
-            client.WriteLog("LoginInfo name={0} code={1} state={2}", name, code, state);
+            client.WriteLog("LoginInfo name={0} code={1} state={2} {3}", name, code, state, Request.GetRawUrl());
+
+            // 无法拿到code时，跳回去再来
+            if (code.IsNullOrEmpty())
+            {
+                if (state == "refresh") throw new Exception("非法请求，无法取得code");
+
+                return Redirect(OnLogin(client, $"{name}_refresh", null));
+            }
+            // 短期内用过的code也跳回
+            if (!_codeCache.TryAdd(code, code, false, out _))
+            {
+                return Redirect(OnLogin(client, $"{name}_refresh", null));
+            }
 
             // 构造redirect_uri，部分提供商（百度）要求获取AccessToken的时候也要传递
             var redirect = prov.GetRedirect(Request);
             client.Authorize(redirect);
 
             var returnUrl = prov.GetReturnUrl(Request, false);
-
 
             try
             {
