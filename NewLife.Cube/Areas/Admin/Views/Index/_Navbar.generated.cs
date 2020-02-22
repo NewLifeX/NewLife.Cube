@@ -199,26 +199,26 @@ WriteLiteral(">\r\n");
             #line hidden
 WriteLiteral("                            <img");
 
-WriteLiteral(" class=\"nav-user-photo\"");
+WriteLiteral(" class=\"nav-user-photo hidden-xs\"");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1919), Tuple.Create("\"", 1945)
+WriteAttribute("src", Tuple.Create(" src=\"", 1929), Tuple.Create("\"", 1955)
             
             #line 48 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-, Tuple.Create(Tuple.Create("", 1925), Tuple.Create<System.Object, System.Int32>(user.GetAvatarUrl()
+, Tuple.Create(Tuple.Create("", 1935), Tuple.Create<System.Object, System.Int32>(user.GetAvatarUrl()
             
             #line default
             #line hidden
-, 1925), false)
+, 1935), false)
 );
 
-WriteAttribute("alt", Tuple.Create(" alt=\"", 1946), Tuple.Create("\"", 1957)
+WriteAttribute("alt", Tuple.Create(" alt=\"", 1956), Tuple.Create("\"", 1967)
             
             #line 48 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-        , Tuple.Create(Tuple.Create("", 1952), Tuple.Create<System.Object, System.Int32>(user
+                  , Tuple.Create(Tuple.Create("", 1962), Tuple.Create<System.Object, System.Int32>(user
             
             #line default
             #line hidden
-, 1952), false)
+, 1962), false)
 );
 
 WriteLiteral(" />\r\n");
@@ -232,7 +232,7 @@ WriteLiteral(" />\r\n");
             #line hidden
 WriteLiteral("                        <span");
 
-WriteLiteral(" class=\"user-info\"");
+WriteLiteral(" class=\"user-info hidden-xs\"");
 
 WriteLiteral(">\r\n                            ");
 
@@ -267,9 +267,9 @@ WriteLiteral(" class=\"user-menu dropdown-menu-right dropdown-menu dropdown-yell
 
 WriteLiteral(">\r\n                        <li>\r\n                            <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 2461), Tuple.Create("\"", 2470)
-, Tuple.Create(Tuple.Create("", 2468), Tuple.Create<System.Object, System.Int32>(Href("~/")
-, 2468), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 2481), Tuple.Create("\"", 2490)
+, Tuple.Create(Tuple.Create("", 2488), Tuple.Create<System.Object, System.Int32>(Href("~/")
+, 2488), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
@@ -283,16 +283,16 @@ WriteLiteral("></i>\r\n                                网站首页\r\n         
 
 WriteLiteral("\r\n\r\n                        <li>\r\n                            <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 3181), Tuple.Create("\"", 3210)
-, Tuple.Create(Tuple.Create("", 3188), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Info/")
-, 3188), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 3201), Tuple.Create("\"", 3230)
+, Tuple.Create(Tuple.Create("", 3208), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Info/")
+, 3208), false)
             
             #line 77 "..\..\Areas\Admin\Views\Index\_Navbar.cshtml"
-, Tuple.Create(Tuple.Create("", 3206), Tuple.Create<System.Object, System.Int32>(uid
+, Tuple.Create(Tuple.Create("", 3226), Tuple.Create<System.Object, System.Int32>(uid
             
             #line default
             #line hidden
-, 3206), false)
+, 3226), false)
 );
 
 WriteLiteral(" target=\"main\"");
@@ -308,9 +308,9 @@ WriteLiteral(" class=\"divider\"");
 
 WriteLiteral("></li>\r\n\r\n                        <li>\r\n                            <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 3515), Tuple.Create("\"", 3541)
-, Tuple.Create(Tuple.Create("", 3522), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Logout")
-, 3522), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 3535), Tuple.Create("\"", 3561)
+, Tuple.Create(Tuple.Create("", 3542), Tuple.Create<System.Object, System.Int32>(Href("~/Admin/User/Logout")
+, 3542), false)
 );
 
 WriteLiteral(">\r\n                                <i");

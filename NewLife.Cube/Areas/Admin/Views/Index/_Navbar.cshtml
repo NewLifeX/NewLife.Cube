@@ -45,9 +45,9 @@
                     <a data-toggle="dropdown" href="~/Admin/User/Info/@uid" class="dropdown-toggle" target="main">
                         @if (user != null && !user.Avatar.IsNullOrEmpty())
                         {
-                            <img class="nav-user-photo" src="@user.GetAvatarUrl()" alt="@user" />
+                            <img class="nav-user-photo hidden-xs" src="@user.GetAvatarUrl()" alt="@user" />
                         }
-                        <span class="user-info">
+                        <span class="user-info hidden-xs">
                             @*<small>欢迎，</small>*@
                             @user <br /> [@roleNames]
                         </span>
