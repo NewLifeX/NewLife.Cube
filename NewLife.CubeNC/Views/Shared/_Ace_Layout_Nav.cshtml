@@ -13,12 +13,10 @@
             if (item.ID != 0)
             {
                 <a href="@(item.Url!=null? Url.Content(item.Url):"#")">@item.DisplayName</a>
-
             }
         }
     }
 </li>
-
 <li>
     <a href="@Url.Action("Index")">@(menu != null ? menu.DisplayName : ViewBag.Title)</a>
 </li>
