@@ -1,0 +1,87 @@
+﻿html {
+    min-height: 100%;
+    position: relative
+}
+
+body {
+    /*background-color: #e4e6e9;*/
+    min-height: 100%;
+    padding-bottom: 0;
+    font-family: 'Open Sans';
+    font-size: 13px;
+    color: #393939;
+    line-height: 1.5
+}
+
+.page-content {
+    background-color: #fff;
+    position: relative;
+    margin: 0;
+    padding: 8px
+}
+
+.breadcrumbs {
+    position: relative;
+    z-index: auto;
+    border-bottom: 1px solid #e5e5e5;
+    background-color: #f5f5f5;
+    min-height: 41px;
+    line-height: 40px;
+    padding: 0 12px 0 0
+}
+
+.breadcrumb {
+    background-color: transparent;
+    display: inline-block;
+    line-height: 20px;
+    margin: 6px 22px 0 12px;
+    padding: 0;
+    font-size: 13px;
+    color: #333;
+    border-radius: 0
+}
+
+    .breadcrumb > li,
+    .breadcrumb > li.active {
+        color: #555;
+        padding: 0 3px 0 3px
+    }
+
+        .breadcrumb > li > a {
+            display: inline-block;
+            color: #4c8fbd
+        }
+
+        .breadcrumb > li + li:before {
+            font-family: FontAwesome;
+            font-size: 14px;
+            content: "\f105";
+            color: #b2b6bf;
+            padding: 0;
+            margin: 0 8px 0 0;
+            position: relative;
+            top: 1px
+        }
+
+    .breadcrumb .home-icon {
+        font-size: 20px;
+        margin-left: 2px;
+        margin-right: 2px;
+        vertical-align: top
+    }
+
+@media only screen and (max-width:480px) {
+    .breadcrumb > li > a {
+        padding: 0 1px
+    }
+}
+
+/* 2019-03-15 表格禁止折行，避免拥挤 */
+.table-responsive > .table > tbody > tr > td,
+.table-responsive > .table > tbody > tr > th,
+.table-responsive > .table > tfoot > tr > td,
+.table-responsive > .table > tfoot > tr > th,
+.table-responsive > .table > thead > tr > td,
+.table-responsive > .table > thead > tr > th {
+    white-space: nowrap
+}

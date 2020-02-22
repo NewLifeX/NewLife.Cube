@@ -99,7 +99,6 @@ WriteLiteral("</a>\r\n");
 
             
             #line 13 "..\..\Views\Shared\_Ace_Layout_Nav.cshtml"
-
             }
         }
     }
@@ -107,28 +106,28 @@ WriteLiteral("</a>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("</li>\r\n\r\n<li>\r\n    <a");
+WriteLiteral("</li>\r\n<li>\r\n    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 407), Tuple.Create("\"", 434)
+WriteAttribute("href", Tuple.Create(" href=\"", 403), Tuple.Create("\"", 430)
             
-            #line 20 "..\..\Views\Shared\_Ace_Layout_Nav.cshtml"
-, Tuple.Create(Tuple.Create("", 414), Tuple.Create<System.Object, System.Int32>(Url.Action("Index")
+            #line 18 "..\..\Views\Shared\_Ace_Layout_Nav.cshtml"
+, Tuple.Create(Tuple.Create("", 410), Tuple.Create<System.Object, System.Int32>(Url.Action("Index")
             
             #line default
             #line hidden
-, 414), false)
+, 410), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 20 "..\..\Views\Shared\_Ace_Layout_Nav.cshtml"
+            #line 18 "..\..\Views\Shared\_Ace_Layout_Nav.cshtml"
                                Write(menu != null ? menu.DisplayName : ViewBag.Title);
 
             
             #line default
             #line hidden
-WriteLiteral("</a>\r\n</li>\r\n");
+WriteLiteral("</a>\r\n</li>");
 
         }
     }

@@ -44,7 +44,7 @@
     <link href="~/Content/artDialog/css/ui-dialog.css" rel="stylesheet" />
 
     <!-- 自定义样式 -->
-    <link rel="stylesheet" href="~/Content/Cube.css?v=3.2.2020.0204">
+    <link rel="stylesheet" href="~/Content/Cube-bootstrap.css?v=3.2.2020.0222">
     <!-- JQuery作为一等公民，页面内部随时可能使用 -->
     <script src="~/Content/js/jquery-3.4.1.min.js"></script>
     @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
@@ -53,14 +53,28 @@
     }
 </head>
 <body>
-    @*@Html.Partial("_Layout_Header")*@
-
-    @*<div class="container">*@
-    @RenderBody()
-    @*</div>*@
-
-    @*@Html.Partial("_Layout_Footer")*@
-
+    <div class="panel panel-default">
+        @if (set2 != null && set2.EnableNavbar)
+        {
+            <div class="breadcrumbs" id="breadcrumbs">
+                <ul class="breadcrumb">
+                    @Html.Partial("_Layout_Nav")
+                </ul>
+                <div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
+            </div>
+        }
+        <div class="page-content">
+            <section class="content-wrapper main-content clear-fix">
+                @RenderBody()
+            </section>
+        </div>
+        @if (DbRunTimeModule.Enable)
+        {
+            <div class="panel-footer">
+                @Html.Raw(DbRunTimeModule.GetInfo())
+            </div>
+        }
+    </div>
     <!-- 最早引入基本脚本 -->
     <script src="~/Content/bootstrap/bootstrap.bundle.min-4.4.1.js"></script>
     @if (set != null && set.BootstrapSelect)

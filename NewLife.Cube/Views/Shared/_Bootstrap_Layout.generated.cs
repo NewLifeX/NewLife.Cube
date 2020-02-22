@@ -224,16 +224,16 @@ WriteLiteral(" />\r\n\r\n    <!-- 自定义样式 -->\r\n    <link");
 
 WriteLiteral(" rel=\"stylesheet\"");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1633), Tuple.Create("\"", 1674)
-, Tuple.Create(Tuple.Create("", 1640), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.css?v=3.2.2020.0204")
+WriteAttribute("href", Tuple.Create(" href=\"", 1633), Tuple.Create("\"", 1684)
+, Tuple.Create(Tuple.Create("", 1640), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube-bootstrap.css?v=3.2.2020.0222")
 , 1640), false)
 );
 
 WriteLiteral(">\r\n    <!-- JQuery作为一等公民，页面内部随时可能使用 -->\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1727), Tuple.Create("\"", 1765)
-, Tuple.Create(Tuple.Create("", 1733), Tuple.Create<System.Object, System.Int32>(Href("~/Content/js/jquery-3.4.1.min.js")
-, 1733), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 1737), Tuple.Create("\"", 1775)
+, Tuple.Create(Tuple.Create("", 1743), Tuple.Create<System.Object, System.Int32>(Href("~/Content/js/jquery-3.4.1.min.js")
+, 1743), false)
 );
 
 WriteLiteral("></script>\r\n");
@@ -254,9 +254,9 @@ WriteLiteral("></script>\r\n");
             #line hidden
 WriteLiteral("        <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1888), Tuple.Create("\"", 1918)
-, Tuple.Create(Tuple.Create("", 1894), Tuple.Create<System.Object, System.Int32>(Href("~/Content/echarts.min.js")
-, 1894), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 1898), Tuple.Create("\"", 1928)
+, Tuple.Create(Tuple.Create("", 1904), Tuple.Create<System.Object, System.Int32>(Href("~/Content/echarts.min.js")
+, 1904), false)
 );
 
 WriteLiteral("></script>\r\n");
@@ -268,42 +268,145 @@ WriteLiteral("></script>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("</head>\r\n<body>\r\n    ");
+WriteLiteral("</head>\r\n<body>\r\n    <div");
 
-WriteLiteral("\r\n\r\n    ");
+WriteLiteral(" class=\"panel panel-default\"");
 
-WriteLiteral("\r\n");
-
-WriteLiteral("    ");
+WriteLiteral(">\r\n");
 
             
-            #line 59 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
-Write(RenderBody());
+            #line 57 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+        
+            
+            #line default
+            #line hidden
+            
+            #line 57 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+         if (set2 != null && set2.EnableNavbar)
+        {
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n    ");
+WriteLiteral("            <div");
 
-WriteLiteral("\r\n\r\n    ");
+WriteLiteral(" class=\"breadcrumbs\"");
 
-WriteLiteral("\r\n\r\n    <!-- 最早引入基本脚本 -->\r\n    <script");
+WriteLiteral(" id=\"breadcrumbs\"");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 2145), Tuple.Create("\"", 2200)
-, Tuple.Create(Tuple.Create("", 2151), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/bootstrap.bundle.min-4.4.1.js")
-, 2151), false)
+WriteLiteral(">\r\n                <ul");
+
+WriteLiteral(" class=\"breadcrumb\"");
+
+WriteLiteral(">\r\n");
+
+WriteLiteral("                    ");
+
+            
+            #line 61 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+               Write(Html.Partial("_Layout_Nav"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                </ul>\r\n                <div");
+
+WriteLiteral(" style=\"float: right; margin-left: 40px;\"");
+
+WriteLiteral(">");
+
+            
+            #line 63 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+                                                         Write(ViewBag.HeaderContent);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</div>\r\n            </div>\r\n");
+
+            
+            #line 65 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        <div");
+
+WriteLiteral(" class=\"page-content\"");
+
+WriteLiteral(">\r\n            <section");
+
+WriteLiteral(" class=\"content-wrapper main-content clear-fix\"");
+
+WriteLiteral(">\r\n");
+
+WriteLiteral("                ");
+
+            
+            #line 68 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+           Write(RenderBody());
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n            </section>\r\n        </div>\r\n");
+
+            
+            #line 71 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+        
+            
+            #line default
+            #line hidden
+            
+            #line 71 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+         if (DbRunTimeModule.Enable)
+        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            <div");
+
+WriteLiteral(" class=\"panel-footer\"");
+
+WriteLiteral(">\r\n");
+
+WriteLiteral("                ");
+
+            
+            #line 74 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+           Write(Html.Raw(DbRunTimeModule.GetInfo()));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n            </div>\r\n");
+
+            
+            #line 76 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    </div>\r\n    <!-- 最早引入基本脚本 -->\r\n    <script");
+
+WriteAttribute("src", Tuple.Create(" src=\"", 2754), Tuple.Create("\"", 2809)
+, Tuple.Create(Tuple.Create("", 2760), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/bootstrap.bundle.min-4.4.1.js")
+, 2760), false)
 );
 
 WriteLiteral("></script>\r\n");
 
             
-            #line 66 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+            #line 80 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
     
             
             #line default
             #line hidden
             
-            #line 66 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+            #line 80 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
      if (set != null && set.BootstrapSelect)
     {
 
@@ -312,15 +415,15 @@ WriteLiteral("></script>\r\n");
             #line hidden
 WriteLiteral("        <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 2281), Tuple.Create("\"", 2338)
-, Tuple.Create(Tuple.Create("", 2287), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/js/bootstrap-multiselect.min.js")
-, 2287), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 2890), Tuple.Create("\"", 2947)
+, Tuple.Create(Tuple.Create("", 2896), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/js/bootstrap-multiselect.min.js")
+, 2896), false)
 );
 
 WriteLiteral("></script>\r\n");
 
             
-            #line 69 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+            #line 83 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
     }
 
             
@@ -331,7 +434,7 @@ WriteLiteral("\r\n");
 WriteLiteral("    ");
 
             
-            #line 71 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+            #line 85 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
 Write(RenderSection("scripts", required: false));
 
             
@@ -339,16 +442,16 @@ Write(RenderSection("scripts", required: false));
             #line hidden
 WriteLiteral("\r\n\r\n    <!--日历控件支持-->\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 2440), Tuple.Create("\"", 2502)
-, Tuple.Create(Tuple.Create("", 2446), Tuple.Create<System.Object, System.Int32>(Href("~/Content/DateTimePicker/bootstrap-datetimepicker.min.js")
-, 2446), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 3049), Tuple.Create("\"", 3111)
+, Tuple.Create(Tuple.Create("", 3055), Tuple.Create<System.Object, System.Int32>(Href("~/Content/DateTimePicker/bootstrap-datetimepicker.min.js")
+, 3055), false)
 );
 
 WriteLiteral("></script>\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 2526), Tuple.Create("\"", 2598)
-, Tuple.Create(Tuple.Create("", 2532), Tuple.Create<System.Object, System.Int32>(Href("~/Content/DateTimePicker/locales/bootstrap-datetimepicker.zh-CN.js")
-, 2532), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 3135), Tuple.Create("\"", 3207)
+, Tuple.Create(Tuple.Create("", 3141), Tuple.Create<System.Object, System.Int32>(Href("~/Content/DateTimePicker/locales/bootstrap-datetimepicker.zh-CN.js")
+, 3141), false)
 );
 
 WriteLiteral("></script>\r\n    <script>\r\n        $(function () {\r\n            $(\'.form_datetime\'" +
@@ -385,13 +488,13 @@ WriteLiteral("></script>\r\n    <script>\r\n        $(function () {\r\n         
 "w\'))\r\n                });\r\n            });\r\n");
 
             
-            #line 141 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+            #line 155 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
             
             
             #line default
             #line hidden
             
-            #line 141 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+            #line 155 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
              if (set != null && set.BootstrapSelect) {
             
             #line default
@@ -472,14 +575,14 @@ WriteLiteral("></label></li>\'\r\n                    },\r\n                    
 "Text: \'全选\'\r\n                });\r\n            });\r\n            ");
 
             
-            #line 161 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+            #line 175 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
                    }
             
             
             #line default
             #line hidden
             
-            #line 164 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
+            #line 178 "..\..\Views\Shared\_Bootstrap_Layout.cshtml"
                                                                                         
 
             
@@ -497,9 +600,9 @@ WriteLiteral(@"            $('tr').dblclick(function () {
     <!--开关插件-->
     <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 7161), Tuple.Create("\"", 7217)
-, Tuple.Create(Tuple.Create("", 7167), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap-switch/bootstrap-switch.min.js")
-, 7167), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 7770), Tuple.Create("\"", 7826)
+, Tuple.Create(Tuple.Create("", 7776), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap-switch/bootstrap-switch.min.js")
+, 7776), false)
 );
 
 WriteLiteral("></script>\r\n    <script>\r\n        $(function () {\r\n            $(\"input.chkSwitch" +
@@ -507,25 +610,25 @@ WriteLiteral("></script>\r\n    <script>\r\n        $(function () {\r\n         
 
 WriteLiteral("\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 7381), Tuple.Create("\"", 7430)
-, Tuple.Create(Tuple.Create("", 7387), Tuple.Create<System.Object, System.Int32>(Href("~/Content/artDialog/dist/dialog-plus-min.js")
-, 7387), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 7990), Tuple.Create("\"", 8039)
+, Tuple.Create(Tuple.Create("", 7996), Tuple.Create<System.Object, System.Int32>(Href("~/Content/artDialog/dist/dialog-plus-min.js")
+, 7996), false)
 );
 
 WriteLiteral("></script>\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 7454), Tuple.Create("\"", 7503)
-, Tuple.Create(Tuple.Create("", 7460), Tuple.Create<System.Object, System.Int32>(Href("~/Content/artDialog/dist/dialog.new.life.js")
-, 7460), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 8063), Tuple.Create("\"", 8112)
+, Tuple.Create(Tuple.Create("", 8069), Tuple.Create<System.Object, System.Int32>(Href("~/Content/artDialog/dist/dialog.new.life.js")
+, 8069), false)
 );
 
 WriteLiteral("></script>\r\n    ");
 
 WriteLiteral("\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 7548), Tuple.Create("\"", 7587)
-, Tuple.Create(Tuple.Create("", 7554), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.js?v=3.2.2020.0204")
-, 7554), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 8157), Tuple.Create("\"", 8196)
+, Tuple.Create(Tuple.Create("", 8163), Tuple.Create<System.Object, System.Int32>(Href("~/Content/Cube.js?v=3.2.2020.0204")
+, 8163), false)
 );
 
 WriteLiteral("></script>\r\n</body>\r\n</html>\r\n");

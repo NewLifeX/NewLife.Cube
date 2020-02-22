@@ -401,6 +401,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Index.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Views\Shared\_Layout_Nav.generated.cs">
+      <DependentUpon>_Layout_Nav.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Views\Shared\_Footer.generated.cs">
       <DependentUpon>_Footer.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -714,9 +719,12 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Login_Login3.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Content\bootstrap-suggest.js" />
     <Content Include="Content\bootstrap\bootstrap.bundle.min-4.4.1.js" />
     <Content Include="Content\bootstrap\bootstrap.min-4.4.1.css" />
     <Content Include="Content\bootstrap\bootstrap.min-4.4.1.js" />
+    <Content Include="Content\Cube-bootstrap.css" />
+    <Content Include="Content\echarts.min.js" />
     <Content Include="Content\images\logo\alipay.png" />
     <Content Include="Content\images\logo\Baidu.png" />
     <Content Include="Content\images\logo\github.png" />
@@ -877,6 +885,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Views\Shared\_Layout_Nav.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Layout_Nav.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Views\Shared\_Footer.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Footer.generated.cs</LastGenOutput>
