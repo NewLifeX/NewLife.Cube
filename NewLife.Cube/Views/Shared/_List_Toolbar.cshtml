@@ -11,8 +11,8 @@
     var set = ViewBag.PageSetting as PageSetting;
 }
 <div class="tableTools-container">
-    <div class="form-inline">
-        <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+    <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+        <div class="form-inline">
             @if (set.EnableAdd && this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
@@ -29,8 +29,8 @@
                 @Html.Partial("_List_Toolbar_Search")
                 @Html.Partial("_List_Toolbar_Adv")
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 @if (set.EnableSelect)
 {

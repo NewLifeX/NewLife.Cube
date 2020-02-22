@@ -75,25 +75,25 @@ WriteLiteral("\r\n<div");
 
 WriteLiteral(" class=\"tableTools-container\"");
 
-WriteLiteral(">\r\n    <div");
+WriteLiteral(">\r\n    <form");
 
-WriteLiteral(" class=\"form-inline\"");
-
-WriteLiteral(">\r\n        <form");
-
-WriteAttribute("action", Tuple.Create(" action=\"", 383), Tuple.Create("\"", 426)
+WriteAttribute("action", Tuple.Create(" action=\"", 348), Tuple.Create("\"", 391)
             
-            #line 15 "..\..\Views\Shared\_List_Toolbar.cshtml"
-, Tuple.Create(Tuple.Create("", 392), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetFormAction(act))
+            #line 14 "..\..\Views\Shared\_List_Toolbar.cshtml"
+, Tuple.Create(Tuple.Create("", 357), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetFormAction(act))
             
             #line default
             #line hidden
-, 392), false)
+, 357), false)
 );
 
 WriteLiteral(" method=\"post\"");
 
 WriteLiteral(" role=\"form\"");
+
+WriteLiteral(">\r\n        <div");
+
+WriteLiteral(" class=\"form-inline\"");
 
 WriteLiteral(">\r\n");
 
@@ -198,7 +198,7 @@ WriteLiteral("                ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </div>\r\n        </form>\r\n    </div>\r\n</div>\r\n");
+WriteLiteral("\r\n            </div>\r\n        </div>\r\n    </form>\r\n</div>\r\n");
 
             
             #line 35 "..\..\Views\Shared\_List_Toolbar.cshtml"

@@ -1,0 +1,222 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube.Charts;
+@{
+    var set = NewLife.Cube.Setting.Current;
+    var set2 = ViewBag.PageSetting as PageSetting;
+
+    var charts = ViewBag.Charts as ECharts[];
+    var charts2 = ViewBag.Charts2 as ECharts[];
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.Contains(" - "))
+    {
+        title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
+    }
+}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+    <meta name="description" content="新生命团队,NewLife,魔方,Cube,XCode" />
+    <title>@title</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon">
+
+    <!-- 页面内联样式 -->
+    @RenderSection("css", required: false)
+
+    @if (set != null && set.BootstrapSelect)
+    {
+        <link rel="stylesheet" href="~/Content/bootstrap/css/bootstrap-multiselect.css">
+    }
+
+    <link rel="stylesheet" href="~/Content/DateTimePicker/bootstrap-datetimepicker.min.css">
+
+    <link rel="stylesheet" href="~/Content/bootstrap-switch/bootstrap-switch.min.css">
+
+    <!-- 最后引入基本样式 -->
+    <link rel="stylesheet" href="~/Content/bootstrap/bootstrap.min-4.4.1.css">
+    <link rel="stylesheet" href="~/Content/awesome/font-awesome.min-5.12.1.css">
+    <link rel="stylesheet" href="~/Content/awesome/regular.min-5.12.1.css">
+    <link rel="stylesheet" href="~/Content/awesome/brands.min-5.12.1.css">
+    <link rel="stylesheet" href="~/Content/awesome/solid.min-5.12.1.css">
+
+    <!-- ace 样式 -->
+    <link rel="stylesheet" href="~/Content/ace/ace.min-2.1.1.css">
+    @*artdialog style*@
+    <link href="~/Content/artDialog/css/ui-dialog.css" rel="stylesheet" />
+
+    <!-- 自定义样式 -->
+    @*<link rel="stylesheet" href="~/Content/Cube.css?v=3.2.2020.0204">*@
+    <link rel="stylesheet" href="~/Content/Cube-bootstrap.css?v=3.2.2020.0222">
+    <!-- JQuery作为一等公民，页面内部随时可能使用 -->
+    <script src="~/Content/js/jquery-3.4.1.min.js"></script>
+    @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
+    {
+        <script src="~/Content/echarts.min.js"></script>
+    }
+</head>
+<body>
+    <div class="body-container">
+        @if (set2 != null && set2.EnableNavbar)
+        {
+            var menu = ViewBag.Menu as IMenu;
+            <div class="page-header" style="padding: 0; margin: 0;">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <i class="fa fa-home home-icon" style="font-size:20px;"></i>
+                        @if (menu != null)
+                        {
+                            foreach (IMenu item in (menu as IEntityTree).AllParents)
+                            {
+                                if (item.ID != 0)
+                                {
+                                    <li class="breadcrumb-item"><a href="@(item.Url!=null? Url.Content(item.Url):"#")">@item.DisplayName</a></li>
+                                }
+                            }
+                        }
+                        <li class="breadcrumb-item active" aria-current="page"><a href="@Url.Action("Index")">@(menu != null ? menu.DisplayName : ViewBag.Title)</a></li>
+                    </ol>
+                </nav>
+                <div class="hidden-xs" style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
+            </div>
+        }
+        <div class="main-container">
+            <div class="main-content page-content container">
+                @RenderBody()
+            </div>
+        </div>
+        @if (DbRunTimeModule.Enable)
+        {
+            <div class="footer">
+                @Html.Raw(DbRunTimeModule.GetInfo())
+            </div>
+        }
+    </div>
+    <!-- 最早引入基本脚本 -->
+    <script src="~/Content/bootstrap/bootstrap.bundle.min-4.4.1.js"></script>
+    @*<script src="~/Content/bootstrap/popper.min-2.0.6.js"></script>*@
+    @if (set != null && set.BootstrapSelect)
+    {
+        <script src="~/Content/bootstrap/js/bootstrap-multiselect.min.js"></script>
+    }
+
+    @RenderSection("scripts", required: false)
+
+    <!--日历控件支持-->
+    <script src="~/Content/DateTimePicker/bootstrap-datetimepicker.min.js"></script>
+    <script src="~/Content/DateTimePicker/locales/bootstrap-datetimepicker.zh-CN.js"></script>
+    <script>
+        $(function () {
+            $('.form_datetime').each(function () {
+                var df = $(this).attr('dateformat');
+                if (!df) {
+                    $(this).attr('dateformat', 'yyyy-mm-dd hh:ii:ss');
+                    $(this).width(140);
+                }
+                else {
+                    // 把C#标准格式化替换为控件格式
+                    df = df.replace('mm', 'ii').replace('MM', 'mm').replace('HH', 'hh');
+                    $(this).attr('dateformat', df);
+
+                    // 根据时间日期格式，锁定日期输入框宽度
+                    if (df.indexOf('hh') >= 0)
+                        $(this).width(140);
+                    else
+                        $(this).width(80);
+                }
+
+                //根据日期格式自动推算日期选择view显示的范围
+                var sv = 2;
+                var mv = 2;
+                var autoView = $(this).attr('autoView');
+                if (autoView != 'false') {
+                    df = $(this).attr('dateformat');
+                    if (df.indexOf('ii') >= 0) {
+                        mv = 0;
+                        if (df.indexOf('dd') >= 0) {
+                            sv = 2;
+                        } else {
+                            sv = 1;
+                        }
+                    } else if (df.indexOf('hh') >= 0) {
+                        mv = 1;
+                        if (df.indexOf('dd') >= 0) {
+                            sv = 2;
+                        } else {
+                            sv = 1;
+                        }
+                    } else if (df.indexOf('dd') >= 0) {
+                        mv = 2;
+                        sv = 2;
+                    } else if (df.indexOf('mm') >= 0) {
+                        mv = 3;
+                        sv = 3;
+                    } else if (df.indexOf('yyyy') >= 0) {
+                        mv = 4;
+                        sv = 4;
+                    }
+                }
+
+                $(this).attr('startview', sv);
+                $(this).attr('minview', mv);
+            });
+            $("[dateformat]").each(function () {
+                $(this).datetimepicker({
+                    format: $(this).attr("dateformat"),
+                    autoclose: true,
+                    language: "zh-CN",
+                    forceParse: false,
+                    startView: parseInt($(this).attr('startview')),
+                    minView: parseInt($(this).attr('minview'))
+                });
+            });
+            @if (set != null && set.BootstrapSelect) {<text>
+            $('.multiselect').each(function () {
+                $(this).multiselect({
+                    // 下拉列表仅在列表项比较多时显示过滤框
+                    enableFiltering: $(this).children().length > 10,
+                    buttonClass: 'btn btn-white btn-primary',
+                    templates: {
+                        button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                        ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                        filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                        filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                        li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                        divider: '<li class="multiselect-item divider"></li>',
+                        liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                    },
+                    filterPlaceholder: '搜索',
+                    nonSelectedText: '无',
+                    allSelectedText: '全选'
+                });
+            });
+            </text>}
+            @*双击跳转到form
+            _List_Data_Action.cshtml变更
+            @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
+            $('tr').dblclick(function () {
+                var $this = $(this);
+                var row = $this.closest("tr");
+                var findcell = row.find('.editcell');
+                if (findcell.length > 0) window.location.href = findcell.attr("href");
+            });
+        });
+    </script>
+
+    <!--开关插件-->
+    <script src="~/Content/bootstrap-switch/bootstrap-switch.min.js"></script>
+    <script>
+        $(function () {
+            $("input.chkSwitch").bootstrapSwitch();
+        })
+    </script>
+
+    @*artDialog*@
+    <script src="~/Content/artDialog/dist/dialog-plus-min.js"></script>
+    <script src="~/Content/artDialog/dist/dialog.new.life.js"></script>
+    @*模态窗Ajax删除提示*@
+    <script src="~/Content/Cube.js?v=3.2.2020.0204"></script>
+</body>
+</html>
