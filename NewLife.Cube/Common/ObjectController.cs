@@ -122,7 +122,7 @@ namespace NewLife.Cube
             if (Request.IsAjaxRequest())
                 return Json(new { result = "success", content = "保存成功" });
             else
-                return View("ObjectForm", obj);
+                return Redirect("Index");
         }
 
         Boolean GetBool(String name)
