@@ -240,75 +240,8 @@ WriteLiteral("        ");
 
             
             #line 42 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-         if (SysConfig.Current.Develop)
+         if (SysConfig.Current.Develop && User.IsInRole("管理员"))
         {
-            if (User.IsInRole("管理员"))
-            {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                <li");
-
-WriteLiteral(" class=\"divider\"");
-
-WriteLiteral("></li>\r\n");
-
-WriteLiteral("                <li>\r\n                    <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 1843), Tuple.Create("\"", 1871)
-            
-            #line 48 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 1850), Tuple.Create<System.Object, System.Int32>(Url.Action("Backup")
-            
-            #line default
-            #line hidden
-, 1850), false)
-);
-
-WriteLiteral(" data-action=\"action\"");
-
-WriteLiteral(" title=\"备份到服务器本地目录\"");
-
-WriteLiteral(">备份</a>\r\n                </li>\r\n");
-
-WriteLiteral("                <li>\r\n                    <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 1988), Tuple.Create("\"", 2017)
-            
-            #line 51 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 1995), Tuple.Create<System.Object, System.Int32>(Url.Action("Restore")
-            
-            #line default
-            #line hidden
-, 1995), false)
-);
-
-WriteLiteral(" data-action=\"action\"");
-
-WriteLiteral(" title=\"从服务器本地目录还原\"");
-
-WriteLiteral(">还原</a>\r\n                </li>\r\n");
-
-WriteLiteral("                <li>\r\n                    <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 2134), Tuple.Create("\"", 2171)
-            
-            #line 54 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 2141), Tuple.Create<System.Object, System.Int32>(Url.Action("BackupAndExport")
-            
-            #line default
-            #line hidden
-, 2141), false)
-);
-
-WriteLiteral(" title=\"备份并下载\"");
-
-WriteLiteral(">备份导出</a>\r\n                </li>\r\n");
-
-            
-            #line 56 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-            }
 
             
             #line default
@@ -319,9 +252,67 @@ WriteLiteral(" class=\"divider\"");
 
 WriteLiteral("></li>\r\n");
 
+WriteLiteral("            <li>\r\n                <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 1801), Tuple.Create("\"", 1829)
             
-            #line 58 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-            if (User.IsInRole("管理员") && (page == null || page.Params.Count == 0))
+            #line 46 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 1808), Tuple.Create<System.Object, System.Int32>(Url.Action("Backup")
+            
+            #line default
+            #line hidden
+, 1808), false)
+);
+
+WriteLiteral(" data-action=\"action\"");
+
+WriteLiteral(" title=\"备份到服务器本地目录\"");
+
+WriteLiteral(">备份</a>\r\n            </li>\r\n");
+
+WriteLiteral("            <li>\r\n                <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 1934), Tuple.Create("\"", 1963)
+            
+            #line 49 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 1941), Tuple.Create<System.Object, System.Int32>(Url.Action("Restore")
+            
+            #line default
+            #line hidden
+, 1941), false)
+);
+
+WriteLiteral(" data-action=\"action\"");
+
+WriteLiteral(" title=\"从服务器本地目录还原\"");
+
+WriteLiteral(">还原</a>\r\n            </li>\r\n");
+
+WriteLiteral("            <li>\r\n                <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 2068), Tuple.Create("\"", 2105)
+            
+            #line 52 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 2075), Tuple.Create<System.Object, System.Int32>(Url.Action("BackupAndExport")
+            
+            #line default
+            #line hidden
+, 2075), false)
+);
+
+WriteLiteral(" title=\"备份并下载\"");
+
+WriteLiteral(">备份导出</a>\r\n            </li>\r\n");
+
+WriteLiteral("            <li");
+
+WriteLiteral(" class=\"divider\"");
+
+WriteLiteral("></li>\r\n");
+
+            
+            #line 55 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+            if (page == null || page.Params.Count == 0)
             {
 
             
@@ -329,14 +320,14 @@ WriteLiteral("></li>\r\n");
             #line hidden
 WriteLiteral("                <li>\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 2416), Tuple.Create("\"", 2443)
+WriteAttribute("href", Tuple.Create(" href=\"", 2305), Tuple.Create("\"", 2332)
             
-            #line 61 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 2423), Tuple.Create<System.Object, System.Int32>(Url.Action("Clear")
+            #line 58 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 2312), Tuple.Create<System.Object, System.Int32>(Url.Action("Clear")
             
             #line default
             #line hidden
-, 2423), false)
+, 2312), false)
 );
 
 WriteLiteral(" data-action=\"action\"");
@@ -348,59 +339,56 @@ WriteLiteral(" title=\"删除数据表所有数据\"");
 WriteLiteral(">清空数据表</a>\r\n                </li>\r\n");
 
             
-            #line 63 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+            #line 60 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
             }
-            if (ViewHelper.IsDevelop())
-            {
 
             
             #line default
             #line hidden
-WriteLiteral("                <li>\r\n                    <a");
+WriteLiteral("            <li>\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 2673), Tuple.Create("\"", 2703)
+WriteAttribute("href", Tuple.Create(" href=\"", 2498), Tuple.Create("\"", 2528)
             
-            #line 67 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 2680), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeList")
+            #line 62 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 2505), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeList")
             
             #line default
             #line hidden
-, 2680), false)
+, 2505), false)
 );
 
-WriteLiteral(">生成列表</a>\r\n                </li>\r\n");
+WriteLiteral(">生成列表</a>\r\n            </li>\r\n");
 
-WriteLiteral("                <li>\r\n                    <a");
+WriteLiteral("            <li>\r\n                <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 2782), Tuple.Create("\"", 2812)
+WriteAttribute("href", Tuple.Create(" href=\"", 2595), Tuple.Create("\"", 2625)
+            
+            #line 65 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 2602), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeForm")
+            
+            #line default
+            #line hidden
+, 2602), false)
+);
+
+WriteLiteral(">生成表单</a>\r\n            </li>\r\n");
+
+WriteLiteral("            <li>\r\n                <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 2692), Tuple.Create("\"", 2724)
+            
+            #line 68 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
+, Tuple.Create(Tuple.Create("", 2699), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeSearch")
+            
+            #line default
+            #line hidden
+, 2699), false)
+);
+
+WriteLiteral(">生成搜索</a>\r\n            </li>\r\n");
+
             
             #line 70 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 2789), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeForm")
-            
-            #line default
-            #line hidden
-, 2789), false)
-);
-
-WriteLiteral(">生成表单</a>\r\n                </li>\r\n");
-
-WriteLiteral("                <li>\r\n                    <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 2891), Tuple.Create("\"", 2923)
-            
-            #line 73 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-, Tuple.Create(Tuple.Create("", 2898), Tuple.Create<System.Object, System.Int32>(Url.Action("MakeSearch")
-            
-            #line default
-            #line hidden
-, 2898), false)
-);
-
-WriteLiteral(">生成搜索</a>\r\n                </li>\r\n");
-
-            
-            #line 75 "..\..\Views\Shared\_List_Toolbar_Adv.cshtml"
-            }
         }
 
             

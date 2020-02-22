@@ -332,32 +332,6 @@ namespace NewLife.Cube
             else
                 return RedirectToAction("Index");
         }
-
-        /// <summary>清空全表数据</summary>
-        /// <returns></returns>
-        [EntityAuthorize(PermissionFlags.Delete)]
-        [DisplayName("清空")]
-        public virtual ActionResult Clear()
-        {
-#if __CORE__
-            var url = Request.Headers["Referer"].FirstOrDefault() + "";
-#else
-            var url = Request.UrlReferrer + "";
-#endif
-
-            var p = Session[CacheKey] as Pager;
-            p = new Pager(p);
-            if (p != null && p.Params.Count > 0) return Json(500, "当前带有查询参数，为免误解，禁止全表清空！");
-
-            var count = Entity<TEntity>.Meta.Session.Truncate();
-
-            if (Request.IsAjaxRequest())
-                return JsonRefresh("共删除{0}行数据".F(count));
-            else if (!url.IsNullOrEmpty())
-                return Redirect(url);
-            else
-                return RedirectToAction("Index");
-        }
         #endregion
 
         #region 实体操作重载

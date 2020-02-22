@@ -39,23 +39,20 @@
                 <a href="@Url.Action("DeleteAll")" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" title="删除当前查询的所有数据">删除全部</a>
             </li>
         }
-        @if (SysConfig.Current.Develop)
+        @if (SysConfig.Current.Develop && User.IsInRole("管理员"))
         {
-            if (User.IsInRole("管理员"))
-            {
-                <li class="divider"></li>
-                <li>
-                    <a href="@Url.Action("Backup")" data-action="action" title="备份到服务器本地目录">备份</a>
-                </li>
-                <li>
-                    <a href="@Url.Action("Restore")" data-action="action" title="从服务器本地目录还原">还原</a>
-                </li>
-                <li>
-                    <a href="@Url.Action("BackupAndExport")" title="备份并下载">备份导出</a>
-                </li>
-            }
             <li class="divider"></li>
-            if (User.IsInRole("管理员") && (page == null || page.Params.Count == 0))
+            <li>
+                <a href="@Url.Action("Backup")" data-action="action" title="备份到服务器本地目录">备份</a>
+            </li>
+            <li>
+                <a href="@Url.Action("Restore")" data-action="action" title="从服务器本地目录还原">还原</a>
+            </li>
+            <li>
+                <a href="@Url.Action("BackupAndExport")" title="备份并下载">备份导出</a>
+            </li>
+            <li class="divider"></li>
+            if (page == null || page.Params.Count == 0)
             {
                 <li>
                     <a href="@Url.Action("Clear")" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" title="删除数据表所有数据">清空数据表</a>

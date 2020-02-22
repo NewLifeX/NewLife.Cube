@@ -164,7 +164,7 @@ namespace NewLife.Cube.Web
             var log = LogProvider.Provider;
             log?.WriteLog(typeof(UserX), "SSO登录", $"[{user}]从[{client.Name}]的[{client.UserName}]登录", user.ID, user + "");
 
-            if (!user.Enable) throw new InvalidOperationException("用户已禁用！");
+            if (!user.Enable) throw new InvalidOperationException($"用户[{user}]已禁用！");
 
             // 登录成功，保存当前用户
             //prv.Current = user;
