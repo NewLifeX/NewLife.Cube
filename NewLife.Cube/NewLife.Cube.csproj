@@ -441,6 +441,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Views\Shared\_Bootstrap_Layout.generated.cs">
+      <DependentUpon>_Bootstrap_Layout.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Views\Shared\_List_Data_Stat.generated.cs">
       <DependentUpon>_List_Data_Stat.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -709,6 +714,9 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Login_Login3.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Content\bootstrap\bootstrap.bundle.min-4.4.1.js" />
+    <Content Include="Content\bootstrap\bootstrap.min-4.4.1.css" />
+    <Content Include="Content\bootstrap\bootstrap.min-4.4.1.js" />
     <Content Include="Content\images\logo\alipay.png" />
     <Content Include="Content\images\logo\Baidu.png" />
     <Content Include="Content\images\logo\github.png" />
@@ -718,7 +726,6 @@
     <Content Include="Content\images\logo\Weibo.png" />
     <Content Include="Content\images\logo\Weixin.png" />
     <None Include="index.html" />
-    <None Include="Content\bootstrap\js\bootstrap.js" />
     <None Include="Entity\Cube.xml">
       <SubType>Designer</SubType>
     </None>
@@ -898,6 +905,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Views\Shared\_Bootstrap_Layout.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Bootstrap_Layout.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Views\Shared\_List_Data_Stat.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data_Stat.generated.cs</LastGenOutput>
@@ -973,6 +984,7 @@
     <None Include="Scripts\jquery.validate.unobtrusive.js" />
     <None Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <None Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Content\js\jquery-3.4.1.min.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

@@ -51,12 +51,11 @@ namespace ASP
             
             #line 2 "..\..\Views\Shared\_Layout.cshtml"
   
-    var cfg = NewLife.Common.SysConfig.Current;
     var title = ViewBag.Title + "";
-    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
-    title += cfg.DisplayName;
-    var title2 = ViewBag.Title2 as String;
-    if (!title2.IsNullOrEmpty()) { title += " - " + title2; }
+    if (title != "" && !title.Contains(" - "))
+    {
+        title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
+    }
 
             
             #line default
@@ -86,7 +85,7 @@ WriteLiteral(" />\r\n    ");
 WriteLiteral("\r\n    <title>");
 
             
-            #line 17 "..\..\Views\Shared\_Layout.cshtml"
+            #line 16 "..\..\Views\Shared\_Layout.cshtml"
       Write(title);
 
             
@@ -94,9 +93,9 @@ WriteLiteral("\r\n    <title>");
             #line hidden
 WriteLiteral("</title>\r\n    <link");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 618), Tuple.Create("\"", 638)
-, Tuple.Create(Tuple.Create("", 625), Tuple.Create<System.Object, System.Int32>(Href("~/favicon.ico")
-, 625), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 497), Tuple.Create("\"", 517)
+, Tuple.Create(Tuple.Create("", 504), Tuple.Create<System.Object, System.Int32>(Href("~/favicon.ico")
+, 504), false)
 );
 
 WriteLiteral(" rel=\"shortcut icon\"");
@@ -108,7 +107,7 @@ WriteLiteral(">\r\n\r\n    <!-- 页面内联样式 -->\r\n");
 WriteLiteral("    ");
 
             
-            #line 21 "..\..\Views\Shared\_Layout.cshtml"
+            #line 20 "..\..\Views\Shared\_Layout.cshtml"
 Write(RenderSection("css", required: false));
 
             
@@ -118,9 +117,9 @@ WriteLiteral("\r\n\r\n    <link");
 
 WriteLiteral(" rel=\"stylesheet\"");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 777), Tuple.Create("\"", 825)
-, Tuple.Create(Tuple.Create("", 784), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/css/bootstrap.min.css")
-, 784), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 656), Tuple.Create("\"", 706)
+, Tuple.Create(Tuple.Create("", 663), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/bootstrap.min-4.4.1.css")
+, 663), false)
 );
 
 WriteLiteral(" />\r\n    ");
@@ -134,7 +133,7 @@ WriteLiteral("\r\n");
 WriteLiteral("    ");
 
             
-            #line 30 "..\..\Views\Shared\_Layout.cshtml"
+            #line 29 "..\..\Views\Shared\_Layout.cshtml"
 Write(RenderBody());
 
             
@@ -146,16 +145,16 @@ WriteLiteral("\r\n\r\n    ");
 
 WriteLiteral("\r\n\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1109), Tuple.Create("\"", 1147)
-, Tuple.Create(Tuple.Create("", 1115), Tuple.Create<System.Object, System.Int32>(Href("~/Content/js/jquery-2.1.3.min.js")
-, 1115), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 990), Tuple.Create("\"", 1028)
+, Tuple.Create(Tuple.Create("", 996), Tuple.Create<System.Object, System.Int32>(Href("~/Content/js/jquery-3.4.1.min.js")
+, 996), false)
 );
 
 WriteLiteral("></script>\r\n    <script");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1171), Tuple.Create("\"", 1212)
-, Tuple.Create(Tuple.Create("", 1177), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/js/bootstrap.js")
-, 1177), false)
+WriteAttribute("src", Tuple.Create(" src=\"", 1052), Tuple.Create("\"", 1107)
+, Tuple.Create(Tuple.Create("", 1058), Tuple.Create<System.Object, System.Int32>(Href("~/Content/bootstrap/bootstrap.bundle.min-4.4.1.js")
+, 1058), false)
 );
 
 WriteLiteral("></script>\r\n    ");
@@ -165,7 +164,7 @@ WriteLiteral("\r\n");
 WriteLiteral("    ");
 
             
-            #line 38 "..\..\Views\Shared\_Layout.cshtml"
+            #line 37 "..\..\Views\Shared\_Layout.cshtml"
 Write(RenderSection("scripts", required: false));
 
             
