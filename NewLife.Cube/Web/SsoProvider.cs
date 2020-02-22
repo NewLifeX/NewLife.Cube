@@ -226,7 +226,19 @@ namespace NewLife.Cube.Web
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;
                 if (av != null && av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http")) av = new Uri(new Uri(client.Server), av) + "";
-                if (user2.Avatar.IsNullOrEmpty()) user2.Avatar = av;
+                if (user2.Avatar.IsNullOrEmpty())
+                    user2.Avatar = av;
+                // 本地头像，如果不存在，也要更新
+                else if (user2.Avatar.StartsWith("/Sso/Avatar/"))
+                {
+                    var av2 = Setting.Current.AvatarPath.CombinePath(user2.ID + ".png");
+                    if (!File.Exists(av2))
+                    {
+                        LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", $"{user2.Avatar} => {av}", user.ID, user + "");
+
+                        user2.Avatar = av;
+                    }
+                }
 
                 // 下载远程头像到本地，Avatar还是保存远程头像地址
                 if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user, av));
@@ -405,9 +417,6 @@ namespace NewLife.Cube.Web
 
             try
             {
-                //var wc = new WebClientX();
-                //Task.Factory.StartNew(() => wc.DownloadFileAsync(url, av)).Wait(5000);
-
                 var client = new HttpClient();
                 var rs = client.GetAsync(url).Result;
                 var buf = rs.Content.ReadAsByteArrayAsync().Result;
