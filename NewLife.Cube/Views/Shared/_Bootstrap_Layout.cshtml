@@ -56,11 +56,9 @@
     <div class="panel panel-default">
         @if (set2 != null && set2.EnableNavbar)
         {
-            <div class="breadcrumbs" id="breadcrumbs">
-                <ul class="breadcrumb">
-                    @Html.Partial("_Layout_Nav")
-                </ul>
-                <div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>
+            <div class="breadcrumbs">
+                @Html.Partial("_Layout_Nav")
+                @*<div style="float: right; margin-left: 40px;">@ViewBag.HeaderContent</div>*@
             </div>
         }
         <div class="page-content">

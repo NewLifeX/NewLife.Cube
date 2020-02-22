@@ -50,88 +50,104 @@ namespace ASP
             
             #line default
             #line hidden
-WriteLiteral("\r\n<li>\r\n    <i");
+WriteLiteral("\r\n<nav");
+
+WriteLiteral(" aria-label=\"breadcrumb\"");
+
+WriteLiteral(">\r\n    <ol");
+
+WriteLiteral(" class=\"breadcrumb\"");
+
+WriteLiteral(">\r\n        <i");
 
 WriteLiteral(" class=\"fa fa-home home-icon\"");
+
+WriteLiteral(" style=\"font-size:20px;\"");
 
 WriteLiteral("></i>\r\n");
 
             
-            #line 6 "..\..\Views\Shared\_Layout_Nav.cshtml"
-    
+            #line 7 "..\..\Views\Shared\_Layout_Nav.cshtml"
+        
             
             #line default
             #line hidden
             
-            #line 6 "..\..\Views\Shared\_Layout_Nav.cshtml"
-     if (menu != null)
-    {
-        foreach (IMenu item in (menu as IEntityTree).AllParents)
+            #line 7 "..\..\Views\Shared\_Layout_Nav.cshtml"
+         if (menu != null)
         {
-            if (item.ID != 0)
+            foreach (IMenu item in (menu as IEntityTree).AllParents)
             {
+                if (item.ID != 0)
+                {
 
             
             #line default
             #line hidden
-WriteLiteral("                <a");
+WriteLiteral("                    <li");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 266), Tuple.Create("\"", 317)
+WriteLiteral(" class=\"breadcrumb-item\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 404), Tuple.Create("\"", 455)
             
-            #line 12 "..\..\Views\Shared\_Layout_Nav.cshtml"
-, Tuple.Create(Tuple.Create("", 273), Tuple.Create<System.Object, System.Int32>(item.Url!=null? Url.Content(item.Url):"#"
+            #line 13 "..\..\Views\Shared\_Layout_Nav.cshtml"
+, Tuple.Create(Tuple.Create("", 411), Tuple.Create<System.Object, System.Int32>(item.Url!=null? Url.Content(item.Url):"#"
             
             #line default
             #line hidden
-, 273), false)
+, 411), false)
 );
 
 WriteLiteral(">");
-
-            
-            #line 12 "..\..\Views\Shared\_Layout_Nav.cshtml"
-                                                                  Write(item.DisplayName);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</a>");
-
-WriteLiteral("&nbsp;&gt;&nbsp;");
-
-WriteLiteral("\r\n");
 
             
             #line 13 "..\..\Views\Shared\_Layout_Nav.cshtml"
+                                                                                                  Write(item.DisplayName);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</a></li>\r\n");
+
+            
+            #line 14 "..\..\Views\Shared\_Layout_Nav.cshtml"
+                }
             }
         }
-    }
 
             
             #line default
             #line hidden
-WriteLiteral("</li>\r\n<li>\r\n    <a");
+WriteLiteral("        <li");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 423), Tuple.Create("\"", 450)
+WriteLiteral(" class=\"breadcrumb-item active\"");
+
+WriteLiteral(" aria-current=\"page\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 595), Tuple.Create("\"", 622)
             
-            #line 18 "..\..\Views\Shared\_Layout_Nav.cshtml"
-, Tuple.Create(Tuple.Create("", 430), Tuple.Create<System.Object, System.Int32>(Url.Action("Index")
+            #line 17 "..\..\Views\Shared\_Layout_Nav.cshtml"
+, Tuple.Create(Tuple.Create("", 602), Tuple.Create<System.Object, System.Int32>(Url.Action("Index")
             
             #line default
             #line hidden
-, 430), false)
+, 602), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 18 "..\..\Views\Shared\_Layout_Nav.cshtml"
-                               Write(menu != null ? menu.DisplayName : ViewBag.Title);
+            #line 17 "..\..\Views\Shared\_Layout_Nav.cshtml"
+                                                                                          Write(menu != null ? menu.DisplayName : ViewBag.Title);
 
             
             #line default
             #line hidden
-WriteLiteral("</a>\r\n</li>");
+WriteLiteral("</a></li>\r\n    </ol>\r\n</nav>");
 
         }
     }
