@@ -53,7 +53,7 @@ namespace ASP
   
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
 
-    var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
+    var fact = ManageProvider.Menu;
 
     var Menus = fact.Root.Childs;
     if (user != null && user.Role != null)
@@ -109,16 +109,16 @@ WriteLiteral(" class=\"dropdown-toggle\"");
 
 WriteLiteral(">\r\n                <i");
 
-WriteAttribute("class", Tuple.Create(" class=\"", 1007), Tuple.Create("\"", 1041)
-, Tuple.Create(Tuple.Create("", 1015), Tuple.Create("menu-icon", 1015), true)
-, Tuple.Create(Tuple.Create(" ", 1024), Tuple.Create("fa", 1025), true)
+WriteAttribute("class", Tuple.Create(" class=\"", 979), Tuple.Create("\"", 1013)
+, Tuple.Create(Tuple.Create("", 987), Tuple.Create("menu-icon", 987), true)
+, Tuple.Create(Tuple.Create(" ", 996), Tuple.Create("fa", 997), true)
             
             #line 26 "..\..\Areas\Admin\Views\Index\_Left.cshtml"
-, Tuple.Create(Tuple.Create(" ", 1027), Tuple.Create<System.Object, System.Int32>(icos[_idx++]
+, Tuple.Create(Tuple.Create(" ", 999), Tuple.Create<System.Object, System.Int32>(icos[_idx++]
             
             #line default
             #line hidden
-, 1028), false)
+, 1000), false)
 );
 
 WriteLiteral("></i>\r\n                <span");

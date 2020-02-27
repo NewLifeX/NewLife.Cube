@@ -214,11 +214,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             var user = _provider.Current as IUser ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
 
-            //var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
             var fact = ManageProvider.Menu;
-            //fact.FindByID(1);
-            //(fact as IEntityOperate)?.FindByKey(1);
-
             var menus = fact.Root.Childs;
             if (user?.Role != null)
             {

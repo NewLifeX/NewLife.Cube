@@ -12,13 +12,13 @@ namespace NewLife.Cube
     {
         #region 属性
         /// <summary>工厂</summary>
-        public IEntityOperate Factory { get; set; }
+        public IEntityFactory Factory { get; set; }
         #endregion
 
         #region 构造
         /// <summary>使用工厂实例化一个字段集合</summary>
         /// <param name="factory"></param>
-        public FieldCollection(IEntityOperate factory)
+        public FieldCollection(IEntityFactory factory)
         {
             Factory = factory;
             AddRange(Factory.Fields);

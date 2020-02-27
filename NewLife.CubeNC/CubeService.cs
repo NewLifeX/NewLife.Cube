@@ -80,8 +80,7 @@ namespace NewLife.Cube
             })
             // 添加版本兼容性，显示声明当前应用版本为2.1
             .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-
-
+            
             services.AddCustomApplicationParts();
 
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();

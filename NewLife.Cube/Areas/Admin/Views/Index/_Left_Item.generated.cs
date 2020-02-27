@@ -58,7 +58,7 @@ namespace ASP
   
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
 
-    var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
+    var fact = ManageProvider.Menu;
 
     var item = Model as IMenu;
     var childs = fact.GetMySubMenus(item.ID, user).Where(m => m.Visible);
@@ -117,14 +117,14 @@ WriteLiteral("\r\n        </a>\r\n");
             #line hidden
 WriteLiteral("        <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 586), Tuple.Create("\"", 597)
+WriteAttribute("href", Tuple.Create(" href=\"", 558), Tuple.Create("\"", 569)
             
             #line 22 "..\..\Areas\Admin\Views\Index\_Left_Item.cshtml"
-, Tuple.Create(Tuple.Create("", 593), Tuple.Create<System.Object, System.Int32>(url
+, Tuple.Create(Tuple.Create("", 565), Tuple.Create<System.Object, System.Int32>(url
             
             #line default
             #line hidden
-, 593), false)
+, 565), false)
 );
 
 WriteLiteral(" target=\"main\"");

@@ -603,7 +603,7 @@ namespace NewLife.Cube
             return true;
         }
 
-        private static void BuildFormItem(FieldItem field, StringBuilder sb, IEntityOperate fact)
+        private static void BuildFormItem(FieldItem field, StringBuilder sb, IEntityFactory fact)
         {
             var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
 

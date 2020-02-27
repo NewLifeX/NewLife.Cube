@@ -49,10 +49,12 @@ namespace NewLife.Cube
             Assembly.GetExecutingAssembly().WriteVersion();
 
             var ioc = ObjectContainer.Current;
-#if !NET4
-            // 外部管理提供者需要手工覆盖
-            ioc.Register<IManageProvider, DefaultManageProvider>();
-#endif
+            var services = ioc.BuildServiceProvider();
+            //#if !NET4
+            //            // 外部管理提供者需要手工覆盖
+            //            ioc.AddSingleton<IManageProvider, DefaultManageProvider>();
+            //#endif
+            if (ManageProvider.Provider == null) ManageProvider.Provider = new DefaultManageProvider();
 
             // 遍历所有引用了AreaRegistrationBase的程序集
             var list = new List<PrecompiledViewAssembly>();
@@ -74,46 +76,53 @@ namespace NewLife.Cube
             VirtualPathFactoryManager.RegisterVirtualPathFactory(engine);
 
             // 注册绑定提供者
-            ioc.Register<IModelBinderProvider, EntityModelBinderProvider>("Entity");
-            ioc.Register<IModelBinderProvider, PagerModelBinderProvider>("Pager");
+            //ioc.Register<IModelBinderProvider, EntityModelBinderProvider>("Entity");
+            //ioc.Register<IModelBinderProvider, PagerModelBinderProvider>("Pager");
             var providers = ModelBinderProviders.BinderProviders;
-            var prv = ioc.Resolve<IModelBinderProvider>("Entity");
+            //var prv = ioc.Resolve<IModelBinderProvider>("Entity");
+            var prv = services.GetService(typeof(EntityModelBinderProvider)) as IModelBinderProvider;
+            if (prv == null) prv = new EntityModelBinderProvider();
             if (prv != null)
             {
                 XTrace.WriteLine("注册实体模型绑定器：{0}", prv.GetType().FullName);
                 providers.Add(prv);
             }
-            prv = ioc.Resolve<IModelBinderProvider>("Pager");
-            if (prv != null)
+            //prv = ioc.Resolve<IModelBinderProvider>("Pager");
+            var prv2 = services.GetService(typeof(PagerModelBinderProvider)) as IModelBinderProvider;
+            if (prv2 == null) prv2 = new PagerModelBinderProvider();
+            if (prv2 != null)
             {
-                XTrace.WriteLine("注册页面模型绑定器：{0}", prv.GetType().FullName);
-                providers.Add(prv);
+                XTrace.WriteLine("注册页面模型绑定器：{0}", prv2.GetType().FullName);
+                providers.Add(prv2);
             }
 
             // 注册过滤器
             //ioc.Register<HandleErrorAttribute, MvcHandleErrorAttribute>();
-            ioc.Register<AuthorizeAttribute, EntityAuthorizeAttribute>("Cube");
+            //ioc.Register<AuthorizeAttribute, EntityAuthorizeAttribute>("Cube");
             var filters = GlobalFilters.Filters;
-            var f1 = ioc.Resolve<HandleErrorAttribute>();
+            //var f1 = ioc.Resolve<HandleErrorAttribute>();
+            var f1 = services.GetService(typeof(HandleErrorAttribute)) as HandleErrorAttribute;
             if (f1 != null)
             {
                 XTrace.WriteLine("注册异常过滤器：{0}", f1.GetType().FullName);
                 filters.Add(f1);
             }
             //var f2 = ioc.Resolve<AuthorizeAttribute>();
-            //if (f2 != null)
-            //{
-            //    XTrace.WriteLine("注册授权过滤器：{0}", f2.GetType().FullName);
-            //    if (f2 is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
-            //    filters.Add(f2);
-            //}
-            foreach (var item in ioc.ResolveAll(typeof(AuthorizeAttribute)))
+            var f2 = services.GetService(typeof(AuthorizeAttribute)) as AuthorizeAttribute;
+            if (f2 == null) f2 = new EntityAuthorizeAttribute();
+            if (f2 != null)
             {
-                var auth = item.Instance;
-                XTrace.WriteLine("注册[{0}]授权过滤器：{1}", item.Identity, auth.GetType().FullName);
-                if (auth is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
-                filters.Add(auth);
+                XTrace.WriteLine("注册授权过滤器：{0}", f2.GetType().FullName);
+                if (f2 is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
+                filters.Add(f2);
             }
+            //foreach (var item in ioc.ResolveAll(typeof(AuthorizeAttribute)))
+            //{
+            //    var auth = item.Instance;
+            //    XTrace.WriteLine("注册[{0}]授权过滤器：{1}", item.Identity, auth.GetType().FullName);
+            //    if (auth is EntityAuthorizeAttribute eaa) eaa.IsGlobal = true;
+            //    filters.Add(auth);
+            //}
 
             // 从数据库或者资源文件加载模版页面的例子
             //HostingEnvironment.RegisterVirtualPathProvider(new ViewPathProvider());
@@ -326,7 +335,7 @@ namespace NewLife.Cube
             var mf = ManageProvider.Menu;
             if (mf == null) return;
 
-            using (var tran = (mf as IEntityOperate).CreateTrans())
+            using (var tran = (mf as IEntityFactory).CreateTrans())
             {
                 XTrace.WriteLine("初始化[{0}]的菜单体系", AreaName);
                 mf.ScanController(AreaName, GetType().Assembly, GetType().Namespace + ".Controllers");

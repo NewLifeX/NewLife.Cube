@@ -15,12 +15,6 @@ namespace XCode.Membership
     public class DefaultManageProvider : ManageProvider
     {
         #region 静态实例
-        //static DefaultManageProvider()
-        //{
-        //    var ioc = ObjectContainer.Current;
-        //    // 外部管理提供者需要手工覆盖
-        //    ioc.Register<IManageProvider, DefaultManageProvider>();
-        //}
         #endregion
 
         #region 属性

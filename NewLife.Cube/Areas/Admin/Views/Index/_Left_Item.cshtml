@@ -3,7 +3,7 @@
 @{
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
 
-    var fact = ObjectContainer.Current.Resolve<IMenuFactory>();
+    var fact = ManageProvider.Menu;
 
     var item = Model as IMenu;
     var childs = fact.GetMySubMenus(item.ID, user).Where(m => m.Visible);

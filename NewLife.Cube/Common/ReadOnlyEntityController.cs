@@ -42,7 +42,7 @@ namespace NewLife.Cube
     {
         #region 属性
         /// <summary>实体工厂</summary>
-        public static IEntityOperate Factory => Entity<TEntity>.Meta.Factory;
+        public static IEntityFactory Factory => Entity<TEntity>.Meta.Factory;
 
         private String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
         #endregion

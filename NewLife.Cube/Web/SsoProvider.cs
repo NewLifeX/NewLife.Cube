@@ -14,6 +14,7 @@ using NewLife.Security;
 using XCode;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using IHttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
 #else
 using IHttpRequest = System.Web.HttpRequestBase;

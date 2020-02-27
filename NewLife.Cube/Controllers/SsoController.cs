@@ -66,12 +66,15 @@ namespace NewLife.Cube.Controllers
         static SsoController()
         {
             // 注册单点登录
-            var oc = ObjectContainer.Current;
-            oc.AutoRegister<SsoProvider, SsoProvider>();
-            oc.AutoRegister<OAuthServer, OAuthServer2>();
+            //var oc = ObjectContainer.Current;
+            //oc.AutoRegister<SsoProvider, SsoProvider>();
+            //oc.AutoRegister<OAuthServer, OAuthServer2>();
 
-            Provider = ObjectContainer.Current.ResolveInstance<SsoProvider>();
-            OAuth = ObjectContainer.Current.ResolveInstance<OAuthServer>();
+            //Provider = ObjectContainer.Current.ResolveInstance<SsoProvider>();
+            //OAuth = ObjectContainer.Current.ResolveInstance<OAuthServer>();
+
+            Provider = new SsoProvider();
+            OAuth = new OAuthServer2();
 
             //OAuthServer.Instance.Log = XTrace.Log;
             OAuth.Log = LogProvider.Provider.AsLog("OAuth");

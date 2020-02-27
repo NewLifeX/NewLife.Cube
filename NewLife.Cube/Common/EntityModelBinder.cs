@@ -79,7 +79,7 @@ namespace NewLife.Cube
         /// <summary>获取绑定器</summary>
         /// <param name="modelType"></param>
         /// <returns></returns>
-        public IModelBinder GetBinder(Type modelType)
+        public virtual IModelBinder GetBinder(Type modelType)
         {
             if (modelType.As<IEntity>()) return new EntityModelBinder();
 

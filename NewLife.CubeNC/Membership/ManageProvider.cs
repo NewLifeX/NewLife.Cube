@@ -6,9 +6,9 @@ using System.Threading;
 using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NewLife.Common;
-using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Model;
 using XCode.Membership;
@@ -22,10 +22,10 @@ namespace NewLife.Cube
         #region 静态实例
         static ManageProvider2()
         {
-            // 此处实例化会触发父类静态构造函数
-            var ioc = ObjectContainer.Current;
-            ioc.Register<IManageProvider, ManageProvider2>()
-            .Register<IManageUser, UserX>();
+            //// 此处实例化会触发父类静态构造函数
+            //var ioc = ObjectContainer.Current;
+            //ioc.Register<IManageProvider, ManageProvider2>()
+            //.Register<IManageUser, UserX>();
         }
 
         internal static IHttpContextAccessor Context;
@@ -39,8 +39,8 @@ namespace NewLife.Cube
         public String SessionKey { get; set; } = "Admin";
         #endregion
 
-        /// <summary>当前管理提供者</summary>
-        public new static IManageProvider Provider => ObjectContainer.Current.ResolveInstance<IManageProvider>();
+        ///// <summary>当前管理提供者</summary>
+        //public new static IManageProvider Provider => ObjectContainer.Current.ResolveInstance<IManageProvider>();
 
         #region IManageProvider 接口
         /// <summary>获取当前用户</summary>
@@ -337,6 +337,8 @@ namespace NewLife.Cube
             service.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             service.TryAddSingleton<IManageProvider, ManageProvider2>();
             //service.TryAddSingleton(ManageProvider2.Provider);
+
+            ManageProvider.Provider = service.BuildServiceProvider().GetService<IManageProvider>();
         }
 
         /// <summary>
