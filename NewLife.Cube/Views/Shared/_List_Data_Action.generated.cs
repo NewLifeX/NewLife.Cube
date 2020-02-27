@@ -130,7 +130,7 @@ WriteLiteral(">查看</a>\r\n");
             #line 16 "..\..\Views\Shared\_List_Data_Action.cshtml"
  if (this.Has(PermissionFlags.Delete))
 {
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var fi = (fact == null || fact.Fields == null) ? null : fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted"));
     if (fi != null && fi.Type == typeof(Boolean) && (Boolean)entity[fi.Name])
     {

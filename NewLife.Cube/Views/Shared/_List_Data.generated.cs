@@ -66,7 +66,7 @@ namespace ASP
             
             #line 5 "..\..\Views\Shared\_List_Data.cshtml"
   
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
     var fk = fact.Unique;

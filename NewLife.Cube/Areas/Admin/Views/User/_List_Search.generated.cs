@@ -60,7 +60,7 @@ namespace ASP
             
             #line 4 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
   
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
 
             

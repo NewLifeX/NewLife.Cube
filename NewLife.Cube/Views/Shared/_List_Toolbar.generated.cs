@@ -60,7 +60,7 @@ namespace ASP
             
             #line 4 "..\..\Views\Shared\_List_Toolbar.cshtml"
   
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
 
     var act = Context.Request.Path;

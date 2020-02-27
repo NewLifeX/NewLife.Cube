@@ -108,7 +108,7 @@ namespace NewLife.Cube
 @using XCode.Membership;
 @using NewLife.Cube;
 @{
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
     var set = ViewBag.PageSetting as PageSetting;
@@ -183,7 +183,7 @@ namespace NewLife.Cube
 @using System.Web.Mvc.Html;
 @using System.Web.Routing;
 @{
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
     var set = ViewBag.PageSetting as PageSetting;
@@ -740,7 +740,7 @@ namespace NewLife.Cube
 @using NewLife.Web;
 @using XCode;
 @{
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
 }
 @*<div class=""form-group"">
@@ -757,7 +757,7 @@ namespace NewLife.Cube
 @using NewLife.Web;
 @using XCode;
 @{
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
 }
 @*<div class=""form-group"">
@@ -793,21 +793,9 @@ namespace NewLife.Cube
         public static Boolean EnableSelect(this WebViewPage page)
 #endif
         {
-            // 是否启用多选，仅取决于更新删除权限，不要求必须有唯一主键，方便前端对多主键灵活控制
-            //var fact = page.ViewContext.ViewBag.Factory as IEntityOperate;
-            //var fk = fact?.Unique;
-            //if (fk == null) return false;
-
             if (page.ViewContext.ViewData.TryGetValue("EnableSelect", out var rs)) return (Boolean)rs;
 
             return page.Has(PermissionFlags.Update, PermissionFlags.Delete);
-
-            //var user = page.ViewBag.User as IUser ?? page.User.Identity as IUser;
-            //if (user == null) return false;
-
-            //var menu = page.ViewBag.Menu as IMenu;
-
-            //return user.Has(menu, PermissionFlags.Update, PermissionFlags.Delete);
         }
 
         /// <summary>获取头像地址</summary>

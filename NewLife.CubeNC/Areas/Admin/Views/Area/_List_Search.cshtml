@@ -3,7 +3,7 @@
 @using NewLife.Cube;
 @using XCode;
 @{
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var p = ViewBag.Page as Pager;
 }
 @Html.ActionLink("所有省份", "Index", new { ParentID = 0 })

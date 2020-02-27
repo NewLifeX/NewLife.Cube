@@ -86,7 +86,7 @@ namespace ASP
             
             #line 10 "..\..\Areas\Admin\Views\Role\_List_Data.cshtml"
   
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
     var set = ViewBag.PageSetting as PageSetting;

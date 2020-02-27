@@ -52,7 +52,7 @@ namespace ASP
             #line 2 "..\..\Areas\Admin\Views\User\_List_Toolbar_Batch.cshtml"
   
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var set = ViewBag.PageSetting as PageSetting;
 
             

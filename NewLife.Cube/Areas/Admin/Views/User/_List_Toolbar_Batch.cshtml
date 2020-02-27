@@ -1,7 +1,7 @@
 ﻿@using NewLife.Common;
 @{
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var set = ViewBag.PageSetting as PageSetting;
 }
 @if (set.EnableSelect)

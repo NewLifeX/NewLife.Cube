@@ -175,7 +175,7 @@ namespace NewLife.Cube
             var mf = ManageProvider.Menu;
             if (mf == null) return;
 
-            using (var tran = (mf as IEntityOperate).CreateTrans())
+            using (var tran = (mf as IEntityFactory).CreateTrans())
             {
                 XTrace.WriteLine("初始化[{0}]的菜单体系", areaName);
                 mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");

@@ -57,7 +57,7 @@ namespace ASP
   
     Layout = NewLife.Cube.Setting.Current.Layout;
 
-    var fact = ViewBag.Factory as IEntityOperate;
+    var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
 
             
