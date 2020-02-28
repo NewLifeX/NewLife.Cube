@@ -272,8 +272,27 @@ namespace NewLife.Cube.Web
                         user = prv.FindByName(name);
                     }
                 }
-                else
+
+                // 匹配Code
+                if (set.ForceBindUserCode)
+                {
+                    var code = client.Items["code"];
+                    if (!code.IsNullOrEmpty())
+                    {
+                        user = prv.FindByName(code);
+                    }
+                }
+
+                // 匹配Mobile
+                if (set.ForceBindUserMobile)
+                {
+                    user = prv.FindByName(client.Name);
+                }
+
+                // 匹配Mail
+
                 // QQ、微信 等不返回用户名
+                if (user == null && name.IsNullOrEmpty())
                 {
                     // OpenID和AccessToken不可能同时为空
                     var openid = client.OpenID;

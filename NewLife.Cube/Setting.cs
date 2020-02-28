@@ -93,10 +93,25 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public Boolean AutoRegister { get; set; } = true;
 
-        /// <summary>强行绑定用户。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
-        [Description("强行绑定用户。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
+        /// <summary>强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
+        [Description("强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
         [Category("用户登录")]
         public Boolean ForceBindUser { get; set; }
+
+        /// <summary>绑定用户代码。根据SSO用户代码强制绑定本地用户</summary>
+        [Description("绑定用户代码。根据SSO用户代码强制绑定本地用户")]
+        [Category("用户登录")]
+        public Boolean ForceBindUserCode { get; set; }
+
+        /// <summary>绑定用户手机。根据SSO用户手机强制绑定本地用户</summary>
+        [Description("绑定用户手机。根据SSO用户手机强制绑定本地用户")]
+        [Category("用户登录")]
+        public Boolean ForceBindUserMobile { get; set; }
+
+        /// <summary>绑定用户邮箱。根据SSO用户邮箱强制绑定本地用户</summary>
+        [Description("绑定用户邮箱。根据SSO用户邮箱强制绑定本地用户")]
+        [Category("用户登录")]
+        public Boolean ForceBindUserMail { get; set; }
 
         ///// <summary>添加Sso角色。把SSO角色添加到本地，默认true</summary>
         //[Description("添加Sso角色。把SSO角色添加到本地，默认true")]
