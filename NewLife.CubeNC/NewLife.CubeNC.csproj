@@ -42,8 +42,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="8.6.2020.227-cbeta" />
-    <PackageReference Include="NewLife.XCode" Version="9.15.2020.227-cbeta" />
+    <PackageReference Include="NewLife.Core" Version="8.6.2020.229-beta" />
+    <PackageReference Include="NewLife.XCode" Version="9.15.2020.229-beta" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,12 +66,8 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserTokenController.cs" Link="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\VisitStatController.cs" Link="Areas\Admin\Controllers\VisitStatController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs">
-      <Link>Areas\Admin\Models\DbItem.cs</Link>
-    </Compile>
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs">
-      <Link>Areas\Admin\Models\FileItem.cs</Link>
-    </Compile>
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs" Link="Areas\Admin\Models\DbItem.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs" Link="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
     <Compile Include="..\NewLife.Cube\Common\DataPermissionAttribute.cs" Link="Common\DataPermissionAttribute.cs" />
@@ -104,9 +100,17 @@
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
     <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
-    <Compile Include="..\NewLife.Cube\Web\DingTalkClient.cs" Link="Web\DingTalkClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuthClient.cs" Link="Web\OAuthClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuthConfig.cs" Link="Web\OAuthConfig.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuthServer.cs" Link="Web\OAuthServer.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthServer2.cs" Link="Web\OAuthServer2.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\BaiduClient.cs" Link="Web\OAuth\BaiduClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\DingTalkClient.cs" Link="Web\OAuth\DingTalkClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\GithubClient.cs" Link="Web\OAuth\GithubClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\QQClient.cs" Link="Web\OAuth\QQClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\TaobaoClient.cs" Link="Web\OAuth\TaobaoClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\WeixinClient.cs" Link="Web\OAuth\WeixinClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
   </ItemGroup>
@@ -127,11 +131,5 @@
       <LastGenOutput>XCoder.cs</LastGenOutput>
     </None>
     <None Include="appsettings.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="Views\Shared\_Footer.cshtml">
-      <LastGenOutput>_Footer.generated.cs</LastGenOutput>
-      <Generator>RazorGenerator</Generator>
-    </Content>
   </ItemGroup>
 </Project>

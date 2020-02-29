@@ -45,8 +45,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.6.7362.38488, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.6.2020.227-cbeta\lib\net45\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.6.7364.15145, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.6.2020.229-beta\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -83,8 +83,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=9.15.7362.38915, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.15.2020.227-cbeta\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.15.7364.15158, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.15.2020.229-beta\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -621,9 +621,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_ViewStart.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Web\OAuthClient.cs" />
+    <Compile Include="Web\OAuthConfig.cs" />
     <Compile Include="Web\OAuthHelper.cs" />
+    <Compile Include="Web\OAuthServer.cs" />
     <Compile Include="Web\OAuthServer2.cs" />
-    <Compile Include="Web\DingTalkClient.cs" />
+    <Compile Include="Web\OAuth\DingTalkClient.cs" />
+    <Compile Include="Web\OAuth\BaiduClient.cs" />
+    <Compile Include="Web\OAuth\GithubClient.cs" />
+    <Compile Include="Web\OAuth\QQClient.cs" />
+    <Compile Include="Web\OAuth\TaobaoClient.cs" />
+    <Compile Include="Web\OAuth\WeixinClient.cs" />
     <Compile Include="Web\SsoProvider.cs" />
     <Compile Include="Web\WebHelper2.cs" />
   </ItemGroup>
