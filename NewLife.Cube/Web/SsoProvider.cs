@@ -264,8 +264,10 @@ namespace NewLife.Cube.Web
                 if (name.IsNullOrEmpty()) name = client.NickName;
                 if (!name.IsNullOrEmpty())
                 {
-                    user = prv.FindByName(name);
-                    if (user != null && !set.ForceBindUser)
+                    // 强制绑定本地用户时，没有前缀
+                    if (set.ForceBindUser)
+                        user = prv.FindByName(name);
+                    else
                     {
                         name = client.Name + "_" + name;
                         user = prv.FindByName(name);
@@ -273,22 +275,22 @@ namespace NewLife.Cube.Web
                 }
 
                 // 匹配Code
-                if (set.ForceBindUserCode)
+                if (user == null && set.ForceBindUserCode)
                 {
-                    var code = client.Items["code"];
-                    if (!code.IsNullOrEmpty())
-                    {
-                        user = prv.FindByName(code);
-                    }
+                    if (!client.UserCode.IsNullOrEmpty()) user = UserX.FindByCode(client.UserCode);
                 }
 
                 // 匹配Mobile
-                if (set.ForceBindUserMobile)
+                if (user == null && set.ForceBindUserMobile)
                 {
-                    user = prv.FindByName(client.Name);
+                    if (!client.Mobile.IsNullOrEmpty()) user = UserX.FindByMobile(client.Mobile);
                 }
 
                 // 匹配Mail
+                if (user == null && set.ForceBindUserMail)
+                {
+                    if (!client.Mail.IsNullOrEmpty()) user = UserX.FindByMail(client.Mail);
+                }
 
                 // QQ、微信 等不返回用户名
                 if (user == null && name.IsNullOrEmpty())
