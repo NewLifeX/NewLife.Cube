@@ -153,7 +153,7 @@ namespace NewLife.Cube
                     var dic2 = new Dictionary<Object, String>();
                     if (!dic.ContainsKey(-1))
                     {
-                        dic2.Add(-1, " ");
+                        dic2.Add(0, " ");
                         foreach (var item in dic)
                         {
                             dic2.Add(item.Key, item.Value);
