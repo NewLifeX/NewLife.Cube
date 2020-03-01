@@ -273,6 +273,7 @@ namespace NewLife.Cube.Web
                     }
                     else
                     {
+                        mode = "Provider-UserName";
                         name = client.Name + "_" + name;
                         user = prv.FindByName(name);
                     }

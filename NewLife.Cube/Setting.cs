@@ -96,7 +96,7 @@ namespace NewLife.Cube
         /// <summary>强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
         [Description("强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
         [Category("用户登录")]
-        public Boolean ForceBindUser { get; set; }
+        public Boolean ForceBindUser { get; set; } = true;
 
         /// <summary>绑定用户代码。根据SSO用户代码强制绑定本地用户</summary>
         [Description("绑定用户代码。根据SSO用户代码强制绑定本地用户")]

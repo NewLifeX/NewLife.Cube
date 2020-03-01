@@ -127,9 +127,29 @@ namespace NewLife.Cube
             }
 
             // 为该字段创建下拉菜单
-            if (map == null || map.Provider == null) return null;
+            var dic = map?.Provider?.GetDataSource();
+            if (dic == null) return null;
 
-            return Html.ForDropDownList(map.Name, map.Provider.GetDataSource(), entity[map.Name]);
+            // 表单页的映射下拉，开头增加无效值选项
+            if (fact != null && !map.Provider.Key.IsNullOrEmpty())
+            {
+                var fi = fact.Table.FindByName(map.Provider.Key) as FieldItem;
+                if (fi != null && fi.Type.IsInt())
+                {
+                    var dic2 = new Dictionary<Object, String>();
+                    if (!dic.ContainsKey(-1))
+                    {
+                        dic2.Add(0, " ");
+                        foreach (var item in dic)
+                        {
+                            dic2.Add(item.Key, item.Value);
+                        }
+                        dic = dic2;
+                    }
+                }
+            }
+
+            return Html.ForDropDownList(map.Name, dic, entity[map.Name]);
         }
 
         /// <summary>输出编辑框</summary>
