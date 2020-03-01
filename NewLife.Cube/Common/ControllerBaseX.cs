@@ -257,11 +257,7 @@ namespace NewLife.Cube
                 rs = dic;
             }
 
-            //#if __CORE__
-            //            return new JsonResult(rs);
-            //#else
             return Content(OnJsonSerialize(rs), "application/json", Encoding.UTF8);
-            //#endif
         }
 
         /// <summary>返回Json数据</summary>

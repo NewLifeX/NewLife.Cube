@@ -26,6 +26,7 @@
             <th class="text-center">页面</th>
             <th class="text-center">Json数据</th>
             <th class="text-center">Xml数据</th>
+            <th class="text-center">Csv数据</th>
             <th class="text-center" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserID"))">用户</a></th>
             <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("Expire"))">过期时间</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
@@ -67,6 +68,7 @@
                 <td class="text-center"><a href="@(url+"/Html"+query)" target="_blank">页面</a></td>
                 <td class="text-center"><a href="@(url+"/Json"+query)" target="_blank">Json数据</a></td>
                 <td class="text-center"><a href="@(url+"/Xml"+query)" target="_blank">Xml数据</a></td>
+                <td class="text-center"><a href="@(url+"/Csv"+query)" target="_blank">Csv数据</a></td>
                 <td class="text-center">@entity.UserName</td>
                 <td class="text-center">@entity.Expire.ToFullString("")</td>
                 <td class="text-center">

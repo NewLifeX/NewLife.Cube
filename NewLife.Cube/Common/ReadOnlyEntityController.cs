@@ -492,7 +492,7 @@ namespace NewLife.Cube
         }
         #endregion
 
-        #region 高级Action
+        #region 数据接口
         /// <summary>页面</summary>
         /// <param name="token">令牌</param>
         /// <param name="p">分页</param>
@@ -625,6 +625,51 @@ namespace NewLife.Cube
             public String Issuer { get; set; }
         }
 
+        /// <summary>Csv接口</summary>
+        /// <param name="token">令牌</param>
+        /// <param name="p">分页</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [DisplayName("Csv接口")]
+        public virtual ActionResult Csv(String token, Pager p)
+        {
+            var issuer = ValidToken(token);
+
+            //// 需要总记录数来分页
+            //p.RetrieveTotalCount = true;
+
+            var list = SearchData(p);
+
+            // 准备需要输出的列
+            var fs = Factory.Fields.ToList();
+
+#if __CORE__
+            var rs = Response;
+            var headers = rs.Headers;
+            headers[HeaderNames.ContentEncoding] = "UTF8";
+            //headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+
+            // 允许同步IO，便于CsvFile刷数据Flush
+            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            if (ft != null) ft.AllowSynchronousIO = true;
+
+            OnExportCsv(fs, list, rs.Body);
+#else
+            var rs = Response;
+            rs.Charset = "UTF-8";
+            rs.ContentEncoding = Encoding.UTF8;
+            //rs.ContentType = "application/vnd.ms-excel";
+
+            OnExportCsv(fs, list, rs.OutputStream);
+
+            rs.Flush();
+#endif
+
+            return new EmptyResult();
+        }
+        #endregion
+
+        #region 导出Xml/Json/Excel/Csv
         /// <summary>导出Xml</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
@@ -789,25 +834,24 @@ namespace NewLife.Cube
         /// <param name="output">输出流</param>
         protected virtual void OnExportExcel(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
         {
-            using (var csv = new CsvFile(output))
+            using var csv = new CsvFile(output);
+
+            // 列头
+            var headers = new List<String>();
+            foreach (var fi in fs)
             {
-                // 列头
-                var headers = new List<String>();
-                foreach (var fi in fs)
-                {
-                    var name = fi.DisplayName;
-                    if (name.IsNullOrEmpty()) name = fi.Description;
-                    if (name.IsNullOrEmpty()) name = fi.Name;
+                var name = fi.DisplayName;
+                if (name.IsNullOrEmpty()) name = fi.Description;
+                if (name.IsNullOrEmpty()) name = fi.Name;
 
-                    headers.Add(name);
-                }
-                csv.WriteLine(headers);
+                headers.Add(name);
+            }
+            csv.WriteLine(headers);
 
-                // 内容
-                foreach (var entity in list)
-                {
-                    csv.WriteLine(fs.Select(e => entity[e.Name]));
-                }
+            // 内容
+            foreach (var entity in list)
+            {
+                csv.WriteLine(fs.Select(e => entity[e.Name]));
             }
         }
 
@@ -879,19 +923,20 @@ namespace NewLife.Cube
         /// <param name="output">输出流</param>
         protected virtual void OnExportCsv(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
         {
-            using (var csv = new CsvFile(output))
-            {
-                // 列头
-                csv.WriteLine(fs.Select(e => e.Name));
+            using var csv = new CsvFile(output);
 
-                // 内容
-                foreach (var entity in list)
-                {
-                    csv.WriteLine(fs.Select(e => entity[e.Name]));
-                }
+            // 列头
+            csv.WriteLine(fs.Select(e => e.Name));
+
+            // 内容
+            foreach (var entity in list)
+            {
+                csv.WriteLine(fs.Select(e => entity[e.Name]));
             }
         }
+        #endregion
 
+        #region 备份/还原/导出/分享
         /// <summary>备份到服务器本地目录</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
