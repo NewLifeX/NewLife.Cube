@@ -24,7 +24,7 @@ namespace NewLife.Web.OAuth
             base.OnGetInfo(dic);
 
             //if (dic.TryGetValue("nickname", out var str)) NickName = str.Trim();
-            if (dic.TryGetValue("client_id", out var str)) UserID = str.ToLong();
+            //if (dic.TryGetValue("client_id", out var str)) UserID = str.ToLong();
 
             // 从大到小找头像
             var avs = "figureurl_qq_2,figureurl_qq_1,figureurl_2,figureurl_1,figureurl".Split(",");
