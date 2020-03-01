@@ -96,8 +96,8 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-            var ms = OAuthConfig.Current.Items.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
-            if (!Setting.Current.AllowLogin)
+            var ms = OAuthConfig.Current.Items?.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
+            if (ms != null && !Setting.Current.AllowLogin)
             {
                 if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
 
@@ -112,12 +112,12 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             // 支持钉钉，且在钉钉内打开，直接跳转
-            if (ms.Any(e => e.Name == "Ding"))
+            if (ms != null && ms.Any(e => e.Name == "Ding"))
             {
 #if __CORE__
                 var agent = Request.Headers["User-Agent"] + "";
 #else
-                    var agent = Request.UserAgent;
+                var agent = Request.UserAgent;
 #endif
                 if (!agent.IsNullOrEmpty() && agent.Contains("DingTalk"))
                 {
