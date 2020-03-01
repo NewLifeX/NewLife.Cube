@@ -93,7 +93,7 @@ namespace NewLife.Web
             if (_map == null)
             {
                 var dic = new Dictionary<String, Type>(StringComparer.OrdinalIgnoreCase);
-                foreach (var item in typeof(OAuthClient).GetAllSubclasses(true))
+                foreach (var item in typeof(OAuthClient).GetAllSubclasses(false))
                 {
                     var key = item.Name.TrimEnd("Client");
                     var ct = item.CreateInstance() as OAuthClient;
@@ -442,8 +442,8 @@ namespace NewLife.Web
         /// <param name="dic"></param>
         protected virtual void OnGetInfo(IDictionary<String, String> dic)
         {
-            if (dic.ContainsKey("openid")) OpenID = dic["openid"].Trim();
             if (dic.TryGetValue("openid", out var str)) OpenID = str.Trim();
+            if (dic.TryGetValue("unionid", out str)) UnionID = str.Trim();
 
             if (dic.TryGetValue("uid", out str)) UserID = str.ToLong();
             if (dic.TryGetValue("userid", out str)) UserID = str.ToLong();
@@ -453,8 +453,26 @@ namespace NewLife.Web
             if (dic.TryGetValue("username", out str)) UserName = str.Trim();
             if (dic.TryGetValue("user_name", out str)) UserName = str.Trim();
 
+            if (dic.TryGetValue("nick", out str)) NickName = str.Trim();
             if (dic.TryGetValue("nickname", out str)) NickName = str.Trim();
             if (dic.TryGetValue("nick_name", out str)) NickName = str.Trim();
+
+            if (dic.TryGetValue("code", out str)) UserCode = str.Trim();
+            if (dic.TryGetValue("usercode", out str)) UserCode = str.Trim();
+            if (dic.TryGetValue("user_code", out str)) UserCode = str.Trim();
+
+            if (dic.TryGetValue("mobile", out str)) Mobile = str.Trim();
+            if (dic.TryGetValue("usermobile", out str)) Mobile = str.Trim();
+            if (dic.TryGetValue("user_mobile", out str)) Mobile = str.Trim();
+
+            if (dic.TryGetValue("mail", out str)) Mail = str.Trim();
+            if (dic.TryGetValue("email", out str)) Mail = str.Trim();
+            if (dic.TryGetValue("usermail", out str)) Mail = str.Trim();
+            if (dic.TryGetValue("user_mail", out str)) Mail = str.Trim();
+
+            if (dic.TryGetValue("detail", out str)) Detail = str.Trim();
+            if (dic.TryGetValue("userdetail", out str)) Detail = str.Trim();
+            if (dic.TryGetValue("user_detail", out str)) Detail = str.Trim();
 
             if (dic.TryGetValue("Avatar", out str)) Avatar = str.Trim();
 

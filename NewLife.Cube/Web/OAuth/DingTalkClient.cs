@@ -95,11 +95,13 @@ namespace NewLife.Cube.Web
 
             if (dic != null)
             {
-                NickName = dic["nick"] as String;
-                OpenID = dic["openid"] as String;
-                UnionID = dic["unionid"] as String;
+                //NickName = dic["nick"] as String;
+                //OpenID = dic["openid"] as String;
+                //UnionID = dic["unionid"] as String;
 
                 Items = dic.ToDictionary(e => e.Key, e => e.Value as String);
+            
+                OnGetInfo(Items);
             }
 
             return null;

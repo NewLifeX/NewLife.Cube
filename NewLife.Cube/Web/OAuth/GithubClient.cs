@@ -23,11 +23,11 @@ namespace NewLife.Web.OAuth
         {
             base.OnGetInfo(dic);
 
-            if (dic.ContainsKey("id")) UserID = dic["id"].Trim('\"').ToLong();
-            if (dic.ContainsKey("login")) UserName = dic["login"].Trim();
-            if (dic.ContainsKey("name")) NickName = dic["name"].Trim();
-            if (dic.ContainsKey("avatar_url")) Avatar = dic["avatar_url"].Trim();
-            if (dic.ContainsKey("bio")) Detail = dic["bio"].Trim();
+            if (dic.TryGetValue("id", out var str)) UserID = str.Trim('\"').ToLong();
+            if (dic.TryGetValue("login", out str)) UserName = str.Trim();
+            if (dic.TryGetValue("name", out str)) NickName = str.Trim();
+            if (dic.TryGetValue("avatar_url", out str)) Avatar = str.Trim();
+            if (dic.TryGetValue("bio", out str)) Detail = str.Trim();
         }
 
         private System.Net.Http.HttpClient _Client;

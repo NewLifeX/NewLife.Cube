@@ -194,13 +194,12 @@ namespace NewLife.Cube.Web
             // 用户信息
             if (dic != null && user is UserX user2)
             {
-                if (user2.Mail.IsNullOrEmpty() && dic.TryGetValue("email", out var email)) user2.Mail = email;
-                if (user2.Mail.IsNullOrEmpty() && dic.TryGetValue("mail", out email)) user2.Mail = email;
-                if (user2.Mobile.IsNullOrEmpty() && dic.TryGetValue("mobile", out var mobile)) user2.Mobile = mobile;
-                if (user2.Code.IsNullOrEmpty() && dic.TryGetValue("code", out var code)) user2.Code = code;
+                if (user2.Code.IsNullOrEmpty()) user2.Code = client.UserCode;
+                if (user2.Mobile.IsNullOrEmpty()) user2.Mobile = client.Mobile;
+                if (user2.Mail.IsNullOrEmpty()) user2.Mail = client.Mail;
+
                 if (user2.Sex == SexKinds.未知 && dic.TryGetValue("sex", out var sex)) user2.Sex = (SexKinds)sex.ToInt();
                 if (user2.Remark.IsNullOrEmpty()) user2.Remark = client.Detail;
-                if (user2.Remark.IsNullOrEmpty() && dic.TryGetValue("detail", out var detail)) user2.Remark = detail;
 
                 var set = Setting.Current;
 

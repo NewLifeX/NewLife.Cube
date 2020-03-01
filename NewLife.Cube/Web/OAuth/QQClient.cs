@@ -23,8 +23,8 @@ namespace NewLife.Web.OAuth
         {
             base.OnGetInfo(dic);
 
-            if (dic.ContainsKey("nickname")) NickName = dic["nickname"].Trim();
-            if (dic.ContainsKey("client_id")) UserID = dic["client_id"].ToLong();
+            //if (dic.TryGetValue("nickname", out var str)) NickName = str.Trim();
+            if (dic.TryGetValue("client_id", out var str)) UserID = str.ToLong();
 
             // 从大到小找头像
             var avs = "figureurl_qq_2,figureurl_qq_1,figureurl_2,figureurl_1,figureurl".Split(",");
