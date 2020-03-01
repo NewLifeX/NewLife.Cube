@@ -251,6 +251,7 @@ namespace NewLife.Cube.Web
         public virtual IManageUser OnBind(UserConnect uc, OAuthClient client)
         {
             var prv = Provider;
+            var mode = "";
 
             // 如果未登录，需要注册一个
             var user = prv.Current;
@@ -266,7 +267,10 @@ namespace NewLife.Cube.Web
                 {
                     // 强制绑定本地用户时，没有前缀
                     if (set.ForceBindUser)
+                    {
+                        mode = "UserName";
                         user = prv.FindByName(name);
+                    }
                     else
                     {
                         name = client.Name + "_" + name;
@@ -277,18 +281,21 @@ namespace NewLife.Cube.Web
                 // 匹配Code
                 if (user == null && set.ForceBindUserCode)
                 {
+                    mode = "UserCode";
                     if (!client.UserCode.IsNullOrEmpty()) user = UserX.FindByCode(client.UserCode);
                 }
 
                 // 匹配Mobile
                 if (user == null && set.ForceBindUserMobile)
                 {
+                    mode = "UserMobile";
                     if (!client.Mobile.IsNullOrEmpty()) user = UserX.FindByMobile(client.Mobile);
                 }
 
                 // 匹配Mail
                 if (user == null && set.ForceBindUserMail)
                 {
+                    mode = "UserMail";
                     if (!client.Mail.IsNullOrEmpty()) user = UserX.FindByMail(client.Mail);
                 }
 
@@ -302,12 +309,15 @@ namespace NewLife.Cube.Web
                     // 过长，需要随机一个较短的
                     var num = openid.GetBytes().Crc();
 
+                    mode = "OpenID-Crc";
                     name = client.Name + "_" + num.ToString("X8");
                     user = prv.FindByName(name);
                 }
 
                 if (user == null)
                 {
+                    mode = "Register";
+
                     // 新注册用户采用魔方默认角色
                     var rid = Role.GetOrAdd(set.DefaultRole).ID;
                     //if (rid == 0 && client.Items.TryGetValue("roleid", out var roleid)) rid = roleid.ToInt();
@@ -324,7 +334,7 @@ namespace NewLife.Cube.Web
 
             // 写日志
             var log = LogProvider.Provider;
-            log?.WriteLog(typeof(UserX), "绑定", $"[{user}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
+            log?.WriteLog(typeof(UserX), "绑定", $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
 
             return user;
         }
