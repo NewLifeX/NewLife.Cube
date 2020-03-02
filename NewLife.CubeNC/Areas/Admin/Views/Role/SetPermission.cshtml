@@ -17,6 +17,14 @@
             // 规避change 需要在失去焦点时触发的问题，设置值完成后手工再次触发该事件
             $('input[parentkey="' + childkey + '"]').prop('checked', status).change();
         });
+        // 授权子项列
+        $('input.pchild').on('change', function () {
+            var $this = $(this);
+            var status = $this.prop('checked');
+            var childkey = $this.attr('pchild');
+
+            $('table input[childkey="' + childkey + '"]').prop('checked', status).change();
+        });
     });
 </script>
 <div class="form-group col-md-12">
@@ -44,9 +52,27 @@
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
                                 {
                                     var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID })
+                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID,@childkey = item.Value })
                                     @Html.Label(id, item.Value)
                                     <text>&nbsp;</text>
+                                }
+                            }
+                            else
+                            {
+                                var slist = new List<String>();
+                                foreach (var item in menus)
+                                {
+                                    slist = slist.Union(item.Permissions.Values).ToList();
+                                }
+                                // 使用 变量i 设置id 避免ID异常无法正常关联checkbox 和label
+                                var i = 0;
+                                foreach (var item in slist)
+                                {
+                                    var id = "pc_" + i;
+                                    @Html.CheckBox(id, false, new { @class = "pchild", @pchild = item, @parentkey = "auth_child" + entity.ID })
+                                    @Html.Label(id, item)
+                                    <text>&nbsp;</text>
+                                    i++;
                                 }
                             }
                         </td>
