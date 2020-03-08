@@ -95,22 +95,16 @@ namespace NewLife.Cube
             var ico2 = wwwroot.CombinePath(ico).GetFullPath();
             if (!File.Exists(ico2))
             {
-                // 延迟时间释放，给子系统覆盖的机会
-                TimerX.Delay(s =>
+                var asm = Assembly.GetExecutingAssembly();
+                var ns = asm.GetManifestResourceNames();
+                var f = ns.FirstOrDefault(e => e.EndsWithIgnoreCase(ico));
+                if (!f.IsNullOrEmpty())
                 {
-                    if (!File.Exists(ico2))
-                    {
-                        //Assembly.GetExecutingAssembly().ReleaseFile(ico, ico2);
-                        var asm = Assembly.GetExecutingAssembly();
-                        var ns = asm.GetManifestResourceNames();
-                        var f = ns.FirstOrDefault(e => e.EndsWithIgnoreCase(ico));
-                        if (!f.IsNullOrEmpty())
-                        {
-                            var ms = asm.GetManifestResourceStream(f);
-                            File.WriteAllBytes(ico2.EnsureDirectory(true), ms.ReadBytes());
-                        }
-                    }
-                }, 1000);
+                    XTrace.WriteLine("释放图标{0}到{1}", f, ico2);
+
+                    var ms = asm.GetManifestResourceStream(f);
+                    File.WriteAllBytes(ico2.EnsureDirectory(true), ms.ReadBytes());
+                }
             }
 
             // 检查魔方样式

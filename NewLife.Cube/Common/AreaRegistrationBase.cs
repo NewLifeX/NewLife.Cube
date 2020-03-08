@@ -221,14 +221,7 @@ namespace NewLife.Cube
             // 释放ico图标
             var ico = "favicon.ico";
             var ico2 = ico.GetFullPath();
-            if (!File.Exists(ico2))
-            {
-                // 延迟时间释放，给子系统覆盖的机会
-                TimerX.Delay(s =>
-                {
-                    if (!File.Exists(ico2)) Assembly.GetExecutingAssembly().ReleaseFile(ico, ico2);
-                }, 15000);
-            }
+            if (!File.Exists(ico2)) Assembly.GetExecutingAssembly().ReleaseFile(ico, ico2);
 
             // 检查魔方样式
             var js = "~/Content/Cube.js".GetFullPath();
