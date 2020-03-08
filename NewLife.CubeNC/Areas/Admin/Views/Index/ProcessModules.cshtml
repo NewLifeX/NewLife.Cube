@@ -15,7 +15,11 @@
     var list = new List<ProcessModule>();
     foreach (ProcessModule item in process.Modules)
     {
-        if (isAll || item.FileVersionInfo.CompanyName != "Microsoft Corporation") { list.Add(item); }
+        try
+        {
+            if (isAll || item.FileVersionInfo.CompanyName != "Microsoft Corporation") { list.Add(item); }
+        }
+        catch { }
     }
 }
 <table class="table table-bordered table-hover table-striped table-condensed">
