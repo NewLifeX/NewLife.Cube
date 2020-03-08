@@ -17,13 +17,6 @@ namespace Test
         {
             XTrace.UseConsole();
 
-            var set = XCode.Setting.Current;
-            if (set.IsNew)
-            {
-                //set.SQLiteDbPath = "..\\Data";
-                set.SaveAsync();
-            }
-
             try
             {
                 Test2();

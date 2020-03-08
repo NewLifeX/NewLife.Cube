@@ -148,9 +148,9 @@ namespace NewLife.Cube.WebMiddleware
             if (page.IsNullOrEmpty()) return;
 
             if (error != null)
-                LogProvider.Provider?.WriteLog("访问", "错误", msg, user?.ID ?? 0, user + "", ip);
+                LogProvider.Provider?.WriteLog("访问", "错误", false, msg, user?.ID ?? 0, user + "", ip);
             else
-                LogProvider.Provider?.WriteLog("访问", "记录", msg, user?.ID ?? 0, user + "", ip);
+                LogProvider.Provider?.WriteLog("访问", "记录", true, msg, user?.ID ?? 0, user + "", ip);
         }
 
         void SaveStatistics(HttpContext ctx, IManageUser user, String ip, String page, String title, Exception error, Stopwatch sw)

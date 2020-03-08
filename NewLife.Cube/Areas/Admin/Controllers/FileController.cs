@@ -413,7 +413,7 @@ namespace NewLife.Cube.Admin.Controllers
         #endregion
 
         #region 日志
-        private static void WriteLog(String action, String remark, String ip = null) => LogProvider.Provider.WriteLog(typeof(FileController), action, remark, ip: ip);
+        private static void WriteLog(String action, String remark, String ip = null) => LogProvider.Provider.WriteLog(typeof(FileController), action, true, remark, ip: ip);
         #endregion
     }
 }

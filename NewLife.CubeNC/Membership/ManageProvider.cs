@@ -239,7 +239,7 @@ namespace NewLife.Cube
                 mu.SaveLogin(null);
 
                 var ctx = req.HttpContext;
-                LogProvider.Provider.WriteLog("用户", "自动登录", $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "", ip: ctx.GetUserHost());
+                LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "", ip: ctx.GetUserHost());
             }
 
             return u;

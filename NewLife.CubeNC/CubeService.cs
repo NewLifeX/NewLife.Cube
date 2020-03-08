@@ -37,7 +37,7 @@ namespace NewLife.Cube
             {
                 set.Name = "NewLife.Cube";
                 set.DisplayName = "魔方平台";
-                set.SaveAsync();
+                set.Save();
             }
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);

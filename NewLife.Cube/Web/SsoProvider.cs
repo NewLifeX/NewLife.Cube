@@ -163,7 +163,7 @@ namespace NewLife.Cube.Web
 
             // 写日志
             var log = LogProvider.Provider;
-            log?.WriteLog(typeof(UserX), "SSO登录", $"[{user}]从[{client.Name}]的[{client.UserName}]登录", user.ID, user + "");
+            log?.WriteLog(typeof(UserX), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName}]登录", user.ID, user + "");
 
             if (!user.Enable) throw new InvalidOperationException($"用户[{user}]已禁用！");
 
@@ -234,7 +234,7 @@ namespace NewLife.Cube.Web
                     var av2 = Setting.Current.AvatarPath.CombinePath(user2.ID + ".png");
                     if (!File.Exists(av2))
                     {
-                        LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", $"{user2.Avatar} => {av}", user.ID, user + "");
+                        LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"{user2.Avatar} => {av}", user.ID, user + "");
 
                         user2.Avatar = av;
                     }
@@ -335,7 +335,7 @@ namespace NewLife.Cube.Web
 
             // 写日志
             var log = LogProvider.Provider;
-            log?.WriteLog(typeof(UserX), "绑定", $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
+            log?.WriteLog(typeof(UserX), "绑定", true, $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
 
             return user;
         }
@@ -443,7 +443,7 @@ namespace NewLife.Cube.Web
             //// 头像是否已存在
             //if (File.Exists(dest)) return false;
 
-            LogProvider.Provider?.WriteLog(user.GetType(), "抓取头像", $"{url} => {dest}", user.ID, user + "");
+            LogProvider.Provider?.WriteLog(user.GetType(), "抓取头像", true, $"{url} => {dest}", user.ID, user + "");
 
             dest.EnsureDirectory(true);
 

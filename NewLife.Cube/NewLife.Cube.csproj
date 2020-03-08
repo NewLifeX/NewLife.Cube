@@ -84,8 +84,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=9.15.7372.32135, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.15.2020.308-rc\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.15.7372.32564, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.15.2020.308-rc2\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

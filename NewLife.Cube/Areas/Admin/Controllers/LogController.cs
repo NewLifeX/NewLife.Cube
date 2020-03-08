@@ -33,11 +33,13 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         protected override IEnumerable<XLog> Search(Pager p)
         {
-            var key = p["Q"];
-            var userid = p["userid"].ToInt(-1);
             var category = p["category"];
+            var action = p["action"];
+            var success = p["success"]?.ToBoolean();
+            var userid = p["userid"].ToInt(-1);
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
+            var key = p["Q"];
 
             // 附近日志
             if (key.IsNullOrEmpty() && userid < 0 && category.IsNullOrEmpty() && start.Year < 2000 && end.Year < 2000)
@@ -54,7 +56,7 @@ namespace NewLife.Cube.Admin.Controllers
                 }
             }
 
-            return XLog.Search(key, userid, category, start, end, p);
+            return XLog.Search(category, action, success, userid, start, end, key, p);
         }
     }
 }

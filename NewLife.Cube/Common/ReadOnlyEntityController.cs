@@ -1094,7 +1094,7 @@ namespace NewLife.Cube
 
             var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
 
-            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成列表", vpath);
+            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成列表", true, vpath);
 #if !__CORE__
             //Js.Alert("生成列表模版 {0} 成功！".F(vpath));
 #endif
@@ -1120,7 +1120,7 @@ namespace NewLife.Cube
 
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
 
-            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成表单", vpath);
+            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成表单", true, vpath);
 #if !__CORE__
             //Js.Alert("生成表单模版 {0} 成功！".F(vpath));
 #endif
@@ -1146,7 +1146,7 @@ namespace NewLife.Cube
 
             var rs = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
 
-            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成搜索", vpath);
+            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成搜索", true, vpath);
 
             return RedirectToAction("Index");
         }

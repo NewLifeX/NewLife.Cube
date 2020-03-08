@@ -203,7 +203,7 @@ namespace XCode.Membership
             if (autologin)
             {
                 mu.SaveLogin(null);
-                LogProvider.Provider.WriteLog("用户", "自动登录", $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "", ip: req.RequestContext.HttpContext.GetUserHost());
+                LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "", ip: req.RequestContext.HttpContext.GetUserHost());
             }
 
             return u;

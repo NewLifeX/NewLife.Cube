@@ -112,7 +112,7 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         #region 日志
-        private static void WriteLog(String action, String remark, String ip = null) => LogProvider.Provider.WriteLog(typeof(DbController), action, remark, ip: ip);
+        private static void WriteLog(String action, String remark, String ip = null) => LogProvider.Provider.WriteLog(typeof(DbController), action, true, remark, ip: ip);
         #endregion
     }
 }

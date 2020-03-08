@@ -40,10 +40,15 @@
     <Optimize>false</Optimize>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Session\ISession2.cs" />
+    <Compile Remove="Session\MemorySession.cs" />
+    <Compile Remove="Session\MemorySessionStore.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="8.6.2020.308-rc" />
-    <PackageReference Include="NewLife.XCode" Version="9.15.2020.308-rc" />
+    <PackageReference Include="NewLife.XCode" Version="9.15.2020.308-rc2" />
   </ItemGroup>
 
   <ItemGroup>
