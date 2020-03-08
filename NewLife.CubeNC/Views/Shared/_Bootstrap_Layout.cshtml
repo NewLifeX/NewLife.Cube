@@ -15,6 +15,8 @@
 
     var charts = ViewBag.Charts as ECharts[];
     var charts2 = ViewBag.Charts2 as ECharts[];
+
+    var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -47,7 +49,7 @@
     <link href="~/Content/artDialog/css/ui-dialog.css" rel="stylesheet" />
 
     <!-- 自定义样式 -->
-    <link rel="stylesheet" href="~/Content/Cube-bootstrap.css?v=3.2.2020.0222">
+    <link rel="stylesheet" href="~/Content/Cube-bootstrap.css?v=@ver">
     <!-- JQuery作为一等公民，页面内部随时可能使用 -->
     <script src="~/Content/js/jquery-3.4.1.min.js"></script>
     @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
@@ -198,6 +200,6 @@
     <script src="~/Content/artDialog/dist/dialog-plus-min.js"></script>
     <script src="~/Content/artDialog/dist/dialog.new.life.js"></script>
     @*模态窗Ajax删除提示*@
-    <script src="~/Content/Cube.js?v=3.2.2020.0204"></script>
+    <script src="~/Content/Cube.js?v=@ver"></script>
 </body>
 </html>
