@@ -23,6 +23,7 @@
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
@@ -47,6 +48,9 @@
                 <td class="text-center">@entity.ID</td>
                 <td>@entity.Category</td>
                 <td>@entity.Action</td>
+                <td class="text-center">
+                    <i class="glyphicon glyphicon-@(entity.Success ? "ok" : "remove")" style="color: @(entity.Success ? "green" : "red");"></i>
+                </td>
                 <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Remark">@entity.Remark</td>
                 <td class="text-right">@entity.LinkID.ToString("n0")</td>
                 <td>@entity.UserName</td>

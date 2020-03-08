@@ -7,6 +7,8 @@
     @Html.ActionLink("访问统计", "Index", "VisitStat", null, new { @class = "btn btn-success btn-sm" })
     <label for="category" class="control-label">类别：</label>
     @Html.ForDropDownList("category", Log.FindAllCategoryName(), page["category"], "全部", true)
+    <label for="action" class="control-label">操作：</label>
+    @Html.ForDropDownList("action", Log.FindAllActionName(), page["action"], "全部", true)
 </div>
 @await Html.PartialAsync("_SelectUser", "userId")
 @await Html.PartialAsync("_DateRange")

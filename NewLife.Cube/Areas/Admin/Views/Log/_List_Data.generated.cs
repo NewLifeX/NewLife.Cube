@@ -191,14 +191,30 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1042), Tuple.Create("\"", 1085)
+WriteAttribute("href", Tuple.Create(" href=\"", 1042), Tuple.Create("\"", 1086)
             
             #line 26 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1049), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Remark"))
+, Tuple.Create(Tuple.Create("", 1049), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Success"))
             
             #line default
             #line hidden
 , 1049), false)
+);
+
+WriteLiteral(">成功</a></th>\r\n            <th");
+
+WriteLiteral(" class=\"text-center\"");
+
+WriteLiteral("><a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 1139), Tuple.Create("\"", 1182)
+            
+            #line 27 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1146), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("Remark"))
+            
+            #line default
+            #line hidden
+, 1146), false)
 );
 
 WriteLiteral(">详细信息</a></th>\r\n            <th");
@@ -207,14 +223,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1140), Tuple.Create("\"", 1183)
+WriteAttribute("href", Tuple.Create(" href=\"", 1237), Tuple.Create("\"", 1280)
             
-            #line 27 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1147), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("LinkID"))
+            #line 28 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1244), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("LinkID"))
             
             #line default
             #line hidden
-, 1147), false)
+, 1244), false)
 );
 
 WriteLiteral(">链接</a></th>\r\n            <th");
@@ -223,14 +239,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1236), Tuple.Create("\"", 1281)
+WriteAttribute("href", Tuple.Create(" href=\"", 1333), Tuple.Create("\"", 1378)
             
-            #line 28 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1243), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UserName"))
+            #line 29 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1340), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("UserName"))
             
             #line default
             #line hidden
-, 1243), false)
+, 1340), false)
 );
 
 WriteLiteral(">用户名</a></th>\r\n            <th");
@@ -239,14 +255,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1335), Tuple.Create("\"", 1380)
+WriteAttribute("href", Tuple.Create(" href=\"", 1432), Tuple.Create("\"", 1477)
             
-            #line 29 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1342), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("CreateIP"))
+            #line 30 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1439), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("CreateIP"))
             
             #line default
             #line hidden
-, 1342), false)
+, 1439), false)
 );
 
 WriteLiteral(">IP地址</a></th>\r\n            <th");
@@ -255,14 +271,14 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1435), Tuple.Create("\"", 1485)
+WriteAttribute("href", Tuple.Create(" href=\"", 1532), Tuple.Create("\"", 1582)
             
-            #line 30 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1442), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("CreateAddress"))
+            #line 31 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1539), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("CreateAddress"))
             
             #line default
             #line hidden
-, 1442), false)
+, 1539), false)
 );
 
 WriteLiteral(">物理地址</a></th>\r\n            <th");
@@ -273,14 +289,14 @@ WriteLiteral(" style=\"min-width:134px;\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1565), Tuple.Create("\"", 1612)
+WriteAttribute("href", Tuple.Create(" href=\"", 1662), Tuple.Create("\"", 1709)
             
-            #line 31 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 1572), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("CreateTime"))
+            #line 32 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 1669), Tuple.Create<System.Object, System.Int32>(Html.Raw(page.GetSortUrl("CreateTime"))
             
             #line default
             #line hidden
-, 1572), false)
+, 1669), false)
 );
 
 WriteLiteral(">时间</a></th>\r\n            <th");
@@ -290,13 +306,13 @@ WriteLiteral(" class=\"text-center\"");
 WriteLiteral(">附近</th>\r\n");
 
             
-            #line 33 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 34 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
             
             
             #line default
             #line hidden
             
-            #line 33 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 34 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
              if (this.Has(PermissionFlags.Detail))
             {
 
@@ -310,7 +326,7 @@ WriteLiteral(" class=\"text-center\"");
 WriteLiteral(">操作</th>\r\n");
 
             
-            #line 36 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 37 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
             }
 
             
@@ -319,13 +335,13 @@ WriteLiteral(">操作</th>\r\n");
 WriteLiteral("        </tr>\r\n    </thead>\r\n    <tbody>\r\n");
 
             
-            #line 40 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 41 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
         
             
             #line default
             #line hidden
             
-            #line 40 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 41 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
          foreach (var entity in Model)
         {
 
@@ -335,13 +351,13 @@ WriteLiteral("        </tr>\r\n    </thead>\r\n    <tbody>\r\n");
 WriteLiteral("            <tr>\r\n");
 
             
-            #line 43 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 44 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                 
             
             #line default
             #line hidden
             
-            #line 43 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 44 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                  if (set.EnableSelect)
                 {
 
@@ -358,20 +374,20 @@ WriteLiteral(" type=\"checkbox\"");
 
 WriteLiteral(" name=\"keys\"");
 
-WriteAttribute("value", Tuple.Create(" value=\"", 2051), Tuple.Create("\"", 2069)
+WriteAttribute("value", Tuple.Create(" value=\"", 2148), Tuple.Create("\"", 2166)
             
-            #line 45 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-      , Tuple.Create(Tuple.Create("", 2059), Tuple.Create<System.Object, System.Int32>(entity.ID
+            #line 46 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+      , Tuple.Create(Tuple.Create("", 2156), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2059), false)
+, 2156), false)
 );
 
 WriteLiteral(" /></td>\r\n");
 
             
-            #line 46 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 47 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                 }
 
             
@@ -384,7 +400,7 @@ WriteLiteral(" class=\"text-center\"");
 WriteLiteral(">");
 
             
-            #line 47 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 48 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                                    Write(entity.ID);
 
             
@@ -393,7 +409,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 48 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 49 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.Category);
 
             
@@ -402,7 +418,7 @@ WriteLiteral("</td>\r\n                <td>");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 49 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 50 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.Action);
 
             
@@ -410,23 +426,53 @@ WriteLiteral("</td>\r\n                <td>");
             #line hidden
 WriteLiteral("</td>\r\n                <td");
 
-WriteLiteral(" style=\"max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellips" +
-"is;\"");
+WriteLiteral(" class=\"text-center\"");
 
-WriteAttribute("title", Tuple.Create(" title=\"", 2344), Tuple.Create("\"", 2366)
+WriteLiteral(">\r\n                    <i");
+
+WriteAttribute("class", Tuple.Create(" class=\"", 2401), Tuple.Create("\"", 2464)
+, Tuple.Create(Tuple.Create("", 2409), Tuple.Create("glyphicon", 2409), true)
+, Tuple.Create(Tuple.Create(" ", 2418), Tuple.Create("glyphicon-", 2419), true)
             
-            #line 50 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-                                , Tuple.Create(Tuple.Create("", 2352), Tuple.Create<System.Object, System.Int32>(entity.Remark
+            #line 52 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 2429), Tuple.Create<System.Object, System.Int32>(entity.Success ? "ok" : "remove"
             
             #line default
             #line hidden
-, 2352), false)
+, 2429), false)
+);
+
+WriteAttribute("style", Tuple.Create(" style=\"", 2465), Tuple.Create("\"", 2516)
+, Tuple.Create(Tuple.Create("", 2473), Tuple.Create("color:", 2473), true)
+            
+            #line 52 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+                     , Tuple.Create(Tuple.Create(" ", 2479), Tuple.Create<System.Object, System.Int32>(entity.Success ? "green" : "red"
+            
+            #line default
+            #line hidden
+, 2480), false)
+, Tuple.Create(Tuple.Create("", 2515), Tuple.Create(";", 2515), true)
+);
+
+WriteLiteral("></i>\r\n                </td>\r\n                <td");
+
+WriteLiteral(" style=\"max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellips" +
+"is;\"");
+
+WriteAttribute("title", Tuple.Create(" title=\"", 2651), Tuple.Create("\"", 2673)
+            
+            #line 54 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+                                , Tuple.Create(Tuple.Create("", 2659), Tuple.Create<System.Object, System.Int32>(entity.Remark
+            
+            #line default
+            #line hidden
+, 2659), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 50 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 54 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                                                                                                                            Write(entity.Remark);
 
             
@@ -439,7 +485,7 @@ WriteLiteral(" class=\"text-right\"");
 WriteLiteral(">");
 
             
-            #line 51 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 55 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                                   Write(entity.LinkID.ToString("n0"));
 
             
@@ -448,7 +494,7 @@ WriteLiteral(">");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 52 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 56 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.UserName);
 
             
@@ -457,7 +503,7 @@ WriteLiteral("</td>\r\n                <td>");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 53 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 57 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.CreateIP);
 
             
@@ -466,7 +512,7 @@ WriteLiteral("</td>\r\n                <td>");
 WriteLiteral("</td>\r\n                <td>");
 
             
-            #line 54 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 58 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                Write(entity.CreateIP.IPToAddress());
 
             
@@ -481,7 +527,7 @@ WriteLiteral(" style=\"max-width:150px\"");
 WriteLiteral(">");
 
             
-            #line 55 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 59 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                                                            Write(entity.CreateTime.ToFullString(""));
 
             
@@ -493,16 +539,16 @@ WriteLiteral(" class=\"text-center\"");
 
 WriteLiteral(">\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 2777), Tuple.Create("\"", 2816)
-, Tuple.Create(Tuple.Create("", 2784), Tuple.Create("?act=near&id=", 2784), true)
+WriteAttribute("href", Tuple.Create(" href=\"", 3084), Tuple.Create("\"", 3123)
+, Tuple.Create(Tuple.Create("", 3091), Tuple.Create("?act=near&id=", 3091), true)
             
-            #line 57 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2797), Tuple.Create<System.Object, System.Int32>(entity.ID
+            #line 61 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+, Tuple.Create(Tuple.Create("", 3104), Tuple.Create<System.Object, System.Int32>(entity.ID
             
             #line default
             #line hidden
-, 2797), false)
-, Tuple.Create(Tuple.Create("", 2807), Tuple.Create("&range=10", 2807), true)
+, 3104), false)
+, Tuple.Create(Tuple.Create("", 3114), Tuple.Create("&range=10", 3114), true)
 );
 
 WriteLiteral(" title=\"前后10行日志\"");
@@ -510,13 +556,13 @@ WriteLiteral(" title=\"前后10行日志\"");
 WriteLiteral(">附近</a>\r\n                </td>\r\n");
 
             
-            #line 59 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 63 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                 
             
             #line default
             #line hidden
             
-            #line 59 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 63 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                  if (this.Has(PermissionFlags.Detail))
                 {
 
@@ -534,7 +580,7 @@ WriteLiteral(">\r\n");
 WriteLiteral("                        ");
 
             
-            #line 62 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 66 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                    Write(Html.Partial("_List_Data_Action", (Object)entity));
 
             
@@ -543,7 +589,7 @@ WriteLiteral("                        ");
 WriteLiteral("\r\n                    </td>\r\n");
 
             
-            #line 64 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 68 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
                 }
 
             
@@ -552,7 +598,7 @@ WriteLiteral("\r\n                    </td>\r\n");
 WriteLiteral("            </tr>\r\n");
 
             
-            #line 66 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
+            #line 70 "..\..\Areas\Admin\Views\Log\_List_Data.cshtml"
         }
 
             

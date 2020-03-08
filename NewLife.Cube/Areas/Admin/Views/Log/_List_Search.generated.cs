@@ -89,10 +89,27 @@ Write(Html.ForDropDownList("category", Log.FindAllCategoryName(), page["category
             
             #line default
             #line hidden
-WriteLiteral("\r\n</div>\r\n");
+WriteLiteral("\r\n    <label");
+
+WriteLiteral(" for=\"action\"");
+
+WriteLiteral(" class=\"control-label\"");
+
+WriteLiteral(">操作：</label>\r\n");
+
+WriteLiteral("    ");
 
             
             #line 11 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
+Write(Html.ForDropDownList("action", Log.FindAllActionName(), page["action"], "全部", true));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n</div>\r\n");
+
+            
+            #line 13 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
 Write(Html.Partial("_SelectUser", "userId"));
 
             
@@ -101,7 +118,7 @@ Write(Html.Partial("_SelectUser", "userId"));
 WriteLiteral("\r\n");
 
             
-            #line 12 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
+            #line 14 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
 Write(Html.Partial("_DateRange"));
 
             
