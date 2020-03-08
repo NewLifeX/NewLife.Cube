@@ -1,0 +1,1 @@
+nohup dotnet cube.dll --urls http://* -basepath ../ &

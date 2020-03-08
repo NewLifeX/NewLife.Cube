@@ -42,6 +42,9 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Build.log</LastGenOutput>
     </None>
+    <None Update="bootstrap.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
