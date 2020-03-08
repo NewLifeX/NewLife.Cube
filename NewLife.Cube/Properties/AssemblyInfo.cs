@@ -36,10 +36,12 @@ using NewLife.Cube;
 //
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
-[assembly: AssemblyVersion("3.2.*")]
-[assembly: AssemblyFileVersion("3.2.2020.0204")]
+[assembly: AssemblyVersion("3.3.*")]
+[assembly: AssemblyFileVersion("3.3.2020.0308")]
 
 /*
+ * v3.3.2020.0308   支持ECharts图表，支持钉钉登录，新增页面数据分享
+ * 
  * v3.2.2020.0204   支持数据权限、用户部门地区选择、用户分享令牌授权
  * 
  * v3.1.2020.0115   X组件内部目录统一使用BasePath，支持命令行参数与环境变量，便于函数计算

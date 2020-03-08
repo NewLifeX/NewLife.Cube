@@ -46,8 +46,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.6.7372.32104, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.6.2020.308-rc\lib\net45\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.7.7372.40134, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.7.2020.308\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -84,8 +84,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=9.15.7372.32564, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.15.2020.308-rc2\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.16.7372.40226, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.16.2020.308\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -360,6 +360,11 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Controllers\SsoController.cs" />
+    <Compile Include="Entity\Build_netcore.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build_netcore.tt</DependentUpon>
+    </Compile>
     <Compile Include="Entity\应用日志.Biz.cs" />
     <Compile Include="Entity\应用日志.cs" />
     <Compile Include="Entity\应用系统.Biz.cs" />
@@ -907,6 +912,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Entity\Build_netcore.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Build_netcore.cs</LastGenOutput>
+    </Content>
     <Content Include="Views\Shared\_Layout_Nav.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Layout_Nav.generated.cs</LastGenOutput>

@@ -9,9 +9,9 @@
     <Description>Mvc权限管理后台，支持模版视图重载覆盖</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2020 NewLife</Copyright>
-    <Version>3.2.2020.0219-beta</Version>
-    <FileVersion>3.2.2020.0219-beta</FileVersion>
-    <AssemblyVersion>3.2.*</AssemblyVersion>
+    <Version>3.3.2020.0308</Version>
+    <FileVersion>3.3.2020.0308</FileVersion>
+    <AssemblyVersion>3.3.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
@@ -28,7 +28,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>高性能备份导出百万级数据</PackageReleaseNotes>
+    <PackageReleaseNotes>支持ECharts图表，支持钉钉登录，新增页面数据分享</PackageReleaseNotes>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -47,8 +47,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="8.6.2020.308-rc" />
-    <PackageReference Include="NewLife.XCode" Version="9.15.2020.308-rc2" />
+    <PackageReference Include="NewLife.Core" Version="8.7.2020.308" />
+    <PackageReference Include="NewLife.XCode" Version="9.16.2020.308" />
   </ItemGroup>
 
   <ItemGroup>

@@ -71,3 +71,5 @@ bld/
 /XTemp
 /Temp
 /NewLife.CubeNC/Properties/launchSettings.json
+/CubeDemo/Entity
+/NewLife.Cube/Entity
