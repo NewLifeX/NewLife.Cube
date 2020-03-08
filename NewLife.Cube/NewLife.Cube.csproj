@@ -360,11 +360,6 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Controllers\SsoController.cs" />
-    <Compile Include="Entity\Build_netcore.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build_netcore.tt</DependentUpon>
-    </Compile>
     <Compile Include="Entity\应用日志.Biz.cs" />
     <Compile Include="Entity\应用日志.cs" />
     <Compile Include="Entity\应用系统.Biz.cs" />
@@ -738,20 +733,20 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Login_Login3.generated.cs</LastGenOutput>
     </None>
-    <Content Include="Content\ace\ace.min-2.1.1.css" />
-    <Content Include="Content\ace\ace.min-2.1.1.js" />
-    <Content Include="Content\awesome\brands.min-5.12.1.css" />
-    <Content Include="Content\awesome\regular.min-5.12.1.css" />
-    <Content Include="Content\awesome\solid.min-5.12.1.css" />
-    <Content Include="Content\bootstrap-suggest.js" />
-    <Content Include="Content\bootstrap\bootstrap.bundle.min-4.4.1.js" />
-    <Content Include="Content\bootstrap\bootstrap.min-4.4.1.css" />
-    <Content Include="Content\bootstrap\bootstrap.min-4.4.1.js" />
-    <Content Include="Content\bootstrap\css\bootstrap-theme.css" />
-    <Content Include="Content\awesome\font-awesome.min-5.12.1.css" />
-    <Content Include="Content\bootstrap\popper.min-2.0.6.js" />
-    <Content Include="Content\Cube-bootstrap.css" />
-    <Content Include="Content\echarts.min.js" />
+    <None Include="Content\ace\ace.min-2.1.1.css" />
+    <None Include="Content\ace\ace.min-2.1.1.js" />
+    <None Include="Content\awesome\brands.min-5.12.1.css" />
+    <None Include="Content\awesome\regular.min-5.12.1.css" />
+    <None Include="Content\awesome\solid.min-5.12.1.css" />
+    <None Include="Content\bootstrap-suggest.js" />
+    <None Include="Content\bootstrap\bootstrap.bundle.min-4.4.1.js" />
+    <None Include="Content\bootstrap\bootstrap.min-4.4.1.css" />
+    <None Include="Content\bootstrap\bootstrap.min-4.4.1.js" />
+    <None Include="Content\bootstrap\css\bootstrap-theme.css" />
+    <None Include="Content\awesome\font-awesome.min-5.12.1.css" />
+    <None Include="Content\bootstrap\popper.min-2.0.6.js" />
+    <None Include="Content\Cube-bootstrap.css" />
+    <None Include="Content\echarts.min.js" />
     <Content Include="Content\images\logo\alipay.png" />
     <Content Include="Content\images\logo\Baidu.png" />
     <Content Include="Content\images\logo\github.png" />
@@ -912,18 +907,14 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>
     </None>
-    <Content Include="Entity\Build_netcore.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build_netcore.cs</LastGenOutput>
-    </Content>
-    <Content Include="Views\Shared\_Layout_Nav.cshtml">
+    <None Include="Views\Shared\_Layout_Nav.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Layout_Nav.generated.cs</LastGenOutput>
-    </Content>
-    <Content Include="Views\Shared\_Ace2_Layout.cshtml">
+    </None>
+    <None Include="Views\Shared\_Ace2_Layout.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Ace2_Layout.generated.cs</LastGenOutput>
-    </Content>
+    </None>
     <None Include="Views\Shared\_Footer.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Footer.generated.cs</LastGenOutput>
@@ -952,10 +943,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
     </None>
-    <Content Include="Views\Shared\_Bootstrap_Layout.cshtml">
+    <None Include="Views\Shared\_Bootstrap_Layout.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Bootstrap_Layout.generated.cs</LastGenOutput>
-    </Content>
+    </None>
     <None Include="Views\Shared\_List_Data_Stat.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data_Stat.generated.cs</LastGenOutput>
@@ -1031,7 +1022,7 @@
     <None Include="Scripts\jquery.validate.unobtrusive.js" />
     <None Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <None Include="Scripts\modernizr-2.6.2.js" />
-    <Content Include="Content\js\jquery-3.4.1.min.js" />
+    <None Include="Content\js\jquery-3.4.1.min.js" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
