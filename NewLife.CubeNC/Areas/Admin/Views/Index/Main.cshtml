@@ -29,182 +29,185 @@
     // GC设置
     var gc = "IsServerGC={0},LatencyMode={1}".F(GCSettings.IsServerGC, GCSettings.LatencyMode);
 }
-<table class="table table-bordered table-hover table-striped table-condensed">
-    <thead>
-        <tr>
-            <th colspan="4">
-                服务器信息
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td class="name">
-                应用系统：
-            </td>
-            <td class="value">
-                @*据说此功能已被干掉*@
-                @*@HttpRuntime.AppDomainAppVirtualPath*@
-                &nbsp;
-                @if (this.Has((PermissionFlags)16))
-                {
-                    <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>
-                }
-                &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
-            </td>
-            <td class="name">
-                目录：
-            </td>
-            <td class="value">
-                @Env.ContentRootPath
-                @*@HttpRuntime.AppDomainAppPath*@
-            </td>
-        </tr>
-        <tr>
-            <td class="name">
-                域名地址：
-            </td>
-            <td class="value">
-                @{
-                    var addrLocal = conn.LocalIpAddress;
-                    var addrRemote = conn.RemoteIpAddress;
-                    if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
-                    if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
-                    var userHost = httpContext.GetUserHost();
-                }
-                <span title="主机">@req.Headers["Host"]</span>，
-                <span title="本地">@addrLocal:@conn.LocalPort</span>
-                &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
-                @if (addrRemote + "" != userHost)
-                {
-                    <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
-                }
-            </td>
-            <td class="name">
-                应用程序：
-            </td>
-            <td class="value">
-                <span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span>
-            </td>
-        </tr>
-        <tr>
-            <td class="name">
-                应用域：
-            </td>
-            <td class="value">
-                @AppDomain.CurrentDomain.FriendlyName
-                <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
-                <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
-                <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
-            </td>
-            <td class="name">
-                .Net 版本：
-            </td>
-            <td class="value">
-                @Environment.Version &nbsp;@ver
-            </td>
-        </tr>
-        <tr>
-            <td class="name">
-                操作系统：
-            </td>
-            <td class="value" title="@mi.Guid">
-                @mi.OSName @mi.OSVersion
-            </td>
-            <td class="name">
-                机器用户：
-            </td>
-            <td class="value" title="@mi.UUID">
-                @if (!mi.Product.IsNullOrEmpty())
-                {
-                    <apan>@mi.Product，</apan>
-                }
-                @Environment.UserName/@Environment.MachineName
-            </td>
-        </tr>
-        <tr>
-            <td class="name">
-                处理器：
-            </td>
-            <td class="value" title="@mi.CpuID">
-                @mi.Processor，
-                @Environment.ProcessorCount
-                核心，@mi.CpuRate.ToString("p0")
-                @if (mi.Temperature > 0)
-                {
-                    <span>，@mi.Temperature ℃</span>
-                }
-            </td>
-            <td class="name">
-                时间：
-            </td>
-            @{
-                //var uptime = TimeSpan.FromTicks(Environment.TickCount64);
-                var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
-            }
-            <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
-                @DateTimeOffset.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))
-            </td>
-        </tr>
-        <tr>
-            @{ var process = Process.GetCurrentProcess();}
-            <td class="name">
-                内存：
-            </td>
-            <td class="value">
-                物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
-                工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M，
-                GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
-                <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
-            </td>
-            <td class="name">
-                进程时间：
-            </td>
-            <td class="value">
-                @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
-            </td>
-        </tr>
-        <tr>
-            <td class="name">
-                Session：
-            </td>
-            <td class="value">
-                @httpContext.Session.Keys.Count() 个
-                <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
-                ，@gc
-            </td>
-            <td class="name">
-                @{ var app = ApplicationManager.Load();}
-                应用启动：
-            </td>
-            <td class="value">
-                启动于 @app.StartTime.ToLocalTime().ToFullString()
-            </td>
-        </tr>
-    </tbody>
-</table>
-<table class="table table-bordered table-hover table-striped table-condensed">
-    <thead>
-        <tr>
-            <th>名称</th>
-            <th>标题</th>
-            <th>文件版本</th>
-            <th>内部版本</th>
-            <th>编译时间</th>
-            <th>描述</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (AssemblyX item in ViewBag.MyAsms)
-        {
+<div class="table-responsive">
+    <table class="table table-bordered table-hover table-striped table-condensed">
+        <thead>
             <tr>
-                <td>@item.Name</td>
-                <td>@item.Title</td>
-                <td>@item.FileVersion</td>
-                <td>@item.Version</td>
-                <td>@item.Compile.ToFullString()</td>
-                <td>@item.Description</td>
+                <th colspan="4">
+                    服务器信息
+                </th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="name">
+                    应用系统：
+                </td>
+                <td class="value">
+                    @*据说此功能已被干掉*@
+                    @*@HttpRuntime.AppDomainAppVirtualPath*@
+                    &nbsp;
+                    @if (this.Has((PermissionFlags)16))
+                    {
+                        <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>
+                    }
+                    &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
+                </td>
+                <td class="name">
+                    目录：
+                </td>
+                <td class="value">
+                    @Env.ContentRootPath
+                    @*@HttpRuntime.AppDomainAppPath*@
+                </td>
+            </tr>
+            <tr>
+                <td class="name">
+                    域名地址：
+                </td>
+                <td class="value">
+                    @{
+                        var addrLocal = conn.LocalIpAddress;
+                        var addrRemote = conn.RemoteIpAddress;
+                        if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+                        if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+                        var userHost = httpContext.GetUserHost();
+                    }
+                    <span title="主机">@req.Headers["Host"]</span>，
+                    <span title="本地">@addrLocal:@conn.LocalPort</span>
+                    &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
+                    @if (addrRemote + "" != userHost)
+                    {
+                        <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
+                    }
+                </td>
+                <td class="name">
+                    应用程序：
+                </td>
+                <td class="value">
+                    <span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="name">
+                    应用域：
+                </td>
+                <td class="value">
+                    @AppDomain.CurrentDomain.FriendlyName
+                    <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
+                    <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
+                    <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
+                </td>
+                <td class="name">
+                    .Net 版本：
+                </td>
+                <td class="value">
+                    @Environment.Version &nbsp;@ver
+                </td>
+            </tr>
+            <tr>
+                <td class="name">
+                    操作系统：
+                </td>
+                <td class="value" title="@mi.Guid">
+                    @mi.OSName @mi.OSVersion
+                </td>
+                <td class="name">
+                    机器用户：
+                </td>
+                <td class="value" title="@mi.UUID">
+                    @if (!mi.Product.IsNullOrEmpty())
+                    {
+                        <apan>@mi.Product，</apan>
+                    }
+                    @Environment.UserName/@Environment.MachineName
+                </td>
+            </tr>
+            <tr>
+                <td class="name">
+                    处理器：
+                </td>
+                <td class="value" title="@mi.CpuID">
+                    @mi.Processor，
+                    @Environment.ProcessorCount
+                    核心，@mi.CpuRate.ToString("p0")
+                    @if (mi.Temperature > 0)
+                    {
+                        <span>，@mi.Temperature ℃</span>
+                    }
+                </td>
+                <td class="name">
+                    时间：
+                </td>
+                @{
+                    //var uptime = TimeSpan.FromTicks(Environment.TickCount64);
+                    var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+                }
+                <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
+                    @DateTimeOffset.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))
+                </td>
+            </tr>
+            <tr>
+                @{ var process = Process.GetCurrentProcess();}
+                <td class="name">
+                    内存：
+                </td>
+                <td class="value">
+                    物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
+                    工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
+                    <br />
+                    GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
+                    <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+                </td>
+                <td class="name">
+                    进程时间：
+                </td>
+                <td class="value">
+                    @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
+                </td>
+            </tr>
+            <tr>
+                <td class="name">
+                    Session：
+                </td>
+                <td class="value">
+                    @httpContext.Session.Keys.Count() 个
+                    <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
+                    ，@gc
+                </td>
+                <td class="name">
+                    @{ var app = ApplicationManager.Load();}
+                    应用启动：
+                </td>
+                <td class="value">
+                    启动于 @app.StartTime.ToLocalTime().ToFullString()
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-bordered table-hover table-striped table-condensed">
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>标题</th>
+                <th>文件版本</th>
+                <th>内部版本</th>
+                <th>编译时间</th>
+                <th>描述</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (AssemblyX item in ViewBag.MyAsms)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Title</td>
+                    <td>@item.FileVersion</td>
+                    <td>@item.Version</td>
+                    <td>@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
+                    <td>@item.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

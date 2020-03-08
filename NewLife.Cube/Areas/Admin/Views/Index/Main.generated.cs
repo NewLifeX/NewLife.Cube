@@ -104,35 +104,39 @@ namespace ASP
     var mi = MachineInfo.Current ?? new MachineInfo();
 
     // GC设置
-    var gc = "IsServerGC={0},LatencyMode={1}".F(GCSettings.IsServerGC, GCSettings.LatencyMode);
+    //var gc = "IsServerGC={0},LatencyMode={1}".F(GCSettings.IsServerGC, GCSettings.LatencyMode);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n<table");
+WriteLiteral("\r\n<div");
+
+WriteLiteral(" class=\"table-responsive\"");
+
+WriteLiteral(">\r\n    <table");
 
 WriteLiteral(" class=\"table table-bordered table-hover table-striped table-condensed\"");
 
-WriteLiteral(">\r\n    <thead>\r\n        <tr>\r\n            <th");
+WriteLiteral(">\r\n        <thead>\r\n            <tr>\r\n                <th");
 
 WriteLiteral(" colspan=\"4\"");
 
-WriteLiteral(">\r\n                服务器信息\r\n            </th>\r\n        </tr>\r\n    </thead>\r\n    <tb" +
-"ody>\r\n        <tr>\r\n            <td");
+WriteLiteral(">\r\n                    服务器信息\r\n                </th>\r\n            </tr>\r\n        <" +
+"/thead>\r\n        <tbody>\r\n            <tr>\r\n                <td");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                应用系统：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    应用系统：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 39 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(HttpRuntime.AppDomainAppVirtualPath);
+            #line 40 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(HttpRuntime.AppDomainAppVirtualPath);
 
             
             #line default
@@ -140,29 +144,29 @@ WriteLiteral("                ");
 WriteLiteral("&nbsp;\r\n");
 
             
-            #line 40 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                
+            #line 41 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                    
             
             #line default
             #line hidden
             
-            #line 40 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                 if (this.Has((PermissionFlags)16))
-                {
+            #line 41 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                     if (this.Has((PermissionFlags)16))
+                    {
 
             
             #line default
             #line hidden
-WriteLiteral("                    <a");
+WriteLiteral("                        <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1241), Tuple.Create("\"", 1270)
+WriteAttribute("href", Tuple.Create(" href=\"", 1347), Tuple.Create("\"", 1376)
             
-            #line 42 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 1248), Tuple.Create<System.Object, System.Int32>(Url.Action("Restart")
+            #line 43 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+, Tuple.Create(Tuple.Create("", 1354), Tuple.Create<System.Object, System.Int32>(Url.Action("Restart")
             
             #line default
             #line hidden
-, 1248), false)
+, 1354), false)
 );
 
 WriteLiteral(" onclick=\"return confirm(\'仅重启ASP.Net应用程序域，而不是操作系统！\\n确认重启？\')\"");
@@ -170,70 +174,71 @@ WriteLiteral(" onclick=\"return confirm(\'仅重启ASP.Net应用程序域，而�
 WriteLiteral(">重启应用系统</a>\r\n");
 
             
-            #line 43 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                &nbsp;&nbsp;&nbsp;&nbsp;");
-
-            
             #line 44 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                   Write(req.GetRawUrl());
+                    }
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </td>\r\n            <td");
+WriteLiteral("                    &nbsp;&nbsp;&nbsp;&nbsp;");
+
+            
+            #line 45 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                       Write(req.GetRawUrl());
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                目录：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    目录：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 50 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(HttpRuntime.AppDomainAppPath);
+            #line 51 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(HttpRuntime.AppDomainAppPath);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </td>\r\n        </tr>\r\n        <tr>\r\n            <td");
+WriteLiteral("\r\n                </td>\r\n            </tr>\r\n            <tr>\r\n                <td" +
+"");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                域名地址：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    域名地址：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
-WriteLiteral(">\r\n                <span");
+WriteLiteral(">\r\n                    <span");
 
 WriteLiteral(" title=\"SERVER_NAME\"");
 
 WriteLiteral(">");
 
             
-            #line 58 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                     Write(Request.ServerVariables["SERVER_NAME"]);
+            #line 59 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                         Write(Request.ServerVariables["SERVER_NAME"]);
 
             
             #line default
             #line hidden
-WriteLiteral("</span>，\r\n                <span");
+WriteLiteral("</span>，\r\n                    <span");
 
 WriteLiteral(" title=\"LOCAl_ADDR\"");
 
 WriteLiteral(">");
 
             
-            #line 59 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                    Write(Request.ServerVariables["LOCAl_ADDR"]);
+            #line 60 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                        Write(Request.ServerVariables["LOCAl_ADDR"]);
 
             
             #line default
@@ -241,80 +246,90 @@ WriteLiteral(">");
 WriteLiteral(":");
 
             
-            #line 59 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                                                           Write(Request.ServerVariables["Server_Port"]);
+            #line 60 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                                                               Write(Request.ServerVariables["Server_Port"]);
 
             
             #line default
             #line hidden
-WriteLiteral("</span>\r\n                &nbsp;<span");
+WriteLiteral("</span>\r\n                    &nbsp;<span");
 
 WriteLiteral(" title=\"REMOTE_HOST\"");
 
 WriteLiteral(">[");
 
             
-            #line 60 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                            Write(Request.ServerVariables["REMOTE_HOST"]);
+            #line 61 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                                Write(Request.ServerVariables["REMOTE_HOST"]);
 
             
             #line default
             #line hidden
-WriteLiteral("]</span>\r\n                &nbsp;<span");
+WriteLiteral("]</span>\r\n                    &nbsp;<span");
 
 WriteLiteral(" title=\"真实\"");
 
 WriteLiteral(">[");
 
             
-            #line 61 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                   Write(httpContext.GetUserHost());
-
-            
-            #line default
-            #line hidden
-WriteLiteral("]</span>\r\n                <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 2154), Tuple.Create("\"", 2190)
-            
             #line 62 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 2161), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/ServerVar")
+                                       Write(httpContext.GetUserHost());
+
             
             #line default
             #line hidden
-, 2161), false)
+WriteLiteral("]</span>\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 2340), Tuple.Create("\"", 2376)
+            
+            #line 63 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+, Tuple.Create(Tuple.Create("", 2347), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/ServerVar")
+            
+            #line default
+            #line hidden
+, 2347), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
 
 WriteLiteral(" title=\"点击打开服务器变量列表\"");
 
-WriteLiteral(">服务器变量列表</a>\r\n            </td>\r\n            <td");
+WriteLiteral(">服务器变量列表</a>\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                计算机用户：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    计算机用户：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
-WriteLiteral(">\r\n");
-
-WriteLiteral("                ");
-
+WriteAttribute("title", Tuple.Create(" title=\"", 2569), Tuple.Create("\"", 2585)
             
             #line 68 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(mi.Product);
+, Tuple.Create(Tuple.Create("", 2577), Tuple.Create<System.Object, System.Int32>(mi.UUID
+            
+            #line default
+            #line hidden
+, 2577), false)
+);
+
+WriteLiteral(">\r\n");
+
+WriteLiteral("                    ");
+
+            
+            #line 69 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(mi.Product);
 
             
             #line default
             #line hidden
 WriteLiteral("，\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 69 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(Environment.UserName);
+            #line 70 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(Environment.UserName);
 
             
             #line default
@@ -322,62 +337,63 @@ WriteLiteral("                ");
 WriteLiteral("/");
 
             
-            #line 69 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                 Write(Environment.MachineName);
+            #line 70 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                     Write(Environment.MachineName);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </td>\r\n        </tr>\r\n        <tr>\r\n            <td");
+WriteLiteral("\r\n                </td>\r\n            </tr>\r\n            <tr>\r\n                <td" +
+"");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                应用程序域：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    应用程序域：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
-            
-            #line 77 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(AppDomain.CurrentDomain.FriendlyName);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                <a");
-
-WriteAttribute("href", Tuple.Create(" href=\"", 2687), Tuple.Create("\"", 2722)
             
             #line 78 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 2694), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Assembly")
+               Write(AppDomain.CurrentDomain.FriendlyName);
+
             
             #line default
             #line hidden
-, 2694), false)
+WriteLiteral("\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 2954), Tuple.Create("\"", 2989)
+            
+            #line 79 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+, Tuple.Create(Tuple.Create("", 2961), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Assembly")
+            
+            #line default
+            #line hidden
+, 2961), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
 
 WriteLiteral(" title=\"点击打开进程程序集列表\"");
 
-WriteLiteral(">程序集列表</a>\r\n            </td>\r\n            <td");
+WriteLiteral(">程序集列表</a>\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                .Net 版本：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    .Net 版本：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 84 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(Environment.Version);
+            #line 85 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(Environment.Version);
 
             
             #line default
@@ -385,27 +401,38 @@ WriteLiteral("                ");
 WriteLiteral(" &nbsp;");
 
             
-            #line 84 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                      Write(ver);
+            #line 85 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                          Write(ver);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </td>\r\n        </tr>\r\n        <tr>\r\n            <td");
+WriteLiteral("\r\n                </td>\r\n            </tr>\r\n            <tr>\r\n                <td" +
+"");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                操作系统：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    操作系统：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
-WriteLiteral(">\r\n");
-
-WriteLiteral("                ");
-
+WriteAttribute("title", Tuple.Create(" title=\"", 3416), Tuple.Create("\"", 3432)
             
             #line 92 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(mi.OSName);
+, Tuple.Create(Tuple.Create("", 3424), Tuple.Create<System.Object, System.Int32>(mi.Guid
+            
+            #line default
+            #line hidden
+, 3424), false)
+);
+
+WriteLiteral(">\r\n");
+
+WriteLiteral("                    ");
+
+            
+            #line 93 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(mi.OSName);
 
             
             #line default
@@ -413,84 +440,120 @@ WriteLiteral("                ");
 WriteLiteral(" ");
 
             
-            #line 92 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                      Write(mi.OSVersion);
+            #line 93 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                          Write(mi.OSVersion);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </td>\r\n            <td");
+WriteLiteral("\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                Web服务器：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    Web服务器：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 98 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(ViewBag.WebServerName);
+            #line 99 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(ViewBag.WebServerName);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </td>\r\n        </tr>\r\n        <tr>\r\n            <td");
+WriteLiteral("\r\n                </td>\r\n            </tr>\r\n            <tr>\r\n                <td" +
+"");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                处理器：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    处理器：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
-WriteLiteral(">\r\n");
-
-WriteLiteral("                ");
-
+WriteAttribute("title", Tuple.Create(" title=\"", 3849), Tuple.Create("\"", 3866)
             
             #line 106 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(mi.Processor);
+, Tuple.Create(Tuple.Create("", 3857), Tuple.Create<System.Object, System.Int32>(mi.CpuID
+            
+            #line default
+            #line hidden
+, 3857), false)
+);
+
+WriteLiteral(">\r\n");
+
+WriteLiteral("                    ");
+
+            
+            #line 107 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(mi.Processor);
 
             
             #line default
             #line hidden
 WriteLiteral("，\r\n");
 
-WriteLiteral("                ");
-
-            
-            #line 107 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(Environment.ProcessorCount);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                核心，");
+WriteLiteral("                    ");
 
             
             #line 108 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-              Write(mi.CpuRate.ToString("p0"));
+               Write(Environment.ProcessorCount);
 
             
             #line default
             #line hidden
-WriteLiteral("，");
+WriteLiteral("\r\n                    核心，");
 
             
-            #line 108 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                         Write(gc);
+            #line 109 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                  Write(mi.CpuRate.ToString("p0"));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </td>\r\n            <td");
+WriteLiteral("\r\n");
+
+            
+            #line 110 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                    
+            
+            #line default
+            #line hidden
+            
+            #line 110 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                     if (mi.Temperature > 0)
+                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <span>，");
+
+            
+            #line 112 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                          Write(mi.Temperature);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ℃</span>\r\n");
+
+            
+            #line 113 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                </td>\r\n                <td");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                时间：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    时间：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
@@ -498,11 +561,11 @@ WriteLiteral(" title=\"这里使用了服务器默认的时间格式！后面是
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 114 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(DateTime.Now.ToFullString());
+            #line 119 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(DateTimeOffset.Now);
 
             
             #line default
@@ -510,8 +573,8 @@ WriteLiteral("                ");
 WriteLiteral("，开机");
 
             
-            #line 114 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                           Write(new TimeSpan(0, 0, 0, 0, Environment.TickCount));
+            #line 119 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                      Write(new TimeSpan(0, 0, 0, 0, Environment.TickCount));
 
             
             #line default
@@ -519,39 +582,39 @@ WriteLiteral("，开机");
 WriteLiteral("，");
 
             
-            #line 114 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                                                                             Write(mi.Temperature);
+            #line 119 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                                                                        Write(mi.Temperature);
 
             
             #line default
             #line hidden
-WriteLiteral(" ℃\r\n            </td>\r\n        </tr>\r\n        <tr>\r\n");
-
-            
-            #line 118 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-            
-            
-            #line default
-            #line hidden
-            
-            #line 118 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-               var process = Process.GetCurrentProcess();
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n            <td");
-
-WriteLiteral(" class=\"name\"");
-
-WriteLiteral(">\r\n                内存：\r\n            </td>\r\n            <td");
-
-WriteLiteral(" class=\"value\"");
-
-WriteLiteral(">\r\n                物理内存：");
+WriteLiteral(" ℃\r\n                </td>\r\n            </tr>\r\n            <tr>\r\n");
 
             
             #line 123 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                 Write((mi.AvailableMemory / 1024 / 1024).ToString("n0"));
+                
+            
+            #line default
+            #line hidden
+            
+            #line 123 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                   var process = Process.GetCurrentProcess();
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                <td");
+
+WriteLiteral(" class=\"name\"");
+
+WriteLiteral(">\r\n                    内存：\r\n                </td>\r\n                <td");
+
+WriteLiteral(" class=\"value\"");
+
+WriteLiteral(">\r\n                    物理：");
+
+            
+            #line 128 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                   Write((mi.AvailableMemory / 1024 / 1024).ToString("n0"));
 
             
             #line default
@@ -559,84 +622,84 @@ WriteLiteral(">\r\n                物理内存：");
 WriteLiteral("M / ");
 
             
-            #line 123 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                                                         Write((mi.Memory / 1024 / 1024).ToString("n0"));
+            #line 128 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                                                           Write((mi.Memory / 1024 / 1024).ToString("n0"));
 
             
             #line default
             #line hidden
-WriteLiteral("M，\r\n                工作集: ");
+WriteLiteral("M，\r\n                    工作/提交: ");
 
             
-            #line 124 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                 Write((process.WorkingSet64 / 1024 / 1024).ToString("n0"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("M，\r\n                提交: ");
-
-            
-            #line 125 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                Write((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"));
+            #line 129 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                       Write((process.WorkingSet64 / 1024 / 1024).ToString("n0"));
 
             
             #line default
             #line hidden
-WriteLiteral("M，\r\n                GC: ");
+WriteLiteral("M/");
 
             
-            #line 126 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                Write((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"));
+            #line 129 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                                                               Write((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"));
 
             
             #line default
             #line hidden
-WriteLiteral("M，\r\n                <a");
+WriteLiteral("M\r\n                    <br />\r\n                    GC: ");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 4459), Tuple.Create("\"", 4500)
             
-            #line 127 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 4466), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/ProcessModules")
+            #line 131 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                    Write((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"));
+
             
             #line default
             #line hidden
-, 4466), false)
+WriteLiteral("M，\r\n                    <a");
+
+WriteAttribute("href", Tuple.Create(" href=\"", 5094), Tuple.Create("\"", 5135)
+            
+            #line 132 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+, Tuple.Create(Tuple.Create("", 5101), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/ProcessModules")
+            
+            #line default
+            #line hidden
+, 5101), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
 
 WriteLiteral(" title=\"点击打开进程模块列表\"");
 
-WriteLiteral(">模块列表</a>\r\n                <a");
+WriteLiteral(">模块列表</a>\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 4565), Tuple.Create("\"", 4597)
+WriteAttribute("href", Tuple.Create(" href=\"", 5204), Tuple.Create("\"", 5236)
             
-            #line 128 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 4572), Tuple.Create<System.Object, System.Int32>(Url.Action("MemoryFree")
+            #line 133 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+, Tuple.Create(Tuple.Create("", 5211), Tuple.Create<System.Object, System.Int32>(Url.Action("MemoryFree")
             
             #line default
             #line hidden
-, 4572), false)
+, 5211), false)
 );
 
 WriteLiteral(" title=\"点击释放进程内存\"");
 
-WriteLiteral(">释放内存</a>\r\n            </td>\r\n            <td");
+WriteLiteral(">释放内存</a>\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                进程时间：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    进程时间：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 134 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(process.TotalProcessorTime.TotalSeconds.ToString("N2"));
+            #line 139 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(process.TotalProcessorTime.TotalSeconds.ToString("N2"));
 
             
             #line default
@@ -644,27 +707,28 @@ WriteLiteral("                ");
 WriteLiteral("秒 启动于 ");
 
             
-            #line 134 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                                                        Write(process.StartTime.ToFullString());
+            #line 139 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                                                            Write(process.StartTime.ToFullString());
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </td>\r\n        </tr>\r\n        <tr>\r\n            <td");
+WriteLiteral("\r\n                </td>\r\n            </tr>\r\n            <tr>\r\n                <td" +
+"");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                Session：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    Session：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 142 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(Session.Contents.Count);
+            #line 147 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(Session.Contents.Count);
 
             
             #line default
@@ -672,8 +736,8 @@ WriteLiteral("                ");
 WriteLiteral(" 个，");
 
             
-            #line 142 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                     Write(Session.Timeout);
+            #line 147 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                         Write(Session.Timeout);
 
             
             #line default
@@ -681,43 +745,43 @@ WriteLiteral(" 个，");
 WriteLiteral(" 分钟，SessionID：");
 
             
-            #line 142 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                                                                   Write(Session.Contents.SessionID);
+            #line 147 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                                                       Write(Session.Contents.SessionID);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                <a");
+WriteLiteral("\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 5137), Tuple.Create("\"", 5171)
+WriteAttribute("href", Tuple.Create(" href=\"", 5836), Tuple.Create("\"", 5870)
             
-            #line 143 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 5144), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Session")
+            #line 148 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+, Tuple.Create(Tuple.Create("", 5843), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Session")
             
             #line default
             #line hidden
-, 5144), false)
+, 5843), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
 
 WriteLiteral(" title=\"点击打开Session列表\"");
 
-WriteLiteral(">Session列表</a>\r\n            </td>\r\n            <td");
+WriteLiteral(">Session列表</a>\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"name\"");
 
-WriteLiteral(">\r\n                Cache：\r\n            </td>\r\n            <td");
+WriteLiteral(">\r\n                    Cache：\r\n                </td>\r\n                <td");
 
 WriteLiteral(" class=\"value\"");
 
 WriteLiteral(">\r\n");
 
-WriteLiteral("                ");
+WriteLiteral("                    ");
 
             
-            #line 149 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-           Write(Cache.Count);
+            #line 154 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+               Write(Cache.Count);
 
             
             #line default
@@ -725,114 +789,125 @@ WriteLiteral("                ");
 WriteLiteral(" 个，可用：");
 
             
-            #line 149 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-                              Write((Cache.EffectivePrivateBytesLimit / 1024).ToString("n0"));
+            #line 154 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                                  Write((Cache.EffectivePrivateBytesLimit / 1024).ToString("n0"));
 
             
             #line default
             #line hidden
-WriteLiteral("KB\r\n                <a");
+WriteLiteral("KB\r\n                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 5466), Tuple.Create("\"", 5498)
+WriteAttribute("href", Tuple.Create(" href=\"", 6193), Tuple.Create("\"", 6225)
             
-            #line 150 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-, Tuple.Create(Tuple.Create("", 5473), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Cache")
+            #line 155 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+, Tuple.Create(Tuple.Create("", 6200), Tuple.Create<System.Object, System.Int32>(Url.Action("Main/Cache")
             
             #line default
             #line hidden
-, 5473), false)
+, 6200), false)
 );
 
 WriteLiteral(" target=\"_blank\"");
 
 WriteLiteral(" title=\"点击打开Cache列表\"");
 
-WriteLiteral(">Cache列表</a>\r\n            </td>\r\n        </tr>\r\n    </tbody>\r\n</table>\r\n<table");
+WriteLiteral(">Cache列表</a>\r\n                </td>\r\n            </tr>\r\n        </tbody>\r\n    </t" +
+"able>\r\n    <table");
 
 WriteLiteral(" class=\"table table-bordered table-hover table-striped table-condensed\"");
 
-WriteLiteral(">\r\n    <thead>\r\n        <tr>\r\n            <th>名称</th>\r\n            <th>标题</th>\r\n " +
-"           <th>文件版本</th>\r\n            <th>内部版本</th>\r\n            <th>编译时间</th>\r\n" +
-"            <th>描述</th>\r\n        </tr>\r\n    </thead>\r\n    <tbody>\r\n");
-
-            
-            #line 167 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-        
-            
-            #line default
-            #line hidden
-            
-            #line 167 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-         foreach (AssemblyX item in ViewBag.MyAsms)
-        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("            <tr>\r\n                <td>");
-
-            
-            #line 170 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-               Write(item.Name);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                <td>");
-
-            
-            #line 171 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-               Write(item.Title);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                <td>");
+WriteLiteral(@">
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>标题</th>
+                <th>文件版本</th>
+                <th>内部版本</th>
+                <th>编译时间</th>
+                <th>描述</th>
+            </tr>
+        </thead>
+        <tbody>
+");
 
             
             #line 172 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-               Write(item.FileVersion);
+            
+            
+            #line default
+            #line hidden
+            
+            #line 172 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+             foreach (AssemblyX item in ViewBag.MyAsms)
+            {
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>");
-
-            
-            #line 173 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-               Write(item.Version);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                <td>");
-
-            
-            #line 174 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-               Write(item.Compile.ToFullString());
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                <td>");
+WriteLiteral("                <tr>\r\n                    <td>");
 
             
             #line 175 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-               Write(item.Description);
+                   Write(item.Name);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n            </tr>\r\n");
+WriteLiteral("</td>\r\n                    <td>");
+
+            
+            #line 176 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                   Write(item.Title);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                    <td>");
 
             
             #line 177 "..\..\Areas\Admin\Views\Index\Main.cshtml"
-        }
+                   Write(item.FileVersion);
 
             
             #line default
             #line hidden
-WriteLiteral("    </tbody>\r\n</table>");
+WriteLiteral("</td>\r\n                    <td>");
+
+            
+            #line 178 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                   Write(item.Version);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                    <td>");
+
+            
+            #line 179 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                    Write(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString());
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                    <td>");
+
+            
+            #line 180 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+                   Write(item.Description);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                </tr>\r\n");
+
+            
+            #line 182 "..\..\Areas\Admin\Views\Index\Main.cshtml"
+            }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        </tbody>\r\n    </table>\r\n</div>");
 
         }
     }
