@@ -75,16 +75,6 @@
     <Compile Include="..\CubeDemo\Entity\班级.cs">
       <Link>Entity\班级.cs</Link>
     </Compile>
-    <Compile Include="Entity\Build.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Entity\Build_netcore.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build_netcore.tt</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -94,17 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Entity\Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.cs</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Build_netcore.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build_netcore.cs</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Model.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -132,6 +132,11 @@ namespace NewLife.Cube
         [Description("会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s")]
         [Category("用户登录")]
         public Int32 SessionTimeout { get; set; } = 0;
+
+        /// <summary>刷新用户周期。该周期内多次SSO登录只拉取一次用户信息，默认600秒</summary>
+        [Description("刷新用户周期。该周期内多次SSO登录只拉取一次用户信息，默认600秒")]
+        [Category("刷新用户周期")]
+        public Int32 RefreshUserPeriod { get; set; } = 600;
         #endregion
 
         #region 界面配置

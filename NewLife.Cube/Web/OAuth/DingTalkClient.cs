@@ -35,6 +35,7 @@ namespace NewLife.Cube.Web
             AccessUrl = null;
             OpenIDUrl = null;
             AccessUrl = "https://oapi.dingtalk.com/sns/getuserinfo_bycode?accessKey={key}&timestamp={timestamp}&signature={signature}";
+            UserUrl = "https://oapi.dingtalk.com/user/get?access_token={token}&userid={userid}";
         }
 
         /// <summary>应用参数</summary>
@@ -100,8 +101,57 @@ namespace NewLife.Cube.Web
                 //UnionID = dic["unionid"] as String;
 
                 Items = dic.ToDictionary(e => e.Key, e => e.Value as String);
-            
+
                 OnGetInfo(Items);
+            }
+
+            return null;
+        }
+
+        private static String _ding_access_token;
+        private static DateTime _ding_expire;
+        public override String GetUserInfo()
+        {
+            //return base.GetUserInfo();
+
+            if (UnionID.IsNullOrEmpty()) return null;
+
+            // 如果配置了企业级账号，可以获取更详细信息
+            var token = _ding_access_token;
+            if (token.IsNullOrEmpty() || _ding_expire < DateTime.Now)
+            {
+                var key = Parameter.GetOrAdd(0, "钉钉", "appkey");
+                var secret = Parameter.GetOrAdd(0, "钉钉", "appsecret");
+
+                _ding_access_token = null;
+                if (!key.Value.IsNullOrEmpty() && !secret.Value.IsNullOrEmpty())
+                {
+                    token = _ding_access_token = GetToken(key.Value, secret.Value);
+                }
+
+                _ding_expire = DateTime.Now.AddSeconds(7200 - 60);
+            }
+
+            if (!token.IsNullOrEmpty())
+            {
+                try
+                {
+                    // 根据UnionId换取员工Id
+                    var userid = GetUseridByUnionid(token, UnionID);
+                    if (!userid.IsNullOrEmpty())
+                    {
+                        // 钉钉Id一般不是自己设置的，很乱，不可取
+                        //client.UserName = userid;
+
+                        //client.GetUserInfo(token, userid);
+                        GetUserInfo(token, userid);
+                    }
+                }
+                catch (AggregateException ex)
+                {
+                    // 某些用户不是本团队成员，此处会抛出异常
+                    if (!(ex.GetTrue() is ApiException)) throw;
+                }
             }
 
             return null;
@@ -126,7 +176,7 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public IDictionary<String, Object> GetUserInfo(String access_token, String userid)
         {
-            var url = $"https://oapi.dingtalk.com/user/get?access_token={access_token}&userid={userid}";
+            var url = UserUrl.Replace("{token}", access_token).Replace("{userid}", userid);
 
             var http = new HttpClient();
             var buf = Task.Run(() => http.GetAsync<Byte[]>(url)).Result;
@@ -136,6 +186,9 @@ namespace NewLife.Cube.Web
             UserName = js["name"] + "";
             NickName = js["nick"] + "";
             Avatar = js["avatar"] + "";
+            Mail = js["email"] + "";
+            Mobile = js["mobile"] + "";
+            Code = js["jobnumber"] + "";
 
             // 合并字典
             var dic = Items;
@@ -152,20 +205,20 @@ namespace NewLife.Cube.Web
             return js;
         }
 
-        /// <summary>填充信息</summary>
-        /// <param name="user"></param>
-        public override void Fill(IManageUser user)
-        {
-            var dic = Items;
-            if (dic != null && user is UserX user2)
-            {
-                if (user2.Mail.IsNullOrEmpty() && dic.TryGetValue("email", out var email)) user2.Mail = email;
-                if (user2.Mobile.IsNullOrEmpty() && dic.TryGetValue("mobile", out var mobile)) user2.Mobile = mobile;
-                if (user2.Code.IsNullOrEmpty() && dic.TryGetValue("jobnumber", out var code)) user2.Code = code;
-            }
+        ///// <summary>填充信息</summary>
+        ///// <param name="user"></param>
+        //public override void Fill(IManageUser user)
+        //{
+        //    var dic = Items;
+        //    if (dic != null && user is UserX user2)
+        //    {
+        //        if (user2.Mail.IsNullOrEmpty() && dic.TryGetValue("email", out var email)) user2.Mail = email;
+        //        if (user2.Mobile.IsNullOrEmpty() && dic.TryGetValue("mobile", out var mobile)) user2.Mobile = mobile;
+        //        if (user2.Code.IsNullOrEmpty() && dic.TryGetValue("jobnumber", out var code)) user2.Code = code;
+        //    }
 
-            base.Fill(user);
-        }
+        //    base.Fill(user);
+        //}
 
         /// <summary>根据unionid获取userid</summary>
         /// <param name="access_token"></param>

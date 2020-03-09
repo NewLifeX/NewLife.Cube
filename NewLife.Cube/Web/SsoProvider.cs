@@ -102,11 +102,10 @@ namespace NewLife.Cube.Web
             return uri.AppendReturn(returnUrl);
         }
 
-        /// <summary>登录成功</summary>
-        /// <param name="client">OAuth客户端</param>
-        /// <param name="context">服务提供者。可用于获取HttpContext成员</param>
+        /// <summary>获取连接信息</summary>
+        /// <param name="client"></param>
         /// <returns></returns>
-        public virtual String OnLogin(OAuthClient client, IServiceProvider context)
+        public virtual UserConnect GetConnect(OAuthClient client)
         {
             var openid = client.OpenID;
             if (openid.IsNullOrEmpty()) openid = client.UserName;
@@ -115,8 +114,15 @@ namespace NewLife.Cube.Web
             var uc = UserConnect.FindByProviderAndOpenID(client.Name, openid);
             if (uc == null) uc = new UserConnect { Provider = client.Name, OpenID = openid };
 
-            uc.Fill(client);
+            return uc;
+        }
 
+        /// <summary>登录成功</summary>
+        /// <param name="client">OAuth客户端</param>
+        /// <param name="context">服务提供者。可用于获取HttpContext成员</param>
+        /// <returns></returns>
+        public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc)
+        {
             // 强行绑定，把第三方账号强行绑定到当前已登录账号
             var forceBind = false;
 #if __CORE__
@@ -147,8 +153,9 @@ namespace NewLife.Cube.Web
                 user3.LastLogin = DateTime.Now;
                 user3.LastLoginIP = ip;
                 //user3.Save();
-                (user3 as IEntity).Update();
+                //(user3 as IEntity).Update();
             }
+            if (user is IEntity entity) entity.Update();
 
             try
             {
