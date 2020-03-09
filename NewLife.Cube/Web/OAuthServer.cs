@@ -155,7 +155,7 @@ namespace NewLife.Web
         #endregion
 
         #region 内嵌
-        class Model
+        internal class Model
         {
             public String AppID { get; set; }
             public String Uri { get; set; }

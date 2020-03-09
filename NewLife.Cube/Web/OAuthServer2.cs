@@ -80,6 +80,10 @@ namespace NewLife.Cube.Web
             var msg = "";
             try
             {
+                var k = "Model:" + key;
+                var model = Cache.Get<Model>(k);
+                if (model != null) id = App.FindByName(model.AppID)?.ID ?? 0;
+
                 var url = base.GetResult(key, user);
 
                 msg = $"key={key},user={user.ID}/{user},url={url}";
