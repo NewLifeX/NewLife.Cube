@@ -93,7 +93,7 @@ namespace NewLife.Web
             if (_map == null)
             {
                 var dic = new Dictionary<String, Type>(StringComparer.OrdinalIgnoreCase);
-                foreach (var item in typeof(OAuthClient).GetAllSubclasses(false))
+                foreach (var item in typeof(OAuthClient).GetAllSubclasses())
                 {
                     var key = item.Name.TrimEnd("Client");
                     var ct = item.CreateInstance() as OAuthClient;

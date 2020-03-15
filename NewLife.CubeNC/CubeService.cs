@@ -134,7 +134,7 @@ namespace NewLife.Cube
         static List<Assembly> FindAllArea()
         {
             var list = new List<Assembly>();
-            var cs = typeof(ControllerBaseX).GetAllSubclasses(true).ToArray();
+            var cs = typeof(ControllerBaseX).GetAllSubclasses().ToArray();
             foreach (var item in cs)
             {
                 var asm = item.Assembly;
@@ -143,7 +143,7 @@ namespace NewLife.Cube
                     list.Add(asm);
                 }
             }
-            cs = typeof(RazorPage).GetAllSubclasses(true).ToArray();
+            cs = typeof(RazorPage).GetAllSubclasses().ToArray();
             foreach (var item in cs)
             {
                 var asm = item.Assembly;
