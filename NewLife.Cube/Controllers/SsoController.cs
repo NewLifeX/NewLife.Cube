@@ -192,6 +192,7 @@ namespace NewLife.Cube.Controllers
                 if (!client.OpenIDUrl.IsNullOrEmpty()) client.GetOpenID();
 
                 // 短时间内不要重复拉取用户信息
+                // 注意，这里可能因为没有OpenID和UserName，无法判断得到用户链接，需要GetUserInfo后方能匹配UserConnect
                 var set = Setting.Current;
                 var uc = prov.GetConnect(client);
                 if (uc.UpdateTime.AddSeconds(set.RefreshUserPeriod) < DateTime.Now)
@@ -200,6 +201,8 @@ namespace NewLife.Cube.Controllers
                     if (!client.UserUrl.IsNullOrEmpty()) client.GetUserInfo();
                 }
 
+                // 如果前面没有取得用户链接，需要再次查询
+                if (uc.ID == 0) uc = prov.GetConnect(client);
                 uc.Fill(client);
 
 #if __CORE__

@@ -74,6 +74,8 @@ namespace NewLife.Cube.Entity
         /// <returns>实体对象</returns>
         public static UserConnect FindByProviderAndOpenID(String provider, String openid)
         {
+            if (provider.IsNullOrEmpty() || openid.IsNullOrEmpty()) return null;
+
             //// 实体缓存
             //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Provider == provider && e.OpenID == openid);
 
