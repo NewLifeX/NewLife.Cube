@@ -155,7 +155,6 @@
                 <td class="value">
                     物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
                     工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
-                    <br />
                     GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
                     <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
                 </td>
