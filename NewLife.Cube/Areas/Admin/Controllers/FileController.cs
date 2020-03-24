@@ -128,19 +128,13 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             // 排序，目录优先
-            switch (sort)
+            list = sort switch
             {
-                case "size":
-                    list = list.OrderByDescending(e => e.Size).ThenBy(e => e.Name).ToList();
-                    break;
-                case "lastwrite":
-                    list = list.OrderByDescending(e => e.LastWrite).ThenBy(e => e.Name).ToList();
-                    break;
-                case "name":
-                default:
-                    list = list.OrderByDescending(e => e.Directory).ThenBy(e => e.Name).ToList();
-                    break;
-            }
+                "size" => list.OrderByDescending(e => e.Size).ThenBy(e => e.Name).ToList(),
+                "lastwrite" => list.OrderByDescending(e => e.LastWrite).ThenBy(e => e.Name).ToList(),
+                _ => list.OrderByDescending(e => e.Directory).ThenBy(e => e.Name).ToList(),
+            };
+
             // 在开头插入上一级目录
             var root = Root.TrimEnd(Path.DirectorySeparatorChar);
             if (!di.FullName.EqualIgnoreCase(Root, root))

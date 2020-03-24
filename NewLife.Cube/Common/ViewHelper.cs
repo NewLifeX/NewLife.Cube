@@ -820,8 +820,14 @@ namespace NewLife.Cube
         {
             if (_IsDevelop != null) return _IsDevelop.Value;
 
-            var fis = ".".AsDirectory().GetFiles("*.csproj", SearchOption.TopDirectoryOnly);
-            _IsDevelop = fis != null && fis.Length > 0;
+            var di = ".".AsDirectory();
+            if (!di.Exists)
+                _IsDevelop = false;
+            else
+            {
+                var fis = di.GetFiles("*.csproj", SearchOption.TopDirectoryOnly);
+                _IsDevelop = fis != null && fis.Length > 0;
+            }
 
             return _IsDevelop.Value;
         }
@@ -842,11 +848,15 @@ namespace NewLife.Cube
 #if __CORE__
                 p = Setting.Current.WebRootPath.CombinePath(p);
 #endif
-                var ico = p.AsDirectory().GetAllFiles(name + ".*").FirstOrDefault();
-                if (ico != null && ico.Exists)
+                var di = p.AsDirectory();
+                if (di.Exists)
                 {
-                    logo = item + ico.Name;
-                    break;
+                    var ico = di.GetAllFiles(name + ".*").FirstOrDefault();
+                    if (ico != null && ico.Exists)
+                    {
+                        logo = item + ico.Name;
+                        break;
+                    }
                 }
             }
 
