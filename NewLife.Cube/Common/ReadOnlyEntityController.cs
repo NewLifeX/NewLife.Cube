@@ -1154,15 +1154,21 @@ namespace NewLife.Cube
         private String GetProjectRoot()
         {
             var asm = GetType().Assembly;
-
-            var ps = new[] { "./", "../../", "../../" + asm.GetName().Name };
+            // core程序出现这种情况：bin/Debug/netcoreapp3.1
+            // 因此添加"../../../" 
+            var ps = new[] { "./", "../../", "../../" + asm.GetName().Name, "../../../", "../../../" + asm.GetName().Name };
+            String err = null;
             foreach (var item in ps)
             {
-                var fis = item.AsDirectory().GetFiles("*.csproj", SearchOption.TopDirectoryOnly);
+                var dir = item.AsDirectory();
+                err += dir + "；";
+                if (!dir.Exists) continue;
+                var fis = dir.GetFiles("*.csproj", SearchOption.TopDirectoryOnly);
                 if (fis != null && fis.Length > 0) return item;
             }
 
-            return null;
+            err = $"遍历以下路径均找不到项目路径，请检查项目路径：{err}";
+            throw new InvalidOperationException(err);
         }
         #endregion
 
