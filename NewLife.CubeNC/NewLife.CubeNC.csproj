@@ -9,8 +9,8 @@
     <Description>Mvc权限管理后台，支持模版视图重载覆盖</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2020 NewLife</Copyright>
-    <Version>3.3.2020.0322-beta</Version>
-    <FileVersion>3.3.2020.0322-beta</FileVersion>
+    <Version>3.3.2020.0329-beta</Version>
+    <FileVersion>3.3.2020.0329-beta</FileVersion>
     <AssemblyVersion>3.3.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
@@ -24,11 +24,12 @@
     <PackageId>NewLife.Cube.Core</PackageId>
     <Authors>$(Company)</Authors>
     <ProjectUrl>https://github.com/NewLifeX</ProjectUrl>
-    <PackageIconUrl>http://www.NewLifeX.com/favicon.ico</PackageIconUrl>
+    <PackageIcon>leaf.png</PackageIcon>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
     <PackageReleaseNotes>支持ECharts图表，支持钉钉登录，新增页面数据分享</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -47,8 +48,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="8.7.2020.324-beta" />
-    <PackageReference Include="NewLife.XCode" Version="9.16.2020.324-beta" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NewLife.Core" Version="8.7.2020.329-beta" />
+    <PackageReference Include="NewLife.XCode" Version="9.16.2020.329-beta" />
   </ItemGroup>
 
   <ItemGroup>
@@ -125,6 +130,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Remove="appsettings.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\NewLife.Cube\Entity\Cube.xml">
