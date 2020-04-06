@@ -526,9 +526,12 @@ namespace NewLife.Cube
             //if (autoPostback) atts.Add("onchange", "$(':submit').click();");
             if (autoPostback) atts.Add("onchange", "$(this).parents('form').submit();");
 
-            var fact = typeof(T).AsFactory();
+            // T有可能是IEntity，为了兼容老版本视图
+            //var fact = typeof(T).AsFactory();
+            var type = list?.FirstOrDefault().GetType() ?? typeof(T);
+            var fact = type.AsFactory();
             var uk = fact?.Unique;
-            if (uk == null) throw new InvalidDataException($"实体类[{typeof(T).FullName}]缺少唯一主键，无法使用下拉！");
+            if (uk == null) throw new InvalidDataException($"实体类[{type.FullName}]缺少唯一主键，无法使用下拉！");
 
             var master = fact.Master;
             var data = new SelectList(list, uk.Name, master?.Name, selectedValue + "");
