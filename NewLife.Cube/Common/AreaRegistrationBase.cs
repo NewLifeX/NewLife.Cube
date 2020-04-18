@@ -176,7 +176,7 @@ namespace NewLife.Cube
         static List<Assembly> FindAllArea()
         {
             var list = new List<Assembly>();
-            Areas = typeof(AreaRegistrationBase).GetAllSubclasses(false).ToArray();
+            Areas = typeof(AreaRegistrationBase).GetAllSubclasses().ToArray();
             //Areas = typeof(AreaRegistration).GetAllSubclasses(false).ToArray();
             //// 子级类库可以不需要建立区域注册，而直接进行模板覆盖
             //Areas = typeof(WebViewPage).GetAllSubclasses(false).ToArray();
@@ -190,7 +190,7 @@ namespace NewLife.Cube
                 }
             }
             // 子级类库可以不需要建立区域注册，而直接进行模板覆盖
-            var rs = typeof(WebViewPage).GetAllSubclasses(false).ToArray();
+            var rs = typeof(WebViewPage).GetAllSubclasses().ToArray();
             foreach (var item in rs)
             {
                 var asm = item.Assembly;

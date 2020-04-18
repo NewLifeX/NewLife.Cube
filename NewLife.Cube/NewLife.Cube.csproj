@@ -46,8 +46,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.7.7398.1899, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.7.2020.403\lib\net45\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.7.7413.34939, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.7.2020.418-beta\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -84,8 +84,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=9.16.7398.1901, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.16.2020.403\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.16.7413.34948, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.16.2020.418-beta\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

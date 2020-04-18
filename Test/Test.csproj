@@ -35,8 +35,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="NewLife.Core, Version=8.7.7398.1899, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.7.2020.403\lib\net45\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.7.7413.34939, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.7.2020.418-beta\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,8 +52,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="XCode, Version=9.16.7398.1901, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.16.2020.403\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.16.7413.34948, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.16.2020.418-beta\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
