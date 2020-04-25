@@ -4,8 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
-    <Version>3.1.2020.0115</Version>
-    <FileVersion>3.1.2020.0115</FileVersion>
+    <Version>3.1.2020.0425</Version>
+    <FileVersion>3.1.2020.0425</FileVersion>
     <AssemblyVersion>3.1.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="8.7.2020.418-beta" />
-    <PackageReference Include="NewLife.XCode" Version="9.16.2020.418-beta" />
+    <PackageReference Include="NewLife.Core" Version="8.7.2020.425-beta" />
+    <PackageReference Include="NewLife.XCode" Version="9.16.2020.425-beta" />
   </ItemGroup>
 
   <ItemGroup>
