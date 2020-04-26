@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Web;
 using NewLife.Log;
 using NewLife.Model;
@@ -202,11 +204,8 @@ namespace NewLife.Web
             var url = GetUrl(AccessUrl);
             WriteLog("GetAccessToken {0}", url);
 
-            var html = Request(url);
+            var html = GetHtml(nameof(GetAccessToken), url);
             if (html.IsNullOrEmpty()) return null;
-
-            html = html.Trim();
-            if (Log != null && Log.Enable) WriteLog(html);
 
             var dic = GetNameValues(html);
             if (dic != null)
@@ -247,11 +246,8 @@ namespace NewLife.Web
             var url = GetUrl(OpenIDUrl);
             WriteLog("GetOpenID {0}", url);
 
-            var html = Request(url);
+            var html = GetHtml(nameof(GetOpenID), url);
             if (html.IsNullOrEmpty()) return null;
-
-            html = html.Trim();
-            if (Log != null && Log.Enable) WriteLog(html);
 
             var dic = GetNameValues(html);
             if (dic != null)
@@ -305,11 +301,8 @@ namespace NewLife.Web
             url = GetUrl(url);
             WriteLog("GetUserInfo {0}", url);
 
-            var html = Request(url);
+            var html = GetHtml(nameof(GetUserInfo), url);
             if (html.IsNullOrEmpty()) return null;
-
-            html = html.Trim();
-            if (Log != null && Log.Enable) WriteLog(html);
 
             var dic = GetNameValues(html);
             if (dic != null)
@@ -427,15 +420,42 @@ namespace NewLife.Web
         /// <summary>最后一次请求的响应内容</summary>
         public String LastHtml { get; set; }
 
-        private WebClientX _Client;
-        /// <summary>创建客户端</summary>
-        /// <param name="url">路径</param>
+        /// <summary>发起请求，获取内容</summary>
+        /// <param name="action"></param>
+        /// <param name="url"></param>
         /// <returns></returns>
-        protected virtual String Request(String url)
+        protected virtual String GetHtml(String action, String url)
         {
-            if (_Client == null) _Client = new WebClientX();
+            // 部分提供者密钥写在头部
+            var client = GetClient();
+            var html = client.GetStringAsync(url).Result;
+            if (html.IsNullOrEmpty()) return null;
 
-            return LastHtml = _Client.GetHtml(url);
+            html = html.Trim();
+            if (Log != null && Log.Enable) WriteLog(html);
+
+            return html;
+        }
+
+        private HttpClient _Client;
+        /// <summary>获取客户端</summary>
+        /// <returns></returns>
+        protected virtual HttpClient GetClient()
+        {
+            if (_Client != null) return _Client;
+
+            // 允许宽松头部
+            WebClientX.SetAllowUnsafeHeaderParsing(true);
+
+            var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+            var agent = "";
+            if (asm != null) agent = $"{asm.GetName().Name} v{asm.GetName().Version}";
+
+            var client = new HttpClient(new HttpClientHandler { UseProxy = false });
+            var headers = client.DefaultRequestHeaders;
+            headers.UserAgent.ParseAdd(agent);
+
+            return _Client = client;
         }
 
         /// <summary>从响应数据中获取信息</summary>

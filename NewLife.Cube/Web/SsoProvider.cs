@@ -469,6 +469,7 @@ namespace NewLife.Cube.Web
             }
             catch (Exception ex)
             {
+                XTrace.WriteLine("抓取头像失败，{0}, {1}", user, url);
                 XTrace.WriteException(ex);
             }
 
