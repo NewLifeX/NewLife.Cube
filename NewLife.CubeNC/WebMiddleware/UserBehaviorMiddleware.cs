@@ -57,7 +57,7 @@ namespace NewLife.Cube.WebMiddleware
             if (!set.WebOnline && !set.WebBehavior && !set.WebStatistics) return;
 
             var req = ctx.Request;
-            if (req == null) return;
+            if (req == null || req.Method == HttpMethods.Head) return;
 
             //var user = ctx.User?.Identity as IManageUser ?? ManageProvider.User as IManageUser;
             var user = ctx.User?.Identity as IManageUser;
