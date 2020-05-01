@@ -12,7 +12,7 @@
         {
             if (item.ID != 0)
             {
-                <a href="@(item.Url!=null? Url.Content(item.Url):"#")">@item.DisplayName</a>
+                @item.DisplayName
             }
         }
     }
