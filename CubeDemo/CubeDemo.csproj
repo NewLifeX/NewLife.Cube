@@ -97,8 +97,8 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest">
     </Reference>
-    <Reference Include="XCode, Version=9.17.7435.37721, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.17.2020.510-beta\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.17.7436.39082, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.17.2020.511-beta\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

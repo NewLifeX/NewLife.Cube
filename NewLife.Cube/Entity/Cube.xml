@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Tables Version="9.14.7338.38849" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="http://www.newlifex.com http://www.newlifex.com/Model2020.xsd" NameSpace="NewLife.Cube.Entity" ConnName="Cube" Output="" BaseClass="Entity" ChineseFileName="True" IgnoreNameCase="True" xmlns="http://www.newlifex.com/Model2020.xsd">
+<Tables Version="9.17.7435.37721" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="http://www.newlifex.com http://www.newlifex.com/Model2020.xsd" NameSpace="NewLife.Cube.Entity" ConnName="Cube" Output="" BaseClass="Entity" ChineseFileName="True" IgnoreNameCase="True" xmlns="http://www.newlifex.com/Model2020.xsd">
   <Table Name="UserConnect" Description="用户链接。第三方绑定" ConnName="Membership">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
@@ -58,6 +58,7 @@
       <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。AppID" />
       <Column Name="DisplayName" DataType="String" Description="显示名" />
       <Column Name="Secret" DataType="String" Description="密钥。AppSecret" />
+      <Column Name="Logo" DataType="String" ItemType="image" Description="图标" />
       <Column Name="White" DataType="String" Length="200" Description="白名单" />
       <Column Name="Black" DataType="String" Length="200" Description="黑名单。黑名单优先于白名单" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />

@@ -6,17 +6,24 @@
 
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
+    var fields = ViewBag.Fields as IList<FieldItem>;
 
+    var url = "";
     var rv = entity.GetRouteKey();
+    if (rv != null && rv.Count > 0)
+        url = Url.Action(isNew ? "Add" : "Edit", rv);
+    else
+        url = Url.Action(isNew ? "Add" : "Edit");
+
+    var enctype = "";
+    if (fields.Any(e => e.Field.ItemType.EqualIgnoreCase("file", "image"))) enctype = "multipart/form-data";
 }
 
 <div class="form-horizontal">
     @await Html.PartialAsync("_Form_Header", entity)
-    @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv))
-    {
+    <form action="@url" enctype="@enctype" method="post">
         @*@Html.AntiForgeryToken()*@
         @*@Html.ValidationSummary()*@
-        //解决主键为(0长度字符串"")的异常信息无法显示问题
         <ul>
             @foreach (var item in ViewData.ModelState.Values)
             {
@@ -27,5 +34,5 @@
             }
         </ul>
         @await Html.PartialAsync("_Form_Body", entity)
-    }
+    </form>
 </div>
