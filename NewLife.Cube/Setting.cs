@@ -63,6 +63,10 @@ namespace NewLife.Cube
         [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars")]
         public String AvatarPath { get; set; } = "";
 
+        /// <summary>上传目录。默认Uploads</summary>
+        [Description("上传目录。默认Uploads")]
+        public String UploadPath { get; set; } = "Uploads";
+
         /// <summary>静态资源目录。默认wwwroot</summary>
         [Description("静态资源目录。默认wwwroot")]
         public String WebRootPath { get; set; } = "wwwroot";

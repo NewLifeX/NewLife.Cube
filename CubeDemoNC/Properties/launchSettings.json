@@ -17,7 +17,6 @@
     },
     "CubeDemoNC": {
       "commandName": "Project",
-      "launchBrowser": true,
       "environmentVariables": {
         "urls": "http://*:5000;https://*:5001"
       },

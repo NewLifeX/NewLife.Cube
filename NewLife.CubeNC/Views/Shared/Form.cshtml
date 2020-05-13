@@ -1,6 +1,7 @@
 ﻿@using System.Reflection
 @using XCode
 @using XCode.Configuration
+@using Microsoft.AspNetCore.Mvc.Rendering;
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
 
@@ -15,13 +16,14 @@
     else
         url = Url.Action(isNew ? "Add" : "Edit");
 
-    var enctype = "";
-    if (fields.Any(e => e.Field.ItemType.EqualIgnoreCase("file", "image"))) enctype = "multipart/form-data";
+    Object htmlAttributes = null;
+    if (fields.Any(e => e.Field.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
 }
 
 <div class="form-horizontal">
     @await Html.PartialAsync("_Form_Header", entity)
-    <form action="@url" enctype="@enctype" method="post">
+    @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv, FormMethod.Post, null, htmlAttributes))
+    {
         @*@Html.AntiForgeryToken()*@
         @*@Html.ValidationSummary()*@
         <ul>
@@ -34,5 +36,5 @@
             }
         </ul>
         @await Html.PartialAsync("_Form_Body", entity)
-    </form>
+    }
 </div>

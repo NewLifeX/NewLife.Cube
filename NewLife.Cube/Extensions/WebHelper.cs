@@ -6,6 +6,7 @@ using System.Web;
 using NewLife.Collections;
 using NewLife.Log;
 using XCode.Membership;
+using System.IO;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -159,6 +160,16 @@ namespace NewLife.Web
             }
 
             return GetRawUrl(uri, k => request.Headers[k]);
+        }
+
+        /// <summary>保存上传文件</summary>
+        /// <param name="file"></param>
+        /// <param name="filename"></param>
+        public static void SaveAs(this IFormFile file, String filename)
+        {
+            using var fs = new FileStream(filename, FileMode.OpenOrCreate);
+            file.OpenReadStream().CopyTo(fs);
+            fs.SetLength(fs.Position);
         }
 #endif
 
