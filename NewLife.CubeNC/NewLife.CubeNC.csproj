@@ -60,6 +60,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Admin\Controllers\AppController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Admin\Controllers\AppLogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AreaController.cs" Link="Areas\Admin\Controllers\AreaController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AttachmentController.cs" Link="Areas\Admin\Controllers\AttachmentController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Controllers\CoreController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Controllers\CubeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DbController.cs" Link="Areas\Admin\Controllers\DbController.cs" />
@@ -106,10 +107,13 @@
     <Compile Include="..\NewLife.Cube\Entity\用户链接.cs">
       <Link>Entity\用户链接.cs</Link>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\附件.Biz.cs" Link="Entity\附件.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\附件.cs" Link="Entity\附件.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
     <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
+    <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthClient.cs" Link="Web\OAuthClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthConfig.cs" Link="Web\OAuthConfig.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />

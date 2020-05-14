@@ -120,6 +120,7 @@ namespace NewLife.Cube.Web
         /// <summary>登录成功</summary>
         /// <param name="client">OAuth客户端</param>
         /// <param name="context">服务提供者。可用于获取HttpContext成员</param>
+        /// <param name="uc">用户链接</param>
         /// <returns></returns>
         public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc)
         {

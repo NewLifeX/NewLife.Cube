@@ -110,6 +110,8 @@ namespace NewLife.Cube.Web
 
         private static String _ding_access_token;
         private static DateTime _ding_expire;
+        /// <summary>获取用户信息</summary>
+        /// <returns></returns>
         public override String GetUserInfo()
         {
             //return base.GetUserInfo();

@@ -134,7 +134,7 @@ namespace NewLife.Cube.Entity
             if (client.Items != null) uc.Remark = client.Items.ToJson();
         }
 
-        static FieldCache<UserConnect> ProviderCache = new FieldCache<UserConnect>(_.Provider);
+        static FieldCache<UserConnect> ProviderCache = new FieldCache<UserConnect>(__.Provider);
 
         /// <summary>获取所有提供商名称</summary>
         /// <returns></returns>

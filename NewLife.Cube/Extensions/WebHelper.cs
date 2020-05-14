@@ -168,7 +168,8 @@ namespace NewLife.Web
         public static void SaveAs(this IFormFile file, String filename)
         {
             using var fs = new FileStream(filename, FileMode.OpenOrCreate);
-            file.OpenReadStream().CopyTo(fs);
+            //file.OpenReadStream().CopyTo(fs);
+            file.CopyTo(fs);
             fs.SetLength(fs.Position);
         }
 #endif
