@@ -266,7 +266,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             try
             {
-                if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
+                //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
                 if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", "用户名不能为空！");
                 if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", "密码不能为空！");
                 if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
@@ -274,7 +274,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 // 去重判断
                 var user = UserX.FindByName(username);
-                if (user != null) throw new ArgumentException("usename", $"用户[{username}]已存在！");
+                if (user != null) throw new ArgumentException("username", $"用户[{username}]已存在！");
 
                 var r = Role.GetOrAdd(set.DefaultRole);
 
@@ -333,7 +333,7 @@ namespace NewLife.Cube.Admin.Controllers
             var ids = GetRequest("keys").SplitAsInt();
             if (ids.Length > 0)
             {
-                Parallel.ForEach(ids, id =>
+                foreach (var id in ids)
                 {
                     var user = UserX.FindByID(id);
                     if (user != null && user.Enable != isEnable)
@@ -343,7 +343,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                         Interlocked.Increment(ref count);
                     }
-                });
+                }
             }
 
             return JsonRefresh("共{1}[{0}]个用户".F(count, isEnable ? "启用" : "禁用"));
