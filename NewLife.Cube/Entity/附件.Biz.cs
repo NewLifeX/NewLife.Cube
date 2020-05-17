@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -154,7 +154,7 @@ namespace NewLife.Cube.Entity
             var exp = new WhereExpression();
 
             if (!category.IsNullOrEmpty()) exp &= _.Category == category;
-            if (!key.IsNullOrEmpty()) exp &= _.FileName.Contains(key) | _.ContentType.Contains(key) | _.Path.Contains(key) | _.Hash.Contains(key) | _.CreateUser.Contains(key) | _.CreateIP.Contains(key) | _.UpdateUser.Contains(key) | _.UpdateIP.Contains(key) | _.Remark.Contains(key);
+            if (!key.IsNullOrEmpty()) exp &= _.FileName == key | _.ContentType.Contains(key) | _.Path.StartsWith(key) | _.Title.Contains(key);
 
             return FindAll(exp, page);
         }

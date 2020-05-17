@@ -52,11 +52,11 @@ namespace NewLife.Cube.Entity
         public String Secret { get => _Secret; set { if (OnPropertyChanging("Secret", value)) { _Secret = value; OnPropertyChanged("Secret"); } } }
 
         private String _Logo;
-        /// <summary>图标</summary>
+        /// <summary>图标。附件编号列表</summary>
         [DisplayName("图标")]
-        [Description("图标")]
+        [Description("图标。附件编号列表")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Logo", "图标", "", ItemType = "image")]
+        [BindColumn("Logo", "图标。附件编号列表", "", ItemType = "image")]
         public String Logo { get => _Logo; set { if (OnPropertyChanging("Logo", value)) { _Logo = value; OnPropertyChanged("Logo"); } } }
 
         private String _White;
@@ -239,7 +239,7 @@ namespace NewLife.Cube.Entity
             /// <summary>密钥。AppSecret</summary>
             public static readonly Field Secret = FindByName("Secret");
 
-            /// <summary>图标</summary>
+            /// <summary>图标。附件编号列表</summary>
             public static readonly Field Logo = FindByName("Logo");
 
             /// <summary>白名单</summary>
@@ -299,7 +299,7 @@ namespace NewLife.Cube.Entity
             /// <summary>密钥。AppSecret</summary>
             public const String Secret = "Secret";
 
-            /// <summary>图标</summary>
+            /// <summary>图标。附件编号列表</summary>
             public const String Logo = "Logo";
 
             /// <summary>白名单</summary>
@@ -360,7 +360,7 @@ namespace NewLife.Cube.Entity
         /// <summary>密钥。AppSecret</summary>
         String Secret { get; set; }
 
-        /// <summary>图标</summary>
+        /// <summary>图标。附件编号列表</summary>
         String Logo { get; set; }
 
         /// <summary>白名单</summary>

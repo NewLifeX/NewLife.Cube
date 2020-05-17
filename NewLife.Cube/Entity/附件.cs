@@ -10,12 +10,13 @@ using XCode.DataAccessLayer;
 
 namespace NewLife.Cube.Entity
 {
-    /// <summary>附件。用于记录各系统模块使用的文件</summary>
+    /// <summary>附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等</summary>
     [Serializable]
     [DataObject]
-    [Description("附件。用于记录各系统模块使用的文件")]
-    [BindIndex("IX_Attachment_Category", false, "Category")]
-    [BindTable("Attachment", Description = "附件。用于记录各系统模块使用的文件", ConnName = "Cube", DbType = DatabaseType.None)]
+    [Description("附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等")]
+    [BindIndex("IX_Attachment_Category_Key", false, "Category,Key")]
+    [BindIndex("IX_Attachment_CreateTime", false, "CreateTime")]
+    [BindTable("Attachment", Description = "附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等", ConnName = "Cube", DbType = DatabaseType.None)]
     public partial class Attachment : IAttachment
     {
         #region 属性
@@ -28,12 +29,28 @@ namespace NewLife.Cube.Entity
         public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
 
         private String _Category;
-        /// <summary>分类</summary>
-        [DisplayName("分类")]
-        [Description("分类")]
+        /// <summary>业务分类</summary>
+        [DisplayName("业务分类")]
+        [Description("业务分类")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Category", "分类", "")]
+        [BindColumn("Category", "业务分类", "")]
         public String Category { get => _Category; set { if (OnPropertyChanging("Category", value)) { _Category = value; OnPropertyChanged("Category"); } } }
+
+        private String _Key;
+        /// <summary>业务主键</summary>
+        [DisplayName("业务主键")]
+        [Description("业务主键")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("Key", "业务主键", "")]
+        public String Key { get => _Key; set { if (OnPropertyChanging("Key", value)) { _Key = value; OnPropertyChanged("Key"); } } }
+
+        private String _Title;
+        /// <summary>标题。业务内容作为附件标题</summary>
+        [DisplayName("标题")]
+        [Description("标题。业务内容作为附件标题")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("Title", "标题。业务内容作为附件标题", "")]
+        public String Title { get => _Title; set { if (OnPropertyChanging("Title", value)) { _Title = value; OnPropertyChanged("Title"); } } }
 
         private String _FileName;
         /// <summary>文件名。原始文件名</summary>
@@ -74,6 +91,14 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, true, 50)]
         [BindColumn("Hash", "哈希。MD5", "")]
         public String Hash { get => _Hash; set { if (OnPropertyChanging("Hash", value)) { _Hash = value; OnPropertyChanged("Hash"); } } }
+
+        private String _Enable;
+        /// <summary>启用。软删除标记</summary>
+        [DisplayName("启用")]
+        [Description("启用。软删除标记")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("Enable", "启用。软删除标记", "")]
+        public String Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
         private String _CreateUser;
         /// <summary>创建者</summary>
@@ -160,11 +185,14 @@ namespace NewLife.Cube.Entity
                 {
                     case "ID": return _ID;
                     case "Category": return _Category;
+                    case "Key": return _Key;
+                    case "Title": return _Title;
                     case "FileName": return _FileName;
                     case "Size": return _Size;
                     case "ContentType": return _ContentType;
                     case "Path": return _Path;
                     case "Hash": return _Hash;
+                    case "Enable": return _Enable;
                     case "CreateUser": return _CreateUser;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateIP": return _CreateIP;
@@ -183,11 +211,14 @@ namespace NewLife.Cube.Entity
                 {
                     case "ID": _ID = value.ToInt(); break;
                     case "Category": _Category = Convert.ToString(value); break;
+                    case "Key": _Key = Convert.ToString(value); break;
+                    case "Title": _Title = Convert.ToString(value); break;
                     case "FileName": _FileName = Convert.ToString(value); break;
                     case "Size": _Size = value.ToLong(); break;
                     case "ContentType": _ContentType = Convert.ToString(value); break;
                     case "Path": _Path = Convert.ToString(value); break;
                     case "Hash": _Hash = Convert.ToString(value); break;
+                    case "Enable": _Enable = Convert.ToString(value); break;
                     case "CreateUser": _CreateUser = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -210,8 +241,14 @@ namespace NewLife.Cube.Entity
             /// <summary>编号</summary>
             public static readonly Field ID = FindByName("ID");
 
-            /// <summary>分类</summary>
+            /// <summary>业务分类</summary>
             public static readonly Field Category = FindByName("Category");
+
+            /// <summary>业务主键</summary>
+            public static readonly Field Key = FindByName("Key");
+
+            /// <summary>标题。业务内容作为附件标题</summary>
+            public static readonly Field Title = FindByName("Title");
 
             /// <summary>文件名。原始文件名</summary>
             public static readonly Field FileName = FindByName("FileName");
@@ -227,6 +264,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>哈希。MD5</summary>
             public static readonly Field Hash = FindByName("Hash");
+
+            /// <summary>启用。软删除标记</summary>
+            public static readonly Field Enable = FindByName("Enable");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUser = FindByName("CreateUser");
@@ -264,8 +304,14 @@ namespace NewLife.Cube.Entity
             /// <summary>编号</summary>
             public const String ID = "ID";
 
-            /// <summary>分类</summary>
+            /// <summary>业务分类</summary>
             public const String Category = "Category";
+
+            /// <summary>业务主键</summary>
+            public const String Key = "Key";
+
+            /// <summary>标题。业务内容作为附件标题</summary>
+            public const String Title = "Title";
 
             /// <summary>文件名。原始文件名</summary>
             public const String FileName = "FileName";
@@ -281,6 +327,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>哈希。MD5</summary>
             public const String Hash = "Hash";
+
+            /// <summary>启用。软删除标记</summary>
+            public const String Enable = "Enable";
 
             /// <summary>创建者</summary>
             public const String CreateUser = "CreateUser";
@@ -312,15 +361,21 @@ namespace NewLife.Cube.Entity
         #endregion
     }
 
-    /// <summary>附件。用于记录各系统模块使用的文件接口</summary>
+    /// <summary>附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等接口</summary>
     public partial interface IAttachment
     {
         #region 属性
         /// <summary>编号</summary>
         Int32 ID { get; set; }
 
-        /// <summary>分类</summary>
+        /// <summary>业务分类</summary>
         String Category { get; set; }
+
+        /// <summary>业务主键</summary>
+        String Key { get; set; }
+
+        /// <summary>标题。业务内容作为附件标题</summary>
+        String Title { get; set; }
 
         /// <summary>文件名。原始文件名</summary>
         String FileName { get; set; }
@@ -336,6 +391,9 @@ namespace NewLife.Cube.Entity
 
         /// <summary>哈希。MD5</summary>
         String Hash { get; set; }
+
+        /// <summary>启用。软删除标记</summary>
+        String Enable { get; set; }
 
         /// <summary>创建者</summary>
         String CreateUser { get; set; }
