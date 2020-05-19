@@ -44,11 +44,9 @@ namespace NewLife.Cube
 
             try
             {
-                var user = ctx.Items["CurrentUser"] as IManageUser;
-                if (user != null) return user;
+                if (ctx.Items["CurrentUser"] is IManageUser user) return user;
 
                 var session = ctx.Items["Session"] as IDictionary<String, Object>;
-                //var type = ObjectContainer.Current.ResolveType<IManageUser>();
 
                 user = session?[SessionKey] as IManageUser;
                 ctx.Items["CurrentUser"] = user;
@@ -167,7 +165,7 @@ namespace NewLife.Cube
         /// <param name="context">Http上下文，兼容NetCore</param>
         public static IManageUser TryLogin(this IManageProvider provider, HttpContext context = null)
         {
-            var serviceProvider = context.RequestServices;
+            var serviceProvider = context?.RequestServices;
 
             // 判断当前登录用户
             var user = provider.GetCurrent(serviceProvider);
@@ -207,17 +205,15 @@ namespace NewLife.Cube
         /// <param name="autologin">是否自动登录</param>
         /// <param name="context">Http上下文，兼容NetCore</param>
         /// <returns></returns>
-        public static IManageUser LoadCookie(this IManageProvider provider, Boolean autologin = true, HttpContext context = null)
+        public static IManageUser LoadCookie(this IManageProvider provider, Boolean autologin, HttpContext context)
         {
-            if (context == null) return null;
-
             var key = "token";
             var req = context?.Request;
             var token = req?.Cookies[key];
             if (token.IsNullOrEmpty()) return null;
 
             var jwt = GetJwt();
-            if (!jwt.TryDecode(token, out var payload))
+            if (!jwt.TryDecode(token, out _))
             {
                 XTrace.WriteLine("令牌无效：{0}", token);
 
@@ -238,11 +234,8 @@ namespace NewLife.Cube
             var u = provider.FindByName(user);
             if (u == null || !u.Enable) return null;
 
-            var mu = u as IAuthUser;
-            //if (!m.Password.EqualIgnoreCase(mu.Password.MD5())) return null;
-
             // 保存登录信息
-            if (autologin)
+            if (autologin && u is IAuthUser mu)
             {
                 mu.SaveLogin(null);
 
