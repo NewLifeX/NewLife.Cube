@@ -35,7 +35,7 @@ namespace NewLife.Cube.Admin.Controllers
         [RequireSsl]
         public ActionResult Index()
         {
-            var user = ManageProvider.Provider.TryLogin();
+            var user = ManageProvider.Provider.TryLogin(HttpContext.ApplicationInstance.Context);
             if (user == null) return RedirectToAction("Login", "User", new { r = Request.Url.PathAndQuery });
 
             ViewBag.User = ManageProvider.User;

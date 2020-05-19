@@ -20,3 +20,5 @@ bld/
 /Avatars
 /BinTest
 *.user
+/NewLife.Cube/Config
+/NewLife.Cube/Plugins

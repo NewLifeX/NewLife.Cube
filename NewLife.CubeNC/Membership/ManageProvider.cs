@@ -143,7 +143,6 @@ namespace NewLife.Cube
         public static void SetPrincipal(this IManageProvider provider, IServiceProvider context = null)
         {
             var ctx = context.GetService<IHttpContextAccessor>()?.HttpContext;
-            //var ctx = context as HttpContext ?? HttpContext.Current;
             if (ctx == null) return;
 
             var user = provider.GetCurrent(context);
@@ -163,7 +162,7 @@ namespace NewLife.Cube
         /// <summary>尝试登录。如果Session未登录则借助Cookie</summary>
         /// <param name="provider">提供者</param>
         /// <param name="context">Http上下文，兼容NetCore</param>
-        public static IManageUser TryLogin(this IManageProvider provider, HttpContext context = null)
+        public static IManageUser TryLogin(this IManageProvider provider, HttpContext context)
         {
             var serviceProvider = context?.RequestServices;
 

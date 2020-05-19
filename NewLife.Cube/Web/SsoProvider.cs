@@ -132,7 +132,8 @@ namespace NewLife.Cube.Web
             var ip = httpContext.GetUserHost();
 #else
             var req = context.GetService<HttpRequest>();
-            var ip = req.RequestContext.HttpContext.GetUserHost();
+            var httpContext = req.RequestContext.HttpContext;
+            var ip = httpContext.GetUserHost();
 #endif
             //if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
             if (req != null) forceBind = req.Get("state").EndsWithIgnoreCase("_bind");
@@ -187,7 +188,7 @@ namespace NewLife.Cube.Web
 #if __CORE__
                 prv.SaveCookie(user, expire, httpContext);
 #else
-                prv.SaveCookie(user, expire, context);
+                prv.SaveCookie(user, expire, httpContext.ApplicationInstance.Context);
 #endif
             }
 
