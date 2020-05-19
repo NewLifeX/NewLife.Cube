@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Reflection;
 using NewLife.Configuration;
+using NewLife.Security;
 
 namespace NewLife.Cube
 {
@@ -139,8 +140,13 @@ namespace NewLife.Cube
 
         /// <summary>刷新用户周期。该周期内多次SSO登录只拉取一次用户信息，默认600秒</summary>
         [Description("刷新用户周期。该周期内多次SSO登录只拉取一次用户信息，默认600秒")]
-        [Category("刷新用户周期")]
+        [Category("用户登录")]
         public Int32 RefreshUserPeriod { get; set; } = 600;
+
+        /// <summary>JWT密钥。用于生成JWT令牌的算法和密钥，如HS256:ABCD1234</summary>
+        [Description("JWT密钥。用于生成JWT令牌的算法和密钥，如HS256:ABCD1234")]
+        [Category("用户登录")]
+        public String JwtSecret { get; set; }
         #endregion
 
         #region 界面配置
@@ -182,7 +188,7 @@ namespace NewLife.Cube
         /// <summary>备案号。留空表示不显示备案信息</summary>
         [Description("备案号。留空表示不显示备案信息")]
         [Category("界面配置")]
-        public String Registration { get; set; } = "粤ICP备10000000号";
+        public String Registration { get; set; } = "沪ICP备10000000号";
         #endregion
 
         #region 方法
@@ -205,6 +211,8 @@ namespace NewLife.Cube
 
             if (AvatarPath.IsNullOrEmpty()) AvatarPath = web ? "..\\Avatars" : "Avatars";
             if (DefaultRole.IsNullOrEmpty() || DefaultRole == "3") DefaultRole = "普通用户";
+
+            if (JwtSecret.IsNullOrEmpty()) JwtSecret = $"HS256:{Rand.NextString(8)}";
 
             // 取版权信息
             if (Copyright.IsNullOrEmpty())

@@ -102,7 +102,7 @@ namespace NewLife.Cube
             var ctx = httpContext;
 
             // 判断当前登录用户
-            var user = ManagerProviderHelper.TryLogin(prv, httpContext.RequestServices);
+            var user = ManagerProviderHelper.TryLogin(prv, httpContext);
             if (user == null) return false;
 
             // 判断权限

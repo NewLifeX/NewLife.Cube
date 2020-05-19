@@ -68,7 +68,7 @@ namespace NewLife.Cube.Admin.Controllers
         public ActionResult Index()
         {
 #if __CORE__
-            var user = ManagerProviderHelper.TryLogin(_provider, HttpContext.RequestServices);
+            var user = ManagerProviderHelper.TryLogin(_provider, HttpContext);
 #else
             var user = ManageProvider.Provider.TryLogin();
 #endif

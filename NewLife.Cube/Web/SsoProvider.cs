@@ -182,11 +182,14 @@ namespace NewLife.Cube.Web
             //prv.SaveCookie(user);
             var set = Setting.Current;
             if (set.SessionTimeout > 0)
+            {
+                var expire = TimeSpan.FromSeconds(set.SessionTimeout);
 #if __CORE__
-                ManagerProviderHelper.SaveCookie(prv, user, TimeSpan.FromSeconds(set.SessionTimeout), httpContext);
+                prv.SaveCookie(user, expire, httpContext);
 #else
-                prv.SaveCookie(user, TimeSpan.FromSeconds(set.SessionTimeout), context);
+                prv.SaveCookie(user, expire, context);
 #endif
+            }
 
             return SuccessUrl;
         }
