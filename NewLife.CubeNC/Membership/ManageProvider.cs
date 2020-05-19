@@ -228,7 +228,12 @@ namespace NewLife.Cube
             if (user.IsNullOrEmpty()) return null;
 
             // 判断有效期
-            if (jwt.Expire < DateTime.Now) return null;
+            if (jwt.Expire < DateTime.Now)
+            {
+                XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
+
+                return null;
+            }
 
             var u = provider.FindByName(user);
             if (u == null || !u.Enable) return null;
@@ -241,7 +246,7 @@ namespace NewLife.Cube
             {
                 mu.SaveLogin(null);
 
-                LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={jwt.IssuedAt} Expire={jwt.Expire}", u.ID, u + "", ip: context.GetUserHost());
+                LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={jwt.IssuedAt} Expire={jwt.Expire} Token={token}", u.ID, u + "", ip: context.GetUserHost());
             }
 
             return u;
@@ -262,13 +267,16 @@ namespace NewLife.Cube
                 res.Cookies.Delete(key);
             else
             {
-                var exp = DateTime.Now.Add(expire);
+                // 令牌有效期，默认2小时
+                var exp = DateTime.Now.Add(expire.TotalSeconds > 0 ? expire : TimeSpan.FromHours(2));
                 var jwt = GetJwt();
                 jwt.Subject = user.Name;
                 jwt.Expire = exp;
 
                 var token = jwt.Encode(null);
-                res.Cookies.Append(key, token, new CookieOptions { Expires = exp });
+                var option = new CookieOptions();
+                if (expire.TotalSeconds > 0) option.Expires = DateTimeOffset.Now.Add(expire);
+                res.Cookies.Append(key, token, option);
             }
         }
         #endregion

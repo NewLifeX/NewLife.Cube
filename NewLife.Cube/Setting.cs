@@ -212,7 +212,7 @@ namespace NewLife.Cube
             if (AvatarPath.IsNullOrEmpty()) AvatarPath = web ? "..\\Avatars" : "Avatars";
             if (DefaultRole.IsNullOrEmpty() || DefaultRole == "3") DefaultRole = "普通用户";
 
-            if (JwtSecret.IsNullOrEmpty()) JwtSecret = $"HS256:{Rand.NextString(8)}";
+            if (JwtSecret.IsNullOrEmpty() || JwtSecret.Split(':').Length != 2) JwtSecret = $"HS256:{Rand.NextString(16)}";
 
             // 取版权信息
             if (Copyright.IsNullOrEmpty())
