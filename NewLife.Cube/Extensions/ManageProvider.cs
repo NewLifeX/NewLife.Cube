@@ -219,7 +219,10 @@ namespace XCode.Membership
 
             var key = "token";
             if (user == null)
-                res.Cookies.Remove(key);
+            {
+                var cookie = new HttpCookie(key) { Value = null, Expires = DateTime.Now.AddDays(-1) };
+                res.Cookies.Set(cookie);
+            }
             else
             {
                 // 令牌有效期，默认2小时
