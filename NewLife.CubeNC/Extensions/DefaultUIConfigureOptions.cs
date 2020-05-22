@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using NewLife.Log;
 
 namespace NewLife.Cube.Extensions
 {
@@ -55,17 +56,24 @@ namespace NewLife.Cube.Extensions
         /// <param name="env"></param>
         public static void AddCubeDefaultUI(this IServiceCollection services, IWebHostEnvironment env)
         {
+            env.ContentRootPath = ".".GetFullPath();
+
             //services.ConfigureOptions<DefaultUIConfigureOptions>();
-            var root = env.WebRootPath;
-            if (!Directory.Exists(root.CombinePath("Content")))
+            //var root = env.WebRootPath;
+            //XTrace.WriteLine("WebRootPath={0}", root);
+            //if (!Directory.Exists(root.CombinePath("Content")))
+            //{
+            var root = Setting.Current.WebRootPath.GetFullPath();
+            if (Directory.Exists(root))
             {
-                root = Setting.Current.WebRootPath.GetFullPath();
-                if (Directory.Exists(root))
-                {
-                    env.WebRootPath = root;
-                    env.WebRootFileProvider = new PhysicalFileProvider(root);
-                }
+                XTrace.WriteLine("WebRootPath={0}", root);
+
+                env.WebRootPath = root;
+                env.WebRootFileProvider = new PhysicalFileProvider(root);
             }
+            //}
+
+            //XTrace.WriteLine("ContentRootPath={0}", env.ContentRootPath);
         }
     }
 }
