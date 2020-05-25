@@ -175,9 +175,9 @@ namespace XCode.Membership
             if (token.IsNullOrEmpty()) return null;
 
             var jwt = GetJwt();
-            if (!jwt.TryDecode(token, out var payload))
+            if (!jwt.TryDecode(token, out var msg))
             {
-                XTrace.WriteLine("令牌无效：{0}", token);
+                XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
 
                 return null;
             }
@@ -185,13 +185,13 @@ namespace XCode.Membership
             var user = jwt.Subject;
             if (user.IsNullOrEmpty()) return null;
 
-            // 判断有效期
-            if (jwt.Expire < DateTime.Now)
-            {
-                XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
+            //// 判断有效期
+            //if (jwt.Expire < DateTime.Now)
+            //{
+            //    XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
 
-                return null;
-            }
+            //    return null;
+            //}
 
             var u = provider.FindByName(user);
             if (u == null || !u.Enable) return null;

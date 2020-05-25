@@ -37,7 +37,7 @@ using NewLife.Cube;
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
 [assembly: AssemblyVersion("3.4.*")]
-[assembly: AssemblyFileVersion("3.4.2020.0519")]
+[assembly: AssemblyFileVersion("3.4.2020.0525")]
 
 /*
  * v3.4.2020.0519   支持JWT
