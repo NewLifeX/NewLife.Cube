@@ -149,4 +149,7 @@
     </None>
     <None Include="appsettings.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
 </Project>

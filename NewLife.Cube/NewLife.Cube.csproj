@@ -751,14 +751,14 @@
     <None Include="Content\bootstrap\popper.min-2.0.6.js" />
     <None Include="Content\Cube-bootstrap.css" />
     <None Include="Content\echarts.min.js" />
-    <Content Include="Content\images\logo\alipay.png" />
-    <Content Include="Content\images\logo\Baidu.png" />
-    <Content Include="Content\images\logo\github.png" />
-    <Content Include="Content\images\logo\NewLife.png" />
-    <Content Include="Content\images\logo\qq.png" />
-    <Content Include="Content\images\logo\Taobao.png" />
-    <Content Include="Content\images\logo\Weibo.png" />
-    <Content Include="Content\images\logo\Weixin.png" />
+    <None Include="Content\images\logo\alipay.png" />
+    <None Include="Content\images\logo\Baidu.png" />
+    <None Include="Content\images\logo\github.png" />
+    <None Include="Content\images\logo\NewLife.png" />
+    <None Include="Content\images\logo\qq.png" />
+    <None Include="Content\images\logo\Taobao.png" />
+    <None Include="Content\images\logo\Weibo.png" />
+    <None Include="Content\images\logo\Weixin.png" />
     <None Include="index.html" />
     <None Include="Entity\Cube.xml">
       <SubType>Designer</SubType>
