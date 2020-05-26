@@ -22,3 +22,5 @@ bld/
 *.user
 /NewLife.Cube/Config
 /NewLife.Cube/Plugins
+/NewLife.CubeNC/Properties/launchSettings.json
+*.pubxml
