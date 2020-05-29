@@ -237,13 +237,14 @@ namespace NewLife.Cube.Web
 
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;
-                if (av != null && av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http")) av = new Uri(new Uri(client.Server), av) + "";
+                if (av != null && av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http"))
+                    av = new Uri(new Uri(client.Server), av) + "";
                 if (user2.Avatar.IsNullOrEmpty())
                     user2.Avatar = av;
                 // 本地头像，如果不存在，也要更新
                 else if (user2.Avatar.StartsWith("/Sso/Avatar/"))
                 {
-                    var av2 = Setting.Current.AvatarPath.CombinePath(user2.ID + ".png");
+                    var av2 = Setting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
                     if (!File.Exists(av2))
                     {
                         LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"{user2.Avatar} => {av}", user.ID, user + "");
