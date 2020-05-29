@@ -60,9 +60,15 @@ namespace NewLife.Cube
         [Description("启用压缩。主要用于Json输出压缩，默认false")]
         public Boolean EnableCompress { get; set; }
 
-        /// <summary>头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars</summary>
-        [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars")]
-        public String AvatarPath { get; set; } = "";
+        /// <summary>抓取头像。是否抓取远程头像，默认true</summary>
+
+        /// <summary>头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取</summary>
+        [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取")]
+#if __CORE__
+        public String AvatarPath { get; set; } = "Avatars";
+#else
+        public String AvatarPath { get; set; } = "..\\Avatars";
+#endif
 
         /// <summary>上传目录。默认Uploads</summary>
         [Description("上传目录。默认Uploads")]
@@ -209,7 +215,7 @@ namespace NewLife.Cube
 
             var web = Runtime.IsWeb;
 
-            if (AvatarPath.IsNullOrEmpty()) AvatarPath = web ? "..\\Avatars" : "Avatars";
+            //if (AvatarPath.IsNullOrEmpty()) AvatarPath = web ? "..\\Avatars" : "Avatars";
             if (DefaultRole.IsNullOrEmpty() || DefaultRole == "3") DefaultRole = "普通用户";
 
             if (JwtSecret.IsNullOrEmpty() || JwtSecret.Split(':').Length != 2) JwtSecret = $"HS256:{Rand.NextString(16)}";

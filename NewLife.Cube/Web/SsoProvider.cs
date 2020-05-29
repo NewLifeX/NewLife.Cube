@@ -239,6 +239,7 @@ namespace NewLife.Cube.Web
                 var av = client.Avatar;
                 if (av != null && av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http"))
                     av = new Uri(new Uri(client.Server), av) + "";
+
                 if (user2.Avatar.IsNullOrEmpty())
                     user2.Avatar = av;
                 // 本地头像，如果不存在，也要更新
