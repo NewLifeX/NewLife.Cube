@@ -1,6 +1,9 @@
 ﻿@using NewLife.Common
 @{
     var set = NewLife.Cube.Setting.Current;
+
+    var returnUrl = (String)ViewBag.ReturnUrl;
+    var url = Url.Action("Login", "User", new { r = returnUrl });
 }
 <div class="tab-pane fade in active" id="Login">
     <!-- Logo-->
@@ -9,11 +12,10 @@
         @*<span style="display: inline-block;vertical-align: 56px;margin-left: 10px;font-size: 24px;">@SysConfig.Current.DisplayName</span>*@
     </div>
     <!-- 登录-->
-    @using (Html.BeginForm("Login", "User", new { r = ViewBag.ReturnUrl }, FormMethod.Post,true, new { @class = "cube-login" }))
-    {
+    <form action="@url" class="cube-login" method="post" onsubmit="md5_salt($('#password'));">
         @Html.ValidationSummary()
         <span class="heading text-primary">@SysConfig.Current.DisplayName 登录</span>
-        if (set.AllowLogin)
+        @if (set.AllowLogin)
         {
             <div class="form-group">
                 <input type="text" class="form-control" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码">
@@ -58,7 +60,7 @@
                 <button type="submit" class="btn btn-default" style="margin: 5px 0 15px 0;width: 100%;">登录</button>
             </div>
 
-            if (!set.LoginTip.IsNullOrEmpty())
+            @if (!set.LoginTip.IsNullOrEmpty())
             {
                 <h4 class="header blue lighter bigger">
                     <i class="ace-icon fa fa-coffee green"></i>
@@ -75,5 +77,5 @@
                 </nav>
             }
         }
-    }
+    </form>
 </div>

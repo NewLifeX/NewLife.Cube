@@ -250,6 +250,37 @@
       <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
       <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <script src="~/Content/js/md5.js"></script>
+
+    <script type="text/javascript">
+        function md5_plain(p) {
+            var pass = p.val();
+            if (pass) {
+                pass = md5(pass);
+                p.val(pass);
+            }
+        }
+
+        function md5_salt(p) {
+            var pass = p.val();
+            if (pass) {
+                pass = md5(pass);
+                var salt = randomString(32);
+                //var salt = new Date().getTime() + '';
+                pass = md5(pass + salt) + ':' + salt;
+                p.val(pass);
+            }
+        }
+
+        function randomString(length) {
+            var x = "0123456789qwertyuioplkjhgfdsazxcvbnm";
+            var str = "";
+            for (var i = 0; i < length; i++) {
+                str += x.charAt(Math.ceil(Math.random() * 100000000) % x.length);
+            }
+            return str;
+        }
+    </script>
 
 </body>
 @await Html.PartialAsync("_Footer")

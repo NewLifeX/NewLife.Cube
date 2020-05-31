@@ -94,9 +94,9 @@ namespace NewLife.Cube
         /// <summary>登录</summary>
         /// <param name="name"></param>
         /// <param name="password"></param>
-        /// <param name="rememberme">是否记住密码</param>
+        /// <param name="remember">是否记住密码</param>
         /// <returns></returns>
-        public override IManageUser Login(String name, String password, Boolean rememberme)
+        public override IManageUser Login(String name, String password, Boolean remember)
         {
             //var user = UserX.Login(name, password, rememberme);
             UserX user;
@@ -113,13 +113,19 @@ namespace NewLife.Cube
                 if (!user.Enable) throw new EntityException("账号{0}被禁用！", account);
 
                 // 数据库为空密码，任何密码均可登录
-                if (user.Password.IsNullOrEmpty())
+                if (!user.Password.IsNullOrEmpty())
                 {
-                    user.Password = password.MD5();
-                }
-                else
-                {
-                    if (!password.MD5().EqualIgnoreCase(user.Password)) throw new EntityException("密码不正确！");
+                    var ss = password.Split(':');
+                    if (ss.Length <= 1)
+                    {
+                        if (!password.MD5().EqualIgnoreCase(user.Password)) throw new EntityException("密码不正确！");
+                    }
+                    else
+                    {
+                        var salt = ss[1];
+                        var pass = (user.Password.ToLower() + salt).MD5();
+                        if (!ss[0].EqualIgnoreCase(pass)) throw new EntityException("密码不正确！");
+                    }
                 }
 
                 // 保存登录信息
@@ -141,7 +147,7 @@ namespace NewLife.Cube
             // 过期时间
             var set = Setting.Current;
             var expire = TimeSpan.FromMinutes(0);
-            if (rememberme && user != null)
+            if (remember && user != null)
             {
                 expire = TimeSpan.FromDays(365);
             }
