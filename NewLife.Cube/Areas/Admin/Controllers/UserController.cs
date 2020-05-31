@@ -166,8 +166,10 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 ModelState.AddModelError("", ex.Message);
             }
+
             //云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
             ViewBag.IsShowTip = UserX.Meta.Count == 1;
+
             return View();
         }
 
@@ -281,7 +283,7 @@ namespace NewLife.Cube.Admin.Controllers
                 user = new UserX()
                 {
                     Name = username,
-                    Password = password.MD5(),
+                    Password = password,
                     Mail = email,
                     RoleID = r.ID,
                     Enable = true

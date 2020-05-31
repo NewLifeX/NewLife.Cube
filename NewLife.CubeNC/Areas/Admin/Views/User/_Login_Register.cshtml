@@ -1,6 +1,8 @@
 ﻿@using NewLife.Common
-
-
+@{
+    var returnUrl = (String)ViewBag.ReturnUrl;
+    var url = Url.Action("Register", "User", new { r = returnUrl });
+}
 <div class="tab-pane fade" id="Register">
     <!-- Logo-->
     <div class="row text-center">
@@ -8,8 +10,7 @@
         @*<span style="display: inline-block;vertical-align: 56px;margin-left: 10px;font-size: 24px;">@SysConfig.Current.DisplayName</span>*@
     </div>
     <!-- 登录-->
-    @using (Html.BeginForm("Register", "User", new { r = ViewBag.ReturnUrl }, FormMethod.Post,true, new { @class = "cube-login" }))
-    {
+    <form action="@url" class="cube-login" method="post" onsubmit="md5_plain($('#reg_password'));md5_plain($('#reg_password2'));">
         @Html.ValidationSummary()
         <span class="heading text-primary">@SysConfig.Current.DisplayName 注册</span>
         <div class="form-group">
@@ -38,8 +39,7 @@
             </div>
             <button type="submit" class="btn btn-default text-center">注册</button>
         </div>
-
-    }
+    </form>
     @*<div class="toolbar clearfix text-center">
             <div class="row" style="padding:30px 60px 0 60px;">
                 <div class="toolbar center">
