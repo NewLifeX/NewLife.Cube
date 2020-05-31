@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using NewLife.Common;
 using NewLife.Log;
 using NewLife.Model;
+using XCode;
 using XCode.Membership;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
 using JwtBuilder = NewLife.Web.JwtBuilder;
@@ -97,9 +98,47 @@ namespace NewLife.Cube
         /// <returns></returns>
         public override IManageUser Login(String name, String password, Boolean rememberme)
         {
-            var user = UserX.Login(name, password, rememberme);
+            //var user = UserX.Login(name, password, rememberme);
+            UserX user;
+            try
+            {
+                // 用户登录，依次支持用户名、邮箱、手机、编码
+                var account = name.Trim();
+                user = UserX.FindByName(account);
+                if (user == null && account.Contains("@")) user = UserX.FindByMail(account);
+                if (user == null && account.ToLong() > 0) user = UserX.FindByMobile(account);
+                if (user == null) user = UserX.FindByCode(account);
+
+                if (user == null) throw new EntityException("帐号{0}不存在！", account);
+                if (!user.Enable) throw new EntityException("账号{0}被禁用！", account);
+
+                // 数据库为空密码，任何密码均可登录
+                if (user.Password.IsNullOrEmpty())
+                {
+                    user.Password = password.MD5();
+                }
+                else
+                {
+                    if (!password.MD5().EqualIgnoreCase(user.Password)) throw new EntityException("密码不正确！");
+                }
+
+                // 保存登录信息
+                user.Logins++;
+                user.LastLogin = DateTime.Now;
+                user.LastLoginIP = UserHost;
+                user.Update();
+
+                UserX.WriteLog("登录", true, $"用户[{user}]使用[{name}]登录成功");
+            }
+            catch (Exception ex)
+            {
+                UserX.WriteLog("登录", false, name + "登录失败！" + ex.Message);
+                throw;
+            }
+
             Current = user;
 
+            // 过期时间
             var set = Setting.Current;
             var expire = TimeSpan.FromMinutes(0);
             if (rememberme && user != null)
@@ -112,6 +151,7 @@ namespace NewLife.Cube
                     expire = TimeSpan.FromSeconds(set.SessionTimeout);
             }
 
+            // 保存Cookie
             var context = Context?.HttpContext;
             this.SaveCookie(user, expire, context);
 
