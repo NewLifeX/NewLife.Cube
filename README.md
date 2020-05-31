@@ -2,9 +2,9 @@
 魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！  
 内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。  
 
-演示站点：https://cube.newlifex.com  
-函数计算：http://cube.feifan.link  
-SSO中心：https://sso.newlifex.com  
+演示站点：https://cube.newlifex.com `CentOS7 + CDN`  
+函数计算：http://cube.feifan.link `阿里云函数计算128M`  
+SSO中心：https://sso.newlifex.com `OAuth服务端`  
 
 魔方教程：https://www.yuque.com/smartstone/cube  
 XCode教程：https://www.yuque.com/smartstone/xcode  
@@ -20,37 +20,27 @@ XCode教程：https://www.yuque.com/smartstone/xcode
 ---
 ### ASP.NET Core 安装
 * 在 *Visual Studio* 中新建`ASP.NET Core Web`项目
-* 通过 *NuGet* 引用`NewLife.Cube.Core`，或自己编译最新的[魔方](http://github.com/NewLifeX/NewLife.Cube)源码
-* 在`Web.config`的`<connectionStrings>`段设置名为`Membership`的连接字符串，用户角色权限菜单等存储在该数据库
-* 系统自动识别数据库类型，默认`\<add name="Membership" connectionString="Data Source=~\App_Data\Membership.db" providerName="Sqlite"/>`
+* 通过 *NuGet* 引用`NewLife.Cube.Core`，或自己编译最新的[魔方 NewLife.CubeNC](http://github.com/NewLifeX/NewLife.Cube)源码
+* 在`appsettings.json`的`ConnectionStrings`段设置名为`Membership`的连接字符串，用户角色权限菜单等存储在该数据库
+* 系统自动识别数据库类型，默认`Data Source=..\Data\Membership.db`
 * 编译项目，项目上点击鼠标右键，`查看`，`在浏览器中查看`，运行魔方平台
-* 系统为`SQLite`/`Oracle`/`MySql`/`SqlCe`数据库自动下载匹配（`x86/x64`）的数据库驱动文件，驱动下载地址可在`Config\Core.config`中修改`PluginServer`
+* 系统为`MySql`/`SQLite`/`Oracle`/`SqlCe`数据库自动下载匹配（`x86/x64`）的数据库驱动文件，驱动下载地址可在`Config\Core.config`中修改`PluginServer`
 * 系统自动下载脚本样式表等资源文件，下载地址可在`Config/Cube.config`中修改`PluginServer`
-* 默认登录用户名是`admin`，密码是`admin`
-* 推荐安装 *Visual Studio* 插件 *Razor Generator*，给`.cshtml`文件设置`自定义工具``RazorGenerator`，可以把`.cshtml`编译生成到`DLL`里面
-* 项目发布时只需要拷贝`Bin`、`web.config`、`Global.asax`，以及其它自己添加的资源文件
+* 默认登录用户名是`admin`，密码是`admin`，也可以使用`NewLife`等第三方OAuth登录，首个进入系统的用户抢得管理员，原`admin`禁用
+* 项目发布时只需要拷贝`*.dll`、`appsettings.json`、`*.deps.json`、`*.runtimeconfig.json`，以及其它自己添加的资源文件
 
 ---
 ### ASP.NET MVC 安装
 * 在 *Visual Studio* 中新建`ASP.NET MVC`项目
-* 通过 *NuGet* 引用`NewLife.Cube`，或自己编译最新的[魔方](http://github.com/NewLifeX/NewLife.Cube)源码
+* 通过 *NuGet* 引用`NewLife.Cube`，或自己编译最新的[魔方 NewLife.Cube](http://github.com/NewLifeX/NewLife.Cube)源码
 * 在`Web.config`的`<connectionStrings>`段设置名为`Membership`的连接字符串，用户角色权限菜单等存储在该数据库
-* 系统自动识别数据库类型，默认`\<add name="Membership" connectionString="Data Source=~\App_Data\Membership.db" providerName="Sqlite"/>`
+* 系统自动识别数据库类型，默认`\<add name="Membership" connectionString="Data Source=..\Data\Membership.db" providerName="Sqlite"/>`
 * 编译项目，项目上点击鼠标右键，`查看`，`在浏览器中查看`，运行魔方平台
 * 系统为`MySql`/`SQLite`/`Oracle`/`SqlCe`数据库自动下载匹配（`x86/x64`）的数据库驱动文件，驱动下载地址可在`Config\Core.config`中修改`PluginServer`
 * 系统自动下载脚本样式表等资源文件，下载地址可在`Config/Cube.config`中修改`PluginServer`
-* 默认登录用户名是`admin`，密码是`admin`
-* 推荐安装 *Visual Studio* 插件 *Razor Generator*，给`.cshtml`文件设置`自定义工具``RazorGenerator`，可以把`.cshtml`编译生成到`DLL`里面
+* 默认登录用户名是`admin`，密码是`admin`，也可以使用`NewLife`等第三方OAuth登录，首个进入系统的用户抢得管理员，原`admin`禁用
+* 推荐安装 *Visual Studio* 插件 *Razor Generator*，给`.cshtml`文件设置`自定义工具`为`RazorGenerator`，可以把`.cshtml`编译生成到`DLL`里面
 * 项目发布时只需要拷贝`Bin`、`web.config`、`Global.asax`，以及其它自己添加的资源文件
-
----
-### 教程
-[【演示】教务系统](http://cube.newlifex.com)
-[【源码】教务系统](http://git.newlifex.com/Stone/CubeDemo)
-
-[【教程】魔方平台NewLife.Cube基础教程（附例程源码）](http://www.newlifex.com/showtopic-1483.aspx)
-[【教程】魔方平台NewLife.Cube模板结构详解](http://www.newlifex.com/showtopic-1491.aspx)
-
 
 ## 新生命开源项目矩阵
 各项目默认支持net4.5/net4.0/netstandard2.0  
