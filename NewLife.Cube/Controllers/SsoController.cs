@@ -581,7 +581,7 @@ namespace NewLife.Cube.Controllers
             var vs = System.IO.File.ReadAllBytes(av);
             return File(vs, "image/png");
 #else
-            return File(av2, "image/png");
+            return File(av, "image/png");
 #endif
         }
         #endregion
