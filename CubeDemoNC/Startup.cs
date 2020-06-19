@@ -25,17 +25,21 @@ namespace CubeDemoNC
 
             app.UseStaticFiles();
 
-            app.UseCube(env);
-
+            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
+                    "CubeAreas",
+                    "{area}/{controller=Index}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(
                     "Default",
-                    "{controller=CubeHome}/{action=Index}/{id?}"
+                    "{controller=Home}/{action=Index}/{id?}"
                     );
                 endpoints.MapRazorPages();
             })
-            .Build();
+                .Build();
+
+            app.UseCube(env);
         }
     }
 }

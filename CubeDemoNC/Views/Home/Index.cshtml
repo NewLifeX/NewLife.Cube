@@ -1,0 +1,24 @@
+﻿@using NewLife.Common;
+@{
+    Layout = null;
+    var p = "/";
+    p = p.EnsureEnd("/") + "Admin";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@SysConfig.Current.DisplayName 666666</title>
+    <meta http-equiv="refresh" content="0;url=@p">
+</head>
+<body>
+    <div>
+        <h1>@SysConfig.Current.DisplayName</h1>
+        @SysConfig.Current.Company
+        @ViewBag.Message
+    </div>
+</body>
+@await Html.PartialAsync("_Footer")
+</html>
