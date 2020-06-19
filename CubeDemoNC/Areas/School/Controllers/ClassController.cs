@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube;
 using NewLife.School.Entity;
 using NewLife.Web;
 using XCode.Membership;
 
-namespace WebTest.Areas.School.Controllers
+namespace CubeDemo.Areas.School.Controllers
 {
     [SchoolArea]
     [DisplayName("班级")]

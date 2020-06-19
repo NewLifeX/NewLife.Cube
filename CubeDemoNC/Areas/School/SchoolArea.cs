@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using NewLife.Cube;
 
-namespace WebTest.Areas.School
+namespace CubeDemo.Areas.School
 {
     [DisplayName("教务系统")]
     public class SchoolArea : AreaBase
