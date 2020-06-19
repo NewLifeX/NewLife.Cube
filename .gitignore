@@ -31,3 +31,6 @@ bld/
 /NewLife.Cube.VueUI/node_modules
 /NewLife.Cube.VueUI
 *.pubxml
+/.vscode
+/CubeDemo/Config
+/XTemp
