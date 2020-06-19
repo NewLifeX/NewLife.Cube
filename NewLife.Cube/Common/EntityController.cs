@@ -13,6 +13,7 @@ using System.Net.Http;
 using NewLife.Serialization;
 using NewLife.Http;
 using NewLife.Remoting;
+using System.IO;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -132,7 +133,13 @@ namespace NewLife.Cube
             var err = "";
             try
             {
+                //SaveFiles(entity);
+
                 OnInsert(entity);
+
+                var fs = SaveFiles(entity);
+                if (fs.Count > 0) OnUpdate(entity);
+
                 rs = true;
             }
             catch (ArgumentException aex)
@@ -205,6 +212,8 @@ namespace NewLife.Cube
             var err = "";
             try
             {
+                SaveFiles(entity);
+
                 rs = OnUpdate(entity);
                 if (rs <= 0) rs = 1;
             }
@@ -236,6 +245,42 @@ namespace NewLife.Cube
                 // 更新完成保持本页
                 return FormView(entity);
             }
+        }
+
+        /// <summary>保存上传文件</summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        protected virtual IList<String> SaveFiles(TEntity entity)
+        {
+            var list = new List<String>();
+
+#if __CORE__
+            var files = Request.Form.Files;
+#else
+            var files = Request.Files;
+#endif
+            var fields = Factory.Fields;
+            foreach (var fi in fields)
+            {
+                var dc = fi.Field;
+                if (dc.ItemType.EqualIgnoreCase("file", "image"))
+                {
+                    var f = files[dc.Name];
+                    if (f != null)
+                    {
+                        // 保存文件
+                        var ext = Path.GetExtension(f.FileName);
+                        var fileName = entity[Factory.Unique] + ext;
+                        fileName = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\{fileName}";
+                        fileName = Setting.Current.UploadPath.CombinePath(fileName).GetBasePath();
+                        fileName.EnsureDirectory(true);
+
+                        f.SaveAs(fileName);
+                    }
+                }
+            }
+
+            return list;
         }
         #endregion
 

@@ -82,9 +82,14 @@ namespace NewLife.Cube
                 return Html.Raw(label);
             }
 
-            if (field.Type == typeof(String) && (field.Length <= 0 || field.Length > 300))
+            if (field.Type == typeof(String))
             {
-                return Html.ForString(field.Name, (String)entity[field.Name], field.Length);
+                var dc = field.Field;
+                if (dc != null && dc.ItemType.EqualIgnoreCase("file", "image"))
+                    return Html.ForFile(field.Name, entity[field.Name], dc.ItemType);
+
+                if (field.Length <= 0 || field.Length > 300)
+                    return Html.ForString(field.Name, (String)entity[field.Name], field.Length);
             }
 
             // 如果是实体树，并且当前是父级字段，则生产下拉
@@ -440,6 +445,15 @@ namespace NewLife.Cube
             }
 
             return Html.ForListBox(name, dic, values, autoPostback);
+        }
+
+        public static IHtmlContent ForFile(this IHtmlHelper Html, String name, Object value, String itemType)
+        {
+            var accept = "";
+            if (itemType.EqualIgnoreCase("image"))
+                accept = "image/*";
+
+            return Html.TextBox(name, value, new { type = "file", accept });
         }
         #endregion
 

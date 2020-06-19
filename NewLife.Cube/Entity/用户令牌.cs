@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 using XCode;
 using XCode.Configuration;
 using XCode.DataAccessLayer;
@@ -23,7 +26,7 @@ namespace NewLife.Cube.Entity
         [Description("编号")]
         [DataObjectField(true, true, false, 0)]
         [BindColumn("ID", "编号", "")]
-        public Int32 ID { get { return _ID; } set { if (OnPropertyChanging(__.ID, value)) { _ID = value; OnPropertyChanged(__.ID); } } }
+        public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
 
         private String _Token;
         /// <summary>令牌</summary>
@@ -31,7 +34,7 @@ namespace NewLife.Cube.Entity
         [Description("令牌")]
         [DataObjectField(false, false, true, 50)]
         [BindColumn("Token", "令牌", "")]
-        public String Token { get { return _Token; } set { if (OnPropertyChanging(__.Token, value)) { _Token = value; OnPropertyChanged(__.Token); } } }
+        public String Token { get => _Token; set { if (OnPropertyChanging("Token", value)) { _Token = value; OnPropertyChanged("Token"); } } }
 
         private String _Url;
         /// <summary>地址。锁定该令牌只能访问该资源路径</summary>
@@ -39,7 +42,7 @@ namespace NewLife.Cube.Entity
         [Description("地址。锁定该令牌只能访问该资源路径")]
         [DataObjectField(false, false, true, 200)]
         [BindColumn("Url", "地址。锁定该令牌只能访问该资源路径", "")]
-        public String Url { get { return _Url; } set { if (OnPropertyChanging(__.Url, value)) { _Url = value; OnPropertyChanged(__.Url); } } }
+        public String Url { get => _Url; set { if (OnPropertyChanging("Url", value)) { _Url = value; OnPropertyChanged("Url"); } } }
 
         private Int32 _UserID;
         /// <summary>用户。本地用户</summary>
@@ -47,7 +50,7 @@ namespace NewLife.Cube.Entity
         [Description("用户。本地用户")]
         [DataObjectField(false, false, false, 0)]
         [BindColumn("UserID", "用户。本地用户", "")]
-        public Int32 UserID { get { return _UserID; } set { if (OnPropertyChanging(__.UserID, value)) { _UserID = value; OnPropertyChanged(__.UserID); } } }
+        public Int32 UserID { get => _UserID; set { if (OnPropertyChanging("UserID", value)) { _UserID = value; OnPropertyChanged("UserID"); } } }
 
         private DateTime _Expire;
         /// <summary>过期时间</summary>
@@ -55,7 +58,7 @@ namespace NewLife.Cube.Entity
         [Description("过期时间")]
         [DataObjectField(false, false, true, 0)]
         [BindColumn("Expire", "过期时间", "")]
-        public DateTime Expire { get { return _Expire; } set { if (OnPropertyChanging(__.Expire, value)) { _Expire = value; OnPropertyChanged(__.Expire); } } }
+        public DateTime Expire { get => _Expire; set { if (OnPropertyChanging("Expire", value)) { _Expire = value; OnPropertyChanged("Expire"); } } }
 
         private Boolean _Enable;
         /// <summary>启用</summary>
@@ -63,7 +66,7 @@ namespace NewLife.Cube.Entity
         [Description("启用")]
         [DataObjectField(false, false, false, 0)]
         [BindColumn("Enable", "启用", "")]
-        public Boolean Enable { get { return _Enable; } set { if (OnPropertyChanging(__.Enable, value)) { _Enable = value; OnPropertyChanged(__.Enable); } } }
+        public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
         private Int32 _Times;
         /// <summary>次数。该令牌使用次数</summary>
@@ -71,7 +74,7 @@ namespace NewLife.Cube.Entity
         [Description("次数。该令牌使用次数")]
         [DataObjectField(false, false, false, 0)]
         [BindColumn("Times", "次数。该令牌使用次数", "")]
-        public Int32 Times { get { return _Times; } set { if (OnPropertyChanging(__.Times, value)) { _Times = value; OnPropertyChanged(__.Times); } } }
+        public Int32 Times { get => _Times; set { if (OnPropertyChanging("Times", value)) { _Times = value; OnPropertyChanged("Times"); } } }
 
         private String _FirstIP;
         /// <summary>首次地址</summary>
@@ -79,7 +82,7 @@ namespace NewLife.Cube.Entity
         [Description("首次地址")]
         [DataObjectField(false, false, true, 50)]
         [BindColumn("FirstIP", "首次地址", "")]
-        public String FirstIP { get { return _FirstIP; } set { if (OnPropertyChanging(__.FirstIP, value)) { _FirstIP = value; OnPropertyChanged(__.FirstIP); } } }
+        public String FirstIP { get => _FirstIP; set { if (OnPropertyChanging("FirstIP", value)) { _FirstIP = value; OnPropertyChanged("FirstIP"); } } }
 
         private DateTime _FirstTime;
         /// <summary>首次时间</summary>
@@ -87,7 +90,7 @@ namespace NewLife.Cube.Entity
         [Description("首次时间")]
         [DataObjectField(false, false, true, 0)]
         [BindColumn("FirstTime", "首次时间", "")]
-        public DateTime FirstTime { get { return _FirstTime; } set { if (OnPropertyChanging(__.FirstTime, value)) { _FirstTime = value; OnPropertyChanged(__.FirstTime); } } }
+        public DateTime FirstTime { get => _FirstTime; set { if (OnPropertyChanging("FirstTime", value)) { _FirstTime = value; OnPropertyChanged("FirstTime"); } } }
 
         private String _LastIP;
         /// <summary>最后地址</summary>
@@ -95,7 +98,7 @@ namespace NewLife.Cube.Entity
         [Description("最后地址")]
         [DataObjectField(false, false, true, 50)]
         [BindColumn("LastIP", "最后地址", "")]
-        public String LastIP { get { return _LastIP; } set { if (OnPropertyChanging(__.LastIP, value)) { _LastIP = value; OnPropertyChanged(__.LastIP); } } }
+        public String LastIP { get => _LastIP; set { if (OnPropertyChanging("LastIP", value)) { _LastIP = value; OnPropertyChanged("LastIP"); } } }
 
         private DateTime _LastTime;
         /// <summary>最后时间</summary>
@@ -103,7 +106,7 @@ namespace NewLife.Cube.Entity
         [Description("最后时间")]
         [DataObjectField(false, false, true, 0)]
         [BindColumn("LastTime", "最后时间", "")]
-        public DateTime LastTime { get { return _LastTime; } set { if (OnPropertyChanging(__.LastTime, value)) { _LastTime = value; OnPropertyChanged(__.LastTime); } } }
+        public DateTime LastTime { get => _LastTime; set { if (OnPropertyChanging("LastTime", value)) { _LastTime = value; OnPropertyChanged("LastTime"); } } }
 
         private Int32 _CreateUserID;
         /// <summary>创建用户</summary>
@@ -111,7 +114,7 @@ namespace NewLife.Cube.Entity
         [Description("创建用户")]
         [DataObjectField(false, false, false, 0)]
         [BindColumn("CreateUserID", "创建用户", "")]
-        public Int32 CreateUserID { get { return _CreateUserID; } set { if (OnPropertyChanging(__.CreateUserID, value)) { _CreateUserID = value; OnPropertyChanged(__.CreateUserID); } } }
+        public Int32 CreateUserID { get => _CreateUserID; set { if (OnPropertyChanging("CreateUserID", value)) { _CreateUserID = value; OnPropertyChanged("CreateUserID"); } } }
 
         private String _CreateIP;
         /// <summary>创建地址</summary>
@@ -119,7 +122,7 @@ namespace NewLife.Cube.Entity
         [Description("创建地址")]
         [DataObjectField(false, false, true, 50)]
         [BindColumn("CreateIP", "创建地址", "")]
-        public String CreateIP { get { return _CreateIP; } set { if (OnPropertyChanging(__.CreateIP, value)) { _CreateIP = value; OnPropertyChanged(__.CreateIP); } } }
+        public String CreateIP { get => _CreateIP; set { if (OnPropertyChanging("CreateIP", value)) { _CreateIP = value; OnPropertyChanged("CreateIP"); } } }
 
         private DateTime _CreateTime;
         /// <summary>创建时间</summary>
@@ -127,7 +130,7 @@ namespace NewLife.Cube.Entity
         [Description("创建时间")]
         [DataObjectField(false, false, true, 0)]
         [BindColumn("CreateTime", "创建时间", "")]
-        public DateTime CreateTime { get { return _CreateTime; } set { if (OnPropertyChanging(__.CreateTime, value)) { _CreateTime = value; OnPropertyChanged(__.CreateTime); } } }
+        public DateTime CreateTime { get => _CreateTime; set { if (OnPropertyChanging("CreateTime", value)) { _CreateTime = value; OnPropertyChanged("CreateTime"); } } }
 
         private Int32 _UpdateUserID;
         /// <summary>更新用户</summary>
@@ -135,7 +138,7 @@ namespace NewLife.Cube.Entity
         [Description("更新用户")]
         [DataObjectField(false, false, false, 0)]
         [BindColumn("UpdateUserID", "更新用户", "")]
-        public Int32 UpdateUserID { get { return _UpdateUserID; } set { if (OnPropertyChanging(__.UpdateUserID, value)) { _UpdateUserID = value; OnPropertyChanged(__.UpdateUserID); } } }
+        public Int32 UpdateUserID { get => _UpdateUserID; set { if (OnPropertyChanging("UpdateUserID", value)) { _UpdateUserID = value; OnPropertyChanged("UpdateUserID"); } } }
 
         private String _UpdateIP;
         /// <summary>更新地址</summary>
@@ -143,7 +146,7 @@ namespace NewLife.Cube.Entity
         [Description("更新地址")]
         [DataObjectField(false, false, true, 50)]
         [BindColumn("UpdateIP", "更新地址", "")]
-        public String UpdateIP { get { return _UpdateIP; } set { if (OnPropertyChanging(__.UpdateIP, value)) { _UpdateIP = value; OnPropertyChanged(__.UpdateIP); } } }
+        public String UpdateIP { get => _UpdateIP; set { if (OnPropertyChanging("UpdateIP", value)) { _UpdateIP = value; OnPropertyChanged("UpdateIP"); } } }
 
         private DateTime _UpdateTime;
         /// <summary>更新时间</summary>
@@ -151,7 +154,7 @@ namespace NewLife.Cube.Entity
         [Description("更新时间")]
         [DataObjectField(false, false, true, 0)]
         [BindColumn("UpdateTime", "更新时间", "")]
-        public DateTime UpdateTime { get { return _UpdateTime; } set { if (OnPropertyChanging(__.UpdateTime, value)) { _UpdateTime = value; OnPropertyChanged(__.UpdateTime); } } }
+        public DateTime UpdateTime { get => _UpdateTime; set { if (OnPropertyChanging("UpdateTime", value)) { _UpdateTime = value; OnPropertyChanged("UpdateTime"); } } }
 
         private String _Remark;
         /// <summary>备注</summary>
@@ -159,7 +162,7 @@ namespace NewLife.Cube.Entity
         [Description("备注")]
         [DataObjectField(false, false, true, 500)]
         [BindColumn("Remark", "备注", "")]
-        public String Remark { get { return _Remark; } set { if (OnPropertyChanging(__.Remark, value)) { _Remark = value; OnPropertyChanged(__.Remark); } } }
+        public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
         #endregion
 
         #region 获取/设置 字段值
@@ -172,24 +175,24 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case __.ID : return _ID;
-                    case __.Token : return _Token;
-                    case __.Url : return _Url;
-                    case __.UserID : return _UserID;
-                    case __.Expire : return _Expire;
-                    case __.Enable : return _Enable;
-                    case __.Times : return _Times;
-                    case __.FirstIP : return _FirstIP;
-                    case __.FirstTime : return _FirstTime;
-                    case __.LastIP : return _LastIP;
-                    case __.LastTime : return _LastTime;
-                    case __.CreateUserID : return _CreateUserID;
-                    case __.CreateIP : return _CreateIP;
-                    case __.CreateTime : return _CreateTime;
-                    case __.UpdateUserID : return _UpdateUserID;
-                    case __.UpdateIP : return _UpdateIP;
-                    case __.UpdateTime : return _UpdateTime;
-                    case __.Remark : return _Remark;
+                    case "ID": return _ID;
+                    case "Token": return _Token;
+                    case "Url": return _Url;
+                    case "UserID": return _UserID;
+                    case "Expire": return _Expire;
+                    case "Enable": return _Enable;
+                    case "Times": return _Times;
+                    case "FirstIP": return _FirstIP;
+                    case "FirstTime": return _FirstTime;
+                    case "LastIP": return _LastIP;
+                    case "LastTime": return _LastTime;
+                    case "CreateUserID": return _CreateUserID;
+                    case "CreateIP": return _CreateIP;
+                    case "CreateTime": return _CreateTime;
+                    case "UpdateUserID": return _UpdateUserID;
+                    case "UpdateIP": return _UpdateIP;
+                    case "UpdateTime": return _UpdateTime;
+                    case "Remark": return _Remark;
                     default: return base[name];
                 }
             }
@@ -197,24 +200,24 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case __.ID : _ID = value.ToInt(); break;
-                    case __.Token : _Token = Convert.ToString(value); break;
-                    case __.Url : _Url = Convert.ToString(value); break;
-                    case __.UserID : _UserID = value.ToInt(); break;
-                    case __.Expire : _Expire = value.ToDateTime(); break;
-                    case __.Enable : _Enable = value.ToBoolean(); break;
-                    case __.Times : _Times = value.ToInt(); break;
-                    case __.FirstIP : _FirstIP = Convert.ToString(value); break;
-                    case __.FirstTime : _FirstTime = value.ToDateTime(); break;
-                    case __.LastIP : _LastIP = Convert.ToString(value); break;
-                    case __.LastTime : _LastTime = value.ToDateTime(); break;
-                    case __.CreateUserID : _CreateUserID = value.ToInt(); break;
-                    case __.CreateIP : _CreateIP = Convert.ToString(value); break;
-                    case __.CreateTime : _CreateTime = value.ToDateTime(); break;
-                    case __.UpdateUserID : _UpdateUserID = value.ToInt(); break;
-                    case __.UpdateIP : _UpdateIP = Convert.ToString(value); break;
-                    case __.UpdateTime : _UpdateTime = value.ToDateTime(); break;
-                    case __.Remark : _Remark = Convert.ToString(value); break;
+                    case "ID": _ID = value.ToInt(); break;
+                    case "Token": _Token = Convert.ToString(value); break;
+                    case "Url": _Url = Convert.ToString(value); break;
+                    case "UserID": _UserID = value.ToInt(); break;
+                    case "Expire": _Expire = value.ToDateTime(); break;
+                    case "Enable": _Enable = value.ToBoolean(); break;
+                    case "Times": _Times = value.ToInt(); break;
+                    case "FirstIP": _FirstIP = Convert.ToString(value); break;
+                    case "FirstTime": _FirstTime = value.ToDateTime(); break;
+                    case "LastIP": _LastIP = Convert.ToString(value); break;
+                    case "LastTime": _LastTime = value.ToDateTime(); break;
+                    case "CreateUserID": _CreateUserID = value.ToInt(); break;
+                    case "CreateIP": _CreateIP = Convert.ToString(value); break;
+                    case "CreateTime": _CreateTime = value.ToDateTime(); break;
+                    case "UpdateUserID": _UpdateUserID = value.ToInt(); break;
+                    case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
+                    case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
+                    case "Remark": _Remark = Convert.ToString(value); break;
                     default: base[name] = value; break;
                 }
             }
@@ -226,60 +229,60 @@ namespace NewLife.Cube.Entity
         public partial class _
         {
             /// <summary>编号</summary>
-            public static readonly Field ID = FindByName(__.ID);
+            public static readonly Field ID = FindByName("ID");
 
             /// <summary>令牌</summary>
-            public static readonly Field Token = FindByName(__.Token);
+            public static readonly Field Token = FindByName("Token");
 
             /// <summary>地址。锁定该令牌只能访问该资源路径</summary>
-            public static readonly Field Url = FindByName(__.Url);
+            public static readonly Field Url = FindByName("Url");
 
             /// <summary>用户。本地用户</summary>
-            public static readonly Field UserID = FindByName(__.UserID);
+            public static readonly Field UserID = FindByName("UserID");
 
             /// <summary>过期时间</summary>
-            public static readonly Field Expire = FindByName(__.Expire);
+            public static readonly Field Expire = FindByName("Expire");
 
             /// <summary>启用</summary>
-            public static readonly Field Enable = FindByName(__.Enable);
+            public static readonly Field Enable = FindByName("Enable");
 
             /// <summary>次数。该令牌使用次数</summary>
-            public static readonly Field Times = FindByName(__.Times);
+            public static readonly Field Times = FindByName("Times");
 
             /// <summary>首次地址</summary>
-            public static readonly Field FirstIP = FindByName(__.FirstIP);
+            public static readonly Field FirstIP = FindByName("FirstIP");
 
             /// <summary>首次时间</summary>
-            public static readonly Field FirstTime = FindByName(__.FirstTime);
+            public static readonly Field FirstTime = FindByName("FirstTime");
 
             /// <summary>最后地址</summary>
-            public static readonly Field LastIP = FindByName(__.LastIP);
+            public static readonly Field LastIP = FindByName("LastIP");
 
             /// <summary>最后时间</summary>
-            public static readonly Field LastTime = FindByName(__.LastTime);
+            public static readonly Field LastTime = FindByName("LastTime");
 
             /// <summary>创建用户</summary>
-            public static readonly Field CreateUserID = FindByName(__.CreateUserID);
+            public static readonly Field CreateUserID = FindByName("CreateUserID");
 
             /// <summary>创建地址</summary>
-            public static readonly Field CreateIP = FindByName(__.CreateIP);
+            public static readonly Field CreateIP = FindByName("CreateIP");
 
             /// <summary>创建时间</summary>
-            public static readonly Field CreateTime = FindByName(__.CreateTime);
+            public static readonly Field CreateTime = FindByName("CreateTime");
 
             /// <summary>更新用户</summary>
-            public static readonly Field UpdateUserID = FindByName(__.UpdateUserID);
+            public static readonly Field UpdateUserID = FindByName("UpdateUserID");
 
             /// <summary>更新地址</summary>
-            public static readonly Field UpdateIP = FindByName(__.UpdateIP);
+            public static readonly Field UpdateIP = FindByName("UpdateIP");
 
             /// <summary>更新时间</summary>
-            public static readonly Field UpdateTime = FindByName(__.UpdateTime);
+            public static readonly Field UpdateTime = FindByName("UpdateTime");
 
             /// <summary>备注</summary>
-            public static readonly Field Remark = FindByName(__.Remark);
+            public static readonly Field Remark = FindByName("Remark");
 
-            static Field FindByName(String name) { return Meta.Table.FindByName(name); }
+            static Field FindByName(String name) => Meta.Table.FindByName(name);
         }
 
         /// <summary>取得用户令牌字段名称的快捷方式</summary>

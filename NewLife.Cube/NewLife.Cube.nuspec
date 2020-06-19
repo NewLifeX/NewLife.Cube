@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>NewLife.Cube</id>
+    <version>3.4.7450.39928</version>
+    <authors>新生命开发团队</authors>
+    <owners>新生命开发团队</owners>
+    <licenseUrl>http://www.NewLifeX.com</licenseUrl>
+    <projectUrl>https://github.com/NewLifeX</projectUrl>
+    <iconUrl>http://www.NewLifeX.com/favicon.ico</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Mvc权限管理后台，支持模版视图重载覆盖</description>
+    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright 2002-2020 新生命开发团队 http://www.NewLifeX.com</copyright>
+    <tags>新生命团队 X组件 NewLife NewLife.Cube</tags>
+    <dependencies>
+    </dependencies>
+  </metadata>
+</package>

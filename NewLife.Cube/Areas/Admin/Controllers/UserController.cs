@@ -176,8 +176,10 @@ namespace NewLife.Cube.Admin.Controllers
 
                 ModelState.AddModelError("", ex.Message);
             }
+
             //云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
             ViewBag.IsShowTip = UserX.Meta.Count == 1;
+
             return View();
         }
 
@@ -276,7 +278,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             try
             {
-                if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
+                //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
                 if (String.IsNullOrEmpty(username)) throw new ArgumentNullException("username", "用户名不能为空！");
                 if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", "密码不能为空！");
                 if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
@@ -284,14 +286,14 @@ namespace NewLife.Cube.Admin.Controllers
 
                 // 去重判断
                 var user = UserX.FindByName(username);
-                if (user != null) throw new ArgumentException("usename", $"用户[{username}]已存在！");
+                if (user != null) throw new ArgumentException("username", $"用户[{username}]已存在！");
 
                 var r = Role.GetOrAdd(set.DefaultRole);
 
                 user = new UserX()
                 {
                     Name = username,
-                    Password = password.MD5(),
+                    Password = password,
                     Mail = email,
                     RoleID = r.ID,
                     Enable = true
@@ -343,7 +345,7 @@ namespace NewLife.Cube.Admin.Controllers
             var ids = GetRequest("keys").SplitAsInt();
             if (ids.Length > 0)
             {
-                Parallel.ForEach(ids, id =>
+                foreach (var id in ids)
                 {
                     var user = UserX.FindByID(id);
                     if (user != null && user.Enable != isEnable)
@@ -353,7 +355,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                         Interlocked.Increment(ref count);
                     }
-                });
+                }
             }
 
             return JsonRefresh("共{1}[{0}]个用户".F(count, isEnable ? "启用" : "禁用"));

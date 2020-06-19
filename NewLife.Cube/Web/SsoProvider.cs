@@ -120,6 +120,7 @@ namespace NewLife.Cube.Web
         /// <summary>登录成功</summary>
         /// <param name="client">OAuth客户端</param>
         /// <param name="context">服务提供者。可用于获取HttpContext成员</param>
+        /// <param name="uc">用户链接</param>
         /// <returns></returns>
         public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc)
         {
@@ -131,7 +132,8 @@ namespace NewLife.Cube.Web
             var ip = httpContext.GetUserHost();
 #else
             var req = context.GetService<HttpRequest>();
-            var ip = req.RequestContext.HttpContext.GetUserHost();
+            var httpContext = req.RequestContext.HttpContext;
+            var ip = httpContext.GetUserHost();
 #endif
             //if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
             if (req != null) forceBind = req.Get("state").EndsWithIgnoreCase("_bind");
@@ -181,11 +183,14 @@ namespace NewLife.Cube.Web
             //prv.SaveCookie(user);
             var set = Setting.Current;
             if (set.SessionTimeout > 0)
+            {
+                var expire = TimeSpan.FromSeconds(set.SessionTimeout);
 #if __CORE__
-                ManagerProviderHelper.SaveCookie(prv, user, TimeSpan.FromSeconds(set.SessionTimeout), httpContext);
+                prv.SaveCookie(user, expire, httpContext);
 #else
-                prv.SaveCookie(user, TimeSpan.FromSeconds(set.SessionTimeout), context);
+                prv.SaveCookie(user, expire, httpContext.ApplicationInstance.Context);
 #endif
+            }
 
             return SuccessUrl;
         }
@@ -232,13 +237,15 @@ namespace NewLife.Cube.Web
 
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;
-                if (av != null && av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http")) av = new Uri(new Uri(client.Server), av) + "";
+                if (av != null && av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http"))
+                    av = new Uri(new Uri(client.Server), av) + "";
+
                 if (user2.Avatar.IsNullOrEmpty())
                     user2.Avatar = av;
                 // 本地头像，如果不存在，也要更新
                 else if (user2.Avatar.StartsWith("/Sso/Avatar/"))
                 {
-                    var av2 = Setting.Current.AvatarPath.CombinePath(user2.ID + ".png");
+                    var av2 = Setting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
                     if (!File.Exists(av2))
                     {
                         LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"{user2.Avatar} => {av}", user.ID, user + "");

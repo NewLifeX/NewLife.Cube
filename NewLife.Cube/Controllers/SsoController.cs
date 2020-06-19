@@ -415,7 +415,15 @@ namespace NewLife.Cube.Controllers
             var url = "";
 
             // 如果已经登录，直接返回。否则跳到登录页面
-            var user = prov?.Current ?? prov?.Provider.TryLogin();
+            var user = prov?.Current;
+            if (user == null)
+            {
+#if __CORE__
+                user = prov?.Provider.TryLogin(HttpContext);
+#else
+                user = prov?.Provider.TryLogin(HttpContext.ApplicationInstance.Context);
+#endif
+            }
             if (user != null)
                 url = OAuth.GetResult(key, user);
             else
@@ -559,22 +567,21 @@ namespace NewLife.Cube.Controllers
             if (prv == null) throw new ArgumentNullException(nameof(Provider));
 
             var set = Setting.Current;
-            var av = set.AvatarPath.CombinePath(id + ".png");
-            var av2 = av.GetBasePath();
-            if (!System.IO.File.Exists(av2))
+            var av = set.AvatarPath.CombinePath(id + ".png").GetBasePath();
+            if (!System.IO.File.Exists(av))
             {
                 var user = prv.Provider?.FindByID(id);
                 if (user == null) throw new Exception("用户不存在 " + id);
 
                 prv.FetchAvatar(user);
             }
-            if (!System.IO.File.Exists(av2)) throw new Exception("用户头像不存在 " + id);
+            if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
 
 #if __CORE__
-            var vs = System.IO.File.ReadAllBytes(av2);
+            var vs = System.IO.File.ReadAllBytes(av);
             return File(vs, "image/png");
 #else
-            return File(av2, "image/png");
+            return File(av, "image/png");
 #endif
         }
         #endregion

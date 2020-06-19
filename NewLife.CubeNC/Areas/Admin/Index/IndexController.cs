@@ -6,27 +6,20 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-#if __CORE__
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NewLife.Cube.Extensions;
-#else
-using System.Web;
-using System.Web.Mvc;
-using Microsoft.AspNetCore.Mvc;
-#endif
-
 using NewLife.Common;
+using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
-using NewLife.Cube.ViewModels;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
-using Microsoft.Extensions.Hosting;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -38,9 +31,8 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>菜单顺序。扫描是会反射读取</summary>
         protected static Int32 MenuOrder { get; set; } = 10;
 
-#if __CORE__
-        private IManageProvider _provider;
-        private IHostApplicationLifetime _applicationLifetime { get; set; }
+        private readonly IManageProvider _provider;
+        private readonly IHostApplicationLifetime _applicationLifetime;
 
         static IndexController() => MachineInfo.RegisterAsync();
 
@@ -50,50 +42,28 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="manageProvider"></param>
         /// <param name="appLifetime"></param>
         /// <param name="logger"></param>
-        public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime
-            , ILogger<IndexController> logger) : this()
+        public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime) : this()
         {
             _provider = manageProvider;
-            // _applicationLifetime = appLifetime;
+            _applicationLifetime = appLifetime;
         }
-#endif
 
         /// <summary>首页</summary>
         /// <returns></returns>
-        //[EntityAuthorize(PermissionFlags.Detail)]
         [AllowAnonymous]
-#if !__CORE__
-        [RequireSsl]
-#endif
         public ActionResult Index()
         {
-#if __CORE__
-            var user = ManagerProviderHelper.TryLogin(_provider, HttpContext.RequestServices);
-#else
-            var user = ManageProvider.Provider.TryLogin();
-#endif
+            var user = _provider.TryLogin(HttpContext);
             if (user == null) return RedirectToAction("Login", "User", new
             {
-#if __CORE__
                 r = Request.GetEncodedPathAndQuery()
-#else
-                r = Request.Url.PathAndQuery
-#endif
             });
 
-#if __CORE__
             ViewBag.User = _provider.Current;
-#else
-            ViewBag.User = ManageProvider.User;
-#endif
             ViewBag.Config = SysConfig.Current;
 
             // 工作台页面
-#if __CORE__
             var startPage = Request.GetRequestValue("page");
-#else
-            var startPage = Request["page"];
-#endif
             if (startPage.IsNullOrEmpty()) startPage = Setting.Current.StartPage;
 
             ViewBag.Main = startPage;
@@ -117,16 +87,15 @@ namespace NewLife.Cube.Admin.Controllers
             Asms = Asms.OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
             ViewBag.Asms = Asms;
 
-            //return View();
-            switch ((id + "").ToLower())
+            return ((id + "").ToLower()) switch
             {
-                case "processmodules": return View("ProcessModules");
-                case "assembly": return View("Assembly");
-                case "session": return View("Session");
-                case "cache": return View("Cache");
-                case "servervar": return View("ServerVar");
-                default: return View();
-            }
+                "processmodules" => View("ProcessModules"),
+                "assembly" => View("Assembly"),
+                "session" => View("Session"),
+                "cache" => View("Cache"),
+                "servervar" => View("ServerVar"),
+                _ => View(),
+            };
         }
 
         /// <summary>获取当前应用程序的所有程序集，不包括系统程序集，仅限本目录</summary>
@@ -202,8 +171,9 @@ namespace NewLife.Cube.Admin.Controllers
 
             return RedirectToAction(nameof(Main));
         }
+
         [DllImport("kernel32.dll")]
-        static extern Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
+        extern static Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
 
         /// <summary>
         /// 获取菜单树

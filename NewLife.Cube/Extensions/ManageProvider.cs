@@ -8,6 +8,8 @@ using NewLife.Common;
 using NewLife.Model;
 using NewLife.Cube;
 using System.Web.SessionState;
+using JwtBuilder = NewLife.Web.JwtBuilder;
+using NewLife.Log;
 
 namespace XCode.Membership
 {
@@ -18,9 +20,6 @@ namespace XCode.Membership
         #endregion
 
         #region 属性
-        /// <summary>保存于Cookie的凭证</summary>
-        public String CookieKey { get; set; } = "Admin";
-
         /// <summary>保存于Session的凭证</summary>
         public String SessionKey { get; set; } = "Admin";
         #endregion
@@ -51,21 +50,9 @@ namespace XCode.Membership
             var key = SessionKey;
             // 特殊处理注销
             if (user == null)
-            {
-                // 修改Session
                 ss.Remove(key);
-
-                //if (ss[key] is IAuthUser au)
-                //{
-                //    au.Online = false;
-                //    au.Save();
-                //}
-            }
             else
-            {
-                // 修改Session
                 ss[key] = user;
-            }
         }
 
         /// <summary>登录</summary>
@@ -90,7 +77,8 @@ namespace XCode.Membership
                     expire = TimeSpan.FromSeconds(set.SessionTimeout);
             }
 
-            this.SaveCookie(user, expire);
+            var context = HttpContext.Current;
+            this.SaveCookie(user, expire, context);
 
             return user;
         }
@@ -106,7 +94,7 @@ namespace XCode.Membership
             ss?.Clear();
 
             // 销毁Cookie
-            this.SaveCookie(null, TimeSpan.FromDays(-1));
+            this.SaveCookie(null, TimeSpan.FromDays(-1), context);
         }
         #endregion
     }
@@ -119,7 +107,6 @@ namespace XCode.Membership
         /// <param name="context">Http上下文，兼容NetCore</param>
         public static void SetPrincipal(this IManageProvider provider, IServiceProvider context = null)
         {
-            //var ctx = context as Microsoft.AspNetCore.Http.HttpContext;
             var ctx = context as HttpContext ?? HttpContext.Current;
             if (ctx == null) return;
 
@@ -140,7 +127,7 @@ namespace XCode.Membership
         /// <summary>尝试登录。如果Session未登录则借助Cookie</summary>
         /// <param name="provider">提供者</param>
         /// <param name="context">Http上下文，兼容NetCore</param>
-        public static IManageUser TryLogin(this IManageProvider provider, IServiceProvider context = null)
+        public static IManageUser TryLogin(this IManageProvider provider, HttpContext context)
         {
             // 判断当前登录用户
             var user = provider.GetCurrent(context);
@@ -157,53 +144,64 @@ namespace XCode.Membership
             return user;
         }
 
-        #region Cookie
-        private static String GetCookieKey(IManageProvider provider)
+        /// <summary>生成令牌</summary>
+        /// <returns></returns>
+        private static JwtBuilder GetJwt()
         {
-            var key = (provider as DefaultManageProvider)?.CookieKey;
-            if (key.IsNullOrEmpty()) key = "cube_user";
+            var set = NewLife.Cube.Setting.Current;
 
-            return key;
+            // 生成令牌
+            var ss = set.JwtSecret.Split(':');
+            var jwt = new JwtBuilder
+            {
+                Algorithm = ss[0],
+                Secret = ss[1],
+            };
+
+            return jwt;
         }
 
+        #region Cookie
         /// <summary>从Cookie加载用户信息</summary>
         /// <param name="provider">提供者</param>
         /// <param name="autologin">是否自动登录</param>
         /// <param name="context">Http上下文，兼容NetCore</param>
         /// <returns></returns>
-        public static IManageUser LoadCookie(this IManageProvider provider, Boolean autologin = true, IServiceProvider context = null)
+        public static IManageUser LoadCookie(this IManageProvider provider, Boolean autologin, HttpContext context)
         {
-            var key = GetCookieKey(provider);
+            var key = "token";
+            var req = context?.Request;
+            var token = req?.Cookies[key]?.Value;
+            if (token.IsNullOrEmpty()) return null;
 
-            if (context == null) context = HttpContext.Current;
-            var req = context.GetService<HttpRequest>();
-            var cookie = req?.Cookies[key];
-            if (cookie == null) return null;
+            var jwt = GetJwt();
+            if (!jwt.TryDecode(token, out var msg))
+            {
+                XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
 
-            var m = new CookieModel();
-            if (!m.Read(cookie, SysConfig.Current.InstallTime.ToFullString())) return null;
+                return null;
+            }
 
-            var user = HttpUtility.UrlDecode(m.UserName);
-            //var user = HttpUtility.UrlDecode(cookie["u"]);
-            //var pass = cookie["p"];
-            //var exp = cookie["e"].ToInt(-1);
-            if (user.IsNullOrEmpty() || m.Password.IsNullOrEmpty()) return null;
+            var user = jwt.Subject;
+            if (user.IsNullOrEmpty()) return null;
 
-            // 判断有效期
-            //var expire = exp.ToDateTime();
-            if (m.Expire < DateTime.Now) return null;
+            //// 判断有效期
+            //if (jwt.Expire < DateTime.Now)
+            //{
+            //    XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
+
+            //    return null;
+            //}
 
             var u = provider.FindByName(user);
             if (u == null || !u.Enable) return null;
 
-            var mu = u as IAuthUser;
-            if (!m.Password.EqualIgnoreCase(mu.Password.MD5())) return null;
-
             // 保存登录信息
-            if (autologin)
+            if (autologin && u is IAuthUser mu)
             {
                 mu.SaveLogin(null);
-                LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={m.Time} Expire={m.Expire}", u.ID, u + "", ip: req.RequestContext.HttpContext.GetUserHost());
+
+                LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={jwt.IssuedAt} Expire={jwt.Expire} Token={token}", u.ID, u + "", ip: req.RequestContext.HttpContext.GetUserHost());
             }
 
             return u;
@@ -214,81 +212,30 @@ namespace XCode.Membership
         /// <param name="user">用户</param>
         /// <param name="expire">过期时间</param>
         /// <param name="context">Http上下文，兼容NetCore</param>
-        public static void SaveCookie(this IManageProvider provider, IManageUser user, TimeSpan expire, IServiceProvider context = null)
+        public static void SaveCookie(this IManageProvider provider, IManageUser user, TimeSpan expire, HttpContext context)
         {
-            if (context == null) context = HttpContext.Current;
+            var res = context?.Response;
+            if (res == null) return;
 
-            var req = context?.GetService<HttpRequest>();
-            var res = context?.GetService<HttpResponse>();
-            if (req == null || res == null) return;
-
-            var key = GetCookieKey(provider);
-            //var reqcookie = req.Cookies[key];
-            if (user is IAuthUser au)
+            var key = "token";
+            if (user == null)
             {
-                var u = HttpUtility.UrlEncode(user.Name);
-                var p = !au.Password.IsNullOrEmpty() ? au.Password.MD5() : null;
-
-                var m = new CookieModel
-                {
-                    UserName = u,
-                    Password = p,
-                    Time = DateTime.Now,
-                    Expire = DateTime.Now.Add(expire)
-                };
-                m.Write(res.Cookies[key], SysConfig.Current.InstallTime.ToFullString());
+                var cookie = new HttpCookie(key) { Value = null, Expires = DateTime.Now.AddDays(-1) };
+                res.Cookies.Set(cookie);
             }
             else
             {
-                var cookie = res.Cookies[key];
-                cookie.Value = null;
-                cookie.Expires = DateTime.Now.AddYears(-1);
+                // 令牌有效期，默认2小时
+                var exp = DateTime.Now.Add(expire.TotalSeconds > 0 ? expire : TimeSpan.FromHours(2));
+                var jwt = GetJwt();
+                jwt.Subject = user.Name;
+                jwt.Expire = exp;
+
+                var token = jwt.Encode(null);
+                var cookie = new HttpCookie(key) { Value = token };
+                if (expire.TotalSeconds > 0) cookie.Expires = DateTime.Now.Add(expire);
+                res.Cookies.Set(cookie);
             }
-        }
-
-        class CookieModel
-        {
-            #region 属性
-            public String UserName { get; set; }
-            public String Password { get; set; }
-            public DateTime Time { get; set; }
-            public DateTime Expire { get; set; }
-            public String Sign { get; set; }
-            #endregion
-
-            #region 方法
-            public Boolean Read(HttpCookie cookie, String key)
-            {
-                UserName = cookie["u"];
-                Password = cookie["p"];
-                Time = (cookie["t"] + "").ToInt().ToDateTime();
-                Expire = (cookie["e"] + "").ToInt().ToDateTime();
-                Sign = cookie["s"];
-
-                var str = $"u={UserName}&p={Password}&t={Time.ToInt()}&e={Expire.ToInt()}&k={key}";
-
-                return str.MD5() == Sign;
-            }
-
-            public void Write(HttpCookie cookie, String key)
-            {
-                //cookie.HttpOnly = true;
-                cookie["u"] = UserName;
-                cookie["p"] = Password;
-
-                var dt = Time;
-                cookie["t"] = dt.ToInt() + "";
-
-                var exp = Expire;
-                cookie.Expires = exp;
-                cookie["e"] = exp.ToInt() + "";
-
-                var str = $"u={UserName}&p={Password}&t={Time.ToInt()}&e={Expire.ToInt()}&k={key}";
-                Sign = str.MD5();
-
-                cookie["s"] = Sign;
-            }
-            #endregion
         }
         #endregion
     }

@@ -84,7 +84,7 @@ namespace NewLife.Cube
             var ctx = httpContext;
 
             // 判断当前登录用户
-            var user = prv.TryLogin();
+            var user = prv.TryLogin(ctx.ApplicationInstance.Context);
             if (user == null) return false;
 
             // 判断权限
