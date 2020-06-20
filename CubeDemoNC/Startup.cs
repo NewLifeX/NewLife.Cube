@@ -24,21 +24,7 @@ namespace CubeDemoNC
             //app.UseHttpsRedirection();
 
             app.UseStaticFiles();
-
-            app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllerRoute(
-                    "CubeAreas",
-                    "{area}/{controller=Index}/{action=Index}/{id?}");
-                endpoints.MapControllerRoute(
-                    "Default",
-                    "{controller=Home}/{action=Index}/{id?}"
-                    );
-                endpoints.MapRazorPages();
-            })
-                .Build();
-
+            
             app.UseCube(env);
         }
     }
