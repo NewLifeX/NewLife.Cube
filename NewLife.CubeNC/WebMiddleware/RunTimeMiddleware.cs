@@ -26,6 +26,13 @@ namespace NewLife.Cube.WebMiddleware
         /// <summary>会话提供者</summary>
         static readonly SessionProvider _sessionProvider = new SessionProvider();
 
+        /// <summary>跟踪器</summary>
+        public static ITracer Tracer { get; set; }
+
+#if DEBUG
+        static RunTimeMiddleware() => Tracer = DefaultTracer.Instance;
+#endif
+
         /// <summary>实例化</summary>
         /// <param name="next"></param>
         public RunTimeMiddleware(RequestDelegate next) => _next = next ?? throw new ArgumentNullException(nameof(next));
@@ -35,6 +42,9 @@ namespace NewLife.Cube.WebMiddleware
         /// <returns></returns>
         public async Task Invoke(HttpContext ctx)
         {
+            // APM跟踪
+            var span = Tracer?.NewSpan(ctx.Request.Path);
+
             ManageProvider.UserHost = ctx.GetUserHost();
 
             // 创建Session集合
@@ -62,9 +72,16 @@ namespace NewLife.Cube.WebMiddleware
             {
                 await _next.Invoke(ctx);
             }
+            catch (Exception ex)
+            {
+                span?.SetError(ex, ctx.Request.QueryString + "");
+
+                throw;
+            }
             finally
             {
                 sw.Stop();
+                span?.Dispose();
 
                 DAL.LocalFilter = null;
                 ManageProvider.UserHost = null;
