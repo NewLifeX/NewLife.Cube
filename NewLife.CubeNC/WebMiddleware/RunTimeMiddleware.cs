@@ -30,7 +30,11 @@ namespace NewLife.Cube.WebMiddleware
         public static ITracer Tracer { get; set; }
 
 #if DEBUG
-        static RunTimeMiddleware() => Tracer = DefaultTracer.Instance;
+        static RunTimeMiddleware()
+        {
+            Tracer = DefaultTracer.Instance;
+            DAL.GlobalTracer = DefaultTracer.Instance;
+        }
 #endif
 
         /// <summary>实例化</summary>
