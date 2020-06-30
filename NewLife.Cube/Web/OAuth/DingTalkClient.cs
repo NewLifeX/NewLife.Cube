@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using NewLife.Log;
@@ -16,8 +17,11 @@ namespace NewLife.Cube.Web
     /// <summary>钉钉身份验证提供者</summary>
     public class DingTalkClient : OAuthClient
     {
-        static DingTalkClient()
+        private static Int32 _show;
+        static void ShowHelp()
         {
+            if (_show > 0 || Interlocked.CompareExchange(ref _show, 1, 0) != 0) return;
+
             // 输出帮助日志
             XTrace.WriteLine("钉钉登录分多种方式，由Scope参数区分。");
             XTrace.WriteLine("Scope=snsapi_qrlogin, 扫码登录");
@@ -78,6 +82,8 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public override String GetAccessToken(String code)
         {
+            ShowHelp();
+
             var url = AccessUrl;
             if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(UserUrl), "未设置用户信息地址");
 
