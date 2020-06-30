@@ -32,12 +32,12 @@ namespace NewLife.Cube
         public static IServiceCollection AddCube(this IServiceCollection services)
         {
             // 修正系统名，确保可运行
-            var set = SysConfig.Current;
-            if (set.IsNew || set.Name == "NewLife.Cube.Views" || set.DisplayName == "NewLife.Cube.Views")
+            var sys = SysConfig.Current;
+            if (/*set.IsNew ||*/ sys.Name == "NewLife.Cube.Views" || sys.DisplayName == "NewLife.Cube.Views")
             {
-                set.Name = "NewLife.Cube";
-                set.DisplayName = "魔方平台";
-                set.Save();
+                sys.Name = "NewLife.Cube";
+                sys.DisplayName = "魔方平台";
+                sys.Save();
             }
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -80,7 +80,7 @@ namespace NewLife.Cube
             })
             // 添加版本兼容性，显示声明当前应用版本为2.1
             .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-            
+
             services.AddCustomApplicationParts();
 
             //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
@@ -99,7 +99,8 @@ namespace NewLife.Cube
             //services.AddCubeDefaultUI(HostingEnvironment);
 
             // 添加压缩
-            services.AddResponseCompression();
+            var set = Setting.Current;
+            if (set.EnableCompress) services.AddResponseCompression();
 
             // 防止汉字被自动编码
             services.Configure<WebEncoderOptions>(options =>
