@@ -41,7 +41,6 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>实例化</summary>
         /// <param name="manageProvider"></param>
         /// <param name="appLifetime"></param>
-        /// <param name="logger"></param>
         public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime) : this()
         {
             _provider = manageProvider;
