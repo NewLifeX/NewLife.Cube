@@ -43,13 +43,15 @@ namespace NewLife.Web
                     new OAuthItem { Name = "Github" }
                 };
 
-                var sc = SysConfig.Current;
+                //var sc = SysConfig.Current;
                 var mi = new OAuthItem
                 {
                     Name = "NewLife",
                     Server = "https://sso.newlifex.com/sso",
-                    AppID = sc.Name,
-                    Secret = sc.Name.GetBytes().RC4("NewLife".GetBytes()).ToBase64(),
+                    //AppID = sc.Name,
+                    //Secret = sc.Name.GetBytes().RC4("NewLife".GetBytes()).ToBase64(),
+                    AppID = "NewLife.Cube",
+                    Secret = "",
                 };
                 list.Add(mi);
                 Items = list.ToArray();
