@@ -1167,8 +1167,11 @@ namespace NewLife.Cube
                 if (fis != null && fis.Length > 0) return item;
             }
 
-            err = $"遍历以下路径均找不到项目路径，请检查项目路径：{err}";
-            throw new InvalidOperationException(err);
+            // 找不到项目根目录，就用当前目录，因为某些项目文件名和输出名可能不一致
+            return "./";
+
+            //err = $"遍历以下路径均找不到项目路径，请检查项目路径：{err}";
+            //throw new InvalidOperationException(err);
         }
         #endregion
 
