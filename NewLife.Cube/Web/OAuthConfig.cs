@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using NewLife.Common;
 using NewLife.Configuration;
+using NewLife.Security;
 
 namespace NewLife.Web
 {
@@ -49,9 +50,8 @@ namespace NewLife.Web
                     Name = "NewLife",
                     Server = "https://sso.newlifex.com/sso",
                     //AppID = sc.Name,
-                    //Secret = sc.Name.GetBytes().RC4("NewLife".GetBytes()).ToBase64(),
                     AppID = "NewLife.Cube",
-                    Secret = "",
+                    Secret = Rand.NextString(16),
                 };
                 list.Add(mi);
                 Items = list.ToArray();
