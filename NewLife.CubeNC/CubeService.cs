@@ -191,7 +191,7 @@ namespace NewLife.Cube
             app.UseCookiePolicy();
             app.UseSession();
 
-            //app.UseMiddleware<ErrorMiddleware>();
+            //app.UseMiddleware<TracerMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
             if (set.WebOnline || set.WebBehavior || set.WebStatistics) app.UseMiddleware<UserBehaviorMiddleware>();
 
