@@ -4,12 +4,12 @@ using System.Linq;
 using System.Security.Principal;
 using System.Threading;
 using System.Web;
-using NewLife.Common;
-using NewLife.Model;
-using NewLife.Cube;
 using System.Web.SessionState;
-using JwtBuilder = NewLife.Web.JwtBuilder;
+using NewLife;
+using NewLife.Cube;
 using NewLife.Log;
+using NewLife.Model;
+using JwtBuilder = NewLife.Web.JwtBuilder;
 
 namespace XCode.Membership
 {
