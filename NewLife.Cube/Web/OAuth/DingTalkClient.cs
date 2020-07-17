@@ -97,7 +97,7 @@ namespace NewLife.Cube.Web
             WriteLog("GetUserInfo {0} {1}", url, tmp_code.ToJson());
 
             // 请求OpenId
-            var http = new HttpClient();
+            var http = CreateClient();
             var dic = Task.Run(() => http.InvokeAsync<IDictionary<String, Object>>(HttpMethod.Post, url, tmp_code, null, "user_info")).Result;
 
             if (dic != null)
@@ -174,7 +174,7 @@ namespace NewLife.Cube.Web
         {
             var url = $"https://oapi.dingtalk.com/gettoken?appkey={appkey}&appsecret={appsecret}";
 
-            var http = new HttpClient();
+            var http = CreateClient();
             return Task.Run(() => http.InvokeAsync<String>(HttpMethod.Get, url, null, null, "access_token")).Result;
         }
 
@@ -186,7 +186,7 @@ namespace NewLife.Cube.Web
         {
             var url = UserUrl.Replace("{token}", access_token).Replace("{userid}", userid);
 
-            var http = new HttpClient();
+            var http = CreateClient();
             var buf = Task.Run(() => http.GetAsync<Byte[]>(url)).Result;
             var str = buf.ToStr();
             var js = new JsonParser(str).Decode() as IDictionary<String, Object>;
@@ -236,7 +236,7 @@ namespace NewLife.Cube.Web
         {
             var url = $"https://oapi.dingtalk.com/user/getUseridByUnionid?access_token={access_token}&unionid={unionId}";
 
-            var http = new HttpClient();
+            var http = CreateClient();
             return Task.Run(() => http.InvokeAsync<String>(HttpMethod.Get, url, null, null, "userid")).Result;
         }
         #endregion

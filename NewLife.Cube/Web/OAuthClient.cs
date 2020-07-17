@@ -45,6 +45,9 @@ namespace NewLife.Web
 
         /// <summary>作用域</summary>
         public String Scope { get; set; }
+
+        /// <summary>APM跟踪器</summary>
+        public static ITracer Tracer { get; set; }
         #endregion
 
         #region 返回参数
@@ -447,15 +450,25 @@ namespace NewLife.Web
             // 允许宽松头部
             WebClientX.SetAllowUnsafeHeaderParsing(true);
 
+            var client = CreateClient();
+
+            return _Client = client;
+        }
+
+        /// <summary>创建客户端</summary>
+        /// <returns></returns>
+        protected static HttpClient CreateClient()
+        {
             var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
             var agent = "";
             if (asm != null) agent = $"{asm.GetName().Name} v{asm.GetName().Version}";
 
-            var client = new HttpClient(new HttpClientHandler { UseProxy = false });
+            var handler = new HttpClientHandler { UseProxy = false };
+            var client = Tracer?.CreateHttpClient(handler) ?? new HttpClient(handler);
             var headers = client.DefaultRequestHeaders;
             headers.UserAgent.ParseAdd(agent);
 
-            return _Client = client;
+            return client;
         }
 
         /// <summary>从响应数据中获取信息</summary>
