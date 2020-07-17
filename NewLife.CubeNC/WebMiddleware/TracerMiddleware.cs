@@ -33,7 +33,11 @@ namespace NewLife.Cube.WebMiddleware
             if (Tracer != null)
             {
                 var action = GetAction(ctx);
-                if (!action.IsNullOrEmpty()) span = Tracer.NewSpan(action);
+                if (!action.IsNullOrEmpty())
+                {
+                    span = Tracer.NewSpan(action);
+                    span.Detach(ctx.Request.Headers.ToDictionary(e => e.Key, e => (Object)e.Value));
+                }
             }
 
             try
