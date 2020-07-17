@@ -52,8 +52,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.8.2020.701" />
-    <PackageReference Include="NewLife.XCode" Version="9.18.2020.701" />
+    <PackageReference Include="NewLife.Core" Version="8.8.2020.717-beta" />
+    <PackageReference Include="NewLife.XCode" Version="9.18.2020.717-beta" />
   </ItemGroup>
 
   <ItemGroup>
@@ -134,6 +134,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Remove="appsettings.json" />
+    <Content Remove="Properties\launchSettings.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
