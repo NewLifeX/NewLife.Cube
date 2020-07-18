@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Log;
+using NewLife.Web;
 using XCode.Membership;
 
 namespace NewLife.Cube
@@ -25,7 +26,7 @@ namespace NewLife.Cube
                 var cad = act as ControllerActionDescriptor;
                 if (cad != null) action = $"{cad.ControllerName}/{cad.ActionName}";
 
-                XTrace.Log.Error("[{0}]的错误[{1}]", action, context.ExceptionHandled ? "已处理" : "未处理");
+                XTrace.Log.Error("[{0}]的错误[{1}] {2}", action, context.ExceptionHandled ? "已处理" : "未处理", context.HttpContext.Request.GetRawUrl());
 
                 if (cad != null) LogProvider.Provider?.WriteLog(cad.ControllerName, cad.ActionName, false, ex.GetTrue().Message);
 
