@@ -24,6 +24,7 @@ namespace CubeDemoNC
             ApiHelper.Tracer = tracer;
             DAL.GlobalTracer = tracer;
             OAuthClient.Tracer = tracer;
+            TracerMiddleware.Tracer = tracer;
 
             services.AddSingleton<ITracer>(tracer);
 
