@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NewLife.Log;
+using NewLife.Web;
+using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.WebMiddleware
 {
@@ -36,6 +38,7 @@ namespace NewLife.Cube.WebMiddleware
                 if (!action.IsNullOrEmpty())
                 {
                     span = Tracer.NewSpan(action);
+                    span.Tag = ctx.Request.GetRawUrl() + "";
                     span.Detach(ctx.Request.Headers.ToDictionary(e => e.Key, e => (Object)e.Value));
                 }
             }
@@ -46,7 +49,7 @@ namespace NewLife.Cube.WebMiddleware
             }
             catch (Exception ex)
             {
-                span?.SetError(ex, ctx.Request.QueryString + "");
+                span?.SetError(ex, null);
 
                 throw;
             }
@@ -58,7 +61,7 @@ namespace NewLife.Cube.WebMiddleware
 
         /// <summary>忽略的后缀</summary>
         public static String[] ExcludeSuffixes { get; set; } = new[] {
-            ".html", ".htm", ".js", ".css", ".png", ".jpg", ".gif", ".ico",  // 脚本样式图片
+            ".html", ".htm", ".js", ".css", ".map", ".png", ".jpg", ".gif", ".ico",  // 脚本样式图片
             ".woff", ".woff2", ".svg", ".ttf", ".otf", ".eot"   // 字体
         };
 
