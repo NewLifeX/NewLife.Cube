@@ -102,7 +102,7 @@ namespace NewLife.Cube.WebMiddleware
             if (!title.IsNullOrEmpty()) sb.Append(title + " ");
             sb.AppendFormat("{0} {1}", req.Method, req.Path);
 
-            var err = error?.Message;
+            var err = error?.GetMessage();
             if (!err.IsNullOrEmpty()) sb.Append(" " + err);
 
             sb.AppendFormat(" {0:n0}ms", sw.ElapsedMilliseconds);

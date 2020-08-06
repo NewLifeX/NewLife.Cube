@@ -28,7 +28,7 @@ namespace NewLife.Cube
 
                 XTrace.Log.Error("[{0}]的错误[{1}] {2}", action, context.ExceptionHandled ? "已处理" : "未处理", context.HttpContext.Request.GetRawUrl());
 
-                if (cad != null) LogProvider.Provider?.WriteLog(cad.ControllerName, cad.ActionName, false, ex.GetTrue().Message);
+                if (cad != null) LogProvider.Provider?.WriteLog(cad.ControllerName, cad.ActionName, false, ex.GetMessage());
 
                 XTrace.WriteException(ex);
 
