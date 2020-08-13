@@ -297,11 +297,21 @@ namespace NewLife.Cube
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
             //if (!atts.ContainsKey("type")) atts.Add("type", "date");
             if (!atts.ContainsKey("class")) atts.Add("class", "form-control date form_datetime");
+            atts["autocomplete"] = "off";
 
             var obj = value.ToFullString();
+
             // 最小时间不显示
             if (value <= DateTime.MinValue || value.Year <= 1900) obj = "";
             //if (format.IsNullOrWhiteSpace()) format = "yyyy-MM-dd HH:mm:ss";
+
+            // 日期
+            if (name.EndsWithIgnoreCase("Date"))
+            {
+                obj = value.ToString("yyyy-MM-dd");
+                //format = "yyyy-mm-dd";
+                atts["dateformat"] = "yyyy-MM-dd";
+            }
 
             // 首先输出图标
             var ico = Html.Raw("<span class=\"input-group-addon\"><i class=\"fa fa-calendar\"></i></span>");
