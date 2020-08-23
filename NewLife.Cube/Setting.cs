@@ -40,17 +40,17 @@ namespace NewLife.Cube
         [Description("扩展插件服务器。将从该网页上根据关键字分析链接并下载插件")]
         public String PluginServer { get; set; } = "http://x.newlifex.com/";
 
-        /// <summary>用户在线。记录用户在线状态</summary>
-        [Description("用户在线。记录用户在线状态")]
-        public Boolean WebOnline { get; set; } = true;
+        ///// <summary>用户在线。记录用户在线状态</summary>
+        //[Description("用户在线。记录用户在线状态")]
+        //public Boolean WebOnline { get; set; } = true;
 
-        /// <summary>用户行为。记录用户所有操作</summary>
-        [Description("用户行为。记录用户所有操作")]
-        public Boolean WebBehavior { get; set; } = true;
+        ///// <summary>用户行为。记录用户所有操作</summary>
+        //[Description("用户行为。记录用户所有操作")]
+        //public Boolean WebBehavior { get; set; } = true;
 
-        /// <summary>访问统计。统计页面访问量</summary>
-        [Description("访问统计。统计页面访问量")]
-        public Boolean WebStatistics { get; set; } = true;
+        ///// <summary>访问统计。统计页面访问量</summary>
+        //[Description("访问统计。统计页面访问量")]
+        //public Boolean WebStatistics { get; set; } = true;
 
         /// <summary>强制SSL。强制使用https访问</summary>
         [Description("强制SSL。强制使用https访问")]

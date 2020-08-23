@@ -67,7 +67,7 @@ WriteLiteral("    ");
 
             
             #line 7 "..\..\Areas\Admin\Views\Log\_List_Search.cshtml"
-Write(Html.ActionLink("访问统计", "Index", "VisitStat", null, new { @class = "btn btn-success btn-sm" }));
+//Write(Html.ActionLink("访问统计", "Index", "VisitStat", null, new { @class = "btn btn-success btn-sm" }));
 
             
             #line default

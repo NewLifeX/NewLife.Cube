@@ -45,6 +45,7 @@
     <Compile Remove="Session\ISession2.cs" />
     <Compile Remove="Session\MemorySession.cs" />
     <Compile Remove="Session\MemorySessionStore.cs" />
+    <Compile Remove="WebMiddleware\UserBehaviorMiddleware.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -73,9 +74,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserConnectController.cs" Link="Areas\Admin\Controllers\UserConnectController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserController.cs" Link="Areas\Admin\Controllers\UserController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserOnlineController.cs" Link="Areas\Admin\Controllers\UserOnlineController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserTokenController.cs" Link="Areas\Admin\Controllers\UserTokenController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\VisitStatController.cs" Link="Areas\Admin\Controllers\VisitStatController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs" Link="Areas\Admin\Models\DbItem.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs" Link="Areas\Admin\Models\FileItem.cs" />

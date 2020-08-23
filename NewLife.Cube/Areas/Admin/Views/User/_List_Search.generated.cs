@@ -98,7 +98,7 @@ WriteLiteral("    ");
 
             
             #line 11 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
-Write(Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class = "btn btn-success btn-sm" }));
+//Write(Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class = "btn btn-success btn-sm" }));
 
             
             #line default
