@@ -42,6 +42,7 @@
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Common\GlobalExceptionFilter.cs" />
     <Compile Remove="Session\ISession2.cs" />
     <Compile Remove="Session\MemorySession.cs" />
     <Compile Remove="Session\MemorySessionStore.cs" />

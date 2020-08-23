@@ -1,6 +1,7 @@
 ﻿#if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.ViewModels;
 #else
 using System.Web;
 using System.Web.Mvc;
@@ -30,14 +31,13 @@ namespace NewLife.Cube.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            var context = HttpContext.Items["ExceptionContext"] as ExceptionContext;
+            var model = HttpContext.Items["Exception"] as ErrorModel;
             if (IsJsonRequest)
             {
-                if (context?.Exception != null)
-                    return Json(500, null, context.Exception, new { action = context.ActionDescriptor.DisplayName });
+                if (model?.Exception != null) return Json(500, null, model.Exception);
             }
 
-            return View("Error", context);
+            return View("Error", model);
         }
 #endif
     }

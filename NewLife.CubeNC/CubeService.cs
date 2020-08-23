@@ -72,8 +72,8 @@ namespace NewLife.Cube
                 // 模型绑定
                 opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
 
-                // 过滤器
-                opt.Filters.Add<GlobalExceptionFilter>();
+                //// 过滤器
+                //opt.Filters.Add<GlobalExceptionFilter>();
 
                 //opt.EnableEndpointRouting = false;
 
@@ -172,12 +172,20 @@ namespace NewLife.Cube
         #endregion
 
         #region 使用魔方
-        /// <summary>使用魔方</summary>
+        /// <summary>使用魔方，放在UseRouting之后，UseEndpoints之前</summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
         /// <returns></returns>
         public static IApplicationBuilder UseCube(this IApplicationBuilder app, IWebHostEnvironment env = null)
         {
+            // 使用Cube前添加自己的管道
+            if (env != null)
+            {
+                // 使用自己的异常处理页，后续必须再次UseRouting
+                if (!env.IsDevelopment())
+                    app.UseExceptionHandler("/CubeHome/Error");
+            }
+
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
 
@@ -187,7 +195,7 @@ namespace NewLife.Cube
             if (set.EnableCompress) app.UseResponseCompression();
 
             // 注册中间件
-            app.UseStaticFiles();
+            //app.UseStaticFiles();
             app.UseCookiePolicy();
             app.UseSession();
 
@@ -197,9 +205,10 @@ namespace NewLife.Cube
 
             if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
 
-            app.UseAuthentication();
+            //app.UseAuthentication();
 
             app.UseRouting();
+
             // 设置默认路由
             app.UseEndpoints(endpoints =>
             {
@@ -210,24 +219,14 @@ namespace NewLife.Cube
                     "Default",
                     "{controller=CubeHome}/{action=Index}/{id?}"
                     );
-                endpoints.MapRazorPages();
-            })
-            .Build();
+                //endpoints.MapRazorPages();
+            });
 
             // 使用管理提供者
             app.UseManagerProvider();
 
             // 自动检查并添加菜单
             AreaBase.RegisterArea<Admin.AdminArea>();
-
-            // 使用Cube前添加自己的管道
-            if (env != null)
-            {
-                if (!env.IsDevelopment())
-                    app.UseDeveloperExceptionPage();
-                else
-                    app.UseExceptionHandler("/CubeHome/Error");
-            }
 
             return app;
         }
