@@ -226,9 +226,9 @@ namespace NewLife.Cube.Web
                         var ids = GetRoles(client.Items, true).ToList();
                         if (ids.Contains(roleId)) ids.Remove(roleId);
                         if (ids.Count == 0)
-                            user2.RoleIDs = null;
+                            user2.RoleIds = null;
                         else
-                            user2.RoleIDs = "," + ids.OrderBy(e => e).Join() + ",";
+                            user2.RoleIds = "," + ids.OrderBy(e => e).Join() + ",";
                     }
                 }
                 // 使用本地角色
@@ -413,7 +413,7 @@ namespace NewLife.Cube.Web
                     code = user2.Code,
                     roleid = user2.RoleID,
                     rolename = user2.RoleName,
-                    roleids = user2.RoleIDs,
+                    roleids = user2.RoleIds,
                     rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
                     avatar = user2.Avatar,
                     detail = user2.Remark,
