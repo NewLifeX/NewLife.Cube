@@ -81,7 +81,9 @@ namespace NewLife.Web
             var model = Cache.Get<Model>(k);
             if (model == null) throw new ArgumentOutOfRangeException(nameof(key), "操作超时，请重试！");
 
-            Cache.Remove(k);
+            // key使用完成后，不要删除，缩短有效期，因为此时部分用户可能刷新url
+            //Cache.Remove(k);
+            Cache.SetExpire(k, TimeSpan.FromSeconds(60));
 
             var prv = GetProvider();
 
@@ -125,7 +127,7 @@ namespace NewLife.Web
 
             // code使用完成后，不要删除，缩短有效期，因为此时部分用户可能刷新url
             //Cache.Remove(k);
-            Cache.SetExpire(k, TimeSpan.FromSeconds(30));
+            Cache.SetExpire(k, TimeSpan.FromSeconds(60));
 
             return model.Token;
         }
