@@ -123,7 +123,9 @@ namespace NewLife.Web
 
             if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", model.AppID, code, model.Token, model.User);
 
-            Cache.Remove(k);
+            // code使用完成后，不要删除，缩短有效期，因为此时部分用户可能刷新url
+            //Cache.Remove(k);
+            Cache.SetExpire(k, TimeSpan.FromSeconds(30));
 
             return model.Token;
         }
