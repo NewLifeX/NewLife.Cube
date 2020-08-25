@@ -11,7 +11,7 @@ namespace NewLife.Web
     {
         #region 属性
         /// <summary>缓存</summary>
-        public ICache Cache { get; set; } = NewLife.Caching.Cache.Default;
+        public ICache Cache { get; set; } = new MemoryCache();
 
         /// <summary>令牌提供者</summary>
         public TokenProvider TokenProvider { get; set; } = new TokenProvider();
