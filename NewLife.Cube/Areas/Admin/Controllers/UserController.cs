@@ -26,7 +26,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("用户")]
     [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
     [Area("Admin")]
-    public class UserController : EntityController<UserX>
+    public class UserController : EntityController<User>
     {
         static UserController()
         {
@@ -44,13 +44,13 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        protected override IEnumerable<UserX> Search(Pager p)
+        protected override IEnumerable<User> Search(Pager p)
         {
             var id = p["id"].ToInt(-1);
             if (id > 0)
             {
-                var list = new List<UserX>();
-                var entity = UserX.FindByID(id);
+                var list = new List<User>();
+                var entity = XCode.Membership.User.FindByID(id);
                 if (entity != null) list.Add(entity);
                 return list;
             }
@@ -63,14 +63,14 @@ namespace NewLife.Cube.Admin.Controllers
 
             //p.RetrieveState = true;
 
-            //return UserX.Search(p["Q"], p["RoleID"].ToInt(-1), enable, start, end, p);
-            return UserX.Search(roleId, departmentId, enable, start, end, p["q"], p);
+            //return User.Search(p["Q"], p["RoleID"].ToInt(-1), enable, start, end, p);
+            return XCode.Membership.User.Search(roleId, departmentId, enable, start, end, p["q"], p);
         }
 
         /// <summary>表单页视图。</summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        protected override ActionResult FormView(UserX entity)
+        protected override ActionResult FormView(User entity)
         {
             // 清空密码，不向浏览器输出
             //entity.Password = null;
@@ -128,7 +128,7 @@ namespace NewLife.Cube.Admin.Controllers
                 }
             }
 
-            ViewBag.IsShowTip = UserX.Meta.Count == 1;
+            ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
             ViewBag.ReturnUrl = returnUrl;
 
             return View();
@@ -178,7 +178,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             //云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
-            ViewBag.IsShowTip = UserX.Meta.Count == 1;
+            ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
 
             return View();
         }
@@ -220,12 +220,12 @@ namespace NewLife.Cube.Admin.Controllers
         {
             if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
 
-            var user = ManageProvider.User;
+            var user = ManageProvider.User as XCode.Membership.User;
             if (user == null) return RedirectToAction("Login");
 
             if (id.Value != user.ID) throw new Exception("禁止修改非当前登录用户资料");
 
-            user = UserX.FindByKeyForEdit(id.Value);
+            user = XCode.Membership.User.FindByKeyForEdit(id.Value);
             if (user == null) throw new Exception("无效用户编号！");
 
             //user.Password = null;
@@ -233,7 +233,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 用于显示的列
             if (ViewBag.Fields == null) ViewBag.Fields = GetFields(true);
-            ViewBag.Factory = UserX.Meta.Factory;
+            ViewBag.Factory = XCode.Membership.User.Meta.Factory;
 
             // 第三方绑定
             var ucs = UserConnect.FindAllByUserID(user.ID);
@@ -247,7 +247,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         [HttpPost]
         [AllowAnonymous]
-        public ActionResult Info(UserX user)
+        public ActionResult Info(User user)
         {
             var cur = ManageProvider.User;
             if (cur == null) return RedirectToAction("Login");
@@ -285,12 +285,12 @@ namespace NewLife.Cube.Admin.Controllers
                 if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
 
                 // 去重判断
-                var user = UserX.FindByName(username);
+                var user = XCode.Membership.User.FindByName(username);
                 if (user != null) throw new ArgumentException("username", $"用户[{username}]已存在！");
 
                 var r = Role.GetOrAdd(set.DefaultRole);
 
-                user = new UserX()
+                user = new User()
                 {
                     Name = username,
                     Password = password,
@@ -319,7 +319,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (ManageProvider.User.RoleName != "管理员") throw new Exception("清除密码操作需要管理员权限，非法操作！");
 
             // 前面表单可能已经清空密码
-            var user = UserX.FindByID(id);
+            var user = XCode.Membership.User.FindByID(id);
             //user.Password = "nopass";
             user.Password = null;
             user.SaveWithoutValid();
@@ -347,7 +347,7 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 foreach (var id in ids)
                 {
-                    var user = UserX.FindByID(id);
+                    var user = XCode.Membership.User.FindByID(id);
                     if (user != null && user.Enable != isEnable)
                     {
                         user.Enable = isEnable;

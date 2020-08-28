@@ -63,7 +63,7 @@ namespace ASP
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     [System.Web.WebPages.PageVirtualPathAttribute("~/Areas/Admin/Views/User/Info.cshtml")]
-    public partial class _Areas_Admin_Views_User_Info_cshtml : System.Web.Mvc.WebViewPage<XCode.Membership.IUser>
+    public partial class _Areas_Admin_Views_User_Info_cshtml : System.Web.Mvc.WebViewPage<XCode.Membership.User>
     {
         public _Areas_Admin_Views_User_Info_cshtml()
         {

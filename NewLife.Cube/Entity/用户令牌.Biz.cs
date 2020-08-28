@@ -43,7 +43,7 @@ namespace NewLife.Cube.Entity
         #region 扩展属性
         /// <summary>用户</summary>
         [XmlIgnore, ScriptIgnore, IgnoreDataMember]
-        public UserX User => Extends.Get(nameof(User), k => UserX.FindByID(UserID));
+        public User User => Extends.Get(nameof(User), k => User.FindByID(UserID));
 
         /// <summary>用户</summary>
         [Map(__.UserID)]

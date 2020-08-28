@@ -14,6 +14,7 @@ using NewLife.Model;
 using XCode;
 using XCode.Membership;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
+using UserX = XCode.Membership.User;
 using JwtBuilder = NewLife.Web.JwtBuilder;
 
 namespace NewLife.Cube
