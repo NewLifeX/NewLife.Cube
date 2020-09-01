@@ -193,7 +193,7 @@ namespace NewLife.Cube
 
             //app.UseMiddleware<TracerMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
-            if (set.WebOnline || set.WebBehavior || set.WebStatistics) app.UseMiddleware<UserBehaviorMiddleware>();
+            //if (set.WebOnline || set.WebBehavior || set.WebStatistics) app.UseMiddleware<UserBehaviorMiddleware>();
 
             if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
 

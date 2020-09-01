@@ -14,7 +14,7 @@ namespace NewLife.Cube.Entity
     [Serializable]
     [DataObject]
     [Description("应用日志。用于OAuthServer的子系统")]
-    [BindTable("AppLog", Description = "应用日志。用于OAuthServer的子系统", ConnName = "Log", DbType = DatabaseType.None)]
+    [BindTable("AppLog", Description = "应用日志。用于OAuthServer的子系统", ConnName = "Cube", DbType = DatabaseType.None)]
     public partial class AppLog
     {
         #region 属性

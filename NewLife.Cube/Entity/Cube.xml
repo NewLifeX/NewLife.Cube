@@ -77,7 +77,7 @@
       <Index Columns="Name" Unique="True" />
     </Indexes>
   </Table>
-  <Table Name="AppLog" Description="应用日志。用于OAuthServer的子系统" ConnName="Log">
+  <Table Name="AppLog" Description="应用日志。用于OAuthServer的子系统">
     <Columns>
       <Column Name="ID" DataType="Int64" PrimaryKey="True" Description="编号" />
       <Column Name="AppId" DataType="Int32" Description="应用" />
