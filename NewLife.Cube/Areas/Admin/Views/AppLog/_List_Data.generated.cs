@@ -366,7 +366,7 @@ WriteAttribute("href", Tuple.Create(" href=\"", 2077), Tuple.Create("\"", 2104)
 , Tuple.Create(Tuple.Create("", 2084), Tuple.Create("App?ID=", 2084), true)
             
             #line 47 "..\..\Areas\Admin\Views\AppLog\_List_Data.cshtml"
-, Tuple.Create(Tuple.Create("", 2091), Tuple.Create<System.Object, System.Int32>(entity.AppID
+, Tuple.Create(Tuple.Create("", 2091), Tuple.Create<System.Object, System.Int32>(entity.AppId
             
             #line default
             #line hidden
@@ -453,7 +453,7 @@ WriteLiteral(">");
 
             
             #line 53 "..\..\Areas\Admin\Views\AppLog\_List_Data.cshtml"
-                                  Write(UserX.FindByID(entity.CreateUserID));
+                                  Write(UserX.FindByID(entity.CreateUserId));
 
             
             #line default

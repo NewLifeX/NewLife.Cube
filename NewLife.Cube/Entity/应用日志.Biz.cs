@@ -45,13 +45,13 @@ namespace NewLife.Cube.Entity
         /// <summary>应用</summary>
         [XmlIgnore]
         //[ScriptIgnore]
-        public App App => Extends.Get(nameof(App), k => App.FindByID(AppID));
+        public App App => Extends.Get(nameof(App), k => App.FindByID(AppId));
 
         /// <summary>应用</summary>
         [XmlIgnore]
         //[ScriptIgnore]
         [DisplayName("应用")]
-        [Map(__.AppID, typeof(App), "ID")]
+        [Map(__.AppId, typeof(App), "ID")]
         public String AppName => App + "";
         #endregion
 
@@ -87,7 +87,7 @@ namespace NewLife.Cube.Entity
         {
             var log = new AppLog
             {
-                AppID = appid,
+                AppId = appid,
                 Action = action,
                 Success = success,
                 Remark = remark,

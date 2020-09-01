@@ -17,7 +17,7 @@ namespace NewLife.Cube.Entity
     [BindIndex("IX_Attachment_Category_Key", false, "Category,Key")]
     [BindIndex("IX_Attachment_CreateTime", false, "CreateTime")]
     [BindTable("Attachment", Description = "附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等", ConnName = "Cube", DbType = DatabaseType.None)]
-    public partial class Attachment : IAttachment
+    public partial class Attachment
     {
         #region 属性
         private Int32 _ID;
@@ -358,76 +358,6 @@ namespace NewLife.Cube.Entity
             /// <summary>内容</summary>
             public const String Remark = "Remark";
         }
-        #endregion
-    }
-
-    /// <summary>附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等接口</summary>
-    public partial interface IAttachment
-    {
-        #region 属性
-        /// <summary>编号</summary>
-        Int32 ID { get; set; }
-
-        /// <summary>业务分类</summary>
-        String Category { get; set; }
-
-        /// <summary>业务主键</summary>
-        String Key { get; set; }
-
-        /// <summary>标题。业务内容作为附件标题</summary>
-        String Title { get; set; }
-
-        /// <summary>文件名。原始文件名</summary>
-        String FileName { get; set; }
-
-        /// <summary>文件大小</summary>
-        Int64 Size { get; set; }
-
-        /// <summary>内容类型</summary>
-        String ContentType { get; set; }
-
-        /// <summary>路径。本地路径或OSS路径</summary>
-        String Path { get; set; }
-
-        /// <summary>哈希。MD5</summary>
-        String Hash { get; set; }
-
-        /// <summary>启用。软删除标记</summary>
-        String Enable { get; set; }
-
-        /// <summary>创建者</summary>
-        String CreateUser { get; set; }
-
-        /// <summary>创建用户</summary>
-        Int32 CreateUserID { get; set; }
-
-        /// <summary>创建地址</summary>
-        String CreateIP { get; set; }
-
-        /// <summary>创建时间</summary>
-        DateTime CreateTime { get; set; }
-
-        /// <summary>更新者</summary>
-        String UpdateUser { get; set; }
-
-        /// <summary>更新用户</summary>
-        Int32 UpdateUserID { get; set; }
-
-        /// <summary>更新地址</summary>
-        String UpdateIP { get; set; }
-
-        /// <summary>更新时间</summary>
-        DateTime UpdateTime { get; set; }
-
-        /// <summary>内容</summary>
-        String Remark { get; set; }
-        #endregion
-
-        #region 获取/设置 字段值
-        /// <summary>获取/设置 字段值</summary>
-        /// <param name="name">字段名</param>
-        /// <returns></returns>
-        Object this[String name] { get; set; }
         #endregion
     }
 }

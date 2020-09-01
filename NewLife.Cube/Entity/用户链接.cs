@@ -17,7 +17,7 @@ namespace NewLife.Cube.Entity
     [BindIndex("IU_UserConnect_Provider_OpenID", true, "Provider,OpenID")]
     [BindIndex("IX_UserConnect_UserID", false, "UserID")]
     [BindTable("UserConnect", Description = "用户链接。第三方绑定", ConnName = "Membership", DbType = DatabaseType.None)]
-    public partial class UserConnect : IUserConnect
+    public partial class UserConnect
     {
         #region 属性
         private Int32 _ID;
@@ -342,73 +342,6 @@ namespace NewLife.Cube.Entity
             /// <summary>备注</summary>
             public const String Remark = "Remark";
         }
-        #endregion
-    }
-
-    /// <summary>用户链接。第三方绑定接口</summary>
-    public partial interface IUserConnect
-    {
-        #region 属性
-        /// <summary>编号</summary>
-        Int32 ID { get; set; }
-
-        /// <summary>提供商</summary>
-        String Provider { get; set; }
-
-        /// <summary>用户。本地用户</summary>
-        Int32 UserID { get; set; }
-
-        /// <summary>身份标识。用户名、OpenID</summary>
-        String OpenID { get; set; }
-
-        /// <summary>用户编号。第三方用户编号</summary>
-        Int64 LinkID { get; set; }
-
-        /// <summary>昵称</summary>
-        String NickName { get; set; }
-
-        /// <summary>头像</summary>
-        String Avatar { get; set; }
-
-        /// <summary>访问令牌</summary>
-        String AccessToken { get; set; }
-
-        /// <summary>刷新令牌</summary>
-        String RefreshToken { get; set; }
-
-        /// <summary>过期时间</summary>
-        DateTime Expire { get; set; }
-
-        /// <summary>启用</summary>
-        Boolean Enable { get; set; }
-
-        /// <summary>创建用户</summary>
-        Int32 CreateUserID { get; set; }
-
-        /// <summary>创建地址</summary>
-        String CreateIP { get; set; }
-
-        /// <summary>创建时间</summary>
-        DateTime CreateTime { get; set; }
-
-        /// <summary>更新用户</summary>
-        Int32 UpdateUserID { get; set; }
-
-        /// <summary>更新地址</summary>
-        String UpdateIP { get; set; }
-
-        /// <summary>更新时间</summary>
-        DateTime UpdateTime { get; set; }
-
-        /// <summary>备注</summary>
-        String Remark { get; set; }
-        #endregion
-
-        #region 获取/设置 字段值
-        /// <summary>获取/设置 字段值</summary>
-        /// <param name="name">字段名</param>
-        /// <returns></returns>
-        Object this[String name] { get; set; }
         #endregion
     }
 }

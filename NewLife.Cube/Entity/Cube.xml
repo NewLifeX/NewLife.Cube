@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Tables Version="9.18.7505.2224" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="http://www.newlifex.com http://www.newlifex.com/Model2020.xsd" NameSpace="NewLife.Cube.Entity" ConnName="Cube" Output="" BaseClass="Entity" ChineseFileName="True" IgnoreNameCase="True" xmlns="http://www.newlifex.com/Model2020.xsd">
+<Tables xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="http://www.newlifex.com http://www.newlifex.com/Model2020.xsd" NameSpace="NewLife.Cube.Entity" ConnName="Cube" Output="" BaseClass="Entity" ChineseFileName="True" xmlns="http://www.newlifex.com/Model2020.xsd">
   <Table Name="UserConnect" Description="用户链接。第三方绑定" ConnName="Membership">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
@@ -79,14 +79,23 @@
   </Table>
   <Table Name="AppLog" Description="应用日志。用于OAuthServer的子系统" ConnName="Log">
     <Columns>
-      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-      <Column Name="AppID" DataType="Int32" Description="应用" />
+      <Column Name="ID" DataType="Int64" PrimaryKey="True" Description="编号" />
+      <Column Name="AppId" DataType="Int32" Description="应用" />
       <Column Name="Action" DataType="String" Description="操作" />
       <Column Name="Success" DataType="Boolean" Description="成功" />
+      <Column Name="ClientId" DataType="String" Description="应用标识" />
+      <Column Name="RedirectUri" DataType="String" Description="回调地址" />
+      <Column Name="ResponseType" DataType="String" Description="响应类型。默认code" />
+      <Column Name="Scope" DataType="String" Description="授权域" />
+      <Column Name="State" DataType="String" Length="500" Description="状态数据" />
+      <Column Name="AccessToken" DataType="String" Length="2000" Description="访问令牌" />
+      <Column Name="RefreshToken" DataType="String" Length="2000" Description="刷新令牌" />
       <Column Name="Remark" DataType="String" Length="2000" Description="详细信息" />
-      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
-      <Column Name="CreateIP" DataType="String" Description="IP地址" />
-      <Column Name="CreateTime" DataType="DateTime" Description="时间" />
+      <Column Name="CreateUserId" DataType="Int32" Description="创建者" />
+      <Column Name="CreateIP" DataType="String" Description="创建IP" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="UpdateIP" DataType="String" Description="更新IP" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
     </Columns>
   </Table>
   <Table Name="Attachment" Description="附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等">

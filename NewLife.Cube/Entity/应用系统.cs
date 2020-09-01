@@ -16,7 +16,7 @@ namespace NewLife.Cube.Entity
     [Description("应用系统。用于OAuthServer的子系统")]
     [BindIndex("IU_App_Name", true, "Name")]
     [BindTable("App", Description = "应用系统。用于OAuthServer的子系统", ConnName = "Cube", DbType = DatabaseType.None)]
-    public partial class App : IApp
+    public partial class App
     {
         #region 属性
         private Int32 _ID;
@@ -341,73 +341,6 @@ namespace NewLife.Cube.Entity
             /// <summary>更新地址</summary>
             public const String UpdateIP = "UpdateIP";
         }
-        #endregion
-    }
-
-    /// <summary>应用系统。用于OAuthServer的子系统接口</summary>
-    public partial interface IApp
-    {
-        #region 属性
-        /// <summary>编号</summary>
-        Int32 ID { get; set; }
-
-        /// <summary>名称。AppID</summary>
-        String Name { get; set; }
-
-        /// <summary>显示名</summary>
-        String DisplayName { get; set; }
-
-        /// <summary>密钥。AppSecret</summary>
-        String Secret { get; set; }
-
-        /// <summary>图标。附件编号列表</summary>
-        String Logo { get; set; }
-
-        /// <summary>白名单</summary>
-        String White { get; set; }
-
-        /// <summary>黑名单。黑名单优先于白名单</summary>
-        String Black { get; set; }
-
-        /// <summary>启用</summary>
-        Boolean Enable { get; set; }
-
-        /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
-        String Urls { get; set; }
-
-        /// <summary>次数</summary>
-        Int32 Auths { get; set; }
-
-        /// <summary>最后请求</summary>
-        DateTime LastAuth { get; set; }
-
-        /// <summary>内容</summary>
-        String Remark { get; set; }
-
-        /// <summary>创建者</summary>
-        Int32 CreateUserID { get; set; }
-
-        /// <summary>创建时间</summary>
-        DateTime CreateTime { get; set; }
-
-        /// <summary>创建地址</summary>
-        String CreateIP { get; set; }
-
-        /// <summary>更新者</summary>
-        Int32 UpdateUserID { get; set; }
-
-        /// <summary>更新时间</summary>
-        DateTime UpdateTime { get; set; }
-
-        /// <summary>更新地址</summary>
-        String UpdateIP { get; set; }
-        #endregion
-
-        #region 获取/设置 字段值
-        /// <summary>获取/设置 字段值</summary>
-        /// <param name="name">字段名</param>
-        /// <returns></returns>
-        Object this[String name] { get; set; }
         #endregion
     }
 }
