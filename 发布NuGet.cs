@@ -19,31 +19,33 @@ namespace NewLife.Reflection
             //PathHelper.BaseDirectory = @"E:\X\Src\NewLife.Cube";
             XTrace.Debug = true;
             XTrace.UseConsole();
+
+            var dir = ".".GetBasePath().AsDirectory();
 			
 			// 查找NuGet.exe
-			var ng = "..\\..\\X\\DLL\\NuGet.exe".GetFullPath();
+			var ng = "..\\DLL\\NuGet.exe".GetBasePath();
 			
             //"cmd".Run("/c del *.nuspec /f/q");
-			foreach(var item in ".".AsDirectory().GetAllFiles("*.nuspec"))
+			foreach(var item in dir.GetAllFiles("*.nuspec"))
 			{
 				Console.WriteLine("删除 {0}", item);
 				item.Delete();
             }
             // 找到名称
-            var proj = ".".AsDirectory().FullName.EnsureEnd("\\");
+            var proj = dir.FullName.EnsureEnd("\\");
 
             Console.WriteLine("proj项目：{0}", proj);
 
             var name = "NewLife.Cube";
-            Console.WriteLine("项目：{0}", name);
-            proj = ".".AsDirectory().GetAllFiles("*.csproj").FirstOrDefault().FullName;
+            Console.WriteLine("项目名称：{0}", name);
+            proj = dir.GetAllFiles("*.csproj").FirstOrDefault().FullName;
             var spec = name + ".nuspec";
-			var specFile = spec.GetFullPath();
-            
+			var specFile = spec.GetBasePath();
+     
             if (!File.Exists(specFile))
             {
 				var tar = "..\\..\\Bin\\" + name + ".dll";
-				tar = tar.GetFullPath();
+				tar = tar.GetBasePath();
                 if (!File.Exists(tar))
                 {
 					Console.WriteLine("只能找项目文件了，总得做点啥不是");
@@ -59,7 +61,7 @@ namespace NewLife.Reflection
                 sCmd.AssemblyPath = tar;
                 sCmd.ExecuteCommand();*/
 				
-                var spec2 = ".".AsDirectory().GetAllFiles(spec).First().Name;
+                var spec2 = dir.GetAllFiles(spec).First().Name;
                 if (!spec.EqualIgnoreCase(spec2)) File.Move(spec2, spec);
             }
 
@@ -116,13 +118,13 @@ namespace NewLife.Reflection
             var pack = "pack {0} -IncludeReferencedProjects -Exclude **\\*.txt;**\\*.png;*.jpg";
             Console.WriteLine("打包：{0}", proj);
             //"cmd".Run("/c del *.nupkg /f/q");
-			foreach(var item in ".".AsDirectory().GetAllFiles("*.nupkg"))
+			foreach(var item in dir.GetAllFiles("*.nupkg"))
 			{
 				Console.WriteLine("删除 {0}", item);
 				item.Delete();
 			}
             ng.Run(pack.F(proj), 30000);
-            var fi = ".".AsDirectory().GetAllFiles("*.nupkg").FirstOrDefault();
+            var fi = dir.GetAllFiles("*.nupkg").FirstOrDefault();
             if (fi != null)
             {
                 var nupkg = fi.Name;
