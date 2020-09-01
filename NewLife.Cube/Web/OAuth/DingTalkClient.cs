@@ -218,7 +218,7 @@ namespace NewLife.Cube.Web
         //public override void Fill(IManageUser user)
         //{
         //    var dic = Items;
-        //    if (dic != null && user is UserX user2)
+        //    if (dic != null && user is User user2)
         //    {
         //        if (user2.Mail.IsNullOrEmpty() && dic.TryGetValue("email", out var email)) user2.Mail = email;
         //        if (user2.Mobile.IsNullOrEmpty() && dic.TryGetValue("mobile", out var mobile)) user2.Mobile = mobile;

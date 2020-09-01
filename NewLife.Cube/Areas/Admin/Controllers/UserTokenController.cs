@@ -56,7 +56,7 @@ namespace NewLife.Cube.Admin.Controllers
             var user = ManageProvider.Provider?.Current;
 
             // 系统角色拥有特权
-            if (user is UserX user2 && user2.Roles.Any(e => e.IsSystem)) return true;
+            if (user is IUser user2 && user2.Roles.Any(e => e.IsSystem)) return true;
 
             // 特殊处理添加操作
             if (type == DataObjectMethodType.Insert && entity.UserID <= 0)

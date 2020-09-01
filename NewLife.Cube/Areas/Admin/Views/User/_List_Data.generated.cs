@@ -76,7 +76,7 @@ namespace ASP
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     [System.Web.WebPages.PageVirtualPathAttribute("~/Areas/Admin/Views/User/_List_Data.cshtml")]
-    public partial class _Areas_Admin_Views_User__List_Data_cshtml : System.Web.Mvc.WebViewPage<IList<XCode.Membership.UserX>>
+    public partial class _Areas_Admin_Views_User__List_Data_cshtml : System.Web.Mvc.WebViewPage<IList<XCode.Membership.User>>
     {
         public _Areas_Admin_Views_User__List_Data_cshtml()
         {

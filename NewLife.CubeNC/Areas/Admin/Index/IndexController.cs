@@ -181,7 +181,7 @@ namespace NewLife.Cube.Admin.Controllers
         // [EntityAuthorize(PermissionFlags.Detail)]
         public List<MenuTree> GetMenu()
         {
-            var user = _provider.Current as IUser ?? XCode.Membership.UserX.FindAll().FirstOrDefault();
+            var user = _provider.Current as IUser ?? XCode.Membership.User.FindAll().FirstOrDefault();
 
             var fact = ManageProvider.Menu;
             var menus = fact.Root.Childs;

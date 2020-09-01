@@ -46,7 +46,7 @@
                     <i class="glyphicon glyphicon-@(entity.Success ? "ok" : "remove")" style="color: @(entity.Success ? "green" : "red");"></i>
                 </td>
                 <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Remark">@entity.Remark</td>
-                <td class="text-right">@UserX.FindByID(entity.CreateUserID)</td>
+                <td class="text-right">@XCode.Membership.User.FindByID(entity.CreateUserID)</td>
                 <td title="@entity.CreateIP.IPToAddress()">@entity.CreateIP</td>
                 <td>@entity.CreateTime.ToFullString("")</td>
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))

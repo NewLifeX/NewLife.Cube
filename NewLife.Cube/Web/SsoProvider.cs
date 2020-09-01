@@ -172,7 +172,7 @@ namespace NewLife.Cube.Web
 
             // 写日志
             var log = LogProvider.Provider;
-            log?.WriteLog(typeof(UserX), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName}]登录", user.ID, user + "");
+            log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName}]登录", user.ID, user + "");
 
             if (!user.Enable) throw new InvalidOperationException($"用户[{user}]已禁用！");
 
@@ -204,7 +204,7 @@ namespace NewLife.Cube.Web
 
             var dic = client.Items;
             // 用户信息
-            if (dic != null && user is UserX user2)
+            if (dic != null && user is User user2)
             {
                 if (user2.Code.IsNullOrEmpty()) user2.Code = client.UserCode;
                 if (user2.Mobile.IsNullOrEmpty()) user2.Mobile = client.Mobile;
@@ -226,9 +226,9 @@ namespace NewLife.Cube.Web
                         var ids = GetRoles(client.Items, true).ToList();
                         if (ids.Contains(roleId)) ids.Remove(roleId);
                         if (ids.Count == 0)
-                            user2.RoleIDs = null;
+                            user2.RoleIds = null;
                         else
-                            user2.RoleIDs = "," + ids.OrderBy(e => e).Join() + ",";
+                            user2.RoleIds = "," + ids.OrderBy(e => e).Join() + ",";
                     }
                 }
                 // 使用本地角色
@@ -297,21 +297,21 @@ namespace NewLife.Cube.Web
                 if (user == null && set.ForceBindUserCode)
                 {
                     mode = "UserCode";
-                    if (!client.UserCode.IsNullOrEmpty()) user = UserX.FindByCode(client.UserCode);
+                    if (!client.UserCode.IsNullOrEmpty()) user = User.FindByCode(client.UserCode);
                 }
 
                 // 匹配Mobile
                 if (user == null && set.ForceBindUserMobile)
                 {
                     mode = "UserMobile";
-                    if (!client.Mobile.IsNullOrEmpty()) user = UserX.FindByMobile(client.Mobile);
+                    if (!client.Mobile.IsNullOrEmpty()) user = User.FindByMobile(client.Mobile);
                 }
 
                 // 匹配Mail
                 if (user == null && set.ForceBindUserMail)
                 {
                     mode = "UserMail";
-                    if (!client.Mail.IsNullOrEmpty()) user = UserX.FindByMail(client.Mail);
+                    if (!client.Mail.IsNullOrEmpty()) user = User.FindByMail(client.Mail);
                 }
 
                 // QQ、微信 等不返回用户名
@@ -340,7 +340,7 @@ namespace NewLife.Cube.Web
 
                     // 注册用户，随机密码
                     user = prv.Register(name, Rand.NextString(16), rid, true);
-                    //if (user is UserX user2) user2.RoleIDs = GetRoles(client.Items, rid < -2).Join();
+                    //if (user is User user2) user2.RoleIDs = GetRoles(client.Items, rid < -2).Join();
                 }
             }
 
@@ -349,7 +349,7 @@ namespace NewLife.Cube.Web
 
             // 写日志
             var log = LogProvider.Provider;
-            log?.WriteLog(typeof(UserX), "绑定", true, $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
+            log?.WriteLog(typeof(User), "绑定", true, $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
 
             return user;
         }
@@ -389,7 +389,7 @@ namespace NewLife.Cube.Web
 
             var user = Provider?.FindByName(username);
             // 两级单点登录可能因缓存造成查不到用户
-            if (user == null) user = UserX.Find(UserX._.Name == username);
+            if (user == null) user = User.Find(User._.Name == username);
 
             return user;
         }
@@ -401,7 +401,7 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual Object GetUserInfo(OAuthServer sso, String token, IManageUser user)
         {
-            if (user is UserX user2)
+            if (user is User user2)
                 return new
                 {
                     userid = user.ID,
@@ -413,7 +413,7 @@ namespace NewLife.Cube.Web
                     code = user2.Code,
                     roleid = user2.RoleID,
                     rolename = user2.RoleName,
-                    roleids = user2.RoleIDs,
+                    roleids = user2.RoleIds,
                     rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
                     avatar = user2.Avatar,
                     detail = user2.Remark,

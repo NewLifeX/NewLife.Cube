@@ -19,8 +19,9 @@ namespace ASP
     using System.Text;
     using System.Web;
     using System.Web.Helpers;
-    
-    #line 6 "..\..\Areas\Admin\Views\App\_List_Data.cshtml"
+    using UserX = XCode.Membership.User;
+
+#line 6 "..\..\Areas\Admin\Views\App\_List_Data.cshtml"
     using System.Web.Mvc;
     
     #line default

@@ -80,7 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NewLife.XCode">
-      <Version>9.19.2020.828-beta8</Version>
+      <Version>9.19.2020.828-beta9</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Compression">
       <Version>4.3.0</Version>

@@ -8,7 +8,7 @@
 
     if (id.IsNullOrEmpty()) { id = "userId"; }
     var userId = page[id];
-    var showValue = UserX.FindByID(userId.ToInt()) + "";
+    var showValue = XCode.Membership.User.FindByID(userId.ToInt()) + "";
 }
 
 <div class="form-group" style="position:relative">

@@ -14,7 +14,6 @@ using NewLife.Model;
 using XCode;
 using XCode.Membership;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
-using UserX = XCode.Membership.User;
 using JwtBuilder = NewLife.Web.JwtBuilder;
 
 namespace NewLife.Cube
@@ -99,16 +98,15 @@ namespace NewLife.Cube
         /// <returns></returns>
         public override IManageUser Login(String name, String password, Boolean remember)
         {
-            //var user = UserX.Login(name, password, rememberme);
-            UserX user;
+            XCode.Membership.User user;
             try
             {
                 // 用户登录，依次支持用户名、邮箱、手机、编码
                 var account = name.Trim();
-                user = UserX.FindByName(account);
-                if (user == null && account.Contains("@")) user = UserX.FindByMail(account);
-                if (user == null && account.ToLong() > 0) user = UserX.FindByMobile(account);
-                if (user == null) user = UserX.FindByCode(account);
+                user = XCode.Membership.User.FindByName(account);
+                if (user == null && account.Contains("@")) user = XCode.Membership.User.FindByMail(account);
+                if (user == null && account.ToLong() > 0) user = XCode.Membership.User.FindByMobile(account);
+                if (user == null) user = XCode.Membership.User.FindByCode(account);
 
                 if (user == null) throw new EntityException("帐号{0}不存在！", account);
                 if (!user.Enable) throw new EntityException("账号{0}被禁用！", account);
@@ -135,11 +133,11 @@ namespace NewLife.Cube
                 user.LastLoginIP = UserHost;
                 user.Update();
 
-                UserX.WriteLog("登录", true, $"用户[{user}]使用[{name}]登录成功");
+                XCode.Membership.User.WriteLog("登录", true, $"用户[{user}]使用[{name}]登录成功");
             }
             catch (Exception ex)
             {
-                UserX.WriteLog("登录", false, name + "登录失败！" + ex.Message);
+                XCode.Membership.User.WriteLog("登录", false, name + "登录失败！" + ex.Message);
                 throw;
             }
 

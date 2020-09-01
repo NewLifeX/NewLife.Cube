@@ -52,7 +52,7 @@
                 </td>
                 <td class="text-right">@entity.Auths.ToString("n0")</td>
                 <td>@entity.LastAuth.ToFullString("")</td>
-                <td class="text-right">@UserX.FindByID(entity.UpdateUserID)</td>
+                <td class="text-right">@XCode.Membership.User.FindByID(entity.UpdateUserID)</td>
                 <td>@entity.UpdateTime.ToFullString("")</td>
                 <td title="@entity.UpdateIP.IPToAddress()">@entity.UpdateIP</td>
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))

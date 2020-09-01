@@ -70,7 +70,7 @@ namespace ASP
 
     if (id.IsNullOrEmpty()) { id = "userId"; }
     var userId = page[id];
-    var showValue = UserX.FindByID(userId.ToInt()) + "";
+    var showValue = XCode.Membership.User.FindByID(userId.ToInt()) + "";
 
             
             #line default
