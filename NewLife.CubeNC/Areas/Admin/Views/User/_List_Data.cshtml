@@ -24,7 +24,6 @@
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Mobile"))">手机</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DepartmentID"))">部门</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("RoleID"))">角色</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Online"))">在线</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Logins"))">登录次数</a></th>
             <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("LastLogin"))">最后登录</a></th>
@@ -53,9 +52,6 @@
                 <td>@entity.Mobile</td>
                 <td><a href="Department?ID=@entity.DepartmentID">@entity.DepartmentName</a></td>
                 <td><a href="Role?ID=@entity.RoleID">@entity.RoleName</a></td>
-                <td class="text-center">
-                    <i class="glyphicon glyphicon-@(entity.Online ? "ok" : "remove")" style="color: @(entity.Online ? "green" : "red");"></i>
-                </td>
                 <td class="text-center">
                     <i class="glyphicon glyphicon-@(entity.Enable ? "ok" : "remove")" style="color: @(entity.Enable ? "green" : "red");"></i>
                 </td>
