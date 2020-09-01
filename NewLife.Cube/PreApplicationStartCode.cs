@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Web;
 using NewLife.Web;
-using XCode.Web;
 
 namespace NewLife.Cube
 {
@@ -21,13 +20,13 @@ namespace NewLife.Cube
             HttpApplication.RegisterModule(typeof(DbRunTimeModule));
 
             var set = Setting.Current;
-            if (set.WebOnline || set.WebBehavior || set.WebStatistics)
-            {
-                UserBehaviorModule.WebOnline = set.WebOnline;
-                UserBehaviorModule.WebBehavior = set.WebBehavior;
-                UserBehaviorModule.WebStatistics = set.WebStatistics;
-                HttpApplication.RegisterModule(typeof(UserBehaviorModule));
-            }
+            //if (set.WebOnline || set.WebBehavior || set.WebStatistics)
+            //{
+            //    UserBehaviorModule.WebOnline = set.WebOnline;
+            //    UserBehaviorModule.WebBehavior = set.WebBehavior;
+            //    UserBehaviorModule.WebStatistics = set.WebStatistics;
+            //    HttpApplication.RegisterModule(typeof(UserBehaviorModule));
+            //}
 
             if (set.SslMode >= SslModes.Full) HttpApplication.RegisterModule(typeof(CubeModule));
 #endif
