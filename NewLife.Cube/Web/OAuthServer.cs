@@ -84,15 +84,11 @@ namespace NewLife.Web
                 app.SaveAsync(5_000);
 
                 if (Log != null) WriteLog("Authorize client_id={0} redirect_uri={1}", client_id, redirect_uri);
-
-                log.Insert();
             }
             catch (Exception ex)
             {
                 log.Success = false;
                 log.Remark = ex.GetTrue()?.Message;
-
-                log.Insert();
 
                 throw;
             }
