@@ -38,7 +38,7 @@ namespace NewLife.Cube.WebMiddleware
                 if (!action.IsNullOrEmpty())
                 {
                     span = Tracer.NewSpan(action);
-                    span.Tag = ctx.Request.GetRawUrl() + "";
+                    span.Tag = ctx.GetUserHost() + " " + ctx.Request.GetRawUrl();
                     span.Detach(ctx.Request.Headers.ToDictionary(e => e.Key, e => (Object)e.Value));
                 }
             }

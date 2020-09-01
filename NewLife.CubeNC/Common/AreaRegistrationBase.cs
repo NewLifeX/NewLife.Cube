@@ -131,7 +131,7 @@ namespace NewLife.Cube
             {
                 Log = XTrace.Log
             };
-            wc.DownloadLinkAndExtract(url, "Cube_Content", content, true);
+            wc.DownloadLinkAndExtract(url, "Cube_Content", content.GetFullPath(), true);
         }
 
         /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>

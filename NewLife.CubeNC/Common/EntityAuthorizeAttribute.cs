@@ -24,15 +24,12 @@ namespace NewLife.Cube
         /// <summary>授权项</summary>
         public PermissionFlags Permission { get; }
 
-        /// <summary>是否全局特性</summary>
-        internal Boolean IsGlobal;
+        ///// <summary>是否全局特性</summary>
+        //internal Boolean IsGlobal;
         #endregion
 
         #region 构造
-        static EntityAuthorizeAttribute()
-        {
-            XTrace.WriteLine("注册过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
-        }
+        static EntityAuthorizeAttribute() => XTrace.WriteLine("注册过滤器：{0}", typeof(EntityAuthorizeAttribute).FullName);
 
         /// <summary>实例化实体授权特性</summary>
         public EntityAuthorizeAttribute() { }
@@ -70,7 +67,7 @@ namespace NewLife.Cube
                 ctrl.MethodInfo.IsDefined(typeof(EntityAuthorizeAttribute), true) ||
                 ctrl.ControllerTypeInfo.IsDefined(typeof(EntityAuthorizeAttribute));
 
-            if (IsGlobal && hasAtt) return;
+            //if (IsGlobal && hasAtt) return;
 
             // 只验证管辖范围
             var create = false;
@@ -212,7 +209,7 @@ namespace NewLife.Cube
             return menu;
         }
 
-        private static ConcurrentDictionary<String, Type> _ss = new ConcurrentDictionary<String, Type>();
+        private static readonly ConcurrentDictionary<String, Type> _ss = new ConcurrentDictionary<String, Type>();
         private Boolean CreateMenu(Type type)
         {
             if (!_ss.TryAdd(type.Namespace, type)) return false;
@@ -237,7 +234,7 @@ namespace NewLife.Cube
                 if (ctype == null) continue;
 
                 // 添加该类型下的所有Action
-                var dic = new Dictionary<MethodInfo, Int32>();
+                //var dic = new Dictionary<MethodInfo, Int32>();
                 foreach (var method in ctype.GetMethods())
                 {
                     if (method.IsStatic || !method.IsPublic) continue;

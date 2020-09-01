@@ -404,7 +404,10 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public virtual ActionResult Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null)
         {
-            if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
+            // 参数不完整时，跳转到登录页面，避免爬虫抓取而导致误报告警
+            if (client_id.IsNullOrEmpty()) return Redirect(Provider.LoginUrl);
+
+            //if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
             if (redirect_uri.IsNullOrEmpty()) throw new ArgumentNullException(nameof(redirect_uri));
             if (response_type.IsNullOrEmpty()) response_type = "code";
 

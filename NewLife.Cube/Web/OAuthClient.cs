@@ -47,7 +47,7 @@ namespace NewLife.Web
         public String Scope { get; set; }
 
         /// <summary>APM跟踪器</summary>
-        public static ITracer Tracer { get; set; }
+        public static ITracer Tracer { get; set; } = DefaultTracer.Instance;
         #endregion
 
         #region 返回参数

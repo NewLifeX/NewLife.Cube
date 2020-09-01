@@ -104,13 +104,13 @@ namespace NewLife.Cube
 
         private static IHtmlContent ForTreeEditor(IHtmlHelper Html, FieldItem field, IEntityTree entity)
         {
-            var fact = EntityFactory.CreateOperate(entity.GetType());
+            //var fact = EntityFactory.CreateOperate(entity.GetType());
             var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
             if (set == null || set.Parent != field.Name) return null;
 
             var root = entity.GetType().GetValue("Root") as IEntityTree;
             // 找到完整菜单树，但是排除当前节点这个分支
-            var list = root.FindAllChildsExcept(entity as IEntityTree);
+            var list = root.FindAllChildsExcept(entity);
             var data = new SelectList(list, set.Key, "TreeNodeText", entity[field.Name]);
             return Html.DropDownList(field.Name, data, new { @class = "multiselect" });
         }
@@ -138,8 +138,7 @@ namespace NewLife.Cube
             // 表单页的映射下拉，开头增加无效值选项
             if (fact != null && !map.Provider.Key.IsNullOrEmpty())
             {
-                var fi = fact.Table.FindByName(map.Provider.Key) as FieldItem;
-                if (fi != null && fi.Type.IsInt())
+                if (fact.Table.FindByName(map.Provider.Key) is FieldItem fi && fi.Type.IsInt())
                 {
                     var dic2 = new Dictionary<Object, String>();
                     if (!dic.ContainsKey(-1))
@@ -227,7 +226,7 @@ namespace NewLife.Cube
             // 首先输出图标
             var ico = "";
 
-            IHtmlContent txt = null;
+            IHtmlContent txt;
             if (name.EqualIgnoreCase("Pass", "Password"))
             {
                 txt = Html.Password(name, value, atts);
@@ -457,6 +456,12 @@ namespace NewLife.Cube
             return Html.ForListBox(name, dic, values, autoPostback);
         }
 
+        /// <summary>文件上传</summary>
+        /// <param name="Html"></param>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <param name="itemType"></param>
+        /// <returns></returns>
         public static IHtmlContent ForFile(this IHtmlHelper Html, String name, Object value, String itemType)
         {
             var accept = "";
@@ -478,7 +483,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForDropDownList(this IHtmlHelper Html, String name, IEnumerable items, Object selectedValue = null, String optionLabel = null, Boolean autoPostback = false)
         {
-            SelectList data = null;
+            SelectList data;
             if (items is IDictionary)
                 data = new SelectList(items, "Key", "Value", selectedValue);
             else
@@ -561,8 +566,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForListBox(this IHtmlHelper Html, String name, IList<IEntity> list, Boolean autoPostback = false)
         {
-            var entity = Html.ViewData.Model as IEntity;
-            var vs = entity == null ? WebHelper2.Params[name] : entity[name];
+            var vs = Html.ViewData.Model is IEntity entity ? entity[name] : WebHelper2.Params[name];
             // 如果是字符串，分割为整型数组，全局约定逗号分割
             if (vs is String) vs = (vs as String).SplitAsInt();
 

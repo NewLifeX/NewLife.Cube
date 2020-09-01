@@ -6,13 +6,18 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using NewLife.Common;
+using NewLife.Cube.ViewModels;
+using NewLife.Log;
+using NewLife.Reflection;
 using NewLife.Security;
+using NewLife.Web;
 using XCode.DataAccessLayer;
 using XCode.Membership;
+using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.WebMiddleware
 {
-    /// <summary>页面查询执行时间中间件</summary>
+    /// <summary>运行时中间件。页面查询执行时间、异常拦截</summary>
     public class RunTimeMiddleware
     {
         private readonly RequestDelegate _next;
@@ -56,6 +61,27 @@ namespace NewLife.Cube.WebMiddleware
             {
                 await _next.Invoke(ctx);
             }
+            catch (Exception ex)
+            {
+                var uri = ctx.Request.GetRawUrl();
+                var ps = uri.AbsolutePath.Split('/');
+
+                XTrace.Log.Error("[{0}]的错误[{1}] {2}", uri, ManageProvider.UserHost, ctx.TraceIdentifier);
+
+                LogProvider.Provider?.WriteLog("访问", "错误", false, uri + Environment.NewLine + ex.GetMessage());
+
+                XTrace.WriteException(ex);
+
+                // 传递给异常处理页面
+                ctx.Items["Exception"] = new ErrorModel
+                {
+                    RequestId = DefaultSpan.Current?.TraceId ?? Activity.Current?.Id ?? ctx.TraceIdentifier,
+                    Uri = uri,
+                    Exception = ex
+                };
+
+                throw;
+            }
             finally
             {
                 sw.Stop();
@@ -71,7 +97,7 @@ namespace NewLife.Cube.WebMiddleware
         /// <summary>获取执行时间和查询次数等信息</summary>
         /// <param name="ctx"></param>
         /// <returns></returns>
-        public static String GetInfo(HttpContext ctx)
+        public static String GetInfo(Microsoft.AspNetCore.Http.HttpContext ctx)
         {
             var rtinf = ctx.Items[nameof(RunTimeInfo)] as RunTimeInfo;
             if (rtinf == null) return null;
