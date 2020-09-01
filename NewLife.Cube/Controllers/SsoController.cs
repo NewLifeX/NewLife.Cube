@@ -74,7 +74,7 @@ namespace NewLife.Cube.Controllers
             //OAuth = ObjectContainer.Current.ResolveInstance<OAuthServer>();
 
             Provider = new SsoProvider();
-            OAuth = new OAuthServer2();
+            OAuth = new OAuthServer();
 
             //OAuthServer.Instance.Log = XTrace.Log;
             OAuth.Log = LogProvider.Provider.AsLog("OAuth");
@@ -438,9 +438,9 @@ namespace NewLife.Cube.Controllers
         /// </remarks>
         /// <returns></returns>
         [AllowAnonymous]
-        public virtual ActionResult Auth2(Int32 id)
+        public virtual ActionResult Auth2(String id)
         {
-            if (id <= 0) throw new ArgumentNullException(nameof(id));
+            if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
             var user = Provider?.Current;
             //if (user == null) throw new InvalidOperationException("未登录！");

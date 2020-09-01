@@ -1,5 +1,6 @@
 ﻿using System;
 using NewLife.Caching;
+using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Security;
@@ -10,8 +11,8 @@ namespace NewLife.Web
     public class OAuthServer
     {
         #region 属性
-        /// <summary>缓存</summary>
-        public ICache Cache { get; set; } = NewLife.Caching.Cache.Default;
+        ///// <summary>缓存</summary>
+        //public ICache Cache { get; set; } = NewLife.Caching.Cache.Default;
 
         /// <summary>令牌提供者</summary>
         public TokenProvider TokenProvider { get; set; } = new TokenProvider();
@@ -40,72 +41,95 @@ namespace NewLife.Web
         /// <param name="scope">授权域</param>
         /// <param name="state">用户状态数据</param>
         /// <returns></returns>
-        public virtual Int32 Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null)
+        public virtual String Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null)
         {
-            //if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
-            //if (redirect_uri.IsNullOrEmpty()) throw new ArgumentNullException(nameof(redirect_uri));
-            //if (response_type.IsNullOrEmpty()) response_type = "code";
-
-            if (!response_type.EqualIgnoreCase("code")) throw new NotSupportedException(nameof(response_type));
-
-            // 用缓存把数据存下来，避免本站登录期间，跳转地址很长
-            var model = new Model
+            var log = new AppLog
             {
-                AppID = client_id,
-                Uri = redirect_uri,
-                Type = response_type,
+                Action = nameof(Authorize),
+                Success = true,
+
+                ClientId = client_id,
+                RedirectUri = redirect_uri,
+                ResponseType = response_type,
                 Scope = scope,
-                State = state,
+                State = state
             };
 
-            // 随机key，并尝试加入缓存
-            var key = 0;
-            do
+            try
             {
-                key = Rand.Next();
+                //if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
+                //if (redirect_uri.IsNullOrEmpty()) throw new ArgumentNullException(nameof(redirect_uri));
+                //if (response_type.IsNullOrEmpty()) response_type = "code";
+
+                if (!response_type.EqualIgnoreCase("code")) throw new NotSupportedException(nameof(response_type));
+
+                var app = App.FindByName(client_id);
+                //if (app == null) throw new XException("未找到应用[{0}]", appid);
+                // 找不到应用时自动创建，但处于禁用状态
+                if (app == null)
+                {
+                    app = new App { Name = client_id };
+                    app.Insert();
+                }
+
+                log.AppId = app.ID;
+                if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
+
+                // 验证回调地址
+                if (!app.ValidCallback(redirect_uri)) throw new XException("回调地址不合法 {0}", redirect_uri);
+
+                // 统计次数
+                app.Auths++;
+                app.LastAuth = DateTime.Now;
+                app.SaveAsync(5_000);
+
+                if (Log != null) WriteLog("Authorize client_id={0} redirect_uri={1}", client_id, redirect_uri);
+
+                log.Insert();
             }
-            while (!Cache.Add("Model:" + key, model, 20 * 60));
+            catch (Exception ex)
+            {
+                log.Success = false;
+                log.Remark = ex.GetTrue()?.Message;
 
-            if (Log != null) WriteLog("Authorize client_id={0} redirect_uri={1}", client_id, redirect_uri);
+                log.Insert();
 
-            return key;
+                throw;
+            }
+            finally
+            {
+                log.Insert();
+            }
+
+            return log.ID + "";
         }
 
         /// <summary>根据验证结果获取跳转回子系统的Url</summary>
         /// <param name="key"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public virtual String GetResult(Int32 key, IManageUser user)
+        public virtual String GetResult(String key, IManageUser user)
         {
-            var k = "Model:" + key;
-            var model = Cache.Get<Model>(k);
-            if (model == null) throw new ArgumentOutOfRangeException(nameof(key), "操作超时，请重试！");
-
-            Cache.Remove(k);
+            var log = AppLog.FindByID(key.ToLong());
+            if (log == null) throw new ArgumentOutOfRangeException(nameof(key), "操作超时，请重试！");
 
             var prv = GetProvider();
+            var code = log.ID + "";
 
             // 建立令牌
-            model.Token = prv.Encode(user.Name, DateTime.Now.AddSeconds(Expire));
-            model.User = user;
+            log.AccessToken = prv.Encode(user.Name, DateTime.Now.AddSeconds(Expire));
+            log.RefreshToken = code + "." + Rand.NextString(16);
+            log.CreateUser = user + "";
 
-            // 随机code，并尝试加入缓存
-            var code = "";
-            do
-            {
-                code = Rand.NextString(16);
-            }
-            while (!Cache.Add("Code:" + code, model, 20 * 60));
+            if (Log != null) WriteLog("Authorize appid={0} code={2} redirect_uri={1} {3}", log.AppId, log.RedirectUri, code, user);
 
-            if (Log != null) WriteLog("Authorize appid={0} code={2} redirect_uri={1} {3}", model.AppID, model.Uri, code, user);
-
-            var url = model.Uri;
+            var url = log.RedirectUri;
             if (url.Contains("?"))
                 url += "&";
             else
                 url += "?";
             url += "code=" + code;
-            if (!model.State.IsNullOrEmpty()) url += "&state=" + model.State;
+            if (!log.State.IsNullOrEmpty()) url += "&state=" + log.State;
 
             return url;
         }
@@ -115,17 +139,14 @@ namespace NewLife.Web
         /// <param name="client_secret"></param>
         /// <param name="code"></param>
         /// <returns></returns>
-        public virtual String GetToken(String client_id, String client_secret, String code)
+        public virtual String[] GetTokens(String client_id, String client_secret, String code)
         {
-            var k = "Code:" + code;
-            var model = Cache.Get<Model>(k);
-            if (model == null) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
+            var log = AppLog.FindByID(code.ToLong());
+            if (log == null) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
-            if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", model.AppID, code, model.Token, model.User);
+            if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", log.AppId, code, log.AccessToken, log.CreateUser);
 
-            Cache.Remove(k);
-
-            return model.Token;
+            return new[] { log.AccessToken, log.RefreshToken };
         }
 
         /// <summary>解码令牌</summary>
@@ -151,19 +172,6 @@ namespace NewLife.Web
             if (prv.Key.IsNullOrEmpty()) prv.ReadKey("..\\Keys\\OAuth.prvkey", true);
 
             return prv;
-        }
-        #endregion
-
-        #region 内嵌
-        internal class Model
-        {
-            public String AppID { get; set; }
-            public String Uri { get; set; }
-            public String Type { get; set; }
-            public String Scope { get; set; }
-            public String State { get; set; }
-            public IManageUser User { get; set; }
-            public String Token { get; set; }
         }
         #endregion
 

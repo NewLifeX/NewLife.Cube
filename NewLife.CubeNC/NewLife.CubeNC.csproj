@@ -118,7 +118,6 @@
     <Compile Include="..\NewLife.Cube\Web\OAuthConfig.cs" Link="Web\OAuthConfig.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthServer.cs" Link="Web\OAuthServer.cs" />
-    <Compile Include="..\NewLife.Cube\Web\OAuthServer2.cs" Link="Web\OAuthServer2.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\BaiduClient.cs" Link="Web\OAuth\BaiduClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\DingTalkClient.cs" Link="Web\OAuth\DingTalkClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\GithubClient.cs" Link="Web\OAuth\GithubClient.cs" />

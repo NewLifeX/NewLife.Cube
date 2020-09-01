@@ -129,11 +129,6 @@
     <Compile Include="Areas\Admin\Index\IndexController.cs" />
     <Compile Include="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="Areas\Admin\Models\DbItem.cs" />
-    <Compile Include="Areas\Admin\Views\AppLog\_List_Data.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>_List_Data.cshtml</DependentUpon>
-    </Compile>
     <Compile Include="Areas\Admin\Views\App\_List_Data.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -630,7 +625,6 @@
     <Compile Include="Web\OAuthConfig.cs" />
     <Compile Include="Web\OAuthHelper.cs" />
     <Compile Include="Web\OAuthServer.cs" />
-    <Compile Include="Web\OAuthServer2.cs" />
     <Compile Include="Web\OAuth\DingTalkClient.cs" />
     <Compile Include="Web\OAuth\BaiduClient.cs" />
     <Compile Include="Web\OAuth\GithubClient.cs" />
@@ -642,10 +636,6 @@
     <Compile Include="Web\WebHelper2.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Areas\Admin\Views\AppLog\_List_Data.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
-    </None>
     <None Include="Areas\Admin\Views\App\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>

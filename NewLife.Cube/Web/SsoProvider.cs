@@ -369,11 +369,12 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual Object GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
         {
-            var token = sso.GetToken(client_id, client_secret, code);
+            var tokens = sso.GetTokens(client_id, client_secret, code);
 
             return new
             {
-                access_token = token,
+                access_token = tokens[0],
+                refresh_token = tokens[1],
                 expires_in = sso.Expire,
                 scope = "basic,UserInfo",
             };

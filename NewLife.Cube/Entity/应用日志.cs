@@ -114,13 +114,13 @@ namespace NewLife.Cube.Entity
         [BindColumn("Remark", "详细信息", "")]
         public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
 
-        private Int32 _CreateUserId;
+        private String _CreateUser;
         /// <summary>创建者</summary>
         [DisplayName("创建者")]
         [Description("创建者")]
-        [DataObjectField(false, false, false, 0)]
-        [BindColumn("CreateUserId", "创建者", "")]
-        public Int32 CreateUserId { get => _CreateUserId; set { if (OnPropertyChanging("CreateUserId", value)) { _CreateUserId = value; OnPropertyChanged("CreateUserId"); } } }
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("CreateUser", "创建者", "")]
+        public String CreateUser { get => _CreateUser; set { if (OnPropertyChanging("CreateUser", value)) { _CreateUser = value; OnPropertyChanged("CreateUser"); } } }
 
         private String _CreateIP;
         /// <summary>创建IP</summary>
@@ -177,7 +177,7 @@ namespace NewLife.Cube.Entity
                     case "AccessToken": return _AccessToken;
                     case "RefreshToken": return _RefreshToken;
                     case "Remark": return _Remark;
-                    case "CreateUserId": return _CreateUserId;
+                    case "CreateUser": return _CreateUser;
                     case "CreateIP": return _CreateIP;
                     case "CreateTime": return _CreateTime;
                     case "UpdateIP": return _UpdateIP;
@@ -201,7 +201,7 @@ namespace NewLife.Cube.Entity
                     case "AccessToken": _AccessToken = Convert.ToString(value); break;
                     case "RefreshToken": _RefreshToken = Convert.ToString(value); break;
                     case "Remark": _Remark = Convert.ToString(value); break;
-                    case "CreateUserId": _CreateUserId = value.ToInt(); break;
+                    case "CreateUser": _CreateUser = Convert.ToString(value); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
@@ -253,7 +253,7 @@ namespace NewLife.Cube.Entity
             public static readonly Field Remark = FindByName("Remark");
 
             /// <summary>创建者</summary>
-            public static readonly Field CreateUserId = FindByName("CreateUserId");
+            public static readonly Field CreateUser = FindByName("CreateUser");
 
             /// <summary>创建IP</summary>
             public static readonly Field CreateIP = FindByName("CreateIP");
@@ -310,7 +310,7 @@ namespace NewLife.Cube.Entity
             public const String Remark = "Remark";
 
             /// <summary>创建者</summary>
-            public const String CreateUserId = "CreateUserId";
+            public const String CreateUser = "CreateUser";
 
             /// <summary>创建IP</summary>
             public const String CreateIP = "CreateIP";
