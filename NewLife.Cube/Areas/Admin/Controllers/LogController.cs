@@ -8,6 +8,7 @@ using XCode;
 using XCode.Membership;
 using XCode.Model;
 using XLog = XCode.Membership.Log;
+using static XCode.Membership.Log;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -41,18 +42,28 @@ namespace NewLife.Cube.Admin.Controllers
             var end = p["dtEnd"].ToDateTime();
             var key = p["Q"];
 
+            // 默认排序
+            if (p.Sort.IsNullOrEmpty()) p.OrderBy = _.ID.Desc();
+
             // 附近日志
             if (key.IsNullOrEmpty() && userid < 0 && category.IsNullOrEmpty() && start.Year < 2000 && end.Year < 2000)
             {
-                var id = p["id"].ToInt();
+                var id = p["id"].ToLong();
                 var act = p["act"];
                 if (act == "near" && id > 0)
                 {
                     var range = p["range"].ToInt();
                     if (range <= 0) range = 10;
 
-                    var exp = XLog._.ID >= id - range & XLog._.ID < id + range;
-                    return XLog.FindAll(exp, p);
+                    // 雪花Id，抽取时间
+                    var flow = XLog.Meta.Factory.FlowId;
+                    if (flow.TryParse(id, out var time, out var _, out var _))
+                    {
+                        start = time.AddSeconds(-range);
+                        end = time.AddSeconds(range);
+
+                        return XLog.FindAll(_.ID.Between(start, end, flow), p);
+                    }
                 }
             }
 

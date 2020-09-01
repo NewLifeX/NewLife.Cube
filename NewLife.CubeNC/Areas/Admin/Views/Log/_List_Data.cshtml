@@ -16,7 +16,6 @@
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
             }
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
@@ -41,9 +40,8 @@
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                 }
-                <td class="text-center">@entity.ID</td>
-                <td>@entity.Category</td>
-                <td>@entity.Action</td>
+                <td class="text-center">@entity.Category</td>
+                <td class="text-center">@entity.Action</td>
                 <td class="text-center">
                     <i class="glyphicon glyphicon-@(entity.Success ? "ok" : "remove")" style="color: @(entity.Success ? "green" : "red");"></i>
                 </td>
@@ -54,7 +52,7 @@
                 <td>@entity.CreateIP.IPToAddress()</td>
                 <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("")</td>
                 <td class="text-center">
-                    <a href="?act=near&id=@entity.ID&range=10&@(page.GetBaseUrl(true,false,false))" title="前后10行日志">附近</a>
+                    <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
                 </td>
                 @if (this.Has(PermissionFlags.Detail))
                 {

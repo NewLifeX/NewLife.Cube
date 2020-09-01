@@ -19,7 +19,7 @@ namespace Test
 
             try
             {
-                Test2();
+                Test3();
             }
             catch (Exception ex)
             {
@@ -74,6 +74,11 @@ namespace Test
 
             var html2 = await http.GetStringAsync(url2);
             XTrace.WriteLine(html2);
+        }
+
+        static void Test3()
+        {
+
         }
     }
 }
