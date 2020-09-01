@@ -46,8 +46,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.9.7549.18933, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.9.2020.828-beta9\lib\net45\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.10.7549.41750, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.10.2020.901\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -84,8 +84,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=9.19.7549.18937, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.9.19.2020.828-beta9\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=9.20.7549.41754, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.9.20.2020.901\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -116,13 +116,11 @@
     <Compile Include="Areas\Admin\Controllers\AppController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserConnectController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserTokenController.cs" />
-    <Compile Include="Areas\Admin\Controllers\VisitStatController.cs" />
     <Compile Include="Areas\Admin\Controllers\RoleController.cs" />
     <Compile Include="Areas\Admin\Controllers\LogController.cs" />
     <Compile Include="Areas\Admin\Controllers\MenuController.cs" />
     <Compile Include="Areas\Admin\Controllers\CoreController.cs" />
     <Compile Include="Areas\Admin\Controllers\CubeController.cs" />
-    <Compile Include="Areas\Admin\Controllers\UserOnlineController.cs" />
     <Compile Include="Areas\Admin\Controllers\XCodeController.cs" />
     <Compile Include="Areas\Admin\Controllers\SysController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserController.cs" />
@@ -249,11 +247,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Areas\Admin\Views\UserOnline\_List_Data.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>_List_Data.cshtml</DependentUpon>
-    </Compile>
     <Compile Include="Areas\Admin\Views\UserToken\_List_Data.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -313,16 +306,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>_Login_Register.cshtml</DependentUpon>
-    </Compile>
-    <Compile Include="Areas\Admin\Views\VisitStat\_List_Data.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>_List_Data.cshtml</DependentUpon>
-    </Compile>
-    <Compile Include="Areas\Admin\Views\VisitStat\_List_Search.generated.cs">
-      <DependentUpon>_List_Search.cshtml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Areas\Admin\Views\_ViewStart.generated.cs">
       <AutoGen>True</AutoGen>
@@ -672,10 +655,6 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
     </None>
-    <None Include="Areas\Admin\Views\UserOnline\_List_Data.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
-    </None>
     <None Include="Areas\Admin\Views\UserToken\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
@@ -687,14 +666,6 @@
     <None Include="Areas\Admin\Views\User\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
-    </None>
-    <None Include="Areas\Admin\Views\VisitStat\_List_Data.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
-    </None>
-    <None Include="Areas\Admin\Views\VisitStat\_List_Search.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
     </None>
     <None Include="Areas\Admin\Views\Index\ProcessModules.cshtml">
       <Generator>RazorGenerator</Generator>

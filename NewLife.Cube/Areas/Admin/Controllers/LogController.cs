@@ -6,6 +6,7 @@ using NewLife.Web;
 using XCode.Membership;
 using XLog = XCode.Membership.Log;
 using static XCode.Membership.Log;
+using XCode;
 
 namespace NewLife.Cube.Admin.Controllers
 {

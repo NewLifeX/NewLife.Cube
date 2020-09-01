@@ -36,10 +36,12 @@ using NewLife.Cube;
 //
 // 可以指定所有这些值，也可以使用“修订号”和“内部版本号”的默认值，
 // 方法是按如下所示使用“*”:
-[assembly: AssemblyVersion("3.4.*")]
-[assembly: AssemblyFileVersion("3.4.2020.0525")]
+[assembly: AssemblyVersion("3.7.*")]
+[assembly: AssemblyFileVersion("3.7.2020.0901")]
 
 /*
+ * v3.7.2020.0901   OAuthServer升级，基于数据库记录授权key
+ * 
  * v3.4.2020.0519   支持JWT
  * 
  * v3.3.2020.0308   支持ECharts图表，支持钉钉登录，新增页面数据分享
