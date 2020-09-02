@@ -89,9 +89,11 @@ namespace NewLife.Cube
 
         static void CheckContent()
         {
+            var set = Setting.Current;
+
             // 释放ico图标
             var ico = "favicon.ico";
-            var wwwroot = Setting.Current.WebRootPath;
+            var wwwroot = set.WebRootPath;
             var ico2 = wwwroot.CombinePath(ico).GetFullPath();
             if (!File.Exists(ico2))
             {
@@ -108,30 +110,33 @@ namespace NewLife.Cube
             }
 
             // 检查魔方样式
-            var content = Setting.Current.WebRootPath.CombinePath("Content");
-            var js = content.CombinePath("Cube.js").GetFullPath();
-            var css = content.CombinePath("Cube.css").GetFullPath();
-            if (File.Exists(js) && File.Exists(css))
+            if (set.ResourceUrl.IsNullOrEmpty())
             {
-                // 判断脚本时间
-                var dt = DateTime.MinValue;
-                var ss = File.ReadAllLines(js);
-                for (var i = 0; i < 5; i++)
+                var content = set.WebRootPath.CombinePath("Content");
+                var js = content.CombinePath("Cube.js").GetFullPath();
+                var css = content.CombinePath("Cube.css").GetFullPath();
+                if (File.Exists(js) && File.Exists(css))
                 {
-                    if (DateTime.TryParse(ss[i].TrimStart("//").Trim(), out dt)) break;
+                    // 判断脚本时间
+                    var dt = DateTime.MinValue;
+                    var ss = File.ReadAllLines(js);
+                    for (var i = 0; i < 5; i++)
+                    {
+                        if (DateTime.TryParse(ss[i].TrimStart("//").Trim(), out dt)) break;
+                    }
+                    // 要求脚本最小更新时间
+                    if (dt >= "2020-02-04 00:00:00".ToDateTime()) return;
                 }
-                // 要求脚本最小更新时间
-                if (dt >= "2020-02-04 00:00:00".ToDateTime()) return;
+
+                var url = Setting.Current.PluginServer;
+                if (url.IsNullOrEmpty()) return;
+
+                var wc = new WebClientX()
+                {
+                    Log = XTrace.Log
+                };
+                wc.DownloadLinkAndExtract(url, "Cube_Content", content.GetFullPath(), true);
             }
-
-            var url = Setting.Current.PluginServer;
-            if (url.IsNullOrEmpty()) return;
-
-            var wc = new WebClientX()
-            {
-                Log = XTrace.Log
-            };
-            wc.DownloadLinkAndExtract(url, "Cube_Content", content.GetFullPath(), true);
         }
 
         /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>

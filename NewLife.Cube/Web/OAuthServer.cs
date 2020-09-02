@@ -117,7 +117,7 @@ namespace NewLife.Web
             log.RefreshToken = code + "." + Rand.NextString(16);
             log.CreateUser = user + "";
 
-            if (Log != null) WriteLog("Authorize appid={0} code={2} redirect_uri={1} {3}", log.AppId, log.RedirectUri, code, user);
+            if (Log != null) WriteLog("Authorize appid={0} code={2} redirect_uri={1} {3}", log.AppName, log.RedirectUri, code, user);
 
             log.Action = nameof(GetResult);
             log.Update();
@@ -143,7 +143,7 @@ namespace NewLife.Web
             var log = AppLog.FindByID(code.ToLong());
             if (log == null) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
-            if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", log.AppId, code, log.AccessToken, log.CreateUser);
+            if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);
 
             log.Action = nameof(GetTokens);
             log.Update();

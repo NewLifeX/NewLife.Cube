@@ -64,6 +64,13 @@ namespace NewLife.Cube
             var env = provider.GetService(typeof(IWebHostEnvironment)) as IWebHostEnvironment;
             if (env != null) services.AddCubeDefaultUI(env);
 
+            // 配置跨域处理，允许所有来源
+            var set = Setting.Current;
+            //if (!set.ResourceUrl.IsNullOrEmpty())
+            //{
+            //    services.AddCors(options => options.AddPolicy("cube_cors", p => p.WithOrigins("https://sso.newlifex.com").AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+            //}
+
             services.AddMvc(opt =>
             {
                 // 分页器绑定
@@ -99,7 +106,6 @@ namespace NewLife.Cube
             //services.AddCubeDefaultUI(HostingEnvironment);
 
             // 添加压缩
-            var set = Setting.Current;
             if (set.EnableCompress) services.AddResponseCompression();
 
             // 防止汉字被自动编码
@@ -205,9 +211,12 @@ namespace NewLife.Cube
 
             if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
 
-            //app.UseAuthentication();
-
             app.UseRouting();
+
+            //// 允许所有跨域
+            //if (!set.ResourceUrl.IsNullOrEmpty()) app.UseCors("cube_cors");
+
+            //app.UseAuthentication();
 
             // 设置默认路由
             app.UseEndpoints(endpoints =>

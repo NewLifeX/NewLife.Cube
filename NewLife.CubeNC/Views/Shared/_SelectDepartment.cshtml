@@ -9,6 +9,11 @@
     if (id.IsNullOrEmpty()) { id = "departmentId"; }
     var departmentId = page[id];
     var showValue = Department.FindByID(departmentId.ToInt())?.ToString();
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
 }
 
 <div class="form-group" style="position:relative">
@@ -23,7 +28,7 @@
     </div>
 </div>
 
-<script src="~/Content/bootstrap-suggest.js"></script>
+<script src="@res/bootstrap-suggest.js"></script>
 <script type="text/javascript">
     $(function () {
         $("#@(id)_select").bsSuggest({

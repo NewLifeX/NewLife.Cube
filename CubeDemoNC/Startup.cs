@@ -56,11 +56,11 @@ namespace CubeDemoNC
 
             app.UseRouting();
 
-            app.UseAuthorization();
-
-            app.UseMiddleware<TracerMiddleware>();
+            //app.UseMiddleware<TracerMiddleware>();
 
             app.UseCube(env);
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

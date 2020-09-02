@@ -7,8 +7,13 @@
     var page = ViewBag.Page as Pager;
 
     var areaId = page[prefix + "AreaID"];
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
 }
-<link href="~/Content/city-picker/city-picker.css" rel="stylesheet">
+<link href="@res/city-picker/city-picker.css" rel="stylesheet">
 <div class="form-group" style="position:relative">
     @*@Html.ForDropDownList(pkey, provs, provid, "全国", true)
         @Html.ForDropDownList(ckey, cities, cityid, "全省", true)*@
@@ -16,7 +21,7 @@
         <input readonly type="text" id="@(prefix)AreaID" value="@areaId" data-toggle="city-picker" placeholder="请选择省/市" data-level="city">
     </div>
 </div>
-<script src="~/Content/city-picker/city-picker.js"></script>
+<script src="@res/city-picker/city-picker.js"></script>
 <script>
     $.fn.citypicker.Constructor.DEFAULTS.dataUrl = '/Cube/AreaChilds?id=';
     $.fn.citypicker.Constructor.DEFAULTS.areaParents = '/Cube/AreaParents?id=';
