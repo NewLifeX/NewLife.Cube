@@ -9,6 +9,7 @@ using NewLife.Reflection;
 using XCode.DataAccessLayer;
 using XCode.Membership;
 using System.Diagnostics;
+using XCode;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using NewLife.Cube.Extensions;
@@ -96,7 +97,11 @@ namespace NewLife.Cube.Admin.Controllers
 
             var dal = DAL.Create(name);
             //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, true);
-            var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, true);
+            //var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, true);
+            var bak = $"{dal.ConnName}_{DateTime.Now:yyyyMMddHHmmss}.zip";
+            bak = NewLife.Setting.Current.BackupPath.CombinePath(bak);
+            var tables = dal.Tables;
+            dal.BackupAll(tables, bak);
 
             sw.Stop();
             WriteLog("备份", $"备份数据库 {name} 并压缩到 {bak}，耗时 {sw.Elapsed}", UserHost);
