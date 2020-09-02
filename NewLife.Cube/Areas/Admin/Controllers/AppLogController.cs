@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
@@ -14,6 +15,21 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class AppLogController : ReadOnlyEntityController<AppLog>
     {
+        static AppLogController()
+        {
+            ListFields.RemoveField("ID");
+        }
+
+        /// <summary>搜索</summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        protected override IEnumerable<AppLog> Search(Pager p)
+        {
+            if (p.Sort.IsNullOrEmpty()) p.Sort = AppLog._.ID.Desc();
+
+            return base.Search(p);
+        }
+
         /// <summary>菜单不可见</summary>
         /// <param name="menu"></param>
         /// <returns></returns>

@@ -84,15 +84,11 @@ namespace NewLife.Web
                 app.SaveAsync(5_000);
 
                 if (Log != null) WriteLog("Authorize client_id={0} redirect_uri={1}", client_id, redirect_uri);
-
-                log.Insert();
             }
             catch (Exception ex)
             {
                 log.Success = false;
                 log.Remark = ex.GetTrue()?.Message;
-
-                log.Insert();
 
                 throw;
             }
@@ -123,6 +119,9 @@ namespace NewLife.Web
 
             if (Log != null) WriteLog("Authorize appid={0} code={2} redirect_uri={1} {3}", log.AppId, log.RedirectUri, code, user);
 
+            log.Action = nameof(GetResult);
+            log.Update();
+
             var url = log.RedirectUri;
             if (url.Contains("?"))
                 url += "&";
@@ -145,6 +144,9 @@ namespace NewLife.Web
             if (log == null) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
             if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", log.AppId, code, log.AccessToken, log.CreateUser);
+
+            log.Action = nameof(GetTokens);
+            log.Update();
 
             return new[] { log.AccessToken, log.RefreshToken };
         }
