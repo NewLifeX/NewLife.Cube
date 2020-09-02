@@ -38,7 +38,7 @@ namespace NewLife.Cube.WebMiddleware
                 if (!action.IsNullOrEmpty())
                 {
                     span = Tracer.NewSpan(action);
-                    span.Tag = ctx.Request.GetRawUrl() + "";
+                    span.Tag = ctx.GetUserHost() + " " + ctx.Request.GetRawUrl();
                     span.Detach(ctx.Request.Headers.ToDictionary(e => e.Key, e => (Object)e.Value));
                 }
             }
@@ -73,8 +73,8 @@ namespace NewLife.Cube.WebMiddleware
             var ss = p.Split('/');
             if (ss.Length == 0) return p;
 
-            // 如果最后一段是数字，则可能是参数，需要去掉
-            if ((ss.Length == 4 || ss.Length == 5) && ss[ss.Length - 1].ToInt() > 0) p = "/" + ss.Take(ss.Length - 1).Join("/");
+            // 如果是魔方格式，保留3段
+            if (ss.Length >= 4 && ss[3].EqualIgnoreCase("detail", "add", "edit")) p = ss.Take(4).Join("/");
 
             return p;
         }

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Web;
-using XCode;
 using XCode.Membership;
-using XCode.Model;
 using XLog = XCode.Membership.Log;
 using static XCode.Membership.Log;
+using XCode;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -26,7 +24,7 @@ namespace NewLife.Cube.Admin.Controllers
             // 日志列表需要显示详细信息，不需要显示用户编号
             ListFields.AddField("Action", "Remark");
             ListFields.RemoveField("CreateUserID");
-            FormFields.RemoveField("Remark");
+            //FormFields.RemoveField("Remark");
         }
 
         /// <summary>搜索数据集</summary>

@@ -29,17 +29,17 @@ namespace NewLife.Cube.Extensions
         /// <param name="options"></param>
         public void PostConfigure(String name, StaticFileOptions options)
         {
-            name = name ?? throw new ArgumentException(nameof(name));
-            options = options ?? throw new ArgumentException(nameof(options));
+            if (name.IsNullOrEmpty()) throw new ArgumentException(nameof(name));
+            if (options == null) throw new ArgumentException(nameof(options));
 
             // 如果没有被其他组件初始化，在这里初始化
-            options.ContentTypeProvider = options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
+            options.ContentTypeProvider ??= new FileExtensionContentTypeProvider();
             if (options.FileProvider == null && Environment.ContentRootFileProvider == null)
             {
                 throw new InvalidOperationException("缺少FileProvider");
             }
 
-            options.FileProvider = options.FileProvider ?? Environment.ContentRootFileProvider;
+            options.FileProvider ??= Environment.ContentRootFileProvider;
 
             // 添加我们的文件提供者
             // 第二个参数指定开始查找的文件夹，比如文件都放在wwwroot，就填“wwwroot”
@@ -63,8 +63,11 @@ namespace NewLife.Cube.Extensions
             //XTrace.WriteLine("WebRootPath={0}", root);
             //if (!Directory.Exists(root.CombinePath("Content")))
             //{
+
+            // 强行设置WebRootPath，避免魔方首次启动下载资源文件后无法马上使用的问题
             var root = Setting.Current.WebRootPath.GetFullPath();
-            if (Directory.Exists(root))
+            if (!Directory.Exists(root)) Directory.CreateDirectory(root);
+
             {
                 XTrace.WriteLine("WebRootPath={0}", root);
 
