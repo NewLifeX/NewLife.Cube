@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Reflection;
 using XCode.DataAccessLayer;
 using XCode.Membership;
+using System.Diagnostics;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using NewLife.Cube.Extensions;
@@ -73,11 +74,14 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Insert)]
         public ActionResult Backup(String name)
         {
+            var sw = Stopwatch.StartNew();
+
             var dal = DAL.Create(name);
             //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, false);
             var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
 
-            WriteLog("备份", "备份数据库 {0} 到 {1}".F(name, bak), UserHost);
+            sw.Stop();
+            WriteLog("备份", $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}", UserHost);
 
             return Index();
         }
@@ -88,11 +92,14 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Insert)]
         public ActionResult BackupAndCompress(String name)
         {
+            var sw = Stopwatch.StartNew();
+
             var dal = DAL.Create(name);
             //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, true);
             var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, true);
 
-            WriteLog("备份", "备份数据库 {0} 并压缩到 {1}".F(name, bak), UserHost);
+            sw.Stop();
+            WriteLog("备份", $"备份数据库 {name} 并压缩到 {bak}，耗时 {sw.Elapsed}", UserHost);
 
             return Index();
         }
