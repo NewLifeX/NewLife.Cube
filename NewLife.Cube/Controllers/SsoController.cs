@@ -430,7 +430,7 @@ namespace NewLife.Cube.Controllers
             if (user != null)
                 url = OAuth.GetResult(key, user);
             else
-                url = prov.LoginUrl.AppendReturn("~/Sso/Auth2/" + key);
+                url = prov.LoginUrl.AppendReturn("/Sso/Auth2?id=" + key);
 
             return Redirect(url);
         }
@@ -451,7 +451,7 @@ namespace NewLife.Cube.Controllers
             if (user == null)
             {
                 var prov = Provider;
-                var url2 = prov.LoginUrl.AppendReturn("~/Sso/Auth2/" + id);
+                var url2 = prov.LoginUrl.AppendReturn("~/Sso/Auth2?id=" + id);
 
                 return Redirect(url2);
             }

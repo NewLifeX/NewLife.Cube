@@ -243,7 +243,7 @@ namespace NewLife.Cube.Web
                 if (user2.Avatar.IsNullOrEmpty())
                     user2.Avatar = av;
                 // 本地头像，如果不存在，也要更新
-                else if (user2.Avatar.StartsWith("/Sso/Avatar/"))
+                else if (user2.Avatar.StartsWithIgnoreCase("/Sso/Avatar/", "/Sso/Avatar?"))
                 {
                     var av2 = Setting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
                     if (!File.Exists(av2))
@@ -470,7 +470,7 @@ namespace NewLife.Cube.Web
                 File.WriteAllBytes(dest, buf);
 
                 // 更新头像
-                user.SetValue("Avatar", "/Sso/Avatar/" + user.ID);
+                user.SetValue("Avatar", "/Sso/Avatar?id=" + user.ID);
                 (user as IEntity)?.Update();
 
                 return true;

@@ -812,7 +812,7 @@ namespace NewLife.Cube
 
             var av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
 
-            if (File.Exists(av)) return "/Sso/Avatar/" + user.ID;
+            if (File.Exists(av)) return "/Sso/Avatar?id=" + user.ID;
 
             return user.Avatar;
         }
