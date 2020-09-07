@@ -65,11 +65,12 @@ namespace NewLife.Cube
             if (env != null) services.AddCubeDefaultUI(env);
 
             // 配置跨域处理，允许所有来源
+            // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
             var set = Setting.Current;
-            //if (!set.ResourceUrl.IsNullOrEmpty())
-            //{
-            //    services.AddCors(options => options.AddPolicy("cube_cors", p => p.WithOrigins("https://sso.newlifex.com").AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
-            //}
+            if (set.CorsOrigins == "*")
+                services.AddCors(options => options.AddPolicy("cube_cors", builder => builder.AllowAnyOrigin()));
+            else if (!set.CorsOrigins.IsNullOrEmpty())
+                services.AddCors(options => options.AddPolicy("cube_cors", builder => builder.WithOrigins(set.CorsOrigins)));
 
             services.AddMvc(opt =>
             {
@@ -184,6 +185,8 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IApplicationBuilder UseCube(this IApplicationBuilder app, IWebHostEnvironment env = null)
         {
+            var set = Setting.Current;
+
             // 使用Cube前添加自己的管道
             if (env != null)
             {
@@ -192,10 +195,11 @@ namespace NewLife.Cube
                     app.UseExceptionHandler("/CubeHome/Error");
             }
 
+            if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
+            if (!set.CorsOrigins.IsNullOrEmpty()) app.UseCors("cube_cors");
+
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
-
-            var set = Setting.Current;
 
             // 压缩配置
             if (set.EnableCompress) app.UseResponseCompression();
@@ -208,8 +212,6 @@ namespace NewLife.Cube
             //app.UseMiddleware<TracerMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
             //if (set.WebOnline || set.WebBehavior || set.WebStatistics) app.UseMiddleware<UserBehaviorMiddleware>();
-
-            if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
 
             app.UseRouting();
 

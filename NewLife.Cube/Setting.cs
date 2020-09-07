@@ -82,6 +82,10 @@ namespace NewLife.Cube
         [Description("资源地址。指向CDN，如 https://sso.newlifex.com/content/，留空表示使用本地")]
         public String ResourceUrl { get; set; }
 
+        /// <summary>跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域</summary>
+        [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
+        public String CorsOrigins { get; set; } 
+
         /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
         [Description("分享有效期。分享令牌的有效期，默认7200秒")]
         public Int32 ShareExpire { get; set; } = 7200;
