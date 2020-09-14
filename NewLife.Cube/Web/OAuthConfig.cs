@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Xml.Serialization;
-using NewLife.Common;
 using NewLife.Configuration;
 using NewLife.Security;
 
