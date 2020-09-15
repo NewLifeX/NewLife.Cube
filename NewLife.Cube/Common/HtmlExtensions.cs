@@ -239,6 +239,7 @@ namespace NewLife.Cube
             MvcHtmlString txt = null;
             if (name.EqualIgnoreCase("Pass", "Password"))
             {
+                if (!atts.ContainsKey("autocomplete")) atts.Add("autocomplete", "off");
                 txt = Html.Password(name, value, atts);
             }
             else if (name.EqualIgnoreCase("Phone"))
