@@ -19,6 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\School\Views\" />
     <Folder Include="Views\Shared\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>

@@ -19,6 +19,21 @@ namespace CubeDemo.Areas.School.Controllers
             return base.Index(p);
         }
 
+        protected override IEnumerable<Class> Search(Pager p)
+        {
+            var id = p["Id"].ToInt(-1);
+            if (id > 0)
+            {
+                var entity = Class.FindByID(id);
+                return entity == null ? new List<Class>() : new List<Class> { entity };
+            }
+
+            var start = p["dtStart"].ToDateTime();
+            var end = p["dtEnd"].ToDateTime();
+
+            return Class.Search(start, end, p["Q"], p);
+        }
+
         protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
         {
             menu.Visible = true;

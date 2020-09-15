@@ -125,7 +125,7 @@ else
                         var dic = new RouteValueDictionary();
                         var key = map.Provider.Key;
                         if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
-                        <td class="text-center">@Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null)</td>
+                        <td class="text-center">@Html.ActionLink(value + "", "Index", map.Provider.EntityType.Name, dic, null)</td>
                     }
                     else
                     {
