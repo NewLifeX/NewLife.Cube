@@ -298,6 +298,44 @@ namespace NewLife.Cube
         [DisplayName("导入")]
         [HttpPost]
         public virtual ActionResult ImportJson() => throw new NotImplementedException();
+
+        /// <summary>启用 或 禁用</summary>
+        /// <param name="id"></param>
+        /// <param name="enable"></param>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Update)]
+        public ActionResult SetEnable(Int32 id = 0, Boolean enable = true)
+        {
+            var fi = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Enable"));
+            if (fi == null) throw new InvalidOperationException($"启用/禁用仅支持Enable字段。");
+
+            var rs = 0;
+            if (id > 0)
+            {
+                var entity = FindData(id);
+                if (entity == null) throw new ArgumentNullException(nameof(id), "找不到任务 " + id);
+
+                //entity.Enable = enable;
+                entity.SetItem(fi.Name, enable);
+                rs += OnUpdate(entity);
+            }
+            else
+            {
+                var ids = GetRequest("keys").SplitAsInt();
+
+                foreach (var item in ids)
+                {
+                    var entity = FindData(item);
+                    if (entity != null /*&& entity.Enable != enable*/)
+                    {
+                        //entity.Enable = enable;
+                        entity.SetItem(fi.Name, enable);
+                        rs += OnUpdate(entity);
+                    }
+                }
+            }
+            return JsonRefresh($"操作成功！共更新[{rs}]行！");
+        }
         #endregion
 
         #region 批量删除

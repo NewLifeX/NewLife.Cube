@@ -4,6 +4,7 @@
     var pair = Model as Pair;
     var entity = pair.First as IEntity;
     var item = pair.Second as FieldItem;
+    var factory = entity.GetType().AsFactory();
 
     var value = entity[item.Name];
     var provider = ManageProvider.Provider;
@@ -22,18 +23,36 @@ else
     switch (Type.GetTypeCode(item.Type))
     {
         case TypeCode.Boolean:
-            if ((Boolean)value)
-            {
-                <td class="text-center">
-                    <i class="glyphicon glyphicon-ok" style="color: green;"></i>
-                </td>
-            }
-            else
-            {
-                <td class="text-center">
-                    <i class="glyphicon glyphicon-remove" style="color: red;"></i>
-                </td>
-            }
+            var bval = (Boolean)value;
+            <td class="text-center">
+                @if (item.Name.EqualIgnoreCase("Enable") && factory.Unique != null)
+                {
+                    var key = entity[factory.Unique.Name];
+                    if (bval)
+                    {
+                        <a href="SetEnable?id=@key&enable=0" data-action="action">
+                            <i class="glyphicon glyphicon-ok" style="color: green;"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="SetEnable?id=@key&enable=1" data-action="action">
+                            <i class="glyphicon glyphicon-remove" style="color: red;"></i>
+                        </a>
+                    }
+                }
+                else
+                {
+                    if (bval)
+                    {
+                        <i class="glyphicon glyphicon-ok" style="color: green;"></i>
+                    }
+                    else
+                    {
+                        <i class="glyphicon glyphicon-remove" style="color: red;"></i>
+                    }
+                }
+            </td>
             break;
         case TypeCode.DateTime:
             var dt = (DateTime)value;

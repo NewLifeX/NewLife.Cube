@@ -34,3 +34,5 @@ bld/
 /.vscode
 /CubeDemo/Config
 /XTemp
+/CubeDemoNC/Areas/School/Models/Config
+/CubeDemoNC/Areas/School/Models/Log

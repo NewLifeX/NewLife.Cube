@@ -1,16 +1,34 @@
 ﻿<#@ template language="C#" hostSpecific="true" debug="true" #>
-<#@ assembly name="$(SolutionDir)\..\Bin\NewLife.Core.dll" #>
-<#@ assembly name="$(SolutionDir)\..\Bin\XCode.dll" #>
+<#@ assembly name="netstandard" #>
+<#@ assembly name="$(SolutionDir)\DLL\NewLife.Core.dll" #>
+<#@ assembly name="$(SolutionDir)\DLL\XCode.dll" #>
 <#@ import namespace="System.Diagnostics" #>
 <#@ import namespace="System.IO" #>
 <#@ import namespace="XCode.Code" #>
 <#@ output extension=".log" #>
 <#
     // 设置当前工作目录
-	PathHelper.BaseDirectory = Host.ResolvePath(".");
-	// 导入模型文件并生成实体类，模型文件、输出目录、命名空间、连接名
-	EntityBuilder.Build();
+	PathHelper.BasePath = Host.ResolvePath(".");
 
-	//var tables = DAL.ImportFrom("Company.Project.xml");
-	//EntityBuilder.Build(tables);
+    // 加载模型文件，得到数据表
+    var option = new BuilderOption();
+    var tables = ClassBuilder.LoadModels(null, option, out var atts);
+    EntityBuilder.FixModelFile(null, option, atts, tables);
+
+    // 生成实体类
+    //option.BaseClass = "I{name}";
+    //option.ModelNameForCopy = "I{name}";
+    EntityBuilder.BuildTables(tables, option, chineseFileName: true);
+
+    // 生成简易模型类
+    option.Output = @"Output\EntityModels\";
+    option.ClassNameTemplate = "{name}Model";
+    option.ModelNameForCopy = "I{name}";
+    //ClassBuilder.BuildModels(tables, option);
+
+    // 生成简易接口
+    option.BaseClass = null;
+    option.ClassNameTemplate = null;
+    option.Output = @"Output\EntityInterfaces\";
+    //ClassBuilder.BuildInterfaces(tables, option);
 #>
