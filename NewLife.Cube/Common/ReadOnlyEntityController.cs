@@ -968,12 +968,17 @@ namespace NewLife.Cube
 
                 var rs = dal.Backup(fact.Table.DataTable, bak);
 
+                WriteLog("备份", true, $"备份[{fileName}]（{rs:n0}行）成功！");
+
                 return Json(0, $"备份[{fileName}]（{rs:n0}行）成功！");
             }
             catch (Exception ex)
             {
                 XTrace.WriteException(ex);
-                return Json(0, null, ex);
+
+                WriteLog("备份", false, ex.GetMessage());
+
+                return Json(500, null, ex);
             }
         }
 
@@ -998,12 +1003,17 @@ namespace NewLife.Cube
 
                 var rs = dal.Restore(fi.FullName, fact.Table.DataTable);
 
+                WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
+
                 return Json(0, $"恢复[{fileName}]（{rs:n0}行）成功！");
             }
             catch (Exception ex)
             {
                 XTrace.WriteException(ex);
-                return Json(0, null, ex);
+
+                WriteLog("恢复", false, ex.GetMessage());
+
+                return Json(500, null, ex);
             }
         }
 
@@ -1037,12 +1047,23 @@ namespace NewLife.Cube
             rs.Buffer = buffer;
             var ms = rs.OutputStream;
 #endif
-            using (var gs = new GZipStream(ms, CompressionLevel.Optimal, true))
+            try
             {
-                dal.Backup(fact.Table.DataTable, gs);
-            }
+                using var gs = new GZipStream(ms, CompressionLevel.Optimal, true);
+                var count = dal.Backup(fact.Table.DataTable, gs);
 
-            return new EmptyResult();
+                WriteLog("备份导出", true, $"备份[{name}]（{count:n0}行）成功！");
+
+                return new EmptyResult();
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+
+                WriteLog("备份导出", false, ex.GetMessage());
+
+                return Json(500, null, ex);
+            }
         }
 
         /// <summary>分享数据</summary>

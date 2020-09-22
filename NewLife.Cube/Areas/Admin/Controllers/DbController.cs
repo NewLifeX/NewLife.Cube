@@ -82,7 +82,7 @@ namespace NewLife.Cube.Admin.Controllers
             var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
 
             sw.Stop();
-            WriteLog("备份", $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}", UserHost);
+            WriteLog("备份", true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
 
             return Index();
         }
@@ -104,7 +104,7 @@ namespace NewLife.Cube.Admin.Controllers
             dal.BackupAll(tables, bak);
 
             sw.Stop();
-            WriteLog("备份", $"备份数据库 {name} 并压缩到 {bak}，耗时 {sw.Elapsed}", UserHost);
+            WriteLog("备份", true, $"备份数据库 {name} 并压缩到 {bak}，耗时 {sw.Elapsed}");
 
             return Index();
         }
@@ -118,13 +118,9 @@ namespace NewLife.Cube.Admin.Controllers
             var dal = DAL.Create(name);
             var xml = DAL.Export(dal.Tables);
 
-            WriteLog("下载", "下载数据库架构 " + name, UserHost);
+            WriteLog("下载", true, "下载数据库架构 " + name);
 
             return File(xml.GetBytes(), "application/xml", name + ".xml");
         }
-
-        #region 日志
-        private static void WriteLog(String action, String remark, String ip = null) => LogProvider.Provider.WriteLog(typeof(DbController), action, true, remark, ip: ip);
-        #endregion
     }
 }

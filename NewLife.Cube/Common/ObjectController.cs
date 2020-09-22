@@ -164,7 +164,7 @@ namespace NewLife.Cube
                     sb.AppendFormat("{0}:{1}=>{2}", name, v2, v1);
                 }
             }
-            LogProvider.Provider.WriteLog(obj.GetType(), "修改", true, sb.ToString(), ip: ip);
+            WriteLog("修改", true, sb.ToString());
         }
 
         /// <summary>获取要显示编辑的成员</summary>

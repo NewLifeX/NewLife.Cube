@@ -313,6 +313,18 @@ namespace NewLife.Cube
         #endregion
 
         #region 辅助
+        /// <summary>写审计日志</summary>
+        /// <param name="action"></param>
+        /// <param name="success"></param>
+        /// <param name="remark"></param>
+        protected virtual void WriteLog(String action, Boolean success, String remark)
+        {
+            var type = GetType();
+            if (type.BaseType.IsGenericType) type = type.BaseType.GetGenericArguments().FirstOrDefault();
+
+            LogProvider.Provider?.WriteLog(type, action, success, remark, 0, null, UserHost);
+        }
+
         /// <summary>获取控制器名称</summary>
         /// <returns></returns>
         protected virtual String[] GetControllerAction()

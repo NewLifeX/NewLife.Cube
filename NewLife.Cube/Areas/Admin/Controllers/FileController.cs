@@ -39,7 +39,7 @@ namespace NewLife.Cube.Admin.Controllers
             var root = Root.EnsureEnd(Path.DirectorySeparatorChar + "");
             if (!fi.FullName.StartsWithIgnoreCase(root))
             {
-                WriteLog("Valid", $"文件[{fi.FullName}]非法越界！", UserHost);
+                WriteLog("Valid", false, $"文件[{fi.FullName}]非法越界！");
 
                 return null;
             }
@@ -59,7 +59,7 @@ namespace NewLife.Cube.Admin.Controllers
             var root = Root.EnsureEnd(Path.DirectorySeparatorChar + "");
             if (!di.FullName.StartsWithIgnoreCase(root))
             {
-                WriteLog("Valid", $"目录[{di.FullName}]非法越界！", UserHost);
+                WriteLog("Valid", false, $"目录[{di.FullName}]非法越界！");
 
                 return null;
             }
@@ -168,7 +168,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (fi != null)
             {
                 p = GetFullName(fi.Directory.FullName);
-                WriteLog("删除", fi.FullName, UserHost);
+                WriteLog("删除", true, fi.FullName);
                 fi.Delete();
             }
             else
@@ -177,7 +177,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (di == null) throw new Exception("找不到文件或目录！");
 
                 p = GetFullName(di.Parent.FullName);
-                WriteLog("删除", di.FullName, UserHost);
+                WriteLog("删除", true, di.FullName);
                 di.Delete(true);
             }
 
@@ -200,7 +200,7 @@ namespace NewLife.Cube.Admin.Controllers
                 p = GetFullName(fi.Directory.FullName);
                 var dst = $"{fi.Name}_{DateTime.Now:yyyyMMddHHmmss}.zip";
                 dst = fi.Directory.FullName.CombinePath(dst);
-                WriteLog("压缩", $"{fi.FullName} => {dst}", UserHost);
+                WriteLog("压缩", true, $"{fi.FullName} => {dst}");
                 fi.Compress(dst);
             }
             else
@@ -211,7 +211,7 @@ namespace NewLife.Cube.Admin.Controllers
                 p = GetFullName(di.Parent.FullName);
                 var dst = $"{di.Name}_{DateTime.Now:yyyyMMddHHmmss}.zip";
                 dst = di.Parent.FullName.CombinePath(dst);
-                WriteLog("压缩", $"{di.FullName} => {dst}", UserHost);
+                WriteLog("压缩", true, $"{di.FullName} => {dst}");
                 di.Compress(dst);
             }
 
@@ -228,7 +228,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (fi == null) throw new Exception("找不到文件！");
 
             var p = GetFullName(fi.Directory.FullName);
-            WriteLog("解压缩", fi.FullName, UserHost);
+            WriteLog("解压缩", true, fi.FullName);
             fi.Extract(fi.Directory.FullName, true);
 
             return RedirectToAction("Index", new { r = p });
@@ -251,7 +251,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (di == null) throw new Exception("找不到目录！");
 
                 var dest = di.FullName.CombinePath(file.FileName);
-                WriteLog("上传", dest, UserHost);
+                WriteLog("上传", true, dest);
 
                 dest.EnsureDirectory(true);
                 System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes());
@@ -273,7 +273,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (di == null) throw new Exception("找不到目录！");
 
                 var dest = di.FullName.CombinePath(file.FileName);
-                WriteLog("上传", dest);
+                WriteLog("上传", true, dest);
 
                 dest.EnsureDirectory(true);
                 file.SaveAs(dest);
@@ -292,7 +292,7 @@ namespace NewLife.Cube.Admin.Controllers
             var fi = GetFile(r);
             if (fi == null) throw new Exception("找不到文件！");
 
-            WriteLog("下载", fi.FullName, UserHost);
+            WriteLog("下载", true, fi.FullName);
 
 #if __CORE__
             return PhysicalFile(fi.FullName, "application/octet-stream", fi.Name, true);
@@ -359,7 +359,7 @@ namespace NewLife.Cube.Admin.Controllers
             foreach (var item in list)
             {
                 var dst = di.FullName.CombinePath(item.Name);
-                WriteLog("复制", $"{item.Raw} => {dst}", UserHost);
+                WriteLog("复制", true, $"{item.Raw} => {dst}");
                 if (item.Directory)
                     item.Raw.AsDirectory().CopyTo(dst);
                 else
@@ -383,7 +383,7 @@ namespace NewLife.Cube.Admin.Controllers
             foreach (var item in list)
             {
                 var dst = di.FullName.CombinePath(item.Name);
-                WriteLog("移动", $"{item.Raw} => {dst}", UserHost);
+                WriteLog("移动", true, $"{item.Raw} => {dst}");
                 if (item.Directory)
                     Directory.Move(item.Raw, dst);
                 else
@@ -404,10 +404,6 @@ namespace NewLife.Cube.Admin.Controllers
 
             return Index(r, null);
         }
-        #endregion
-
-        #region 日志
-        private static void WriteLog(String action, String remark, String ip = null) => LogProvider.Provider.WriteLog(typeof(FileController), action, true, remark, ip: ip);
         #endregion
     }
 }
