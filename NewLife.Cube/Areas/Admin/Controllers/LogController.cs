@@ -54,13 +54,13 @@ namespace NewLife.Cube.Admin.Controllers
                     if (range <= 0) range = 10;
 
                     // 雪花Id，抽取时间
-                    var flow = XLog.Meta.Factory.FlowId;
-                    if (flow.TryParse(id, out var time, out var _, out var _))
+                    var snow = XLog.Meta.Factory.Snow;
+                    if (snow.TryParse(id, out var time, out var _, out var _))
                     {
                         start = time.AddSeconds(-range);
                         end = time.AddSeconds(range);
 
-                        return XLog.FindAll(_.ID.Between(start, end, flow), p);
+                        return XLog.FindAll(_.ID.Between(start, end, snow), p);
                     }
                 }
             }

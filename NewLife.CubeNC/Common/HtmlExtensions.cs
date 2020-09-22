@@ -78,7 +78,7 @@ namespace NewLife.Cube
 
             if (field.ReadOnly)
             {
-                var label = "<label class=\"form-control\">{0}</label>".F(entity[field.Name]);
+                var label = $"<label class=\"form-control\">{entity[field.Name]}</label>";
                 return Html.Raw(label);
             }
 
@@ -125,7 +125,7 @@ namespace NewLife.Cube
             var fact = map.Provider == null ? null : EntityFactory.CreateOperate(map.Provider.EntityType);
             if (map.Provider == null || fact != null && fact.Count > Setting.Current.MaxDropDownList)
             {
-                var label = "&nbsp;<label class=\"\">{0}</label>".F(entity[field.Name]);
+                var label = $"&nbsp;<label class=\"\">{entity[field.Name]}</label>";
                 if (field.OriField != null) field = field.OriField;
                 var mhs = Html.ForEditor(field.Name, entity[field.Name], field.Type);
                 return new HtmlString(mhs.GetString() + label);
@@ -187,7 +187,7 @@ namespace NewLife.Cube
             var txt = Html.Label(name);
             foreach (var pi in pis)
             {
-                var pname = "{0}_{1}".F(name, pi.Name);
+                var pname = $"{name}_{pi.Name}";
 
                 sb.AppendLine("<div class=\"form-group\">");
                 sb.AppendLine(Html.Label(pi.Name, pi.GetDisplayName(), new { @class = "control-label col-md-2" }).GetString());
@@ -388,7 +388,7 @@ namespace NewLife.Cube
             if (field.Type == typeof(Boolean))
                 return Html.Label(field.Name, des);
             else
-                return Html.Raw("<span class=\"middle\">{0}</span>".F(des));
+                return Html.Raw($"<span class=\"middle\">{des}</span>");
         }
 
         /// <summary>输出描述</summary>

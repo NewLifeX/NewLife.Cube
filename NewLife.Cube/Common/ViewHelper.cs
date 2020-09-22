@@ -76,7 +76,7 @@ namespace NewLife.Cube
             {
                 foreach (var item in pks)
                 {
-                    rv[item.Name] = "{0}".F(entity[item.Name]);
+                    rv[item.Name] = entity[item.Name];
                 }
             }
 

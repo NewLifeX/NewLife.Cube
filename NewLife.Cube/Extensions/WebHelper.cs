@@ -227,7 +227,8 @@ namespace NewLife.Web
             if (name.IsNullOrWhiteSpace()) return sb;
 
             // 必须注意，value可能是时间类型
-            return UrlParam(sb, "{0}={1}".F(HttpUtility.UrlEncode(name), HttpUtility.UrlEncode("{0}".F(value))));
+            var val = value is DateTime dt ? dt.ToFullString() : value + "";
+            return UrlParam(sb, $"{HttpUtility.UrlEncode(name)}={HttpUtility.UrlEncode(val)}");
         }
 
         /// <summary>把一个参数字典追加Url参数，指定包含的参数</summary>

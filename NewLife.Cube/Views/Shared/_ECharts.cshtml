@@ -12,20 +12,20 @@
     var style = chart.Style;
     if (chart.Width > 0)
     {
-        style += "width: {0}px;".F(chart.Width);
+        style += String.Format("width: {0}px;", chart.Width);
     }
     else if (chart.Width < 0)
     {
-        style += "width: {0}%;".F(-chart.Width);
+        style += String.Format("width: {0}%;", -chart.Width);
     }
 
     if (chart.Height > 0)
     {
-        style += "height: {0}px;".F(chart.Height);
+        style += String.Format("height: {0}px;", chart.Height);
     }
     else if (chart.Height < 0)
     {
-        style += "height: {0}%;".F(-chart.Height);
+        style += String.Format("height: {0}%;", -chart.Height);
     }
 }
 <div id="@name" style="@style" class="@chart.Class"></div>

@@ -73,20 +73,20 @@ namespace ASP
     var style = chart.Style;
     if (chart.Width > 0)
     {
-        style += "width: {0}px;".F(chart.Width);
+        style += String.Format("width: {0}px;", chart.Width);
     }
     else if (chart.Width < 0)
     {
-        style += "width: {0}%;".F(-chart.Width);
+        style += String.Format("width: {0}%;", -chart.Width);
     }
 
     if (chart.Height > 0)
     {
-        style += "height: {0}px;".F(chart.Height);
+        style += String.Format("height: {0}px;", chart.Height);
     }
     else if (chart.Height < 0)
     {
-        style += "height: {0}%;".F(-chart.Height);
+        style += String.Format("height: {0}%;", -chart.Height);
     }
 
             
@@ -94,34 +94,34 @@ namespace ASP
             #line hidden
 WriteLiteral("\r\n<div");
 
-WriteAttribute("id", Tuple.Create(" id=\"", 662), Tuple.Create("\"", 672)
+WriteAttribute("id", Tuple.Create(" id=\"", 714), Tuple.Create("\"", 724)
             
             #line 31 "..\..\Views\Shared\_ECharts.cshtml"
-, Tuple.Create(Tuple.Create("", 667), Tuple.Create<System.Object, System.Int32>(name
+, Tuple.Create(Tuple.Create("", 719), Tuple.Create<System.Object, System.Int32>(name
             
             #line default
             #line hidden
-, 667), false)
+, 719), false)
 );
 
-WriteAttribute("style", Tuple.Create(" style=\"", 673), Tuple.Create("\"", 687)
+WriteAttribute("style", Tuple.Create(" style=\"", 725), Tuple.Create("\"", 739)
             
             #line 31 "..\..\Views\Shared\_ECharts.cshtml"
-, Tuple.Create(Tuple.Create("", 681), Tuple.Create<System.Object, System.Int32>(style
+, Tuple.Create(Tuple.Create("", 733), Tuple.Create<System.Object, System.Int32>(style
             
             #line default
             #line hidden
-, 681), false)
+, 733), false)
 );
 
-WriteAttribute("class", Tuple.Create(" class=\"", 688), Tuple.Create("\"", 708)
+WriteAttribute("class", Tuple.Create(" class=\"", 740), Tuple.Create("\"", 760)
             
             #line 31 "..\..\Views\Shared\_ECharts.cshtml"
-, Tuple.Create(Tuple.Create("", 696), Tuple.Create<System.Object, System.Int32>(chart.Class
+, Tuple.Create(Tuple.Create("", 748), Tuple.Create<System.Object, System.Int32>(chart.Class
             
             #line default
             #line hidden
-, 696), false)
+, 748), false)
 );
 
 WriteLiteral("></div>\r\n<script");

@@ -87,13 +87,13 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 var f = inf as FileInfo;
                 if (f.Length < 1024)
-                    fi.Size = "{0:n0}".F(f.Length);
+                    fi.Size = $"{f.Length:n0}";
                 else if (f.Length < 1024 * 1024)
-                    fi.Size = "{0:n2}K".F((Double)f.Length / 1024);
+                    fi.Size = $"{(Double)f.Length / 1024:n2}K";
                 else if (f.Length < 1024 * 1024 * 1024)
-                    fi.Size = "{0:n2}M".F((Double)f.Length / 1024 / 1024);
+                    fi.Size = $"{(Double)f.Length / 1024 / 1024:n2}M";
                 else if (f.Length < 1024L * 1024 * 1024 * 1024)
-                    fi.Size = "{0:n2}G".F((Double)f.Length / 1024 / 1024 / 1024);
+                    fi.Size = $"{(Double)f.Length / 1024 / 1024 / 1024:n2}G";
             }
 
             return fi;
@@ -198,9 +198,9 @@ namespace NewLife.Cube.Admin.Controllers
             if (fi != null)
             {
                 p = GetFullName(fi.Directory.FullName);
-                var dst = "{0}_{1:yyyyMMddHHmmss}.zip".F(fi.Name, DateTime.Now);
+                var dst = $"{fi.Name}_{DateTime.Now:yyyyMMddHHmmss}.zip";
                 dst = fi.Directory.FullName.CombinePath(dst);
-                WriteLog("压缩", "{0} => {1}".F(fi.FullName, dst), UserHost);
+                WriteLog("压缩", $"{fi.FullName} => {dst}", UserHost);
                 fi.Compress(dst);
             }
             else
@@ -209,9 +209,9 @@ namespace NewLife.Cube.Admin.Controllers
                 if (di == null) throw new Exception("找不到文件或目录！");
 
                 p = GetFullName(di.Parent.FullName);
-                var dst = "{0}_{1:yyyyMMddHHmmss}.zip".F(di.Name, DateTime.Now);
+                var dst = $"{di.Name}_{DateTime.Now:yyyyMMddHHmmss}.zip";
                 dst = di.Parent.FullName.CombinePath(dst);
-                WriteLog("压缩", "{0} => {1}".F(di.FullName, dst), UserHost);
+                WriteLog("压缩", $"{di.FullName} => {dst}", UserHost);
                 di.Compress(dst);
             }
 
@@ -359,7 +359,7 @@ namespace NewLife.Cube.Admin.Controllers
             foreach (var item in list)
             {
                 var dst = di.FullName.CombinePath(item.Name);
-                WriteLog("复制", "{0} => {1}".F(item.Raw, dst), UserHost);
+                WriteLog("复制", $"{item.Raw} => {dst}", UserHost);
                 if (item.Directory)
                     item.Raw.AsDirectory().CopyTo(dst);
                 else
@@ -383,7 +383,7 @@ namespace NewLife.Cube.Admin.Controllers
             foreach (var item in list)
             {
                 var dst = di.FullName.CombinePath(item.Name);
-                WriteLog("移动", "{0} => {1}".F(item.Raw, dst), UserHost);
+                WriteLog("移动", $"{item.Raw} => {dst}", UserHost);
                 if (item.Directory)
                     Directory.Move(item.Raw, dst);
                 else

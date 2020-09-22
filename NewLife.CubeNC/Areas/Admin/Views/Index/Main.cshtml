@@ -27,7 +27,7 @@
     var mi = MachineInfo.Current ?? new MachineInfo();
 
     // GC设置
-    var gc = "IsServerGC={0},LatencyMode={1}".F(GCSettings.IsServerGC, GCSettings.LatencyMode);
+    var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
 }
 <div class="table-responsive">
     <table class="table table-bordered table-hover table-striped table-condensed">

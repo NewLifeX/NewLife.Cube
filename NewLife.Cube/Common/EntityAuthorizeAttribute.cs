@@ -123,8 +123,8 @@ namespace NewLife.Cube
 
             var ctx = filterContext.HttpContext;
 
-            var res = "[{0}/{1}]".F(ctrl.ControllerName, act.ActionName);
-            var msg = "访问资源 {0} 需要 {1} 权限".F(res, pm.GetDescription());
+            var res = $"[{ctrl.ControllerName}/{act.ActionName}]";
+            var msg = $"访问资源 {res} 需要 {pm.GetDescription()} 权限";
             LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
 
             var menu = ctx.Items["CurrentMenu"] as IMenu;

@@ -484,7 +484,7 @@ namespace NewLife.Cube
             var count = Entity<TEntity>.Meta.Session.Truncate();
 
             if (Request.IsAjaxRequest())
-                return JsonRefresh("共删除{0}行数据".F(count));
+                return JsonRefresh($"共删除{count}行数据");
             else if (!url.IsNullOrEmpty())
                 return Redirect(url);
             else
@@ -709,7 +709,7 @@ namespace NewLife.Cube
             if (name.IsNullOrEmpty()) name = GetType().Name.TrimEnd("Controller");
             if (!ext.IsNullOrEmpty()) ext = ext.EnsureStart(".");
 
-            if (includeTime) name += "_{0:yyyyMMddHHmmss}".F(DateTime.Now);
+            if (includeTime) name += $"_{DateTime.Now:yyyyMMddHHmmss}";
 
             name += ext;
             name = HttpUtility.UrlEncode(name, Encoding.UTF8);
@@ -951,7 +951,7 @@ namespace NewLife.Cube
                 var dal = fact.Session.Dal;
 
                 var name = GetType().Name.TrimEnd("Controller");
-                var fileName = "{0}_{1:yyyyMMddHHmmss}.gz".F(name, DateTime.Now);
+                var fileName = $"{name}_{DateTime.Now:yyyyMMddHHmmss}.gz";
                 var bak = NewLife.Setting.Current.BackupPath.CombinePath(fileName).GetBasePath();
                 bak.EnsureDirectory(true);
 
@@ -978,7 +978,7 @@ namespace NewLife.Cube
                 var dal = fact.Session.Dal;
 
                 var name = GetType().Name.TrimEnd("Controller");
-                var fileName = "{0}_*.gz".F(name);
+                var fileName = $"{name}_*.gz";
 
                 var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
                 var fi = di?.GetFiles(fileName)?.LastOrDefault();
@@ -1089,7 +1089,7 @@ namespace NewLife.Cube
 
             // 视图路径，Areas/区域/Views/控制器/_List_Data.cshtml
             var cs = GetControllerAction();
-            var vpath = "Areas/{0}/Views/{1}/_List_Data.cshtml".F(cs[0], cs[1]);
+            var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Data.cshtml";
             if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
             var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
@@ -1115,7 +1115,7 @@ namespace NewLife.Cube
 
             // 视图路径，Areas/区域/Views/控制器/_Form_Body.cshtml
             var cs = GetControllerAction();
-            var vpath = "Areas/{0}/Views/{1}/_Form_Body.cshtml".F(cs[0], cs[1]);
+            var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_Form_Body.cshtml";
             if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
@@ -1141,7 +1141,7 @@ namespace NewLife.Cube
 
             // 视图路径，Areas/区域/Views/控制器/_List_Search.cshtml
             var cs = GetControllerAction();
-            var vpath = "Areas/{0}/Views/{1}/_List_Search.cshtml".F(cs[0], cs[1]);
+            var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Search.cshtml";
             if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
             var rs = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);

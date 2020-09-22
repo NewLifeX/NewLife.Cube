@@ -61,7 +61,7 @@ namespace NewLife.Cube.Admin.Controllers
                 });
                 if (t.Wait(300)) di.Version = t.Result;
 
-                if (dir.Exists) di.Backups = dir.GetFiles("{0}_*".F(dal.ConnName), SearchOption.TopDirectoryOnly).Length;
+                if (dir.Exists) di.Backups = dir.GetFiles($"{dal.ConnName}_*", SearchOption.TopDirectoryOnly).Length;
 
                 list.Add(di);
             }

@@ -358,7 +358,7 @@ namespace NewLife.Cube.Admin.Controllers
                 }
             }
 
-            return JsonRefresh("共{1}[{0}]个用户".F(count, isEnable ? "启用" : "禁用"));
+            return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个用户");
         }
     }
 }

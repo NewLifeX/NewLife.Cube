@@ -367,7 +367,7 @@ namespace NewLife.Cube
                     tran.Commit();
                 }
             }
-            return JsonRefresh("共删除{0}行数据".F(count));
+            return JsonRefresh($"共删除{count}行数据");
         }
 
         /// <summary>删除全部</summary>
@@ -409,7 +409,7 @@ namespace NewLife.Cube
             }
 
             if (Request.IsAjaxRequest())
-                return JsonRefresh("共删除{0}行数据".F(count));
+                return JsonRefresh($"共删除{count}行数据");
             else if (!url.IsNullOrEmpty())
                 return Redirect(url);
             else
