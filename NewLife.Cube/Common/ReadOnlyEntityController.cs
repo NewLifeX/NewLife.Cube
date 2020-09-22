@@ -481,14 +481,25 @@ namespace NewLife.Cube
             p = new Pager(p);
             if (p != null && p.Params.Count > 0) return Json(500, "当前带有查询参数，为免误解，禁止全表清空！");
 
-            var count = Entity<TEntity>.Meta.Session.Truncate();
+            try
+            {
+                var count = Entity<TEntity>.Meta.Session.Truncate();
 
-            if (Request.IsAjaxRequest())
-                return JsonRefresh($"共删除{count}行数据");
-            else if (!url.IsNullOrEmpty())
-                return Redirect(url);
-            else
-                return RedirectToAction("Index");
+                WriteLog("清空数据", true, $"共删除{count}行数据");
+
+                if (Request.IsAjaxRequest())
+                    return JsonRefresh($"共删除{count}行数据");
+                else if (!url.IsNullOrEmpty())
+                    return Redirect(url);
+                else
+                    return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                WriteLog("清空数据", false, ex.GetMessage());
+
+                throw;
+            }
         }
         #endregion
 
@@ -981,7 +992,8 @@ namespace NewLife.Cube
                 var fileName = $"{name}_*.gz";
 
                 var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
-                var fi = di?.GetFiles(fileName)?.LastOrDefault();
+                //var fi = di?.GetFiles(fileName)?.LastOrDefault();
+                var fi = di?.GetFiles(fileName)?.OrderByDescending(e => e.Name).FirstOrDefault();
                 if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
 
                 var rs = dal.Restore(fi.FullName, fact.Table.DataTable);
@@ -1094,7 +1106,7 @@ namespace NewLife.Cube
 
             var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
 
-            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成列表", true, vpath);
+            WriteLog("生成列表", true, vpath);
 #if !__CORE__
             //Js.Alert("生成列表模版 {0} 成功！".F(vpath));
 #endif
@@ -1120,7 +1132,7 @@ namespace NewLife.Cube
 
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
 
-            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成表单", true, vpath);
+            WriteLog("生成表单", true, vpath);
 #if !__CORE__
             //Js.Alert("生成表单模版 {0} 成功！".F(vpath));
 #endif
@@ -1146,7 +1158,7 @@ namespace NewLife.Cube
 
             var rs = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
 
-            LogProvider.Provider?.WriteLog(Factory.EntityType, "生成搜索", true, vpath);
+            WriteLog("生成搜索", true, vpath);
 
             return RedirectToAction("Index");
         }
