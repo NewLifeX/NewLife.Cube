@@ -83,7 +83,7 @@ namespace NewLife.Cube.WebMiddleware
             if (ss.Length == 0) return p;
 
             // 如果是魔方格式，保留3段
-            if (ss.Length >= 4 && ss[3].EqualIgnoreCase("detail", "add", "edit")) p = ss.Take(4).Join("/");
+            if (ss.Length >= 4 && ss[3].EqualIgnoreCase("detail", "add", "edit")) p = "/" + ss.Take(4).Join("/");
 
             return p;
         }
