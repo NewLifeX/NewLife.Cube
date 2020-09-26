@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NewLife.Log;
@@ -46,6 +48,13 @@ namespace NewLife.Cube.WebMiddleware
             try
             {
                 await _next.Invoke(ctx);
+
+                // 根据状态码识别异常
+                if (span != null)
+                {
+                    var code = ctx.Response.StatusCode;
+                    if (code >= 200 && code <= 299) span.SetError(new HttpRequestException($"Http Error {code}"), null);
+                }
             }
             catch (Exception ex)
             {
