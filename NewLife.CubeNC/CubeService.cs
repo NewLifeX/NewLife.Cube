@@ -205,7 +205,7 @@ namespace NewLife.Cube
             if (set.EnableCompress) app.UseResponseCompression();
 
             // 注册中间件
-            //app.UseStaticFiles();
+            app.UseStaticFiles();
             app.UseCookiePolicy();
             app.UseSession();
 
