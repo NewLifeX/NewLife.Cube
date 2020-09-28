@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Caching;
 using NewLife.Cube;
+using NewLife.Log;
 using NewLife.School.Entity;
 using NewLife.Web;
 using XCode.Membership;
@@ -14,13 +16,16 @@ namespace CubeDemo.Areas.School.Controllers
     [DisplayName("班级")]
     public class ClassController : EntityController<Class>
     {
-        public override ActionResult Index(Pager p = null)
-        {
-            return base.Index(p);
-        }
+        private readonly ITracer _tracer;
+
+        public ClassController(ITracer tracer) => _tracer = tracer;
+
+        public override ActionResult Index(Pager p = null) => base.Index(p);
 
         protected override IEnumerable<Class> Search(Pager p)
         {
+            using var span = _tracer?.NewSpan(nameof(Search), p);
+
             var id = p["Id"].ToInt(-1);
             if (id > 0)
             {
