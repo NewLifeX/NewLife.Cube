@@ -434,7 +434,7 @@ namespace NewLife.Cube
         protected virtual Int32 OnDelete(TEntity entity) => entity.Delete();
         #endregion
 
-        #region 同步数据
+        #region 同步/还原
         /// <summary>同步数据</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
@@ -514,6 +514,41 @@ namespace NewLife.Cube
             }
 
             return Index();
+        }
+
+        /// <summary>从服务器本地目录还原</summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Insert)]
+        [DisplayName("还原")]
+        public virtual ActionResult Restore()
+        {
+            try
+            {
+                var fact = Factory;
+                var dal = fact.Session.Dal;
+
+                var name = GetType().Name.TrimEnd("Controller");
+                var fileName = $"{name}_*.gz";
+
+                var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
+                //var fi = di?.GetFiles(fileName)?.LastOrDefault();
+                var fi = di?.GetFiles(fileName)?.OrderByDescending(e => e.Name).FirstOrDefault();
+                if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
+
+                var rs = dal.Restore(fi.FullName, fact.Table.DataTable);
+
+                WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
+
+                return Json(0, $"恢复[{fileName}]（{rs:n0}行）成功！");
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+
+                WriteLog("恢复", false, ex.GetMessage());
+
+                return Json(500, null, ex);
+            }
         }
         #endregion
     }
