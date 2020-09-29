@@ -67,6 +67,9 @@ namespace NewLife.Cube.Admin.Controllers
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
 
+            // 地区默认降序
+            if (p.Sort.IsNullOrEmpty()) p.OrderBy = Area._.ID.Desc();
+
             return Area.Search(parentid, level, idstart, idend, enable, p["q"], start, end, p);
         }
 
