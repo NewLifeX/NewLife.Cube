@@ -37,7 +37,8 @@ namespace NewLife.Cube.Admin.Controllers
                 // 异步初始化数据
                 //if (Area.Meta.Count == 0) ThreadPoolX.QueueUserWorkItem(() => Area.FetchAndSave());
                 // 必须同步初始化，否则无法取得当前登录用户信息
-                if (Area.Meta.Count == 0) Area.FetchAndSave();
+                //if (Area.Meta.Count == 0) Area.FetchAndSave();
+                if (Area.Meta.Count == 0) Area.Import("http://x.newlifex.com/Area.csv.gz", true);
             }
 
             var id = p["id"].ToInt(-1);
@@ -67,8 +68,8 @@ namespace NewLife.Cube.Admin.Controllers
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
 
-            // 地区默认降序
-            if (p.Sort.IsNullOrEmpty()) p.OrderBy = Area._.ID.Desc();
+            // 地区默认升序
+            if (p.Sort.IsNullOrEmpty()) p.OrderBy = Area._.ID.Asc();
 
             return Area.Search(parentid, level, idstart, idend, enable, p["q"], start, end, p);
         }

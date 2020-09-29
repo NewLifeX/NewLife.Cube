@@ -53,8 +53,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.10.2020.927-rc2" />
-    <PackageReference Include="NewLife.XCode" Version="10.0.2020.927-rc2" />
+    <PackageReference Include="NewLife.Core" Version="8.10.2020.929-rc2" />
+    <PackageReference Include="NewLife.XCode" Version="10.0.2020.929-rc4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -140,11 +140,6 @@
   <ItemGroup>
     <None Include="..\NewLife.Cube\Entity\Cube.xml">
       <Link>Entity\Cube.xml</Link>
-    </None>
-    <None Include="..\NewLife.Cube\Entity\XCoder.log">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>XCoder.tt</DependentUpon>
     </None>
     <None Include="..\NewLife.Cube\Entity\XCoder.tt">
       <Link>Entity\XCoder.tt</Link>
