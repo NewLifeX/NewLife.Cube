@@ -4,8 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
-    <Version>3.3.2020.0503</Version>
-    <FileVersion>3.3.2020.0503</FileVersion>
+    <Version>3.3.2020.0930</Version>
+    <FileVersion>3.3.2020.0930</FileVersion>
     <AssemblyVersion>3.3.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
