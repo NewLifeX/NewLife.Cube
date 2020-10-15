@@ -171,6 +171,8 @@ WriteLiteral(" name=\"password\"");
 
 WriteLiteral(" placeholder=\"密码\"");
 
+WriteLiteral(" autocomplete=\"off\"");
+
 WriteLiteral(">\r\n            <i");
 
 WriteLiteral(" class=\"glyphicon glyphicon-user\"");
@@ -193,6 +195,8 @@ WriteLiteral(" name=\"password2\"");
 
 WriteLiteral(" placeholder=\"重复密码\"");
 
+WriteLiteral(" autocomplete=\"off\"");
+
 WriteLiteral(">\r\n            <i");
 
 WriteLiteral(" class=\"glyphicon glyphicon-user\"");
@@ -205,13 +209,11 @@ WriteLiteral(" class=\"form-group text-center\"");
 
 WriteLiteral(">\r\n            <div");
 
-WriteLiteral(" style=\"display: inline-block; margin-top: 5px;\"");
+WriteLiteral(" style=\"display: inline-block; margin-top: 5px; float: left;\"");
 
-WriteLiteral(">\r\n                <span");
+WriteLiteral(">\r\n                ");
 
-WriteLiteral(" style=\"margin-left: auto; margin-right: auto; margin-top: 5px;\"");
-
-WriteLiteral(">已有账号？</span>\r\n                <a");
+WriteLiteral("\r\n                <a");
 
 WriteLiteral(" href=\"#Login\"");
 

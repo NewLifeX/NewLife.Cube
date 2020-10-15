@@ -86,19 +86,42 @@ WriteLiteral("\r\n    </div>\r\n    <!-- 登录-->\r\n");
             #line 12 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
      using (Html.BeginForm("Login", "User", new { r = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "cube-login" }))
     {
+        if (ViewBag.IsShowTip)
+        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        <div");
+
+WriteLiteral(" class=\"alert alert-block alert-success\"");
+
+WriteLiteral(">\r\n            默认账号：<span");
+
+WriteLiteral(" class=\"orange\"");
+
+WriteLiteral(">admin</span>；默认密码：<span");
+
+WriteLiteral(" class=\"orange\"");
+
+WriteLiteral(">admin</span>\r\n        </div>\r\n");
+
+            
+            #line 19 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+        }
         
             
             #line default
             #line hidden
             
-            #line 14 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 20 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
    Write(Html.ValidationSummary());
 
             
             #line default
             #line hidden
             
-            #line 14 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 20 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                                  
 
             
@@ -110,15 +133,15 @@ WriteLiteral(" class=\"heading text-primary\"");
 
 WriteLiteral("><a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 667), Tuple.Create("\"", 676)
-, Tuple.Create(Tuple.Create("", 674), Tuple.Create<System.Object, System.Int32>(Href("~/")
-, 674), false)
+WriteAttribute("href", Tuple.Create(" href=\"", 883), Tuple.Create("\"", 892)
+, Tuple.Create(Tuple.Create("", 890), Tuple.Create<System.Object, System.Int32>(Href("~/")
+, 890), false)
 );
 
 WriteLiteral(">");
 
             
-            #line 15 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 21 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                                                    Write(SysConfig.Current.DisplayName);
 
             
@@ -127,7 +150,7 @@ WriteLiteral(">");
 WriteLiteral("</a> 登录</span>\r\n");
 
             
-            #line 16 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 22 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
         if (set.AllowLogin)
         {
 
@@ -172,6 +195,8 @@ WriteLiteral(" name=\"password\"");
 
 WriteLiteral(" placeholder=\"密码\"");
 
+WriteLiteral(" autocomplete=\"off\"");
+
 WriteLiteral(">\r\n                <i");
 
 WriteLiteral(" class=\"glyphicon glyphicon-lock\"");
@@ -211,13 +236,13 @@ WriteLiteral(" for=\"remember\"");
 WriteLiteral(">记住我</label>\r\n");
 
             
-            #line 33 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 39 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                 
             
             #line default
             #line hidden
             
-            #line 33 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 39 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                  if (set.AllowRegister)
                 {
                     
@@ -225,14 +250,14 @@ WriteLiteral(">记住我</label>\r\n");
             #line default
             #line hidden
             
-            #line 36 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 42 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                                                                              
                     
             
             #line default
             #line hidden
             
-            #line 43 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 49 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                            
 
                     if (set.AllowRegister)
@@ -262,14 +287,14 @@ WriteLiteral("\r\n                                <span>我要注册</span>\r\n 
 "</a>\r\n                        </div>\r\n");
 
             
-            #line 54 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 60 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                     }
                     
             
             #line default
             #line hidden
             
-            #line 56 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 62 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                                 
                 }
 
@@ -287,7 +312,7 @@ WriteLiteral(" style=\"margin: 5px 0 15px 0;width: 100%;\"");
 WriteLiteral(">登录</button>\r\n            </div>\r\n");
 
             
-            #line 60 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 66 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
 
             if (!set.LoginTip.IsNullOrEmpty())
             {
@@ -306,7 +331,7 @@ WriteLiteral(" class=\"ace-icon fa fa-coffee green\"");
 WriteLiteral("></i>\r\n\r\n                </h4>\r\n");
 
             
-            #line 67 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 73 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
 
 
             
@@ -319,7 +344,7 @@ WriteLiteral(" class=\"space-6\"");
 WriteLiteral("></div>\r\n");
 
             
-            #line 69 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 75 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
 
 
             
@@ -356,7 +381,7 @@ WriteLiteral(">&times;</span></button>\r\n");
 WriteLiteral("                        ");
 
             
-            #line 73 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 79 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
                    Write(Html.Raw(set.LoginTip));
 
             
@@ -365,7 +390,7 @@ WriteLiteral("                        ");
 WriteLiteral("\r\n                    </div>\r\n                </nav>\r\n");
 
             
-            #line 76 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
+            #line 82 "..\..\Areas\Admin\Views\User\_Login_Login.cshtml"
             }
         }
     }

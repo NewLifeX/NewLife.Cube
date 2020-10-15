@@ -702,7 +702,8 @@ namespace NewLife.Cube
             var txt = "";
             if (name.EqualIgnoreCase("Pass", "Password"))
             {
-                type = "password";
+                //type = "password";
+                type = "password\" autocomplete=\"off";
             }
             else if (name.EqualIgnoreCase("Phone", "Mobile"))
             {
