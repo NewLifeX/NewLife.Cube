@@ -39,6 +39,13 @@ namespace NewLife.Cube
                     Params = WebHelper.Params
                 };
 
+                var routes = bindingContext.ActionContext.RouteData.Values;
+                //foreach (var item in routes)
+                //{
+                //    if (!pager.Params.ContainsKey(item.Key)) pager.Params[item.Key] = item.Value + "";
+                //}
+                if (!pager.Params.ContainsKey("id") && routes.TryGetValue("id", out var id)) pager.Params["id"] = id + "";
+
                 var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
 
                 bindingContext.Model = pager;
