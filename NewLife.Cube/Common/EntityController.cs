@@ -487,30 +487,29 @@ namespace NewLife.Cube
             if (list.Length > 0)
             {
                 XTrace.WriteLine("[{0}]准备覆盖写入[{1}]行数据", fact.EntityType.FullName, list.Length);
-                using (var tran = fact.CreateTrans())
+                using var tran = fact.Session.CreateTrans();
+
+                // 清空
+                try
                 {
-                    // 清空
-                    try
-                    {
-                        fact.Session.Truncate();
-                    }
-                    catch (Exception ex) { XTrace.WriteException(ex); }
-
-                    // 插入
-                    //ms.All(e => { e.AllChilds = new List<Menu>(); return true; });
-                    fact.AllowInsertIdentity = true;
-                    //ms.Insert();
-                    //var empty = typeof(List<>).MakeGenericType(fact.EntityType).CreateInstance();
-                    foreach (IEntity entity in list)
-                    {
-                        if (entity is IEntityTree tree) tree.AllChilds.Clear();
-
-                        entity.Insert();
-                    }
-                    fact.AllowInsertIdentity = false;
-
-                    tran.Commit();
+                    fact.Session.Truncate();
                 }
+                catch (Exception ex) { XTrace.WriteException(ex); }
+
+                // 插入
+                //ms.All(e => { e.AllChilds = new List<Menu>(); return true; });
+                fact.AllowInsertIdentity = true;
+                //ms.Insert();
+                //var empty = typeof(List<>).MakeGenericType(fact.EntityType).CreateInstance();
+                foreach (IEntity entity in list)
+                {
+                    if (entity is IEntityTree tree) tree.AllChilds.Clear();
+
+                    entity.Insert();
+                }
+                fact.AllowInsertIdentity = false;
+
+                tran.Commit();
             }
 
             return Index();

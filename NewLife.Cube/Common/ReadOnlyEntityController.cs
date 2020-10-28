@@ -791,7 +791,7 @@ namespace NewLife.Cube
 #if !__CORE__
             var buffer = true;
 #endif
-            if (Factory.Count > 100_000)
+            if (Factory.Session.Count > 100_000)
             {
                 var p = Session[CacheKey] as Pager;
                 p = new Pager(p)
@@ -879,7 +879,7 @@ namespace NewLife.Cube
             // 要导出的数据超大时，启用流式输出
             var buffer = true;
 #endif
-            if (Factory.Count > 100_000)
+            if (Factory.Session.Count > 100_000)
             {
                 var p = Session[CacheKey] as Pager;
                 p = new Pager(p)
@@ -957,7 +957,7 @@ namespace NewLife.Cube
             try
             {
                 var fact = Factory;
-                if (fact.Count > 10_000_000) throw new XException($"数据量[{fact.Count:n0}>10_000_000]，禁止备份！");
+                if (fact.Session.Count > 10_000_000) throw new XException($"数据量[{fact.Session.Count:n0}>10_000_000]，禁止备份！");
 
                 var dal = fact.Session.Dal;
 
@@ -990,7 +990,7 @@ namespace NewLife.Cube
         public virtual ActionResult BackupAndExport()
         {
             var fact = Factory;
-            if (fact.Count > 10_000_000) throw new XException($"数据量[{fact.Count:n0}>10_000_000]，禁止备份！");
+            if (fact.Session.Count > 10_000_000) throw new XException($"数据量[{fact.Session.Count:n0}>10_000_000]，禁止备份！");
             var dal = fact.Session.Dal;
 
             var name = GetType().Name.TrimEnd("Controller");
@@ -1008,7 +1008,7 @@ namespace NewLife.Cube
 #else
             // 要导出的数据超大时，启用流式输出
             var buffer = true;
-            if (Factory.Count > 100_000) buffer = false;
+            if (Factory.Session.Count > 100_000) buffer = false;
             rs.Buffer = buffer;
             var ms = rs.OutputStream;
 #endif

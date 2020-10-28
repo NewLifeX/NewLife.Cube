@@ -174,26 +174,25 @@ namespace NewLife.Cube
             var mf = ManageProvider.Menu;
             if (mf == null) return;
 
-            using (var tran = (mf as IEntityFactory).CreateTrans())
+            using var tran = (mf as IEntityFactory).Session.CreateTrans();
+
+            XTrace.WriteLine("初始化[{0}]的菜单体系", areaName);
+            mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
+
+            // 更新区域名称为友好中文名
+            var menu = mf.Root.FindByPath(areaName);
+            if (menu != null && menu.DisplayName.IsNullOrEmpty())
             {
-                XTrace.WriteLine("初始化[{0}]的菜单体系", areaName);
-                mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
+                var dis = areaType.GetDisplayName();
+                var des = areaType.GetDescription();
 
-                // 更新区域名称为友好中文名
-                var menu = mf.Root.FindByPath(areaName);
-                if (menu != null && menu.DisplayName.IsNullOrEmpty())
-                {
-                    var dis = areaType.GetDisplayName();
-                    var des = areaType.GetDescription();
+                if (!dis.IsNullOrEmpty()) menu.DisplayName = dis;
+                if (!des.IsNullOrEmpty()) menu.Remark = des;
 
-                    if (!dis.IsNullOrEmpty()) menu.DisplayName = dis;
-                    if (!des.IsNullOrEmpty()) menu.Remark = des;
-
-                    (menu as IEntity).Update();
-                }
-
-                tran.Commit();
+                (menu as IEntity).Update();
             }
+
+            tran.Commit();
         }
 
         private static ICollection<String> _areas;
