@@ -6,14 +6,18 @@
 
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting;
 
     var charts = ViewBag.Charts as ECharts[];
     var charts2 = ViewBag.Charts2 as ECharts[];
 }
 
-<div class="clearfix">
-    @await Html.PartialAsync("_List_Toolbar")
-</div>
+@if (set.EnableToolbar)
+{
+    <div class="clearfix">
+        @await Html.PartialAsync("_List_Toolbar")
+    </div>
+}
 @if (charts != null && charts.Length > 0)
 {
     <div class="clearfix">

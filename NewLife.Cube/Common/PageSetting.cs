@@ -14,6 +14,9 @@ namespace NewLife.Cube
         /// <summary>启用导航栏。默认true</summary>
         public Boolean EnableNavbar { get; set; } = true;
 
+        /// <summary>启用工具栏。默认true</summary>
+        public Boolean EnableToolbar { get; set; } = true;
+
         /// <summary>启用添加按钮。默认true</summary>
         public Boolean EnableAdd { get; set; } = true;
 

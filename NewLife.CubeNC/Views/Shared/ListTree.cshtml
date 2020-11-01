@@ -5,11 +5,15 @@
 
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting;
 }
 
-<div class="clearfix">
-    @await Html.PartialAsync("_List_Toolbar")
-</div>
+@if (set.EnableToolbar)
+{
+    <div class="clearfix">
+        @await Html.PartialAsync("_List_Toolbar")
+    </div>
+}
 <div class="table-responsive">
     @await Html.PartialAsync("_ListTree_Data")
 </div>
