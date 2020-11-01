@@ -10,6 +10,8 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 using System.Web;
+using NewLife.Caching;
+using NewLife.Log;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +30,9 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class UserController : EntityController<User>
     {
+        /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
+        private static ICache _cache = Cache.Default ?? new MemoryCache();
+
         static UserController()
         {
             MenuOrder = 100;
@@ -143,9 +148,18 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult Login(String username, String password, Boolean? remember)
         {
+            // 连续错误校验
+            var key = $"Login:{username}";
+            var errors = _cache.Get<Int32>(key);
+
             var returnUrl = GetRequest("r");
             try
             {
+                if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
+                if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password), "密码不能为空！");
+
+                if (errors >= 5) throw new InvalidOperationException($"[{username}]登录错误过多，请在60秒后再试！");
+
                 var provider = ManageProvider.Provider;
                 if (ModelState.IsValid && provider.Login(username, password, remember ?? false) != null)
                 {
@@ -161,6 +175,9 @@ namespace NewLife.Cube.Admin.Controllers
                     // 不要嵌入自己
                     if (returnUrl.EndsWithIgnoreCase("/Admin", "/Admin/User/Login")) returnUrl = null;
 
+                    // 登录成功，清空错误数
+                    if (errors > 0) _cache.Remove(key);
+
                     return RedirectToAction("Index", "Index", new { page = returnUrl });
                 }
 
@@ -169,6 +186,10 @@ namespace NewLife.Cube.Admin.Controllers
             }
             catch (Exception ex)
             {
+                // 登录失败比较重要，记录一下
+                XTrace.WriteLine("[{0}]登录失败！{1}", username, ex.Message);
+                XTrace.WriteException(ex);
+
                 if (IsJsonRequest)
                 {
                     return Json(500, ex.Message);
@@ -176,6 +197,10 @@ namespace NewLife.Cube.Admin.Controllers
 
                 ModelState.AddModelError("", ex.Message);
             }
+
+            // 累加错误数，首次出错时设置过期时间
+            _cache.Increment(key, 1);
+            if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(60));
 
             //云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
             ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
