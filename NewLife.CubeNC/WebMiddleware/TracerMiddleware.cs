@@ -32,16 +32,20 @@ namespace NewLife.Cube.WebMiddleware
         public async Task Invoke(HttpContext ctx)
         {
             // APM跟踪
-            //var span = Tracer?.NewSpan(ctx.Request.Path);
             ISpan span = null;
             if (Tracer != null)
             {
                 var action = GetAction(ctx);
                 if (!action.IsNullOrEmpty())
                 {
+                    // 聚合请求头作为强制采样的数据标签
+                    var vs = ctx.Request.Headers.ToDictionary(e => e.Key, e => e.Value + "");
+
                     span = Tracer.NewSpan(action);
-                    span.Tag = ctx.GetUserHost() + " " + ctx.Request.GetRawUrl();
-                    span.Detach(ctx.Request.Headers.ToDictionary(e => e.Key, e => (Object)e.Value));
+                    span.Tag = $"{ctx.GetUserHost()} {ctx.Request.Method} {ctx.Request.GetRawUrl()}";
+                    if (span is DefaultSpan ds && ds.TraceFlag > 0)
+                        span.Tag += Environment.NewLine + vs.Join(Environment.NewLine, e => $"{e.Key}:{e.Value}");
+                    span.Detach(vs);
                 }
             }
 
