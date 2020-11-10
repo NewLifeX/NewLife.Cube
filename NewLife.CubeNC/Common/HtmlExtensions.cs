@@ -527,7 +527,7 @@ namespace NewLife.Cube
 
             // T有可能是IEntity，为了兼容老版本视图
             //var fact = typeof(T).AsFactory();
-            var type = list?.FirstOrDefault().GetType() ?? typeof(T);
+            var type = list?.FirstOrDefault()?.GetType() ?? typeof(T);
             var fact = type.AsFactory();
             var uk = fact?.Unique;
             if (uk == null) throw new InvalidDataException($"实体类[{type.FullName}]缺少唯一主键，无法使用下拉！");
