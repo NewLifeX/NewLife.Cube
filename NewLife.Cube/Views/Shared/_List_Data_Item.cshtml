@@ -71,7 +71,7 @@ else
             break;
         case TypeCode.Single:
         case TypeCode.Double:
-            if (name2.EndsWith("Rate"))
+            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
             {
                 var dd = (Double)value;
                 var des = item.Description + "";
@@ -109,9 +109,9 @@ else
                 //var provider = ViewData["Provider"] as IManageProvider;
                 <td class="text-center">@provider.FindByID(value)</td>
             }
-            else if (name2.EndsWith("Rate"))
+            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
             {
-                var dd = (Double)value;
+                var dd = Convert.ToDouble(value);
                 var des = item.Description + "";
                 if (des.Contains("百分之一")) { dd /= 100; }
                 if (des.Contains("万分之一")) { dd /= 10000; }

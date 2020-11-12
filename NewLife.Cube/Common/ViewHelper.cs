@@ -333,7 +333,7 @@ namespace NewLife.Cube
                             break;
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            if (name2.EndsWith("Rate"))
+                            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
                                 if (des.Contains("百分之一"))
@@ -360,7 +360,7 @@ namespace NewLife.Cube
                                 sb.AppendFormat(@"<td class=""text-center"">@entity.{0}</td>", item.Name);
                             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                                 BuildUser(item, sb);
-                            else if (name2.EndsWith("Rate"))
+                            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
                                 if (des.Contains("百分之一"))
@@ -447,7 +447,7 @@ namespace NewLife.Cube
                             break;
                         case TypeCode.Single:
                         case TypeCode.Double:
-                            if (name2.EndsWith("Rate"))
+                            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
                                 if (des.Contains("百分之一"))
@@ -475,7 +475,7 @@ namespace NewLife.Cube
                                 sb.Append(@"<td></td>");
                             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                                 sb.Append(@"<td></td>");
-                            else if (name2.EndsWith("Rate"))
+                            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
                                 if (des.Contains("百分之一"))
