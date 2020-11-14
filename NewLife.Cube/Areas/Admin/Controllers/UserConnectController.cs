@@ -32,6 +32,8 @@ namespace NewLife.Cube.Admin.Controllers
             // 用户列，增加连接
             {
                 var df = ListFields.AddDataField("UserName");
+                df.Header = "用户";
+                df.HeaderTitle = "对应的本地用户信息";
                 df.Url = "User?id={UserID}";
             }
 
