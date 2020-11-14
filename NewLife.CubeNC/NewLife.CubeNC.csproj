@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方平台</AssemblyTitle>
@@ -81,6 +81,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs" Link="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
+    <Compile Include="..\NewLife.Cube\Common\DataField.cs" Link="Common\DataField.cs" />
     <Compile Include="..\NewLife.Cube\Common\DataPermissionAttribute.cs" Link="Common\DataPermissionAttribute.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityController.cs" Link="Common\EntityController.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityTreeController.cs" Link="Common\EntityTreeController.cs" />

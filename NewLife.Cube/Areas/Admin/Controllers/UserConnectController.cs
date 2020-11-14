@@ -22,6 +22,25 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.RemoveField("AccessToken");
             ListFields.RemoveField("RefreshToken");
             ListFields.RemoveField("Avatar");
+
+            // 提供者列，增加查询
+            {
+                var df = ListFields.AddDataField(UserConnect._.Provider);
+                df.Url = "?provider={Provider}";
+            }
+
+            // 用户列，增加连接
+            {
+                var df = ListFields.AddDataField("UserName");
+                df.Url = "User?id={UserID}";
+            }
+
+            // 插入一列
+            {
+                var df = ListFields.AddDataField("用户信息", "CreateUserID");
+                df.DisplayName = "用户信息";
+                df.Url = "User?id={UserID}";
+            }
         }
 
         /// <summary>菜单不可见</summary>

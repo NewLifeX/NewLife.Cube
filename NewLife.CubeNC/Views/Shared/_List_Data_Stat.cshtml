@@ -6,7 +6,7 @@
     var entity = Model as IEntity;
 
     var page = ViewBag.Page as Pager;
-    var fields = ViewBag.Fields as IList<FieldItem>;
+    var fields = ViewBag.Fields as FieldCollection;
     var set = ViewBag.PageSetting as PageSetting;
 }
 <tr>
@@ -16,6 +16,12 @@
     }
     @foreach (var item in fields)
     {
+        // 在该字段之前插入的字段
+        var df = fields.GetBeforeField(item.Name);
+        if (df != null)
+        {
+            <td></td>
+        }
         if (item.IsIdentity)
         {
             <td>总计</td>

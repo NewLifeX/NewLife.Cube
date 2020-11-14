@@ -13,6 +13,9 @@ namespace NewLife.Cube
         #region 属性
         /// <summary>工厂</summary>
         public IEntityFactory Factory { get; set; }
+
+        /// <summary>定制版字段</summary>
+        public IList<DataField> Fields { get; set; } = new List<DataField>();
         #endregion
 
         #region 构造
@@ -233,6 +236,49 @@ namespace NewLife.Cube
 
             return this;
         }
+        #endregion
+
+        #region 自定义字段
+        /// <summary>添加定制版数据字段</summary>
+        /// <param name="fi"></param>
+        /// <returns></returns>
+        public DataField AddDataField(FieldItem fi)
+        {
+            var df = new DataField
+            {
+                Name = fi.Name,
+                Header = fi.DisplayName,
+            };
+            Fields.Add(df);
+
+            return df;
+        }
+
+        /// <summary>添加定制字段，插入指定列之前</summary>
+        /// <param name="name"></param>
+        /// <param name="beforeName"></param>
+        /// <returns></returns>
+        public DataField AddDataField(String name, String beforeName = null)
+        {
+            var df = new DataField
+            {
+                Name = name,
+                BeforeName = beforeName,
+            };
+            Fields.Add(df);
+
+            return df;
+        }
+
+        /// <summary>获取指定名称的定制字段</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public DataField GetField(String name) => Fields.FirstOrDefault(e => e.Name == name);
+
+        /// <summary>获取指定列名之前的定制字段</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public DataField GetBeforeField(String name) => Fields.FirstOrDefault(e => e.BeforeName == name);
         #endregion
     }
 }
