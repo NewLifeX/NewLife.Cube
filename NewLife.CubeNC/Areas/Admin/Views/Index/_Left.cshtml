@@ -3,7 +3,7 @@
 @{
     String[] icos = new String[] { "fa-tachometer", "fa-desktop", "fa-list", "fa-pencil-square-o", "fa-list-alt", "fa-calendar", "fa-picture-o", "fa-tag", "fa-file-o" };
     Int32 _idx = 0;
-    var Menus = ViewBag.Menus as List<MenuTree>;
+    var Menus = ViewBag.Menus as List<MenuTree> ?? new List<MenuTree>();
 }
 <ul class="nav nav-list">
     @foreach (var menu in Menus)
