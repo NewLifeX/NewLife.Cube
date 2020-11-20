@@ -75,7 +75,7 @@
                         }
                     </td>
                     <td class="text-center">
-                        @Html.PartialAsync("_List_Data_Action", (Object)entity).Result
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                     </td>
                 }
             </tr>

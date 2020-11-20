@@ -38,10 +38,7 @@ namespace NewLife.Cube
         public static Type[] Areas { get; private set; }
 
         /// <summary>实例化区域注册</summary>
-        public AreaRegistrationBase()
-        {
-            AreaName = GetType().Name.TrimEnd("AreaRegistration");
-        }
+        public AreaRegistrationBase() => AreaName = GetType().Name.TrimEnd("AreaRegistration");
 
         static AreaRegistrationBase()
         {
@@ -328,26 +325,25 @@ namespace NewLife.Cube
             var mf = ManageProvider.Menu;
             if (mf == null) return;
 
-            using (var tran = (mf as IEntityFactory).CreateTrans())
+            using var tran = (mf as IEntityFactory).Session.CreateTrans();
+
+            XTrace.WriteLine("初始化[{0}]的菜单体系", AreaName);
+            mf.ScanController(AreaName, GetType().Assembly, GetType().Namespace + ".Controllers");
+
+            // 更新区域名称为友好中文名
+            var menu = mf.Root.FindByPath(AreaName);
+            if (menu != null && menu.DisplayName.IsNullOrEmpty())
             {
-                XTrace.WriteLine("初始化[{0}]的菜单体系", AreaName);
-                mf.ScanController(AreaName, GetType().Assembly, GetType().Namespace + ".Controllers");
+                var dis = GetType().GetDisplayName();
+                var des = GetType().GetDescription();
 
-                // 更新区域名称为友好中文名
-                var menu = mf.Root.FindByPath(AreaName);
-                if (menu != null && menu.DisplayName.IsNullOrEmpty())
-                {
-                    var dis = GetType().GetDisplayName();
-                    var des = GetType().GetDescription();
+                if (!dis.IsNullOrEmpty()) menu.DisplayName = dis;
+                if (!des.IsNullOrEmpty()) menu.Remark = des;
 
-                    if (!dis.IsNullOrEmpty()) menu.DisplayName = dis;
-                    if (!des.IsNullOrEmpty()) menu.Remark = des;
-
-                    (menu as IEntity).Update();
-                }
-
-                tran.Commit();
+                (menu as IEntity).Update();
             }
+
+            tran.Commit();
         }
 
         private static ICollection<String> _areas;

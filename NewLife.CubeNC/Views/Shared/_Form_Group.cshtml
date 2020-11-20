@@ -11,5 +11,5 @@
     if (cls.IsNullOrEmpty()) { cls = "form-group col-xs-12 col-sm-6 col-lg-4"; }
 }
 <div class="@cls">
-    @Html.PartialAsync("_Form_Item", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
+    @await Html.PartialAsync("_Form_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
 </div>

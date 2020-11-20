@@ -9,8 +9,8 @@
 {
     if (!item.IsIdentity)
     {
-        @Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, FieldItem>(entity, item)).Result
+        @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, FieldItem>(entity, item))
     }
 }
-@Html.PartialAsync("_Form_Footer", entity).Result
-@Html.PartialAsync("_Form_Action", entity).Result
+@await Html.PartialAsync("_Form_Footer", entity)
+@await Html.PartialAsync("_Form_Action", entity)
