@@ -21,10 +21,7 @@ namespace NewLife.Cube.WebMiddleware
 
         /// <summary>实例化</summary>
         /// <param name="next"></param>
-        public TracerMiddleware(RequestDelegate next)
-        {
-            _next = next ?? throw new ArgumentNullException(nameof(next));
-        }
+        public TracerMiddleware(RequestDelegate next) => _next = next ?? throw new ArgumentNullException(nameof(next));
 
         /// <summary>调用</summary>
         /// <param name="ctx"></param>

@@ -25,7 +25,7 @@
         <ul class="submenu">
             @foreach (var menu in childs)
             {
-                @Html.PartialAsync("_Left_Item", menu).Result;
+                @await Html.PartialAsync("_Left_Item", menu);
             }
         </ul>
     }

@@ -92,7 +92,7 @@ app.UseStaticHttpContext();
 ## Razor视图
 
 - [参考博客](https://www.cnblogs.com/tcjiaan/p/8412827.html)
-- 分部页替换：`<partial name="_Login_Login"/>`或`@Html.PartialAsync("_Login_Login").Result`
+- 分部页替换：`<partial name="_Login_Login"/>`或`@await Html.PartialAsync("_Login_Login")`
 
 ### 导入命名空间
 
