@@ -57,6 +57,9 @@ namespace NewLife.Cube.WebMiddleware
                 DAL.LocalFilter = s => inf.Sqls.Add(s);
             }
 
+            // 日志控制，精确标注Web类型线程
+            WriteLogEventArgs.Current.IsWeb = true;
+
             try
             {
                 await _next.Invoke(ctx);
@@ -88,6 +91,9 @@ namespace NewLife.Cube.WebMiddleware
 
                 DAL.LocalFilter = null;
                 ManageProvider.UserHost = null;
+
+                // 日志控制
+                WriteLogEventArgs.Current.IsWeb = false;
             }
         }
 
