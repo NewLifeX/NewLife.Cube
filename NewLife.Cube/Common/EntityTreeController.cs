@@ -95,7 +95,9 @@ namespace NewLife.Cube
         public ActionResult Up(Int32 id)
         {
             var menu = FindByID(id);
-            menu.Up();
+
+            if (Valid(menu, DataObjectMethodType.Update, true))
+                menu.Up();
 
             return RedirectToAction("Index");
         }
@@ -108,7 +110,9 @@ namespace NewLife.Cube
         public ActionResult Down(Int32 id)
         {
             var menu = FindByID(id);
-            menu.Down();
+
+            if (Valid(menu, DataObjectMethodType.Update, true))
+                menu.Down();
 
             return RedirectToAction("Index");
         }

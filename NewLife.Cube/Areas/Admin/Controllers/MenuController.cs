@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using XCode.Membership;
 
@@ -13,10 +14,28 @@ namespace NewLife.Cube.Admin.Controllers
         static MenuController()
         {
             MenuOrder = 80;
+#if DEBUG
+            XCode.Cache.CacheBase.Debug = true;
+#endif
 
             // 过滤要显示的字段
             ListFields.RemoveField("Remark");
             FormFields.RemoveField("Remark");
+        }
+
+        /// <summary>验证实体对象</summary>
+        /// <param name="entity"></param>
+        /// <param name="type"></param>
+        /// <param name="post"></param>
+        /// <returns></returns>
+        protected override Boolean Valid(Menu entity, DataObjectMethodType type, Boolean post)
+        {
+            var rs = base.Valid(entity, type, post);
+
+            // 清空缓存
+            if (post) Menu.Meta.Session.ClearCache($"{type}-{entity}");
+
+            return rs;
         }
     }
 }

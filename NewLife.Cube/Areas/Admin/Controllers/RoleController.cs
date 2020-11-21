@@ -106,11 +106,20 @@ namespace NewLife.Cube.Admin.Controllers
             return base.Edit(entity);
         }
 
-        /// <summary>打印</summary>
+        /// <summary>验证实体对象</summary>
+        /// <param name="entity"></param>
+        /// <param name="type"></param>
+        /// <param name="post"></param>
         /// <returns></returns>
-        [DisplayName("打印")]
-        [EntityAuthorize((PermissionFlags)16)]
-        public ActionResult Print() => View();
+        protected override Boolean Valid(Role entity, DataObjectMethodType type, Boolean post)
+        {
+            var rs = base.Valid(entity, type, post);
+
+            // 清空缓存
+            if (post) Role.Meta.Session.ClearCache($"{type}-{entity}");
+
+            return rs;
+        }
 
         Boolean GetBool(String name)
         {
