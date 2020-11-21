@@ -114,6 +114,7 @@
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
     <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
+    <Compile Include="..\NewLife.Cube\ViewModels\ObjectModel.cs" Link="ViewModels\ObjectModel.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthClient.cs" Link="Web\OAuthClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthConfig.cs" Link="Web\OAuthConfig.cs" />

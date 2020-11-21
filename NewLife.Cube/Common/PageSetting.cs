@@ -38,6 +38,7 @@ namespace NewLife.Cube
             var set = new PageSetting
             {
                 EnableNavbar = EnableNavbar,
+                EnableToolbar = EnableToolbar,
                 EnableAdd = EnableAdd,
                 EnableKey = EnableKey,
                 EnableSelect = EnableSelect,

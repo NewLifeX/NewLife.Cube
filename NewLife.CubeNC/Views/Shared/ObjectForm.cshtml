@@ -1,4 +1,4 @@
-﻿@model Object
+﻿@model NewLife.Cube.ViewModels.ObjectModel
 @using NewLife;
 @using System.ComponentModel;
 @using System.Reflection;
@@ -6,11 +6,11 @@
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
 
-    var Obj = Model as Object;
-    var dic = ViewBag.Properties as Dictionary<String, List<PropertyInfo>>;
+    var obj = Model.Value;
+    var dic = Model.Properties;
 }
 <div class="row">
-    @await Html.PartialAsync("_Object_Nav", Model)
+    @await Html.PartialAsync("_Object_Nav", Model.Value)
 </div>
 <div class="row">
     <div class="col-md-12">
@@ -19,7 +19,7 @@
             {
                 @Html.AntiForgeryToken()
                 @Html.ValidationSummary(true)
-                foreach (var item in dic)
+                foreach (var item in Model.Properties)
                 {
                     if (dic.Count > 1)
                     {
@@ -43,7 +43,7 @@
                         <div class="form-group col-sm-12 col-md-12">
                             <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@pi.Name">@(dis ?? pi.Name)</label>
                             <div class="input-group col-xs-10 col-md-4">
-                                @Html.ForEditor(pi.Name, Obj.GetValue(pi), pi.PropertyType)
+                                @Html.ForEditor(pi.Name, obj.GetValue(pi), pi.PropertyType)
                                 @Html.ValidationMessage(pi.Name)
                             </div>
                             <span class="hidden-xs col-md-5">&nbsp; @des</span>

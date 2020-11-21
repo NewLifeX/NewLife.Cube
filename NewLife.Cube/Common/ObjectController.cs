@@ -6,6 +6,7 @@ using System.Text;
 using NewLife.Reflection;
 using XCode.Membership;
 using System.Collections.Generic;
+using NewLife.Cube.ViewModels;
 #if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -47,21 +48,6 @@ namespace NewLife.Cube
             if (txt.IsNullOrEmpty()) txt = (HttpContext.Items["CurrentMenu"] as IMenu)?.Remark;
             if (txt.IsNullOrEmpty()) txt = des;
             ViewBag.HeaderContent = txt;
-
-            if (Value != null)
-            {
-                var pis = GetMembers(Value);
-                var dic = new Dictionary<String, List<PropertyInfo>>();
-                foreach (var pi in pis)
-                {
-                    var cat = pi.GetCustomAttribute<CategoryAttribute>();
-                    var category = cat?.Category ?? "";
-                    if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<PropertyInfo>();
-
-                    list.Add(pi);
-                }
-                ViewBag.Properties = dic;
-            }
         }
 
         /// <summary>执行后</summary>
@@ -81,7 +67,27 @@ namespace NewLife.Cube
         /// <summary>显示对象</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
-        public ActionResult Index() => View("ObjectForm", Value);
+        public ActionResult Index()
+        {
+            var model = new ObjectModel { Value = Value };
+
+            if (Value != null)
+            {
+                var pis = GetMembers(Value);
+                var dic = new Dictionary<String, List<PropertyInfo>>();
+                foreach (var pi in pis)
+                {
+                    var cat = pi.GetCustomAttribute<CategoryAttribute>();
+                    var category = cat?.Category ?? "";
+                    if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<PropertyInfo>();
+
+                    list.Add(pi);
+                }
+                model.Properties = dic;
+            }
+
+            return View("ObjectForm", model);
+        }
 
         /// <summary>保存对象</summary>
         /// <param name="obj"></param>

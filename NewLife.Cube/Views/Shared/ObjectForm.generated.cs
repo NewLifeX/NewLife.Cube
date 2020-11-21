@@ -52,7 +52,7 @@ namespace ASP
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     [System.Web.WebPages.PageVirtualPathAttribute("~/Views/Shared/ObjectForm.cshtml")]
-    public partial class _Views_Shared_ObjectForm_cshtml : System.Web.Mvc.WebViewPage<Object>
+    public partial class _Views_Shared_ObjectForm_cshtml : System.Web.Mvc.WebViewPage<NewLife.Cube.ViewModels.ObjectModel>
     {
         public _Views_Shared_ObjectForm_cshtml()
         {
@@ -64,8 +64,8 @@ namespace ASP
   
     Layout = NewLife.Cube.Setting.Current.Layout;
 
-    var Obj = Model as Object;
-    var dic = ViewBag.Properties as Dictionary<String, List<PropertyInfo>>;
+    var obj = Model.Value;
+    var dic = Model.Properties;
 
             
             #line default
@@ -190,14 +190,14 @@ WriteLiteral(">\r\n                            <label");
 
 WriteLiteral(" class=\"control-label col-xs-2 col-md-3 no-padding-left\"");
 
-WriteAttribute("for", Tuple.Create(" for=\"", 1783), Tuple.Create("\"", 1797)
+WriteAttribute("for", Tuple.Create(" for=\"", 1764), Tuple.Create("\"", 1778)
             
             #line 43 "..\..\Views\Shared\ObjectForm.cshtml"
-                , Tuple.Create(Tuple.Create("", 1789), Tuple.Create<System.Object, System.Int32>(pi.Name
+                , Tuple.Create(Tuple.Create("", 1770), Tuple.Create<System.Object, System.Int32>(pi.Name
             
             #line default
             #line hidden
-, 1789), false)
+, 1770), false)
 );
 
 WriteLiteral(">");
@@ -219,7 +219,7 @@ WriteLiteral("                                ");
 
             
             #line 45 "..\..\Views\Shared\ObjectForm.cshtml"
-                           Write(Html.ForEditor(pi.Name, Obj.GetValue(pi), pi.PropertyType));
+                           Write(Html.ForEditor(pi.Name, obj.GetValue(pi), pi.PropertyType));
 
             
             #line default
