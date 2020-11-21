@@ -55,7 +55,10 @@ namespace NewLife.Cube
         }
 
         /// <summary>构造函数</summary>
-        public ReadOnlyEntityController() { }
+        public ReadOnlyEntityController()
+        {
+            PageSetting.IsReadOnly = true;
+        }
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>

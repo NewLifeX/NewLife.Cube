@@ -3,10 +3,19 @@
 @using XCode
 @{
     var entity = Model as IEntity;
+    var set = ViewBag.PageSetting as PageSetting;
 
     var rv = entity.GetRouteKey();
 }
-@if (this.Has(PermissionFlags.Update))
+@if (set.IsReadOnly)
+{
+    if (this.Has(PermissionFlags.Detail))
+    {
+        <i class="glyphicon glyphicon-edit" style="color: blue;"></i>
+        <a href="@Url.Action("Detail", rv)" class="editcell">查看</a>
+    }
+}
+else if (this.Has(PermissionFlags.Update))
 {
     <i class="glyphicon glyphicon-edit" style="color: blue;"></i>
     <a href="@Url.Action("Edit", rv)" class="editcell">编辑</a>

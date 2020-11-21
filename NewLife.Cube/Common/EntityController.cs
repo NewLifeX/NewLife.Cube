@@ -5,22 +5,14 @@ using System.Linq;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
-using NewLife.Reflection;
 using NewLife.Log;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net.Http;
-using NewLife.Serialization;
-using NewLife.Http;
 using NewLife.Remoting;
 using System.IO;
 #if __CORE__
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Net.Http.Headers;
 using NewLife.Cube.Extensions;
 #else
 using System.Web.Mvc;
@@ -38,6 +30,11 @@ namespace NewLife.Cube
         #endregion
 
         #region 构造
+        /// <summary>实例化</summary>
+        public EntityController()
+        {
+            PageSetting.IsReadOnly = false;
+        }
         #endregion
 
         #region 默认Action

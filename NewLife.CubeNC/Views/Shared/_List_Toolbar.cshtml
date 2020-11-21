@@ -13,7 +13,7 @@
 <div class="tableTools-container">
     <div class="form-inline">
         <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
-            @if (set.EnableAdd && this.Has(PermissionFlags.Insert))
+            @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
                 @Html.ActionLink("添加", "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())

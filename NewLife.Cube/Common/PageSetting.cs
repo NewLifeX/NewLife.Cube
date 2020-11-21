@@ -25,6 +25,9 @@ namespace NewLife.Cube
 
         /// <summary>启用选择列。默认Update/Delete权限时为true</summary>
         public Boolean EnableSelect { get; set; }
+
+        /// <summary>是否只读页面。只读页面没有添加编辑删除等按钮</summary>
+        public Boolean IsReadOnly { get; set; }
         #endregion
 
         #region 构造
