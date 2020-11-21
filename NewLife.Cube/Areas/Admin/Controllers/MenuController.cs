@@ -14,9 +14,6 @@ namespace NewLife.Cube.Admin.Controllers
         static MenuController()
         {
             MenuOrder = 80;
-#if DEBUG
-            XCode.Cache.CacheBase.Debug = true;
-#endif
 
             // 过滤要显示的字段
             ListFields.RemoveField("Remark");
