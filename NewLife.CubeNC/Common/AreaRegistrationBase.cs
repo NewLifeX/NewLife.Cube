@@ -174,6 +174,9 @@ namespace NewLife.Cube
             var mf = ManageProvider.Menu;
             if (mf == null) return;
 
+            // 初始化数据库
+            _ = Menu.Meta.Count;
+
             using var tran = (mf as IEntityFactory).Session.CreateTrans();
 
             XTrace.WriteLine("初始化[{0}]的菜单体系", areaName);

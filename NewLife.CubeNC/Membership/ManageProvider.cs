@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading;
-using System.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using NewLife.Common;
 using NewLife.Log;
 using NewLife.Model;
 using XCode;
@@ -338,6 +336,9 @@ namespace NewLife.Cube
         public static void UseManagerProvider(this IApplicationBuilder app)
         {
             ManageProvider2.Context = app.ApplicationServices.GetService<IHttpContextAccessor>();
+
+            // 初始化数据库
+            _ = Role.Meta.Count;
         }
     }
 }
