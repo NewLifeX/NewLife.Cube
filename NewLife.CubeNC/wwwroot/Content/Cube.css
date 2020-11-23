@@ -3,11 +3,20 @@
 
     .page-content { padding: 0px; }
 
-    .form-horizontal .control-label { float: left; }
+    .form-horizontal .control-label { 
+        /*float: left;*/
+        font-size:12px;
+        padding-left:8px;
+        display:block;
+    }
 
-    .form-group { display: inline-block; margin-bottom: 2px; }
+    .form-group {
+        display: inline-block;
+        margin-bottom: 10px;
+        padding-left: 20px;
+    }
 
-    .form-inline .form-group { display: inline-block; margin-bottom: 0; vertical-align: middle; }
+    .form-inline .form-group { display: inline-block;  vertical-align: middle; }
 
     .form-inline .control-label { margin-bottom: 0; vertical-align: middle; }
 
