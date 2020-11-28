@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.WebEncoders;
@@ -65,14 +66,13 @@ namespace NewLife.Cube
             else if (!set.CorsOrigins.IsNullOrEmpty())
                 services.AddCors(options => options.AddPolicy("cube_cors", builder => builder.WithOrigins(set.CorsOrigins)));
 
-            services.AddMvc(opt =>
+            services.Configure<MvcOptions>(opt =>
             {
                 // 分页器绑定
                 opt.ModelBinderProviders.Insert(0, new PagerModelBinderProvider());
 
                 // 模型绑定
                 opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
-
             });
 
             services.AddCustomApplicationParts();
@@ -186,22 +186,34 @@ namespace NewLife.Cube
             if (TracerMiddleware.Tracer != null) app.UseMiddleware<TracerMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
 
-            app.UseRouting();
-
             //app.UseAuthentication();
 
-            // 设置默认路由
-            app.UseEndpoints(endpoints =>
+            // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
+            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out var value) && value is IEndpointRouteBuilder eps)
             {
-                endpoints.MapControllerRoute(
+                eps.MapControllerRoute(
                     "CubeAreas",
                     "{area}/{controller=Index}/{action=Index}/{id?}");
-                endpoints.MapControllerRoute(
+                eps.MapControllerRoute(
                     "Default",
                     "{controller=CubeHome}/{action=Index}/{id?}"
                     );
-                //endpoints.MapRazorPages();
-            });
+            }
+            else
+            {
+                app.UseRouting();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllerRoute(
+                        "CubeAreas",
+                        "{area}/{controller=Index}/{action=Index}/{id?}");
+                    endpoints.MapControllerRoute(
+                        "Default",
+                        "{controller=CubeHome}/{action=Index}/{id?}"
+                        );
+                });
+            }
 
             // 使用管理提供者
             app.UseManagerProvider();

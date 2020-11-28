@@ -34,6 +34,7 @@ namespace CubeDemoNC
 
             services.AddSingleton<ITracer>(tracer);
 
+            services.AddControllersWithViews();
             services.AddCube();
         }
 
@@ -54,7 +55,7 @@ namespace CubeDemoNC
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting();
+            //app.UseRouting();
 
             //app.UseMiddleware<TracerMiddleware>();
 
