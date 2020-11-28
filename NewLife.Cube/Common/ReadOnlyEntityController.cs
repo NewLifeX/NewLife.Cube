@@ -102,9 +102,9 @@ namespace NewLife.Cube
                 ViewBag.HeaderContent = txt;
 
 #if !__CORE__
-                var actionName = filterContext.ActionDescriptor.ActionName;
-                // 启用压缩
-                if (Setting.Current.EnableCompress && actionName != nameof(ExportExcel)) SetCompress();
+                //var actionName = filterContext.ActionDescriptor.ActionName;
+                //// 启用压缩
+                //if (Setting.Current.EnableCompress && actionName != nameof(ExportExcel)) SetCompress();
 #endif
             }
 

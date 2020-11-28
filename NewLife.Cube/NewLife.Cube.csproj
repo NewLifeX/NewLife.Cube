@@ -318,7 +318,6 @@
     <Compile Include="Common\ReadOnlyEntityController.cs" />
     <Compile Include="Common\PagerModelBinder.cs" />
     <Compile Include="Common\EntityTreeController.cs" />
-    <Compile Include="Common\CubeModule.cs" />
     <Compile Include="Common\NoPermissionException.cs" />
     <Compile Include="Common\ObjectController.cs" />
     <Compile Include="Common\ControllerBaseX.cs" />
@@ -333,7 +332,6 @@
     <Compile Include="Common\MembershipExtensions.cs" />
     <Compile Include="Common\EntityController.cs" />
     <Compile Include="Common\ConfigController.cs" />
-    <Compile Include="Common\RequireSslAttribute.cs" />
     <Compile Include="Common\ViewHelper.cs" />
     <Compile Include="Common\EntityAuthorizeAttribute.cs" />
     <Compile Include="Controllers\CubeController.cs" />

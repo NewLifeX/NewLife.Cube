@@ -6,21 +6,21 @@ using NewLife.Security;
 
 namespace NewLife.Cube
 {
-    /// <summary>SSL模式</summary>
-    public enum SslModes
-    {
-        /// <summary>关闭</summary>
-        [Description("关闭")]
-        Disable = 0,
+    ///// <summary>SSL模式</summary>
+    //public enum SslModes
+    //{
+    //    /// <summary>关闭</summary>
+    //    [Description("关闭")]
+    //    Disable = 0,
 
-        /// <summary>仅首页</summary>
-        [Description("仅首页")]
-        HomeOnly = 10,
+    //    /// <summary>仅首页</summary>
+    //    [Description("仅首页")]
+    //    HomeOnly = 10,
 
-        /// <summary>所有请求</summary>
-        [Description("所有请求")]
-        Full = 9999,
-    }
+    //    /// <summary>所有请求</summary>
+    //    [Description("所有请求")]
+    //    Full = 9999,
+    //}
 
     /// <summary>魔方设置</summary>
     [DisplayName("魔方设置")]
@@ -40,27 +40,13 @@ namespace NewLife.Cube
         [Description("扩展插件服务器。将从该网页上根据关键字分析链接并下载插件")]
         public String PluginServer { get; set; } = "http://x.newlifex.com/";
 
-        ///// <summary>用户在线。记录用户在线状态</summary>
-        //[Description("用户在线。记录用户在线状态")]
-        //public Boolean WebOnline { get; set; } = true;
+        ///// <summary>强制SSL。强制使用https访问</summary>
+        //[Description("强制SSL。强制使用https访问")]
+        //public SslModes SslMode { get; set; } = SslModes.Disable;
 
-        ///// <summary>用户行为。记录用户所有操作</summary>
-        //[Description("用户行为。记录用户所有操作")]
-        //public Boolean WebBehavior { get; set; } = true;
-
-        ///// <summary>访问统计。统计页面访问量</summary>
-        //[Description("访问统计。统计页面访问量")]
-        //public Boolean WebStatistics { get; set; } = true;
-
-        /// <summary>强制SSL。强制使用https访问</summary>
-        [Description("强制SSL。强制使用https访问")]
-        public SslModes SslMode { get; set; } = SslModes.Disable;
-
-        /// <summary>启用压缩。主要用于Json输出压缩，默认false</summary>
-        [Description("启用压缩。主要用于Json输出压缩，默认false")]
-        public Boolean EnableCompress { get; set; }
-
-        /// <summary>抓取头像。是否抓取远程头像，默认true</summary>
+        ///// <summary>启用压缩。主要用于Json输出压缩，默认false</summary>
+        //[Description("启用压缩。主要用于Json输出压缩，默认false")]
+        //public Boolean EnableCompress { get; set; }
 
         /// <summary>头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取</summary>
         [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取")]

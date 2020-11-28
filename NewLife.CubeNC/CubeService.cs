@@ -33,7 +33,7 @@ namespace NewLife.Cube
         {
             // 修正系统名，确保可运行
             var sys = SysConfig.Current;
-            if (/*set.IsNew ||*/ sys.Name == "NewLife.Cube.Views" || sys.DisplayName == "NewLife.Cube.Views")
+            if (sys.Name == "NewLife.Cube.Views" || sys.DisplayName == "NewLife.Cube.Views")
             {
                 sys.Name = "NewLife.Cube";
                 sys.DisplayName = "魔方平台";
@@ -53,14 +53,7 @@ namespace NewLife.Cube
             // 添加Session会话支持
             services.AddSession();
 
-            //// 添加标识用户支持
-            //services.AddDefaultIdentity<IdentityUser>();
-
-            //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
-            //services.AddSingleton<IView, PrecompiledMvcView>();
-
             var provider = services.BuildServiceProvider();
-            //var env = provider.GetService<IHostingEnvironment>();
             var env = provider.GetService(typeof(IWebHostEnvironment)) as IWebHostEnvironment;
             if (env != null) services.AddCubeDefaultUI(env);
 
@@ -80,34 +73,15 @@ namespace NewLife.Cube
                 // 模型绑定
                 opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
 
-                //// 过滤器
-                //opt.Filters.Add<GlobalExceptionFilter>();
-
-                //opt.EnableEndpointRouting = false;
-
-            })
-            // 添加版本兼容性，显示声明当前应用版本为2.1
-            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            });
 
             services.AddCustomApplicationParts();
 
-            //services.AddSingleton<IRazorViewEngine, CompositePrecompiledMvcEngine>();
-            //services.AddTransient<IConfigureOptions<MvcViewOptions>, RazorViewOPtionsSetup>();
-
-            //// 注册Cookie认证服务
-            //services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-
-            // 添加魔方模块
             // 添加管理提供者
             services.AddManageProvider();
 
-            //// 添加Http上下文访问器
-            //services.AddHttpContextAccessor();
-
-            //services.AddCubeDefaultUI(HostingEnvironment);
-
-            // 添加压缩
-            if (set.EnableCompress) services.AddResponseCompression();
+            //// 添加压缩
+            //if (set.EnableCompress) services.AddResponseCompression();
 
             // 防止汉字被自动编码
             services.Configure<WebEncoderOptions>(options =>
@@ -195,14 +169,14 @@ namespace NewLife.Cube
                     app.UseExceptionHandler("/CubeHome/Error");
             }
 
-            if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
+            //if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
             if (!set.CorsOrigins.IsNullOrEmpty()) app.UseCors("cube_cors");
 
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
 
-            // 压缩配置
-            if (set.EnableCompress) app.UseResponseCompression();
+            //// 压缩配置
+            //if (set.EnableCompress) app.UseResponseCompression();
 
             // 注册中间件
             app.UseStaticFiles();
@@ -211,12 +185,8 @@ namespace NewLife.Cube
 
             if (TracerMiddleware.Tracer != null) app.UseMiddleware<TracerMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
-            //if (set.WebOnline || set.WebBehavior || set.WebStatistics) app.UseMiddleware<UserBehaviorMiddleware>();
 
             app.UseRouting();
-
-            //// 允许所有跨域
-            //if (!set.ResourceUrl.IsNullOrEmpty()) app.UseCors("cube_cors");
 
             //app.UseAuthentication();
 

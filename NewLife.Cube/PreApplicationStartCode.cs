@@ -19,7 +19,7 @@ namespace NewLife.Cube
             HttpApplication.RegisterModule(typeof(ErrorModule));
             HttpApplication.RegisterModule(typeof(DbRunTimeModule));
 
-            var set = Setting.Current;
+            //var set = Setting.Current;
             //if (set.WebOnline || set.WebBehavior || set.WebStatistics)
             //{
             //    UserBehaviorModule.WebOnline = set.WebOnline;
@@ -28,7 +28,7 @@ namespace NewLife.Cube
             //    HttpApplication.RegisterModule(typeof(UserBehaviorModule));
             //}
 
-            if (set.SslMode >= SslModes.Full) HttpApplication.RegisterModule(typeof(CubeModule));
+            //if (set.SslMode >= SslModes.Full) HttpApplication.RegisterModule(typeof(CubeModule));
 #endif
         }
     }
