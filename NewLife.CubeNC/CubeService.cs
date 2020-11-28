@@ -80,9 +80,6 @@ namespace NewLife.Cube
             // 添加管理提供者
             services.AddManageProvider();
 
-            //// 添加压缩
-            //if (set.EnableCompress) services.AddResponseCompression();
-
             // 防止汉字被自动编码
             services.Configure<WebEncoderOptions>(options =>
             {
@@ -169,14 +166,10 @@ namespace NewLife.Cube
                     app.UseExceptionHandler("/CubeHome/Error");
             }
 
-            //if (set.SslMode > SslModes.Disable) app.UseHttpsRedirection();
             if (!set.CorsOrigins.IsNullOrEmpty()) app.UseCors("cube_cors");
 
             // 配置静态Http上下文访问器
             app.UseStaticHttpContext();
-
-            //// 压缩配置
-            //if (set.EnableCompress) app.UseResponseCompression();
 
             // 注册中间件
             app.UseStaticFiles();
@@ -189,15 +182,50 @@ namespace NewLife.Cube
             //app.UseAuthentication();
 
             // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
-            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out var value) && value is IEndpointRouteBuilder eps)
+            app.UseRouter(endpoints =>
             {
-                eps.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "CubeAreas",
                     "{area}/{controller=Index}/{action=Index}/{id?}");
-                eps.MapControllerRoute(
+            });
+
+            // 使用管理提供者
+            app.UseManagerProvider();
+
+            // 自动检查并添加菜单
+            AreaBase.RegisterArea<Admin.AdminArea>();
+
+            return app;
+        }
+
+        /// <summary>使用魔方首页</summary>
+        /// <param name="app"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseCubeHome(this IApplicationBuilder app)
+        {
+            app.UseRouter(endpoints =>
+            {
+                endpoints.MapControllerRoute(
                     "Default",
                     "{controller=CubeHome}/{action=Index}/{id?}"
                     );
+            });
+
+            return app;
+        }
+
+        /// <summary>使用路由配置，用于注册路由映射</summary>
+        /// <param name="app"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseRouter(this IApplicationBuilder app, Action<IEndpointRouteBuilder> configure)
+        {
+            if (configure == null) throw new ArgumentNullException(nameof(configure));
+
+            // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
+            if (app.Properties.TryGetValue("__EndpointRouteBuilder", out var value) && value is IEndpointRouteBuilder eps)
+            {
+                configure(eps);
             }
             else
             {
@@ -205,21 +233,9 @@ namespace NewLife.Cube
 
                 app.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapControllerRoute(
-                        "CubeAreas",
-                        "{area}/{controller=Index}/{action=Index}/{id?}");
-                    endpoints.MapControllerRoute(
-                        "Default",
-                        "{controller=CubeHome}/{action=Index}/{id?}"
-                        );
+                    configure(endpoints);
                 });
             }
-
-            // 使用管理提供者
-            app.UseManagerProvider();
-
-            // 自动检查并添加菜单
-            AreaBase.RegisterArea<Admin.AdminArea>();
 
             return app;
         }
