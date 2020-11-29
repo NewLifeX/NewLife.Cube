@@ -31,8 +31,8 @@ namespace NewLife.Cube
 
         static AreaBase()
         {
-            // 自动检查并下载魔方资源
-            ThreadPoolX.QueueUserWorkItem(CheckContent);
+            //// 自动检查并下载魔方资源
+            //ThreadPoolX.QueueUserWorkItem(CheckContent);
         }
 
         static void CheckContent()

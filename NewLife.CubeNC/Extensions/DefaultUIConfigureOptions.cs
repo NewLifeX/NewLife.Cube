@@ -1,12 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders.Composite;
+using Microsoft.Extensions.FileProviders.Embedded;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using NewLife.Log;
 
 namespace NewLife.Cube.Extensions
@@ -14,19 +21,19 @@ namespace NewLife.Cube.Extensions
     /// <summary>默认UI配置选项</summary>
     public class DefaultUIConfigureOptions : IPostConfigureOptions<StaticFileOptions>
     {
+        /// <summary>环境</summary>
+        public IWebHostEnvironment Environment { get; }
+
         /// <summary>实例化</summary>
         /// <param name="environment"></param>
         public DefaultUIConfigureOptions(IWebHostEnvironment environment) => Environment = environment;
-
-        /// <summary>环境</summary>
-        public IWebHostEnvironment Environment { get; }
 
         /// <summary>提交配置</summary>
         /// <param name="name"></param>
         /// <param name="options"></param>
         public void PostConfigure(String name, StaticFileOptions options)
         {
-            if (name.IsNullOrEmpty()) throw new ArgumentException(nameof(name));
+            //if (name.IsNullOrEmpty()) throw new ArgumentException(nameof(name));
             if (options == null) throw new ArgumentException(nameof(options));
 
             // 如果没有被其他组件初始化，在这里初始化
@@ -36,12 +43,15 @@ namespace NewLife.Cube.Extensions
                 throw new InvalidOperationException("缺少FileProvider");
             }
 
-            options.FileProvider ??= Environment.ContentRootFileProvider;
-
             // 添加我们的文件提供者
             // 第二个参数指定开始查找的文件夹，比如文件都放在wwwroot，就填“wwwroot”
-            var filesProvider = new ManifestEmbeddedFileProvider(GetType().Assembly, Setting.Current.WebRootPath);
-            options.FileProvider = new CompositeFileProvider(options.FileProvider, filesProvider);
+            //var physicalProvider = new PhysicalFileProvider(root);
+            var physicalProvider = Environment.ContentRootFileProvider;
+            var embeddedProvider = new ManifestEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "wwwroot");
+            //var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
+            var compositeProvider = new CompositeFileProvider(physicalProvider, embeddedProvider);
+
+            options.FileProvider = compositeProvider;
         }
     }
 
@@ -53,16 +63,27 @@ namespace NewLife.Cube.Extensions
         /// <param name="env"></param>
         public static void AddCubeDefaultUI(this IServiceCollection services, IWebHostEnvironment env)
         {
-            env.ContentRootPath = ".".GetFullPath();
+            services.ConfigureOptions(typeof(DefaultUIConfigureOptions));
 
-            // 强行设置WebRootPath，避免魔方首次启动下载资源文件后无法马上使用的问题
-            var root = Setting.Current.WebRootPath.GetFullPath();
-            if (!Directory.Exists(root)) Directory.CreateDirectory(root);
+            ////env.ContentRootPath = ".".GetFullPath();
 
-            XTrace.WriteLine("WebRootPath={0}", root);
+            //// 强行设置WebRootPath，避免魔方首次启动下载资源文件后无法马上使用的问题
+            //var root = Setting.Current.WebRootPath.GetFullPath();
+            //if (!Directory.Exists(root)) Directory.CreateDirectory(root);
 
-            env.WebRootPath = root;
-            env.WebRootFileProvider = new PhysicalFileProvider(root);
+            ////XTrace.WriteLine("WebRootPath={0}", env.WebRootPath);
+
+            ////env.WebRootPath = root;
+            ////env.WebRootFileProvider = new PhysicalFileProvider(root);
+
+            //var physicalProvider = new PhysicalFileProvider(root);
+            ////var physicalProvider = env.ContentRootFileProvider;
+            //var embeddedProvider = new EmbeddedFileProvider2(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
+            //var compositeProvider = new CompositeFileProvider2(physicalProvider, embeddedProvider);
+
+            //services.AddSingleton<IFileProvider>(embeddedProvider);
+            ////env.ContentRootPath = root;
+            ////env.ContentRootFileProvider = compositeProvider;
         }
     }
 }
