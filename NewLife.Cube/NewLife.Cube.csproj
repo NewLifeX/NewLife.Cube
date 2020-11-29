@@ -383,11 +383,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Index.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Shared\_Ace2_Layout.generated.cs">
-      <DependentUpon>_Ace2_Layout.cshtml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Views\Shared\_Layout_Nav.generated.cs">
       <DependentUpon>_Layout_Nav.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -432,11 +427,6 @@
       <DependentUpon>_Form_Group.cshtml</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-    </Compile>
-    <Compile Include="Views\Shared\_Bootstrap_Layout.generated.cs">
-      <DependentUpon>_Bootstrap_Layout.cshtml</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Views\Shared\_List_Data_Stat.generated.cs">
       <DependentUpon>_List_Data_Stat.cshtml</DependentUpon>
@@ -522,11 +512,6 @@
       <DependentUpon>_Ace_Layout_Nav.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Views\Shared\_Layout.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>_Layout.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Views\Shared\_Layout_Footer.generated.cs">
       <DependentUpon>_Layout_Footer.cshtml</DependentUpon>
@@ -705,12 +690,8 @@
     <None Include="Content\awesome\regular.min-5.12.1.css" />
     <None Include="Content\awesome\solid.min-5.12.1.css" />
     <None Include="Content\bootstrap-suggest.js" />
-    <None Include="Content\bootstrap\bootstrap.bundle.min-4.4.1.js" />
-    <None Include="Content\bootstrap\bootstrap.min-4.4.1.css" />
-    <None Include="Content\bootstrap\bootstrap.min-4.4.1.js" />
     <None Include="Content\bootstrap\css\bootstrap-theme.css" />
     <None Include="Content\awesome\font-awesome.min-5.12.1.css" />
-    <None Include="Content\bootstrap\popper.min-2.0.6.js" />
     <None Include="Content\Cube-bootstrap.css" />
     <None Include="Content\echarts.min.js" />
     <None Include="Content\images\logo\alipay.png" />
@@ -786,8 +767,6 @@
     <None Include="Content\bootstrap\js\bootstrap-multiselect.min.js" />
     <None Include="Content\bootstrap\js\bootstrap-tag.min.js" />
     <None Include="Content\bootstrap\js\bootstrap-wysiwyg.min.js" />
-    <None Include="Content\DateTimePicker\bootstrap-datetimepicker.css" />
-    <None Include="Content\DateTimePicker\bootstrap-datetimepicker.js" />
     <None Include="Content\DateTimePicker\bootstrap-datetimepicker.min.css" />
     <None Include="Content\DateTimePicker\bootstrap-datetimepicker.min.js" />
     <None Include="Content\DateTimePicker\locales\bootstrap-datetimepicker.es.js" />
@@ -891,10 +870,6 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Layout_Nav.generated.cs</LastGenOutput>
     </None>
-    <None Include="Views\Shared\_Ace2_Layout.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_Ace2_Layout.generated.cs</LastGenOutput>
-    </None>
     <None Include="Views\Shared\_Footer.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Footer.generated.cs</LastGenOutput>
@@ -922,10 +897,6 @@
     <None Include="Views\Shared\_Form_Group.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Group.generated.cs</LastGenOutput>
-    </None>
-    <None Include="Views\Shared\_Bootstrap_Layout.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_Bootstrap_Layout.generated.cs</LastGenOutput>
     </None>
     <None Include="Views\Shared\_List_Data_Stat.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -1002,7 +973,6 @@
     <None Include="Scripts\jquery.validate.unobtrusive.js" />
     <None Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <None Include="Scripts\modernizr-2.6.2.js" />
-    <None Include="Content\js\jquery-3.4.1.min.js" />
     <Content Include="Entity\Build_netcore.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Build_netcore.log</LastGenOutput>
@@ -1030,10 +1000,6 @@
     <None Include="Views\Shared\_Form_Header.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Header.generated.cs</LastGenOutput>
-    </None>
-    <None Include="Views\Shared\_Layout.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_Layout.generated.cs</LastGenOutput>
     </None>
     <None Include="Views\Shared\_Ace_Layout_Nav.cshtml">
       <Generator>RazorGenerator</Generator>
