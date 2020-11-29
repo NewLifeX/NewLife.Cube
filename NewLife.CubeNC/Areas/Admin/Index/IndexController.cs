@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -17,6 +18,8 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Remoting;
+using NewLife.Threading;
 using XCode;
 using XCode.Membership;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -141,8 +144,46 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize((PermissionFlags)16)]
         public ActionResult Restart()
         {
-            ApplicationManager.Load().Restart();
-            //_applicationLifetime.StopApplication();  
+            var manager = ApplicationManager.Load();
+            //_applicationLifetime.StopApplication();
+
+            // 借助StarAgent重启自己
+            try
+            {
+                var client = new ApiClient("udp://127.0.0.1:5500")
+                {
+                    Log = XTrace.Log,
+                    EncoderLog = XTrace.Log,
+                };
+
+                var p = Process.GetCurrentProcess();
+                var fileName = p.MainModule.FileName;
+
+                ThreadPoolX.QueueUserWorkItem(() =>
+                {
+                    // 发起命令
+                    var rs = client.Invoke<String>("KillAndStart", new
+                    {
+                        processId = p.Id,
+                        delay = 3,
+                        fileName = fileName,
+                        arguments = Environment.CommandLine,
+                        workingDirectory = Environment.CurrentDirectory,
+                    });
+                    XTrace.WriteLine("rs={0}", rs);
+
+                    // 本进程退出
+                    manager.Stop();
+                    //p.Kill();
+                });
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+
+                manager.Restart();
+            }
+
             return JsonRefresh("重启成功", 2);
         }
 
