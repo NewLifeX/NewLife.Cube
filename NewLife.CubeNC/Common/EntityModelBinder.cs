@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
-using HttpContext = NewLife.Web.HttpContext;
 
 namespace NewLife.Cube
 {

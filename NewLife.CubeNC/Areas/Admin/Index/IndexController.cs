@@ -111,8 +111,7 @@ namespace NewLife.Cube.Admin.Controllers
                 {
                     if (asmx.FileVersion.IsNullOrEmpty()) continue;
 
-                    var file = asmx.Asm.CodeBase;
-                    if (file.IsNullOrEmpty()) file = asmx.Asm.Location;
+                    var file = asmx.Asm.Location;
                     if (file.IsNullOrEmpty()) continue;
 
                     if (file.StartsWith("file:///"))

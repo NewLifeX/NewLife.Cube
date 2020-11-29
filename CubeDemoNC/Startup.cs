@@ -6,10 +6,7 @@ using Microsoft.Extensions.Hosting;
 using NewLife.Cube;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
-using NewLife.Remoting;
-using NewLife.Web;
 using Stardust.Monitors;
-using XCode.DataAccessLayer;
 
 namespace CubeDemoNC
 {
@@ -17,10 +14,7 @@ namespace CubeDemoNC
     {
         public IConfiguration Configuration { get; }
 
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+        public Startup(IConfiguration configuration) => Configuration = configuration;
 
         public void ConfigureServices(IServiceCollection services)
         {
