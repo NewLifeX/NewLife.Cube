@@ -54,7 +54,7 @@ namespace NewLife.Cube.WebMiddleware
                 if (span != null)
                 {
                     var code = ctx.Response.StatusCode;
-                    if (code >= 400) span.SetError(new HttpRequestException($"Http Error {code} {(HttpStatusCode)code}"), null);
+                    if (code >= 400 && code != 404) span.SetError(new HttpRequestException($"Http Error {code} {(HttpStatusCode)code}"), null);
                 }
             }
             catch (Exception ex)
