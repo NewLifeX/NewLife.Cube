@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using NewLife.Log;
-using NewLife.Threading;
-using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
@@ -24,68 +20,10 @@ namespace NewLife.Cube
     /// </remarks>
     public class AreaBase : AreaAttribute
     {
-        private static ConcurrentDictionary<Type, Type> _areas = new ConcurrentDictionary<Type, Type>();
+        private static readonly ConcurrentDictionary<Type, Type> _areas = new ConcurrentDictionary<Type, Type>();
 
         /// <summary>实例化区域注册</summary>
         public AreaBase(String areaName) : base(areaName) => RegisterArea(GetType());
-
-        static AreaBase()
-        {
-            //// 自动检查并下载魔方资源
-            //ThreadPoolX.QueueUserWorkItem(CheckContent);
-        }
-
-        static void CheckContent()
-        {
-            var set = Setting.Current;
-
-            // 释放ico图标
-            var ico = "favicon.ico";
-            var wwwroot = set.WebRootPath;
-            var ico2 = wwwroot.CombinePath(ico).GetFullPath();
-            if (!File.Exists(ico2))
-            {
-                var asm = Assembly.GetExecutingAssembly();
-                var ns = asm.GetManifestResourceNames();
-                var f = ns.FirstOrDefault(e => e.EndsWithIgnoreCase(ico));
-                if (!f.IsNullOrEmpty())
-                {
-                    XTrace.WriteLine("释放图标{0}到{1}", f, ico2);
-
-                    var ms = asm.GetManifestResourceStream(f);
-                    File.WriteAllBytes(ico2.EnsureDirectory(true), ms.ReadBytes());
-                }
-            }
-
-            // 检查魔方样式
-            if (set.ResourceUrl.IsNullOrEmpty())
-            {
-                var content = set.WebRootPath.CombinePath("Content");
-                var js = content.CombinePath("Cube.js").GetFullPath();
-                var css = content.CombinePath("Cube.css").GetFullPath();
-                if (File.Exists(js) && File.Exists(css))
-                {
-                    // 判断脚本时间
-                    var dt = DateTime.MinValue;
-                    var ss = File.ReadAllLines(js);
-                    for (var i = 0; i < 5; i++)
-                    {
-                        if (DateTime.TryParse(ss[i].TrimStart("//").Trim(), out dt)) break;
-                    }
-                    // 要求脚本最小更新时间
-                    if (dt >= "2020-02-04 00:00:00".ToDateTime()) return;
-                }
-
-                var url = Setting.Current.PluginServer;
-                if (url.IsNullOrEmpty()) return;
-
-                var wc = new WebClientX()
-                {
-                    Log = XTrace.Log
-                };
-                wc.DownloadLinkAndExtract(url, "Cube_Content", content.GetFullPath(), true);
-            }
-        }
 
         /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>
         public static void RegisterArea<T>() where T : AreaBase => RegisterArea(typeof(T));

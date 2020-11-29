@@ -28,7 +28,7 @@ namespace NewLife.Cube
     public static class CubeService
     {
         #region 配置魔方
-        /// <summary>添加魔方</summary>
+        /// <summary>添加魔方，放在AddControllersWithViews之后</summary>
         /// <param name="services"></param>
         /// <returns></returns>
         public static IServiceCollection AddCube(this IServiceCollection services)
@@ -59,10 +59,7 @@ namespace NewLife.Cube
             services.AddSession();
 
             // 注册魔方默认UI
-            //var provider = services.BuildServiceProvider();
-            //var env = provider.GetService(typeof(IWebHostEnvironment)) as IWebHostEnvironment;
-            //if (env != null) services.AddCubeDefaultUI(env);
-            services.AddCubeDefaultUI(null);
+            services.AddCubeDefaultUI();
 
             // 配置跨域处理，允许所有来源
             // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
@@ -160,7 +157,7 @@ namespace NewLife.Cube
         #endregion
 
         #region 使用魔方
-        /// <summary>使用魔方，放在UseRouting之后，UseEndpoints之前</summary>
+        /// <summary>使用魔方，放在UseEndpoints之前，自动探测是否UseRouting</summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
         /// <returns></returns>
@@ -190,6 +187,8 @@ namespace NewLife.Cube
 
             if (TracerMiddleware.Tracer != null) app.UseMiddleware<TracerMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
+
+            app.UseCubeDefaultUI(env);
 
             // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
             app.UseRouter(endpoints =>

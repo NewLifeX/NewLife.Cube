@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.FileProviders.Composite;
-using Microsoft.Extensions.FileProviders.Embedded;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using NewLife.Log;
 
 namespace NewLife.Cube.Extensions
@@ -43,9 +36,7 @@ namespace NewLife.Cube.Extensions
                 throw new InvalidOperationException("缺少FileProvider");
             }
 
-            // 添加我们的文件提供者
-            // 第二个参数指定开始查找的文件夹，比如文件都放在wwwroot，就填“wwwroot”
-            //var physicalProvider = new PhysicalFileProvider(root);
+            // 添加我们的文件提供者。第二个参数指定开始查找的文件夹，比如文件都放在wwwroot，就填“wwwroot”
             var physicalProvider = Environment.ContentRootFileProvider;
             var embeddedProvider = new ManifestEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "wwwroot");
             //var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
@@ -60,30 +51,22 @@ namespace NewLife.Cube.Extensions
     {
         /// <summary>添加魔方UI</summary>
         /// <param name="services"></param>
+        public static void AddCubeDefaultUI(this IServiceCollection services) => services.ConfigureOptions(typeof(DefaultUIConfigureOptions));
+
+        /// <summary>使用魔方UI</summary>
+        /// <param name="app"></param>
         /// <param name="env"></param>
-        public static void AddCubeDefaultUI(this IServiceCollection services, IWebHostEnvironment env)
+        /// <returns></returns>
+        public static IApplicationBuilder UseCubeDefaultUI(this IApplicationBuilder app, IWebHostEnvironment env)
         {
-            services.ConfigureOptions(typeof(DefaultUIConfigureOptions));
+            // 强行设置WebRootPath，避免魔方首次启动下载资源文件后无法马上使用的问题
+            var root = Setting.Current.WebRootPath.GetFullPath();
 
-            ////env.ContentRootPath = ".".GetFullPath();
+            XTrace.WriteLine("WebRootPath={0}", root);
 
-            //// 强行设置WebRootPath，避免魔方首次启动下载资源文件后无法马上使用的问题
-            //var root = Setting.Current.WebRootPath.GetFullPath();
-            //if (!Directory.Exists(root)) Directory.CreateDirectory(root);
+            env.WebRootPath = root;
 
-            ////XTrace.WriteLine("WebRootPath={0}", env.WebRootPath);
-
-            ////env.WebRootPath = root;
-            ////env.WebRootFileProvider = new PhysicalFileProvider(root);
-
-            //var physicalProvider = new PhysicalFileProvider(root);
-            ////var physicalProvider = env.ContentRootFileProvider;
-            //var embeddedProvider = new EmbeddedFileProvider2(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
-            //var compositeProvider = new CompositeFileProvider2(physicalProvider, embeddedProvider);
-
-            //services.AddSingleton<IFileProvider>(embeddedProvider);
-            ////env.ContentRootPath = root;
-            ////env.ContentRootFileProvider = compositeProvider;
+            return app;
         }
     }
 }

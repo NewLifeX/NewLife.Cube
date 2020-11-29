@@ -6,22 +6,6 @@ using NewLife.Security;
 
 namespace NewLife.Cube
 {
-    ///// <summary>SSL模式</summary>
-    //public enum SslModes
-    //{
-    //    /// <summary>关闭</summary>
-    //    [Description("关闭")]
-    //    Disable = 0,
-
-    //    /// <summary>仅首页</summary>
-    //    [Description("仅首页")]
-    //    HomeOnly = 10,
-
-    //    /// <summary>所有请求</summary>
-    //    [Description("所有请求")]
-    //    Full = 9999,
-    //}
-
     /// <summary>魔方设置</summary>
     [DisplayName("魔方设置")]
     [Config("Cube")]
@@ -35,18 +19,6 @@ namespace NewLife.Cube
         /// <summary>显示运行时间</summary>
         [Description("显示运行时间")]
         public Boolean ShowRunTime { get; set; } = true;
-
-        /// <summary>扩展插件服务器。将从该网页上根据关键字分析链接并下载插件</summary>
-        [Description("扩展插件服务器。将从该网页上根据关键字分析链接并下载插件")]
-        public String PluginServer { get; set; } = "http://x.newlifex.com/";
-
-        ///// <summary>强制SSL。强制使用https访问</summary>
-        //[Description("强制SSL。强制使用https访问")]
-        //public SslModes SslMode { get; set; } = SslModes.Disable;
-
-        ///// <summary>启用压缩。主要用于Json输出压缩，默认false</summary>
-        //[Description("启用压缩。主要用于Json输出压缩，默认false")]
-        //public Boolean EnableCompress { get; set; }
 
         /// <summary>头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取</summary>
         [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取")]
@@ -70,7 +42,7 @@ namespace NewLife.Cube
 
         /// <summary>跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域</summary>
         [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
-        public String CorsOrigins { get; set; } 
+        public String CorsOrigins { get; set; }
 
         /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
         [Description("分享有效期。分享令牌的有效期，默认7200秒")]
@@ -117,11 +89,6 @@ namespace NewLife.Cube
         [Description("绑定用户邮箱。根据SSO用户邮箱强制绑定本地用户")]
         [Category("用户登录")]
         public Boolean ForceBindUserMail { get; set; }
-
-        ///// <summary>添加Sso角色。把SSO角色添加到本地，默认true</summary>
-        //[Description("添加Sso角色。把SSO角色添加到本地，默认true")]
-        //[Category("用户登录")]
-        //public Boolean AddSsoRole { get; set; } = true;
 
         /// <summary>使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole</summary>
         [Description("使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole")]
@@ -199,10 +166,7 @@ namespace NewLife.Cube
         protected override void OnLoaded()
         {
 #if __CORE__
-            if (StartPage.IsNullOrEmpty()) StartPage =
-                // 避免出现生成 "/Admin/Admin/Index/Main" 这样的情况
-                //NewLife.Web.HttpContext.Current?.Request.PathBase.ToString().EnsureEnd("/") + 
-                "/Admin/Index/Main";
+            if (StartPage.IsNullOrEmpty()) StartPage = "/Admin/Index/Main";
 #else
             if (StartPage.IsNullOrEmpty()) StartPage = System.Web.HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/Index/Main";
 #endif

@@ -236,7 +236,7 @@ namespace NewLife.Cube
                 if (dt >= "2020-02-04 00:00:00".ToDateTime()) return;
             }
 
-            var url = Setting.Current.PluginServer;
+            var url = NewLife.Setting.Current.PluginServer;
             if (url.IsNullOrEmpty()) return;
 
             var wc = new WebClientX()
