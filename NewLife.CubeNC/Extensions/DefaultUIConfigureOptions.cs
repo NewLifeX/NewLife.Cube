@@ -16,10 +16,7 @@ namespace NewLife.Cube.Extensions
     {
         /// <summary>实例化</summary>
         /// <param name="environment"></param>
-        public DefaultUIConfigureOptions(IWebHostEnvironment environment)
-        {
-            Environment = environment;
-        }
+        public DefaultUIConfigureOptions(IWebHostEnvironment environment) => Environment = environment;
 
         /// <summary>环境</summary>
         public IWebHostEnvironment Environment { get; }
@@ -58,25 +55,14 @@ namespace NewLife.Cube.Extensions
         {
             env.ContentRootPath = ".".GetFullPath();
 
-            //services.ConfigureOptions<DefaultUIConfigureOptions>();
-            //var root = env.WebRootPath;
-            //XTrace.WriteLine("WebRootPath={0}", root);
-            //if (!Directory.Exists(root.CombinePath("Content")))
-            //{
-
             // 强行设置WebRootPath，避免魔方首次启动下载资源文件后无法马上使用的问题
             var root = Setting.Current.WebRootPath.GetFullPath();
             if (!Directory.Exists(root)) Directory.CreateDirectory(root);
 
-            {
-                XTrace.WriteLine("WebRootPath={0}", root);
+            XTrace.WriteLine("WebRootPath={0}", root);
 
-                env.WebRootPath = root;
-                env.WebRootFileProvider = new PhysicalFileProvider(root);
-            }
-            //}
-
-            //XTrace.WriteLine("ContentRootPath={0}", env.ContentRootPath);
+            env.WebRootPath = root;
+            env.WebRootFileProvider = new PhysicalFileProvider(root);
         }
     }
 }

@@ -324,9 +324,6 @@ namespace NewLife.Cube
         {
             service.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             service.TryAddSingleton<IManageProvider, ManageProvider2>();
-            //service.TryAddSingleton(ManageProvider2.Provider);
-
-            ManageProvider.Provider = service.BuildServiceProvider().GetService<IManageProvider>();
         }
 
         /// <summary>
@@ -335,6 +332,9 @@ namespace NewLife.Cube
         /// <param name="app"></param>
         public static void UseManagerProvider(this IApplicationBuilder app)
         {
+            XTrace.WriteLine("初始化ManageProvider");
+
+            ManageProvider.Provider = app.ApplicationServices.GetService<IManageProvider>();
             ManageProvider2.Context = app.ApplicationServices.GetService<IHttpContextAccessor>();
 
             // 初始化数据库

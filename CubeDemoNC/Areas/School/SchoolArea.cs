@@ -10,6 +10,6 @@ namespace CubeDemo.Areas.School
     {
         public SchoolArea() : base(nameof(SchoolArea).TrimEnd("Area")) { }
 
-        static SchoolArea() => RegisterArea<SchoolArea>();
+        //static SchoolArea() => RegisterArea<SchoolArea>();
     }
 }

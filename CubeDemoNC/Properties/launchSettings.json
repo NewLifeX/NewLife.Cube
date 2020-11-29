@@ -1,26 +1,12 @@
 {
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:35006",
-      "sslPort": 44375
-    }
-  },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
+    "CubeDemoNC": {
+      "commandName": "Project",
       "launchBrowser": true,
+      "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-    "CubeDemoNC": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "urls": "http://*:5000;https://*:5001"
-      },
-      "applicationUrl": "http://localhost:5000"
     }
   }
 }

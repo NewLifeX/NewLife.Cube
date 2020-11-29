@@ -18,6 +18,7 @@ using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
+using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
 
@@ -32,6 +33,9 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IServiceCollection AddCube(this IServiceCollection services)
         {
+            XTrace.WriteLine("{0} Start 配置魔方 {0}", new String('=', 32));
+            Assembly.GetExecutingAssembly().WriteVersion();
+
             // 修正系统名，确保可运行
             var sys = SysConfig.Current;
             if (sys.Name == "NewLife.Cube.Views" || sys.DisplayName == "NewLife.Cube.Views")
@@ -54,6 +58,7 @@ namespace NewLife.Cube
             // 添加Session会话支持
             services.AddSession();
 
+            // 注册魔方默认UI
             var provider = services.BuildServiceProvider();
             var env = provider.GetService(typeof(IWebHostEnvironment)) as IWebHostEnvironment;
             if (env != null) services.AddCubeDefaultUI(env);
@@ -85,6 +90,8 @@ namespace NewLife.Cube
             {
                 options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
             });
+           
+            XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
 
             return services;
         }
@@ -100,6 +107,8 @@ namespace NewLife.Cube
 
             foreach (var asm in list)
             {
+                XTrace.WriteLine("注册区域视图程序集：{0}", asm.FullName);
+
                 var factory = ApplicationPartFactory.GetApplicationPartFactory(asm);
                 foreach (var part in factory.GetApplicationParts(asm))
                 {
@@ -156,6 +165,8 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IApplicationBuilder UseCube(this IApplicationBuilder app, IWebHostEnvironment env = null)
         {
+            XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
+
             var set = Setting.Current;
 
             // 使用Cube前添加自己的管道
@@ -179,11 +190,11 @@ namespace NewLife.Cube
             if (TracerMiddleware.Tracer != null) app.UseMiddleware<TracerMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
 
-            //app.UseAuthentication();
-
             // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
             app.UseRouter(endpoints =>
             {
+                XTrace.WriteLine("注册魔方区域路由");
+
                 endpoints.MapControllerRoute(
                     "CubeAreas",
                     "{area}/{controller=Index}/{action=Index}/{id?}");
@@ -194,6 +205,8 @@ namespace NewLife.Cube
 
             // 自动检查并添加菜单
             AreaBase.RegisterArea<Admin.AdminArea>();
+
+            XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
             return app;
         }

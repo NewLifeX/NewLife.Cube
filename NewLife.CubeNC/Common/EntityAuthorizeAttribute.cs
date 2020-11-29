@@ -67,8 +67,6 @@ namespace NewLife.Cube
                 ctrl.MethodInfo.IsDefined(typeof(EntityAuthorizeAttribute), true) ||
                 ctrl.ControllerTypeInfo.IsDefined(typeof(EntityAuthorizeAttribute));
 
-            //if (IsGlobal && hasAtt) return;
-
             // 只验证管辖范围
             var create = false;
             if (!AreaBase.Contains(ctrl))
