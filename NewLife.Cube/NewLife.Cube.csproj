@@ -46,8 +46,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.10.7630.37658, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.10.2020.1121-beta3\lib\net45\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.10.7640.27713, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.10.2020.1201\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -84,8 +84,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=10.0.7630.37660, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.10.0.2020.1121-beta3\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=10.0.7640.27715, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.10.0.2020.1201\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -338,6 +338,16 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Controllers\SsoController.cs" />
+    <Compile Include="Entity\Build.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Entity\Build_netcore.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build_netcore.tt</DependentUpon>
+    </Compile>
     <Compile Include="Entity\应用日志.Biz.cs" />
     <Compile Include="Entity\应用日志.cs" />
     <Compile Include="Entity\应用系统.Biz.cs" />
@@ -702,20 +712,6 @@
     <None Include="Content\images\logo\Taobao.png" />
     <None Include="Content\images\logo\Weibo.png" />
     <None Include="Content\images\logo\Weixin.png" />
-    <Content Include="Entity\Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.log</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Build_netcore.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build_netcore.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
-    </Content>
     <None Include="index.html" />
     <None Include="Entity\Cube.xml">
       <SubType>Designer</SubType>
@@ -973,9 +969,13 @@
     <None Include="Scripts\jquery.validate.unobtrusive.js" />
     <None Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <None Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Entity\Build.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Build.cs</LastGenOutput>
+    </Content>
     <Content Include="Entity\Build_netcore.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build_netcore.log</LastGenOutput>
+      <LastGenOutput>Build_netcore.cs</LastGenOutput>
     </Content>
     <Content Include="Entity\Model.xml" />
     <Content Include="Web.config">
