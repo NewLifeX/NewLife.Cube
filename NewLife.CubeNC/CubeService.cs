@@ -88,7 +88,7 @@ namespace NewLife.Cube
             {
                 options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
             });
-           
+
             XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
 
             return services;
@@ -161,7 +161,7 @@ namespace NewLife.Cube
         /// <param name="app"></param>
         /// <param name="env"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseCube(this IApplicationBuilder app, IWebHostEnvironment env = null)
+        public static IApplicationBuilder UseCube(this IApplicationBuilder app, IWebHostEnvironment env)
         {
             XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
 
@@ -188,7 +188,7 @@ namespace NewLife.Cube
             if (TracerMiddleware.Tracer != null) app.UseMiddleware<TracerMiddleware>();
             app.UseMiddleware<RunTimeMiddleware>();
 
-            app.UseCubeDefaultUI(env);
+            if (env != null) app.UseCubeDefaultUI(env);
 
             // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
             app.UseRouter(endpoints =>
