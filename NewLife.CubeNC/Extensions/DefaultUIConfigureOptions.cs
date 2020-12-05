@@ -38,8 +38,8 @@ namespace NewLife.Cube.Extensions
 
             // 添加我们的文件提供者。第二个参数指定开始查找的文件夹，比如文件都放在wwwroot，就填“wwwroot”
             var physicalProvider = Environment.ContentRootFileProvider;
-            var embeddedProvider = new ManifestEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "wwwroot");
-            //var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
+            //var embeddedProvider = new ManifestEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "wwwroot");
+            var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
             var compositeProvider = new CompositeFileProvider(physicalProvider, embeddedProvider);
 
             options.FileProvider = compositeProvider;

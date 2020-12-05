@@ -13,14 +13,14 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 }
-<link href="@res/city-picker/city-picker.css" rel="stylesheet">
+<link href="@res/city_picker/city-picker.css" rel="stylesheet">
 <div class="form-group" style="position:relative">
     @*@Html.ForDropDownList(pkey, provs, provid, "全国", true)*@
     <div>
         <input readonly type="text" id="@(prefix)AreaID" value="@areaId" data-toggle="city-picker" placeholder="请选择省" data-level="province">
     </div>
 </div>
-<script src="@res/city-picker/city-picker.js"></script>
+<script src="@res/city_picker/city-picker.js"></script>
 <script>
     $.fn.citypicker.Constructor.DEFAULTS.dataUrl = '/Cube/AreaChilds?id=';
     $.fn.citypicker.Constructor.DEFAULTS.areaParents = '/Cube/AreaParents?id=';
