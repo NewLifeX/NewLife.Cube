@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
@@ -62,7 +62,7 @@ namespace NewLife.Cube.Entity
         /// <summary>回调地址</summary>
         [DisplayName("回调地址")]
         [Description("回调地址")]
-        [DataObjectField(false, false, true, 200)]
+        [DataObjectField(false, false, true, 500)]
         [BindColumn("RedirectUri", "回调地址", "")]
         public String RedirectUri { get => _RedirectUri; set { if (OnPropertyChanging("RedirectUri", value)) { _RedirectUri = value; OnPropertyChanged("RedirectUri"); } } }
 
