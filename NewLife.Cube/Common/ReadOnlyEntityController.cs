@@ -858,6 +858,8 @@ namespace NewLife.Cube
                 if (name.IsNullOrEmpty()) name = fi.Description;
                 if (name.IsNullOrEmpty()) name = fi.Name;
 
+                // 第一行以ID开头的csv文件，容易被识别为SYLK文件
+                if (name == "ID" && fi == fs[0]) name = "Id";
                 headers.Add(name);
             }
             csv.WriteLine(headers);
@@ -940,7 +942,9 @@ namespace NewLife.Cube
             using var csv = new CsvFile(output);
 
             // 列头
-            csv.WriteLine(fs.Select(e => e.Name));
+            var headers = fs.Select(e => e.Name).ToArray();
+            if (headers[0] == "ID") headers[0] = "Id";
+            csv.WriteLine(headers);
 
             // 内容
             foreach (var entity in list)
