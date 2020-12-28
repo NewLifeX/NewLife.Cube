@@ -12,6 +12,7 @@ using NewLife;
 using NewLife.Log;
 using NewLife.Cube;
 using NewLife.Serialization;
+using XCode.Cache;
 
 namespace CubeDemoNC
 {
@@ -23,6 +24,7 @@ namespace CubeDemoNC
 
             XTrace.UseConsole();
 
+            CacheBase.Debug = true;
             //CreateWebHostBuilder(args).Build().Run();  
             var app = ApplicationManager.Load();
 
