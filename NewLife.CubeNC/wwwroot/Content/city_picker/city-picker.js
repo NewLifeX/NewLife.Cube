@@ -101,7 +101,7 @@
         render: function () {
             var p = this.getPosition(),
                 placeholder = this.$element.attr('placeholder') || this.options.placeholder,
-                closebtn = "<span class='cube_clear'><img src='/Content/city-picker/images/clear.png'></span>",// 清空按钮
+                closebtn = "<span class='cube_clear'><img src='/Content/city_picker/images/clear.png'></span>",// 清空按钮
                 textspan = '<span class="city-picker-span" style="' +
                     this.getWidthStyle(p.width) + 'height:' +
                     p.height + 'px;line-height:' + (p.height - 1) + 'px;float:left;">' +
