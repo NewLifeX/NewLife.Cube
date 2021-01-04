@@ -46,15 +46,6 @@ namespace NewLife.Cube
                 // 长字段和密码字段不显示
                 NoPass();
             }
-            //else
-            //{
-            //    RemoveCreateField();
-            //    RemoveUpdateField();
-            //    RemoveRemarkField();
-            //}
-
-            //// IP地址字段
-            //ProcessIP();
 
             return this;
         }
@@ -65,43 +56,7 @@ namespace NewLife.Cube
             var map = pi.GetCustomAttribute<MapAttribute>();
             if (map == null) return;
 
-            // 如果是本实体类关系，可以覆盖
-            //if (map.Provider == null)
-            //{
-            //    if (!isForm || pi.CanWrite) Replace(map.Name, pi.Name);
-            //}
-            //else
-            //{
-            //    if (isForm) Replace(map.Name, pi.Name);
-            //}
             Replace(map.Name, pi.Name);
-
-            // 如果没有标注Map特性，那就算了吧
-            //var type = Factory.EntityType;
-            //var fact = EntityFactory.CreateOperate(map.Provider.EntityType);
-            //if (fact != null && fact.Master != null)
-            //{
-            //    // 找到扩展表主字段是否属于当前实体类扩展属性
-            //    // 首先用对象扩展属性名加上外部主字段名
-            //    var master = type.GetProperty(pi.Name + fact.Master.Name);
-            //    // 再用外部类名加上外部主字段名
-            //    if (master == null) master = type.GetProperty(map.Provider.EntityType.Name + fact.Master.Name);
-            //    // 再试试加上Name
-            //    if (master == null) master = type.GetProperty(pi.Name + "Name");
-            //    if (master != null)
-            //    {
-            //        if (!isForm)
-            //        {
-            //            // 去掉本地用于映射的字段（如果不是主键），替换为扩展属性
-            //            Replace(map.Column, master.Name);
-            //        }
-            //        else
-            //        {
-            //            // 加到后面
-            //            AddField(map.Column, master.Name);
-            //        }
-            //    }
-            //}
         }
 
         void NoPass()
@@ -119,21 +74,6 @@ namespace NewLife.Cube
                 }
             }
         }
-
-        //void ProcessIP()
-        //{
-        //    for (var i = Count - 1; i >= 0; i--)
-        //    {
-        //        if (this[i].Name.EndsWithIgnoreCase("IP", "Uri"))
-        //        {
-        //            var name = this[i].Name.TrimEnd("IP", "Uri");
-        //            name += "Address";
-        //            var addr = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
-        //            // 加到后面
-        //            if (addr != null) Insert(i + 1, addr);
-        //        }
-        //    }
-        //}
         #endregion
 
         #region 添加删除替换
@@ -265,6 +205,10 @@ namespace NewLife.Cube
                 Name = name,
                 BeforeName = beforeName,
             };
+            
+            var fi = Find(e => e.Name == name);
+            if (fi != null) df.DisplayName = fi.DisplayName;
+
             Fields.Add(df);
 
             return df;

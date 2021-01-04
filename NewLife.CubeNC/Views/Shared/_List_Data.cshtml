@@ -24,7 +24,7 @@
                 var df = fields.GetField(item.Name);
                 if (df != null)
                 {
-                    var header = df.Header ?? df.Name;
+                    var header = df.Header ?? df.DisplayName ?? df.Name;
                     var url = df.HeaderUrl ?? sortUrl;
                     <th class="text-center" title="@df.HeaderTitle"><a href="@Html.Raw(url)">@header</a></th>
                 }
@@ -34,7 +34,7 @@
                     df = fields.GetBeforeField(item.Name);
                     if (df != null)
                     {
-                        var header = df.Header ?? df.Name;
+                        var header = df.Header ?? df.DisplayName ?? df.Name;
                         if (df.HeaderUrl.IsNullOrEmpty())
                         {
                             <th class="text-center" title="@df.HeaderTitle">@header</th>
