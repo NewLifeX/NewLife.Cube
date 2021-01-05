@@ -246,7 +246,7 @@ namespace NewLife.Cube
 #endif
             }
 
-            ViewBag.RowsAffected = rs;
+            //ViewBag.RowsAffected = rs;
             if (!rs)
             {
                 WriteLog("Edit", false, err);
