@@ -54,7 +54,20 @@ namespace NewLife.Cube
             var entity = FindData(id);
             Valid(entity, DataObjectMethodType.Delete, true);
 
-            OnDelete(entity);
+            try
+            {
+                OnDelete(entity);
+            }
+            catch (Exception ex)
+            {
+                var err = ex.GetTrue().Message;
+                WriteLog("Delete", false, err);
+
+                if (Request.IsAjaxRequest())
+                    return JsonRefresh("删除失败！" + err);
+
+                throw;
+            }
 
             if (Request.IsAjaxRequest())
                 return JsonRefresh("删除成功！");
@@ -152,6 +165,8 @@ namespace NewLife.Cube
 
             if (!rs)
             {
+                WriteLog("Add", false, err);
+
                 ViewBag.StatusMessage = "添加失败！" + err;
                 // 添加失败，ID清零，否则会显示保存按钮
                 entity[Entity<TEntity>.Meta.Unique.Name] = 0;
@@ -205,14 +220,15 @@ namespace NewLife.Cube
                 return FormView(entity);
             }
 
-            var rs = 0;
+            var rs = false;
             var err = "";
             try
             {
                 SaveFiles(entity);
 
-                rs = OnUpdate(entity);
-                if (rs <= 0) rs = 1;
+                OnUpdate(entity);
+
+                rs = true;
             }
             catch (ArgumentException aex)
             {
@@ -221,7 +237,7 @@ namespace NewLife.Cube
             }
             catch (Exception ex)
             {
-                //err = ex.Message;
+                err = ex.Message;
                 //ModelState.AddModelError("", ex.Message);
 #if __CORE__
                 ModelState.AddModelError("", ex.Message);
@@ -231,8 +247,10 @@ namespace NewLife.Cube
             }
 
             ViewBag.RowsAffected = rs;
-            if (rs <= 0)
+            if (!rs)
             {
+                WriteLog("Edit", false, err);
+
                 ViewBag.StatusMessage = "保存失败！" + err;
                 return FormView(entity);
             }
@@ -346,23 +364,21 @@ namespace NewLife.Cube
             var keys = SelectKeys;
             if (keys != null && keys.Length > 0)
             {
-                using (var tran = Entity<TEntity>.Meta.CreateTrans())
+                using var tran = Entity<TEntity>.Meta.CreateTrans();
+                var list = new List<IEntity>();
+                foreach (var item in keys)
                 {
-                    var list = new List<IEntity>();
-                    foreach (var item in keys)
+                    var entity = Entity<TEntity>.FindByKey(item);
+                    if (entity != null)
                     {
-                        var entity = Entity<TEntity>.FindByKey(item);
-                        if (entity != null)
-                        {
-                            // 验证数据权限
-                            if (Valid(entity, DataObjectMethodType.Delete, true)) list.Add(entity);
+                        // 验证数据权限
+                        if (Valid(entity, DataObjectMethodType.Delete, true)) list.Add(entity);
 
-                            count++;
-                        }
+                        count++;
                     }
-                    list.Delete();
-                    tran.Commit();
                 }
+                list.Delete();
+                tran.Commit();
             }
             return JsonRefresh($"共删除{count}行数据");
         }
@@ -392,17 +408,15 @@ namespace NewLife.Cube
                 var list = SearchData(p).ToList();
                 count += list.Count;
                 //list.Delete();
-                using (var tran = Entity<TEntity>.Meta.CreateTrans())
+                using var tran = Entity<TEntity>.Meta.CreateTrans();
+                var list2 = new List<IEntity>();
+                foreach (var entity in list)
                 {
-                    var list2 = new List<IEntity>();
-                    foreach (var entity in list)
-                    {
-                        // 验证数据权限
-                        if (Valid(entity, DataObjectMethodType.Delete, true)) list2.Add(entity);
-                    }
-                    list2.Delete();
-                    tran.Commit();
+                    // 验证数据权限
+                    if (Valid(entity, DataObjectMethodType.Delete, true)) list2.Add(entity);
                 }
+                list2.Delete();
+                tran.Commit();
             }
 
             if (Request.IsAjaxRequest())
