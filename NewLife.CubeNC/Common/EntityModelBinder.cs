@@ -42,7 +42,7 @@ namespace NewLife.Cube
                         var id = rvs[uk.Name];
                         //if (id != null) entity = GetEntity(fact.EntityType, id) ?? fact.FindByKeyForEdit(id);
                         if (id != null) entity = fact.FindByKeyForEdit(id);
-                        if (entity == null) entity = fact.Create();
+                        if (entity == null) entity = fact.Create(true);
                     }
                     else if (pks.Length > 0)
                     {
@@ -57,7 +57,7 @@ namespace NewLife.Cube
 
                         entity = fact.Find(exp);
 
-                        if (entity == null) entity = fact.Create();
+                        if (entity == null) entity = fact.Create(true);
                     }
 
                     if (entity != null)

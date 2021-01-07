@@ -83,7 +83,7 @@ namespace NewLife.Cube
         [DisplayName("添加{type}")]
         public virtual ActionResult Add()
         {
-            var entity = Factory.Create() as TEntity;
+            var entity = Factory.Create(true) as TEntity;
 
 #if __CORE__
             // 填充QueryString参数
