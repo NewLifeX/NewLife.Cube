@@ -72,7 +72,7 @@ namespace NewLife.Cube
                         return entity;
                     }
 
-                    return fact.Create();
+                    return fact.Create(true);
                 }
             }
 
