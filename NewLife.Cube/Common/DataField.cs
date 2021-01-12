@@ -32,12 +32,15 @@ namespace NewLife.Cube
         /// <summary>头部标题。数据移上去后显示的文字</summary>
         public String HeaderTitle { get; set; }
 
+        /// <summary>数据动作</summary>
+        public String DataAction { get; set; }
+
         ///// <summary>最小宽度。单位px</summary>ed
         //public Int32 MinWidth { get; set; }
         #endregion
 
         #region 方法
-        private static Regex _reg = new Regex(@"{(\w+)}", RegexOptions.Compiled);
+        private static readonly Regex _reg = new Regex(@"{(\w+)}", RegexOptions.Compiled);
 
         /// <summary>针对指定实体对象计算DisplayName，替换其中变量</summary>
         /// <param name="data"></param>

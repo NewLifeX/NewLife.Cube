@@ -84,7 +84,14 @@
                         else
                         {
                             var url = df.GetUrl(entity);
-                            <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                            if (df.DataAction.IsNullOrEmpty())
+                            {
+                                <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                            }
+                            else
+                            {
+                                <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                            }
                         }
                     }
                     else
@@ -101,7 +108,14 @@
                             else
                             {
                                 var url = df.GetUrl(entity);
-                                <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                                if (df.DataAction.IsNullOrEmpty())
+                                {
+                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                                }
+                                else
+                                {
+                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                                }
                             }
                         }
 
