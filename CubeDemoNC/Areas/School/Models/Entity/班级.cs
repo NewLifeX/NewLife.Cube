@@ -42,6 +42,14 @@ namespace NewLife.School.Entity
         [BindColumn("Enable", "启用", "")]
         public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
+        private DateTime _GraduationDate;
+        /// <summary>毕业时间</summary>
+        [DisplayName("毕业时间")]
+        [Description("毕业时间")]
+        [DataObjectField(false, false, true, 0)]
+        [BindColumn("GraduationDate", "毕业时间", "")]
+        public DateTime GraduationDate { get => _GraduationDate; set { if (OnPropertyChanging("GraduationDate", value)) { _GraduationDate = value; OnPropertyChanged("GraduationDate"); } } }
+
         private Int32 _CreateUserID;
         /// <summary>创建者</summary>
         [DisplayName("创建者")]
@@ -112,6 +120,7 @@ namespace NewLife.School.Entity
                     case "ID": return _ID;
                     case "Name": return _Name;
                     case "Enable": return _Enable;
+                    case "GraduationDate": return _GraduationDate;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
                     case "CreateIP": return _CreateIP;
@@ -129,6 +138,7 @@ namespace NewLife.School.Entity
                     case "ID": _ID = value.ToInt(); break;
                     case "Name": _Name = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
+                    case "GraduationDate": _GraduationDate = value.ToDateTime(); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -154,6 +164,9 @@ namespace NewLife.School.Entity
 
             /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
+
+            /// <summary>毕业时间</summary>
+            public static readonly Field GraduationDate = FindByName("GraduationDate");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -190,6 +203,9 @@ namespace NewLife.School.Entity
 
             /// <summary>启用</summary>
             public const String Enable = "Enable";
+
+            /// <summary>毕业时间</summary>
+            public const String GraduationDate = "GraduationDate";
 
             /// <summary>创建者</summary>
             public const String CreateUserID = "CreateUserID";

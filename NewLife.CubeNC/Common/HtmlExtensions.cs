@@ -299,7 +299,7 @@ namespace NewLife.Cube
             if (!atts.ContainsKey("class")) atts.Add("class", "form-control date form_datetime");
             atts["autocomplete"] = "off";
 
-            var obj = value.ToFullString();
+            var obj = value == DateTime.MinValue ? "" : value.ToFullString();
 
             // 最小时间不显示
             if (value <= DateTime.MinValue || value.Year <= 1900) obj = "";
@@ -308,7 +308,7 @@ namespace NewLife.Cube
             // 日期
             if (name.EndsWithIgnoreCase("Date"))
             {
-                obj = value.ToString("yyyy-MM-dd");
+                if (value > DateTime.MinValue) obj = value.ToString("yyyy-MM-dd");
                 //format = "yyyy-mm-dd";
                 atts["dateformat"] = "yyyy-MM-dd";
             }
