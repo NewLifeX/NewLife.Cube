@@ -101,7 +101,7 @@ else
                 var val = "";
                 try
                 {
-                    val = System.EnumHelper.GetDescription((Enum)value) ?? value + "";
+                    val = EnumHelper.GetDescription((Enum)value) ?? value + "";
                 }
                 catch { }
                 <td class="text-center">@val</td>

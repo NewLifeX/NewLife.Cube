@@ -413,7 +413,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForEnum(this IHtmlHelper Html, String name, Object value, String label = null)
         {
-            var dic = System.EnumHelper.GetDescriptions(value.GetType());
+            var dic = EnumHelper.GetDescriptions(value.GetType());
             var data = new SelectList(dic, "Key", "Value", value.ToInt());
             // 由于 Html.DropDownList 获取默认值，会从 ViewData，ViewData.Model，中获取name的值
             // 如果获取到了，则不会再看传入的selectlist的默认值，由于此处是枚举，所以通过 Html.ViewData.Eval(name) 会得到字符串值，所以导致绑定默认值失败
@@ -442,7 +442,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForEnum<T>(this IHtmlHelper Html, String name, Boolean selectAll = false, Boolean autoPostback = false)
         {
-            var dic = System.EnumHelper.GetDescriptions(typeof(T));
+            var dic = EnumHelper.GetDescriptions(typeof(T));
 
             IEnumerable values = null;
             var vs = WebHelper2.Params[name].SplitAsInt();
