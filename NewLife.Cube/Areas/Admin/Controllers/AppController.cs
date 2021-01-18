@@ -12,7 +12,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>应用系统</summary>
     [DisplayName("应用系统")]
     [Area("Admin")]
-    public class AppController : EntityController<App>
+    public class AppController : EntityController<Entity.App>
     {
         static AppController()
         {

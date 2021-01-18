@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Net.Http.Headers;
 using NewLife.Log;
 using NewLife.Model;
 using XCode;
@@ -252,6 +253,13 @@ namespace NewLife.Cube
             var key = "token";
             var req = context?.Request;
             var token = req?.Cookies[key];
+
+            // 尝试从url中获取token
+            if (token.IsNullOrEmpty()) token = req?.Query["jwtToken"];
+
+            // 尝试从头部获取token
+            if (token.IsNullOrEmpty()) token = req?.Headers[HeaderNames.Authorization];
+
             if (token.IsNullOrEmpty()) return null;
 
             var jwt = GetJwt();
@@ -265,13 +273,13 @@ namespace NewLife.Cube
             var user = jwt.Subject;
             if (user.IsNullOrEmpty()) return null;
 
-            //// 判断有效期
-            //if (jwt.Expire < DateTime.Now)
-            //{
-            //    XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
+            // 判断有效期 TODO 之前为什么注释
+            if (jwt.Expire < DateTime.Now)
+            {
+                XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
 
-            //    return null;
-            //}
+                return null;
+            }
 
             var u = provider.FindByName(user);
             if (u == null || !u.Enable) return null;
@@ -312,6 +320,8 @@ namespace NewLife.Cube
                 var option = new CookieOptions();
                 if (expire.TotalSeconds > 0) option.Expires = DateTimeOffset.Now.Add(expire);
                 res.Cookies.Append(key, token, option);
+
+                context.Items["jwtToken"] = token;
             }
         }
         #endregion

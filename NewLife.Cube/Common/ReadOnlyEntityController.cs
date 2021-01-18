@@ -566,7 +566,7 @@ namespace NewLife.Cube
             if (token.IsNullOrEmpty()) token = GetRequest("token");
             if (token.IsNullOrEmpty()) token = GetRequest("key");
 
-            var app = App.FindBySecret(token);
+            var app = Entity.App.FindBySecret(token);
             if (app != null)
             {
                 if (!app.Enable) throw new XException("非法授权！");
