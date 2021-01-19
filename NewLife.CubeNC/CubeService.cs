@@ -206,6 +206,8 @@ namespace NewLife.Cube
             // 自动检查并添加菜单
             AreaBase.RegisterArea<Admin.AdminArea>();
 
+            app.UseCubeRouteRedirect();
+
             XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
             return app;
@@ -250,6 +252,54 @@ namespace NewLife.Cube
                 });
             }
 
+            return app;
+        }
+
+        /// <summary>
+        /// 魔方路由重定向
+        /// </summary>
+        /// <remarks>添加了Route特性后，MVC的路由体系就不好使了，因此这里做手动定向</remarks>
+        /// <returns></returns>
+        public static IApplicationBuilder UseCubeRouteRedirect(this IApplicationBuilder app)
+        {
+            var areas = new String[] { "Admin", "School" };
+            app.Use(async (context, next) =>
+            {
+                var req = context.Request;
+                var resp = context.Response;
+                var path = req.Path.ToString().TrimEnd('/');
+                var pathSplit = path.Split('/').Where(w => !w.IsNullOrWhiteSpace()).ToArray();
+                if (pathSplit.Length < 1)
+                {
+                    resp.Redirect("/Admin/Index/Index");
+                }
+                else if (pathSplit.Length < 2)
+                {
+                    if (areas.Any(a => a.Equals(pathSplit[0], StringComparison.OrdinalIgnoreCase)))
+                    {
+                        resp.Redirect($"{path}/Index/Index");
+                    }
+                    else
+                    {
+                        resp.Redirect($"{path}/Index");
+                    }
+                }
+                else if (pathSplit.Length < 3)
+                {
+                    if (areas.Any(a => a.Equals(pathSplit[0], StringComparison.OrdinalIgnoreCase)))
+                    {
+                        resp.Redirect($"{path}/Index");
+                    }
+                    else
+                    {
+                        await next();
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+            });
             return app;
         }
         #endregion

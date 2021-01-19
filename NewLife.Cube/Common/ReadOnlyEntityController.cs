@@ -408,6 +408,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("{type}管理")]
+        [HttpGet("[action]")]
         public virtual ActionResult Index(Pager p = null)
         {
             if (p == null) p = ViewBag.Page as Pager;
@@ -440,6 +441,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("查看{type}")]
+        [HttpGet("[action]")]
         public virtual ActionResult Detail(String id)
         {
             var entity = FindData(id);
@@ -472,6 +474,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("清空")]
+        [HttpGet("[action]")]
         public virtual ActionResult Clear()
         {
 #if __CORE__
@@ -513,6 +516,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [AllowAnonymous]
         [DisplayName("页面")]
+        [HttpGet("[action]")]
         public virtual ActionResult Html(String token, Pager p)
         {
             try
@@ -538,6 +542,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [AllowAnonymous]
         [DisplayName("Json接口")]
+        [HttpGet("[action]")]
         public virtual ActionResult Json(String token, Pager p)
         {
             try
@@ -606,6 +611,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [AllowAnonymous]
         [DisplayName("Xml接口")]
+        [HttpGet("[action]")]
         public virtual ActionResult Xml(String token, Pager p)
         {
             var xml = "";
@@ -645,6 +651,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [AllowAnonymous]
         [DisplayName("Csv接口")]
+        [HttpGet("[action]")]
         public virtual ActionResult Csv(String token, Pager p)
         {
             var issuer = ValidToken(token);
@@ -688,6 +695,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("导出")]
+        [HttpGet("[action]")]
         public virtual ActionResult ExportXml()
         {
             var obj = OnExportXml();
@@ -739,6 +747,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("导出")]
+        [HttpGet("[action]")]
         public virtual ActionResult ExportJson()
         {
             var json = OnExportJson().ToJson(true);
@@ -759,6 +768,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("导出")]
+        [HttpGet("[action]")]
         public virtual ActionResult ExportExcel()
         {
             // 准备需要输出的列
@@ -875,6 +885,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("导出")]
+        [HttpGet("[action]")]
         public virtual ActionResult ExportCsv()
         {
             // 准备需要输出的列
@@ -959,6 +970,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("备份")]
+        [HttpGet("[action]")]
         public virtual ActionResult Backup()
         {
             try
@@ -994,6 +1006,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("导出")]
+        [HttpGet("[action]")]
         public virtual ActionResult BackupAndExport()
         {
             var fact = Factory;
@@ -1045,6 +1058,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("分享{type}")]
+        [HttpGet("[action]")]
         public virtual ActionResult Share()
         {
             // 当前用户所有令牌
@@ -1085,6 +1099,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("生成列表")]
+        [HttpGet("[action]")]
         public ActionResult MakeList()
         {
             if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
@@ -1111,6 +1126,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("生成表单")]
+        [HttpGet("[action]")]
         public ActionResult MakeForm()
         {
             if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
@@ -1137,6 +1153,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("生成搜索")]
+        [HttpGet("[action]")]
         public ActionResult MakeSearch()
         {
             if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");

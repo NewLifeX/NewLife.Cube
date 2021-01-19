@@ -28,6 +28,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("用户")]
     [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class UserController : EntityController<User>
     {
         /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
@@ -88,6 +89,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>登录</summary>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public ActionResult Login()
         {
             var returnUrl = GetRequest("r");
@@ -144,9 +146,9 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="password"></param>
         /// <param name="remember"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("[action]")]
         [AllowAnonymous]
-        public ActionResult Login(String username, String password, Boolean? remember)
+        public ActionResult Login([FromForm] String username, [FromForm] String password, [FromForm] Boolean? remember)
         {
             // 连续错误校验
             var key = $"Login:{username}";
@@ -212,6 +214,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>注销</summary>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public ActionResult Logout()
         {
             var returnUrl = GetRequest("r");
@@ -242,6 +245,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public ActionResult Info(Int32? id)
         {
             if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
@@ -271,7 +275,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>更新用户资料</summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("[action]")]
         [AllowAnonymous]
         public ActionResult Info(User user)
         {
@@ -295,7 +299,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="password"></param>
         /// <param name="password2"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("[action]")]
         [AllowAnonymous]
         public ActionResult Register(String email, String username, String password, String password2)
         {
@@ -340,6 +344,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
+        [HttpGet("[action]")]
         public ActionResult ClearPassword(Int32 id)
         {
             if (ManageProvider.User.RoleName != "管理员") throw new Exception("清除密码操作需要管理员权限，非法操作！");
@@ -357,12 +362,14 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="keys"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
+        [HttpGet("[action]")]
         public ActionResult EnableSelect(String keys) => EnableOrDisableSelect();
 
         /// <summary>批量禁用</summary>
         /// <param name="keys"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
+        [HttpGet("[action]")]
         public ActionResult DisableSelect(String keys) => EnableOrDisableSelect(false);
 
         private ActionResult EnableOrDisableSelect(Boolean isEnable = true)

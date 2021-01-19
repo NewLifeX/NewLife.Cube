@@ -11,6 +11,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DataPermission(null, "ManagerID={#userId}")]
     [DisplayName("部门")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class DepartmentController : EntityController<Department>
     {
         static DepartmentController()

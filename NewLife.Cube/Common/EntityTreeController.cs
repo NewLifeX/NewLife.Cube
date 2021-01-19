@@ -92,6 +92,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [DisplayName("上升")]
         [EntityAuthorize(PermissionFlags.Update)]
+        [HttpGet("[action]")]
         public ActionResult Up(Int32 id)
         {
             var menu = FindByID(id);
@@ -107,6 +108,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [DisplayName("下降")]
         [EntityAuthorize(PermissionFlags.Update)]
+        [HttpGet("[action]")]
         public ActionResult Down(Int32 id)
         {
             var menu = FindByID(id);

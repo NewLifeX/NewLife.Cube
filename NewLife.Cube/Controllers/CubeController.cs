@@ -26,6 +26,7 @@ namespace NewLife.Cube.Controllers
 {
     /// <summary>魔方前端数据接口</summary>
     [DisplayName("数据接口")]
+    [Route("[controller]")]
     public class CubeController : ControllerBaseX
     {
         #region 拦截
@@ -76,6 +77,7 @@ namespace NewLife.Cube.Controllers
         /// <summary>服务器信息，用户健康检测</summary>
         /// <param name="state">状态信息</param>
         /// <returns></returns>
+        [HttpGet("[action]")]
         public ActionResult Info(String state)
         {
             var asmx = AssemblyX.Entry;
@@ -151,6 +153,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="departmentId"></param>
         /// <param name="key"></param>
         /// <returns></returns>
+        [HttpGet("[action]")]
         public ActionResult UserSearch(Int32 roleId = 0, Int32 departmentId = 0, String key = null)
         {
             var exp = new WhereExpression();
@@ -183,6 +186,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="parentid"></param>
         /// <param name="key"></param>
         /// <returns></returns>
+        [HttpGet("[action]")]
         public ActionResult DepartmentSearch(Int32 parentid = -1, String key = null)
         {
             var exp = new WhereExpression();
@@ -214,6 +218,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public ActionResult Area(Int32 id = 0)
         {
             var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -236,6 +241,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public ActionResult AreaChilds(Int32 id = 0)
         {
             var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -252,6 +258,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="isContainSelf">是否包含查询的地区</param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public ActionResult AreaParents(Int32 id = 0, Boolean isContainSelf = false)
         {
             var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -276,6 +283,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public ActionResult AreaAllParents(Int32 id = 0)
         {
             var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);

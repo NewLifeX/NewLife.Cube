@@ -14,6 +14,7 @@ namespace CubeDemo.Areas.School.Controllers
 {
     [SchoolArea]
     [DisplayName("班级")]
+    [Route("School/[controller]")]
     public class ClassController : EntityController<Class>
     {
         private readonly ITracer _tracer;

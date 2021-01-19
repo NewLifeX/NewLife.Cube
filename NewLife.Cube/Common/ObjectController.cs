@@ -67,6 +67,7 @@ namespace NewLife.Cube
         /// <summary>显示对象</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult Index()
         {
             var model = new ObjectModel { Value = Value };
@@ -92,7 +93,7 @@ namespace NewLife.Cube
         /// <summary>保存对象</summary>
         /// <param name="obj"></param>
         /// <returns></returns>
-        //[HttpPost]
+        [HttpPost("[action]")]
         //[DisplayName("修改")]
         [EntityAuthorize(PermissionFlags.Update)]
         public ActionResult Update(TObject obj)

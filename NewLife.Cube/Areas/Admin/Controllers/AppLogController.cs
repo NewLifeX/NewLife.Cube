@@ -13,6 +13,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>应用日志</summary>
     [DisplayName("应用日志")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class AppLogController : ReadOnlyEntityController<AppLog>
     {
         static AppLogController()

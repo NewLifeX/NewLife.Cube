@@ -19,6 +19,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("文件")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class FileController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
@@ -106,6 +107,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>文件管理主视图</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult Index(String r, String sort)
         {
             var di = GetDirectory(r) ?? Root.AsDirectory();
@@ -160,6 +162,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="r"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
+        [HttpGet("[action]")]
         public ActionResult Delete(String r)
         {
             var p = "";
@@ -190,6 +193,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="r"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
+        [HttpGet("[action]")]
         public ActionResult Compress(String r)
         {
             var p = "";
@@ -222,6 +226,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="r"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
+        [HttpGet("[action]")]
         public ActionResult Decompress(String r)
         {
             var fi = GetFile(r);
@@ -241,7 +246,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="r"></param>
         /// <param name="file"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("[action]")]
         [EntityAuthorize(PermissionFlags.Insert)]
         public ActionResult Upload(String r, IFormFile file)
         {
@@ -287,6 +292,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="r"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult Download(String r)
         {
             var fi = GetFile(r);
@@ -317,6 +323,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="f"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult Copy(String r, String f)
         {
             var fi = GetItem(f);
@@ -334,6 +341,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="f"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult CancelCopy(String r, String f)
         {
             var fi = GetItem(f);
@@ -350,6 +358,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="r"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
+        [HttpGet("[action]")]
         public ActionResult Paste(String r)
         {
             var di = GetDirectory(r) ?? Root.AsDirectory();
@@ -374,6 +383,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="r"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
+        [HttpGet("[action]")]
         public ActionResult Move(String r)
         {
             var di = GetDirectory(r) ?? Root.AsDirectory();
@@ -397,6 +407,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>清空剪切板</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult ClearClipboard(String r)
         {
             var list = GetClip();

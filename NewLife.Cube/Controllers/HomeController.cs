@@ -11,10 +11,12 @@ namespace NewLife.Cube.Controllers
 {
     /// <summary>主页面</summary>
     //[AllowAnonymous]
+    [Route("[controller]")]
     public class CubeHomeController : ControllerBaseX
     {
         /// <summary>主页面</summary>
         /// <returns></returns>
+        [HttpGet("[action]")]
         public ActionResult Index()
         {
             ViewBag.Message = "主页面";
@@ -26,6 +28,7 @@ namespace NewLife.Cube.Controllers
         /// <summary>错误</summary>
         /// <returns></returns>
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [HttpGet("[action]")]
         public IActionResult Error()
         {
             var model = HttpContext.Items["Exception"] as ErrorModel;

@@ -15,6 +15,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("用户链接")]
     [Description("第三方登录信息")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class UserConnectController : EntityController<UserConnect>
     {
         static UserConnectController()

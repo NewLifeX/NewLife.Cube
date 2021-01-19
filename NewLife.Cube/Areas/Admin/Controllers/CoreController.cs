@@ -11,6 +11,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>设置控制器</summary>
     [DisplayName("基本设置")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class CoreController : ConfigController<NewLife.Setting>
     {
         /// <summary>菜单不可见</summary>

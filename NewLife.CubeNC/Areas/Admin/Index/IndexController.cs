@@ -29,6 +29,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>首页</summary>
     [DisplayName("首页")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class IndexController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
@@ -53,6 +54,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>首页</summary>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public ActionResult Index()
         {
             var user = _provider.TryLogin(HttpContext);
@@ -79,6 +81,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         [DisplayName("服务器信息")]
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult Main(String id)
         {
             ViewBag.Act = id;
@@ -142,6 +145,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         [DisplayName("重启")]
         [EntityAuthorize((PermissionFlags)16)]
+        [HttpGet("[action]")]
         public ActionResult Restart()
         {
             var manager = ApplicationManager.Load();
@@ -193,6 +197,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         [DisplayName("释放内存")]
         [EntityAuthorize((PermissionFlags)16)]
+        [HttpGet("[action]")]
         public ActionResult MemoryFree()
         {
             try
@@ -219,6 +224,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// </summary>
         /// <returns></returns>
         // [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public List<MenuTree> GetMenu()
         {
             var user = _provider.Current as IUser ?? XCode.Membership.User.FindAll().FirstOrDefault();

@@ -24,6 +24,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("数据库")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class DbController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
@@ -34,6 +35,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>数据库列表</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult Index()
         {
             var list = new List<DbItem>();
@@ -73,6 +75,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="name"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
+        [HttpGet("[action]")]
         public ActionResult Backup(String name)
         {
             var sw = Stopwatch.StartNew();
@@ -91,6 +94,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="name"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
+        [HttpGet("[action]")]
         public ActionResult BackupAndCompress(String name)
         {
             var sw = Stopwatch.StartNew();
@@ -113,6 +117,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="name"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet("[action]")]
         public ActionResult Download(String name)
         {
             var dal = DAL.Create(name);

@@ -48,6 +48,7 @@ using System.Web.Mvc;
 namespace NewLife.Cube.Controllers
 {
     /// <summary>单点登录控制器</summary>
+    [Route("[controller]")]
     public class SsoController : ControllerBaseX
     {
         /// <summary>当前提供者</summary>
@@ -83,6 +84,7 @@ namespace NewLife.Cube.Controllers
         /// <summary>首页</summary>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public virtual ActionResult Index() => Redirect("~/");
 
         #region 单点登录客户端
@@ -90,6 +92,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="name"></param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public virtual ActionResult Login(String name)
         {
             var prov = Provider;
@@ -133,6 +136,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="state"></param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public virtual ActionResult LoginInfo(String code, String state)
         {
             var name = state + "";
@@ -288,6 +292,7 @@ namespace NewLife.Cube.Controllers
         /// </remarks>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public virtual ActionResult Logout()
         {
             // 先读Session，待会会清空
@@ -340,6 +345,7 @@ namespace NewLife.Cube.Controllers
         /// <summary>绑定</summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [HttpGet("[action]")]
         public virtual ActionResult Bind(String id)
         {
             var prov = Provider;
@@ -364,6 +370,7 @@ namespace NewLife.Cube.Controllers
         /// <summary>取消绑定</summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [HttpGet("[action]")]
         public virtual ActionResult UnBind(String id)
         {
             var user = Provider.Current;
@@ -402,6 +409,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="state">用户状态数据</param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public virtual ActionResult Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null)
         {
             // 参数不完整时，跳转到登录页面，避免爬虫抓取而导致误报告警
@@ -441,6 +449,7 @@ namespace NewLife.Cube.Controllers
         /// </remarks>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public virtual ActionResult Auth2(String id)
         {
             if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
@@ -476,6 +485,8 @@ namespace NewLife.Cube.Controllers
         /// <param name="grant_type">授权类型。</param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
+        [HttpPost("[action]")]
         public virtual ActionResult Access_Token(String client_id, String client_secret, String code, String grant_type = null)
         {
             if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
@@ -518,6 +529,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="access_token">访问令牌</param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public virtual ActionResult UserInfo(String access_token)
         {
             if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
@@ -562,6 +574,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="id">用户编号</param>
         /// <returns></returns>
         [AllowAnonymous]
+        [HttpGet("[action]")]
         public virtual ActionResult Avatar(Int32 id)
         {
             if (id <= 0) throw new ArgumentNullException(nameof(id));

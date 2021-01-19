@@ -20,6 +20,7 @@ using System.Web.Mvc;
 namespace NewLife.Cube
 {
     /// <summary>控制器基类</summary>
+    [ApiController]
     public class ControllerBaseX : Controller
     {
         #region 属性

@@ -14,6 +14,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>地区</summary>
     [DisplayName("地区")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class AreaController : EntityController<Area>
     {
         static AreaController()

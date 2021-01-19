@@ -16,6 +16,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("用户令牌")]
     [Description("授权指定用户访问接口数据，支持有效期")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class UserTokenController : EntityController<UserToken>
     {
         static UserTokenController()

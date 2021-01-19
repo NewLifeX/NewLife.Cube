@@ -12,6 +12,7 @@ namespace CubeDemo.Areas.School.Controllers
 {
     [SchoolArea]
     [DisplayName("学生")]
+    [Route("School/[controller]")]
     public class StudentController : EntityController<Student>
     {
         static StudentController()

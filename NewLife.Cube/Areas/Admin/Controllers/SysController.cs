@@ -12,6 +12,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>系统设置控制器</summary>
     [DisplayName("系统设置")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class SysController : ConfigController<SysConfig>
     {
         /// <summary>菜单不可见</summary>

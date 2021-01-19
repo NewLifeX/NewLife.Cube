@@ -43,6 +43,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
         [DisplayName("删除{type}")]
+        [HttpGet("[action]")]
         public virtual ActionResult Delete(String id)
         {
 #if __CORE__
@@ -81,6 +82,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
         [DisplayName("添加{type}")]
+        [HttpGet("[action]")]
         public virtual ActionResult Add()
         {
             var entity = Factory.Create(true) as TEntity;
@@ -122,7 +124,7 @@ namespace NewLife.Cube
         /// <param name="entity"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
-        [HttpPost]
+        [HttpPost("[action]")]
 #if __CORE__
         [ValidateAntiForgeryToken]
 #else
@@ -188,6 +190,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
         [DisplayName("更新{type}")]
+        [HttpGet("[action]")]
         public virtual ActionResult Edit(String id)
         {
             var entity = FindData(id);
@@ -206,7 +209,7 @@ namespace NewLife.Cube
         /// <param name="entity"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
-        [HttpPost]
+        [HttpPost("[action]")]
 #if __CORE__
         [ValidateAntiForgeryToken]
 #else
@@ -304,14 +307,14 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
         [DisplayName("导入")]
-        [HttpPost]
+        [HttpPost("[action]")]
         public virtual ActionResult ImportXml() => throw new NotImplementedException();
 
         /// <summary>导入Json</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
         [DisplayName("导入")]
-        [HttpPost]
+        [HttpPost("[action]")]
         public virtual ActionResult ImportJson() => throw new NotImplementedException();
 
         /// <summary>启用 或 禁用</summary>
@@ -319,6 +322,7 @@ namespace NewLife.Cube
         /// <param name="enable"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
+        [HttpGet("[action]")]
         public ActionResult SetEnable(Int32 id = 0, Boolean enable = true)
         {
             var fi = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Enable"));
@@ -358,6 +362,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
         [DisplayName("删除选中")]
+        [HttpGet("[action]")]
         public virtual ActionResult DeleteSelect()
         {
             var count = 0;
@@ -387,6 +392,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Delete)]
         [DisplayName("删除全部")]
+        [HttpGet("[action]")]
         public virtual ActionResult DeleteAll()
         {
 #if __CORE__
@@ -450,6 +456,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
         [DisplayName("同步{type}")]
+        [HttpGet("[action]")]
         public async Task<ActionResult> Sync()
         {
             //if (id.IsNullOrEmpty()) return RedirectToAction(nameof(Index));
@@ -530,6 +537,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
         [DisplayName("还原")]
+        [HttpGet("[action]")]
         public virtual ActionResult Restore()
         {
             try

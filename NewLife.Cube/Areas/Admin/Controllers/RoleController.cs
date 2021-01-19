@@ -20,6 +20,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("角色")]
     [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class RoleController : EntityController<Role>
     {
         static RoleController()

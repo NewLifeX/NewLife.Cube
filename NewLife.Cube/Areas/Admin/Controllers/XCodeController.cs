@@ -11,6 +11,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>设置控制器</summary>
     [DisplayName("数据中间件")]
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class XCodeController : ConfigController<XCode.Setting>
     {
         /// <summary>菜单不可见</summary>

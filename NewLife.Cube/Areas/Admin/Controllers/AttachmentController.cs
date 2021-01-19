@@ -10,6 +10,7 @@ namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>附件管理</summary>
     [Area("Admin")]
+    [Route("Admin/[controller]")]
     public class AttachmentController : EntityController<Attachment>
     {
         static AttachmentController()
