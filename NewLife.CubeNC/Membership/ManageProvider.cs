@@ -273,7 +273,7 @@ namespace NewLife.Cube
             var user = jwt.Subject;
             if (user.IsNullOrEmpty()) return null;
 
-            // 判断有效期 TODO 之前为什么注释
+            // 判断有效期
             if (jwt.Expire < DateTime.Now)
             {
                 XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
