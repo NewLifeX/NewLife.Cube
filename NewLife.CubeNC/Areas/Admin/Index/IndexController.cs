@@ -269,6 +269,13 @@ namespace NewLife.Cube.Admin.Controllers
                 (menu as IEntity).Update();
             }
 
+            // 添加系统信息菜单
+            var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == "Main");
+            if (m2 == null)
+            {
+                m2 = menu.Parent.Add("Main", "系统信息", null, "/Admin/Index/Main");
+            }
+
             return base.ScanActionMenu(menu);
         }
     }
