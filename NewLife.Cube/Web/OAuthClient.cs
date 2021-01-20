@@ -163,6 +163,15 @@ namespace NewLife.Web
             if (!mi.Secret.IsNullOrEmpty()) Secret = mi.Secret;
             if (!mi.Scope.IsNullOrEmpty()) Scope = mi.Scope;
         }
+
+        /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
+        /// <param name="userAgent"></param>
+        /// <returns></returns>
+        public virtual Boolean Support(String userAgent) => false;
+
+        /// <summary>构造跳转验证前，针对指定客户端进行初始化</summary>
+        /// <param name="userAgent"></param>
+        public virtual void Init(String userAgent) { }
         #endregion
 
         #region 1-跳转验证

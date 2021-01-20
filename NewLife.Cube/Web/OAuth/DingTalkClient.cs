@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using NewLife.Log;
-using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -74,6 +73,23 @@ namespace NewLife.Cube.Web
                     break;
                 default:
                     break;
+            }
+        }
+
+        /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
+        /// <param name="userAgent"></param>
+        /// <returns></returns>
+        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains("DingTalk");
+
+        /// <summary>针对指定客户端进行初始化</summary>
+        /// <param name="userAgent"></param>
+        public override void Init(String userAgent)
+        {
+            // 钉钉内打开时，自动切换为应用内免登
+            if (Support(userAgent))
+            {
+                Scope = "snsapi_auth";
+                SetMode(Scope);
             }
         }
 

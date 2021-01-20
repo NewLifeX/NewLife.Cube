@@ -12,6 +12,7 @@ using XCode.Membership;
 using System.Web;
 using NewLife.Caching;
 using NewLife.Log;
+using NewLife.Cube.Web;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -117,19 +118,26 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             // 支持钉钉，且在钉钉内打开，直接跳转
-            if (ms != null && ms.Any(e => e.Name == "Ding"))
+            if (ms != null)
             {
 #if __CORE__
                 var agent = Request.Headers["User-Agent"] + "";
 #else
                 var agent = Request.UserAgent;
 #endif
-                if (!agent.IsNullOrEmpty() && agent.Contains("DingTalk"))
+                if (!agent.IsNullOrEmpty())
                 {
-                    var url = $"~/Sso/Login?name=Ding";
-                    if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
+                    foreach (var item in ms)
+                    {
+                        var client = OAuthClient.Create(item.Name);
+                        if (client != null && client.Support(agent))
+                        {
+                            var url = $"~/Sso/Login?name={item.Name}";
+                            if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
 
-                    return Redirect(url);
+                            return Redirect(url);
+                        }
+                    }
                 }
             }
 

@@ -7,7 +7,6 @@ using NewLife.Log;
 using NewLife.Model;
 using NewLife.Web;
 using XCode.Membership;
-using NewLife.Remoting;
 using NewLife.Collections;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -65,19 +64,11 @@ namespace NewLife.Cube.Controllers
 
         static SsoController()
         {
-            // 注册单点登录
-            //var oc = ObjectContainer.Current;
-            //oc.AutoRegister<SsoProvider, SsoProvider>();
-            //oc.AutoRegister<OAuthServer, OAuthServer2>();
-
-            //Provider = ObjectContainer.Current.ResolveInstance<SsoProvider>();
-            //OAuth = ObjectContainer.Current.ResolveInstance<OAuthServer>();
-
             Provider = new SsoProvider();
-            OAuth = new OAuthServer();
-
-            //OAuthServer.Instance.Log = XTrace.Log;
-            OAuth.Log = LogProvider.Provider.AsLog("OAuth");
+            OAuth = new OAuthServer
+            {
+                Log = LogProvider.Provider.AsLog("OAuth")
+            };
         }
 
         /// <summary>首页</summary>
@@ -110,20 +101,14 @@ namespace NewLife.Cube.Controllers
             var prov = Provider;
             var redirect = prov.GetRedirect(Request, returnUrl);
 
-            // 钉钉内打开时，自动切换为应用内免登
-            if (client is DingTalkClient ding)
-            {
 #if __CORE__
-                var agent = Request.Headers["User-Agent"] + "";
+            var agent = Request.Headers["User-Agent"] + "";
 #else
-                var agent = Request.UserAgent;
+            var agent = Request.UserAgent;
 #endif
-                if (!agent.IsNullOrEmpty() && agent.Contains("DingTalk"))
-                {
-                    ding.Scope = "snsapi_auth";
-                    ding.SetMode(ding.Scope);
-                }
-            }
+
+            // 针对指定客户端进行初始化
+            client.Init(agent);
 
             return client.Authorize(redirect, state);
         }
