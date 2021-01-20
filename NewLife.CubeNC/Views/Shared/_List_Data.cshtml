@@ -100,7 +100,7 @@
                         df = fields.GetBeforeField(item.Name);
                         if (df != null)
                         {
-                            var name = df.GetDisplayName(entity) ?? entity[item.Name];
+                            var name = df.GetDisplayName(entity) ?? df.Header;
                             if (df.Url.IsNullOrEmpty())
                             {
                                 <td class="text-center" title="@df.Title">@name</td>
