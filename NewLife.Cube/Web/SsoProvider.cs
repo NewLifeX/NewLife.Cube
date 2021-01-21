@@ -379,9 +379,9 @@ namespace NewLife.Cube.Web
 
         /// <summary>密码式获取令牌</summary>
         /// <param name="sso"></param>
-        /// <param name="client_id"></param>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
+        /// <param name="client_id">应用标识</param>
+        /// <param name="username">用户名</param>
+        /// <param name="password">密码</param>
         /// <param name="ip"></param>
         /// <returns></returns>
         public virtual Object GetAccessTokenByPassword(OAuthServer sso, String client_id, String username, String password, String ip)
@@ -409,8 +409,11 @@ namespace NewLife.Cube.Web
                 var token = sso.CreateToken(app, user.Name, user.ID + "");
                 //token.Scope = "basic,UserInfo";
 
+                log.AccessToken = token.AccessToken;
+                log.RefreshToken = token.RefreshToken;
+
+                log.CreateUser = user.Name;
                 log.Scope = token.Scope;
-                log.Remark = $"username={username} accesstoken={token.AccessToken}";
 
                 return token;
             }
@@ -429,11 +432,12 @@ namespace NewLife.Cube.Web
 
         /// <summary>凭证式获取令牌</summary>
         /// <param name="sso"></param>
-        /// <param name="client_id"></param>
-        /// <param name="client_secret"></param>
+        /// <param name="client_id">应用标识</param>
+        /// <param name="client_secret">密钥</param>
+        /// <param name="username">用户名。可以是设备编码等唯一使用者标识</param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public virtual Object GetAccessTokenByClientCredentials(OAuthServer sso, String client_id, String client_secret, String ip)
+        public virtual Object GetAccessTokenByClientCredentials(OAuthServer sso, String client_id, String client_secret, String username, String ip)
         {
             var log = new AppLog
             {
@@ -450,12 +454,15 @@ namespace NewLife.Cube.Web
                 var app = sso.Auth(client_id, client_secret);
                 log.AppId = app.ID;
 
-                var code = Rand.NextString(8);
-                var token = sso.CreateToken(app, client_id, $"{client_id}#{code}");
+                var code = !username.IsNullOrEmpty() ? username : ("_" + Rand.NextString(7));
+                var token = sso.CreateToken(app, code, $"{client_id}#{code}");
                 //token.Scope = "basic,UserInfo";
 
+                log.AccessToken = token.AccessToken;
+                log.RefreshToken = token.RefreshToken;
+
+                log.CreateUser = code;
                 log.Scope = token.Scope;
-                log.Remark = $"code={code} accesstoken={token.AccessToken}";
 
                 return token;
             }
@@ -472,14 +479,64 @@ namespace NewLife.Cube.Web
             }
         }
 
+        /// <summary>凭证式获取令牌</summary>
+        /// <param name="sso"></param>
+        /// <param name="client_id">应用标识</param>
+        /// <param name="client_secret">密钥</param>
+        /// <param name="refresh_token">刷新令牌</param>
+        /// <param name="ip"></param>
+        /// <returns></returns>
+        public virtual Object RefreshToken(OAuthServer sso, String client_id, String client_secret, String refresh_token, String ip)
+        {
+            var log = new AppLog
+            {
+                Action = "RefreshToken",
+                Success = true,
+
+                ClientId = client_id,
+                ResponseType = "refresh_token",
+                CreateIP = ip,
+            };
+
+            try
+            {
+                var app = sso.Auth(client_id, client_secret);
+                log.AppId = app.ID;
+
+                var name = sso.Decode(refresh_token);
+                var ss = name.Split("#");
+                if (ss.Length != 2 || ss[0] != client_id) throw new Exception("非法令牌");
+
+                // 使用者标识保持不变
+                var code = ss[1];
+                var token = sso.CreateToken(app, code, $"{client_id}#{code}");
+
+                log.AccessToken = token.AccessToken;
+                log.RefreshToken = token.RefreshToken;
+
+                log.CreateUser = code;
+                log.Scope = token.Scope;
+
+                return token;
+            }
+            catch (Exception ex)
+            {
+                log.Success = false;
+                log.Remark = ex.GetTrue()?.Message;
+
+                throw;
+            }
+            finally
+            {
+                log.Insert();
+            }
+        }
         /// <summary>获取用户信息</summary>
         /// <param name="sso"></param>
-        /// <param name="token"></param>
+        /// <param name="username"></param>
         /// <returns></returns>
-        public virtual IManageUser GetUser(OAuthServer sso, String token)
+        public virtual IManageUser GetUser(OAuthServer sso, String username)
         {
-            var username = sso.Decode(token);
-
             var user = Provider?.FindByName(username);
             // 两级单点登录可能因缓存造成查不到用户
             if (user == null) user = User.Find(User._.Name == username);

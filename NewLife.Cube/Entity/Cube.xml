@@ -92,7 +92,7 @@
       <Column Name="AccessToken" DataType="String" Length="2000" Description="访问令牌" />
       <Column Name="RefreshToken" DataType="String" Length="2000" Description="刷新令牌" />
       <Column Name="Remark" DataType="String" Length="2000" Description="详细信息" />
-      <Column Name="CreateUser" DataType="String" Description="创建者" />
+      <Column Name="CreateUser" DataType="String" Description="创建者。可以是设备编码等唯一使用者标识" />
       <Column Name="CreateIP" DataType="String" Description="创建IP" />
       <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
       <Column Name="UpdateIP" DataType="String" Description="更新IP" />

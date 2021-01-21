@@ -449,12 +449,13 @@ namespace NewLife.Cube.Controllers
         /// </remarks>
         /// <param name="client_id">应用标识</param>
         /// <param name="client_secret">密钥</param>
-        /// <param name="username">用户名</param>
+        /// <param name="username">用户名。可以是设备编码等唯一使用者标识</param>
         /// <param name="password">密码</param>
+        /// <param name="refresh_token">刷新令牌</param>
         /// <param name="grant_type">授权类型</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public virtual ActionResult Token(String client_id, String client_secret, String username, String password, String grant_type = null)
+        public virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
         {
             if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
             if (grant_type.IsNullOrEmpty()) grant_type = "password";
@@ -476,15 +477,22 @@ namespace NewLife.Cube.Controllers
 
                         rs = Provider.GetAccessTokenByPassword(OAuth, client_id, username, password, UserHost);
                         break;
+
                     case "client_credentials":
                         if (client_secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_secret));
 
-                        rs = Provider.GetAccessTokenByClientCredentials(OAuth, client_id, client_secret, UserHost);
+                        // username 可以是设备编码等唯一使用者标识
+                        rs = Provider.GetAccessTokenByClientCredentials(OAuth, client_id, client_secret, username, UserHost);
+                        break;
+
+                    case "refresh_token":
+                        if (refresh_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(refresh_token));
+                        if (client_secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_secret));
+
+                        rs = Provider.RefreshToken(OAuth, client_id, client_secret, refresh_token, UserHost);
                         break;
                 }
 
-
-                // 返回UserInfo告知客户端可以请求用户信息
 #if __CORE__
                 return Json(rs);
 #else
@@ -493,7 +501,7 @@ namespace NewLife.Cube.Controllers
             }
             catch (Exception ex)
             {
-                XTrace.WriteLine($"Token client_id={client_id} client_secret={username} username={username}");
+                XTrace.WriteLine($"Token client_id={client_id} username={username} grant_type={grant_type}");
                 XTrace.WriteException(ex);
 #if __CORE__
                 return Json(new { error = ex.GetTrue().Message });
@@ -517,8 +525,9 @@ namespace NewLife.Cube.Controllers
             var msg = "";
             try
             {
-                user = Provider?.GetUser(sso, access_token);
-                if (user == null) throw new Exception("用户不存在");
+                var username = OAuth.Decode(access_token);
+                user = Provider?.GetUser(sso, username);
+                if (user == null) throw new XException("用户[{0}]不存在", username);
 
                 var rs = Provider.GetUserInfo(sso, access_token, user);
 #if __CORE__

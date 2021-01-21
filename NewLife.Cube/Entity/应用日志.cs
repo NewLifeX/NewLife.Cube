@@ -115,11 +115,11 @@ namespace NewLife.Cube.Entity
         public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
 
         private String _CreateUser;
-        /// <summary>创建者</summary>
+        /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
         [DisplayName("创建者")]
-        [Description("创建者")]
+        [Description("创建者。可以是设备编码等唯一使用者标识")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("CreateUser", "创建者", "")]
+        [BindColumn("CreateUser", "创建者。可以是设备编码等唯一使用者标识", "")]
         public String CreateUser { get => _CreateUser; set { if (OnPropertyChanging("CreateUser", value)) { _CreateUser = value; OnPropertyChanged("CreateUser"); } } }
 
         private String _CreateIP;
@@ -252,7 +252,7 @@ namespace NewLife.Cube.Entity
             /// <summary>详细信息</summary>
             public static readonly Field Remark = FindByName("Remark");
 
-            /// <summary>创建者</summary>
+            /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
             public static readonly Field CreateUser = FindByName("CreateUser");
 
             /// <summary>创建IP</summary>
@@ -309,7 +309,7 @@ namespace NewLife.Cube.Entity
             /// <summary>详细信息</summary>
             public const String Remark = "Remark";
 
-            /// <summary>创建者</summary>
+            /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
             public const String CreateUser = "CreateUser";
 
             /// <summary>创建IP</summary>
