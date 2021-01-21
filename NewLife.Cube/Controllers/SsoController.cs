@@ -8,6 +8,8 @@ using NewLife.Model;
 using NewLife.Web;
 using XCode.Membership;
 using NewLife.Collections;
+using System.Security.Cryptography;
+using NewLife.Security;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -552,6 +554,28 @@ namespace NewLife.Cube.Controllers
             {
                 sso.WriteLog("UserInfo {0} access_token={1} msg={2}", user, access_token, msg);
             }
+        }
+
+        /// <summary>获取应用公钥，用于验证令牌</summary>
+        /// <param name="client_id">应用</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public ActionResult GetKey(String client_id)
+        {
+            //var app = App.FindByName(client_id);
+
+            var prv = OAuth.GetProvider();
+            var dsa = new DSACryptoServiceProvider();
+            dsa.FromXmlStringX(prv.Key);
+
+            _ = dsa.ExportParameters(true);
+            var key = dsa.ToXmlString(false);
+            var rs = new { algorithm = "DSA", key };
+#if __CORE__
+            return Json(rs);
+#else
+            return Json(rs, JsonRequestBehavior.AllowGet);
+#endif
         }
         #endregion
 

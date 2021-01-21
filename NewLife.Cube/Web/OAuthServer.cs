@@ -231,7 +231,9 @@ namespace NewLife.Web
         #endregion
 
         #region 辅助
-        private TokenProvider GetProvider()
+        /// <summary>获取令牌提供者</summary>
+        /// <returns></returns>
+        public TokenProvider GetProvider()
         {
             var prv = TokenProvider;
             if (prv == null) prv = TokenProvider = new TokenProvider();
