@@ -577,6 +577,27 @@ namespace NewLife.Cube.Controllers
             return Json(rs, JsonRequestBehavior.AllowGet);
 #endif
         }
+
+        /// <summary>验证令牌，回写cookie</summary>
+        /// <param name="access_token">应用</param>
+        /// <param name="redirect_uri">回调地址</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public ActionResult Verify(String access_token, String redirect_uri)
+        {
+            if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
+
+            var prv = Provider.Provider;
+            var username = OAuth.Decode(access_token);
+
+            // 设置登录用户，
+            var user = prv.FindByName(username);
+            prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
+
+            if (redirect_uri.IsNullOrEmpty()) return Content("ok");
+
+            return Redirect(redirect_uri);
+        }
         #endregion
 
         #region 辅助
