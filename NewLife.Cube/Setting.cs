@@ -114,6 +114,10 @@ namespace NewLife.Cube
         [Description("JWT密钥。用于生成JWT令牌的算法和密钥，如HS256:ABCD1234")]
         [Category("用户登录")]
         public String JwtSecret { get; set; }
+
+        /// <summary>令牌有效期。访问令牌AccessToken的有效期，默认7200秒</summary>
+        [Description("令牌有效期。访问令牌AccessToken的有效期，默认7200秒")]
+        public Int32 TokenExpire { get; set; } = 7200;
         #endregion
 
         #region 界面配置

@@ -17,8 +17,8 @@ namespace NewLife.Web
         /// <summary>令牌提供者</summary>
         public TokenProvider TokenProvider { get; set; } = new TokenProvider();
 
-        /// <summary>令牌有效期。默认24小时</summary>
-        public Int32 Expire { get; set; } = 24 * 3600;
+        ///// <summary>令牌有效期。默认24小时</summary>
+        //public Int32 Expire { get; set; } = 24 * 3600;
         #endregion
 
         #region 静态
@@ -107,9 +107,10 @@ namespace NewLife.Web
 
             var prv = GetProvider();
             var code = log.ID + "";
+            var set = NewLife.Cube.Setting.Current;
 
             // 建立令牌
-            log.AccessToken = prv.Encode(user.Name, DateTime.Now.AddSeconds(Expire));
+            log.AccessToken = prv.Encode(user.Name, DateTime.Now.AddSeconds(set.TokenExpire));
             log.RefreshToken = code + "." + Rand.NextString(16);
             log.CreateUser = user + "";
 
