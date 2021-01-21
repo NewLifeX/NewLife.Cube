@@ -17,6 +17,15 @@ namespace NewLife.Cube.Admin.Controllers
         static AppController()
         {
             MenuOrder = 38;
+
+            ListFields.RemoveField("Secret", "Logo", "White", "Black", "Urls", "Remark");
+
+            {
+                var df = ListFields.AddDataField("AppLog", "Enable");
+                df.Header = "日志";
+                df.DisplayName = "日志";
+                df.Url = "AppLog?appId={ID}";
+            }
         }
 
         /// <summary>菜单不可见</summary>

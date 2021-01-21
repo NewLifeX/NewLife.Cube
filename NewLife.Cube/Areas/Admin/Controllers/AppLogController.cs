@@ -25,9 +25,14 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         protected override IEnumerable<AppLog> Search(Pager p)
         {
+            var appId = p["appId"].ToInt(-1);
+            var start = p["dtStart"].ToDateTime();
+            var end = p["dtEnd"].ToDateTime();
+            var key = p["Q"];
+
             if (p.Sort.IsNullOrEmpty()) p.Sort = AppLog._.ID.Desc();
 
-            return base.Search(p);
+            return AppLog.Search(appId, start, end, key, p);
         }
 
         /// <summary>菜单不可见</summary>

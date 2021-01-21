@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using NewLife.Data;
 using XCode;
 using XCode.Membership;
 
@@ -57,6 +59,22 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 高级查询
+        /// <summary>高级搜索</summary>
+        /// <param name="appId"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="key"></param>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        public static IList<AppLog> Search(Int32 appId, DateTime start, DateTime end, String key, PageParameter page)
+        {
+            var exp = new WhereExpression();
+
+            if (appId >= 0) exp &= _.AppId == appId;
+            exp &= _.ID.Between(start, end, Meta.Factory.Snow);
+
+            return FindAll(exp, page);
+        }
         #endregion
 
         #region 业务操作
