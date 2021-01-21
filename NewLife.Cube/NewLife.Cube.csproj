@@ -600,6 +600,7 @@
     <Compile Include="Web\OAuth\TaobaoClient.cs" />
     <Compile Include="Web\OAuth\WeixinClient.cs" />
     <Compile Include="Web\SsoProvider.cs" />
+    <Compile Include="Web\TokenInfo.cs" />
     <Compile Include="Web\TracerModule.cs" />
     <Compile Include="Web\WebHelper2.cs" />
   </ItemGroup>

@@ -35,9 +35,8 @@ namespace NewLife.Cube.Web
             Server = "https://oapi.dingtalk.com/connect/oauth2/";
 
             AuthUrl = "sns_authorize?appid={key}&response_type=code&scope={scope}&state={state}&redirect_uri={redirect}";
-            AccessUrl = null;
-            OpenIDUrl = null;
             AccessUrl = "https://oapi.dingtalk.com/sns/getuserinfo_bycode?accessKey={key}&timestamp={timestamp}&signature={signature}";
+            OpenIDUrl = null;
             UserUrl = "https://oapi.dingtalk.com/user/get?access_token={token}&userid={userid}";
         }
 

@@ -16,6 +16,11 @@ namespace NewLife.Web
     /// 最简单易懂的 OAuth2.0
     /// http://www.ruanyifeng.com/blog/2019/04/oauth-grant-types.html
     /// 
+    /// OAuth 2.0 的四种方式:
+    /// 1，code 授权码
+    /// 2，token 隐藏式
+    /// 3，password 密码式
+    /// 4，client_credentials 凭证式
     /// </remarks>
     public class OAuthClient
     {

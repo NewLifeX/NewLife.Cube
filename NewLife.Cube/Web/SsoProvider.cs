@@ -369,20 +369,107 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual Object GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
         {
-            var tokens = sso.GetTokens(client_id, client_secret, code);
+            sso.Auth(client_id, client_secret);
 
-            var app = App.FindByName(client_id);
-            var expire = app.TokenExpire;
-            var set = NewLife.Cube.Setting.Current;
-            if (expire <= 0) expire = set.TokenExpire;
+            var token = sso.GetToken(code);
+            token.Scope = "basic,UserInfo";
 
-            return new
+            return token;
+        }
+
+        /// <summary>密码式获取令牌</summary>
+        /// <param name="sso"></param>
+        /// <param name="client_id"></param>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <param name="ip"></param>
+        /// <returns></returns>
+        public virtual Object GetAccessTokenByPassword(OAuthServer sso, String client_id, String username, String password, String ip)
+        {
+            var log = new AppLog
             {
-                access_token = tokens[0],
-                refresh_token = tokens[1],
-                expires_in = expire,
-                scope = "basic,UserInfo",
+                Action = "Password",
+                Success = true,
+
+                ClientId = client_id,
+                ResponseType = "password",
+                CreateIP = ip,
             };
+
+            try
+            {
+                var app = sso.Auth(client_id, null);
+                log.AppId = app.ID;
+
+                // 不能使用 ManagerProvider，它会写cookie
+                //var user = Provider.Login(username, password, false);
+                var user = XCode.Membership.User.Login(username, password, false);
+                if (user == null) throw new XException("用户{0}验证失败", username);
+
+                var token = sso.CreateToken(app, user.Name, user.ID + "");
+                //token.Scope = "basic,UserInfo";
+
+                log.Scope = token.Scope;
+                log.Remark = $"username={username} accesstoken={token.AccessToken}";
+
+                return token;
+            }
+            catch (Exception ex)
+            {
+                log.Success = false;
+                log.Remark = ex.GetTrue()?.Message;
+
+                throw;
+            }
+            finally
+            {
+                log.Insert();
+            }
+        }
+
+        /// <summary>凭证式获取令牌</summary>
+        /// <param name="sso"></param>
+        /// <param name="client_id"></param>
+        /// <param name="client_secret"></param>
+        /// <param name="ip"></param>
+        /// <returns></returns>
+        public virtual Object GetAccessTokenByClientCredentials(OAuthServer sso, String client_id, String client_secret, String ip)
+        {
+            var log = new AppLog
+            {
+                Action = "ClientCredentials",
+                Success = true,
+
+                ClientId = client_id,
+                ResponseType = "client_credentials",
+                CreateIP = ip,
+            };
+
+            try
+            {
+                var app = sso.Auth(client_id, client_secret);
+                log.AppId = app.ID;
+
+                var code = Rand.NextString(8);
+                var token = sso.CreateToken(app, client_id, $"{client_id}#{code}");
+                //token.Scope = "basic,UserInfo";
+
+                log.Scope = token.Scope;
+                log.Remark = $"code={code} accesstoken={token.AccessToken}";
+
+                return token;
+            }
+            catch (Exception ex)
+            {
+                log.Success = false;
+                log.Remark = ex.GetTrue()?.Message;
+
+                throw;
+            }
+            finally
+            {
+                log.Insert();
+            }
         }
 
         /// <summary>获取用户信息</summary>

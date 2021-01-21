@@ -1,6 +1,7 @@
 ﻿using System;
 using NewLife.Caching;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Security;
@@ -30,6 +31,30 @@ namespace NewLife.Web
         #endregion
 
         #region 方法
+        /// <summary>验证应用</summary>
+        /// <param name="client_id"></param>
+        /// <param name="client_secret"></param>
+        /// <returns></returns>
+        public virtual App Auth(String client_id, String client_secret)
+        {
+            var app = App.FindByName(client_id);
+            //if (app == null) throw new XException("未找到应用[{0}]", appid);
+            // 找不到应用时自动创建，但处于禁用状态
+            if (app == null)
+            {
+                app = new App { Name = client_id };
+                app.Insert();
+            }
+
+            if (!client_secret.IsNullOrEmpty())
+            {
+                if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
+                if (!app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
+            }
+
+            return app;
+        }
+
         /// <summary>验证用户身份</summary>
         /// <remarks>
         /// 子系统需要验证访问者身份时，引导用户跳转到这里。
@@ -59,14 +84,7 @@ namespace NewLife.Web
             {
                 //if (!response_type.EqualIgnoreCase("code")) throw new NotSupportedException(nameof(response_type));
 
-                var app = App.FindByName(client_id);
-                //if (app == null) throw new XException("未找到应用[{0}]", appid);
-                // 找不到应用时自动创建，但处于禁用状态
-                if (app == null)
-                {
-                    app = new App { Name = client_id };
-                    app.Insert();
-                }
+                var app = Auth(client_id, null);
 
                 log.AppId = app.ID;
                 if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
@@ -79,7 +97,7 @@ namespace NewLife.Web
                 app.LastAuth = DateTime.Now;
                 app.SaveAsync(5_000);
 
-                if (Log != null) WriteLog("Authorize client_id={0} redirect_uri={1}", client_id, redirect_uri);
+                if (Log != null) WriteLog("Authorize client_id={0} redirect_uri={1} response_type={2}", client_id, redirect_uri, response_type);
             }
             catch (Exception ex)
             {
@@ -108,13 +126,11 @@ namespace NewLife.Web
             var prv = GetProvider();
             var code = log.ID + "";
 
-            var expire = log.App.TokenExpire;
-            var set = NewLife.Cube.Setting.Current;
-            if (expire <= 0) expire = set.TokenExpire;
+            var token = CreateToken(log.App, user.Name, code);
 
             // 建立令牌
-            log.AccessToken = prv.Encode(user.Name, DateTime.Now.AddSeconds(expire));
-            log.RefreshToken = code + "." + Rand.NextString(16);
+            log.AccessToken = token.AccessToken;
+            log.RefreshToken = token.RefreshToken;
             log.CreateUser = user + "";
 
             if (Log != null) WriteLog("Authorize appid={0} code={2} redirect_uri={1} {3}", log.AppName, log.RedirectUri, code, user);
@@ -148,22 +164,55 @@ namespace NewLife.Web
             return url;
         }
 
-        /// <summary>根据Code获取令牌</summary>
-        /// <param name="client_id"></param>
-        /// <param name="client_secret"></param>
+        /// <summary>创建令牌</summary>
+        /// <param name="app"></param>
+        /// <param name="name"></param>
         /// <param name="code"></param>
         /// <returns></returns>
-        public virtual String[] GetTokens(String client_id, String client_secret, String code)
+        public virtual TokenInfo CreateToken(App app, String name, String code)
+        {
+            var prv = GetProvider();
+
+            var expire = 0;
+            if (app != null) expire = app.TokenExpire;
+
+            var set = NewLife.Cube.Setting.Current;
+            if (expire <= 0) expire = set.TokenExpire;
+
+            // 建立令牌
+            return new TokenInfo
+            {
+                AccessToken = prv.Encode(name, DateTime.Now.AddSeconds(expire)),
+                RefreshToken = prv.Encode(code, DateTime.Now.AddSeconds(expire)),
+                Expire = expire
+            };
+        }
+
+        /// <summary>根据Code获取令牌</summary>
+        /// <param name="code"></param>
+        /// <returns></returns>
+        public virtual TokenInfo GetToken(String code)
         {
             var log = AppLog.FindByID(code.ToLong());
             if (log == null) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
             if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);
 
-            log.Action = nameof(GetTokens);
+            log.Action = nameof(GetToken);
             log.Update();
 
-            return new[] { log.AccessToken, log.RefreshToken };
+            var expire = 0;
+            if (log.App != null) expire = log.App.TokenExpire;
+
+            var set = NewLife.Cube.Setting.Current;
+            if (expire <= 0) expire = set.TokenExpire;
+
+            return new TokenInfo
+            {
+                AccessToken = log.AccessToken,
+                RefreshToken = log.RefreshToken,
+                Expire = expire
+            };
         }
 
         /// <summary>解码令牌</summary>
@@ -173,11 +222,11 @@ namespace NewLife.Web
         {
             var prv = GetProvider();
 
-            var rs = prv.TryDecode(token, out var username, out var expire);
-            if (!rs || username.IsNullOrEmpty()) throw new Exception("非法访问令牌");
+            var rs = prv.TryDecode(token, out var name, out var expire);
+            if (!rs || name.IsNullOrEmpty()) throw new Exception("非法访问令牌");
             if (expire < DateTime.Now) throw new Exception("令牌已过期");
 
-            return username;
+            return name;
         }
         #endregion
 

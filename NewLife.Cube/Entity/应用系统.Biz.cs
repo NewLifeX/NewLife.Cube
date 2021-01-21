@@ -103,8 +103,8 @@ namespace NewLife.Cube.Entity
         /// <returns></returns>
         public Boolean ValidCallback(String url)
         {
-            if (url.IsNullOrEmpty()) return false;
             if (Urls.IsNullOrEmpty()) return true;
+            if (url.IsNullOrEmpty()) return false;
 
             var us = Urls.Split(",", ";");
             if (us == null || us.Length == 0) return true;

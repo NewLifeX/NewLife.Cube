@@ -84,11 +84,11 @@ namespace NewLife.Cube.Entity
         public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
         private Int32 _TokenExpire;
-        /// <summary>有效期。访问令牌AccessToken的有效期，默认使用全局设置</summary>
+        /// <summary>有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置</summary>
         [DisplayName("有效期")]
-        [Description("有效期。访问令牌AccessToken的有效期，默认使用全局设置")]
+        [Description("有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("TokenExpire", "有效期。访问令牌AccessToken的有效期，默认使用全局设置", "")]
+        [BindColumn("TokenExpire", "有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置", "")]
         public Int32 TokenExpire { get => _TokenExpire; set { if (OnPropertyChanging("TokenExpire", value)) { _TokenExpire = value; OnPropertyChanged("TokenExpire"); } } }
 
         private String _Urls;
@@ -261,7 +261,7 @@ namespace NewLife.Cube.Entity
             /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
 
-            /// <summary>有效期。访问令牌AccessToken的有效期，默认使用全局设置</summary>
+            /// <summary>有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置</summary>
             public static readonly Field TokenExpire = FindByName("TokenExpire");
 
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
@@ -324,7 +324,7 @@ namespace NewLife.Cube.Entity
             /// <summary>启用</summary>
             public const String Enable = "Enable";
 
-            /// <summary>有效期。访问令牌AccessToken的有效期，默认使用全局设置</summary>
+            /// <summary>有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置</summary>
             public const String TokenExpire = "TokenExpire";
 
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>

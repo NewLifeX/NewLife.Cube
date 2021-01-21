@@ -398,7 +398,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="client_id">应用标识</param>
         /// <param name="client_secret">密钥</param>
         /// <param name="code">代码</param>
-        /// <param name="grant_type">授权类型。</param>
+        /// <param name="grant_type">授权类型</param>
         /// <returns></returns>
         [AllowAnonymous]
         public virtual ActionResult Access_Token(String client_id, String client_secret, String code, String grant_type = null)
@@ -430,6 +430,70 @@ namespace NewLife.Cube.Controllers
             catch (Exception ex)
             {
                 XTrace.WriteLine($"Access_Token client_id={client_id} client_secret={client_secret} code={code}");
+                XTrace.WriteException(ex);
+#if __CORE__
+                return Json(new { error = ex.GetTrue().Message });
+#else
+                return Json(new { error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
+#endif
+            }
+        }
+
+        /// <summary>3，根据password/client_credentials获取令牌</summary>
+        /// <remarks>
+        /// 密码式：
+        /// 用户把用户名和密码，直接告诉该应用。该应用就使用你的密码，申请令牌，这种方式称为"密码式"（password）。
+        /// 凭证式：
+        /// 凭证式（client credentials），适用于没有前端的命令行应用，即在命令行下请求令牌。
+        /// 针对第三方应用，而不是针对用户的，即有可能多个用户共享同一个令牌。
+        /// </remarks>
+        /// <param name="client_id">应用标识</param>
+        /// <param name="client_secret">密钥</param>
+        /// <param name="username">用户名</param>
+        /// <param name="password">密码</param>
+        /// <param name="grant_type">授权类型</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public virtual ActionResult Token(String client_id, String client_secret, String username, String password, String grant_type = null)
+        {
+            if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
+            if (grant_type.IsNullOrEmpty()) grant_type = "password";
+
+            // 返回给子系统的数据：
+            // access_token 访问令牌
+            // expires_in 有效期
+            // refresh_token 刷新令牌
+            // openid 用户唯一标识
+
+            try
+            {
+                Object rs = null;
+                switch (grant_type.ToLower())
+                {
+                    case "password":
+                        if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username));
+                        if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
+
+                        rs = Provider.GetAccessTokenByPassword(OAuth, client_id, username, password, UserHost);
+                        break;
+                    case "client_credentials":
+                        if (client_secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_secret));
+
+                        rs = Provider.GetAccessTokenByClientCredentials(OAuth, client_id, client_secret, UserHost);
+                        break;
+                }
+
+
+                // 返回UserInfo告知客户端可以请求用户信息
+#if __CORE__
+                return Json(rs);
+#else
+                return Json(rs, JsonRequestBehavior.AllowGet);
+#endif
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteLine($"Token client_id={client_id} client_secret={username} username={username}");
                 XTrace.WriteException(ex);
 #if __CORE__
                 return Json(new { error = ex.GetTrue().Message });

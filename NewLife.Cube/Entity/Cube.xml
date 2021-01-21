@@ -62,7 +62,7 @@
       <Column Name="White" DataType="String" Length="200" Description="白名单" />
       <Column Name="Black" DataType="String" Length="200" Description="黑名单。黑名单优先于白名单" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
-      <Column Name="TokenExpire" DataType="Int32" Description="有效期。访问令牌AccessToken的有效期，默认使用全局设置" />
+      <Column Name="TokenExpire" DataType="Int32" Description="有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置" />
       <Column Name="Urls" DataType="String" Length="500" Description="回调地址。用于限制回调地址安全性，多个地址逗号隔开" />
       <Column Name="Auths" DataType="Int32" Description="次数" />
       <Column Name="LastAuth" DataType="DateTime" Description="最后请求" />
