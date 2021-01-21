@@ -12,6 +12,11 @@ using NewLife.Serialization;
 namespace NewLife.Web
 {
     /// <summary>OAuth 2.0 客户端</summary>
+    /// <remarks>
+    /// 最简单易懂的 OAuth2.0
+    /// http://www.ruanyifeng.com/blog/2019/04/oauth-grant-types.html
+    /// 
+    /// </remarks>
     public class OAuthClient
     {
         #region 属性

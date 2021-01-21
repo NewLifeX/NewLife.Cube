@@ -212,61 +212,6 @@ namespace NewLife.Cube.Controllers
             }
         }
 
-        //private static String _ding_access_token;
-        //private static DateTime _ding_expire;
-        //private void DoDingDing(DingTalkClient client)
-        //{
-        //    if (client == null || client.UnionID.IsNullOrEmpty()) return;
-
-        //    // 如果配置了企业级账号，可以获取更详细信息
-        //    var token = _ding_access_token;
-        //    if (token.IsNullOrEmpty() || _ding_expire < DateTime.Now)
-        //    {
-        //        var ps = Parameter.FindAllByUserID(0).Where(e => e.Category == "钉钉").ToList();
-        //        var key = ps.FirstOrDefault(e => e.Name == "appkey");
-        //        if (key == null)
-        //        {
-        //            key = new Parameter { Category = "钉钉", Name = "appkey", Enable = true };
-        //            key.Insert();
-        //        }
-        //        var secret = ps.FirstOrDefault(e => e.Name == "appsecret");
-        //        if (secret == null)
-        //        {
-        //            secret = new Parameter { Category = "钉钉", Name = "appsecret", Enable = true };
-        //            secret.Insert();
-        //        }
-
-        //        _ding_access_token = null;
-        //        if (!key.Value.IsNullOrEmpty() && !secret.Value.IsNullOrEmpty())
-        //        {
-        //            token = _ding_access_token = DingTalkClient.GetToken(key.Value, secret.Value);
-        //        }
-
-        //        _ding_expire = DateTime.Now.AddSeconds(7200 - 60);
-        //    }
-
-        //    if (!token.IsNullOrEmpty())
-        //    {
-        //        try
-        //        {
-        //            // 根据UnionId换取员工Id
-        //            var userid = DingTalkClient.GetUseridByUnionid(token, client.UnionID);
-        //            if (!userid.IsNullOrEmpty())
-        //            {
-        //                // 钉钉Id一般不是自己设置的，很乱，不可取
-        //                //client.UserName = userid;
-
-        //                client.GetUserInfo(token, userid);
-        //            }
-        //        }
-        //        catch (AggregateException ex)
-        //        {
-        //            // 某些用户不是本团队成员，此处会抛出异常
-        //            if (!(ex.GetTrue() is ApiException)) throw;
-        //        }
-        //    }
-        //}
-
         /// <summary>注销登录</summary>
         /// <remarks>
         /// 子系统引导用户跳转到这里注销登录。
@@ -276,14 +221,9 @@ namespace NewLife.Cube.Controllers
         public virtual ActionResult Logout()
         {
             // 先读Session，待会会清空
-            //#if __CORE__
             var prov = Provider;
             var name = GetSession<String>("Cube_Sso");
             var client = prov.GetClient(name);
-            //var client = GetSession<OAuthClient>("Cube_Sso_Client");
-            //#else
-            //var client = GetSession<OAuthClient>("Cube_Sso_Client");
-            //#endif
 
             var prv = Provider;
             prv?.Logout();

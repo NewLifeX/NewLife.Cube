@@ -57,11 +57,7 @@ namespace NewLife.Web
 
             try
             {
-                //if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
-                //if (redirect_uri.IsNullOrEmpty()) throw new ArgumentNullException(nameof(redirect_uri));
-                //if (response_type.IsNullOrEmpty()) response_type = "code";
-
-                if (!response_type.EqualIgnoreCase("code")) throw new NotSupportedException(nameof(response_type));
+                //if (!response_type.EqualIgnoreCase("code")) throw new NotSupportedException(nameof(response_type));
 
                 var app = App.FindByName(client_id);
                 //if (app == null) throw new XException("未找到应用[{0}]", appid);
@@ -123,12 +119,27 @@ namespace NewLife.Web
             log.Update();
 
             var url = log.RedirectUri;
-            if (url.Contains("?"))
-                url += "&";
-            else
-                url += "?";
-            url += "code=" + code;
-            if (!log.State.IsNullOrEmpty()) url += "&state=" + log.State;
+
+            switch ((log.ResponseType + "").ToLower())
+            {
+                case "token":
+                    if (url.Contains("?"))
+                        url += "&";
+                    else
+                        url += "?";
+                    if (!log.State.IsNullOrEmpty()) url += "state=" + log.State;
+                    url += "#token=" + log.AccessToken;
+                    break;
+                case "code":
+                default:
+                    if (url.Contains("?"))
+                        url += "&";
+                    else
+                        url += "?";
+                    url += "code=" + code;
+                    if (!log.State.IsNullOrEmpty()) url += "&state=" + log.State;
+                    break;
+            }
 
             return url;
         }
