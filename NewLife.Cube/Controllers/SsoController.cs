@@ -420,9 +420,16 @@ namespace NewLife.Cube.Controllers
 
             try
             {
-                var rs = Provider.GetAccessToken(OAuth, client_id, client_secret, code, UserHost);
+                var token = Provider.GetAccessToken(OAuth, client_id, client_secret, code, UserHost);
 
                 // 返回UserInfo告知客户端可以请求用户信息
+                var rs = new
+                {
+                    access_token = token.AccessToken,
+                    refresh_token = token.RefreshToken,
+                    expires_in = token.Expire,
+                    scope = token.Scope,
+                };
 #if __CORE__
                 return Json(rs);
 #else
@@ -470,31 +477,38 @@ namespace NewLife.Cube.Controllers
 
             try
             {
-                Object rs = null;
+                TokenInfo token = null;
                 switch (grant_type.ToLower())
                 {
                     case "password":
                         if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username));
                         if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
 
-                        rs = Provider.GetAccessTokenByPassword(OAuth, client_id, username, password, UserHost);
+                        token = Provider.GetAccessTokenByPassword(OAuth, client_id, username, password, UserHost);
                         break;
 
                     case "client_credentials":
                         if (client_secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_secret));
 
                         // username 可以是设备编码等唯一使用者标识
-                        rs = Provider.GetAccessTokenByClientCredentials(OAuth, client_id, client_secret, username, UserHost);
+                        token = Provider.GetAccessTokenByClientCredentials(OAuth, client_id, client_secret, username, UserHost);
                         break;
 
                     case "refresh_token":
                         if (refresh_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(refresh_token));
                         if (client_secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_secret));
 
-                        rs = Provider.RefreshToken(OAuth, client_id, client_secret, refresh_token, UserHost);
+                        token = Provider.RefreshToken(OAuth, client_id, client_secret, refresh_token, UserHost);
                         break;
                 }
 
+                var rs = new
+                {
+                    access_token = token.AccessToken,
+                    refresh_token = token.RefreshToken,
+                    expires_in = token.Expire,
+                    scope = token.Scope,
+                };
 #if __CORE__
                 return Json(rs);
 #else

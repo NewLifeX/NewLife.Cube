@@ -367,7 +367,7 @@ namespace NewLife.Cube.Web
         /// <param name="code"></param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public virtual Object GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
+        public virtual TokenInfo GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
         {
             sso.Auth(client_id, client_secret);
 
@@ -384,7 +384,7 @@ namespace NewLife.Cube.Web
         /// <param name="password">密码</param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public virtual Object GetAccessTokenByPassword(OAuthServer sso, String client_id, String username, String password, String ip)
+        public virtual TokenInfo GetAccessTokenByPassword(OAuthServer sso, String client_id, String username, String password, String ip)
         {
             var log = new AppLog
             {
@@ -437,7 +437,7 @@ namespace NewLife.Cube.Web
         /// <param name="username">用户名。可以是设备编码等唯一使用者标识</param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public virtual Object GetAccessTokenByClientCredentials(OAuthServer sso, String client_id, String client_secret, String username, String ip)
+        public virtual TokenInfo GetAccessTokenByClientCredentials(OAuthServer sso, String client_id, String client_secret, String username, String ip)
         {
             var log = new AppLog
             {
@@ -486,7 +486,7 @@ namespace NewLife.Cube.Web
         /// <param name="refresh_token">刷新令牌</param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public virtual Object RefreshToken(OAuthServer sso, String client_id, String client_secret, String refresh_token, String ip)
+        public virtual TokenInfo RefreshToken(OAuthServer sso, String client_id, String client_secret, String refresh_token, String ip)
         {
             var log = new AppLog
             {

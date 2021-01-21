@@ -49,7 +49,7 @@ namespace NewLife.Web
             if (!client_secret.IsNullOrEmpty())
             {
                 if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
-                if (!app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
+                if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
             }
 
             return app;
