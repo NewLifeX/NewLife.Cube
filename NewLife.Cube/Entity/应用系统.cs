@@ -83,6 +83,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("Enable", "启用", "")]
         public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
+        private Int32 _TokenExpire;
+        /// <summary>有效期。访问令牌AccessToken的有效期，默认使用全局设置</summary>
+        [DisplayName("有效期")]
+        [Description("有效期。访问令牌AccessToken的有效期，默认使用全局设置")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("TokenExpire", "有效期。访问令牌AccessToken的有效期，默认使用全局设置", "")]
+        public Int32 TokenExpire { get => _TokenExpire; set { if (OnPropertyChanging("TokenExpire", value)) { _TokenExpire = value; OnPropertyChanged("TokenExpire"); } } }
+
         private String _Urls;
         /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
         [DisplayName("回调地址")]
@@ -182,6 +190,7 @@ namespace NewLife.Cube.Entity
                     case "White": return _White;
                     case "Black": return _Black;
                     case "Enable": return _Enable;
+                    case "TokenExpire": return _TokenExpire;
                     case "Urls": return _Urls;
                     case "Auths": return _Auths;
                     case "LastAuth": return _LastAuth;
@@ -207,6 +216,7 @@ namespace NewLife.Cube.Entity
                     case "White": _White = Convert.ToString(value); break;
                     case "Black": _Black = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
+                    case "TokenExpire": _TokenExpire = value.ToInt(); break;
                     case "Urls": _Urls = Convert.ToString(value); break;
                     case "Auths": _Auths = value.ToInt(); break;
                     case "LastAuth": _LastAuth = value.ToDateTime(); break;
@@ -250,6 +260,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
+
+            /// <summary>有效期。访问令牌AccessToken的有效期，默认使用全局设置</summary>
+            public static readonly Field TokenExpire = FindByName("TokenExpire");
 
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
             public static readonly Field Urls = FindByName("Urls");
@@ -310,6 +323,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>启用</summary>
             public const String Enable = "Enable";
+
+            /// <summary>有效期。访问令牌AccessToken的有效期，默认使用全局设置</summary>
+            public const String TokenExpire = "TokenExpire";
 
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
             public const String Urls = "Urls";

@@ -369,14 +369,18 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual Object GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
         {
-            var set = NewLife.Cube.Setting.Current;
             var tokens = sso.GetTokens(client_id, client_secret, code);
+
+            var app = App.FindByName(client_id);
+            var expire = app.TokenExpire;
+            var set = NewLife.Cube.Setting.Current;
+            if (expire <= 0) expire = set.TokenExpire;
 
             return new
             {
                 access_token = tokens[0],
                 refresh_token = tokens[1],
-                expires_in = set.TokenExpire,
+                expires_in = expire,
                 scope = "basic,UserInfo",
             };
         }

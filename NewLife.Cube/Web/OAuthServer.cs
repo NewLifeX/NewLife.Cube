@@ -107,10 +107,13 @@ namespace NewLife.Web
 
             var prv = GetProvider();
             var code = log.ID + "";
+
+            var expire = log.App.TokenExpire;
             var set = NewLife.Cube.Setting.Current;
+            if (expire <= 0) expire = set.TokenExpire;
 
             // 建立令牌
-            log.AccessToken = prv.Encode(user.Name, DateTime.Now.AddSeconds(set.TokenExpire));
+            log.AccessToken = prv.Encode(user.Name, DateTime.Now.AddSeconds(expire));
             log.RefreshToken = code + "." + Rand.NextString(16);
             log.CreateUser = user + "";
 

@@ -702,19 +702,10 @@
     <None Include="Content\images\logo\Taobao.png" />
     <None Include="Content\images\logo\Weibo.png" />
     <None Include="Content\images\logo\Weixin.png" />
-    <Content Include="Entity\Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.log</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Build_netcore.log">
+    <Content Include="Entity\XCoder.log">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Build_netcore.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
+      <DependentUpon>XCoder.tt</DependentUpon>
     </Content>
     <None Include="index.html" />
     <None Include="Entity\Cube.xml">
@@ -973,11 +964,6 @@
     <None Include="Scripts\jquery.validate.unobtrusive.js" />
     <None Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <None Include="Scripts\modernizr-2.6.2.js" />
-    <Content Include="Entity\Build_netcore.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build_netcore.log</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Model.xml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
