@@ -244,7 +244,7 @@ WriteLiteral("</td>\r\n");
                 var val = v + "";
                 try
                 {
-                    val = System.EnumHelper.GetDescription((Enum)v) ?? v + "";
+                    val = NewLife.EnumHelper.GetDescription((Enum)v) ?? v + "";
                 }
                 catch { }
 

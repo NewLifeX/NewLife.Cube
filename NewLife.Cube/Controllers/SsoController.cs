@@ -199,8 +199,9 @@ namespace NewLife.Cube.Controllers
 #endif
 
                 // 标记登录提供商
-                SetSession("Cube_Sso", client.Name);
+                //SetSession("Cube_Sso", client.Name);
                 //SetSession("Cube_Sso_Client", client);
+                Session["Cube_Sso"] = client.Name;
 
                 if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
@@ -224,7 +225,8 @@ namespace NewLife.Cube.Controllers
         {
             // 先读Session，待会会清空
             var prov = Provider;
-            var name = GetSession<String>("Cube_Sso");
+            //var name = GetSession<String>("Cube_Sso");
+            var name = Session["Cube_Sso"] as String;
             var client = prov.GetClient(name);
 
             var prv = Provider;

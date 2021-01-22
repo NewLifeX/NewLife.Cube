@@ -53,7 +53,7 @@ namespace ASP
   
     // 所有可用层级
     var vs = Model as StatLevels[];
-    var ds = System.EnumHelper.GetDescriptions(typeof(StatLevels));
+    var ds = NewLife.EnumHelper.GetDescriptions(typeof(StatLevels));
     var def = StatLevels.All;
     if (vs != null && vs.Length > 0)
     {

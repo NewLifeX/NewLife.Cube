@@ -138,11 +138,13 @@ namespace NewLife.Cube
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
+        [Obsolete]
         protected virtual T GetSession<T>(String key) where T : class => HttpContext.Session.Get<T>(key);
 
         /// <summary>设置Session值</summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
+        [Obsolete]
         protected virtual void SetSession(String key, Object value) => HttpContext.Session.Set(key, value);
 #else
         /// <summary>获取请求值</summary>
@@ -154,11 +156,13 @@ namespace NewLife.Cube
         /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
+        [Obsolete]
         protected virtual T GetSession<T>(String key) => (T)Session[key];
 
         /// <summary>设置Session值</summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
+        [Obsolete]
         protected virtual void SetSession(String key, Object value) => Session[key] = value;
 #endif
         #endregion

@@ -292,7 +292,7 @@ WriteLiteral("</td>\r\n");
                 var val = "";
                 try
                 {
-                    val = System.EnumHelper.GetDescription((Enum)value) ?? value + "";
+                    val = NewLife.EnumHelper.GetDescription((Enum)value) ?? value + "";
                 }
                 catch { }
 
