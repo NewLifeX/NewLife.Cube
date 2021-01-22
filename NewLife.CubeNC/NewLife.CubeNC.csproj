@@ -77,6 +77,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserTokenController.cs" Link="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\ChangePasswordModel.cs" Link="Areas\Admin\Models\ChangePasswordModel.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\BindsModel.cs" Link="Areas\Admin\Models\BindsModel.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs" Link="Areas\Admin\Models\DbItem.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs" Link="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />

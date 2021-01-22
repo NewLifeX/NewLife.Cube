@@ -352,54 +352,28 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         /// <summary>用户绑定</summary>
-        /// <param name="id"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult Binds(Int32 id)
+        public ActionResult Binds()
         {
-            //if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
-
             var user = ManageProvider.User as XCode.Membership.User;
             if (user == null) return RedirectToAction("Login");
-
-            if (id > 0 && id != user.ID) throw new Exception("禁止查看非当前登录用户资料");
 
             user = XCode.Membership.User.FindByKeyForEdit(user.ID);
             if (user == null) throw new Exception("无效用户编号！");
 
-            //user.Password = null;
-            user["Password"] = null;
-
-            // 用于显示的列
-            if (ViewBag.Fields == null) ViewBag.Fields = GetFields(true);
-            ViewBag.Factory = XCode.Membership.User.Meta.Factory;
-
             // 第三方绑定
             var ucs = UserConnect.FindAllByUserID(user.ID);
-            ViewBag.Binds = ucs;
+            var ms = OAuthConfig.Current.Items.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
 
-            return IsJsonRequest ? Json(0, "ok", user) : View(user);
-        }
+            var model = new BindsModel
+            {
+                Name = user.Name,
+                Connects = ucs,
+                OAuthItems = ms,
+            };
 
-        /// <summary>用户绑定</summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        [HttpPost]
-        [AllowAnonymous]
-        public ActionResult Binds(User user)
-        {
-            var cur = ManageProvider.User;
-            if (cur == null) return RedirectToAction("Login");
-
-            if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
-
-            var entity = user as IEntity;
-            if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-            if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
-
-            user.Update();
-
-            return Info(user.ID);
+            return View(model);
         }
 
         /// <summary>注册</summary>

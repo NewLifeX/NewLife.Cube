@@ -125,6 +125,7 @@
     <Compile Include="Areas\Admin\Controllers\SysController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserController.cs" />
     <Compile Include="Areas\Admin\Index\IndexController.cs" />
+    <Compile Include="Areas\Admin\Models\BindsModel.cs" />
     <Compile Include="Areas\Admin\Models\ChangePasswordModel.cs" />
     <Compile Include="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="Areas\Admin\Models\DbItem.cs" />
