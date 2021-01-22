@@ -37,7 +37,7 @@ namespace NewLife.Web.OAuth
         {
             Server = "https://open.weixin.qq.com/connect/oauth2/";
 
-            AuthUrl = "authorize?response_type={response_type}&client_id={key}&redirect_uri={redirect}&state={state}&scope={scope}#wechat_redirect";
+            AuthUrl = "authorize?response_type={response_type}&appid={key}&redirect_uri={redirect}&state={state}&scope={scope}#wechat_redirect";
 
             var qyapi = "https://qyapi.weixin.qq.com/cgi-bin/";
             AccessUrl = qyapi + "gettoken?corpid={key}&corpsecret={secret}";

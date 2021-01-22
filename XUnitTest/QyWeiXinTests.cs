@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
 using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web.OAuth;
@@ -144,6 +145,32 @@ namespace XUnitTest
 
                 var pc = info.GetPunchCorrection();
             }
+        }
+
+        [Fact]
+        public async void GetUserInfo()
+        {
+            var ss = GetSecret("SSO");
+            var wx = new QyWeiXin
+            {
+                CorpId = ss[0],
+                CorpSecret = ss[1]
+            };
+
+            var url = wx.Authorize("https://sso.diyibox.com/cube/info");
+            XTrace.WriteLine(url);
+
+            var http = new HttpClient();
+            var rs = await http.GetAsync(url);
+            rs.EnsureSuccessStatusCode();
+            //var html = await rs.Content.ReadAsStringAsync();
+
+            var url2 = rs.RequestMessage?.RequestUri + "";
+
+            //var user = await wx.GetAccessToken("Stone");
+
+            //Assert.NotNull(user);
+            //Assert.Equal("大石头", user.Alias);
         }
     }
 }
