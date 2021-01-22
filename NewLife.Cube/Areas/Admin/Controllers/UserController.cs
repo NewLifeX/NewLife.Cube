@@ -345,7 +345,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (requireOldPass && !user.Password.EqualIgnoreCase(oldpass2)) throw new Exception("密码错误");
 
             // 修改密码
-            user.Password = model.NewPassword.MD5();
+            user.Password = model.NewPassword;
             user.Update();
 
             ViewBag.StatusMessage = "修改成功！";
