@@ -249,16 +249,16 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult Info(Int32? id)
+        public ActionResult Info(Int32 id)
         {
-            if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
+            //if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
 
             var user = ManageProvider.User as XCode.Membership.User;
             if (user == null) return RedirectToAction("Login");
 
-            if (id.Value != user.ID) throw new Exception("禁止修改非当前登录用户资料");
+            if (id > 0 && id != user.ID) throw new Exception("禁止查看非当前登录用户资料");
 
-            user = XCode.Membership.User.FindByKeyForEdit(id.Value);
+            user = XCode.Membership.User.FindByKeyForEdit(user.ID);
             if (user == null) throw new Exception("无效用户编号！");
 
             //user.Password = null;
