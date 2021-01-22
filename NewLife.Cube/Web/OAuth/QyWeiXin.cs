@@ -41,7 +41,7 @@ namespace NewLife.Web.OAuth
 
             var qyapi = "https://qyapi.weixin.qq.com/cgi-bin/";
             AccessUrl = qyapi + "gettoken?corpid={key}&corpsecret={secret}";
-            UserUrl = qyapi + "getuserinfo?access_token={token}&code={code}";
+            UserUrl = qyapi + "user/getuserinfo?access_token={token}&code={code}";
 
             Scope = "snsapi_base";
         }
