@@ -601,6 +601,10 @@
       <DependentUpon>_ViewStart.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Web\AttachmentProvider.cs" />
+    <Compile Include="Web\Models\ApprovalInfo.cs" />
+    <Compile Include="Web\Models\CheckInData.cs" />
+    <Compile Include="Web\Models\DepartmentInfo.cs" />
+    <Compile Include="Web\Models\UserInfo.cs" />
     <Compile Include="Web\OAuthClient.cs" />
     <Compile Include="Web\OAuthConfig.cs" />
     <Compile Include="Web\OAuthHelper.cs" />
@@ -610,6 +614,7 @@
     <Compile Include="Web\OAuth\GithubClient.cs" />
     <Compile Include="Web\OAuth\QQClient.cs" />
     <Compile Include="Web\OAuth\TaobaoClient.cs" />
+    <Compile Include="Web\OAuth\QyWeiXin.cs" />
     <Compile Include="Web\OAuth\WeixinClient.cs" />
     <Compile Include="Web\SsoProvider.cs" />
     <Compile Include="Web\TokenInfo.cs" />

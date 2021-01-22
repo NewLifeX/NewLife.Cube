@@ -8,15 +8,8 @@
     <FileVersion>3.8.2021.0101</FileVersion>
     <AssemblyVersion>3.8.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
+    <OutputPath>..\Bin</OutputPath>
     <UserSecretsId>1396351c-62fe-4836-9e51-9d77859955ad</UserSecretsId>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\Bin</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\Bin</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
