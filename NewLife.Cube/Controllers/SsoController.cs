@@ -79,6 +79,15 @@ namespace NewLife.Cube.Controllers
         public virtual ActionResult Index() => Redirect("~/");
 
         #region 单点登录客户端
+        private String GetUserAgent()
+        {
+#if __CORE__
+            return Request.Headers["User-Agent"] + "";
+#else
+            return Request.UserAgent;
+#endif
+        }
+
         /// <summary>第三方登录</summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -87,6 +96,8 @@ namespace NewLife.Cube.Controllers
         {
             var prov = Provider;
             var client = prov.GetClient(name);
+            client.Init(GetUserAgent());
+
             var rurl = prov.GetReturnUrl(Request, true);
 
             var state = GetRequest("state");
@@ -102,15 +113,6 @@ namespace NewLife.Cube.Controllers
         {
             var prov = Provider;
             var redirect = prov.GetRedirect(Request, returnUrl);
-
-#if __CORE__
-            var agent = Request.Headers["User-Agent"] + "";
-#else
-            var agent = Request.UserAgent;
-#endif
-
-            // 针对指定客户端进行初始化
-            client.Init(agent);
 
             return client.Authorize(redirect, state);
         }
@@ -132,6 +134,7 @@ namespace NewLife.Cube.Controllers
 
             var prov = Provider;
             var client = prov.GetClient(name);
+            client.Init(GetUserAgent());
 
             client.WriteLog("LoginInfo name={0} code={1} state={2} {3}", name, code, state, Request.GetRawUrl());
 
@@ -228,6 +231,7 @@ namespace NewLife.Cube.Controllers
             //var name = GetSession<String>("Cube_Sso");
             var name = Session["Cube_Sso"] as String;
             var client = prov.GetClient(name);
+            client.Init(GetUserAgent());
 
             var prv = Provider;
             prv?.Logout();
@@ -282,6 +286,8 @@ namespace NewLife.Cube.Controllers
             var url = Request.UrlReferrer + "";
 #endif
             var client = prov.GetClient(id);
+            client.Init(GetUserAgent());
+
             var redirect = prov.GetRedirect(Request, url);
             //// 附加绑定动作
             //redirect += "&sso_action=bind";

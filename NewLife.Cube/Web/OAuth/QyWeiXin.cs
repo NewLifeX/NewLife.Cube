@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NewLife.Cube.Web.Models;
-using NewLife.Log;
 using NewLife.Remoting;
 using XCode.Membership;
 
@@ -19,6 +18,9 @@ namespace NewLife.Web.OAuth
         /// <summary>应用凭证</summary>
         public String CorpSecret { get => Secret; set => Secret = value; }
 
+        /// <summary>应用Id</summary>
+        public String AgentId { get; set; }
+
         ///// <summary>访问令牌</summary>
         //public String AccessToken { get; set; }
 
@@ -29,7 +31,7 @@ namespace NewLife.Web.OAuth
         //public ITracer Tracer { get; set; } = DefaultTracer.Instance;
 
         //private HttpClient _client;
-        private String _uri = "https://qyapi.weixin.qq.com/";
+        private readonly String _uri = "https://qyapi.weixin.qq.com/";
         #endregion
 
         #region 构造
@@ -45,6 +47,34 @@ namespace NewLife.Web.OAuth
             UserUrl = qyapi + "user/getuserinfo?access_token={token}&code={code}";
 
             Scope = "snsapi_base";
+        }
+
+        /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
+        /// <param name="userAgent"></param>
+        /// <returns></returns>
+        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains("MicroMessenger") && userAgent.Contains("wxwork");
+
+        /// <summary>针对指定客户端进行初始化</summary>
+        /// <param name="userAgent"></param>
+        public override void Init(String userAgent)
+        {
+            var key = CorpId;
+            if (!key.IsNullOrEmpty() && key.Contains("#"))
+            {
+                CorpId = key.Substring(null, "#");
+                AgentId = key.Substring("#", null);
+            }
+
+            // 钉钉内打开时，自动切换为应用内免登
+            if (Support(userAgent))
+            {
+                Scope = "snsapi_base";
+            }
+            else
+            {
+                Scope = null;
+                AuthUrl = "https://open.work.weixin.qq.com/wwopen/sso/qrConnect?appid={key}&agentid={agentid}&redirect_uri={redirect}&state={state}".Replace("{agentid}", AgentId);
+            }
         }
         #endregion
 
@@ -249,6 +279,7 @@ namespace NewLife.Web.OAuth
 
             if (dic.TryGetValue("UserId", out var str)) UserName = str.Trim();
             if (dic.TryGetValue("DeviceId", out str)) DeviceId = str.Trim();
+            if (dic.TryGetValue("OpenId", out str)) OpenID = str.Trim();
         }
         #endregion
     }
