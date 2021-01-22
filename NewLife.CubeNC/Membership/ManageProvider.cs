@@ -309,7 +309,11 @@ namespace NewLife.Cube
                 jwt.Expire = exp;
 
                 var token = jwt.Encode(null);
-                var option = new CookieOptions();
+                var option = new CookieOptions
+                {
+                    SameSite = SameSiteMode.Unspecified,
+                    Secure = true
+                };
                 if (expire.TotalSeconds > 0) option.Expires = DateTimeOffset.Now.Add(expire);
                 res.Cookies.Append(key, token, option);
             }
