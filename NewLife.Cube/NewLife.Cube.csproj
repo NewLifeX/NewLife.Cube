@@ -692,6 +692,13 @@
     <None Include="Content\bootstrap-suggest.js" />
     <None Include="Content\bootstrap\css\bootstrap-theme.css" />
     <None Include="Content\awesome\font-awesome.min-5.12.1.css" />
+    <Content Include="Content\chosen\chosen-sprite%402x.png" />
+    <Content Include="Content\chosen\chosen-sprite.png" />
+    <Content Include="Content\chosen\chosen.css" />
+    <Content Include="Content\chosen\chosen.jquery.min.js" />
+    <Content Include="Content\chosen\chosen.min.css" />
+    <Content Include="Content\chosen\chosen.proto.min.js" />
+    <Content Include="Content\chosen\LICENSE.md" />
     <None Include="Content\Cube-bootstrap.css" />
     <None Include="Content\echarts.min.js" />
     <None Include="Content\images\logo\alipay.png" />
@@ -910,6 +917,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Form_Body.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Views\Shared\_SelectDepartment2.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_SelectDepartment2.cs</LastGenOutput>
+    </Content>
     <None Include="Views\Shared\_SelectDepartment.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_SelectDepartment.generated.cs</LastGenOutput>
