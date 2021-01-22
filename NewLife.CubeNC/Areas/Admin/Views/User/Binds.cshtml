@@ -7,6 +7,9 @@
 @{
     var fact = EntityFactory.CreateOperate(ViewData.ModelMetadata.ModelType);
     var user = Model as IUser;
+
+    var ms = NewLife.Web.OAuthConfig.Current.Items.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
+    var binds = ViewBag.Binds as IList<UserConnect>;
 }
 <div class="row">
     @await Html.PartialAsync("_User_Nav")
@@ -14,13 +17,6 @@
 <div class="row">
     <div class="col-md-12">
         <div class="form-horizontal">
-            @if (ViewBag.StatusMessage != null)
-            {
-                <div class="alert alert-success alert-dismissible text-center" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <strong>@ViewBag.StatusMessage</strong>
-                </div>
-            }
             @using (Html.BeginForm("Info", null, new { id = Model[fact.Unique.Name] }))
             {
                 @Html.ValidationSummary()
@@ -37,6 +33,12 @@
                     <label class="control-label col-md-2">名称</label>
                     <div class="input-group col-md-6">
                         <input value="@user.Name" class="col-xs-12 col-sm-8 col-md-6 col-lg-4" disabled="disabled" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">密码</label>
+                    <div class="input-group col-md-6">
+                        @Html.ForEditor("Password")
                     </div>
                 </div>
                 <div class="form-group">
@@ -96,6 +98,34 @@
                         @user.LastLoginIP
                     </div>
                 </div>
+                if (ms.Count > 0)
+                {
+                    <div class="form-group">
+                        <label class="control-label col-md-2">第三方绑定</label>
+                        <div class="input-group col-md-6">
+                            <ul>
+                                @foreach (var mi in ms)
+                                {
+                                    var uc = binds.FirstOrDefault(e => e.Enable && e.Provider.EqualIgnoreCase(mi.Name));
+                                    if (uc != null)
+                                    {
+                                        <li>
+                                            <span>@mi.Name（已绑定）</span>
+                                            <a href="~/Sso/UnBind/@mi.Name" title="取消绑定 @mi.Name">取消绑定</a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            <span>@mi.Name（未绑定）</span>
+                                            <a href="~/Sso/Bind/@mi.Name" title="绑定 @mi.Name">去绑定</a>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
                 <div class="clearfix form-actions">
                     <label class="control-label col-md-4"></label>
                     <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-save"></i><strong>保存</strong></button>

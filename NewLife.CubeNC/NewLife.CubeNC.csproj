@@ -53,8 +53,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.10.2021.115-beta1" />
-    <PackageReference Include="NewLife.XCode" Version="10.0.2021.115-beta1" />
+    <PackageReference Include="NewLife.Core" Version="8.10.2021.120-beta2" />
+    <PackageReference Include="NewLife.XCode" Version="10.0.2021.120-beta2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +76,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserController.cs" Link="Areas\Admin\Controllers\UserController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserTokenController.cs" Link="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\ChangePasswordModel.cs" Link="Areas\Admin\Models\ChangePasswordModel.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs" Link="Areas\Admin\Models\DbItem.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs" Link="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />

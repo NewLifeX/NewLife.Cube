@@ -116,7 +116,7 @@ namespace NewLife.Cube.Admin.Controllers
             var rs = base.Valid(entity, type, post);
 
             // 清空缓存
-            if (post) Role.Meta.Session.ClearCache($"{type}-{entity}");
+            if (post) Role.Meta.Session.ClearCache($"{type}-{entity}", true);
 
             return rs;
         }

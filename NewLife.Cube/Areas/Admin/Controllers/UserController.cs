@@ -13,6 +13,7 @@ using System.Web;
 using NewLife.Caching;
 using NewLife.Log;
 using NewLife.Cube.Web;
+using NewLife.Cube.Areas.Admin.Models;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -268,10 +269,6 @@ namespace NewLife.Cube.Admin.Controllers
             if (ViewBag.Fields == null) ViewBag.Fields = GetFields(true);
             ViewBag.Factory = XCode.Membership.User.Meta.Factory;
 
-            // 第三方绑定
-            var ucs = UserConnect.FindAllByUserID(user.ID);
-            ViewBag.Binds = ucs;
-
             return IsJsonRequest ? Json(0, "ok", user) : View(user);
         }
 
@@ -281,6 +278,115 @@ namespace NewLife.Cube.Admin.Controllers
         [HttpPost]
         [AllowAnonymous]
         public ActionResult Info(User user)
+        {
+            var cur = ManageProvider.User;
+            if (cur == null) return RedirectToAction("Login");
+
+            if (user.ID != cur.ID) throw new Exception("禁止修改非当前登录用户资料");
+
+            var entity = user as IEntity;
+            if (entity.Dirtys["Name"]) throw new Exception("禁止修改用户名！");
+            if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
+            if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
+
+            user.Update();
+
+            return Info(user.ID);
+        }
+
+        /// <summary>修改密码</summary>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public ActionResult ChangePassword()
+        {
+            var user = ManageProvider.User as XCode.Membership.User;
+            if (user == null) return RedirectToAction("Login");
+
+            var name = Session["Cube_Sso"] as String;
+            var model = new ChangePasswordModel
+            {
+                Name = user.Name,
+                SsoName = name,
+            };
+
+            return View(model);
+        }
+
+        /// <summary>修改密码</summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AllowAnonymous]
+        public ActionResult ChangePassword(ChangePasswordModel model)
+        {
+            var oldpass = model.OldPassword;
+            var pass1 = model.NewPassword;
+            var pass2 = model.NewPassword2;
+
+            if (String.IsNullOrWhiteSpace(pass1)) throw new ArgumentException($"“{nameof(pass1)}”不能为 Null 或空白", nameof(pass1));
+            if (String.IsNullOrWhiteSpace(pass2)) throw new ArgumentException($"“{nameof(pass2)}”不能为 Null 或空白", nameof(pass2));
+            if (pass1 != pass2) throw new ArgumentException($"两次输入密码不一致", nameof(pass1));
+
+            // SSO 登录不需要知道原密码就可以修改，原则上更相信外方，同时也避免了直接第三方登录没有设置密码的尴尬
+            var ssoName = Session["Cube_Sso"] as String;
+            var requireOldPass = ssoName.IsNullOrEmpty();
+            if (requireOldPass)
+            {
+                if (String.IsNullOrWhiteSpace(oldpass)) throw new ArgumentException($"“{nameof(oldpass)}”不能为 Null 或空白", nameof(oldpass));
+                if (pass1 == oldpass) throw new ArgumentException($"修改密码不能与原密码一致", nameof(pass1));
+            }
+
+            var cur = ManageProvider.User;
+            if (cur == null) return RedirectToAction("Login");
+
+            var user = XCode.Membership.User.FindByKeyForEdit(cur.ID);
+
+            var oldpass2 = oldpass.MD5();
+            if (requireOldPass && !user.Password.EqualIgnoreCase(oldpass2)) throw new Exception("密码错误");
+
+            // 修改密码
+            user.Password = oldpass2;
+            user.Update();
+
+            return Info(user.ID);
+        }
+
+        /// <summary>用户绑定</summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public ActionResult Binds(Int32 id)
+        {
+            //if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
+
+            var user = ManageProvider.User as XCode.Membership.User;
+            if (user == null) return RedirectToAction("Login");
+
+            if (id > 0 && id != user.ID) throw new Exception("禁止查看非当前登录用户资料");
+
+            user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+            if (user == null) throw new Exception("无效用户编号！");
+
+            //user.Password = null;
+            user["Password"] = null;
+
+            // 用于显示的列
+            if (ViewBag.Fields == null) ViewBag.Fields = GetFields(true);
+            ViewBag.Factory = XCode.Membership.User.Meta.Factory;
+
+            // 第三方绑定
+            var ucs = UserConnect.FindAllByUserID(user.ID);
+            ViewBag.Binds = ucs;
+
+            return IsJsonRequest ? Json(0, "ok", user) : View(user);
+        }
+
+        /// <summary>用户绑定</summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AllowAnonymous]
+        public ActionResult Binds(User user)
         {
             var cur = ManageProvider.User;
             if (cur == null) return RedirectToAction("Login");

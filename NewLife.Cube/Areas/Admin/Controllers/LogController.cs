@@ -35,6 +35,7 @@ namespace NewLife.Cube.Admin.Controllers
             var category = p["category"];
             var action = p["action"];
             var success = p["success"]?.ToBoolean();
+            var linkid = p["linkid"].ToInt(-1);
             var userid = p["userid"].ToInt(-1);
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
@@ -65,7 +66,7 @@ namespace NewLife.Cube.Admin.Controllers
                 }
             }
 
-            return XLog.Search(category, action, success, userid, start, end, key, p);
+            return XLog.Search(category, action, linkid, success, userid, start, end, key, p);
         }
     }
 }
