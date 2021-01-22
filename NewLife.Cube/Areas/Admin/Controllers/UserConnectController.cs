@@ -34,15 +34,16 @@ namespace NewLife.Cube.Admin.Controllers
                 var df = ListFields.AddDataField("UserName");
                 df.Header = "用户";
                 df.HeaderTitle = "对应的本地用户信息";
+                df.DisplayName = "{UserName}";
                 df.Url = "User?id={UserID}";
             }
 
-            // 插入一列
-            {
-                var df = ListFields.AddDataField("用户信息", "CreateUserID");
-                df.DisplayName = "用户信息";
-                df.Url = "User?id={UserID}";
-            }
+            //// 插入一列
+            //{
+            //    var df = ListFields.AddDataField("用户信息", "CreateUserID");
+            //    df.DisplayName = "用户信息";
+            //    df.Url = "User?id={UserID}";
+            //}
         }
 
         /// <summary>菜单不可见</summary>

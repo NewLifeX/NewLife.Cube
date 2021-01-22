@@ -313,6 +313,9 @@ namespace NewLife.Web
         /// <summary>明细</summary>
         public String Detail { get; set; }
 
+        /// <summary>设备标识。</summary>
+        public String DeviceId { get; set; }
+
         /// <summary>获取用户信息</summary>
         /// <returns></returns>
         public virtual String GetUserInfo()

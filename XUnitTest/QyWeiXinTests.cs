@@ -47,7 +47,7 @@ namespace XUnitTest
 
             Assert.NotEmpty(token);
             Assert.NotEmpty(wx.AccessToken);
-            Assert.True(wx.Expired > DateTime.Now);
+            Assert.True(wx.Expire > DateTime.Now);
         }
 
         [Fact]

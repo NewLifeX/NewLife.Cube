@@ -22,13 +22,14 @@ namespace NewLife.Web.OAuth
         ///// <summary>访问令牌</summary>
         //public String AccessToken { get; set; }
 
-        /// <summary>过期时间</summary>
-        public DateTime Expired { get; set; }
+        ///// <summary>过期时间</summary>
+        //public DateTime Expire { get; set; }
 
         ///// <summary>性能跟踪</summary>
         //public ITracer Tracer { get; set; } = DefaultTracer.Instance;
 
-        private HttpClient _client;
+        //private HttpClient _client;
+        private String _uri = "https://qyapi.weixin.qq.com/";
         #endregion
 
         #region 构造
@@ -57,13 +58,14 @@ namespace NewLife.Web.OAuth
 
             //var url = $"https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={CorpId}&corpsecret={CorpSecret}";
 
-            _client = Tracer.CreateHttpClient();
-            _client.BaseAddress = new Uri("https://qyapi.weixin.qq.com");
-            var rs = await _client.GetAsync<IDictionary<String, Object>>("/cgi-bin/gettoken", new { corpid = CorpId, corpsecret = CorpSecret });
+            var client = GetClient();
+            //_client = Tracer.CreateHttpClient();
+            //_client.BaseAddress = new Uri("https://qyapi.weixin.qq.com");
+            var rs = await client.GetAsync<IDictionary<String, Object>>(_uri + "cgi-bin/gettoken", new { corpid = CorpId, corpsecret = CorpSecret });
 
             AccessToken = rs["access_token"] as String;
             var exp = rs["expires_in"].ToInt(-1);
-            if (exp > 0) Expired = DateTime.Now.AddSeconds(exp);
+            if (exp > 0) Expire = DateTime.Now.AddSeconds(exp);
 
             return AccessToken;
         }
@@ -72,7 +74,7 @@ namespace NewLife.Web.OAuth
         /// <returns></returns>
         protected async Task<String> GetAccessToken()
         {
-            if (!String.IsNullOrEmpty(AccessToken) && Expired > DateTime.Now.AddMinutes(1)) return AccessToken;
+            if (!String.IsNullOrEmpty(AccessToken) && Expire > DateTime.Now.AddMinutes(1)) return AccessToken;
 
             return await GetToken();
         }
@@ -85,7 +87,8 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var rs = await _client.InvokeAsync<DepartmentInfo[]>(HttpMethod.Get, "/cgi-bin/department/list", new { access_token = token }, null, "department");
+            var client = GetClient();
+            var rs = await client.InvokeAsync<DepartmentInfo[]>(HttpMethod.Get, _uri + "cgi-bin/department/list", new { access_token = token }, null, "department");
 
             return rs;
         }
@@ -97,7 +100,8 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var rs = await _client.InvokeAsync<UserInfo>(HttpMethod.Get, "/cgi-bin/user/get", new
+            var client = GetClient();
+            var rs = await client.InvokeAsync<UserInfo>(HttpMethod.Get, _uri + "cgi-bin/user/get", new
             {
                 userid = userId,
                 access_token = token
@@ -114,7 +118,8 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var rs = await _client.InvokeAsync<UserInfo[]>(HttpMethod.Get, "/cgi-bin/user/list", new
+            var client = GetClient();
+            var rs = await client.InvokeAsync<UserInfo[]>(HttpMethod.Get, _uri + "cgi-bin/user/list", new
             {
                 department_id = departmentId,
                 fetch_child = fetchChild ? 1 : 0,
@@ -126,11 +131,17 @@ namespace NewLife.Web.OAuth
         #endregion
 
         #region 考勤
+        /// <summary>获取考勤数据</summary>
+        /// <param name="userIds"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
         public async Task<CheckInData[]> GetCheckIn(String[] userIds, DateTime start, DateTime end)
         {
             var token = await GetAccessToken();
 
-            var rs = await _client.InvokeAsync<CheckInData[]>(HttpMethod.Post, "/cgi-bin/checkin/getcheckindata?access_token=" + token, new
+            var client = GetClient();
+            var rs = await client.InvokeAsync<CheckInData[]>(HttpMethod.Post, _uri + "cgi-bin/checkin/getcheckindata?access_token=" + token, new
             {
                 opencheckindatatype = 3,
                 starttime = start.ToInt(),
@@ -143,11 +154,19 @@ namespace NewLife.Web.OAuth
         #endregion
 
         #region 审批
+        /// <summary>获取审批数据</summary>
+        /// <param name="templateId"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="cursor"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
         public async Task<String[]> GetApprovals(String templateId, DateTime start, DateTime end, Int32 cursor = 0, Int32 size = 100)
         {
             var token = await GetAccessToken();
 
-            var rs = await _client.InvokeAsync<String[]>(HttpMethod.Post, "/cgi-bin/oa/getapprovalinfo?access_token=" + token, new
+            var client = GetClient();
+            var rs = await client.InvokeAsync<String[]>(HttpMethod.Post, _uri + "cgi-bin/oa/getapprovalinfo?access_token=" + token, new
             {
                 starttime = start.ToInt(),
                 endtime = end.ToInt(),
@@ -162,11 +181,15 @@ namespace NewLife.Web.OAuth
             return rs;
         }
 
+        /// <summary>获取审批单详情</summary>
+        /// <param name="sp_no"></param>
+        /// <returns></returns>
         public async Task<ApprovalInfo> GetApproval(String sp_no)
         {
             var token = await GetAccessToken();
 
-            var rs = await _client.InvokeAsync<ApprovalInfo>(HttpMethod.Post, "/cgi-bin/oa/getapprovaldetail?access_token=" + token, new
+            var client = GetClient();
+            var rs = await client.InvokeAsync<ApprovalInfo>(HttpMethod.Post, _uri + "cgi-bin/oa/getapprovaldetail?access_token=" + token, new
             {
                 sp_no
             }, null, "info");
@@ -181,6 +204,9 @@ namespace NewLife.Web.OAuth
         /// <returns></returns>
         public static String GetConfig(String name) => Parameter.GetOrAdd(0, "QyWeiXin", name)?.Value;
 
+        /// <summary>依据魔方字典参数的配置，创建企业微信对象</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static QyWeiXin CreateFor(String name)
         {
             return new QyWeiXin
@@ -191,11 +217,39 @@ namespace NewLife.Web.OAuth
         }
         #endregion
 
+        #region 用户信息增强
+        /// <summary>企业内部应用获取用户信息</summary>
+        /// <returns></returns>
+        public override String GetUserInfo()
+        {
+            var html = base.GetUserInfo();
+
+            // 获取用户详情
+            if (!UserName.IsNullOrEmpty())
+            {
+                var user = Task.Run(() => GetUser(UserName)).Result;
+                if (user != null)
+                {
+                    NickName = user.Name;
+                    Mobile = user.Mobile;
+                    Mail = user.Mail;
+                    Avatar = user.Avatar;
+                    Detail = user.Alias;
+                }
+            }
+
+            return html;
+        }
+
         /// <summary>从响应数据中获取信息</summary>
         /// <param name="dic"></param>
         protected override void OnGetInfo(IDictionary<String, String> dic)
         {
             base.OnGetInfo(dic);
+
+            if (dic.TryGetValue("UserId", out var str)) UserName = str.Trim();
+            if (dic.TryGetValue("DeviceId", out str)) DeviceId = str.Trim();
         }
+        #endregion
     }
 }
