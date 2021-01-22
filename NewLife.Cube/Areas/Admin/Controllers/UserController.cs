@@ -269,7 +269,8 @@ namespace NewLife.Cube.Admin.Controllers
             if (ViewBag.Fields == null) ViewBag.Fields = GetFields(true);
             ViewBag.Factory = XCode.Membership.User.Meta.Factory;
 
-            return IsJsonRequest ? Json(0, "ok", user) : View(user);
+            // 必须指定视图名，因为其它action会调用
+            return View("Info", user);
         }
 
         /// <summary>更新用户资料</summary>
@@ -319,21 +320,20 @@ namespace NewLife.Cube.Admin.Controllers
         [AllowAnonymous]
         public ActionResult ChangePassword(ChangePasswordModel model)
         {
-            var oldpass = model.OldPassword;
-            var pass1 = model.NewPassword;
-            var pass2 = model.NewPassword2;
+            if (model.NewPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"新密码不能为 Null 或空白", nameof(model.NewPassword));
+            if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"确认密码不能为 Null 或空白", nameof(model.NewPassword2));
+            if (model.NewPassword != model.NewPassword2) throw new ArgumentException($"两次输入密码不一致", nameof(model.NewPassword));
 
-            if (String.IsNullOrWhiteSpace(pass1)) throw new ArgumentException($"“{nameof(pass1)}”不能为 Null 或空白", nameof(pass1));
-            if (String.IsNullOrWhiteSpace(pass2)) throw new ArgumentException($"“{nameof(pass2)}”不能为 Null 或空白", nameof(pass2));
-            if (pass1 != pass2) throw new ArgumentException($"两次输入密码不一致", nameof(pass1));
+            var set = Setting.Current;
+            if (model.NewPassword.Length < set.MinPasswordLength) throw new ArgumentException($"最短密码要求{set.MinPasswordLength}位", nameof(model.NewPassword));
 
             // SSO 登录不需要知道原密码就可以修改，原则上更相信外方，同时也避免了直接第三方登录没有设置密码的尴尬
             var ssoName = Session["Cube_Sso"] as String;
             var requireOldPass = ssoName.IsNullOrEmpty();
             if (requireOldPass)
             {
-                if (String.IsNullOrWhiteSpace(oldpass)) throw new ArgumentException($"“{nameof(oldpass)}”不能为 Null 或空白", nameof(oldpass));
-                if (pass1 == oldpass) throw new ArgumentException($"修改密码不能与原密码一致", nameof(pass1));
+                if (model.OldPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"原密码不能为 Null 或空白", nameof(model.OldPassword));
+                if (model.NewPassword == model.OldPassword) throw new ArgumentException($"修改密码不能与原密码一致", nameof(model.NewPassword));
             }
 
             var cur = ManageProvider.User;
@@ -341,14 +341,16 @@ namespace NewLife.Cube.Admin.Controllers
 
             var user = XCode.Membership.User.FindByKeyForEdit(cur.ID);
 
-            var oldpass2 = oldpass.MD5();
+            var oldpass2 = model.OldPassword.MD5();
             if (requireOldPass && !user.Password.EqualIgnoreCase(oldpass2)) throw new Exception("密码错误");
 
             // 修改密码
-            user.Password = oldpass2;
+            user.Password = model.NewPassword.MD5();
             user.Update();
 
-            return Info(user.ID);
+            ViewBag.StatusMessage = "修改成功！";
+
+            return ChangePassword();
         }
 
         /// <summary>用户绑定</summary>
@@ -396,6 +398,8 @@ namespace NewLife.Cube.Admin.Controllers
                 if (String.IsNullOrEmpty(password)) throw new ArgumentNullException("password", "密码不能为空！");
                 if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
                 if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
+
+                if (password.Length < set.MinPasswordLength) throw new ArgumentException($"最短密码要求{set.MinPasswordLength}位", nameof(password));
 
                 // 去重判断
                 var user = XCode.Membership.User.FindByName(username);

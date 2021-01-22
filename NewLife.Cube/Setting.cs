@@ -70,6 +70,11 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public Boolean AutoRegister { get; set; } = true;
 
+        /// <summary>密码强度。最小密码长度，默认6</summary>
+        [Description("密码强度。最小密码长度，默认6")]
+        [Category("用户登录")]
+        public Int32 MinPasswordLength { get; set; } = 6;
+
         /// <summary>强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
         [Description("强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
         [Category("用户登录")]
