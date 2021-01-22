@@ -58,8 +58,8 @@ namespace NewLife.Cube
             // 添加Session会话支持
             services.AddSession();
 
-            // 注册魔方默认UI
-            services.AddCubeDefaultUI();
+            //// 注册魔方默认UI
+            //services.AddCubeDefaultUI();
 
             // 配置跨域处理，允许所有来源
             // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
