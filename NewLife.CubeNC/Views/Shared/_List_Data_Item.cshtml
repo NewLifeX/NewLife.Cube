@@ -141,10 +141,13 @@ else
                 {
                     if (map.Provider != null)
                     {
-                        var dic = new RouteValueDictionary();
+                        var name = map.Provider.EntityType.Name;
                         var key = map.Provider.Key;
-                        if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
-                        <td class="text-center">@Html.ActionLink(value + "", "Index", map.Provider.EntityType.Name, dic, null)</td>
+                        val = entity[item.OriField.Name];
+                        @*var dic = new RouteValueDictionary();
+                            if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
+                            <td class="text-center">@Html.ActionLink(value + "", "Index", map.Provider.EntityType.Name, dic, null)</td>*@
+                        <td class="text-center"><a href="@name?@key=@val">@value</a></td>
                     }
                     else
                     {
