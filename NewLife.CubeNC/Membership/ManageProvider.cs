@@ -319,7 +319,7 @@ namespace NewLife.Cube
                 var token = jwt.Encode(null);
                 var option = new CookieOptions
                 {
-                    SameSite = SameSiteMode.Unspecified,
+                    SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Unspecified,
                     Secure = true
                 };
                 if (expire.TotalSeconds > 0) option.Expires = DateTimeOffset.Now.Add(expire);

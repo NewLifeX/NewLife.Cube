@@ -92,30 +92,25 @@ Write(Html.ActionLink("用户链接", "Index", "UserConnect", null, new { @class
             
             #line default
             #line hidden
-WriteLiteral("\r\n");
+WriteLiteral("\r\n    ");
 
-WriteLiteral("    ");
-
-            
-            #line 11 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
-//Write(Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class = "btn btn-success btn-sm" }));
-
-            
-            #line default
-            #line hidden
 WriteLiteral("\r\n    <label");
 
 WriteLiteral(" for=\"roleId\"");
 
 WriteLiteral(" class=\"control-label\"");
 
-WriteLiteral(">角色：</label>\r\n");
+WriteLiteral(">角色：</label>\r\n    ");
+
+WriteLiteral("\r\n    ");
+
+WriteLiteral("\r\n");
 
 WriteLiteral("    ");
 
             
-            #line 13 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
-Write(Html.ForDropDownList("roleId", Role.FindAllWithCache(), page["roleId"], "全部", true));
+            #line 15 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
+Write(Html.ForListBox("roleIds", Role.FindAllWithCache(), page["roleIds"]));
 
             
             #line default
@@ -123,7 +118,7 @@ Write(Html.ForDropDownList("roleId", Role.FindAllWithCache(), page["roleId"], "�
 WriteLiteral("\r\n</div>\r\n");
 
             
-            #line 15 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
+            #line 17 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
 Write(Html.Partial("_Enable"));
 
             
@@ -132,12 +127,14 @@ Write(Html.Partial("_Enable"));
 WriteLiteral("\r\n");
 
             
-            #line 16 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
+            #line 18 "..\..\Areas\Admin\Views\User\_List_Search.cshtml"
 Write(Html.Partial("_SelectDepartment", "departmentId"));
 
             
             #line default
             #line hidden
+WriteLiteral("\r\n");
+
 WriteLiteral("\r\n");
 
         }

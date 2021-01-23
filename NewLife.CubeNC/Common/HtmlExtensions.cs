@@ -433,28 +433,17 @@ namespace NewLife.Cube
             return hmstr;
         }
 
-        /// <summary>枚举多选，支持默认全选或不选。需要部分选中可使用ForListBox</summary>
+        /// <summary>枚举多选</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="Html"></param>
         /// <param name="name"></param>
-        /// <param name="selectAll">是否全部选中。默认false</param>
-        /// <param name="autoPostback">自动回发</param>
+        /// <param name="selectedValues">已选择项</param>
         /// <returns></returns>
-        public static IHtmlContent ForEnum<T>(this IHtmlHelper Html, String name, Boolean selectAll = false, Boolean autoPostback = false)
+        public static IHtmlContent ForEnum<T>(this IHtmlHelper Html, String name, String selectedValues)
         {
             var dic = EnumHelper.GetDescriptions(typeof(T));
 
-            IEnumerable values = null;
-            var vs = WebHelper2.Params[name].SplitAsInt();
-            if (vs != null && vs.Length > 0)
-                values = vs;
-            else if (selectAll)
-            {
-                var arr = Enum.GetValues(typeof(T)) as T[];
-                values = arr.Cast<Int32>().ToArray();
-            }
-
-            return Html.ForListBox(name, dic, values, autoPostback);
+            return Html.ForListBox(name, dic, selectedValues);
         }
 
         /// <summary>文件上传</summary>
@@ -537,14 +526,13 @@ namespace NewLife.Cube
             return Html.DropDownList(name, data, optionLabel, atts);
         }
 
-        /// <summary>字典的下拉列表</summary>
+        /// <summary>字典的下拉列表。多选</summary>
         /// <param name="Html"></param>
         /// <param name="name"></param>
         /// <param name="dic"></param>
-        /// <param name="selectedValues"></param>
-        /// <param name="autoPostback">自动回发</param>
+        /// <param name="selectedValues">已选择项</param>
         /// <returns></returns>
-        public static IHtmlContent ForListBox(this IHtmlHelper Html, String name, IDictionary dic, IEnumerable selectedValues, Boolean autoPostback = false)
+        public static IHtmlContent ForListBox(this IHtmlHelper Html, String name, IDictionary dic, String selectedValues)
         {
             var atts = new RouteValueDictionary();
             if (Setting.Current.BootstrapSelect)
@@ -553,34 +541,26 @@ namespace NewLife.Cube
                 atts.Add("class", "form-control");
 
             atts.Add("multiple", "");
-            // 处理自动回发
-            if (autoPostback) atts.Add("onchange", "$(':submit').click();");
 
-            return Html.ListBox(name, new MultiSelectList(dic, "Key", "Value", selectedValues), atts);
+            return Html.ListBox(name, new MultiSelectList(dic, "Key", "Value", selectedValues?.Split(",")), atts);
         }
 
-        /// <summary>实体列表的下拉列表。多选，自动匹配当前模型的选中项，支持数组类型或字符串类型（自动分割）的选中项</summary>
+        /// <summary>实体列表的下拉列表。多选</summary>
         /// <param name="Html"></param>
         /// <param name="name"></param>
         /// <param name="list"></param>
-        /// <param name="autoPostback">自动回发</param>
+        /// <param name="selectedValues">已选择项</param>
         /// <returns></returns>
-        public static IHtmlContent ForListBox(this IHtmlHelper Html, String name, IList<IEntity> list, Boolean autoPostback = false)
+        public static IHtmlContent ForListBox<TEntity>(this IHtmlHelper Html, String name, IList<TEntity> list, String selectedValues) where TEntity : IEntity
         {
-            var vs = Html.ViewData.Model is IEntity entity ? entity[name] : WebHelper2.Params[name];
-            // 如果是字符串，分割为整型数组，全局约定逗号分割
-            if (vs is String) vs = (vs as String).SplitAsInt();
-
             var atts = new RouteValueDictionary();
             if (Setting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
                 atts.Add("class", "form-control");
             atts.Add("multiple", "");
-            // 处理自动回发
-            if (autoPostback) atts.Add("onchange", "$(':submit').click();");
 
-            return Html.ListBox(name, new MultiSelectList(list.ToDictionary(), "Key", "Value", vs as IEnumerable), atts);
+            return Html.ListBox(name, new MultiSelectList(list.ToDictionary(), "Key", "Value", selectedValues?.Split(",")), atts);
         }
         #endregion
 

@@ -6,7 +6,7 @@
     var id = (Object)Model + "";
     var page = ViewBag.Page as Pager;
 
-    if (id.IsNullOrEmpty()) { id = "departmentId"; }
+    if (id.IsNullOrEmpty()) { id = "departmentIds"; }
     var departmentId = page[id];
     var showValue = Department.FindByID(departmentId.ToInt()) + "";
 

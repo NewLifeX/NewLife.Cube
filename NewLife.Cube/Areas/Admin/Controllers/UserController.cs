@@ -22,6 +22,7 @@ using NewLife.Cube.Extensions;
 using System.Web.Mvc;
 using System.Web.Security;
 #endif
+using static XCode.Membership.User;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -63,24 +64,28 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             var roleId = p["roleId"].ToInt(-1);
-            var departmentIds = p["departmentId"]?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var roleIds = p["roleIds"]?.Split(",");
+            var departmentId = p["departmentId"].ToInt(-1);
+            var departmentIds = p["departmentIds"]?.Split(",");
             var enable = p["enable"]?.ToBoolean();
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
+            var key = p["q"];
 
             //p.RetrieveState = true;
-            var departmentId = -1;
-            if (departmentIds == null || (departmentIds.Length == 1 && !string.IsNullOrEmpty(departmentIds[0])))
-            {
-                return XCode.Membership.User.Search(roleId, departmentId, enable, start, end, p["q"], p);
-            }
-            else
-            {
-                throw new NotImplementedException($"未实现多部门查询的方法，当前选择的部门列表:{string.Join(",", departmentIds)}");
-            }
 
-            //return User.Search(p["Q"], p["RoleID"].ToInt(-1), enable, start, end, p);
+            //return XCode.Membership.User.Search(roleId, departmentId, enable, start, end, key, p);
 
+            var exp = new WhereExpression();
+            if (roleId >= 0) exp &= _.RoleID == roleId | _.RoleIds.Contains("," + roleId + ",");
+            if (roleIds != null && roleIds.Length > 0) exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
+            if (departmentId >= 0) exp &= _.DepartmentID == departmentId;
+            if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
+            if (enable != null) exp &= _.Enable == enable.Value;
+            exp &= _.LastLogin.Between(start, end);
+            if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
+
+            return XCode.Membership.User.FindAll(exp, p);
         }
 
         /// <summary>表单页视图。</summary>
