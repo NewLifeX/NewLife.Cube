@@ -10,7 +10,6 @@
     var fields = ViewBag.Fields as FieldCollection;
     var dataField = fields.GetField(item.Name);
     var dataSource = dataField?.DataSourceCallback;
-    var page = ViewBag.Page as Pager;
 
     var err = 0;
     if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
@@ -40,7 +39,7 @@
 <div class="input-group col-xs-@(total - label) col-sm-@input">
     @if (dataSource != null)
     {
-        @Html.ForListBox(item.Name, dataSource(item.Name), page[item.Name])
+        @Html.ForListBox(item.Name, dataSource(item.Name), entity[item.Name] as String)
     }
     else
     {

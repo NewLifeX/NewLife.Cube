@@ -41,7 +41,6 @@ namespace NewLife.Cube
                     {
                         // 查询实体对象用于编辑
                         var id = rvs[uk.Name];
-                        //if (id != null) entity = GetEntity(fact.EntityType, id) ?? fact.FindByKeyForEdit(id);
                         if (id != null) entity = fact.FindByKeyForEdit(id);
                         if (entity == null) entity = fact.Create(true);
                     }
@@ -61,47 +60,71 @@ namespace NewLife.Cube
                         if (entity == null) entity = fact.Create(true);
                     }
 
-                    if (entity != null)
-                    {
-                        var fs = bindingContext.HttpContext.Request.Form;
-                        foreach (var item in fact.Fields)
-                        {
-                            // 提前填充动态字段的扩展属性
-                            if (item.IsDynamic && fs.ContainsKey(item.Name))
-                                entity.SetItem(item.Name, fs[item.Name]);
-                            else if (fs.ContainsKey(item.Name))
-                            {
-                                var vs = fs[item.Name];
-                                if (vs.Count > 1) entity.SetItem(item.Name, vs.Join(","));
-                            }
-                        }
+                    //if (entity != null)
+                    //{
+                    //    var fs = bindingContext.HttpContext.Request.Form;
+                    //    foreach (var item in fact.Fields)
+                    //    {
+                    //        if (fs.TryGetValue(item.Name, out var vs) && vs.Count > 1)
+                    //            entity.SetItem(item.Name, vs.ToString());
+                    //    }
 
-                        return entity;
-                    }
+                    //    return entity;
+                    //}
 
-                    return fact.Create(true);
+                    return entity ?? fact.Create(true);
                 }
             }
 
             return base.CreateModel(bindingContext);
         }
 
+        protected override Boolean CanBindProperty(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
+        {
+            // 不要绑定复杂类型，那是扩展属性
+            if (propertyMetadata.ModelType.GetTypeCode() == TypeCode.Object) return false;
+
+            return base.CanBindProperty(bindingContext, propertyMetadata);
+        }
+
+        protected override Task BindProperty(ModelBindingContext bindingContext)
+        {
+            var metadata = bindingContext.ModelMetadata;
+            var result = bindingContext.Result;
+            switch (metadata.ModelType.GetTypeCode())
+            {
+                case TypeCode.DateTime:
+                    // 客户端可能提交空时间，不要绑定属性，以免出现空时间验证失败
+                    if (result.Model is not DateTime) return Task.CompletedTask;
+                    break;
+            }
+
+            return base.BindProperty(bindingContext);
+        }
+
         protected override void SetProperty(ModelBindingContext bindingContext, String modelName, ModelMetadata propertyMetadata, ModelBindingResult result)
         {
-            var fs = bindingContext.HttpContext.Request.Form;
-            var vs = fs[modelName];
-            if (vs.Count > 1)
+            switch (propertyMetadata.ModelType.GetTypeCode())
             {
-                var fact = EntityFactory.CreateOperate(bindingContext.ModelType);
-                foreach (var item in fact.Fields)
-                {
-                    if (fs.ContainsKey(item.Name))
+                case TypeCode.String:
+                    // 如果有多个值，则修改结果，避免 3,2,5 变成只有3
+                    var vs = bindingContext.ValueProvider.GetValue(modelName).Values;
+                    if (vs.Count > 1)
                     {
-                        vs = fs[item.Name];
-                        if (vs.Count > 1) return;
+                        result = ModelBindingResult.Success(vs.ToString());
                     }
-                }
+                    break;
             }
+
+            //var fs = bindingContext.HttpContext.Request.Form;
+            //if (fs.TryGetValue(modelName, out var vs) && vs.Count > 1)
+            //{
+            //    var fact = EntityFactory.CreateOperate(bindingContext.ModelType);
+            //    foreach (var item in fact.Fields)
+            //    {
+            //        if (fs.TryGetValue(item.Name, out var vs2) && vs2.Count > 1) return;
+            //    }
+            //}
 
             base.SetProperty(bindingContext, modelName, propertyMetadata, result);
         }
@@ -119,21 +142,17 @@ namespace NewLife.Cube
 
             if (!context.Metadata.ModelType.As<IEntity>()) return null;
 
+            var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
             var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
             foreach (var property in context.Metadata.Properties)
             {
                 propertyBinders.Add(property, context.CreateBinder(property));
             }
 
-            var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
             return new EntityModelBinder(propertyBinders, loggerFactory);
         }
 
         /// <summary>实例化</summary>
-        public EntityModelBinderProvider()
-        {
-            XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);
-            //ModelBinderProviders.BinderProviders.Add(new EntityModelBinderProvider());
-        }
+        public EntityModelBinderProvider() => XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);//ModelBinderProviders.BinderProviders.Add(new EntityModelBinderProvider());
     }
 }

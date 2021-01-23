@@ -75,7 +75,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             {
                 var df = FormFields.AddDataField("RoleIds");
-                df.DataSourceCallback = e => Role.FindAllWithCache().Cast<IEntity>().ToList();
+                df.DataSourceCallback = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }
         }
 

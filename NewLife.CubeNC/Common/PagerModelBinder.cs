@@ -47,12 +47,9 @@ namespace NewLife.Cube
                 if (!pager.Params.ContainsKey("id") && routes.TryGetValue("id", out var id)) pager.Params["id"] = id + "";
 
                 var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
-
                 bindingContext.Model = pager;
-
                 await complexTypeModelBinder.BindModelAsync(bindingContext);
-
-                bindingContext.Result = ModelBindingResult.Success(pager);
+                //bindingContext.Result = ModelBindingResult.Success(pager);
             }
 
             //return Task.CompletedTask;
