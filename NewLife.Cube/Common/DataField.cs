@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NewLife.Data;
+using XCode;
 
 namespace NewLife.Cube
 {
@@ -34,6 +36,9 @@ namespace NewLife.Cube
 
         /// <summary>数据动作</summary>
         public String DataAction { get; set; }
+
+        /// <summary>多选数据源</summary>
+        public Func<String, IList<IEntity>> DataSourceCallback { get; set; }
 
         ///// <summary>最小宽度。单位px</summary>ed
         //public Int32 MinWidth { get; set; }

@@ -72,6 +72,11 @@ namespace NewLife.Cube.Admin.Controllers
                 df.DisplayName = "日志";
                 df.Url = "Log?userId={ID}";
             }
+
+            {
+                var df = FormFields.AddDataField("RoleIds");
+                df.DataSourceCallback = e => Role.FindAllWithCache().Cast<IEntity>().ToList();
+            }
         }
 
         /// <summary>搜索数据集</summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,10 +64,16 @@ namespace NewLife.Cube
                     if (entity != null)
                     {
                         var fs = bindingContext.HttpContext.Request.Form;
-                        // 提前填充动态字段的扩展属性
                         foreach (var item in fact.Fields)
                         {
-                            if (item.IsDynamic && fs.ContainsKey(item.Name)) entity.SetItem(item.Name, fs[item.Name]);
+                            // 提前填充动态字段的扩展属性
+                            if (item.IsDynamic && fs.ContainsKey(item.Name))
+                                entity.SetItem(item.Name, fs[item.Name]);
+                            else if (fs.ContainsKey(item.Name))
+                            {
+                                var vs = fs[item.Name];
+                                if (vs.Count > 1) entity.SetItem(item.Name, vs.Join(","));
+                            }
                         }
 
                         return entity;
@@ -77,6 +84,26 @@ namespace NewLife.Cube
             }
 
             return base.CreateModel(bindingContext);
+        }
+
+        protected override void SetProperty(ModelBindingContext bindingContext, String modelName, ModelMetadata propertyMetadata, ModelBindingResult result)
+        {
+            var fs = bindingContext.HttpContext.Request.Form;
+            var vs = fs[modelName];
+            if (vs.Count > 1)
+            {
+                var fact = EntityFactory.CreateOperate(bindingContext.ModelType);
+                foreach (var item in fact.Fields)
+                {
+                    if (fs.ContainsKey(item.Name))
+                    {
+                        vs = fs[item.Name];
+                        if (vs.Count > 1) return;
+                    }
+                }
+            }
+
+            base.SetProperty(bindingContext, modelName, propertyMetadata, result);
         }
     }
 

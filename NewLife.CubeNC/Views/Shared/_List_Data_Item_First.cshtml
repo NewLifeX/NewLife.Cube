@@ -79,10 +79,10 @@ else
                 var map = item.Map;
                 if (map != null && map.Provider != null && value + "" != "")
                 {
-                    var dic = new RouteValueDictionary();
+                    var name = map.Provider.EntityType.Name;
                     var key = map.Provider.Key;
-                    if (!key.IsNullOrEmpty() && item.OriField != null) { dic[key] = entity[item.OriField.Name]; }
-                    <td class="text-center">@Html.ActionLink(value + "", "Edit", map.Provider.EntityType.Name, dic, null)</td>
+                    var val = entity[item.OriField.Name];
+                    <td class="text-center"><a href="@name?@key=@val">@value</a></td>
                 }
                 else
                 {

@@ -46,8 +46,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.10.7690.14809, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.10.2021.120-beta2\lib\net45\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.10.7693.26627, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.10.2021.123-beta3\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -84,8 +84,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=10.0.7690.14814, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.10.0.2021.120-beta2\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=10.0.7693.26629, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.10.0.2021.123-beta3\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -722,10 +722,29 @@
     <None Include="Content\images\logo\Taobao.png" />
     <None Include="Content\images\logo\Weibo.png" />
     <None Include="Content\images\logo\Weixin.png" />
+    <Content Include="Entity\Build.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Build.log</LastGenOutput>
+    </Content>
+    <Content Include="Entity\Build_netcore.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Build_netcore.log</LastGenOutput>
+    </Content>
+    <Content Include="Entity\Model.xml" />
     <Content Include="Entity\XCoder.log">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>XCoder.tt</DependentUpon>
+    </Content>
+    <Content Include="Entity\Build_netcore.log">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build_netcore.tt</DependentUpon>
+    </Content>
+    <Content Include="Entity\Build.log">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build.tt</DependentUpon>
     </Content>
     <None Include="index.html" />
     <None Include="Entity\Cube.xml">
