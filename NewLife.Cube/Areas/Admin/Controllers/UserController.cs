@@ -40,6 +40,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             MenuOrder = 100;
 
+            ListFields.RemoveField("Avatar", "RoldIds", "Online", "RegisterIP");
             ListFields.RemoveField("Phone");
             ListFields.RemoveField("Code");
             ListFields.RemoveField("StartTime");
@@ -47,6 +48,30 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.RemoveField("RegisterTime");
             ListFields.RemoveField("Question");
             ListFields.RemoveField("Answer");
+            ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
+            ListFields.RemoveUpdateField();
+            ListFields.RemoveField("Remark");
+
+            {
+                var df = ListFields.AddDataField("Link", "Logins");
+                df.Header = "链接";
+                df.DisplayName = "链接";
+                df.Url = "UserConnect?id={ID}";
+            }
+
+            {
+                var df = ListFields.AddDataField("Token", "Logins");
+                df.Header = "令牌";
+                df.DisplayName = "令牌";
+                df.Url = "UserToken?id={ID}";
+            }
+
+            {
+                var df = ListFields.AddDataField("Log", "Logins");
+                df.Header = "日志";
+                df.DisplayName = "日志";
+                df.Url = "Log?userId={ID}";
+            }
         }
 
         /// <summary>搜索数据集</summary>

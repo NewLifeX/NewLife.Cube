@@ -17,8 +17,8 @@
     @foreach (var item in fields)
     {
         // 在该字段之前插入的字段
-        var df = fields.GetBeforeField(item.Name);
-        if (df != null)
+        var dfs = fields.GetBeforeFields(item.Name);
+        foreach (var elm in dfs)
         {
             <td></td>
         }

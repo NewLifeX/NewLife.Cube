@@ -205,7 +205,7 @@ namespace NewLife.Cube
                 Name = name,
                 BeforeName = beforeName,
             };
-            
+
             var fi = Find(e => e.Name == name);
             if (fi != null) df.DisplayName = fi.DisplayName;
 
@@ -222,7 +222,13 @@ namespace NewLife.Cube
         /// <summary>获取指定列名之前的定制字段</summary>
         /// <param name="name"></param>
         /// <returns></returns>
+        [Obsolete]
         public DataField GetBeforeField(String name) => Fields.FirstOrDefault(e => e.BeforeName == name);
+
+        /// <summary>获取指定列名之前的定制字段</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IList<DataField> GetBeforeFields(String name) => Fields.Where(e => e.BeforeName == name).ToList();
         #endregion
     }
 }

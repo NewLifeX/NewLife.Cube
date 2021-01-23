@@ -31,9 +31,10 @@
                 else
                 {
                     // 在该字段之前插入的字段
-                    df = fields.GetBeforeField(item.Name);
-                    if (df != null)
+                    var dfs = fields.GetBeforeFields(item.Name);
+                    foreach (var elm in dfs)
                     {
+                        df = elm;
                         var header = df.Header ?? df.DisplayName ?? df.Name;
                         if (df.HeaderUrl.IsNullOrEmpty())
                         {
@@ -97,9 +98,10 @@
                     else
                     {
                         // 在该字段之前插入的字段
-                        df = fields.GetBeforeField(item.Name);
-                        if (df != null)
+                        var dfs = fields.GetBeforeFields(item.Name);
+                        foreach (var elm in dfs)
                         {
+                            df = elm;
                             var name = df.GetDisplayName(entity) ?? df.Header;
                             if (df.Url.IsNullOrEmpty())
                             {
