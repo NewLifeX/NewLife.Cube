@@ -1,0 +1,37 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using System.Linq;
+@{
+    var id = (Object)Model + "";
+    var page = ViewBag.Page as Pager;
+
+    if (id.IsNullOrEmpty()) { id = "departmentId"; }
+    var departmentId = page[id];
+    var showValue = Department.FindByID(departmentId.ToInt()) + "";
+
+    //获取部门列表
+    var list = Department.FindAll(Department._.Enable == true & Department._.Visible == true);
+}
+
+<div class="form-group" style="position:relative">
+    <div class="col-lg-12">
+        <div class="input-group">
+            <select data-placeholder="所有部门" name="@id" id="@id" multiple>
+                @{
+                    foreach (var dept in list)
+                    {
+                        <option value="@dept.ID" @(dept.ID.ToString() == departmentId ? "selected" : "")>@dept.Name</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="~/Content/chosen/chosen.css">
+<script src="~/Content/chosen/chosen.jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#@id").chosen({ width: "150px", no_results_text: "未找到匹配项。"});
+    });
+</script>
