@@ -174,7 +174,8 @@ namespace NewLife.Cube.Admin.Controllers
                 {
                     if (IsJsonRequest)
                     {
-                        return Json(0, "ok", new { provider.Current.ID });
+                        var token = HttpContext.Items["jwtToken"];
+                        return Json(0, "ok", new { /*provider.Current.ID,*/ Token = token });
                     }
 
                     //FormsAuthentication.SetAuthCookie(username, remember ?? false);
