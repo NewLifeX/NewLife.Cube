@@ -752,7 +752,9 @@ namespace NewLife.Cube
     <label for=""RoleID"" class=""control-label"">角色：</label>
     @Html.ForDropDownList(""RoleID"", Role.FindAllWithCache().Cast<IEntity>().ToList(), page[""roldId""], ""全部"", true)
     @Html.ForDropDownList(""p"", VisitStat.FindAllPageName(), page[""p""], ""全部页面"", true)
-</div>*@
+    @Html.ForListBox(""roleIds"", Role.FindAllWithCache(), page[""roleIds""])
+</ div>*@
+@*@await Html.PartialAsync(""_SelectDepartment"", ""departmentId"")*@
 @*@await Html.PartialAsync(""_DateRange"")*@";
 #else
             var tmp = @"@using {Namespace}
@@ -769,7 +771,9 @@ namespace NewLife.Cube
     <label for=""RoleID"" class=""control-label"">角色：</label>
     @Html.ForDropDownList(""RoleID"", Role.FindAllWithCache().Cast<IEntity>().ToList(), page[""roldId""], ""全部"", true)
     @Html.ForDropDownList(""p"", VisitStat.FindAllPageName(), page[""p""], ""全部页面"", true)
+    @Html.ForListBox(""roleIds"", Role.FindAllWithCache(), page[""roleIds""])
 </div>*@
+@*@await Html.PartialAsync(""_SelectDepartment"", ""departmentId"")*@
 @*@Html.Partial(""_DateRange"")*@";
 #endif
 
