@@ -56,14 +56,14 @@ namespace NewLife.Cube.Admin.Controllers
                 var df = ListFields.AddDataField("Link", "Logins");
                 df.Header = "链接";
                 df.DisplayName = "链接";
-                df.Url = "UserConnect?id={ID}";
+                df.Url = "UserConnect?userId={ID}";
             }
 
             {
                 var df = ListFields.AddDataField("Token", "Logins");
                 df.Header = "令牌";
                 df.DisplayName = "令牌";
-                df.Url = "UserToken?id={ID}";
+                df.Url = "UserToken?userId={ID}";
             }
 
             {
@@ -118,16 +118,16 @@ namespace NewLife.Cube.Admin.Controllers
             return XCode.Membership.User.FindAll(exp, p);
         }
 
-        /// <summary>表单页视图。</summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        protected override ActionResult FormView(User entity)
+        protected override Boolean Valid(User entity, DataObjectMethodType type, Boolean post)
         {
-            // 清空密码，不向浏览器输出
-            //entity.Password = null;
-            entity["Password"] = null;
+            if (!post && type == DataObjectMethodType.Update)
+            {
+                // 清空密码，不向浏览器输出
+                //entity.Password = null;
+                entity["Password"] = null;
+            }
 
-            return base.FormView(entity);
+            return base.Valid(entity, type, post);
         }
 
         #region 登录注销

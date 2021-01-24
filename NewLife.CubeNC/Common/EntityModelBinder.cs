@@ -14,7 +14,7 @@ using XCode;
 namespace NewLife.Cube
 {
     /// <summary>实体模型绑定器</summary>
-    public class EntityModelBinder : ComplexTypeModelBinder
+    class EntityModelBinder : ComplexTypeModelBinder
     {
         /// <summary>实例化实体模型绑定器</summary>
         /// <param name="propertyBinders"></param>
@@ -122,10 +122,7 @@ namespace NewLife.Cube
                 case TypeCode.String:
                     // 如果有多个值，则修改结果，避免 3,2,5 变成只有3
                     var vs = bindingContext.ValueProvider.GetValue(modelName).Values;
-                    if (vs.Count > 1)
-                    {
-                        result = ModelBindingResult.Success(vs.ToString());
-                    }
+                    if (vs.Count > 1) result = ModelBindingResult.Success(vs.ToString());
                     break;
             }
 
@@ -173,6 +170,6 @@ namespace NewLife.Cube
         }
 
         /// <summary>实例化</summary>
-        public EntityModelBinderProvider() => XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);//ModelBinderProviders.BinderProviders.Add(new EntityModelBinderProvider());
+        public EntityModelBinderProvider() => XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);
     }
 }
