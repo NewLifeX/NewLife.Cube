@@ -13,7 +13,7 @@ using XCode;
 namespace NewLife.Cube
 {
     /// <summary>实体模型绑定器</summary>
-    public class EntityModelBinder : ComplexTypeModelBinder
+    class EntityModelBinder : ComplexTypeModelBinder
     {
         /// <summary>实例化实体模型绑定器</summary>
         /// <param name="propertyBinders"></param>
@@ -60,18 +60,6 @@ namespace NewLife.Cube
                         if (entity == null) entity = fact.Create(true);
                     }
 
-                    //if (entity != null)
-                    //{
-                    //    var fs = bindingContext.HttpContext.Request.Form;
-                    //    foreach (var item in fact.Fields)
-                    //    {
-                    //        if (fs.TryGetValue(item.Name, out var vs) && vs.Count > 1)
-                    //            entity.SetItem(item.Name, vs.ToString());
-                    //    }
-
-                    //    return entity;
-                    //}
-
                     return entity ?? fact.Create(true);
                 }
             }
@@ -109,22 +97,9 @@ namespace NewLife.Cube
                 case TypeCode.String:
                     // 如果有多个值，则修改结果，避免 3,2,5 变成只有3
                     var vs = bindingContext.ValueProvider.GetValue(modelName).Values;
-                    if (vs.Count > 1)
-                    {
-                        result = ModelBindingResult.Success(vs.ToString());
-                    }
+                    if (vs.Count > 1) result = ModelBindingResult.Success(vs.ToString());
                     break;
             }
-
-            //var fs = bindingContext.HttpContext.Request.Form;
-            //if (fs.TryGetValue(modelName, out var vs) && vs.Count > 1)
-            //{
-            //    var fact = EntityFactory.CreateOperate(bindingContext.ModelType);
-            //    foreach (var item in fact.Fields)
-            //    {
-            //        if (fs.TryGetValue(item.Name, out var vs2) && vs2.Count > 1) return;
-            //    }
-            //}
 
             base.SetProperty(bindingContext, modelName, propertyMetadata, result);
         }
@@ -153,6 +128,6 @@ namespace NewLife.Cube
         }
 
         /// <summary>实例化</summary>
-        public EntityModelBinderProvider() => XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);//ModelBinderProviders.BinderProviders.Add(new EntityModelBinderProvider());
+        public EntityModelBinderProvider() => XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);
     }
 }

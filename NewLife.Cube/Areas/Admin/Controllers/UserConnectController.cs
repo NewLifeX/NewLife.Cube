@@ -46,6 +46,9 @@ namespace NewLife.Cube.Admin.Controllers
             //}
         }
 
+        /// <summary>构造</summary>
+        public UserConnectController() => PageSetting.EnableAdd = false;
+
         /// <summary>菜单不可见</summary>
         /// <param name="menu"></param>
         /// <returns></returns>

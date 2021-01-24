@@ -56,14 +56,14 @@ namespace NewLife.Cube.Admin.Controllers
                 var df = ListFields.AddDataField("Link", "Logins");
                 df.Header = "链接";
                 df.DisplayName = "链接";
-                df.Url = "UserConnect?id={ID}";
+                df.Url = "UserConnect?userId={ID}";
             }
 
             {
                 var df = ListFields.AddDataField("Token", "Logins");
                 df.Header = "令牌";
                 df.DisplayName = "令牌";
-                df.Url = "UserToken?id={ID}";
+                df.Url = "UserToken?userId={ID}";
             }
 
             {
