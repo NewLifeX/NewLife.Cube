@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using XCode;
 
 namespace NewLife.Cube
@@ -60,6 +61,30 @@ namespace NewLife.Cube
                         if (entity == null) entity = fact.Create(true);
                     }
 
+                    //if (entity != null)
+                    //{
+                    //    var fs = bindingContext.HttpContext.Request.Form;
+                    //    foreach (var item in fact.Fields)
+                    //    {
+                    //        if (fs.TryGetValue(item.Name, out var vs) && vs.Count > 1)
+                    //            entity.SetItem(item.Name, vs.ToString());
+                    //    }
+
+                    //    return entity;
+                    //}
+
+                    //var request = bindingContext.HttpContext.Request;
+                    //if (request.ContentType.Contains("json") && request.ContentLength > 0)
+                    //{
+                    //    // 允许同步IO，便于CsvFile刷数据Flush
+                    //    var ft = bindingContext.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+                    //    if (ft != null) ft.AllowSynchronousIO = true;
+
+                    //    var body = request.Body.ToStr();
+                    //    var entityBody = body.ToJsonEntity(modelType) as IEntity;
+                    //    bindingContext.HttpContext.Items["EntityBody"] = entityBody;
+                    //}
+
                     return entity ?? fact.Create(true);
                 }
             }
@@ -100,6 +125,23 @@ namespace NewLife.Cube
                     if (vs.Count > 1) result = ModelBindingResult.Success(vs.ToString());
                     break;
             }
+
+            //Object val;
+            //var entityBody =  bindingContext.HttpContext.Items["EntityBody"];
+            //if (entityBody != null && (val = _entityBody[modelName]) != null)
+            //{
+            //    result = ModelBindingResult.Success(val);
+            //}
+
+            //var fs = bindingContext.HttpContext.Request.Form;
+            //if (fs.TryGetValue(modelName, out var vs) && vs.Count > 1)
+            //{
+            //    var fact = EntityFactory.CreateOperate(bindingContext.ModelType);
+            //    foreach (var item in fact.Fields)
+            //    {
+            //        if (fs.TryGetValue(item.Name, out var vs2) && vs2.Count > 1) return;
+            //    }
+            //}
 
             base.SetProperty(bindingContext, modelName, propertyMetadata, result);
         }

@@ -84,6 +84,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\BindsModel.cs" Link="Areas\Admin\Models\BindsModel.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs" Link="Areas\Admin\Models\DbItem.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs" Link="Areas\Admin\Models\FileItem.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\UserModel.cs" Link="Areas\Admin\Models\UserModel.cs" />
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
     <Compile Include="..\NewLife.Cube\Common\DataField.cs" Link="Common\DataField.cs" />
