@@ -55,10 +55,7 @@ namespace NewLife.Cube
         }
 
         /// <summary>构造函数</summary>
-        public ReadOnlyEntityController()
-        {
-            PageSetting.IsReadOnly = true;
-        }
+        public ReadOnlyEntityController() => PageSetting.IsReadOnly = true;
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
@@ -155,10 +152,7 @@ namespace NewLife.Cube
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        protected virtual IEnumerable<TEntity> Search(Pager p)
-        {
-            return Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
-        }
+        protected virtual IEnumerable<TEntity> Search(Pager p) => Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
 
         /// <summary>搜索数据，支持数据权限</summary>
         /// <param name="p"></param>
@@ -451,21 +445,10 @@ namespace NewLife.Cube
             // Json输出
             if (IsJsonRequest) return Json(0, null, entity);
 
-            return FormView(entity);
-        }
-
-        /// <summary>表单页视图。子控制器可以重载，以传递更多信息给视图，比如修改要显示的列</summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        protected virtual ActionResult FormView(TEntity entity)
-        {
             // 用于显示的列
-            ViewBag.Fields = GetFields(true);
+            ViewBag.Fields = DetailFields;
 
-            //// 呈现表单前，保存实体对象。提交时优先使用该对象而不是去数据库查找，避免脏写
-            //EntityModelBinder.SetEntity(entity);
-
-            return View("Form", entity);
+            return View("Detail", entity);
         }
 
         /// <summary>清空全表数据</summary>
@@ -1213,15 +1196,29 @@ namespace NewLife.Cube
         #region 列表字段和表单字段
         private static FieldCollection _ListFields;
         /// <summary>列表字段过滤</summary>
-        protected static FieldCollection ListFields { get => _ListFields ??= new FieldCollection(Factory).SetRelation(false); set => _ListFields = value; }
+        protected static FieldCollection ListFields => _ListFields ??= new FieldCollection(Factory, "List");
 
         private static FieldCollection _FormFields;
         /// <summary>表单字段过滤</summary>
-        protected static FieldCollection FormFields { get => _FormFields ??= new FieldCollection(Factory).SetRelation(true); set => _FormFields = value; }
+        [Obsolete]
+        protected static FieldCollection FormFields => _FormFields ??= new FieldCollection(Factory, "Form");
+
+        private static FieldCollection _AddFormFields;
+        /// <summary>表单字段过滤</summary>
+        protected static FieldCollection AddFormFields => _AddFormFields ??= new FieldCollection(Factory, "AddForm");
+
+        private static FieldCollection _EditFormFields;
+        /// <summary>表单字段过滤</summary>
+        protected static FieldCollection EditFormFields => _EditFormFields ??= new FieldCollection(Factory, "EditForm");
+
+        private static FieldCollection _DetailFields;
+        /// <summary>表单字段过滤</summary>
+        protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, "Detail");
 
         /// <summary>获取要显示的字段列表</summary>
         /// <param name="isForm">是否是表单</param>
         /// <returns></returns>
+        [Obsolete]
         protected virtual IList<FieldItem> GetFields(Boolean isForm) => (isForm ? FormFields : ListFields) ?? Entity<TEntity>.Meta.Fields.ToList();
         #endregion
 

@@ -1,0 +1,24 @@
+﻿@using NewLife;
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using Microsoft.AspNetCore.Mvc.Rendering;
+@{
+    Layout = NewLife.Cube.Setting.Current.Layout;
+
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+}
+
+<div class="form-horizontal">
+    <ul>
+        @foreach (var item in ViewData.ModelState.Values)
+        {
+            foreach (var error in item.Errors)
+            {
+                <li>@error.Exception</li>
+            }
+        }
+    </ul>
+    @await Html.PartialAsync("_Form_Body", entity)
+</div>
