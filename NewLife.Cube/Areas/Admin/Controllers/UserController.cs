@@ -193,14 +193,15 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         /// <summary>登录</summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <param name="remember"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost()]
         [AllowAnonymous]
-        public ActionResult Login(String username, String password, Boolean? remember)
+        public ActionResult Login(LoginModel loginModel)
         {
+            var username = loginModel.Username;
+            var password = loginModel.Password;
+            var remember = loginModel.Remember;
+
             // 连续错误校验
             var key = $"Login:{username}";
             var errors = _cache.Get<Int32>(key);
@@ -214,7 +215,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (errors >= 5) throw new InvalidOperationException($"[{username}]登录错误过多，请在60秒后再试！");
 
                 var provider = ManageProvider.Provider;
-                if (ModelState.IsValid && provider.Login(username, password, remember ?? false) != null)
+                if (ModelState.IsValid && provider.Login(username, password, remember) != null)
                 {
                     if (IsJsonRequest)
                     {
@@ -424,15 +425,16 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         /// <summary>注册</summary>
-        /// <param name="email"></param>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <param name="password2"></param>
         /// <returns></returns>
         [HttpPost]
         [AllowAnonymous]
-        public ActionResult Register(String email, String username, String password, String password2)
+        public ActionResult Register(RegisterModel registerModel)
         {
+            var email = registerModel.Email;
+            var username = registerModel.Username;
+            var password = registerModel.Password;
+            var password2 = registerModel.Password2;
+
             var set = Setting.Current;
             if (!set.AllowRegister) throw new Exception("禁止注册！");
 

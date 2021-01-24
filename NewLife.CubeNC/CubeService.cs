@@ -71,6 +71,8 @@ namespace NewLife.Cube
 
             services.Configure<MvcOptions>(opt =>
             {
+                opt.ModelBinderProviders.Insert(0, new JsonModelBinderProvider());
+
                 // 分页器绑定
                 opt.ModelBinderProviders.Insert(0, new PagerModelBinderProvider());
 
