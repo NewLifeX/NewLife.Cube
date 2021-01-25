@@ -236,8 +236,22 @@ namespace NewLife.Cube.Web
                     user2.RoleID = Role.GetOrAdd(set.DefaultRole).ID;
 
                 // 部门
-                var depCode = client.Items["departmentCode"];
-                var depName = client.Items["departmentName"];
+                if (!client.DepartmentCode.IsNullOrEmpty())
+                {
+                    var dep = Department.FindByCode(client.DepartmentCode);
+                    if (dep == null)
+                    {
+                        dep = new Department
+                        {
+                            Code = client.DepartmentCode,
+                            Name = client.DepartmentName,
+                            Enable = true
+                        };
+                        dep.Insert();
+                    }
+
+                    user2.DepartmentID = dep.ID;
+                }
 
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;
