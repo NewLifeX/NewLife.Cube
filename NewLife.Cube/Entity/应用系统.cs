@@ -51,6 +51,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("Secret", "密钥。AppSecret", "")]
         public String Secret { get => _Secret; set { if (OnPropertyChanging("Secret", value)) { _Secret = value; OnPropertyChanged("Secret"); } } }
 
+        private String _HomePage;
+        /// <summary>首页</summary>
+        [DisplayName("首页")]
+        [Description("首页")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("HomePage", "首页", "")]
+        public String HomePage { get => _HomePage; set { if (OnPropertyChanging("HomePage", value)) { _HomePage = value; OnPropertyChanged("HomePage"); } } }
+
         private String _Logo;
         /// <summary>图标。附件编号列表</summary>
         [DisplayName("图标")]
@@ -186,6 +194,7 @@ namespace NewLife.Cube.Entity
                     case "Name": return _Name;
                     case "DisplayName": return _DisplayName;
                     case "Secret": return _Secret;
+                    case "HomePage": return _HomePage;
                     case "Logo": return _Logo;
                     case "White": return _White;
                     case "Black": return _Black;
@@ -212,6 +221,7 @@ namespace NewLife.Cube.Entity
                     case "Name": _Name = Convert.ToString(value); break;
                     case "DisplayName": _DisplayName = Convert.ToString(value); break;
                     case "Secret": _Secret = Convert.ToString(value); break;
+                    case "HomePage": _HomePage = Convert.ToString(value); break;
                     case "Logo": _Logo = Convert.ToString(value); break;
                     case "White": _White = Convert.ToString(value); break;
                     case "Black": _Black = Convert.ToString(value); break;
@@ -248,6 +258,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>密钥。AppSecret</summary>
             public static readonly Field Secret = FindByName("Secret");
+
+            /// <summary>首页</summary>
+            public static readonly Field HomePage = FindByName("HomePage");
 
             /// <summary>图标。附件编号列表</summary>
             public static readonly Field Logo = FindByName("Logo");
@@ -311,6 +324,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>密钥。AppSecret</summary>
             public const String Secret = "Secret";
+
+            /// <summary>首页</summary>
+            public const String HomePage = "HomePage";
 
             /// <summary>图标。附件编号列表</summary>
             public const String Logo = "Logo";
