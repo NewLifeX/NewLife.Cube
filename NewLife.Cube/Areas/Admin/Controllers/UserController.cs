@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Web;
@@ -12,7 +11,6 @@ using XCode.Membership;
 using System.Web;
 using NewLife.Caching;
 using NewLife.Log;
-using NewLife.Cube.Web;
 using NewLife.Cube.Areas.Admin.Models;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -40,14 +38,8 @@ namespace NewLife.Cube.Admin.Controllers
         {
             MenuOrder = 100;
 
-            ListFields.RemoveField("Avatar", "RoldIds", "Online", "RegisterIP");
-            ListFields.RemoveField("Phone");
-            ListFields.RemoveField("Code");
-            ListFields.RemoveField("StartTime");
-            ListFields.RemoveField("EndTime");
-            ListFields.RemoveField("RegisterTime");
-            ListFields.RemoveField("Question");
-            ListFields.RemoveField("Answer");
+            ListFields.RemoveField("Avatar", "RoldIds", "Online", "RegisterIP", "RegisterTime");
+            ListFields.RemoveField("Phone", "Code", "Question", "Answer");
             ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
             ListFields.RemoveUpdateField();
             ListFields.RemoveField("Remark");
@@ -74,7 +66,12 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             {
-                var df = FormFields.AddDataField("RoleIds");
+                var df = AddFormFields.AddDataField("RoleIds");
+                df.DataSourceCallback = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            }
+
+            {
+                var df = EditFormFields.AddDataField("RoleIds");
                 df.DataSourceCallback = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }
         }
@@ -118,6 +115,11 @@ namespace NewLife.Cube.Admin.Controllers
             return XCode.Membership.User.FindAll(exp, p);
         }
 
+        /// <summary>验证实体对象</summary>
+        /// <param name="entity"></param>
+        /// <param name="type"></param>
+        /// <param name="post"></param>
+        /// <returns></returns>
         protected override Boolean Valid(User entity, DataObjectMethodType type, Boolean post)
         {
             if (!post && type == DataObjectMethodType.Update)
@@ -311,8 +313,10 @@ namespace NewLife.Cube.Admin.Controllers
             //user.Password = null;
             user["Password"] = null;
 
+            if (IsJsonRequest) return Json(0, "ok", user);
+
             // 用于显示的列
-            if (ViewBag.Fields == null) ViewBag.Fields = GetFields(true);
+            if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
             ViewBag.Factory = XCode.Membership.User.Meta.Factory;
 
             // 必须指定视图名，因为其它action会调用

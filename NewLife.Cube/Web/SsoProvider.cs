@@ -235,6 +235,24 @@ namespace NewLife.Cube.Web
                 if (user2.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
                     user2.RoleID = Role.GetOrAdd(set.DefaultRole).ID;
 
+                // 部门
+                if (set.UseSsoDepartment && !client.DepartmentCode.IsNullOrEmpty())
+                {
+                    var dep = Department.FindByCode(client.DepartmentCode);
+                    if (dep == null)
+                    {
+                        dep = new Department
+                        {
+                            Code = client.DepartmentCode,
+                            Name = client.DepartmentName,
+                            Enable = true
+                        };
+                        dep.Insert();
+                    }
+
+                    user2.DepartmentID = dep.ID;
+                }
+
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;
                 if (av != null && av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http"))
@@ -406,7 +424,14 @@ namespace NewLife.Cube.Web
                 var user = XCode.Membership.User.Login(username, password, false);
                 if (user == null) throw new XException("用户{0}验证失败", username);
 
-                var token = sso.CreateToken(app, user.Name, user.ID + "");
+                var token = sso.CreateToken(app, user.Name, null, $"{client_id}#{user.Name}");
+                //var token = sso.CreateToken(app, user.Name, new
+                //{
+                //    userid = user.ID,
+                //    usercode = user.Code,
+                //    nickname = user.DisplayName,
+                //});
+                //var token = sso.CreateToken(app, user.Name, GetUserInfo(null, null, user));
                 //token.Scope = "basic,UserInfo";
 
                 log.AccessToken = token.AccessToken;
@@ -451,11 +476,14 @@ namespace NewLife.Cube.Web
 
             try
             {
-                var app = sso.Auth(client_id, client_secret);
+                var app = App.FindByName(client_id);
+                if (app != null) log.AppId = app.ID;
+
+                app = sso.Auth(client_id, client_secret);
                 log.AppId = app.ID;
 
                 var code = !username.IsNullOrEmpty() ? username : ("_" + Rand.NextString(7));
-                var token = sso.CreateToken(app, code, $"{client_id}#{code}");
+                var token = sso.CreateToken(app, code, null, $"{client_id}#{code}");
                 //token.Scope = "basic,UserInfo";
 
                 log.AccessToken = token.AccessToken;
@@ -500,7 +528,10 @@ namespace NewLife.Cube.Web
 
             try
             {
-                var app = sso.Auth(client_id, client_secret);
+                var app = App.FindByName(client_id);
+                if (app != null) log.AppId = app.ID;
+
+                app = sso.Auth(client_id, client_secret);
                 log.AppId = app.ID;
 
                 var name = sso.Decode(refresh_token);
@@ -509,7 +540,7 @@ namespace NewLife.Cube.Web
 
                 // 使用者标识保持不变
                 var code = ss[1];
-                var token = sso.CreateToken(app, code, $"{client_id}#{code}");
+                var token = sso.CreateToken(app, code, null, $"{client_id}#{code}");
 
                 log.AccessToken = token.AccessToken;
                 log.RefreshToken = token.RefreshToken;
@@ -565,6 +596,8 @@ namespace NewLife.Cube.Web
                     rolename = user2.RoleName,
                     roleids = user2.RoleIds,
                     rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
+                    departmentCode = user2.Department?.Code,
+                    departmentName = user2.Department?.Name,
                     avatar = user2.Avatar,
                     detail = user2.Remark,
                 };

@@ -35,7 +35,7 @@ namespace NewLife.Cube
             {
                 case "AddForm":
                     SetRelation(true);
-                    RemoveCreateField();
+                    //RemoveCreateField();
                     RemoveUpdateField();
                     break;
                 case "EditForm":

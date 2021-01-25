@@ -85,7 +85,7 @@ namespace NewLife.Cube
                 ViewBag.Page = p;
 
                 // 用于显示的列
-                if (!ps.ContainsKey("entity")) ViewBag.Fields = GetFields(false);
+                if (!ps.ContainsKey("entity")) ViewBag.Fields = ListFields;
 
                 if (ViewBag.HeaderTitle == null) ViewBag.HeaderTitle = Entity<TEntity>.Meta.Table.Description + "管理";
 
@@ -1106,7 +1106,7 @@ namespace NewLife.Cube
             var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_Form_Body.cshtml";
             if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
-            var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, FormFields);
+            var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, EditFormFields);
 
             WriteLog("生成表单", true, vpath);
 #if !__CORE__

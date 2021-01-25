@@ -17,7 +17,7 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <DefineConstants>$(DefineConstants);__CORE__</DefineConstants>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
@@ -57,8 +57,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.10.2021.123-beta3" />
-    <PackageReference Include="NewLife.XCode" Version="10.0.2021.123-beta3" />
+    <PackageReference Include="NewLife.Core" Version="8.10.2021.125-beta3" />
+    <PackageReference Include="NewLife.XCode" Version="10.0.2021.125-beta3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -137,6 +137,7 @@
     <Compile Include="..\NewLife.Cube\Web\OAuth\QyWeiXin.cs" Link="Web\OAuth\QyWeiXin.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\TaobaoClient.cs" Link="Web\OAuth\TaobaoClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\WeixinClient.cs" Link="Web\OAuth\WeixinClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\SsoClient.cs" Link="Web\SsoClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\TokenInfo.cs" Link="Web\TokenInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />

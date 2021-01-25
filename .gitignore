@@ -36,4 +36,5 @@ bld/
 /XTemp
 /CubeDemoNC/Areas/School/Models/Config
 /CubeDemoNC/Areas/School/Models/Log
+/CubeDemoNC/publish
 /NewLife.CubeUI/node_modules

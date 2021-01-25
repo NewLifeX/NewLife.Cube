@@ -100,6 +100,11 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public Boolean UseSsoRole { get; set; } = true;
 
+        /// <summary>使用Sso部门。SSO登录后继续使用SSO部门，默认true</summary>
+        [Description("使用Sso部门。SSO登录后继续使用SSO部门，默认true")]
+        [Category("用户登录")]
+        public Boolean UseSsoDepartment { get; set; } = true;
+
         /// <summary>注销所有系统。默认false仅注销本系统，true时注销SsoServer</summary>
         [Description("注销所有系统。默认false仅注销本系统，true时注销SsoServer")]
         [Category("用户登录")]

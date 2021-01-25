@@ -17,7 +17,6 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 过滤要显示的字段
             ListFields.RemoveField("Remark");
-            FormFields.RemoveField("Remark");
         }
 
         /// <summary>验证实体对象</summary>
