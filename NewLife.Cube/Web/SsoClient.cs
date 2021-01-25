@@ -65,6 +65,22 @@ namespace NewLife.Cube.Web
             return rs["access_token"] as String;
         }
 
+        /// <summary>刷新令牌</summary>
+        /// <param name="accessToken"></param>
+        /// <returns></returns>
+        public async Task<IDictionary<String, Object>> RefreshToken(String accessToken)
+        {
+            var client = GetClient();
+
+            return await client.GetAsync<IDictionary<String, Object>>("sso/token", new
+            {
+                grant_type = "refresh_token",
+                client_id = AppId,
+                client_secret = Secret,
+                refresh_token = accessToken,
+            });
+        }
+
         /// <summary>通过令牌获取用户信息</summary>
         /// <param name="accessToken"></param>
         /// <returns></returns>
@@ -90,6 +106,17 @@ namespace NewLife.Cube.Web
             if (dic.TryGetValue("nickname", out str)) user.DisplayName = str as String;
 
             return user;
+        }
+
+        /// <summary>获取应用公钥，用于验证令牌</summary>
+        /// <param name="client_id">应用</param>
+        /// <param name="client_secret">密钥</param>
+        /// <returns></returns>
+        public async Task<IDictionary<String, Object>> GetKey(String client_id, String client_secret)
+        {
+            var client = GetClient();
+
+            return await client.GetAsync<IDictionary<String, Object>>("sso/getkey", new { client_id, client_secret });
         }
     }
 }

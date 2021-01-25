@@ -17,7 +17,8 @@ namespace XUnitTest
         {
             var client = new SsoClient
             {
-                Server = "https://sso.newlifex.com",
+                Server = "https://localhost:5001",
+                //Server = "https://sso.newlifex.com",
                 AppId = "NewLife.Cube",
                 Secret = "",
             };

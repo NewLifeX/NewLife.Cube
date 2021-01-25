@@ -580,11 +580,13 @@ namespace NewLife.Cube.Controllers
 
         /// <summary>获取应用公钥，用于验证令牌</summary>
         /// <param name="client_id">应用</param>
+        /// <param name="client_secret">密钥</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult GetKey(String client_id)
+        public ActionResult GetKey(String client_id, String client_secret)
         {
-            //var app = App.FindByName(client_id);
+            var app = OAuth.Auth(client_id, client_secret);
+            if (app == null) throw new ArgumentException($"无效应用[{client_id}]");
 
             var prv = OAuth.GetProvider();
             var dsa = new DSACryptoServiceProvider();

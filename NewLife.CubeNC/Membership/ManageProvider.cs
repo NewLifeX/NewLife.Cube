@@ -255,12 +255,13 @@ namespace NewLife.Cube
             var token = req?.Cookies[key];
 
             // 尝试从url中获取token
-            if (token.IsNullOrEmpty()) token = req?.Query["jwtToken"];
+            if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["token"];
+            if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["jwtToken"];
 
             // 尝试从头部获取token
-            if (token.IsNullOrEmpty()) token = req?.Headers[HeaderNames.Authorization];
+            if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Headers[HeaderNames.Authorization];
 
-            if (token.IsNullOrEmpty()) return null;
+            if (token.IsNullOrEmpty() || token.Split(".").Length != 3) return null;
 
             var jwt = GetJwt();
             if (!jwt.TryDecode(token, out var msg))
