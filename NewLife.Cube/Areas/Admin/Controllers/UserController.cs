@@ -310,6 +310,8 @@ namespace NewLife.Cube.Admin.Controllers
             //user.Password = null;
             user["Password"] = null;
 
+            if (IsJsonRequest) return Json(0, "ok", user);
+
             // 用于显示的列
             if (ViewBag.Fields == null) ViewBag.Fields = GetFields(true);
             ViewBag.Factory = XCode.Membership.User.Meta.Factory;
