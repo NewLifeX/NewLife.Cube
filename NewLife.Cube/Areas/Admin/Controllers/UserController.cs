@@ -297,7 +297,8 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>获取用户资料</summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [EntityAuthorize]
         public ActionResult Info(Int32 id)
         {
             //if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
@@ -327,7 +328,8 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         [HttpPost]
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [EntityAuthorize]
         public ActionResult Info(User user)
         {
             var cur = ManageProvider.User;
