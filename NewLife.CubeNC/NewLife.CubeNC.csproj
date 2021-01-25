@@ -137,6 +137,7 @@
     <Compile Include="..\NewLife.Cube\Web\OAuth\QyWeiXin.cs" Link="Web\OAuth\QyWeiXin.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\TaobaoClient.cs" Link="Web\OAuth\TaobaoClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\WeixinClient.cs" Link="Web\OAuth\WeixinClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\SsoClient.cs" Link="Web\SsoClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\TokenInfo.cs" Link="Web\TokenInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
