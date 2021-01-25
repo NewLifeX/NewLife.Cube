@@ -301,6 +301,12 @@ namespace NewLife.Web
         /// <summary>用户代码</summary>
         public String UserCode { get; set; }
 
+        /// <summary>部门代码，唯一标识</summary>
+        public String DepartmentCode { get; set; }
+
+        /// <summary>部门名称</summary>
+        public String DepartmentName { get; set; }
+
         /// <summary>手机</summary>
         public String Mobile { get; set; }
 
@@ -515,6 +521,12 @@ namespace NewLife.Web
             if (dic.TryGetValue("code", out str)) UserCode = str.Trim();
             if (dic.TryGetValue("usercode", out str)) UserCode = str.Trim();
             if (dic.TryGetValue("user_code", out str)) UserCode = str.Trim();
+
+            if (dic.TryGetValue("departmentCode", out str)) DepartmentCode = str.Trim();
+            if (dic.TryGetValue("department_code", out str)) DepartmentCode = str.Trim();
+
+            if (dic.TryGetValue("departmentName", out str)) DepartmentName = str.Trim();
+            if (dic.TryGetValue("department_name", out str)) DepartmentName = str.Trim();
 
             if (dic.TryGetValue("mobile", out str)) Mobile = str.Trim();
             if (dic.TryGetValue("usermobile", out str)) Mobile = str.Trim();

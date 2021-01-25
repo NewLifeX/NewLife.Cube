@@ -235,6 +235,10 @@ namespace NewLife.Cube.Web
                 if (user2.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
                     user2.RoleID = Role.GetOrAdd(set.DefaultRole).ID;
 
+                // 部门
+                var depCode = client.Items["departmentCode"];
+                var depName = client.Items["departmentName"];
+
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;
                 if (av != null && av.StartsWith("/") && client.Server.StartsWithIgnoreCase("http"))
@@ -565,6 +569,8 @@ namespace NewLife.Cube.Web
                     rolename = user2.RoleName,
                     roleids = user2.RoleIds,
                     rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
+                    departmentCode = user2.Department?.Code,
+                    departmentName = user2.Department?.Name,
                     avatar = user2.Avatar,
                     detail = user2.Remark,
                 };

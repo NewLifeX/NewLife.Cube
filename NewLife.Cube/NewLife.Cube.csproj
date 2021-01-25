@@ -129,6 +129,7 @@
     <Compile Include="Areas\Admin\Models\ChangePasswordModel.cs" />
     <Compile Include="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="Areas\Admin\Models\DbItem.cs" />
+    <Compile Include="Areas\Admin\Models\UserModel.cs" />
     <Compile Include="Areas\Admin\Views\App\_List_Data.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -340,6 +341,16 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Controllers\SsoController.cs" />
+    <Compile Include="Entity\Build.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Entity\Build_netcore.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Build_netcore.tt</DependentUpon>
+    </Compile>
     <Compile Include="Entity\应用日志.Biz.cs" />
     <Compile Include="Entity\应用日志.cs" />
     <Compile Include="Entity\应用系统.Biz.cs" />
@@ -724,27 +735,17 @@
     <None Include="Content\images\logo\Weixin.png" />
     <Content Include="Entity\Build.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.log</LastGenOutput>
+      <LastGenOutput>Build.cs</LastGenOutput>
     </Content>
     <Content Include="Entity\Build_netcore.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build_netcore.log</LastGenOutput>
+      <LastGenOutput>Build_netcore.cs</LastGenOutput>
     </Content>
     <Content Include="Entity\Model.xml" />
     <Content Include="Entity\XCoder.log">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>XCoder.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build_netcore.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build_netcore.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
     </Content>
     <None Include="index.html" />
     <None Include="Entity\Cube.xml">
