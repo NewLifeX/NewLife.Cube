@@ -127,7 +127,7 @@ namespace NewLife.Cube
         [EntityAuthorize(PermissionFlags.Insert)]
         [HttpPost]
 #if __CORE__
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
 #else
         [ValidateInput(false)]
 #endif
@@ -176,12 +176,16 @@ namespace NewLife.Cube
                 // 添加失败，ID清零，否则会显示保存按钮
                 entity[Entity<TEntity>.Meta.Unique.Name] = 0;
 
+                if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
+
                 ViewBag.Fields = AddFormFields;
 
                 return View("AddForm", entity);
             }
 
             ViewBag.StatusMessage = "添加成功！";
+
+            if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
 
             var url = Session["Cube_Add_Referrer"] as String;
             if (!url.IsNullOrEmpty())
@@ -218,7 +222,7 @@ namespace NewLife.Cube
         [EntityAuthorize(PermissionFlags.Update)]
         [HttpPost]
 #if __CORE__
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
 #else
         [ValidateInput(false)]
 #endif
@@ -268,6 +272,8 @@ namespace NewLife.Cube
             else
                 ViewBag.StatusMessage = "保存成功！";
 
+            if(IsJsonRequest) return Json(0, ViewBag.StatusMessage);
+
             ViewBag.Fields = EditFormFields;
 
             return View("EditForm", entity);
@@ -281,6 +287,7 @@ namespace NewLife.Cube
             var list = new List<String>();
 
 #if __CORE__
+            if (!Request.HasFormContentType) return list;
             var files = Request.Form.Files;
 #else
             var files = Request.Files;
