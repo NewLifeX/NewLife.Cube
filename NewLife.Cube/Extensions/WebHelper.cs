@@ -108,10 +108,10 @@ namespace NewLife.Web
                 var req = ctx.Request;
                 // 这里必须用可空字典，否则直接通过索引查不到数据时会抛出异常
                 dic = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
-                foreach (var item in req.RouteValues)
-                {
-                    if (item.Value != null) dic[item.Key] = item.Value as String;
-                }
+                //foreach (var item in req.RouteValues)
+                //{
+                //    if (item.Value != null) dic[item.Key] = item.Value as String;
+                //}
 
                 IEnumerable<KeyValuePair<String, StringValues>>[] nvss;
                 nvss = req.HasFormContentType ?
