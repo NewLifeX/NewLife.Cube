@@ -248,7 +248,7 @@ namespace NewLife.Web
                 var secret = "";
 
                 // 从头部找到颁发者，拿它的密钥
-                var header = JsonParser.Decode(ts[0].ToBase64().ToStr());
+                var header = JsonParser.Decode(ts[1].ToBase64().ToStr());
                 if (header.TryGetValue("aud", out var str))
                 {
                     var app = App.FindByName(str as String);

@@ -36,15 +36,15 @@ namespace NewLife.Cube.Web
             return _client;
         }
 
-        /// <summary>验证账号密码，并返回令牌</summary>
+        /// <summary>密码式，验证账号密码，并返回令牌</summary>
         /// <param name="username"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public async Task<IDictionary<String, Object>> GetTokenInfo(String username, String password)
+        public async Task<TokenInfo> GetToken(String username, String password)
         {
             var client = GetClient();
 
-            return await client.GetAsync<IDictionary<String, Object>>("sso/token", new
+            return await client.GetAsync<TokenInfo>("sso/token", new
             {
                 grant_type = "password",
                 client_id = AppId,
@@ -54,15 +54,20 @@ namespace NewLife.Cube.Web
             });
         }
 
-        /// <summary>验证账号密码，并返回令牌</summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
+        /// <summary>凭证式，为指定设备办法令牌</summary>
+        /// <param name="deviceId"></param>
         /// <returns></returns>
-        public async Task<String> GetToken(String username, String password)
+        public async Task<TokenInfo> GetToken(String deviceId)
         {
-            var rs = await GetTokenInfo(username, password);
+            var client = GetClient();
 
-            return rs["access_token"] as String;
+            return await client.GetAsync<TokenInfo>("sso/token", new
+            {
+                grant_type = "client_credentials",
+                client_id = AppId,
+                client_secret = Secret,
+                username = deviceId,
+            });
         }
 
         /// <summary>刷新令牌</summary>
@@ -97,6 +102,10 @@ namespace NewLife.Cube.Web
         public async Task<IManageUser> GetUser(String accessToken)
         {
             var dic = await GetUserInfo(accessToken);
+
+            var code = dic["errcode"].ToInt(-1);
+            var error = dic["error"] as String;
+            if (code > 0 && code != 200) throw new ApiException(code, error);
 
             var user = JsonHelper.Convert<User>(dic);
 

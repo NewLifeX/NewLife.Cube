@@ -449,9 +449,9 @@ namespace NewLife.Cube.Controllers
                 XTrace.WriteLine($"Access_Token client_id={client_id} client_secret={client_secret} code={code}");
                 XTrace.WriteException(ex);
 #if __CORE__
-                return Json(new { error = ex.GetTrue().Message });
+                return Json(new { errcode = 500, error = ex.GetTrue().Message });
 #else
-                return Json(new { error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
 #endif
             }
         }
@@ -528,9 +528,9 @@ namespace NewLife.Cube.Controllers
                 XTrace.WriteLine($"Token client_id={client_id} username={username} grant_type={grant_type}");
                 XTrace.WriteException(ex);
 #if __CORE__
-                return Json(new { error = ex.GetTrue().Message });
+                return Json(new { errcode = 500, error = ex.GetTrue().Message });
 #else
-                return Json(new { error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
 #endif
             }
         }
@@ -567,9 +567,9 @@ namespace NewLife.Cube.Controllers
                 XTrace.WriteLine($"UserInfo {access_token}");
                 XTrace.WriteException(ex);
 #if __CORE__
-                return Json(new { error = ex.GetTrue().Message });
+                return Json(new { errcode = 500, error = ex.GetTrue().Message });
 #else
-                return Json(new { error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
 #endif
             }
             finally
