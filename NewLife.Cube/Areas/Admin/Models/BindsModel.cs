@@ -8,7 +8,7 @@ using NewLife.Web;
 namespace NewLife.Cube.Areas.Admin.Models
 {
     /// <summary>第三方绑定模型</summary>
-    public class BindsModel
+    public class BindsModel : ICubeModel
     {
         /// <summary>用户名</summary>
         public String Name { get; set; }

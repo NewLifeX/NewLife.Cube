@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using NewLife.Cube.Areas.Admin.Models;
 using XCode.DataAccessLayer;
 
 namespace NewLife.Cube.Admin
 {
     /// <summary>数据项</summary>
-    public class DbItem
+    public class DbItem : ICubeModel
     {
         /// <summary>连接名</summary>
         public String Name { get; set; }

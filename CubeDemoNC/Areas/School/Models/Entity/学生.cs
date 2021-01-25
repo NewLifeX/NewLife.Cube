@@ -175,7 +175,7 @@ namespace NewLife.School.Entity
                     case "ID": _ID = value.ToInt(); break;
                     case "ClassID": _ClassID = value.ToInt(); break;
                     case "Name": _Name = Convert.ToString(value); break;
-                    case "Sex": _Sex = (SexKind)value; break;
+                    case "Sex": _Sex = (SexKind)value.ToInt(); break;
                     case "Age": _Age = value.ToInt(); break;
                     case "Mobile": _Mobile = Convert.ToString(value); break;
                     case "Address": _Address = Convert.ToString(value); break;

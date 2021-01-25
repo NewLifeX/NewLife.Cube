@@ -3,7 +3,7 @@
 namespace NewLife.Cube.Areas.Admin.Models
 {
     /// <summary>修改密码模型</summary>
-    public class ChangePasswordModel
+    public class ChangePasswordModel : ICubeModel
     {
         /// <summary>用户名</summary>
         public String Name { get; set; }

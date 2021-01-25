@@ -115,7 +115,10 @@ namespace NewLife.Cube
 #endif
             Session["Cube_Add_Referrer"] = url;
 
-            return FormView(entity);
+            // 用于显示的列
+            ViewBag.Fields = AddFormFields;
+
+            return View("AddForm", entity);
         }
 
         /// <summary>保存</summary>
@@ -136,7 +139,9 @@ namespace NewLife.Cube
             if (!Valid(entity, DataObjectMethodType.Insert, true))
             {
                 ViewBag.StatusMessage = "验证失败！";
-                return FormView(entity);
+                ViewBag.Fields = AddFormFields;
+
+                return View("AddForm", entity);
             }
 
             var rs = false;
@@ -170,7 +175,10 @@ namespace NewLife.Cube
                 ViewBag.StatusMessage = "添加失败！" + err;
                 // 添加失败，ID清零，否则会显示保存按钮
                 entity[Entity<TEntity>.Meta.Unique.Name] = 0;
-                return FormView(entity);
+
+                ViewBag.Fields = AddFormFields;
+
+                return View("AddForm", entity);
             }
 
             ViewBag.StatusMessage = "添加成功！";
@@ -199,7 +207,9 @@ namespace NewLife.Cube
             // Json输出
             if (IsJsonRequest) return Json(0, null, entity);
 
-            return FormView(entity);
+            ViewBag.Fields = EditFormFields;
+
+            return View("EditForm", entity);
         }
 
         /// <summary>保存</summary>
@@ -217,7 +227,9 @@ namespace NewLife.Cube
             if (!Valid(entity, DataObjectMethodType.Update, true))
             {
                 ViewBag.StatusMessage = "验证失败！";
-                return FormView(entity);
+                ViewBag.Fields = EditFormFields;
+
+                return View("EditForm", entity);
             }
 
             var rs = false;
@@ -252,14 +264,13 @@ namespace NewLife.Cube
                 WriteLog("Edit", false, err);
 
                 ViewBag.StatusMessage = "保存失败！" + err;
-                return FormView(entity);
             }
             else
-            {
                 ViewBag.StatusMessage = "保存成功！";
-                // 更新完成保持本页
-                return FormView(entity);
-            }
+
+            ViewBag.Fields = EditFormFields;
+
+            return View("EditForm", entity);
         }
 
         /// <summary>保存上传文件</summary>

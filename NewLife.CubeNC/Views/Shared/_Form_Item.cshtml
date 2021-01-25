@@ -37,6 +37,48 @@
 }
 <label class="control-label col-xs-@(label) col-sm-@label">@display</label>
 <div class="input-group col-xs-@(total - label) col-sm-@input">
+    @*@if (fields.Kind == "Detail")
+    {
+        var value = entity[item.Name];
+        <label class="control-label">
+            @switch (Type.GetTypeCode(item.Type))
+            {
+                //case TypeCode.Boolean:
+                //    break;
+                //case TypeCode.Char:
+                //    break;
+                //case TypeCode.SByte:
+                //    break;
+                //case TypeCode.Byte:
+                //    break;
+                //case TypeCode.Int16:
+                //    break;
+                //case TypeCode.UInt16:
+                //    break;
+                //case TypeCode.Int32:
+                //    break;
+                //case TypeCode.UInt32:
+                //    break;
+                //case TypeCode.Int64:
+                //    break;
+                //case TypeCode.UInt64:
+                //    break;
+                //case TypeCode.Single:
+                //    break;
+                //case TypeCode.Double:
+                //    break;
+                //case TypeCode.Decimal:
+                //    break;
+                case TypeCode.DateTime:
+                    @(((DateTime)value).ToFullString(""))
+                    break;
+                case TypeCode.String:
+                default:
+                    @value
+                    break;
+            }
+        </label>
+    }*@
     @if (dataSource != null)
     {
         @Html.ForListBox(item.Name, dataSource(item.Name), entity[item.Name] as String)

@@ -1,0 +1,35 @@
+﻿@using NewLife;
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using Microsoft.AspNetCore.Mvc.Rendering;
+@{
+    Layout = NewLife.Cube.Setting.Current.Layout;
+
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+
+    var rv = entity.GetRouteKey();
+
+    Object htmlAttributes = null;
+    if (fields.Any(e => e.Field != null && e.Field.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
+}
+
+<div class="form-horizontal">
+    @await Html.PartialAsync("_Form_Header", entity)
+    @using (Html.BeginForm("Edit", null, rv, FormMethod.Post, null, htmlAttributes))
+    {
+        @*@Html.AntiForgeryToken()*@
+        @*@Html.ValidationSummary()*@
+        <ul>
+            @foreach (var item in ViewData.ModelState.Values)
+            {
+                foreach (var error in item.Errors)
+                {
+                    <li>@error.Exception</li>
+                }
+            }
+        </ul>
+        @await Html.PartialAsync("_Form_Body", entity)
+    }
+</div>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Web;
@@ -12,7 +11,6 @@ using XCode.Membership;
 using System.Web;
 using NewLife.Caching;
 using NewLife.Log;
-using NewLife.Cube.Web;
 using NewLife.Cube.Areas.Admin.Models;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -40,14 +38,8 @@ namespace NewLife.Cube.Admin.Controllers
         {
             MenuOrder = 100;
 
-            ListFields.RemoveField("Avatar", "RoldIds", "Online", "RegisterIP");
-            ListFields.RemoveField("Phone");
-            ListFields.RemoveField("Code");
-            ListFields.RemoveField("StartTime");
-            ListFields.RemoveField("EndTime");
-            ListFields.RemoveField("RegisterTime");
-            ListFields.RemoveField("Question");
-            ListFields.RemoveField("Answer");
+            ListFields.RemoveField("Avatar", "RoldIds", "Online", "RegisterIP", "RegisterTime");
+            ListFields.RemoveField("Phone", "Code", "Question", "Answer");
             ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
             ListFields.RemoveUpdateField();
             ListFields.RemoveField("Remark");
@@ -56,14 +48,14 @@ namespace NewLife.Cube.Admin.Controllers
                 var df = ListFields.AddDataField("Link", "Logins");
                 df.Header = "链接";
                 df.DisplayName = "链接";
-                df.Url = "UserConnect?id={ID}";
+                df.Url = "UserConnect?userId={ID}";
             }
 
             {
                 var df = ListFields.AddDataField("Token", "Logins");
                 df.Header = "令牌";
                 df.DisplayName = "令牌";
-                df.Url = "UserToken?id={ID}";
+                df.Url = "UserToken?userId={ID}";
             }
 
             {
@@ -74,7 +66,12 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             {
-                var df = FormFields.AddDataField("RoleIds");
+                var df = AddFormFields.AddDataField("RoleIds");
+                df.DataSourceCallback = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            }
+
+            {
+                var df = EditFormFields.AddDataField("RoleIds");
                 df.DataSourceCallback = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }
         }
@@ -118,16 +115,21 @@ namespace NewLife.Cube.Admin.Controllers
             return XCode.Membership.User.FindAll(exp, p);
         }
 
-        /// <summary>表单页视图。</summary>
+        /// <summary>验证实体对象</summary>
         /// <param name="entity"></param>
+        /// <param name="type"></param>
+        /// <param name="post"></param>
         /// <returns></returns>
-        protected override ActionResult FormView(User entity)
+        protected override Boolean Valid(User entity, DataObjectMethodType type, Boolean post)
         {
-            // 清空密码，不向浏览器输出
-            //entity.Password = null;
-            entity["Password"] = null;
+            if (!post && type == DataObjectMethodType.Update)
+            {
+                // 清空密码，不向浏览器输出
+                //entity.Password = null;
+                entity["Password"] = null;
+            }
 
-            return base.FormView(entity);
+            return base.Valid(entity, type, post);
         }
 
         #region 登录注销
@@ -193,14 +195,15 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         /// <summary>登录</summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <param name="remember"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost()]
         [AllowAnonymous]
-        public ActionResult Login(String username, String password, Boolean? remember)
+        public ActionResult Login(LoginModel loginModel)
         {
+            var username = loginModel.Username;
+            var password = loginModel.Password;
+            var remember = loginModel.Remember;
+
             // 连续错误校验
             var key = $"Login:{username}";
             var errors = _cache.Get<Int32>(key);
@@ -214,7 +217,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (errors >= 5) throw new InvalidOperationException($"[{username}]登录错误过多，请在60秒后再试！");
 
                 var provider = ManageProvider.Provider;
-                if (ModelState.IsValid && provider.Login(username, password, remember ?? false) != null)
+                if (ModelState.IsValid && provider.Login(username, password, remember) != null)
                 {
                     if (IsJsonRequest)
                     {
@@ -313,7 +316,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (IsJsonRequest) return Json(0, "ok", user);
 
             // 用于显示的列
-            if (ViewBag.Fields == null) ViewBag.Fields = GetFields(true);
+            if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
             ViewBag.Factory = XCode.Membership.User.Meta.Factory;
 
             // 必须指定视图名，因为其它action会调用
@@ -426,15 +429,16 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         /// <summary>注册</summary>
-        /// <param name="email"></param>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
-        /// <param name="password2"></param>
         /// <returns></returns>
         [HttpPost]
         [AllowAnonymous]
-        public ActionResult Register(String email, String username, String password, String password2)
+        public ActionResult Register(RegisterModel registerModel)
         {
+            var email = registerModel.Email;
+            var username = registerModel.Username;
+            var password = registerModel.Password;
+            var password2 = registerModel.Password2;
+
             var set = Setting.Current;
             if (!set.AllowRegister) throw new Exception("禁止注册！");
 

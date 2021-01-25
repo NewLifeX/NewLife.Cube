@@ -25,8 +25,6 @@ namespace NewLife.Cube.Admin.Controllers
         static RoleController()
         {
             MenuOrder = 90;
-
-            FormFields.RemoveField("Remark");
         }
 
         /// <summary>动作执行前</summary>

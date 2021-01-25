@@ -33,7 +33,7 @@ namespace NewLife.Cube.Admin.Controllers
         protected override IEnumerable<XLog> Search(Pager p)
         {
             var category = p["category"];
-            var action = p["action"];
+            var action = p["act"];
             var success = p["success"]?.ToBoolean();
             var linkid = p["linkid"].ToInt(-1);
             var userid = p["userid"].ToInt(-1);

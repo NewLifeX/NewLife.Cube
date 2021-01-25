@@ -11,6 +11,9 @@ namespace NewLife.Cube
     public class FieldCollection : List<FieldItem>
     {
         #region 属性
+        /// <summary>类型</summary>
+        public String Kind { get; set; }
+
         /// <summary>工厂</summary>
         public IEntityFactory Factory { get; set; }
 
@@ -21,10 +24,34 @@ namespace NewLife.Cube
         #region 构造
         /// <summary>使用工厂实例化一个字段集合</summary>
         /// <param name="factory"></param>
-        public FieldCollection(IEntityFactory factory)
+        /// <param name="kind"></param>
+        public FieldCollection(IEntityFactory factory, String kind)
         {
+            Kind = kind;
             Factory = factory;
             AddRange(Factory.Fields);
+
+            switch (kind)
+            {
+                case "AddForm":
+                    SetRelation(true);
+                    //RemoveCreateField();
+                    RemoveUpdateField();
+                    break;
+                case "EditForm":
+                    SetRelation(true);
+                    break;
+                case "Detail":
+                    SetRelation(true);
+                    break;
+                case "Form":
+                    SetRelation(true);
+                    break;
+                case "List":
+                default:
+                    SetRelation(false);
+                    break;
+            }
         }
         #endregion
 
@@ -50,7 +77,7 @@ namespace NewLife.Cube
             return this;
         }
 
-        void ProcessRelation(PropertyInfo pi, Boolean isForm)
+        private void ProcessRelation(PropertyInfo pi, Boolean isForm)
         {
             // 处理带有Map特性的扩展属性
             var map = pi.GetCustomAttribute<MapAttribute>();
@@ -59,7 +86,7 @@ namespace NewLife.Cube
             Replace(map.Name, pi.Name);
         }
 
-        void NoPass()
+        private void NoPass()
         {
             for (var i = Count - 1; i >= 0; i--)
             {

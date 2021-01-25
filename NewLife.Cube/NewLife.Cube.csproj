@@ -46,8 +46,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.10.7693.26627, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.10.2021.123-beta3\lib\net45\NewLife.Core.dll</HintPath>
+    <Reference Include="NewLife.Core, Version=8.10.7695.36854, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.10.2021.125-beta3\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -84,8 +84,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=10.0.7693.26629, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.10.0.2021.123-beta3\lib\net45\XCode.dll</HintPath>
+    <Reference Include="XCode, Version=10.0.7695.36863, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.10.0.2021.125-beta3\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +129,7 @@
     <Compile Include="Areas\Admin\Models\ChangePasswordModel.cs" />
     <Compile Include="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="Areas\Admin\Models\DbItem.cs" />
+    <Compile Include="Areas\Admin\Models\UserModel.cs" />
     <Compile Include="Areas\Admin\Views\App\_List_Data.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -611,6 +612,7 @@
     <Compile Include="Web\OAuth\TaobaoClient.cs" />
     <Compile Include="Web\OAuth\QyWeiXin.cs" />
     <Compile Include="Web\OAuth\WeixinClient.cs" />
+    <Compile Include="Web\SsoClient.cs" />
     <Compile Include="Web\SsoProvider.cs" />
     <Compile Include="Web\TokenInfo.cs" />
     <Compile Include="Web\TracerModule.cs" />

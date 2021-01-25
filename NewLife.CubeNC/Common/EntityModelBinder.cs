@@ -8,12 +8,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using XCode;
 
 namespace NewLife.Cube
 {
     /// <summary>实体模型绑定器</summary>
-    public class EntityModelBinder : ComplexTypeModelBinder
+    class EntityModelBinder : ComplexTypeModelBinder
     {
         /// <summary>实例化实体模型绑定器</summary>
         /// <param name="propertyBinders"></param>
@@ -72,6 +73,18 @@ namespace NewLife.Cube
                     //    return entity;
                     //}
 
+                    //var request = bindingContext.HttpContext.Request;
+                    //if (request.ContentType.Contains("json") && request.ContentLength > 0)
+                    //{
+                    //    // 允许同步IO，便于CsvFile刷数据Flush
+                    //    var ft = bindingContext.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+                    //    if (ft != null) ft.AllowSynchronousIO = true;
+
+                    //    var body = request.Body.ToStr();
+                    //    var entityBody = body.ToJsonEntity(modelType) as IEntity;
+                    //    bindingContext.HttpContext.Items["EntityBody"] = entityBody;
+                    //}
+
                     return entity ?? fact.Create(true);
                 }
             }
@@ -109,12 +122,16 @@ namespace NewLife.Cube
                 case TypeCode.String:
                     // 如果有多个值，则修改结果，避免 3,2,5 变成只有3
                     var vs = bindingContext.ValueProvider.GetValue(modelName).Values;
-                    if (vs.Count > 1)
-                    {
-                        result = ModelBindingResult.Success(vs.ToString());
-                    }
+                    if (vs.Count > 1) result = ModelBindingResult.Success(vs.ToString());
                     break;
             }
+
+            //Object val;
+            //var entityBody =  bindingContext.HttpContext.Items["EntityBody"];
+            //if (entityBody != null && (val = _entityBody[modelName]) != null)
+            //{
+            //    result = ModelBindingResult.Success(val);
+            //}
 
             //var fs = bindingContext.HttpContext.Request.Form;
             //if (fs.TryGetValue(modelName, out var vs) && vs.Count > 1)
@@ -153,6 +170,6 @@ namespace NewLife.Cube
         }
 
         /// <summary>实例化</summary>
-        public EntityModelBinderProvider() => XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);//ModelBinderProviders.BinderProviders.Add(new EntityModelBinderProvider());
+        public EntityModelBinderProvider() => XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);
     }
 }

@@ -265,6 +265,7 @@ namespace NewLife.Web.OAuth
                     Mail = user.Mail;
                     Avatar = user.Avatar;
                     Detail = user.Alias;
+                    DepartmentCode = user.MainDepartment;
                 }
             }
 

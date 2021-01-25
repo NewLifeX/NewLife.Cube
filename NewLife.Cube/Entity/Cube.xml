@@ -58,6 +58,7 @@
       <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。AppID" />
       <Column Name="DisplayName" DataType="String" Description="显示名" />
       <Column Name="Secret" DataType="String" Description="密钥。AppSecret" />
+      <Column Name="HomePage" DataType="String" Length="200" Description="首页" />
       <Column Name="Logo" DataType="String" ItemType="image" Description="图标。附件编号列表" />
       <Column Name="White" DataType="String" Length="200" Description="白名单" />
       <Column Name="Black" DataType="String" Length="200" Description="黑名单。黑名单优先于白名单" />
