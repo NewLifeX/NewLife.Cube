@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -114,11 +115,20 @@ namespace NewLife.Cube
             var prv = ManageProvider.Provider;
             if (prv?.Current == null)
             {
-                var retUrl = filterContext.HttpContext.Request.GetEncodedPathAndQuery();
-                //.Host.ToString();//.Url?.PathAndQuery;
+                if (filterContext.HttpContext.Request.Headers["Accept"]
+                    .Any(e => e.Split(',').Any(a => a.Trim() == "application/json")))
+                {
+                    filterContext.HttpContext.Response.StatusCode = 401;
+                    filterContext.Result = new JsonResult(new { code = 401, message = "没有登陆或登录超时！" });
+                }
+                else
+                {
+                    var retUrl = filterContext.HttpContext.Request.GetEncodedPathAndQuery();
+                    //.Host.ToString();//.Url?.PathAndQuery;
 
-                var rurl = "~/Admin/User/Login".AppendReturn(retUrl);
-                filterContext.Result = new RedirectResult(rurl);
+                    var rurl = "~/Admin/User/Login".AppendReturn(retUrl);
+                    filterContext.Result = new RedirectResult(rurl);
+                }
             }
             else
             {
@@ -140,6 +150,13 @@ namespace NewLife.Cube
             var res = $"[{ctrl.ControllerName}/{ act.ActionName}]";
             var msg = $"访问资源 {res} 需要 {pm.GetDescription()} 权限";
             LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
+
+            if (filterContext.HttpContext.Request.Headers["Accept"]
+                .Any(e => e.Split(',').Any(a => a.Trim() == "application/json")))
+            {
+                filterContext.HttpContext.Response.StatusCode = 403;
+                return new JsonResult(new { code = 403, message = msg });
+            }
 
             var menu = ctx.Items["CurrentMenu"] as IMenu;
 
