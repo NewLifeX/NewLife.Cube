@@ -273,8 +273,9 @@ namespace NewLife.Web
                 if (!jwt.TryDecode(token, out var msg))
                 {
                     XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
+                    throw new Exception(msg);
 
-                    return null;
+                    //return null;
                 }
 
                 return jwt.Subject;
