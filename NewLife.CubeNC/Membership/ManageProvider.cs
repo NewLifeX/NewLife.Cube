@@ -263,6 +263,8 @@ namespace NewLife.Cube
 
             if (token.IsNullOrEmpty() || token.Split(".").Length != 3) return null;
 
+            token = token.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
+
             var jwt = GetJwt();
             if (!jwt.TryDecode(token, out var msg))
             {

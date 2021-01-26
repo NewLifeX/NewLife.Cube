@@ -297,7 +297,8 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>获取用户资料</summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [EntityAuthorize]
         public ActionResult Info(Int32 id)
         {
             //if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
@@ -313,6 +314,8 @@ namespace NewLife.Cube.Admin.Controllers
             //user.Password = null;
             user["Password"] = null;
 
+            if (IsJsonRequest) return Json(0, "ok", user);
+
             // 用于显示的列
             if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
             ViewBag.Factory = XCode.Membership.User.Meta.Factory;
@@ -325,7 +328,8 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         [HttpPost]
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [EntityAuthorize]
         public ActionResult Info(User user)
         {
             var cur = ManageProvider.User;
