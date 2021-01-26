@@ -46,6 +46,7 @@
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="NewLife.Core, Version=8.10.7695.36854, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NewLife.Core.8.10.2021.125-beta3\lib\net46\NewLife.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -99,6 +100,7 @@
     </Reference>
     <Reference Include="XCode, Version=10.0.7695.36863, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NewLife.XCode.10.0.2021.125-beta3\lib\net45\XCode.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>
   <ItemGroup>
