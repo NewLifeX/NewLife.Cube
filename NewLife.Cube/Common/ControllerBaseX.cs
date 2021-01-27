@@ -237,6 +237,17 @@ namespace NewLife.Cube
         #endregion
 
         #region Json结果
+
+        /// <summary>成功响应Json结果</summary>
+        /// <param name="message">消息，成功或失败时的文本消息</param>
+        /// <param name="data">数据对象</param>
+        /// <returns></returns>
+        [NonAction]
+        public virtual ActionResult Ok(String message = "ok", Object data = null)
+        {
+            return Json(0, message, data);
+        }
+
         /// <summary>响应Json结果</summary>
         /// <param name="code">代码。0成功，其它为错误代码</param>
         /// <param name="message">消息，成功或失败时的文本消息</param>
