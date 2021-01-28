@@ -278,7 +278,18 @@ namespace NewLife.Cube.Controllers
             var prov = Provider;
 
             var user = prov.Current;
-            if (user == null) throw new Exception("未登录！");
+            if (user == null)
+            {
+                //throw new Exception("未登录！");
+
+#if __CORE__
+                var retUrl = Request.GetEncodedPathAndQuery();
+#else
+                var retUrl = Request.Url?.PathAndQuery;
+#endif
+                var rurl = "~/Admin/User/Login".AppendReturn(retUrl);
+                return Redirect(rurl);
+            }
 
 #if __CORE__
             var url = Request.Headers["Referer"].FirstOrDefault() + "";
