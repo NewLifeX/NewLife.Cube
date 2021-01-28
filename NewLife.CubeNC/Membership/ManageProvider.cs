@@ -308,10 +308,14 @@ namespace NewLife.Cube
             var res = context?.Response;
             if (res == null) return;
 
-            var key = "token";
-            if (user == null)
-                res.Cookies.Delete(key);
-            else
+            var option = new CookieOptions
+            {
+                SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Unspecified,
+                Secure = true
+            };
+
+            var token = "";
+            if (user != null)
             {
                 // 令牌有效期，默认2小时
                 var exp = DateTime.Now.Add(expire.TotalSeconds > 0 ? expire : TimeSpan.FromHours(2));
@@ -319,17 +323,16 @@ namespace NewLife.Cube
                 jwt.Subject = user.Name;
                 jwt.Expire = exp;
 
-                var token = jwt.Encode(null);
-                var option = new CookieOptions
-                {
-                    SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Unspecified,
-                    Secure = true
-                };
+                token = jwt.Encode(null);
                 if (expire.TotalSeconds > 0) option.Expires = DateTimeOffset.Now.Add(expire);
-                res.Cookies.Append(key, token, option);
-
-                context.Items["jwtToken"] = token;
             }
+            else
+            {
+                option.Expires = DateTimeOffset.MinValue;
+            }
+            res.Cookies.Append("token", token, option);
+
+            context.Items["jwtToken"] = token;
         }
         #endregion
 
