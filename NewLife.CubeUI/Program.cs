@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using NewLife.CubeUI.Services;
 using NewLife.Remoting;
+using NewLife.Log;
 
 namespace NewLife.CubeUI
 {
@@ -16,11 +17,21 @@ namespace NewLife.CubeUI
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(
+            builder.Services.AddScoped(sp => new HttpClient
+            {
+                BaseAddress = new Uri(
                 //builder.HostEnvironment.BaseAddress
                 "http://81.69.253.197:8000"
-                ) });
-            builder.Services.AddSingleton(new ApiHttpClient("http://81.69.253.197:8000"));
+                )
+            });
+
+            //XTrace.Log = new CubeUILog();
+            var apiHttpClient = new ApiHttpClient("http://81.69.253.197:8000")
+            {
+                Log = null// XTrace.Log
+            };
+
+            builder.Services.AddSingleton(apiHttpClient);
             builder.Services.AddAntDesign();
             builder.Services.Configure<ProSettings>(builder.Configuration.GetSection("ProSettings"));
 
@@ -38,5 +49,18 @@ namespace NewLife.CubeUI
 
             await host.RunAsync();
         }
+    }
+
+    public class CubeUILog : NewLife.Log.ILog
+    {
+        public Boolean Enable { get; set; }
+        public LogLevel Level { get; set; }
+
+        public void Debug(String format, params Object[] args) { }
+        public void Error(String format, params Object[] args) { }
+        public void Fatal(String format, params Object[] args) { }
+        public void Info(String format, params Object[] args) { }
+        public void Warn(String format, params Object[] args) { }
+        public void Write(LogLevel level, String format, params Object[] args) { }
     }
 }

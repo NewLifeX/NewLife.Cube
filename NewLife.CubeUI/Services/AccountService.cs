@@ -4,8 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using NewLife.CubeUI.Helpers;
 using NewLife.CubeUI.Models;
-using NewLife.Remoting;
+// using NewLife.CubeUI.Models.Req;
+using NewLife.CubeUI.Models.Resp;
 
 namespace NewLife.CubeUI.Services
 {
@@ -24,15 +26,13 @@ namespace NewLife.CubeUI.Services
         private readonly Random _random = new Random();
         private ILocalStorageService _localStorageService;
         private HttpClient _httpClient;
-        private ApiHttpClient _client;
 
         private User _user;
 
-        public AccountService(ILocalStorageService localStorageService, HttpClient httpClient, ApiHttpClient client)
+        public AccountService(ILocalStorageService localStorageService, HttpClient httpClient)
         {
             _localStorageService = localStorageService;
             _httpClient = httpClient;
-            _client = client;
         }
 
         public User User
@@ -56,22 +56,11 @@ namespace NewLife.CubeUI.Services
 
         public async Task LoginAsync(LoginParamsType model)
         {
-            //_client.
-            var content = new FormUrlEncodedContent(
-                 model
-                     .ToDictionary()
-                     .Select(s => new KeyValuePair<String?, String?>(s.Key, s.Value?.ToString()))
-             );
-
-            _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-            var r = await _httpClient.PostAsync("/Admin/User/Login", content);
-
-            var d = await r.Content.ReadAsStringAsync();
-
-            var token = d;
+            // var data = _client.Post<LoginResp>("/Admin/User/Login", model);
+            var data = _httpClient.Post<LoginResp>("/Admin/User/Login", model);
             User = new User()
             {
-                Token = token
+                Token = data.Token
             };
 
             _localStorageService.SetItem(_userKey, User);

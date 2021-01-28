@@ -12,8 +12,12 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
-    <PackageReference Include="NewLife.Core" Version="8.10.2021.123-beta3" />
+    <!--<PackageReference Include="NewLife.Core" Version="8.10.2021.123-beta3" />-->
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\X\NewLife.Core\NewLife.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(SolutionDir)'==''">
@@ -30,9 +34,9 @@
     <Exec WorkingDirectory="$(SolutionDir)" Command="npm install" />
   </Target>
 
-  <Target Name="DebugRunGulp" BeforeTargets="DebugEnsureNodeEnv" Condition=" '$(Configuration)' == 'Debug' And Exists('$(SolutionDir)node_modules') ">
+  <!-- <Target Name="DebugRunGulp" BeforeTargets="DebugEnsureNodeEnv" Condition=" '$(Configuration)' == 'Debug' And Exists('$(SolutionDir)node_modules') ">
     <Exec WorkingDirectory="$(SolutionDir)" Command="npm run gulp:pro" />
-  </Target>
+  </Target> -->
 
   <Target Name="PublishRunGulp" AfterTargets="ComputeFilesToPublish">
     <Exec WorkingDirectory="$(SolutionDir)" Command="npm install" />
