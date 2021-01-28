@@ -236,7 +236,7 @@ namespace NewLife.Cube.Web
                     user2.RoleID = Role.GetOrAdd(set.DefaultRole).ID;
 
                 // 部门
-                if (set.UseSsoDepartment && !client.DepartmentCode.IsNullOrEmpty())
+                if (set.UseSsoDepartment && !client.DepartmentCode.IsNullOrEmpty() && !client.DepartmentName.IsNullOrEmpty())
                 {
                     var dep = Department.FindByCode(client.DepartmentCode);
                     if (dep == null)

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using NewLife.Caching;
 using NewLife.Cube.Web.Models;
 using NewLife.Remoting;
 using XCode.Membership;
@@ -32,6 +34,7 @@ namespace NewLife.Web.OAuth
 
         //private HttpClient _client;
         private readonly String _uri = "https://qyapi.weixin.qq.com/";
+        private ICache _cache;
         #endregion
 
         #region 构造
@@ -47,6 +50,8 @@ namespace NewLife.Web.OAuth
             UserUrl = qyapi + "user/getuserinfo?access_token={token}&code={code}";
 
             Scope = "snsapi_base";
+
+            _cache = Cache.Default ?? new MemoryCache();
         }
 
         /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
@@ -266,6 +271,24 @@ namespace NewLife.Web.OAuth
                     Avatar = user.Avatar;
                     Detail = user.Alias;
                     DepartmentCode = user.MainDepartment;
+                }
+
+                // 根据部门编码，填充部门名称
+                var code = DepartmentCode.ToInt();
+                //if (!DepartmentCode.IsNullOrEmpty() && DepartmentName.IsNullOrEmpty())
+                if (code > 0 && DepartmentName.IsNullOrEmpty())
+                {
+                    var key = $"sso:dps:{CorpId}";
+                    var dps = _cache.Get<DepartmentInfo[]>(key);
+                    if (dps == null || dps.Length == 0)
+                    {
+                        dps = Task.Run(() => GetDepartments()).Result;
+
+                        _cache.Set(key, dps, 3600);
+                    }
+
+                    var dp = dps?.FirstOrDefault(e => e.Id == code);
+                    if (dp != null) DepartmentName = dp.Name;
                 }
             }
 

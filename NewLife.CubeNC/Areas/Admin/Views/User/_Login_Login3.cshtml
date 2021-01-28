@@ -5,7 +5,7 @@
     var set = NewLife.Cube.Setting.Current;
     var returnUrl = ViewBag.ReturnUrl as String;
     var ms = NewLife.Web.OAuthConfig.Current.Items.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
-    var dic = "NewLife=新生命,Baidu=百度,Weixin=微信,Taobao=淘宝,Ding=钉钉".SplitAsDictionary("=", ",");
+    var dic = "NewLife=新生命,Baidu=百度,Weixin=微信,Taobao=淘宝,Ding=钉钉,QyWeiXin=企业微信".SplitAsDictionary("=", ",");
 }
 @if (ms.Count > 0 && set.AutoRegister)
 {
