@@ -42,6 +42,7 @@ namespace NewLife.CubeUI
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<IProfileService, ProfileService>();
             builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+            builder.Services.AddScoped<IMenuService, MenuService>();
 
             var host = builder.Build();
 

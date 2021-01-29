@@ -42,8 +42,6 @@ namespace NewLife.CubeUI.Services
             {
                 if (_user != null) return _user;
 
-                //_user = _localStorageService.GetItem<User>(_userKey).Result;
-
                 return _user;
             }
 
@@ -53,6 +51,12 @@ namespace NewLife.CubeUI.Services
         public async Task Initialize()
         {
             User = await _localStorageService.GetItem<User>(_userKey);
+
+            if (User != null && !User.Token.IsNullOrWhiteSpace())
+            {
+                _httpClient.DefaultRequestHeaders.Authorization
+                    = new AuthenticationHeaderValue("bearer", User.Token);
+            }
         }
 
         public async Task LoginAsync(LoginParamsType model)
@@ -64,6 +68,8 @@ namespace NewLife.CubeUI.Services
                 Token = data.Token
             };
 
+            _httpClient.DefaultRequestHeaders.Authorization
+                = new AuthenticationHeaderValue("bearer", data.Token);
             // Console.WriteLine(data.ToJson());
 
             _localStorageService.SetItem(_userKey, User);

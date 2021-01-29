@@ -18,6 +18,13 @@ namespace NewLife.CubeUI.Helpers
     /// </summary>
     public static class HttpClientHelper
     {
+        /// <typeparam name="TResult">响应类型，优先原始字节数据，字典返回整体，Object返回data，没找到data时返回整体字典，其它对data反序列化</typeparam>
+        /// <param name="client">Http客户端</param>
+        /// <param name="action">服务操作</param>
+        /// <param name="args">参数</param>
+        /// <returns></returns>
+        public static async Task<TResult> GetAsync<TResult>(this HttpClient client, String action, Object args = null) => await client.InvokeAsync<TResult>(HttpMethod.Get, action, args);
+
         /// <summary>同步提交，参数Json打包在Body</summary>
         /// <typeparam name="TResult">响应类型，优先原始字节数据，字典返回整体，Object返回data，没找到data时返回整体字典，其它对data反序列化</typeparam>
         /// <param name="client">Http客户端</param>
