@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NewLife.Data;
+using XCode;
+using XCode.Configuration;
 
 namespace NewLife.Cube
 {
@@ -15,6 +17,9 @@ namespace NewLife.Cube
 
         /// <summary>前缀名称。放在某字段之前</summary>
         public String BeforeName { get; set; }
+
+        /// <summary>后缀名称。放在某字段之后</summary>
+        public String AfterName { get; set; }
 
         /// <summary>显示名</summary>
         public String DisplayName { get; set; }
@@ -34,11 +39,14 @@ namespace NewLife.Cube
         /// <summary>头部标题。数据移上去后显示的文字</summary>
         public String HeaderTitle { get; set; }
 
-        /// <summary>数据动作</summary>
+        /// <summary>数据动作。设为action时走ajax请求</summary>
         public String DataAction { get; set; }
 
         /// <summary>多选数据源</summary>
         public Func<String, IDictionary> DataSourceCallback { get; set; }
+
+        /// <summary>是否显示</summary>
+        public Func<IEntity, FieldItem, Boolean> OnVisible { get; set; }
 
         ///// <summary>最小宽度。单位px</summary>ed
         //public Int32 MinWidth { get; set; }
