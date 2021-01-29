@@ -28,7 +28,7 @@ namespace NewLife.CubeUI.Services
 
         public async Task GetAsync()
         {
-            var data = await _httpClient.GetAsync<List<MenuResp>>("/Admin/Index/GetMenu");
+            var data = await _httpClient.GetAsync<List<MenuResp>>("/Admin/Index/GetMenuTree");
             MenuTree = data;
         }
 

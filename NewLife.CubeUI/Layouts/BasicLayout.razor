@@ -37,6 +37,13 @@ MenuData="_menuData">
             Name = s.Name,
             Key = s.ID + "",
             Icon = s.Icon ?? "smile",
+            Children = s.Children?.Select(ss => new MenuDataItem
+            {
+                Path = ss.Url,
+                Name = ss.Name,
+                Key = ss.ID + "",
+                Icon = ss.Icon ?? "smile"
+            }).ToArray()
         }).ToArray();
 
         await base.OnInitializedAsync();
