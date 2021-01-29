@@ -8,6 +8,7 @@ using NewLife.CubeUI.Helpers;
 using NewLife.CubeUI.Models;
 // using NewLife.CubeUI.Models.Req;
 using NewLife.CubeUI.Models.Resp;
+using NewLife.Serialization;
 
 namespace NewLife.CubeUI.Services
 {
@@ -56,12 +57,14 @@ namespace NewLife.CubeUI.Services
 
         public async Task LoginAsync(LoginParamsType model)
         {
-            // var data = _client.Post<LoginResp>("/Admin/User/Login", model);
-            var data = _httpClient.Post<LoginResp>("/Admin/User/Login", model);
+            var data = await _httpClient.PostAsync<LoginResp>("/Admin/User/Login", model);
             User = new User()
             {
+                Username = model.UserName,
                 Token = data.Token
             };
+
+            // Console.WriteLine(data.ToJson());
 
             _localStorageService.SetItem(_userKey, User);
         }

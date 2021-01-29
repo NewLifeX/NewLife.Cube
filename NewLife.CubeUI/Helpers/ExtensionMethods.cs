@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Specialized;
 using System.Web;
@@ -9,6 +9,8 @@ namespace BlazorApp.Helpers
     {
         public static NameValueCollection QueryString(this NavigationManager navigationManager)
         {
+            Console.WriteLine(navigationManager.Uri);
+            Console.WriteLine(new Uri(navigationManager.Uri).Query);
             return HttpUtility.ParseQueryString(new Uri(navigationManager.Uri).Query);
         }
 

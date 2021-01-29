@@ -25,10 +25,13 @@ namespace NewLife.CubeUI.Pages.User.Login
                 await AccountService.LoginAsync(_model);
 
                 var returnUrl = NavigationManager.QueryString("returnUrl") ?? "/";
+                Console.WriteLine($"Navigate To {returnUrl}");
                 NavigationManager.NavigateTo(returnUrl);
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
+
                 // 错误提示
                 //AlertService.Error(ex.Message);
                 //loading = false;

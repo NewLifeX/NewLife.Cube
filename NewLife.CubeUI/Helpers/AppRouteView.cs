@@ -21,12 +21,17 @@ namespace NewLife.Cube.Helpers
         protected override void Render(RenderTreeBuilder builder)
         {
             var authorize = Attribute.GetCustomAttribute(RouteData.PageType, typeof(AuthorizeAttribute)) != null;
-            if (authorize && AccountService.User == null)
+            // 按理说登录页设置了匿名访问不该来这里的
+            var uri = new Uri(NavigationManager.Uri);
+
+            if (authorize && AccountService.User == null 
+                          && !uri.LocalPath.StartsWith("/user/login", StringComparison.OrdinalIgnoreCase))
             {
-                var returnUrl = WebUtility.UrlEncode(new Uri(NavigationManager.Uri).PathAndQuery);
+                Console.WriteLine($"当前访问地址：{NavigationManager.Uri}");
+                var returnUrl = WebUtility.UrlEncode(uri.PathAndQuery);
+                Console.WriteLine($"returnUrl：{returnUrl}");
                 NavigationManager.NavigateTo($"/User/Login?returnUrl={returnUrl}");
                 base.Render(builder);
-
             }
             else
             {

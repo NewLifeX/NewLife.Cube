@@ -4,9 +4,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NewLife.CubeUI.Services;
 using NewLife.Remoting;
-using NewLife.Log;
+using LogLevel = NewLife.Log.LogLevel;
 
 namespace NewLife.CubeUI
 {
@@ -46,6 +47,8 @@ namespace NewLife.CubeUI
 
             var accountService = host.Services.GetRequiredService<IAccountService>();
             await accountService.Initialize();
+
+            Console.WriteLine("starting...");
 
             await host.RunAsync();
         }

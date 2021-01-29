@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using NewLife.Collections;
 using NewLife.Data;
 using NewLife.Reflection;
@@ -23,8 +24,8 @@ namespace NewLife.CubeUI.Helpers
         /// <param name="action">服务操作</param>
         /// <param name="args">参数</param>
         /// <returns></returns>
-        public static TResult Post<TResult>(this HttpClient client, String action, Object args = null)
-        => client.Invoke<TResult>(HttpMethod.Post, action, args);
+        public static async Task<TResult> PostAsync<TResult>(this HttpClient client, String action, Object args = null)
+        => await client.InvokeAsync<TResult>(HttpMethod.Post, action, args);
 
         /// <summary>异步调用，等待返回结果</summary>
         /// <typeparam name="TResult">响应类型，优先原始字节数据，字典返回整体，Object返回data，没找到data时返回整体字典，其它对data反序列化</typeparam>
@@ -35,7 +36,7 @@ namespace NewLife.CubeUI.Helpers
         /// <param name="onRequest">请求头回调</param>
         /// <param name="dataName">数据字段名称，默认data。同一套rpc体系不同接口的code/message一致，但data可能不同</param>
         /// <returns></returns>
-        public static TResult Invoke<TResult>(this HttpClient client, HttpMethod method, String action, Object args = null, Action<HttpRequestMessage> onRequest = null, String dataName = "data")
+        public static async Task<TResult> InvokeAsync<TResult>(this HttpClient client, HttpMethod method, String action, Object args = null, Action<HttpRequestMessage> onRequest = null, String dataName = "data")
         {
             //if (client?.BaseAddress == null) throw new ArgumentNullException(nameof(client.BaseAddress));
 
@@ -58,7 +59,7 @@ namespace NewLife.CubeUI.Helpers
             try
             {
                 // 发起请求
-                var msg = client.SendAsync(request).Result;
+                var msg = await client.SendAsync(request);
                 return ProcessResponse<TResult>(msg, dataName);
             }
             catch (Exception ex)
