@@ -324,6 +324,8 @@ namespace NewLife.Cube.Controllers
                 uc.Update();
             }
 
+            if (IsJsonRequest) return Ok();
+
 #if __CORE__
             var url = Request.Headers["Referer"].FirstOrDefault() + "";
 #else

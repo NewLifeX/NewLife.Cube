@@ -288,6 +288,8 @@ namespace NewLife.Cube.Admin.Controllers
 
             ManageProvider.Provider.Logout();
 
+            if (IsJsonRequest) return Ok();
+
             if (!returnUrl.IsNullOrEmpty()) return Redirect(returnUrl);
 
             return RedirectToAction(nameof(Login));
@@ -349,7 +351,8 @@ namespace NewLife.Cube.Admin.Controllers
 
         /// <summary>修改密码</summary>
         /// <returns></returns>
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [EntityAuthorize]
         public ActionResult ChangePassword()
         {
             var user = ManageProvider.User as XCode.Membership.User;
@@ -369,7 +372,8 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [EntityAuthorize]
         public ActionResult ChangePassword(ChangePasswordModel model)
         {
             if (model.NewPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"新密码不能为 Null 或空白", nameof(model.NewPassword));
@@ -402,12 +406,15 @@ namespace NewLife.Cube.Admin.Controllers
 
             ViewBag.StatusMessage = "修改成功！";
 
+            if (IsJsonRequest) return Ok(ViewBag.StatusMessage);
+
             return ChangePassword();
         }
 
         /// <summary>用户绑定</summary>
         /// <returns></returns>
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [EntityAuthorize]
         public ActionResult Binds()
         {
             var user = ManageProvider.User as XCode.Membership.User;
@@ -426,6 +433,8 @@ namespace NewLife.Cube.Admin.Controllers
                 Connects = ucs,
                 OAuthItems = ms,
             };
+
+            if (IsJsonRequest) return Ok(data: model);
 
             return View(model);
         }
@@ -493,6 +502,8 @@ namespace NewLife.Cube.Admin.Controllers
             //user.Password = "nopass";
             user.Password = null;
             user.SaveWithoutValid();
+
+            if (IsJsonRequest) return Ok();
 
             return RedirectToAction("Edit", new { id });
         }

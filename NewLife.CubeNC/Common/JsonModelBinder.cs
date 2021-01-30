@@ -39,7 +39,7 @@ namespace NewLife.Cube
 
             var modelType = bindingContext.ModelType;
 
-            if (req.ContentType.Contains("json") && req.ContentLength > 0)
+            if (req.ContentType !=null && req.ContentType.Contains("json") && req.ContentLength > 0)
             {
                 // 允许同步IO，便于CsvFile刷数据Flush
                 var ft = bindingContext.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
