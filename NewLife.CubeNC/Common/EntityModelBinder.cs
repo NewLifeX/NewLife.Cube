@@ -60,7 +60,7 @@ namespace NewLife.Cube
 
                         if (entity == null) entity = fact.Create(true);
                     }
-                    
+
                     // 尝试从body读取json格式的参数
                     var request = bindingContext.HttpContext.Request;
                     if (request.ContentType.Contains("json") && request.ContentLength > 0)
@@ -68,7 +68,7 @@ namespace NewLife.Cube
                         // 允许同步IO
                         var ft = bindingContext.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
                         if (ft != null) ft.AllowSynchronousIO = true;
-                        
+
                         var body = request.Body.ToStr();
                         var entityBody = body.ToJsonEntity(typeof(Object)); // NullableDictionary<string,object>)
                         bindingContext.HttpContext.Items["EntityBody"] = entityBody;
@@ -102,7 +102,10 @@ namespace NewLife.Cube
             {
                 case TypeCode.DateTime:
                     // 客户端可能提交空时间，不要绑定属性，以免出现空时间验证失败
-                    if (result.Model is not DateTime) return Task.CompletedTask;
+                    //if (result.Model is not DateTime) return Task.CompletedTask;
+                    var dt = bindingContext.HttpContext.Request.Form[metadata.Name];
+                    if (dt.Count == 0) return Task.CompletedTask;
+
                     break;
             }
 
