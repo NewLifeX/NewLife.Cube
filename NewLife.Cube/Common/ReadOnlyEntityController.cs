@@ -11,9 +11,11 @@ using System.Xml.Serialization;
 using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
+using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
 using NewLife.Xml;
@@ -505,7 +507,31 @@ namespace NewLife.Cube
                 _ => ListFields
             };
 
-            return Ok(data: fields);
+            var data = fields.Select(s =>
+            {
+                var fm = new FieldModel { };
+
+                fm.Copy(s);
+
+                fm.TypeStr = s.Type.Name;
+
+                return fm;
+            }).ToList();
+
+            var customs = fields.Fields.Select(s =>
+            {
+                var fm = new FieldModel { };
+
+                fm.Copy(s);
+
+                fm.IsCustom = true;
+
+                return fm;
+            }).ToList();
+
+            data.AddRange(customs);
+
+            return Ok(data: data);
         }
 
         #endregion
