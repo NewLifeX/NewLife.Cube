@@ -11,6 +11,10 @@ using AreaX = XCode.Membership.Area;
 using XCode;
 using NewLife.Data;
 using static XCode.Membership.User;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using System.Text;
 
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -28,6 +32,17 @@ namespace NewLife.Cube.Controllers
     [DisplayName("数据接口")]
     public class CubeController : ControllerBaseX
     {
+#if __CORE__
+        private readonly IList<EndpointDataSource> _sources;
+
+        /// <summary>构造函数</summary>
+        /// <param name="sources"></param>
+        public CubeController(IEnumerable<EndpointDataSource> sources)
+        {
+            _sources = sources.ToList();
+        }
+#endif
+
         #region 拦截
 #if __CORE__
         /// <summary>执行后</summary>
@@ -73,6 +88,7 @@ namespace NewLife.Cube.Controllers
         private static readonly String _MachineName = Environment.MachineName;
         private static readonly String _UserName = Environment.UserName;
         private static readonly String _LocalIP = NetHelper.MyIP() + "";
+
         /// <summary>服务器信息，用户健康检测</summary>
         /// <param name="state">状态信息</param>
         /// <returns></returns>
@@ -143,6 +159,54 @@ namespace NewLife.Cube.Controllers
                 GC2 = GC.GetGeneration(2),
             };
         }
+        #endregion
+
+        #region 接口信息
+#if __CORE__
+        /// <summary>获取所有接口信息</summary>
+        /// <returns></returns>
+        public ActionResult Apis()
+        {
+            var set = new List<EndpointDataSource>();
+            var eps = new List<String>();
+            foreach (var item in _sources)
+            {
+                if (!set.Contains(item))
+                {
+                    set.Add(item);
+
+                    //eps.AddRange(item.Endpoints);
+                    foreach (var elm in item.Endpoints)
+                    {
+                        var area = elm.Metadata.GetMetadata<AreaAttribute>();
+                        var disp = elm.Metadata.GetMetadata<DisplayNameAttribute>();
+                        var desc = elm.Metadata.GetMetadata<ControllerActionDescriptor>();
+                        var post = elm.Metadata.GetMetadata<HttpPostAttribute>();
+                        if (desc == null) continue;
+
+                        //var name = area == null ?
+                        //    $"{desc.ControllerName}/{desc.ActionName}" :
+                        //    $"{area?.RouteValue}/{desc.ControllerName}/{desc.ActionName}";
+
+                        var sb = new StringBuilder();
+                        sb.Append(post != null ? "POST " : "GET ");
+                        sb.Append(desc.ControllerName);
+                        sb.Append("/");
+                        sb.Append(desc.ActionName);
+                        sb.Append("(");
+                        sb.Append(desc.MethodInfo.GetParameters().Join(",", pi => $"{pi.ParameterType.Name} {pi.Name}"));
+                        sb.Append(")");
+
+                        var name = sb.ToString();
+
+                        if (!eps.Contains(name)) eps.Add(name);
+                    }
+                }
+            }
+
+            return Json(eps);
+        }
+#endif
         #endregion
 
         #region 用户

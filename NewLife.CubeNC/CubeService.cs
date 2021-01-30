@@ -183,7 +183,7 @@ namespace NewLife.Cube
             app.UseStaticHttpContext();
 
             // 注册中间件
-            app.UseStaticFiles();
+            //app.UseStaticFiles();
             app.UseCookiePolicy();
             app.UseSession();
 
