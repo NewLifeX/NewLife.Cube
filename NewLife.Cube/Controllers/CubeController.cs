@@ -1,26 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using NewLife.Log;
-using XCode.Membership;
 using System.Diagnostics;
-using NewLife.Reflection;
+using System.Linq;
 using System.Reflection;
-using AreaX = XCode.Membership.Area;
-using XCode;
-using NewLife.Data;
-using static XCode.Membership.User;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using System.Text;
+using NewLife.Data;
+using NewLife.Log;
+using NewLife.Reflection;
+using XCode;
+using XCode.Membership;
+using static XCode.Membership.User;
+using AreaX = XCode.Membership.Area;
 
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Routing;
 #else
 using System.Web;
 using System.Web.Mvc;
