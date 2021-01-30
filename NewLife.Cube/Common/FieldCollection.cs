@@ -224,17 +224,19 @@ namespace NewLife.Cube
         /// <summary>添加定制字段，插入指定列之前</summary>
         /// <param name="name"></param>
         /// <param name="beforeName"></param>
+        /// <param name="afterName"></param>
         /// <returns></returns>
-        public DataField AddDataField(String name, String beforeName = null)
+        public DataField AddDataField(String name, String beforeName = null, String afterName = null)
         {
             var df = new DataField
             {
                 Name = name,
                 BeforeName = beforeName,
+                AfterName = afterName,
             };
 
-            var fi = Find(e => e.Name == name);
-            if (fi != null) df.DisplayName = fi.DisplayName;
+            //var fi = Find(e => e.Name == name);
+            //if (fi != null) df.DisplayName = fi.DisplayName;
 
             Fields.Add(df);
 
@@ -256,6 +258,11 @@ namespace NewLife.Cube
         /// <param name="name"></param>
         /// <returns></returns>
         public IList<DataField> GetBeforeFields(String name) => Fields.Where(e => e.BeforeName == name).ToList();
+
+        /// <summary>获取指定列名之后的定制字段</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IList<DataField> GetAfterFields(String name) => Fields.Where(e => e.AfterName == name).ToList();
         #endregion
     }
 }

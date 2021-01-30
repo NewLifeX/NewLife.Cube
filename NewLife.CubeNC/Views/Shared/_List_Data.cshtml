@@ -55,6 +55,22 @@
                     {
                         <th class="text-center" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                     }
+
+                    // 在该字段之后插入的字段
+                    dfs = fields.GetAfterFields(item.Name);
+                    foreach (var elm in dfs)
+                    {
+                        df = elm;
+                        var header = df.Header ?? df.DisplayName ?? df.Name;
+                        if (df.HeaderUrl.IsNullOrEmpty())
+                        {
+                            <th class="text-center" title="@df.HeaderTitle">@header</th>
+                        }
+                        else
+                        {
+                            <th class="text-center" title="@df.HeaderTitle"><a href="@Html.Raw(df.HeaderUrl)">@header</a></th>
+                        }
+                    }
                 }
             }
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
@@ -122,6 +138,30 @@
                         }
 
                         @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
+
+                        // 在该字段之后插入的字段
+                        dfs = fields.GetAfterFields(item.Name);
+                        foreach (var elm in dfs)
+                        {
+                            df = elm;
+                            var name = df.GetDisplayName(entity) ?? df.Header;
+                            if (df.Url.IsNullOrEmpty())
+                            {
+                                <td class="text-center" title="@df.Title">@name</td>
+                            }
+                            else
+                            {
+                                var url = df.GetUrl(entity);
+                                if (df.DataAction.IsNullOrEmpty())
+                                {
+                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                                }
+                                else
+                                {
+                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                                }
+                            }
+                        }
                     }
                 }
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
