@@ -487,6 +487,27 @@ namespace NewLife.Cube
                 throw;
             }
         }
+
+        /// <summary>
+        /// 获取字段
+        /// </summary>
+        /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
+        /// <returns></returns>
+        [EntityAuthorize]
+        public virtual ActionResult GetEntityFields(String kind)
+        {
+            var fields = kind switch
+            {
+                "Detail" => DetailFields,
+                "EditForm" => EditFormFields,
+                "AddForm" => AddFormFields,
+                "List" => ListFields,
+                _ => ListFields
+            };
+
+            return Ok(data: fields);
+        }
+
         #endregion
 
         #region 数据接口

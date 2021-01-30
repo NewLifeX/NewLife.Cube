@@ -218,8 +218,10 @@ namespace NewLife.Cube.Admin.Controllers
         /// 获取菜单树
         /// </summary>
         /// <returns></returns>
-        // [EntityAuthorize(PermissionFlags.Detail)]
-        public List<MenuTree> GetMenu()
+        [EntityAuthorize()]
+        public ActionResult GetMenuTree() => Ok(data: GetMenu());
+
+        private List<MenuTree> GetMenu()
         {
             var user = _provider.Current as IUser ?? XCode.Membership.User.FindAll().FirstOrDefault();
 
