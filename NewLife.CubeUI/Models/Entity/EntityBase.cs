@@ -15,7 +15,7 @@ namespace NewLife.CubeUI.Models.Entity
         {
             get
             {
-                Console.WriteLine($"Get Value:{name}");
+                //Console.WriteLine($"Get Value:{name}");
                 return name;
             }
             set { }

@@ -50,33 +50,33 @@
     protected override bool ShouldRender()
     {
     @*StateHasChanged();*@
-    Console.WriteLine(nameof(ShouldRender));
+    // Console.WriteLine(nameof(ShouldRender));
         return true;
     }
 
     protected override void OnInitialized()
     {
-        Console.WriteLine(nameof(OnInitialized));
+        // Console.WriteLine(nameof(OnInitialized));
 
         base.OnInitialized();
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        Console.WriteLine(nameof(OnAfterRender));
+        // Console.WriteLine(nameof(OnAfterRender));
 
         base.OnAfterRender(firstRender);
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        Console.WriteLine(nameof(OnAfterRenderAsync));
+        // Console.WriteLine(nameof(OnAfterRenderAsync));
         return base.OnAfterRenderAsync(firstRender);
     }
 
     protected override void OnParametersSet()
     {
-        Console.WriteLine(nameof(OnParametersSet));
+        // Console.WriteLine(nameof(OnParametersSet));
 
         base.OnParametersSet();
     }
@@ -85,13 +85,14 @@
     {
         Console.WriteLine(nameof(OnParametersSetAsync));
         fields = await FieldService.GetListFieldsAsync($"{Area}/{ModelName}");
+        data = await EntityService.GetListAsync($"{Area}/{ModelName}");
 
         await base.OnParametersSetAsync();
     }
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        Console.WriteLine(nameof(SetParametersAsync));
+        @*Console.WriteLine(nameof(SetParametersAsync));*@
 
         return base.SetParametersAsync(parameters);
     }

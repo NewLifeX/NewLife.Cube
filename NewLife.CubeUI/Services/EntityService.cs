@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NewLife.CubeUI.Models.Resp;
 using NewLife.CubeUI.Helpers;
 using NewLife.CubeUI.Models.Entity;
+using NewLife.Serialization;
 
 namespace NewLife.CubeUI.Services
 {
@@ -31,28 +32,12 @@ namespace NewLife.CubeUI.Services
         /// <returns></returns>
         public async Task<List<EntityBase>> GetListAsync(String baseUrl)
         {
-            //var data = await _httpClient.PostAsync<List<Object>>($"{baseUrl}/Index");
-            var data = new List<EntityBase>()
-            {
-                new User1()
-                {
-                    ID = 1,
-                    Name = "Name1"
-                },
-                new User1()
-                {
-                    ID = 2,
-                    Name = "Name2"
-                }
-            };
+            var result = await _httpClient.PostAsync<Object>($"{baseUrl}/Index") as List<Object>;
+            
+            var data = result.Select(s
+                => (EntityBase) new Entity().SetValues(s as Dictionary<String, Object>)).ToList();
+
             return data;
         }
-    }
-
-    public class User1 : Entity<User1>
-    {
-        public int ID { get; set; }
-
-        public string Name { get; set; }
     }
 }
