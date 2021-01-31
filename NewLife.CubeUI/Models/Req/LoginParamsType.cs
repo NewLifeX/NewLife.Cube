@@ -16,6 +16,6 @@ namespace NewLife.CubeUI.Models
 
         public bool AutoLogin { get; set; }
 
-        public bool Remember { get; set; }
+        public bool Remember { get => AutoLogin; set { } } 
     }
 }

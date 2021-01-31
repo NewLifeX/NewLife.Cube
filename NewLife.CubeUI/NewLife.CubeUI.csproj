@@ -13,12 +13,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="5.0.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
-    <!--<PackageReference Include="NewLife.Core" Version="8.10.2021.123-beta3" />-->
+    <PackageReference Include="NewLife.Core" Version="8.10.2021.123-beta3" />
+    <PackageReference Include="NewLife.XCode" Version="10.0.2021.123-beta3" />
     <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\X\NewLife.Core\NewLife.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(SolutionDir)'==''">

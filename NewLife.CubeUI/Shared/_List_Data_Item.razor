@@ -1,0 +1,19 @@
+﻿@using NewLife.CubeUI.Models.Resp
+@using NewLife.CubeUI.Models.Entity
+
+@if (Field.IsIdentity)
+{
+    <AntDesign.Column @bind-Field="@Field.Name" Title="@Field.DisplayName"></AntDesign.Column>
+}
+else
+{
+    <AntDesign.Column @bind-Field="@Entity[Field.Name]"  Title="@Field.DisplayName"></AntDesign.Column>
+}
+
+@code {
+    [Parameter]
+    public FieldResp Field { get; set; }    
+
+    [Parameter]
+    public EntityBase Entity { get; set; }
+}

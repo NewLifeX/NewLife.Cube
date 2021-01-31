@@ -1,0 +1,108 @@
+﻿@using System.ComponentModel
+@using AntDesign.TableModels
+@using NewLife.CubeUI.Models.Resp
+@using NewLife.CubeUI.Services
+@using NewLife.CubeUI.Models.Entity
+@inject IFieldService FieldService
+@inject IEntityService EntityService
+
+<Table TItem="EntityBase" DataSource="@data" OnRowClick="@OnRowClick">
+    @foreach (var field in fields)
+        {
+    <_List_Data_Item Entity="@context" Field="@field"></_List_Data_Item>
+    }
+
+    <ActionColumn Title="Acton">
+        <Space Size="middle">
+            <SpaceItem>
+            </SpaceItem>
+            <SpaceItem>
+                <a>Delete</a>
+            </SpaceItem>
+        </Space>
+    </ActionColumn>
+</Table>
+
+@code {
+    [Parameter]
+    public string Area { get; set; }
+
+    [Parameter]
+    public string ModelName { get; set; }
+
+    private List<FieldResp> fields = new List<FieldResp>()
+    {
+    new FieldResp()
+    {
+    Name = "ID"
+    }
+    };
+
+    List<EntityBase> data = new List<EntityBase>()
+    {
+    };
+
+    void OnRowClick(RowData<EntityBase> row)
+    {
+        Console.WriteLine($"row {row.Data["ID"]} was clicked");
+    }
+
+    protected override bool ShouldRender()
+    {
+    @*StateHasChanged();*@
+    Console.WriteLine(nameof(ShouldRender));
+        return true;
+    }
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine(nameof(OnInitialized));
+
+        base.OnInitialized();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Console.WriteLine(nameof(OnAfterRender));
+
+        base.OnAfterRender(firstRender);
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine(nameof(OnAfterRenderAsync));
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine(nameof(OnParametersSet));
+
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Console.WriteLine(nameof(OnParametersSetAsync));
+        fields = await FieldService.GetListFieldsAsync($"{Area}/{ModelName}");
+
+        await base.OnParametersSetAsync();
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        Console.WriteLine(nameof(SetParametersAsync));
+
+        return base.SetParametersAsync(parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        fields = await FieldService.GetListFieldsAsync($"{Area}/{ModelName}");
+        Console.WriteLine(fields.Count);
+        Console.WriteLine(nameof(OnInitializedAsync));
+        await base.OnInitializedAsync();
+
+        data = await EntityService.GetListAsync($"{Area}/{ModelName}");
+    }
+}
