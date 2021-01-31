@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web;
+using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
@@ -122,9 +123,8 @@ namespace NewLife.Web
 
             if (name.IsNullOrEmpty())
             {
-                var set = OAuthConfig.Current;
-                var mi = set.Items.FirstOrDefault(e => !e.AppID.IsNullOrEmpty());
-                if (mi != null) name = mi.Name;
+                var ms = OAuthConfig.GetValids();
+                if (ms.Count > 0) name = ms[0].Name;
             }
             if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name), "未正确配置OAuth");
 
@@ -147,29 +147,36 @@ namespace NewLife.Web
         /// <param name="name"></param>
         public void Apply(String name)
         {
-            var set = OAuthConfig.Current;
-            var ms = set.Items;
-            if (ms == null || ms.Length == 0) throw new InvalidOperationException("未设置OAuth服务端");
+            var ms = OAuthConfig.GetValids();
+            if (ms.Count == 0) throw new InvalidOperationException("未设置OAuth服务端");
 
-            var mi = set.GetOrAdd(name);
-            if (name.IsNullOrEmpty()) mi = ms.FirstOrDefault(e => !e.AppID.IsNullOrEmpty());
-            if (mi == null) throw new InvalidOperationException($"未找到有效的OAuth服务端设置[{name}]");
+            var mi = ms.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+            if (mi == null)
+            {
+                if (name.IsNullOrEmpty()) mi = ms[0];
+                if (mi == null)
+                {
+                    mi = new OAuthConfig { Name = name };
+                    mi.Insert();
+                }
+            }
+            if (mi == null || !mi.Enable) throw new InvalidOperationException($"未找到有效的OAuth服务端设置[{name}]");
 
             Name = mi.Name;
 
-            if (set.Debug) Log = XTrace.Log;
+            if (mi.Debug) Log = XTrace.Log;
 
             Apply(mi);
         }
 
         /// <summary>应用参数设置</summary>
         /// <param name="mi"></param>
-        public virtual void Apply(OAuthItem mi)
+        public virtual void Apply(OAuthConfig mi)
         {
             Name = mi.Name;
             if (!mi.Server.IsNullOrEmpty()) Server = mi.Server;
             if (!mi.AccessServer.IsNullOrEmpty()) AccessServer = mi.AccessServer;
-            if (!mi.AppID.IsNullOrEmpty()) Key = mi.AppID;
+            if (!mi.AppId.IsNullOrEmpty()) Key = mi.AppId;
             if (!mi.Secret.IsNullOrEmpty()) Secret = mi.Secret;
             if (!mi.Scope.IsNullOrEmpty()) Scope = mi.Scope;
         }

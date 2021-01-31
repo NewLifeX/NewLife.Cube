@@ -7,6 +7,8 @@ using NewLife.Collections;
 using NewLife.Log;
 using XCode.Membership;
 using System.IO;
+using NewLife.Cube.Entity;
+using System.Linq;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -86,8 +88,9 @@ namespace NewLife.Web
             Uri uri = null;
 
             // 配置
-            var set = OAuthConfig.Current;
-            if (!set.AppUrl.IsNullOrEmpty()) uri = new Uri(set.AppUrl);
+            var ms = OAuthConfig.GetValids();
+            var mi = ms.FirstOrDefault(e => !e.AppUrl.IsNullOrEmpty());
+            if (mi != null) uri = new Uri(mi.AppUrl);
 
             // 取请求头
             if (uri == null && !req.RawUrl.IsNullOrEmpty()) uri = new Uri(req.Url, req.RawUrl);
@@ -153,8 +156,9 @@ namespace NewLife.Web
             Uri uri = null;
 
             // 配置
-            var set = OAuthConfig.Current;
-            if (!set.AppUrl.IsNullOrEmpty()) uri = new Uri(set.AppUrl);
+            var ms = OAuthConfig.GetValids();
+            var mi = ms.FirstOrDefault(e => !e.AppUrl.IsNullOrEmpty());
+            if (mi != null) uri = new Uri(mi.AppUrl);
 
             // 取请求头
             if (uri == null)

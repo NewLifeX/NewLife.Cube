@@ -1,0 +1,54 @@
+﻿@model BindsModel
+@using System.Linq
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using NewLife.Cube.Entity;
+@using NewLife.Cube.Areas.Admin.Models;
+@{
+    var ms = Model.OAuthItems;
+    var binds = Model.Connects;
+}
+<div class="row">
+    @Html.Partial("_User_Nav")
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label col-md-2">名称</label>
+                <div class="input-group col-md-6">
+                    <input value="@Model.Name" class="col-xs-12 col-sm-8 col-md-6 col-lg-4" disabled="disabled" />
+                </div>
+            </div>
+            @if (ms.Count > 0)
+            {
+                <div class="form-group">
+                    <label class="control-label col-md-2">第三方绑定</label>
+                    <div class="input-group col-md-6">
+                        <ul>
+                            @foreach (var mi in ms)
+                            {
+                                var uc = binds.FirstOrDefault(e => e.Enable && e.Provider.EqualIgnoreCase(mi.Name));
+                                if (uc != null)
+                                {
+                                    <li>
+                                        <span>@mi.Name（已绑定）</span>
+                                        <a href="~/Sso/UnBind/@mi.Name" title="取消绑定 @mi.Name">取消绑定</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <span>@mi.Name（未绑定）</span>
+                                        <a href="~/Sso/Bind/@mi.Name" title="绑定 @mi.Name">去绑定</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

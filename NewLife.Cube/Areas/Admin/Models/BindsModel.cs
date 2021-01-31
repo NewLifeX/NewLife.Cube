@@ -17,6 +17,6 @@ namespace NewLife.Cube.Areas.Admin.Models
         public IList<UserConnect> Connects { get; set; }
 
         /// <summary>可选的第三方</summary>
-        public IList<OAuthItem> OAuthItems { get; set; }
+        public IList<OAuthConfig> OAuthItems { get; set; }
     }
 }

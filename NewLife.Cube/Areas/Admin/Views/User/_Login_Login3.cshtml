@@ -1,9 +1,9 @@
 ﻿@using NewLife.Cube.Web;
+@using NewLife.Cube.Entity;
 @{
     var set = NewLife.Cube.Setting.Current;
     var returnUrl = ViewBag.ReturnUrl as String;
-    var ms = NewLife.Web.OAuthConfig.Current.Items.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
-    var dic = "NewLife=新生命,Baidu=百度,Weixin=微信,Taobao=淘宝,Ding=钉钉".SplitAsDictionary("=", ",");
+    var ms = OAuthConfig.GetValids();
 }
 @if (ms.Count > 0 && set.AutoRegister)
 {
@@ -19,11 +19,7 @@
             <div class="form-group col-sm-12">
                 @foreach (var mi in ms)
                 {
-                    var nickName = "";
-                    if (!dic.TryGetValue(mi.Name, out nickName))
-                    {
-                        nickName = mi.Name;
-                    }
+                    var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
 
                     var url = "Sso/Login?name=" + mi.Name;
                     if (!returnUrl.IsNullOrEmpty())
@@ -32,7 +28,7 @@
                     }
 
                     url = HttpRuntime.AppDomainAppVirtualPath + url;
-                    var logo = ViewHelper.GetLogo(mi.Name);
+                    var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
 
                     <a href="@url">
                         @if (!logo.IsNullOrEmpty())

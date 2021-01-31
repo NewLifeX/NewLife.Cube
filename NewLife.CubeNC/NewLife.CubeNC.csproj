@@ -73,6 +73,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Controllers\FileController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\LogController.cs" Link="Areas\Admin\Controllers\LogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\MenuController.cs" Link="Areas\Admin\Controllers\MenuController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthConfigController.cs" Link="Areas\Admin\Controllers\OAuthConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ParameterController.cs" Link="Areas\Admin\Controllers\ParameterController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Controllers\RoleController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
@@ -102,6 +103,8 @@
     <Compile Include="..\NewLife.Cube\Controllers\HomeController.cs" Link="Controllers\HomeController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\ODataController.cs" Link="Controllers\ODataController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\SsoController.cs" Link="Controllers\SsoController.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\OAuth配置.cs" Link="Entity\OAuth配置.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs" Link="Entity\应用日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
@@ -127,7 +130,6 @@
     <Compile Include="..\NewLife.Cube\Web\Models\DepartmentInfo.cs" Link="Web\Models\DepartmentInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\UserInfo.cs" Link="Web\Models\UserInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthClient.cs" Link="Web\OAuthClient.cs" />
-    <Compile Include="..\NewLife.Cube\Web\OAuthConfig.cs" Link="Web\OAuthConfig.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthServer.cs" Link="Web\OAuthServer.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\BaiduClient.cs" Link="Web\OAuth\BaiduClient.cs" />

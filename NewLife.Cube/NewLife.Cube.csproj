@@ -110,6 +110,7 @@
     </Compile>
     <Compile Include="App_Start\ODataConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\OAuthConfigController.cs" />
     <Compile Include="Areas\Admin\Controllers\AttachmentController.cs" />
     <Compile Include="Areas\Admin\Controllers\AreaController.cs" />
     <Compile Include="Areas\Admin\Controllers\ParameterController.cs" />
@@ -264,6 +265,21 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_List_Search.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Areas\Admin\Views\User\_User_Nav.generated.cs">
+      <DependentUpon>_User_Nav.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Areas\Admin\Views\User\Binds.generated.cs">
+      <DependentUpon>Binds.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Areas\Admin\Views\User\ChangePassword.generated.cs">
+      <DependentUpon>ChangePassword.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Areas\Admin\Views\User\Login.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -345,6 +361,8 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Controllers\SsoController.cs" />
+    <Compile Include="Entity\OAuth配置.Biz.cs" />
+    <Compile Include="Entity\OAuth配置.cs" />
     <Compile Include="Entity\应用日志.Biz.cs" />
     <Compile Include="Entity\应用日志.cs" />
     <Compile Include="Entity\应用系统.Biz.cs" />
@@ -606,7 +624,6 @@
     <Compile Include="Web\Models\DepartmentInfo.cs" />
     <Compile Include="Web\Models\UserInfo.cs" />
     <Compile Include="Web\OAuthClient.cs" />
-    <Compile Include="Web\OAuthConfig.cs" />
     <Compile Include="Web\OAuthHelper.cs" />
     <Compile Include="Web\OAuthServer.cs" />
     <Compile Include="Web\OAuth\DingTalkClient.cs" />
@@ -667,6 +684,18 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Areas\Admin\Views\User\ChangePassword.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>ChangePassword.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Areas\Admin\Views\User\Binds.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Binds.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Areas\Admin\Views\User\_User_Nav.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_User_Nav.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Areas\Admin\Views\User\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
@@ -728,29 +757,11 @@
     <None Include="Content\images\logo\Taobao.png" />
     <None Include="Content\images\logo\Weibo.png" />
     <None Include="Content\images\logo\Weixin.png" />
-    <Content Include="Entity\Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.log</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Build_netcore.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build_netcore.log</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Model.xml" />
+    <Content Include="Content\images\logo\Ding.png" />
     <Content Include="Entity\XCoder.log">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>XCoder.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build_netcore.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build_netcore.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
     </Content>
     <None Include="index.html" />
     <None Include="Entity\Cube.xml">
