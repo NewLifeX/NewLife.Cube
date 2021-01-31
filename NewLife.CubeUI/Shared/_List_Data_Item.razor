@@ -7,7 +7,7 @@
 }
 else
 {
-    <AntDesign.Column @bind-Field="@Entity[Field.Name]"  Title="@Field.DisplayName"></AntDesign.Column>
+    <AntDesign.Column TData="EntityBase" Title="@Field.DisplayName">@Entity[Field.Name]</AntDesign.Column>
 }
 
 @code {

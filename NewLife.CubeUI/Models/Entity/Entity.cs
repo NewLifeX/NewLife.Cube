@@ -21,7 +21,7 @@ namespace NewLife.CubeUI.Models.Entity
                 }
 
                 var pi = GetType().GetProperty(name, bfic);
-                Console.WriteLine(pi?.Name);
+                //Console.WriteLine(pi?.Name);
                 if (pi != null && pi.CanRead) return pi.GetValue(this);
 
                 return null;
@@ -35,7 +35,7 @@ namespace NewLife.CubeUI.Models.Entity
                 }
 
                 var pi = GetType().GetProperty(name, bfic);
-                Console.WriteLine(pi?.Name);
+                //Console.WriteLine(pi?.Name);
                 if (pi != null && pi.CanWrite) pi.SetValue(this, value);
 
                 _item[name] = value;

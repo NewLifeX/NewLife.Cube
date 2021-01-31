@@ -34,7 +34,7 @@ namespace NewLife.CubeUI.Services
         {
             var result = await _httpClient.PostAsync<Object>($"{baseUrl}/Index") as List<Object>;
             
-            var data = result.Select(s
+            var data = result?.Select(s
                 => (EntityBase) new Entity().SetValues(s as Dictionary<String, Object>)).ToList();
 
             return data;

@@ -8,8 +8,8 @@
 
 <Table TItem="EntityBase" DataSource="@data" OnRowClick="@OnRowClick">
     @foreach (var field in fields)
-        {
-    <_List_Data_Item Entity="@context" Field="@field"></_List_Data_Item>
+    {
+        <_List_Data_Item Entity="@context" Field="@field"></_List_Data_Item>
     }
 
     <ActionColumn Title="Acton">
@@ -30,17 +30,9 @@
     [Parameter]
     public string ModelName { get; set; }
 
-    private List<FieldResp> fields = new List<FieldResp>()
-    {
-    new FieldResp()
-    {
-    Name = "ID"
-    }
-    };
+    private List<FieldResp> fields = new List<FieldResp>();
 
-    List<EntityBase> data = new List<EntityBase>()
-    {
-    };
+    List<EntityBase> data = new List<EntityBase>();
 
     void OnRowClick(RowData<EntityBase> row)
     {
@@ -92,9 +84,9 @@
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        @*Console.WriteLine(nameof(SetParametersAsync));*@
+    @*Console.WriteLine(nameof(SetParametersAsync));*@
 
-        return base.SetParametersAsync(parameters);
+    return base.SetParametersAsync(parameters);
     }
 
     protected override async Task OnInitializedAsync()
