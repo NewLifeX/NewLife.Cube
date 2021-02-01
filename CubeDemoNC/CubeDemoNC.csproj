@@ -19,9 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="5.0.2" />
     <PackageReference Include="NewLife.Stardust" Version="1.2.2021.103" />
-    <PackageReference Include="SQLitePCLRaw.core" Version="2.0.5-pre20210119130047" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,12 +43,6 @@
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-    <PackageReference Include="SQLitePCLRaw.bundle_cil">
-      <Version>2.0.5-pre20210119130047</Version>
-    </PackageReference>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="http://json.schemastore.org/behat" /></VisualStudio></ProjectExtensions>
