@@ -11,9 +11,11 @@ using System.Xml.Serialization;
 using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
+using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
 using NewLife.Xml;
@@ -487,6 +489,51 @@ namespace NewLife.Cube
                 throw;
             }
         }
+
+        /// <summary>
+        /// 获取字段
+        /// </summary>
+        /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
+        /// <returns></returns>
+        [EntityAuthorize]
+        public virtual ActionResult GetEntityFields(String kind)
+        {
+            var fields = kind switch
+            {
+                "Detail" => DetailFields,
+                "EditForm" => EditFormFields,
+                "AddForm" => AddFormFields,
+                "List" => ListFields,
+                _ => ListFields
+            };
+
+            var data = fields.Select(s =>
+            {
+                var fm = new FieldModel { };
+
+                fm.Copy(s);
+
+                fm.TypeStr = s.Type.Name;
+
+                return fm;
+            }).ToList();
+
+            var customs = fields.Fields.Select(s =>
+            {
+                var fm = new FieldModel { };
+
+                fm.Copy(s);
+
+                fm.IsCustom = true;
+
+                return fm;
+            }).ToList();
+
+            data.AddRange(customs);
+
+            return Ok(data: data);
+        }
+
         #endregion
 
         #region 数据接口
