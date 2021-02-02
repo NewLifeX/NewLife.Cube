@@ -70,6 +70,8 @@ namespace NewLife.Cube
 
             var list = EntityTree<TEntity>.Root.AllChilds;
 
+            if (IsJsonRequest) return Json(0, null, list, new { pager = p });
+
             return View("ListTree", list);
         }
 
