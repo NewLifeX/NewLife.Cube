@@ -151,15 +151,7 @@ namespace NewLife.Web
             if (ms.Count == 0) throw new InvalidOperationException("未设置OAuth服务端");
 
             var mi = ms.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
-            if (mi == null)
-            {
-                if (name.IsNullOrEmpty()) mi = ms[0];
-                if (mi == null)
-                {
-                    mi = new OAuthConfig { Name = name };
-                    mi.Insert();
-                }
-            }
+            if (mi == null && name.IsNullOrEmpty()) mi = ms[0];
             if (mi == null || !mi.Enable) throw new InvalidOperationException($"未找到有效的OAuth服务端设置[{name}]");
 
             Name = mi.Name;
