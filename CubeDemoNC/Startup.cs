@@ -6,7 +6,10 @@ using Microsoft.Extensions.Hosting;
 using NewLife.Cube;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
+using NewLife.Threading;
+using Stardust;
 using Stardust.Monitors;
+using Setting = NewLife.Cube.Setting;
 
 namespace CubeDemoNC
 {
@@ -62,6 +65,13 @@ namespace CubeDemoNC
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+            });
+
+            // 探测星尘
+            ThreadPoolX.QueueUserWorkItem(() =>
+            {
+                var client = new LocalStarClient();
+                client.ProbeAndInstall(null, "1.1");
             });
         }
     }

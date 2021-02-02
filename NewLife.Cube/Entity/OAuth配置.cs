@@ -51,22 +51,6 @@ namespace NewLife.Cube.Entity
         [BindColumn("Logo", "图标", "")]
         public String Logo { get => _Logo; set { if (OnPropertyChanging("Logo", value)) { _Logo = value; OnPropertyChanged("Logo"); } } }
 
-        private String _Server;
-        /// <summary>服务地址</summary>
-        [DisplayName("服务地址")]
-        [Description("服务地址")]
-        [DataObjectField(false, false, true, 200)]
-        [BindColumn("Server", "服务地址", "")]
-        public String Server { get => _Server; set { if (OnPropertyChanging("Server", value)) { _Server = value; OnPropertyChanged("Server"); } } }
-
-        private String _AccessServer;
-        /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
-        [DisplayName("令牌服务地址")]
-        [Description("令牌服务地址。可以不同于验证地址的内网直达地址")]
-        [DataObjectField(false, false, true, 200)]
-        [BindColumn("AccessServer", "令牌服务地址。可以不同于验证地址的内网直达地址", "")]
-        public String AccessServer { get => _AccessServer; set { if (OnPropertyChanging("AccessServer", value)) { _AccessServer = value; OnPropertyChanged("AccessServer"); } } }
-
         private String _AppId;
         /// <summary>应用标识</summary>
         [DisplayName("应用标识")]
@@ -82,6 +66,22 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, true, 50)]
         [BindColumn("Secret", "应用密钥。", "")]
         public String Secret { get => _Secret; set { if (OnPropertyChanging("Secret", value)) { _Secret = value; OnPropertyChanged("Secret"); } } }
+
+        private String _Server;
+        /// <summary>服务地址</summary>
+        [DisplayName("服务地址")]
+        [Description("服务地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("Server", "服务地址", "")]
+        public String Server { get => _Server; set { if (OnPropertyChanging("Server", value)) { _Server = value; OnPropertyChanged("Server"); } } }
+
+        private String _AccessServer;
+        /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
+        [DisplayName("令牌服务地址")]
+        [Description("令牌服务地址。可以不同于验证地址的内网直达地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("AccessServer", "令牌服务地址。可以不同于验证地址的内网直达地址", "")]
+        public String AccessServer { get => _AccessServer; set { if (OnPropertyChanging("AccessServer", value)) { _AccessServer = value; OnPropertyChanged("AccessServer"); } } }
 
         private String _Scope;
         /// <summary>授权范围</summary>
@@ -186,10 +186,10 @@ namespace NewLife.Cube.Entity
                     case "Name": return _Name;
                     case "NickName": return _NickName;
                     case "Logo": return _Logo;
-                    case "Server": return _Server;
-                    case "AccessServer": return _AccessServer;
                     case "AppId": return _AppId;
                     case "Secret": return _Secret;
+                    case "Server": return _Server;
+                    case "AccessServer": return _AccessServer;
                     case "Scope": return _Scope;
                     case "Enable": return _Enable;
                     case "Debug": return _Debug;
@@ -212,10 +212,10 @@ namespace NewLife.Cube.Entity
                     case "Name": _Name = Convert.ToString(value); break;
                     case "NickName": _NickName = Convert.ToString(value); break;
                     case "Logo": _Logo = Convert.ToString(value); break;
-                    case "Server": _Server = Convert.ToString(value); break;
-                    case "AccessServer": _AccessServer = Convert.ToString(value); break;
                     case "AppId": _AppId = Convert.ToString(value); break;
                     case "Secret": _Secret = Convert.ToString(value); break;
+                    case "Server": _Server = Convert.ToString(value); break;
+                    case "AccessServer": _AccessServer = Convert.ToString(value); break;
                     case "Scope": _Scope = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
                     case "Debug": _Debug = value.ToBoolean(); break;
@@ -249,17 +249,17 @@ namespace NewLife.Cube.Entity
             /// <summary>图标</summary>
             public static readonly Field Logo = FindByName("Logo");
 
-            /// <summary>服务地址</summary>
-            public static readonly Field Server = FindByName("Server");
-
-            /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
-            public static readonly Field AccessServer = FindByName("AccessServer");
-
             /// <summary>应用标识</summary>
             public static readonly Field AppId = FindByName("AppId");
 
             /// <summary>应用密钥。</summary>
             public static readonly Field Secret = FindByName("Secret");
+
+            /// <summary>服务地址</summary>
+            public static readonly Field Server = FindByName("Server");
+
+            /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
+            public static readonly Field AccessServer = FindByName("AccessServer");
 
             /// <summary>授权范围</summary>
             public static readonly Field Scope = FindByName("Scope");
@@ -312,17 +312,17 @@ namespace NewLife.Cube.Entity
             /// <summary>图标</summary>
             public const String Logo = "Logo";
 
-            /// <summary>服务地址</summary>
-            public const String Server = "Server";
-
-            /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
-            public const String AccessServer = "AccessServer";
-
             /// <summary>应用标识</summary>
             public const String AppId = "AppId";
 
             /// <summary>应用密钥。</summary>
             public const String Secret = "Secret";
+
+            /// <summary>服务地址</summary>
+            public const String Server = "Server";
+
+            /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
+            public const String AccessServer = "AccessServer";
 
             /// <summary>授权范围</summary>
             public const String Scope = "Scope";

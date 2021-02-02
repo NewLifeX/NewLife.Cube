@@ -133,10 +133,10 @@
       <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。提供者名称" />
       <Column Name="NickName" DataType="String" Description="昵称" />
       <Column Name="Logo" DataType="String" Description="图标" />
-      <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
-      <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
       <Column Name="AppId" DataType="String" Description="应用标识" />
       <Column Name="Secret" DataType="String" Description="应用密钥。" />
+      <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
+      <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
       <Column Name="Scope" DataType="String" Description="授权范围" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="Debug" DataType="Boolean" Description="调试。设置处于调试状态，输出详细日志" />
