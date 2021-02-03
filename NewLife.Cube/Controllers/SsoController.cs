@@ -317,11 +317,13 @@ namespace NewLife.Cube.Controllers
 
             var binds = UserConnect.FindAllByUserID(user.ID);
 
-            var uc = binds.FirstOrDefault(e => e.Provider.EqualIgnoreCase(id));
-            if (uc != null)
+            foreach (var uc in binds)
             {
-                uc.Enable = false;
-                uc.Update();
+                if (uc.Provider.EqualIgnoreCase(id))
+                {
+                    uc.Enable = false;
+                    uc.Update();
+                }
             }
 
             if (IsJsonRequest) return Ok();
