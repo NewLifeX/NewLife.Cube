@@ -12,6 +12,8 @@ using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Security;
 using XCode;
+using NewLife.Threading;
+using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +53,41 @@ namespace NewLife.Cube.Web
             RedirectUrl = "~/Sso/LoginInfo";
             SuccessUrl = "~/Admin";
             LoginUrl = "~/Admin/User/Login";
+        }
+
+        static SsoProvider()
+        {
+            // 同步旧版OAuth配置到数据库
+            ThreadPoolX.QueueUserWorkItem(() =>
+            {
+                var set = NewLife.Web.OAuthConfig.Current;
+                if (set.Items != null)
+                {
+                    var list = OAuthConfig.FindAll();
+                    foreach (var item in set.Items)
+                    {
+                        if (item.Name.IsNullOrEmpty()) continue;
+
+                        var mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Name));
+                        if (mi == null)
+                        {
+                            mi = new OAuthConfig
+                            {
+                                Name = item.Name,
+                                Enable = !item.AppID.IsNullOrEmpty()
+                            };
+                            list.Add(mi);
+                        }
+
+                        if (mi.Server.IsNullOrEmpty()) mi.Server = item.Server;
+                        if (mi.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
+                        if (mi.AppId.IsNullOrEmpty()) mi.AppId = item.AppID;
+                        if (mi.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
+                        if (mi.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
+                    }
+                    list.Save();
+                }
+            });
         }
         #endregion
 

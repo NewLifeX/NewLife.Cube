@@ -106,11 +106,11 @@ namespace NewLife.Cube.Entity
             Add("Github", "Github", "/Content/images/logo/Github.png");
             Add("Baidu", "百度", "/Content/images/logo/Baidu.png");
             Add("Ding", "钉钉", "/Content/images/logo/Ding.png");
-            Add("QyWeiXin", "企业微信", "/Content/images/logo/Weixin.png");
+            Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeixin.png");
             Add("Weixin", "微信", "/Content/images/logo/Weixin.png");
-            Add("Weibo", "微博", "/Content/images/logo/Weibo.png");
-            Add("Taobao", "淘宝", "/Content/images/logo/Taobao.png");
-            Add("Alipay", "支付宝", "/Content/images/logo/Alipay.png");
+            //Add("Weibo", "微博", "/Content/images/logo/Weibo.png");
+            //Add("Taobao", "淘宝", "/Content/images/logo/Taobao.png");
+            //Add("Alipay", "支付宝", "/Content/images/logo/Alipay.png");
 
             if (XTrace.Debug) XTrace.WriteLine("完成初始化OAuthConfig[OAuth配置]数据！");
         }

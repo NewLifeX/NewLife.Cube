@@ -621,6 +621,7 @@
     <Compile Include="Web\Models\DepartmentInfo.cs" />
     <Compile Include="Web\Models\UserInfo.cs" />
     <Compile Include="Web\OAuthClient.cs" />
+    <Compile Include="Web\OAuthConfig.cs" />
     <Compile Include="Web\OAuthHelper.cs" />
     <Compile Include="Web\OAuthServer.cs" />
     <Compile Include="Web\OAuth\DingTalkClient.cs" />
