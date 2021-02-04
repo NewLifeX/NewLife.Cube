@@ -34,6 +34,10 @@ namespace NewLife.Web.OAuth
         {
             switch (mode)
             {
+                // 扫码登录
+                case "snsapi_login":
+                    AuthUrl = "qrconnect?appid={key}&response_type=code&scope={scope}&state={state}&redirect_uri={redirect}";
+                    break;
                 // 静默授权，用户无感知
                 case "snsapi_base":
                     Scope = mode;
