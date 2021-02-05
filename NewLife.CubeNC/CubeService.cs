@@ -48,12 +48,14 @@ namespace NewLife.Cube
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             // 配置Cookie策略
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // 此项为true需要用户授权才能记录cookie
-                options.CheckConsentNeeded = context => false;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+            services.ConfigureNonBreakingSameSiteCookies();
+            //services.Configure<CookiePolicyOptions>(options =>
+            //{
+            //    // 此项为true需要用户授权才能记录cookie
+            //    options.CheckConsentNeeded = context => false;
+            //    options.MinimumSameSitePolicy = SameSiteMode.None;
+            //});
+
 
             // 添加Session会话支持
             services.AddSession();
