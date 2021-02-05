@@ -3,7 +3,7 @@
 @{
     var set = NewLife.Cube.Setting.Current;
     var returnUrl = ViewBag.ReturnUrl as String;
-    var ms = OAuthConfig.GetValids();
+    var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
 }
 @if (ms.Count > 0 && set.AutoRegister)
 {

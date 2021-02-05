@@ -149,7 +149,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-            var ms = OAuthConfig.GetValids();
+            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
             if (ms != null && !Setting.Current.AllowLogin)
             {
                 if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
@@ -425,7 +425,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 第三方绑定
             var ucs = UserConnect.FindAllByUserID(user.ID);
-            var ms = OAuthConfig.GetValids();
+            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
 
             var model = new BindsModel
             {

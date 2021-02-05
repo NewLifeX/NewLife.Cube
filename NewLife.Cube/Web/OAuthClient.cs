@@ -9,6 +9,7 @@ using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Serialization;
+using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
 
 namespace NewLife.Web
 {
@@ -123,7 +124,7 @@ namespace NewLife.Web
 
             if (name.IsNullOrEmpty())
             {
-                var ms = OAuthConfig.GetValids();
+                var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
                 if (ms.Count > 0) name = ms[0].Name;
             }
             if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name), "未正确配置OAuth");
@@ -147,7 +148,7 @@ namespace NewLife.Web
         /// <param name="name"></param>
         public void Apply(String name)
         {
-            var ms = OAuthConfig.GetValids();
+            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
             if (ms.Count == 0) throw new InvalidOperationException("未设置OAuth服务端");
 
             var mi = ms.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
@@ -163,7 +164,7 @@ namespace NewLife.Web
 
         /// <summary>应用参数设置</summary>
         /// <param name="mi"></param>
-        public virtual void Apply(OAuthConfig mi)
+        public virtual void Apply(NewLife.Cube.Entity.OAuthConfig mi)
         {
             Name = mi.Name;
             if (!mi.Server.IsNullOrEmpty()) Server = mi.Server;

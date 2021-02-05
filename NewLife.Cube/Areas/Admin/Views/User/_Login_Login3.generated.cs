@@ -59,7 +59,7 @@ namespace ASP
   
     var set = NewLife.Cube.Setting.Current;
     var returnUrl = ViewBag.ReturnUrl as String;
-    var ms = OAuthConfig.GetValids();
+    var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
 
             
             #line default
@@ -135,14 +135,14 @@ WriteLiteral(">\r\n");
             #line hidden
 WriteLiteral("                    <a");
 
-WriteAttribute("href", Tuple.Create(" href=\"", 1399), Tuple.Create("\"", 1410)
+WriteAttribute("href", Tuple.Create(" href=\"", 1419), Tuple.Create("\"", 1430)
             
             #line 33 "..\..\Areas\Admin\Views\User\_Login_Login3.cshtml"
-, Tuple.Create(Tuple.Create("", 1406), Tuple.Create<System.Object, System.Int32>(url
+, Tuple.Create(Tuple.Create("", 1426), Tuple.Create<System.Object, System.Int32>(url
             
             #line default
             #line hidden
-, 1406), false)
+, 1426), false)
 );
 
 WriteLiteral(">\r\n");
@@ -165,24 +165,24 @@ WriteLiteral("                            ");
 
 WriteLiteral("<img");
 
-WriteAttribute("src", Tuple.Create(" src=\"", 1532), Tuple.Create("\"", 1543)
+WriteAttribute("src", Tuple.Create(" src=\"", 1552), Tuple.Create("\"", 1563)
             
             #line 36 "..\..\Areas\Admin\Views\User\_Login_Login3.cshtml"
-, Tuple.Create(Tuple.Create("", 1538), Tuple.Create<System.Object, System.Int32>(logo
+, Tuple.Create(Tuple.Create("", 1558), Tuple.Create<System.Object, System.Int32>(logo
             
             #line default
             #line hidden
-, 1538), false)
+, 1558), false)
 );
 
-WriteAttribute("title", Tuple.Create(" title=\"", 1544), Tuple.Create("\"", 1561)
+WriteAttribute("title", Tuple.Create(" title=\"", 1564), Tuple.Create("\"", 1581)
             
             #line 36 "..\..\Areas\Admin\Views\User\_Login_Login3.cshtml"
-, Tuple.Create(Tuple.Create("", 1552), Tuple.Create<System.Object, System.Int32>(nickName
+, Tuple.Create(Tuple.Create("", 1572), Tuple.Create<System.Object, System.Int32>(nickName
             
             #line default
             #line hidden
-, 1552), false)
+, 1572), false)
 );
 
 WriteLiteral(" style=\"width: 64px; height: 64px;\"");

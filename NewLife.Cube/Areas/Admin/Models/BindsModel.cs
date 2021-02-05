@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using NewLife.Cube.Entity;
-using NewLife.Web;
+using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
 
 namespace NewLife.Cube.Areas.Admin.Models
 {

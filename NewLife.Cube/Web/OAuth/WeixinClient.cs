@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using NewLife.Cube.Entity;
 
 namespace NewLife.Web.OAuth
 {
@@ -21,7 +19,7 @@ namespace NewLife.Web.OAuth
 
         /// <summary>应用参数</summary>
         /// <param name="mi"></param>
-        public override void Apply(OAuthConfig mi)
+        public override void Apply(NewLife.Cube.Entity.OAuthConfig mi)
         {
             base.Apply(mi);
 

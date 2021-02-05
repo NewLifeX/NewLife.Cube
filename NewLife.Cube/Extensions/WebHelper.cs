@@ -88,7 +88,7 @@ namespace NewLife.Web
             Uri uri = null;
 
             // 配置
-            var ms = OAuthConfig.GetValids();
+            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
             var mi = ms.FirstOrDefault(e => !e.AppUrl.IsNullOrEmpty());
             if (mi != null) uri = new Uri(mi.AppUrl);
 
@@ -156,7 +156,7 @@ namespace NewLife.Web
             Uri uri = null;
 
             // 配置
-            var ms = OAuthConfig.GetValids();
+            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
             var mi = ms.FirstOrDefault(e => !e.AppUrl.IsNullOrEmpty());
             if (mi != null) uri = new Uri(mi.AppUrl);
 
