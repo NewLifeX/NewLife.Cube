@@ -308,11 +308,7 @@ namespace NewLife.Cube
             var res = context?.Response;
             if (res == null) return;
 
-            var option = new CookieOptions
-            {
-                SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Unspecified,
-                Secure = true
-            };
+            var option = new CookieOptions();
 
             var token = "";
             if (user != null)
