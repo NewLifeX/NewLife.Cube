@@ -2,6 +2,8 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using NewLife.Collections;
+using NewLife.Serialization;
 
 namespace NewLife.Cube.Extensions
 {
@@ -47,6 +49,30 @@ namespace NewLife.Cube.Extensions
             if (request.GetRequestValue("output").EqualIgnoreCase("json")) return true;
 
             return false;
+        }
+
+        /// <summary>
+        /// 获取请求中的body对象，第一次解析后存储在HttpContext.Items["RequestBody"]中
+        /// </summary>
+        /// <param name="request"></param>
+        /// <remarks>如果类型是Object，返回的类型则是<see cref="NullableDictionary{String,Object}"/></remarks>
+        public static T GetRequestBody<T>(this HttpRequest request) where T : class, new()
+        {
+            if (!request.IsAjaxRequest()) return null;
+
+            if (request.HttpContext.Items["RequestBody"] is T requestBody) return requestBody;
+
+            // 允许同步IO
+            var ft = request.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            if (ft != null) ft.AllowSynchronousIO = true;
+
+            var body = request.Body.ToStr();
+
+            var entityBody = body.ToJsonEntity(typeof(T));
+            request.HttpContext.Items["RequestBody"] = entityBody;
+
+            return entityBody as T;
+
         }
     }
 }
