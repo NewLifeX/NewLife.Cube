@@ -7,6 +7,7 @@ using NewLife.Collections;
 using NewLife.Log;
 using XCode.Membership;
 using System.IO;
+using NewLife.Cube.Extensions;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -139,6 +140,18 @@ namespace NewLife.Web
                         dic[item] = value.ToString().Trim();
                     }
                 }
+
+                // 尝试从body读取json格式的参数
+                if (req.GetRequestBody<Object>() is NullableDictionary<String, Object> entityBody)
+                {
+                    foreach (var (key, value) in entityBody)
+                    {
+                        var v = value?.ToString()?.Trim();
+                        if (v.IsNullOrWhiteSpace()) continue;
+                        dic[key] = v;
+                    }
+                }
+
                 ctx.Items["Params"] = dic;
 
                 return dic;
