@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Serialization;
@@ -62,16 +63,11 @@ namespace NewLife.Cube
                     }
 
                     // 尝试从body读取json格式的参数
-                    var request = bindingContext.HttpContext.Request;
-                    if (request.ContentType.Contains("json") && request.ContentLength > 0)
+                    var ctx = bindingContext.HttpContext;
+                    var request = ctx.Request;
+                    if (request.GetRequestBody<Object>() != null)
                     {
-                        // 允许同步IO
-                        var ft = bindingContext.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-                        if (ft != null) ft.AllowSynchronousIO = true;
-
-                        var body = request.Body.ToStr();
-                        var entityBody = body.ToJsonEntity(typeof(Object)); // NullableDictionary<string,object>)
-                        bindingContext.HttpContext.Items["EntityBody"] = entityBody;
+                        ctx.Items["EntityBody"] = ctx.Items["RequestBody"];
                     }
 
                     return entity ?? fact.Create(true);
@@ -97,7 +93,21 @@ namespace NewLife.Cube
         protected override Task BindProperty(ModelBindingContext bindingContext)
         {
             var metadata = bindingContext.ModelMetadata;
-            var result = bindingContext.Result;
+
+            // 优先从json body中读取值
+            Object val;
+            var entityBody = bindingContext.HttpContext.Items["EntityBody"] as NewLife.Collections.NullableDictionary<String, Object>;
+            var fieldName = bindingContext.FieldName;
+            if (entityBody != null && (val = entityBody[fieldName]) != null)
+            {
+                bindingContext.Result = ModelBindingResult.Success(val);
+                return Task.CompletedTask;
+            }
+
+            // 表单中也没值，直接返回
+            if (!bindingContext.HttpContext.Request.HasFormContentType)
+                return Task.CompletedTask;
+
             switch (metadata.ModelType.GetTypeCode())
             {
                 case TypeCode.DateTime:
@@ -107,15 +117,6 @@ namespace NewLife.Cube
                     if (dt.Count == 0) return Task.CompletedTask;
 
                     break;
-            }
-
-            Object val;
-            var entityBody = bindingContext.HttpContext.Items["EntityBody"] as NewLife.Collections.NullableDictionary<String, Object>;
-            var fieldName = bindingContext.FieldName;
-            if (entityBody != null && (val = entityBody[fieldName]) != null)
-            {
-                bindingContext.Result = ModelBindingResult.Success(val);
-                return Task.CompletedTask;
             }
 
             return base.BindProperty(bindingContext);
