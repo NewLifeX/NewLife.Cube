@@ -42,7 +42,7 @@ namespace NewLife.Cube.Web
 
         /// <summary>应用参数</summary>
         /// <param name="mi"></param>
-        public override void Apply(OAuthItem mi)
+        public override void Apply(NewLife.Cube.Entity.OAuthConfig mi)
         {
             base.Apply(mi);
 

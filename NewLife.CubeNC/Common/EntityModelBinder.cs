@@ -114,7 +114,7 @@ namespace NewLife.Cube
                     // 客户端可能提交空时间，不要绑定属性，以免出现空时间验证失败
                     //if (result.Model is not DateTime) return Task.CompletedTask;
                     var dt = bindingContext.HttpContext.Request.Form[metadata.Name];
-                    if (dt.Count == 0) return Task.CompletedTask;
+                    if (dt.Count == 0 || dt.ToString().IsNullOrEmpty()) return Task.CompletedTask;
 
                     break;
             }

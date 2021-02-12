@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using NewLife.Data;
 using XCode;
@@ -8,6 +7,18 @@ using XCode.Configuration;
 
 namespace NewLife.Cube
 {
+    /// <summary>获取数据源委托</summary>
+    /// <param name="entity"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    public delegate IDictionary DataSourceDelegate(IEntity entity, FieldItem field);
+
+    /// <summary>数据可见委托</summary>
+    /// <param name="entity"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    public delegate Boolean DataVisibleDelegate(IEntity entity, FieldItem field);
+
     /// <summary>数据字段。用于定制数据列</summary>
     public class DataField
     {
@@ -43,13 +54,10 @@ namespace NewLife.Cube
         public String DataAction { get; set; }
 
         /// <summary>多选数据源</summary>
-        public Func<String, IDictionary> DataSourceCallback { get; set; }
+        public DataSourceDelegate DataSource { get; set; }
 
         /// <summary>是否显示</summary>
-        public Func<IEntity, FieldItem, Boolean> OnVisible { get; set; }
-
-        ///// <summary>最小宽度。单位px</summary>ed
-        //public Int32 MinWidth { get; set; }
+        public DataVisibleDelegate DataVisible { get; set; }
         #endregion
 
         #region 方法

@@ -67,12 +67,12 @@ namespace NewLife.Cube.Admin.Controllers
 
             {
                 var df = AddFormFields.AddDataField("RoleIds");
-                df.DataSourceCallback = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }
 
             {
                 var df = EditFormFields.AddDataField("RoleIds");
-                df.DataSourceCallback = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }
         }
 
@@ -149,7 +149,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-            var ms = OAuthConfig.Current.Items?.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
+            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
             if (ms != null && !Setting.Current.AllowLogin)
             {
                 if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
@@ -425,7 +425,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 第三方绑定
             var ucs = UserConnect.FindAllByUserID(user.ID);
-            var ms = OAuthConfig.Current.Items.Where(e => !e.AppID.IsNullOrEmpty()).ToList();
+            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
 
             var model = new BindsModel
             {
@@ -495,7 +495,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize(PermissionFlags.Update)]
         public ActionResult ClearPassword(Int32 id)
         {
-            if (ManageProvider.User.RoleName != "管理员") throw new Exception("清除密码操作需要管理员权限，非法操作！");
+            if (!ManageProvider.User.Role.IsSystem) throw new Exception("清除密码操作需要管理员权限，非法操作！");
 
             // 前面表单可能已经清空密码
             var user = XCode.Membership.User.FindByID(id);

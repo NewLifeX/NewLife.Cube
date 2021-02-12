@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using NewLife.Cube.Entity;
-using NewLife.Web;
+using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
 
 namespace NewLife.Cube.Areas.Admin.Models
 {
@@ -17,6 +15,6 @@ namespace NewLife.Cube.Areas.Admin.Models
         public IList<UserConnect> Connects { get; set; }
 
         /// <summary>可选的第三方</summary>
-        public IList<OAuthItem> OAuthItems { get; set; }
+        public IList<OAuthConfig> OAuthItems { get; set; }
     }
 }

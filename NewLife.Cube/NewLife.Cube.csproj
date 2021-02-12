@@ -46,10 +46,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NewLife.Core, Version=8.10.7695.36854, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.Core.8.10.2021.125-beta3\lib\net45\NewLife.Core.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
+    <Reference Include="NewLife.Core, Version=8.10.7703.42930, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.Core.8.10.2021.202\lib\net45\NewLife.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -86,10 +84,8 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="XCode, Version=10.0.7695.36863, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NewLife.XCode.10.0.2021.125-beta3\lib\net45\XCode.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
+    <Reference Include="XCode, Version=10.0.7703.42933, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NewLife.XCode.10.0.2021.202\lib\net45\XCode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +106,7 @@
     </Compile>
     <Compile Include="App_Start\ODataConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\OAuthConfigController.cs" />
     <Compile Include="Areas\Admin\Controllers\AttachmentController.cs" />
     <Compile Include="Areas\Admin\Controllers\AreaController.cs" />
     <Compile Include="Areas\Admin\Controllers\ParameterController.cs" />
@@ -264,6 +261,21 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>_List_Search.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Areas\Admin\Views\User\_User_Nav.generated.cs">
+      <DependentUpon>_User_Nav.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Areas\Admin\Views\User\Binds.generated.cs">
+      <DependentUpon>Binds.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Areas\Admin\Views\User\ChangePassword.generated.cs">
+      <DependentUpon>ChangePassword.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Areas\Admin\Views\User\Login.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -345,6 +357,8 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Controllers\SsoController.cs" />
+    <Compile Include="Entity\OAuth配置.Biz.cs" />
+    <Compile Include="Entity\OAuth配置.cs" />
     <Compile Include="Entity\应用日志.Biz.cs" />
     <Compile Include="Entity\应用日志.cs" />
     <Compile Include="Entity\应用系统.Biz.cs" />
@@ -364,6 +378,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\FieldModel.cs" />
     <Compile Include="ViewModels\ObjectModel.cs" />
     <Compile Include="PreApplicationStartCode.cs" />
     <Compile Include="Precompiled\AssemblyExtensions.cs">
@@ -667,6 +682,18 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Search.generated.cs</LastGenOutput>
     </None>
+    <Content Include="Areas\Admin\Views\User\ChangePassword.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>ChangePassword.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Areas\Admin\Views\User\Binds.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>Binds.generated.cs</LastGenOutput>
+    </Content>
+    <Content Include="Areas\Admin\Views\User\_User_Nav.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_User_Nav.generated.cs</LastGenOutput>
+    </Content>
     <None Include="Areas\Admin\Views\User\_List_Data.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_List_Data.generated.cs</LastGenOutput>
@@ -728,29 +755,11 @@
     <None Include="Content\images\logo\Taobao.png" />
     <None Include="Content\images\logo\Weibo.png" />
     <None Include="Content\images\logo\Weixin.png" />
-    <Content Include="Entity\Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.log</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Build_netcore.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build_netcore.log</LastGenOutput>
-    </Content>
-    <Content Include="Entity\Model.xml" />
+    <Content Include="Content\images\logo\Ding.png" />
     <Content Include="Entity\XCoder.log">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>XCoder.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build_netcore.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build_netcore.tt</DependentUpon>
-    </Content>
-    <Content Include="Entity\Build.log">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Build.tt</DependentUpon>
     </Content>
     <None Include="index.html" />
     <None Include="Entity\Cube.xml">

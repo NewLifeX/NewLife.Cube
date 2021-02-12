@@ -34,23 +34,15 @@ namespace ASP
     using XCode.Membership;
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    [System.Web.WebPages.PageVirtualPathAttribute("~/Areas/Admin/Views/Shared/_Object_Nav.cshtml")]
-    public partial class _Areas_Admin_Views_Shared__Object_Nav_cshtml : System.Web.Mvc.WebViewPage<dynamic>
+    [System.Web.WebPages.PageVirtualPathAttribute("~/Areas/Admin/Views/User/_User_Nav.cshtml")]
+    public partial class _Areas_Admin_Views_User__User_Nav_cshtml : System.Web.Mvc.WebViewPage<dynamic>
     {
-        public _Areas_Admin_Views_Shared__Object_Nav_cshtml()
+        public _Areas_Admin_Views_User__User_Nav_cshtml()
         {
         }
         public override void Execute()
         {
-            
-            #line 1 "..\..\Areas\Admin\Views\Shared\_Object_Nav.cshtml"
-  
-    var Obj = Model as Object;
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n<div");
+WriteLiteral("<div");
 
 WriteLiteral(" class=\"text-center col-md-12\"");
 
@@ -61,8 +53,8 @@ WriteLiteral(">\r\n");
 WriteLiteral("    ");
 
             
-            #line 5 "..\..\Areas\Admin\Views\Shared\_Object_Nav.cshtml"
-Write(Html.ActionLink("基本设置", "Index", "Core", null, new { @class = "btn btn-success btn-sm" }));
+            #line 2 "..\..\Areas\Admin\Views\User\_User_Nav.cshtml"
+Write(Html.ActionLink("基本信息", "Info", "User", null, new { @class = "btn btn-success btn-sm" }));
 
             
             #line default
@@ -72,8 +64,8 @@ WriteLiteral("\r\n");
 WriteLiteral("    ");
 
             
-            #line 6 "..\..\Areas\Admin\Views\Shared\_Object_Nav.cshtml"
-Write(Html.ActionLink("系统设置", "Index", "Sys", null, new { @class = "btn btn-success btn-sm" }));
+            #line 3 "..\..\Areas\Admin\Views\User\_User_Nav.cshtml"
+Write(Html.ActionLink("修改密码", "ChangePassword", "User", null, new { @class = "btn btn-success btn-sm" }));
 
             
             #line default
@@ -83,35 +75,13 @@ WriteLiteral("\r\n");
 WriteLiteral("    ");
 
             
-            #line 7 "..\..\Areas\Admin\Views\Shared\_Object_Nav.cshtml"
-Write(Html.ActionLink("数据中间件", "Index", "XCode", null, new { @class = "btn btn-success btn-sm" }));
+            #line 4 "..\..\Areas\Admin\Views\User\_User_Nav.cshtml"
+Write(Html.ActionLink("第三方授权", "Binds", "User", null, new { @class = "btn btn-success btn-sm" }));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n");
-
-WriteLiteral("    ");
-
-            
-            #line 8 "..\..\Areas\Admin\Views\Shared\_Object_Nav.cshtml"
-Write(Html.ActionLink("魔方设置", "Index", "Cube", null, new { @class = "btn btn-success btn-sm" }));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n");
-
-WriteLiteral("    ");
-
-            
-            #line 9 "..\..\Areas\Admin\Views\Shared\_Object_Nav.cshtml"
-Write(Html.ActionLink("OAuth设置", "Index", "OAuthConfig", null, new { @class = "btn btn-success btn-sm" }));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n</div>\r\n");
+WriteLiteral("\r\n</div>");
 
         }
     }
