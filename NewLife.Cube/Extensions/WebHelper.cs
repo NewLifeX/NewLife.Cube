@@ -9,6 +9,7 @@ using XCode.Membership;
 using System.IO;
 using NewLife.Cube.Entity;
 using System.Linq;
+using NewLife.Cube.Extensions;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
