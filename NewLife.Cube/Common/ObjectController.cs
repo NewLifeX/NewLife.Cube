@@ -7,6 +7,7 @@ using NewLife.Reflection;
 using XCode.Membership;
 using System.Collections.Generic;
 using NewLife.Cube.ViewModels;
+using NewLife.Web;
 #if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -23,7 +24,7 @@ namespace NewLife.Cube
         /// <summary>要展现和修改的对象</summary>
         protected abstract TObject Value { get; set; }
 
-        /// <summary>菜单顺序。扫描是会反射读取</summary>
+        /// <summary>菜单顺序。扫描时会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
         /// <summary>动作执行前</summary>
@@ -74,17 +75,29 @@ namespace NewLife.Cube
             if (Value != null)
             {
                 var pis = GetMembers(Value);
-                var dic = new Dictionary<String, List<PropertyInfo>>();
+                var dic = new Dictionary<String, List<CubePropertyInfo>>();
                 foreach (var pi in pis)
                 {
                     var cat = pi.GetCustomAttribute<CategoryAttribute>();
                     var category = cat?.Category ?? "";
-                    if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<PropertyInfo>();
+                    if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<CubePropertyInfo>();
 
-                    list.Add(pi);
+                    var cpi = new CubePropertyInfo
+                    {
+                        Name = pi.Name,
+                        DisplayName = pi.GetDisplayName(),
+                        Description = pi.GetDescription(),
+                        PropertyType = pi.PropertyType,
+                        TypeStr = pi.PropertyType.Name
+                    };
+
+                    list.Add(cpi);
                 }
                 model.Properties = dic;
             }
+
+            if (IsJsonRequest)
+                return Ok(data: model);
 
             return View("ObjectForm", model);
         }
@@ -101,7 +114,7 @@ namespace NewLife.Cube
 
             // 反射处理内部复杂成员
 #if __CORE__
-            var keys = Request.Form.Keys;
+            var keys = WebHelper.Params.Keys;
 #else
             var keys = Request.Form.AllKeys;
 #endif
@@ -114,7 +127,7 @@ namespace NewLife.Cube
                     {
                         if (keys.Contains(pi.Name))
                         {
-                            var v = (Object)Request.Form[pi.Name];
+                            var v = (Object)Request.GetRequestValue(pi.Name);
                             if (pi.PropertyType == typeof(Boolean)) v = GetBool(pi.Name);
 
                             pv.SetValue(pi, v);
@@ -125,8 +138,8 @@ namespace NewLife.Cube
 
             Value = obj;
 
-            if (Request.IsAjaxRequest())
-                return Json(new { result = "success", content = "保存成功" });
+            if (IsJsonRequest)
+                return Ok("保存成功");
             else
                 return Redirect("Index");
         }
