@@ -25,7 +25,14 @@ namespace NewLife.Cube.Extensions
             if (value.Count > 0) return value;
 
             value = request.Query[key];
-            return value.Count > 0 ? value.ToString() : null;
+
+            if(value.Count > 0) return value.ToString();
+
+            // 拒绝output关键字，避免死循环
+            if (key == "output") return null;
+
+            var entityBody = request.GetRequestBody<NullableDictionary<String, Object>>();
+            return entityBody?[key].ToString();
         }
 
         /// <summary>
