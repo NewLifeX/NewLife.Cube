@@ -82,11 +82,20 @@ namespace NewLife.Cube
                     var category = cat?.Category ?? "";
                     if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<CubePropertyInfo>();
 
+                    var dis = pi.GetDisplayName();
+                    var des = pi.GetDescription();
+                    if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
+                    if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
+                    {
+                        des = dis.Substring("。");
+                        dis = dis.Substring(null, "。");
+                    }
+
                     var cpi = new CubePropertyInfo
                     {
                         Name = pi.Name,
-                        DisplayName = pi.GetDisplayName(),
-                        Description = pi.GetDescription(),
+                        DisplayName = dis ?? pi.Name,
+                        Description = des,
                         PropertyType = pi.PropertyType,
                         TypeStr = pi.PropertyType.Name
                     };

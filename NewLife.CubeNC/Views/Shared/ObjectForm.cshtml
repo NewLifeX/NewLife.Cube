@@ -34,17 +34,12 @@
                         var name = pi.Name;
                         var dis = pi.DisplayName;
                         var des = pi.Description;
-                        if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
-                        if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
-                        {
-                            des = dis.Substring("。");
-                            dis = dis.Substring(null, "。");
-                        }
+
                         <div class="form-group col-sm-12 col-md-12">
-                            <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@pi.Name">@(dis ?? pi.Name)</label>
+                            <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@name">@(dis)</label>
                             <div class="input-group col-xs-10 col-md-4">
-                                @Html.ForEditor(pi.Name, obj.GetValue(pi.Name), pi.PropertyType)
-                                @Html.ValidationMessage(pi.Name)
+                                @Html.ForEditor(name, obj.GetValue(name), pi.PropertyType)
+                                @Html.ValidationMessage(name)
                             </div>
                             <span class="hidden-xs col-md-5">&nbsp; @des</span>
                         </div>
