@@ -353,7 +353,7 @@ namespace NewLife.Web
             {
                 var uri = new Uri(url);
                 var ruri = new Uri(returnUrl);
-                if (ruri.Scheme.EqualIgnoreCase(uri.Scheme) && ruri.Host.EqualIgnoreCase(uri.Host)) returnUrl = ruri.PathAndQuery;
+                if (ruri.Scheme.EqualIgnoreCase(uri.Scheme) && ruri.Authority.EqualIgnoreCase(uri.Authority)) returnUrl = ruri.PathAndQuery;
             }
 #if !__CORE__
             else if (returnUrl.StartsWith("~/"))
