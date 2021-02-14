@@ -227,7 +227,7 @@ namespace NewLife.Cube
 
         /// <summary>生成令牌</summary>
         /// <returns></returns>
-        private static JwtBuilder GetJwt()
+        public static JwtBuilder GetJwt()
         {
             var set = Setting.Current;
 
