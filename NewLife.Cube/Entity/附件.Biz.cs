@@ -137,7 +137,7 @@ namespace NewLife.Cube.Entity
         public static IList<Attachment> FindAllByCategory(String category)
         {
             // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.Category == category);
+            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.Category.EqualIgnoreCase(category));
 
             return FindAll(_.Category == category);
         }

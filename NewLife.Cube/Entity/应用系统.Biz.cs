@@ -72,7 +72,7 @@ namespace NewLife.Cube.Entity
             if (name.IsNullOrEmpty()) return null;
 
             // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Name == name);
+            if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Name.EqualIgnoreCase(name));
 
             // 单对象缓存
             //return Meta.SingleCache.GetItemWithSlaveKey(name) as App;
@@ -88,7 +88,7 @@ namespace NewLife.Cube.Entity
             if (appkey.IsNullOrEmpty()) return null;
 
             // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Secret == appkey);
+            if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Secret.EqualIgnoreCase(appkey));
 
             return Find(_.Secret == appkey);
         }
