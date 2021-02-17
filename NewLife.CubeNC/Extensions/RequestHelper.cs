@@ -2,6 +2,8 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using NewLife.Collections;
+using NewLife.Serialization;
 
 namespace NewLife.Cube.Extensions
 {
@@ -23,7 +25,14 @@ namespace NewLife.Cube.Extensions
             if (value.Count > 0) return value;
 
             value = request.Query[key];
-            return value.Count > 0 ? value.ToString() : null;
+
+            if(value.Count > 0) return value.ToString();
+
+            // 拒绝output关键字，避免死循环
+            if (key == "output") return null;
+
+            var entityBody = request.GetRequestBody<NullableDictionary<String, Object>>();
+            return entityBody?[key].ToString();
         }
 
         /// <summary>
@@ -48,5 +57,32 @@ namespace NewLife.Cube.Extensions
 
             return false;
         }
+
+        /// <summary>
+        /// 获取请求中的body对象，第一次解析后存储在HttpContext.Items["RequestBody"]中
+        /// </summary>
+        /// <param name="request"></param>
+        /// <remarks>如果类型是Object，返回的类型则是<see cref="NullableDictionary{String,Object}"/></remarks>
+        public static T GetRequestBody<T>(this HttpRequest request) where T : class, new() => GetRequestBody(request, typeof(T)) as T;
+
+        public static Object GetRequestBody(this HttpRequest request, Type type)
+        {
+            if (!request.IsAjaxRequest()) return null;
+
+            var requestBody = request.HttpContext.Items["RequestBody"];
+            if (requestBody != null) return requestBody;
+
+            // 允许同步IO
+            var ft = request.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            if (ft != null) ft.AllowSynchronousIO = true;
+
+            var body = request.Body.ToStr();
+
+            var entityBody = body.ToJsonEntity(type);
+            request.HttpContext.Items["RequestBody"] = entityBody;
+
+            return entityBody;
+        }
+
     }
 }

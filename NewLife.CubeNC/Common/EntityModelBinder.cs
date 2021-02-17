@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NewLife.Collections;
+using NewLife.Cube.Common;
+using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Serialization;
@@ -28,57 +31,52 @@ namespace NewLife.Cube
         protected override Object CreateModel(ModelBindingContext bindingContext)
         {
             var modelType = bindingContext.ModelType;
-            if (modelType.As<IEntity>())
+            if (!modelType.As<IEntity>()) return base.CreateModel(bindingContext);
+
+            var fact = EntityFactory.CreateOperate(modelType);
+
+            if (fact == null) return base.CreateModel(bindingContext);
+
+            // 尝试从body读取json格式的参数
+            var ctx = bindingContext.HttpContext;
+            var request = ctx.Request;
+            if (request.GetRequestBody<Object>() != null)
             {
-                var fact = EntityFactory.CreateOperate(modelType);
-                if (fact != null)
-                {
-                    var rvs = bindingContext.ActionContext.RouteData.Values;
-                    var pks = fact.Table.PrimaryKeys;
-                    var uk = fact.Unique;
+                ctx.Items["EntityBody"] = ctx.Items["RequestBody"];
+                var cubeBodyValueProvider = new CubeBodyValueProvider(bindingContext.ValueProvider,
+                    ctx.Items["EntityBody"] as NullableDictionary<String, Object>);
 
-                    IEntity entity = null;
-                    if (uk != null)
-                    {
-                        // 查询实体对象用于编辑
-                        var id = rvs[uk.Name];
-                        if (id != null) entity = fact.FindByKeyForEdit(id);
-                        if (entity == null) entity = fact.Create(true);
-                    }
-                    else if (pks.Length > 0)
-                    {
-                        // 查询实体对象用于编辑
-                        var req = bindingContext.HttpContext.Request.Query;
-                        var exp = new WhereExpression();
-                        foreach (var item in pks)
-                        {
-                            var v = req[item.Name].FirstOrDefault();
-                            exp &= item.Equal(v.ChangeType(item.Type));
-                        }
-
-                        entity = fact.Find(exp);
-
-                        if (entity == null) entity = fact.Create(true);
-                    }
-
-                    // 尝试从body读取json格式的参数
-                    var request = bindingContext.HttpContext.Request;
-                    if (request.ContentType.Contains("json") && request.ContentLength > 0)
-                    {
-                        // 允许同步IO
-                        var ft = bindingContext.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-                        if (ft != null) ft.AllowSynchronousIO = true;
-
-                        var body = request.Body.ToStr();
-                        var entityBody = body.ToJsonEntity(typeof(Object)); // NullableDictionary<string,object>)
-                        bindingContext.HttpContext.Items["EntityBody"] = entityBody;
-                    }
-
-                    return entity ?? fact.Create(true);
-                }
+                // 添加body提供者，从body中取值，只取第一层，
+                // 下面的BindProperty方法，以前从body中并没有处理值的格式，
+                // 强行绑定会出错记录在ModelState，在api中返回400错误，mvc不会
+                bindingContext.ValueProvider = cubeBodyValueProvider;
             }
 
-            return base.CreateModel(bindingContext);
+            var pks = fact.Table.PrimaryKeys;
+            var uk = fact.Unique;
+
+            IEntity entity = null;
+            if (uk != null)
+            {
+                // 查询实体对象用于编辑
+                var id = bindingContext.ValueProvider.GetValue(uk.Name);
+                if (id != ValueProviderResult.None) entity = fact.FindByKeyForEdit(id.ToString());
+            }
+            else if (pks.Length > 0)
+            {
+                // 查询实体对象用于编辑
+                var exp = new WhereExpression();
+                foreach (var item in pks)
+                {
+                    var v = bindingContext.ValueProvider.GetValue(item.Name);
+                    if(v == ValueProviderResult.None) continue;
+                    exp &= item.Equal(v.ChangeType(item.Type));
+                }
+
+                entity = fact.Find(exp);
+            }
+
+            return entity ?? fact.Create(true);
         }
 
         protected override Boolean CanBindProperty(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
@@ -97,25 +95,16 @@ namespace NewLife.Cube
         protected override Task BindProperty(ModelBindingContext bindingContext)
         {
             var metadata = bindingContext.ModelMetadata;
-            var result = bindingContext.Result;
+
             switch (metadata.ModelType.GetTypeCode())
             {
                 case TypeCode.DateTime:
                     // 客户端可能提交空时间，不要绑定属性，以免出现空时间验证失败
                     //if (result.Model is not DateTime) return Task.CompletedTask;
-                    var dt = bindingContext.HttpContext.Request.Form[metadata.Name];
+                    var dt = bindingContext.ValueProvider.GetValue(metadata.Name).Values;
                     if (dt.Count == 0 || dt.ToString().IsNullOrEmpty()) return Task.CompletedTask;
 
                     break;
-            }
-
-            Object val;
-            var entityBody = bindingContext.HttpContext.Items["EntityBody"] as NewLife.Collections.NullableDictionary<String, Object>;
-            var fieldName = bindingContext.FieldName;
-            if (entityBody != null && (val = entityBody[fieldName]) != null)
-            {
-                bindingContext.Result = ModelBindingResult.Success(val);
-                return Task.CompletedTask;
             }
 
             return base.BindProperty(bindingContext);

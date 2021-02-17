@@ -324,7 +324,7 @@ namespace NewLife.Cube
         /// <summary>Json序列化。默认使用FastJson</summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        protected virtual String OnJsonSerialize(Object data) => data.ToJson();
+        protected virtual String OnJsonSerialize(Object data) => data.ToJson(false, true, true);
         #endregion
 
         #region 辅助

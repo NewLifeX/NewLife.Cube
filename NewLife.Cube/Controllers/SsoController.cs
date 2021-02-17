@@ -208,6 +208,16 @@ namespace NewLife.Cube.Controllers
 
                 if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
+                // 子系统颁发token给前端
+                if (state == "front-end")
+                {
+                    var jwt = ManagerProviderHelper.GetJwt();
+                    jwt.Expire = DateTime.Now.Add(TimeSpan.FromHours(2));
+                    jwt.Subject = uc.User.Name;
+                    var token = jwt.Encode(null);
+                    url += $"#token={token}";
+                }
+
                 return Redirect(url);
             }
             catch (Exception ex)

@@ -9,6 +9,7 @@ using XCode.Membership;
 using System.IO;
 using NewLife.Cube.Entity;
 using System.Linq;
+using NewLife.Cube.Extensions;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -142,6 +143,18 @@ namespace NewLife.Web
                         dic[item] = value.ToString().Trim();
                     }
                 }
+
+                // 尝试从body读取json格式的参数
+                if (req.GetRequestBody<Object>() is NullableDictionary<String, Object> entityBody)
+                {
+                    foreach (var (key, value) in entityBody)
+                    {
+                        var v = value?.ToString()?.Trim();
+                        if (v.IsNullOrWhiteSpace()) continue;
+                        dic[key] = v;
+                    }
+                }
+
                 ctx.Items["Params"] = dic;
 
                 return dic;
@@ -340,7 +353,7 @@ namespace NewLife.Web
             {
                 var uri = new Uri(url);
                 var ruri = new Uri(returnUrl);
-                if (ruri.Scheme.EqualIgnoreCase(uri.Scheme) && ruri.Host.EqualIgnoreCase(uri.Host)) returnUrl = ruri.PathAndQuery;
+                if (ruri.Scheme.EqualIgnoreCase(uri.Scheme) && ruri.Authority.EqualIgnoreCase(uri.Authority)) returnUrl = ruri.PathAndQuery;
             }
 #if !__CORE__
             else if (returnUrl.StartsWith("~/"))

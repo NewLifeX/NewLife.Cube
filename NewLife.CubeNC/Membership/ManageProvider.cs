@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
+using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Model;
 using XCode;
@@ -227,7 +228,7 @@ namespace NewLife.Cube
 
         /// <summary>生成令牌</summary>
         /// <returns></returns>
-        private static JwtBuilder GetJwt()
+        public static JwtBuilder GetJwt()
         {
             var set = Setting.Current;
 
@@ -287,8 +288,8 @@ namespace NewLife.Cube
             var u = provider.FindByName(user);
             if (u == null || !u.Enable) return null;
 
-            // 保存登录信息
-            if (autologin && u is IAuthUser mu)
+            // 保存登录信息。如果是json请求，不用记录自动登录
+            if (autologin && u is IAuthUser mu && !req.IsAjaxRequest())
             {
                 mu.SaveLogin(null);
 

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NewLife.Collections;
+using NewLife.Cube.Extensions;
 using NewLife.Data;
 using NewLife.Web;
 
@@ -46,13 +48,24 @@ namespace NewLife.Cube
                 //}
                 if (!pager.Params.ContainsKey("id") && routes.TryGetValue("id", out var id)) pager.Params["id"] = id + "";
 
+                // 尝试从body读取json格式的参数
+                if (bindingContext.HttpContext.Request.GetRequestBody<Object>() is NullableDictionary<String, Object> entityBody)
+                {
+                    foreach (var (key, _) in _propertyBinders)
+                    {
+                        var v = entityBody[key.Name]?.ToString();
+                        if (v.IsNullOrWhiteSpace()) continue;
+                        pager[key.Name] = v;
+                    }
+
+                    bindingContext.Result = ModelBindingResult.Success(pager);
+                    return;
+                }
+
                 var complexTypeModelBinder = new ComplexTypeModelBinder(_propertyBinders, _loggerFactory);
                 bindingContext.Model = pager;
                 await complexTypeModelBinder.BindModelAsync(bindingContext);
-                //bindingContext.Result = ModelBindingResult.Success(pager);
             }
-
-            //return Task.CompletedTask;
         }
     }
 

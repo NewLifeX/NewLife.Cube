@@ -118,7 +118,7 @@ namespace NewLife.Cube.Web
                 var baseUri = request.GetRawUrl();
 
                 var uri = new Uri(url);
-                if (uri != null && uri.Host.EqualIgnoreCase(baseUri.Host)) url = uri.PathAndQuery;
+                if (uri != null && uri.Authority.EqualIgnoreCase(baseUri.Authority)) url = uri.PathAndQuery;
             }
 
             return url;

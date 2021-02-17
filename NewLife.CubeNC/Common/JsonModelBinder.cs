@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NewLife.Collections;
+using NewLife.Configuration;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Extensions;
 using NewLife.Data;
 using NewLife.Reflection;
 using NewLife.Serialization;
@@ -39,16 +42,11 @@ namespace NewLife.Cube
 
             var modelType = bindingContext.ModelType;
 
-            if (req.ContentType !=null && req.ContentType.Contains("json") && req.ContentLength > 0)
+            var entityBody = req.GetRequestBody(modelType);
+
+            if (entityBody != null)
             {
-                // 允许同步IO，便于CsvFile刷数据Flush
-                var ft = bindingContext.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-                if (ft != null) ft.AllowSynchronousIO = true;
-
-                var body = req.Body.ToStr();
-                var m = body.ToJsonEntity(modelType);
-
-                bindingContext.Result = ModelBindingResult.Success(m);
+                bindingContext.Result = ModelBindingResult.Success(entityBody);
             }
             else
             {
@@ -67,7 +65,14 @@ namespace NewLife.Cube
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
             var modelType = context.Metadata.ModelType;
-            if (modelType.As<ICubeModel>())
+            var isGenericType = false;
+            if (modelType.BaseType?.FullName != null && modelType.BaseType.FullName.StartsWith("NewLife.Configuration.Config`1["))
+            {
+                var genericType = typeof(Config<>).MakeGenericType(modelType);
+                isGenericType = genericType.FullName != null && modelType.As(genericType);
+            }
+
+            if (modelType.As<ICubeModel>() || isGenericType)
             {
                 var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
                 foreach (var property in context.Metadata.Properties)
