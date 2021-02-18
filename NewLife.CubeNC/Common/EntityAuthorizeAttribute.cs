@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -115,8 +116,7 @@ namespace NewLife.Cube
             var prv = ManageProvider.Provider;
             if (prv?.Current == null)
             {
-                if (filterContext.HttpContext.Request.Headers["Accept"]
-                    .Any(e => e.Split(',').Any(a => a.Trim() == "application/json")))
+                if (filterContext.HttpContext.Request.IsAjaxRequest())
                 {
                     filterContext.HttpContext.Response.StatusCode = 401;
                     filterContext.Result = new JsonResult(new { code = 401, message = "没有登陆或登录超时！" });
@@ -151,8 +151,7 @@ namespace NewLife.Cube
             var msg = $"访问资源 {res} 需要 {pm.GetDescription()} 权限";
             LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
 
-            if (filterContext.HttpContext.Request.Headers["Accept"]
-                .Any(e => e.Split(',').Any(a => a.Trim() == "application/json")))
+            if (filterContext.HttpContext.Request.IsAjaxRequest())
             {
                 filterContext.HttpContext.Response.StatusCode = 403;
                 return new JsonResult(new { code = 403, message = msg });
