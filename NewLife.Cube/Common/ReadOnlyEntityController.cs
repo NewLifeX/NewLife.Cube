@@ -494,9 +494,10 @@ namespace NewLife.Cube
         /// 获取字段
         /// </summary>
         /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
+        /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
         /// <returns></returns>
         [EntityAuthorize]
-        public virtual ActionResult GetEntityFields(String kind)
+        public virtual ActionResult GetEntityFields(String kind, Int32 formatType = 0)
         {
             var fields = kind switch
             {
@@ -509,7 +510,7 @@ namespace NewLife.Cube
 
             var data = fields.Select(s =>
             {
-                var fm = new FieldModel { };
+                var fm = new FieldModel(formatType);
 
                 fm.Copy(s);
 
@@ -520,7 +521,7 @@ namespace NewLife.Cube
 
             var customs = fields.Fields.Select(s =>
             {
-                var fm = new FieldModel { };
+                var fm = new FieldModel(formatType);
 
                 fm.Copy(s);
 
@@ -1247,8 +1248,8 @@ namespace NewLife.Cube
 
         private static FieldCollection _FormFields;
         /// <summary>表单字段过滤</summary>
-        [Obsolete]
-        protected static FieldCollection FormFields => _FormFields ??= new FieldCollection(Factory, "Form");
+        //[Obsolete]
+        //protected static FieldCollection FormFields => _FormFields ??= new FieldCollection(Factory, "Form");
 
         private static FieldCollection _AddFormFields;
         /// <summary>表单字段过滤</summary>
@@ -1262,11 +1263,51 @@ namespace NewLife.Cube
         /// <summary>表单字段过滤</summary>
         protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, "Detail");
 
-        /// <summary>获取要显示的字段列表</summary>
-        /// <param name="isForm">是否是表单</param>
+        /// <summary>
+        /// 获取字段
+        /// </summary>
+        /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
+        /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
         /// <returns></returns>
-        [Obsolete]
-        protected virtual IList<FieldItem> GetFields(Boolean isForm) => (isForm ? FormFields : ListFields) ?? Entity<TEntity>.Meta.Fields.ToList();
+        [EntityAuthorize]
+        public virtual ActionResult GetFields(String kind, Int32 formatType = 0)
+        {
+            var fields = kind switch
+            {
+                "Detail" => DetailFields,
+                "EditForm" => EditFormFields,
+                "AddForm" => AddFormFields,
+                "List" => ListFields,
+                _ => ListFields
+            };
+
+            var data = fields.Select(s =>
+            {
+                var fm = new FieldModel(formatType);
+
+                fm.Copy(s);
+
+                fm.TypeStr = s.Type.Name;
+
+                return fm;
+            }).ToList();
+
+            var customs = fields.Fields.Select(s =>
+            {
+                var fm = new FieldModel(formatType);
+
+                fm.Copy(s);
+
+                fm.IsCustom = true;
+
+                return fm;
+            }).ToList();
+
+            data.AddRange(customs);
+
+            return Ok(data: data);
+        }
+
         #endregion
 
         #region 权限菜单

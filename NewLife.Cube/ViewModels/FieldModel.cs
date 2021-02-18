@@ -10,6 +10,44 @@ namespace NewLife.Cube.ViewModels
     /// </summary>
     public class FieldModel
     {
+        private String _name;
+        private String _columnName;
+
+        /// <summary>
+        /// 小写格式，默认false
+        /// </summary>
+        public Boolean LowerCase = false;
+
+        /// <summary>
+        /// 小驼峰格式，默认true
+        /// </summary>
+        public Boolean CamelCase = true;
+
+        public FieldModel() { }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
+        public FieldModel(Int32 formatType)
+        {
+            if (formatType == 0)
+            {
+                LowerCase = false;
+                CamelCase = true;
+            }
+            else if (formatType == 1)
+            {
+                LowerCase = true;
+                CamelCase = false;
+            }
+            else
+            {
+                LowerCase = false;
+                CamelCase = false;
+            }
+        }
+
         /// <summary>备注</summary>
         public String Description { get; set; }
 
@@ -17,7 +55,11 @@ namespace NewLife.Cube.ViewModels
         public String DisplayName { get; set; }
 
         /// <summary>属性名</summary>
-        public String Name { get; internal set; }
+        public String Name
+        {
+            get => FormatName(_name);
+            internal set => _name = value;
+        }
 
         /// <summary>是否允许空</summary>
         public Boolean IsNullable { get; internal set; }
@@ -36,7 +78,11 @@ namespace NewLife.Cube.ViewModels
         /// 默认使用BindColumn特性中指定的字段名，如果没有指定，则使用属性名。
         /// 字段名可能两边带有方括号等标识符
         /// </remarks>
-        public String ColumnName { get; set; }
+        public String ColumnName
+        {
+            get => FormatName(_columnName);
+            set => _columnName = value;
+        }
 
         /// <summary>是否只读</summary>
         /// <remarks>set { _ReadOnly = value; } 放出只读属性的设置，比如在编辑页面的时候，有的字段不能修改 如修改用户时  不能修改用户名</remarks>
@@ -78,5 +124,19 @@ namespace NewLife.Cube.ViewModels
         /// <summary>数据动作。设为action时走ajax请求</summary>
         public String DataAction { get; set; }
         #endregion
+
+        /// <summary>根据小写和驼峰格式化名称</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private String FormatName(String name)
+        {
+            if (name.IsNullOrEmpty()) return name;
+
+            if (LowerCase) return name.ToLower();
+            if (!CamelCase) return name;
+            if (name.EqualIgnoreCase("id")) return "id";
+            if (name.Length < 2) return name.ToLower();
+            return name.Substring(0, 1).ToLower() + name.Substring(1);
+        }
     }
 }
