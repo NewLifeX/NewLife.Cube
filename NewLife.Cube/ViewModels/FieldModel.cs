@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NewLife.Cube.Common;
 
 namespace NewLife.Cube.ViewModels
 {
@@ -14,39 +15,20 @@ namespace NewLife.Cube.ViewModels
         private String _columnName;
 
         /// <summary>
-        /// 小写格式，默认false
+        /// 默认CamelCase小驼峰
         /// </summary>
-        public Boolean LowerCase = false;
+        public FormatType FormatType = FormatType.CamelCase;
 
         /// <summary>
-        /// 小驼峰格式，默认true
+        /// 默认CamelCase小驼峰
         /// </summary>
-        public Boolean CamelCase = true;
-
         public FieldModel() { }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
-        public FieldModel(Int32 formatType)
-        {
-            if (formatType == 0)
-            {
-                LowerCase = false;
-                CamelCase = true;
-            }
-            else if (formatType == 1)
-            {
-                LowerCase = true;
-                CamelCase = false;
-            }
-            else
-            {
-                LowerCase = false;
-                CamelCase = false;
-            }
-        }
+        public FieldModel(FormatType formatType) => FormatType = formatType;
 
         /// <summary>备注</summary>
         public String Description { get; set; }
@@ -132,8 +114,8 @@ namespace NewLife.Cube.ViewModels
         {
             if (name.IsNullOrEmpty()) return name;
 
-            if (LowerCase) return name.ToLower();
-            if (!CamelCase) return name;
+            if (FormatType == FormatType.LowerCase) return name.ToLower();
+            if (FormatType != FormatType.CamelCase) return name;
             if (name.EqualIgnoreCase("id")) return "id";
             if (name.Length < 2) return name.ToLower();
             return name.Substring(0, 1).ToLower() + name.Substring(1);
