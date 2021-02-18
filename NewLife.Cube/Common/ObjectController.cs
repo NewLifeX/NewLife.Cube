@@ -6,6 +6,7 @@ using System.Text;
 using NewLife.Reflection;
 using XCode.Membership;
 using System.Collections.Generic;
+using NewLife.Cube.Common;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 #if __CORE__
@@ -66,9 +67,10 @@ namespace NewLife.Cube
         }
 
         /// <summary>显示对象</summary>
+        /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
-        public ActionResult Index()
+        public ActionResult Index(FormatType formatType = FormatType.CamelCase)
         {
             var model = new ObjectModel { Value = Value };
 
@@ -105,10 +107,17 @@ namespace NewLife.Cube
                 model.Properties = dic;
             }
 
-            if (IsJsonRequest)
-                return Ok(data: model);
+            if (!IsJsonRequest) return View("ObjectForm", model);
 
-            return View("ObjectForm", model);
+            foreach (var property in model.Properties)
+            {
+                foreach (var item in property.Value)
+                {
+                    item.FormatType = formatType;
+                }
+            }
+
+            return Ok(data: model);
         }
 
         /// <summary>保存对象</summary>

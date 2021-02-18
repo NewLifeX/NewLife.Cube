@@ -9,6 +9,7 @@ using System.Text;
 using System.Web;
 using System.Xml.Serialization;
 using NewLife.Common;
+using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
@@ -497,7 +498,8 @@ namespace NewLife.Cube
         /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
         /// <returns></returns>
         [EntityAuthorize]
-        public virtual ActionResult GetEntityFields(String kind, Int32 formatType = 0)
+        [Obsolete("使用GetFields")]
+        public virtual ActionResult GetEntityFields(String kind, FormatType formatType = FormatType.CamelCase)
         {
             var fields = kind switch
             {
@@ -1270,7 +1272,7 @@ namespace NewLife.Cube
         /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
         /// <returns></returns>
         [EntityAuthorize]
-        public virtual ActionResult GetFields(String kind, Int32 formatType = 0)
+        public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
         {
             var fields = kind switch
             {
