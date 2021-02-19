@@ -153,4 +153,66 @@
       <Index Columns="Name" Unique="True" />
     </Indexes>
   </Table>
+  <Table Name="ModelTable" Description="模型表。实体表模型">
+    <Columns>
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Category" DataType="String" Description="分类" />
+      <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称" />
+      <Column Name="DisplayName" DataType="String" Description="显示名" />
+      <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="Url" DataType="String" Description="路径。全路径" />
+      <Column Name="Controller" DataType="String" Description="控制器。控制器类型全名" />
+      <Column Name="TableName" DataType="String" Description="表名" />
+      <Column Name="ConnName" DataType="String" Description="连接名" />
+      <Column Name="InsertOnly" DataType="Boolean" Description="仅插入。日志型数据" />
+      <Column Name="Description" DataType="String" Length="500" Description="说明" />
+      <Column Name="CreateUserId" DataType="Int32" Description="创建者" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" />
+      <Column Name="UpdateUserId" DataType="Int32" Description="更新者" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
+    </Columns>
+    <Indexes>
+      <Index Columns="Category,Name" Unique="True" />
+    </Indexes>
+  </Table>
+  <Table Name="ModelColumn" Description="模型列。实体表的数据列">
+    <Columns>
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="TableId" DataType="Int32" Description="模型表" />
+      <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称" />
+      <Column Name="DisplayName" DataType="String" Description="显示名" />
+      <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="DataType" DataType="String" Description="数据类型" />
+      <Column Name="ItemType" DataType="String" Description="元素类型" />
+      <Column Name="PrimaryKey" DataType="Boolean" Description="主键" />
+      <Column Name="Master" DataType="Boolean" Description="主字段。主字段作为业务主要字段，代表当前数据行意义" />
+      <Column Name="Length" DataType="Int32" Description="长度" />
+      <Column Name="Nullable" DataType="Boolean" Description="允许空" />
+      <Column Name="Description" DataType="String" Length="500" Description="说明" />
+      <Column Name="ShowInList" DataType="Boolean" Description="列表页显示" />
+      <Column Name="ShowInForm" DataType="Boolean" Description="表单页显示" />
+      <Column Name="ShowInSearch" DataType="Boolean" Description="搜索显示" />
+      <Column Name="Sort" DataType="Int32" Description="排序" />
+      <Column Name="Width" DataType="String" Description="宽度" />
+      <Column Name="CellText" DataType="String" Description="单元格文字" />
+      <Column Name="CellTitle" DataType="String" Description="单元格标题。数据单元格上的提示文字" />
+      <Column Name="CellUrl" DataType="String" Description="单元格链接。数据单元格的链接" />
+      <Column Name="HeaderText" DataType="String" Description="头部文字" />
+      <Column Name="HeaderTitle" DataType="String" Description="头部标题。数据移上去后显示的文字" />
+      <Column Name="HeaderUrl" DataType="String" Description="头部链接。一般是排序" />
+      <Column Name="DataAction" DataType="String" Description="数据动作。设为action时走ajax请求" />
+      <Column Name="DataSource" DataType="String" Length="500" Description="多选数据源" />
+      <Column Name="CreateUserId" DataType="Int32" Description="创建者" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" />
+      <Column Name="UpdateUserId" DataType="Int32" Description="更新者" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
+    </Columns>
+    <Indexes>
+      <Index Columns="TableId,Name" Unique="True" />
+    </Indexes>
+  </Table>
 </Tables>
