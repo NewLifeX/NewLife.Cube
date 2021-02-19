@@ -107,6 +107,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("Nullable", "允许空", "")]
         public Boolean Nullable { get => _Nullable; set { if (OnPropertyChanging("Nullable", value)) { _Nullable = value; OnPropertyChanged("Nullable"); } } }
 
+        private Boolean _IsDataObjectField;
+        /// <summary>数据字段</summary>
+        [DisplayName("数据字段")]
+        [Description("数据字段")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("IsDataObjectField", "数据字段", "")]
+        public Boolean IsDataObjectField { get => _IsDataObjectField; set { if (OnPropertyChanging("IsDataObjectField", value)) { _IsDataObjectField = value; OnPropertyChanged("IsDataObjectField"); } } }
+
         private String _Description;
         /// <summary>说明</summary>
         [DisplayName("说明")]
@@ -289,6 +297,7 @@ namespace NewLife.Cube.Entity
                     case "Master": return _Master;
                     case "Length": return _Length;
                     case "Nullable": return _Nullable;
+                    case "IsDataObjectField": return _IsDataObjectField;
                     case "Description": return _Description;
                     case "ShowInList": return _ShowInList;
                     case "ShowInForm": return _ShowInForm;
@@ -327,6 +336,7 @@ namespace NewLife.Cube.Entity
                     case "Master": _Master = value.ToBoolean(); break;
                     case "Length": _Length = value.ToInt(); break;
                     case "Nullable": _Nullable = value.ToBoolean(); break;
+                    case "IsDataObjectField": _IsDataObjectField = value.ToBoolean(); break;
                     case "Description": _Description = Convert.ToString(value); break;
                     case "ShowInList": _ShowInList = value.ToBoolean(); break;
                     case "ShowInForm": _ShowInForm = value.ToBoolean(); break;
@@ -389,6 +399,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>允许空</summary>
             public static readonly Field Nullable = FindByName("Nullable");
+
+            /// <summary>数据字段</summary>
+            public static readonly Field IsDataObjectField = FindByName("IsDataObjectField");
 
             /// <summary>说明</summary>
             public static readonly Field Description = FindByName("Description");
@@ -488,6 +501,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>允许空</summary>
             public const String Nullable = "Nullable";
+
+            /// <summary>数据字段</summary>
+            public const String IsDataObjectField = "IsDataObjectField";
 
             /// <summary>说明</summary>
             public const String Description = "Description";

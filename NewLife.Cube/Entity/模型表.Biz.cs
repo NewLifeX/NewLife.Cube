@@ -1,22 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
-using NewLife;
 using NewLife.Data;
-using NewLife.Log;
-using NewLife.Model;
-using NewLife.Reflection;
-using NewLife.Threading;
-using NewLife.Web;
 using XCode;
 using XCode.Cache;
 using XCode.Configuration;
@@ -49,76 +37,18 @@ namespace NewLife.Cube.Entity
             if (!HasDirty) return;
 
             // 这里验证参数范围，建议抛出参数异常，指定参数名，前端用户界面可以捕获参数异常并聚焦到对应的参数输入框
+            if (Category.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Category), "分类不能为空！");
             if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), "名称不能为空！");
 
             // 建议先调用基类方法，基类方法会做一些统一处理
             base.Valid(isNew);
-
-            // 在新插入数据或者修改了指定字段时进行修正
-            // 处理当前已登录用户信息，可以由UserModule过滤器代劳
-            /*var user = ManageProvider.User;
-            if (user != null)
-            {
-                if (isNew && !Dirtys[nameof(CreateUserId)]) CreateUserId = user.ID;
-                if (!Dirtys[nameof(UpdateUserId)]) UpdateUserId = user.ID;
-            }*/
-            //if (isNew && !Dirtys[nameof(CreateTime)]) CreateTime = DateTime.Now;
-            //if (!Dirtys[nameof(UpdateTime)]) UpdateTime = DateTime.Now;
-            //if (isNew && !Dirtys[nameof(CreateIP)]) CreateIP = ManageProvider.UserHost;
-            //if (!Dirtys[nameof(UpdateIP)]) UpdateIP = ManageProvider.UserHost;
-
-            // 检查唯一索引
-            // CheckExist(isNew, nameof(Category), nameof(Name));
         }
-
-        ///// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
-        //[EditorBrowsable(EditorBrowsableState.Never)]
-        //protected override void InitData()
-        //{
-        //    // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
-        //    if (Meta.Session.Count > 0) return;
-
-        //    if (XTrace.Debug) XTrace.WriteLine("开始初始化ModelTable[模型表]数据……");
-
-        //    var entity = new ModelTable();
-        //    entity.Id = 0;
-        //    entity.Category = "abc";
-        //    entity.Name = "abc";
-        //    entity.DisplayName = "abc";
-        //    entity.Enable = true;
-        //    entity.Url = "abc";
-        //    entity.Controller = "abc";
-        //    entity.TableName = "abc";
-        //    entity.ConnName = "abc";
-        //    entity.InsertOnly = true;
-        //    entity.Description = "abc";
-        //    entity.CreateUserId = 0;
-        //    entity.CreateTime = DateTime.Now;
-        //    entity.CreateIP = "abc";
-        //    entity.UpdateUserId = 0;
-        //    entity.UpdateTime = DateTime.Now;
-        //    entity.UpdateIP = "abc";
-        //    entity.Insert();
-
-        //    if (XTrace.Debug) XTrace.WriteLine("完成初始化ModelTable[模型表]数据！");
-        //}
-
-        ///// <summary>已重载。基类先调用Valid(true)验证数据，然后在事务保护内调用OnInsert</summary>
-        ///// <returns></returns>
-        //public override Int32 Insert()
-        //{
-        //    return base.Insert();
-        //}
-
-        ///// <summary>已重载。在事务保护范围内处理业务，位于Valid之后</summary>
-        ///// <returns></returns>
-        //protected override Int32 OnDelete()
-        //{
-        //    return base.OnDelete();
-        //}
         #endregion
 
         #region 扩展属性
+        ///// <summary>模型列集合</summary>
+        //[XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        //public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAll());
         #endregion
 
         #region 扩展查询
@@ -173,7 +103,7 @@ namespace NewLife.Cube.Entity
         }
 
         // Select Count(Id) as Id,Category From ModelTable Where CreateTime>'2020-01-24 00:00:00' Group By Category Order By Id Desc limit 20
-        static readonly FieldCache<ModelTable> _CategoryCache = new FieldCache<ModelTable>(nameof(Category))
+        private static readonly FieldCache<ModelTable> _CategoryCache = new FieldCache<ModelTable>(nameof(Category))
         {
             //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty
         };
@@ -184,6 +114,23 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 业务操作
+        /// <summary>获取有效模型表</summary>
+        /// <returns></returns>
+        public static IList<ModelTable> GetValids() => FindAllWithCache().Where(e => e.Enable).ToList();
+
+        /// <summary>填充</summary>
+        /// <param name="table"></param>
+        public void Fill(TableItem table)
+        {
+            var dt = table.DataTable;
+
+            DisplayName = dt.DisplayName;
+            Description = dt.Description;
+
+            TableName = dt.TableName;
+            ConnName = table.ConnName;
+            InsertOnly = dt.InsertOnly;
+        }
         #endregion
     }
 }

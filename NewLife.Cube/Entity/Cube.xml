@@ -190,6 +190,7 @@
       <Column Name="Master" DataType="Boolean" Description="主字段。主字段作为业务主要字段，代表当前数据行意义" />
       <Column Name="Length" DataType="Int32" Description="长度" />
       <Column Name="Nullable" DataType="Boolean" Description="允许空" />
+      <Column Name="IsDataObjectField" DataType="Boolean" Description="数据字段" />
       <Column Name="Description" DataType="String" Length="500" Description="说明" />
       <Column Name="ShowInList" DataType="Boolean" Description="列表页显示" />
       <Column Name="ShowInForm" DataType="Boolean" Description="表单页显示" />
