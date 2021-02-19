@@ -475,8 +475,8 @@ namespace NewLife.Web
         {
             if (_Client != null) return _Client;
 
-            // 允许宽松头部
-            WebClientX.SetAllowUnsafeHeaderParsing(true);
+            //// 允许宽松头部
+            //WebClientX.SetAllowUnsafeHeaderParsing(true);
 
             var client = CreateClient();
 
