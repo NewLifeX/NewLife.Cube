@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace NewLife.Cube.ViewModels
@@ -30,20 +30,20 @@ namespace NewLife.Cube.ViewModels
         /// <value></value>
         public String Icon { get; set; }
         /// <summary>
-        /// 自定义样式类
+        /// 是否可见
         /// </summary>
         /// <value></value>
-        public String Class { get; set; }
+        public Boolean Visible { get; set; }
         /// <summary>
         /// 子菜单
         /// </summary>
         /// <value></value>
-        public List<MenuTree> Children { get => GetChildren?.Invoke(this) ?? null; set { } }
+        public IList<MenuTree> Children { get => GetChildren?.Invoke(this) ?? null; set { } }
 
         /// <summary>
         /// 获取子菜单的方法
         /// </summary>
-        private static Func<MenuTree, List<MenuTree>> GetChildren;
+        private static Func<MenuTree, IList<MenuTree>> GetChildren;
 
         /// <summary>
         /// 获取菜单树
@@ -52,12 +52,14 @@ namespace NewLife.Cube.ViewModels
         /// <param name="getMenuList">获取菜单列表的方法</param>
         /// <param name="src">获取菜单列表的初始数据来源</param>
         /// <returns></returns>
-        public static List<MenuTree> GetMenuTree<T>(Func<MenuTree, T> getChildrenSrc,
-        Func<T, List<MenuTree>> getMenuList, T src) where T : class, new()
+        public static IList<MenuTree> GetMenuTree<T>(Func<MenuTree, T> getChildrenSrc,
+        Func<T, IList<MenuTree>> getMenuList, T src) where T : class
         {
-            GetChildren = m =>getMenuList?.Invoke(getChildrenSrc(m));
+            GetChildren = m => getMenuList?.Invoke(getChildrenSrc(m));
 
             return getMenuList?.Invoke(src);
         }
+
+        public override String ToString() => Name;
     }
 }
