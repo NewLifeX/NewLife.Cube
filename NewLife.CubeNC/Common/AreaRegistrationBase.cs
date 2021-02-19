@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using NewLife.Cube.Entity;
 using NewLife.Log;
+using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
 
@@ -66,7 +68,7 @@ namespace NewLife.Cube
 
             using var tran = (mf as IEntityFactory).Session.CreateTrans();
 
-            mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
+            var menus = mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
 
             // 更新区域名称为友好中文名
             var menu = mf.Root.FindByPath(areaName);
@@ -82,6 +84,9 @@ namespace NewLife.Cube
             }
 
             tran.Commit();
+
+            // 扫描模型表
+            ScanModel(areaName, menus);
         }
 
         private static ICollection<String> _namespaces;
@@ -101,6 +106,62 @@ namespace NewLife.Cube
             // 该控制器父级命名空间必须有对应的区域注册类，才会拦截其异常
             ns = ns.TrimEnd(".Controllers");
             return _namespaces.Contains(ns);
+        }
+
+        private static void ScanModel(String areaName, IList<IMenu> menus)
+        {
+            var models = ModelTable.FindAll().Where(e => e.Category.EqualIgnoreCase(areaName)).ToList();
+            foreach (var menu in menus.OrderByDescending(e => e.Sort))
+            {
+                if (menu.FullName.IsNullOrEmpty()) continue;
+
+                var ctrl = menu.FullName.GetTypeEx();
+                if (ctrl == null || !ctrl.BaseType.IsGenericType) continue;
+
+                var entityType = ctrl.BaseType.GenericTypeArguments.FirstOrDefault();
+                if (entityType == null || !entityType.As<IEntity>()) continue;
+
+                var factory = entityType.AsFactory();
+                if (factory == null) continue;
+
+                var table = models.FirstOrDefault(e => e.Name == entityType.Name);
+                if (table == null) table = new ModelTable { Name = entityType.Name, Enable = true };
+
+                table.Category = areaName;
+                table.Url = menu.Url.TrimStart("~");
+                table.Controller = ctrl.FullName;
+
+                table.Fill(factory.Table);
+                table.Save();
+
+                var columns = ModelColumn.FindAllByTableId(table.Id);
+                var idx = 1;
+                foreach (var field in factory.AllFields)
+                {
+                    if (!field.IsDataObjectField && field.Type.GetTypeCode() == TypeCode.Object) continue;
+
+                    var column = columns.FirstOrDefault(e => e.Name == field.Name);
+                    if (column == null)
+                    {
+                        column = new ModelColumn
+                        {
+                            Name = field.Name,
+                            Enable = true,
+
+                            ShowInList = true,
+                            ShowInForm = true,
+                        };
+                        columns.Add(column);
+                    }
+
+                    column.TableId = table.Id;
+                    column.Sort = idx++;
+
+                    column.Fill(field);
+                    //column.Save();
+                }
+                columns.Save();
+            }
         }
     }
 }

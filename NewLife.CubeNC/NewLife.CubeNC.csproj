@@ -73,6 +73,8 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Controllers\FileController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\LogController.cs" Link="Areas\Admin\Controllers\LogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\MenuController.cs" Link="Areas\Admin\Controllers\MenuController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelColumnController.cs" Link="Areas\Admin\Controllers\ModelColumnController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelTableController.cs" Link="Areas\Admin\Controllers\ModelTableController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthConfigController.cs" Link="Areas\Admin\Controllers\OAuthConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ParameterController.cs" Link="Areas\Admin\Controllers\ParameterController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Controllers\RoleController.cs" />
@@ -109,6 +111,10 @@
     <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.cs" Link="Entity\应用系统.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\模型列.Biz.cs" Link="Entity\模型列.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\模型列.cs" Link="Entity\模型列.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\模型表.Biz.cs" Link="Entity\模型表.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\模型表.cs" Link="Entity\模型表.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs" Link="Entity\用户令牌.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.cs" Link="Entity\用户令牌.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户链接.Biz.cs">

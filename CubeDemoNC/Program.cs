@@ -24,7 +24,7 @@ namespace CubeDemoNC
 
             XTrace.UseConsole();
 
-            CacheBase.Debug = true;
+            //CacheBase.Debug = true;
             //CreateWebHostBuilder(args).Build().Run();  
             var app = ApplicationManager.Load();
 

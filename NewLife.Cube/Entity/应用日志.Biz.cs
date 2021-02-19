@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Data;
 using XCode;
@@ -28,14 +30,10 @@ namespace NewLife.Cube.Entity
 
         #region 扩展属性
         /// <summary>应用</summary>
-        [XmlIgnore]
-        //[ScriptIgnore]
+        [XmlIgnore, ScriptIgnore, IgnoreDataMember]
         public App App => Extends.Get(nameof(App), k => App.FindByID(AppId));
 
         /// <summary>应用</summary>
-        [XmlIgnore]
-        //[ScriptIgnore]
-        [DisplayName("应用")]
         [Map(__.AppId, typeof(App), "ID")]
         public String AppName => App + "";
         #endregion

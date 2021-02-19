@@ -1248,8 +1248,8 @@ namespace NewLife.Cube
         /// <summary>列表字段过滤</summary>
         protected static FieldCollection ListFields => _ListFields ??= new FieldCollection(Factory, "List");
 
-        private static FieldCollection _FormFields;
-        /// <summary>表单字段过滤</summary>
+        //private static FieldCollection _FormFields;
+        ///// <summary>表单字段过滤</summary>
         //[Obsolete]
         //protected static FieldCollection FormFields => _FormFields ??= new FieldCollection(Factory, "Form");
 
@@ -1310,6 +1310,28 @@ namespace NewLife.Cube
             return Ok(data: data);
         }
 
+        /// <summary>获取所有表</summary>
+        /// <returns></returns>
+        public virtual ActionResult GetTables()
+        {
+            var tables = ModelTable.GetValids();
+            return Ok(data: tables);
+        }
+
+        /// <summary>获取当前表所有列</summary>
+        /// <returns></returns>
+        public virtual ActionResult GetColumns()
+        {
+            var tables = ModelTable.GetValids();
+            var ctrl = GetType().FullName;
+            var table = tables.FirstOrDefault(e => e.Controller == ctrl);
+            if (table == null) return Json(500, $"无法找到当前控制器[{ctrl}]的模型表信息");
+
+            var columns = ModelColumn.FindAllByTableId(table.Id);
+            columns = columns.Where(e => e.Enable).OrderBy(e => e.Sort).ToArray();
+
+            return Ok(data: columns);
+        }
         #endregion
 
         #region 权限菜单

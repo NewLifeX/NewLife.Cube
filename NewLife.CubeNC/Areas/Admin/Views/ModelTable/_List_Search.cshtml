@@ -1,0 +1,14 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Entity;
+@using NewLife.Cube.Extensions
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+}
+<div class="form-group">
+    <label for="category" class="control-label">分类：</label>
+    @Html.ForDropDownList("category", ModelTable.GetCategoryList(), page["category"], "全部", true)
+</div>
+@*@Html.Partial("_DateRange")*@
