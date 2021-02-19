@@ -134,6 +134,8 @@ namespace NewLife.Cube.Entity
             else
             {
                 DisplayName = field.DisplayName;
+
+                DataType = field.Type.Name;
             }
 
             IsDataObjectField = field.IsDataObjectField;

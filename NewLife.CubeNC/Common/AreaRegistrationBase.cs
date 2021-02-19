@@ -111,7 +111,7 @@ namespace NewLife.Cube
         private static void ScanModel(String areaName, IList<IMenu> menus)
         {
             var models = ModelTable.FindAll().Where(e => e.Category.EqualIgnoreCase(areaName)).ToList();
-            foreach (var menu in menus)
+            foreach (var menu in menus.OrderByDescending(e => e.Sort))
             {
                 if (menu.FullName.IsNullOrEmpty()) continue;
 
@@ -151,14 +151,16 @@ namespace NewLife.Cube
                             ShowInList = true,
                             ShowInForm = true,
                         };
+                        columns.Add(column);
                     }
 
                     column.TableId = table.Id;
                     column.Sort = idx++;
 
                     column.Fill(field);
-                    column.Save();
+                    //column.Save();
                 }
+                columns.Save();
             }
         }
     }
