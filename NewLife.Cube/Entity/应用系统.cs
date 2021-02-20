@@ -107,6 +107,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("Urls", "回调地址。用于限制回调地址安全性，多个地址逗号隔开", "")]
         public String Urls { get => _Urls; set { if (OnPropertyChanging("Urls", value)) { _Urls = value; OnPropertyChanged("Urls"); } } }
 
+        private String _RoleIds;
+        /// <summary>授权角色。只允许这些角色登录该系统，多个地址逗号隔开，未填写时表示不限制</summary>
+        [DisplayName("授权角色")]
+        [Description("授权角色。只允许这些角色登录该系统，多个地址逗号隔开，未填写时表示不限制")]
+        [DataObjectField(false, false, true, 500)]
+        [BindColumn("RoleIds", "授权角色。只允许这些角色登录该系统，多个地址逗号隔开，未填写时表示不限制", "")]
+        public String RoleIds { get => _RoleIds; set { if (OnPropertyChanging("RoleIds", value)) { _RoleIds = value; OnPropertyChanged("RoleIds"); } } }
+
         private Int32 _Auths;
         /// <summary>次数</summary>
         [DisplayName("次数")]
@@ -201,6 +209,7 @@ namespace NewLife.Cube.Entity
                     case "Enable": return _Enable;
                     case "TokenExpire": return _TokenExpire;
                     case "Urls": return _Urls;
+                    case "RoleIds": return _RoleIds;
                     case "Auths": return _Auths;
                     case "LastAuth": return _LastAuth;
                     case "Remark": return _Remark;
@@ -228,6 +237,7 @@ namespace NewLife.Cube.Entity
                     case "Enable": _Enable = value.ToBoolean(); break;
                     case "TokenExpire": _TokenExpire = value.ToInt(); break;
                     case "Urls": _Urls = Convert.ToString(value); break;
+                    case "RoleIds": _RoleIds = Convert.ToString(value); break;
                     case "Auths": _Auths = value.ToInt(); break;
                     case "LastAuth": _LastAuth = value.ToDateTime(); break;
                     case "Remark": _Remark = Convert.ToString(value); break;
@@ -279,6 +289,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
             public static readonly Field Urls = FindByName("Urls");
+
+            /// <summary>授权角色。只允许这些角色登录该系统，多个地址逗号隔开，未填写时表示不限制</summary>
+            public static readonly Field RoleIds = FindByName("RoleIds");
 
             /// <summary>次数</summary>
             public static readonly Field Auths = FindByName("Auths");
@@ -345,6 +358,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>回调地址。用于限制回调地址安全性，多个地址逗号隔开</summary>
             public const String Urls = "Urls";
+
+            /// <summary>授权角色。只允许这些角色登录该系统，多个地址逗号隔开，未填写时表示不限制</summary>
+            public const String RoleIds = "RoleIds";
 
             /// <summary>次数</summary>
             public const String Auths = "Auths";
