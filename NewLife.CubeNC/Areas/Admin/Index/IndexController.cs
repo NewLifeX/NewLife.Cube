@@ -221,7 +221,7 @@ namespace NewLife.Cube.Admin.Controllers
         [EntityAuthorize()]
         public ActionResult GetMenuTree() => Ok(data: GetMenu());
 
-        private List<MenuTree> GetMenu()
+        private IList<MenuTree> GetMenu()
         {
             var user = _provider.Current as IUser ?? XCode.Membership.User.FindAll().FirstOrDefault();
 
@@ -229,17 +229,16 @@ namespace NewLife.Cube.Admin.Controllers
             var menus = fact.Root.Childs;
             if (user?.Role != null)
             {
-                menus = fact.GetMySubMenus(fact.Root.ID, user);
+                menus = fact.GetMySubMenus(fact.Root.ID, user, true);
             }
 
             // 如果顶级只有一层，并且至少有三级目录，则提升一级
             if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
-            menus = menus.Where(m => m.Visible).ToList();
-
             var menuTree = MenuTree.GetMenuTree(pMenuTree =>
             {
-                return fact.GetMySubMenus(pMenuTree.ID, user).Where(m => m.Visible).ToList();
+                var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
+                return subMenus;
             }, list =>
             {
 
@@ -251,12 +250,11 @@ namespace NewLife.Cube.Admin.Controllers
                                     Name = menu.DisplayName,
                                     Url = Url.Content(menu.Url),
                                     Icon = menu.Icon,
-                                    Class = ""
+                                    Visible = menu.Visible
                                 }).ToList();
                 return menuList.Count > 0 ? menuList : null;
-            }, menus.ToList());
+            }, menus);
 
-            //var childs = menuTree[0].Children;
             return menuTree;
         }
 
