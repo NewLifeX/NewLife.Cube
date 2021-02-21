@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Web.Script.Serialization;
+using System.Xml.Serialization;
 using NewLife.Security;
 using XCode;
 using XCode.Membership;
@@ -37,7 +41,20 @@ namespace NewLife.Cube.Entity
             if (Name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Name), "名称不能为空！");
 
             //if (Secret.IsNullOrEmpty()) Secret = Rand.NextString(16).ToLower();
+
+            //if (RoleIds == null || RoleIds.Length == 0)
+            //    Roles = null;
+            //else
+            //    Roles = RoleIds.Distinct().Join(",");
         }
+
+        ///// <summary>加载后</summary>
+        //protected override void OnLoad()
+        //{
+        //    base.OnLoad();
+
+        //    RoleIds = Roles.SplitAsInt();
+        //}
 
         /// <summary>已重载。显示系统名称</summary>
         /// <returns></returns>
@@ -45,6 +62,10 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 扩展属性
+        ///// <summary>角色集合</summary>
+        //[XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        //[Map(nameof(Roles))]
+        //public Int32[] RoleIds { get; set; }
         #endregion
 
         #region 扩展查询

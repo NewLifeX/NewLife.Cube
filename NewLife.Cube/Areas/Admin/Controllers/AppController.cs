@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
@@ -25,6 +26,16 @@ namespace NewLife.Cube.Admin.Controllers
                 df.Header = "日志";
                 df.DisplayName = "日志";
                 df.Url = "AppLog?appId={ID}";
+            }
+
+            {
+                var df = AddFormFields.AddDataField("RoleIds");
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            }
+
+            {
+                var df = EditFormFields.AddDataField("RoleIds");
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }
         }
 
