@@ -17,6 +17,11 @@ namespace NewLife.Web.OAuth
             UserUrl = "https://graph.qq.com/user/get_user_info?access_token={token}&oauth_consumer_key={key}&openid={openid}";
         }
 
+        /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
+        /// <param name="userAgent"></param>
+        /// <returns></returns>
+        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains(" QQ/");
+
         /// <summary>从响应数据中获取信息</summary>
         /// <param name="dic"></param>
         protected override void OnGetInfo(IDictionary<String, String> dic)

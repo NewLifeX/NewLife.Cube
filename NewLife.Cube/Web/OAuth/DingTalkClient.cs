@@ -78,7 +78,7 @@ namespace NewLife.Cube.Web
         /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
         /// <param name="userAgent"></param>
         /// <returns></returns>
-        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains("DingTalk");
+        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains(" DingTalk/");
 
         /// <summary>针对指定客户端进行初始化</summary>
         /// <param name="userAgent"></param>
