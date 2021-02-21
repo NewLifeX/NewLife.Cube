@@ -30,8 +30,8 @@ namespace NewLife.Web.OAuth
             {
                 switch (str)
                 {
-                    case "男": dic["sex"] = "1"; break;
-                    case "女": dic["sex"] = "2"; break;
+                    case "男": Sex = 1; break;
+                    case "女": Sex = 2; break;
                 }
             }
 

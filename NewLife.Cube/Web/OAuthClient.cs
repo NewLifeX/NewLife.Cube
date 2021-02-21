@@ -298,6 +298,9 @@ namespace NewLife.Web
         /// <summary>昵称</summary>
         public String NickName { get; set; }
 
+        /// <summary>性别。0未知，1男，2女</summary>
+        public Int32 Sex { get; set; }
+
         /// <summary>用户代码</summary>
         public String UserCode { get; set; }
 
@@ -513,6 +516,8 @@ namespace NewLife.Web
             if (dic.TryGetValue("name", out str)) UserName = str.Trim();
             if (dic.TryGetValue("username", out str)) UserName = str.Trim();
             if (dic.TryGetValue("user_name", out str)) UserName = str.Trim();
+
+            if (dic.TryGetValue("sex", out str)) Sex = str.Trim().ToInt();
 
             if (dic.TryGetValue("nick", out str)) NickName = str.Trim();
             if (dic.TryGetValue("nickname", out str)) NickName = str.Trim();

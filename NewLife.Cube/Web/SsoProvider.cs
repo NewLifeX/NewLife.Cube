@@ -247,7 +247,7 @@ namespace NewLife.Cube.Web
                 if (user2.Mobile.IsNullOrEmpty()) user2.Mobile = client.Mobile;
                 if (user2.Mail.IsNullOrEmpty()) user2.Mail = client.Mail;
 
-                if (user2.Sex == SexKinds.未知 && dic.TryGetValue("sex", out var sex)) user2.Sex = (SexKinds)sex.ToInt();
+                if (user2.Sex == SexKinds.未知 && client.Sex != 0) user2.Sex = (SexKinds)client.Sex;
                 if (user2.Remark.IsNullOrEmpty()) user2.Remark = client.Detail;
 
                 var set = Setting.Current;
