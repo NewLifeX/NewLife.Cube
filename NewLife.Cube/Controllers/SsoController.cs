@@ -650,6 +650,28 @@ namespace NewLife.Cube.Controllers
             }
         }
 
+        /// <summary>验证令牌是否有效</summary>
+        /// <param name="access_token">应用</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public ActionResult Auth(String access_token)
+        {
+            if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
+
+            var prv = Provider.Provider;
+            var username = OAuth.Decode(access_token);
+
+            // 设置登录用户，
+            var user = prv.FindByName(username);
+            prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
+
+#if __CORE__
+            return Json(new { errcode = 0, error = "ok" });
+#else
+            return Json(new { errcode = 0, error = "ok" }, JsonRequestBehavior.AllowGet);
+#endif
+        }
+
         /// <summary>获取应用公钥，用于验证令牌</summary>
         /// <param name="client_id">应用</param>
         /// <param name="client_secret">密钥</param>
