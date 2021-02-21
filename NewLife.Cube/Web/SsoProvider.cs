@@ -547,11 +547,10 @@ namespace NewLife.Cube.Web
         /// <summary>凭证式获取令牌</summary>
         /// <param name="sso"></param>
         /// <param name="client_id">应用标识</param>
-        /// <param name="client_secret">密钥</param>
         /// <param name="refresh_token">刷新令牌</param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public virtual TokenInfo RefreshToken(OAuthServer sso, String client_id, String client_secret, String refresh_token, String ip)
+        public virtual TokenInfo RefreshToken(OAuthServer sso, String client_id, String refresh_token, String ip)
         {
             var log = new AppLog
             {
@@ -568,7 +567,7 @@ namespace NewLife.Cube.Web
                 var app = App.FindByName(client_id);
                 if (app != null) log.AppId = app.ID;
 
-                app = sso.Auth(client_id, client_secret);
+                app = sso.Auth(client_id, null);
                 log.AppId = app.ID;
 
                 var name = sso.Decode(refresh_token);

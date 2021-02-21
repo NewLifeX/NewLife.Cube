@@ -47,10 +47,10 @@ namespace NewLife.Web.OAuth
             }
         }
 
-        ///// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
-        ///// <param name="userAgent"></param>
-        ///// <returns></returns>
-        //public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains("wechat");
+        /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
+        /// <param name="userAgent"></param>
+        /// <returns></returns>
+        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && (userAgent.Contains("MicroMessenger") || userAgent.Contains("WeChat") || userAgent.Contains("Weixin"));
 
         ///// <summary>针对指定客户端进行初始化</summary>
         ///// <param name="userAgent"></param>

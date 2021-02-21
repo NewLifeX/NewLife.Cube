@@ -529,9 +529,8 @@ namespace NewLife.Cube.Controllers
 
                     case "refresh_token":
                         if (refresh_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(refresh_token));
-                        if (client_secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_secret));
 
-                        token = Provider.RefreshToken(OAuth, client_id, client_secret, refresh_token, UserHost);
+                        token = Provider.RefreshToken(OAuth, client_id, refresh_token, UserHost);
                         break;
                 }
 
@@ -560,7 +559,7 @@ namespace NewLife.Cube.Controllers
             }
         }
 
-        /// <summary>3，根据token获取用户信息</summary>
+        /// <summary>4，根据token获取用户信息</summary>
         /// <param name="access_token">访问令牌</param>
         /// <returns></returns>
         [AllowAnonymous]
@@ -600,6 +599,54 @@ namespace NewLife.Cube.Controllers
             finally
             {
                 sso.WriteLog("UserInfo {0} access_token={1} msg={2}", user, access_token, msg);
+            }
+        }
+
+        /// <summary>5，刷新令牌</summary>
+        /// <remarks>
+        /// 若access_token已超时，那么进行refresh_token会获取一个新的access_token，新的超时时间；
+        /// 若access_token未超时，那么进行refresh_token不会改变access_token，但超时时间会刷新，相当于续期access_token。
+        /// </remarks>
+        /// <param name="client_id">应用标识</param>
+        /// <param name="grant_type">授权类型</param>
+        /// <param name="refresh_token">刷新令牌</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public virtual ActionResult Refresh_Token(String client_id, String grant_type, String refresh_token)
+        {
+            if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
+            if (grant_type.IsNullOrEmpty()) grant_type = "refresh_token";
+
+            //!!! 由于访问令牌使用JWT，做不到微信的机制，刷新令牌时access_token不改变且续期。JWT想要续期，就必须重新颁发。
+
+            try
+            {
+                if (refresh_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(refresh_token));
+
+                var token = Provider.RefreshToken(OAuth, client_id, refresh_token, UserHost);
+
+                var rs = new
+                {
+                    access_token = token.AccessToken,
+                    refresh_token = token.RefreshToken,
+                    expires_in = token.Expire,
+                    scope = token.Scope,
+                };
+#if __CORE__
+                return Json(rs);
+#else
+                return Json(rs, JsonRequestBehavior.AllowGet);
+#endif
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteLine($"RefreshToken client_id={client_id} grant_type={grant_type} refresh_token={refresh_token}");
+                XTrace.WriteException(ex);
+#if __CORE__
+                return Json(new { errcode = 500, error = ex.GetTrue().Message });
+#else
+                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
+#endif
             }
         }
 
