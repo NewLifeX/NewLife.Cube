@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
 using NewLife.Log;
@@ -132,10 +133,24 @@ namespace NewLife.Web
             log.AccessToken = token.AccessToken;
             log.RefreshToken = token.RefreshToken;
             log.CreateUser = user + "";
+            log.Action = nameof(GetResult);
 
             if (Log != null) WriteLog("Authorize appid={0} code={2} redirect_uri={1} {3}", log.AppName, log.RedirectUri, code, user);
 
-            log.Action = nameof(GetResult);
+            // 校验角色
+            var ids = log.App?.RoleIds?.SplitAsInt();
+            if (ids != null && ids.Length > 0 && user is XCode.Membership.User user2)
+            {
+                if (!user2.Roles.Any(r => ids.Contains(r.ID)))
+                {
+                    log.Success = false;
+                    log.Remark = $"该应用[{log.AppName}]不支持用户所属角色登录！";
+                    log.Update();
+
+                    throw new InvalidOperationException(log.Remark);
+                }
+            }
+
             log.Update();
 
             var url = log.RedirectUri;

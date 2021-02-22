@@ -57,7 +57,7 @@ namespace NewLife.Web.OAuth
         /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
         /// <param name="userAgent"></param>
         /// <returns></returns>
-        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains("MicroMessenger") && userAgent.Contains("wxwork");
+        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains(" MicroMessenger/") && userAgent.Contains(" wxwork/");
 
         /// <summary>针对指定客户端进行初始化</summary>
         /// <param name="userAgent"></param>
@@ -303,7 +303,7 @@ namespace NewLife.Web.OAuth
 
             if (dic.TryGetValue("UserId", out var str)) UserName = str.Trim();
             if (dic.TryGetValue("DeviceId", out str)) DeviceId = str.Trim();
-            if (dic.TryGetValue("OpenId", out str)) OpenID = str.Trim();
+            //if (dic.TryGetValue("OpenId", out str)) OpenID = str.Trim();
         }
         #endregion
     }
