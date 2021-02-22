@@ -248,7 +248,7 @@ namespace NewLife.Cube.Admin.Controllers
                                 {
                                     ID = menu.ID,
                                     Name = menu.Name,
-                                    DisplayName = menu.DisplayName,
+                                    DisplayName = menu.DisplayName ?? menu.Name,
                                     Url = Url.Content(menu.Url),
                                     Icon = menu.Icon,
                                     Visible = menu.Visible,
