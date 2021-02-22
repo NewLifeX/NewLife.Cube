@@ -247,10 +247,13 @@ namespace NewLife.Cube.Admin.Controllers
                                 select new MenuTree
                                 {
                                     ID = menu.ID,
-                                    Name = menu.DisplayName,
+                                    Name = menu.Name,
+                                    DisplayName = menu.DisplayName,
                                     Url = Url.Content(menu.Url),
                                     Icon = menu.Icon,
-                                    Visible = menu.Visible
+                                    Visible = menu.Visible,
+                                    ParentID = menu.ParentID,
+                                    Permissions = menu.Permissions
                                 }).ToList();
                 return menuList.Count > 0 ? menuList : null;
             }, menus);

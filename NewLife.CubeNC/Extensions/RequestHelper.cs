@@ -32,6 +32,7 @@ namespace NewLife.Cube.Extensions
             if (key == "output") return null;
 
             var entityBody = request.GetRequestBody<NullableDictionary<String, Object>>();
+            if (entityBody == null) return null;
             return !entityBody.TryGetValue(key, out var v) ? null : v?.ToString();
         }
 

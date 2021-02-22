@@ -13,12 +13,19 @@ namespace NewLife.Cube.ViewModels
         /// </summary>
         /// <value></value>
         public Int32 ID { get; set; }
-
         /// <summary>
         /// 名称
         /// </summary>
         /// <value></value>
         public String Name { get; set; }
+        /// <summary>
+        /// 显示名
+        /// </summary>
+        public String DisplayName { get; set; }
+        /// <summary>
+        /// 父级id
+        /// </summary>
+        public Int32? ParentID { get; set; }
         /// <summary>
         /// 链接
         /// </summary>
@@ -34,6 +41,8 @@ namespace NewLife.Cube.ViewModels
         /// </summary>
         /// <value></value>
         public Boolean Visible { get; set; }
+        /// <summary>可选权限子项</summary>
+        public Dictionary<Int32, String> Permissions { get; set; }
         /// <summary>
         /// 子菜单
         /// </summary>
