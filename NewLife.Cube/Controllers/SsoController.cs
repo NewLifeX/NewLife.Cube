@@ -10,6 +10,7 @@ using XCode.Membership;
 using NewLife.Collections;
 using System.Security.Cryptography;
 using NewLife.Security;
+using NewLife.Cube.Web.Models;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;

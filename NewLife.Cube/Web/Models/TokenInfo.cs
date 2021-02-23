@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace NewLife.Cube.Web
+namespace NewLife.Cube.Web.Models
 {
     /// <summary>令牌信息</summary>
     public class TokenInfo

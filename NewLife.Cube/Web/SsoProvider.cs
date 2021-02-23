@@ -14,6 +14,7 @@ using NewLife.Security;
 using XCode;
 using NewLife.Threading;
 using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
+using NewLife.Cube.Web.Models;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

@@ -57,8 +57,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.10.2021.212-beta2" />
-    <PackageReference Include="NewLife.XCode" Version="10.0.2021.212-beta3" />
+    <PackageReference Include="NewLife.Core" Version="8.10.2021.224-beta3" />
+    <PackageReference Include="NewLife.XCode" Version="10.0.2021.224-beta3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -135,6 +135,7 @@
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\CheckInData.cs" Link="Web\Models\CheckInData.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\DepartmentInfo.cs" Link="Web\Models\DepartmentInfo.cs" />
+    <Compile Include="..\NewLife.Cube\Web\Models\TokenInfo.cs" Link="Web\Models\TokenInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\UserInfo.cs" Link="Web\Models\UserInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthClient.cs" Link="Web\OAuthClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthConfig.cs" Link="Web\OAuthConfig.cs" />
@@ -149,7 +150,6 @@
     <Compile Include="..\NewLife.Cube\Web\OAuth\WeixinClient.cs" Link="Web\OAuth\WeixinClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoClient.cs" Link="Web\SsoClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
-    <Compile Include="..\NewLife.Cube\Web\TokenInfo.cs" Link="Web\TokenInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
   </ItemGroup>
 

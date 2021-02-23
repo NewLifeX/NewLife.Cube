@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using NewLife.Cube.Web.Models;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Remoting;

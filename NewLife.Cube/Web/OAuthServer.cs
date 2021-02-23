@@ -2,6 +2,7 @@
 using System.Linq;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
+using NewLife.Cube.Web.Models;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Serialization;

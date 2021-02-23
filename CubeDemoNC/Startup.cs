@@ -67,12 +67,12 @@ namespace CubeDemoNC
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            // 探测星尘
-            ThreadPoolX.QueueUserWorkItem(() =>
-            {
-                var client = new LocalStarClient();
-                client.ProbeAndInstall(null, "1.1");
-            });
+            //// 探测星尘
+            //ThreadPoolX.QueueUserWorkItem(() =>
+            //{
+            //    var client = new LocalStarClient();
+            //    client.ProbeAndInstall(null, "1.1");
+            //});
         }
     }
 }
