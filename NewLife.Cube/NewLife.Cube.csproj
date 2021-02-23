@@ -625,6 +625,7 @@
     <Compile Include="Web\Models\ApprovalInfo.cs" />
     <Compile Include="Web\Models\CheckInData.cs" />
     <Compile Include="Web\Models\DepartmentInfo.cs" />
+    <Compile Include="Web\Models\SsoTokenModel.cs" />
     <Compile Include="Web\Models\UserInfo.cs" />
     <Compile Include="Web\OAuthClient.cs" />
     <Compile Include="Web\OAuthConfig.cs" />

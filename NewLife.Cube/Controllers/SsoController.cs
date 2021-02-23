@@ -486,6 +486,7 @@ namespace NewLife.Cube.Controllers
         /// <remarks>
         /// 密码式：
         /// 用户把用户名和密码，直接告诉该应用。该应用就使用你的密码，申请令牌，这种方式称为"密码式"（password）。
+        /// 为了避免密码暴露在Url中，需要用表单Post方式提交。
         /// 凭证式：
         /// 凭证式（client credentials），适用于没有前端的命令行应用，即在命令行下请求令牌。
         /// 针对第三方应用，而不是针对用户的，即有可能多个用户共享同一个令牌。
@@ -551,6 +552,67 @@ namespace NewLife.Cube.Controllers
             catch (Exception ex)
             {
                 XTrace.WriteLine($"Token client_id={client_id} username={username} grant_type={grant_type}");
+                XTrace.WriteException(ex);
+#if __CORE__
+                return Json(new { errcode = 500, error = ex.GetTrue().Message });
+#else
+                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
+#endif
+            }
+        }
+
+        /// <summary>3，根据password/client_credentials获取令牌</summary>
+        /// <remarks>
+        /// 密码式：
+        /// 用户把用户名和密码，直接告诉该应用。该应用就使用你的密码，申请令牌，这种方式称为"密码式"（password）。
+        /// 凭证式：
+        /// 凭证式（client credentials），适用于没有前端的命令行应用，即在命令行下请求令牌。
+        /// 针对第三方应用，而不是针对用户的，即有可能多个用户共享同一个令牌。
+        /// </remarks>
+        /// <param name="model">请求模型</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public virtual ActionResult PasswordToken([FromBody]SsoTokenModel model)
+        {
+            if (model.client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(model.client_id));
+            if (model.grant_type.IsNullOrEmpty()) model.grant_type = "password";
+
+            try
+            {
+                TokenInfo token = null;
+                switch (model.grant_type.ToLower())
+                {
+                    case "password":
+                        if (model.UserName.IsNullOrEmpty()) throw new ArgumentNullException(nameof(model.UserName));
+                        if (model.Password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(model.Password));
+
+                        token = Provider.GetAccessTokenByPassword(OAuth, model.client_id, model.UserName, model.Password, UserHost);
+                        break;
+
+                    case "client_credentials":
+                        if (model.client_secret.IsNullOrEmpty()) throw new ArgumentNullException(nameof(model.client_secret));
+
+                        // username 可以是设备编码等唯一使用者标识
+                        token = Provider.GetAccessTokenByClientCredentials(OAuth, model.client_id, model.client_secret, model.UserName, UserHost);
+                        break;
+                }
+
+                var rs = new
+                {
+                    access_token = token.AccessToken,
+                    refresh_token = token.RefreshToken,
+                    expires_in = token.Expire,
+                    scope = token.Scope,
+                };
+#if __CORE__
+                return Json(rs);
+#else
+                return Json(rs, JsonRequestBehavior.AllowGet);
+#endif
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteLine($"Token client_id={model.client_id} username={model.UserName} grant_type={model.grant_type}");
                 XTrace.WriteException(ex);
 #if __CORE__
                 return Json(new { errcode = 500, error = ex.GetTrue().Message });
