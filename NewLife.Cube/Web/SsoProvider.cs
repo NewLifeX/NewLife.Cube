@@ -437,7 +437,7 @@ namespace NewLife.Cube.Web
         /// <param name="sso"></param>
         /// <param name="client_id">应用标识</param>
         /// <param name="username">用户名</param>
-        /// <param name="password">密码</param>
+        /// <param name="password">密码。支持md5密码，以md5#开头</param>
         /// <param name="ip"></param>
         /// <returns></returns>
         public virtual TokenInfo GetAccessTokenByPassword(OAuthServer sso, String client_id, String username, String password, String ip)
@@ -457,20 +457,25 @@ namespace NewLife.Cube.Web
                 var app = sso.Auth(client_id, null);
                 log.AppId = app.ID;
 
-                // 不能使用 ManagerProvider，它会写cookie
-                //var user = Provider.Login(username, password, false);
-                var user = XCode.Membership.User.Login(username, password, false);
+                IManageUser user = null;
+                if (password.StartsWithIgnoreCase("md5#"))
+                {
+                    var pass = password.Substring("md5#".Length);
+                    user = XCode.Membership.User.Login(username, u =>
+                    {
+                        if (!u.Password.IsNullOrEmpty() && !u.Password.EqualIgnoreCase(pass))
+                            throw new InvalidOperationException($"密码不正确！");
+                    });
+                }
+                else
+                {
+                    // 不能使用 ManagerProvider，它会写cookie
+                    //var user = Provider.Login(username, password, false);
+                    user = XCode.Membership.User.Login(username, password, false);
+                }
                 if (user == null) throw new XException("用户{0}验证失败", username);
 
                 var token = sso.CreateToken(app, user.Name, null, $"{client_id}#{user.Name}");
-                //var token = sso.CreateToken(app, user.Name, new
-                //{
-                //    userid = user.ID,
-                //    usercode = user.Code,
-                //    nickname = user.DisplayName,
-                //});
-                //var token = sso.CreateToken(app, user.Name, GetUserInfo(null, null, user));
-                //token.Scope = "basic,UserInfo";
 
                 log.AccessToken = token.AccessToken;
                 log.RefreshToken = token.RefreshToken;
