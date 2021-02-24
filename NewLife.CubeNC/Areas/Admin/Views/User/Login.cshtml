@@ -1,12 +1,10 @@
-﻿@using NewLife.Common;
+﻿@model LoginViewModel
+@using NewLife.Common;
 @{
     Layout = null;
     ViewBag.Title = "登录";
 
-    var set = NewLife.Cube.Setting.Current;
-    var res = set.ResourceUrl;
-    if (String.IsNullOrEmpty(res)) res = "/Content";
-    res = res.TrimEnd('/');
+    var res = Model.ResourceUrl;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -239,10 +237,10 @@
             <div class="col-md-6 col-md-offset-3">
                 <div class="tab-content">
                     @*<partial name="_Login_Login"/>*@
-                    @await Html.PartialAsync("_Login_Login")@*登录页*@
-                    @await Html.PartialAsync("_Login_Forgot")@*找回密码页*@
-                    @await Html.PartialAsync("_Login_Register")@*注册页*@
-                    @await Html.PartialAsync("_Login_Login3")@*第三方登录*@
+                    @await Html.PartialAsync("_Login_Login", Model)@*登录页*@
+                    @await Html.PartialAsync("_Login_Forgot", Model)@*找回密码页*@
+                    @await Html.PartialAsync("_Login_Register", Model)@*注册页*@
+                    @await Html.PartialAsync("_Login_Login3", Model)@*第三方登录*@
                 </div>
             </div>
         </div>

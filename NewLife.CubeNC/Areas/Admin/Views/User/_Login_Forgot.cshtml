@@ -1,10 +1,15 @@
-﻿<div class="tab-pane fade" id="Forgot">
+﻿@model LoginViewModel
+@using NewLife.Common
+@{
+    var set = Model;
+}
+<div class="tab-pane fade" id="Forgot">
     <!-- Logo-->
     <div class="row text-center">
         <i class="glyphicon glyphicon-cloud login-logo center-block"></i>
     </div>
     <!-- 登录-->
-    @using (Html.BeginForm("ForgetPassword", "User", new { r = ViewBag.ReturnUrl }, FormMethod.Post,true, new { @class = "cube-login" }))
+    @using (Html.BeginForm("ForgetPassword", "User", new { r = set.ReturnUrl }, FormMethod.Post, true, new { @class = "cube-login" }))
     {
         @Html.ValidationSummary()
         <span class="heading text-primary">取回密码</span>
@@ -17,14 +22,14 @@
         </div>
 
     }
-        <div class="toolbar clearfix text-center">
-            <div class="row" style="padding-top:30px;">
-                <div class="toolbar center">
-                    <a href="#Login" data-toggle="tab">
-                        回到登录
-                        <i class="ace-icon fa fa-arrow-right"></i>
-                    </a>
-                </div>
+    <div class="toolbar clearfix text-center">
+        <div class="row" style="padding-top:30px;">
+            <div class="toolbar center">
+                <a href="#Login" data-toggle="tab">
+                    回到登录
+                    <i class="ace-icon fa fa-arrow-right"></i>
+                </a>
             </div>
         </div>
+    </div>
 </div>

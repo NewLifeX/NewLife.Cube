@@ -12,6 +12,7 @@ using System.Web;
 using NewLife.Caching;
 using NewLife.Log;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Common;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -188,10 +189,47 @@ namespace NewLife.Cube.Admin.Controllers
                 }
             }
 
-            ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
-            ViewBag.ReturnUrl = returnUrl;
+            //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
+            //ViewBag.ReturnUrl = returnUrl;
 
-            return View();
+            var model = GetViewModel(returnUrl);
+            model.OAuthItems = ms;
+
+            return View(model);
+        }
+
+        private LoginViewModel GetViewModel(String returnUrl)
+        {
+            var set = NewLife.Cube.Setting.Current;
+            var sys = SysConfig.Current;
+            var model = new LoginViewModel
+            {
+                DisplayName = sys.DisplayName,
+
+                AllowLogin = set.AllowLogin,
+                AllowRegister = set.AllowRegister,
+                AutoRegister = set.AutoRegister,
+
+                LoginTip = set.LoginTip,
+                ResourceUrl = set.ResourceUrl,
+                ReturnUrl = returnUrl,
+
+                //OAuthItems = ms,
+            };
+
+            if (model.ResourceUrl.IsNullOrEmpty()) model.ResourceUrl = "/Content";
+            model.ResourceUrl = model.ResourceUrl.TrimEnd('/');
+
+            // 是否使用Sso登录
+            var appId = GetRequest("ssoAppId").ToInt();
+            var app = App.FindByID(appId);
+            if (app != null)
+            {
+                model.DisplayName = app + "";
+                model.Logo = app.Logo;
+            }
+
+            return model;
         }
 
         /// <summary>登录</summary>
@@ -259,10 +297,13 @@ namespace NewLife.Cube.Admin.Controllers
             _cache.Increment(key, 1);
             if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(60));
 
-            //云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
-            ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
+            ////云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
+            //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
 
-            return View();
+            var model = GetViewModel(returnUrl);
+            model.OAuthItems = NewLife.Cube.Entity.OAuthConfig.GetValids();
+
+            return View(model);
         }
 
         /// <summary>注销</summary>

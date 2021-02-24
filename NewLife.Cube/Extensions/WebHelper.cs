@@ -4,10 +4,8 @@ using System.Collections.Specialized;
 using System.Text;
 using System.Web;
 using NewLife.Collections;
-using NewLife.Log;
 using XCode.Membership;
 using System.IO;
-using NewLife.Cube.Entity;
 using System.Linq;
 using NewLife.Cube.Extensions;
 #if __CORE__

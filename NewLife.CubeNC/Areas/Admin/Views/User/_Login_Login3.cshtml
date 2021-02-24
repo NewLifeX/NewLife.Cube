@@ -1,14 +1,17 @@
-﻿@using System.IO
+﻿@model LoginViewModel
+@using System.IO
 @using System.Web
 @using NewLife.Cube.Web;
 @using NewLife.Cube.Entity;
 @{
-    var set = NewLife.Cube.Setting.Current;
-    var returnUrl = ViewBag.ReturnUrl as String;
-    var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
+    //var set = NewLife.Cube.Setting.Current;
+    var set = Model;
+
+    //var returnUrl = ViewBag.ReturnUrl as String;
+    //var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
     //var dic = "NewLife=新生命,Baidu=百度,Weixin=微信,Taobao=淘宝,Ding=钉钉,QyWeiXin=企业微信".SplitAsDictionary("=", ",");
 }
-@if (ms.Count > 0 && set.AutoRegister)
+@if (set.OAuthItems.Count > 0 && set.AutoRegister)
 {
     <div class="text-center">
         <div class="col-sm-12">
@@ -20,14 +23,14 @@
         </div>
         <div class="row" style="padding: 0 0 0 0;">
             <div class="form-group col-sm-12">
-                @foreach (var mi in ms)
+                @foreach (var mi in set.OAuthItems)
                 {
                     var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
 
                     var url = "Sso/Login?name=" + mi.Name;
-                    if (!returnUrl.IsNullOrEmpty())
+                    if (!set.ReturnUrl.IsNullOrEmpty())
                     {
-                        url += "&r=" + HttpUtility.UrlEncode(returnUrl);
+                        url += "&r=" + HttpUtility.UrlEncode(set.ReturnUrl);
                     }
 
                     url =

@@ -391,7 +391,7 @@ namespace NewLife.Cube.Controllers
             if (user != null)
                 url = OAuth.GetResult(key, user);
             else
-                url = prov.LoginUrl.AppendReturn("/Sso/Auth2?id=" + key);
+                url = prov.GetLoginUrl(key);
 
             return Redirect(url);
         }
@@ -409,13 +409,7 @@ namespace NewLife.Cube.Controllers
             var user = Provider?.Current;
             //if (user == null) throw new InvalidOperationException("未登录！");
             // 未登录时跳转到登录页面，重新认证
-            if (user == null)
-            {
-                var prov = Provider;
-                var url2 = prov.LoginUrl.AppendReturn("~/Sso/Auth2?id=" + id);
-
-                return Redirect(url2);
-            }
+            if (user == null) return Redirect(Provider.GetLoginUrl(id));
 
             // 返回给子系统的数据：
             // code 授权码，子系统凭借该代码来索取用户信息
@@ -572,7 +566,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="model">请求模型</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public virtual ActionResult PasswordToken([FromBody]SsoTokenModel model)
+        public virtual ActionResult PasswordToken([FromBody] SsoTokenModel model)
         {
             if (model.client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(model.client_id));
             if (model.grant_type.IsNullOrEmpty()) model.grant_type = "password";

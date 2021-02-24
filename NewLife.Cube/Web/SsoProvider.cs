@@ -125,6 +125,23 @@ namespace NewLife.Cube.Web
             return url;
         }
 
+        /// <summary>获取登录回跳地址</summary>
+        /// <param name="logId"></param>
+        /// <returns></returns>
+        public virtual String GetLoginUrl(String logId)
+        {
+            var url = LoginUrl;
+
+            var log = AppLog.FindByID(logId.ToLong());
+            if (log != null)
+            {
+                url += url.Contains("?") ? "&" : "?";
+                url += $"ssoAppId={log.AppId}";
+            }
+
+            return url.AppendReturn("/Sso/Auth2?id=" + logId);
+        }
+
         /// <summary>获取回调地址</summary>
         /// <param name="request"></param>
         /// <param name="returnUrl"></param>

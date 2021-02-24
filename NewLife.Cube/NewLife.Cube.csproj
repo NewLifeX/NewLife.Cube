@@ -132,6 +132,7 @@
     <Compile Include="Areas\Admin\Models\ChangePasswordModel.cs" />
     <Compile Include="Areas\Admin\Models\FileItem.cs" />
     <Compile Include="Areas\Admin\Models\DbItem.cs" />
+    <Compile Include="Areas\Admin\Models\LoginViewModel.cs" />
     <Compile Include="Areas\Admin\Models\UserModel.cs" />
     <Compile Include="Areas\Admin\Views\App\_List_Data.generated.cs">
       <AutoGen>True</AutoGen>
