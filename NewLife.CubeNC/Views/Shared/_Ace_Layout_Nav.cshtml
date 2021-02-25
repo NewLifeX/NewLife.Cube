@@ -1,8 +1,12 @@
-﻿@using XCode
+﻿@using NewLife;
+@using XCode
 @using XCode.Membership
 @{
     var menu = ViewBag.Menu as IMenu;
     if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
+
+    var url = Context.Request.Headers["Referer"].FirstOrDefault() + "";
+    var us = url.TrimStart("http://", "https://").Split('/', StringSplitOptions.RemoveEmptyEntries);
 }
 <li>
     <i class="ace-icon fa fa-home home-icon"></i>
@@ -20,3 +24,7 @@
 <li>
     <a href="@Url.Action("Index")">@(menu != null ? menu.DisplayName : ViewBag.Title)</a>
 </li>
+@if (!String.IsNullOrEmpty(url) && us.Length > 2)
+{
+    <a href="#" onclick="history.go(-1);" title="@url" style="margin-left: 40px;"><span class="glyphicon glyphicon-backward"></span></a>
+}
