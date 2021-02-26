@@ -12,7 +12,7 @@
         @*<span style="display: inline-block;vertical-align: 56px;margin-left: 10px;font-size: 24px;">@SysConfig.Current.DisplayName</span>*@
     </div>
     <!-- 登录-->
-    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" onsubmit="md5_plain($('#reg_password'));md5_plain($('#reg_password2'));">
+    <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="cube-login" method="post">
         @Html.ValidationSummary()
         <span class="heading text-primary">@set.DisplayName 注册</span>
         <div class="form-group">

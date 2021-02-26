@@ -506,7 +506,10 @@ namespace NewLife.Cube.Admin.Controllers
 
                 // 去重判断
                 var user = XCode.Membership.User.FindByName(username);
-                if (user != null) throw new ArgumentException("username", $"用户[{username}]已存在！");
+                if (user != null) throw new ArgumentException(nameof(username), $"用户[{username}]已存在！");
+
+                user = XCode.Membership.User.FindByMail(email);
+                if (user != null) throw new ArgumentException(nameof(email), $"邮箱[{email}]已存在！");
 
                 var r = Role.GetOrAdd(set.DefaultRole);
 
