@@ -527,7 +527,10 @@ namespace NewLife.Cube.Admin.Controllers
                 ModelState.AddModelError(aex.ParamName, aex.Message);
             }
 
-            return View("Login");
+            var model = GetViewModel(null);
+            model.OAuthItems = NewLife.Cube.Entity.OAuthConfig.GetValids();
+
+            return View("Login", model);
         }
 
         /// <summary>清空密码</summary>
