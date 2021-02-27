@@ -153,8 +153,8 @@ namespace NewLife.Cube.Web
             if (!returnUrl.IsNullOrEmpty() && returnUrl.StartsWithIgnoreCase("/Sso/Login")) returnUrl = null;
 
             var uri = RedirectUrl.AsUri(request.GetRawUrl()) + "";
-
-            return uri.AppendReturn(returnUrl);
+            return uri;
+            //return uri.AppendReturn(returnUrl);
         }
 
         /// <summary>获取连接信息</summary>

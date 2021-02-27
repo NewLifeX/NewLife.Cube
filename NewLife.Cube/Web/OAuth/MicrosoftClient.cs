@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Web;
 using NewLife.Http;
 using NewLife.Serialization;
@@ -109,6 +110,18 @@ namespace NewLife.Web.OAuth
 
                 return html;
             }
+            else if (action == nameof(GetUserInfo))
+            {
+                var client = GetClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+                var html = client.GetStringAsync(url).Result;
+                if (html.IsNullOrEmpty()) return null;
+
+                html = html.Trim();
+                if (Log != null && Log.Enable) WriteLog(html);
+
+                return html;
+            }
 
             return base.GetHtml(action, url);
         }
@@ -119,7 +132,9 @@ namespace NewLife.Web.OAuth
         {
             base.OnGetInfo(dic);
 
-            if (dic.TryGetValue("headimgurl", out var str)) Avatar = str.Trim();
+            //todo 其实可以从token请求返回的id_token里面jwt解析得到email和name
+
+            if (dic.TryGetValue("picture", out var str)) Avatar = str.Trim();
         }
 
         /// <summary>获取Url，替换变量</summary>
