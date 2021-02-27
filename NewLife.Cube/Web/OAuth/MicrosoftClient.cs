@@ -28,9 +28,9 @@ namespace NewLife.Web.OAuth
 
             AuthUrl = "authorize?response_type={response_type}&client_id={key}&redirect_uri={redirect}&state={state}&scope={scope}";
             AccessUrl = "token?grant_type=authorization_code&client_id={key}&client_secret={secret}&code={code}&redirect_uri={redirect}";
+            LogoutUrl = "logout?post_logout_redirect_uri={redirect}";
+            UserUrl = "https://graph.microsoft.com/oidc/userinfo?access_token={token}&openid={openid}&lang=zh_CN";
 
-            //Scope = HttpUtility.UrlEncode("https://graph.microsoft.com/user.read");
-            //Scope = "https%3A%2F%2Fgraph.microsoft.com%2Fmail.read%20api%3A%2F%2F";
             Scope = "openid profile email";
         }
 

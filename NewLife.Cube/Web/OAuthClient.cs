@@ -403,7 +403,7 @@ namespace NewLife.Web
         /// <returns></returns>
         protected virtual String GetUrl(String url)
         {
-            if (!url.StartsWithIgnoreCase("http"))
+            if (!url.StartsWithIgnoreCase("http://", "https://"))
             {
                 // 授权以外的连接，使用令牌服务地址
                 if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth"))
@@ -494,8 +494,7 @@ namespace NewLife.Web
             var agent = "";
             if (asm != null) agent = $"{asm.GetName().Name} v{asm.GetName().Version}";
 
-            var handler = new HttpClientHandler { UseProxy = false };
-            var client = Tracer?.CreateHttpClient(handler) ?? new HttpClient(handler);
+            var client = Tracer?.CreateHttpClient();
             var headers = client.DefaultRequestHeaders;
             headers.UserAgent.ParseAdd(agent);
 
