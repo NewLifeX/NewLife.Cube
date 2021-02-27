@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using NewLife.Http;
+using NewLife.Serialization;
 
 namespace NewLife.Web.OAuth
 {
@@ -26,7 +27,7 @@ namespace NewLife.Web.OAuth
             Server = "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/";
 
             AuthUrl = "authorize?response_type={response_type}&client_id={key}&redirect_uri={redirect}&state={state}&scope={scope}";
-            AccessUrl = "token?grant_type=authorization_code&client_id={key}&client_secret={secret}&code={code}&state={state}&redirect_uri={redirect}";
+            AccessUrl = "token?grant_type=authorization_code&client_id={key}&client_secret={secret}&code={code}&redirect_uri={redirect}";
 
             //Scope = HttpUtility.UrlEncode("https://graph.microsoft.com/user.read");
             //Scope = "https%3A%2F%2Fgraph.microsoft.com%2Fmail.read%20api%3A%2F%2F";
@@ -97,6 +98,7 @@ namespace NewLife.Web.OAuth
                 var p = url.IndexOf('?');
                 var dic = url.Substring(p + 1).SplitAsDictionary("=", "&").ToDictionary(e => e.Key, e => HttpUtility.UrlDecode(e.Value));
                 url = url.Substring(0, p);
+                //WriteLog(dic.ToJson(true));
 
                 var client = GetClient();
                 var html = client.PostFormAsync(url, dic).Result;

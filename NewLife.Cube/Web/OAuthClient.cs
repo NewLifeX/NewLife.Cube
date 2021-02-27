@@ -413,12 +413,12 @@ namespace NewLife.Web
             }
 
             url = url
-               .Replace("{key}", Key)
+               .Replace("{key}", HttpUtility.UrlEncode(Key + ""))
                .Replace("{secret}", HttpUtility.UrlEncode(Secret + ""))
                .Replace("{response_type}", HttpUtility.UrlEncode(ResponseType) + "")
-               .Replace("{token}", AccessToken)
-               .Replace("{code}", Code)
-               .Replace("{openid}", OpenID)
+               .Replace("{token}", HttpUtility.UrlEncode(AccessToken + ""))
+               .Replace("{code}", HttpUtility.UrlEncode(Code + ""))
+               .Replace("{openid}", HttpUtility.UrlEncode(OpenID + ""))
                .Replace("{redirect}", HttpUtility.UrlEncode(_redirect + ""))
                .Replace("{scope}", HttpUtility.UrlEncode(Scope + ""))
                .Replace("{state}", HttpUtility.UrlEncode(_state + ""));
