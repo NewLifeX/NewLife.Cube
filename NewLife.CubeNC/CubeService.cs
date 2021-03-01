@@ -7,7 +7,6 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -21,6 +20,7 @@ using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
+using XCode.DataAccessLayer;
 
 namespace NewLife.Cube
 {
@@ -46,6 +46,9 @@ namespace NewLife.Cube
             }
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            // 连接字符串
+            DAL.ConnStrs.TryAdd("Cube", "MapTo=Membership");
 
             // 配置Cookie策略
             services.ConfigureNonBreakingSameSiteCookies();
