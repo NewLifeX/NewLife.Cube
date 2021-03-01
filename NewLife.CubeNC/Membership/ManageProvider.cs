@@ -5,7 +5,6 @@ using System.Security.Principal;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.Extensions;
@@ -193,7 +192,7 @@ namespace NewLife.Cube
             var user = provider.GetCurrent(context);
             if (user == null) return;
 
-            if (!(user is IIdentity id) || ctx.User?.Identity == id) return;
+            if (user is not IIdentity id || ctx.User?.Identity == id) return;
 
             // 角色列表
             var roles = new List<String>();

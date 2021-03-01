@@ -15,9 +15,9 @@ using XCode;
 using NewLife.Threading;
 using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
 using NewLife.Cube.Web.Models;
+
 #if __CORE__
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using IHttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
 #else
 using IHttpRequest = System.Web.HttpRequestBase;
