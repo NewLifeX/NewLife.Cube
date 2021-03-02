@@ -101,62 +101,56 @@ namespace NewLife.Cube.Controllers
 
             var rurl = prov.GetReturnUrl(Request, true);
 
-            var state = GetRequest("state");
-            if (!state.IsNullOrEmpty())
-                state = client.Name + "_" + state;
-            else
-                state = client.Name;
-
-            return base.Redirect(OnLogin(client, state, rurl));
+            return base.Redirect(OnLogin(client, null, rurl));
         }
 
         private String OnLogin(OAuthClient client, String state, String returnUrl)
         {
             var prov = Provider;
-            var redirect = prov.GetRedirect(Request, returnUrl);
+            var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
+            if (state.IsNullOrEmpty() && !returnUrl.IsNullOrEmpty()) state = $"r={returnUrl}";
 
             return client.Authorize(redirect, state);
         }
 
         /// <summary>第三方登录完成后跳转到此</summary>
+        /// <param name="id">提供者</param>
         /// <param name="code"></param>
         /// <param name="state"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public virtual ActionResult LoginInfo(String code, String state)
+        public virtual ActionResult LoginInfo(String id, String code, String state)
         {
-            var name = state + "";
-            var p = name.IndexOf('_');
-            if (p > 0)
-            {
-                name = state.Substring(0, p);
-                state = state.Substring(p + 1);
-            }
+            if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
+            var name = id;
             var prov = Provider;
             var client = prov.GetClient(name);
             client.Init(GetUserAgent());
 
             client.WriteLog("LoginInfo name={0} code={1} state={2} {3}", name, code, state, Request.GetRawUrl());
 
-            // 无法拿到code时，跳回去再来
-            if (code.IsNullOrEmpty())
-            {
-                if (state == "refresh") throw new Exception("非法请求，无法取得code");
+            var ds = state.SplitAsDictionary("=", "&");
 
-                return Redirect(OnLogin(client, $"{name}_refresh", null));
-            }
-            // 短期内用过的code也跳回
-            if (!_codeCache.TryAdd(code, code, false, out _))
-            {
-                return Redirect(OnLogin(client, $"{name}_refresh", null));
-            }
+            //// 无法拿到code时，跳回去再来
+            //if (code.IsNullOrEmpty())
+            //{
+            //    if (state == "refresh") throw new Exception("非法请求，无法取得code");
+
+            //    return Redirect(OnLogin(client, $"{name}_refresh", null));
+            //}
+            //// 短期内用过的code也跳回
+            //if (!_codeCache.TryAdd(code, code, false, out _))
+            //{
+            //    return Redirect(OnLogin(client, $"{name}_refresh", null));
+            //}
 
             // 构造redirect_uri，部分提供商（百度）要求获取AccessToken的时候也要传递
-            var redirect = prov.GetRedirect(Request);
+            var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
             client.Authorize(redirect);
 
-            var returnUrl = prov.GetReturnUrl(Request, false);
+            //var returnUrl = prov.GetReturnUrl(Request, false);
+            var returnUrl = ds["r"];
 
             try
             {
@@ -168,7 +162,7 @@ namespace NewLife.Cube.Controllers
                     // 如果拿不到访问令牌或用户信息，则重新跳转
                     if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0 && client.UserName.IsNullOrEmpty())
                     {
-                        XTrace.WriteLine("拿不到访问令牌 code={0} state={1}", code, state);
+                        XTrace.WriteLine("[{2}]拿不到访问令牌 code={0} state={1}", code, state, id);
                         XTrace.WriteLine(Request.GetRawUrl() + "");
                         if (!html.IsNullOrEmpty()) XTrace.WriteLine(html);
 
@@ -203,8 +197,6 @@ namespace NewLife.Cube.Controllers
 #endif
 
                 // 标记登录提供商
-                //SetSession("Cube_Sso", client.Name);
-                //SetSession("Cube_Sso_Client", client);
                 Session["Cube_Sso"] = client.Name;
 
                 if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
@@ -239,7 +231,6 @@ namespace NewLife.Cube.Controllers
         {
             // 先读Session，待会会清空
             var prov = Provider;
-            //var name = GetSession<String>("Cube_Sso");
             var name = Session["Cube_Sso"] as String;
             var client = prov.GetClient(name);
             client.Init(GetUserAgent());
@@ -261,10 +252,6 @@ namespace NewLife.Cube.Controllers
                     if (url.IsNullOrEmpty()) url = prv.SuccessUrl;
 
                     var state = GetRequest("state");
-                    if (!state.IsNullOrEmpty())
-                        state = client.Name + "_" + state;
-                    else
-                        state = client.Name;
 
                     url = url.AsUri(Request.GetRawUrl()) + "";
 
@@ -291,29 +278,22 @@ namespace NewLife.Cube.Controllers
             var user = prov.Current;
             if (user == null)
             {
-                //throw new Exception("未登录！");
-
 #if __CORE__
-                var retUrl = Request.GetEncodedPathAndQuery();
+                var returnUrl = Request.GetEncodedPathAndQuery();
 #else
-                var retUrl = Request.Url?.PathAndQuery;
+                var returnUrl = Request.Url?.PathAndQuery;
 #endif
-                var rurl = "~/Admin/User/Login".AppendReturn(retUrl);
+                var rurl = "~/Admin/User/Login".AppendReturn(returnUrl);
                 return Redirect(rurl);
             }
 
-#if __CORE__
-            var url = Request.Headers["Referer"].FirstOrDefault() + "";
-#else
-            var url = Request.UrlReferrer + "";
-#endif
+            var url = prov.GetReturnUrl(Request, true);
             var client = prov.GetClient(id);
             client.Init(GetUserAgent());
 
-            var redirect = prov.GetRedirect(Request, url);
-            //// 附加绑定动作
-            //redirect += "&sso_action=bind";
-            url = client.Authorize(redirect, client.Name + "_bind");
+            var redirect = prov.GetRedirect(Request, null);
+            var state = $"r={url}";
+            url = client.Authorize(redirect, state);
 
             return Redirect(url);
         }
@@ -339,11 +319,7 @@ namespace NewLife.Cube.Controllers
 
             if (IsJsonRequest) return Ok();
 
-#if __CORE__
-            var url = Request.Headers["Referer"].FirstOrDefault() + "";
-#else
-            var url = Request.UrlReferrer + "";
-#endif
+            var url = Provider.GetReturnUrl(Request, true);
             if (url.IsNullOrEmpty()) url = "/";
 
             return Redirect(url);

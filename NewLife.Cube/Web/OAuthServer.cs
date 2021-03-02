@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Web;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
 using NewLife.Cube.Web.Models;
@@ -163,8 +164,8 @@ namespace NewLife.Web
                         url += "&";
                     else
                         url += "?";
-                    if (!log.State.IsNullOrEmpty()) url += "state=" + log.State;
-                    url += "#token=" + log.AccessToken;
+                    if (!log.State.IsNullOrEmpty()) url += "state=" + HttpUtility.UrlEncode(log.State);
+                    url += "#token=" + HttpUtility.UrlEncode(log.AccessToken);
                     break;
                 case "code":
                 default:
@@ -173,7 +174,7 @@ namespace NewLife.Web
                     else
                         url += "?";
                     url += "code=" + code;
-                    if (!log.State.IsNullOrEmpty()) url += "&state=" + log.State;
+                    if (!log.State.IsNullOrEmpty()) url += "&state=" + HttpUtility.UrlEncode(log.State);
                     break;
             }
 

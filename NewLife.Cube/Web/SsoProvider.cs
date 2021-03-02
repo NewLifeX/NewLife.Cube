@@ -33,8 +33,8 @@ namespace NewLife.Cube.Web
         /// <summary>用户管理提供者</summary>
         public IManageProvider Provider { get; set; }
 
-        /// <summary>重定向地址。~/Sso/LoginInfo</summary>
-        public String RedirectUrl { get; set; }
+        ///// <summary>重定向地址。~/Sso/LoginInfo</summary>
+        //public String RedirectUrl { get; set; }
 
         /// <summary>登录成功后跳转地址。~/Admin</summary>
         public String SuccessUrl { get; set; }
@@ -51,7 +51,7 @@ namespace NewLife.Cube.Web
         public SsoProvider()
         {
             Provider = ManageProvider.Provider;
-            RedirectUrl = "~/Sso/LoginInfo";
+            //RedirectUrl = "~/Sso/LoginInfo";
             SuccessUrl = "~/Admin";
             LoginUrl = "~/Admin/User/Login";
         }
@@ -122,6 +122,9 @@ namespace NewLife.Cube.Web
                 if (uri != null && uri.Authority.EqualIgnoreCase(baseUri.Authority)) url = uri.PathAndQuery;
             }
 
+            // 过滤环回重定向
+            if (!url.IsNullOrEmpty() && url.StartsWithIgnoreCase("/Sso/Login/")) url = null;
+
             return url;
         }
 
@@ -144,18 +147,9 @@ namespace NewLife.Cube.Web
 
         /// <summary>获取回调地址</summary>
         /// <param name="request"></param>
-        /// <param name="returnUrl"></param>
+        /// <param name="redirectUrl"></param>
         /// <returns></returns>
-        public virtual String GetRedirect(IHttpRequest request, String returnUrl = null)
-        {
-            if (returnUrl.IsNullOrEmpty()) returnUrl = request.Get("r");
-            // 过滤环回重定向
-            if (!returnUrl.IsNullOrEmpty() && returnUrl.StartsWithIgnoreCase("/Sso/Login")) returnUrl = null;
-
-            var uri = RedirectUrl.AsUri(request.GetRawUrl()) + "";
-            return uri;
-            //return uri.AppendReturn(returnUrl);
-        }
+        public virtual String GetRedirect(IHttpRequest request, String redirectUrl) => redirectUrl.AsUri(request.GetRawUrl()) + "";
 
         /// <summary>获取连接信息</summary>
         /// <param name="client"></param>

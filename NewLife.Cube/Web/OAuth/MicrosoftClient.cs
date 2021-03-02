@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Web;
 using NewLife.Http;
-using NewLife.Serialization;
 
 namespace NewLife.Web.OAuth
 {
