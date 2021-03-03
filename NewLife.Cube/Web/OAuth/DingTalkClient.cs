@@ -76,9 +76,12 @@ namespace NewLife.Cube.Web
         }
 
         /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
+        /// <remarks>
+        /// Mozilla/5.0 (Linux; U; Android 10; zh-CN; YAL-AL10 Build/HUAWEIYAL-AL10) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/69.0.3497.100 UWS/3.22.0.36 Mobile Safari/537.36 AliApp(DingTalk/6.0.7) com.alibaba.android.rimet/14599822 Channel/227200 language/zh-CN UT4Aplus/0.2.25 colorScheme/light
+        /// </remarks>
         /// <param name="userAgent"></param>
         /// <returns></returns>
-        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains(" DingTalk/");
+        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains("DingTalk/");
 
         /// <summary>针对指定客户端进行初始化</summary>
         /// <param name="userAgent"></param>

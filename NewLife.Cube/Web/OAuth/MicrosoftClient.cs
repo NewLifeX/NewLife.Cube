@@ -67,26 +67,6 @@ namespace NewLife.Web.OAuth
             }
         }
 
-        /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
-        /// <param name="userAgent"></param>
-        /// <returns></returns>
-        public override Boolean Support(String userAgent) =>
-            !userAgent.IsNullOrEmpty() &&
-            (userAgent.Contains(" MicroMessenger/") || userAgent.Contains(" MICROMESSENGER/")) &&
-            (userAgent.Contains(" WeChat/") || userAgent.Contains(" Weixin/") || userAgent.Contains("WINDOWS PHONE"));
-
-        /// <summary>针对指定客户端进行初始化</summary>
-        /// <param name="userAgent"></param>
-        public override void Init(String userAgent)
-        {
-            // 应用内打开时，自动切换为应用内免登
-            if (Support(userAgent))
-            {
-                Scope = "snsapi_userinfo";
-                SetMode(Scope);
-            }
-        }
-
         /// <summary>发起请求，获取内容</summary>
         /// <param name="action"></param>
         /// <param name="url"></param>
