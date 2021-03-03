@@ -56,20 +56,19 @@ namespace NewLife.Web.OAuth
         /// <returns></returns>
         public override Boolean Support(String userAgent) =>
             !userAgent.IsNullOrEmpty() &&
-            (userAgent.Contains(" MicroMessenger/") || userAgent.Contains(" MICROMESSENGER/")) &&
-            (userAgent.Contains(" WeChat/") || userAgent.Contains(" Weixin/") || userAgent.Contains("WINDOWS PHONE"));
+            (userAgent.Contains(" MicroMessenger/") || userAgent.Contains(" MICROMESSENGER/"));
 
-        /// <summary>针对指定客户端进行初始化</summary>
-        /// <param name="userAgent"></param>
-        public override void Init(String userAgent)
-        {
-            // 应用内打开时，自动切换为应用内免登
-            if (Support(userAgent))
-            {
-                Scope = "snsapi_userinfo";
-                SetMode(Scope);
-            }
-        }
+        ///// <summary>针对指定客户端进行初始化</summary>
+        ///// <param name="userAgent"></param>
+        //public override void Init(String userAgent)
+        //{
+        //    // 应用内打开时，自动切换为应用内免登
+        //    if (Support(userAgent))
+        //    {
+        //        Scope = "snsapi_userinfo";
+        //        SetMode(Scope);
+        //    }
+        //}
 
         /// <summary>从响应数据中获取信息</summary>
         /// <param name="dic"></param>

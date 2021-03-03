@@ -80,11 +80,14 @@ namespace NewLife.Cube.Web
                             list.Add(mi);
                         }
 
-                        if (mi.Server.IsNullOrEmpty()) mi.Server = item.Server;
-                        if (mi.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
-                        if (mi.AppId.IsNullOrEmpty()) mi.AppId = item.AppID;
-                        if (mi.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
-                        if (mi.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
+                        if (mi.ID == 0 || !item.AppID.IsNullOrEmpty())
+                        {
+                            if (mi.Server.IsNullOrEmpty()) mi.Server = item.Server;
+                            if (mi.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
+                            if (mi.AppId.IsNullOrEmpty()) mi.AppId = item.AppID;
+                            if (mi.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
+                            if (mi.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
+                        }
                     }
                     list.Save();
                 }
