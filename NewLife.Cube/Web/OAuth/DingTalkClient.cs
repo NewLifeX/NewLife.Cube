@@ -123,6 +123,8 @@ namespace NewLife.Cube.Web
 
             if (dic != null)
             {
+                XTrace.WriteLine(dic.ToJson());
+
                 //NickName = dic["nick"] as String;
                 //OpenID = dic["openid"] as String;
                 //UnionID = dic["unionid"] as String;

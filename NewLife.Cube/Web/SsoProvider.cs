@@ -82,11 +82,11 @@ namespace NewLife.Cube.Web
 
                         if (mi.ID == 0 || !item.AppID.IsNullOrEmpty())
                         {
-                            if (mi.Server.IsNullOrEmpty()) mi.Server = item.Server;
-                            if (mi.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
-                            if (mi.AppId.IsNullOrEmpty()) mi.AppId = item.AppID;
-                            if (mi.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
-                            if (mi.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
+                            if (mi.Server.IsNullOrEmpty() && !item.Server.IsNullOrEmpty()) mi.Server = item.Server;
+                            if (mi.AccessServer.IsNullOrEmpty() && !item.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
+                            if (mi.AppId.IsNullOrEmpty() && !item.AppID.IsNullOrEmpty()) mi.AppId = item.AppID;
+                            if (mi.Secret.IsNullOrEmpty() && !item.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
+                            if (mi.Scope.IsNullOrEmpty() && !item.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
                         }
                     }
                     list.Save();
@@ -173,11 +173,12 @@ namespace NewLife.Cube.Web
         /// <param name="client">OAuth客户端</param>
         /// <param name="context">服务提供者。可用于获取HttpContext成员</param>
         /// <param name="uc">用户链接</param>
+        /// <param name="forceBind">强行绑定，把第三方账号强行绑定到当前已登录账号</param>
         /// <returns></returns>
-        public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc)
+        public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc, Boolean forceBind)
         {
-            // 强行绑定，把第三方账号强行绑定到当前已登录账号
-            var forceBind = false;
+            //// 强行绑定，把第三方账号强行绑定到当前已登录账号
+            //var forceBind = false;
 #if __CORE__
             var httpContext = context.GetService<IHttpContextAccessor>().HttpContext;
             var req = httpContext.Request;
@@ -188,7 +189,7 @@ namespace NewLife.Cube.Web
             var ip = httpContext.GetUserHost();
 #endif
             //if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
-            if (req != null) forceBind = req.Get("state").EndsWithIgnoreCase("_bind");
+            //if (req != null) forceBind = req.Get("state").EndsWithIgnoreCase("_bind");
 
             // 可能因为初始化顺序的问题，导致前面没能给Provider赋值
             var prv = Provider;

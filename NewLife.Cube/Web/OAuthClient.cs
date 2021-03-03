@@ -4,12 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web;
-using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Serialization;
-using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
 
 namespace NewLife.Web
 {

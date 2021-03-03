@@ -191,9 +191,9 @@ namespace NewLife.Cube.Controllers
                 uc.Fill(client);
 
 #if __CORE__
-                var url = prov.OnLogin(client, HttpContext.RequestServices, uc);
+                var url = prov.OnLogin(client, HttpContext.RequestServices, uc, ds["a"] == "bind");
 #else
-                var url = prov.OnLogin(client, HttpContext, uc);
+                var url = prov.OnLogin(client, HttpContext, uc, ds["a"] == "bind");
 #endif
 
                 // 标记登录提供商
@@ -291,8 +291,8 @@ namespace NewLife.Cube.Controllers
             var client = prov.GetClient(id);
             client.Init(GetUserAgent());
 
-            var redirect = prov.GetRedirect(Request, null);
-            var state = $"r={url}";
+            var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
+            var state = $"r={url}&a=bind";
             url = client.Authorize(redirect, state);
 
             return Redirect(url);
