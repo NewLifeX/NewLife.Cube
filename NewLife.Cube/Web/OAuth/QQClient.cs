@@ -4,6 +4,9 @@ using System.Collections.Generic;
 namespace NewLife.Web.OAuth
 {
     /// <summary>身份验证提供者</summary>
+    /// <remarks>
+    /// 平台 https://connect.qq.com/manage.html
+    /// </remarks>
     public class QQClient : OAuthClient
     {
         /// <summary>实例化</summary>

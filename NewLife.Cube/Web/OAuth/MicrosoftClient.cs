@@ -9,6 +9,7 @@ namespace NewLife.Web.OAuth
 {
     /// <summary>微软身份验证提供者</summary>
     /// <remarks>
+    /// 平台 https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/RegisteredApps
     /// 参考文档 https://docs.microsoft.com/zh-cn/azure/active-directory/develop/v2-oauth2-auth-code-flow
     /// </remarks>
     public class MicrosoftClient : OAuthClient

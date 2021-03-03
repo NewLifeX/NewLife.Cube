@@ -14,6 +14,9 @@ using XCode.Membership;
 namespace NewLife.Cube.Web
 {
     /// <summary>钉钉身份验证提供者</summary>
+    /// <remarks>
+    /// 平台 https://open-dev.dingtalk.com/
+    /// </remarks>
     public class DingTalkClient : OAuthClient
     {
         private static Int32 _show;

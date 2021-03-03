@@ -6,6 +6,9 @@ using System.Net.Http.Headers;
 namespace NewLife.Web.OAuth
 {
     /// <summary>身份验证提供者</summary>
+    /// <remarks>
+    /// 平台 https://github.com/settings/developers
+    /// </remarks>
     public class GithubClient : OAuthClient
     {
         /// <summary>实例化</summary>

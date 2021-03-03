@@ -4,6 +4,9 @@ using System.Collections.Generic;
 namespace NewLife.Web.OAuth
 {
     /// <summary>百度身份验证提供者</summary>
+    /// <remarks>
+    /// 平台 http://developer.baidu.com/console
+    /// </remarks>
     public class BaiduClient : OAuthClient
     {
         /// <summary>实例化</summary>
