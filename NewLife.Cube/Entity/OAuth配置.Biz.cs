@@ -108,6 +108,7 @@ namespace NewLife.Cube.Entity
             Add("Ding", "钉钉", "/Content/images/logo/Ding.png");
             Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeixin.png");
             Add("Weixin", "微信", "/Content/images/logo/Weixin.png");
+            Add("Microsoft", "微软", "/Content/images/logo/Microsoft.png");
             //Add("Weibo", "微博", "/Content/images/logo/Weibo.png");
             //Add("Taobao", "淘宝", "/Content/images/logo/Taobao.png");
             //Add("Alipay", "支付宝", "/Content/images/logo/Alipay.png");

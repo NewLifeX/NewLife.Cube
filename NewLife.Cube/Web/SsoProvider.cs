@@ -67,7 +67,7 @@ namespace NewLife.Cube.Web
                     var list = OAuthConfig.FindAll();
                     foreach (var item in set.Items)
                     {
-                        if (item.Name.IsNullOrEmpty()) continue;
+                        if (item.Name.IsNullOrEmpty() || item.AppID.IsNullOrEmpty()) continue;
 
                         var mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Name));
                         if (mi == null)
@@ -75,19 +75,16 @@ namespace NewLife.Cube.Web
                             mi = new OAuthConfig
                             {
                                 Name = item.Name,
-                                Enable = !item.AppID.IsNullOrEmpty()
+                                Enable = true
                             };
                             list.Add(mi);
                         }
 
-                        if (mi.ID == 0 || !item.AppID.IsNullOrEmpty())
-                        {
-                            if (mi.Server.IsNullOrEmpty() && !item.Server.IsNullOrEmpty()) mi.Server = item.Server;
-                            if (mi.AccessServer.IsNullOrEmpty() && !item.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
-                            if (mi.AppId.IsNullOrEmpty() && !item.AppID.IsNullOrEmpty()) mi.AppId = item.AppID;
-                            if (mi.Secret.IsNullOrEmpty() && !item.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
-                            if (mi.Scope.IsNullOrEmpty() && !item.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
-                        }
+                        if (mi.Server.IsNullOrEmpty() && !item.Server.IsNullOrEmpty()) mi.Server = item.Server;
+                        if (mi.AccessServer.IsNullOrEmpty() && !item.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
+                        if (mi.AppId.IsNullOrEmpty() && !item.AppID.IsNullOrEmpty()) mi.AppId = item.AppID;
+                        if (mi.Secret.IsNullOrEmpty() && !item.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
+                        if (mi.Scope.IsNullOrEmpty() && !item.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
                     }
                     list.Save();
                 }

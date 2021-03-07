@@ -26,68 +26,68 @@ namespace NewLife.Web
         #endregion
 
         #region 方法
-        /// <summary>已加载</summary>
-        protected override void OnLoaded()
-        {
-            var ms = Items;
-            if (ms == null || ms.Length == 0)
-            {
-                var list = new List<OAuthItem>
-                {
-                    new OAuthItem { Name = "QQ" },
-                    new OAuthItem { Name = "Weixin" },
-                    new OAuthItem { Name = "Baidu" },
-                    new OAuthItem { Name = "Weibo" },
-                    new OAuthItem { Name = "Taobao" },
-                    new OAuthItem { Name = "Alipay" },
-                    new OAuthItem { Name = "Github" }
-                };
+        ///// <summary>已加载</summary>
+        //protected override void OnLoaded()
+        //{
+        //    var ms = Items;
+        //    if (ms == null || ms.Length == 0)
+        //    {
+        //        var list = new List<OAuthItem>
+        //        {
+        //            new OAuthItem { Name = "QQ" },
+        //            new OAuthItem { Name = "Weixin" },
+        //            new OAuthItem { Name = "Baidu" },
+        //            new OAuthItem { Name = "Weibo" },
+        //            new OAuthItem { Name = "Taobao" },
+        //            new OAuthItem { Name = "Alipay" },
+        //            new OAuthItem { Name = "Github" }
+        //        };
 
-                //var sc = SysConfig.Current;
-                var mi = new OAuthItem
-                {
-                    Name = "NewLife",
-                    Server = "https://sso.newlifex.com/sso",
-                    //AppID = sc.Name,
-                    AppID = "NewLife.Cube",
-                    Secret = Rand.NextString(16),
-                };
-                list.Add(mi);
-                Items = list.ToArray();
-            }
+        //        //var sc = SysConfig.Current;
+        //        var mi = new OAuthItem
+        //        {
+        //            Name = "NewLife",
+        //            Server = "https://sso.newlifex.com/sso",
+        //            //AppID = sc.Name,
+        //            AppID = "NewLife.Cube",
+        //            Secret = Rand.NextString(16),
+        //        };
+        //        list.Add(mi);
+        //        Items = list.ToArray();
+        //    }
 
-            base.OnLoaded();
-        }
+        //    base.OnLoaded();
+        //}
 
-        /// <summary>获取</summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public OAuthItem Get(String name) => Items.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+        ///// <summary>获取</summary>
+        ///// <param name="name"></param>
+        ///// <returns></returns>
+        //public OAuthItem Get(String name) => Items.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
 
-        /// <summary>获取或添加</summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public OAuthItem GetOrAdd(String name)
-        {
-            if (name.IsNullOrEmpty()) return null;
+        ///// <summary>获取或添加</summary>
+        ///// <param name="name"></param>
+        ///// <returns></returns>
+        //public OAuthItem GetOrAdd(String name)
+        //{
+        //    if (name.IsNullOrEmpty()) return null;
 
-            var mi = Items.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
-            if (mi != null) return mi;
+        //    var mi = Items.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+        //    if (mi != null) return mi;
 
-            lock (this)
-            {
-                var list = new List<OAuthItem>(Items);
-                mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
-                if (mi != null) return mi;
+        //    lock (this)
+        //    {
+        //        var list = new List<OAuthItem>(Items);
+        //        mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+        //        if (mi != null) return mi;
 
-                mi = new OAuthItem { Name = name };
-                list.Add(mi);
+        //        mi = new OAuthItem { Name = name };
+        //        list.Add(mi);
 
-                Items = list.ToArray();
+        //        Items = list.ToArray();
 
-                return mi;
-            }
-        }
+        //        return mi;
+        //    }
+        //}
         #endregion
     }
 
