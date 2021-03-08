@@ -1313,7 +1313,7 @@ namespace NewLife.Cube
         /// <summary>获取所有表</summary>
         /// <returns></returns>
         [EntityAuthorize]
-        public virtual ActionResult GetTables(FormatType formatType = FormatType.CamelCase)
+        public virtual ActionResult GetTables()
         {
             var tables = ModelTable.GetValids();
             return Ok(data: tables);
