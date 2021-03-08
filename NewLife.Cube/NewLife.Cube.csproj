@@ -337,6 +337,7 @@
     <Compile Include="Common\AreaAttribute.cs" />
     <Compile Include="Common\DataField.cs" />
     <Compile Include="Common\DataPermissionAttribute.cs" />
+    <Compile Include="Common\FormatType.cs" />
     <Compile Include="Common\ReadOnlyEntityController.cs" />
     <Compile Include="Common\PagerModelBinder.cs" />
     <Compile Include="Common\EntityTreeController.cs" />
