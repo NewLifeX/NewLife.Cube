@@ -108,7 +108,13 @@ namespace NewLife.Cube.Controllers
         {
             var prov = Provider;
             var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
+            // 请求来源，前后端分离时传front-end，重定向会带上token放到锚点
+            var source = GetRequest("source");
             if (state.IsNullOrEmpty() && !returnUrl.IsNullOrEmpty()) state = $"r={returnUrl}";
+            if (!source.IsNullOrEmpty())
+            {
+                state += (state.IsNullOrEmpty() ? "" : "&") + $"s={source}";
+            }
 
             return client.Authorize(redirect, state);
         }
@@ -202,7 +208,7 @@ namespace NewLife.Cube.Controllers
                 if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
                 // 子系统颁发token给前端
-                if (state == "front-end")
+                if (ds["s"] == "front-end")
                 {
                     var jwt = ManagerProviderHelper.GetJwt();
                     jwt.Expire = DateTime.Now.Add(TimeSpan.FromHours(2));
