@@ -264,26 +264,43 @@ namespace NewLife.Cube.Web
                 if (user2.Remark.IsNullOrEmpty()) user2.Remark = client.Detail;
 
                 var set = Setting.Current;
+                var roleId = 0;
+                List<Int32> roleIds = null;
 
                 // 使用认证中心的角色
                 if (set.UseSsoRole)
                 {
-                    var roleId = GetRole(dic, true);
+                     roleId = GetRole(dic, true);
                     if (roleId > 0)
                     {
                         user2.RoleID = roleId;
 
                         var ids = GetRoles(client.Items, true).ToList();
-                        if (ids.Contains(roleId)) ids.Remove(roleId);
-                        if (ids.Count == 0)
-                            user2.RoleIds = null;
-                        else
-                            user2.RoleIds = "," + ids.OrderBy(e => e).Join() + ",";
+                        if (roleIds == null) roleIds = new List<int>();
+                        roleIds.AddRange(ids);
                     }
                 }
                 // 使用本地角色
                 if (user2.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
-                    user2.RoleID = Role.GetOrAdd(set.DefaultRole).ID;
+                    user2.RoleID = roleId = Role.GetOrAdd(set.DefaultRole).ID;
+
+                // OAuth提供者的自动角色
+                var cfg = OAuthConfig.FindAllWithCache().FirstOrDefault(e => e.Name.EqualIgnoreCase(client.Name));
+                if (cfg != null && !cfg.AutoRole.IsNullOrEmpty())
+                {
+                    var ids = GetRoles(cfg.AutoRole, true).ToList();
+                    if (roleIds == null) roleIds = new List<int>();
+                    roleIds.AddRange(ids);
+                }
+
+                if (roleIds != null)
+                {
+                    if (roleIds.Contains(roleId)) roleIds.Remove(roleId);
+                    if (roleIds.Count == 0)
+                        user2.RoleIds = null;
+                    else
+                        user2.RoleIds = "," + roleIds.OrderBy(e => e).Join() + ",";
+                }
 
                 // 部门
                 if (set.UseSsoDepartment && !client.DepartmentCode.IsNullOrEmpty() && !client.DepartmentName.IsNullOrEmpty())
@@ -744,27 +761,31 @@ namespace NewLife.Cube.Web
 
         private Int32[] GetRoles(IDictionary<String, String> dic, Boolean create)
         {
-            if (dic.TryGetValue("RoleNames", out var roleNames))
+            if (dic.TryGetValue("RoleNames", out var roleNames)) return GetRoles(roleNames, create);
+
+            return new Int32[0];
+        }
+
+        private Int32[] GetRoles(String roleNames, Boolean create)
+        {
+            var names = roleNames.Split(',');
+            var rs = new List<Int32>();
+            foreach (var item in names)
             {
-                var names = roleNames.Split(',');
-                var rs = new List<Int32>();
-                foreach (var item in names)
+                if (item.IsNullOrEmpty()) continue;
+
+                var r = Role.FindByName(item);
+                if (r != null)
+                    rs.Add(r.ID);
+                else if (create)
                 {
-                    if (item.IsNullOrEmpty()) continue;
-
-                    var r = Role.FindByName(item);
-                    if (r != null)
-                        rs.Add(r.ID);
-                    else if (create)
-                    {
-                        r = new Role { Name = item };
-                        r.Insert();
-                        rs.Add(r.ID);
-                    }
+                    r = new Role { Name = item };
+                    r.Insert();
+                    rs.Add(r.ID);
                 }
-
-                if (rs.Count > 0) return rs.ToArray();
             }
+
+            if (rs.Count > 0) return rs.Distinct().ToArray();
 
             //// 判断角色有效
             //if (dic.TryGetValue("RoleIDs", out var rids)) return rids.SplitAsInt().Where(e => Role.FindByID(e) != null).ToArray();

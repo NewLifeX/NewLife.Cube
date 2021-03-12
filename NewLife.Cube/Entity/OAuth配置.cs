@@ -115,6 +115,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("AppUrl", "应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址", "")]
         public String AppUrl { get => _AppUrl; set { if (OnPropertyChanging("AppUrl", value)) { _AppUrl = value; OnPropertyChanged("AppUrl"); } } }
 
+        private String _AutoRole;
+        /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
+        [DisplayName("自动角色")]
+        [Description("自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("AutoRole", "自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开", "")]
+        public String AutoRole { get => _AutoRole; set { if (OnPropertyChanging("AutoRole", value)) { _AutoRole = value; OnPropertyChanged("AutoRole"); } } }
+
         private Int32 _CreateUserID;
         /// <summary>创建者</summary>
         [DisplayName("创建者")]
@@ -194,6 +202,7 @@ namespace NewLife.Cube.Entity
                     case "Enable": return _Enable;
                     case "Debug": return _Debug;
                     case "AppUrl": return _AppUrl;
+                    case "AutoRole": return _AutoRole;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
                     case "CreateIP": return _CreateIP;
@@ -220,6 +229,7 @@ namespace NewLife.Cube.Entity
                     case "Enable": _Enable = value.ToBoolean(); break;
                     case "Debug": _Debug = value.ToBoolean(); break;
                     case "AppUrl": _AppUrl = Convert.ToString(value); break;
+                    case "AutoRole": _AutoRole = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -272,6 +282,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
             public static readonly Field AppUrl = FindByName("AppUrl");
+
+            /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
+            public static readonly Field AutoRole = FindByName("AutoRole");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -335,6 +348,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
             public const String AppUrl = "AppUrl";
+
+            /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
+            public const String AutoRole = "AutoRole";
 
             /// <summary>创建者</summary>
             public const String CreateUserID = "CreateUserID";
