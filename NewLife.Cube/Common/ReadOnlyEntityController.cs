@@ -1269,7 +1269,7 @@ namespace NewLife.Cube
         /// 获取字段
         /// </summary>
         /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-        /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
+        /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
         /// <returns></returns>
         [EntityAuthorize]
         public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
@@ -1312,6 +1312,7 @@ namespace NewLife.Cube
 
         /// <summary>获取所有表</summary>
         /// <returns></returns>
+        [EntityAuthorize]
         public virtual ActionResult GetTables()
         {
             var tables = ModelTable.GetValids();
@@ -1319,8 +1320,10 @@ namespace NewLife.Cube
         }
 
         /// <summary>获取当前表所有列</summary>
+        /// <param name="formatType">Name的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
         /// <returns></returns>
-        public virtual ActionResult GetColumns()
+        [EntityAuthorize]
+        public virtual ActionResult GetColumns(FormatType formatType = FormatType.CamelCase)
         {
             var tables = ModelTable.GetValids();
             var ctrl = GetType().FullName;
@@ -1329,6 +1332,11 @@ namespace NewLife.Cube
 
             var columns = ModelColumn.FindAllByTableId(table.Id);
             columns = columns.Where(e => e.Enable).OrderBy(e => e.Sort).ToArray();
+
+            foreach (var item in columns)
+            {
+                item.Name = item.Name.FormatName(formatType);
+            }
 
             return Ok(data: columns);
         }

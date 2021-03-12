@@ -39,7 +39,7 @@ namespace NewLife.Cube.ViewModels
         /// <summary>属性名</summary>
         public String Name
         {
-            get => FormatName(_name);
+            get => _name.FormatName(FormatType);
             internal set => _name = value;
         }
 
@@ -62,7 +62,7 @@ namespace NewLife.Cube.ViewModels
         /// </remarks>
         public String ColumnName
         {
-            get => FormatName(_columnName);
+            get => _columnName.FormatName(FormatType);
             set => _columnName = value;
         }
 
@@ -105,20 +105,6 @@ namespace NewLife.Cube.ViewModels
 
         /// <summary>数据动作。设为action时走ajax请求</summary>
         public String DataAction { get; set; }
-        #endregion
-
-        /// <summary>根据小写和驼峰格式化名称</summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        private String FormatName(String name)
-        {
-            if (name.IsNullOrEmpty()) return name;
-
-            if (FormatType == FormatType.LowerCase) return name.ToLower();
-            if (FormatType != FormatType.CamelCase) return name;
-            if (name.EqualIgnoreCase("id")) return "id";
-            if (name.Length < 2) return name.ToLower();
-            return name.Substring(0, 1).ToLower() + name.Substring(1);
-        }
+        #endregion       
     }
 }
