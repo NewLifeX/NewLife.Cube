@@ -13,6 +13,7 @@ using NewLife.Caching;
 using NewLife.Log;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Common;
+using NewLife.Reflection;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -357,7 +358,13 @@ namespace NewLife.Cube.Admin.Controllers
             //user.Password = null;
             user["Password"] = null;
 
-            if (IsJsonRequest) return Json(0, "ok", user);
+            if (IsJsonRequest)
+            {
+                var userInfo = new UserInfo();
+                userInfo.Copy(user);
+                userInfo.SetPermission(user.Roles);
+                return Json(0, "ok", userInfo);
+            }
 
             // 用于显示的列
             if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
