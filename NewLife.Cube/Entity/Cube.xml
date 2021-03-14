@@ -187,7 +187,7 @@
       <Column Name="DisplayName" DataType="String" Description="显示名" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="DataType" DataType="String" Description="数据类型" />
-      <Column Name="ItemType" DataType="String" Description="元素类型" />
+      <Column Name="ItemType" DataType="String" Description="元素类型。image,file,html,singleSelect,multipleSelect" />
       <Column Name="PrimaryKey" DataType="Boolean" Description="主键" />
       <Column Name="Master" DataType="Boolean" Description="主字段。主字段作为业务主要字段，代表当前数据行意义" />
       <Column Name="Length" DataType="Int32" Description="长度" />
