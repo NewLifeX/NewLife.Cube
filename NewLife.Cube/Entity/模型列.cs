@@ -68,11 +68,11 @@ namespace NewLife.Cube.Entity
         public String DataType { get => _DataType; set { if (OnPropertyChanging("DataType", value)) { _DataType = value; OnPropertyChanged("DataType"); } } }
 
         private String _ItemType;
-        /// <summary>元素类型</summary>
+        /// <summary>元素类型。image,file,html,singleSelect,multipleSelect</summary>
         [DisplayName("元素类型")]
-        [Description("元素类型")]
+        [Description("元素类型。image,file,html,singleSelect,multipleSelect")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("ItemType", "元素类型", "")]
+        [BindColumn("ItemType", "元素类型。image,file,html,singleSelect,multipleSelect", "")]
         public String ItemType { get => _ItemType; set { if (OnPropertyChanging("ItemType", value)) { _ItemType = value; OnPropertyChanged("ItemType"); } } }
 
         private Boolean _PrimaryKey;
@@ -385,7 +385,7 @@ namespace NewLife.Cube.Entity
             /// <summary>数据类型</summary>
             public static readonly Field DataType = FindByName("DataType");
 
-            /// <summary>元素类型</summary>
+            /// <summary>元素类型。image,file,html,singleSelect,multipleSelect</summary>
             public static readonly Field ItemType = FindByName("ItemType");
 
             /// <summary>主键</summary>
@@ -487,7 +487,7 @@ namespace NewLife.Cube.Entity
             /// <summary>数据类型</summary>
             public const String DataType = "DataType";
 
-            /// <summary>元素类型</summary>
+            /// <summary>元素类型。image,file,html,singleSelect,multipleSelect</summary>
             public const String ItemType = "ItemType";
 
             /// <summary>主键</summary>
