@@ -85,8 +85,8 @@ namespace NewLife.Cube
 
             tran.Commit();
 
-            // 扫描模型表
-            ScanModel(areaName, menus);
+            //// 扫描模型表
+            //ScanModel(areaName, menus);
         }
 
         private static ICollection<String> _namespaces;
@@ -108,60 +108,8 @@ namespace NewLife.Cube
             return _namespaces.Contains(ns);
         }
 
-        private static void ScanModel(String areaName, IList<IMenu> menus)
-        {
-            var models = ModelTable.FindAll().Where(e => e.Category.EqualIgnoreCase(areaName)).ToList();
-            foreach (var menu in menus.OrderByDescending(e => e.Sort))
-            {
-                if (menu.FullName.IsNullOrEmpty()) continue;
-
-                var ctrl = menu.FullName.GetTypeEx();
-                if (ctrl == null || !ctrl.BaseType.IsGenericType) continue;
-
-                var entityType = ctrl.BaseType.GenericTypeArguments.FirstOrDefault();
-                if (entityType == null || !entityType.As<IEntity>()) continue;
-
-                var factory = entityType.AsFactory();
-                if (factory == null) continue;
-
-                var table = models.FirstOrDefault(e => e.Name == entityType.Name);
-                if (table == null) table = new ModelTable { Name = entityType.Name, Enable = true };
-
-                table.Category = areaName;
-                table.Url = menu.Url.TrimStart("~");
-                table.Controller = ctrl.FullName;
-
-                table.Fill(factory.Table);
-                table.Save();
-
-                var columns = ModelColumn.FindAllByTableId(table.Id);
-                var idx = 1;
-                foreach (var field in factory.AllFields)
-                {
-                    if (!field.IsDataObjectField && field.Type.GetTypeCode() == TypeCode.Object) continue;
-
-                    var column = columns.FirstOrDefault(e => e.Name == field.Name);
-                    if (column == null)
-                    {
-                        column = new ModelColumn
-                        {
-                            Name = field.Name,
-                            Enable = true,
-
-                            ShowInList = true,
-                            ShowInForm = true,
-                        };
-                        columns.Add(column);
-                    }
-
-                    column.TableId = table.Id;
-                    column.Sort = idx++;
-
-                    column.Fill(field);
-                    //column.Save();
-                }
-                columns.Save();
-            }
-        }
+        /// <summary>获取所有区域</summary>
+        /// <returns></returns>
+        public static ICollection<Type> GetAreas() => _areas.Keys;
     }
 }
