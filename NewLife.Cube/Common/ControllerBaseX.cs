@@ -325,6 +325,7 @@ namespace NewLife.Cube
         /// <param name="data"></param>
         /// <returns></returns>
         protected virtual String OnJsonSerialize(Object data) => data.ToJson(false, true, true);
+
         #endregion
 
         #region 辅助

@@ -71,14 +71,14 @@
                 $.ajaxSettings.async = false;
                 $.getJSON(this.options.areaParents + code, function (json) {
                     $.each(json.data, function (i, n) {
-                        if (n.Level === 1) {
-                            context.options.province = n.ID;
+                        if (n.level === 1) {
+                            context.options.province = n.id;
                         }
-                        if (n.Level === 2) {
-                            context.options.city = n.ID;
+                        if (n.level === 2) {
+                            context.options.city = n.id;
                         }
-                        if (n.Level === 3) {
-                            context.options.district = n.ID;
+                        if (n.level === 3) {
+                            context.options.district = n.id;
                         }
                     });
                     $.ajaxSettings.async = true;
@@ -629,15 +629,15 @@
             $.ajaxSettings.async = false
             $.getJSON(this.options.dataUrl + temp, function (json) {
                 $.each(json.data, function (i, n) {
-                    if (n.BigArea == undefined) {
-                        result[n.ID] = n.Name;
+                    if (n.bigArea == undefined) {
+                        result[n.id] = n.name;
                     }
                     else {
-                        if (n.BigArea in result) {
-                            result[n.BigArea].push({ code: n.ID, address: n.Name });
+                        if (n.bigArea in result) {
+                            result[n.bigArea].push({ code: n.id, address: n.name });
                         }
                         else {
-                            result[n.BigArea] = [{ code: n.ID, address: n.Name }];
+                            result[n.bigArea] = [{ code: n.id, address: n.name }];
                         }
                     }
                 });
