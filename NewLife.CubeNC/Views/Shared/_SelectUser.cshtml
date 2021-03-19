@@ -34,14 +34,14 @@
         $("#@(id)_select").bsSuggest({
             url: "/cube/UserSearch?key=",
             getDataMethod:"url",
-            effectiveFieldsAlias: { ID:"编号",Code:"代码",Name: "名称",DisplayName:'昵称',DepartmentName:'部门'},
+            effectiveFieldsAlias: { id:"编号",code:"代码",name: "名称",displayName:'昵称',departmentName:'部门'},
             ignorecase: true,
             showHeader: true,
             delayUntilKeyup: true, //获取数据的方式为 firstByUrl 时，延迟到有输入/获取到焦点时才请求数据
             hideOnSelect: true,
-            idField: "ID",
+            idField: "id",
             showBtn: false,
-            keyField: "Name",
+            keyField: "name",
             clearable: true,
             searchingTip: '搜索中...',
             allowNoKeyword: true,
