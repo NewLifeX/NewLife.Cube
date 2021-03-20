@@ -361,7 +361,7 @@ namespace NewLife.Cube
                 foreach (var item in ids)
                 {
                     var entity = FindData(item);
-                    if (entity != null /*&& entity.Enable != enable*/)
+                    if (entity != null && Valid(entity, DataObjectMethodType.Update, true))
                     {
                         //entity.Enable = enable;
                         entity.SetItem(fi.Name, enable);
