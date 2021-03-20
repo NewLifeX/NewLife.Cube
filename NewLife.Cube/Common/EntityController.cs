@@ -155,6 +155,8 @@ namespace NewLife.Cube
                 var fs = SaveFiles(entity);
                 if (fs.Count > 0) OnUpdate(entity);
 
+                if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
+
                 rs = true;
             }
             catch (ArgumentException aex)
@@ -272,7 +274,7 @@ namespace NewLife.Cube
             else
                 ViewBag.StatusMessage = "保存成功！";
 
-            if(IsJsonRequest) return Json(0, ViewBag.StatusMessage);
+            if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
 
             ViewBag.Fields = EditFormFields;
 

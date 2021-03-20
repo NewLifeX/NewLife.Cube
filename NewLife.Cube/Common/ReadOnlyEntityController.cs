@@ -1237,8 +1237,7 @@ namespace NewLife.Cube
             if (post && LogOnChange)
             {
                 // 必须提前写修改日志，否则修改后脏数据失效，保存的日志为空
-                if (type == DataObjectMethodType.Insert ||
-                    type == DataObjectMethodType.Delete ||
+                if (type == DataObjectMethodType.Delete ||
                     (type == DataObjectMethodType.Update && (entity as IEntity).HasDirty))
                     LogProvider.Provider.WriteLog(type + "", entity);
             }
