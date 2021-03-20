@@ -420,23 +420,29 @@ namespace NewLife.Cube
             p = new Pager(p);
             if (p != null)
             {
-                p.PageIndex = 1;
-                p.PageSize = 100_000;
-                // 不要查记录数
-                p.RetrieveTotalCount = false;
-
-                var list = SearchData(p).ToList();
-                count += list.Count;
-                //list.Delete();
-                using var tran = Entity<TEntity>.Meta.CreateTrans();
-                var list2 = new List<IEntity>();
-                foreach (var entity in list)
+                // 循环多次删除
+                for (var i = 0; i < 10; i++)
                 {
-                    // 验证数据权限
-                    if (Valid(entity, DataObjectMethodType.Delete, true)) list2.Add(entity);
+                    p.PageIndex = i + 1;
+                    p.PageSize = 100_000;
+                    // 不要查记录数
+                    p.RetrieveTotalCount = false;
+
+                    var list = SearchData(p).ToList();
+                    if (list.Count == 0) break;
+
+                    count += list.Count;
+                    //list.Delete();
+                    using var tran = Entity<TEntity>.Meta.CreateTrans();
+                    var list2 = new List<IEntity>();
+                    foreach (var entity in list)
+                    {
+                        // 验证数据权限
+                        if (Valid(entity, DataObjectMethodType.Delete, true)) list2.Add(entity);
+                    }
+                    list2.Delete();
+                    tran.Commit();
                 }
-                list2.Delete();
-                tran.Commit();
             }
 
             if (Request.IsAjaxRequest())
