@@ -31,7 +31,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Net.Http.Headers;
 #else
 using System.Web.Mvc;
@@ -46,6 +45,9 @@ namespace NewLife.Cube
         #region 属性
         /// <summary>实体工厂</summary>
         public static IEntityFactory Factory => Entity<TEntity>.Meta.Factory;
+
+        /// <summary>实体改变时写日志。默认false</summary>
+        protected static Boolean LogOnChange { get; set; }
 
         private String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
         #endregion
@@ -1232,6 +1234,15 @@ namespace NewLife.Cube
                 }
             }
 
+            if (post && LogOnChange)
+            {
+                // 必须提前写修改日志，否则修改后脏数据失效，保存的日志为空
+                if (type == DataObjectMethodType.Insert ||
+                    type == DataObjectMethodType.Delete ||
+                    (type == DataObjectMethodType.Update && (entity as IEntity).HasDirty))
+                    LogProvider.Provider.WriteLog(type + "", entity);
+            }
+
             return true;
         }
 
@@ -1343,7 +1354,7 @@ namespace NewLife.Cube
         #endregion
 
         #region 权限菜单
-        /// <summary>菜单顺序。扫描是会反射读取</summary>
+        /// <summary>菜单顺序。扫描时会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
         /// <summary>自动从实体类拿到显示名</summary>
