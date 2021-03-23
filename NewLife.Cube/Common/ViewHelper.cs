@@ -720,7 +720,7 @@ namespace NewLife.Cube
                 type = "url";
                 ico = "home";
             }
-            else if (field.Length < 0 || field.Length > 300)
+            else if (field.IsBigText())
             {
                 txt = $"<textarea class=\"{cls}\" cols=\"20\" id=\"{name}\" name=\"{name}\" rows=\"3\">@entity.{name}</textarea>";
             }

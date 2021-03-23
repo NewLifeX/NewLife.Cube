@@ -88,8 +88,8 @@ namespace NewLife.Cube
                 if (dc != null && dc.ItemType.EqualIgnoreCase("file", "image"))
                     return Html.ForFile(field.Name, entity[field.Name], dc.ItemType);
 
-                if (field.Length <= 0 || field.Length > 300)
-                    return Html.ForString(field.Name, (String)entity[field.Name], field.Length);
+                //if (field.Length <= 0 || field.Length > 300)
+                return Html.ForString(field.Name, (String)entity[field.Name], field.Length);
             }
 
             // 如果是实体树，并且当前是父级字段，则生产下拉
@@ -256,7 +256,7 @@ namespace NewLife.Cube
                 //if (!atts.ContainsKey("type")) atts.Add("type", "url");
                 txt = Html.TextBox(name, value, atts);
             }
-            else if (length < 0 || length > 300)
+            else if (length < 0 || length >= 300 || (length >= 200 && name.EqualIgnoreCase("Remark", "Description", "Comment")))
             {
                 txt = Html.TextArea(name, value, 3, 20, atts);
             }
@@ -574,6 +574,11 @@ namespace NewLife.Cube
             htmlContent.WriteTo(writer, HtmlEncoder.Default);
             return writer.ToString();
         }
+
+        /// <summary>是否大文本字段</summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public static Boolean IsBigText(this FieldItem field) => field.Length < 0 || field.Length >= 300 || field.Length >= 200 && field.Name.EqualIgnoreCase("Remark", "Description", "Comment");
         #endregion
     }
 }

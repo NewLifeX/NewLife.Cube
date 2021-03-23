@@ -1,0 +1,32 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var entity = pair.Item1;
+    var field = pair.Item2;
+
+    var fields = ViewBag.Fields as FieldCollection;
+    var dataField = fields.GetField(field.Name);
+
+    var err = 0;
+    if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
+
+    var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
+    var display = dataField?.DisplayName ?? field.DisplayName;
+}
+<label class="control-label col-sm-3 col-md-2 col-lg-1">@display</label>
+@if (err > 0)
+{
+    <span class="col-sm-9 alert alert-danger">
+        @Html.ValidationMessage(field.Name)
+    </span>
+}
+else if (!des.IsNullOrEmpty())
+{
+    <span class="col-sm-9">@Html.ForDescription(field)</span>
+}
+<div class="input-group col-sm-12">
+    @Html.ForEditor(field, entity)
+</div>
