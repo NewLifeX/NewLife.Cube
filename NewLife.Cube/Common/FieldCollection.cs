@@ -243,6 +243,16 @@ namespace NewLife.Cube
             return df;
         }
 
+        /// <summary>添加定制字段，插入指定列之前</summary>
+        /// <param name="field"></param>
+        /// <returns></returns>
+        public DataField AddDataField(DataField field)
+        {
+            Fields.Add(field);
+
+            return field;
+        }
+
         /// <summary>获取指定名称的定制字段</summary>
         /// <param name="name"></param>
         /// <returns></returns>

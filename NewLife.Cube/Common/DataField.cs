@@ -66,7 +66,7 @@ namespace NewLife.Cube
         /// <summary>针对指定实体对象计算DisplayName，替换其中变量</summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public String GetDisplayName(IExtend data)
+        public virtual String GetDisplayName(IExtend data)
         {
             if (DisplayName.IsNullOrEmpty()) return null;
 
@@ -76,7 +76,7 @@ namespace NewLife.Cube
         /// <summary>针对指定实体对象计算url，替换其中变量</summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public String GetUrl(IExtend data)
+        public virtual String GetUrl(IExtend data)
         {
             if (Url.IsNullOrEmpty()) return null;
 
