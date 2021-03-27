@@ -270,7 +270,7 @@ namespace NewLife.Cube.Web
                 // 使用认证中心的角色
                 if (set.UseSsoRole)
                 {
-                     roleId = GetRole(dic, true);
+                    roleId = GetRole(dic, true);
                     if (roleId > 0)
                     {
                         user2.RoleID = roleId;
@@ -299,7 +299,7 @@ namespace NewLife.Cube.Web
                     if (roleIds.Count == 0)
                         user2.RoleIds = null;
                     else
-                        user2.RoleIds = "," + roleIds.OrderBy(e => e).Join() + ",";
+                        user2.RoleIds = roleIds.ToArray();
                 }
 
                 // 部门
