@@ -299,7 +299,7 @@ namespace NewLife.Cube.Web
                     if (roleIds.Count == 0)
                         user2.RoleIds = null;
                     else
-                        user2.RoleIds = roleIds.ToArray();
+                        user2.RoleIds = "," + roleIds.OrderBy(e => e).Join() + ",";
                 }
 
                 // 部门
