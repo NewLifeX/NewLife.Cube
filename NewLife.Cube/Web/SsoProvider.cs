@@ -554,6 +554,10 @@ namespace NewLife.Cube.Web
                 app = sso.Auth(client_id, client_secret);
                 log.AppId = app.ID;
 
+                // 验证应用能力
+                var scopes = app.Scopes?.Split(",");
+                if (scopes == null || !"client_credentials".EqualIgnoreCase(scopes)) throw new InvalidOperationException($"应用[{app}]没有使用client_credentials客户端凭证的能力！");
+
                 var code = !username.IsNullOrEmpty() ? username : ("_" + Rand.NextString(7));
                 var token = sso.CreateToken(app, code, null, $"{client_id}#{code}");
                 //token.Scope = "basic,UserInfo";
