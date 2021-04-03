@@ -198,18 +198,11 @@
         <tbody>
             @foreach (AssemblyX item in ViewBag.MyAsms)
             {
-                var att2 = item.Asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-                var inf = att2?.InformationalVersion;
-                if (!inf.IsNullOrEmpty())
-                {
-                    var p = inf.IndexOf('+');
-                    if (p > 0) { inf = inf.Substring(0, p); }
-                }
                 <tr>
                     <td>@item.Name</td>
                     <td>@item.Title</td>
                     <td>@item.FileVersion</td>
-                    <td>@inf</td>
+                    <td>@item.Version</td>
                     <td title="@item.Version">@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
                     <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@item.Description">@item.Description</td>
                 </tr>
