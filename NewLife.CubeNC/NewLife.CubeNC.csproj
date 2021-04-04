@@ -151,6 +151,7 @@
     <Compile Include="..\NewLife.Cube\Web\OAuth\DingTalkClient.cs" Link="Web\OAuth\DingTalkClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\GithubClient.cs" Link="Web\OAuth\GithubClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\MicrosoftClient.cs" Link="Web\OAuth\MicrosoftClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\OpenWeixinClient.cs" Link="Web\OAuth\OpenWeixinClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\QQClient.cs" Link="Web\OAuth\QQClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\QyWeiXin.cs" Link="Web\OAuth\QyWeiXin.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\TaobaoClient.cs" Link="Web\OAuth\TaobaoClient.cs" />

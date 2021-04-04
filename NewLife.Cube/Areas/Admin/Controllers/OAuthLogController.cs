@@ -17,7 +17,7 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static OAuthLogController()
         {
-            ListFields.RemoveField("Id");
+            //ListFields.RemoveField("Id");
         }
 
         /// <summary>搜索</summary>

@@ -249,11 +249,11 @@ namespace NewLife.Cube.Controllers
             }
             catch (Exception ex)
             {
-                if (log.Remark.IsNullOrEmpty()) log.Remark = ex.GetTrue().ToString();
+                if (log.Remark.IsNullOrEmpty()) log.Remark = ex.ToString();
                 log.Success = false;
                 log.SaveAsync();
 
-                XTrace.WriteException(ex.GetTrue());
+                XTrace.WriteException(ex);
 
                 throw;
             }

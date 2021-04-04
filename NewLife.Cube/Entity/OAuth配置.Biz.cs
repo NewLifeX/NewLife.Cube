@@ -106,8 +106,9 @@ namespace NewLife.Cube.Entity
             Add("Github", "Github", "/Content/images/logo/Github.png");
             Add("Baidu", "百度", "/Content/images/logo/Baidu.png");
             Add("Ding", "钉钉", "/Content/images/logo/Ding.png");
-            Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeixin.png");
-            Add("Weixin", "微信", "/Content/images/logo/Weixin.png");
+            Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeixin.png", "snsapi_qrlogin扫码登录，snsapi_auth钉钉内免登，snsapi_login密码登录");
+            Add("Weixin", "微信公众号", "/Content/images/logo/Weixin.png", "snsapi_base静默登录，snsapi_userinfo需要用户关注后授权");
+            Add("OpenWeixin", "微信开放平台", "/Content/images/logo/Weixin.png", "snsapi_login用于扫码登录");
             Add("Microsoft", "微软", "/Content/images/logo/Microsoft.png");
             //Add("Weibo", "微博", "/Content/images/logo/Weibo.png");
             //Add("Taobao", "淘宝", "/Content/images/logo/Taobao.png");
@@ -177,14 +178,16 @@ namespace NewLife.Cube.Entity
         /// <param name="name"></param>
         /// <param name="nickName"></param>
         /// <param name="logo"></param>
+        /// <param name="remark"></param>
         /// <returns></returns>
-        public static OAuthConfig Add(String name, String nickName, String logo)
+        public static OAuthConfig Add(String name, String nickName, String logo, String remark = null)
         {
             var entity = new OAuthConfig
             {
                 Name = name,
                 NickName = nickName,
                 Logo = logo,
+                Remark = remark,
             };
 
             entity.Insert();

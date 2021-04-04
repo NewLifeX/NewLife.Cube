@@ -643,6 +643,7 @@
     <Compile Include="Web\OAuth\TaobaoClient.cs" />
     <Compile Include="Web\OAuth\QyWeiXin.cs" />
     <Compile Include="Web\OAuth\MicrosoftClient.cs" />
+    <Compile Include="Web\OAuth\OpenWeixinClient.cs" />
     <Compile Include="Web\OAuth\WeixinClient.cs" />
     <Compile Include="Web\SsoClient.cs" />
     <Compile Include="Web\SsoProvider.cs" />
