@@ -11,6 +11,7 @@ using NewLife.Collections;
 using System.Security.Cryptography;
 using NewLife.Security;
 using NewLife.Cube.Web.Models;
+using System.Web;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -115,6 +116,7 @@ namespace NewLife.Cube.Controllers
             {
                 state += (state.IsNullOrEmpty() ? "" : "&") + $"s={source}";
             }
+            state = HttpUtility.UrlEncode(state);
 
             return client.Authorize(redirect, state);
         }
@@ -299,6 +301,7 @@ namespace NewLife.Cube.Controllers
 
             var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
             var state = $"r={url}&a=bind";
+            state = HttpUtility.UrlEncode(state);
             url = client.Authorize(redirect, state);
 
             return Redirect(url);
