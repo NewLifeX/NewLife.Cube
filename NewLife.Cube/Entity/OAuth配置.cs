@@ -60,11 +60,11 @@ namespace NewLife.Cube.Entity
         public String AppId { get => _AppId; set { if (OnPropertyChanging("AppId", value)) { _AppId = value; OnPropertyChanged("AppId"); } } }
 
         private String _Secret;
-        /// <summary>应用密钥。</summary>
+        /// <summary>应用密钥</summary>
         [DisplayName("应用密钥")]
-        [Description("应用密钥。")]
-        [DataObjectField(false, false, true, 50)]
-        [BindColumn("Secret", "应用密钥。", "")]
+        [Description("应用密钥")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("Secret", "应用密钥", "")]
         public String Secret { get => _Secret; set { if (OnPropertyChanging("Secret", value)) { _Secret = value; OnPropertyChanged("Secret"); } } }
 
         private String _Server;
@@ -262,7 +262,7 @@ namespace NewLife.Cube.Entity
             /// <summary>应用标识</summary>
             public static readonly Field AppId = FindByName("AppId");
 
-            /// <summary>应用密钥。</summary>
+            /// <summary>应用密钥</summary>
             public static readonly Field Secret = FindByName("Secret");
 
             /// <summary>服务地址</summary>
@@ -328,7 +328,7 @@ namespace NewLife.Cube.Entity
             /// <summary>应用标识</summary>
             public const String AppId = "AppId";
 
-            /// <summary>应用密钥。</summary>
+            /// <summary>应用密钥</summary>
             public const String Secret = "Secret";
 
             /// <summary>服务地址</summary>

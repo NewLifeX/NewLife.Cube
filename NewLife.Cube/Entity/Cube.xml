@@ -27,6 +27,32 @@
       <Index Columns="UserID" />
     </Indexes>
   </Table>
+  <Table Name="OAuthLog" Description="OAuth日志。用于记录OAuth客户端请求，同时Id作为state，避免向OAuthServer泄漏本机Url">
+    <Columns>
+      <Column Name="Id" DataType="Int64" PrimaryKey="True" Description="编号" />
+      <Column Name="Provider" DataType="String" Description="提供商" />
+      <Column Name="ConnectId" DataType="Int32" Description="链接" />
+      <Column Name="UserId" DataType="Int32" Description="用户" />
+      <Column Name="Action" DataType="String" Description="操作" />
+      <Column Name="Success" DataType="Boolean" Description="成功" />
+      <Column Name="RedirectUri" DataType="String" Length="500" Description="回调地址" />
+      <Column Name="ResponseType" DataType="String" Description="响应类型。默认code" />
+      <Column Name="Scope" DataType="String" Description="授权域" />
+      <Column Name="State" DataType="String" Length="500" Description="状态数据" />
+      <Column Name="Source" DataType="String" Description="来源" />
+      <Column Name="AccessToken" DataType="String" Length="2000" Description="访问令牌" />
+      <Column Name="RefreshToken" DataType="String" Length="2000" Description="刷新令牌" />
+      <Column Name="Remark" DataType="String" Length="2000" Description="详细信息" />
+      <Column Name="CreateIP" DataType="String" Description="创建IP" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+    </Columns>
+    <Indexes>
+      <Index Columns="Provider" />
+      <Index Columns="ConnectId" />
+      <Index Columns="UserId" />
+    </Indexes>
+  </Table>
   <Table Name="UserToken" Description="用户令牌。授权指定用户访问接口数据，支持有效期" ConnName="Membership">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
@@ -136,7 +162,7 @@
       <Column Name="NickName" DataType="String" Description="昵称" />
       <Column Name="Logo" DataType="String" Description="图标" />
       <Column Name="AppId" DataType="String" Description="应用标识" />
-      <Column Name="Secret" DataType="String" Description="应用密钥。" />
+      <Column Name="Secret" DataType="String" Length="200" Description="应用密钥" />
       <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
       <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
       <Column Name="Scope" DataType="String" Description="授权范围" />

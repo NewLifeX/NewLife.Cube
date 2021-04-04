@@ -76,6 +76,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelColumnController.cs" Link="Areas\Admin\Controllers\ModelColumnController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelTableController.cs" Link="Areas\Admin\Controllers\ModelTableController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthConfigController.cs" Link="Areas\Admin\Controllers\OAuthConfigController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthLogController.cs" Link="Areas\Admin\Controllers\OAuthLogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ParameterController.cs" Link="Areas\Admin\Controllers\ParameterController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Controllers\RoleController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
@@ -107,6 +108,8 @@
     <Compile Include="..\NewLife.Cube\Controllers\HomeController.cs" Link="Controllers\HomeController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\ODataController.cs" Link="Controllers\ODataController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\SsoController.cs" Link="Controllers\SsoController.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.cs" Link="Entity\OAuth配置.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs" Link="Entity\应用日志.Biz.cs" />

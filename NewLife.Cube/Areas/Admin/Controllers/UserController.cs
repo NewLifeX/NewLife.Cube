@@ -68,6 +68,13 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             {
+                var df = ListFields.AddDataField("OAuthLog", "Logins");
+                df.Header = "OAuth日志";
+                df.DisplayName = "OAuth日志";
+                df.Url = "OAuthLog?userId={ID}";
+            }
+
+            {
                 var df = AddFormFields.AddDataField("RoleIds");
                 df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }

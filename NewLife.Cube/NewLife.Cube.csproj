@@ -106,6 +106,7 @@
     </Compile>
     <Compile Include="App_Start\ODataConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
+    <Compile Include="Areas\Admin\Controllers\OAuthLogController.cs" />
     <Compile Include="Areas\Admin\Controllers\ModelTableController.cs" />
     <Compile Include="Areas\Admin\Controllers\ModelColumnController.cs" />
     <Compile Include="Areas\Admin\Controllers\OAuthConfigController.cs" />
@@ -361,6 +362,8 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ODataController.cs" />
     <Compile Include="Controllers\SsoController.cs" />
+    <Compile Include="Entity\OAuth日志.Biz.cs" />
+    <Compile Include="Entity\OAuth日志.cs" />
     <Compile Include="Entity\OAuth配置.Biz.cs" />
     <Compile Include="Entity\OAuth配置.cs" />
     <Compile Include="Entity\应用日志.Biz.cs" />
