@@ -65,8 +65,11 @@ namespace NewLife.Web.OAuth
             // 应用内打开时，自动切换为应用内免登
             if (Support(userAgent))
             {
-                Scope = "snsapi_base";
-                SetMode(Scope);
+                if (Scope == "snsapi_login")
+                {
+                    Scope = "snsapi_base";
+                    SetMode(Scope);
+                }
             }
         }
 
