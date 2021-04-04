@@ -439,12 +439,23 @@ namespace NewLife.Web
             // Json格式转为名值字典
             if (p1 >= 0 && p2 > p1)
             {
-                dic = new JsonParser(html).Decode().ToDictionary().ToDictionary(e => e.Key.ToLower(), e => e.Value + "", StringComparer.OrdinalIgnoreCase);
+                var js = JsonParser.Decode(html);
+                dic = new Dictionary<String, String>();
+                foreach (var item in js)
+                {
+                    var v = item.Value;
+                    if (v is IList<Object> list)
+                        dic[item.Key] = "[" + list.Join() + "]";
+                    else if (v is IDictionary<String, Object> dic2)
+                        dic[item.Key] = dic2.ToJson();
+                    else if (v != null)
+                        dic[item.Key] = v + "";
+                }
             }
             // Url格式转为名值字典
             else if (html.Contains("=") && html.Contains("&"))
             {
-                dic = html.SplitAsDictionary("=", "&").ToDictionary(e => e.Key.ToLower(), e => e.Value + "", StringComparer.OrdinalIgnoreCase);
+                dic = html.SplitAsDictionary("=", "&");
             }
 
             return dic.ToNullable(StringComparer.OrdinalIgnoreCase);

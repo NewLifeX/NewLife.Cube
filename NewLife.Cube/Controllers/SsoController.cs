@@ -122,7 +122,7 @@ namespace NewLife.Cube.Controllers
             {
                 Provider = client.Name,
                 Action = "Login",
-                Success = true,
+                Success = false,
                 ResponseType = client.ResponseType,
                 Scope = client.Scope,
                 State = state,
@@ -222,6 +222,7 @@ namespace NewLife.Cube.Controllers
 
                 log.ConnectId = uc.ID;
                 log.UserId = uc.UserID;
+                log.Success = true;
                 log.SaveAsync();
 
 #if __CORE__
@@ -337,7 +338,7 @@ namespace NewLife.Cube.Controllers
             {
                 Provider = client.Name,
                 Action = "Bind",
-                Success = true,
+                Success = false,
                 ResponseType = client.ResponseType,
                 Scope = client.Scope,
                 State = null,
