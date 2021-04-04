@@ -184,8 +184,6 @@ namespace NewLife.Cube.Web
             var httpContext = req.RequestContext.HttpContext;
             var ip = httpContext.GetUserHost();
 #endif
-            //if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
-            //if (req != null) forceBind = req.Get("state").EndsWithIgnoreCase("_bind");
 
             // 可能因为初始化顺序的问题，导致前面没能给Provider赋值
             var prv = Provider;
@@ -221,7 +219,7 @@ namespace NewLife.Cube.Web
 
             // 写日志
             var log = LogProvider.Provider;
-            log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName}]登录", user.ID, user + "");
+            log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName ?? client.NickName}]登录", user.ID, user + "");
 
             if (!user.Enable) throw new InvalidOperationException($"用户[{user}]已禁用！");
 
@@ -359,10 +357,27 @@ namespace NewLife.Cube.Web
                 var cfg = OAuthConfig.FindByName(client.Name);
                 if (!cfg.AutoRegister) throw new InvalidOperationException($"绑定[{cfg}]要求本地已登录！");
 
+                // 匹配UnionId
+                if (user == null && !client.UnionID.IsNullOrEmpty())
+                {
+                    var list = UserConnect.FindAllByUnionId(client.UnionID);
+
+                    //// 排除当前项，选择登录次数最多的用户
+                    //list = list.Where(e => e.ID != uc.ID && e.UserID > 0).ToList();
+                    // 选择登录次数最多的用户
+                    var ids = list.Where(e => e.Enable && e.UserID > 0).Select(e => e.UserID).Distinct().ToArray();
+                    var users = ids.Select(e => User.FindByID(e)).Where(e => e != null).ToList();
+                    if (users.Count > 0)
+                    {
+                        mode = "UnionID";
+                        user = users.OrderByDescending(e => e.Logins).FirstOrDefault();
+                    }
+                }
+
                 // 先找用户名，如果存在，就加上提供者前缀，直接覆盖
                 var name = client.UserName;
                 if (name.IsNullOrEmpty()) name = client.NickName;
-                if (!name.IsNullOrEmpty())
+                if (user == null && !name.IsNullOrEmpty())
                 {
                     // 强制绑定本地用户时，没有前缀
                     if (set.ForceBindUser)
@@ -434,7 +449,7 @@ namespace NewLife.Cube.Web
 
             // 写日志
             var log = LogProvider.Provider;
-            log?.WriteLog(typeof(User), "绑定", true, $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
+            log?.WriteLog(typeof(User), "绑定", true, $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.UserName ?? client.NickName}]", user.ID, user + "");
 
             return user;
         }

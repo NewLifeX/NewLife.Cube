@@ -68,6 +68,16 @@ namespace NewLife.Cube.Entity
             return Find(_.ID == id);
         }
 
+        /// <summary>根据UnionID查找。跨多应用，因为微信公众号和微信开放平台可能共用UnionID</summary>
+        /// <param name="unionId"></param>
+        /// <returns></returns>
+        public static IList<UserConnect> FindAllByUnionId(String unionId)
+        {
+            if (unionId.IsNullOrEmpty()) return new List<UserConnect>();
+
+            return FindAll(_.UnionID == unionId);
+        }
+
         /// <summary>根据提供商、用户查找</summary>
         /// <param name="provider">提供商</param>
         /// <param name="openid">身份标识</param>

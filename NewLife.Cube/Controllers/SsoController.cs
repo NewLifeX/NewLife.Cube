@@ -59,12 +59,12 @@ namespace NewLife.Cube.Controllers
         /// <summary>单点登录服务端</summary>
         public static OAuthServer OAuth { get; set; }
 
-        /// <summary>存储最近用过的code，避免用户刷新页面</summary>
-        private static DictionaryCache<String, String> _codeCache = new DictionaryCache<string, string>()
-        {
-            Expire = 600,
-            Period = 60
-        };
+        ///// <summary>存储最近用过的code，避免用户刷新页面</summary>
+        //private static DictionaryCache<String, String> _codeCache = new DictionaryCache<string, string>()
+        //{
+        //    Expire = 600,
+        //    Period = 60
+        //};
 
         static SsoController()
         {
@@ -331,8 +331,6 @@ namespace NewLife.Cube.Controllers
             client.Init(GetUserAgent());
 
             var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
-            //var state = $"r={url}&a=bind";
-            //state = HttpUtility.UrlEncode(state);
 
             var log = new OAuthLog
             {

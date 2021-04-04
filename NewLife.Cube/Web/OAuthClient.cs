@@ -559,7 +559,7 @@ namespace NewLife.Web
             if (dic.TryGetValue("Avatar", out str)) Avatar = str.Trim();
 
             // 获取用户信息出错时抛出异常
-            if (dic.TryGetValue("error", out str)) throw new InvalidOperationException(str);
+            if (dic.TryGetValue("error", out str) || dic.TryGetValue("errmsg", out str)) throw new InvalidOperationException(str);
         }
         #endregion
 

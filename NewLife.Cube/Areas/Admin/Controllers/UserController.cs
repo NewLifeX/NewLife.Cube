@@ -173,8 +173,8 @@ namespace NewLife.Cube.Admin.Controllers
                 }
             }
 
-            // 支持钉钉，且在钉钉内打开，直接跳转
-            if (ms != null)
+            // 部分提供支持应用内免登录，直接跳转
+            if (ms != null && ms.Count > 0)
             {
 #if __CORE__
                 var agent = Request.Headers["User-Agent"] + "";
@@ -185,13 +185,17 @@ namespace NewLife.Cube.Admin.Controllers
                 {
                     foreach (var item in ms)
                     {
-                        var client = OAuthClient.Create(item.Name);
-                        if (client != null && client.Support(agent))
+                        // 需要应用支持自动注册才能跳转
+                        if (item.Enable && item.AutoRegister)
                         {
-                            var url = $"~/Sso/Login?name={item.Name}";
-                            if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
+                            var client = OAuthClient.Create(item.Name);
+                            if (client != null && client.Support(agent))
+                            {
+                                var url = $"~/Sso/Login?name={item.Name}";
+                                if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
 
-                            return Redirect(url);
+                                return Redirect(url);
+                            }
                         }
                     }
                 }
@@ -240,7 +244,7 @@ namespace NewLife.Cube.Admin.Controllers
             return model;
         }
 
-        /// <summary>登录</summary>
+        /// <summary>密码登录</summary>
         /// <returns></returns>
         [HttpPost()]
         [AllowAnonymous]
@@ -280,6 +284,31 @@ namespace NewLife.Cube.Admin.Controllers
 
                     // 登录成功，清空错误数
                     if (errors > 0) _cache.Remove(key);
+
+                    // 自动绑定应用内打开的客户端
+                    var ms = OAuthConfig.GetValids();
+                    if (ms != null && ms.Count > 0)
+                    {
+#if __CORE__
+                        var agent = Request.Headers["User-Agent"] + "";
+#else
+                        var agent = Request.UserAgent;
+#endif
+                        if (!agent.IsNullOrEmpty())
+                        {
+                            foreach (var item in ms)
+                            {
+                                var client = OAuthClient.Create(item.Name);
+                                if (client != null && client.Support(agent))
+                                {
+                                    var url = $"~/Sso/Bind/{item.Name}";
+                                    if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
+
+                                    return Redirect(url);
+                                }
+                            }
+                        }
+                    }
 
                     return RedirectToAction("Index", "Index", new { page = returnUrl });
                 }
