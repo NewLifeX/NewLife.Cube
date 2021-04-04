@@ -127,6 +127,7 @@ namespace NewLife.Cube.Entity
 
             uc.LinkID = client.UserID;
             //ub.OpenID = client.OpenID;
+            uc.UnionID = client.UnionID;
             uc.AccessToken = client.AccessToken;
             uc.RefreshToken = client.RefreshToken;
             uc.Expire = client.Expire;

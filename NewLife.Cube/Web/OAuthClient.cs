@@ -361,7 +361,7 @@ namespace NewLife.Web
         /// <param name="user"></param>
         public virtual void Fill(IManageUser user)
         {
-            if (user.Name.IsNullOrEmpty()) user.Name = UserName ?? OpenID;
+            if (user.Name.IsNullOrEmpty()) user.Name = UserName ?? UnionID ?? OpenID;
             if (user.NickName.IsNullOrEmpty()) user.NickName = NickName;
 
             //// 头像
@@ -417,6 +417,7 @@ namespace NewLife.Web
                .Replace("{token}", HttpUtility.UrlEncode(AccessToken + ""))
                .Replace("{code}", HttpUtility.UrlEncode(Code + ""))
                .Replace("{openid}", HttpUtility.UrlEncode(OpenID + ""))
+               .Replace("{unionid}", HttpUtility.UrlEncode(UnionID + ""))
                .Replace("{redirect}", HttpUtility.UrlEncode(_redirect + ""))
                .Replace("{scope}", HttpUtility.UrlEncode(Scope + ""))
                .Replace("{state}", HttpUtility.UrlEncode(_state + ""));

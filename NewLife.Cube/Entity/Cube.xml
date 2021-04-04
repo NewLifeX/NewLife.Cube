@@ -6,6 +6,7 @@
       <Column Name="Provider" DataType="String" Description="提供商" />
       <Column Name="UserID" DataType="Int32" Description="用户。本地用户" />
       <Column Name="OpenID" DataType="String" Description="身份标识。用户名、OpenID" />
+      <Column Name="UnionID" DataType="String" Description="全局标识。跨应用统一" />
       <Column Name="LinkID" DataType="Int64" Description="用户编号。第三方用户编号" />
       <Column Name="NickName" DataType="String" Description="昵称" />
       <Column Name="Avatar" DataType="String" Length="200" Description="头像" />
