@@ -65,10 +65,10 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public Boolean AllowRegister { get; set; } = true;
 
-        /// <summary>自动注册。SSO登录后，如果本地未登录，自动注册新用户</summary>
-        [Description("自动注册。SSO登录后，如果本地未登录，自动注册新用户")]
-        [Category("用户登录")]
-        public Boolean AutoRegister { get; set; } = true;
+        ///// <summary>自动注册。SSO登录后，如果本地未登录，自动注册新用户</summary>
+        //[Description("自动注册。SSO登录后，如果本地未登录，自动注册新用户")]
+        //[Category("用户登录")]
+        //public Boolean AutoRegister { get; set; } = true;
 
         /// <summary>密码强度。最小密码长度，默认6</summary>
         [Description("密码强度。最小密码长度，默认6")]

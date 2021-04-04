@@ -356,7 +356,8 @@ namespace NewLife.Cube.Web
             if (user == null)
             {
                 var set = Setting.Current;
-                if (!set.AutoRegister) throw new InvalidOperationException("绑定要求本地已登录！");
+                var cfg = OAuthConfig.FindByName(client.Name);
+                if (!cfg.AutoRegister) throw new InvalidOperationException($"绑定[{cfg}]要求本地已登录！");
 
                 // 先找用户名，如果存在，就加上提供者前缀，直接覆盖
                 var name = client.UserName;

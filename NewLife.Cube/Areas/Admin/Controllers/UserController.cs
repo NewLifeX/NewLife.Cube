@@ -216,7 +216,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 AllowLogin = set.AllowLogin,
                 AllowRegister = set.AllowRegister,
-                AutoRegister = set.AutoRegister,
+                //AutoRegister = set.AutoRegister,
 
                 LoginTip = set.LoginTip,
                 ResourceUrl = set.ResourceUrl,

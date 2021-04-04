@@ -17,7 +17,7 @@ namespace NewLife.Cube.ViewModels
         public String Logo => String.Empty;
         public Boolean AllowLogin => _set.AllowLogin;
         public Boolean AllowRegister => _set.AllowRegister;
-        public Boolean AutoRegister => _set.AutoRegister;
+        //public Boolean AutoRegister => _set.AutoRegister;
 
         public List<OAuthConfigModel> Providers =>
             OAuthConfig.FindAllWithCache().Where(w=>w.Enable).Select(s =>

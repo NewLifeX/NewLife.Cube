@@ -130,6 +130,10 @@ namespace NewLife.Cube.Entity
 
             if (XTrace.Debug) XTrace.WriteLine("完成初始化OAuthConfig[OAuth配置]数据！");
         }
+
+        /// <summary>已重载。显示友好名称</summary>
+        /// <returns></returns>
+        public override String ToString() => !NickName.IsNullOrEmpty() ? NickName : Name;
         #endregion
 
         #region 扩展属性
