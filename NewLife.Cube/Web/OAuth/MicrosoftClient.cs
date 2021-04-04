@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Web;
 using NewLife.Cube.Entity;
 using NewLife.Http;
@@ -112,6 +113,9 @@ namespace NewLife.Web.OAuth
         protected override void OnGetInfo(IDictionary<String, String> dic)
         {
             base.OnGetInfo(dic);
+
+            // 去掉简体中文名字中的空格
+            if (!UserName.IsNullOrEmpty() && UserName.Contains(" ") && Encoding.UTF8.GetByteCount(UserName) != UserName.Length) UserName = UserName.Replace(" ", null);
 
             //todo 其实可以从token请求返回的id_token里面jwt解析得到email和name
 
