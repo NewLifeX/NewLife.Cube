@@ -229,10 +229,26 @@ namespace NewLife.Cube.Controllers
                 log.ConnectId = uc.ID;
                 log.UserId = uc.UserID;
                 log.Success = true;
-                log.SaveAsync();
+                log.Update();
 
                 // 标记登录提供商
                 Session["Cube_Sso"] = client.Name;
+
+                // 如果验证成功但登录失败，直接跳走
+                if (url.IsNullOrEmpty())
+                {
+                    Session["Cube_OAuthId"] = log.Id;
+                    return Redirect("/Admin/User/Login?autologin=0".AppendReturn(returnUrl));
+                }
+
+                // 登录后自动绑定
+                var logId = Session["Cube_OAuthId"].ToLong();
+                if (logId > 0 && logId != log.Id)
+                {
+                    Session["Cube_OAuthId"] = null;
+                    var log2 = Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
+                    if (log2 != null && log2.Success && !log2.RedirectUri.IsNullOrEmpty()) return Redirect(log2.RedirectUri);
+                }
 
                 if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
