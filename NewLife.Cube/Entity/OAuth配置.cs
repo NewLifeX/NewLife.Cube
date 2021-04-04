@@ -139,6 +139,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("AutoRole", "自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开", "")]
         public String AutoRole { get => _AutoRole; set { if (OnPropertyChanging("AutoRole", value)) { _AutoRole = value; OnPropertyChanged("AutoRole"); } } }
 
+        private Int32 _Sort;
+        /// <summary>排序。较大者在前面</summary>
+        [DisplayName("排序")]
+        [Description("排序。较大者在前面")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("Sort", "排序。较大者在前面", "")]
+        public Int32 Sort { get => _Sort; set { if (OnPropertyChanging("Sort", value)) { _Sort = value; OnPropertyChanged("Sort"); } } }
+
         private Int32 _CreateUserID;
         /// <summary>创建者</summary>
         [DisplayName("创建者")]
@@ -221,6 +229,7 @@ namespace NewLife.Cube.Entity
                     case "Visible": return _Visible;
                     case "AutoRegister": return _AutoRegister;
                     case "AutoRole": return _AutoRole;
+                    case "Sort": return _Sort;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
                     case "CreateIP": return _CreateIP;
@@ -250,6 +259,7 @@ namespace NewLife.Cube.Entity
                     case "Visible": _Visible = value.ToBoolean(); break;
                     case "AutoRegister": _AutoRegister = value.ToBoolean(); break;
                     case "AutoRole": _AutoRole = Convert.ToString(value); break;
+                    case "Sort": _Sort = value.ToInt(); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -311,6 +321,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
             public static readonly Field AutoRole = FindByName("AutoRole");
+
+            /// <summary>排序。较大者在前面</summary>
+            public static readonly Field Sort = FindByName("Sort");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -383,6 +396,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
             public const String AutoRole = "AutoRole";
+
+            /// <summary>排序。较大者在前面</summary>
+            public const String Sort = "Sort";
 
             /// <summary>创建者</summary>
             public const String CreateUserID = "CreateUserID";

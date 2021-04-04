@@ -213,11 +213,11 @@ namespace NewLife.Cube.Entity
 
         /// <summary>获取全部有效设置</summary>
         /// <returns></returns>
-        public static IList<OAuthConfig> GetValids() => FindAllWithCache().Where(e => e.Enable).ToList();
+        public static IList<OAuthConfig> GetValids() => FindAllWithCache().Where(e => e.Enable).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
 
         /// <summary>获取全部有效且可见设置</summary>
         /// <returns></returns>
-        public static IList<OAuthConfig> GetVisibles() => FindAllWithCache().Where(e => e.Enable && e.Visible).ToList();
+        public static IList<OAuthConfig> GetVisibles() => FindAllWithCache().Where(e => e.Enable && e.Visible).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
         #endregion
     }
 }
