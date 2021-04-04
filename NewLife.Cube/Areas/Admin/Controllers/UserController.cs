@@ -94,7 +94,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (id > 0)
             {
                 var list = new List<User>();
-                var entity = XCode.Membership.User.FindByID(id);
+                var entity = FindByID(id);
                 if (entity != null) list.Add(entity);
                 return list;
             }
@@ -158,7 +158,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
+            var ms = OAuthConfig.GetValids();
             if (ms != null && !Setting.Current.AllowLogin)
             {
                 if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
@@ -201,14 +201,14 @@ namespace NewLife.Cube.Admin.Controllers
             //ViewBag.ReturnUrl = returnUrl;
 
             var model = GetViewModel(returnUrl);
-            model.OAuthItems = ms;
+            model.OAuthItems = ms.Where(e => e.Visible).ToList();
 
             return View(model);
         }
 
         private LoginViewModel GetViewModel(String returnUrl)
         {
-            var set = NewLife.Cube.Setting.Current;
+            var set = Setting.Current;
             var sys = SysConfig.Current;
             var model = new LoginViewModel
             {
@@ -309,7 +309,7 @@ namespace NewLife.Cube.Admin.Controllers
             //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
 
             var model = GetViewModel(returnUrl);
-            model.OAuthItems = NewLife.Cube.Entity.OAuthConfig.GetValids();
+            model.OAuthItems = OAuthConfig.GetVisibles();
 
             return View(model);
         }
@@ -480,7 +480,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 第三方绑定
             var ucs = UserConnect.FindAllByUserID(user.ID);
-            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
+            var ms = OAuthConfig.GetValids();
 
             var model = new BindsModel
             {
@@ -519,10 +519,10 @@ namespace NewLife.Cube.Admin.Controllers
                 if (password.Length < set.MinPasswordLength) throw new ArgumentException($"最短密码要求{set.MinPasswordLength}位", nameof(password));
 
                 // 去重判断
-                var user = XCode.Membership.User.FindByName(username);
+                var user = FindByName(username);
                 if (user != null) throw new ArgumentException(nameof(username), $"用户[{username}]已存在！");
 
-                user = XCode.Membership.User.FindByMail(email);
+                user = FindByMail(email);
                 if (user != null) throw new ArgumentException(nameof(email), $"邮箱[{email}]已存在！");
 
                 var r = Role.GetOrAdd(set.DefaultRole);
@@ -545,7 +545,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             var model = GetViewModel(null);
-            model.OAuthItems = NewLife.Cube.Entity.OAuthConfig.GetValids();
+            model.OAuthItems = OAuthConfig.GetVisibles();
 
             return View("Login", model);
         }
@@ -559,7 +559,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (!ManageProvider.User.Role.IsSystem) throw new Exception("清除密码操作需要管理员权限，非法操作！");
 
             // 前面表单可能已经清空密码
-            var user = XCode.Membership.User.FindByID(id);
+            var user = FindByID(id);
             //user.Password = "nopass";
             user.Password = null;
             user.SaveWithoutValid();
@@ -589,7 +589,7 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 foreach (var id in ids)
                 {
-                    var user = XCode.Membership.User.FindByID(id);
+                    var user = FindByID(id);
                     if (user != null && user.Enable != isEnable)
                     {
                         user.Enable = isEnable;

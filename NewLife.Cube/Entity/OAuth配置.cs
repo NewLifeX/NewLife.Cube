@@ -91,6 +91,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("Scope", "授权范围", "")]
         public String Scope { get => _Scope; set { if (OnPropertyChanging("Scope", value)) { _Scope = value; OnPropertyChanged("Scope"); } } }
 
+        private String _AppUrl;
+        /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+        [DisplayName("应用地址")]
+        [Description("应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("AppUrl", "应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址", "")]
+        public String AppUrl { get => _AppUrl; set { if (OnPropertyChanging("AppUrl", value)) { _AppUrl = value; OnPropertyChanged("AppUrl"); } } }
+
         private Boolean _Enable;
         /// <summary>启用</summary>
         [DisplayName("启用")]
@@ -107,13 +115,21 @@ namespace NewLife.Cube.Entity
         [BindColumn("Debug", "调试。设置处于调试状态，输出详细日志", "")]
         public Boolean Debug { get => _Debug; set { if (OnPropertyChanging("Debug", value)) { _Debug = value; OnPropertyChanged("Debug"); } } }
 
-        private String _AppUrl;
-        /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
-        [DisplayName("应用地址")]
-        [Description("应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址")]
-        [DataObjectField(false, false, true, 200)]
-        [BindColumn("AppUrl", "应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址", "")]
-        public String AppUrl { get => _AppUrl; set { if (OnPropertyChanging("AppUrl", value)) { _AppUrl = value; OnPropertyChanged("AppUrl"); } } }
+        private Boolean _Visible;
+        /// <summary>可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号</summary>
+        [DisplayName("可见")]
+        [Description("可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("Visible", "可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号", "")]
+        public Boolean Visible { get => _Visible; set { if (OnPropertyChanging("Visible", value)) { _Visible = value; OnPropertyChanged("Visible"); } } }
+
+        private Boolean _AutoRegister;
+        /// <summary>自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定</summary>
+        [DisplayName("自动注册")]
+        [Description("自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("AutoRegister", "自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定", "")]
+        public Boolean AutoRegister { get => _AutoRegister; set { if (OnPropertyChanging("AutoRegister", value)) { _AutoRegister = value; OnPropertyChanged("AutoRegister"); } } }
 
         private String _AutoRole;
         /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
@@ -199,9 +215,11 @@ namespace NewLife.Cube.Entity
                     case "Server": return _Server;
                     case "AccessServer": return _AccessServer;
                     case "Scope": return _Scope;
+                    case "AppUrl": return _AppUrl;
                     case "Enable": return _Enable;
                     case "Debug": return _Debug;
-                    case "AppUrl": return _AppUrl;
+                    case "Visible": return _Visible;
+                    case "AutoRegister": return _AutoRegister;
                     case "AutoRole": return _AutoRole;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
@@ -226,9 +244,11 @@ namespace NewLife.Cube.Entity
                     case "Server": _Server = Convert.ToString(value); break;
                     case "AccessServer": _AccessServer = Convert.ToString(value); break;
                     case "Scope": _Scope = Convert.ToString(value); break;
+                    case "AppUrl": _AppUrl = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
                     case "Debug": _Debug = value.ToBoolean(); break;
-                    case "AppUrl": _AppUrl = Convert.ToString(value); break;
+                    case "Visible": _Visible = value.ToBoolean(); break;
+                    case "AutoRegister": _AutoRegister = value.ToBoolean(); break;
                     case "AutoRole": _AutoRole = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
@@ -274,14 +294,20 @@ namespace NewLife.Cube.Entity
             /// <summary>授权范围</summary>
             public static readonly Field Scope = FindByName("Scope");
 
+            /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+            public static readonly Field AppUrl = FindByName("AppUrl");
+
             /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
 
             /// <summary>调试。设置处于调试状态，输出详细日志</summary>
             public static readonly Field Debug = FindByName("Debug");
 
-            /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
-            public static readonly Field AppUrl = FindByName("AppUrl");
+            /// <summary>可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号</summary>
+            public static readonly Field Visible = FindByName("Visible");
+
+            /// <summary>自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定</summary>
+            public static readonly Field AutoRegister = FindByName("AutoRegister");
 
             /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
             public static readonly Field AutoRole = FindByName("AutoRole");
@@ -340,14 +366,20 @@ namespace NewLife.Cube.Entity
             /// <summary>授权范围</summary>
             public const String Scope = "Scope";
 
+            /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+            public const String AppUrl = "AppUrl";
+
             /// <summary>启用</summary>
             public const String Enable = "Enable";
 
             /// <summary>调试。设置处于调试状态，输出详细日志</summary>
             public const String Debug = "Debug";
 
-            /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
-            public const String AppUrl = "AppUrl";
+            /// <summary>可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号</summary>
+            public const String Visible = "Visible";
+
+            /// <summary>自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定</summary>
+            public const String AutoRegister = "AutoRegister";
 
             /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
             public const String AutoRole = "AutoRole";

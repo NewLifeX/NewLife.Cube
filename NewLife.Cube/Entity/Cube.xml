@@ -53,6 +53,35 @@
       <Index Columns="UserId" />
     </Indexes>
   </Table>
+  <Table Name="OAuthConfig" Description="OAuth配置。需要连接的OAuth认证方">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。提供者名称" />
+      <Column Name="NickName" DataType="String" Description="昵称" />
+      <Column Name="Logo" DataType="String" Description="图标" />
+      <Column Name="AppId" DataType="String" Description="应用标识" />
+      <Column Name="Secret" DataType="String" Length="200" Description="应用密钥" />
+      <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
+      <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
+      <Column Name="Scope" DataType="String" Description="授权范围" />
+      <Column Name="AppUrl" DataType="String" Length="200" Description="应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址" />
+      <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="Debug" DataType="Boolean" Description="调试。设置处于调试状态，输出详细日志" />
+      <Column Name="Visible" DataType="Boolean" Description="可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号" />
+      <Column Name="AutoRegister" DataType="Boolean" Description="自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定" />
+      <Column Name="AutoRole" DataType="String" Description="自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开" />
+      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" />
+      <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
+      <Column Name="Remark" DataType="String" Length="500" Description="内容" />
+    </Columns>
+    <Indexes>
+      <Index Columns="Name" Unique="True" />
+    </Indexes>
+  </Table>
   <Table Name="UserToken" Description="用户令牌。授权指定用户访问接口数据，支持有效期" ConnName="Membership">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
@@ -153,33 +182,6 @@
     <Indexes>
       <Index Columns="Category,Key" />
       <Index Columns="CreateTime" />
-    </Indexes>
-  </Table>
-  <Table Name="OAuthConfig" Description="OAuth配置。需要连接的OAuth认证方">
-    <Columns>
-      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-      <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。提供者名称" />
-      <Column Name="NickName" DataType="String" Description="昵称" />
-      <Column Name="Logo" DataType="String" Description="图标" />
-      <Column Name="AppId" DataType="String" Description="应用标识" />
-      <Column Name="Secret" DataType="String" Length="200" Description="应用密钥" />
-      <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
-      <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
-      <Column Name="Scope" DataType="String" Description="授权范围" />
-      <Column Name="Enable" DataType="Boolean" Description="启用" />
-      <Column Name="Debug" DataType="Boolean" Description="调试。设置处于调试状态，输出详细日志" />
-      <Column Name="AppUrl" DataType="String" Length="200" Description="应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址" />
-      <Column Name="AutoRole" DataType="String" Description="自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开" />
-      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
-      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
-      <Column Name="CreateIP" DataType="String" Description="创建地址" />
-      <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
-      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
-      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
-      <Column Name="Remark" DataType="String" Length="500" Description="内容" />
-    </Columns>
-    <Indexes>
-      <Index Columns="Name" Unique="True" />
     </Indexes>
   </Table>
   <Table Name="ModelTable" Description="模型表。实体表模型">

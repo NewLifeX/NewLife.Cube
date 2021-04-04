@@ -220,16 +220,16 @@ namespace NewLife.Cube.Controllers
                 if (uc.ID == 0) uc = prov.GetConnect(client);
                 uc.Fill(client);
 
-                log.ConnectId = uc.ID;
-                log.UserId = uc.UserID;
-                log.Success = true;
-                log.SaveAsync();
-
 #if __CORE__
                 var url = prov.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind");
 #else
                 var url = prov.OnLogin(client, HttpContext, uc, log.Action == "Bind");
 #endif
+
+                log.ConnectId = uc.ID;
+                log.UserId = uc.UserID;
+                log.Success = true;
+                log.SaveAsync();
 
                 // 标记登录提供商
                 Session["Cube_Sso"] = client.Name;

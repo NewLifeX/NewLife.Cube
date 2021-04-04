@@ -8,6 +8,7 @@ using XCode.Membership;
 using System.IO;
 using System.Linq;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Entity;
 #if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -167,7 +168,7 @@ namespace NewLife.Web
             Uri uri = null;
 
             // 配置
-            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
+            var ms = OAuthConfig.GetValids();
             var mi = ms.FirstOrDefault(e => !e.AppUrl.IsNullOrEmpty());
             if (mi != null) uri = new Uri(mi.AppUrl);
 

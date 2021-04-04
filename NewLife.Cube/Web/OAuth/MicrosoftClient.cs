@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Web;
+using NewLife.Cube.Entity;
 using NewLife.Http;
 
 namespace NewLife.Web.OAuth
@@ -37,7 +38,7 @@ namespace NewLife.Web.OAuth
 
         /// <summary>应用参数</summary>
         /// <param name="mi"></param>
-        public override void Apply(NewLife.Cube.Entity.OAuthConfig mi)
+        public override void Apply(OAuthConfig mi)
         {
             base.Apply(mi);
 

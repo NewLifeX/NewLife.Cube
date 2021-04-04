@@ -99,15 +99,29 @@ namespace NewLife.Cube.Entity
 
                 Enable = true,
                 Debug = true,
+                Visible = true,
+                AutoRegister = true,
             };
             entity.Insert();
 
             Add("QQ", "QQ", "/Content/images/logo/QQ.png");
             Add("Github", "Github", "/Content/images/logo/Github.png");
             Add("Baidu", "百度", "/Content/images/logo/Baidu.png");
-            Add("Ding", "钉钉", "/Content/images/logo/Ding.png");
-            Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeixin.png", "snsapi_qrlogin扫码登录，snsapi_auth钉钉内免登，snsapi_login密码登录");
-            Add("Weixin", "微信公众号", "/Content/images/logo/Weixin.png", "snsapi_base静默登录，snsapi_userinfo需要用户关注后授权");
+            Add("Ding", "钉钉", "/Content/images/logo/Ding.png", "snsapi_qrlogin扫码登录，snsapi_auth钉钉内免登，snsapi_login密码登录");
+            Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeixin.png");
+            //Add("Weixin", "微信公众号", "/Content/images/logo/Weixin.png", "snsapi_base静默登录，snsapi_userinfo需要用户关注后授权");
+            var cfg = new OAuthConfig
+            {
+                Name = "Weixin",
+                NickName = "微信公众号",
+                Logo = "/Content/images/logo/Weixin.png",
+                Remark = "snsapi_base静默登录，snsapi_userinfo需要用户关注后授权",
+
+                Visible = false,
+                AutoRegister = true,
+            };
+            cfg.Insert();
+
             Add("OpenWeixin", "微信开放平台", "/Content/images/logo/Weixin.png", "snsapi_login用于扫码登录");
             Add("Microsoft", "微软", "/Content/images/logo/Microsoft.png");
             //Add("Weibo", "微博", "/Content/images/logo/Weibo.png");
@@ -187,6 +201,8 @@ namespace NewLife.Cube.Entity
                 Name = name,
                 NickName = nickName,
                 Logo = logo,
+                Visible = true,
+                AutoRegister = true,
                 Remark = remark,
             };
 
@@ -198,6 +214,10 @@ namespace NewLife.Cube.Entity
         /// <summary>获取全部有效设置</summary>
         /// <returns></returns>
         public static IList<OAuthConfig> GetValids() => FindAllWithCache().Where(e => e.Enable).ToList();
+
+        /// <summary>获取全部有效且可见设置</summary>
+        /// <returns></returns>
+        public static IList<OAuthConfig> GetVisibles() => FindAllWithCache().Where(e => e.Enable && e.Visible).ToList();
         #endregion
     }
 }

@@ -13,7 +13,6 @@ using NewLife.Reflection;
 using NewLife.Security;
 using XCode;
 using NewLife.Threading;
-using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
 using NewLife.Cube.Web.Models;
 
 #if __CORE__
@@ -56,40 +55,40 @@ namespace NewLife.Cube.Web
             LoginUrl = "~/Admin/User/Login";
         }
 
-        static SsoProvider()
-        {
-            // 同步旧版OAuth配置到数据库
-            ThreadPoolX.QueueUserWorkItem(() =>
-            {
-                var set = NewLife.Web.OAuthConfig.Current;
-                if (set.Items != null)
-                {
-                    var list = OAuthConfig.FindAll();
-                    foreach (var item in set.Items)
-                    {
-                        if (item.Name.IsNullOrEmpty() || item.AppID.IsNullOrEmpty()) continue;
+        //static SsoProvider()
+        //{
+        //    // 同步旧版OAuth配置到数据库
+        //    ThreadPoolX.QueueUserWorkItem(() =>
+        //    {
+        //        var set = NewLife.Web.OAuthConfig.Current;
+        //        if (set.Items != null)
+        //        {
+        //            var list = OAuthConfig.FindAll();
+        //            foreach (var item in set.Items)
+        //            {
+        //                if (item.Name.IsNullOrEmpty() || item.AppID.IsNullOrEmpty()) continue;
 
-                        var mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Name));
-                        if (mi == null)
-                        {
-                            mi = new OAuthConfig
-                            {
-                                Name = item.Name,
-                                Enable = true
-                            };
-                            list.Add(mi);
-                        }
+        //                var mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Name));
+        //                if (mi == null)
+        //                {
+        //                    mi = new OAuthConfig
+        //                    {
+        //                        Name = item.Name,
+        //                        Enable = true
+        //                    };
+        //                    list.Add(mi);
+        //                }
 
-                        if (mi.Server.IsNullOrEmpty() && !item.Server.IsNullOrEmpty()) mi.Server = item.Server;
-                        if (mi.AccessServer.IsNullOrEmpty() && !item.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
-                        if (mi.AppId.IsNullOrEmpty() && !item.AppID.IsNullOrEmpty()) mi.AppId = item.AppID;
-                        if (mi.Secret.IsNullOrEmpty() && !item.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
-                        if (mi.Scope.IsNullOrEmpty() && !item.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
-                    }
-                    list.Save();
-                }
-            });
-        }
+        //                if (mi.Server.IsNullOrEmpty() && !item.Server.IsNullOrEmpty()) mi.Server = item.Server;
+        //                if (mi.AccessServer.IsNullOrEmpty() && !item.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
+        //                if (mi.AppId.IsNullOrEmpty() && !item.AppID.IsNullOrEmpty()) mi.AppId = item.AppID;
+        //                if (mi.Secret.IsNullOrEmpty() && !item.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
+        //                if (mi.Scope.IsNullOrEmpty() && !item.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
+        //            }
+        //            list.Save();
+        //        }
+        //    });
+        //}
         #endregion
 
         #region 方法
