@@ -540,6 +540,10 @@ namespace NewLife.Cube.Web
                 var app = sso.Auth(client_id, null);
                 log.AppId = app.ID;
 
+                // 验证应用能力
+                var scopes = app.Scopes?.Split(",");
+                if (scopes == null || !"password".EqualIgnoreCase(scopes)) throw new InvalidOperationException($"应用[{app}]没有使用password密码凭证的能力！");
+
                 IManageUser user = null;
                 if (password.StartsWithIgnoreCase("md5#"))
                 {
