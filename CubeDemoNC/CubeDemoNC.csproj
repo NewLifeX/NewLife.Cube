@@ -4,9 +4,9 @@
     <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
-    <Version>3.8.2021.0403</Version>
-    <FileVersion>3.8.2021.0403</FileVersion>
-    <AssemblyVersion>3.8.*</AssemblyVersion>
+    <Version>3.9.2021.0406</Version>
+    <FileVersion>3.9.2021.0406</FileVersion>
+    <AssemblyVersion>3.9.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
     <UserSecretsId>1396351c-62fe-4836-9e51-9d77859955ad</UserSecretsId>
