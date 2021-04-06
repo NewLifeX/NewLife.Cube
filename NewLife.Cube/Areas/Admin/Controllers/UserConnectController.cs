@@ -38,6 +38,13 @@ namespace NewLife.Cube.Admin.Controllers
                 df.Url = "User?id={UserID}";
             }
 
+            {
+                var df = ListFields.AddDataField("OAuthLog", "Enable");
+                df.Header = "OAuth日志";
+                df.DisplayName = "OAuth日志";
+                df.Url = "OAuthLog?connectId={ID}";
+            }
+
             //// 插入一列
             //{
             //    var df = ListFields.AddDataField("用户信息", "CreateUserID");

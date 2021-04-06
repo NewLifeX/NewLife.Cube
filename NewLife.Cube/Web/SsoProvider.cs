@@ -13,7 +13,6 @@ using NewLife.Reflection;
 using NewLife.Security;
 using XCode;
 using NewLife.Threading;
-using OAuthConfig = NewLife.Cube.Entity.OAuthConfig;
 using NewLife.Cube.Web.Models;
 
 #if __CORE__
@@ -56,40 +55,40 @@ namespace NewLife.Cube.Web
             LoginUrl = "~/Admin/User/Login";
         }
 
-        static SsoProvider()
-        {
-            // 同步旧版OAuth配置到数据库
-            ThreadPoolX.QueueUserWorkItem(() =>
-            {
-                var set = NewLife.Web.OAuthConfig.Current;
-                if (set.Items != null)
-                {
-                    var list = OAuthConfig.FindAll();
-                    foreach (var item in set.Items)
-                    {
-                        if (item.Name.IsNullOrEmpty() || item.AppID.IsNullOrEmpty()) continue;
+        //static SsoProvider()
+        //{
+        //    // 同步旧版OAuth配置到数据库
+        //    ThreadPoolX.QueueUserWorkItem(() =>
+        //    {
+        //        var set = NewLife.Web.OAuthConfig.Current;
+        //        if (set.Items != null)
+        //        {
+        //            var list = OAuthConfig.FindAll();
+        //            foreach (var item in set.Items)
+        //            {
+        //                if (item.Name.IsNullOrEmpty() || item.AppID.IsNullOrEmpty()) continue;
 
-                        var mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Name));
-                        if (mi == null)
-                        {
-                            mi = new OAuthConfig
-                            {
-                                Name = item.Name,
-                                Enable = true
-                            };
-                            list.Add(mi);
-                        }
+        //                var mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Name));
+        //                if (mi == null)
+        //                {
+        //                    mi = new OAuthConfig
+        //                    {
+        //                        Name = item.Name,
+        //                        Enable = true
+        //                    };
+        //                    list.Add(mi);
+        //                }
 
-                        if (mi.Server.IsNullOrEmpty() && !item.Server.IsNullOrEmpty()) mi.Server = item.Server;
-                        if (mi.AccessServer.IsNullOrEmpty() && !item.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
-                        if (mi.AppId.IsNullOrEmpty() && !item.AppID.IsNullOrEmpty()) mi.AppId = item.AppID;
-                        if (mi.Secret.IsNullOrEmpty() && !item.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
-                        if (mi.Scope.IsNullOrEmpty() && !item.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
-                    }
-                    list.Save();
-                }
-            });
-        }
+        //                if (mi.Server.IsNullOrEmpty() && !item.Server.IsNullOrEmpty()) mi.Server = item.Server;
+        //                if (mi.AccessServer.IsNullOrEmpty() && !item.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
+        //                if (mi.AppId.IsNullOrEmpty() && !item.AppID.IsNullOrEmpty()) mi.AppId = item.AppID;
+        //                if (mi.Secret.IsNullOrEmpty() && !item.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
+        //                if (mi.Scope.IsNullOrEmpty() && !item.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
+        //            }
+        //            list.Save();
+        //        }
+        //    });
+        //}
         #endregion
 
         #region 方法
@@ -185,8 +184,6 @@ namespace NewLife.Cube.Web
             var httpContext = req.RequestContext.HttpContext;
             var ip = httpContext.GetUserHost();
 #endif
-            //if (req != null) forceBind = req.Get("sso_action").EqualIgnoreCase("bind");
-            //if (req != null) forceBind = req.Get("state").EndsWithIgnoreCase("_bind");
 
             // 可能因为初始化顺序的问题，导致前面没能给Provider赋值
             var prv = Provider;
@@ -195,6 +192,20 @@ namespace NewLife.Cube.Web
             // 检查绑定，新用户的uc.UserID为0
             var user = prv.FindByID(uc.UserID);
             if (forceBind || user == null || !uc.Enable) user = OnBind(uc, client);
+
+            try
+            {
+                uc.UpdateTime = DateTime.Now;
+                uc.Save();
+            }
+            catch (Exception ex)
+            {
+                //为了防止某些特殊数据导致的无法正常登录，把所有异常记录到日志当中。忽略错误
+                XTrace.WriteException(ex);
+            }
+
+            // 如果应用不支持自动注册，此时将得不到用户，跳回去登录页面
+            if (user == null) return null;
 
             // 填充昵称等数据
             Fill(client, user);
@@ -209,20 +220,9 @@ namespace NewLife.Cube.Web
             }
             if (user is IEntity entity) entity.Update();
 
-            try
-            {
-                uc.UpdateTime = DateTime.Now;
-                uc.Save();
-            }
-            catch (Exception ex)
-            {
-                //为了防止某些特殊数据导致的无法正常登录，把所有异常记录到日志当中。忽略错误
-                XTrace.WriteException(ex);
-            }
-
             // 写日志
             var log = LogProvider.Provider;
-            log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName}]登录", user.ID, user + "");
+            log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName ?? client.NickName}]登录", user.ID, user + "");
 
             if (!user.Enable) throw new InvalidOperationException($"用户[{user}]已禁用！");
 
@@ -349,6 +349,7 @@ namespace NewLife.Cube.Web
         /// <param name="client"></param>
         public virtual IManageUser OnBind(UserConnect uc, OAuthClient client)
         {
+            var log = LogProvider.Provider;
             var prv = Provider;
             var mode = "";
 
@@ -356,13 +357,37 @@ namespace NewLife.Cube.Web
             var user = prv.Current;
             if (user == null)
             {
+                // 匹配UnionId
+                if (user == null && !client.UnionID.IsNullOrEmpty())
+                {
+                    var list = UserConnect.FindAllByUnionId(client.UnionID);
+
+                    //// 排除当前项，选择登录次数最多的用户
+                    //list = list.Where(e => e.ID != uc.ID && e.UserID > 0).ToList();
+                    // 选择登录次数最多的用户
+                    var ids = list.Where(e => e.Enable && e.UserID > 0).Select(e => e.UserID).Distinct().ToArray();
+                    var users = ids.Select(e => User.FindByID(e)).Where(e => e != null).ToList();
+                    if (users.Count > 0)
+                    {
+                        mode = "UnionID";
+                        user = users.OrderByDescending(e => e.Logins).FirstOrDefault();
+                    }
+                }
+
                 var set = Setting.Current;
-                if (!set.AutoRegister) throw new InvalidOperationException("绑定要求本地已登录！");
+                var cfg = OAuthConfig.FindByName(client.Name);
+                //if (!cfg.AutoRegister) throw new InvalidOperationException($"绑定[{cfg}]要求本地已登录！");
+                if (user == null && !cfg.AutoRegister)
+                {
+                    log?.WriteLog(typeof(User), "SSO登录", false, $"无法找到[{client.Name}]的[{client.NickName}]在本地的绑定，准备进入登录页面，利用其它登录方式后再绑定", 0, user + "");
+
+                    return null;
+                }
 
                 // 先找用户名，如果存在，就加上提供者前缀，直接覆盖
                 var name = client.UserName;
                 if (name.IsNullOrEmpty()) name = client.NickName;
-                if (!name.IsNullOrEmpty())
+                if (user == null && !name.IsNullOrEmpty())
                 {
                     // 强制绑定本地用户时，没有前缀
                     if (set.ForceBindUser)
@@ -433,10 +458,39 @@ namespace NewLife.Cube.Web
             uc.Enable = true;
 
             // 写日志
-            var log = LogProvider.Provider;
-            log?.WriteLog(typeof(User), "绑定", true, $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.UserName}]", user.ID, user + "");
+            log?.WriteLog(typeof(User), "绑定", true, $"[{user}]依据[{mode}]绑定到[{client.Name}]的[{client.NickName}]", user.ID, user + "");
 
             return user;
+        }
+
+        /// <summary>登录后绑定当前用户</summary>
+        public virtual OAuthLog BindAfterLogin(Int64 oauthId)
+        {
+            var prv = Provider;
+            var mode = nameof(BindAfterLogin);
+
+            var user = prv.Current;
+            if (user == null) return null;
+
+            var log = OAuthLog.FindById(oauthId);
+            if (log == null) return null;
+
+            var uc = UserConnect.FindByID(log.ConnectId);
+            if (uc == null) return null;
+
+            uc.UserID = user.ID;
+            uc.Enable = true;
+            uc.UpdateTime = DateTime.Now;
+            uc.Update();
+
+            log.UserId = user.ID;
+            log.SaveAsync();
+
+            // 写日志
+            LogProvider.Provider?.WriteLog(typeof(User), "绑定", true, $"[{user}]依据[{mode}]绑定到[{uc.Provider}]的[{uc.NickName}]", user.ID, user + "");
+
+            return log;
+
         }
 
         /// <summary>注销</summary>

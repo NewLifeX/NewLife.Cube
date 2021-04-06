@@ -4,8 +4,8 @@
     <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
-    <Version>3.8.2021.0101</Version>
-    <FileVersion>3.8.2021.0101</FileVersion>
+    <Version>3.8.2021.0403</Version>
+    <FileVersion>3.8.2021.0403</FileVersion>
     <AssemblyVersion>3.8.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
@@ -19,8 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.3" />
-    <PackageReference Include="NewLife.Stardust" Version="1.4.2021.322-beta3" />
+    <PackageReference Include="NewLife.Stardust" Version="1.4.2021.403-rc3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web;
+using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
@@ -122,7 +123,7 @@ namespace NewLife.Web
 
             if (name.IsNullOrEmpty())
             {
-                var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
+                var ms = OAuthConfig.GetValids();
                 if (ms.Count > 0) name = ms[0].Name;
             }
             if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name), "未正确配置OAuth");
@@ -146,7 +147,7 @@ namespace NewLife.Web
         /// <param name="name"></param>
         public void Apply(String name)
         {
-            var ms = NewLife.Cube.Entity.OAuthConfig.GetValids();
+            var ms = OAuthConfig.GetValids();
             if (ms.Count == 0) throw new InvalidOperationException("未设置OAuth服务端");
 
             var mi = ms.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
@@ -162,7 +163,7 @@ namespace NewLife.Web
 
         /// <summary>应用参数设置</summary>
         /// <param name="mi"></param>
-        public virtual void Apply(NewLife.Cube.Entity.OAuthConfig mi)
+        public virtual void Apply(OAuthConfig mi)
         {
             Name = mi.Name;
             if (!mi.Server.IsNullOrEmpty()) Server = mi.Server;
@@ -361,7 +362,7 @@ namespace NewLife.Web
         /// <param name="user"></param>
         public virtual void Fill(IManageUser user)
         {
-            if (user.Name.IsNullOrEmpty()) user.Name = UserName ?? OpenID;
+            if (user.Name.IsNullOrEmpty()) user.Name = UserName ?? UnionID ?? OpenID;
             if (user.NickName.IsNullOrEmpty()) user.NickName = NickName;
 
             //// 头像
@@ -417,6 +418,7 @@ namespace NewLife.Web
                .Replace("{token}", HttpUtility.UrlEncode(AccessToken + ""))
                .Replace("{code}", HttpUtility.UrlEncode(Code + ""))
                .Replace("{openid}", HttpUtility.UrlEncode(OpenID + ""))
+               .Replace("{unionid}", HttpUtility.UrlEncode(UnionID + ""))
                .Replace("{redirect}", HttpUtility.UrlEncode(_redirect + ""))
                .Replace("{scope}", HttpUtility.UrlEncode(Scope + ""))
                .Replace("{state}", HttpUtility.UrlEncode(_state + ""));
@@ -438,12 +440,23 @@ namespace NewLife.Web
             // Json格式转为名值字典
             if (p1 >= 0 && p2 > p1)
             {
-                dic = new JsonParser(html).Decode().ToDictionary().ToDictionary(e => e.Key.ToLower(), e => e.Value + "", StringComparer.OrdinalIgnoreCase);
+                var js = JsonParser.Decode(html);
+                dic = new Dictionary<String, String>();
+                foreach (var item in js)
+                {
+                    var v = item.Value;
+                    if (v is IList<Object> list)
+                        dic[item.Key] = "[" + list.Join() + "]";
+                    else if (v is IDictionary<String, Object> dic2)
+                        dic[item.Key] = dic2.ToJson();
+                    else if (v != null)
+                        dic[item.Key] = v + "";
+                }
             }
             // Url格式转为名值字典
             else if (html.Contains("=") && html.Contains("&"))
             {
-                dic = html.SplitAsDictionary("=", "&").ToDictionary(e => e.Key.ToLower(), e => e.Value + "", StringComparer.OrdinalIgnoreCase);
+                dic = html.SplitAsDictionary("=", "&");
             }
 
             return dic.ToNullable(StringComparer.OrdinalIgnoreCase);
@@ -546,7 +559,7 @@ namespace NewLife.Web
             if (dic.TryGetValue("Avatar", out str)) Avatar = str.Trim();
 
             // 获取用户信息出错时抛出异常
-            if (dic.TryGetValue("error", out str)) throw new InvalidOperationException(str);
+            if (dic.TryGetValue("error", out str) || dic.TryGetValue("errmsg", out str)) throw new InvalidOperationException(str);
         }
         #endregion
 

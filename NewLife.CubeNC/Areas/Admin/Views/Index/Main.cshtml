@@ -203,8 +203,8 @@
                     <td>@item.Title</td>
                     <td>@item.FileVersion</td>
                     <td>@item.Version</td>
-                    <td>@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
-                    <td>@item.Description</td>
+                    <td title="@item.Version">@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
+                    <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@item.Description">@item.Description</td>
                 </tr>
             }
         </tbody>

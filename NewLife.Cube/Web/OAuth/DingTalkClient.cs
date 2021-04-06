@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Remoting;
 using NewLife.Serialization;
@@ -45,7 +46,7 @@ namespace NewLife.Cube.Web
 
         /// <summary>应用参数</summary>
         /// <param name="mi"></param>
-        public override void Apply(NewLife.Cube.Entity.OAuthConfig mi)
+        public override void Apply(OAuthConfig mi)
         {
             base.Apply(mi);
 

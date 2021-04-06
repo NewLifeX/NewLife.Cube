@@ -9,8 +9,8 @@
     <Description>魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2021 NewLife</Copyright>
-    <Version>3.8.2021.0329-rc2</Version>
-    <FileVersion>3.8.2021.0329</FileVersion>
+    <Version>3.8.2021.0403-rc3</Version>
+    <FileVersion>3.8.2021.0403</FileVersion>
     <AssemblyVersion>3.8.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\Bin</OutputPath>
@@ -57,8 +57,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.10.2021.329-rc2" />
-    <PackageReference Include="NewLife.XCode" Version="10.1.2021.329-rc2" />
+    <PackageReference Include="NewLife.Core" Version="8.10.2021.403-rc3" />
+    <PackageReference Include="NewLife.XCode" Version="10.1.2021.403-rc3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +76,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelColumnController.cs" Link="Areas\Admin\Controllers\ModelColumnController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelTableController.cs" Link="Areas\Admin\Controllers\ModelTableController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthConfigController.cs" Link="Areas\Admin\Controllers\OAuthConfigController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthLogController.cs" Link="Areas\Admin\Controllers\OAuthLogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ParameterController.cs" Link="Areas\Admin\Controllers\ParameterController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Controllers\RoleController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
@@ -107,6 +108,8 @@
     <Compile Include="..\NewLife.Cube\Controllers\HomeController.cs" Link="Controllers\HomeController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\ODataController.cs" Link="Controllers\ODataController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\SsoController.cs" Link="Controllers\SsoController.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.cs" Link="Entity\OAuth配置.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs" Link="Entity\应用日志.Biz.cs" />
@@ -141,13 +144,13 @@
     <Compile Include="..\NewLife.Cube\Web\Models\TokenInfo.cs" Link="Web\Models\TokenInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\UserInfo.cs" Link="Web\Models\UserInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthClient.cs" Link="Web\OAuthClient.cs" />
-    <Compile Include="..\NewLife.Cube\Web\OAuthConfig.cs" Link="Web\OAuthConfig.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthServer.cs" Link="Web\OAuthServer.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\BaiduClient.cs" Link="Web\OAuth\BaiduClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\DingTalkClient.cs" Link="Web\OAuth\DingTalkClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\GithubClient.cs" Link="Web\OAuth\GithubClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\MicrosoftClient.cs" Link="Web\OAuth\MicrosoftClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\OpenWeixinClient.cs" Link="Web\OAuth\OpenWeixinClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\QQClient.cs" Link="Web\OAuth\QQClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\QyWeiXin.cs" Link="Web\OAuth\QyWeiXin.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\TaobaoClient.cs" Link="Web\OAuth\TaobaoClient.cs" />

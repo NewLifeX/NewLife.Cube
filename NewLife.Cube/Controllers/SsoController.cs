@@ -11,6 +11,7 @@ using NewLife.Collections;
 using System.Security.Cryptography;
 using NewLife.Security;
 using NewLife.Cube.Web.Models;
+using System.Web;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -58,12 +59,12 @@ namespace NewLife.Cube.Controllers
         /// <summary>单点登录服务端</summary>
         public static OAuthServer OAuth { get; set; }
 
-        /// <summary>存储最近用过的code，避免用户刷新页面</summary>
-        private static DictionaryCache<String, String> _codeCache = new DictionaryCache<string, string>()
-        {
-            Expire = 600,
-            Period = 60
-        };
+        ///// <summary>存储最近用过的code，避免用户刷新页面</summary>
+        //private static DictionaryCache<String, String> _codeCache = new DictionaryCache<string, string>()
+        //{
+        //    Expire = 600,
+        //    Period = 60
+        //};
 
         static SsoController()
         {
@@ -110,13 +111,27 @@ namespace NewLife.Cube.Controllers
             var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
             // 请求来源，前后端分离时传front-end，重定向会带上token放到锚点
             var source = GetRequest("source");
-            if (state.IsNullOrEmpty() && !returnUrl.IsNullOrEmpty()) state = $"r={returnUrl}";
-            if (!source.IsNullOrEmpty())
-            {
-                state += (state.IsNullOrEmpty() ? "" : "&") + $"s={source}";
-            }
+            //if (state.IsNullOrEmpty() && !returnUrl.IsNullOrEmpty()) state = $"r={returnUrl}";
+            //if (!source.IsNullOrEmpty())
+            //{
+            //    state += (state.IsNullOrEmpty() ? "" : "&") + $"s={source}";
+            //}
+            //state = HttpUtility.UrlEncode(state);
 
-            return client.Authorize(redirect, state);
+            var log = new OAuthLog
+            {
+                Provider = client.Name,
+                Action = "Login",
+                Success = false,
+                ResponseType = client.ResponseType,
+                Scope = client.Scope,
+                State = state,
+                RedirectUri = returnUrl,
+                Source = source
+            };
+            log.Insert();
+
+            return client.Authorize(redirect, log.Id + "");
         }
 
         /// <summary>第三方登录完成后跳转到此</summary>
@@ -136,7 +151,9 @@ namespace NewLife.Cube.Controllers
 
             client.WriteLog("LoginInfo name={0} code={1} state={2} {3}", name, code, state, Request.GetRawUrl());
 
-            var ds = state.SplitAsDictionary("=", "&");
+            //var ds = state.SplitAsDictionary("=", "&");
+            var log = OAuthLog.FindById(state.ToLong());
+            if (log == null) throw new InvalidOperationException("无效state=" + state);
 
             //// 无法拿到code时，跳回去再来
             //if (code.IsNullOrEmpty())
@@ -156,7 +173,8 @@ namespace NewLife.Cube.Controllers
             client.Authorize(redirect);
 
             //var returnUrl = prov.GetReturnUrl(Request, false);
-            var returnUrl = ds["r"];
+            //var returnUrl = ds["r"];
+            var returnUrl = log.RedirectUri;
 
             try
             {
@@ -172,8 +190,14 @@ namespace NewLife.Cube.Controllers
                         XTrace.WriteLine(Request.GetRawUrl() + "");
                         if (!html.IsNullOrEmpty()) XTrace.WriteLine(html);
 
+                        log.Success = false;
+                        log.Remark = html;
+
                         throw new InvalidOperationException($"内部错误，无法获取令牌 code={code}");
                     }
+
+                    log.AccessToken = client.AccessToken;
+                    log.RefreshToken = client.RefreshToken;
                 }
 
                 //// 特殊处理钉钉
@@ -197,18 +221,39 @@ namespace NewLife.Cube.Controllers
                 uc.Fill(client);
 
 #if __CORE__
-                var url = prov.OnLogin(client, HttpContext.RequestServices, uc, ds["a"] == "bind");
+                var url = prov.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind");
 #else
-                var url = prov.OnLogin(client, HttpContext, uc, ds["a"] == "bind");
+                var url = prov.OnLogin(client, HttpContext, uc, log.Action == "Bind");
 #endif
+
+                log.ConnectId = uc.ID;
+                log.UserId = uc.UserID;
+                log.Success = true;
+                log.Update();
 
                 // 标记登录提供商
                 Session["Cube_Sso"] = client.Name;
 
+                // 如果验证成功但登录失败，直接跳走
+                if (url.IsNullOrEmpty())
+                {
+                    Session["Cube_OAuthId"] = log.Id;
+                    return Redirect("/Admin/User/Login?autologin=0".AppendReturn(returnUrl));
+                }
+
+                // 登录后自动绑定
+                var logId = Session["Cube_OAuthId"].ToLong();
+                if (logId > 0 && logId != log.Id)
+                {
+                    Session["Cube_OAuthId"] = null;
+                    var log2 = Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
+                    if (log2 != null && log2.Success && !log2.RedirectUri.IsNullOrEmpty()) return Redirect(log2.RedirectUri);
+                }
+
                 if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
                 // 子系统颁发token给前端
-                if (ds["s"] == "front-end")
+                if (log.Source == "front-end")
                 {
                     var jwt = ManagerProviderHelper.GetJwt();
                     jwt.Expire = DateTime.Now.Add(TimeSpan.FromHours(2));
@@ -221,7 +266,11 @@ namespace NewLife.Cube.Controllers
             }
             catch (Exception ex)
             {
-                XTrace.WriteException(ex.GetTrue());
+                if (log.Remark.IsNullOrEmpty()) log.Remark = ex.ToString();
+                log.Success = false;
+                log.SaveAsync();
+
+                XTrace.WriteException(ex);
 
                 throw;
             }
@@ -298,8 +347,20 @@ namespace NewLife.Cube.Controllers
             client.Init(GetUserAgent());
 
             var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
-            var state = $"r={url}&a=bind";
-            url = client.Authorize(redirect, state);
+
+            var log = new OAuthLog
+            {
+                Provider = client.Name,
+                Action = "Bind",
+                Success = false,
+                ResponseType = client.ResponseType,
+                Scope = client.Scope,
+                State = null,
+                RedirectUri = url,
+            };
+            log.Insert();
+
+            url = client.Authorize(redirect, log.Id + "");
 
             return Redirect(url);
         }

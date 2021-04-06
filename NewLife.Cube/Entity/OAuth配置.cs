@@ -60,11 +60,11 @@ namespace NewLife.Cube.Entity
         public String AppId { get => _AppId; set { if (OnPropertyChanging("AppId", value)) { _AppId = value; OnPropertyChanged("AppId"); } } }
 
         private String _Secret;
-        /// <summary>应用密钥。</summary>
+        /// <summary>应用密钥</summary>
         [DisplayName("应用密钥")]
-        [Description("应用密钥。")]
-        [DataObjectField(false, false, true, 50)]
-        [BindColumn("Secret", "应用密钥。", "")]
+        [Description("应用密钥")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("Secret", "应用密钥", "")]
         public String Secret { get => _Secret; set { if (OnPropertyChanging("Secret", value)) { _Secret = value; OnPropertyChanged("Secret"); } } }
 
         private String _Server;
@@ -91,6 +91,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("Scope", "授权范围", "")]
         public String Scope { get => _Scope; set { if (OnPropertyChanging("Scope", value)) { _Scope = value; OnPropertyChanged("Scope"); } } }
 
+        private String _AppUrl;
+        /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+        [DisplayName("应用地址")]
+        [Description("应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("AppUrl", "应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址", "")]
+        public String AppUrl { get => _AppUrl; set { if (OnPropertyChanging("AppUrl", value)) { _AppUrl = value; OnPropertyChanged("AppUrl"); } } }
+
         private Boolean _Enable;
         /// <summary>启用</summary>
         [DisplayName("启用")]
@@ -107,13 +115,21 @@ namespace NewLife.Cube.Entity
         [BindColumn("Debug", "调试。设置处于调试状态，输出详细日志", "")]
         public Boolean Debug { get => _Debug; set { if (OnPropertyChanging("Debug", value)) { _Debug = value; OnPropertyChanged("Debug"); } } }
 
-        private String _AppUrl;
-        /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
-        [DisplayName("应用地址")]
-        [Description("应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址")]
-        [DataObjectField(false, false, true, 200)]
-        [BindColumn("AppUrl", "应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址", "")]
-        public String AppUrl { get => _AppUrl; set { if (OnPropertyChanging("AppUrl", value)) { _AppUrl = value; OnPropertyChanged("AppUrl"); } } }
+        private Boolean _Visible;
+        /// <summary>可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号</summary>
+        [DisplayName("可见")]
+        [Description("可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("Visible", "可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号", "")]
+        public Boolean Visible { get => _Visible; set { if (OnPropertyChanging("Visible", value)) { _Visible = value; OnPropertyChanged("Visible"); } } }
+
+        private Boolean _AutoRegister;
+        /// <summary>自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定</summary>
+        [DisplayName("自动注册")]
+        [Description("自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("AutoRegister", "自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定", "")]
+        public Boolean AutoRegister { get => _AutoRegister; set { if (OnPropertyChanging("AutoRegister", value)) { _AutoRegister = value; OnPropertyChanged("AutoRegister"); } } }
 
         private String _AutoRole;
         /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
@@ -122,6 +138,14 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, true, 50)]
         [BindColumn("AutoRole", "自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开", "")]
         public String AutoRole { get => _AutoRole; set { if (OnPropertyChanging("AutoRole", value)) { _AutoRole = value; OnPropertyChanged("AutoRole"); } } }
+
+        private Int32 _Sort;
+        /// <summary>排序。较大者在前面</summary>
+        [DisplayName("排序")]
+        [Description("排序。较大者在前面")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("Sort", "排序。较大者在前面", "")]
+        public Int32 Sort { get => _Sort; set { if (OnPropertyChanging("Sort", value)) { _Sort = value; OnPropertyChanged("Sort"); } } }
 
         private Int32 _CreateUserID;
         /// <summary>创建者</summary>
@@ -199,10 +223,13 @@ namespace NewLife.Cube.Entity
                     case "Server": return _Server;
                     case "AccessServer": return _AccessServer;
                     case "Scope": return _Scope;
+                    case "AppUrl": return _AppUrl;
                     case "Enable": return _Enable;
                     case "Debug": return _Debug;
-                    case "AppUrl": return _AppUrl;
+                    case "Visible": return _Visible;
+                    case "AutoRegister": return _AutoRegister;
                     case "AutoRole": return _AutoRole;
+                    case "Sort": return _Sort;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
                     case "CreateIP": return _CreateIP;
@@ -226,10 +253,13 @@ namespace NewLife.Cube.Entity
                     case "Server": _Server = Convert.ToString(value); break;
                     case "AccessServer": _AccessServer = Convert.ToString(value); break;
                     case "Scope": _Scope = Convert.ToString(value); break;
+                    case "AppUrl": _AppUrl = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
                     case "Debug": _Debug = value.ToBoolean(); break;
-                    case "AppUrl": _AppUrl = Convert.ToString(value); break;
+                    case "Visible": _Visible = value.ToBoolean(); break;
+                    case "AutoRegister": _AutoRegister = value.ToBoolean(); break;
                     case "AutoRole": _AutoRole = Convert.ToString(value); break;
+                    case "Sort": _Sort = value.ToInt(); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -262,7 +292,7 @@ namespace NewLife.Cube.Entity
             /// <summary>应用标识</summary>
             public static readonly Field AppId = FindByName("AppId");
 
-            /// <summary>应用密钥。</summary>
+            /// <summary>应用密钥</summary>
             public static readonly Field Secret = FindByName("Secret");
 
             /// <summary>服务地址</summary>
@@ -274,17 +304,26 @@ namespace NewLife.Cube.Entity
             /// <summary>授权范围</summary>
             public static readonly Field Scope = FindByName("Scope");
 
+            /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+            public static readonly Field AppUrl = FindByName("AppUrl");
+
             /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
 
             /// <summary>调试。设置处于调试状态，输出详细日志</summary>
             public static readonly Field Debug = FindByName("Debug");
 
-            /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
-            public static readonly Field AppUrl = FindByName("AppUrl");
+            /// <summary>可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号</summary>
+            public static readonly Field Visible = FindByName("Visible");
+
+            /// <summary>自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定</summary>
+            public static readonly Field AutoRegister = FindByName("AutoRegister");
 
             /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
             public static readonly Field AutoRole = FindByName("AutoRole");
+
+            /// <summary>排序。较大者在前面</summary>
+            public static readonly Field Sort = FindByName("Sort");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -328,7 +367,7 @@ namespace NewLife.Cube.Entity
             /// <summary>应用标识</summary>
             public const String AppId = "AppId";
 
-            /// <summary>应用密钥。</summary>
+            /// <summary>应用密钥</summary>
             public const String Secret = "Secret";
 
             /// <summary>服务地址</summary>
@@ -340,17 +379,26 @@ namespace NewLife.Cube.Entity
             /// <summary>授权范围</summary>
             public const String Scope = "Scope";
 
+            /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+            public const String AppUrl = "AppUrl";
+
             /// <summary>启用</summary>
             public const String Enable = "Enable";
 
             /// <summary>调试。设置处于调试状态，输出详细日志</summary>
             public const String Debug = "Debug";
 
-            /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
-            public const String AppUrl = "AppUrl";
+            /// <summary>可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号</summary>
+            public const String Visible = "Visible";
+
+            /// <summary>自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定</summary>
+            public const String AutoRegister = "AutoRegister";
 
             /// <summary>自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开</summary>
             public const String AutoRole = "AutoRole";
+
+            /// <summary>排序。较大者在前面</summary>
+            public const String Sort = "Sort";
 
             /// <summary>创建者</summary>
             public const String CreateUserID = "CreateUserID";

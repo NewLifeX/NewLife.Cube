@@ -3,7 +3,11 @@ using System.Collections.Generic;
 
 namespace NewLife.Web.OAuth
 {
-    /// <summary>身份验证提供者</summary>
+    /// <summary>微信公众号</summary>
+    /// <remarks>
+    /// 文档 https://developers.weixin.qq.com/doc/offiaccount/OA_Web_Apps/Wechat_webpage_authorization.html
+    /// 微信开放平台和微信公众号是两套接口体系，前者主要用于扫码登录，后者主要用于微信客户端（含手机和PC）免登
+    /// </remarks>
     public class WeixinClient : OAuthClient
     {
         /// <summary>实例化</summary>
@@ -11,44 +15,16 @@ namespace NewLife.Web.OAuth
         {
             Server = "https://open.weixin.qq.com/connect/";
 
-            AuthUrl = "qrconnect?response_type={response_type}&appid={key}&redirect_uri={redirect}&state={state}&scope={scope}";
-            AccessUrl = "https://api.weixin.qq.com/sns/oauth2/access_token?grant_type=authorization_code&appid={key}&secret={secret}&code={code}";
+            AuthUrl = "oauth2/authorize?appid={key}&redirect_uri={redirect}&response_type={response_type}&scope={scope}&state={state}#wechat_redirect";
+            AccessUrl = "https://api.weixin.qq.com/sns/oauth2/access_token?appid={key}&secret={secret}&code={code}&grant_type=authorization_code";
             UserUrl = "https://api.weixin.qq.com/sns/userinfo?access_token={token}&openid={openid}&lang=zh_CN";
 
-            Scope = "snsapi_login";
-        }
+            // 获取用户基本信息(UnionID机制)，这里使用普通access_token，而不是OAuth2.0的网页access_token
+            //UserUrl = "https://api.weixin.qq.com/cgi-bin/user/info?access_token={token}&openid={openid}&lang=zh_CN";
 
-        /// <summary>应用参数</summary>
-        /// <param name="mi"></param>
-        public override void Apply(NewLife.Cube.Entity.OAuthConfig mi)
-        {
-            base.Apply(mi);
-
-            SetMode(Scope);
-        }
-
-        /// <summary>设置工作模式</summary>
-        /// <param name="mode"></param>
-        public virtual void SetMode(String mode)
-        {
-            switch (mode)
-            {
-                // 扫码登录
-                case "snsapi_login":
-                    AuthUrl = "qrconnect?response_type={response_type}&appid={key}&redirect_uri={redirect}&state={state}&scope={scope}#wechat_redirect";
-                    Scope = mode;
-                    break;
-                // 静默授权，用户无感知
-                case "snsapi_base":
-                    AuthUrl = "oauth2/authorize?response_type={response_type}&appid={key}&redirect_uri={redirect}&state={state}&scope={scope}#wechat_redirect";
-                    Scope = mode;
-                    break;
-                // 授权需要用户手动同意
-                case "snsapi_userinfo":
-                    AuthUrl = "oauth2/authorize?response_type={response_type}&appid={key}&redirect_uri={redirect}&state={state}&scope={scope}#wechat_redirect";
-                    Scope = mode;
-                    break;
-            }
+            // snsapi_base 静默授权，用户无感知
+            // snsapi_userinfo 授权需要用户手动同意
+            Scope = "snsapi_base";
         }
 
         /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
@@ -58,16 +34,13 @@ namespace NewLife.Web.OAuth
             !userAgent.IsNullOrEmpty() &&
             (userAgent.Contains(" MicroMessenger/") || userAgent.Contains(" MICROMESSENGER/"));
 
-        /// <summary>针对指定客户端进行初始化</summary>
-        /// <param name="userAgent"></param>
-        public override void Init(String userAgent)
+        /// <summary>只有snsapi_userinfo获取用户信息</summary>
+        /// <returns></returns>
+        public override String GetUserInfo()
         {
-            // 应用内打开时，自动切换为应用内免登
-            if (Support(userAgent))
-            {
-                Scope = "snsapi_base";
-                SetMode(Scope);
-            }
+            if (Scope == "snsapi_base") return null;
+
+            return base.GetUserInfo();
         }
 
         /// <summary>从响应数据中获取信息</summary>

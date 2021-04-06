@@ -52,6 +52,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("OpenID", "身份标识。用户名、OpenID", "")]
         public String OpenID { get => _OpenID; set { if (OnPropertyChanging("OpenID", value)) { _OpenID = value; OnPropertyChanged("OpenID"); } } }
 
+        private String _UnionID;
+        /// <summary>全局标识。跨应用统一</summary>
+        [DisplayName("全局标识")]
+        [Description("全局标识。跨应用统一")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("UnionID", "全局标识。跨应用统一", "")]
+        public String UnionID { get => _UnionID; set { if (OnPropertyChanging("UnionID", value)) { _UnionID = value; OnPropertyChanged("UnionID"); } } }
+
         private Int64 _LinkID;
         /// <summary>用户编号。第三方用户编号</summary>
         [DisplayName("用户编号")]
@@ -179,6 +187,7 @@ namespace NewLife.Cube.Entity
                     case "Provider": return _Provider;
                     case "UserID": return _UserID;
                     case "OpenID": return _OpenID;
+                    case "UnionID": return _UnionID;
                     case "LinkID": return _LinkID;
                     case "NickName": return _NickName;
                     case "Avatar": return _Avatar;
@@ -204,6 +213,7 @@ namespace NewLife.Cube.Entity
                     case "Provider": _Provider = Convert.ToString(value); break;
                     case "UserID": _UserID = value.ToInt(); break;
                     case "OpenID": _OpenID = Convert.ToString(value); break;
+                    case "UnionID": _UnionID = Convert.ToString(value); break;
                     case "LinkID": _LinkID = value.ToLong(); break;
                     case "NickName": _NickName = Convert.ToString(value); break;
                     case "Avatar": _Avatar = Convert.ToString(value); break;
@@ -239,6 +249,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>身份标识。用户名、OpenID</summary>
             public static readonly Field OpenID = FindByName("OpenID");
+
+            /// <summary>全局标识。跨应用统一</summary>
+            public static readonly Field UnionID = FindByName("UnionID");
 
             /// <summary>用户编号。第三方用户编号</summary>
             public static readonly Field LinkID = FindByName("LinkID");
@@ -299,6 +312,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>身份标识。用户名、OpenID</summary>
             public const String OpenID = "OpenID";
+
+            /// <summary>全局标识。跨应用统一</summary>
+            public const String UnionID = "UnionID";
 
             /// <summary>用户编号。第三方用户编号</summary>
             public const String LinkID = "LinkID";
