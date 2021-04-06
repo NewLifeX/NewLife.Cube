@@ -216,7 +216,7 @@ namespace NewLife.Cube.Controllers
                     if (!client.UserUrl.IsNullOrEmpty()) client.GetUserInfo();
                 }
 
-                // 如果前面没有取得用户链接，需要再次查询
+                // 如果前面没有取得用户链接，需要再次查询，因为GetUserInfo可能取得了UserName，而前面只有OpenId
                 if (uc.ID == 0) uc = prov.GetConnect(client);
                 uc.Fill(client);
 
