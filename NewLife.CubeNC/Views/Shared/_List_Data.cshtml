@@ -94,7 +94,11 @@
                     if (df != null)
                     {
                         var name = df.GetDisplayName(entity) ?? entity[item.Name];
-                        if (df.Url.IsNullOrEmpty())
+                        if (df.DataVisible != null && !df.DataVisible(entity, item))
+                        {
+                            <td></td>
+                        }
+                        else if (df.Url.IsNullOrEmpty())
                         {
                             <td class="text-center" title="@df.Title">@name</td>
                         }
@@ -119,7 +123,11 @@
                         {
                             df = elm;
                             var name = df.GetDisplayName(entity) ?? df.Header;
-                            if (df.Url.IsNullOrEmpty())
+                            if (df.DataVisible != null && !df.DataVisible(entity, item))
+                            {
+                                <td></td>
+                            }
+                            else if (df.Url.IsNullOrEmpty())
                             {
                                 <td class="text-center" title="@df.Title">@name</td>
                             }
@@ -145,7 +153,11 @@
                         {
                             df = elm;
                             var name = df.GetDisplayName(entity) ?? df.Header;
-                            if (df.Url.IsNullOrEmpty())
+                            if (df.DataVisible != null && !df.DataVisible(entity, item))
+                            {
+                                <td></td>
+                            }
+                            else if (df.Url.IsNullOrEmpty())
                             {
                                 <td class="text-center" title="@df.Title">@name</td>
                             }
