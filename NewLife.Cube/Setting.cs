@@ -44,6 +44,10 @@ namespace NewLife.Cube
         [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
         public String CorsOrigins { get; set; }
 
+        /// <summary>是否允许在iframe中展示。SAMEORIGIN-允许相同域名，ALLOWALL-允许任何域名</summary>
+        [Description("是否允许在iframe中展示。默认为空-只允许相同域名，SAMEORIGIN-允许相同域名和端口，ALLOWALL-允许任何域名")]
+        public String XFrameOptions { get; set; }
+
         /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
         [Description("分享有效期。分享令牌的有效期，默认7200秒")]
         public Int32 ShareExpire { get; set; } = 7200;

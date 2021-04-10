@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.5" />
     <PackageReference Include="NewLife.Stardust" Version="1.4.2021.327-rc1" />
   </ItemGroup>
 

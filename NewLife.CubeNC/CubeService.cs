@@ -185,6 +185,17 @@ namespace NewLife.Cube
                     app.UseExceptionHandler("/CubeHome/Error");
             }
 
+            // 设置X-Frame-Options
+            app.Use(async (context, next) =>
+            {
+                await next();
+
+                if (!set.XFrameOptions.IsNullOrWhiteSpace())
+                {
+                    context.Response.Headers.Add("X-Frame-Options", set.XFrameOptions);
+                }
+            });
+
             if (!set.CorsOrigins.IsNullOrEmpty()) app.UseCors("cube_cors");
 
             // 配置静态Http上下文访问器
