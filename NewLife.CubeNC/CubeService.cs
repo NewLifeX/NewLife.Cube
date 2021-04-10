@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.WebEncoders;
+using Microsoft.Net.Http.Headers;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
@@ -188,12 +189,12 @@ namespace NewLife.Cube
             // 设置X-Frame-Options
             app.Use(async (context, next) =>
             {
-                await next();
-
                 if (!set.XFrameOptions.IsNullOrWhiteSpace())
                 {
-                    context.Response.Headers.Add("X-Frame-Options", set.XFrameOptions);
+                    context.Response.Headers[HeaderNames.XFrameOptions] = set.XFrameOptions;
                 }
+
+                await next();
             });
 
             if (!set.CorsOrigins.IsNullOrEmpty()) app.UseCors("cube_cors");
