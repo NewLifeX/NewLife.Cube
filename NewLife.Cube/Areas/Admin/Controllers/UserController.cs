@@ -95,6 +95,7 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 var list = new List<User>();
                 var entity = FindByID(id);
+                entity.Password = null;
                 if (entity != null) list.Add(entity);
                 return list;
             }
@@ -121,7 +122,14 @@ namespace NewLife.Cube.Admin.Controllers
             exp &= _.LastLogin.Between(start, end);
             if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
 
-            return XCode.Membership.User.FindAll(exp, p);
+            var list2 = XCode.Membership.User.FindAll(exp, p);
+
+            foreach (var user in list2)
+            {
+                user.Password = null;
+            }
+
+            return list2;
         }
 
         /// <summary>验证实体对象</summary>
