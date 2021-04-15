@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <Version>3.9.2021.0406</Version>
@@ -13,7 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\School\Views\" />
+    <Compile Remove="Areas\School\Views\**" />
+    <Content Remove="Areas\School\Views\**" />
+    <EmbeddedResource Remove="Areas\School\Views\**" />
+    <None Remove="Areas\School\Views\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Views\Shared\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>

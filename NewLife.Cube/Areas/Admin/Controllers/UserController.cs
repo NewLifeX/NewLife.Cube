@@ -157,11 +157,15 @@ namespace NewLife.Cube.Admin.Controllers
                     return RedirectToAction("Index", "Index", new { page = returnUrl });
             }
 
+            // 是否已完成第三方登录
+            var logId = Session["Cube_OAuthId"].ToLong();
+
             // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
             var ms = OAuthConfig.GetValids();
             if (ms != null && !Setting.Current.AllowLogin)
             {
                 if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
+                if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
 
                 // 只有一个，跳转
                 if (ms.Count == 1)
@@ -174,7 +178,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             // 部分提供支持应用内免登录，直接跳转
-            if (ms != null && ms.Count > 0 && GetRequest("autologin") != "0")
+            if (ms != null && ms.Count > 0 && logId == 0 && GetRequest("autologin") != "0")
             {
 #if __CORE__
                 var agent = Request.Headers["User-Agent"] + "";

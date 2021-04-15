@@ -377,9 +377,9 @@ namespace NewLife.Cube.Web
                 var set = Setting.Current;
                 var cfg = OAuthConfig.FindByName(client.Name);
                 //if (!cfg.AutoRegister) throw new InvalidOperationException($"绑定[{cfg}]要求本地已登录！");
-                if (user == null && !cfg.AutoRegister)
+                if (user == null && !set.AutoRegister && !cfg.AutoRegister)
                 {
-                    log?.WriteLog(typeof(User), "SSO登录", false, $"无法找到[{client.Name}]的[{client.NickName}]在本地的绑定，准备进入登录页面，利用其它登录方式后再绑定", 0, user + "");
+                    log?.WriteLog(typeof(User), "SSO登录", false, $"无法找到[{client.Name}]的[{client.NickName}]在本地的绑定，且没有打开自动注册，准备进入登录页面，利用其它登录方式后再绑定", 0, user + "");
 
                     return null;
                 }
