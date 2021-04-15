@@ -147,9 +147,9 @@ namespace NewLife.Cube
         public String LoginTip { get; set; }
 
         /// <summary>表单组样式。大中小屏幕分别3/2/1列</summary>
-        [Description("表单组样式。大中小屏幕分别3/2/1列")]
+        [Description("表单组样式。大中小屏幕分别3/2/1列，form-group col-xs-12 col-sm-6 col-lg-4")]
         [Category("界面配置")]
-        public String FormGroupClass { get; set; } = "form-group col-xs-12 col-sm-6 col-lg-4";
+        public String FormGroupClass { get; set; } = "form-group col-xs-12 col-sm-6";
 
         /// <summary>下拉选择框。使用Bootstrap，美观，但有呈现方面的性能损耗</summary>
         [Description("下拉选择框。使用Bootstrap，美观，但有呈现方面的性能损耗")]
