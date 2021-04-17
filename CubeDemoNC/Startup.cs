@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
 using NewLife;
 using NewLife.Cube;
 using NewLife.Cube.Extensions;
@@ -62,7 +64,14 @@ namespace CubeDemoNC
                 {
                     var staticFileOptions = new StaticFileOptions()
                     {
-                        FileProvider = new PhysicalFileProvider(env.WebRootPath)
+                        FileProvider = new PhysicalFileProvider(env.WebRootPath),
+                        OnPrepareResponse = (context =>
+                        {
+                            if (!context.Context.Response.Headers[HeaderNames.ContentType].Contains("text/html"))
+                                return;
+                            context.Context.Response.Headers.Remove(HeaderNames.ETag);
+                            context.Context.Response.Headers.Remove(HeaderNames.LastModified);
+                        })
                     };
 
                     a.UseDefaultFiles();
