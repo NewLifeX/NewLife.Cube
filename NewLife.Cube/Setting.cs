@@ -174,6 +174,11 @@ namespace NewLife.Cube
         [Description("备案号。留空表示不显示备案信息")]
         [Category("界面配置")]
         public String Registration { get; set; } = "沪ICP备10000000号";
+
+        /// <summary>启用新UI</summary>
+        [Description("启用新UI")]
+        [Category("界面配置")]
+        public Boolean EnableNewUI { get; set; }
         #endregion
 
         #region 方法

@@ -21,6 +21,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="5.0.5" />
     <PackageReference Include="NewLife.Stardust" Version="1.4.2021.327-rc1" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.3" Condition="'$(TargetFramework)'=='net5.0'" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.14" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>
 
   <ItemGroup>

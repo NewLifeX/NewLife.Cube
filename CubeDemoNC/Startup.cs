@@ -2,8 +2,11 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using NewLife;
 using NewLife.Cube;
+using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 using NewLife.Threading;
@@ -51,6 +54,25 @@ namespace CubeDemoNC
 
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseWhen(
+                context => set.EnableNewUI && context.Request.Method.EqualIgnoreCase("GET") &&
+                           !context.Request.IsAjaxRequest(),
+                a =>
+                {
+                    var staticFileOptions = new StaticFileOptions()
+                    {
+                        FileProvider = new PhysicalFileProvider(env.WebRootPath)
+                    };
+
+                    a.UseDefaultFiles();
+
+                    a.UseSpa(options =>
+                    {
+                        a.UseSpaStaticFiles(staticFileOptions);
+                        options.Options.DefaultPageStaticFileOptions = staticFileOptions;
+                    });
+                });
 
             //app.UseRouting();
 
