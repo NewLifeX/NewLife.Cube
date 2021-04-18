@@ -101,13 +101,13 @@ namespace NewLife.Cube.Entity
         #region 业务操作
         /// <summary>添加定时作业</summary>
         /// <param name="name"></param>
-        /// <param name="action"></param>
+        /// <param name="method"></param>
         /// <param name="cron"></param>
+        /// <param name="enable"></param>
         /// <returns></returns>
-        public static CronJob Add(String name, Action<String> action, String cron, Boolean enable = true)
+        public static CronJob Add(String name, MethodInfo method, String cron, Boolean enable = true)
         {
-            var method = action.Method;
-            if (method == null || !method.IsStatic) throw new ArgumentOutOfRangeException(nameof(action), "定时作业执行方法必须是带有单个字符串参数的静态方法。");
+            if (method == null || !method.IsStatic) throw new ArgumentOutOfRangeException(nameof(method), "定时作业执行方法必须是带有单个String参数的静态方法。");
 
             if (name.IsNullOrEmpty()) name = method.Name;
             var job = FindByName(name);
@@ -127,6 +127,22 @@ namespace NewLife.Cube.Entity
 
             return job;
         }
+
+        /// <summary>添加定时作业</summary>
+        /// <param name="name"></param>
+        /// <param name="action"></param>
+        /// <param name="cron"></param>
+        /// <param name="enable"></param>
+        /// <returns></returns>
+        public static CronJob Add(String name, Action<String> action, String cron, Boolean enable = true) => Add(name, action.Method, cron, enable);
+
+        ///// <summary>添加定时作业</summary>
+        ///// <param name="name"></param>
+        ///// <param name="action"></param>
+        ///// <param name="cron"></param>
+        ///// <param name="enable"></param>
+        ///// <returns></returns>
+        //public static CronJob Add(String name, Action<CronJob> action, String cron, Boolean enable = true) => Add(name, action.Method, cron, enable);
         #endregion
     }
 }

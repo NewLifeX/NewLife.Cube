@@ -19,14 +19,7 @@ namespace NewLife.Cube.Services
     public class JobService : IHostedService
     {
         #region 核心控制
-        private static readonly ILog _log;
         private readonly ITracer _tracer;
-
-        static JobService()
-        {
-            var log = LogProvider.Provider.AsLog("JobService");
-            _log = new CompositeLog(XTrace.Log, log);
-        }
 
         /// <summary>实例化作业服务</summary>
         /// <param name="tracer"></param>
@@ -62,7 +55,7 @@ namespace NewLife.Cube.Services
             if (_timers.Count == 0)
             {
                 // 添加默认作业
-                CronJob.Add(null, RunSql, "0 0 * * * ? *", false);
+                CronJob.Add(null, RunSql, "15 * * * * ? *", false);
                 CronJob.Add(null, BackupDb, "5 0 0 * * ? *", false);
             }
 
@@ -72,7 +65,7 @@ namespace NewLife.Cube.Services
                 var job = _timers.FirstOrDefault(e => e.Job.Id == item.Id);
                 if (job == null)
                 {
-                    job = new MyJob { Job = item, Tracer = _tracer, Log = _log };
+                    job = new MyJob { Job = item, Tracer = _tracer };
                     _timers.Add(job);
                 }
                 job.Job = item;
@@ -86,12 +79,22 @@ namespace NewLife.Cube.Services
                 }
                 catch (Exception ex)
                 {
-                    _log.Error("控制 作业[{0}/{1}]失败，{2}", item.Name, item.DisplayName, ex.Message);
+                    WriteLog("控制", false, $"作业[{item.Name}/{item.DisplayName}]失败，{ex.Message}", item);
 
                     item.Enable = false;
                     item.Update();
                 }
             }
+        }
+        #endregion
+
+        #region 辅助
+        internal static void WriteLog(String action, Boolean success, String remark, CronJob job)
+        {
+            var log = LogProvider.Provider.CreateLog("JobService", action, success, remark);
+            if (job != null) log.LinkID = job.Id;
+
+            log.SaveAsync();
         }
         #endregion
 
@@ -102,6 +105,7 @@ namespace NewLife.Cube.Services
         [Description("参数格式 connName#sql")]
         public static void RunSql(String argument)
         {
+            //var argument = job?.Argument;
             if (argument.IsNullOrEmpty()) return;
 
             var p = argument.IndexOf('#');
@@ -109,22 +113,29 @@ namespace NewLife.Cube.Services
 
             var connName = argument.Substring(0, p).Trim();
             var sql = argument.Substring(p + 1).Trim();
-            _log.Info("执行 在[{0}]上执行SQL：{1}", connName, sql);
+
+            var message = $"执行 在[{connName}]上执行SQL。";
+            var success = true;
             try
             {
-                DAL.Create(connName).Execute(sql);
+                var rs = DAL.Create(connName).Execute(sql);
+                message += "返回：" + rs;
             }
             catch (Exception ex)
             {
-                _log.Error("执行 在[{0}]上执行SQL出错。{1}", connName, ex);
+                success = false;
+                message += ex.ToString();
             }
+
+            var job = TimerX.Current?.State as CronJob;
+            WriteLog("执行", success, message, job);
         }
 
         /// <summary></summary>
         /// <param name="connName"></param>
         [DisplayName("备份数据库")]
         [Description("参数是连接名connName")]
-        public static void BackupDb(String connName) => _log.Info("在[{0}]上备份数据库", connName);
+        public static void BackupDb(String connName) => XTrace.WriteLine("在[{0}]上备份数据库", connName);
         #endregion
     }
 
@@ -135,8 +146,6 @@ namespace NewLife.Cube.Services
 
         public ITracer Tracer { get; set; }
 
-        public ILog Log { get; set; }
-
         private TimerX _timer;
         private String _id;
         private Action<String> _action;
@@ -145,16 +154,18 @@ namespace NewLife.Cube.Services
 
         public void Start()
         {
-            // 参数检查
-            var expession = Job.Cron;
-            if (expession.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Job.Cron));
+            var job = Job;
 
-            var cmd = Job.Method;
-            if (cmd.IsNullOrEmpty()) throw new ArgumentNullException(nameof(Job.Method));
+            // 参数检查
+            var expession = job.Cron;
+            if (expession.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Cron));
+
+            var cmd = job.Method;
+            if (cmd.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Method));
 
             // 标识相同，不要处理
             var id = $"{expession}@{cmd}";
-            if (id == _id) return;
+            if (id == _id && _timer != null) return;
 
             var cron = new Cron();
             if (!cron.Parse(expession)) throw new InvalidOperationException($"无效表达式 {expession}");
@@ -170,11 +181,19 @@ namespace NewLife.Cube.Services
             _action = method.As<Action<String>>();
             if (_action == null) throw new InvalidOperationException($"无效作业方法 {cmd}");
 
-            Log.Info("加载 作业[{0}/{1}]，定时 {2}，方法 {3}", Job.Name, Job.DisplayName, Job.Cron, Job.Method);
+            JobService.WriteLog("启用", true, $"作业[{job.Name}]，定时 {job.Cron}，方法 {job.Method}", job);
 
             // 实例化定时器，原定时器销毁
             _timer.TryDispose();
-            _timer = new TimerX(DoJobWork, null, expession) { Async = true };
+            _timer = new TimerX(DoJobWork, job, expession) { Async = true };
+
+            // 如果下一次执行时间在未来，表示用户希望尽快执行一次
+            var ts = job.NextTime - DateTime.Now;
+            if (ts.TotalMilliseconds >= 1000)
+                _timer.SetNext((Int32)ts.TotalMilliseconds);
+            else
+                job.NextTime = _timer.Cron.GetNext(_timer.NextTime);
+            job.Update();
 
             _id = id;
         }
@@ -183,6 +202,8 @@ namespace NewLife.Cube.Services
         {
             if (_timer != null)
             {
+                JobService.WriteLog("停用", true, $"作业[{Job.Name}]", Job);
+
                 _timer.TryDispose();
                 _timer = null;
             }
@@ -190,6 +211,16 @@ namespace NewLife.Cube.Services
             _id = null;
         }
 
-        private void DoJobWork(Object state) => _action?.Invoke(Job.Argument);
+        private void DoJobWork(Object state)
+        {
+            var job = Job;
+            job.LastTime = DateTime.Now;
+
+            _action?.Invoke(job.Argument);
+            //_action2?.Invoke(job);
+
+            job.NextTime = _timer.Cron.GetNext(_timer.NextTime);
+            job.Update();
+        }
     }
 }

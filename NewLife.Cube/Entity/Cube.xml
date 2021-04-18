@@ -258,6 +258,8 @@
       <Column Name="Method" DataType="String" Description="命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数" />
       <Column Name="Argument" DataType="String" Length="2000" Description="参数。方法参数，时间日期、网址、SQL等" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="LastTime" DataType="DateTime" Description="最后时间。最后一次执行作业的时间" />
+      <Column Name="NextTime" DataType="DateTime" Description="下一次时间。下一次执行作业的时间" />
       <Column Name="Remark" DataType="String" Length="500" Description="内容" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
       <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />

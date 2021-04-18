@@ -75,6 +75,22 @@ namespace NewLife.Cube.Entity
         [BindColumn("Enable", "启用", "")]
         public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
+        private DateTime _LastTime;
+        /// <summary>最后时间。最后一次执行作业的时间</summary>
+        [DisplayName("最后时间")]
+        [Description("最后时间。最后一次执行作业的时间")]
+        [DataObjectField(false, false, true, 0)]
+        [BindColumn("LastTime", "最后时间。最后一次执行作业的时间", "")]
+        public DateTime LastTime { get => _LastTime; set { if (OnPropertyChanging("LastTime", value)) { _LastTime = value; OnPropertyChanged("LastTime"); } } }
+
+        private DateTime _NextTime;
+        /// <summary>下一次时间。下一次执行作业的时间</summary>
+        [DisplayName("下一次时间")]
+        [Description("下一次时间。下一次执行作业的时间")]
+        [DataObjectField(false, false, true, 0)]
+        [BindColumn("NextTime", "下一次时间。下一次执行作业的时间", "")]
+        public DateTime NextTime { get => _NextTime; set { if (OnPropertyChanging("NextTime", value)) { _NextTime = value; OnPropertyChanged("NextTime"); } } }
+
         private String _Remark;
         /// <summary>内容</summary>
         [DisplayName("内容")]
@@ -149,6 +165,8 @@ namespace NewLife.Cube.Entity
                     case "Method": return _Method;
                     case "Argument": return _Argument;
                     case "Enable": return _Enable;
+                    case "LastTime": return _LastTime;
+                    case "NextTime": return _NextTime;
                     case "Remark": return _Remark;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
@@ -170,6 +188,8 @@ namespace NewLife.Cube.Entity
                     case "Method": _Method = Convert.ToString(value); break;
                     case "Argument": _Argument = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
+                    case "LastTime": _LastTime = value.ToDateTime(); break;
+                    case "NextTime": _NextTime = value.ToDateTime(); break;
                     case "Remark": _Remark = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
@@ -207,6 +227,12 @@ namespace NewLife.Cube.Entity
 
             /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
+
+            /// <summary>最后时间。最后一次执行作业的时间</summary>
+            public static readonly Field LastTime = FindByName("LastTime");
+
+            /// <summary>下一次时间。下一次执行作业的时间</summary>
+            public static readonly Field NextTime = FindByName("NextTime");
 
             /// <summary>内容</summary>
             public static readonly Field Remark = FindByName("Remark");
@@ -255,6 +281,12 @@ namespace NewLife.Cube.Entity
 
             /// <summary>启用</summary>
             public const String Enable = "Enable";
+
+            /// <summary>最后时间。最后一次执行作业的时间</summary>
+            public const String LastTime = "LastTime";
+
+            /// <summary>下一次时间。下一次执行作业的时间</summary>
+            public const String NextTime = "NextTime";
 
             /// <summary>内容</summary>
             public const String Remark = "Remark";
