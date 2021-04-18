@@ -405,7 +405,7 @@ namespace NewLife.Web
             if (!url.StartsWithIgnoreCase("http://", "https://"))
             {
                 // 授权以外的连接，使用令牌服务地址
-                if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth"))
+                if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize"))
                     url = AccessServer.EnsureEnd("/") + url.TrimStart('/');
                 else
                     url = Server.EnsureEnd("/") + url.TrimStart('/');

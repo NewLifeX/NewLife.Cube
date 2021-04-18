@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <Version>3.9.2021.0406</Version>
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust" Version="1.4.2021.327-rc1" />
+    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.408" />
   </ItemGroup>
 
   <ItemGroup>
