@@ -63,7 +63,8 @@ namespace CubeDemoNC
              * 3、非json请求
              * 4、不带query参数。如果真的是新ui的页面请求，且带了query参数，不能与魔方旧有接口一样，否则不会命中
              * */
-            app.UseWhen(
+            if (set.EnableNewUI)
+                app.UseWhen(
                 context => set.EnableNewUI && context.Request.Method.EqualIgnoreCase("GET") &&
                            !context.Request.IsAjaxRequest() &&
                            context.Request.Query.Count < 1,
@@ -113,7 +114,8 @@ namespace CubeDemoNC
             //});
 
             // 所有请求没有命中的，统一在这里处理
-            app.UseWhen(context => set.EnableNewUI,
+            if (set.EnableNewUI)
+                app.UseWhen(context => set.EnableNewUI,
                 a =>
                 {
                     var staticFileOptions = new StaticFileOptions()
