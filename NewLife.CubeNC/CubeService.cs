@@ -16,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.WebEncoders;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -98,6 +99,8 @@ namespace NewLife.Cube
             {
                 options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
             });
+
+            services.AddHostedService<JobService>();
 
             XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
 

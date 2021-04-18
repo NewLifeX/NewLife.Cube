@@ -249,4 +249,25 @@
       <Index Columns="TableId,Name" Unique="True" />
     </Indexes>
   </Table>
+  <Table Name="CronJob" Description="定时作业。定时执行任务">
+    <Columns>
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称" />
+      <Column Name="DisplayName" DataType="String" Description="显示名" />
+      <Column Name="Cron" DataType="String" Description="Cron表达式。用于定时执行的Cron表达式" />
+      <Column Name="Method" DataType="String" Description="命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数" />
+      <Column Name="Argument" DataType="String" Length="2000" Description="参数。方法参数，时间日期、网址、SQL等" />
+      <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="Remark" DataType="String" Length="500" Description="内容" />
+      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" />
+      <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
+    </Columns>
+    <Indexes>
+      <Index Columns="Name" Unique="True" />
+    </Indexes>
+  </Table>
 </Tables>

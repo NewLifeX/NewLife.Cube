@@ -67,6 +67,7 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AreaController.cs" Link="Areas\Admin\Controllers\AreaController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AttachmentController.cs" Link="Areas\Admin\Controllers\AttachmentController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Controllers\CoreController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CronJobController.cs" Link="Areas\Admin\Controllers\CronJobController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Controllers\CubeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DbController.cs" Link="Areas\Admin\Controllers\DbController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DepartmentController.cs" Link="Areas\Admin\Controllers\DepartmentController.cs" />
@@ -112,6 +113,8 @@
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.cs" Link="Entity\OAuth配置.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\定时作业.Biz.cs" Link="Entity\定时作业.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\定时作业.cs" Link="Entity\定时作业.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs" Link="Entity\应用日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
