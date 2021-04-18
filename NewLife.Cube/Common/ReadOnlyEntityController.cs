@@ -195,6 +195,13 @@ namespace NewLife.Cube
                     {
                         // 如果前端没有传值，则不要参与构造查询
                         var val = GetRequest(item.Name);
+
+                        // 2021.04.18 添加
+                        // 表结构没有唯一键，只有联合主键，并且id是其中一个主键，
+                        // 而id作为路由参数，上面从Request中获取到空值，
+                        // 最终导致联合主键的表查询单条数据，只用到名称为非id的主键
+                        if (val == null && item.Name.EqualIgnoreCase("id")) val = key.ToString();
+
                         if (val != null) exp &= item.Equal(val);
                     }
 
