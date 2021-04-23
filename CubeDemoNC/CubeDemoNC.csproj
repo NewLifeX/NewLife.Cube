@@ -4,8 +4,8 @@
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
-    <Version>3.9.2021.0406</Version>
-    <FileVersion>3.9.2021.0406</FileVersion>
+    <Version>3.9.2021.0423-beta1</Version>
+    <FileVersion>3.9.2021.0423</FileVersion>
     <AssemblyVersion>3.9.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
