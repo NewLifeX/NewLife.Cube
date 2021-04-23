@@ -161,13 +161,17 @@ namespace NewLife.Cube.Admin.Controllers
 
                 ThreadPoolX.QueueUserWorkItem(() =>
                 {
+                    var p = Process.GetCurrentProcess();
+                    var fileName = p.MainModule.FileName;
+                    var args = Environment.CommandLine.TrimStart(Path.ChangeExtension(fileName, ".dll")).Trim();
+
                     // 发起命令
                     var rs = client.Invoke<String>("KillAndStart", new
                     {
                         processId = p.Id,
                         delay = 3,
                         fileName = fileName,
-                        arguments = Environment.CommandLine,
+                        arguments = args,
                         workingDirectory = Environment.CurrentDirectory,
                     });
                     XTrace.WriteLine("rs={0}", rs);
