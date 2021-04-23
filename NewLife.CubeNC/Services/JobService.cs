@@ -85,6 +85,9 @@ namespace NewLife.Cube.Services
                     item.Update();
                 }
             }
+
+            // 如果没有作业，10分钟跑一次
+            _timer.Period = list.Count > 0 ? 60_000 : 600_000;
         }
         #endregion
 
