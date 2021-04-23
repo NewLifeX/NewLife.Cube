@@ -404,12 +404,13 @@ namespace NewLife.Cube.Controllers
         /// <param name="response_type">响应类型。默认code</param>
         /// <param name="scope">授权域</param>
         /// <param name="state">用户状态数据</param>
+        /// <param name="loginUrl">登录页。子系统请求SSO时，如果在SSO未登录则直接跳转的地址，该地址有可能属于子系统自身，适用于password模式登录等场景</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public virtual ActionResult Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null)
+        public virtual ActionResult Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null, String loginUrl = null)
         {
             // 参数不完整时，跳转到登录页面，避免爬虫抓取而导致误报告警
-            if (client_id.IsNullOrEmpty()) return Redirect(Provider.LoginUrl);
+            if (client_id.IsNullOrEmpty()) return Redirect(loginUrl ?? Provider.LoginUrl);
 
             //if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
             if (redirect_uri.IsNullOrEmpty()) throw new ArgumentNullException(nameof(redirect_uri));
@@ -433,6 +434,8 @@ namespace NewLife.Cube.Controllers
             }
             if (user != null)
                 url = OAuth.GetResult(key, user);
+            else if (!loginUrl.IsNullOrEmpty())
+                url = loginUrl;
             else
                 url = prov.GetLoginUrl(key);
 
