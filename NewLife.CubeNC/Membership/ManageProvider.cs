@@ -190,6 +190,18 @@ namespace NewLife.Cube
             var pa = list.FirstOrDefault(e => e.Enable);
             if (pa == null || pa.Principal == null) return user;
 
+            var roles = pa.Principal?.Roles;
+            if (roles != null && roles.Any(e => e.IsSystem))
+            {
+                pa.Enable = false;
+                pa.Remark = "安全起见，不得代理系统管理员";
+                pa.Update();
+
+                LogProvider.Provider.WriteLog("用户", "代理", false, $"安全起见，[{pa.AgentName}]不得代理系统管理员[{pa.PrincipalName}]的身份权限", pa.AgentId, pa.AgentName);
+
+                return user;
+            }
+
             pa.Times--;
             if (pa.Times == 0) pa.Enable = false;
             pa.Update();
