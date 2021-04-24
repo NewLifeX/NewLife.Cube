@@ -1,14 +1,17 @@
-﻿@using NewLife;
+﻿@model SelectUserModel
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
 @using System.Linq;
+@using NewLife.Cube.ViewModels;
 @{
-    var id = (Object)Model + "";
+    var id = Model.Id;
     var page = ViewBag.Page as Pager;
 
     if (id.IsNullOrEmpty()) { id = "userId"; }
-    var userId = page[id];
-    var showValue = XCode.Membership.User.FindByID(userId.ToInt())?.ToString();
+    var userId = Model.UserId;
+    if (userId <= 0) userId = page[id].ToInt();
+    var showValue = XCode.Membership.User.FindByID(userId)?.ToString();
 
     var set = NewLife.Cube.Setting.Current;
     var res = set.ResourceUrl;
@@ -32,7 +35,7 @@
 <script type="text/javascript">
     $(function () {
         $("#@(id)_select").bsSuggest({
-            url: "/cube/UserSearch?key=",
+            url: "/cube/UserSearch?roleid=@Model.RoleId&department=@Model.DepartmentId&key=",
             getDataMethod:"url",
             effectiveFieldsAlias: { id:"编号",code:"代码",name: "名称",displayName:'昵称',departmentName:'部门'},
             ignorecase: true,

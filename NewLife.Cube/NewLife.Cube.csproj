@@ -412,6 +412,7 @@
     <Compile Include="Precompiled\PrecompiledViewAssembly.cs" />
     <Compile Include="Precompiled\PrecompiledViewLocationCache.cs" />
     <Compile Include="Setting.cs" />
+    <Compile Include="ViewModels\SelectUserModel.cs" />
     <Compile Include="Views\CubeHome\Index.generated.cs">
       <DependentUpon>Index.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
