@@ -119,6 +119,7 @@
     <Compile Include="Areas\Admin\Controllers\DbController.cs" />
     <Compile Include="Areas\Admin\Controllers\FileController.cs" />
     <Compile Include="Areas\Admin\Controllers\AppController.cs" />
+    <Compile Include="Areas\Admin\Controllers\PrincipalAgentController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserConnectController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Include="Areas\Admin\Controllers\RoleController.cs" />
@@ -367,6 +368,8 @@
     <Compile Include="Entity\OAuth日志.cs" />
     <Compile Include="Entity\OAuth配置.Biz.cs" />
     <Compile Include="Entity\OAuth配置.cs" />
+    <Compile Include="Entity\委托代理.Biz.cs" />
+    <Compile Include="Entity\委托代理.cs" />
     <Compile Include="Entity\定时作业.Biz.cs" />
     <Compile Include="Entity\定时作业.cs" />
     <Compile Include="Entity\应用日志.Biz.cs" />
@@ -1139,7 +1142,9 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Areas\Admin\Views\PrincipalAgent\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v12.0</VSToolsPath>

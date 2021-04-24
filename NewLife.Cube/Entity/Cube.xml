@@ -272,4 +272,25 @@
       <Index Columns="Name" Unique="True" />
     </Indexes>
   </Table>
+  <Table Name="PrincipalAgent" Description="委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份，一次有效">
+    <Columns>
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="PrincipalId" DataType="Int32" Description="委托人。把自己的身份权限委托给别人" />
+      <Column Name="AgentId" DataType="Int32" Description="代理人。代理获得别人身份权限" />
+      <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="Times" DataType="Int32" Description="次数。可用代理次数，0表示已用完，-1表示无限制" />
+      <Column Name="Expire" DataType="DateTime" Description="有效期。截止时间之前有效，不设置表示无限制" />
+      <Column Name="CreateUserId" DataType="Int32" Description="创建者" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" />
+      <Column Name="UpdateUserId" DataType="Int32" Description="更新者" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
+      <Column Name="Remark" DataType="String" Length="500" Description="内容" />
+    </Columns>
+    <Indexes>
+      <Index Columns="PrincipalId" />
+      <Index Columns="AgentId" />
+    </Indexes>
+  </Table>
 </Tables>
