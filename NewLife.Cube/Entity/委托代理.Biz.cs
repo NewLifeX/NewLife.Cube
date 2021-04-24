@@ -82,6 +82,11 @@ namespace NewLife.Cube.Entity
         /// <param name="agentId">代理人</param>
         /// <returns>实体列表</returns>
         public static IList<PrincipalAgent> FindAllByAgentId(Int32 agentId) => FindAll(_.AgentId == agentId);
+
+        /// <summary>根据代理人选择可用代理项</summary>
+        /// <param name="agentId"></param>
+        /// <returns></returns>
+        public static IList<PrincipalAgent> GetAllValidByAgentId(Int32 agentId) => FindAll(_.AgentId == agentId & _.Enable == true, _.Id.Asc(), null, 0, 100);
         #endregion
 
         #region 高级查询

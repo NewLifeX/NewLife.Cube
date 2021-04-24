@@ -272,7 +272,7 @@
       <Index Columns="Name" Unique="True" />
     </Indexes>
   </Table>
-  <Table Name="PrincipalAgent" Description="委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份，一次有效">
+  <Table Name="PrincipalAgent" Description="委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份">
     <Columns>
       <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
       <Column Name="PrincipalId" DataType="Int32" Description="委托人。把自己的身份权限委托给别人" />

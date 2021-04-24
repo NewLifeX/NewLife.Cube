@@ -227,8 +227,9 @@ namespace NewLife.Cube.Web
             if (!user.Enable) throw new InvalidOperationException($"用户[{user}]已禁用！");
 
             // 登录成功，保存当前用户
-            //prv.Current = user;
-            prv.SetCurrent(user, context);
+            if (prv is ManageProvider2 prv2) user = prv2.CheckAgent(user);
+            prv.Current = user;
+
             // 单点登录不要保存Cookie，让它在Session过期时请求认证中心
             //prv.SaveCookie(user);
             var set = Setting.Current;
