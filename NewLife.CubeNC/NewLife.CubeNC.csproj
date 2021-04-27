@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方平台</AssemblyTitle>
@@ -57,8 +57,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.10.2021.418-beta1" />
-    <PackageReference Include="NewLife.XCode" Version="10.1.2021.418-beta1" />
+    <PackageReference Include="NewLife.Core" Version="8.10.2021.427-beta1" />
+    <PackageReference Include="NewLife.XCode" Version="10.1.2021.427-beta3" />
   </ItemGroup>
 
   <ItemGroup>

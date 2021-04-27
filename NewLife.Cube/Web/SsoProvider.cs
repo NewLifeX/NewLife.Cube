@@ -719,6 +719,14 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual Object GetUserInfo(OAuthServer sso, String token, IManageUser user)
         {
+            // 返回用户资源，可作为子系统数据权限
+            var res = Parameter.FindAllByUserID(user.ID, "Resources");
+            var dic = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in res.Where(e => e.Enable))
+            {
+                dic[item.Name] = item.Value;
+            }
+
             if (user is User user2)
                 return new
                 {
@@ -737,6 +745,7 @@ namespace NewLife.Cube.Web
                     departmentName = user2.Department?.Name,
                     avatar = user2.Avatar,
                     detail = user2.Remark,
+                    resources = dic,
                 };
             else
                 return new
@@ -744,6 +753,7 @@ namespace NewLife.Cube.Web
                     userid = user.ID,
                     username = user.Name,
                     nickname = user.NickName,
+                    resources = dic,
                 };
         }
         #endregion
