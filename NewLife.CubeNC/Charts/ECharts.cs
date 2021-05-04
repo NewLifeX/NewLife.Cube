@@ -239,6 +239,12 @@ namespace NewLife.Cube.Charts
             var series = Series;
             if (series != null) dic[nameof(series)] = series;
 
+            // 合并Items
+            foreach (var item in Items)
+            {
+                dic[item.Key] = item.Value;
+            }
+
             return dic.ToJson(false, false, true);
         }
         #endregion
