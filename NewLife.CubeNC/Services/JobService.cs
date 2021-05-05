@@ -11,7 +11,9 @@ using NewLife.Reflection;
 using NewLife.Threading;
 using XCode.DataAccessLayer;
 using XCode.Membership;
+using NewLife.Model;
 using ILog = NewLife.Log.ILog;
+using IHostedService = Microsoft.Extensions.Hosting.IHostedService;
 
 namespace NewLife.Cube.Services
 {
@@ -22,8 +24,8 @@ namespace NewLife.Cube.Services
         private readonly ITracer _tracer;
 
         /// <summary>实例化作业服务</summary>
-        /// <param name="tracer"></param>
-        public JobService(ITracer tracer) => _tracer = tracer;
+        /// <param name="provider"></param>
+        public JobService(IServiceProvider provider) => _tracer = provider.GetService<ITracer>();
 
         private TimerX _timer;
         /// <summary>启动</summary>
