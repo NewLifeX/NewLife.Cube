@@ -57,6 +57,7 @@ namespace CubeDemoNC
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+#if !NET60
             /* 新ui通道，以下需同时满足条件
              * 1、配置启用新ui
              * 2、GET请求
@@ -90,6 +91,7 @@ namespace CubeDemoNC
                         options.Options.DefaultPageStaticFileOptions = staticFileOptions;
                     });
                 });
+#endif
 
             //app.UseRouting();
 
@@ -113,6 +115,7 @@ namespace CubeDemoNC
             //    client.ProbeAndInstall(null, "1.1");
             //});
 
+#if !NET60
             // 所有请求没有命中的，统一在这里处理
             if (set.EnableNewUI)
                 app.UseWhen(context => set.EnableNewUI,
@@ -138,6 +141,7 @@ namespace CubeDemoNC
                         options.Options.DefaultPageStaticFileOptions = staticFileOptions;
                     });
                 });
+#endif
         }
     }
 }
