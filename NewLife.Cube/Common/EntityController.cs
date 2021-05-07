@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using NewLife.Remoting;
 using System.IO;
+using NewLife.Reflection;
 #if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
@@ -307,19 +308,32 @@ namespace NewLife.Cube
                         // 保存文件，优先原名字
                         var fileName = f.FileName;
                         fileName = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\{fileName}";
-                        var fileName2 = uploadpath.CombinePath(fileName).GetBasePath();
-                        if (System.IO.File.Exists(fileName))
+                        var fullFile = uploadpath.CombinePath(fileName).GetBasePath();
+                        if (System.IO.File.Exists(fullFile))
                         {
                             fileName = entity[Factory.Unique] + Path.GetExtension(f.FileName);
                             fileName = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\{fileName}";
-                            fileName2 = uploadpath.CombinePath(fileName).GetBasePath();
+                            fullFile = uploadpath.CombinePath(fileName).GetBasePath();
                         }
-                        fileName2.EnsureDirectory(true);
+                        fullFile.EnsureDirectory(true);
 
-                        f.SaveAs(fileName2);
+                        f.SaveAs(fullFile);
 
                         entity.SetItem(fi.Name, fileName);
                         list.Add(f.FileName);
+
+                        // 写日志，取category比较麻烦，待升级XCode后可以简化
+                        var type = entity.GetType();
+                        var cat = "";
+                        if (type.As<IEntity>())
+                        {
+                            var fact = EntityFactory.CreateOperate(type);
+                            if (fact != null) cat = fact.Table.DataTable.DisplayName;
+                        }
+                        if (cat.IsNullOrEmpty()) cat = type.GetDisplayName() ?? type.GetDescription() ?? type.Name;
+                        var log = LogProvider.Provider.CreateLog(cat, "上传", true, $"上传{f.FileName}，保存为{fileName}", 0, null, UserHost);
+                        if (Factory.Unique != null) log.LinkID = entity[Factory.Unique].ToInt();
+                        log.SaveAsync();
                     }
                 }
             }
