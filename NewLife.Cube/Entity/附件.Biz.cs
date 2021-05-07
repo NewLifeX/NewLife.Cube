@@ -64,51 +64,6 @@ namespace NewLife.Cube.Entity
             //if (isNew && !Dirtys[nameof(CreateIP)]) CreateIP = ManageProvider.UserHost;
             //if (!Dirtys[nameof(UpdateIP)]) UpdateIP = ManageProvider.UserHost;
         }
-
-        ///// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
-        //[EditorBrowsable(EditorBrowsableState.Never)]
-        //protected override void InitData()
-        //{
-        //    // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
-        //    if (Meta.Session.Count > 0) return;
-
-        //    if (XTrace.Debug) XTrace.WriteLine("开始初始化Attachment[附件]数据……");
-
-        //    var entity = new Attachment();
-        //    entity.ID = 0;
-        //    entity.Category = "abc";
-        //    entity.FileName = "abc";
-        //    entity.Size = 0;
-        //    entity.ContentType = "abc";
-        //    entity.Path = "abc";
-        //    entity.Hash = "abc";
-        //    entity.CreateUser = "abc";
-        //    entity.CreateUserID = 0;
-        //    entity.CreateIP = "abc";
-        //    entity.CreateTime = DateTime.Now;
-        //    entity.UpdateUser = "abc";
-        //    entity.UpdateUserID = 0;
-        //    entity.UpdateIP = "abc";
-        //    entity.UpdateTime = DateTime.Now;
-        //    entity.Remark = "abc";
-        //    entity.Insert();
-
-        //    if (XTrace.Debug) XTrace.WriteLine("完成初始化Attachment[附件]数据！");
-        //}
-
-        ///// <summary>已重载。基类先调用Valid(true)验证数据，然后在事务保护内调用OnInsert</summary>
-        ///// <returns></returns>
-        //public override Int32 Insert()
-        //{
-        //    return base.Insert();
-        //}
-
-        ///// <summary>已重载。在事务保护范围内处理业务，位于Valid之后</summary>
-        ///// <returns></returns>
-        //protected override Int32 OnDelete()
-        //{
-        //    return base.OnDelete();
-        //}
         #endregion
 
         #region 扩展属性

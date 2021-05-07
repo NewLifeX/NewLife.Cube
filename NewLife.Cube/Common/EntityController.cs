@@ -287,6 +287,7 @@ namespace NewLife.Cube
         protected virtual IList<String> SaveFiles(TEntity entity)
         {
             var list = new List<String>();
+            var uploadpath = Setting.Current.UploadPath;
 
 #if __CORE__
             if (!Request.HasFormContentType) return list;
@@ -303,14 +304,22 @@ namespace NewLife.Cube
                     var f = files[dc.Name];
                     if (f != null)
                     {
-                        // 保存文件
-                        var ext = Path.GetExtension(f.FileName);
-                        var fileName = entity[Factory.Unique] + ext;
+                        // 保存文件，优先原名字
+                        var fileName = f.FileName;
                         fileName = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\{fileName}";
-                        fileName = Setting.Current.UploadPath.CombinePath(fileName).GetBasePath();
-                        fileName.EnsureDirectory(true);
+                        var fileName2 = uploadpath.CombinePath(fileName).GetBasePath();
+                        if (System.IO.File.Exists(fileName))
+                        {
+                            fileName = entity[Factory.Unique] + Path.GetExtension(f.FileName);
+                            fileName = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\{fileName}";
+                            fileName2 = uploadpath.CombinePath(fileName).GetBasePath();
+                        }
+                        fileName2.EnsureDirectory(true);
 
-                        f.SaveAs(fileName);
+                        f.SaveAs(fileName2);
+
+                        entity.SetItem(fi.Name, fileName);
+                        list.Add(f.FileName);
                     }
                 }
             }
