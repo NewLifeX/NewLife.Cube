@@ -282,7 +282,9 @@ namespace NewLife.Cube
             var set = Setting.Current;
 
             // 生成令牌
-            var ss = set.JwtSecret.Split(':');
+            var ss = set.JwtSecret?.Split(':');
+            if (ss == null || ss.Length < 2) throw new InvalidOperationException("未设置JWT算法和密钥");
+
             var jwt = new JwtBuilder
             {
                 Algorithm = ss[0],
