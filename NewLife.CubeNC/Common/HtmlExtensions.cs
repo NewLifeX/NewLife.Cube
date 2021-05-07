@@ -86,7 +86,11 @@ namespace NewLife.Cube
             {
                 var dc = field.Field;
                 if (dc != null && dc.ItemType.EqualIgnoreCase("file", "image"))
-                    return Html.ForFile(field.Name, entity[field.Name], dc.ItemType);
+                {
+                    var h1 = Html.ForString(field.Name, (String)entity[field.Name], field.Length);
+                    var h2 = Html.ForFile(field.Name, entity[field.Name], dc.ItemType);
+                    return new HtmlString(h1.GetString() + h2.GetString());
+                }
 
                 //if (field.Length <= 0 || field.Length > 300)
                 return Html.ForString(field.Name, (String)entity[field.Name], field.Length);
