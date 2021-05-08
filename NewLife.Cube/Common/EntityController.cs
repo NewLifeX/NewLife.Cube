@@ -375,7 +375,8 @@ namespace NewLife.Cube
 
                 //entity.Enable = enable;
                 entity.SetItem(fi.Name, enable);
-                rs += OnUpdate(entity);
+                if (Valid(entity, DataObjectMethodType.Update, true))
+                    rs += OnUpdate(entity);
             }
             else
             {
@@ -384,11 +385,12 @@ namespace NewLife.Cube
                 foreach (var item in ids)
                 {
                     var entity = FindData(item);
-                    if (entity != null && Valid(entity, DataObjectMethodType.Update, true))
+                    if (entity != null)
                     {
                         //entity.Enable = enable;
                         entity.SetItem(fi.Name, enable);
-                        rs += OnUpdate(entity);
+                        if (Valid(entity, DataObjectMethodType.Update, true))
+                            rs += OnUpdate(entity);
                     }
                 }
             }

@@ -267,12 +267,12 @@ namespace NewLife.Cube
         /// <summary>获取指定列名之前的定制字段</summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public IList<DataField> GetBeforeFields(String name) => Fields.Where(e => e.BeforeName == name).ToList();
+        public IList<DataField> GetBeforeFields(String name) => Fields.Where(e => e.BeforeName.EqualIgnoreCase(name)).ToList();
 
         /// <summary>获取指定列名之后的定制字段</summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public IList<DataField> GetAfterFields(String name) => Fields.Where(e => e.AfterName == name).ToList();
+        public IList<DataField> GetAfterFields(String name) => Fields.Where(e => e.AfterName.EqualIgnoreCase(name)).ToList();
         #endregion
     }
 }

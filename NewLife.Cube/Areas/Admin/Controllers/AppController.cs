@@ -18,6 +18,7 @@ namespace NewLife.Cube.Admin.Controllers
         static AppController()
         {
             MenuOrder = 38;
+            LogOnChange = true;
 
             ListFields.RemoveField("Secret", "Logo", "White", "Black", "Urls", "Remark");
 
@@ -36,6 +37,13 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 var df = EditFormFields.AddDataField("RoleIds");
                 df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            }
+
+            {
+                var df = ListFields.AddDataField("Log", "UpdateUserId");
+                df.DisplayName = "修改日志";
+                df.Header = "修改日志";
+                df.Url = "/Admin/Log?category=应用系统&linkId={ID}";
             }
         }
 
