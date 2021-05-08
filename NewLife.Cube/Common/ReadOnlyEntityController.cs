@@ -25,6 +25,7 @@ using XCode.Configuration;
 using XCode.Membership;
 using XCode.Model;
 using NewLife.Security;
+using System.Threading.Tasks;
 
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -34,6 +35,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Net.Http.Headers;
 #else
 using System.Web.Mvc;
+using ValueTask = System.Threading.Tasks.Task;
 #endif
 
 namespace NewLife.Cube
@@ -687,7 +689,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [AllowAnonymous]
         [DisplayName("Csv接口")]
-        public virtual ActionResult Csv(String token, Pager p)
+        public virtual async Task<ActionResult> Csv(String token, Pager p)
         {
             var issuer = ValidToken(token);
 
@@ -705,9 +707,9 @@ namespace NewLife.Cube
             headers[HeaderNames.ContentEncoding] = "UTF8";
             //headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
-            // 允许同步IO，便于CsvFile刷数据Flush
-            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            if (ft != null) ft.AllowSynchronousIO = true;
+            //// 允许同步IO，便于CsvFile刷数据Flush
+            //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            //if (ft != null) ft.AllowSynchronousIO = true;
 
             OnExportCsv(fs, list, rs.Body);
 #else
@@ -716,7 +718,7 @@ namespace NewLife.Cube
             rs.ContentEncoding = Encoding.UTF8;
             //rs.ContentType = "application/vnd.ms-excel";
 
-            OnExportCsv(fs, list, rs.OutputStream);
+            await OnExportCsv(fs, list, rs.OutputStream);
 
             rs.Flush();
 #endif
@@ -801,7 +803,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("导出")]
-        public virtual ActionResult ExportExcel()
+        public virtual async Task<ActionResult> ExportExcel()
         {
             // 准备需要输出的列
             var fs = new List<FieldItem>();
@@ -860,12 +862,12 @@ namespace NewLife.Cube
             headers[HeaderNames.ContentEncoding] = "UTF8";
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
-            // 允许同步IO，便于CsvFile刷数据Flush
-            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            if (ft != null) ft.AllowSynchronousIO = true;
+            //// 允许同步IO，便于CsvFile刷数据Flush
+            //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            //if (ft != null) ft.AllowSynchronousIO = true;
 
             var data = ExportData();
-            OnExportExcel(fs, data, rs.Body);
+            await OnExportExcel(fs, data, rs.Body);
 #else
             var rs = Response;
             rs.Charset = "UTF-8";
@@ -888,9 +890,13 @@ namespace NewLife.Cube
         /// <param name="fs">字段列表</param>
         /// <param name="list">数据集</param>
         /// <param name="output">输出流</param>
-        protected virtual void OnExportExcel(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
+        protected virtual async ValueTask OnExportExcel(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
         {
-            using var csv = new CsvFile(output);
+#if NET50 || NET60
+            await using var csv = new CsvFile(output, true);
+#else
+            using var csv = new CsvFile(output, true);
+#endif
 
             // 列头
             var headers = new List<String>();
@@ -904,12 +910,12 @@ namespace NewLife.Cube
                 if (name == "ID" && fi == fs[0]) name = "Id";
                 headers.Add(name);
             }
-            csv.WriteLine(headers);
+            await csv.WriteLineAsync(headers);
 
             // 内容
             foreach (var entity in list)
             {
-                csv.WriteLine(fs.Select(e => entity[e.Name]));
+                await csv.WriteLineAsync(fs.Select(e => entity[e.Name]));
             }
         }
 
@@ -917,7 +923,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("导出")]
-        public virtual ActionResult ExportCsv()
+        public virtual async Task<ActionResult> ExportCsv()
         {
             // 准备需要输出的列
             var fs = Factory.Fields.ToList();
@@ -951,9 +957,9 @@ namespace NewLife.Cube
             headers[HeaderNames.ContentEncoding] = "UTF8";
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
-            // 允许同步IO，便于CsvFile刷数据Flush
-            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            if (ft != null) ft.AllowSynchronousIO = true;
+            //// 允许同步IO，便于CsvFile刷数据Flush
+            //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            //if (ft != null) ft.AllowSynchronousIO = true;
 
             var data = ExportData();
             OnExportCsv(fs, data, rs.Body);
@@ -967,7 +973,7 @@ namespace NewLife.Cube
             rs.Buffer = buffer;
 
             var data = ExportData();
-            OnExportCsv(fs, data, rs.OutputStream);
+            await OnExportCsv(fs, data, rs.OutputStream);
 
             rs.Flush();
 #endif
@@ -979,19 +985,23 @@ namespace NewLife.Cube
         /// <param name="fs">字段列表</param>
         /// <param name="list">数据集</param>
         /// <param name="output">输出流</param>
-        protected virtual void OnExportCsv(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
+        protected virtual async ValueTask OnExportCsv(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
         {
-            using var csv = new CsvFile(output);
+#if NET50 || NET60
+            await using var csv = new CsvFile(output, true);
+#else
+            using var csv = new CsvFile(output, true);
+#endif
 
             // 列头
             var headers = fs.Select(e => e.Name).ToArray();
             if (headers[0] == "ID") headers[0] = "Id";
-            csv.WriteLine(headers);
+            await csv.WriteLineAsync(headers);
 
             // 内容
             foreach (var entity in list)
             {
-                csv.WriteLine(fs.Select(e => entity[e.Name]));
+                await csv.WriteLineAsync(fs.Select(e => entity[e.Name]));
             }
         }
         #endregion
@@ -1049,9 +1059,9 @@ namespace NewLife.Cube
 
             // 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
 #if __CORE__
-            // 允许同步IO，便于CsvFile刷数据Flush
-            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            if (ft != null) ft.AllowSynchronousIO = true;
+            //// 允许同步IO，便于CsvFile刷数据Flush
+            //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            //if (ft != null) ft.AllowSynchronousIO = true;
 
             var ms = rs.Body;
 #else

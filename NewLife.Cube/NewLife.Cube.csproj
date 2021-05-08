@@ -396,6 +396,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\FieldModel.cs" />
+    <Compile Include="ViewModels\LoginConfigModel.cs" />
     <Compile Include="ViewModels\ObjectModel.cs" />
     <Compile Include="PreApplicationStartCode.cs" />
     <Compile Include="Precompiled\AssemblyExtensions.cs">
@@ -640,7 +641,6 @@
     <Compile Include="Web\Models\SsoTokenModel.cs" />
     <Compile Include="Web\Models\UserInfo.cs" />
     <Compile Include="Web\OAuthClient.cs" />
-    <Compile Include="Web\OAuthConfig.cs" />
     <Compile Include="Web\OAuthHelper.cs" />
     <Compile Include="Web\OAuthServer.cs" />
     <Compile Include="Web\OAuth\DingTalkClient.cs" />

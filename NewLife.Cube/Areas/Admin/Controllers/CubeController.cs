@@ -1,7 +1,16 @@
 ﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
+
+#if __CORE__
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Net.Http.Headers;
+#else
+using System.Web.Mvc;
+#endif
 
 namespace NewLife.Cube.Admin.Controllers
 {

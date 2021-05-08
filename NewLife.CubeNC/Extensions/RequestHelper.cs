@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -26,7 +27,7 @@ namespace NewLife.Cube.Extensions
 
             value = request.Query[key];
 
-            if(value.Count > 0) return value.ToString();
+            if (value.Count > 0) return value.ToString();
 
             // 拒绝output关键字，避免死循环
             if (key == "output") return null;
@@ -73,11 +74,16 @@ namespace NewLife.Cube.Extensions
             var requestBody = request.HttpContext.Items["RequestBody"];
             if (requestBody != null) return requestBody;
 
-            // 允许同步IO
-            var ft = request.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            if (ft != null) ft.AllowSynchronousIO = true;
+            //// 允许同步IO
+            //var ft = request.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            //if (ft != null) ft.AllowSynchronousIO = true;
 
-            var body = request.Body.ToStr();
+            //var body = request.Body.ToStr();
+
+            request.EnableBuffering();
+            request.Body.Seek(0, SeekOrigin.Begin);
+            var reader = new StreamReader(request.Body);
+            var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
 
             var entityBody = body.ToJsonEntity(type);
             request.HttpContext.Items["RequestBody"] = entityBody;
