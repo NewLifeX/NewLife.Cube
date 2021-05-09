@@ -468,17 +468,12 @@ namespace NewLife.Cube.Admin.Controllers
                 if (model.NewPassword == model.OldPassword) throw new ArgumentException($"修改密码不能与原密码一致", nameof(model.NewPassword));
             }
 
-            var cur = ManageProvider.User;
-            if (cur == null) return RedirectToAction("Login");
+            var current = ManageProvider.User;
+            if (current == null) return RedirectToAction("Login");
 
-            var user = XCode.Membership.User.FindByKeyForEdit(cur.ID);
+            var user = ManageProvider.Provider.ChangePassword(current.Name, model.NewPassword, requireOldPass ? model.OldPassword : null);
 
-            var oldpass2 = model.OldPassword.MD5();
-            if (requireOldPass && !user.Password.EqualIgnoreCase(oldpass2)) throw new Exception("密码错误");
-
-            // 修改密码
-            user.Password = model.NewPassword;
-            user.Update();
+            //(user as User).Update();
 
             ViewBag.StatusMessage = "修改成功！";
 
@@ -547,16 +542,16 @@ namespace NewLife.Cube.Admin.Controllers
                 if (user != null) throw new ArgumentException(nameof(email), $"邮箱[{email}]已存在！");
 
                 var r = Role.GetOrAdd(set.DefaultRole);
-
-                user = new User()
-                {
-                    Name = username,
-                    Password = password,
-                    Mail = email,
-                    RoleID = r.ID,
-                    Enable = true
-                };
-                user.Register();
+                //user = new User()
+                //{
+                //    Name = username,
+                //    Password = password,
+                //    Mail = email,
+                //    RoleID = r.ID,
+                //    Enable = true
+                //};
+                //user.Register();
+                var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
 
                 // 注册成功
             }

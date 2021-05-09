@@ -98,48 +98,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public override IManageUser Login(String name, String password, Boolean remember)
         {
-            XCode.Membership.User user;
-            try
-            {
-                // 用户登录，依次支持用户名、邮箱、手机、编码
-                var account = name.Trim();
-                user = XCode.Membership.User.FindByName(account);
-                if (user == null && account.Contains("@")) user = XCode.Membership.User.FindByMail(account);
-                if (user == null && account.ToLong() > 0) user = XCode.Membership.User.FindByMobile(account);
-                if (user == null) user = XCode.Membership.User.FindByCode(account);
-
-                if (user == null) throw new EntityException("帐号{0}不存在！", account);
-                if (!user.Enable) throw new EntityException("账号{0}被禁用！", account);
-
-                // 数据库为空密码，任何密码均可登录
-                if (!user.Password.IsNullOrEmpty())
-                {
-                    var ss = password.Split(':');
-                    if (ss.Length <= 1)
-                    {
-                        if (!password.MD5().EqualIgnoreCase(user.Password)) throw new EntityException("密码不正确！");
-                    }
-                    else
-                    {
-                        var salt = ss[1];
-                        var pass = (user.Password.ToLower() + salt).MD5();
-                        if (!ss[0].EqualIgnoreCase(pass)) throw new EntityException("密码不正确！");
-                    }
-                }
-
-                // 保存登录信息
-                user.Logins++;
-                user.LastLogin = DateTime.Now;
-                user.LastLoginIP = UserHost;
-                user.Update();
-
-                XCode.Membership.User.WriteLog("登录", true, $"用户[{user}]使用[{name}]登录成功");
-            }
-            catch (Exception ex)
-            {
-                XCode.Membership.User.WriteLog("登录", false, name + "登录失败！" + ex.Message);
-                throw;
-            }
+            var user = base.Login(name, password, remember);
 
             user = CheckAgent(user) as User;
             Current = user;

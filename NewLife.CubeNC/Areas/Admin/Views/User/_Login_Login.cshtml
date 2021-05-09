@@ -20,7 +20,7 @@
         }
     </div>
     <!-- 登录-->
-    <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" onsubmit="md5_salt($('#password'));">
+    <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login" method="post">
         @Html.ValidationSummary()
         <span class="heading text-primary">@set.DisplayName 登录</span>
         @if (set.AllowLogin)

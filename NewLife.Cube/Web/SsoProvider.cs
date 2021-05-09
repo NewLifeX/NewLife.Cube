@@ -704,10 +704,7 @@ namespace NewLife.Cube.Web
         {
             var user = Provider?.FindByName(username);
             // 两级单点登录可能因缓存造成查不到用户
-            if (user == null) user = User.Find(User._.Name == username);
-            if (user == null && username.Contains("@")) user = User.FindByMail(username);
-            if (user == null && username.ToLong() > 0) user = User.FindByMobile(username);
-            if (user == null) user = User.FindByCode(username);
+            if (user == null) user = User.FindForLogin(username);
 
             return user;
         }
