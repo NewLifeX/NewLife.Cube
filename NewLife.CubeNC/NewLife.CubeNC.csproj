@@ -9,8 +9,8 @@
     <Description>魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2021 NewLife</Copyright>
-    <Version>3.10.2021.0508-beta1</Version>
-    <FileVersion>3.10.2021.0508</FileVersion>
+    <Version>3.10.2021.0511-beta3</Version>
+    <FileVersion>3.10.2021.0511</FileVersion>
     <AssemblyVersion>3.10.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\Bin</OutputPath>
@@ -60,8 +60,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.10.2021.509-beta2" />
-    <PackageReference Include="NewLife.XCode" Version="10.1.2021.509-beta2" />
+    <PackageReference Include="NewLife.Core" Version="8.10.2021.511-beta3" />
+    <PackageReference Include="NewLife.XCode" Version="10.1.2021.511-beta3" />
   </ItemGroup>
 
   <ItemGroup>

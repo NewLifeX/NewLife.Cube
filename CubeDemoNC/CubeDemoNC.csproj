@@ -5,7 +5,7 @@
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <Version>3.10.2021.0506</Version>
-    <FileVersion>3.10.2021.0506</FileVersion>
+    <FileVersion>3.10.2021.0511</FileVersion>
     <AssemblyVersion>3.10.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
