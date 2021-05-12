@@ -4,15 +4,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using NewLife.Cube.Entity;
 using NewLife.Log;
+using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Threading;
 using XCode.DataAccessLayer;
 using XCode.Membership;
-using NewLife.Model;
-using ILog = NewLife.Log.ILog;
 using IHostedService = Microsoft.Extensions.Hosting.IHostedService;
 
 namespace NewLife.Cube.Services
@@ -27,7 +25,7 @@ namespace NewLife.Cube.Services
         /// <param name="provider"></param>
         public JobService(IServiceProvider provider) => _tracer = provider.GetService<ITracer>();
 
-        private TimerX _timer;
+        private static TimerX _timer;
         /// <summary>启动</summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -49,6 +47,9 @@ namespace NewLife.Cube.Services
 
             return Task.CompletedTask;
         }
+
+        /// <summary>唤醒作业调度，作业配置有变更</summary>
+        public static void Wake() => _timer.SetNext(1_000);
 
         private readonly IList<MyJob> _timers = new List<MyJob>();
 
@@ -89,7 +90,7 @@ namespace NewLife.Cube.Services
             }
 
             // 如果没有作业，10分钟跑一次
-            _timer.Period = list.Count > 0 ? 60_000 : 600_000;
+            _timer.Period = list.Any(e => e.Enable) ? 60_000 : 3600_000;
         }
         #endregion
 

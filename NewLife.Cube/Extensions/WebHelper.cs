@@ -167,10 +167,10 @@ namespace NewLife.Web
         {
             Uri uri = null;
 
-            // 配置
-            var ms = OAuthConfig.GetValids();
-            var mi = ms.FirstOrDefault(e => !e.AppUrl.IsNullOrEmpty());
-            if (mi != null) uri = new Uri(mi.AppUrl);
+            //// 配置
+            //var ms = OAuthConfig.GetValids();
+            //var mi = ms.FirstOrDefault(e => !e.AppUrl.IsNullOrEmpty());
+            //if (mi != null) uri = new Uri(mi.AppUrl);
 
             // 取请求头
             if (uri == null)

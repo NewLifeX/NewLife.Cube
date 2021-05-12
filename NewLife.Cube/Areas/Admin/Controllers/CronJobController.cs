@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Services;
 using XCode;
 using XCode.Membership;
 
@@ -32,6 +32,18 @@ namespace NewLife.Cube.Admin.Controllers
                 df.DisplayName = "作业日志";
                 df.Url = "Log?category=JobService&linkId={Id}";
             }
+        }
+
+        /// <summary>修改数据时，唤醒作业服务跟进</summary>
+        /// <param name="entity"></param>
+        /// <param name="type"></param>
+        /// <param name="post"></param>
+        /// <returns></returns>
+        protected override Boolean Valid(CronJob entity, DataObjectMethodType type, Boolean post)
+        {
+            if (post) JobService.Wake();
+
+            return base.Valid(entity, type, post);
         }
 
         /// <summary>菜单不可见</summary>

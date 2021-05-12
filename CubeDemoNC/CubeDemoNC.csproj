@@ -4,7 +4,7 @@
     <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
-    <Version>3.10.2021.0506</Version>
+    <Version>3.10.2021.0511</Version>
     <FileVersion>3.10.2021.0511</FileVersion>
     <AssemblyVersion>3.10.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
