@@ -48,6 +48,10 @@ namespace NewLife.Cube
         [Description("是否允许在iframe中展示。默认为空-只允许相同域名，SAMEORIGIN-允许相同域名和端口，ALLOWALL-允许任何域名")]
         public String XFrameOptions { get; set; }
 
+        /// <summary>token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）</summary>
+        [Description("token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）")]
+        public Int32 SameSiteMode { get; set; } = -1;
+
         /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
         [Description("分享有效期。分享令牌的有效期，默认7200秒")]
         public Int32 ShareExpire { get; set; } = 7200;

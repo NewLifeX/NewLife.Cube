@@ -320,6 +320,7 @@ namespace NewLife.Cube
             if (res == null) return;
 
             var option = new CookieOptions();
+            option.SameSite = (Microsoft.AspNetCore.Http.SameSiteMode)Setting.Current.SameSiteMode;
 
             var token = "";
             if (user != null)
