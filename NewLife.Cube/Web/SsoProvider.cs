@@ -12,7 +12,6 @@ using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Security;
 using XCode;
-using NewLife.Threading;
 using NewLife.Cube.Web.Models;
 
 #if __CORE__
@@ -271,13 +270,21 @@ namespace NewLife.Cube.Web
                 // 使用认证中心的角色
                 if (set.UseSsoRole)
                 {
+                    // 跟本地系统角色合并
+                    var sys = user2.Roles.Where(e => e.IsSystem).Select(e => e.ID).ToList();
+                    if (sys.Count > 0)
+                    {
+                        roleId = user2.RoleID;
+                        if (roleIds == null) roleIds = new List<Int32>();
+                        roleIds.AddRange(sys);
+                    }
                     roleId = GetRole(dic, true);
                     if (roleId > 0)
                     {
                         user2.RoleID = roleId;
 
                         var ids = GetRoles(client.Items, true).ToList();
-                        if (roleIds == null) roleIds = new List<int>();
+                        if (roleIds == null) roleIds = new List<Int32>();
                         roleIds.AddRange(ids);
                     }
                 }
@@ -290,12 +297,13 @@ namespace NewLife.Cube.Web
                 if (cfg != null && !cfg.AutoRole.IsNullOrEmpty())
                 {
                     var ids = GetRoles(cfg.AutoRole, true).ToList();
-                    if (roleIds == null) roleIds = new List<int>();
+                    if (roleIds == null) roleIds = new List<Int32>();
                     roleIds.AddRange(ids);
                 }
 
                 if (roleIds != null)
                 {
+                    roleIds = roleIds.Distinct().ToList();
                     if (roleIds.Contains(roleId)) roleIds.Remove(roleId);
                     if (roleIds.Count == 0)
                         user2.RoleIds = null;

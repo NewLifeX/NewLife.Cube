@@ -44,12 +44,12 @@ namespace NewLife.Cube
         [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
         public String CorsOrigins { get; set; }
 
-        /// <summary>是否允许在iframe中展示。SAMEORIGIN-允许相同域名，ALLOWALL-允许任何域名</summary>
-        [Description("是否允许在iframe中展示。默认为空-只允许相同域名，SAMEORIGIN-允许相同域名和端口，ALLOWALL-允许任何域名")]
+        /// <summary>在iframe中展示。SAMEORIGIN-允许相同域名，ALLOWALL-允许任何域名</summary>
+        [Description("在iframe中展示。默认为空-只允许相同域名，SAMEORIGIN-允许相同域名和端口，ALLOWALL-允许任何域名")]
         public String XFrameOptions { get; set; }
 
-        /// <summary>token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）</summary>
-        [Description("token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）")]
+        /// <summary>Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）</summary>
+        [Description("Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）")]
         public Int32 SameSiteMode { get; set; } = -1;
 
         /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
@@ -107,6 +107,11 @@ namespace NewLife.Cube
         [Description("使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole")]
         [Category("用户登录")]
         public Boolean UseSsoRole { get; set; } = true;
+
+        ///// <summary>保留本地角色。本地角色与SSO角色合并，默认false</summary>
+        //[Description("保留本地角色。本地角色与SSO角色合并，默认false")]
+        //[Category("用户登录")]
+        //public Boolean KeepLocalRole { get; set; }
 
         /// <summary>使用Sso部门。SSO登录后继续使用SSO部门，默认true</summary>
         [Description("使用Sso部门。SSO登录后继续使用SSO部门，默认true")]
