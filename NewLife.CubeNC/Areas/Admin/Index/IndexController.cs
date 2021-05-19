@@ -106,7 +106,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             var list = new List<AssemblyX>();
             var hs = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
-            var cur = AppDomain.CurrentDomain.BaseDirectory;
+            var cur = AppDomain.CurrentDomain.BaseDirectory.CombinePath("../").GetFullPath();
             foreach (var asmx in AssemblyX.GetAssemblies())
             {
                 // 加载程序集列表很容易抛出异常，全部屏蔽
