@@ -505,7 +505,7 @@ namespace NewLife.Web
             var agent = "";
             if (asm != null) agent = $"{asm.GetName().Name} v{asm.GetName().Version}";
 
-            var client = Tracer?.CreateHttpClient();
+            var client = Tracer.CreateHttpClient();
             var headers = client.DefaultRequestHeaders;
             headers.UserAgent.ParseAdd(agent);
 
