@@ -567,7 +567,10 @@ namespace NewLife.Cube.Web
                 {
                     // 不能使用 ManagerProvider，它会写cookie
                     //var user = Provider.Login(username, password, false);
-                    user = XCode.Membership.User.Login(username, password, false);
+                    if (Provider is ManageProvider prv)
+                        user = prv.LoginCore(username, password);
+                    else
+                        user = XCode.Membership.User.Login(username, password, false);
                 }
                 if (user == null) throw new XException("用户{0}验证失败", username);
 
