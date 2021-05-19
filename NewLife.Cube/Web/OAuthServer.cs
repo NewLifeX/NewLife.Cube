@@ -126,7 +126,7 @@ namespace NewLife.Web
             var log = AppLog.FindByID(key.ToLong());
             if (log == null) throw new ArgumentOutOfRangeException(nameof(key), "操作超时，请重试！");
 
-            var prv = GetProvider();
+            //var prv = GetProvider();
             var code = log.ID + "";
 
             var token = CreateToken(log.App, user.Name, null, $"{log.App?.Name}#{user.Name}");
