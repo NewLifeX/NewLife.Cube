@@ -1,4 +1,5 @@
-﻿using NewLife.Cube.Web;
+﻿using System.IO;
+using NewLife.Cube.Web;
 using NewLife.Remoting;
 using NewLife.Web;
 using XCode.Membership;
@@ -18,6 +19,9 @@ namespace XUnitTest
                 AppId = "test",
                 Secret = "test1234",
             };
+
+            var file = "..\\..\\Bin\\Keys\\SsoSecurity.pubkey".GetFullPath();
+            if (File.Exists(file)) client.SecurityKey = File.ReadAllText(file);
 
             var token = await client.GetToken("admin", "admin");
             Assert.NotNull(token);

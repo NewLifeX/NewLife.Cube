@@ -6,6 +6,7 @@ using NewLife.Cube.Web.Models;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Remoting;
+using NewLife.Security;
 using NewLife.Serialization;
 using XCode.Membership;
 
@@ -24,6 +25,13 @@ namespace NewLife.Cube.Web
         /// <summary>应用密钥</summary>
         public String Secret { get; set; }
 
+        /// <summary>安全密钥。keyName$keyValue</summary>
+        /// <remarks>
+        /// 公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，可以写死在代码里面。
+        /// 密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。
+        /// </remarks>
+        public String SecurityKey { get; set; }
+
         private HttpClient _client;
         #endregion
 
@@ -38,12 +46,28 @@ namespace NewLife.Cube.Web
         }
 
         /// <summary>密码式，验证账号密码，并返回令牌</summary>
-        /// <param name="username"></param>
-        /// <param name="password"></param>
+        /// <param name="username">账号</param>
+        /// <param name="password">密码</param>
         /// <returns></returns>
         public async Task<TokenInfo> GetToken(String username, String password)
         {
             var client = GetClient();
+
+            var key = SecurityKey;
+            if (!key.IsNullOrEmpty())
+            {
+                var name = "";
+                var p = key.IndexOf('$');
+                if (p >= 0)
+                {
+                    name = key.Substring(0, p);
+                    key = key.Substring(p + 1);
+                }
+
+                // RSA公钥加密
+                var pass = RSAHelper.Encrypt(password.GetBytes(), key).ToBase64();
+                password = $"$rsa${name}${pass}";
+            }
 
             return await client.GetAsync<TokenInfo>("sso/token", new
             {
