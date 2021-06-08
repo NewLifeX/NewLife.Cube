@@ -880,6 +880,8 @@ namespace NewLife.Cube.Web
 
                 if (key.IsNullOrEmpty())
                 {
+                    file.EnsureDirectory(true);
+
                     var ks = RSAHelper.GenerateParameters();
                     File.WriteAllText(file, ks[0]);
                     File.WriteAllText(file.TrimEnd(".prvkey") + ".pubkey", ks[1]);
