@@ -219,12 +219,7 @@ namespace NewLife.Cube.Services
             _timer.TryDispose();
             _timer = new TimerX(DoJobWork, job, expession) { Async = true };
 
-            // 如果下一次执行时间在未来，表示用户希望尽快执行一次
-            var ts = job.NextTime - DateTime.Now;
-            if (ts.TotalMilliseconds >= 1000 && job.NextTime < _timer.NextTime)
-                _timer.SetNext((Int32)ts.TotalMilliseconds);
-            else
-                job.NextTime = _timer.NextTime;
+            job.NextTime = _timer.NextTime;
             job.Update();
 
             _id = id;
