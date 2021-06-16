@@ -71,7 +71,7 @@ namespace NewLife.Cube.Admin.Controllers
             ViewBag.Main = startPage;
             ViewBag.Menus = GetMenu();
 
-            return View();
+            return View("index_layui");
         }
 
         /// <summary>服务器信息</summary>
