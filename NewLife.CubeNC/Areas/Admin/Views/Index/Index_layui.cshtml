@@ -116,11 +116,11 @@
     <script src="./layui/layui.js"></script>
     <script>
         //JS
-        layui.use(['element', 'layer', 'util'], function () {
-            var element = layui.element
-                , layer = layui.layer
-                , util = layui.util
-                , $ = layui.$;
+        layui.use(['element_cube', 'layer', 'util'], function () {
+            var element = layui.element_cube,
+                layer = layui.layer,
+                util = layui.util,
+                $ = layui.$;
 
             //头部事件
             util.event('lay-header-event', {
@@ -151,6 +151,17 @@
 
             // 左侧菜单
             util.event('cube-leftmenu', {
+                openmenu: function (othis) {
+                    var url = othis.attr('lay-url');
+
+                    element.tabAdd('layadmin-layout-tabs', {
+                        title: 'test',
+                        content: '<iframe src="http://www.baidu.com" frameborder="0" class="cube-iframe">',
+                        id: '1'
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>

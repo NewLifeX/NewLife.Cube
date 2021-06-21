@@ -63,6 +63,7 @@
     ,tree: 'tree' //树结构
     ,table: 'table' //表格
     ,element: 'element' //常用元素操作
+    ,element_cube:'element_cube' //常用元素操作（魔方）
     ,rate: 'rate'  //评分组件
     ,colorpicker: 'colorpicker' //颜色选择器
     ,slider: 'slider' //滑块
