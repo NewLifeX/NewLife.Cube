@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>魔方</title>
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <link rel="stylesheet" href="./layui/css/cube.css">
+</head>
+
+<body>
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo layui-hide-xs layui-bg-black">Cube Demo</div>
+            <!-- 头部区域（可配合layui 已有的水平导航） -->
+            <ul class="layui-nav layui-layout-left">
+                <!-- 移动端显示 -->
+                <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
+                    <i class="layui-icon layui-icon-spread-left"></i>
+                </li>
+
+                <li class="layui-nav-item layui-hide-xs"><a href="#">nav 1</a></li>
+                <li class="layui-nav-item layui-hide-xs"><a href="#">nav 2</a></li>
+                <li class="layui-nav-item layui-hide-xs"><a href="#">nav 3</a></li>
+                <li class="layui-nav-item">
+                    <a href="javascript:void(0);">nav groups</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="#">menu 11</a></dd>
+                        <dd><a href="#">menu 22</a></dd>
+                        <dd><a href="#">menu 33</a></dd>
+                    </dl>
+                </li>
+            </ul>
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+                    <a href="javascript:void(0);">
+                        <img src="#" class="layui-nav-img"> tester
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="#">Your Profile</a></dd>
+                        <dd><a href="#">Settings</a></dd>
+                        <dd><a href="#">Sign out</a></dd>
+                    </dl>
+                </li>
+                <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+                    <a href="javascript:void(0);">
+                        <i class="layui-icon layui-icon-more-vertical"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+                <ul class="layui-nav layui-nav-tree" lay-filter="test">
+                    <li class="layui-nav-item layui-nav-itemed">
+                        <a href="javascript:void(0);">menu group 1</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:void(0);" data-url='http://www.baidu.com' lay-url='http://www.baidu.com' cube-leftmenu='openmenu'>menu 1</a></dd>
+                            <dd><a href="javascript:void(0);">menu 2</a></dd>
+                            <dd><a href="javascript:void(0);">menu 3</a></dd>
+                            <dd><a href="">the links</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:void(0);">menu group 2</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:void(0);">list 1</a></dd>
+                            <dd><a href="javascript:void(0);">list 2</a></dd>
+                            <dd><a href="">超链接</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item"><a href="javascript:void(0);">click menu item</a></li>
+                    <li class="layui-nav-item"><a href="">the links</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="cube-tabs" lay-allowClose="true" lay-filter="layadmin-layout-tabs">
+            <ul class="layui-tab-title">
+                <li class="layui-this" lay-id="11">网站设置</li>
+                <li lay-id="22">用户管理</li>
+                <li lay-id="33">权限分配</li>
+                <li lay-id="44">商品管理</li>
+                <li lay-id="55">订单管理</li>
+            </ul>
+        </div>
+
+        <div class="layui-body cube-body cube-tabs-content">
+            <div class="layui-tab-item layui-show">
+                <iframe src="http://www.baidu.com" frameborder="0" class="cube-iframe"></iframe>
+            </div>
+            <div class="layui-tab-item">2</div>
+            <div class="layui-tab-item">3</div>
+            <div class="layui-tab-item">4</div>
+            <div class="layui-tab-item">5</div>
+        </div>
+
+        <!-- 遮罩层 -->
+        <div class="layui-index-shade" layui-layer-shade-event="shadeClose"></div>
+    </div>
+    <script src="./layui/layui.js"></script>
+    <script>
+        //JS
+        layui.use(['element', 'layer', 'util'], function() {
+            var element = layui.element,
+                layer = layui.layer,
+                util = layui.util,
+                $ = layui.$;
+
+            //头部事件
+            util.event('lay-header-event', {
+                //左侧菜单事件
+                menuLeft: function(othis) {
+                    $('.layui-index-shade').addClass('layui-layer-shade');
+                    $('.layui-layout').removeClass('layui-layout-admin');
+                },
+                menuRight: function() {
+                    layer.open({
+                        type: 1,
+                        content: '<div style="padding: 15px;">处理右侧面板的操作</div>',
+                        area: ['260px', '100%'],
+                        offset: 'rt', //右上角
+                        anim: 5,
+                        shadeClose: true
+                    });
+                }
+            });
+
+            // 遮罩层事件
+            util.event('layui-layer-shade-event', {
+                shadeClose: function(othis) {
+                    $('.layui-index-shade').removeClass('layui-layer-shade');
+                    $('.layui-layout').addClass('layui-layout-admin');
+                }
+            });
+
+            // 绑定tab
+            // element.tab({
+            //     headerElem: '#tabHeader>li',
+            //     bodyElem: '#tabBody>.layui-tab-item'
+            // });
+
+            util.event('cube-leftmenu', {
+                openmenu: function(othis) {
+                    var url = othis.attr('lay-url');
+
+                    element.tabAdd('layadmin-layout-tabs', {
+                        title: 'test',
+                        content: '<iframe src="http://www.baidu.com" frameborder="0" class="cube-iframe">',
+                        id: '1'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
