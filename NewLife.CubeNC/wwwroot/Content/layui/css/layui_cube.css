@@ -1,0 +1,49 @@
+/* 移动端 */
+
+@media screen and (max-width: 768px) {
+    .layui-layout .layui-side {
+        z-index: 1100;
+    }
+
+    .layui-layout-admin .layui-layout-left,
+    .layui-layout-admin .layui-body,
+    .layui-layout-admin .layui-footer,
+    .layui-layout-admin .cube-tabs {
+        left: 0;
+    }
+
+    .layui-layout-admin .layui-side {
+        left: -300px;
+    }
+    /* 遮罩层 */
+    .layui-layer-shade {
+        z-index: 1001;
+        background-color: rgb(0, 0, 0);
+        opacity: 0.3;
+    }
+}
+/* 魔方框架页 tab样式 */
+
+.cube-tab-title {
+    width: 100%;
+    left: 200px;
+    margin-top: 60px;
+    position: fixed;
+    margin: 60px 0 10px 0;
+    text-align: left !important
+}
+
+    .cube-tab-title .layui-this {
+        background-color: #F6F6F6;
+    }
+
+.layui-layout-admin .cube-body {
+    top: 100px;
+    position: fixed;
+}
+
+.layui-layout-admin .layui-tab-item .cube-iframe {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}

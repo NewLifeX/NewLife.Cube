@@ -20,8 +20,9 @@
          opacity: 0.3;
      }
  }
+ /* 魔方框架页 tab样式 */
  
- .cube-tabs {
+ .cube-tab-title {
      width: 100%;
      left: 200px;
      margin-top: 60px;
@@ -30,7 +31,7 @@
      text-align: left!important
  }
  
- .cube-tabs .layui-this {
+ .cube-tab-title .layui-this {
      background-color: #F6F6F6;
  }
  

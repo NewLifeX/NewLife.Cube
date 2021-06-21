@@ -79,24 +79,27 @@
             </div>
         </div>
 
-        <div class="cube-tabs" lay-allowClose="true" lay-filter="layadmin-layout-tabs">
-            <ul class="layui-tab-title">
-                <li class="layui-this" lay-id="11">网站设置</li>
-                <li lay-id="22">用户管理</li>
-                <li lay-id="33">权限分配</li>
-                <li lay-id="44">商品管理</li>
-                <li lay-id="55">订单管理</li>
-            </ul>
-        </div>
-
-        <div class="layui-body cube-body cube-tabs-content">
-            <div class="layui-tab-item layui-show">
-                <iframe src="http://www.baidu.com" frameborder="0" class="cube-iframe"></iframe>
+        <!-- 主内容区 -->
+        <div class="cube-tab" lay-allowClose="true">
+            <div class="cube-tab-title">
+                <ul class="layui-tab-title">
+                    <li class="layui-this" lay-id="11">网站设置</li>
+                    <li lay-id="22">用户管理</li>
+                    <li lay-id="33">权限分配</li>
+                    <li lay-id="44">商品管理</li>
+                    <li lay-id="55">订单管理</li>
+                </ul>
             </div>
-            <div class="layui-tab-item">2</div>
-            <div class="layui-tab-item">3</div>
-            <div class="layui-tab-item">4</div>
-            <div class="layui-tab-item">5</div>
+
+            <div class="layui-body cube-body cube-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <iframe src="http://www.baidu.com" frameborder="0" class="cube-iframe"></iframe>
+                </div>
+                <div class="layui-tab-item">2</div>
+                <div class="layui-tab-item">3</div>
+                <div class="layui-tab-item">4</div>
+                <div class="layui-tab-item">5</div>
+            </div>
         </div>
 
         <!-- 遮罩层 -->
@@ -138,12 +141,7 @@
                 }
             });
 
-            // 绑定tab
-            // element.tab({
-            //     headerElem: '#tabHeader>li',
-            //     bodyElem: '#tabBody>.layui-tab-item'
-            // });
-
+            // 左侧菜单
             util.event('cube-leftmenu', {
                 openmenu: function(othis) {
                     var url = othis.attr('lay-url');
