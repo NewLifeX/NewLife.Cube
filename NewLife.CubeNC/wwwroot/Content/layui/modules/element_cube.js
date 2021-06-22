@@ -10,7 +10,7 @@ layui.define('jquery', function(exports) {
         hint = layui.hint(),
         device = layui.device()
 
-    , MOD_NAME = 'element', THIS = 'layui-this', SHOW = 'layui-show'
+    , MOD_NAME = 'element_cube', THIS = 'layui-this', SHOW = 'layui-show'
 
     , Element = function() {
         this.config = {};
@@ -31,8 +31,8 @@ layui.define('jquery', function(exports) {
     // 添加标签（魔方）
     Element.prototype.tabAddCube = function(filter, options) {
         var TITLE = '.cube-tab-title',
-            tabElem = $('.layui-tab[lay-filter=' + filter + ']'),
-            titElem = tabElem.children(TITLE),
+            tabElem = $('.cube-tab[lay-filter=' + filter + ']'),
+            titElem = tabElem.children(TITLE).children('ul'),
             barElem = titElem.children('.layui-tab-bar'),
             contElem = tabElem.children('.cube-tab-content'),
             li = '<li' + function() {
@@ -47,17 +47,21 @@ layui.define('jquery', function(exports) {
 
         barElem[0] ? barElem.before(li) : titElem.append(li);
         contElem.append('<div class="layui-tab-item">' + (options.content || '') + '</div>');
-        call.hideTabMore(true);
-        call.tabAuto();
+        call.hideTabMoreCube(true);
+        call.tabAutoCube();
+        // 获取新添加的标签页，并触发点击事件
+        var $li = barElem[0] ? barElem.children('li:first') : titElem.children('li:last');
+        call.tabClickCube(null, null, $li);
+
         return this;
     };
 
     //外部Tab删除（魔方）
     Element.prototype.tabDeleteCube = function(filter, layid) {
         var TITLE = '.cube-tab-title',
-            tabElem = $('.layui-tab[lay-filter=' + filter + ']'),
+            tabElem = $('.cube-tab[lay-filter=' + filter + ']'),
             titElem = tabElem.children(TITLE),
-            liElem = titElem.find('>li[lay-id="' + layid + '"]');
+            liElem = titElem.find('>ul>li[lay-id="' + layid + '"]');
         call.tabDeleteCube(null, liElem);
         return this;
     };
@@ -65,9 +69,9 @@ layui.define('jquery', function(exports) {
     //外部Tab切换（魔方）
     Element.prototype.tabChangeCube = function(filter, layid) {
         var TITLE = '.cube-tab-title',
-            tabElem = $('.layui-tab[lay-filter=' + filter + ']'),
+            tabElem = $('.cube-tab[lay-filter=' + filter + ']'),
             titElem = tabElem.children(TITLE),
-            liElem = titElem.find('>li[lay-id="' + layid + '"]');
+            liElem = titElem.find('>ul>li[lay-id="' + layid + '"]');
         call.tabClickCube.call(liElem[0], null, null, liElem);
         return this;
     };
@@ -497,12 +501,8 @@ layui.define('jquery', function(exports) {
 
     var TITLE = '.cube-tab-title li';
     dom.on('click', TITLE, call.tabClickCube); //Tab切换（魔方）
-
     dom.on('click', call.hideTabMoreCube); //隐藏展开的Tab
-
-    $(window).on('resize', function() {
-        call.tabAutoCube(); // 魔方自适应
-    });
+    $(window).on('resize', call.tabAutoCube);
 
     exports(MOD_NAME, element);
 });
