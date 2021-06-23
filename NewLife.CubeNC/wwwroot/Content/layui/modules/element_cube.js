@@ -184,7 +184,7 @@ layui.define('jquery', function(exports) {
                 if (othis.attr('lay-allowClose')) {
                     title.find('li').each(function() {
                         var li = $(this);
-                        if (li.attr('lay-id') == 'homeHeader') return;
+                        if (li.hasClass('cube-homeHeader')) return;
 
                         if (!li.find('.' + CLOSE)[0]) {
                             var close = $('<i class="layui-icon layui-icon-close layui-unselect ' + CLOSE + '"></i>');

@@ -1,5 +1,17 @@
 ﻿@{
     Layout = null;
+
+    var User = ViewBag.User;
+    var cfg = ViewBag.Config;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
 }
 
 <!DOCTYPE html>
@@ -10,60 +22,29 @@
     <title>魔方 - Layui</title>
     <link rel="stylesheet" href="./layui/css/layui.css">
     <link rel="stylesheet" href="./layui/css/layui_cube.css">
-
 </head>
 <body>
     <div class="layui-layout layui-layout-admin">
-        <div class="layui-header">
-            <div class="layui-logo layui-hide-xs layui-bg-black">Cube demo</div>
-            <ul class="layui-nav layui-layout-right">
-                <li class="layui-nav-item layui-hide layui-show-md-inline-block">
-                    <a href="javascript:void(0);">
-                        <img src="./images/logo/NewLife.png" class="layui-nav-img">
-                        tester
-                    </a>
-                    <dl class="layui-nav-child">
-                        <dd><a href="#">Your Profile</a></dd>
-                        <dd><a href="#">Settings</a></dd>
-                        <dd><a href="#">Sign out</a></dd>
-                    </dl>
-                </li>
-                <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
-                    <a href="javascript:void(0);">
-                        <i class="layui-icon layui-icon-more-vertical"></i>
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <!-- 头部导航 -->
+        @await Html.PartialAsync("_Navbar_Layui")
 
-        <div class="layui-side layui-bg-black">
-            <div class="layui-side-scroll">
-                <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
-                <ul class="layui-nav layui-nav-tree" lay-filter="test">
-                    <li class="layui-nav-item layui-nav-itemed">
-                        <a href="javascript:void(0);">menu group 1</a>
-                        <dl class="layui-nav-child">
-                            <dd><a href="javascript:void(0);" data-url='https://www.baidu.com' cube-leftmenu='openmenu' data-title="hello">hello</a></dd>
-                            <dd><a href="javascript:void(0);" data-url='https://www.163.com' cube-leftmenu='openmenu' data-title="word">word</a></dd>
-                        </dl>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
+        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+        @await Html.PartialAsync("_Left_layui")
+       
         <!-- 主内容区 -->
         <div class="cube-tab" lay-allowClose="true" lay-filter="cube-layout-tabs">
+            <!-- 标签头 -->
             <div class="cube-tab-title">
                 <ul class='layui-tab-title'>
-                    <li class="layui-this cube-homeHeader" lay-id="homeHeader">
+                    <li class="layui-this cube-homeHeader" lay-id="/Admin/Index/Main">
                         <i class="layui-icon layui-icon-home"></i>
                     </li>
                 </ul>
             </div>
-
+            <!-- 标签内容 -->
             <div class="layui-body cube-body cube-tab-content">
                 <div class="layui-tab-item layui-show">
-                    <iframe src="https://www.newlifex.com/" frameborder="0" class="cube-iframe"></iframe>
+                    <iframe src="@ViewBag.Main" frameborder="0" class="cube-iframe"></iframe>
                 </div>
             </div>
         </div>

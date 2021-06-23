@@ -7,11 +7,12 @@
 
      //头部事件
      util.event('lay-header-event', {
-         //左侧菜单事件
+         // 左侧菜单
          menuLeft: function(othis) {
              $('.layui-index-shade').addClass('layui-layer-shade');
              $('.layui-layout').removeClass('layui-layout-admin');
          },
+         // 右侧菜单
          menuRight: function() {
              layer.open({
                  type: 1,
@@ -21,6 +22,20 @@
                  anim: 5,
                  shadeClose: true
              });
+         },
+         // 设置菜单
+         menuSetting: function(othis) {
+             var url = othis.data('url');
+             var title = othis.data('title');
+             var isout = othis.data('loginout');
+             // 过滤登出菜单操作
+             if (isout) {
+                 console.log('out');
+                 location.href = url;
+                 return;
+             }
+
+             cubeAddTab(url, title);
          }
      });
 
@@ -39,17 +54,22 @@
              var url = othis.data('url');
              var title = othis.data('title');
 
-             var li = $('.cube-tab-title').children('ul').children('li[lay-id="' + url + '"]');
-             if (li && li.length > 0) {
-                 cube.tabChangeCube('cube-layout-tabs', url);
-                 return;
-             }
-
-             cube.tabAddCube('cube-layout-tabs', {
-                 title: title,
-                 content: '<iframe src="' + url + '" frameborder="0" class="cube-iframe">',
-                 id: url
-             });
+             cubeAddTab(url, title);
          }
      });
+
+     // 菜单统一添加方法
+     function cubeAddTab(url, title) {
+         var li = $('.cube-tab-title').children('ul').children('li[lay-id="' + url + '"]');
+         if (li && li.length > 0) {
+             cube.tabChangeCube('cube-layout-tabs', url);
+             return;
+         }
+
+         cube.tabAddCube('cube-layout-tabs', {
+             title: title,
+             content: '<iframe src="' + url + '" frameborder="0" class="cube-iframe">',
+             id: url
+         });
+     }
  });

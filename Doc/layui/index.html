@@ -21,9 +21,9 @@
                     <i class="layui-icon layui-icon-spread-left"></i>
                 </li>
 
-                <li class="layui-nav-item layui-hide-xs"><a href="#">nav 1</a></li>
-                <li class="layui-nav-item layui-hide-xs"><a href="#">nav 2</a></li>
-                <li class="layui-nav-item layui-hide-xs"><a href="#">nav 3</a></li>
+                <li class="layui-nav-item layui-hide-xs"><a href="javascript:;">nav 1</a></li>
+                <li class="layui-nav-item layui-hide-xs"><a href="javascript:;">nav 2</a></li>
+                <li class="layui-nav-item layui-hide-xs"><a href="javascript:;">nav 3</a></li>
                 <li class="layui-nav-item">
                     <a href="javascript:void(0);">nav groups</a>
                     <dl class="layui-nav-child">
@@ -33,25 +33,32 @@
                     </dl>
                 </li>
             </ul>
+
             <ul class="layui-nav layui-layout-right">
                 <li class="layui-nav-item layui-hide layui-show-md-inline-block">
                     <a href="javascript:void(0);">
-                        <img src="#" class="layui-nav-img"> tester
+                        <img src="./layui/logo/NewLife.png" class="layui-nav-img"> 管理员
                     </a>
                     <dl class="layui-nav-child">
-                        <dd><a href="#">Your Profile</a></dd>
-                        <dd><a href="#">Settings</a></dd>
-                        <dd><a href="#">Sign out</a></dd>
+                        <dd><a href="javascript:;" lay-header-event="menuSetting" data-url="https://www.baidu.com" data-title="百度">Your Profile</a></dd>
+                        <dd><a href="javascript:;" lay-header-event="menuSetting" data-url="https://www.163.com" data-title="网易">Settings</a></dd>
+                        <hr/>
+                        <dd><a href="javascript:;" lay-header-event="menuSetting" data-url="https://www.sohu.com" data-title="搜狐" data-loginout="true">Sign out</a></dd>
                     </dl>
                 </li>
+
+                <li class="layui-menu-item-divider"></li>
+
                 <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
                     <a href="javascript:void(0);">
                         <i class="layui-icon layui-icon-more-vertical"></i>
                     </a>
                 </li>
+                <li class="layui-menu-item-divider"></li>
             </ul>
         </div>
 
+        <!-- 左侧菜单 -->
         <div class="layui-side layui-bg-black">
             <div class="layui-side-scroll">
                 <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
@@ -59,8 +66,8 @@
                     <li class="layui-nav-item layui-nav-itemed">
                         <a href="javascript:void(0);">menu group 1</a>
                         <dl class="layui-nav-child">
-                            <dd><a href="javascript:void(0);" data-url='http://www.baidu.com' cube-leftmenu='openmenu' data-title="hello">hello</a></dd>
-                            <dd><a href="javascript:void(0);" data-url='http://www.163.com' cube-leftmenu='openmenu' data-title="word">word</a></dd>
+                            <dd><a href="javascript:void(0);" data-url='https://www.baidu.com' cube-leftmenu='openmenu' data-title="hello">hello</a></dd>
+                            <dd><a href="javascript:void(0);" data-url='https://www.163.com' cube-leftmenu='openmenu' data-title="word">word</a></dd>
                             <dd><a href="javascript:void(0);">menu 3</a></dd>
                         </dl>
                     </li>
@@ -80,7 +87,7 @@
         <div class="cube-tab" lay-allowClose="true" lay-filter="cube-layout-tabs">
             <div class="cube-tab-title">
                 <ul class='layui-tab-title'>
-                    <li class="layui-this cube-homeHeader" lay-id="homeHeader">
+                    <li class="layui-this cube-homeHeader" lay-id="https://www.baidu.com">
                         <i class="layui-icon layui-icon-home"></i>
                     </li>
                     <li lay-id="11">网站设置</li>
