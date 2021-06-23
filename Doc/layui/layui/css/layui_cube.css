@@ -43,6 +43,12 @@
      border-color: #eee;
  }
  
+ .cube-tab-title ul li.cube-homeHeader {
+     padding: 0;
+     min-width: 46px;
+     height: 40px;
+ }
+ 
  .cube-tab-title ul li {
      display: inline-block;
      *display: inline;

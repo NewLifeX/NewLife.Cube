@@ -112,7 +112,7 @@ layui.define('jquery', function(exports) {
         tabClickCube: function(e, index, liElem, options) {
             options = options || {};
             var othis = liElem || $(this),
-                index = index || othis.parent().children('li').index(othis),
+                index = index || othis.parent().children('li').index(othis), // 需要忽略主页固定标签
                 parents = options.headerElem ? othis.parent() : othis.parents('.cube-tab').eq(0),
                 item = options.bodyElem ? $(options.bodyElem) : parents.children('.cube-tab-content').children('.layui-tab-item'),
                 elemA = othis.find('a'),
@@ -184,6 +184,8 @@ layui.define('jquery', function(exports) {
                 if (othis.attr('lay-allowClose')) {
                     title.find('li').each(function() {
                         var li = $(this);
+                        if (li.attr('lay-id') == 'homeHeader') return;
+
                         if (!li.find('.' + CLOSE)[0]) {
                             var close = $('<i class="layui-icon layui-icon-close layui-unselect ' + CLOSE + '"></i>');
                             close.on('click', call.tabDeleteCube);
