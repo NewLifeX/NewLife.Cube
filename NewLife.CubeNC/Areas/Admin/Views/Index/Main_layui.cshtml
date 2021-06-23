@@ -1,0 +1,44 @@
+﻿@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime;
+@using System.Runtime.Versioning;
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Http.Extensions
+@using NewLife.Caching
+@using NewLife.Common;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject IWebHostEnvironment Env
+@{
+    Layout = NewLife.Cube.Setting.Current.Layout;
+
+    ViewBag.Title = "服务器信息";
+
+    //var os = Environment.OSVersion + "";
+    //if (Runtime.Linux) os = WebHelper2.GetLinuxName();
+    var asm = Assembly.GetExecutingAssembly();
+    var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
+    var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
+    var httpContext = HttpContextAccessor.HttpContext;
+    var req = httpContext.Request;
+    //var req = NewLife.Web.HttpContext.Current.Request;
+    var conn = httpContext.Connection;
+
+    var mi = MachineInfo.Current ?? new MachineInfo();
+
+    // GC设置
+    var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
+}
+
+<div class="layui-fluid">
+    <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+        <div class="layui-panel">
+            <div style="padding: 30px;">一个面板</div>
+        </div>
+    </div>
+    <div class="layui-col-xs12 layui-col-sm12 layui-col-md12">
+        <div class="layui-panel">
+            <div style="padding: 30px;">一个面板</div>
+        </div>
+    </div>
+</div>  

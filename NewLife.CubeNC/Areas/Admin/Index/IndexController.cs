@@ -96,7 +96,7 @@ namespace NewLife.Cube.Admin.Controllers
                 "session" => View("Session"),
                 "cache" => View("Cache"),
                 "servervar" => View("ServerVar"),
-                _ => View(),
+                _ => View("Main_layui"),
             };
         }
 

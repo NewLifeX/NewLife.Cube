@@ -19,16 +19,17 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>魔方 - Layui</title>
+    <title>@title</title>
+
     <link rel="stylesheet" href="./layui/css/layui.css">
-    <link rel="stylesheet" href="./layui/css/layui_cube.css">
+    <link rel="stylesheet" href="./layui/css/layui_main_cube.css">
 </head>
 <body>
     <div class="layui-layout layui-layout-admin">
         <!-- 头部导航 -->
         @await Html.PartialAsync("_Navbar_Layui")
 
-        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+        <!-- 左侧导航区域（可配合layui已有的垂直导航）-->
         @await Html.PartialAsync("_Left_layui")
        
         <!-- 主内容区 -->
@@ -52,7 +53,8 @@
         <!-- 移动端遮罩层 -->
         <div class="layui-index-shade" layui-layer-shade-event="shadeClose"></div>
     </div>
+
     <script src="./layui/layui.js"></script>
-    <script src="./layui/layui_cube.js"></script>
+    <script src="./layui/layui_main_cube.js"></script>
 </body>
 </html>
