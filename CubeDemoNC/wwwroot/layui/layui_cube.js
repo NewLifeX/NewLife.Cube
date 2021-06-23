@@ -42,6 +42,7 @@
              var li = $('.cube-tab-title').children('ul').children('li[lay-id="' + url + '"]');
              if (li && li.length > 0) {
                  cube.tabChangeCube('cube-layout-tabs', url);
+
                  return;
              }
 

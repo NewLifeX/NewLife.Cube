@@ -10,12 +10,9 @@
 
     var doc = win.document,
         config = {
-            modules: {} //记录模块物理路径
-            ,
-            status: {} //记录模块加载状态
-            ,
-            timeout: 10 //符合规范的模块请求最长等待秒数
-                ,
+            modules: {}, //记录模块物理路径
+            status: {}, //记录模块加载状态
+            timeout: 10, //符合规范的模块请求最长等待秒数
             event: {} //记录模块自定义事件
         }
 
@@ -54,51 +51,28 @@
 
     //内置模块
     , modules = config.builtin = {
-        lay: 'lay' //基础 DOM 操作
-            ,
-        layer: 'layer' //弹层
-            ,
-        laydate: 'laydate' //日期
-            ,
-        laypage: 'laypage' //分页
-            ,
-        laytpl: 'laytpl' //模板引擎
-            ,
-        layedit: 'layedit' //富文本编辑器
-            ,
-        form: 'form' //表单集
-            ,
-        upload: 'upload' //上传
-            ,
-        dropdown: 'dropdown' //下拉菜单
-            ,
-        transfer: 'transfer' //穿梭框
-            ,
-        tree: 'tree' //树结构
-            ,
-        table: 'table' //表格
-            ,
-        element: 'element' //常用元素操作
-            ,
-        element_cube: 'element_cube' //常用元素操作（魔方）
-            ,
-        rate: 'rate' //评分组件
-            ,
-        colorpicker: 'colorpicker' //颜色选择器
-            ,
-        slider: 'slider' //滑块
-            ,
-        carousel: 'carousel' //轮播
-            ,
-        flow: 'flow' //流加载
-            ,
-        util: 'util' //工具块
-            ,
-        code: 'code' //代码修饰器
-            ,
-        jquery: 'jquery' //DOM 库（第三方）
-
-        ,
+        lay: 'lay', //基础 DOM 操作
+        layer: 'layer', //弹层
+        laydate: 'laydate', //日期
+        laypage: 'laypage', //分页
+        laytpl: 'laytpl', //模板引擎
+        layedit: 'layedit', //富文本编辑器
+        form: 'form', //表单集
+        upload: 'upload', //上传
+        dropdown: 'dropdown', //下拉菜单
+        transfer: 'transfer', //穿梭框
+        tree: 'tree', //树结构
+        table: 'table', //表格
+        element: 'element', //常用元素操作
+        element_cube: 'element_cube', //常用元素操作（魔方）
+        rate: 'rate', //评分组件
+        colorpicker: 'colorpicker', //颜色选择器
+        slider: 'slider', //滑块
+        carousel: 'carousel', //轮播
+        flow: 'flow', //流加载
+        util: 'util', //工具块
+        code: 'code', //代码修饰器
+        jquery: 'jquery', //DOM 库（第三方）
         all: 'all',
         'layui.all': 'layui.all' //聚合标识（功能性的，非真实模块）
     };
