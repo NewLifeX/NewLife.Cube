@@ -103,6 +103,7 @@
  .layui-layout-admin .cube-body {
      top: 100px;
      position: fixed;
+     background-color: #f2f2f2;
  }
  
  .layui-layout-admin .layui-tab-item .cube-iframe {
@@ -110,6 +111,3 @@
      width: 100%;
      position: absolute;
  }
- /* .layui-layout-admin .cube-tab-title{
-     5
- } */
