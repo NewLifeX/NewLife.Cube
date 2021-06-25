@@ -1,0 +1,59 @@
+/*global*/
+/*需要改成主题色--背景颜色的样式*/
+.layui-btn,
+.layui-btn-normal,
+.layui-layout-admin .header-demo,
+.layui-nav-tree .layui-nav-child dd.layui-this, 
+.layui-nav-tree .layui-nav-child dd.layui-this a, 
+.layui-nav-tree .layui-this, 
+.layui-nav-tree .layui-this>a, 
+.layui-nav-tree .layui-this>a:hover,
+.layui-nav-tree .layui-nav-item a:hover,
+.layui-nav-tree .layui-nav-bar,
+.layui-nav .layui-nav-child dd.layui-this a, 
+.layui-nav-child dd.layui-this,
+.layui-table-tool .layui-inline[lay-event],
+.layui-form-checked[lay-skin=primary] i,
+.layui-form-onswitch,
+.layui-laypage .layui-laypage-curr .layui-laypage-em,
+.lay-ext-mulitsel .layui-input.multiple a, /*下拉多选*/
+.layui-form-select dl dd.layui-this i,
+.search-model  #searchBtn_ ,
+form .task-row #searchBtn_{
+    background-color: #6575c7 !important;
+}
+/*需要改成主题色--字体颜色的样式*/
+.admin-nav-card>.layui-tab-title .layui-this,
+.layui-tab-brief>.layui-tab-title .layui-this,
+.layui-btn-group .layui-btn-primary:hover,
+.layui-form-radio>i:hover, .layui-form-radioed>i,
+.l-layout-header .header-span,
+.layui-tree-txt.cite {
+	color: #6575c7 !important;
+}
+/*需要改成主题色--边框颜色的样式*/
+.layui-laypage-limits:active,
+.layui-form-checked[lay-skin=primary] i,
+.layui-form-checked[lay-skin=primary] i:hover,
+.layui-table-tool .layui-inline[lay-event],
+.layui-form-onswitch {
+    border: 1px solid #6575c7 !important;
+}
+/*需要改成白色--字体颜色样式*/
+.layui-nav-tree .layui-nav-child dd.layui-this, 
+.layui-nav-tree .layui-nav-child dd.layui-this a, 
+.layui-nav-tree .layui-this, 
+.layui-nav-tree .layui-this>a, 
+.layui-nav-tree .layui-this>a:hover,
+.layui-nav-tree .layui-nav-item a:hover,
+.layui-nav .layui-nav-child dd.layui-this a, 
+.layui-nav-child dd.layui-this,
+.layui-form-checked[lay-skin=primary] i,
+.layui-table-tool .layui-inline[lay-event]  {
+    color: #fff !important;
+}
+.menu-this{background-color: #7d2aea7a!important}
+
+.header .layui-nav-item a:hover{
+	background-color: #7d2aea7a !important;
+}

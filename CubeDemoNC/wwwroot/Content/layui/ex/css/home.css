@@ -1,0 +1,27 @@
+/*主页home.html样式*/
+
+.layui-container-fluid {margin: 15px!important;background: #f2f2f2!important;}
+.layui-tab-content {padding: 5px 0;}
+
+.admin-badge{position: absolute; top: 50%; margin-top: -9px; right: 15px; color: #01AAED; }
+.admin-card-list{padding: 15px;}
+.admin-card-list p.admin-big-font{font-size: 36px; color: #666; line-height: 36px; padding: 5px 0 10px; overflow: hidden; text-overflow: ellipsis; word-break: break-all; white-space: nowrap;}
+.admin-card-list p.admin-normal-font{padding-bottom: 10px; font-size: 20px; color: #666; line-height: 24px;}
+.admin-span-color{font-size: 14px; position: absolute; right: 15px;}
+.admin-span-color i{padding-left: 5px;}
+.admin-btn-group{position: absolute; right: 15px;}
+
+.admin-card-status li{position: relative; padding: 10px 0; border-bottom: 1px solid #EEE;}
+.admin-card-status li h3{padding-bottom: 5px; font-weight: 700;}
+.admin-card-status li p{padding-bottom: 10px;}
+.admin-card-status li>span{color: #999;}
+
+.admin-page-table td span{color: #2F4056;}
+.admin-page-table td span.first{color: #FF5722;}
+.admin-page-table td span.second{color: #FFB800;}
+.admin-page-table td span.third{color: #5FB878;}
+
+.admin-dataview{height: 332px!important; background: #fff}
+
+
+

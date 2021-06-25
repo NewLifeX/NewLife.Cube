@@ -1,0 +1,61 @@
+	/* 列表工具栏 */
+	.layui-table-tool{
+		background-color:#ffffff;
+		padding:5px;
+		min-height: 30px;
+	}
+	.layui-table-tool-self {
+    	top: 5px;
+	}
+	.layui-layer-title {
+    	background-color: #ffffff!important;
+   }
+   .search-model .layui-form-item .layui-input{
+   		height:30px;
+   		line-height: 30px;
+   }
+   .search-model .layui-form-item .layui-btn{
+   		height:30px;
+   		line-height: 30px;
+   		width:70px;
+   		padding:0px;
+   }
+   
+.layui-btn-danger {
+    background-color: #FF5722!important;
+}
+.layui-table-tool-panel{
+	color:#409eff;
+}
+.table-button{
+	border-bottom: 1px solid #eee;
+	margin-bottom: 5px;
+	padding-bottom: 5px;
+}
+.layui-btn-group .layui-dropMenu{
+	font-size:14px;
+}
+.layui-btn-group .layui-inline {
+	margin-left:1px;
+}
+/*日志详情*/
+.show-text{
+	padding:10px 0px 0px 10px;
+}
+/*首页footer*/
+.layui-layout-admin .layui-footer{
+	background-color: #ddd;
+}
+
+/*查询条件label*/
+.layui-form-pane  .layui-inline .layui-form-label{
+	padding: 5px 15px;
+	height:30px;
+}
+.layui-form-pane  .layui-inline .layui-input-block{
+	height:30px;
+	min-height: 30px;
+}
+.layui-table-tool{
+	min-height:35px;
+}
