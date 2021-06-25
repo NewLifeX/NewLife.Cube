@@ -57,6 +57,13 @@
 
         #AssemblyInfo .laytable-cell-1-0-3 {
         }
+
+        #AssemblyInfo .laytable-cell-1-0-4 {
+        }
+
+        #AssemblyInfo .laytable-cell-1-0-5 {
+            width:700px;
+        }
     </style>
 }
 
@@ -70,8 +77,24 @@
                 <div class="layui-card-body">
                     <div class="layui-form layui-border-box layui-table-view">
                         <div class="layui-table-box" id="ServerInfo">
+                            <div class="layui-table-header">
+                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="4">
+                                                <div class="layui-table-cell laytable-cell-1-0-0">
+                                                    <span>
+                                                        服务器信息
+                                                    </span>
+                                                </div>
+                                            </th>
+
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
                             <div class="layui-table-body">
-                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm">
                                     <tbody>
                                         <tr>
                                             <td>
@@ -81,7 +104,12 @@
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-29
+                                                    &nbsp;
+                                                    @if (this.Has((PermissionFlags)16))
+                                                    {
+                                                        <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>
+                                                    }
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
                                                 </div>
                                             </td>
                                             <td>
@@ -91,139 +119,175 @@
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
+                                                    @Env.ContentRootPath
                                                 </div>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    应用系统：
+                                                    域名地址：
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-29
+                                                    @{
+                                                        var addrLocal = conn.LocalIpAddress;
+                                                        var addrRemote = conn.RemoteIpAddress;
+                                                        if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+                                                        if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+                                                        var userHost = httpContext.GetUserHost();
+                                                    }
+                                                    <span title="主机">@req.Headers["Host"]</span>，
+                                                    <span title="本地">@addrLocal:@conn.LocalPort</span>
+                                                    &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
+                                                    @if (addrRemote + "" != userHost)
+                                                    {
+                                                        <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
+                                                    }
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    目录：
+                                                    应用程序：
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
+                                                    <span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span>
                                                 </div>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    应用系统：
+                                                    应用域：
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-29
+                                                    @AppDomain.CurrentDomain.FriendlyName
+                                                    <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
+                                                    <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
+                                                    <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    目录：
+                                                    .Net 版本：
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
+                                                    @Environment.Version &nbsp;@ver
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td title="@mi.Guid">
+                                                <div class="layui-table-cell laytable-cell-1-0-0">
+                                                    操作系统：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-1">
+                                                    @mi.OSName @mi.OSVersion
+                                                </div>
+                                            </td>
+                                            <td title="@mi.UUID">
+                                                <div class="layui-table-cell laytable-cell-1-0-2">
+                                                    机器用户：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-3">
+                                                    @if (!mi.Product.IsNullOrEmpty())
+                                                    {
+                                                        <apan>@mi.Product，</apan>
+                                                    }
+                                                    @Environment.UserName/@Environment.MachineName
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td title="@mi.CpuID">
+                                                <div class="layui-table-cell laytable-cell-1-0-0">
+                                                    处理器：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-1">
+                                                    @mi.Processor，
+                                                    @Environment.ProcessorCount
+                                                    核心，@mi.CpuRate.ToString("p0")
+                                                    @if (mi.Temperature > 0)
+                                                    {
+                                                        <span>，@mi.Temperature ℃</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-2">
+                                                    时间：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+                                                }
+                                                <div class="layui-table-cell laytable-cell-1-0-3">
+                                                    @DateTimeOffset.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                @{ var process = Process.GetCurrentProcess();}
+                                                <div class="layui-table-cell laytable-cell-1-0-0">
+                                                    内存：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-1">
+                                                    物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
+                                                    工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
+                                                    GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
+                                                    <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-2">
+                                                    进程时间：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-3">
+                                                    @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
                                                 </div>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    应用系统：
+                                                    Session：
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-29
+                                                    @httpContext.Session.Keys.Count() 个
+                                                    <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
+                                                    ，@gc
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    目录：
+                                                    @{ var app = ApplicationManager.Load();}
+                                                    应用启动：
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    应用系统：
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-29
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    目录：
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    应用系统：
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-29
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    目录：
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    应用系统：
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-29
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    目录：
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
+                                                    启动于 @app.StartTime.ToLocalTime().ToFullString()
                                                 </div>
                                             </td>
                                         </tr>
@@ -231,7 +295,6 @@
                                 </table>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -245,34 +308,48 @@
                     <div class="layui-form layui-border-box layui-table-view">
                         <div class="layui-table-box" id="AssemblyInfo">
                             <div class="layui-table-header">
-                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0">
+                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm">
                                     <thead>
                                         <tr>
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
                                                     <span>
-                                                        应用系统：
+                                                        名称
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
                                                     <span>
-                                                        重启应用系统     https://star.diyibox.com/Admin/Index/Main
+                                                        标题
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
                                                     <span>
-                                                        目录：
+                                                        文件版本
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-2">
+                                                <div class="layui-table-cell laytable-cell-1-0-3">
                                                     <span>
-                                                        /diyi/stardust/web
+                                                        内部版本
+                                                    </span>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div class="layui-table-cell laytable-cell-1-0-4">
+                                                    <span>
+                                                        编译时间
+                                                    </span>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div class="layui-table-cell laytable-cell-1-0-5">
+                                                    <span>
+                                                        描述
                                                     </span>
                                                 </div>
                                             </th>
@@ -280,72 +357,81 @@
                                     </thead>
                                 </table>
                             </div>
-                            <div class="layui-table-body">
-                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" style="width: 100%;">
+                            <div class="layui-table-body layui-table-main" _style="height:210px">
+                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm">
                                     <tbody>
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    应用系统：
+                                                    StarWeb
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-29
+                                                    星尘控制台
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    目录：
+                                                    4.6.25921.02 built by: dlab-DDVSOWINAGE040.
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
+                                                    1.1.7842.1074
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-4">
+                                                    2021-06-21 00:35:48
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-5">
+                                                    星尘，分布式服务框架。分布式资源调度，服务自动注册和发现，负载均衡，动态伸缩，故障转移，性能监控。
                                                 </div>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    许闲心
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    2016-11-28
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    于千万人之中遇见你所遇见的人，于千万年之中，时间的无涯的荒野里…
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    人生就像是一场修行
-                                                </div>
-                                            </td>
-                                        </tr>
+
+                                        @foreach (AssemblyX item in ViewBag.MyAsms)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <div class="layui-table-cell laytable-cell-1-0-0">
+                                                        @item.Name
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="layui-table-cell laytable-cell-1-0-1">
+                                                        @item.Title
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="layui-table-cell laytable-cell-1-0-2">
+                                                        @item.FileVersion
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="layui-table-cell laytable-cell-1-0-3">
+                                                        @item.Version
+                                                    </div>
+                                                </td>
+                                                <td title="@item.Version">
+                                                    <div class="layui-table-cell laytable-cell-1-0-4">
+                                                        @(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())
+                                                    </div>
+                                                </td>
+                                                <td title="@item.Description">
+                                                    <div class="layui-table-cell laytable-cell-1-0-5">
+                                                        @item.Description
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                        <style>
-                            .laytable-cell-1-0-0 {
-                                width: 100px;
-                            }
-
-                            .laytable-cell-1-0-1 {
-                            }
-
-                            .laytable-cell-1-0-2 {
-                                width: 100px;
-                            }
-
-                            .laytable-cell-1-0-3 {
-                            }
-                        </style>
                     </div>
                 </div>
             </div>
