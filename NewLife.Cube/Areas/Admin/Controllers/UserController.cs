@@ -399,6 +399,8 @@ namespace NewLife.Cube.Admin.Controllers
                 var userInfo = new UserInfo();
                 userInfo.Copy(user);
                 userInfo.SetPermission(user.Roles);
+                userInfo.SetRoleNames(user.Roles);
+
                 return Json(0, "ok", userInfo);
             }
 

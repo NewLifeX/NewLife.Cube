@@ -22,8 +22,19 @@ namespace NewLife.Cube.Areas.Admin.Models
     /// </summary>
     public class LoginModel : ICubeModel
     {
+        /// <summary>
+        /// 登录用户名
+        /// </summary>
         public String Username { get; set; }
+
+        /// <summary>
+        /// 密码
+        /// </summary>
         public String Password { get; set; }
+
+        /// <summary>
+        /// 记住登录状态
+        /// </summary>
         public Boolean Remember { get; set; }
     }
 
@@ -73,6 +84,16 @@ namespace NewLife.Cube.Areas.Admin.Models
 
         /// <summary>角色组。次要角色集合</summary>
         public String RoleIds { get; set; }
+
+        /// <summary>
+        /// 主要角色名
+        /// </summary>
+        public String RoleName { get; set; }
+
+        /// <summary>
+        /// 角色集合名，逗号隔开
+        /// </summary>
+        public String RoleNames { get; set; }
 
         /// <summary>部门。组织机构</summary>
         public Int32 DepartmentID { get; set; }
@@ -172,6 +193,18 @@ namespace NewLife.Cube.Areas.Admin.Models
             }
 
             Permission = sb.Put(true);
+        }
+
+        /// <summary>
+        /// 设置所有角色名
+        /// </summary>
+        /// <param name="roles"></param>
+        public void SetRoleNames(IRole[] roles)
+        {
+            if (roles == null) return;
+            if (!RoleNames.IsNullOrWhiteSpace()) return;
+
+            RoleNames = roles.Select(s => s.Name).Join();
         }
     }
 }
