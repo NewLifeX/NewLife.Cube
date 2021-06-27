@@ -40,6 +40,13 @@ namespace NewLife.Cube.Web
         /// <summary>本地登录检查地址。~/Admin/User/Login</summary>
         public String LoginUrl { get; set; }
 
+        /// <summary>安全密钥。keyName$keyValue</summary>
+        /// <remarks>
+        /// 公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，可以写死在代码里面。
+        /// 密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。
+        /// </remarks>
+        public String SecurityKey { get; set; }
+
         /// <summary>已登录用户</summary>
         public IManageUser Current => Provider.Current;
         #endregion
@@ -54,40 +61,11 @@ namespace NewLife.Cube.Web
             LoginUrl = "~/Admin/User/Login";
         }
 
-        //static SsoProvider()
-        //{
-        //    // 同步旧版OAuth配置到数据库
-        //    ThreadPoolX.QueueUserWorkItem(() =>
-        //    {
-        //        var set = NewLife.Web.OAuthConfig.Current;
-        //        if (set.Items != null)
-        //        {
-        //            var list = OAuthConfig.FindAll();
-        //            foreach (var item in set.Items)
-        //            {
-        //                if (item.Name.IsNullOrEmpty() || item.AppID.IsNullOrEmpty()) continue;
-
-        //                var mi = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Name));
-        //                if (mi == null)
-        //                {
-        //                    mi = new OAuthConfig
-        //                    {
-        //                        Name = item.Name,
-        //                        Enable = true
-        //                    };
-        //                    list.Add(mi);
-        //                }
-
-        //                if (mi.Server.IsNullOrEmpty() && !item.Server.IsNullOrEmpty()) mi.Server = item.Server;
-        //                if (mi.AccessServer.IsNullOrEmpty() && !item.AccessServer.IsNullOrEmpty()) mi.AccessServer = item.AccessServer;
-        //                if (mi.AppId.IsNullOrEmpty() && !item.AppID.IsNullOrEmpty()) mi.AppId = item.AppID;
-        //                if (mi.Secret.IsNullOrEmpty() && !item.Secret.IsNullOrEmpty()) mi.Secret = item.Secret;
-        //                if (mi.Scope.IsNullOrEmpty() && !item.Scope.IsNullOrEmpty()) mi.Scope = item.Scope;
-        //            }
-        //            list.Save();
-        //        }
-        //    });
-        //}
+        static SsoProvider()
+        {
+            // 生成密钥
+            new SsoProvider().GetKey(null);
+        }
         #endregion
 
         #region 方法
@@ -557,11 +535,23 @@ namespace NewLife.Cube.Web
                 if (password.StartsWithIgnoreCase("md5#"))
                 {
                     var pass = password.Substring("md5#".Length);
-                    user = XCode.Membership.User.Login(username, u =>
+                    user = User.Login(username, u =>
                     {
                         if (!u.Password.IsNullOrEmpty() && !u.Password.EqualIgnoreCase(pass))
                             throw new InvalidOperationException($"密码不正确！");
                     });
+                }
+                else if (password.StartsWithIgnoreCase("$rsa$"))
+                {
+                    var ss = password.Split('$');
+                    var key = GetKey(ss[2]);
+                    var pass = ss[ss.Length - 1];
+                    pass = RSAHelper.Decrypt(pass.ToBase64(), key).ToStr();
+
+                    if (Provider is ManageProvider prv)
+                        user = prv.LoginCore(username, pass);
+                    else
+                        user = User.Login(username, pass, false);
                 }
                 else
                 {
@@ -570,7 +560,7 @@ namespace NewLife.Cube.Web
                     if (Provider is ManageProvider prv)
                         user = prv.LoginCore(username, password);
                     else
-                        user = XCode.Membership.User.Login(username, password, false);
+                        user = User.Login(username, password, false);
                 }
                 if (user == null) throw new XException("用户{0}验证失败", username);
 
@@ -875,6 +865,43 @@ namespace NewLife.Cube.Web
             //if (dic.TryGetValue("RoleIDs", out var rids)) return rids.SplitAsInt().Where(e => Role.FindByID(e) != null).ToArray();
 
             return new Int32[0];
+        }
+
+        /// <summary>获取指定Key，默认实现从SecurityKey解析</summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public virtual String GetKey(String name)
+        {
+            var key = SecurityKey;
+            if (key.IsNullOrEmpty())
+            {
+                var file = "..\\Keys\\SsoSecurity.prvkey".GetFullPath();
+                if (File.Exists(file)) key = File.ReadAllText(file);
+
+                if (key.IsNullOrEmpty())
+                {
+                    file.EnsureDirectory(true);
+
+                    var ks = RSAHelper.GenerateParameters();
+                    File.WriteAllText(file, ks[0]);
+                    File.WriteAllText(file.TrimEnd(".prvkey") + ".pubkey", ks[1]);
+                    key = ks[0];
+                }
+            }
+            if (key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(SecurityKey), $"无法找到名为[{name}]的密钥");
+
+            var name2 = "";
+            var p = key.IndexOf('$');
+            if (p >= 0)
+            {
+                name2 = key.Substring(0, p);
+                key = key.Substring(p + 1);
+            }
+
+            if (!name.IsNullOrEmpty() && !name2.IsNullOrEmpty() && !name.EqualIgnoreCase(name2))
+                throw new ArgumentOutOfRangeException(nameof(SecurityKey), $"无法找到名为[{name}]的密钥");
+
+            return key;
         }
         #endregion
     }

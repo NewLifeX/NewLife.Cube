@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Threading;
 using XCode;
 using XCode.Membership;
 
@@ -41,7 +42,16 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         protected override Boolean Valid(CronJob entity, DataObjectMethodType type, Boolean post)
         {
-            if (post) JobService.Wake();
+            if (post)
+            {
+                var cron = new Cron();
+                if (!cron.Parse(entity.Cron)) throw new ArgumentException("Cron表达式有误！", nameof(entity.Cron));
+
+                // 重算下一次的时间
+                if (entity is IEntity e && !e.Dirtys[nameof(entity.Name)]) entity.NextTime = cron.GetNext(DateTime.Now);
+
+                JobService.Wake();
+            }
 
             return base.Valid(entity, type, post);
         }

@@ -1,17 +1,14 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Web;
 using XCode.Membership;
-using NewLife.Collections;
 using System.Security.Cryptography;
 using NewLife.Security;
 using NewLife.Cube.Web.Models;
-using System.Web;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
