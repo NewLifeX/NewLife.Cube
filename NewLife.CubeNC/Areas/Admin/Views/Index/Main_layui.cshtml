@@ -62,12 +62,20 @@
         }
 
         #AssemblyInfo .laytable-cell-1-0-5 {
-            width:700px;
+            width: 700px;
+        }
+
+        #mainpage a:focus, a:hover {
+            color: #23527c;
+        }
+
+        #mainpage a {
+            color: #337ab7;
         }
     </style>
 }
 
-<div class="layui-fluid">
+<div class="layui-fluid" id="mainpage">
     <div class="layui-row layui-col-space15">
         <div class="layui-col-md12">
             <div class="layui-card">
@@ -82,19 +90,18 @@
                                     <thead>
                                         <tr>
                                             <th colspan="4">
-                                                <div class="layui-table-cell laytable-cell-1-0-0">
+                                                <div class="layui-table-cell laytable-cell-group">
                                                     <span>
                                                         服务器信息
                                                     </span>
                                                 </div>
                                             </th>
-
                                         </tr>
                                     </thead>
                                 </table>
                             </div>
                             <div class="layui-table-body">
-                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm">
+                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
                                     <tbody>
                                         <tr>
                                             <td>
@@ -308,46 +315,46 @@
                     <div class="layui-form layui-border-box layui-table-view">
                         <div class="layui-table-box" id="AssemblyInfo">
                             <div class="layui-table-header">
-                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm">
+                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
                                     <thead>
                                         <tr>
                                             <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-0">
+                                                <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
                                                     <span>
                                                         名称
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-1">
+                                                <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
                                                     <span>
                                                         标题
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-2">
+                                                <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
                                                     <span>
                                                         文件版本
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-3">
+                                                <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
                                                     <span>
                                                         内部版本
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-4">
+                                                <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
                                                     <span>
                                                         编译时间
                                                     </span>
                                                 </div>
                                             </th>
                                             <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-5">
+                                                <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
                                                     <span>
                                                         描述
                                                     </span>
@@ -357,72 +364,39 @@
                                     </thead>
                                 </table>
                             </div>
-                            <div class="layui-table-body layui-table-main" _style="height:210px">
-                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm">
+                            <div class="layui-table-body layui-table-main">
+                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
                                     <tbody>
-                                        <tr>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-0">
-                                                    StarWeb
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-1">
-                                                    星尘控制台
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    4.6.25921.02 built by: dlab-DDVSOWINAGE040.
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    1.1.7842.1074
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-4">
-                                                    2021-06-21 00:35:48
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="layui-table-cell laytable-cell-1-0-5">
-                                                    星尘，分布式服务框架。分布式资源调度，服务自动注册和发现，负载均衡，动态伸缩，故障转移，性能监控。
-                                                </div>
-                                            </td>
-                                        </tr>
-
                                         @foreach (AssemblyX item in ViewBag.MyAsms)
                                         {
                                             <tr>
                                                 <td>
-                                                    <div class="layui-table-cell laytable-cell-1-0-0">
+                                                    <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
                                                         @item.Name
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div class="layui-table-cell laytable-cell-1-0-1">
+                                                    <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
                                                         @item.Title
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div class="layui-table-cell laytable-cell-1-0-2">
+                                                    <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
                                                         @item.FileVersion
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div class="layui-table-cell laytable-cell-1-0-3">
+                                                    <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
                                                         @item.Version
                                                     </div>
                                                 </td>
                                                 <td title="@item.Version">
-                                                    <div class="layui-table-cell laytable-cell-1-0-4">
+                                                    <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
                                                         @(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())
                                                     </div>
                                                 </td>
                                                 <td title="@item.Description">
-                                                    <div class="layui-table-cell laytable-cell-1-0-5">
+                                                    <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
                                                         @item.Description
                                                     </div>
                                                 </td>
@@ -440,7 +414,55 @@
 </div>
 
 @section scripts{
-    <script type="text/javascript">
+    <script src="/js/jquery-2.1.3.min.js"></script>
+    <script>
+        function setTable() {
+
+
+
+            var bodys = $('.layui-table-box').find('.layui-table-body table');
+            bodys.each(function () {
+                // 暂时默认表格宽度始和头不保持一致
+                var tds = $(this).find('tr:first td');
+                tds.each(function (index) {
+                    $this = $(this);
+                    var p = $this.parents('.layui-table-box');
+                    var $div = $this.children('div');
+                    var className = '.laytable-cell-' + $div.data('id');
+
+                    p.find(className).width($div.width());
+                });
+            });
+        }
+
+
+        layui.use(['jquery'], function () {
+            var $ = layui.$;
+            // 设置滚动条
+
+            $('#ServerInfo').find('.layui-table-body').on('scroll', function () {
+                $this = $(this);
+                var left = $this.scrollLeft();
+
+                $header = $this.parents('.layui-table-box').find('.layui-table-header');
+                $header.scrollLeft(left);
+            });
+
+            $('#AssemblyInfo').find('.layui-table-body').on('scroll', function () {
+                $this = $(this);
+                var left = $this.scrollLeft();
+
+                $header = $this.parents('.layui-table-box').find('.layui-table-header');
+                $header.scrollLeft(left);
+            });
+
+
+            setTable();
+
+           
+        });
+
+
 
     </script>
 }
