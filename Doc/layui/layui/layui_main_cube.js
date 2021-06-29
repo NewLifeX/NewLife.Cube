@@ -9,7 +9,7 @@
      util.event('lay-header-event', {
          // 左侧菜单
          menuLeft: function(othis) {
-             $('.layui-index-shade').addClass('layui-layer-shade');
+             //  $('.layui-index-shade').addClass('layui-layer-shade');
              $('.layui-layout').removeClass('layui-layout-admin');
          },
          // 右侧菜单
@@ -42,7 +42,7 @@
      // 遮罩层事件
      util.event('layui-layer-shade-event', {
          shadeClose: function(othis) {
-             $('.layui-index-shade').removeClass('layui-layer-shade');
+             //  $('.layui-index-shade').removeClass('layui-layer-shade');
              $('.layui-layout').addClass('layui-layout-admin');
          }
      });

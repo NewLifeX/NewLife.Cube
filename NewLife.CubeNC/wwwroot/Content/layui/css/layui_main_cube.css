@@ -4,13 +4,14 @@
      .layui-layout .layui-side {
          z-index: 1100;
      }
-     .layui-layout-admin .layui-layout-left,
-     .layui-layout-admin .layui-body,
-     .layui-layout-admin .layui-footer,
-     .layui-layout-admin .cube-tab-title {
-         left: 0;
-     }
-     .layui-layout-admin .layui-side {
+    .cube-layout-admin .layui-layout-left,
+    .cube-layout-admin .layui-body,
+    .cube-layout-admin .layui-footer,
+    .cube-layout-admin .cube-tab-title,
+    .cube-layout-admin .layui-tab-title {
+        left: 0;
+    }
+     .cube-layout-admin .layui-side {
          left: -300px;
      }
      /* 遮罩层 */
