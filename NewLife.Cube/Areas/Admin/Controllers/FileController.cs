@@ -153,7 +153,7 @@ namespace NewLife.Cube.Admin.Controllers
             // 剪切板
             ViewBag.Clip = GetClip();
 
-            return View("Index", list);
+            return View("Index_layui", list);
         }
 
         /// <summary>删除</summary>
@@ -259,6 +259,36 @@ namespace NewLife.Cube.Admin.Controllers
 
             return RedirectToAction("Index", new { r });
         }
+
+        /// <summary>上传文件</summary>
+        /// <param name="r"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [EntityAuthorize(PermissionFlags.Insert)]
+        public ActionResult UploadLayui(String r, IFormFile file)
+        {
+            try
+            {
+                if (file != null)
+                {
+                    var di = GetDirectory(r) ?? Root.AsDirectory();
+                    if (di == null) throw new Exception("找不到目录！");
+
+                    var dest = di.FullName.CombinePath(file.FileName);
+                    WriteLog("上传", true, dest);
+
+                    dest.EnsureDirectory(true);
+                    System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes());
+                }
+                return Json(new { code = 0, message = "上传成功" });
+            }
+            catch (Exception ex)
+            {
+                WriteLog("上传失败", false, ex + "");
+                return Json(new { code = 500, message = "上传失败" });
+            }
+        }
 #else
         /// <summary>上传文件</summary>
         /// <param name="r"></param>
@@ -280,6 +310,36 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             return RedirectToAction("Index", new { r });
+        }
+
+        /// <summary>上传文件</summary>
+        /// <param name="r"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Insert)]
+        public ActionResult UploadLayui(String r, HttpPostedFileBase file)
+        {
+            try
+            {
+                if (file != null)
+                {
+                    var di = GetDirectory(r) ?? Root.AsDirectory();
+                    if (di == null) throw new Exception("找不到目录！");
+
+                    var dest = di.FullName.CombinePath(file.FileName);
+                    WriteLog("上传", true, dest);
+
+                    dest.EnsureDirectory(true);
+                    file.SaveAs(dest);
+                }
+
+                return Json(new { code = 0, message = "上传成功" });
+            }
+            catch (Exception ex)
+            {
+                WriteLog("上传失败", false, ex + "");
+                return Json(new { code = 500, message = "上传失败" });
+            }
         }
 #endif
 
