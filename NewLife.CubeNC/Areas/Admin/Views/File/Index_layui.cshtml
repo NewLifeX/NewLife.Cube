@@ -5,6 +5,7 @@
     var fs = Model as List<FileItem>;
     var r = ViewBag.Current as String;
     var clips = ViewBag.Clip as ICollection<FileItem>;
+    var message = ViewBag.Message + "";
 }
 
 @section css{
@@ -16,6 +17,10 @@
 
         .layui-table-box a {
             color: #337ab7;
+        }
+
+        .layui-btn-container {
+            padding: 15px 0 0 15px;
         }
     </style>
 }
@@ -172,8 +177,12 @@
             // 表格设置
             setTableScroll();
             setTable();
+            var msg ="@message";
+            if (msg!='') {
+                layer.msg(msg);
+            }
 
-            // 选文件后上传
+           // 选文件后上传
             upload.render({
                 elem: '#selectFile'
                 , url: '/Admin/File/UploadLayui' //改成您自己的上传接口
@@ -181,7 +190,9 @@
                 , bindAction: '#startUpload'
                 , done: function (res) {
                     layer.msg(res.message);
+                    location.href = '/Admin/File/Index?Message=' + res.message;
                 }
+                , accept:'file'
             });
 
             // 设置按钮事件

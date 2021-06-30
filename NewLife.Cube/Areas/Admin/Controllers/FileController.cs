@@ -106,7 +106,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>文件管理主视图</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
-        public ActionResult Index(String r, String sort)
+        public ActionResult Index(String r, String sort, String message = "")
         {
             var di = GetDirectory(r) ?? Root.AsDirectory();
 
@@ -152,6 +152,8 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 剪切板
             ViewBag.Clip = GetClip();
+            // 提示信息
+            ViewBag.Message = message;
 
             return View("Index_layui", list);
         }
