@@ -66,7 +66,7 @@ namespace NewLife.Cube.Admin.Controllers
                 list.Add(di);
             }
 
-            return View("Index", list);
+            return View("Index_layui", list);
         }
 
         /// <summary>备份数据库</summary>

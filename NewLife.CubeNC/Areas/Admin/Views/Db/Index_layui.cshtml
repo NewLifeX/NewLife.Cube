@@ -1,49 +1,30 @@
-﻿@using System.Diagnostics;
-@using System.Collections;
-@using System.Reflection;
-@using System.Runtime.Versioning;
-@using NewLife.Common;
-@using NewLife.Cube.Extensions
+﻿@using NewLife.Common;
+@using NewLife.Cube.Admin;
+@using XCode.DataAccessLayer;
 @{
     Layout = NewLife.Cube.Setting.Current.Layout;
-
-    ViewBag.Title = "进程模块";
-
-    var isAll = String.Equals("All", Context.Request.GetRequestValue("Mode"), StringComparison.OrdinalIgnoreCase);
-
-    var process = Process.GetCurrentProcess();
-    var list = new List<ProcessModule>();
-    foreach (ProcessModule item in process.Modules)
-    {
-        try
-        {
-            if (isAll || item.FileVersionInfo.CompanyName != "Microsoft Corporation") { list.Add(item); }
-        }
-        catch { }
-    }
+    var dbs = Model as IList<DbItem>;
 }
 
 @section css{
     <link rel="stylesheet" href="/layui/css/layui_cube.css">
+    <style>
+        .layui-table-box a:focus, a:hover {
+            color: #23527c;
+        }
+
+        .layui-table-box a {
+            color: #337ab7;
+        }
+    </style>
 }
 
 <div class="layui-fluid" id="mainpage">
-    <div class="layui-col-md12">
-        <div class="layui-card">
-            <div class="layui-card-header">
-                进程模块(@process.ProcessName , PID=@process.Id)
-                @if (!isAll)
-                {
-                    <text>（<a href="?Mode=All">完整</a>，仅用户）</text>
-                }
-                else
-                {
-                    <text>（完整，<a href="?Mode=OnlyUser">仅用户</a>）</text>
-                }
-            </div>
-            <div class="layui-card-body">
-                <div class="layui-form layui-border-box layui-table-view">
-                    <div class="layui-table-box" id="AssemblyInfo">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-panel">
+                <div class="layui-form layui-border-box layui-table-view" style="margin:10px;">
+                    <div class="layui-table-box">
                         <div class="layui-table-header">
                             <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
                                 <thead>
@@ -51,49 +32,49 @@
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
                                                 <span>
-                                                    模块名称
+                                                    名称
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
                                                 <span>
-                                                    公司名称
+                                                    类型
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
                                                 <span>
-                                                    产品名称
+                                                    连接字符串
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
                                                 <span>
-                                                    描述
+                                                    版本
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
                                                 <span>
-                                                    版本
+                                                    备份
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
                                                 <span>
-                                                    大小
+                                                    备份并压缩
                                                 </span>
                                             </div>
                                         </th>
                                         <th>
                                             <div class="layui-table-cell laytable-cell-1-0-6" data-id="1-0-6">
                                                 <span>
-                                                    路径
+                                                    下载表结构
                                                 </span>
                                             </div>
                                         </th>
@@ -104,42 +85,72 @@
                         <div class="layui-table-body layui-table-main">
                             <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
                                 <tbody>
-                                    @foreach (ProcessModule item in list)
+                                    @foreach (var item in dbs)
                                     {
+                                        var dal = DAL.Create(item.Name);
+                                        // 密码需要保密
+                                        var str = item.ConnStr;
+                                        if (!str.IsNullOrEmpty())
+                                        {
+                                            var ss = str.Split(";");
+                                            for (var i = 0; i < ss.Length; i++)
+                                            {
+                                                if (ss[i].StartsWithIgnoreCase("password=", "pass=", "pwd="))
+                                                {
+                                                    ss[i] = ss[i].Substring(null, "=") + "={保密}";
+                                                    str = ss.Join(";");
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        var str2 = dal.Db.ConnectionString;
+                                        if (!str2.IsNullOrEmpty())
+                                        {
+                                            var ss = str2.Split(";");
+                                            for (var i = 0; i < ss.Length; i++)
+                                            {
+                                                if (ss[i].StartsWithIgnoreCase("password=", "pass=", "pwd="))
+                                                {
+                                                    ss[i] = ss[i].Substring(null, "=") + "={保密}";
+                                                    str2 = ss.Join(";");
+                                                    break;
+                                                }
+                                            }
+                                        }
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
-                                                    @item.ModuleName
+                                                    @item.Name
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
-                                                    @item.FileVersionInfo.CompanyName
+                                                    @item.Type
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td title="@str2">
                                                 <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
-                                                    @item.FileVersionInfo.ProductName
+                                                    @str
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
-                                                    @item.FileVersionInfo.FileDescription
+                                                    @item.Version
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
-                                                    @item.FileVersionInfo.FileVersion
+                                                    @Html.ActionLink("备份", "Backup", new { Name = item.Name })，共 @item.Backups.ToString("n0")个
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
-                                                    @item.ModuleMemorySize
+                                                    @Html.ActionLink("备份并压缩", "BackupAndCompress", new { Name = item.Name })
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-6" data-id="1-0-6">
-                                                    @item.FileName
+                                                    @Html.ActionLink("下载", "Download", new { Name = item.Name })
                                                 </div>
                                             </td>
                                         </tr>
@@ -162,7 +173,6 @@
             var $ = layui.$;
 
             setTableScroll();
-
             setTable();
         });
     </script>

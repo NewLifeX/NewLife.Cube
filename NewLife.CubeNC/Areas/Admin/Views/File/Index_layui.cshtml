@@ -1,0 +1,265 @@
+﻿@using System.Diagnostics;
+@using NewLife.Common;
+@using NewLife.Cube.Admin;
+@{
+    var fs = Model as List<FileItem>;
+    var r = ViewBag.Current as String;
+    var clips = ViewBag.Clip as ICollection<FileItem>;
+}
+
+@section css{
+    <link rel="stylesheet" href="/layui/css/layui_cube.css">
+    <style>
+        .layui-table-box a:focus, a:hover {
+            color: #23527c;
+        }
+
+        .layui-table-box a {
+            color: #337ab7;
+        }
+    </style>
+}
+
+<div class="layui-fluid" id="mainpage">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-panel">
+                <div class="layui-form layui-border-box layui-table-view" style="margin:10px;">
+                    <div class="layui-table-box">
+                        <div class="layui-btn-container">
+                            <button type="button" class="layui-btn layui-btn-normal" id="test8">选择文件</button>
+                            <button type="button" class="layui-btn" id="test9">开始上传</button>
+                        </div>
+
+                        <div class="layui-table-header">
+                            <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
+                                                <span>
+                                                    名称
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
+                                                <span>
+                                                    大小
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
+                                                <span>
+                                                    修改时间
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
+                                                <span>
+                                                    复制
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
+                                                <span>
+                                                    压缩
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
+                                                <span>
+                                                    删除
+                                                </span>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="layui-table-body layui-table-main">
+                            <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                <tbody>
+
+                                    @*<tr>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
+                                                    @item.Name
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
+                                                    @item.Type
+                                                </div>
+                                            </td>
+                                            <td title="@str2">
+                                                <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
+                                                    @str
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
+                                                    @item.Version
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
+                                                    @Html.ActionLink("备份", "Backup", new { Name = item.Name })，共 @item.Backups.ToString("n0")个
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
+                                                    @Html.ActionLink("备份并压缩", "BackupAndCompress", new { Name = item.Name })
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-6" data-id="1-0-6">
+                                                    @Html.ActionLink("下载", "Download", new { Name = item.Name })
+                                                </div>
+                                            </td>
+                                        </tr>*@
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script src="/js/jquery-2.1.3.min.js"></script>
+    <script src="/layui/layui_cube.js"></script>
+    <script>
+        layui.use(['jquery', 'upload'], function () {
+            var $ = layui.$,
+                upload = layui.upload;
+
+            setTableScroll();
+            setTable();
+
+            //选完文件后不自动上传
+            upload.render({
+                elem: '#test8'
+                , url: 'https://httpbin.org/post' //改成您自己的上传接口
+                , auto: false
+                //,multiple: true
+                , bindAction: '#test9'
+                , done: function (res) {
+                    layer.msg('上传成功');
+                    console.log(res)
+                }
+            });
+        });
+    </script>
+}
+
+
+<div class="form-inline">
+    <form action="~/Admin/File" id="tool" method="post">
+        <div class="input-group">
+            <span class="input-group-addon">
+                <i class="ace-icon fa fa-check"></i>
+            </span>
+            <input name="r" type="search" id="r" value="@r" class="form-control" placeholder="当前路径" />
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <span class="glyphicon glyphicon-folder-open icon-on-right bigger-110"></span>
+                    打开
+                </button>
+            </span>
+        </div>
+        <div class="input-group">
+            <span class="input-group-addon">
+                <i class="glyphicon glyphicon-file"></i>
+            </span>
+            <input name="file" type="file" id="file" placeholder="上传文件" />
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-success btn-sm" onclick="$('#tool').attr('action', '/Admin/File/Upload');$('#tool').attr('enctype', 'multipart/form-data'); return true;">
+                    <span class="glyphicon glyphicon-plus icon-on-right bigger-110"></span>
+                    上传
+                </button>
+            </span>
+        </div>
+        @if (clips.Count > 0)
+        {
+            <div class="input-group">
+                <span class="input-group-addon">
+                    <i class="glyphicon glyphicon-floppy-disk" title="剪切板共有 @clips.Count 项">@clips.Count</i>
+                </span>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-pink btn-sm" onclick="location.href = '/Admin/File/Paste?r=@r';">
+                        <span class="glyphicon glyphicon-floppy-save icon-on-right bigger-110"></span>
+                        粘贴
+                    </button>
+                </span>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-gray btn-sm" onclick="location.href = '/Admin/File/Move?r=@r';">
+                        <span class="glyphicon glyphicon-floppy-save icon-on-right bigger-110"></span>
+                        移动
+                    </button>
+                </span>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-yellow btn-sm" onclick="location.href = '/Admin/File/ClearClipboard?r=@r';">
+                        <span class="glyphicon glyphicon-retweet icon-on-right bigger-110"></span>
+                        清空
+                    </button>
+                </span>
+            </div>
+        }
+    </form>
+</div>
+<table class="table table-bordered table-hover table-striped table-condensed">
+    <thead>
+        <tr>
+            <th class="text-center"><a href="~/Admin/File?r=@r&sort=name">名称</a></th>
+            <th class="text-center"><a href="~/Admin/File?r=@r&sort=size">大小</a></th>
+            <th class="text-center"><a href="~/Admin/File?r=@r&sort=lastwrite">修改时间</a></th>
+            <th class="text-center">复制</th>
+            <th class="text-center">压缩</th>
+            <th class="text-center">删除</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in fs)
+        {
+            <tr>
+                @if (item.Directory)
+                {
+                    <td>&nbsp;&nbsp;<a href="~/Admin/File?r=@item.FullName" title="进入目录">@item.Name</a></td>
+                }
+                else
+                {
+                    <td>&nbsp;&nbsp;<a href="~/Admin/File/Download?r=@item.FullName" title="下载文件">@item.Name</a></td>
+                }
+                <td class="text-right">@item.Size</td>
+                <td class="text-center">@item.LastWrite.ToFullString("")</td>
+                <td class="text-center">
+                    @if (!clips.Any(e => e.FullName == item.FullName))
+                    {
+                        <a href="~/Admin/File/Copy?r=@r&f=@item.FullName" title="复制到剪切板，然后去目标目录粘贴">复制</a>
+                    }
+                    else
+                    {
+                        <a href="~/Admin/File/CancelCopy?r=@r&f=@item.FullName" title="从剪切板移除">取消复制</a>
+                    }
+                </td>
+                @if (item.Name.EndsWithIgnoreCase(".zip"))
+                {
+                    <td class="text-center"><a href="~/Admin/File/Decompress?r=@item.FullName" title="解压缩到当前目录">解压缩</a></td>
+                }
+                else
+                {
+                    <td class="text-center"><a href="~/Admin/File/Compress?r=@item.FullName" title="压缩到当前目录，加上时间后缀">压缩</a></td>
+                }
+                <td class="text-center"><a href="~/Admin/File/Delete?r=@item.FullName" onclick="return confirm('确认删除？');">删除</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
