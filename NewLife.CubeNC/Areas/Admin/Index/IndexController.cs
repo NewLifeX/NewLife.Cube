@@ -92,7 +92,7 @@ namespace NewLife.Cube.Admin.Controllers
             return ((id + "").ToLower()) switch
             {
                 "processmodules" => View("ProcessModules"),
-                "assembly" => View("Assembly"),
+                "assembly" => View("Assembly_layui"),
                 "session" => View("Session"),
                 "cache" => View("Cache"),
                 "servervar" => View("ServerVar"),
