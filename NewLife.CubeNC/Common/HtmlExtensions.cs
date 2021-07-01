@@ -34,14 +34,14 @@ namespace NewLife.Cube
             switch (Type.GetTypeCode(type))
             {
                 case TypeCode.Boolean:
-                    return Html.ForBoolean(name, value.ToBoolean());
+                    return Html.ForBoolean(name, value.ToBoolean(), htmlAttributes);
                 case TypeCode.DateTime:
-                    return Html.ForDateTime(name, value.ToDateTime());
+                    return Html.ForDateTime(name, value.ToDateTime(), format, htmlAttributes);
                 case TypeCode.Decimal:
-                    return Html.ForDecimal(name, Convert.ToDecimal(value));
+                    return Html.ForDecimal(name, Convert.ToDecimal(value), format, htmlAttributes);
                 case TypeCode.Single:
                 case TypeCode.Double:
-                    return Html.ForDouble(name, value.ToDouble());
+                    return Html.ForDouble(name, value.ToDouble(), format, htmlAttributes);
                 case TypeCode.Byte:
                 case TypeCode.SByte:
                 case TypeCode.Int16:
@@ -51,11 +51,11 @@ namespace NewLife.Cube
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
                     if (type.IsEnum)
-                        return Html.ForEnum(name, value ?? 0.ChangeType(type), format);
+                        return Html.ForEnum(name, value ?? 0.ChangeType(type));
                     else
-                        return Html.ForInt(name, Convert.ToInt64(value));
+                        return Html.ForInt(name, Convert.ToInt64(value), format, htmlAttributes);
                 case TypeCode.String:
-                    return Html.ForString(name, value + "");
+                    return Html.ForString(name, value + "", 0, htmlAttributes);
                 default:
                     return Html.ForObject(name, value);
             }

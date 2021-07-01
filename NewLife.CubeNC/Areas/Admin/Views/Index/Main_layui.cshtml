@@ -174,9 +174,9 @@
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
                                                     @AppDomain.CurrentDomain.FriendlyName
-                                                    <a href="@Url.Action("MainLayui", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
-                                                    <a href="@Url.Action("MainLayui", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
-                                                    <a href="@Url.Action("MainLayui", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
+                                                    <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
+                                                    <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
+                                                    <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
                                                 </div>
                                             </td>
                                             <td>
@@ -282,7 +282,7 @@
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-1">
                                                     @httpContext.Session.Keys.Count() 个
-                                                    <a href="@Url.Action("MainLayui", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
+                                                    <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
                                                     ，@gc
                                                 </div>
                                             </td>

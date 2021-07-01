@@ -14,14 +14,17 @@ namespace NewLife.Cube
         #region 属性
         /// <summary>是否启用调试。默认true</summary>
         [Description("调试")]
+        [Category("通用")]
         public Boolean Debug { get; set; } = true;
 
         /// <summary>显示运行时间</summary>
         [Description("显示运行时间")]
+        [Category("通用")]
         public Boolean ShowRunTime { get; set; } = true;
 
         /// <summary>头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取</summary>
         [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取")]
+        [Category("通用")]
 #if __CORE__
         public String AvatarPath { get; set; } = "Avatars";
 #else
@@ -30,30 +33,37 @@ namespace NewLife.Cube
 
         /// <summary>上传目录。默认Uploads</summary>
         [Description("上传目录。默认Uploads")]
+        [Category("通用")]
         public String UploadPath { get; set; } = "Uploads";
 
         /// <summary>静态资源目录。默认wwwroot</summary>
         [Description("静态资源目录。默认wwwroot")]
+        [Category("通用")]
         public String WebRootPath { get; set; } = "wwwroot";
 
         /// <summary>资源地址。指向CDN，如 https://sso.newlifex.com/content/，留空表示使用本地</summary>
         [Description("资源地址。指向CDN，如 https://sso.newlifex.com/content/，留空表示使用本地")]
+        [Category("通用")]
         public String ResourceUrl { get; set; }
 
         /// <summary>跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域</summary>
         [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
+        [Category("通用")]
         public String CorsOrigins { get; set; }
 
         /// <summary>在iframe中展示。SAMEORIGIN-允许相同域名，ALLOWALL-允许任何域名</summary>
         [Description("在iframe中展示。默认为空-只允许相同域名，SAMEORIGIN-允许相同域名和端口，ALLOWALL-允许任何域名")]
+        [Category("通用")]
         public String XFrameOptions { get; set; }
 
         /// <summary>Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）</summary>
         [Description("Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）")]
+        [Category("通用")]
         public Int32 SameSiteMode { get; set; } = -1;
 
         /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
         [Description("分享有效期。分享令牌的有效期，默认7200秒")]
+        [Category("通用")]
         public Int32 ShareExpire { get; set; } = 7200;
         #endregion
 
@@ -153,6 +163,11 @@ namespace NewLife.Cube
         [Description("布局页。")]
         [Category("界面配置")]
         public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
+
+        /// <summary>皮肤配置。（默认：""=ACE,"layui"=layui）</summary>
+        [Description("皮肤配置。（默认：\"\"=ACE,\"layui\"=layui）")]
+        [Category("界面配置")]
+        public String SkinPage { get; set; } = "";
 
         /// <summary>登录提示。留空表示不显示登录提示信息</summary>
         [Description("登录提示。留空表示不显示登录提示信息")]
