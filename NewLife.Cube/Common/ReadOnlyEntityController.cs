@@ -440,7 +440,8 @@ namespace NewLife.Cube
             // Json输出
             if (IsJsonRequest) return Json(0, null, list, new { pager = p });
 
-            return View("List", list);
+            var skin = Setting.Current.SkinPage;
+            return View(skin.IsNullOrEmpty() ? "List" : "List_" + skin, list);
         }
 
         /// <summary>表单，查看</summary>

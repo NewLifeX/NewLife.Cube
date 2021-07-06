@@ -71,7 +71,7 @@ namespace NewLife.Cube.Admin.Controllers
             ViewBag.Main = startPage;
             ViewBag.Menus = GetMenu();
 
-            var skin = Setting.Current.SkinPage;
+            var skin = Setting.Current.FrameSkin;
             return View(skin.IsNullOrEmpty() ? "index" : "index_" + skin);
         }
 
@@ -91,58 +91,16 @@ namespace NewLife.Cube.Admin.Controllers
             ViewBag.Asms = Asms;
 
             var skin = Setting.Current.SkinPage;
-            if (skin.IsNullOrEmpty())
+            return ((id + "").ToLower()) switch
             {
-                return ((id + "").ToLower()) switch
-                {
-                    "processmodules" => View("ProcessModules"),
-                    "assembly" => View("Assembly"),
-                    "session" => View("Session"),
-                    "cache" => View("Cache"),
-                    "servervar" => View("ServerVar"),
-                    _ => View("Main"),
-                };
-            }
-            else
-            {
-                return ((id + "").ToLower()) switch
-                {
-                    "processmodules" => View("ProcessModules_" + skin),
-                    "assembly" => View("Assembly_" + skin),
-                    "session" => View("Session_" + skin),
-                    "cache" => View("Cache_" + skin),
-                    "servervar" => View("ServerVar_" + skin),
-                    _ => View("Main_" + skin),
-                };
-            }
+                "processmodules" => View(skin.IsNullOrEmpty() ? "ProcessModules" : "ProcessModules_" + skin),
+                "assembly" => View(skin.IsNullOrEmpty() ? "Assembly" : "Assembly_" + skin),
+                "session" => View(skin.IsNullOrEmpty() ? "Session" : "Session_" + skin),
+                "cache" => View(skin.IsNullOrEmpty() ? "Cache" : "Cache_" + skin),
+                "servervar" => View(skin.IsNullOrEmpty() ? "ServerVar" : "ServerVar_" + skin),
+                _ => View(skin.IsNullOrEmpty() ? "Main" : "Main_" + skin),
+            };
         }
-
-        ///// <summary>服务器信息(layui)</summary>
-        ///// <param name="id"></param>
-        ///// <returns></returns>
-        //[DisplayName("服务器信息(layui)")]
-        //[EntityAuthorize(PermissionFlags.Detail)]
-        //public ActionResult MainLayui(String id)
-        //{
-        //    ViewBag.Act = id;
-        //    ViewBag.Config = SysConfig.Current;
-        //    ViewBag.MyAsms = GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
-
-        //    var Asms = AssemblyX.GetAssemblies(null).ToArray();
-        //    Asms = Asms.OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
-        //    ViewBag.Asms = Asms;
-
-        //    return ((id + "").ToLower()) switch
-        //    {
-        //        "processmodules" => View("ProcessModules_layui"),
-        //        "assembly" => View("Assembly_layui"),
-        //        "session" => View("Session_layui"),
-        //        "cache" => View("Cache_layui"),
-        //        "servervar" => View("ServerVar_layui"),
-        //        _ => View("Main_layui"),
-        //    };
-        //}
-
 
         /// <summary>获取当前应用程序的所有程序集，不包括系统程序集，仅限本目录</summary>
         /// <returns></returns>

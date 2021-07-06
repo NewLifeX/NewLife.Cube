@@ -169,6 +169,11 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public String SkinPage { get; set; } = "";
 
+        /// <summary>框架皮肤配置。（默认：""=ACE,"layui"=layui）</summary>
+        [Description("框架皮肤配置。（默认：\"\"=ACE,\"layui\"=layui）")]
+        [Category("界面配置")]
+        public String FrameSkin { get; set; } = "";
+
         /// <summary>登录提示。留空表示不显示登录提示信息</summary>
         [Description("登录提示。留空表示不显示登录提示信息")]
         [Category("界面配置")]
