@@ -151,10 +151,29 @@ namespace NewLife.Cube.Entity
         }
 
         /// <summary>验证来源地址</summary>
-        /// <param name="source"></param>
+        /// <param name="ip"></param>
         /// <returns></returns>
-        public Boolean ValidSource(String source)
+        public Boolean ValidSource(String ip)
         {
+            if (ip.IsNullOrEmpty()) return true;
+
+            // 匹配黑名单
+            var ps = Black.Split(",", ";");
+            if (ps != null && ps.Length > 0)
+            {
+                if (ps.Any(e => ip.IsMatch(ip))) return false;
+            }
+
+            // 匹配白名单
+            ps = White.Split(",", ";");
+            if (ps != null && ps.Length > 0)
+            {
+                if (ps.Any(e => ip.IsMatch(ip))) return true;
+
+                // 白名单存在，但匹配失败，则直接失败
+                return false;
+            }
+
             return true;
         }
 
