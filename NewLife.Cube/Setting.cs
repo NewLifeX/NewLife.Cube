@@ -164,6 +164,11 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
 
+        /// <summary>皮肤。（默认：""=ACE,"layui"=layui）</summary>
+        [Description("皮肤。（默认：\"\"=ACE,\"layui\"=layui）")]
+        [Category("界面配置")]
+        public String Skin { get; set; } = "";
+
         /// <summary>皮肤配置。（默认：""=ACE,"layui"=layui）</summary>
         [Description("皮肤配置。（默认：\"\"=ACE,\"layui\"=layui）")]
         [Category("界面配置")]

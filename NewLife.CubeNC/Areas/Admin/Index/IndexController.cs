@@ -71,8 +71,7 @@ namespace NewLife.Cube.Admin.Controllers
             ViewBag.Main = startPage;
             ViewBag.Menus = GetMenu();
 
-            var skin = Setting.Current.FrameSkin;
-            return View(skin.IsNullOrEmpty() ? "index" : "index_" + skin);
+            return View();
         }
 
         /// <summary>服务器信息</summary>
@@ -90,15 +89,14 @@ namespace NewLife.Cube.Admin.Controllers
             Asms = Asms.OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
             ViewBag.Asms = Asms;
 
-            var skin = Setting.Current.SkinPage;
             return ((id + "").ToLower()) switch
             {
-                "processmodules" => View(skin.IsNullOrEmpty() ? "ProcessModules" : "ProcessModules_" + skin),
-                "assembly" => View(skin.IsNullOrEmpty() ? "Assembly" : "Assembly_" + skin),
-                "session" => View(skin.IsNullOrEmpty() ? "Session" : "Session_" + skin),
-                "cache" => View(skin.IsNullOrEmpty() ? "Cache" : "Cache_" + skin),
-                "servervar" => View(skin.IsNullOrEmpty() ? "ServerVar" : "ServerVar_" + skin),
-                _ => View(skin.IsNullOrEmpty() ? "Main" : "Main_" + skin),
+                "processmodules" => View("ProcessModules"),
+                "assembly" => View("Assembly"),
+                "session" => View("Session"),
+                "cache" => View("Cache"),
+                "servervar" => View("ServerVar"),
+                _ => View(),
             };
         }
 
