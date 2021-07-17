@@ -159,10 +159,10 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public String StartPage { get; set; }
 
-        /// <summary>布局页。</summary>
-        [Description("布局页。")]
-        [Category("界面配置")]
-        public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
+        ///// <summary>布局页。</summary>
+        //[Description("布局页。")]
+        //[Category("界面配置")]
+        //public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
 
         /// <summary>皮肤。（默认：""=ACE,"layui"=layui）</summary>
         [Description("皮肤。（默认：\"\"=ACE,\"layui\"=layui）")]
