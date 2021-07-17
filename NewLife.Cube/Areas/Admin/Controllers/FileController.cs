@@ -155,12 +155,7 @@ namespace NewLife.Cube.Admin.Controllers
             // 提示信息
             ViewBag.Message = message;
 
-            var skin = Setting.Current.SkinPage;
-
-            if (skin.IsNullOrEmpty())
-                return View("Index", list);
-            else
-                return View("Index_" + skin, list);
+            return View("Index", list);
         }
 
         /// <summary>删除</summary>

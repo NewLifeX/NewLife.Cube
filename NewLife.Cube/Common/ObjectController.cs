@@ -107,19 +107,7 @@ namespace NewLife.Cube
                 model.Properties = dic;
             }
 
-            if (!IsJsonRequest)
-            {
-                var skin = Setting.Current.SkinPage;
-                if (skin.IsNullOrEmpty())
-                {
-                    return View("ObjectForm", model);
-                }
-                else
-                {
-                    return View("ObjectForm_" + skin, model);
-                }
-            }
-
+            if (!IsJsonRequest) return View("ObjectForm", model);
 
             foreach (var property in model.Properties)
             {

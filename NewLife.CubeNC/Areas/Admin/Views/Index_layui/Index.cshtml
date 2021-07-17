@@ -12,8 +12,6 @@
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
-
-    var mainpath = "/Admin/Index/Main" + set.SkinPage;
 }
 
 <!DOCTYPE html>
@@ -39,7 +37,7 @@
             <!-- 标签头 -->
             <div class="cube-tab-title">
                 <ul class='layui-tab-title'>
-                    <li class="layui-this cube-homeHeader" lay-id="@mainpath">
+                    <li class="layui-this cube-homeHeader" lay-id="/Admin/Index_layui/Main">
                         <i class="layui-icon layui-icon-home"></i>
                     </li>
                 </ul>
