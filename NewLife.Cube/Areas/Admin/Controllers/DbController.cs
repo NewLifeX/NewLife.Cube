@@ -66,7 +66,12 @@ namespace NewLife.Cube.Admin.Controllers
                 list.Add(di);
             }
 
-            return View("Index_layui", list);
+            var skin = Setting.Current.SkinPage;
+
+            if (skin.IsNullOrEmpty())
+                return View("Index", list);
+            else
+                return View("Index_" + skin, list);
         }
 
         /// <summary>备份数据库</summary>
