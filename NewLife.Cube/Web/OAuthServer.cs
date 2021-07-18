@@ -57,6 +57,34 @@ namespace NewLife.Web
             return app;
         }
 
+        /// <summary>验证应用</summary>
+        /// <param name="client_id"></param>
+        /// <param name="client_secret"></param>
+        /// <param name="ip"></param>
+        /// <returns></returns>
+        public virtual App Auth(String client_id, String client_secret, String ip)
+        {
+            var app = App.FindByName(client_id);
+            //if (app == null) throw new XException("未找到应用[{0}]", appid);
+            // 找不到应用时自动创建，但处于禁用状态
+            if (app == null)
+            {
+                app = new App { Name = client_id };
+                app.Insert();
+            }
+
+            if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
+
+            if (!app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);
+            
+            if (!client_secret.IsNullOrEmpty())
+            {
+                if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
+            }
+
+            return app;
+        }
+
         /// <summary>验证用户身份</summary>
         /// <remarks>
         /// 子系统需要验证访问者身份时，引导用户跳转到这里。

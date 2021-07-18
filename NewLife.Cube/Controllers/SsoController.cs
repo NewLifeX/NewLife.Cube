@@ -780,7 +780,7 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public ActionResult GetKey(String client_id, String client_secret)
         {
-            var app = OAuth.Auth(client_id, client_secret);
+            var app = OAuth.Auth(client_id, client_secret, UserHost);
             if (app == null) throw new ArgumentException($"无效应用[{client_id}]");
 
             var prv = OAuth.GetProvider();
