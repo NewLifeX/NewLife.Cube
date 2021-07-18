@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Web;
 using System.Xml.Serialization;
 using NewLife.Common;
@@ -26,7 +27,7 @@ using XCode.Membership;
 using XCode.Model;
 using NewLife.Security;
 using System.Threading.Tasks;
-
+using NewLife.Threading;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -1394,6 +1395,18 @@ namespace NewLife.Cube
                 var arr = new[] { PermissionFlags.Insert, PermissionFlags.Update, PermissionFlags.Delete }.Select(e => (Int32)e).ToArray();
                 dic = dic.Where(e => !arr.Contains(e.Value)).ToDictionary(e => e.Key, e => e.Value);
             }
+
+            ThreadPoolX.QueueUserWorkItem(() =>
+            {
+                // 等菜单缓存准备好
+                Thread.Sleep(1000);
+
+                // 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
+                // var list = GetType().GetCustomAttributes();
+                // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
+                // 生成模型表模型列
+                ModelTable.ScanModel(null, menu, Entity<TEntity>.Meta.Factory);
+            });
 
             return dic;
         }

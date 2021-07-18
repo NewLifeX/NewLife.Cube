@@ -26,6 +26,8 @@ namespace NewLife.Cube.Admin.Controllers
                 df.DisplayName = "列集合";
                 df.Url = "ModelColumn?tableId={Id}";
             }
+
+            //Init();
         }
 
         private static Boolean _inited;
@@ -57,7 +59,7 @@ namespace NewLife.Cube.Admin.Controllers
 
         protected override IEnumerable<ModelTable> Search(Pager p)
         {
-            Init();
+            //Init();
 
             var category = p["category"];
             var start = p["dtStart"].ToDateTime();

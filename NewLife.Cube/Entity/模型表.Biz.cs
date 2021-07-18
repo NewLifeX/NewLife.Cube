@@ -139,7 +139,6 @@ namespace NewLife.Cube.Entity
             foreach (var menu in menus.OrderByDescending(e => e.Sort))
             {
                 if (menu.FullName.IsNullOrEmpty()) continue;
-
                 var ctrl = menu.FullName.GetTypeEx();
                 if (ctrl == null || !ctrl.BaseType.IsGenericType) continue;
 
@@ -149,44 +148,63 @@ namespace NewLife.Cube.Entity
                 var factory = entityType.AsFactory();
                 if (factory == null) continue;
 
-                var table = models.FirstOrDefault(e => e.Name == entityType.Name);
-                if (table == null) table = new ModelTable { Name = entityType.Name, Enable = true };
-
-                table.Category = areaName;
-                table.Url = menu.Url.TrimStart("~");
-                table.Controller = ctrl.FullName;
-
-                table.Fill(factory.Table);
-                table.Save();
-
-                var columns = ModelColumn.FindAllByTableId(table.Id);
-                var idx = 1;
-                foreach (var field in factory.AllFields)
-                {
-                    if (!field.IsDataObjectField && field.Type.GetTypeCode() == TypeCode.Object) continue;
-
-                    var column = columns.FirstOrDefault(e => e.Name == field.Name);
-                    if (column == null)
-                    {
-                        column = new ModelColumn
-                        {
-                            Name = field.Name,
-                            Enable = true,
-
-                            ShowInList = true,
-                            ShowInForm = true,
-                        };
-                        columns.Add(column);
-                    }
-
-                    column.TableId = table.Id;
-                    column.Sort = idx++;
-
-                    column.Fill(field);
-                    //column.Save();
-                }
-                columns.Save();
+                ScanModel(areaName, menu, factory);
             }
+        }
+
+        /// <summary>
+        /// 根据菜单和实体工厂创建模型表和模型列
+        /// </summary>
+        /// <param name="menu"></param>
+        /// <param name="factory"></param>
+        public static void ScanModel(String areaName, IMenu menu, IEntityFactory factory)
+        {
+            var entityTypeName = menu.Name; // 菜单名从控制器名称里面取
+            var ctrlFullName = menu.FullName;
+
+            if (areaName.IsNullOrWhiteSpace()) areaName = menu.Parent.Name;
+            // var areaName = menu.Parent.Name; // 这里Parent有可能为空，读取不到父级
+
+            var table = ModelTable.FindByCategoryAndName(areaName, entityTypeName);
+            // var table = ModelTable.Meta.Cache.Find(e => e.Category.EqualIgnoreCase(areaName) && e.Name == entityTypeName);
+            // var table = ModelTable.Find(ModelTable._.Category == areaName & ModelTable._.Name == entityTypeName);
+
+            if (table == null) table = new ModelTable { Name = entityTypeName, Enable = true };
+
+            table.Category = areaName;
+            table.Url = menu.Url.TrimStart("~");
+            table.Controller = ctrlFullName;
+
+            table.Fill(factory.Table);
+            table.Save();
+
+            var columns = ModelColumn.FindAllByTableId(table.Id);
+            var idx = 1;
+            foreach (var field in factory.AllFields)
+            {
+                if (!field.IsDataObjectField && field.Type.GetTypeCode() == TypeCode.Object) continue;
+
+                var column = columns.FirstOrDefault(e => e.Name == field.Name);
+                if (column == null)
+                {
+                    column = new ModelColumn
+                    {
+                        Name = field.Name,
+                        Enable = true,
+
+                        ShowInList = true,
+                        ShowInForm = true,
+                    };
+                    columns.Add(column);
+                }
+
+                column.TableId = table.Id;
+                column.Sort = idx++;
+
+                column.Fill(field);
+                //column.Save();
+            }
+            columns.Save();
         }
         #endregion
     }
