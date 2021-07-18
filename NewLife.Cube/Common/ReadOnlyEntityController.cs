@@ -1374,6 +1374,16 @@ namespace NewLife.Cube
         /// <summary>菜单顺序。扫描时会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
+        /// <summary>
+        /// 控制器对应菜单
+        /// </summary>
+        protected static IMenu CurrentMenu { get; set; }
+
+        /// <summary>
+        /// 控制器对应模型表
+        /// </summary>
+        protected static ModelTable ModelTable { get; set; }
+
         /// <summary>自动从实体类拿到显示名</summary>
         /// <param name="menu"></param>
         /// <returns></returns>
@@ -1405,11 +1415,19 @@ namespace NewLife.Cube
                 // var list = GetType().GetCustomAttributes();
                 // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
                 // 生成模型表模型列
-                ModelTable.ScanModel(null, menu, Entity<TEntity>.Meta.Factory);
+                ModelTable = ModelTable.ScanModel(null, menu, Entity<TEntity>.Meta.Factory);
             });
+
+            CurrentMenu = menu;
 
             return dic;
         }
+
+        /// <summary>
+        /// 确保创建模型表
+        /// </summary>
+        protected static void EnsureCreateModelTable() => ModelTable ??= ModelTable.ScanModel(null, CurrentMenu, Entity<TEntity>.Meta.Factory);
+
         #endregion
 
         #region 辅助

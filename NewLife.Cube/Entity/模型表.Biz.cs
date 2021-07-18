@@ -47,9 +47,9 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 扩展属性
-        ///// <summary>模型列集合</summary>
-        //[XmlIgnore, ScriptIgnore, IgnoreDataMember]
-        //public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAll());
+        /// <summary>模型列集合</summary>
+        [XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAll());
         #endregion
 
         #region 扩展查询
@@ -157,7 +157,7 @@ namespace NewLife.Cube.Entity
         /// </summary>
         /// <param name="menu"></param>
         /// <param name="factory"></param>
-        public static void ScanModel(String areaName, IMenu menu, IEntityFactory factory)
+        public static ModelTable ScanModel(String areaName, IMenu menu, IEntityFactory factory)
         {
             var entityTypeName = menu.Name; // 菜单名从控制器名称里面取
             var ctrlFullName = menu.FullName;
@@ -205,6 +205,8 @@ namespace NewLife.Cube.Entity
                 //column.Save();
             }
             columns.Save();
+
+            return table;
         }
         #endregion
     }
