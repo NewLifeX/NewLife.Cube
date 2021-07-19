@@ -25,178 +25,35 @@
     </style>
 }
 
-<div class="layui-fluid" id="mainpage">
-    <div class="layui-row layui-col-space15">
-        <div class="layui-col-md12">
-            <div class="layui-panel">
-                <div class="layui-card-body">
-                    <table lay-filter="parse-table-demo">
-                        <thead>
-                            <tr>
-                                @foreach (var item in fields)
-                                {
-                                    // 要替换的字段
-                                    var df = fields.GetField(item.Name);
-                                    if (df != null)
-                                    {
-                                        var header = df.Header ?? df.DisplayName ?? df.Name;
 
-                                        <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle',sort:''}">@header</th>
-                                    }
-                                    else
-                                    {
-                                        // 在该字段之前插入的字段
-                                        var dfs = fields.GetBeforeFields(item.Name);
-                                        foreach (var elm in dfs)
-                                        {
-                                            df = elm;
-                                            var header = df.Header ?? df.DisplayName ?? df.Name;
-                                            if (df.HeaderUrl.IsNullOrEmpty())
-                                            {
-                                                <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle'}">@header</th>
-                                            }
-                                            else
-                                            {
-                                                <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle'}">@header</th>
-                                            }
-                                        }
-
-                                        if (item.Type == typeof(DateTime))
-                                        {
-                                            var width = item.Name.EndsWithIgnoreCase("Date") ? 96 : 150;
-                                            <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
-                                        }
-                                        else
-                                        {
-                                            <th lay-data="{field:'@item.Name',title:'@item.Description'}">@item.DisplayName</th>
-                                        }
-
-                                        // 在该字段之后插入的字段
-                                        dfs = fields.GetAfterFields(item.Name);
-                                        foreach (var elm in dfs)
-                                        {
-                                            df = elm;
-                                            var header = df.Header ?? df.DisplayName ?? df.Name;
-                                            if (df.HeaderUrl.IsNullOrEmpty())
-                                            {
-                                                <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle'}">@header</th>
-                                            }
-                                            else
-                                            {
-                                                <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle'}">@header</th>
-                                            }
-                                        }
-                                    }
-                                }
-
-                                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-                                {
-                                    <th lay-data="{toolbar:'#barOpt',minWidth:120,fixed:'right',align:'center'}">操作</th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var entity in Model)
-                            {
-                                <tr>
-                                    @foreach (var item in fields)
-                                    {
-                                        // 要替换的字段
-                                        var df = fields.GetField(item.Name);
-                                        if (df != null)
-                                        {
-                                            var name = df.GetDisplayName(entity) ?? entity[item.Name];
-                                            if (df.DataVisible != null && !df.DataVisible(entity, item))
-                                            {
-                                                <td></td>
-                                            }
-                                            else if (df.Url.IsNullOrEmpty())
-                                            {
-                                                <td title="@df.Title">@name</td>
-                                            }
-                                            else
-                                            {
-                                                var url = df.GetUrl(entity);
-                                                if (df.DataAction.IsNullOrEmpty())
-                                                {
-                                                    <td title="@df.Title">@name</td>
-                                                }
-                                                else
-                                                {
-                                                    <td title="@df.Title">@name</td>
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // 在该字段之前插入的字段
-                                            var dfs = fields.GetBeforeFields(item.Name);
-                                            foreach (var elm in dfs)
-                                            {
-                                                df = elm;
-                                                var name = df.GetDisplayName(entity) ?? df.Header;
-                                                if (df.DataVisible != null && !df.DataVisible(entity, item))
-                                                {
-                                                    <td></td>
-                                                }
-                                                else if (df.Url.IsNullOrEmpty())
-                                                {
-                                                    <td title="@df.Title">@name</td>
-                                                }
-                                                else
-                                                {
-                                                    var url = df.GetUrl(entity);
-                                                    if (df.DataAction.IsNullOrEmpty())
-                                                    {
-                                                        <td title="@df.Title">@name</td>
-                                                    }
-                                                    else
-                                                    {
-                                                        <td title="@df.Title">@name</td>
-                                                    }
-                                                }
-                                            }
-
-                                            @await Html.PartialAsync("_List_Data_Item_layui", new ValueTuple<IEntity, FieldItem>(entity, item))
-
-                                            // 在该字段之后插入的字段
-                                            dfs = fields.GetAfterFields(item.Name);
-                                            foreach (var elm in dfs)
-                                            {
-                                                df = elm;
-                                                var name = df.GetDisplayName(entity) ?? df.Header;
-                                                if (df.DataVisible != null && !df.DataVisible(entity, item))
-                                                {
-                                                    <td></td>
-                                                }
-                                                else if (df.Url.IsNullOrEmpty())
-                                                {
-                                                    <td title="@df.Title">@name</td>
-                                                }
-                                                else
-                                                {
-                                                    var url = df.GetUrl(entity);
-                                                    if (df.DataAction.IsNullOrEmpty())
-                                                    {
-                                                        <td title="@df.Title">@name</td>
-                                                    }
-                                                    else
-                                                    {
-                                                        <td title="@df.Title">@name</td>
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+@if (set.EnableToolbar)
+{
+    @await Html.PartialAsync("_List_Toolbar_layui")
+}
+@*@if (charts != null && charts.Length > 0)
+    {
+        <div class="clearfix">
+            @foreach (var item in charts)
+            {
+                @await Html.PartialAsync("_ECharts_layui", item)
+            }
         </div>
-    </div>
-</div>
+    }*@
+
+@await Html.PartialAsync("_List_Data_layui")
+
+@*<div class="panel-footer">
+        @await Html.PartialAsync("_List_Pager_layui")
+    </div>*@
+@*@if (charts2 != null && charts2.Length > 0)
+    {
+        <div class="clearfix">
+            @foreach (var item in charts2)
+            {
+                @await Html.PartialAsync("_ECharts_layui", item)
+            }
+        </div>
+    }*@
 
 @section scripts{
     <script>
@@ -214,22 +71,4 @@
             });
         });
     </script>
-
-    <script type="text/html" id="toolbarDemo">
-        <div class="layui-btn-container">
-            <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
-            <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
-            <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
-        </div>
-    </script>
-
-    @* 设置行操作按钮*@
-    @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-    {
-        @foreach (var entity in Model)
-        {
-            @await Html.PartialAsync("_List_Data_Action_layui", (Object)entity)
-            break;
-        }
-    }
 }

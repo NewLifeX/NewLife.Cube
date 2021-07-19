@@ -14,8 +14,8 @@
     // 第二名称，去掉后面的数字，便于模式匹配
     var name2 = item.Name;
     while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) { name2 = name2.Substring(0, name2.Length - 1); }
-
 }
+
 @if (item.IsIdentity)
 {
     <td>@value</td>
@@ -171,5 +171,5 @@ else
                 }
             }
             break;
+    }
 }
-        }
