@@ -304,6 +304,9 @@ namespace NewLife.Web.OAuth
             if (dic.TryGetValue("UserId", out var str)) UserName = str.Trim();
             if (dic.TryGetValue("DeviceId", out str)) DeviceId = str.Trim();
             //if (dic.TryGetValue("OpenId", out str)) OpenID = str.Trim();
+
+            if (dic.TryGetValue("errmsg", out str) && str != "ok") throw new InvalidOperationException(str);
+
         }
         #endregion
     }
