@@ -517,7 +517,7 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual TokenInfo GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
         {
-            sso.Auth(client_id, client_secret);
+            sso.Auth(client_id, client_secret, ip);
 
             var token = sso.GetToken(code);
             token.Scope = "basic,UserInfo";
@@ -546,7 +546,7 @@ namespace NewLife.Cube.Web
 
             try
             {
-                var app = sso.Auth(client_id, null);
+                var app = sso.Auth(client_id, null, ip);
                 log.AppId = app.ID;
 
                 // 验证应用能力
@@ -621,7 +621,7 @@ namespace NewLife.Cube.Web
                 var app = App.FindByName(client_id);
                 if (app != null) log.AppId = app.ID;
 
-                app = sso.Auth(client_id, client_secret);
+                app = sso.Auth(client_id, client_secret, ip);
                 log.AppId = app.ID;
 
                 // 验证应用能力
@@ -676,7 +676,7 @@ namespace NewLife.Cube.Web
                 var app = App.FindByName(client_id);
                 if (app != null) log.AppId = app.ID;
 
-                app = sso.Auth(client_id, null);
+                app = sso.Auth(client_id, null, ip);
                 log.AppId = app.ID;
 
                 var name = sso.Decode(refresh_token);

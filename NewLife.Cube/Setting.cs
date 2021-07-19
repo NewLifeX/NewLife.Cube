@@ -159,20 +159,15 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public String StartPage { get; set; }
 
-        /// <summary>布局页。</summary>
-        [Description("布局页。")]
-        [Category("界面配置")]
-        public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
+        ///// <summary>布局页。</summary>
+        //[Description("布局页。")]
+        //[Category("界面配置")]
+        //public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
 
-        /// <summary>皮肤配置。（默认：""=ACE,"layui"=layui）</summary>
-        [Description("皮肤配置。（默认：\"\"=ACE,\"layui\"=layui）")]
+        /// <summary>皮肤。（默认：""=ACE,"layui"=layui）</summary>
+        [Description("皮肤。（默认：\"\"=ACE,\"layui\"=layui）")]
         [Category("界面配置")]
-        public String SkinPage { get; set; } = "";
-
-        /// <summary>框架皮肤配置。（默认：""=ACE,"layui"=layui）</summary>
-        [Description("框架皮肤配置。（默认：\"\"=ACE,\"layui\"=layui）")]
-        [Category("界面配置")]
-        public String FrameSkin { get; set; } = "";
+        public String Skin { get; set; } = "";
 
         /// <summary>登录提示。留空表示不显示登录提示信息</summary>
         [Description("登录提示。留空表示不显示登录提示信息")]
