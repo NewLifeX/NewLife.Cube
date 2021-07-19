@@ -1,6 +1,6 @@
 ﻿@{
     var set = NewLife.Cube.Setting.Current;
-    if (String.IsNullOrEmpty(set.Skin))
+    if (String.IsNullOrEmpty(set.Skin) || String.Equals(set.Skin, "ACE", StringComparison.OrdinalIgnoreCase))
     {
         Layout = "~/Views/Shared/_Ace_Layout.cshtml";
     }
