@@ -14,7 +14,7 @@
 }
 
 <div class="layui-header">
-    <div class="layui-logo layui-bg-black">Cube demo</div>
+    <div class="layui-logo layui-bg-black">@name</div>
 
     <!-- 头部区域（可配合layui 已有的水平导航） -->
     <ul class="layui-nav layui-layout-left">
@@ -29,7 +29,7 @@
             <a href="javascript:;">
                 @if (user != null && !user.Avatar.IsNullOrEmpty())
                 {
-                    <img class="layui-nav-img" src="./images/logo/NewLife.png" alt="@user">
+                    <img class="layui-nav-img" src="@user.GetAvatarUrl()" alt="@user">
                 }
                 @user / @roleNames
             </a>
