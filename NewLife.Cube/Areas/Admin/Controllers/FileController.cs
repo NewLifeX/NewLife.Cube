@@ -106,7 +106,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>文件管理主视图</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
-        public ActionResult Index(String r, String sort)
+        public ActionResult Index(String r, String sort, String message = "")
         {
             var di = GetDirectory(r) ?? Root.AsDirectory();
 
@@ -152,6 +152,8 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 剪切板
             ViewBag.Clip = GetClip();
+            // 提示信息
+            ViewBag.Message = message;
 
             return View("Index", list);
         }
@@ -259,6 +261,36 @@ namespace NewLife.Cube.Admin.Controllers
 
             return RedirectToAction("Index", new { r });
         }
+
+        /// <summary>上传文件</summary>
+        /// <param name="r"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [EntityAuthorize(PermissionFlags.Insert)]
+        public ActionResult UploadLayui(String r, IFormFile file)
+        {
+            try
+            {
+                if (file != null)
+                {
+                    var di = GetDirectory(r) ?? Root.AsDirectory();
+                    if (di == null) throw new Exception("找不到目录！");
+
+                    var dest = di.FullName.CombinePath(file.FileName);
+                    WriteLog("上传", true, dest);
+
+                    dest.EnsureDirectory(true);
+                    System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes());
+                }
+                return Json(new { code = 0, message = "上传成功" });
+            }
+            catch (Exception ex)
+            {
+                WriteLog("上传失败", false, ex + "");
+                return Json(new { code = 500, message = "上传失败" });
+            }
+        }
 #else
         /// <summary>上传文件</summary>
         /// <param name="r"></param>
@@ -280,6 +312,36 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             return RedirectToAction("Index", new { r });
+        }
+
+        /// <summary>上传文件</summary>
+        /// <param name="r"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Insert)]
+        public ActionResult UploadLayui(String r, HttpPostedFileBase file)
+        {
+            try
+            {
+                if (file != null)
+                {
+                    var di = GetDirectory(r) ?? Root.AsDirectory();
+                    if (di == null) throw new Exception("找不到目录！");
+
+                    var dest = di.FullName.CombinePath(file.FileName);
+                    WriteLog("上传", true, dest);
+
+                    dest.EnsureDirectory(true);
+                    file.SaveAs(dest);
+                }
+
+                return Json(new { code = 0, message = "上传成功" });
+            }
+            catch (Exception ex)
+            {
+                WriteLog("上传失败", false, ex + "");
+                return Json(new { code = 500, message = "上传失败" });
+            }
         }
 #endif
 

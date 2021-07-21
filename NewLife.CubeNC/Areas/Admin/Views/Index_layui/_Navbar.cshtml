@@ -1,0 +1,43 @@
+﻿@using NewLife.Common;
+@using XCode.Membership;
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var uid = 0;
+    var roleNames = "";
+    if (user != null)
+    {
+        uid = user.ID;
+        roleNames = user.Roles == null ? "" : user.Roles.Join();
+    }
+    var cfg = ViewBag.Config as SysConfig;
+    var name = cfg == null ? "" : cfg.DisplayName;
+}
+
+<div class="layui-header">
+    <div class="layui-logo layui-bg-black">@name</div>
+
+    <!-- 头部区域（可配合layui 已有的水平导航） -->
+    <ul class="layui-nav layui-layout-left">
+        <!-- 移动端显示 -->
+        <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
+            <i class="layui-icon layui-icon-spread-left"></i>
+        </li>
+    </ul>
+
+    <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+            <a href="javascript:;">
+                @if (user != null && !user.Avatar.IsNullOrEmpty())
+                {
+                    <img class="layui-nav-img" src="@user.GetAvatarUrl()" alt="@user">
+                }
+                @user / @roleNames
+            </a>
+            <dl class="layui-nav-child">
+                <dd><a href="javascript:;" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="用户信息">用户信息</a></dd>
+                <hr>
+                <dd><a href="javascript:;" lay-header-event="menuSetting" data-url='/Admin/User/Logout' data-title="注销" data-loginout="true">注销</a></dd>
+            </dl>
+        </li>
+    </ul>
+</div>

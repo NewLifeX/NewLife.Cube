@@ -1,0 +1,31 @@
+﻿@using NewLife.Model;
+@using NewLife.Cube.ViewModels;
+@{
+    var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
+    var flag = true;
+}
+
+<div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree">
+            @foreach (var menu in menus.Where(e => e.Visible))
+            {
+                var childs = menu.Children ?? new List<MenuTree>();
+                <li class="layui-nav-item @(flag?"layui-nav-itemed":"")">
+                <a href="javascript:;">@menu.DisplayName</a>
+                @if (childs.Any())
+                {
+                    <dl class="layui-nav-child">
+                        @foreach (var menu2 in childs.Where(w => w.Visible))
+                        {
+                            @await Html.PartialAsync("_Left_Item", menu2);
+                        }
+                    </dl>
+                }
+                </li>
+                //默认打开第一个标签页
+                flag = false;
+            }
+        </ul>
+    </div>
+</div>

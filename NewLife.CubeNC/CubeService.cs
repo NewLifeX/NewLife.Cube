@@ -101,6 +101,12 @@ namespace NewLife.Cube
                 options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
             });
 
+            // 配置视图引擎
+            services.Configure<RazorViewEngineOptions>(o =>
+            {
+                o.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
+            });
+
             services.AddHostedService<JobService>();
 
             XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));

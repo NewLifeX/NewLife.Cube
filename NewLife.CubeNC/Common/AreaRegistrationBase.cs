@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Threading;

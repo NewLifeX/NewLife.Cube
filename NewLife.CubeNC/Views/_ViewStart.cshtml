@@ -1,3 +1,11 @@
 ﻿@{
-    Layout = NewLife.Cube.Setting.Current.Layout;
+    var set = NewLife.Cube.Setting.Current;
+    if (String.IsNullOrEmpty(set.Theme) || String.Equals(set.Theme, "ACE", StringComparison.OrdinalIgnoreCase))
+    {
+        Layout = "~/Views/Shared/_Ace_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/" + set.Skin + "/_Layout.cshtml";
+    }
 }

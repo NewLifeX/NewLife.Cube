@@ -72,6 +72,8 @@ namespace NewLife.Cube.Admin.Controllers
             ViewBag.Menus = GetMenu();
 
             return View();
+            //var skin = Setting.Current.Skin;
+            //return View((skin.IsNullOrEmpty() || skin.EqualIgnoreCase("ACE")) ? "index" : $"../Index_{skin}/index");
         }
 
         /// <summary>服务器信息</summary>

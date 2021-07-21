@@ -1,0 +1,209 @@
+﻿@using System.Diagnostics;
+@using NewLife.Common;
+@using NewLife.Cube.Admin;
+@{
+    var fs = Model as List<FileItem>;
+    var r = ViewBag.Current as String;
+    var clips = ViewBag.Clip as ICollection<FileItem>;
+    var message = ViewBag.Message + "";
+}
+
+@section css{
+    <style>
+        .layui-table-box a:focus, a:hover {
+            color: #23527c;
+        }
+
+        .layui-table-box a {
+            color: #337ab7;
+        }
+
+        .layui-btn-container {
+            padding: 15px 0 0 15px;
+        }
+    </style>
+}
+
+<div class="layui-fluid" id="mainpage">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-panel">
+                <div class="layui-btn-container">
+                    <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="selectFile">选择文件</button>
+                    <button type="button" class="layui-btn layui-btn-sm" id="startUpload">开始上传</button>
+                    @if (clips.Count > 0)
+                    {
+                        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="Paste">粘贴</button>
+                        <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="Move">移动</button>
+                        <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="Clear">清空</button>
+                    }
+                </div>
+                <div class="layui-form layui-border-box layui-table-view" style="margin:10px;">
+                    <div class="layui-table-box">
+                        <div class="layui-table-header">
+                            <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
+                                                <span>
+                                                    名称
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
+                                                <span>
+                                                    大小
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
+                                                <span>
+                                                    修改时间
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
+                                                <span>
+                                                    复制
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
+                                                <span>
+                                                    压缩
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
+                                                <span>
+                                                    删除
+                                                </span>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="layui-table-body layui-table-main">
+                            <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                <tbody>
+                                    @foreach (var item in fs)
+                                    {
+                                        <tr>
+                                            @if (item.Directory)
+                                            {
+                                                <td>
+                                                    <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
+                                                        <a href="~/Admin/File?r=@item.FullName" title="进入目录">@item.Name</a>
+                                                    </div>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td>
+                                                    <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
+                                                        <a href="~/Admin/File/Download?r=@item.FullName" title="下载文件">@item.Name</a>
+                                                    </div>
+                                                </td>
+                                            }
+
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
+                                                    @item.Size
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
+                                                    @item.LastWrite.ToFullString("")
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
+                                                    @if (!clips.Any(e => e.FullName == item.FullName))
+                                                    {
+                                                        <a href="~/Admin/File/Copy?r=@r&f=@item.FullName" title="复制到剪切板，然后去目标目录粘贴">复制</a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a href="~/Admin/File/CancelCopy?r=@r&f=@item.FullName" title="从剪切板移除">取消复制</a>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
+                                                    @if (item.Name.EndsWithIgnoreCase(".zip"))
+                                                    {
+                                                        <a href="~/Admin/File/Decompress?r=@item.FullName" title="解压缩到当前目录">解压缩</a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a href="~/Admin/File/Compress?r=@item.FullName" title="压缩到当前目录，加上时间后缀">压缩</a>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
+                                                    <a href="~/Admin/File/Delete?r=@item.FullName" onclick="return confirm('确认删除？');">删除</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts{
+    <script>
+        layui.use(['jquery', 'upload', 'util'], function () {
+            var $ = layui.$,
+                upload = layui.upload,
+                util = layui.util;
+            // 表格设置
+            setTableScroll();
+            setTable();
+            var msg ="@message";
+            if (msg!='') {
+                layer.msg(msg);
+            }
+
+           // 选文件后上传
+            upload.render({
+                elem: '#selectFile'
+                , url: '/Admin/File/UploadLayui' //改成您自己的上传接口
+                , auto: false
+                , bindAction: '#startUpload'
+                , done: function (res) {
+                    layer.msg(res.message);
+                    location.href = '/Admin/File/Index?Message=' + res.message;
+                }
+                , accept:'file'
+            });
+
+            // 设置按钮事件
+            util.event('lay-event', {
+                Paste: function (othis) {
+                    location.href = '/Admin/File/Paste?r=@r';
+                },
+                Move: function (othis) {
+                    location.href = '/Admin/File/Move?r=@r';
+                },
+                Clear: function (othis) {
+                    location.href = '/Admin/File/ClearClipboard?r=@r';
+                }
+            });
+        });
+    </script>
+}
