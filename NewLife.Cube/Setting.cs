@@ -164,8 +164,8 @@ namespace NewLife.Cube
         //[Category("界面配置")]
         //public String Layout { get; set; } = "~/Views/Shared/_Ace_Layout.cshtml";
 
-        /// <summary>主题样式。每一个内容页，重启生效，（默认：""=ACE,"layui"=layui）</summary>
-        [Description("主题样式。每一个内容页，重启生效，（默认：\"\"=ACE,\"layui\"=layui）")]
+        /// <summary>主题样式。每一个内容页，（默认：""=ACE,"layui"=layui）</summary>
+        [Description("主题样式。每一个内容页，（默认：\"\"=ACE,\"layui\"=layui）")]
         [Category("界面配置")]
         public String Theme { get; set; } = "";
 
