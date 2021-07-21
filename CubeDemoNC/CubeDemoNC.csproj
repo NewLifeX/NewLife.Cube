@@ -4,6 +4,7 @@
     <TargetFrameworks>net5.0</TargetFrameworks>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
+    <AssemblyTitle>魔方演示平台</AssemblyTitle>
     <Version>3.10.2021.0511</Version>
     <FileVersion>3.10.2021.0511</FileVersion>
     <AssemblyVersion>3.10.*</AssemblyVersion>
@@ -63,10 +64,14 @@
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="http://json.schemastore.org/behat" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties appsettings_1json__JsonSchema="http://json.schemastore.org/behat" />
+    </VisualStudio>
+  </ProjectExtensions>
 
-<!--  <Target Name="PostBuild" AfterTargets="PostBuildEvent">-->
-<!--    <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q" />-->
-<!--  </Target>-->
+  <!--  <Target Name="PostBuild" AfterTargets="PostBuildEvent">-->
+  <!--    <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q" />-->
+  <!--  </Target>-->
 
 </Project>
