@@ -50,7 +50,7 @@
         <div class="layui-col-md12">
             <div class="layui-panel" id="cube_panel">
                 <div class="layui-btn-container">
-                    @await Html.PartialAsync("_Object_Nav_layui", Model.Value)
+                    @await Html.PartialAsync("_Object_Nav", Model.Value)
                 </div>
 
                 @using (Html.BeginForm("Update", null, FormMethod.Post, new { @class = "layui-form", @ha = "123" }))
