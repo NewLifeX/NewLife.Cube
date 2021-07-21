@@ -1,27 +1,30 @@
-﻿@{
+﻿@using NewLife.Common;
+@using NewLife.Cube.WebMiddleware;
+@using NewLife.Cube.Charts;
+@{
     Layout = null;
 
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var roleNames = "";
     if (user != null) roleNames = user.Roles == null ? "" : user.Roles.Join();
 
-    var cfg = ViewBag.Config as NewLife.Common.SysConfig;
-
     var title = ViewBag.Title + "";
-    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
-    title += cfg.DisplayName;
+    if (title != "" && !title.Contains(" - "))
+    {
+        title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
+    }
 
     var set = NewLife.Cube.Setting.Current;
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
-    var name = cfg == null ? "" : cfg.DisplayName;
-
     var set2 = ViewBag.PageSetting as PageSetting;
 
     var menu = ViewBag.Menu as IMenu;
     if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
+
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -39,6 +42,9 @@
 
     <link rel="stylesheet" href="@res/adminlte/css/fontawesome-all.min.css" />
     <link rel="stylesheet" href="@res/adminlte/css/adminlte.min.css" />
+
+    <!-- jQuery -->
+    <script src="@res/js/jquery-3.6.0.min.js"></script>
 </head>
 <body class="hold-transition sidebar-mini">
     <!-- Content Wrapper. Contains page content -->
@@ -76,17 +82,129 @@
         <!-- /.content-wrapper -->
         <footer class="main-footer">
             <div class="float-right d-none d-sm-block">
-                <b>Version</b> 3.1.0
+                @Html.Raw(runInfo)
             </div>
-            <strong>Copyright &copy; 2014-2021 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights reserved.
         </footer>
     }
 
-    <!-- jQuery -->
-    <script src="@res/js/jquery-3.6.0.min.js"></script>
     <!-- Bootstrap 4 -->
     <script src="@res/adminlte/js/bootstrap.bundle.min.js"></script>
     <!-- AdminLTE -->
     <script src="@res/adminlte/js/adminlte.min.js"></script>
+    @if (set != null && set.BootstrapSelect)
+    {
+        <script src="@res/bootstrap/js/bootstrap-multiselect.min.js"></script>
+    }
+
+    @RenderSection("scripts", required: false)
+
+    <!--日历控件支持-->
+    <script src="@res/DateTimePicker/bootstrap-datetimepicker.min.js"></script>
+    <script src="@res/DateTimePicker/locales/bootstrap-datetimepicker.zh_CN.js"></script>
+    <script>
+        $(function () {
+            $('.form_datetime').each(function () {
+                var df = $(this).attr('dateformat');
+                if (!df) {
+                    $(this).attr('dateformat', 'yyyy-mm-dd hh:ii:ss');
+                    $(this).width(140);
+                }
+                else {
+                    // 把C#标准格式化替换为控件格式
+                    df = df.replace('mm', 'ii').replace('MM', 'mm').replace('HH', 'hh');
+                    $(this).attr('dateformat', df);
+
+                    // 根据时间日期格式，锁定日期输入框宽度
+                    if (df.indexOf('hh') >= 0)
+                        $(this).width(140);
+                    else
+                        $(this).width(80);
+                }
+
+                //根据日期格式自动推算日期选择view显示的范围
+                var sv = 2;
+                var mv = 2;
+                var autoView = $(this).attr('autoView');
+                if (autoView != 'false') {
+                    df = $(this).attr('dateformat');
+                    if (df.indexOf('ii') >= 0) {
+                        mv = 0;
+                        if (df.indexOf('dd') >= 0) {
+                            sv = 2;
+                        } else {
+                            sv = 1;
+                        }
+                    } else if (df.indexOf('hh') >= 0) {
+                        mv = 1;
+                        if (df.indexOf('dd') >= 0) {
+                            sv = 2;
+                        } else {
+                            sv = 1;
+                        }
+                    } else if (df.indexOf('dd') >= 0) {
+                        mv = 2;
+                        sv = 2;
+                    } else if (df.indexOf('mm') >= 0) {
+                        mv = 3;
+                        sv = 3;
+                    } else if (df.indexOf('yyyy') >= 0) {
+                        mv = 4;
+                        sv = 4;
+                    }
+                }
+
+                $(this).attr('startview', sv);
+                $(this).attr('minview', mv);
+            });
+            $("[dateformat]").each(function () {
+                $(this).datetimepicker({
+                    format: $(this).attr("dateformat"),
+                    autoclose: true,
+                    language: "zh-CN",
+                    forceParse: false,
+                    startView: parseInt($(this).attr('startview')),
+                    minView: parseInt($(this).attr('minview'))
+                });
+            });
+            @if (set != null && set.BootstrapSelect) {<text>
+            $('.multiselect').each(function () {
+                $(this).multiselect({
+                    // 下拉列表仅在列表项比较多时显示过滤框
+                    enableFiltering: $(this).children().length > 10,
+                    buttonClass: 'btn btn-white btn-primary',
+                    templates: {
+                        button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                        ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                        filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                        filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                        li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                        divider: '<li class="multiselect-item divider"></li>',
+                        liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                    },
+                    filterPlaceholder: '搜索',
+                    nonSelectedText: '无',
+                    allSelectedText: '全选'
+                });
+            });
+            </text>}
+            @*双击跳转到form
+            _List_Data_Action.cshtml变更
+            @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
+            $('tr').dblclick(function () {
+                var $this = $(this);
+                var row = $this.closest("tr");
+                var findcell = row.find('.editcell');
+                if (findcell.length > 0) window.location.href = findcell.attr("href");
+            });
+        });
+    </script>
+
+    <!--开关插件-->
+    <script src="@res/bootstrap_switch/bootstrap-switch.min.js"></script>
+    <script>
+        $(function () {
+            $("input.chkSwitch").bootstrapSwitch();
+        })
+    </script>
 </body>
 </html>
