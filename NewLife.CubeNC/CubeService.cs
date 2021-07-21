@@ -102,22 +102,10 @@ namespace NewLife.Cube
             });
 
             // 配置视图引擎
-            var skin = set.Skin;
-            if (!skin.IsNullOrEmpty() && !skin.EqualIgnoreCase("ACE"))
+            services.Configure<RazorViewEngineOptions>(o =>
             {
-                services.Configure<RazorViewEngineOptions>(o =>
-                {
-                    var p = o.ViewLocationFormats.IndexOf("/Views/Shared/{0}.cshtml");
-                    if (p >= 0) o.ViewLocationFormats.Insert(p, "/Views/" + skin + "/{0}.cshtml");
-
-                    p = o.AreaViewLocationFormats.IndexOf("/Views/Shared/{0}.cshtml");
-                    if (p >= 0) o.AreaViewLocationFormats.Insert(p, "/Views/" + skin + "/{0}.cshtml");
-                    p = o.AreaViewLocationFormats.IndexOf("/Areas/{2}/Views/Shared/{0}.cshtml");
-                    if (p >= 0) o.AreaViewLocationFormats.Insert(p, "/Areas/{2}/Views/" + skin + "/{0}.cshtml");
-                    p = o.AreaViewLocationFormats.IndexOf("/Areas/{2}/Views/{1}/{0}.cshtml");
-                    if (p >= 0) o.AreaViewLocationFormats.Insert(p, "/Areas/{2}/Views/{1}_" + skin + "/{0}.cshtml");
-                });
-            }
+                o.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
+            });
 
             services.AddHostedService<JobService>();
 
