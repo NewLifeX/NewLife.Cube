@@ -211,12 +211,8 @@
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Views\AdminLTE\" />
     <Folder Include="Web\Models\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="Areas\Admin\Views\_ViewStart.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+    <Folder Include="wwwroot\Content\adminlte\" />
   </ItemGroup>
 </Project>
