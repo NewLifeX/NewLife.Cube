@@ -164,7 +164,17 @@ namespace NewLife.Cube
             foreach (var item in ".".AsDirectory().GetFiles("*.Views.dll"))
             {
                 var asm = Assembly.LoadFile(item.FullName);
-                if (!list.Contains(asm)&&!list.Any(e=>e.FullName == asm.FullName))
+                if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
+                {
+                    list.Add(asm);
+                }
+            }
+
+            // 反射 NewLife.Cube.*.dll
+            foreach (var item in ".".AsDirectory().GetFiles("NewLife.Cube.*.dll"))
+            {
+                var asm = Assembly.LoadFile(item.FullName);
+                if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
                 {
                     list.Add(asm);
                 }
