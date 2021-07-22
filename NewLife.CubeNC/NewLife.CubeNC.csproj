@@ -176,27 +176,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Shared\_ValidationScriptsPartial.cshtml" />
-    <Content Remove="wwwroot\Content\adminlte\css\fontawesome-all.min.css" />
-    <Content Remove="wwwroot\Content\adminlte\js\bootstrap.bundle.min.js" />
-    <Content Remove="wwwroot\Content\adminlte\js\bootstrap.bundle.min.js.map" />
-    <Content Remove="wwwroot\Content\js\jquery-3.6.0.min.js" />
-    <Content Remove="wwwroot\Content\js\jquery.autosize.min.js" />
-    <Content Remove="wwwroot\Content\js\jquery.bootstrap-duallistbox.min.js" />
-    <Content Remove="wwwroot\Content\js\jquery.colorbox.min.js" />
-    <Content Remove="wwwroot\Content\js\jquery.min.map" />
-    <Content Remove="wwwroot\Content\js\jquery1x.min.js" />
-    <Content Remove="wwwroot\Content\layui\css\layui_main_cube.css" />
-    <Content Remove="wwwroot\Content\layui\layui_cube.js" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="wwwroot\Content\js\jquery.autosize.min.js" />
-    <EmbeddedResource Remove="wwwroot\Content\js\jquery.bootstrap-duallistbox.min.js" />
-    <EmbeddedResource Remove="wwwroot\Content\js\jquery.colorbox.min.js" />
-    <EmbeddedResource Remove="wwwroot\Content\js\jquery1x.min.js" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>

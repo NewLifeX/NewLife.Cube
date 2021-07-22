@@ -42,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj" />
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
   </ItemGroup>
 

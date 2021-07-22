@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnitTest", "XUnitTest\XUnitTest.csproj", "{E3B44ECB-BE8B-4878-B987-CAF116D57961}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewLife.Cube.AdminLTE", "NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj", "{B18A926E-842E-45DD-A0D0-0078D898D72B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
