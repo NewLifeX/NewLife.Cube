@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -154,6 +155,16 @@ namespace NewLife.Cube
             {
                 var asm = item.Assembly;
                 if (!list.Contains(asm))
+                {
+                    list.Add(asm);
+                }
+            }
+
+            // 反射 *.Views.dll
+            foreach (var item in ".".AsDirectory().GetFiles("*.Views.dll"))
+            {
+                var asm = Assembly.LoadFile(item.FullName);
+                if (!list.Contains(asm)&&!list.Any(e=>e.FullName == asm.FullName))
                 {
                     list.Add(asm);
                 }
