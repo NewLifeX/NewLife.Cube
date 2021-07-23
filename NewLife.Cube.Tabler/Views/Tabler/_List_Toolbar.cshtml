@@ -34,9 +34,11 @@
             <div class="col-auto">
                 <div class="d-flex">
                     @await Html.PartialAsync("_List_Search")
-                    @await Html.PartialAsync("_List_Toolbar_Search")
-                    @await Html.PartialAsync("_List_Toolbar_Adv")
                 </div>
+            </div>
+            @await Html.PartialAsync("_List_Toolbar_Search")
+            <div class="col">
+                @await Html.PartialAsync("_List_Toolbar_Adv")
             </div>
         </div>
     </form>
