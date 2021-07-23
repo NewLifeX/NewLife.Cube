@@ -14,20 +14,20 @@
 
 @if (set.EnableToolbar)
 {
-    <div class="clearfix">
+    <div class="row">
         @await Html.PartialAsync("_List_Toolbar")
     </div>
 }
 @if (charts != null && charts.Length > 0)
 {
-    <div class="clearfix">
+    <div class="row">
         @foreach (var item in charts)
         {
             @await Html.PartialAsync("_ECharts", item)
         }
     </div>
 }
-<div class="card">
+<div class="row">
     @await Html.PartialAsync("_List_Data")
 </div>
 <div class="panel-footer">

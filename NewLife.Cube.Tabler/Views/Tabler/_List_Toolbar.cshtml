@@ -10,28 +10,32 @@
 
     var set = ViewBag.PageSetting as PageSetting;
 }
-<div class="card-body">
-    <div class="row">
-        <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+<div class="col-12">
+    <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+        <div class="row">
+            @await Html.PartialAsync("_List_Toolbar_Custom")
+            @*<div class="pull-right form-group">*@
+            @await Html.PartialAsync("_List_Search")
+            @await Html.PartialAsync("_List_Toolbar_Search")
+            @await Html.PartialAsync("_List_Toolbar_Adv")
+            @*</div>*@
+        </div>
+        <div class="row">
             @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
             {
                 var rv = page.GetRouteValue();
-                @Html.ActionLink("添加", "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
+                <div class="col-md-1">
+                    @Html.ActionLink("添加", "Add", rv, new { @class = "btn btn-white w-100" }.ToDictionary())
+                </div>
             }
             @if (set.EnableSelect)
             {
-                <div class="form-group toolbar-batch">
+                <div class="col-md-6 col-xl-4 toolbar-batch">
                     @await Html.PartialAsync("_List_Toolbar_Batch")
                 </div>
             }
-            @await Html.PartialAsync("_List_Toolbar_Custom")
-            @*<div class="pull-right form-group">*@
-                @await Html.PartialAsync("_List_Search")
-                @await Html.PartialAsync("_List_Toolbar_Search")
-                @await Html.PartialAsync("_List_Toolbar_Adv")
-            @*</div>*@
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 @if (set.EnableSelect)
 {
