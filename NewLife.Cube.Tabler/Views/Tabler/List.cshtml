@@ -28,7 +28,9 @@
     </div>
 }
 <div class="row">
-    @await Html.PartialAsync("_List_Data")
+    <div class="table-responsive">
+        @await Html.PartialAsync("_List_Data")
+    </div>
 </div>
 <div class="panel-footer">
     @await Html.PartialAsync("_List_Pager")
