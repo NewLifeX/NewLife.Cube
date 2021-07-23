@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.202
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31521.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Others", "Others", "{32891F65-FBA1-42B2-918E-61F3A9623F2A}"
 	ProjectSection(SolutionItems) = preProject
@@ -23,7 +23,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnitTest", "XUnitTest\XUnitTest.csproj", "{E3B44ECB-BE8B-4878-B987-CAF116D57961}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewLife.Cube.AdminLTE", "NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj", "{B18A926E-842E-45DD-A0D0-0078D898D72B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.AdminLTE", "NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj", "{B18A926E-842E-45DD-A0D0-0078D898D72B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Tabler", "NewLife.Cube.Tabler\NewLife.Cube.Tabler.csproj", "{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,10 @@ Global
 		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

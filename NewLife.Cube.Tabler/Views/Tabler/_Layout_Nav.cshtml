@@ -1,0 +1,17 @@
+﻿@using NewLife;
+@using XCode
+@using XCode.Membership
+@{
+    var menu = ViewBag.Menu as IMenu;
+    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
+
+    var url = Context.Request.Headers["Referer"].FirstOrDefault() + "";
+    var us = url.TrimStart("http://", "https://").Split('/', StringSplitOptions.RemoveEmptyEntries);
+}
+<div class="row align-items-center">
+    <div class="col">
+        <h2 class="page-title">
+            @menu.DisplayName
+        </h2>
+    </div>
+</div>

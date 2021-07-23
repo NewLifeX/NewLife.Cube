@@ -1,0 +1,74 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube.WebMiddleware;
+@using NewLife.Cube.Charts;
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var roleNames = "";
+    if (user != null) roleNames = user.Roles == null ? "" : user.Roles.Join();
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.Contains(" - "))
+    {
+        title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
+    }
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var set2 = ViewBag.PageSetting as PageSetting;
+
+    var menu = ViewBag.Menu as IMenu;
+    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
+
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
+}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+    <title>@title</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!-- 页面内联样式 -->
+    @RenderSection("css", required: false)
+
+    <link rel="stylesheet" href="@res/tabler/css/tabler.min.css" />
+</head>
+<body class="antialiased">
+    <div class="wrapper">
+        @await Html.PartialAsync("_Layout_Header")
+        <div class="page-wrapper">
+            @if (set2 != null && set2.EnableNavbar)
+            {
+                <div class="container-xl">
+                    <div class="page-header d-print-none">
+                        @await Html.PartialAsync("_Layout_Nav")
+                    </div>
+                </div>
+            }
+            <div class="page-body">
+                <div class="container-xl">
+                    @RenderBody()
+                </div>
+            </div>
+            @await Html.PartialAsync("_Layout_Footer")
+        </div>
+    </div>
+
+    <!-- Tabler Core -->
+    <script src="@res/tabler/js/tabler.min.js"></script>
+    @if (set != null && set.BootstrapSelect)
+    {
+        <script src="@res/bootstrap/js/bootstrap-multiselect.min.js"></script>
+    }
+
+    @RenderSection("scripts", required: false)
+
+</body>
+</html>
