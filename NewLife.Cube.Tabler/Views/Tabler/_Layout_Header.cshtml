@@ -12,6 +12,7 @@
         roleNames = user.Roles == null ? "" : user.Roles.Join();
     }
     var cfg = ViewBag.Config as SysConfig;
+    if (cfg == null) cfg = SysConfig.Current;
     var name = cfg == null ? "" : cfg.DisplayName;
 }
 <header class="navbar navbar-expand-md navbar-light d-print-none">
@@ -21,7 +22,7 @@
         </button>
         <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
             <a href=".">
-                <img src="/Content/tabler/img/logo.svg" width="110" height="32" alt="Tabler" class="navbar-brand-image">
+                <img src="/Content/images/logo/NewLife.png" width="110" height="32" alt="Tabler" class="navbar-brand-image">
             </a>
         </h1>
         <h1>
