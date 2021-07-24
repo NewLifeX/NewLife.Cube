@@ -1,0 +1,182 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var ukey = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+
+<table lay-filter="parse-table-demo">
+    <thead>
+        <tr>
+            @foreach (var item in fields)
+            {
+                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+
+                // 要替换的字段
+                var df = fields.GetField(item.Name);
+                if (df != null)
+                {
+                    var header = df.Header ?? df.DisplayName ?? df.Name;
+                    var url = df.HeaderUrl ?? sortUrl;
+                    <th class="text-center" title="@df.HeaderTitle"><a href="@Html.Raw(url)">@header</a></th>
+                }
+                else
+                {
+                    // 在该字段之前插入的字段
+                    var dfs = fields.GetBeforeFields(item.Name);
+                    foreach (var elm in dfs)
+                    {
+                        df = elm;
+                        var header = df.Header ?? df.DisplayName ?? df.Name;
+                        if (df.HeaderUrl.IsNullOrEmpty())
+                        {
+                            <th class="text-center" title="@df.HeaderTitle">@header</th>
+                        }
+                        else
+                        {
+                            <th class="text-center" title="@df.HeaderTitle"><a href="@Html.Raw(df.HeaderUrl)">@header</a></th>
+                        }
+                    }
+
+                    if (item.Type == typeof(DateTime))
+                    {
+                        var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                        <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                    }
+                    else
+                    {
+                        <th class="text-center" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                    }
+
+                    // 在该字段之后插入的字段
+                    dfs = fields.GetAfterFields(item.Name);
+                    foreach (var elm in dfs)
+                    {
+                        df = elm;
+                        var header = df.Header ?? df.DisplayName ?? df.Name;
+                        if (df.HeaderUrl.IsNullOrEmpty())
+                        {
+                            <th class="text-center" title="@df.HeaderTitle">@header</th>
+                        }
+                        else
+                        {
+                            <th class="text-center" title="@df.HeaderTitle"><a href="@Html.Raw(df.HeaderUrl)">@header</a></th>
+                        }
+                    }
+                }
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            <tr>
+                @if (set.EnableSelect && ukey != null)
+                {
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity[ukey.Name]" /></td>
+                }
+                @foreach (var item in fields)
+                {
+                    // 要替换的字段
+                    var df = fields.GetField(item.Name);
+                    if (df != null)
+                    {
+                        var name = df.GetDisplayName(entity) ?? entity[item.Name];
+                        if (df.DataVisible != null && !df.DataVisible(entity, item))
+                        {
+                            <td></td>
+                        }
+                        else if (df.Url.IsNullOrEmpty())
+                        {
+                            <td class="text-center" title="@df.Title">@name</td>
+                        }
+                        else
+                        {
+                            var url = df.GetUrl(entity);
+                            if (df.DataAction.IsNullOrEmpty())
+                            {
+                                <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                            }
+                            else
+                            {
+                                <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // 在该字段之前插入的字段
+                        var dfs = fields.GetBeforeFields(item.Name);
+                        foreach (var elm in dfs)
+                        {
+                            df = elm;
+                            var name = df.GetDisplayName(entity) ?? df.Header;
+                            if (df.DataVisible != null && !df.DataVisible(entity, item))
+                            {
+                                <td></td>
+                            }
+                            else if (df.Url.IsNullOrEmpty())
+                            {
+                                <td class="text-center" title="@df.Title">@name</td>
+                            }
+                            else
+                            {
+                                var url = df.GetUrl(entity);
+                                if (df.DataAction.IsNullOrEmpty())
+                                {
+                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                                }
+                                else
+                                {
+                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                                }
+                            }
+                        }
+
+                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
+
+                        // 在该字段之后插入的字段
+                        dfs = fields.GetAfterFields(item.Name);
+                        foreach (var elm in dfs)
+                        {
+                            df = elm;
+                            var name = df.GetDisplayName(entity) ?? df.Header;
+                            if (df.DataVisible != null && !df.DataVisible(entity, item))
+                            {
+                                <td></td>
+                            }
+                            else if (df.Url.IsNullOrEmpty())
+                            {
+                                <td class="text-center" title="@df.Title">@name</td>
+                            }
+                            else
+                            {
+                                var url = df.GetUrl(entity);
+                                if (df.DataAction.IsNullOrEmpty())
+                                {
+                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                                }
+                                else
+                                {
+                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                                }
+                            }
+                        }
+                    }
+                }
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td class="text-center">
+                        @await Html.PartialAsync("_List_Data_Action", null)
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+

@@ -19,6 +19,7 @@ using NewLife.Web;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
+using NewLife.Cube.ViewModels;
 
 namespace NewLife.Cube
 {
@@ -873,6 +874,46 @@ namespace NewLife.Cube
             _logo_cache[name] = logo;
 
             return logo;
+        }
+
+        public static IList<MenuTree> GetMenus(this IUser user)
+        {
+            if (user == null) user = XCode.Membership.User.FindAll().FirstOrDefault();
+
+            var fact = ManageProvider.Menu;
+            var menus = fact.Root.Childs;
+            if (user?.Role != null)
+            {
+                menus = fact.GetMySubMenus(fact.Root.ID, user, true);
+            }
+
+            // 如果顶级只有一层，并且至少有三级目录，则提升一级
+            if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
+
+            var menuTree = MenuTree.GetMenuTree(pMenuTree =>
+            {
+                var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
+                return subMenus;
+            }, list =>
+            {
+
+                var menuList = (from menu in list
+                                    // where m.Visible
+                                select new MenuTree
+                                {
+                                    ID = menu.ID,
+                                    Name = menu.Name,
+                                    DisplayName = menu.DisplayName ?? menu.Name,
+                                    Url = menu.Url,
+                                    Icon = menu.Icon,
+                                    Visible = menu.Visible,
+                                    ParentID = menu.ParentID,
+                                    Permissions = menu.Permissions
+                                }).ToList();
+                return menuList.Count > 0 ? menuList : null;
+            }, menus);
+
+            return menuTree;
         }
     }
 

@@ -1,0 +1,13 @@
+﻿@using NewLife.Model;
+@using XCode.Membership;
+@using NewLife.Cube.ViewModels;
+@{
+    var item = Model as MenuTree;
+    var childs = item.Children ?? new List<MenuTree>();
+    var url = item.Url.IsNullOrEmpty() ? "" : Url.Content(item.Url);
+}
+
+@if (item.Visible)
+{
+    <dd><a href="javascript:;" data-url='@url' cube-leftmenu='openmenu' data-title="@item.DisplayName">@item.DisplayName</a></dd>
+}

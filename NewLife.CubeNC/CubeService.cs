@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -101,6 +102,12 @@ namespace NewLife.Cube
                 options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
             });
 
+            // 配置视图引擎
+            services.Configure<RazorViewEngineOptions>(o =>
+            {
+                o.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
+            });
+
             services.AddHostedService<JobService>();
 
             XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
@@ -148,6 +155,26 @@ namespace NewLife.Cube
             {
                 var asm = item.Assembly;
                 if (!list.Contains(asm))
+                {
+                    list.Add(asm);
+                }
+            }
+
+            // 反射 *.Views.dll
+            foreach (var item in ".".AsDirectory().GetFiles("*.Views.dll"))
+            {
+                var asm = Assembly.LoadFile(item.FullName);
+                if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
+                {
+                    list.Add(asm);
+                }
+            }
+
+            // 反射 NewLife.Cube.*.dll
+            foreach (var item in ".".AsDirectory().GetFiles("NewLife.Cube.*.dll"))
+            {
+                var asm = Assembly.LoadFile(item.FullName);
+                if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
                 {
                     list.Add(asm);
                 }

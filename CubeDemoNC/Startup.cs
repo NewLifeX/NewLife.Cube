@@ -11,8 +11,6 @@ using NewLife.Cube;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
-using NewLife.Threading;
-using Stardust;
 using Stardust.Monitors;
 using Setting = NewLife.Cube.Setting;
 
@@ -98,6 +96,8 @@ namespace CubeDemoNC
             //app.UseMiddleware<TracerMiddleware>();
 
             app.UseCube(env);
+            app.UseAdminLTE(env);
+            app.UseTabler(env);
 
             app.UseAuthorization();
 

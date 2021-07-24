@@ -1,0 +1,175 @@
+﻿@using NewLife;
+@using Microsoft.AspNetCore.Routing
+@using XCode;
+@using XCode.Configuration;
+@{
+    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var entity = pair.Item1;
+    var item = pair.Item2;
+    var factory = entity.GetType().AsFactory();
+
+    var value = entity[item.Name];
+    var provider = ManageProvider.Provider;
+
+    // 第二名称，去掉后面的数字，便于模式匹配
+    var name2 = item.Name;
+    while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) { name2 = name2.Substring(0, name2.Length - 1); }
+}
+
+@if (item.IsIdentity)
+{
+    <td>@value</td>
+}
+else
+{
+    switch (Type.GetTypeCode(item.Type))
+    {
+        case TypeCode.Boolean:
+            var bval = (Boolean)value;
+            <td>
+                @if (item.Name.EqualIgnoreCase("Enable") && factory.Unique != null)
+                {
+                    var key = entity[factory.Unique.Name];
+                    if (bval)
+                    {
+                        <a href="@Url.Action("SetEnable",null,new { id=key, enable=false })" data-action="action">
+                            <i class="glyphicon glyphicon-ok" style="color: green;"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("SetEnable",null,new { id=key, enable=true })" data-action="action">
+                            <i class="glyphicon glyphicon-remove" style="color: red;"></i>
+                        </a>
+                    }
+                }
+                else
+                {
+                    if (bval)
+                    {
+                        <i class="glyphicon glyphicon-ok" style="color: green;"></i>
+                    }
+                    else
+                    {
+                        <i class="glyphicon glyphicon-remove" style="color: red;"></i>
+                    }
+                }
+            </td>
+            break;
+        case TypeCode.DateTime:
+            var dt = (DateTime)value;
+            if (name2.EndsWith("Date"))
+            {
+                <td>@dt.ToString("yyyy-MM-dd", "")</td>
+            }
+            else
+            {
+                <td>@dt.ToFullString("")</td>
+            }
+            break;
+        case TypeCode.Decimal:
+            var dc = (Decimal)value;
+            <td>@dc.ToString("n2")</td>
+            break;
+        case TypeCode.Single:
+        case TypeCode.Double:
+            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+            {
+                var dd = (Double)value;
+                var des = item.Description + "";
+                if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("万分之一")) { dd /= 10000; }
+
+                <td>@dd.ToString("p2")</td>
+            }
+            else
+            {
+                var dd = (Double)value;
+                <td>@dd.ToString("n2")</td>
+            }
+            break;
+        case TypeCode.Byte:
+        case TypeCode.Int16:
+        case TypeCode.Int32:
+        case TypeCode.Int64:
+        case TypeCode.UInt16:
+        case TypeCode.UInt32:
+        case TypeCode.UInt64:
+            //特殊处理枚举
+            if (item.Type.IsEnum)
+            {
+                var val = "";
+                try
+                {
+                    val = EnumHelper.GetDescription((Enum)value) ?? value + "";
+                }
+                catch { }
+                <td>@val</td>
+            }
+            else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+            {
+                //var provider = ViewData["Provider"] as IManageProvider;
+                if (provider != null)
+                {
+                    <td>@provider?.FindByID(value)</td>
+                }
+                else
+                {
+                    <td>@value</td>
+                }
+            }
+            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+            {
+                var dd = Convert.ToDouble(value);
+                var des = item.Description + "";
+                if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("万分之一")) { dd /= 10000; }
+
+                <td>@dd.ToString("p2")</td>
+            }
+            else
+            {
+                <td>@Convert.ToInt64(value).ToString("n0")</td>
+            }
+            break;
+        case TypeCode.String:
+        default:
+            {
+                var val = value;
+                var map = item.Map;
+                if (map != null && val + "" != "")
+                {
+                    if (map.Provider != null)
+                    {
+                        var name = map.Provider.EntityType.Name;
+                        var key = map.Provider.Key;
+                        val = entity[item.OriField.Name];
+                        <td><a href="@name?@key=@val">@value</a></td>
+                    }
+                    else
+                    {
+                        <td>@value</td>
+                    }
+                }
+                else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
+                {
+                    <td title="@((value+"").IPToAddress())">@value</td>
+                }
+                else if (item.Name.EqualIgnoreCase("Remark", "Description"))
+                {
+                    //防止内容过长
+                    <td title="@value">@value</td>
+                }
+                else if (item.Length >= 500)
+                {
+                    //防止内容过长
+                    <td title="@value">@value</td>
+                }
+                else
+                {
+                    <td>@value</td>
+                }
+            }
+            break;
+    }
+}

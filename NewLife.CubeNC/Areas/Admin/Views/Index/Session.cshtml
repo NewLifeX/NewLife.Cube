@@ -7,7 +7,7 @@
 @using NewLife.Serialization
 @inject IHttpContextAccessor HttpContextAccessor
 @{
-    Layout = NewLife.Cube.Setting.Current.Layout;
+    //Layout = NewLife.Cube.Setting.Current.Layout;
     var session = HttpContextAccessor.HttpContext.Session;
     var session2 = HttpContextAccessor.HttpContext.Items["Session"] as IDictionary<String, Object>;
     ViewBag.Title = "Session列表";

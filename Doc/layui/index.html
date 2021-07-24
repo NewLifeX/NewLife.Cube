@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>魔方</title>
+    <link rel="stylesheet" href="./layui/css/layui.css">
+    <link rel="stylesheet" href="./layui/css/layui_main_cube.css">
+</head>
+
+<body>
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo layui-hide-xs layui-bg-black">Cube Demo</div>
+            <!-- 头部区域（可配合layui 已有的水平导航） -->
+            <ul class="layui-nav layui-layout-left">
+                <!-- 移动端显示 -->
+                <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
+                    <i class="layui-icon layui-icon-spread-left"></i>
+                </li>
+
+                <li class="layui-nav-item layui-hide-xs"><a href="javascript:;">nav 1</a></li>
+                <li class="layui-nav-item layui-hide-xs"><a href="javascript:;">nav 2</a></li>
+                <li class="layui-nav-item layui-hide-xs"><a href="javascript:;">nav 3</a></li>
+                <li class="layui-nav-item">
+                    <a href="javascript:void(0);">nav groups</a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="#">menu 11</a></dd>
+                        <dd><a href="#">menu 22</a></dd>
+                        <dd><a href="#">menu 33</a></dd>
+                    </dl>
+                </li>
+            </ul>
+
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+                    <a href="javascript:void(0);">
+                        <img src="./layui/logo/NewLife.png" class="layui-nav-img"> 管理员
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" lay-header-event="menuSetting" data-url="https://www.baidu.com" data-title="百度">Your Profile</a></dd>
+                        <dd><a href="javascript:;" lay-header-event="menuSetting" data-url="https://www.163.com" data-title="网易">Settings</a></dd>
+                        <hr/>
+                        <dd><a href="javascript:;" lay-header-event="menuSetting" data-url="https://www.sohu.com" data-title="搜狐" data-loginout="true">Sign out</a></dd>
+                    </dl>
+                </li>
+
+                <li class="layui-menu-item-divider"></li>
+
+                <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+                    <a href="javascript:void(0);">
+                        <i class="layui-icon layui-icon-more-vertical"></i>
+                    </a>
+                </li>
+                <li class="layui-menu-item-divider"></li>
+            </ul>
+        </div>
+
+        <!-- 左侧菜单 -->
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+                <ul class="layui-nav layui-nav-tree">
+                    <li class="layui-nav-item layui-nav-itemed">
+                        <a href="javascript:void(0);">menu group 1</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:void(0);" data-url='https://www.baidu.com' cube-leftmenu='openmenu' data-title="hello">hello</a></dd>
+                            <dd><a href="javascript:void(0);" data-url='https://www.163.com' cube-leftmenu='openmenu' data-title="word">word</a></dd>
+                            <dd><a href="javascript:void(0);">menu 3</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:void(0);">menu group 2</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:void(0);">list 1</a></dd>
+                            <dd><a href="javascript:void(0);">list 2</a></dd>
+                            <dd><a href="javascript:void(0);">超链接</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="cube-tab" lay-allowClose="true" lay-filter="cube-layout-tabs">
+            <div class="cube-tab-title">
+                <ul class='layui-tab-title'>
+                    <li class="layui-this cube-homeHeader" lay-id="https://www.baidu.com">
+                        <i class="layui-icon layui-icon-home"></i>
+                    </li>
+                    <li lay-id="11">网站设置</li>
+                    <li lay-id="22">用户管理</li>
+                    <li lay-id="33">权限分配</li>
+                </ul>
+            </div>
+
+            <div class="layui-body cube-body cube-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <iframe src="main.html" frameborder="0" class="cube-iframe"></iframe>
+                </div>
+                <div class="layui-tab-item">
+                    <iframe src="http://www.baidu.com" frameborder="0" class="cube-iframe"></iframe>
+                </div>
+                <div class="layui-tab-item">2</div>
+                <div class="layui-tab-item">3</div>
+            </div>
+        </div>
+
+        <!-- 遮罩层 -->
+        <div class="layui-index-shade" layui-layer-shade-event="shadeClose"></div>
+    </div>
+    <script src="./layui/layui.js"></script>
+    <script src="./layui/layui_main_cube.js"></script>
+</body>
+
+</html>
