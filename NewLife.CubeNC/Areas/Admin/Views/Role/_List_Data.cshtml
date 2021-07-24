@@ -7,7 +7,7 @@
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as IList<FieldItem>;
-        var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting;
     var provider = ManageProvider.Provider;
 }
 <table class="table table-bordered table-hover table-striped table-condensed">
@@ -41,7 +41,7 @@
                 <td class="text-center">@entity.ID</td>
                 <td>@entity.Name</td>
                 <td class="text-center">
-                    <i class="glyphicon glyphicon-@(entity.IsSystem ? "ok" : "remove")" style="color: @(entity.IsSystem ? "green" : "red");"></i>
+                    @await Html.PartialAsync("_Icon_Boolean", entity.IsSystem)
                 </td>
                 <td>@entity.Remark</td>
                 <td class="text-right">@provider.FindByID(entity.UpdateUserID)</td>
