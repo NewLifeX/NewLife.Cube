@@ -193,7 +193,9 @@ namespace NewLife.Cube.Entity
                         Enable = true,
 
                         ShowInList = true,
-                        ShowInForm = true,
+                        ShowInAddForm = true,
+                        ShowInDetailForm = true,
+                        ShowInEditForm = true,
                     };
                     columns.Add(column);
                 }
