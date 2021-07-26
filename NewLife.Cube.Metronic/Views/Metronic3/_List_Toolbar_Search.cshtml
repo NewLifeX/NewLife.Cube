@@ -1,0 +1,17 @@
+﻿@using NewLife.Cube.Extensions
+@{
+    var set = ViewBag.PageSetting as PageSetting;
+}
+<div class="d-inline-flex input-group px-2">
+    @if (set.EnableKey)
+    {
+        <input name="q" type="search" id="q" value="@Context.Request.GetRequestValue("q")" class="form-control form-control-sm" placeholder="搜索关键字" />
+    }
+    <div class="input-group-append">
+        <button type="submit" class="btn btn-sm btn-success">
+            <span>
+                <i class="la la-search"></i>
+            </span>
+        </button>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+
+    var set = ViewBag.PageSetting as PageSetting; 
+}
+<form class="d-flex justify-content-between flex-wrap flex-md-grow-1 flex-lg-grow-1" action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+    <div class="card-title">
+        <div class="d-inline-flex align-items-center">
+            @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+            {
+                var rv = page.GetRouteValue();
+                @Html.ActionLink("添加", "Add", rv, new { @class = "btn btn-primary btn-sm" }.ToDictionary())
+            }
+            @if (set.EnableSelect)
+            {
+                <div class="d-inline-flex">
+                    @await Html.PartialAsync("_List_Toolbar_Batch")
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card-toolbar">
+        <div class="d-inline-flex align-items-center">
+            @await Html.PartialAsync("_List_Toolbar_Custom")
+            <div class="d-inline-flex align-items-center">
+                @await Html.PartialAsync("_List_Search")
+                @await Html.PartialAsync("_List_Toolbar_Search")
+                @await Html.PartialAsync("_List_Toolbar_Adv")
+            </div>
+        </div>
+    </div>
+</form>

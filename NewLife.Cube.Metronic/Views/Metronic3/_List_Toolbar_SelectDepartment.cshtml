@@ -1,0 +1,63 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using System.Linq;
+@{
+    var id = (Object)Model + "";
+    var page = ViewBag.Page as Pager;
+
+    if (id.IsNullOrEmpty()) { id = "departmentId"; }
+    var departmentId = page[id];
+    var showValue = Department.FindByID(departmentId.ToInt())?.ToString();
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+}
+
+<div class="d-inline-flex align-items-center" style="position:relative">
+    <div class="col-lg-12">
+        <div class="input-group">
+            <input type="hidden" name="@id" id="@id" value="@departmentId" />
+            <input type="text" class="form-control form-control-sm" id="@(id)_select" placeholder="搜索部门" value="@showValue">
+            <div class="input-group-btn">
+                <ul class="dropdown-menu dropdown-menu-right" role="menu"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/assets/plugins/global/plugins.bundle.js"></script>
+<script src="~/Content/bootstrap-suggest.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#@(id)_select").bsSuggest({
+            url: "/cube/DepartmentSearch?key=",
+            getDataMethod:"url",
+            effectiveFieldsAlias: { id:"编号",code:"代码",name: "名称",fullName:'全名',manager:'管理者'},
+            ignorecase: true,
+            showHeader: true,
+            delayUntilKeyup: true, //获取数据的方式为 firstByUrl 时，延迟到有输入/获取到焦点时才请求数据
+            hideOnSelect: true,
+            idField: "id",
+            showBtn: false,
+            keyField: "name",
+            clearable: true,
+            searchingTip: '搜索中...',
+            allowNoKeyword: true,
+            delay: 500,
+            emptyTip: '无数据',
+            containerValueId: '@id',
+            fnProcessData: function (result) {
+                dt = {};
+                dt.value = result.data;
+                return dt;
+            }
+        }).on('onSetSelectValue', function (e, keyword, data) {
+            $('#@id').val(keyword.id);
+        }).on('onUnsetSelectValue', function () {
+            $('#@id').val('');
+        });
+    });
+</script>

@@ -1,0 +1,399 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube.WebMiddleware;
+@using NewLife.Cube.Charts;
+@{
+    var set = NewLife.Cube.Setting.Current;
+    var set2 = ViewBag.PageSetting as PageSetting;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.Contains(" - "))
+    {
+        title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
+    }
+
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/";
+    res = res.TrimEnd('/');
+
+    var charts = ViewBag.Charts as ECharts[];
+    var charts2 = ViewBag.Charts2 as ECharts[];
+
+    var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
+}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="新生命团队,NewLife,魔方,Cube,XCode,XIoT" />
+    @*上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！*@
+    <title>@title</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon">
+
+    <!-- 页面内联样式 -->
+    @RenderSection("css", required: false)
+
+    @if (set != null && set.BootstrapSelect)
+    {
+        <link rel="stylesheet" href="@res/bootstrap/css/bootstrap-multiselect.css">
+    }
+
+    <!-- Metronic 样式 -->
+    <!-- 网页字体 -->
+    <script src="https://cdn.bootcss.com/webfont/1.6.16/webfontloader.js"></script>
+    <script>
+        WebFont.load({
+            google: { "families": ["Poppins:300,400,500,600,700", "Roboto:300,400,500,600,700"] },
+            active: function () {
+                sessionStorage.fonts = true;
+            }
+        });
+    </script>
+
+    <link href="~/metronic/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/metronic/plugins/custom/prismjs/prismjs.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/metronic/css/style.bundle.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Cube.css" type="text/css" />
+
+    <link href="@res/artDialog/css/ui-dialog.css" rel="stylesheet" />
+
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="@res/Cube.css?v=@ver">
+    @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
+    {
+        <script src="@res/echarts.min.js"></script>
+    }
+</head>
+<body id="kt_body" class="header-mobile-fixed subheader-enabled aside-enabled aside-fixed aside-secondary-enabled page-loading">
+    <!-- 开始布局页 -->
+    @await Html.PartialAsync("_Layout_Header_Mobile")
+
+    <div class="d-flex flex-column flex-root">
+        <div class="d-flex flex-row flex-column-fluid page">
+            @await Html.PartialAsync("_Layout_Aside")
+            <div class="d-flex flex-column flex-row-fluid wrapper" id="kt_wrapper">
+                <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+                    @await Html.PartialAsync("_Layout_Header")
+
+                    <div class="d-flex flex-column-fluid">
+                        <div class="container-fluid">
+                            @RenderBody()
+
+                            @if (set.ShowRunTime)
+                            {
+                                <div class="alert alert-custom alert-default alert-shadow gutter-t">
+                                    <div class="alert-text">
+                                        @Html.Raw(runInfo)
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- footer -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 结束布局页-->
+
+    @await Html.PartialAsync("_Layout_LoginUser")
+
+    <div id="kt_scrolltop" class="scrolltop">
+        <span class="svg-icon">
+            <!--begin::Svg Icon | path:assets/media/svg/icons/Navigation/Up-2.svg-->
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                    <polygon points="0 0 24 0 24 24 0 24"></polygon>
+                    <rect fill="#000000" opacity="0.3" x="11" y="10" width="2" height="10" rx="1"></rect>
+                    <path d="M6.70710678,12.7071068 C6.31658249,13.0976311 5.68341751,13.0976311 5.29289322,12.7071068 C4.90236893,12.3165825 4.90236893,11.6834175 5.29289322,11.2928932 L11.2928932,5.29289322 C11.6714722,4.91431428 12.2810586,4.90106866 12.6757246,5.26284586 L18.6757246,10.7628459 C19.0828436,11.1360383 19.1103465,11.7686056 18.7371541,12.1757246 C18.3639617,12.5828436 17.7313944,12.6103465 17.3242754,12.2371541 L12.0300757,7.38413782 L6.70710678,12.7071068 Z" fill="#000000" fill-rule="nonzero"></path>
+                </g>
+            </svg>
+            <!--end::Svg Icon-->
+        </span>
+    </div>
+
+    <!-- 界面配置变量 -->
+    <script>
+        var KTAppSettings = {
+            "breakpoints": {
+                "sm": 576,
+                "md": 768,
+                "lg": 992,
+                "xl": 1200,
+                "xxl": 1200
+            },
+            "colors": {
+                "theme": {
+                    "base": {
+                        "white": "#ffffff",
+                        "primary": "#1BC5BD",
+                        "secondary": "#E5EAEE",
+                        "success": "#1BC5BD",
+                        "info": "#6993FF",
+                        "warning": "#FFA800",
+                        "danger": "#F64E60",
+                        "light": "#F3F6F9",
+                        "dark": "#212121"
+                    },
+                    "light": {
+                        "white": "#ffffff",
+                        "primary": "#1BC5BD",
+                        "secondary": "#ECF0F3",
+                        "success": "#C9F7F5",
+                        "info": "#E1E9FF",
+                        "warning": "#FFF4DE",
+                        "danger": "#FFE2E5",
+                        "light": "#F3F6F9",
+                        "dark": "#D6D6E0"
+                    },
+                    "inverse": {
+                        "white": "#ffffff",
+                        "primary": "#ffffff",
+                        "secondary": "#212121",
+                        "success": "#ffffff",
+                        "info": "#ffffff",
+                        "warning": "#ffffff",
+                        "danger": "#ffffff",
+                        "light": "#464E5F",
+                        "dark": "#ffffff"
+                    }
+                },
+                "gray": {
+                    "gray-100": "#F3F6F9",
+                    "gray-200": "#ECF0F3",
+                    "gray-300": "#E5EAEE",
+                    "gray-400": "#D6D6E0",
+                    "gray-500": "#B5B5C3",
+                    "gray-600": "#80808F",
+                    "gray-700": "#464E5F",
+                    "gray-800": "#1B283F",
+                    "gray-900": "#212121"
+                }
+            },
+            "font-family": "Poppins"
+        };
+    </script>
+
+    <!-- Metronic模板脚本 -->
+    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/plugins/custom/prismjs/prismjs.bundle.js"></script>
+    <script src="~/metronic/js/scripts.bundle.min.js"></script>
+
+    <!-- 最早引入基本脚本 [魔方原有脚本，全部移植完成后删除] -->
+    @if (set != null && set.BootstrapSelect)
+    {
+        <script src="@res/bootstrap/js/bootstrap-multiselect.min.js"></script>
+    }
+
+    @RenderSection("scripts", required: false)
+
+    <!-- 启用列表表头选择 -->
+    @if (set2.EnableSelect)
+    {
+        <script>
+            $(function () {
+                var $toolbarContext = $('.toolbar-batch'),
+                    $batchButtons = $('button[data-action="action"], input[data-action="action"]'), //button, input=button, a 3种类型都可以
+                    $table = $('.table'),
+                    $keys = $('input[name="keys"]', $table);
+
+                $table.on('click', '#chkAll', function () {
+                    // 全选
+                    $keys.prop('checked', this.checked);
+                    // 启用禁用批量操作区
+                    $batchButtons.prop('disabled', !this.checked);
+                });
+
+                $table.on('click.checked', 'tbody input[name="keys"]', function (e) {
+                    //页面中所有的checkbox
+                    var allbox = $table.find('tbody :checkbox[name="keys"]');
+                    //页面中所选中的checkbox
+                    var selecteds = $table.find('tbody :checkbox:checked[name="keys"]');
+                    if (selecteds.length > 0) {
+                        // 启用禁用批量操作区
+                        $batchButtons.prop('disabled', false);
+                        //需要判断当前页面所有行的checkbox是否都选中，以此来决定是否需要改变checkbox#chkAll 的状态
+                        if (allbox.length == selecteds.length) {
+                            $table.find('#chkAll').prop('checked', true);
+                        } else {
+                            $table.find('#chkAll').prop('checked', false);
+                        }
+                    }
+                    else {
+                        $batchButtons.prop('disabled', true);
+                        $table.find('#chkAll').prop('checked', false);
+                    }
+                });
+            })
+        </script>
+    }
+
+    <script>
+        // 日历控件
+        $(function () {
+            $('.form_datetime').each(function () {
+                var df = $(this).attr('dateformat');
+                if (!df) {
+                    $(this).attr('dateformat', 'yyyy-mm-dd hh:ii:ss');
+                    $(this).width(140);
+                }
+                else {
+                    // 把C#标准格式化替换为控件格式
+                    df = df.replace('mm', 'ii').replace('MM', 'mm').replace('HH', 'hh');
+                    $(this).attr('dateformat', df);
+
+                    // 根据时间日期格式，锁定日期输入框宽度
+                    if (df.indexOf('hh') >= 0)
+                        $(this).width(140);
+                    else
+                        $(this).width(80);
+                }
+
+                //根据日期格式自动推算日期选择view显示的范围
+                var sv = 2;
+                var mv = 2;
+                var autoView = $(this).attr('autoView');
+                if (autoView != 'false') {
+                    df = $(this).attr('dateformat');
+                    if (df.indexOf('ii') >= 0) {
+                        mv = 0;
+                        if (df.indexOf('dd') >= 0) {
+                            sv = 2;
+                        } else {
+                            sv = 1;
+                        }
+                    } else if (df.indexOf('hh') >= 0) {
+                        mv = 1;
+                        if (df.indexOf('dd') >= 0) {
+                            sv = 2;
+                        } else {
+                            sv = 1;
+                        }
+                    } else if (df.indexOf('dd') >= 0) {
+                        mv = 2;
+                        sv = 2;
+                    } else if (df.indexOf('mm') >= 0) {
+                        mv = 3;
+                        sv = 3;
+                    } else if (df.indexOf('yyyy') >= 0) {
+                        mv = 4;
+                        sv = 4;
+                    }
+                }
+
+                $(this).attr('startview', sv);
+                $(this).attr('minview', mv);
+            });
+            $("[dateformat]").each(function () {
+                $(this).datetimepicker({
+                    format: $(this).attr("dateformat"),
+                    autoclose: true,
+                    language: "zh-CN",
+                    forceParse: false,
+                    startView: parseInt($(this).attr('startview')),
+                    minView: parseInt($(this).attr('minview'))
+                });
+            });
+
+            @if (set != null && set.BootstrapSelect) {<text>
+            $('.multiselect').each(function () {
+                $(this).multiselect({
+                    // 下拉列表仅在列表项比较多时显示过滤框
+                    enableFiltering: $(this).children().length > 10,
+                    buttonClass: 'btn btn-white btn-primary',
+                    templates: {
+                        button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                        ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                        filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                        filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                        li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                        divider: '<li class="multiselect-item divider"></li>',
+                        liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                    },
+                    filterPlaceholder: '搜索',
+                    nonSelectedText: '无',
+                    allSelectedText: '全选'
+                });
+            });
+            </text>}
+            @*双击跳转到form
+            _List_Data_Action.cshtml变更
+            @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
+            $('tr').dblclick(function () {
+                var $this = $(this);
+                var row = $this.closest("tr");
+                var findcell = row.find('.editcell');
+                if (findcell.length > 0) window.location.href = findcell.attr("href");
+            });
+        });
+
+        // 区间时间插件
+        $("input[name='dtRange']").daterangepicker(
+            {
+                // autoApply: true,
+                // autoUpdateInput: false,
+                // alwaysShowCalendars: true,
+                buttonClasses: 'btn',
+                applyClass: 'btn-primary',
+                cancelClass: 'btn-secondary',
+                ranges: {
+                    '今天': [moment(), moment()],
+                    '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '近7天': [moment().subtract(7, 'days'), moment()],
+                    '近30天': [moment().subtract(29, 'days'), moment()],
+                    '这个月': [moment().startOf('month'), moment().endOf('month')],
+                    '上个月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                locale: {
+                    format: "YYYY/MM/DD HH:mm",
+                    separator: " - ",
+                    applyLabel: "确认",
+                    cancelLabel: "清空",
+                    fromLabel: "开始时间",
+                    toLabel: "结束时间",
+                    customRangeLabel: "自定义日期范围",
+                    daysOfWeek: ["日", "一", "二", "三", "四", "五", "六"],
+                    monthNames: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]
+                }
+            }
+        ).on('cancel.daterangepicker', function (ev, picker) {
+            $("#dtRange").val("请选择日期范围");
+            $("#dtStart").val("");
+            $("#dtEnd").val("");
+        }).on('apply.daterangepicker', function (ev, picker) {
+            $("#dtStart").val(picker.startDate.format('YYYY-MM-DD'));
+            $("#dtEnd").val(picker.endDate.format('YYYY-MM-DD'));
+            $("#dtRange").val(picker.startDate.format('YYYY-MM-DD') + " 至 " + picker.endDate.format('YYYY-MM-DD'));
+        });
+
+        // 处理表单标签长度
+        window.onresize = function () {
+            var ilabel = $("div.item-label:first");
+            $("div.bigitem-label").width(ilabel.width()); // 设置所有备注类大字段的标签宽度
+        }
+
+        $(function () {
+            var ilabel = $("div.item-label:first");
+            $("div.bigitem-label").width(ilabel.width()); // 设置所有备注类大字段的标签宽度
+        });
+    </script>
+
+    <!--开关插件-->
+    <script src="@res/bootstrap_switch/bootstrap-switch.min.js"></script>
+    <script>
+        $(function () {
+            $("input.chkSwitch").bootstrapSwitch();
+        })
+    </script>
+
+    @*artDialog*@
+    <script src="@res/artDialog/dist/dialog-plus-min.js"></script>
+    <script src="@res/artDialog/dist/dialog.new.life.js"></script>
+    @*模态窗Ajax删除提示*@
+    <script src="@res/Cube.js?v=@ver"></script>
+</body>
+</html>

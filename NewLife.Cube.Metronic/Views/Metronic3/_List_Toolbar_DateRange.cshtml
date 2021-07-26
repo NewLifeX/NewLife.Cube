@@ -1,0 +1,19 @@
+﻿@using NewLife;
+@{
+    var fmt = Model as String;
+    var formatStr = !fmt.IsNullOrEmpty() ? fmt : "yyyy-MM-dd";
+    //var name = fmt == "yyyy-MM-dd" ? "日期" : "时间";
+    var p = ViewBag.Page as Pager;
+
+    var dtStart = p["dtStart"].ToDateTime();
+    var dtEnd = p["dtEnd"].ToDateTime();
+}
+<div class="d-inline-flex flex-shrink-0 align-items-center">
+    <div class="input-group input-group-sm flex-nowrap align-items-stretch">
+        @*<label class="flex-shrink-0">时间</label>*@
+        <div class="input-group-prepend"><span class="input-group-text" id="basic-addon2"><i class="la la-calendar" aria-hidden="true"></i></span></div>
+        <input type="text" name="dtRange" class="form-control pull-right" placeholder="请选择日期范围" aria-describedby="basic-addon2" style="width: 232px;">
+    </div>
+    <input type="hidden" id="dtStart" name="dtStart" class="form-control form-control-sm" value="@p["dtStart"]" />
+    <input type="hidden" id="dtEnd" name="dtEnd" class="form-control form-control-sm" value="@p["dtEnd"]" />
+</div>

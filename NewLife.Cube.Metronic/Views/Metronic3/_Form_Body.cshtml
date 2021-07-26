@@ -1,0 +1,25 @@
+﻿@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var set = NewLife.Cube.Setting.Current;
+}
+
+<div class="card-body d-flex flex-wrap pt-5 pr-0">
+    @foreach (var item in fields)
+    {
+@*        // 默认隐藏审计属性
+        if (item.ColumnName.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "UpdateUserID", "UpdateUser", "UpdateTime",
+            "CreateIP", "UpdateIP") && set.HidenAuditProperty)
+            continue;
+*@
+        if (!item.IsIdentity)
+        {
+            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, FieldItem>(entity, item))
+        }
+    }
+</div>
+
+

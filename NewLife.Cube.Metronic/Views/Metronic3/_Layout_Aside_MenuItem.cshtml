@@ -1,0 +1,62 @@
+﻿@using NewLife.Model;
+@using XCode.Membership;
+@using NewLife;
+@using NewLife.Cube.ViewModels;
+@{
+    String[] icons = new String[] { "flaticon-cogwheel", "flaticon-squares-4", "flaticon-imac", "flaticon-responsive", "flaticon-cogwheel",
+        "flaticon-interface-1", "flaticon-interface-3", "flaticon-web", "flaticon-interface-8", "flaticon-time-1", "flaticon-app",
+        "flaticon-map-location","flaticon-grid-menu-v2","flaticon-paper-plane", "flaticon-network", "flaticon-squares-3",
+        "flaticon-interface-9","flaticon-graphic-2","flaticon-layers","flaticon-line-graph","flaticon-clock-1", "flaticon-layers" };
+    Int32 _idx = 0;
+
+    var item = Model as MenuTree;
+    var childs = item.Children ?? new List<MenuTree>();
+    var url = item.Url.IsNullOrEmpty() ? "" : Url.Content(item.Url);
+}
+
+@if (childs.Any())
+{
+    if (_idx >= icons.Length) { _idx = 0; }
+
+    <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+        <a href="javascript:;" class="menu-link menu-toggle">
+            @if (!item.Icon.IsNullOrEmpty())
+            {
+                <i class="menu-icon @item.Icon" style="font-size:large"></i>
+            }
+            else if(item.ParentID == 0) {
+                if (item.Name != "Admin") { _idx++; }
+                <i class="menu-icon @icons[_idx++]" style="font-size:large"></i>
+            }
+            <span class="menu-text" style="font-size:large">@item.DisplayName</span>
+            <span class="menu-label">
+                <span class="label label-rounded label-primary">@item.Children.Where(w => w.Visible).Count()</span>
+            </span>
+            <i class="menu-arrow"></i>
+        </a> 
+
+        <!-- 子菜单 -->
+        <div class="menu-submenu">
+            <i class="menu-arrow"></i>
+            <ul class="menu-subnav">
+               @foreach (var menu in childs.Where(w => w.Visible)) {
+                    @await Html.PartialAsync("_Layout_Aside_MenuItem", menu);
+               }
+            </ul>
+        </div>
+    </li>
+}
+else
+{
+    <li class="menu-item" aria-haspopup="true">
+        <a href=@item.Url target="_self" class="menu-link">
+            @if (!item.Icon.IsNullOrEmpty()) { 
+                <i class="menu-icon @item.Icon" style="font-size:large"></i>
+            }
+            <i class="menu-bullet menu-bullet-dot">
+                <span></span>
+            </i>
+            <span class="menu-text" style="font-size:medium">@item.DisplayName</span>
+        </a>
+    </li>
+}

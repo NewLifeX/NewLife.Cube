@@ -1,0 +1,11 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode
+@{
+    var entity = Model as IEntity;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    var rv = entity.GetRouteKey();
+}
+
+<!-- 高级动作 -->
