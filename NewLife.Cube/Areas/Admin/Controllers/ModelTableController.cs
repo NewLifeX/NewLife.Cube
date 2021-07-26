@@ -27,7 +27,48 @@ namespace NewLife.Cube.Admin.Controllers
                 df.Url = "ModelColumn?tableId={Id}";
             }
 
-            //Init();
+            ModelTableSetting = table =>
+            {
+                var columns = table.Columns;
+
+                // 不在列表页显示
+                var fields = columns.FindAll(fa =>
+                    fa.ShowInList &&
+                    (fa.Name.EqualIgnoreCase(ModelTable._.Controller)
+                     || fa.Name.EqualIgnoreCase(ModelTable._.TableName)
+                     || fa.Name.EqualIgnoreCase(ModelTable._.ConnName)));
+
+                foreach (var field in fields)
+                {
+                    field.ShowInList = false;
+                }
+
+                // 调整列宽
+                columns.Find(f => f.Name.EqualIgnoreCase(ModelTable._.Name)).Width = "115";
+                columns.Find(f => f.Name.EqualIgnoreCase(ModelTable._.DisplayName)).Width = "115";
+                columns.Find(f => f.Name.EqualIgnoreCase(ModelTable._.Url)).Width = "200";
+
+                columns.Save();
+
+                // 添加列
+                var column = ModelColumn.FindByTableIdAndName(table.Id, "Columns") ?? new ModelColumn
+                {
+                    TableId = table.Id,
+                    Name = "Columns",
+                    DisplayName = "列集合",
+                    //CellText = "列集合",
+                    //CellTitle = "列集合",
+                    CellUrl = "/Admin/ModelColumn?tableId={id}",
+                    ShowInList = true,
+                    Enable = true,
+                    Sort = 5,
+                    Width = "80",
+                };
+
+                column.Save();
+
+                return table;
+            };
         }
 
         private static Boolean _inited;
