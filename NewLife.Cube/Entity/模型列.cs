@@ -131,29 +131,13 @@ namespace NewLife.Cube.Entity
         [BindColumn("ShowInList", "列表页显示", "")]
         public Boolean ShowInList { get => _ShowInList; set { if (OnPropertyChanging("ShowInList", value)) { _ShowInList = value; OnPropertyChanged("ShowInList"); } } }
 
-        private Boolean _ShowInAddForm;
-        /// <summary>添加表单页显示</summary>
-        [DisplayName("添加表单页显示")]
-        [Description("添加表单页显示")]
+        private ShowInForm _ShowInForm;
+        /// <summary>表单页显示</summary>
+        [DisplayName("表单页显示")]
+        [Description("表单页显示")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("ShowInAddForm", "添加表单页显示", "")]
-        public Boolean ShowInAddForm { get => _ShowInAddForm; set { if (OnPropertyChanging("ShowInAddForm", value)) { _ShowInAddForm = value; OnPropertyChanged("ShowInAddForm"); } } }
-
-        private Boolean _ShowInEditForm;
-        /// <summary>编辑表单页显示</summary>
-        [DisplayName("编辑表单页显示")]
-        [Description("编辑表单页显示")]
-        [DataObjectField(false, false, false, 0)]
-        [BindColumn("ShowInEditForm", "编辑表单页显示", "")]
-        public Boolean ShowInEditForm { get => _ShowInEditForm; set { if (OnPropertyChanging("ShowInEditForm", value)) { _ShowInEditForm = value; OnPropertyChanged("ShowInEditForm"); } } }
-
-        private Boolean _ShowInDetailForm;
-        /// <summary>详情表单页显示</summary>
-        [DisplayName("详情表单页显示")]
-        [Description("详情表单页显示")]
-        [DataObjectField(false, false, false, 0)]
-        [BindColumn("ShowInDetailForm", "详情表单页显示", "")]
-        public Boolean ShowInDetailForm { get => _ShowInDetailForm; set { if (OnPropertyChanging("ShowInDetailForm", value)) { _ShowInDetailForm = value; OnPropertyChanged("ShowInDetailForm"); } } }
+        [BindColumn("ShowInForm", "表单页显示", "")]
+        public ShowInForm ShowInForm { get => _ShowInForm; set { if (OnPropertyChanging("ShowInForm", value)) { _ShowInForm = value; OnPropertyChanged("ShowInForm"); } } }
 
         private Boolean _ShowInSearch;
         /// <summary>搜索显示</summary>
@@ -316,9 +300,7 @@ namespace NewLife.Cube.Entity
                     case "IsDataObjectField": return _IsDataObjectField;
                     case "Description": return _Description;
                     case "ShowInList": return _ShowInList;
-                    case "ShowInAddForm": return _ShowInAddForm;
-                    case "ShowInEditForm": return _ShowInEditForm;
-                    case "ShowInDetailForm": return _ShowInDetailForm;
+                    case "ShowInForm": return _ShowInForm;
                     case "ShowInSearch": return _ShowInSearch;
                     case "Sort": return _Sort;
                     case "Width": return _Width;
@@ -357,9 +339,7 @@ namespace NewLife.Cube.Entity
                     case "IsDataObjectField": _IsDataObjectField = value.ToBoolean(); break;
                     case "Description": _Description = Convert.ToString(value); break;
                     case "ShowInList": _ShowInList = value.ToBoolean(); break;
-                    case "ShowInAddForm": _ShowInAddForm = value.ToBoolean(); break;
-                    case "ShowInEditForm": _ShowInEditForm = value.ToBoolean(); break;
-                    case "ShowInDetailForm": _ShowInDetailForm = value.ToBoolean(); break;
+                    case "ShowInForm": _ShowInForm = (ShowInForm)value.ToInt(); break;
                     case "ShowInSearch": _ShowInSearch = value.ToBoolean(); break;
                     case "Sort": _Sort = value.ToInt(); break;
                     case "Width": _Width = Convert.ToString(value); break;
@@ -429,14 +409,8 @@ namespace NewLife.Cube.Entity
             /// <summary>列表页显示</summary>
             public static readonly Field ShowInList = FindByName("ShowInList");
 
-            /// <summary>添加表单页显示</summary>
-            public static readonly Field ShowInAddForm = FindByName("ShowInAddForm");
-
-            /// <summary>编辑表单页显示</summary>
-            public static readonly Field ShowInEditForm = FindByName("ShowInEditForm");
-
-            /// <summary>详情表单页显示</summary>
-            public static readonly Field ShowInDetailForm = FindByName("ShowInDetailForm");
+            /// <summary>表单页显示</summary>
+            public static readonly Field ShowInForm = FindByName("ShowInForm");
 
             /// <summary>搜索显示</summary>
             public static readonly Field ShowInSearch = FindByName("ShowInSearch");
@@ -537,14 +511,8 @@ namespace NewLife.Cube.Entity
             /// <summary>列表页显示</summary>
             public const String ShowInList = "ShowInList";
 
-            /// <summary>添加表单页显示</summary>
-            public const String ShowInAddForm = "ShowInAddForm";
-
-            /// <summary>编辑表单页显示</summary>
-            public const String ShowInEditForm = "ShowInEditForm";
-
-            /// <summary>详情表单页显示</summary>
-            public const String ShowInDetailForm = "ShowInDetailForm";
+            /// <summary>表单页显示</summary>
+            public const String ShowInForm = "ShowInForm";
 
             /// <summary>搜索显示</summary>
             public const String ShowInSearch = "ShowInSearch";
