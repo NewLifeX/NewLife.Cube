@@ -273,6 +273,8 @@ namespace NewLife.Cube.Admin.Controllers
             // 连续错误校验
             var key = $"Login:{username}";
             var errors = _cache.Get<Int32>(key);
+            var ipKey = $"Login:{UserHost}";
+            var ipErrors = _cache.Get<Int32>(ipKey);
 
             var returnUrl = GetRequest("r");
             try
@@ -281,6 +283,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password), "密码不能为空！");
 
                 if (errors >= 5) throw new InvalidOperationException($"[{username}]登录错误过多，请在60秒后再试！");
+                if (ipErrors >= 5) throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在60秒后再试！");
 
                 var provider = ManageProvider.Provider;
                 if (ModelState.IsValid && provider.Login(username, password, remember) != null)
@@ -300,6 +303,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                     // 登录成功，清空错误数
                     if (errors > 0) _cache.Remove(key);
+                    if (ipErrors > 0) _cache.Remove(ipKey);
 
                     // 登录后自动绑定
                     var logId = Session["Cube_OAuthId"].ToLong();

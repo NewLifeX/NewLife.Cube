@@ -54,10 +54,10 @@
                 <td class="text-right">@entity.Sort.ToString("n0")</td>
                 @*<td>@entity.Icon</td>*@
                 <td class="text-center">
-                    <i class="glyphicon glyphicon-@(entity.Visible ? "ok" : "remove")" style="color: @(entity.Visible ? "green" : "red");"></i>
+                    @await Html.PartialAsync("_Icon_Boolean", entity.Visible)
                 </td>
                 <td class="text-center">
-                    <i class="glyphicon glyphicon-@(entity.Necessary ? "ok" : "remove")" style="color: @(entity.Necessary ? "green" : "red");"></i>
+                    @await Html.PartialAsync("_Icon_Boolean", entity.Necessary)
                 </td>
                 <td>@entity.Permission</td>
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
@@ -65,13 +65,17 @@
                     <td class="text-center">
                         @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
                         {
-                            <a href="@Url.Action("Up", new { id })"><span class="glyphicon glyphicon-arrow-up" style="color: green;"></span></a>
+                            <a href="@Url.Action("Up", new { id })">
+                                @await Html.PartialAsync("_Icon_Arrow", true)
+                            </a>
                         }
                     </td>
                     <td class="text-center">
                         @if (p != null && entity != p.Childs[p.Childs.Count - 1])
                         {
-                            <a href="@Url.Action("Down", new { id })"><span class="glyphicon glyphicon-arrow-down" style="color: red;"></span></a>
+                            <a href="@Url.Action("Down", new { id })">
+                                @await Html.PartialAsync("_Icon_Arrow", false)
+                            </a>
                         }
                     </td>
                     <td class="text-center">

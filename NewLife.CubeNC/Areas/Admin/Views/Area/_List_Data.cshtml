@@ -63,7 +63,7 @@
                 <td class="text-right">@entity.Latitude</td>
                 <td class="text-center">@entity.GeoHash</td>
                 <td class="text-center">
-                    <i class="glyphicon glyphicon-@(entity.Enable ? "ok" : "remove")" style="color: @(entity.Enable ? "green" : "red");"></i>
+                    @await Html.PartialAsync("_Icon_Boolean", entity.Enable)
                 </td>
                 <td class="text-center">@entity.CreateTime.ToFullString("")</td>
                 <td class="text-center">@entity.UpdateTime.ToFullString("")</td>
