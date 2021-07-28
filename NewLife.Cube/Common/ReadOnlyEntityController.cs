@@ -439,7 +439,7 @@ namespace NewLife.Cube
             var list = SearchData(p);
 
             // Json输出
-            if (IsJsonRequest) return Json(0, null, list, new { pager = p });
+            if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p });
 
             return View("List", list);
         }
@@ -458,7 +458,7 @@ namespace NewLife.Cube
             Valid(entity, DataObjectMethodType.Select, false);
 
             // Json输出
-            if (IsJsonRequest) return Json(0, null, entity);
+            if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.详情));
 
             // 用于显示的列
             ViewBag.Fields = DetailFields;
@@ -1374,15 +1374,17 @@ namespace NewLife.Cube
         /// <summary>菜单顺序。扫描时会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
-        /// <summary>
-        /// 控制器对应菜单
-        /// </summary>
+        /// <summary>控制器对应菜单</summary>
         protected static IMenu CurrentMenu { get; set; }
 
         /// <summary>
-        /// 控制器对应模型表
+        /// 模型表设置，生成模型表数据之后调用
         /// </summary>
-        protected static ModelTable ModelTable { get; set; }
+        protected static Func<ModelTable, ModelTable> ModelTableSetting { get; set; } = table => table;
+
+        /// <summary>控制器对应模型表</summary>
+        protected static ModelTable ModelTable
+          => ModelTable.FindByCategoryAndName(CurrentMenu?.Parent?.Name, CurrentMenu?.Name) ?? ModelTableSetting(ModelTable.ScanModel(CurrentMenu?.Parent?.Name, CurrentMenu?.Name, CurrentMenu?.FullName, CurrentMenu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
 
         /// <summary>自动从实体类拿到显示名</summary>
         /// <param name="menu"></param>
@@ -1411,11 +1413,19 @@ namespace NewLife.Cube
                 // 等菜单缓存准备好
                 Thread.Sleep(1000);
 
-                // 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
+                // TODO 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
                 // var list = GetType().GetCustomAttributes();
                 // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
                 // 生成模型表模型列
-                ModelTable = ModelTable.ScanModel(null, menu, Entity<TEntity>.Meta.Factory);
+                var modelTable = ModelTable.ScanModel(menu.Parent?.Name, menu, Entity<TEntity>.Meta.Factory);
+
+                // 模型表已是异步执行模型表生成，这里使用同步保存模型列
+                //ThreadPoolX.QueueUserWorkItem(() =>
+                //{
+                // 等模型列缓存准备好
+                //Thread.Sleep(1000);
+                ModelTableSetting(modelTable);
+                //});
             });
 
             CurrentMenu = menu;
@@ -1424,9 +1434,48 @@ namespace NewLife.Cube
         }
 
         /// <summary>
-        /// 确保创建模型表
+        /// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
         /// </summary>
-        protected static void EnsureCreateModelTable() => ModelTable ??= ModelTable.ScanModel(null, CurrentMenu, Entity<TEntity>.Meta.Factory);
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        protected virtual TEntity EntityFilter(TEntity entity, ShowInForm showInForm)
+        {
+            if (entity == null) return null;
+            var modelTable = ModelTable;
+            var modelColumns = modelTable.Columns?.Where(w => !w.ShowInForm.HasFlag(showInForm));
+
+            foreach (var column in modelColumns)
+            {
+                if (entity[column.Name] != null) entity[column.Name] = null;
+            }
+
+            return entity;
+        }
+
+        /// <summary>
+        /// 实体列表过滤器，根据模型列的列表页显示类型，不显示的字段去掉
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns></returns>
+        protected virtual IEnumerable<TEntity> EntitiesFilter(IEnumerable<TEntity> entities)
+        {
+            if (entities == null) return null;
+            var modelTable = ModelTable;
+            // 不显示的列
+            var modelColumns = modelTable?.Columns?.Where(w => !w.ShowInList).ToList();
+
+            if (modelColumns == null) return entities;
+
+            foreach (var entity in entities)
+            {
+                foreach (var column in modelColumns.Where(column => entity[column.Name] != null))
+                {
+                    entity[column.Name] = null;
+                }
+            }
+
+            return entities;
+        }
 
         #endregion
 
