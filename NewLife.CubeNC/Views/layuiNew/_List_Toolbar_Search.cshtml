@@ -1,0 +1,14 @@
+﻿@using NewLife.Cube.Extensions
+@{ var set = ViewBag.PageSetting as PageSetting; }
+
+
+<div class="layui-input-inline">
+    <input name="q" type="search" placeholder="关键字" autocomplete="off" class="layui-input">
+</div>
+<div class="layui-input-inline">
+    <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="comm-query">
+        <i class="layui-icon layui-icon-search"></i>
+        查询
+    </button>
+    @await Html.PartialAsync("_List_Toolbar_Adv")
+</div>

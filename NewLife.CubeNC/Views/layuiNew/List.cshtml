@@ -1,0 +1,17 @@
+﻿@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Charts;
+
+@await Html.PartialAsync("_List_Toolbar")
+@await Html.PartialAsync("_List_Data")
+
+
+
+
+@*@if (charts != null && charts.Length > 0)
+    {
+    <div class="clearfix">
+        @foreach (var item in charts)
+        {
+    @await Html.PartialAsync("_ECharts", item)}
+    </div>}*@

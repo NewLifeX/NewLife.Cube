@@ -14,6 +14,7 @@ using NewLife.Log;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Common;
 using NewLife.Reflection;
+using NewLife.Cube.ViewModels;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -632,5 +633,47 @@ namespace NewLife.Cube.Admin.Controllers
 
             return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个用户");
         }
+        #region 获取其它表的信息
+        /// <summary>
+        /// 用户--查询角色列表
+        /// </summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet]
+        public IActionResult GetRole()
+        {
+            var list = Role.Meta.Factory.FindAll(Role._.Enable == true, "", "", 0, 0);
+            return Ok(data: list);
+        }
+
+        /// <summary>
+        /// 获取所有select 树形部门
+        /// </summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        [HttpGet]
+        public IActionResult GetSelectDeparTree(int id)
+        {
+            var DepartmentList = Department.FindAll();
+            var treeList = (from deprt in DepartmentList
+                            where deprt.Enable == true
+                            orderby deprt.Sort
+                            select new SelectTree
+                            {
+                                name = deprt.Name,
+                                disabled = deprt.ID == id ? true : false,
+                                value = deprt.ID.ToString(),
+                                parentID = deprt.ParentID.ToString()
+                            }).ToList();
+
+            var sList = new List<SelectTree>();
+            var node = new SelectTree();
+            sList = node.GetSelectTreeList(treeList, sList, "0");
+            return Json(new
+            {
+                data = sList
+            });
+        }
+        #endregion
     }
 }

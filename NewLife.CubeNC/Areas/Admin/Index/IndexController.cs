@@ -224,7 +224,56 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         [EntityAuthorize()]
         public ActionResult GetMenuTree() => Ok(data: GetMenu());
+        /// <summary>
+        /// 获取菜单树-新的
+        /// </summary>
+        /// <returns></returns>
+        [EntityAuthorize()]
+        public ActionResult GetMenuTreeNew()
+        {
+            //后续可能做成配置
+            return Ok(data:
+                new
+                {
+                    logo = new
+                    {
+                        title = SysConfig.Current.DisplayName,
+                        image = "/Content/Pear-Admin-Layui/admin/images/logo.png"
+                    },
+                    menu = new
+                    {
+                        collaspe = false,
+                        accordion = true,
+                        async = false,
+                        control = false,
+                        select = 0,
+                        data = GetMenu(),
+                    },
+                    tab = new
+                    {
+                        muiltTab = true,
+                        keepState = true,
+                        tabMax = 30,
+                        index = new
+                        {
+                            id = 0,
+                            href = "view /console/console1.html",
+                            title = "首页"
+                        }
+                    },
+                    theme = new
+                    {
+                        defaultColor = 2,
+                        defaultMenu = "dark-theme",
+                        allowCustom = true
+                    },
+                    header = new
+                    {
+                        message = false
+                    }
 
+                });
+        }
         private IList<MenuTree> GetMenu()
         {
             var user = _provider.Current as IUser ?? XCode.Membership.User.FindAll().FirstOrDefault();
@@ -252,10 +301,13 @@ namespace NewLife.Cube.Admin.Controllers
                                 {
                                     ID = menu.ID,
                                     Name = menu.Name,
+                                    Title = menu.DisplayName ?? menu.Name,
                                     DisplayName = menu.DisplayName ?? menu.Name,
                                     Url = Url.Content(menu.Url),
+                                    Href = Url.Content(menu.Url),
                                     Icon = menu.Icon,
                                     Visible = menu.Visible,
+                                    Type = menu.Childs.Count >= 1 ? 0 : 1,
                                     ParentID = menu.ParentID,
                                     Permissions = menu.Permissions
                                 }).ToList();

@@ -1,0 +1,32 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{ var fact = ViewBag.Factory as IEntityFactory;
+    //var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var ukey = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting; }
+
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="comm-table" lay-filter="comm-table"></table>
+    </div>
+</div>
+@{ var cols = from f in fields
+               select new
+               {
+                   title = f.DisplayName,
+                   field = f.Name == "ID" ? "id" : f.Name.Substring(0, 1).ToLower() + f.Name.Substring(1),
+                   align = "center",
+                   templet = f.Name == "ID" ? "#id" : "#" + f.Name.Substring(0, 1).ToLower() + f.Name.Substring(1)
+               };
+    var colsArray = System.Text.Json.JsonSerializer.Serialize(cols);
+    var act = Context.Request.Path + "";
+}
+<input id="comm_url" hidden="hidden" value="@act" />
+<input id="comm_colsArray" hidden="hidden" value="@colsArray" />
+<input id="comm_title" hidden="hidden" value="@ViewBag.Title" />
+@await Html.PartialAsync("_List_Data_Action");
+<script src="~/Content/PearAdminLayui/exce/Comm/listdata.js" type="text/javascript" asp-append-version="true"></script>

@@ -1,0 +1,21 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{ var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+
+    var set = ViewBag.PageSetting as PageSetting; 
+}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" id="comm_form" action="">
+            <div class="layui-form-item">
+                @await Html.PartialAsync("_List_Search")
+                @await Html.PartialAsync("_List_Toolbar_Search")
+            </div>
+        </form>
+    </div>
+</div>

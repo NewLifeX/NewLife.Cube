@@ -1,0 +1,80 @@
+﻿@section css {
+    <style>
+        .pear-container {
+            background-color: #fff;
+        }
+    </style>
+}
+@model IEntity
+@{ var menu = Model as Menu;
+}
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="main-container">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">上级菜单</label>
+                    <input id="tree_ParentID_hidden" hidden="hidden" value="@menu.ParentID" />
+                    <div class="layui-input-block">
+                        <div xid="parentID" class="xm-select-demo"></div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">菜单名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="DisplayName" lay-verify="required" lay-reqText="请输入菜单名称" autocomplete="off" class="layui-input" value="@menu.DisplayName">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">控制器名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="Name" lay-verify="required" lay-reqText="请输入控制器名称" autocomplete="off" placeholder="" class="layui-input" value="@menu.Name">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">命名空间</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="FullName" lay-verify="title" autocomplete="off" placeholder="菜单命名空间不可随意填写，与权限判断结合使用" class="layui-input" value="@menu.FullName">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">菜单链接</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="Url" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" value="@menu.Url">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">排序</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="Sort" lay-verify="number" placeholder="只能填写数字" autocomplete="off" class="layui-input" value="@menu.Sort">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">基本权限</label>
+                    <div class="layui-input-block">
+                        <textarea name="Permission" class="layui-textarea" placeholder="例如:1#查看,2#添加,对不同资源的权限，逗号分隔">@menu.Permission</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注</label>
+                    <div class="layui-input-block">
+                        <textarea name="Remark" class="layui-textarea">@menu.Remark</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit="" lay-filter="saveBtn">
+                <i class="layui-icon layui-icon-ok"></i>
+                保存
+            </button>
+        </div>
+    </div>
+    <input name="id" hidden="hidden" value="@menu.ID" />
+</form>
+@section javascript {
+    <script src="~/Content/PearAdminLayui/exce/Admin/Menu/MenuEdit.js" type="text/javascript" asp-append-version="true"></script>
+}
+

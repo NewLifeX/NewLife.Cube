@@ -1,0 +1,16 @@
+﻿@model IList<XCode.Membership.Menu>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{ var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var set = ViewBag.PageSetting as PageSetting; }
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="menu-table" lay-filter="menu-table"></table>
+    </div>
+</div>
+@await Html.PartialAsync("_List_Data_Action");
+<script src="~/Content/PearAdminLayui/exce/Admin/Menu/Menu.js" type="text/javascript" asp-append-version="true"></script>

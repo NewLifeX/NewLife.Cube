@@ -1,0 +1,67 @@
+{
+	"logo": {
+		"title": "Pear Admin",
+		"image": "admin/images/logo.png"
+	},
+	"menu": {
+		"data": "admin/data/menu.json",
+		"collaspe": true,
+		"accordion": true,
+		"method": "GET",
+		"control": false,
+		"select": "0"
+	},
+	"tab": {
+		"muiltTab": true,
+		"keepState": true,
+		"tabMax": 30,
+		"index": {
+			"id": "0",
+			"href": "view/console/console1.html",
+			"title": "首页"
+		}
+	},
+	"theme": {
+		"defaultColor": "2",
+		"defaultMenu": "dark-theme",
+		"allowCustom": true
+	},
+	"colors": [{
+			"id": "1",
+			"color": "#2d8cf0"
+		},{
+			"id": "2",
+			"color": "#5FB878"
+		},{
+			"id": "3",
+			"color": "#1E9FFF"
+		}, {
+			"id": "4",
+			"color": "#FFB800"
+		}, {
+			"id": "5",
+			"color": "darkgray"
+		}
+	],
+	"links": [{
+			"icon": "layui-icon layui-icon-auz",
+			"title": "官方网站",
+			"href": "http://www.pearadmin.com"
+		},{
+			"icon": "layui-icon layui-icon-auz",
+			"title": "开发文档",
+			"href": "http://www.pearadmin.com"
+		},{
+			"icon": "layui-icon layui-icon-auz",
+			"title": "开源地址",
+			"href": "https://gitee.com/Jmysy/Pear-Admin-Layui"
+		}
+	],
+	"other": {
+		"keepLoad": 1200,
+		"autoHead": false
+	},
+	"header": {
+		"message": false
+	}
+}

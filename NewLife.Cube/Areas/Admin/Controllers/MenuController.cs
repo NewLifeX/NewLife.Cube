@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.ViewModels;
 using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers
@@ -32,6 +35,44 @@ namespace NewLife.Cube.Admin.Controllers
             if (post) Menu.Meta.Session.ClearCache($"{type}-{entity}", true);
 
             return rs;
+        }
+        /// <summary>
+        /// 获取所有菜单节点列表
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [EntityAuthorize(PermissionFlags.Detail)]
+        public ActionResult GetMenuAll()
+        {
+            var list = Menu.Meta.Factory.FindAll(null, "Sort", "", 0, 0);
+            return Json(0, null, list);
+        }
+        /// <summary>
+        /// 获取所有select 树形菜单
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [EntityAuthorize(PermissionFlags.Detail)]
+        public IActionResult GetSelectTree(int id)
+        {
+            var menuList = Menu.FindAll();
+            var treeList = (from menu in menuList
+                            where menu.DisplayName != "主页" && menu.Visible == true
+                            select new SelectTree
+                            {
+                                name = menu.DisplayName,
+                                disabled = menu.ID == id ? true : false,
+                                value = menu.ID.ToString(),
+                                parentID = menu.ParentID.ToString()
+                            }).ToList();
+
+            var sList = new List<SelectTree>();
+            var node = new SelectTree();
+            sList = node.GetSelectTreeList(treeList, sList, "0");
+            return Json(new
+            {
+                data = sList
+            });
         }
     }
 }

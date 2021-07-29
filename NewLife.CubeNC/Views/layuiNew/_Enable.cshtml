@@ -1,0 +1,26 @@
+﻿<div class="layui-input-inline">
+    <div xid="enable" class="xm-select-demo"></div>
+</div>
+<script type="text/javascript">
+    layui.use(['xmSelect'], function () {
+        let xmSelect = layui.xmSelect;
+        xmSelect.render({
+            el: '[xid=enable]',
+            tips: "状态",
+            name: "enable",
+            radio: true,
+            clickClose: true,
+            theme: {
+                color: '#0081ff',
+            },
+            toolbar: {
+                show: true,
+                list: ['ALL', 'CLEAR']
+            },
+            data: [
+                { name: '启用', value: 1 },
+                { name: '禁用', value: 0 }
+            ]
+        });
+    });
+</script>

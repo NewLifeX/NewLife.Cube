@@ -1,0 +1,53 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode
+@{
+    var set = ViewBag.PageSetting as PageSetting;
+
+}
+@if (set.IsReadOnly)
+{
+    if (this.Has(PermissionFlags.Detail))
+    {
+        <script type="text/html" id="common-bar">
+            <button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="detail">查看</button>
+        </script>
+
+    }
+}
+else
+{
+    <script type="text/html" id="common-bar">
+        @if ((this.Has(PermissionFlags.Detail)))
+        {
+            <button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="detail">查看</button>
+        }
+        @if ((this.Has(PermissionFlags.Update)))
+        {
+            <button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="edit">编辑</button>
+        }
+        @if (this.Has(PermissionFlags.Delete))
+        {
+            var fact = ViewBag.Factory as IEntityFactory;
+            var fi = (fact == null || fact.Fields == null) ? null : fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted"));
+            if (fi != null && fi.Type == typeof(Boolean))
+            {
+                <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="transfer">恢复</button>
+
+            }
+            else
+            {
+                <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="remove">删除</button>
+            }
+        }
+    </script>
+}
+@if (this.Has(PermissionFlags.Insert))
+{
+    <script type="text/html" id="common-toolbar">
+        <button class="pear-btn pear-btn-primary pear-btn-md" lay-event="add">
+            <i class="layui-icon layui-icon-add-1"></i>
+            新增
+        </button>
+    </script>
+}

@@ -1,0 +1,91 @@
+﻿@{
+    Layout = null;
+
+    var User = ViewBag.User;
+    var cfg = ViewBag.Config;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var nickName = user?.DisplayName;
+    var img = user?.Avatar;
+    img = img.IsNullOrEmpty() ? "/Content/PearAdminLayui/admin/images/avatar.jpg" : img;
+}
+
+<!DOCTYPE html>
+<html lang="zn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>@title</title>
+    <!-- 依 赖 样 式 -->
+    <link rel="stylesheet" href="@res/PearAdminLayui/component/pear/css/pear.css" />
+    <!-- 加 载 样 式-->
+    <link rel="stylesheet" href="@res/PearAdminLayui/admin/css/load.css" />
+    <!-- 布 局 样 式 -->
+    <link rel="stylesheet" href="@res/PearAdminLayui/admin/css/admin.css" />
+
+    <!--<script src="https://unpkg.com/vue@next"></script>-->
+    <!-- 引入样式 -->
+    <!--<link rel="stylesheet" href="https://unpkg.com/element-plus/lib/theme-chalk/index.css">-->
+    <!-- 引入组件库 -->
+    <!--<script src="https://unpkg.com/element-plus/lib/index.full.js"></script>-->
+    @*<link href="@res/layuimini-2/css/left.css" rel="stylesheet" asp-append-version="true" />*@
+</head>
+<body class="layui-layout-body pear-admin">
+    <!-- 布 局 框 架 -->
+    <div class="layui-layout layui-layout-admin">
+        @await Html.PartialAsync("_Navbar")
+        @await Html.PartialAsync("_Left")
+        <!-- 视 图 页 面 -->
+        <div class="layui-body">
+            <!-- 内 容 页 面 -->
+            <div id="content"></div>
+        </div>
+        <!-- 遮 盖 层 -->
+        <div class="pear-cover"></div>
+        <!-- 加 载 动 画-->
+        <div class="loader-main">
+            <div class="loader"></div>
+        </div>
+    </div>
+    <!-- 移 动 端 便 捷 操 作 -->
+    <div class="pear-collasped-pe collaspe">
+        <a href="#" class="layui-icon layui-icon-shrink-right"></a>
+    </div>
+    <!-- 依 赖 脚 本 -->
+    <script src="/Content/PearAdminLayui/component/layui/layui.js" asp-append-version="true"></script>
+    <script src="/Content/PearAdminLayui/component/pear/pear.js" asp-append-version="true"></script>
+    <!-- 框 架 初 始 化 -->
+    <script>
+    layui.use(['admin', 'jquery', 'convert', 'popup'], function () {
+        var admin = layui.admin;
+        var $ = layui.jquery;
+        var convert = layui.convert;
+        var popup = layui.popup;
+
+        admin.setAvatar('@img', "@nickName");
+
+        admin.setConfigType("json");
+        admin.setConfigPath("/Admin/Index/GetMenuTreeNew");
+
+        admin.render();
+
+        // 登出逻辑
+        admin.logout(function () {
+            popup.success("注销成功", function () {
+                location.href = "login.html";
+            })
+            return true;
+        })
+    })
+    </script>
+</body>
+</html>

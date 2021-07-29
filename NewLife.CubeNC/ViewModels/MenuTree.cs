@@ -18,6 +18,17 @@ namespace NewLife.Cube.ViewModels
         /// </summary>
         /// <value></value>
         public String Name { get; set; }
+
+        /// <summary>
+        /// 菜单名称
+        /// </summary>
+        public String Title { get; set; }
+
+        /// <summary>
+        /// 类型
+        /// </summary>
+        public Int32 Type { get; set; }
+
         /// <summary>
         /// 显示名
         /// </summary>
@@ -26,11 +37,25 @@ namespace NewLife.Cube.ViewModels
         /// 父级id
         /// </summary>
         public Int32? ParentID { get; set; }
+
+        /// <summary>
+        /// 链接
+        /// </summary>
+        /// <value></value>
+        public String Href { get; set; }
+
         /// <summary>
         /// 链接
         /// </summary>
         /// <value></value>
         public String Url { get; set; }
+
+        /// <summary>
+        /// 目标
+        /// </summary>
+        /// <value></value>
+        public String target { get; set; }
+
         /// <summary>
         /// 图标
         /// </summary>

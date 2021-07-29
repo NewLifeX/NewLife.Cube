@@ -1,0 +1,69 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using NewLife.Cube.WebMiddleware;
+@{ var pager = ViewBag.Page as Pager;
+    //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
+    // 没有总记录数的时候不显示分页，可以认为不启用分页
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+
+
+
+    var ss = pager.GetPage("上一页");
+    var sssss = pager.GetPage("下一页");
+
+    var urlPage = act;
+    var set = NewLife.Cube.Setting.Current;
+    var set2 = ViewBag.PageSetting as PageSetting;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.Contains(" - "))
+    {
+        title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
+    }
+
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context); }
+
+@if (pager.TotalCount > 0)
+{
+<div class="layui-card-body">
+    <div id="List-Page"></div>
+</div>
+ <script type="text/javascript">
+        layui.use(['laypage', 'layer'], function () {
+            var laypage = layui.laypage
+                , layer = layui.layer;
+            var $ = layui.jquery;
+            //$.ajax({
+            //    type: "GET",
+            //    url: "/Cube/GetInfo",
+            //    async: false,
+            //    //data: { username: $("#username").val(), content: $("#content").val() },
+            //    dataType: "json",
+            //    success: function (data) {
+            //        console.log(JSON.stringify(data));
+            //    }
+            //});
+            //完整功能
+            laypage.render({
+                elem: 'List-Page'
+                , count: '@pager.TotalCount.ToString("n0")'
+                , curr:'@pager.PageIndex' //当前页
+                ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                ,jump: function (e, first) {
+                    var d = {};
+                    var t = $('#comm_form [name]').serializeArray();
+                    let obj = "";
+                    $.each(t, function () {
+                        d[this.name] = this.value;
+                        obj = "&" + this.name + "="+this.value;
+                    });
+                    if (!first) {
+                        location.href ="@urlPage"+ "?PageIndex=" + e.curr + obj;
+                    }
+                }
+            });
+        });
+</script>
+}

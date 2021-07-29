@@ -12,6 +12,7 @@ using XCode;
 using XCode.Membership;
 using static XCode.Membership.User;
 using AreaX = XCode.Membership.Area;
+using NewLife.Cube.ViewModels;
 
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -270,6 +271,33 @@ namespace NewLife.Cube.Controllers
                 //e.ManagerID,
                 Manager = FindByID(e.ManagerID)?.ToString(),
             }).ToArray());
+        }
+        /// <summary>
+        /// 获取所有select 树形部门
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetSelectDeparTree(int id)
+        {
+            var DepartmentList = Department.FindAll();
+            var treeList = (from deprt in DepartmentList
+                            where deprt.Enable == true
+                            orderby deprt.Sort
+                            select new SelectTree
+                            {
+                                name = deprt.Name,
+                                disabled = deprt.ID == id ? true : false,
+                                value = deprt.ID.ToString(),
+                                parentID = deprt.ParentID.ToString()
+                            }).ToList();
+
+            var sList = new List<SelectTree>();
+            var node = new SelectTree();
+            sList = node.GetSelectTreeList(treeList, sList, "0");
+            return Json(new
+            {
+                data = sList
+            });
         }
         #endregion
 

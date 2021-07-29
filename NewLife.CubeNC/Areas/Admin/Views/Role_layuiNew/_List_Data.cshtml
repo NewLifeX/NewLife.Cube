@@ -1,0 +1,17 @@
+﻿@model IList<XCode.Membership.Role>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{ var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var set = ViewBag.PageSetting as PageSetting;
+    var provider = ManageProvider.Provider; }
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="role-table" lay-filter="role-table"></table>
+    </div>
+</div>
+@await Html.PartialAsync("_List_Data_Action");
+<script src="~/Content/PearAdminLayui/exce/Admin/Role/Role.js" type="text/javascript" asp-append-version="true"></script>

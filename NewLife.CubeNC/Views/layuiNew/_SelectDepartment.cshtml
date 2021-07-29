@@ -1,0 +1,57 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using System.Linq;
+@{ var id = (Object)Model + "";
+                var page = ViewBag.Page as Pager;
+
+                if (id.IsNullOrEmpty()) { id = "departmentId"; }
+                var departmentId = page[id];
+                var showValue = Department.FindByID(departmentId.ToInt())?.ToString();
+
+                var set = NewLife.Cube.Setting.Current;
+                var res = set.ResourceUrl;
+                if (String.IsNullOrEmpty(res)) res = "/Content";
+                res = res.TrimEnd('/'); 
+ }
+<div class="layui-input-inline">
+    <div xid="ParentID" class="xm-select-demo"></div>
+</div>
+<script type="text/javascript">
+    layui.use(['commonExtend', 'xmSelect'], function () {
+        var $ = layui.jquery,
+            apiUtil = layui.commonExtend;
+
+        let xmSelect = layui.xmSelect;
+    //部门
+        apiUtil.ajax('/cube/GetSelectDeparTree', [], "get", function (res) {
+        var tree_ParentID = xmSelect.render({
+            el: '[xid=ParentID]',
+            autoRow: true,
+            filterable: true,
+            name: "departmentId",
+            tips: "部门",
+            radio: true,
+            clickClose: true,
+            tree: {
+                show: true,
+                showFolderIcon: true,
+                showLine: true,
+                //非严格模式
+                strict: false,
+                indent: 20,
+                expandedKeys: true,
+            },
+            toolbar: {
+                show: true,
+                list: ['all','clear']
+            },
+            filterable: true,
+            height: 'auto',
+            data: function () {
+                return res.data;
+            }
+        });
+    });
+});
+</script>

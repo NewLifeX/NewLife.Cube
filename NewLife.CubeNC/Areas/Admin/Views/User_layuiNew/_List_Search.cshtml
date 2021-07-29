@@ -1,0 +1,48 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{ var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var roleList = from d in Role.FindAll()
+                   select new
+                   {
+                       ID = d.ID,
+                       Name = d.Name
+                   };
+
+    var roleName = System.Text.Json.JsonSerializer.Serialize(roleList);
+}
+
+<div class="layui-input-inline">
+    <div xid="role" class="xm-select-demo"></div>
+</div>
+@await Html.PartialAsync("_Enable")
+@await Html.PartialAsync("_SelectDepartment", "departmentId")
+<script type="text/javascript">
+    layui.use(['xmSelect'], function () {
+        let xmSelect = layui.xmSelect;
+        var reg = new RegExp("&quot;", "g");
+        let data = JSON.parse("@roleName".replace(reg, '"'));
+        xmSelect.render({
+            el: '[xid=role]',
+            tips: "角色",
+            name: "roleIds",
+            theme: {
+                color: '#0081ff',
+            },
+            prop: {
+                name: 'Name',
+                value: 'ID',
+            },
+            toolbar: {
+                show: true,
+                list: ['ALL', 'CLEAR']
+            },
+            data: data
+        });
+    });
+</script>
+<script type="text/html" id="enable">
+    <input type="checkbox" name="enable{{d.id}}" readonly="readonly" value="{{d.id}}" lay-skin="switch" lay-text="启用|禁用" lay-filter="comm-enable_filter" {{ d.enable? 'checked' : '' }}>
+</script>

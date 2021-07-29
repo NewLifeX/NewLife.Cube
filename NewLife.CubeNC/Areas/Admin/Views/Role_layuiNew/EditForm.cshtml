@@ -1,0 +1,94 @@
+﻿@section css {
+    <style>
+        .ew-tree-table {
+            border: none;
+        }
+        .right {
+            text-align:right;
+        }
+    </style>
+}
+@model IEntity
+@{ 
+    var role = Model as Role;
+    var menus = Menu.Root.AllChilds;
+}
+<form class="" action="" id="formRole">
+    <div class="layui-row layui-col-space10">
+        <div class="layui-col-md3">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">角色名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="Name" lay-verify="required" lay-reqText="请输入角色名称" autocomplete="off" class="layui-input" value="@role.Name">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-block">
+                            <textarea name="Remark" class="layui-textarea">@role.Remark</textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item right">
+                        <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit="" lay-filter="saveBtn">
+                            <i class="layui-icon layui-icon-ok"></i>
+                            保存
+                        </button>
+                    </div>
+                    <input name="id" hidden="hidden" value="@role.ID" />
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md9">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <table class="layui-table">
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>显示名</th>
+                                <th>授权</th>
+                                <th>操作权限</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entity in menus)
+                            {
+                                <tr>
+                                    <td>@entity.TreeNodeName</td>
+                                    <td>@entity.DisplayName</td>
+                                    <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID })</td>
+                                    <td>
+                                        @if (entity.Childs.Count == 0)
+                                        {
+                                            foreach (var item in entity.Permissions.OrderBy(e => e.Key))
+                                            {
+                                                var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
+                                                @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID })
+                                                @Html.Label(id, item.Value)
+                                                <text>&nbsp;</text> 
+                                            }
+                                        }
+                                        else
+                                        {
+
+                                                @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID })
+                                                @Html.Label("pc_readonly_" + entity.ID, "只读")
+                                                <text>&nbsp;</text>
+                                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ID })
+                                                @Html.Label("pc_all_" + entity.ID, "全部")
+                                        }
+                                    </td>
+                                </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+@section javascript {
+    <script src="~/Content/PearAdminLayui/exce/Admin/Role/RoleEdit.js" type="text/javascript" asp-append-version="true"></script>
+}

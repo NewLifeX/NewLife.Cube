@@ -122,7 +122,12 @@ namespace NewLife.Cube
                     context.ExceptionHandled = true;
                 }
             }
-
+            //add zim 20210724 增加sql 执行时间
+            var set = NewLife.Cube.Setting.Current;
+            if (set.ShowRunTime)
+            {
+                Session["Sql_ShowRunTime"] = WebMiddleware.RunTimeMiddleware.GetInfo(HttpContext);
+            }
             base.OnActionExecuted(context);
         }
         #endregion

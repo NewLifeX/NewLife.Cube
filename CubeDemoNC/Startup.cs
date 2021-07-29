@@ -96,9 +96,9 @@ namespace CubeDemoNC
             //app.UseMiddleware<TracerMiddleware>();
 
             app.UseCube(env);
-            app.UseAdminLTE(env);
-            app.UseTabler(env);
-            app.UseMetronic(env);
+            //app.UseAdminLTE(env);
+            //app.UseTabler(env);
+            //app.UseMetronic(env);
 
             app.UseAuthorization();
 

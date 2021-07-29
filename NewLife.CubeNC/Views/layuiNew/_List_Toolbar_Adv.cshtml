@@ -1,0 +1,125 @@
+﻿@using NewLife.Common;
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var page = ViewBag.Page as Pager;
+    var dataList = new List<Dictionary<string, string>>();
+    int index = 1;
+
+    dataList.Add(new Dictionary<string, string>()
+    {
+        ["title"] = "导出Excel",
+        ["href"] = Url.Action("ExportExcel"),
+        ["id"] = index++.ToString()
+    });
+    dataList.Add(new Dictionary<string, string>()
+    {
+        ["title"] = "导出Csv",
+        ["href"] = Url.Action("ExportCsv"),
+        ["id"] = index++.ToString()
+    });
+    dataList.Add(new Dictionary<string, string>()
+    {
+        ["title"] = "导出Xml",
+        ["href"] = Url.Action("ExportXml"),
+        ["id"] = index++.ToString()
+    });
+    dataList.Add(new Dictionary<string, string>()
+    {
+        ["title"] = "导出Json",
+        ["href"] = Url.Action("ExportJson"),
+        ["id"] = index++.ToString()
+    });
+    dataList.Add(new Dictionary<string, string>()
+    {
+        ["title"] = "分享",
+        ["href"] = Url.Action("Share"),
+        ["id"] = index++.ToString()
+    });
+    dataList.Add(new Dictionary<string, string>()
+    {
+        ["title"] = "同步",
+        ["href"] = Url.Action("Sync"),
+        ["id"] = index++.ToString()
+    });
+    if (this.Has(PermissionFlags.Delete))
+    {
+        dataList.Add(new Dictionary<string, string>()
+        {
+            ["title"] = "删除选中",
+            ["href"] = Url.Action("DeleteSelect"),
+            ["id"] = index++.ToString()
+        });
+        dataList.Add(new Dictionary<string, string>()
+        {
+            ["title"] = "删除全部",
+            ["href"] = Url.Action("DeleteAll"),
+            ["id"] = index++.ToString()
+        });
+    }
+    if (SysConfig.Current.Develop && user != null && user.Role.IsSystem)
+    {
+        dataList.Add(new Dictionary<string, string>()
+        {
+            ["title"] = "备份",
+            ["href"] = Url.Action("Backup"),
+            ["id"] = index++.ToString()
+        });
+        dataList.Add(new Dictionary<string, string>()
+        {
+            ["title"] = "还原",
+            ["href"] = Url.Action("Restore"),
+            ["id"] = index++.ToString()
+        });
+        dataList.Add(new Dictionary<string, string>()
+        {
+            ["title"] = "备份导出",
+            ["href"] = Url.Action("BackupAndExport"),
+            ["id"] = index++.ToString()
+        });
+        if (page == null || page.Params.Count == 0)
+        {
+
+            dataList.Add(new Dictionary<string, string>()
+            {
+                ["title"] = "清空数据表",
+                ["href"] = Url.Action("Clear"),
+                ["id"] = index++.ToString()
+            });
+
+        }
+        dataList.Add(new Dictionary<string, string>()
+        {
+            ["title"] = "生成列表",
+            ["href"] = Url.Action("MakeList"),
+            ["id"] = index++.ToString()
+        });
+        dataList.Add(new Dictionary<string, string>()
+        {
+            ["title"] = "生成表单",
+            ["href"] = Url.Action("MakeForm"),
+            ["id"] = index++.ToString()
+        });
+        dataList.Add(new Dictionary<string, string>()
+        {
+            ["title"] = "生成搜索",
+            ["href"] = Url.Action("MakeSearch"),
+            ["id"] = index++.ToString()
+        });
+    }
+    var data = System.Text.Json.JsonSerializer.Serialize(dataList);
+}
+<button class="pear-btn pear-btn-md pear-btn-primary" id="more_comm">@*<i class="layui-icon layui-icon-down layui-font-12"></i>*@高级</button>
+<script>
+    layui.use([ 'dropdown'], function () {
+        let dropdown = layui.dropdown;
+
+        let reg = new RegExp("&quot;", "g");
+        let data = JSON.parse("@data".replace(reg, '"'));
+        console.log(data);
+        dropdown.render({
+            elem: '#more_comm'
+            , data: data
+            , id: '#more_comm'
+        });
+    });
+</script>

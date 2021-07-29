@@ -1,0 +1,117 @@
+﻿@section css {
+    <style>
+        .pear-container {
+            background-color: #fff;
+        }
+    </style>
+}
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container">
+            <div class="main-container">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">归属部门</label>
+                    <div class="layui-input-block">
+                        <div id="tree_DepartmentID" class="xm-select-demo"></div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">账号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="Name" lay-verify="required" lay-reqText="请输入账号" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">密码</label>
+                    <div class="layui-input-block">
+                        <input type="Password" name="password" lay-verify="required" lay-reqText="请输入密码" autocomplete="off" placeholder="" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-input-inline">
+                    <label class="layui-form-label">姓名</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="DisplayName" lay-verify="title" autocomplete="off" placeholder="" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-input-inline">
+                    <label class="layui-form-label">员工编号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="code" lay-verify="title" autocomplete="off" placeholder="" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-input-inline">
+                    <label class="layui-form-label">邮箱</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="Mail" autocomplete="off" placeholder="" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-input-inline">
+                    <label class="layui-form-label">手机</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="Mobile" autocomplete="off" placeholder="" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">性别</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="Sex" value="@XCode.Membership.SexKinds.男" title="男">
+                        <input type="radio" name="Sex" value="@XCode.Membership.SexKinds.女" title="女">
+                        <input type="radio" name="Sex" checked="checked" value="@XCode.Membership.SexKinds.未知" title="未知">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">启用</label>
+                    <div class="layui-input-block">
+                        <div xid="enable" class="xm-select-demo"></div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-form-item" style="display:none">
+                        <label class="layui-form-label">头像</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="Avatar" placeholder="" autocomplete="off" class="layui-input" value="">
+                        </div>
+                    </div>
+                    <label class="layui-form-label">头像</label>
+                    <div class="layui-input-block">
+                        <div class="layui-upload-drag" id="user_Attachment">
+                            <i class="layui-icon"></i>
+                            <p>点击上传，或将文件拖拽到此处</p>
+                            <div class="layui-hide" id="user_Attachment_Upload">
+                                <hr>
+                                <img src="" alt="上传成功后渲染" style="max-width: 150px">
+                                <div class="layui-progress layui-progress-big" lay-showpercent="yes" lay-filter="demo" style="margin-top:5px">
+                                    <div class="layui-progress-bar" lay-percent=""></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">主要角色</label>
+                    <div class="layui-input-block">
+                        <div xid="user_RoleID" class="xm-select-demo"></div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">角色组</label>
+                    <div class="layui-input-block">
+                        <div xid="user_RoleIDs" class="xm-select-demo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-sm" lay-submit="" lay-filter="saveBtn">
+                <i class="layui-icon layui-icon-ok"></i>
+                保存
+            </button>
+        </div>
+    </div>
+</form>
+@section javascript {
+    <script src="~/Content/PearAdminLayui/exce/Admin/User/UserAdd.js" type="text/javascript" asp-append-version="true"></script>
+}
+
