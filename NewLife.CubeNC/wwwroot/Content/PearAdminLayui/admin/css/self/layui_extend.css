@@ -1,0 +1,53 @@
+/*.layui-table-header,
+.layui-table-header th {
+   background-color: none;
+}
+.layui-table-view .layui-table[lay-skin=line] {
+   border: none;
+}
+.layui-table-tool {
+    border-bottom: none;
+}
+
+.layui-table-view {
+   border: none;
+}*/
+
+/*星号*/
+.layui-form-label.required:after {
+    /*    top: 6px;*/
+    right: 5px;
+    color: red;
+    content: '*';
+    position: absolute;
+    margin-left: 4px;
+    font-weight: 700;
+    line-height: 1.8em;
+}
+
+
+/* 表格内使用的样式 蓝色 */
+.table-yangse-hongse {
+    text-transform: capitalize;
+    /*    background: #fff5f4 !important;*/
+    color: #2d8cf0 !important;
+    /*    display: inline-block;*/
+    padding: .25em .4em;
+    /* font-size: 75%; */
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 3px;
+    text-align: center;
+    /*    white-space: nowrap;*/
+    vertical-align: baseline;
+    border-radius: 5px;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+/*.layui-table-cell {
+    height: auto;
+    word-break: normal;
+    display: block;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow: hidden;
+}*/

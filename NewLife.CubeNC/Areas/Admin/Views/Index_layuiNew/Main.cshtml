@@ -1,0 +1,335 @@
+﻿@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime;
+@using System.Runtime.Versioning;
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Http.Extensions
+@using NewLife.Caching
+@using NewLife.Common;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject IWebHostEnvironment Env
+@{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
+    ViewBag.Title = "服务器信息";
+
+    var asm = Assembly.GetExecutingAssembly();
+    var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
+    var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
+    var httpContext = HttpContextAccessor.HttpContext;
+    var req = httpContext.Request;
+    var conn = httpContext.Connection;
+
+    var mi = MachineInfo.Current ?? new MachineInfo();
+
+    // GC设置
+    var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
+
+    List<dynamic> list = new List<dynamic>();
+    dynamic mainTable = new System.Dynamic.ExpandoObject(); //动态类型字段 可读可写
+    mainTable.name = "应用系统";
+    mainTable.system = "重启应用系统";
+    mainTable.restart = this.Has((PermissionFlags)16) ? Url.Action("Restart") : "";//是否拥有重启系统的权限
+    mainTable.restart = this.Has((PermissionFlags)16) ? Url.Action("Restart") : "";//是否拥有重启系统的权限
+    list.Add(mainTable);
+
+    var dateArray = ViewBag.MyAsms as AssemblyX[];
+
+    var dataList = dateArray.Select(m => new
+    {
+        name = m.Name,
+        title = m.Title,
+        fileVersion = m.FileVersion,
+        version = m.Version,
+        compile = m.Compile,
+        description = m.Description
+    });
+
+    var dataArray = System.Text.Json.JsonSerializer.Serialize(dataList);
+}
+@section css{
+    <style>
+        /*服务器信息*/
+        #ServerInfo .laytable-cell-1-0-0 {
+            width: 100px;
+        }
+
+        #ServerInfo . {
+        }
+
+        #ServerInfo . {
+            width: 100px;
+        }
+
+        #ServerInfo . {
+        }
+
+        /*程序集信息*/
+        #AssemblyInfo .laytable-cell-1-0-0 {
+        }
+
+        #AssemblyInfo . {
+        }
+
+        #AssemblyInfo . {
+        }
+
+        #AssemblyInfo . {
+        }
+
+            #AssemblyInfo .laytable-cell-1-0-4 {
+            }
+
+            #AssemblyInfo .laytable-cell-1-0-5 {
+                width: 700px;
+            }
+
+        #mainpage a:focus, a:hover {
+            color: #23527c;
+        }
+
+        #mainpage a {
+            color: #337ab7;
+        }
+    </style>
+}
+<form class="layui-form" action="">
+    <div class="layui-row layui-col-space12">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    服务器信息
+                </div>
+                <div class="layui-card-body">
+                    <div class="layui-form layui-border-box layui-table-view">
+                        <div class="layui-table-box" id="ServerInfo">
+                            <div class="layui-table-body">
+                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="layui-table-cell" data-id="1-0-0">
+                                                    应用系统：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell " data-id="1-0-1">
+                                                    &nbsp;
+                                                    @if (this.Has((PermissionFlags)16))
+                                                    {
+                                                        <button class="pear-btn pear-btn-danger pear-btn-xs" lay-submit lay-filter="restart" data-href="@Url.Action("Restart")" lay-event="detail">重启应用系统</button>
+                                                    }
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell " data-id="1-0-2">
+                                                    目录：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell " data-id="1-0-3">
+                                                    @Env.ContentRootPath
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="layui-table-cell">
+                                                    域名地址：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @{
+                                                        var addrLocal = conn.LocalIpAddress;
+                                                        var addrRemote = conn.RemoteIpAddress;
+                                                        if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+                                                        if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+                                                        var userHost = httpContext.GetUserHost();
+                                                    }
+                                                    <span title="主机">@req.Headers["Host"]</span>，
+                                                    <span title="本地">@addrLocal:@conn.LocalPort</span>
+                                                    &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
+                                                    @if (addrRemote + "" != userHost)
+                                                    {
+                                                        <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    应用程序：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    <span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="layui-table-cell">
+                                                    应用域：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @AppDomain.CurrentDomain.FriendlyName
+                                                    <a class="table-yangse-hongse" href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
+                                                    <a class="table-yangse-hongse" href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
+                                                    <a class="table-yangse-hongse" href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    .Net 版本：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @Environment.Version &nbsp;@ver
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td title="@mi.Guid">
+                                                <div class="layui-table-cell">
+                                                    操作系统：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @mi.OSName @mi.OSVersion
+                                                </div>
+                                            </td>
+                                            <td title="@mi.UUID">
+                                                <div class="layui-table-cell ">
+                                                    机器用户：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @if (!mi.Product.IsNullOrEmpty())
+                                                    {
+                                                        <apan>@mi.Product，</apan>
+                                                    }
+                                                    @Environment.UserName/@Environment.MachineName
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td title="@mi.CpuID">
+                                                <div class="layui-table-cell">
+                                                    处理器：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @mi.Processor，
+                                                    @Environment.ProcessorCount
+                                                    核心，@mi.CpuRate.ToString("p0")
+                                                    @if (mi.Temperature > 0)
+                                                    {
+                                                        <span>，@mi.Temperature ℃</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    时间：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+                                                }
+                                                <div class="layui-table-cell ">
+                                                    @DateTimeOffset.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                @{ var process = Process.GetCurrentProcess();}
+                                                <div class="layui-table-cell">
+                                                    内存：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
+                                                    工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
+                                                    GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
+                                                    <a class="table-yangse-hongse" href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    进程时间：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="layui-table-cell">
+                                                    Session：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @httpContext.Session.Keys.Count() 个
+                                                    <a class="table-yangse-hongse" href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
+                                                    ，@gc
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    @{ var app = ApplicationManager.Load();}
+                                                    应用启动：
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell ">
+                                                    启动于 @app.StartTime.ToLocalTime().ToFullString()
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<div class="layui-row layui-col-space12">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                程序集信息
+            </div>
+            <div class="layui-card-body">
+                <div class="layui-card">
+                    <div class="layui-card-body">
+                        <table id="ass-table" lay-filter="role-table"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<input id="comm_dataArray" hidden="hidden" value="@dataArray" />
+
+@section javascript{
+    <script src="~/Content/PearAdminLayui/exce/Admin/Index/main.js" type="text/javascript" asp-append-version="true"></script>
+}

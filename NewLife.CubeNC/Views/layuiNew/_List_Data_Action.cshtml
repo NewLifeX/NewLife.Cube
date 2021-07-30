@@ -10,7 +10,7 @@
     if (this.Has(PermissionFlags.Detail))
     {
         <script type="text/html" id="common-bar">
-            <button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="detail">查看</button>
+            <button class="pear-btn pear-btn-primary pear-btn-xs" lay-event="detail">查看</button>
         </script>
 
     }
@@ -20,11 +20,11 @@ else
     <script type="text/html" id="common-bar">
         @if ((this.Has(PermissionFlags.Detail)))
         {
-            <button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="detail">查看</button>
+            <button class="pear-btn pear-btn-primary pear-btn-xs" lay-event="detail">查看</button>
         }
         @if ((this.Has(PermissionFlags.Update)))
         {
-            <button class="pear-btn pear-btn-primary pear-btn-sm" lay-event="edit">编辑</button>
+            <button class="pear-btn pear-btn-primary pear-btn-xs" lay-event="edit">编辑</button>
         }
         @if (this.Has(PermissionFlags.Delete))
         {
@@ -32,12 +32,12 @@ else
             var fi = (fact == null || fact.Fields == null) ? null : fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted"));
             if (fi != null && fi.Type == typeof(Boolean))
             {
-                <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="transfer">恢复</button>
+                <button class="pear-btn pear-btn-danger pear-btn-xs" lay-event="transfer">恢复</button>
 
             }
             else
             {
-                <button class="pear-btn pear-btn-danger pear-btn-sm" lay-event="remove">删除</button>
+                <button class="pear-btn pear-btn-danger pear-btn-xs" lay-event="remove">删除</button>
             }
         }
     </script>

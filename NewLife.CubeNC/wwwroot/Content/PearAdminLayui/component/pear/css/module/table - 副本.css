@@ -94,3 +94,7 @@
 .layui-table-body::-webkit-scrollbar-corner {
 	background: #f6f6f6;
 }
+.layui-table-header,
+.layui-table-header th {
+    background-color: none;
+}

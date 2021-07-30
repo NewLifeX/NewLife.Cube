@@ -1,0 +1,137 @@
+﻿@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime.Versioning;
+@using NewLife.Common;
+@{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
+    ViewBag.Title = "程序集列表";
+}
+
+<div class="layui-fluid" id="mainpage">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-header">
+                程序集列表(@AppDomain.CurrentDomain.FriendlyName)
+            </div>
+            <div class="layui-card-body">
+                <div class="layui-form layui-border-box layui-table-view">
+                    <div class="layui-table-box" id="AssemblyInfo">
+                        <div class="layui-table-header">
+                            <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
+                                                <span>
+                                                    名称
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
+                                                <span>
+                                                    标题
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
+                                                <span>
+                                                    文件版本
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
+                                                <span>
+                                                    内部版本
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
+                                                <span>
+                                                    编译时间
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
+                                                <span>
+                                                    路径
+                                                </span>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="layui-table-body layui-table-main">
+                            <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                <tbody>
+                                    @foreach (AssemblyX item in ViewBag.Asms)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
+                                                    @item.Name
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
+                                                    @item.Title
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
+                                                    @item.FileVersion
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-3" data-id="1-0-3">
+                                                    @item.Version
+                                                </div>
+                                            </td>
+                                            <td title="@item.Version">
+                                                <div class="layui-table-cell laytable-cell-1-0-4" data-id="1-0-4">
+                                                    @item.Compile.ToFullString()
+                                                </div>
+                                            </td>
+                                            <td title="@item.Description">
+                                                <div class="layui-table-cell laytable-cell-1-0-5" data-id="1-0-5">
+                                                    @{
+                                                        var location = String.Empty;
+                                                        try
+                                                        {
+                                                            location = item.Asm.Location;
+                                                        }
+                                                        catch { }
+                                                    }
+                                                    @location
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section javascript{
+    <script>
+        layui.use(['jquery'], function () {
+            var $ = layui.$;
+
+            setTableScroll();
+
+            setTable();
+        });
+    </script>
+}

@@ -197,6 +197,8 @@
     <Folder Include="Areas\Admin\Views\User_layuiNew\" />
     <Folder Include="Areas\Admin\Views\Role_layuiNew\" />
     <Folder Include="Areas\Admin\Views\Menu_layuiNew\" />
+    <Folder Include="Areas\Admin\Views\Index_layuiNew\" />
     <Folder Include="Web\Models\" />
+    <Folder Include="wwwroot\Content\PearAdminLayui\admin\css\self\" />
   </ItemGroup>
 </Project>

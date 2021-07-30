@@ -43,6 +43,10 @@ layui.config({
     viewShow: 'self/viewShow', //  api viewShow
     viewShowTree: 'self/viewShowTree', //  api viewShow
     treeTablelay: 'treetablelay/treeTable', //table树形扩展
+    soulTable: 'soulTable/ext/soulTable',
+    tableChild: 'soulTable/ext/tableChild',
+    tableMerge: 'soulTable/ext/tableMerge',
+    tableFilter: 'soulTable/ext/tableFilter',
 }).use(['layer', 'theme'], function () {
     layui.theme.changeTheme(window, false);
 });
