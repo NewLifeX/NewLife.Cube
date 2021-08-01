@@ -131,13 +131,13 @@ namespace NewLife.Cube.Entity
         [BindColumn("ShowInList", "列表页显示", "")]
         public Boolean ShowInList { get => _ShowInList; set { if (OnPropertyChanging("ShowInList", value)) { _ShowInList = value; OnPropertyChanged("ShowInList"); } } }
 
-        private Boolean _ShowInForm;
+        private ShowInForm _ShowInForm;
         /// <summary>表单页显示</summary>
         [DisplayName("表单页显示")]
         [Description("表单页显示")]
         [DataObjectField(false, false, false, 0)]
         [BindColumn("ShowInForm", "表单页显示", "")]
-        public Boolean ShowInForm { get => _ShowInForm; set { if (OnPropertyChanging("ShowInForm", value)) { _ShowInForm = value; OnPropertyChanged("ShowInForm"); } } }
+        public ShowInForm ShowInForm { get => _ShowInForm; set { if (OnPropertyChanging("ShowInForm", value)) { _ShowInForm = value; OnPropertyChanged("ShowInForm"); } } }
 
         private Boolean _ShowInSearch;
         /// <summary>搜索显示</summary>
@@ -339,7 +339,7 @@ namespace NewLife.Cube.Entity
                     case "IsDataObjectField": _IsDataObjectField = value.ToBoolean(); break;
                     case "Description": _Description = Convert.ToString(value); break;
                     case "ShowInList": _ShowInList = value.ToBoolean(); break;
-                    case "ShowInForm": _ShowInForm = value.ToBoolean(); break;
+                    case "ShowInForm": _ShowInForm = (ShowInForm)value.ToInt(); break;
                     case "ShowInSearch": _ShowInSearch = value.ToBoolean(); break;
                     case "Sort": _Sort = value.ToInt(); break;
                     case "Width": _Width = Convert.ToString(value); break;

@@ -226,7 +226,7 @@
       <Column Name="IsDataObjectField" DataType="Boolean" Description="数据字段" />
       <Column Name="Description" DataType="String" Length="500" Description="说明" />
       <Column Name="ShowInList" DataType="Boolean" Description="列表页显示" />
-      <Column Name="ShowInForm" DataType="Boolean" Description="表单页显示" />
+      <Column Name="ShowInForm" DataType="Int32" Description="表单页显示" Type="ShowInForm" />
       <Column Name="ShowInSearch" DataType="Boolean" Description="搜索显示" />
       <Column Name="Sort" DataType="Int32" Description="排序" />
       <Column Name="Width" DataType="String" Description="宽度" />

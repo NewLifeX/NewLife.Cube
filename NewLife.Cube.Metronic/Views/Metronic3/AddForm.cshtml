@@ -1,0 +1,48 @@
+﻿@using NewLife;
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using Microsoft.AspNetCore.Mvc.Rendering;
+@{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+
+    var rv = entity.GetRouteKey();
+
+    Object htmlAttributes = null;
+    if (fields.Any(e => e.Field != null && e.Field.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
+}
+
+<div class="card card-custom">
+    <div class="form-horizontal">
+        @using (Html.BeginForm("Add", null, rv, FormMethod.Post, null, htmlAttributes))
+        {
+            <!-- 表单按钮 -->
+            <div class="card-header d-flex justify-content-between">
+                <div class="card-title"></div>
+                <div class="card-toolbar">
+                    @await Html.PartialAsync("_Form_Action")
+                </div>
+            </div>
+
+            <!-- 错误信息 -->
+            @await Html.PartialAsync("_Form_Header", entity)
+            <ul>
+                @foreach (var item in ViewData.ModelState.Values)
+                {
+                    foreach (var error in item.Errors)
+                    {
+                        <li>@error.Exception</li>
+                    }
+                }
+            </ul>
+            <!-- 表单内容 -->
+            @await Html.PartialAsync("_Form_Body", entity)
+
+            <!-- 表单页脚 -->
+            @await Html.PartialAsync("_Form_Footer", entity)
+        }
+    </div>
+</div>

@@ -5,9 +5,9 @@
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
-    <Version>3.10.2021.0723</Version>
-    <FileVersion>3.10.2021.0723</FileVersion>
-    <AssemblyVersion>3.10.*</AssemblyVersion>
+    <Version>4.0.2021.0725-beta1</Version>
+    <FileVersion>4.0.2021.0725</FileVersion>
+    <AssemblyVersion>4.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
     <UserSecretsId>1396351c-62fe-4836-9e51-9d77859955ad</UserSecretsId>
@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.Metronic\NewLife.Cube.Metronic.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Tabler\NewLife.Cube.Tabler.csproj" />
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
   </ItemGroup>

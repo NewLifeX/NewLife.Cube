@@ -1,0 +1,106 @@
+﻿@using XCode;
+@{
+    var menu = ViewBag.Menu as IMenu;
+}
+
+<!-- 开始侧边栏-->
+<div class="aside aside-left d-flex aside-fixed" id="kt_aside">
+    <!-- 开始主侧边栏-->
+    <div class="aside-primary d-flex flex-column align-items-center flex-row-auto">
+        <!--begin::Brand-->
+        <div class="aside-brand d-flex flex-column align-items-center flex-column-auto py-5 py-lg-12">
+
+            <!--begin::Logo-->
+            <a href="#">
+                <img alt="Logo" src="~/assets/media/logos/Logo.png" class="max-h-60px" />
+            </a>
+
+            <!--end::Logo-->
+        </div>
+
+        <!--end::Brand-->
+        <!--begin::Nav Wrapper 主侧边栏对应副侧边栏对应的TabPane,通过data-target关联-->
+        <div class="aside-nav d-flex flex-column align-items-center flex-column-fluid py-5 scroll scroll-pull">
+
+            <!--begin::Nav-->
+            <ul class="nav flex-column" role="tablist">
+
+                <!--begin::Item-->
+                <li class="nav-item mb-3" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="系统菜单">
+                    <a href="#" class="nav-link btn btn-icon btn-clean btn-lg active" data-toggle="tab" data-target="#cube_aside_menu_admin" role="tab">
+                        <span class="svg-icon svg-icon-xl">
+                            <!--begin::Svg Icon | path:assets/media/svg/icons/Layout/Layout-4-blocks.svg-->
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                    <rect x="0" y="0" width="24" height="24" />
+                                    <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                    <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                </g>
+                            </svg>
+                            <!--end::Svg Icon-->
+                        </span>
+                        
+                    </a>
+                </li>
+
+                <!--end::Item-->
+                <!--begin::Item-->
+                <li class="nav-item mb-3" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="系统设置">
+                    <a href="#" class="nav-link btn btn-icon btn-clean btn-lg" data-toggle="tab" data-target="#cube_aside_menu_setting" role="tab">
+                        <span class="svg-icon svg-icon-primary svg-icon-2x">
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                    <rect x="0" y="0" width="24" height="24" />
+                                    <path d="M7,3 L17,3 C19.209139,3 21,4.790861 21,7 C21,9.209139 19.209139,11 17,11 L7,11 C4.790861,11 3,9.209139 3,7 C3,4.790861 4.790861,3 7,3 Z M7,9 C8.1045695,9 9,8.1045695 9,7 C9,5.8954305 8.1045695,5 7,5 C5.8954305,5 5,5.8954305 5,7 C5,8.1045695 5.8954305,9 7,9 Z" fill="#000000" />
+                                    <path d="M7,13 L17,13 C19.209139,13 21,14.790861 21,17 C21,19.209139 19.209139,21 17,21 L7,21 C4.790861,21 3,19.209139 3,17 C3,14.790861 4.790861,13 7,13 Z M17,19 C18.1045695,19 19,18.1045695 19,17 C19,15.8954305 18.1045695,15 17,15 C15.8954305,15 15,15.8954305 15,17 C15,18.1045695 15.8954305,19 17,19 Z" fill="#000000" opacity="0.3" />
+                                </g>
+                            </svg>
+                        </span>
+                        
+                    </a>
+                </li>
+
+                <!--end::Item-->
+            </ul>
+
+            <!--end::Nav-->
+        </div>
+
+        <!--end::Nav Wrapper-->
+        <!--begin::Footer-->
+        <div class="aside-footer d-flex flex-column align-items-center flex-column-auto py-4 py-lg-10">
+
+            <!--begin::Aside Toggle-->
+            <span class="aside-toggle btn btn-icon btn-primary btn-hover-primary shadow-sm" id="kt_aside_toggle" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="Toggle Aside">
+                <i class="ki ki-bold-arrow-back icon-sm"></i>
+            </span>
+
+            <!--end::Aside Toggle-->
+
+            <!--begin::User-->
+            <a href="#" class="btn btn-icon btn-clean btn-lg w-40px h-40px" id="kt_quick_user_toggle" data-toggle="tooltip" data-placement="right" data-container="body" data-boundary="window" title="用户信息">
+                <span class="symbol symbol-30 symbol-lg-40">
+                    <span class="svg-icon svg-icon-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                <polygon points="0 0 24 0 24 24 0 24" />
+                                <path d="M12,11 C9.790861,11 8,9.209139 8,7 C8,4.790861 9.790861,3 12,3 C14.209139,3 16,4.790861 16,7 C16,9.209139 14.209139,11 12,11 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" />
+                                <path d="M3.00065168,20.1992055 C3.38825852,15.4265159 7.26191235,13 11.9833413,13 C16.7712164,13 20.7048837,15.2931929 20.9979143,20.2 C21.0095879,20.3954741 20.9979143,21 20.2466999,21 C16.541124,21 11.0347247,21 3.72750223,21 C3.47671215,21 2.97953825,20.45918 3.00065168,20.1992055 Z" fill="#000000" fill-rule="nonzero" />
+                            </g>
+                        </svg>
+                    </span>
+                </span>
+            </a>
+
+            <!--end::User-->
+        </div>
+
+        <!--end::Footer-->
+    </div>
+    <!-- 结束主侧边栏-->
+
+    <!-- 开始副侧边栏-->
+    @await Html.PartialAsync("_Layout_Aside_TabPane")
+    <!-- 结束副侧边栏-->
+</div>
+<!-- 结束侧边栏-->

@@ -49,7 +49,7 @@ namespace NewLife.Cube.Entity
         #region 扩展属性
         /// <summary>模型列集合</summary>
         [XmlIgnore, ScriptIgnore, IgnoreDataMember]
-        public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAll());
+        public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAllByTableId(Id));
         #endregion
 
         #region 扩展查询
@@ -157,22 +157,30 @@ namespace NewLife.Cube.Entity
         /// </summary>
         /// <param name="menu"></param>
         /// <param name="factory"></param>
-        public static ModelTable ScanModel(String areaName, IMenu menu, IEntityFactory factory)
+        public static ModelTable ScanModel(String areaName, IMenu menu, IEntityFactory factory) => ScanModel(areaName, menu.Name, menu.FullName, menu.Url.TrimStart("~"), factory);
+
+        /// <summary> 
+        /// 根据菜单和实体工厂创建模型表和模型列
+        /// </summary>
+        /// <param name="factory"></param>
+        public static ModelTable ScanModel(String areaName, String ctrlName, String ctrlFullName, String url, IEntityFactory factory)
         {
-            var entityTypeName = menu.Name; // 菜单名从控制器名称里面取
-            var ctrlFullName = menu.FullName;
+            //var entityTypeName = menu.Name; // 菜单名从控制器名称里面取
+            //var ctrlFullName = menu.FullName;
+            //var url = menu.Url.TrimStart("~");
 
-            if (areaName.IsNullOrWhiteSpace()) areaName = menu.Parent.Name;
-            // var areaName = menu.Parent.Name; // 这里Parent有可能为空，读取不到父级
 
-            var table = ModelTable.FindByCategoryAndName(areaName, entityTypeName);
+            //if (areaName.IsNullOrWhiteSpace()) areaName = menu.Parent.Name;
+            //// var areaName = menu.Parent.Name; // 这里Parent有可能为空，读取不到父级
+
+            var table = ModelTable.FindByCategoryAndName(areaName, ctrlName);
             // var table = ModelTable.Meta.Cache.Find(e => e.Category.EqualIgnoreCase(areaName) && e.Name == entityTypeName);
             // var table = ModelTable.Find(ModelTable._.Category == areaName & ModelTable._.Name == entityTypeName);
 
-            if (table == null) table = new ModelTable { Name = entityTypeName, Enable = true };
+            if (table == null) table = new ModelTable { Name = ctrlName, Enable = true };
 
             table.Category = areaName;
-            table.Url = menu.Url.TrimStart("~");
+            table.Url = url;
             table.Controller = ctrlFullName;
 
             table.Fill(factory.Table);
@@ -191,9 +199,8 @@ namespace NewLife.Cube.Entity
                     {
                         Name = field.Name,
                         Enable = true,
-
                         ShowInList = true,
-                        ShowInForm = true,
+                        ShowInForm = ShowInForm.详情 | ShowInForm.添加 | ShowInForm.编辑,
                     };
                     columns.Add(column);
                 }
@@ -202,9 +209,10 @@ namespace NewLife.Cube.Entity
                 column.Sort = idx++;
 
                 column.Fill(field);
-                //column.Save();
+                column.SetWidth();
+                column.Save();
             }
-            columns.Save();
+            //columns.Save(); // 模型表已是异步执行模型表生成，这里使用同步保存模型列
 
             return table;
         }

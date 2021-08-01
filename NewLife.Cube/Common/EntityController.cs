@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using NewLife.Remoting;
 using System.IO;
+using NewLife.Cube.Entity;
 using NewLife.Reflection;
 #if __CORE__
 using Microsoft.AspNetCore.Mvc;
@@ -212,7 +213,7 @@ namespace NewLife.Cube
             Valid(entity, DataObjectMethodType.Update, false);
 
             // Json输出
-            if (IsJsonRequest) return Json(0, null, entity);
+            if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
 
             ViewBag.Fields = EditFormFields;
 

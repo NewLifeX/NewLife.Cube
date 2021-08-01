@@ -1,0 +1,52 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode
+@{
+    var entity = Model as IEntity;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    var rv = entity.GetRouteKey();
+}
+
+<!-- 常规动作 -->
+@if (set.IsReadOnly)
+{
+    if (this.Has(PermissionFlags.Detail))
+    {
+        <a href="@Url.Action("Detail", rv)" class="editcell btn btn-icon btn-xs btn-light btn-hover-primary mr-1" data-toggle="tooltip" data-placement="top" title="查看明细">
+            <i class="la la-edit text-primary"></i>
+        </a>
+    }
+}
+else if (this.Has(PermissionFlags.Update))
+{
+    <a href="@Url.Action("Edit", rv)" class="editcell btn btn-icon btn-xs btn-light btn-hover-primary mr-1" data-toggle="tooltip" data-placement="top" title="编辑对象">
+        <i class="la la-edit text-primary"></i>
+    </a>
+}
+else if (this.Has(PermissionFlags.Detail))
+{
+    <a href="@Url.Action("Detail", rv)" class="editcell btn btn-icon btn-xs btn-light btn-hover-primary mr-1" data-toggle="tooltip" data-placement="top" title="查看明细">
+        <i class="la la-edit text-primary"></i>
+    </a>
+}
+@if (this.Has(PermissionFlags.Delete))
+{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var fi = (fact == null || fact.Fields == null) ? null : fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted"));
+    if (fi != null && fi.Type == typeof(Boolean) && (Boolean)entity[fi.Name])
+    {
+        <a href="@Url.Action("Delete", rv)" class="btn btn-icon btn-xs btn-light btn-hover-secondary mr-1" data-action="action" data-confirm="确认恢复？" data-toggle="tooltip" data-placement="top" title="恢复对象">
+            <i class="la la-transfer text-secondary"></i>
+        </a>
+    }
+    else
+    {
+        <a href="@Url.Action("Delete", rv)" class="btn btn-icon btn-xs btn-light btn-hover-warning mr-1" data-action="action" data-confirm="确认删除？" data-toggle="tooltip" data-placement="top" title="删除对象">
+            <i class="la la-trash text-warning"></i>
+        </a>
+    }
+}
+
+<!-- 高级动作 -->
+@await Html.PartialAsync("_List_Data_Action_Custom", entity)

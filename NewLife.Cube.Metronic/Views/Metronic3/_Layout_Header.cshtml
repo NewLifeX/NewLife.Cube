@@ -1,0 +1,62 @@
+﻿@using Microsoft.AspNetCore.Http.Extensions
+@using NewLife.Common;
+@{
+    var cfg = NewLife.Common.SysConfig.Current;
+    var user = ManageProvider.User;
+    var home = NewLife.Cube.Setting.Current.StartPage;
+    var retUrl = Context.Request.GetEncodedPathAndQuery();
+    var menu = ViewBag.Menu as IMenu;
+}
+
+<!--begin::Subheader-->
+<div class="subheader py-2 py-lg-4 subheader-solid" id="kt_subheader">
+    <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap flex-sm-nowrap">
+        <!--begin::Details-->
+        <div class="d-flex align-items-center flex-wrap mr-2">
+            <h5 class="text-dark font-weight-bold mt-2 mb-2 mr-5">@(menu != null ? menu.DisplayName : ViewBag.Title)</h5>
+            <div class="subheader-separator subheader-separator-ver mt-2 mb-2 mr-5 bg-gray-200"></div>
+        </div>
+        <!--end::Details-->
+
+        <!--begin::Toolbar-->
+        <div class="d-flex align-items-center">
+            <div class="dropdown dropdown-inline d-flex align-items-center" data-toggle="tooltip" data-placement="left" title="当前用户 @user.Name（@user.DisplayName）">
+                <a href="#" class="d-flex align-items-center" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="d-flex flex-column text-right mr-2">
+                        <span class="text-muted font-weight-bold">@user.DisplayName</span>
+                        <span class="font-weight-bold">@user.Name</span>
+                    </div>
+                    <div class="symbol symbol-light-primary symbol-40">
+                        @if (!user.Avatar.IsNullOrEmpty())
+                        {
+                            <img alt="Pic" src="@user.GetAvatarUrl()">
+                        }
+                        else
+                        {
+                            <span class="symbol-label font-size-h5">@user.Name.Substring(0, 1).ToUpper()</span>
+                            <i class="symbol-badge bg-primary"></i>
+                        }
+                    </div>
+                </a>
+
+                <div class="dropdown-menu p-0 m-0 dropdown-menu-md dropdown-menu-right">
+                    <ul class="navi navi-hover">
+                        <li class="navi-header font-weight-bold py-4">
+                            <span class="font-size-lg">用户菜单</span>
+                        </li>
+                        <li class="navi-separator mb-3"></li>
+                        <li class="navi-item">
+                            <a href="~/Admin/User/Logout" class="navi-link">
+                                <span class="navi-icon"><i class="la la-sign-out"></i></span>
+                                <span class="navi-text"><span class="label label-xl label-inline label-light-primary">注销</span></span>
+                                <span class="label label-light-danger label-rounded font-weight-bold">!</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!--end::Toolbar-->
+    </div>
+</div>
+<!--end::Subheader-->
