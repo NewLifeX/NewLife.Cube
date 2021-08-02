@@ -1,0 +1,40 @@
+﻿@model IList<XCode.Membership.Log>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    //var dataArray = System.Text.Json.JsonSerializer.Serialize(Model);
+}
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="log-table" lay-filter="log-table"></table>
+    </div>
+</div>
+@*<input id="comm_dataArray" hidden="hidden" value="@dataArray" />*@
+<script type="text/html" id="success">
+    {{#if (d.success) { }}
+    <button class="pear-btn pear-btn-sm pear-btn-success">
+        <i class="layui-icon layui-icon-ok"></i>
+        成功
+    </button>
+    {{# }else { }}
+    <button class="pear-btn pear-btn-sm pear-btn-danger">
+        <i class="layui-icon layui-icon-help"></i>
+        异常
+    </button>
+    {{# } }}
+</script>
+<script type="text/html" id="range">
+    <a href="?act=near&id={{d.id}}&range=10" title="前后10行日志">附近</a>
+</script>
+@*@section javascript {
+        <script src="~/Content/PearAdminLayui/exce/Admin/Log/log.js" type="text/javascript" asp-append-version="true"></script>
+    }*@
+<script src="~/Content/PearAdminLayui/exce/Admin/Log/log.js" type="text/javascript" asp-append-version="true"></script>

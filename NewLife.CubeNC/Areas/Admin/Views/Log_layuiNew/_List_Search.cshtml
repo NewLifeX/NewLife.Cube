@@ -1,0 +1,69 @@
+﻿@using NewLife.Cube.Extensions
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var logList = Log.FindAllCategoryName().Select(m => new
+    {
+        ID = m.Key,
+        Name = m.Value
+    });
+
+    var actList = Log.FindAllActionName().Select(m => new
+    {
+        ID = m.Key,
+        Name = m.Value
+    });
+
+    var log = System.Text.Json.JsonSerializer.Serialize(logList);
+    var act = System.Text.Json.JsonSerializer.Serialize(actList);
+}
+<div class="layui-input-inline">
+    <div xid="log" class="xm-select-demo"></div>
+</div>
+<div class="layui-input-inline">
+    <div xid="act" class="xm-select-demo"></div>
+</div>
+@await Html.PartialAsync("_DateRange")
+<script type="text/javascript">
+    layui.use(['xmSelect'], function () {
+        let xmSelect = layui.xmSelect;
+        var reg = new RegExp("&quot;", "g");
+        let data = JSON.parse("@log".replace(reg, '"'));
+        xmSelect.render({
+            el: '[xid=log]',
+            tips: "类别",
+            name: "category",
+            radio: true,
+            clickClose: true,
+            prop: {
+                name: 'Name',
+                value: 'ID',
+            },
+            toolbar: {
+                show: true,
+                list: ['ALL', 'CLEAR']
+            },
+            data: data
+        });
+
+        let act = JSON.parse("@act".replace(reg, '"'));
+        xmSelect.render({
+            el: '[xid=act]',
+            tips: "操作",
+            name: "act",
+            radio: true,
+            clickClose: true,
+            prop: {
+                name: 'Name',
+                value: 'ID',
+            },
+            toolbar: {
+                show: true,
+                list: ['ALL', 'CLEAR']
+            },
+            data: act
+        });
+
+    });
+</script>

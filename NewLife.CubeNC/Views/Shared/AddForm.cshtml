@@ -12,22 +12,26 @@
     var rv = entity.GetRouteKey();
 
     Object htmlAttributes = null;
-    if (fields.Any(e => e.Field != null && e.Field.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
+    if (fields.Any(e => e.Field != null && e.Field.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data", @class = "layui-form" };
+}
+@section css {
+    <style>
+        .pear-container {
+            background-color: #fff;
+        }
+    </style>
+}
+@using (Html.BeginForm("Add", null, rv, FormMethod.Post, null, htmlAttributes))
+{
+    <ul>
+        @foreach (var item in ViewData.ModelState.Values)
+        {
+            foreach (var error in item.Errors)
+            {
+                <li>@error.Exception</li>
+            }
+        }
+    </ul>
+    @await Html.PartialAsync("_Form_Body", entity)
 }
 
-<div class="form-horizontal">
-    @await Html.PartialAsync("_Form_Header", entity)
-    @using (Html.BeginForm("Add", null, rv, FormMethod.Post, null, htmlAttributes))
-    {
-        <ul>
-            @foreach (var item in ViewData.ModelState.Values)
-            {
-                foreach (var error in item.Errors)
-                {
-                    <li>@error.Exception</li>
-                }
-            }
-        </ul>
-        @await Html.PartialAsync("_Form_Body", entity)
-    }
-</div>

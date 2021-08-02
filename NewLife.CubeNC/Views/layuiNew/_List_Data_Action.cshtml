@@ -2,8 +2,10 @@
 @using NewLife.Cube
 @using XCode
 @{
+    var entity = Model as IEntity;
     var set = ViewBag.PageSetting as PageSetting;
 
+    var rv = entity.GetRouteKey();
 }
 @if (set.IsReadOnly)
 {
@@ -30,7 +32,7 @@ else
         {
             var fact = ViewBag.Factory as IEntityFactory;
             var fi = (fact == null || fact.Fields == null) ? null : fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted"));
-            if (fi != null && fi.Type == typeof(Boolean))
+            if (fi != null && fi.Type == typeof(Boolean) && (Boolean)entity[fi.Name])
             {
                 <button class="pear-btn pear-btn-danger pear-btn-xs" lay-event="transfer">恢复</button>
 

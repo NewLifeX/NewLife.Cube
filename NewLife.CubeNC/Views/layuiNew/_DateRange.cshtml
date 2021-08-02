@@ -1,0 +1,18 @@
+﻿<div class="layui-input-inline">
+    <input type="text" name="dtStart" id="dtStart" autocomplete="off" placeholder="开始时间" class="layui-input">
+</div>
+<div class="layui-input-inline">
+    <input type="text" name="dtEnd" id="dtEnd" autocomplete="off" placeholder="结束时间" class="layui-input">
+</div>
+<script type="text/javascript">
+        layui.use('laydate', function () {
+            var laydate = layui.laydate;
+
+            laydate.render({
+                elem: '#dtStart' //指定元素
+            });
+            laydate.render({
+                elem: '#dtEnd' //指定元素
+            });
+        });
+</script>
