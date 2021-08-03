@@ -1,0 +1,136 @@
+﻿@model IList<NewLife.Cube.Entity.OAuthConfig>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var set = ViewBag.PageSetting as PageSetting;
+    var ukey = fact.Unique;
+}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            @if (set.EnableSelect && ukey != null)
+            {
+                <th class="text-center" style="width:10px;">
+                    <label class="checkbox checkbox-single">
+                        <input type="checkbox" id="chkAll" title="全选" />
+                        <span></span>
+                    </label>
+                </th>
+            }
+            <th><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
+            <th><a href="@Html.Raw(page.GetSortUrl("AppId"))">应用标识</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Scope"))">授权范围</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("AppUrl"))">应用地址</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Visible"))">可见</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("AutoRegister"))">自动注册</a></th>
+            @if (this.Has(PermissionFlags.Detail))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+        <tr>
+            @if (set.EnableSelect && ukey != null)
+            {
+                <td class="text-center align-middle pt-0 pb-0">
+                    <label class="checkbox checkbox-single">
+                        <input class="checkable" type="checkbox" name="keys" value="@entity[ukey.Name]" />
+                        <span></span>
+                    </label>
+                </td>
+            }
+            <td>
+                <span style="width:270px">
+                    <div class="d-flex align-items-center">
+                        @{
+                            var nickName = !entity.NickName.IsNullOrEmpty() ? entity.NickName : entity.Name;
+                            var url = "Sso/Login?name=" + entity.Name;
+                            url = "/" + url;
+                            var logo = !entity.Logo.IsNullOrEmpty() ? entity.Logo : ViewHelper.GetLogo(entity.Name);
+
+                            <div class="symbol symbol-40 symbol-sm flex-shrink-0">
+                                <div class="symbol-label">
+                                    @if (!logo.IsNullOrEmpty())
+                                    {
+                                        <img class="h-75 align-self-center" src="@logo" alt="photo">
+                                    }
+                                    else
+                                    {
+                                        <span class="symbol-label font-size-h5">@entity.Name.First()</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        <div class="ml-4">
+                            <div class="text-dark-75 font-weight-bolder font-size-lg mb-0">@entity.Name</div>
+                            <a class="text-muted font-weight-bold text-hover-primary">@entity.NickName</a>
+                        </div>
+                    </div>
+                </span>
+            </td>
+            <td>
+                <span style="width:137px">
+                    <div class="font-weight-bolder font-size-lg mb-0">@entity.AppId</div>
+                    <div class="text-muted font-weight-bold text-hover-primary">@entity.Server</div>
+                </span>
+            </td>
+            <td class="align-middle">@entity.Scope</td>
+            <td class="align-middle">@entity.AppUrl</td>
+            <td class="text-center align-middle">
+                @{
+                    var bval = entity.Enable;
+                    @if (fact.Unique != null)
+                    {
+
+                        var key = entity[fact.Unique.Name];
+                        if (bval)
+                        {
+                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = false })" data-action="action">
+                                <i class="la la-check" style="color: green;"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = true })" data-action="action">
+                                <i class="la la-remove" style="color: red;"></i>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        if (bval)
+                        {
+                            <i class="la la-check" style="color: green;"></i>
+                        }
+                        else
+                        {
+                            <i class="la la-remove" style="color: red;"></i>
+                        }
+                    }
+                }
+            </td>
+            <td class="text-center align-middle">
+                <i class="la la-@(entity.Visible ? "check" : "remove")" style="color: @(entity.Visible ? "green" : "red");"></i>
+            </td>
+            <td class="text-center align-middle">
+                <i class="la la-@(entity.AutoRegister ? "check" : "remove")" style="color: @(entity.AutoRegister ? "green" : "red");"></i>
+            </td>
+            @if (this.Has(PermissionFlags.Detail))
+            {
+                <td class="text-center align-middle" style="width: 90px;">
+                    @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                </td>
+            }
+        </tr>
+        }
+    </tbody>
+</table>

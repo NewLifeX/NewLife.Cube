@@ -1,0 +1,82 @@
+﻿@model IList<Area>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
+@using NewLife.Cube;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var set = ViewBag.PageSetting as PageSetting;
+    var provider = ManageProvider.Provider;
+}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <th class="text-center" style="width:10px;">
+                    <label class="checkbox checkbox-single">
+                        <input type="checkbox" id="chkAll" title="全选" />
+                        <span></span>
+                    </label>
+                </th>
+            }
+            <th class="text-center" title="编码。行政区划编码"><a href="@Html.Raw(page.GetSortUrl("ID"))">编码</a></th>
+            <th><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
+            <th><a href="@Html.Raw(page.GetSortUrl("FullName"))">全名</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ParentID"))">父级</a></th>
+            <th class="text-center">下级</th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Level"))">层级</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Kind"))">类型</a></th>
+            <th class="text-center" title="区号。电话区号"><a href="@Html.Raw(page.GetSortUrl("TelCode"))">区号</a></th>
+            <th class="text-center" title="邮编。邮政编码"><a href="@Html.Raw(page.GetSortUrl("ZipCode"))">邮编</a></th>
+            <th class="text-right"><a href="@Html.Raw(page.GetSortUrl("Latitude"))">经纬度</a></th>
+            <th title="字符串前缀相同越多，地理距离越近，8位精度19米，6位610米"><a href="@Html.Raw(page.GetSortUrl("GeoHash"))">地址编码</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            var pstr = entity.Parent != null ? (entity.Parent + "") : (entity.ParentID + "");
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <td class="text-center align-middle pt-0 pb-0">
+                    <label class="checkbox checkbox-single">
+                        <input class="checkable" type="checkbox" name="keys" value="@entity.ID" />
+                        <span></span>
+                    </label>
+                </td>
+            }
+            <td class="text-center align-middle">@entity.ID</td>
+            <td class="align-middle">@entity.Name</td>
+            <td class="align-middle">@entity.FullName</td>
+            <td class="text-center align-middle"><a href="?Id=@entity.ParentID">@pstr</a></td>
+            <td class="text-center align-middle"><a href="?parentId=@entity.ID">下级</a></td>
+            <td class="text-center align-middle">@entity.Level</td>
+            <td class="text-center align-middle">@entity.Kind</td>
+            <td class="text-center align-middle">@entity.TelCode</td>
+            <td class="text-center align-middle">@entity.ZipCode</td>
+            <td class="text-right align-middle">@entity.Longitude, @entity.Latitude</td>
+            <td class="align-middle">@entity.GeoHash</td>
+            <td class="text-center align-middle">@entity.UpdateTime.ToFullString("")</td>
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <td class="text-center align-middle">
+                    <div class="d-flex d-inline-flex">
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                    </div>
+                </td>
+            }
+        </tr>
+        }
+    </tbody>
+</table>

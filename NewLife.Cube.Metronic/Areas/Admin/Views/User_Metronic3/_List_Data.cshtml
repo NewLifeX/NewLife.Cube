@@ -1,0 +1,179 @@
+﻿@model IList<XCode.Membership.User>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as IList<FieldItem>;
+    var set = ViewBag.PageSetting as PageSetting;
+    var ukey = fact.Unique;
+}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            @if (set.EnableSelect && ukey != null)
+            {
+                <th class="text-center" style="width:10px;">
+                    <label class="checkbox checkbox-single">
+                        <input type="checkbox" id="chkAll" title="全选" />
+                        <span></span>
+                    </label>
+                </th>
+            }
+            <th><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
+            <th><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">昵称</a></th>
+            <th><a href="@Html.Raw(page.GetSortUrl("Mobile"))">手机</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("RoleID"))">角色</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DepartmentID"))">部门</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
+            <th class="text-center">链接</th>
+            <th class="text-center">令牌</th>
+            <th class="text-center">日志</th>
+            <th class="text-center">OAuth日志</th>
+            <th class="text-center">登录信息</th>
+            @if (this.Has(PermissionFlags.Detail))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+        <tr>
+            @if (set.EnableSelect && ukey != null)
+            {
+                <td class="text-center align-middle pt-0 pb-0">
+                    <label class="checkbox checkbox-single">
+                        <input class="checkable" type="checkbox" name="keys" value="@entity[ukey.Name]" />
+                        <span></span>
+                    </label>
+                </td>
+            }
+            <td>
+                <span style="width:270px">
+                    <div class="d-flex align-items-center">
+                        @{
+                            var user = entity;
+
+                            <div class="symbol symbol-40 symbol-sm flex-shrink-0">
+                                <div class="symbol-label">
+                                    @if (!user.Avatar.IsNullOrEmpty())
+                                    {
+                                        <img class="h-75 align-self-center" src="@user.GetAvatarUrl()" alt="@user">
+                                    }
+                                    else
+                                    {
+                                        <span class="symbol-label font-size-h5 text-hover-primary">@user.Name.Substring(0, 1).ToUpper()</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        <div class="ml-4">
+                            <div class="text-dark-75 font-weight-bolder font-size-lg mb-0">@entity.Name</div>
+                            <a class="text-muted font-weight-bold text-hover-primary">@entity.Mail</a>
+                        </div>
+                    </div>
+                </span>
+            </td>
+            <td class="align-middle">@entity.DisplayName</td>
+            <td class="align-middle">@entity.Mobile</td>
+            @{
+                var item = fields.First(f => f.ColumnName == "RoleID");
+                var map = item?.Map;
+                if (map != null && !entity.RoleName.IsNullOrEmpty())
+                {
+                    if (map.Provider != null)
+                    {
+                        var name = map.Provider.EntityType.Name;
+                        var key = map.Provider.Key;
+                        <td class="align-middle"><a href="@name?@key=@entity.RoleID">@entity.RoleName</a></td>
+
+                    }
+                    else
+                    {
+                        <td class="align-middle">@entity.RoleName</td>
+                    }
+                }
+                else
+                {
+                    <td class="align-middle">@entity.RoleName</td>
+                }
+
+                // 部门
+                item = fields.First(f => f.ColumnName == "DepartmentID");
+                map = item?.Map;
+                if (map != null && !entity.RoleName.IsNullOrEmpty())
+                {
+                    if (map.Provider != null)
+                    {
+                        var name = map.Provider.EntityType.Name;
+                        var key = map.Provider.Key;
+                        <td class="align-middle"><a href="@name?@key=@entity.DepartmentID">@entity.DepartmentName</a></td>
+
+                    }
+                    else
+                    {
+                        <td class="align-middle">@entity.DepartmentName</td>
+                    }
+                }
+                else
+                {
+                    <td class="align-middle">@entity.DepartmentName</td>
+                }
+            }
+            <td class="text-center align-middle">
+                @{
+                    var bval = entity.Enable;
+                    @if (fact.Unique != null)
+                    {
+
+                        var key = entity[fact.Unique.Name];
+                        if (bval)
+                        {
+                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = false })" data-action="action">
+                                <i class="la la-check" style="color: green;"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = true })" data-action="action">
+                                <i class="la la-remove" style="color: red;"></i>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        if (bval)
+                        {
+                            <i class="la la-check" style="color: green;"></i>
+                        }
+                        else
+                        {
+                            <i class="la la-remove" style="color: red;"></i>
+                        }
+                    }
+                }
+            </td>
+            <td class="text-center align-middle"><a href="UserConnect?userId=@entity.ID">链接</a></td>
+            <td class="text-center align-middle"><a href="UserToken?userId=@entity.ID)">令牌</a></td>
+            <td class="text-center align-middle"><a href="Log?userId=@entity.ID">日志</a></td>
+            <td class="text-center align-middle"><a href="OAuthLog?userId=@entity.ID">OAuth日志</a></td>
+            <td>
+                <span style="width:137px">
+                    <div class="text-right font-weight-bold font-size-lg mb-0" data-toggle="tooltip" data-placement="top" title="当前用户登录次数及最近登录时间">@entity.Logins</div>
+                    <div class="text-right text-muted text-hover-primary">@entity.LastLogin.ToFullString("")</div>
+                </span>
+            </td>
+            @if (this.Has(PermissionFlags.Detail))
+            {
+                <td class="text-center align-middle" style="width: 90px;">
+                    @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                </td>
+            }
+        </tr>
+        }
+    </tbody>
+</table>

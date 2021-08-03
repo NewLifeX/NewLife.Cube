@@ -1,0 +1,58 @@
+﻿@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime.Versioning;
+@using NewLife.Common;
+@{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
+    ViewBag.Title = "程序集列表";
+}
+
+<div class="card card-custom">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-condensed">
+                <tr>
+                    <th class="text-dark text-hover-primary font-size-h5 font-weight-bold" colspan="6">
+                        程序集列表(@AppDomain.CurrentDomain.FriendlyName )
+                    </th>
+                </tr>
+                <tr>
+                    <th>名称</th>
+                    <th>标题</th>
+                    <th>文件版本</th>
+                    <th>内部版本</th>
+                    <th>编译时间</th>
+                    <th>路径</th>
+                </tr>
+                @foreach (AssemblyX item in ViewBag.Asms)
+                {
+                    var location = String.Empty;
+                    try
+                    {
+                        location = item.Asm.Location;
+                    }
+                    catch { }
+
+                    <tr>
+                        <td>
+                            @item.Name
+                        </td>
+                        <td>
+                            @item.Title
+                        </td>
+                        <td>
+                            @item.FileVersion
+                        </td>
+                        <td>@item.Version</td>
+                        <td>@item.Compile.ToFullString()</td>
+                        <td style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-toggle="tooltip" data-placement="top" title="@location">
+                            @location
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+</div>

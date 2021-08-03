@@ -1,0 +1,207 @@
+﻿@model LoginViewModel
+@using NewLife.Common;
+@{
+    Layout = null;
+    ViewBag.Title = "登录";
+
+    var res = Model.ResourceUrl;
+}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+    <title>@ViewBag.Title - @SysConfig.Current.DisplayName</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!-- 自定义样式-->
+    <link href="~/assets/css/pages/login/login-1.css" rel="stylesheet" type="text/css" />
+    <!-- 基本样式 -->
+    <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" />
+    <link href="~/assets/plugins/custom/prismjs/prismjs.bundle.css" rel="stylesheet" />
+    <link href="~/assets/css/style.bundle.css" rel="stylesheet" />
+</head>
+<body id="kt-body" class="header-mobile-fixed subheader-enabled aside-enabled aside-fixed aside-secondary-enabled page-loading">
+    <!--布局容器-->
+    <div class="d-flex flex-column flex-root">
+        <!--begin::Login-->
+        <div class="login login-1 login-signin-on d-flex flex-column flex-lg-row flex-column-fluid bg-white" id="kt_login">
+            <!--begin::Aside-->
+            <div class="login-aside d-flex flex-column flex-row-auto" style="background-color: #F2C98A;">
+                <!--begin::Aside Top-->
+                <div class="d-flex flex-column-auto flex-column pt-lg-40 pt-15">
+                    <!--begin::Aside header-->
+                    <a href="#" class="text-center mb-10">
+                        <img src="~/assets/media/logos/Logo.png" class="max-h-120px" alt="" />
+                    </a>
+                    <!--end::Aside header-->
+                    <!--begin::Aside title-->
+                    <h3 class="font-weight-bolder text-center font-size-h4 font-size-h1-lg" style="color: #986923;">
+                        @SysConfig.Current.DisplayName
+                    </h3>
+                    <!--end::Aside title-->
+                </div>
+                <!--end::Aside Top-->
+                <!--begin::Aside Bottom-->
+                <div class="aside-img d-flex flex-row-fluid bgi-no-repeat bgi-position-y-bottom bgi-position-x-center" style="background-image: url(../../../../assets/media/svg/illustrations/login-visual-1.svg)"></div>
+                <!--end::Aside Bottom-->
+            </div>
+            <!--begin::Aside-->
+            <!--begin::Content-->
+            <div class="login-content flex-row-fluid d-flex flex-column justify-content-center position-relative overflow-hidden p-7 mx-auto">
+                <!--begin::Content body-->
+                <div class="d-flex flex-column-fluid flex-center">
+                    <!--begin::Signin-->
+                    @await Html.PartialAsync("_Login_Login")
+                    <!--end::Signin-->
+                    <!--begin::Signup-->
+                    @await Html.PartialAsync("_Login_Register")
+                    <!--end::Signup-->
+                    <!--begin::Forgot-->
+                    @await Html.PartialAsync("_Login_Forgot")
+                    <!--end::Forgot-->
+                </div>
+                <!--end::Content body-->
+                <!--begin::Content footer-->
+                @await Html.PartialAsync("_Footer")
+                <!--end::Content footer-->
+            </div>
+            <!--end::Content-->
+        </div>
+        <!--end::Login-->
+    </div>
+
+    <script>var KTAppSettings =
+    {
+        "breakpoints":
+        {
+            "sm": 576, "md": 768, "lg": 992, "xl": 1200, "xxl": 1200
+        },
+        "colors":
+        {
+            "theme":
+            {
+                "base":
+                {
+                    "white": "#ffffff", "primary": "#1BC5BD", "secondary": "#E5EAEE", "success": "#1BC5BD", "info": "#6993FF", "warning": "#FFA800", "danger": "#F64E60", "light": "#F3F6F9", "dark": "#212121"
+                },
+                "light":
+                {
+                    "white": "#ffffff", "primary": "#1BC5BD", "secondary": "#ECF0F3", "success": "#C9F7F5", "info": "#E1E9FF", "warning": "#FFF4DE", "danger": "#FFE2E5", "light": "#F3F6F9", "dark": "#D6D6E0"
+                },
+                "inverse":
+                {
+                    "white": "#ffffff", "primary": "#ffffff", "secondary": "#212121", "success": "#ffffff", "info": "#ffffff", "warning": "#ffffff", "danger": "#ffffff", "light": "#464E5F", "dark": "#ffffff"
+                }
+            },
+            "gray":
+            {
+                "gray-100": "#F3F6F9", "gray-200": "#ECF0F3", "gray-300": "#E5EAEE", "gray-400": "#D6D6E0", "gray-500": "#B5B5C3", "gray-600": "#80808F", "gray-700": "#464E5F", "gray-800": "#1B283F", "gray-900": "#212121"
+            }
+        }, "font-family": "Poppins"
+    };</script>
+    <!-- JQuery作为一等公民，页面内部随时可能使用 -->
+    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/plugins/custom/prismjs/prismjs.bundle.js"></script>
+    <script src="~/assets/js/scripts.bundle.min.js"></script>
+
+    <script src="@res/js/md5.js"></script>
+
+    <script type="text/javascript">
+        function md5_plain(p) {
+            var pass = p.val();
+            if (pass) {
+                pass = md5(pass);
+                p.val(pass);
+            }
+        }
+
+        function md5_salt(p) {
+            var pass = p.val();
+            if (pass) {
+                pass = md5(pass);
+                var salt = randomString(32);
+                //var salt = new Date().getTime() + '';
+                pass = md5(pass + salt) + ':' + salt;
+                p.val(pass);
+            }
+        }
+
+        function randomString(length) {
+            var x = "0123456789qwertyuioplkjhgfdsazxcvbnm";
+            var str = "";
+            for (var i = 0; i < length; i++) {
+                str += x.charAt(Math.ceil(Math.random() * 100000000) % x.length);
+            }
+            return str;
+        }
+
+        "use strict";
+        // 定义类
+        var KTLogin = function () {
+            var _login;
+
+            var _showForm = function (form) {
+                var cls = 'login-' + form + '-on';
+                var form = 'kt_login_' + form + '_form';
+
+                _login.removeClass('login-forgot-on');
+                _login.removeClass('login-signin-on');
+                _login.removeClass('login-signup-on');
+
+                _login.addClass(cls);
+
+                KTUtil.animateClass(KTUtil.getById(form), 'animate__animated animate__backInUp');
+                console.log(_login);
+            }
+            
+            var _handleSignInForm = function () {
+                // 忘记密码点击事件
+                $('#kt_login_forgot').on('click', function (e) {
+                    e.preventDefault();
+                    _showForm('forgot');
+                });
+
+                // 注册按钮点击事件
+                $('#kt_login_signup').on('click', function (e) {
+                    e.preventDefault();
+                    _showForm('signup');
+                });
+            }
+
+            var _handleSignUpForm = function (e) {
+                $('#kt_login_signup_cancel').on('click', function (e) {
+                    e.preventDefault();
+                    _showForm('signin');
+                });
+            }
+
+            var _handleForgotForm = function (e) {
+                $('#kt_login_forgot_cancel').on('click', function (e) {
+                    e.preventDefault();
+                    _showForm('signin');
+                });
+            }
+
+            // 公共函数
+            return {
+                init: function () {
+                    _login = $('#kt_login');
+
+                    _handleSignInForm();
+                    _handleSignUpForm();
+                    _handleForgotForm();
+                }
+            };
+        }();
+
+        jQuery(document).ready(function () {
+            KTLogin.init();
+        });
+    </script>
+
+</body>
+</html>

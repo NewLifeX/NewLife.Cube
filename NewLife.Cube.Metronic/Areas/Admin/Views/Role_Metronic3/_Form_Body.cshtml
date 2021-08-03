@@ -1,0 +1,48 @@
+﻿@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var set = NewLife.Cube.Setting.Current;
+}
+
+<div class="card-body d-flex flex-column pt-5">
+    <div class="accordion accordion-toggle-arrow" id="accordionRole">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title collapsed" data-toggle="collapse" data-target="#role">角色属性</div>
+            </div>
+            <div id="role" class="collapse show" data-parent="#accordionRole">
+                <div class="card-body d-flex flex-wrap">
+                    @foreach (var item in fields)
+                    {
+                        @*// 默认隐藏审计属性
+                        if (item.ColumnName.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "UpdateUserID", "UpdateUser", "UpdateTime",
+                            "CreateIP", "UpdateIP") && set.HidenAuditProperty)
+                            continue;*@
+
+                        if (!item.IsIdentity && !item.ColumnName.EqualIgnoreCase("Permission"))
+                        {
+                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, FieldItem>(entity, item))
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title collapsed" data-toggle="collapse" data-target="#permission">权限设置</div>
+            </div>
+            <div id="permission" class="collapse" data-parent="#accordionRole">
+                <div class="card-body p-0">
+                    @await Html.PartialAsync("SetPermission", new { Role = entity })
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
