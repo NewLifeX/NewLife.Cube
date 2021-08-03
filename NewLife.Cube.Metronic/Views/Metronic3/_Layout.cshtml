@@ -13,7 +13,7 @@
 
     var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
     var res = set.ResourceUrl;
-    if (String.IsNullOrEmpty(res)) res = "/";
+    if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
     var charts = ViewBag.Charts as ECharts[];
@@ -179,8 +179,8 @@
     </script>
 
     <!-- Metronic模板脚本 -->
-    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
-    <script src="~/assets/plugins/custom/prismjs/prismjs.bundle.js"></script>
+    <script src="~/metronic/plugins/global/plugins.bundle.js"></script>
+    <script src="~/metronic/plugins/custom/prismjs/prismjs.bundle.js"></script>
     <script src="~/metronic/js/scripts.bundle.min.js"></script>
 
     <!-- 最早引入基本脚本 [魔方原有脚本，全部移植完成后删除] -->
