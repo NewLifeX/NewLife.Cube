@@ -74,7 +74,7 @@ namespace NewLife.Cube.Extensions
             var options = new StaticFileOptions();
             {
                 //var physicalProvider = env.ContentRootFileProvider;
-                var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
+                var embeddedProvider = new CubeEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
                 //var compositeProvider = new CompositeFileProvider(physicalProvider, embeddedProvider);
 
                 options.FileProvider = embeddedProvider;

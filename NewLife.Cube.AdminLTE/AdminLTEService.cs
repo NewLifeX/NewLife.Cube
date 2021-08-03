@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
+using NewLife.Cube.Extensions;
 
 namespace NewLife.Cube
 {
@@ -17,7 +18,7 @@ namespace NewLife.Cube
             // 独立静态文件设置，魔方自己的静态资源内嵌在程序集里面
             var options = new StaticFileOptions();
             {
-                var embeddedProvider = new EmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.AdminLTE.wwwroot");
+                var embeddedProvider = new CubeEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.AdminLTE.wwwroot");
                 options.FileProvider = embeddedProvider;
             }
             app.UseStaticFiles(options);
