@@ -19,7 +19,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>NewLife.Cube.Tabler</PackageId>
+    <PackageId>NewLife.Cube.Metronic</PackageId>
     <Authors>$(Company)</Authors>
     <ProjectUrl>https://github.com/NewLifeX</ProjectUrl>
     <PackageIcon>leaf.png</PackageIcon>
