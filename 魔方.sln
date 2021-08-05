@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Tabler", "NewL
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Metronic", "NewLife.Cube.Metronic\NewLife.Cube.Metronic.csproj", "{FD226577-A7C3-4A67-AEA6-B89745A6A950}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Blazor", "NewLife.Cube.Blazor\NewLife.Cube.Blazor.csproj", "{664872A2-7E4D-41D2-8606-95B1E416EB08}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{FD226577-A7C3-4A67-AEA6-B89745A6A950}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD226577-A7C3-4A67-AEA6-B89745A6A950}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD226577-A7C3-4A67-AEA6-B89745A6A950}.Release|Any CPU.Build.0 = Release|Any CPU
+		{664872A2-7E4D-41D2-8606-95B1E416EB08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{664872A2-7E4D-41D2-8606-95B1E416EB08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{664872A2-7E4D-41D2-8606-95B1E416EB08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{664872A2-7E4D-41D2-8606-95B1E416EB08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
