@@ -37,7 +37,7 @@
 
   <ItemGroup>
     <PackageReference Include="NewLife.Stardust" Version="1.5.2021.505" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.7" Condition="'$(TargetFramework)'=='net5.0'" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.8" Condition="'$(TargetFramework)'=='net5.0'" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.14" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>
 
