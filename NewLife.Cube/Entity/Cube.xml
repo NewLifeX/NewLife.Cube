@@ -194,7 +194,7 @@
       <Column Name="DisplayName" DataType="String" Description="显示名" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="Url" DataType="String" Description="路径。全路径" />
-      <Column Name="Controller" DataType="String" Description="控制器。控制器类型全名" />
+      <Column Name="Controller" DataType="String" Length="100" Description="控制器。控制器类型全名" />
       <Column Name="TableName" DataType="String" Description="表名" />
       <Column Name="ConnName" DataType="String" Description="连接名" />
       <Column Name="InsertOnly" DataType="Boolean" Description="仅插入。日志型数据" />
