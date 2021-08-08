@@ -160,7 +160,34 @@ namespace NewLife.Cube
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>
-        protected virtual IEnumerable<TEntity> Search(Pager p) => Entity<TEntity>.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
+        protected virtual IEnumerable<TEntity> Search(Pager p)
+        {
+            var start = p["dtStart"].ToDateTime();
+            var end = p["dtEnd"].ToDateTime();
+            var key = p["Q"];
+
+            var whereExpression = Entity<TEntity>.SearchWhereByKeys(key);
+            if (start > DateTime.MinValue || end > DateTime.MinValue)
+            {
+                var masterTime = Entity<TEntity>.Meta.Factory.MasterTime;
+                if (masterTime != null)
+                    whereExpression &= masterTime.Between(start, end);
+            }
+
+            // 根据模型列设置，拼接作为搜索字段的字段
+
+            var modelTable = ModelTable;
+            var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
+
+            foreach (var col in modelCols)
+            {
+                var val = p[col.Name];
+                if (val.IsNullOrWhiteSpace()) continue;
+                whereExpression &= col.Field == val;
+            }
+
+            return Entity<TEntity>.FindAll(whereExpression, p);
+        }
 
         /// <summary>搜索数据，支持数据权限</summary>
         /// <param name="p"></param>
@@ -1442,7 +1469,7 @@ namespace NewLife.Cube
         {
             if (entity == null) return null;
             var modelTable = ModelTable;
-            var modelColumns = modelTable.Columns?.Where(w => !w.ShowInForm.HasFlag(showInForm));
+            var modelColumns = modelTable.GetColumns()?.Where(w => !w.ShowInForm.HasFlag(showInForm));
 
             foreach (var column in modelColumns)
             {
@@ -1462,7 +1489,7 @@ namespace NewLife.Cube
             if (entities == null) return null;
             var modelTable = ModelTable;
             // 不显示的列
-            var modelColumns = modelTable?.Columns?.Where(w => !w.ShowInList).ToList();
+            var modelColumns = modelTable?.GetColumns()?.Where(w => !w.ShowInList).ToList();
 
             if (modelColumns == null) return entities;
 

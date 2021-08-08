@@ -29,7 +29,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             ModelTableSetting = table =>
             {
-                var columns = table.Columns;
+                var columns = table.GetColumns();
 
                 // 不在列表页显示
                 var fields = columns.FindAll(fa =>
