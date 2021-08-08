@@ -18,11 +18,11 @@
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
     <!-- 自定义样式-->
-    <link href="~/assets/css/pages/login/login-1.css" rel="stylesheet" type="text/css" />
+    <link href="~/metronic/css/pages/login/login-1.css" rel="stylesheet" type="text/css" />
     <!-- 基本样式 -->
-    <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" />
-    <link href="~/assets/plugins/custom/prismjs/prismjs.bundle.css" rel="stylesheet" />
-    <link href="~/assets/css/style.bundle.css" rel="stylesheet" />
+    <link href="~/metronic/plugins/global/plugins.bundle.css" rel="stylesheet" />
+    <link href="~/metronic/plugins/custom/prismjs/prismjs.bundle.css" rel="stylesheet" />
+    <link href="~/metronic/css/style.bundle.css" rel="stylesheet" />
 </head>
 <body id="kt-body" class="header-mobile-fixed subheader-enabled aside-enabled aside-fixed aside-secondary-enabled page-loading">
     <!--布局容器-->
@@ -74,39 +74,40 @@
         <!--end::Login-->
     </div>
 
-    <script>var KTAppSettings =
-    {
-        "breakpoints":
+    <script>
+    var KTAppSettings =
         {
-            "sm": 576, "md": 768, "lg": 992, "xl": 1200, "xxl": 1200
-        },
-        "colors":
-        {
-            "theme":
+            "breakpoints":
             {
-                "base":
-                {
-                    "white": "#ffffff", "primary": "#1BC5BD", "secondary": "#E5EAEE", "success": "#1BC5BD", "info": "#6993FF", "warning": "#FFA800", "danger": "#F64E60", "light": "#F3F6F9", "dark": "#212121"
-                },
-                "light":
-                {
-                    "white": "#ffffff", "primary": "#1BC5BD", "secondary": "#ECF0F3", "success": "#C9F7F5", "info": "#E1E9FF", "warning": "#FFF4DE", "danger": "#FFE2E5", "light": "#F3F6F9", "dark": "#D6D6E0"
-                },
-                "inverse":
-                {
-                    "white": "#ffffff", "primary": "#ffffff", "secondary": "#212121", "success": "#ffffff", "info": "#ffffff", "warning": "#ffffff", "danger": "#ffffff", "light": "#464E5F", "dark": "#ffffff"
-                }
+                "sm": 576, "md": 768, "lg": 992, "xl": 1200, "xxl": 1200
             },
-            "gray":
+            "colors":
             {
-                "gray-100": "#F3F6F9", "gray-200": "#ECF0F3", "gray-300": "#E5EAEE", "gray-400": "#D6D6E0", "gray-500": "#B5B5C3", "gray-600": "#80808F", "gray-700": "#464E5F", "gray-800": "#1B283F", "gray-900": "#212121"
-            }
-        }, "font-family": "Poppins"
-    };</script>
+                "theme":
+                {
+                    "base":
+                    {
+                        "white": "#ffffff", "primary": "#1BC5BD", "secondary": "#E5EAEE", "success": "#1BC5BD", "info": "#6993FF", "warning": "#FFA800", "danger": "#F64E60", "light": "#F3F6F9", "dark": "#212121"
+                    },
+                    "light":
+                    {
+                        "white": "#ffffff", "primary": "#1BC5BD", "secondary": "#ECF0F3", "success": "#C9F7F5", "info": "#E1E9FF", "warning": "#FFF4DE", "danger": "#FFE2E5", "light": "#F3F6F9", "dark": "#D6D6E0"
+                    },
+                    "inverse":
+                    {
+                        "white": "#ffffff", "primary": "#ffffff", "secondary": "#212121", "success": "#ffffff", "info": "#ffffff", "warning": "#ffffff", "danger": "#ffffff", "light": "#464E5F", "dark": "#ffffff"
+                    }
+                },
+                "gray":
+                {
+                    "gray-100": "#F3F6F9", "gray-200": "#ECF0F3", "gray-300": "#E5EAEE", "gray-400": "#D6D6E0", "gray-500": "#B5B5C3", "gray-600": "#80808F", "gray-700": "#464E5F", "gray-800": "#1B283F", "gray-900": "#212121"
+                }
+            }, "font-family": "Poppins"
+        };</script>
     <!-- JQuery作为一等公民，页面内部随时可能使用 -->
-    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
-    <script src="~/assets/plugins/custom/prismjs/prismjs.bundle.js"></script>
-    <script src="~/assets/js/scripts.bundle.min.js"></script>
+    <script src="~/metronic/plugins/global/plugins.bundle.js"></script>
+    <script src="~/metronic/plugins/custom/prismjs/prismjs.bundle.js"></script>
+    <script src="~/metronic/js/scripts.bundle.min.js"></script>
 
     <script src="@res/js/md5.js"></script>
 
@@ -157,7 +158,7 @@
                 KTUtil.animateClass(KTUtil.getById(form), 'animate__animated animate__backInUp');
                 console.log(_login);
             }
-            
+
             var _handleSignInForm = function () {
                 // 忘记密码点击事件
                 $('#kt_login_forgot').on('click', function (e) {
