@@ -1,0 +1,15 @@
+.error.error-4 .error-title {
+  font-size: 8.7rem !important;
+}
+.error.error-4 .error-subtitle {
+  font-size: 4.5rem !important;
+}
+
+@media (min-width: 768px) {
+  .error.error-4 .error-title {
+    font-size: 15.7rem !important;
+  }
+  .error.error-4 .error-subtitle {
+    font-size: 9.5rem !important;
+  }
+}

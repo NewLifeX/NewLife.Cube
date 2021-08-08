@@ -1,0 +1,1 @@
+var KTRecaptcha={init:function(){}};jQuery(document).ready((function(){KTRecaptcha.init()}));
