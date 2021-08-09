@@ -1,0 +1,200 @@
+.login.login-4 .login-container .login-content {
+  width: 450px;
+}
+.login.login-4 .login-container .login-content .wizard-nav {
+  padding: 0;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step {
+  padding: 0.75rem 0;
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+  margin-bottom: 1.5rem;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step .wizard-wrapper {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step .wizard-icon {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background-color: #F3F6F9;
+  margin-right: 1rem;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step .wizard-icon .wizard-check {
+  display: none;
+  font-size: 1.4rem;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step .wizard-icon .wizard-number {
+  font-weight: 600;
+  color: #3F4254;
+  font-size: 1.35rem;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step .wizard-label {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step .wizard-label .wizard-title {
+  color: #181C32;
+  font-weight: 600;
+  font-size: 1.24rem;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step .wizard-label .wizard-desc {
+  color: #B5B5C3;
+  font-size: 0.925rem;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-icon {
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+  background-color: #E1F0FF;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-icon .wizard-check {
+  color: #3699FF;
+  display: inline-block;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-icon .wizard-number {
+  display: none;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-label .wizard-title {
+  color: #B5B5C3;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-label .wizard-desc {
+  color: #D1D3E0;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] {
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-icon {
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+  background-color: #E1F0FF;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-icon .wizard-check {
+  color: #3699FF;
+  display: none;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-icon .wizard-number {
+  color: #3699FF;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-label .wizard-title {
+  color: #181C32;
+}
+.login.login-4 .login-container .login-content .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-label .wizard-desc {
+  color: #B5B5C3;
+}
+.login.login-4 .login-container .login-content.login-content-signup {
+  width: 700px;
+}
+.login.login-4 .login-aside {
+  background: linear-gradient(147.04deg, #CA7B70 0.74%, #5A2119 99.61%);
+  width: 700px;
+}
+.login.login-4 .login-aside .login-conteiner {
+  height: 100%;
+}
+
+@media (min-width: 992px) {
+  .login.login-4 .login-aside .login-conteiner {
+    min-height: 610px !important;
+    background-size: 580px;
+  }
+}
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .login.login-4 .login-aside .login-conteiner {
+    min-height: 420px !important;
+    background-size: 400px;
+  }
+}
+@media (max-width: 991.98px) {
+  .login.login-4 .login-container .wizard-nav {
+    padding: 0;
+    -ms-flex-line-pack: center;
+    align-content: center;
+  }
+  .login.login-4 .login-container .wizard-nav .wizard-steps .wizard-step {
+    margin-bottom: 0.5rem;
+  }
+  .login.login-4 .login-aside {
+    width: 100% !important;
+  }
+  .login.login-4 .login-aside .login-conteiner {
+    min-height: 210px !important;
+    background-size: 200px;
+  }
+}
+@media (max-width: 575.98px) {
+  .login.login-4 .login-container {
+    width: 100%;
+  }
+  .login.login-4 .login-container .wizard-nav .wizard-steps {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+  }
+  .login.login-4 .login-container .wizard-nav .wizard-steps .wizard-step {
+    width: 100%;
+  }
+  .login.login-4 .login-container .wizard-nav .wizard-steps .wizard-step .wizard-wrapper .svg-icon {
+    display: none;
+  }
+  .login.login-4 .login-container .login-content {
+    width: 100%;
+  }
+  .login.login-4 .login-container .login-content.login-content-signup {
+    width: 100%;
+  }
+  .login.login-4 .login-aside {
+    width: 100% !important;
+  }
+}
+@media (max-width: 1800px) {
+  .login.login-4 .login-aside {
+    width: 600px;
+  }
+}

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using NewLife.Cube.Extensions;
 
 namespace NewLife.Cube
@@ -22,6 +23,14 @@ namespace NewLife.Cube
                 options.FileProvider = embeddedProvider;
             }
             app.UseStaticFiles(options);
+
+            app.UseEndpoints(endpoint =>
+            {
+                // Razor路由方案
+                endpoint.MapRazorPages();
+                // Blazor通信方案
+                endpoint.MapBlazorHub();
+            });
 
             return app;
         }
