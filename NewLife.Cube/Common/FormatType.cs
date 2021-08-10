@@ -23,10 +23,11 @@ namespace NewLife.Cube.Common
         DefaultCase = 2
     }
 
-    public static class FormatString
+    public static class FormatHelper
     {
         /// <summary>根据小写和驼峰格式化名称</summary>
         /// <param name="name"></param>
+        /// <param name="formatType"></param>
         /// <returns></returns>
         public static String FormatName(this String name, FormatType formatType)
         {

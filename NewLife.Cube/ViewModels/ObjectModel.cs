@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.Serialization;
 using NewLife.Cube.Common;
 
@@ -21,19 +20,42 @@ namespace NewLife.Cube.ViewModels
     /// </summary>
     public class CubePropertyInfo
     {
-        private String _name;
-        public FormatType FormatType = FormatType.DefaultCase;
+        /// <summary>名称</summary>
+        public String Name { get; set; }
 
-        public String Name
-        {
-            get => _name.FormatName(FormatType);
-            set => _name = value;
-        }
-
+        /// <summary>显示名</summary>
         public String DisplayName { get; set; }
+
+        /// <summary>描述</summary>
         public String Description { get; set; }
+
+        /// <summary>属性类型</summary>
         [IgnoreDataMember]
         public Type PropertyType { get; set; }
-        public String TypeStr { get; set; }
+
+        /// <summary>类型</summary>
+        public String Type => PropertyType?.Name;
+
+        /// <summary>类型（字符串）</summary>
+        [Obsolete]
+        public String TypeStr => PropertyType?.Name;
+
+        /// <summary>类别</summary>
+        public String Category { get; set; }
+
+        /// <summary>格式化类型</summary>
+        public FormatType FormatType { get; set; } = FormatType.DefaultCase;
+
+        /// <summary>克隆</summary>
+        /// <returns></returns>
+        public CubePropertyInfo Clone() => new()
+        {
+            Name = Name,
+            DisplayName = DisplayName,
+            Description = Description,
+            PropertyType = PropertyType,
+            Category = Category,
+            FormatType = FormatType.DefaultCase,
+        };
     }
 }

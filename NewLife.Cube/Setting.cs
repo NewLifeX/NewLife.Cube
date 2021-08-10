@@ -11,7 +11,7 @@ namespace NewLife.Cube
     [Config("Cube")]
     public class Setting : Config<Setting>
     {
-        #region 属性
+        #region 通用
         /// <summary>是否启用调试。默认true</summary>
         [Description("调试")]
         [Category("通用")]
@@ -150,6 +150,7 @@ namespace NewLife.Cube
 
         /// <summary>令牌有效期。访问令牌AccessToken的有效期，默认7200秒</summary>
         [Description("令牌有效期。访问令牌AccessToken的有效期，默认7200秒")]
+        [Category("用户登录")]
         public Int32 TokenExpire { get; set; } = 7200;
         #endregion
 
