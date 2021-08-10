@@ -170,8 +170,8 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public String Theme { get; set; } = "";
 
-        /// <summary>框架皮肤。最外层框架页，ACE/layui</summary>
-        [Description("框架皮肤。最外层框架页，ACE/layui")]
+        /// <summary>首页皮肤。最外层框架页，ACE/layui</summary>
+        [Description("首页皮肤。最外层框架页，ACE/layui")]
         [Category("界面配置")]
         public String Skin { get; set; } = "";
 

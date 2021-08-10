@@ -1,8 +1,9 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Services;
+using NewLife.Model;
 
 namespace NewLife.Cube
 {
@@ -22,6 +23,13 @@ namespace NewLife.Cube
                 options.FileProvider = embeddedProvider;
             }
             app.UseStaticFiles(options);
+
+            var ui = app.ApplicationServices.GetService<UIService>();
+            if (ui != null)
+            {
+                ui.AddTheme("Metronic3");
+                ui.AddSkin("Metronic3");
+            }
 
             return app;
         }
