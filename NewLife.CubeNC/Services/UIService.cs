@@ -8,10 +8,10 @@ namespace NewLife.Cube.Services
     {
         #region 属性
         /// <summary>主题集合</summary>
-        public IList<String> Themes { get; } = new List<String> { "Ace", "layui" };
+        public IList<String> Themes { get; } = new List<String>();
 
         /// <summary>皮肤集合</summary>
-        public IList<String> Skins { get; } = new List<String> { "Ace", "layui" };
+        public IList<String> Skins { get; } = new List<String>();
         #endregion
 
         /// <summary>添加主题</summary>

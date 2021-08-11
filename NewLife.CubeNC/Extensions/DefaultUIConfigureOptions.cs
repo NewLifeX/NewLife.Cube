@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using NewLife.Cube.Services;
 using NewLife.Log;
 
 namespace NewLife.Cube.Extensions
@@ -80,6 +81,16 @@ namespace NewLife.Cube.Extensions
                 options.FileProvider = embeddedProvider;
             }
             app.UseStaticFiles(options);
+
+            var ui = app.ApplicationServices.GetService<UIService>();
+            if (ui != null)
+            {
+                ui.AddTheme("Ace");
+                ui.AddSkin("Ace");
+
+                ui.AddTheme("layui");
+                ui.AddSkin("layui");
+            }
 
             return app;
         }

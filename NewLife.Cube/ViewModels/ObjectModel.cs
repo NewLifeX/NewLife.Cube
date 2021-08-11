@@ -43,8 +43,8 @@ namespace NewLife.Cube.ViewModels
         /// <summary>类别</summary>
         public String Category { get; set; }
 
-        /// <summary>格式化类型</summary>
-        public FormatType FormatType { get; set; } = FormatType.DefaultCase;
+        ///// <summary>格式化类型</summary>
+        //public FormatType FormatType { get; set; } = FormatType.DefaultCase;
 
         /// <summary>克隆</summary>
         /// <returns></returns>
@@ -55,7 +55,7 @@ namespace NewLife.Cube.ViewModels
             Description = Description,
             PropertyType = PropertyType,
             Category = Category,
-            FormatType = FormatType.DefaultCase,
+            //FormatType = FormatType.DefaultCase,
         };
     }
 }

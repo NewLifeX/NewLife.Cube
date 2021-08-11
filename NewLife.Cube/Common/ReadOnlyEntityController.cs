@@ -560,7 +560,7 @@ namespace NewLife.Cube
                 return fm;
             }).ToList();
 
-            var customs = fields.Fields.Select(s =>
+            var customs = fields.Select(s =>
             {
                 var fm = new FieldModel(formatType);
 
@@ -1349,7 +1349,7 @@ namespace NewLife.Cube
                 return fm;
             }).ToList();
 
-            var customs = fields.Fields.Select(s =>
+            var customs = fields.Select(s =>
             {
                 var fm = new FieldModel(formatType);
 

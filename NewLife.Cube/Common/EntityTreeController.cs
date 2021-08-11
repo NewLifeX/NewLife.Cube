@@ -33,8 +33,8 @@ namespace NewLife.Cube
                 var fi = all.FirstOrDefault(e => e.Name.EqualIgnoreCase(item));
                 if (fi != null)
                 {
-                    if (list.Contains(fi)) list.Remove(fi);
-                    list.Insert(k++, fi);
+                    list.RemoveField(item);
+                    list.Insert(k++, list.Create(fi));
                 }
             }
 
@@ -42,14 +42,14 @@ namespace NewLife.Cube
             {
                 if (set != null && item.Name.EqualIgnoreCase(set.Name, set.Parent))
                 {
-                    list.Remove(item);
+                    list.RemoveField(item.Name);
                     continue;
                 }
 
                 var pi = type.GetProperty(item.Name);
                 if (pi == null || pi.GetCustomAttribute<DisplayNameAttribute>() == null)
                 {
-                    list.Remove(item);
+                    list.RemoveField(item.Name);
                     continue;
                 }
 

@@ -29,15 +29,15 @@ namespace NewLife.Cube.Admin.Controllers
                 df.Url = "AppLog?appId={ID}";
             }
 
-            {
-                var df = AddFormFields.AddDataField("RoleIds");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
-            }
+            //{
+            //    var df = AddFormFields.AddDataField("RoleIds");
+            //    df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            //}
 
-            {
-                var df = EditFormFields.AddDataField("RoleIds");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
-            }
+            //{
+            //    var df = EditFormFields.AddDataField("RoleIds");
+            //    df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            //}
 
             {
                 var df = ListFields.AddDataField("Log", "UpdateUserId");

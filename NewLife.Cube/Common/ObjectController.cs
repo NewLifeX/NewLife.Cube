@@ -80,7 +80,7 @@ namespace NewLife.Cube
                 foreach (var item in list)
                 {
                     item.Name = FormatHelper.FormatName(item.Name, formatType);
-                    item.FormatType = formatType;
+                    //item.FormatType = formatType;
                 }
                 var dic = list
                     .GroupBy(e => e.Category + "")
@@ -90,14 +90,6 @@ namespace NewLife.Cube
             }
 
             if (!IsJsonRequest) return View("ObjectForm", model);
-
-            foreach (var property in model.Properties)
-            {
-                foreach (var item in property.Value)
-                {
-                    item.FormatType = formatType;
-                }
-            }
 
             return Ok(data: model);
         }

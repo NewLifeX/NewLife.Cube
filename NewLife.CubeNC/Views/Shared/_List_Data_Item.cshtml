@@ -3,7 +3,7 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = (ValueTuple<IEntity, DataField>)Model;
     var entity = pair.Item1;
     var item = pair.Item2;
     var factory = entity.GetType().AsFactory();
@@ -16,7 +16,7 @@
     while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) { name2 = name2.Substring(0, name2.Length - 1); }
 
 }
-@if (item.IsIdentity)
+@if (item.PrimaryKey)
 {
     <td class="text-center">@value</td>
 }
@@ -120,14 +120,13 @@ else
         default:
             {
                 var val = value;
-                var map = item.Map;
-                if (map != null && val + "" != "")
+                if (!item.MapField.IsNullOrEmpty() && val + "" != "")
                 {
-                    if (map.Provider != null)
+                    if (item.MapProvider != null)
                     {
-                        var name = map.Provider.EntityType.Name;
-                        var key = map.Provider.Key;
-                        val = entity[item.OriField.Name];
+                        var name = item.MapProvider.EntityType.Name;
+                        var key = item.MapProvider.Key;
+                        val = entity[item.MapField];
                         <td class="text-center"><a href="@name?@key=@val">@value</a></td>
                     }
                     else

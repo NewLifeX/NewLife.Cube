@@ -74,15 +74,15 @@ namespace NewLife.Cube.Admin.Controllers
                 df.Url = "OAuthLog?userId={ID}";
             }
 
-            {
-                var df = AddFormFields.AddDataField("RoleIds");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
-            }
+            //{
+            //    var df = AddFormFields.AddDataField("RoleIds");
+            //    df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            //}
 
-            {
-                var df = EditFormFields.AddDataField("RoleIds");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
-            }
+            //{
+            //    var df = EditFormFields.AddDataField("RoleIds");
+            //    df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            //}
         }
 
         /// <summary>搜索数据集</summary>

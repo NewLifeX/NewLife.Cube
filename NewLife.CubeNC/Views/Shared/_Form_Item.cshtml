@@ -3,13 +3,13 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = (ValueTuple<IEntity, DataField>)Model;
     var entity = pair.Item1;
     var item = pair.Item2;
 
-    var fields = ViewBag.Fields as FieldCollection;
-    var dataField = fields.GetField(item.Name);
-    var dataSource = dataField?.DataSource;
+    var fs = ViewBag.Fields as FieldCollection;
+    var dataField = fs.GetField(item.Name);
+    var dataSource = (dataField as ListField)?.DataSource;
 
     var err = 0;
     if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
@@ -38,7 +38,47 @@
     }
     else
     {
-        @Html.ForEditor(item, entity)
+        @*@Html.ForEditor(item, entity)*@
+        if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null)
+        {
+
+        }
+        else if (item.Readonly)
+        {
+            <label class="form-control">@entity[item.Name]</label>
+        }
+        else if (item.Type == typeof(String))
+        {
+            if (item.ItemType.EqualIgnoreCase("file", "image"))
+            {
+                @Html.ForString(item.Name, (String)entity[item.Name], item.Length)
+                @Html.ForFile(item.Name, (String)entity[item.Name], item.ItemType)
+            }
+            else
+            {
+                @Html.ForString(item.Name, (String)entity[item.Name], item.Length)
+            }
+        }
+        else if (entity is IEntityTree treeEntity)
+        {
+            var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+            if (set == null || set.Parent != item.Name)
+            {
+
+            }
+            else
+            {
+                var root = entity.GetType().GetValue("Root") as IEntityTree;
+                // 找到完整菜单树，但是排除当前节点这个分支
+                var list = root.FindAllChildsExcept(treeEntity);
+                var data = new SelectList(list, set.Key, "TreeNodeText", entity[item.Name]);
+                @Html.DropDownList(item.Name, data, new { @class = "multiselect" })
+            }
+        }
+        else
+        {
+            @Html.ForEditor(item.Name, entity[item.Name], item.Type)
+        }
     }
 </div>
 @if (err > 0)
@@ -49,5 +89,13 @@
 }
 else if (!des.IsNullOrEmpty())
 {
-    <span class="hidden-xs col-sm-@span">@Html.ForDescription(item)</span>
+    <span class="hidden-xs col-sm-@span">
+        @{
+            //var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+            if (!des.IsNullOrWhiteSpace())
+            {
+                <span class="middle">@des</span>
+            }
+        }
+    </span>
 }

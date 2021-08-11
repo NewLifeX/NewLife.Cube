@@ -1,5 +1,6 @@
 ﻿@using NewLife;
 @using NewLife.Cube
+@using NewLife.Cube.ViewModels;
 @using XCode;
 @using XCode.Configuration;
 @{
@@ -8,7 +9,7 @@
     var item = pair.Item2;
 
     var fields = ViewBag.Fields as FieldCollection;
-    var dataField = fields.GetField(item.Name);
+    var dataField = fields.GetField(item.Name) as ListField;
     var dataSource = dataField?.DataSource;
 
     var err = 0;

@@ -12,7 +12,7 @@
     var rv = entity.GetRouteKey();
 
     Object htmlAttributes = null;
-    if (fields.Any(e => e.Field != null && e.Field.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
+    if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
 }
 
 <div class="form-horizontal">
