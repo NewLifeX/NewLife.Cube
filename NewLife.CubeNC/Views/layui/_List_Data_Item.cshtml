@@ -154,12 +154,7 @@ else
                 {
                     <td title="@((value+"").IPToAddress())">@value</td>
                 }
-                else if (item.Name.EqualIgnoreCase("Remark", "Description"))
-                {
-                    //防止内容过长
-                    <td title="@value">@value</td>
-                }
-                else if (item.Length >= 500)
+                else if (item.IsBigText())
                 {
                     //防止内容过长
                     <td title="@value">@value</td>

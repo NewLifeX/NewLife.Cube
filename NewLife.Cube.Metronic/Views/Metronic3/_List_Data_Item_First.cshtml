@@ -3,13 +3,13 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = (ValueTuple<IEntity, DataField>)Model;
     var entity = pair.Item1;
     var item = pair.Item2;
 
     var value = entity[item.Name];
 }
-@if (item.IsIdentity)
+@if (item.PrimaryKey)
 {
     <td class="text-center">@value</td>
 }

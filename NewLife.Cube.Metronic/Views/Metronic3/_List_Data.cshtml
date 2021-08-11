@@ -160,7 +160,7 @@
                             }
                         }
 
-                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
+                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
 
                         // 在该字段之后插入的字段
                         dfs = fields.GetAfterFields(item.Name);

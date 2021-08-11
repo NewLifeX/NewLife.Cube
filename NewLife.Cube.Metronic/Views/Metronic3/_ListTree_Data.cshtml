@@ -28,7 +28,7 @@
                     <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                 }
                 else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)
-                    || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
+                || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
                 {
                     <th class="text-right" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                 }
@@ -48,7 +48,6 @@
     <tbody>
         @foreach (IEntityTree entity in Model)
         {
-            var FirstFlag = 0;
             var p = entity.Parent as IEntityTree;
             if (p == null)
             {
@@ -58,18 +57,11 @@
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity[fk.Name]" /><span/></label></td>
+                    <td class="text-center"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity[fk.Name]" /><span /></label></td>
                 }
                 @foreach (var item in fields)
                 {
-                    if (FirstFlag == 0)
-                    {
-                        @await Html.PartialAsync("_List_Data_Item_First", new ValueTuple<IEntity, FieldItem>(entity, item))
-                    }
-                    else
-                    {
-                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
-                    }
+                    @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
 
                     FirstFlag++;
                 }

@@ -8,6 +8,7 @@
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as FieldCollection;
     var set = ViewBag.PageSetting as PageSetting;
+    var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 }
 <tr>
     @if (set.EnableSelect)
@@ -29,8 +30,7 @@
         else
         {
             // 第二名称，去掉后面的数字，便于模式匹配
-            var name2 = item.Name;
-            while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) { name2 = name2.Substring(0, name2.Length - 1); }
+            var name2 = item.Name.TrimEnd(digits);
 
             var value = entity[item.Name];
             switch (Type.GetTypeCode(item.Type))
@@ -49,7 +49,9 @@
                     {
                         var dd = (Double)value;
                         var des = item.Description + "";
+                        if (des.Contains("十分之一")) { dd /= 10; }
                         if (des.Contains("百分之一")) { dd /= 100; }
+                        if (des.Contains("千分之一")) { dd /= 1000; }
                         if (des.Contains("万分之一")) { dd /= 10000; }
 
                         <td class="text-center">@dd.ToString("p2")</td>
@@ -72,7 +74,7 @@
                     {
                         <td></td>
                     }
-                    else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID") || item.Name.EndsWith("ID"))
+                    else if (name2.EqualIgnoreCase("CreateUserID", "UpdateUserID") || name2.EndsWith("ID") || name2.EndsWith("Id"))
                     {
                         <td></td>
                     }
@@ -80,7 +82,9 @@
                     {
                         var dd = Convert.ToDouble(value);
                         var des = item.Description + "";
+                        if (des.Contains("十分之一")) { dd /= 10; }
                         if (des.Contains("百分之一")) { dd /= 100; }
+                        if (des.Contains("千分之一")) { dd /= 1000; }
                         if (des.Contains("万分之一")) { dd /= 10000; }
 
                         <td class="text-center">@dd.ToString("p2")</td>

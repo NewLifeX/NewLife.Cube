@@ -297,12 +297,12 @@ namespace NewLife.Cube
             sb.Append("            @if (this.Has");
             sb.Append(str);
 
+            var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
             ident = new String(' ', 4 * 4);
             foreach (var item in fields)
             {
                 // 第二名称，去掉后面的数字，便于模式匹配
-                var name2 = item.Name;
-                while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) name2 = name2.Substring(0, name2.Length - 1);
+                var name2 = item.Name.TrimEnd(digits);
 
                 // 缩进
                 sb.Append(ident);
@@ -421,13 +421,13 @@ namespace NewLife.Cube
 
         private static String BuildStat(IList<DataField> fields)
         {
+            var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
             var ident = new String(' ', 4 * 4);
             var sb = new StringBuilder();
             foreach (var item in fields)
             {
                 // 第二名称，去掉后面的数字，便于模式匹配
-                var name2 = item.Name;
-                while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) name2 = name2.Substring(0, name2.Length - 1);
+                var name2 = item.Name.TrimEnd(digits);
 
                 // 缩进
                 sb.Append(ident);
@@ -516,7 +516,7 @@ namespace NewLife.Cube
 }
 @foreach (var item in fields)
 {
-    if (!item.IsIdentity)
+    if (!item.PrimaryKey)
     {
         <div class=""@cls"">
             @await Html.PartialAsync(""_Form_Item"", new Pair(entity, item))
@@ -547,7 +547,7 @@ namespace NewLife.Cube
 }
 @foreach (var item in fields)
 {
-    if (!item.IsIdentity)
+    if (!item.PrimaryKey)
     {
         <div class=""@cls"">
             @Html.Partial(""_Form_Item"", new Pair(entity, item))

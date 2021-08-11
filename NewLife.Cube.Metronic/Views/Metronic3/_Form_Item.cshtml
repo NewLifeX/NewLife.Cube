@@ -4,7 +4,7 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = (ValueTuple<IEntity, DataField>)Model;
     var entity = pair.Item1;
     var item = pair.Item2;
 
@@ -33,7 +33,7 @@
 }
 <!-- 字段标签（含帮助说明信息） -->
 <div class="d-inline-flex align-items-center justify-content-lg-end col-lg-3 col-md-4 pl-0 item-label">
-    <label class="col-form-label mb-lg-0 mb-md-0" for="@item.ColumnName">@display</label>
+    <label class="col-form-label mb-lg-0 mb-md-0" for="@item.Name">@display</label>
     @if (!des.IsNullOrEmpty())
     {
         <div class="d-none d-md-block d-lg-block" style="text-align: center; font-size: 1.5rem;">
@@ -52,7 +52,7 @@
         else
         {
             // 系统字段默认不允许编辑
-            if (item.ColumnName.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+            if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
             "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
             {
                 @Html.ForEditor(item, entity, null, null, new { @disabled = "disabled" }.ToDictionary())

@@ -12,8 +12,8 @@
     var provider = ManageProvider.Provider;
 
     // 第二名称，去掉后面的数字，便于模式匹配
-    var name2 = item.Name;
-    while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) { name2 = name2.Substring(0, name2.Length - 1); }
+    var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+    var name2 = item.Name.TrimEnd(digits);
 
 }
 @if (item.PrimaryKey)
@@ -138,15 +138,10 @@ else
                 {
                     <td class="text-center" title="@((value+"").IPToAddress())">@value</td>
                 }
-                else if (item.Name.EqualIgnoreCase("Remark", "Description"))
+                else if (item.IsBigText())
                 {
                     //防止内容过长
                     <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td>
-                }
-                else if (item.Length >= 500)
-                {
-                    //防止内容过长
-                    <td style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td>
                 }
                 else
                 {

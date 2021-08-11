@@ -34,7 +34,6 @@
     <tbody>
         @foreach (IEntityTree entity in Model)
         {
-            var FirstFlag = 0;
             var p = entity.Parent as IEntityTree;
             if (p == null)
             {
@@ -48,16 +47,7 @@
                 }
                 @foreach (var item in fields)
                 {
-                    if (FirstFlag == 0)
-                    {
-                        @await Html.PartialAsync("_List_Data_Item_First", new ValueTuple<IEntity, DataField>(entity, item))
-                    }
-                    else
-                    {
-                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
-                    }
-
-                    FirstFlag++;
+                    @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
                 }
                 <td class="text-center">
                     @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
