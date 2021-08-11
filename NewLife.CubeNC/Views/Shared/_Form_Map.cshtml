@@ -49,6 +49,6 @@
         var dic3 = dic.ToDictionary(e => e.Key + "", e => e.Value);
 
         //@Html.ForDropDownList(field.MapField, dic, entity[field.MapField])
-        @await Html.PartialAsync("_Form_DropDownList", new ItemModel(field.MapField, dic3, null, entity[field.MapField] + "", null))
+        @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(field.MapField, dic3,  entity[field.MapField] + ""))
     }
 }

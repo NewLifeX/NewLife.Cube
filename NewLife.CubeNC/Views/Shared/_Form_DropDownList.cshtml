@@ -1,4 +1,4 @@
-﻿@model ItemModel
+﻿@model ListBoxModel
 @using NewLife;
 @using NewLife.Cube
 @using XCode;
@@ -7,7 +7,7 @@
 @{
     var name = Model.Name;
     var value = Model.Value;
-    var type = Model.Type ?? value.GetType();
+    var type = value.GetType();
 
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
     if (NewLife.Cube.Setting.Current.BootstrapSelect)
@@ -16,18 +16,21 @@
         atts.Add("class", "form-control");
 
     // 处理自动回发
-    var autoPostback = atts.TryGetValue("autoPostback", out var val) && val.ToBoolean();
-    if (autoPostback) atts.Add("onchange", "$(this).parents('form').submit();");
+    if (Model.AutoPostback) atts.Add("onchange", "$(this).parents('form').submit();");
 
-    var optionLabel = atts.TryGetValue("optionLabel", out var val2) ? (val2 + "") : "";
+    var optionLabel = Model.OptionLabel;
 
-    var selectedValue = Model.Format;
+    var selectedValue = Model.SelectedValues;
 }
-@if (type.As(typeof(IEnumerable)) && type.GetElementTypeEx().As(typeof(IEntity)))
+@if (value is IEnumerable<SelectListItem> selectList)
+{
+    @Html.DropDownList(name, selectList, atts)
+}
+else if (type is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
 {
     IEntityFactory factory = null;
     var dic = new Dictionary<String, String>();
-    foreach (IEntity entity in value as IEnumerable)
+    foreach (IEntity entity in data)
     {
         if (factory == null) factory = entity.GetType().AsFactory();
 

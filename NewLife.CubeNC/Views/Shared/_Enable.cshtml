@@ -12,5 +12,5 @@
 <div class="form-group">
     <label for="enable" class="control-label">状态：</label>
     @*@Html.ForDropDownList("enable", dic, page["enable"], "全部", true)*@
-    @await Html.PartialAsync("_Form_DropDownList", new ItemModel("enable", dic, null, page["enable"], new{ optionLabel = "全部", autoPostback = true }))
+    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel("enable", dic,  page["enable"], "全部", true, null))
 </div>
