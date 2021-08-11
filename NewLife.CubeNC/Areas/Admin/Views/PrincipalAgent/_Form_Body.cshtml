@@ -8,7 +8,7 @@
 @using NewLife.Cube;
 @{
     var entity = Model;
-    var fields = ViewBag.Fields as IList<DataField>;
+    var fields = ViewBag.Fields as FieldCollection;
     var isNew = (entity as IEntity).IsNullKey;
 
     var set = NewLife.Cube.Setting.Current;

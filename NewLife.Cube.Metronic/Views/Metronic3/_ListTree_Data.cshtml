@@ -1,5 +1,6 @@
 ﻿@using NewLife;
 @using NewLife.Cube
+@using NewLife.Cube.ViewModels;
 @using NewLife.Reflection
 @using NewLife.Web;
 @using XCode;
@@ -7,7 +8,7 @@
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var fields = ViewBag.Fields as IList<FieldItem>;
+    var fields = ViewBag.Fields as FieldCollection;
     var fk = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
 }
@@ -20,7 +21,7 @@
             }
             @foreach (var item in fields)
             {
-                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+                var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
                 if (item.Type == typeof(DateTime) || item.Type == typeof(Boolean))
                 {
                     var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;

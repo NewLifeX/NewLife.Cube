@@ -7,7 +7,7 @@
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var fields = ViewBag.Fields as IList<DataField>;
+    var fields = ViewBag.Fields as FieldCollection;
     var fk = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
 }

@@ -23,7 +23,7 @@
             }
             @foreach (var item in fields)
             {
-                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+                var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
 
                 // 要替换的字段
                 var df = fields.GetField(item.Name);

@@ -6,8 +6,7 @@
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var fields = ViewBag.Fields as IList<FieldItem>;
-        var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting;
     var provider = ManageProvider.Provider;
 }
 <table class="table table-hover">
@@ -34,7 +33,7 @@
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center align-middle"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity.ID" /><span/></label></td>
+                    <td class="text-center align-middle"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity.ID" /><span /></label></td>
                 }
                 <td class="align-middle">@entity.Name</td>
                 <td class="text-center align-middle">
@@ -48,7 +47,7 @@
                     <td class="text-center align-middle">
                         <div class="d-flex d-inline-flex">
                             @await Html.PartialAsync("_List_Data_Action", (Object)entity)
-                        </div> 
+                        </div>
                     </td>
                 }
             </tr>

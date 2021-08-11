@@ -1,4 +1,5 @@
 ﻿@using NewLife;
+@using NewLife.Cube.ViewModels;
 @using System.Reflection
 @using XCode
 @using XCode.Configuration
@@ -8,7 +9,7 @@
 
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
-    var fields = ViewBag.Fields as IList<FieldItem>;
+    var fields = ViewBag.Fields as FieldCollection;
 
     var url = "";
     var rv = entity.GetRouteKey();
@@ -18,7 +19,7 @@
         url = Url.Action(isNew ? "Add" : "Edit");
 
     Object htmlAttributes = null;
-    if (fields.Any(e => e.Field != null && e.Field.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
+    if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
 }
 
 <div class="card card-custom">

@@ -8,7 +8,7 @@
 
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
-    var fields = ViewBag.Fields as IList<DataField>;
+    var fields = ViewBag.Fields as FieldCollection;
 
     var url = "";
     var rv = entity.GetRouteKey();
