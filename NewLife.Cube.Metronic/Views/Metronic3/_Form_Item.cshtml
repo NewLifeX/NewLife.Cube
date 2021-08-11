@@ -1,12 +1,12 @@
-﻿@using NewLife;
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
 @using NewLife.Cube
 @using NewLife.Cube.ViewModels;
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, DataField>)Model;
-    var entity = pair.Item1;
-    var item = pair.Item2;
+    var entity = Model.Item1;
+    var item = Model.Item2;
 
     var fields = ViewBag.Fields as FieldCollection;
     var dataField = fields.GetField(item.Name) as ListField;
@@ -63,7 +63,7 @@
                 @*@Html.ForEditor(item, entity)*@
                 if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null)
                 {
-
+                    @await Html.PartialAsync("_Form_Map", Model)
                 }
                 else if (item.Readonly)
                 {

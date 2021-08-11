@@ -61,25 +61,16 @@
                 }
                 @foreach (var item in fields)
                 {
-                    if (item is ListField df)
+                    var df = item as ListField;
+                    if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
                     {
+                        <td></td>
+                    }
+                    else if (df != null && !df.DataAction.IsNullOrEmpty())
+                    {
+                        var url = df.GetUrl(entity);
                         var name = df.GetDisplayName(entity) ?? df.Header;
-                        if (df.DataVisible != null && !df.DataVisible(entity, item))
-                        {
-                            <td></td>
-                        }
-                        else
-                        {
-                            var url = df.GetUrl(entity);
-                            if (!df.DataAction.IsNullOrEmpty())
-                            {
-                                <td class="text-center align-middle" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
-                            }
-                            else
-                            {
-                                @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
-                            }
-                        }
+                        <td class="text-center align-middle" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
                     }
                     else
                     {

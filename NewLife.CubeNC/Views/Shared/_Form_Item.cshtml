@@ -4,9 +4,8 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = Model;
-    var entity = pair.Item1;
-    var item = pair.Item2;
+    var entity = Model.Item1;
+    var item = Model.Item2;
 
     var fs = ViewBag.Fields as FieldCollection;
     var dataField = fs.GetField(item.Name);
@@ -42,7 +41,7 @@
         @*@Html.ForEditor(item, entity)*@
         if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null)
         {
-
+            @await Html.PartialAsync("_Form_Map", Model)
         }
         else if (item.Readonly)
         {
@@ -65,7 +64,7 @@
             var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
             if (set == null || set.Parent != item.Name)
             {
-                @await Html.PartialAsync("_Form_Editor", new ValueTuple<String, Object, Type, String, Object>(item.Name, entity[item.Name], item.Type, "", ""))
+                @await Html.PartialAsync("_Form_Editor", new ValueTuple<String, Object, Type, String, Object>(item.Name, entity[item.Name], item.Type, null, null))
             }
             else
             {
@@ -79,7 +78,7 @@
         else
         {
             @*@Html.ForEditor(item.Name, entity[item.Name], item.Type)*@
-            @await Html.PartialAsync("_Form_Editor", new ValueTuple<String, Object, Type, String, Object>(item.Name, entity[item.Name], item.Type, "", ""))
+            @await Html.PartialAsync("_Form_Editor", new ValueTuple<String, Object, Type, String, Object>(item.Name, entity[item.Name], item.Type, null, null))
         }
     }
 </div>
