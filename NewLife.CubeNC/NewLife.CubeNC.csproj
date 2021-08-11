@@ -175,6 +175,7 @@
 
   <ItemGroup>
     <Content Remove="Views\Shared\_List_Data_Item_First.cshtml" />
+    <Content Remove="Views\Shared\_StatLevel.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

@@ -37,7 +37,7 @@
                 var dic2 = new Dictionary<Object, String>();
                 if (!dic.ContainsKey(-1))
                 {
-                    dic2[0] = " ";
+                    dic2[0] = "<0>";
                     foreach (var item in dic)
                     {
                         dic2[item.Key] = item.Value;
@@ -46,7 +46,9 @@
                 }
             }
         }
+        var dic3 = dic.ToDictionary(e => e.Key + "", e => e.Value);
 
-        @Html.ForDropDownList(field.MapField, dic, entity[field.MapField])
+        //@Html.ForDropDownList(field.MapField, dic, entity[field.MapField])
+        @await Html.PartialAsync("_Form_DropDownList", new ItemModel(field.MapField, dic3, null, entity[field.MapField] + "", null))
     }
 }

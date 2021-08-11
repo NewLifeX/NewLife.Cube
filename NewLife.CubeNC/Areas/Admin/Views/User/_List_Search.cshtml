@@ -8,7 +8,8 @@
 <div class="form-group">
     <label for="roleId" class="control-label">角色：</label>
     @*@Html.ForDropDownList("roleId", Role.FindAllWithCache(), page["roleId"], "全部", true)*@
-    @Html.ForListBox("roleIds", Role.FindAllWithCache(), page["roleIds"])
+    @*@Html.ForListBox("roleIds", Role.FindAllWithCache(), page["roleIds"])*@
+    @await Html.PartialAsync("_Form_ListBox", new ItemModel("roleIds", Role.FindAllWithCache(), null, page["roleIds"], null))
 </div>
 @await Html.PartialAsync("_Enable")
 @await Html.PartialAsync("_SelectDepartment", "departmentId")

@@ -47,7 +47,8 @@
     <div class="input-group">
         @if (dataSource != null)
         {
-            @Html.ForListBox(item.Name, dataSource(entity, item), entity[item.Name] as String)
+            @*@Html.ForListBox(item.Name, dataSource(entity, item), entity[item.Name] as String)*@
+            @await Html.PartialAsync("_Form_ListBox", new ItemModel(item.Name, dataSource(entity, item), null, entity[item.Name] as String, null))
         }
         else
         {
