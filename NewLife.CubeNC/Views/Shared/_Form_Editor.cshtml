@@ -14,17 +14,21 @@
 @switch (Type.GetTypeCode(type))
 {
     case TypeCode.Boolean:
-        @Html.ForBoolean(name, value.ToBoolean(), htmlAttributes)
+        //@Html.ForBoolean(name, value.ToBoolean(), htmlAttributes)
+        @await Html.PartialAsync("_Form_Boolean", Model)
         break;
     case TypeCode.DateTime:
-        @Html.ForDateTime(name, value.ToDateTime(), format, htmlAttributes)
+        //@Html.ForDateTime(name, value.ToDateTime(), format, htmlAttributes)
+        @await Html.PartialAsync("_Form_DateTime", Model)
         break;
     case TypeCode.Decimal:
-        @Html.ForDecimal(name, Convert.ToDecimal(value), format, htmlAttributes)
+        //@Html.ForDecimal(name, Convert.ToDecimal(value), format, htmlAttributes)
+        @await Html.PartialAsync("_Form_Decimal", Model)
         break;
     case TypeCode.Single:
     case TypeCode.Double:
-        @Html.ForDouble(name, value.ToDouble(), format, htmlAttributes)
+        //@Html.ForDouble(name, value.ToDouble(), format, htmlAttributes)
+        @await Html.PartialAsync("_Form_Double", Model)
         break;
     case TypeCode.Byte:
     case TypeCode.SByte:

@@ -64,7 +64,7 @@
                             <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
                                 <legend>@item.Key</legend>
                             </fieldset>
-                }
+                        }
 
                         foreach (var pi in item.Value)
                         {
@@ -72,6 +72,7 @@
                             var dis = pi.DisplayName;
                             var des = pi.Description;
                             var val = obj.GetValue(name);
+                            var model = new ItemModel(name, val, pi.PropertyType);
 
                             <div class="layui-form-item">
                                 <label class="layui-form-label" for="@name">@(dis)</label>
@@ -79,14 +80,16 @@
                                     @switch (Type.GetTypeCode(pi.PropertyType))
                                     {
                                         case TypeCode.Boolean:
-                                            @Html.ForBoolean(name, (Boolean)val, new Dictionary<string, object> { { "lay-skin", "switch" }, { "lay-text", "on|off" } })
+                                            model.HtmlAttributes = new Dictionary<string, object> { { "lay-skin", "switch" }, { "lay-text", "on|off" } };
+                                            @await Html.PartialAsync("_Form_Boolean", model)
                                             break;
                                         case TypeCode.DateTime:
-                                            @Html.ForDateTime(name, (DateTime)val, null, new { @class = "layui-input dtController" })
+                                            model.HtmlAttributes = new { @@class = "layui-input dtController" };
+                                            @await Html.PartialAsync("_Form_DateTime", model)
                                             break;
                                         default:
-                                            @*@Html.ForEditor(name, obj.GetValue(name), pi.PropertyType, null, new { @class = "layui-input" })*@
-                                            @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.PropertyType, null, new { @class = "layui-input" }))
+                                            model.HtmlAttributes = new { @@class = "layui-input" };
+                                            @await Html.PartialAsync("_Form_Editor", model)
                                             break;
                                     }
                                 </div>
