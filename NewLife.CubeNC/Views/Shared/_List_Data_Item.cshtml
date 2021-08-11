@@ -61,7 +61,9 @@ else
             {
                 var dd = (Double)value;
                 var des = item.Description + "";
+                if (des.Contains("十分之一")) { dd /= 10; }
                 if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
                 <td class="text-center">@dd.ToString("p2")</td>
@@ -106,7 +108,9 @@ else
             {
                 var dd = Convert.ToDouble(value);
                 var des = item.Description + "";
+                if (des.Contains("十分之一")) { dd /= 10; }
                 if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
                 <td class="text-center">@dd.ToString("p2")</td>
@@ -149,8 +153,5 @@ else
                 }
             }
             break;
-            @*default:
-                <td>@value</td>
-                break;*@
     }
 }

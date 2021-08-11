@@ -335,8 +335,12 @@ namespace NewLife.Cube
                             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
-                                if (des.Contains("百分之一"))
+                                if (des.Contains("十分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("百分之一"))
                                     sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("千分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
                                 else if (des.Contains("万分之一"))
                                     sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
                                 else
@@ -362,10 +366,14 @@ namespace NewLife.Cube
                             else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
-                                if (des.Contains("百分之一"))
-                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
+                                if (des.Contains("十分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("百分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("千分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
                                 else if (des.Contains("万分之一"))
-                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
                                 else
                                     sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
                             }
@@ -449,8 +457,12 @@ namespace NewLife.Cube
                             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
-                                if (des.Contains("百分之一"))
+                                if (des.Contains("十分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("百分之一"))
                                     sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("千分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
                                 else if (des.Contains("万分之一"))
                                     sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
                                 else
@@ -477,10 +489,14 @@ namespace NewLife.Cube
                             else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
-                                if (des.Contains("百分之一"))
-                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
+                                if (des.Contains("十分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("百分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("千分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
                                 else if (des.Contains("万分之一"))
-                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
                                 else
                                     sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
                             }
