@@ -140,14 +140,13 @@ else
         default:
             {
                 var val = value;
-                var map = item.Map;
-                if (map != null && val + "" != "")
+                if (!item.MapField.IsNullOrEmpty() && val + "" != "")
                 {
-                    if (map.Provider != null)
+                    if (item.MapProvider != null)
                     {
-                        var name = map.Provider.EntityType.Name;
-                        var key = map.Provider.Key;
-                        val = entity[item.OriField.Name];
+                        var name = item.MapProvider.EntityType.Name;
+                        var key = item.MapProvider.Key;
+                        val = entity[item.MapField];
                         <td class="align-middle"><a href="@name?@key=@val">@value</a></td>
                     }
                     else
@@ -170,8 +169,5 @@ else
                 }
             }
             break;
-            @*default:
-                <td>@value</td>
-                break;*@
     }
 }

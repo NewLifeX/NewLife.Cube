@@ -55,12 +55,52 @@
             if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
             "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
             {
-                @Html.ForEditor(item, entity, null, null, new { @disabled = "disabled" }.ToDictionary())
+                @Html.ForString(item.Name, (String)entity[item.Name], item.Length, new { @disabled = "disabled" }.ToDictionary())
 
             }
             else
             {
-                @Html.ForEditor(item, entity)
+                @*@Html.ForEditor(item, entity)*@
+                if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null)
+                {
+
+                }
+                else if (item.Readonly)
+                {
+                    <label class="form-control">@entity[item.Name]</label>
+                }
+                else if (item.Type == typeof(String))
+                {
+                    if (item.ItemType.EqualIgnoreCase("file", "image"))
+                    {
+                        @Html.ForString(item.Name, (String)entity[item.Name], item.Length)
+                        @Html.ForFile(item.Name, (String)entity[item.Name], item.ItemType)
+                    }
+                    else
+                    {
+                        @Html.ForString(item.Name, (String)entity[item.Name], item.Length)
+                    }
+                }
+                else if (entity is IEntityTree treeEntity)
+                {
+                    var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+                    if (set == null || set.Parent != item.Name)
+                    {
+
+                    }
+                    else
+                    {
+                        var root = entity.GetType().GetValue("Root") as IEntityTree;
+                        // 找到完整菜单树，但是排除当前节点这个分支
+                        var list = root.FindAllChildsExcept(treeEntity);
+                        var data = new SelectList(list, set.Key, "TreeNodeText", entity[item.Name]);
+                        @Html.DropDownList(item.Name, data, new { @class = "multiselect" })
+                    }
+                }
+                else
+                {
+                    @Html.ForEditor(item.Name, entity[item.Name], item.Type)
+                }
             }
         }
     </div>

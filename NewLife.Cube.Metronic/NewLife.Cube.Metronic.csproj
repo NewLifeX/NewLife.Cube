@@ -50,6 +50,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Metronic3\_List_Data_Item_First.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
 
