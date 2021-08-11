@@ -39,7 +39,7 @@
                             <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@name">@(dis)</label>
                             <div class="input-group col-xs-10 col-md-4">
                                 @*@Html.ForEditor(name, obj.GetValue(name), pi.PropertyType)*@
-                                @await Html.PartialAsync("_Form_Editor", new ValueTuple<String, Object, Type, String, Object>(name, obj.GetValue(name), pi.PropertyType, "", ""))
+                                @await Html.PartialAsync("_Form_Editor", new ItemModel(name, obj.GetValue(name), pi.PropertyType))
                                 @Html.ValidationMessage(name)
                             </div>
                             <span class="hidden-xs col-md-5">&nbsp; @des</span>

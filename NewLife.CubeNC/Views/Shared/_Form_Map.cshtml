@@ -20,7 +20,7 @@
 {
     if (!field.MapField.IsNullOrEmpty()) field = fs.GetField(field.MapField) ?? field;
 
-    @await Html.PartialAsync("_Form_Editor", new ValueTuple<String, Object, Type, String, Object>(field.Name, entity[field.Name], field.Type, null, null))
+    @await Html.PartialAsync("_Form_Editor", new ItemModel(field.Name, entity[field.Name], field.Type))
     <text>&nbsp;</text>
     <label class="">@entity[field.Name]</label>
 }

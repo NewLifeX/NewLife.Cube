@@ -86,7 +86,7 @@
                                             break;
                                         default:
                                             @*@Html.ForEditor(name, obj.GetValue(name), pi.PropertyType, null, new { @class = "layui-input" })*@
-                                            @await Html.PartialAsync("_Form_Editor", new ValueTuple<String, Object, Type, String, Object>(name, val, pi.PropertyType, "", new { @class = "layui-input" }))
+                                            @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.PropertyType, null, new { @class = "layui-input" }))
                                             break;
                                     }
                                 </div>

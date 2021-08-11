@@ -1,14 +1,14 @@
-﻿@model ValueTuple<String, Object, Type, String, Object>
+﻿@model ItemModel
 @using NewLife;
 @using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
 @{
-    var name = Model.Item1;
-    var value = Model.Item2;
-    var type = Model.Item3;
-    var format = Model.Item4;
-    var htmlAttributes = Model.Item5;
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = Model.Type;
+    var format = Model.Format;
+    var htmlAttributes = Model.HtmlAttributes;
     if (type == null) type = value.GetType();
 }
 @switch (Type.GetTypeCode(type))
@@ -34,15 +34,13 @@
     case TypeCode.UInt16:
     case TypeCode.UInt32:
     case TypeCode.UInt64:
-        if (type.IsEnum)
-            @Html.ForEnum(name, value ?? 0.ChangeType(type))
-        else
-            @Html.ForInt(name, Convert.ToInt64(value), format, htmlAttributes)
+        //if (type.IsEnum)
+        //    @Html.ForEnum(name, value ?? 0.ChangeType(type))
+        //else
+        //    @Html.ForInt(name, Convert.ToInt64(value), format, htmlAttributes)
+        @await Html.PartialAsync("_Form_Int", Model)
         break;
     case TypeCode.String:
         @Html.ForString(name, value + "", 0, htmlAttributes)
-        break;
-    default:
-        @Html.ForObject(name, value)
         break;
 }
