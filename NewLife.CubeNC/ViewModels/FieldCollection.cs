@@ -235,32 +235,33 @@ namespace NewLife.Cube
         /// <summary>添加定制版数据字段</summary>
         /// <param name="fi"></param>
         /// <returns></returns>
-        public ListField AddDataField(FieldItem fi) => Add(fi) as ListField;
+        public DataField AddDataField(FieldItem fi) => Add(fi);
 
         /// <summary>添加定制字段，插入指定列之前</summary>
         /// <param name="name"></param>
         /// <param name="beforeName"></param>
         /// <param name="afterName"></param>
         /// <returns></returns>
-        public ListField AddDataField(String name, String beforeName = null, String afterName = null)
+        public DataField AddDataField(String name, String beforeName = null, String afterName = null)
         {
-            var df = Create(null);
-            df.Name = name;
+            var fi = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+            var field = Create(fi);
+            field.Name = name;
 
             if (!beforeName.IsNullOrEmpty())
             {
                 var idx = FindIndex(beforeName);
-                if (idx >= 0) Insert(idx, df);
+                if (idx >= 0) Insert(idx, field);
             }
             else if (!beforeName.IsNullOrEmpty())
             {
                 var idx = FindIndex(afterName);
-                if (idx >= 0) Insert(idx + 1, df);
+                if (idx >= 0) Insert(idx + 1, field);
             }
             else
-                Add(df);
+                Add(field);
 
-            return df as ListField;
+            return field;
         }
 
         /// <summary>添加定制字段，插入指定列之前</summary>
@@ -269,6 +270,46 @@ namespace NewLife.Cube
         public DataField AddDataField(DataField field)
         {
             Add(field);
+
+            return field;
+        }
+
+        /// <summary>添加定制版数据字段</summary>
+        /// <param name="fi"></param>
+        /// <returns></returns>
+        public ListField AddListField(FieldItem fi)
+        {
+            var field = new ListField();
+            field.Fill(fi);
+
+            Add(field);
+
+            return field;
+        }
+
+        /// <summary>添加定制字段，插入指定列之前</summary>
+        /// <param name="name"></param>
+        /// <param name="beforeName"></param>
+        /// <param name="afterName"></param>
+        /// <returns></returns>
+        public ListField AddListField(String name, String beforeName = null, String afterName = null)
+        {
+            var fi = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+            var field = new ListField { Name = name };
+            if (fi != null) field.Fill(fi);
+
+            if (!beforeName.IsNullOrEmpty())
+            {
+                var idx = FindIndex(beforeName);
+                if (idx >= 0) Insert(idx, field);
+            }
+            else if (!beforeName.IsNullOrEmpty())
+            {
+                var idx = FindIndex(afterName);
+                if (idx >= 0) Insert(idx + 1, field);
+            }
+            else
+                Add(field);
 
             return field;
         }

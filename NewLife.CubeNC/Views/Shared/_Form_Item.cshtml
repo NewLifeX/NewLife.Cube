@@ -9,7 +9,7 @@
 
     var fs = ViewBag.Fields as FieldCollection;
     var dataField = fs.GetField(item.Name);
-    var dataSource = (dataField as ListField)?.DataSource;
+    var dataSource = dataField?.DataSource;
 
     var err = 0;
     if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -12,6 +13,12 @@ using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels
 {
+    /// <summary>获取数据源委托</summary>
+    /// <param name="entity"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    public delegate IDictionary DataSourceDelegate(IEntity entity, DataField field);
+
     /// <summary>数据字段</summary>
     public class DataField
     {
@@ -65,6 +72,9 @@ namespace NewLife.Cube.ViewModels
         /// <summary>映射提供者</summary>
         [XmlIgnore, IgnoreDataMember]
         public MapProvider MapProvider { get; set; }
+
+        /// <summary>多选数据源</summary>
+        public DataSourceDelegate DataSource { get; set; }
 
         /// <summary>扩展属性</summary>
         [XmlIgnore, IgnoreDataMember]

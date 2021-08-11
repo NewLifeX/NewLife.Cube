@@ -47,7 +47,7 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.RemoveField("Remark");
 
             {
-                var df = ListFields.AddDataField("Link", "Logins");
+                var df = ListFields.AddListField("Link", "Logins");
                 df.Header = "链接";
                 df.HeaderTitle = "第三方登录的链接信息";
                 df.DisplayName = "链接";
@@ -56,35 +56,37 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             {
-                var df = ListFields.AddDataField("Token", "Logins");
+                var df = ListFields.AddListField("Token", "Logins");
                 df.Header = "令牌";
                 df.DisplayName = "令牌";
                 df.Url = "UserToken?userId={ID}";
             }
 
             {
-                var df = ListFields.AddDataField("Log", "Logins");
+                var df = ListFields.AddListField("Log", "Logins");
                 df.Header = "日志";
                 df.DisplayName = "日志";
                 df.Url = "Log?userId={ID}";
             }
 
             {
-                var df = ListFields.AddDataField("OAuthLog", "Logins");
+                var df = ListFields.AddListField("OAuthLog", "Logins");
                 df.Header = "OAuth日志";
                 df.DisplayName = "OAuth日志";
                 df.Url = "OAuthLog?userId={ID}";
             }
 
-            //{
-            //    var df = AddFormFields.AddDataField("RoleIds");
-            //    df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
-            //}
+            {
+                var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                AddFormFields.RemoveField("RoleNames");
+            }
 
-            //{
-            //    var df = EditFormFields.AddDataField("RoleIds");
-            //    df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
-            //}
+            {
+                var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                EditFormFields.RemoveField("RoleNames");
+            }
         }
 
         /// <summary>搜索数据集</summary>
@@ -327,7 +329,7 @@ namespace NewLife.Cube.Admin.Controllers
                 // 登录失败比较重要，记录一下
                 XTrace.WriteLine("[{0}]登录失败！{1}", username, ex.Message);
                 XTrace.WriteException(ex);
-                
+
                 // 累加错误数，首次出错时设置过期时间
                 _cache.Increment(key, 1);
                 _cache.Increment(ipKey, 1);

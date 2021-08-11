@@ -22,13 +22,13 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.RemoveCreateField();
 
             {
-                var df = ListFields.AddDataField("Log", null, "Enable");
+                var df = ListFields.AddListField("Log", null, "Enable");
                 df.Header = "日志";
                 df.DisplayName = "日志";
                 df.Url = "Log?category=CronJob&linkId={Id}";
             }
             {
-                var df = ListFields.AddDataField("JobLog", null, "Enable");
+                var df = ListFields.AddListField("JobLog", null, "Enable");
                 df.Header = "作业日志";
                 df.DisplayName = "作业日志";
                 df.Url = "Log?category=JobService&linkId={Id}";

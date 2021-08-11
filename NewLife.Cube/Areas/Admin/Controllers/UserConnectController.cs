@@ -25,13 +25,13 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 提供者列，增加查询
             {
-                var df = ListFields.AddDataField(UserConnect._.Provider);
+                var df = ListFields.AddListField(UserConnect._.Provider);
                 df.Url = "?provider={Provider}";
             }
 
             // 用户列，增加连接
             {
-                var df = ListFields.AddDataField("UserName");
+                var df = ListFields.AddListField("UserName");
                 df.Header = "用户";
                 df.HeaderTitle = "对应的本地用户信息";
                 df.DisplayName = "{UserName}";
@@ -39,7 +39,7 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             {
-                var df = ListFields.AddDataField("OAuthLog", "Enable");
+                var df = ListFields.AddListField("OAuthLog", "Enable");
                 df.Header = "OAuth日志";
                 df.DisplayName = "OAuth日志";
                 df.Url = "OAuthLog?connectId={ID}";

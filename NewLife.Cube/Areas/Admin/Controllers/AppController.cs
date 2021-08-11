@@ -23,24 +23,24 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.RemoveField("Secret", "Logo", "White", "Black", "Urls", "Remark");
 
             {
-                var df = ListFields.AddDataField("AppLog", "Enable");
+                var df = ListFields.AddListField("AppLog", "Enable");
                 df.Header = "日志";
                 df.DisplayName = "日志";
                 df.Url = "AppLog?appId={ID}";
             }
 
-            //{
-            //    var df = AddFormFields.AddDataField("RoleIds");
-            //    df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
-            //}
-
-            //{
-            //    var df = EditFormFields.AddDataField("RoleIds");
-            //    df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
-            //}
+            {
+                var df = AddFormFields.AddDataField("RoleIds");
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            }
 
             {
-                var df = ListFields.AddDataField("Log", "UpdateUserId");
+                var df = EditFormFields.AddDataField("RoleIds");
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+            }
+
+            {
+                var df = ListFields.AddListField("Log", "UpdateUserId");
                 df.DisplayName = "修改日志";
                 df.Header = "修改日志";
                 df.Url = "/Admin/Log?category=应用系统&linkId={ID}";

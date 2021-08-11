@@ -1,18 +1,11 @@
 ﻿using System;
-using NewLife.Data;
 using System.Text.RegularExpressions;
-using XCode.Configuration;
+using NewLife.Data;
 using XCode;
-using System.Collections;
+using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels
 {
-    /// <summary>获取数据源委托</summary>
-    /// <param name="entity"></param>
-    /// <param name="field"></param>
-    /// <returns></returns>
-    public delegate IDictionary DataSourceDelegate(IEntity entity, DataField field);
-
     /// <summary>数据可见委托</summary>
     /// <param name="entity"></param>
     /// <param name="field"></param>
@@ -43,9 +36,6 @@ namespace NewLife.Cube.ViewModels
 
         /// <summary>数据动作。设为action时走ajax请求</summary>
         public String DataAction { get; set; }
-
-        /// <summary>多选数据源</summary>
-        public DataSourceDelegate DataSource { get; set; }
 
         /// <summary>是否显示</summary>
         public DataVisibleDelegate DataVisible { get; set; }
