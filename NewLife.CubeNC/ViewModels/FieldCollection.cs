@@ -123,7 +123,7 @@ namespace NewLife.Cube
             for (var i = Count - 1; i >= 0; i--)
             {
                 var fi = this[i];
-                if (fi.Type == typeof(String))
+                if (fi.Type == typeof(String) && fi.MapField.IsNullOrEmpty())
                 {
                     if (fi.Length <= 0 || fi.Length > 1000 ||
                         fi.Name.EqualIgnoreCase("password", "pass", "pwd"))

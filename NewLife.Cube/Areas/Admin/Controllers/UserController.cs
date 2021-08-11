@@ -40,7 +40,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             MenuOrder = 100;
 
-            ListFields.RemoveField("Avatar", "RoldIds", "Online", "RegisterIP", "RegisterTime");
+            ListFields.RemoveField("Avatar", "RoleIds", "Online", "RegisterIP", "RegisterTime");
             ListFields.RemoveField("Phone", "Code", "Question", "Answer");
             ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
             ListFields.RemoveUpdateField();
