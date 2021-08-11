@@ -73,8 +73,7 @@
                 {
                     if (item.ItemType.EqualIgnoreCase("file", "image"))
                     {
-                        @Html.ForString(item.Name, (String)entity[item.Name], item.Length)
-                        @Html.ForFile(item.Name, (String)entity[item.Name], item.ItemType)
+                        @await Html.PartialAsync("_Form_File", Model)
                     }
                     else
                     {
