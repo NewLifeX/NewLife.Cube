@@ -71,6 +71,12 @@ namespace NewLife.Cube.ViewModels
         public IDictionary<String, String> Properties { get; } = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
         #endregion
 
+        #region 构造
+        /// <summary>已重载</summary>
+        /// <returns></returns>
+        public override String ToString() => $"{Name} {DisplayName} {Type.Name}";
+        #endregion
+
         #region 方法
         ///// <summary>实例化</summary>
         //public DataField() { }

@@ -49,7 +49,9 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 var df = ListFields.AddDataField("Link", "Logins");
                 df.Header = "链接";
+                df.HeaderTitle = "第三方登录的链接信息";
                 df.DisplayName = "链接";
+                df.Title = "第三方登录的链接信息";
                 df.Url = "UserConnect?userId={ID}";
             }
 

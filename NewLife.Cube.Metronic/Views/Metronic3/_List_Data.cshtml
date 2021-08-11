@@ -24,6 +24,9 @@
             @foreach (var item in fields)
             {
                 var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                var df = item as ListField;
+                var name = df?.Header ?? item.DisplayName;
+                var title = df?.HeaderTitle ?? item.Description;
 
                 if (item.Type == typeof(DateTime) || item.Type == typeof(Boolean))
                 {
@@ -71,6 +74,12 @@
                         var url = df.GetUrl(entity);
                         var name = df.GetDisplayName(entity) ?? df.Header;
                         <td class="text-center align-middle" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                    }
+                    else if (df != null && !df.Url.IsNullOrEmpty())
+                    {
+                        var url = df.GetUrl(entity);
+                        var name = df.GetDisplayName(entity) ?? df.Header;
+                        <td class="text-center align-middle" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
                     }
                     else
                     {

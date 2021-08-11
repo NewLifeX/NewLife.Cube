@@ -23,8 +23,8 @@ namespace NewLife.Cube.ViewModels
     public class ListField : DataField
     {
         #region 属性
-        /// <summary>单元格文字</summary>
-        public String Text { get; set; }
+        ///// <summary>单元格文字</summary>
+        //public String Text { get; set; }
 
         /// <summary>单元格标题。数据单元格上的提示文字</summary>
         public String Title { get; set; }
@@ -38,8 +38,8 @@ namespace NewLife.Cube.ViewModels
         /// <summary>头部标题。数据移上去后显示的文字</summary>
         public String HeaderTitle { get; set; }
 
-        /// <summary>头部链接。一般是排序</summary>
-        public String HeaderUrl { get; set; }
+        ///// <summary>头部链接。一般是排序</summary>
+        //public String HeaderUrl { get; set; }
 
         /// <summary>数据动作。设为action时走ajax请求</summary>
         public String DataAction { get; set; }

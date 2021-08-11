@@ -22,6 +22,10 @@
             @foreach (var item in fields)
             {
                 var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                var df = item as ListField;
+                var name = df?.Header ?? item.DisplayName;
+                var title = df?.HeaderTitle ?? item.Description;
+             
                 if (item.Type == typeof(DateTime) || item.Type == typeof(Boolean))
                 {
                     var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;

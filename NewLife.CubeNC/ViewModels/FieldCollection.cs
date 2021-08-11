@@ -59,7 +59,9 @@ namespace NewLife.Cube
                     break;
             }
         }
+        #endregion
 
+        #region 方法
         /// <summary>为指定字段创建数据字段</summary>
         /// <param name="field"></param>
         /// <returns></returns>
@@ -92,9 +94,7 @@ namespace NewLife.Cube
 
             return df;
         }
-        #endregion
 
-        #region 方法
         /// <summary>设置扩展关系</summary>
         /// <param name="isForm">是否表单使用</param>
         /// <returns></returns>
