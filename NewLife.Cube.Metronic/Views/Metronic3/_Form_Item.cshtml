@@ -56,8 +56,7 @@
             if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
             "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
             {
-                @Html.ForString(item.Name, (String)entity[item.Name], item.Length, new { @disabled = "disabled" }.ToDictionary())
-
+                @Html.ForString(item.Name, entity[item.Name]?.ToString(), item.Length, new { @disabled = "disabled" }.ToDictionary())
             }
             else
             {

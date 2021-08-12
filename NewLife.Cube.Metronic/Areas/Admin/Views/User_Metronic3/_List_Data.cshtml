@@ -81,15 +81,14 @@
                 <td class="align-middle">@entity.DisplayName</td>
                 <td class="align-middle">@entity.Mobile</td>
                 @{
-                    var item = fields.First(f => f.Name == "RoleID");
-                    if (!entity.RoleName.IsNullOrEmpty() && !item.MapField.IsNullOrEmpty())
+                    var item = fields.FirstOrDefault(f => f.Name == "RoleID");
+                    if (item != null && !entity.RoleName.IsNullOrEmpty() && !item.MapField.IsNullOrEmpty())
                     {
                         if (item.MapProvider != null)
                         {
                             var name = item.MapProvider.EntityType.Name;
                             var key = item.MapProvider.Key;
                             <td class="align-middle"><a href="@name?@key=@entity.RoleID">@entity.RoleName</a></td>
-
                         }
                         else
                         {
@@ -102,15 +101,14 @@
                     }
 
                     // 部门
-                    item = fields.First(f => f.Name == "DepartmentID");
-                    if (!entity.RoleName.IsNullOrEmpty() && !item.MapField.IsNullOrEmpty())
+                    item = fields.FirstOrDefault(f => f.Name == "DepartmentID");
+                    if (item != null && !entity.RoleName.IsNullOrEmpty() && !item.MapField.IsNullOrEmpty())
                     {
                         if (item.MapProvider != null)
                         {
                             var name = item.MapProvider.EntityType.Name;
                             var key = item.MapProvider.Key;
                             <td class="align-middle"><a href="@name?@key=@entity.DepartmentID">@entity.DepartmentName</a></td>
-
                         }
                         else
                         {

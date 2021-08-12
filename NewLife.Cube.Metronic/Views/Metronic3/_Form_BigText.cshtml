@@ -30,7 +30,7 @@
 
 <div class="flex-grow-1">
     <div class="input-group">
-        @Html.ForString(field.Name, (String)entity[field.Name], field.Length, new { @class = "form-control form-control-textarea" }.ToDictionary())
+        @Html.ForString(field.Name, (String)entity[field.Name], field.Length, new { @class = "form-control form-control-textarea"}.ToDictionary())
     </div>
     <span class="form-text text-muted d-sm-none"><span class="middle">@des</span></span>
     @if (err > 0)
