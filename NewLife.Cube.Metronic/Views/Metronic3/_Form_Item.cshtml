@@ -5,111 +5,116 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var entity = Model.Item1;
-    var item = Model.Item2;
+	var entity = Model.Item1;
+	var item = Model.Item2;
 
-    var fields = ViewBag.Fields as FieldCollection;
-    var dataField = fields.GetField(item.Name) as ListField;
-    var dataSource = dataField?.DataSource;
+	var fields = ViewBag.Fields as FieldCollection;
+	var dataField = fields.GetField(item.Name) as ListField;
+	var dataSource = dataField?.DataSource;
 
-    var err = 0;
-    if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
+	var err = 0;
+	if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
 
-    var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
-    var display = dataField?.DisplayName ?? item.DisplayName;
+	var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+	var display = dataField?.DisplayName ?? item.DisplayName;
 
-    var total = 12;
-    var label = 3;
-    var span = 4;
-    if (err == 0 && des.IsNullOrEmpty())
-    {
-        span = 0;
-    }
-    else if (item.Type == typeof(Boolean) || item.Type.IsEnum)
-    {
-        span += 1;
-    }
-    var input = total - label - span;
+	var total = 12;
+	var label = 3;
+	var span = 4;
+	if (err == 0 && des.IsNullOrEmpty())
+	{
+		span = 0;
+	}
+	else if (item.Type == typeof(Boolean) || item.Type.IsEnum)
+	{
+		span += 1;
+	}
+	var input = total - label - span;
 }
 <!-- 字段标签（含帮助说明信息） -->
 <div class="d-inline-flex align-items-center justify-content-lg-end col-lg-3 col-md-4 pl-0 item-label">
-    <label class="col-form-label mb-lg-0 mb-md-0" for="@item.Name">@display</label>
-    @if (!des.IsNullOrEmpty())
-    {
-        <div class="d-none d-md-block d-lg-block" style="text-align: center; font-size: 1.5rem;">
-            <i class="la la-question-circle pl-1" data-toggle="tooltip" data-placement="top" title="@des"></i>
-        </div>
-    }
+	<label class="col-form-label mb-lg-0 mb-md-0" for="@item.Name">@display</label>
+	@if (!des.IsNullOrEmpty())
+	{
+		<div class="d-none d-md-block d-lg-block" style="text-align: center; font-size: 1.5rem;">
+			<i class="la la-question-circle pl-1" data-toggle="tooltip" data-placement="top" title="@des"></i>
+		</div>
+	}
 </div>
 
 <!-- 字段编辑框 -->
 <div class="flex-grow-1">
-    <div class="input-group">
-        @if (dataSource != null)
-        {
-            @*@Html.ForListBox(item.Name, dataSource(entity, item), entity[item.Name] as String)*@
-            @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
-        }
-        else
-        {
-            // 系统字段默认不允许编辑
-            if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-            "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
-            {
-                @Html.ForString(item.Name, (String)entity[item.Name], item.Length, new { @disabled = "disabled" }.ToDictionary())
+	<div class="input-group">
+		@if (dataSource != null)
+		{
+			@*@Html.ForListBox(item.Name, dataSource(entity, item), entity[item.Name] as String)*@
+			@await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+		}
+		else
+		{
+			var itemModel = new ItemModel(item.Name, entity[item.Name], item.Type) { Length = item.Length };
 
-            }
-            else
-            {
-                @*@Html.ForEditor(item, entity)*@
-                if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null)
-                {
-                    @await Html.PartialAsync("_Form_Map", Model)
-                }
-                else if (item.Readonly)
-                {
-                    <label class="form-control">@entity[item.Name]</label>
-                }
-                else if (item.Type == typeof(String))
-                {
-                    if (item.ItemType.EqualIgnoreCase("file", "image"))
-                    {
-                        @await Html.PartialAsync("_Form_File", Model)
-                    }
-                    else
-                    {
-                        @Html.ForString(item.Name, (String)entity[item.Name], item.Length)
-                    }
-                }
-                else if (entity is IEntityTree treeEntity)
-                {
-                    var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
-                    if (set == null || set.Parent != item.Name)
-                    {
-
-                    }
-                    else
-                    {
-                        var root = entity.GetType().GetValue("Root") as IEntityTree;
-                        // 找到完整菜单树，但是排除当前节点这个分支
-                        var list = root.FindAllChildsExcept(treeEntity);
-                        var data = new SelectList(list, set.Key, "TreeNodeText", entity[item.Name]);
-                        @Html.DropDownList(item.Name, data, new { @class = "multiselect" })
-                    }
-                }
-                else
-                {
-                    @Html.ForEditor(item.Name, entity[item.Name], item.Type)
-                }
-            }
-        }
-    </div>
-    <span class="form-text text-muted d-sm-none"><span class="middle">@des</span></span>
-    @if (err > 0)
-    {
-        <span class="col-sm-@span alert alert-danger">
-            @Html.ValidationMessage(item.Name)
-        </span>
-    }
+			// 系统字段默认不允许编辑
+			if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+			"UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
+			{
+				@*@Html.ForString(item.Name, (String)entity[item.Name], item.Length, new { @disabled = "disabled" }.ToDictionary())*@
+				itemModel.HtmlAttributes = new { disabled = "disabled" };
+				@await Html.PartialAsync("_Form_String", itemModel)
+			}
+			else
+			{
+				@*@Html.ForEditor(item, entity)*@
+				if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null)
+				{
+					@await Html.PartialAsync("_Form_Map", Model)
+				}
+				else if (item.Readonly)
+				{
+					<label class="form-control">@entity[item.Name]</label>
+				}
+				else if (item.Type == typeof(String))
+				{
+					if (item.ItemType.EqualIgnoreCase("file", "image"))
+					{
+						@await Html.PartialAsync("_Form_File", Model)
+					}
+					else
+					{
+						@*@Html.ForString(item.Name, (String)entity[item.Name], item.Length)*@
+						@await Html.PartialAsync("_Form_String", itemModel)
+					}
+				}
+				else if (entity is IEntityTree treeEntity)
+				{
+					var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+					if (set == null || set.Parent != item.Name)
+					{
+						@await Html.PartialAsync("_Form_Editor", itemModel)
+					}
+					else
+					{
+						var root = entity.GetType().GetValue("Root") as IEntityTree;
+						// 找到完整菜单树，但是排除当前节点这个分支
+						var list = root.FindAllChildsExcept(treeEntity);
+						var data = new SelectList(list, set.Key, "TreeNodeText", entity[item.Name]);
+						@Html.DropDownList(item.Name, data, new { @class = "multiselect" })
+					}
+				}
+				else
+				{
+					@*@Html.ForEditor(item.Name, entity[item.Name], item.Type)*@
+					@await Html.PartialAsync("_Form_Editor", itemModel)
+				}
+			}
+		}
+	</div>
+	<span class="form-text text-muted d-sm-none"><span class="middle">@des</span></span>
+	@if (err > 0)
+	{
+		<span class="col-sm-@span alert alert-danger">
+			@Html.ValidationMessage(item.Name)
+		</span>
+	}
 </div>
 
