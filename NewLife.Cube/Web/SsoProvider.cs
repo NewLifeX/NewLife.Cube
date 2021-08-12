@@ -153,7 +153,7 @@ namespace NewLife.Cube.Web
             //// 强行绑定，把第三方账号强行绑定到当前已登录账号
             //var forceBind = false;
 #if __CORE__
-            var httpContext = context.GetService<IHttpContextAccessor>().HttpContext;
+            var httpContext = ModelExtension.GetService<IHttpContextAccessor>(context).HttpContext;
             var req = httpContext.Request;
             var ip = httpContext.GetUserHost();
 #else

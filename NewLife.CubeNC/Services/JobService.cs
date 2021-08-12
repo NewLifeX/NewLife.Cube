@@ -24,7 +24,7 @@ namespace NewLife.Cube.Services
 
         /// <summary>实例化作业服务</summary>
         /// <param name="provider"></param>
-        public JobService(IServiceProvider provider) => _tracer = provider.GetService<ITracer>();
+        public JobService(IServiceProvider provider) => _tracer = ModelExtension.GetService<ITracer>(provider);
 
         private static TimerX _timer;
         /// <summary>启动</summary>

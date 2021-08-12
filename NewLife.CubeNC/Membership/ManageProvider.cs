@@ -39,8 +39,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public override IManageUser GetCurrent(IServiceProvider context = null)
         {
-            var ctx = (context?.GetService<IHttpContextAccessor>() ?? Context)
-                ?.HttpContext;
+            var ctx = (ModelExtension.GetService<IHttpContextAccessor>(context) ?? Context)?.HttpContext;
             if (ctx == null) return null;
 
             try
@@ -68,7 +67,7 @@ namespace NewLife.Cube
         /// <param name="context"></param>
         public override void SetCurrent(IManageUser user, IServiceProvider context = null)
         {
-            var ctx = (context?.GetService<IHttpContextAccessor>() ?? Context)
+            var ctx = (ModelExtension.GetService<IHttpContextAccessor>(context) ?? Context)
                 ?.HttpContext;
             if (ctx == null) return;
 
@@ -195,7 +194,7 @@ namespace NewLife.Cube
         /// <param name="context">Http上下文，兼容NetCore</param>
         public static void SetPrincipal(this IManageProvider provider, IServiceProvider context = null)
         {
-            var ctx = context.GetService<IHttpContextAccessor>()?.HttpContext;
+            var ctx = ModelExtension.GetService<IHttpContextAccessor>(context)?.HttpContext;
             if (ctx == null) return;
 
             var user = provider.GetCurrent(context);
@@ -362,8 +361,9 @@ namespace NewLife.Cube
         {
             XTrace.WriteLine("初始化ManageProvider");
 
-            ManageProvider.Provider = app.ApplicationServices.GetService<IManageProvider>();
-            ManageProvider2.Context = app.ApplicationServices.GetService<IHttpContextAccessor>();
+            var provider = app.ApplicationServices;
+            ManageProvider.Provider = ModelExtension.GetService<IManageProvider>(provider);
+            ManageProvider2.Context = ModelExtension.GetService<IHttpContextAccessor>(provider);
 
             // 初始化数据库
             _ = Role.Meta.Count;
