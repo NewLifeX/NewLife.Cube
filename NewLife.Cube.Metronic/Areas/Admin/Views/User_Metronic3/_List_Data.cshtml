@@ -82,7 +82,7 @@
 				<td class="align-middle">@entity.Mobile</td>
 				@{
 					var item = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase("RoleID"));
-					if (!entity.RoleName.IsNullOrEmpty() && item != null && !item.MapField.IsNullOrEmpty())
+					if (item != null && !entity.RoleName.IsNullOrEmpty() && item != null && !item.MapField.IsNullOrEmpty())
 					{
 						if (item.MapProvider != null)
 						{
@@ -102,8 +102,8 @@
 					}
 
                     // 部门
-                    item = fields.First(f => f.Name == "DepartmentID");
-                    if (!entity.RoleName.IsNullOrEmpty() && !item.MapField.IsNullOrEmpty())
+                    item = fields.FirstOrDefault(f => f.Name == "DepartmentID");
+                    if (item != null && !entity.RoleName.IsNullOrEmpty() && !item.MapField.IsNullOrEmpty())
                     {
                         if (item.MapProvider != null)
                         {
