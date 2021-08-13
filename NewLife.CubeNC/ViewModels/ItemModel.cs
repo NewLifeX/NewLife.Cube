@@ -15,6 +15,9 @@ namespace NewLife.Cube.ViewModels
         /// <summary>类型</summary>
         public Type Type { get; set; }
 
+        /// <summary>字段长度</summary>
+        public Int32 Length { get;set;  }
+
         /// <summary>格式化字符串</summary>
         public String Format { get; set; }
 

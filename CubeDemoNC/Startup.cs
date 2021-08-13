@@ -42,7 +42,7 @@ namespace CubeDemoNC
 
             //services.AddHttpContextAccessor();
             // Blazor Server方式渲染
-            services.AddBootstrapBlazor();
+            //services.AddBootstrapBlazor();
             services.AddRazorPages();
             services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
         }

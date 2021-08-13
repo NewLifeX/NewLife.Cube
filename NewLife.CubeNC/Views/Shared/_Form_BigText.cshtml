@@ -30,6 +30,7 @@ else if (!des.IsNullOrEmpty())
     }
     else
     {
-        @Html.ForString(field.Name, (String)entity[field.Name], field.Length)
+        @*@Html.ForString(field.Name, (String)entity[field.Name], field.Length)*@
+        @await Html.PartialAsync("_Form_String", new ItemModel(field.Name, entity[field.Name], field.Type) { Length = field.Length })
     }
 </div>

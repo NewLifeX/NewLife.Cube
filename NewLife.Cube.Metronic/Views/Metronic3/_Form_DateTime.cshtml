@@ -1,0 +1,38 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+	var name = Model.Name;
+	var value = (DateTime)Model.Value;
+	var type = Model.Type;
+
+	var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+	//if (!atts.ContainsKey("type")) atts.Add("type", "date");
+	if (!atts.ContainsKey("class")) atts.Add("class", "form-control date form_datetime");
+	atts["autocomplete"] = "off";
+
+	var obj = value == DateTime.MinValue ? "" : value.ToFullString();
+
+	// 最小时间不显示
+	if (value <= DateTime.MinValue || value.Year <= 1900) obj = "";
+	//if (format.IsNullOrWhiteSpace()) format = "yyyy-MM-dd HH:mm:ss";
+
+	// 升级日期控件到Bootstrap4样式及表示法
+	if (name.EndsWithIgnoreCase("Date"))
+	{
+		if (value > DateTime.MinValue) obj = value.ToString("yyyy-MM-dd");
+		//format = "yyyy-mm-dd";
+		atts["dateformat"] = "yyyy-MM-dd";
+		atts.Add("type", "date");
+	}
+	else
+	{
+		atts.Add("type", "datetime-local");
+	}
+}
+<div class="input-group-prepend">
+	<span class="input-group-text"><i class="la la-calendar"></i></span>
+	@Html.TextBox(name, obj, Model.Format, atts)
+</div>

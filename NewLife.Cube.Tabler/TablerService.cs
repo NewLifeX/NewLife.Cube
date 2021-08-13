@@ -25,7 +25,7 @@ namespace NewLife.Cube
             }
             app.UseStaticFiles(options);
 
-            var ui = app.ApplicationServices.GetService<UIService>();
+            var ui = ModelExtension.GetService<UIService>(app.ApplicationServices);
             if (ui != null)
             {
                 ui.AddTheme("Tabler");

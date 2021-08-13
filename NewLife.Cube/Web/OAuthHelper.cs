@@ -20,7 +20,7 @@ namespace NewLife.Cube.Web
             if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
 
 #if __CORE__
-            url = HttpContext.Current.Request.Host + HttpContext.Current.Request.PathBase + url;
+            url = NewLife.Web.HttpContext.Current.Request.Host + NewLife.Web.HttpContext.Current.Request.PathBase + url;
 #else
             url = HttpRuntime.AppDomainAppVirtualPath + url;
 #endif

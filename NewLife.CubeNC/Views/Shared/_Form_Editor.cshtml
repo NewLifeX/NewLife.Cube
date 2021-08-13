@@ -45,6 +45,7 @@
         @await Html.PartialAsync("_Form_Int", Model)
         break;
     case TypeCode.String:
-        @Html.ForString(name, value + "", 0, htmlAttributes)
+        //@Html.ForString(name, value + "", 0, htmlAttributes)
+        @await Html.PartialAsync("_Form_String", Model)
         break;
 }
