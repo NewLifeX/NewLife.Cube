@@ -1,62 +1,35 @@
-﻿using System.Collections.Generic;
-using BootstrapBlazor.Components;
-using Microsoft.AspNetCore.Components;
-using NewLife.Cube.ViewModels;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BootstrapBlazor.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using NewLife.Cube.ViewModels;
+using XCode.Membership;
 
 namespace NewLife.Cube.Blazor.Views.Blazor
 {
     public partial class MainLayout
     {
-        private bool UseTabSet { get; set; } = true;
 
-        private string Theme { get; set; } = "";
-
-        private bool IsOpen { get; set; }
-
-        private bool IsFixedHeader { get; set; } = true;
-
-        private bool IsFixedFooter { get; set; } = true;
-
-        private bool IsFullSide { get; set; } = true;
-
-        private bool ShowFooter { get; set; } = true;
-
-        private List<MenuItem> Menus { get; set; }
-
-        private Dictionary<string, string> TabItemTextDictionary { get; set; }
-
-        private static List<MenuItem> GetIconSideMenuItems()
-        {
-            var menus = new List<MenuItem>
-            {
-                new MenuItem() { Text = "返回组件库", Icon = "fa fa-fw fa-home", Url = "https://www.blazor.zone/components" },
-                new MenuItem() { Text = "Index", Icon = "fa fa-fw fa-fa", Url = "/" , Match = NavLinkMatch.All},
-                new MenuItem() { Text = "Counter", Icon = "fa fa-fw fa-check-square-o", Url = "/counter" },
-                new MenuItem() { Text = "FetchData", Icon = "fa fa-fw fa-database", Url = "fetchdata" },
-                new MenuItem() { Text = "Table", Icon = "fa fa-fw fa-table", Url = "table" }
-            };
-
-            return menus;
-        }
-
-        [Parameter]
-        public IList<MenuTree> menus { get; set; }
+        [Inject] private IManageProvider _provider { get; set; }
 
         /// <summary>
-        /// 菜单折叠
+        /// 菜单列表
         /// </summary>
-        public bool IsCollapsed { get; set; }
-
-        private string ClassString => CssBuilder.Default("menu-demo-bar")
-                .AddClass("is-collapsed", IsCollapsed)
-                .Build();
-
         public IEnumerable<MenuItem> IconSideMenuItems { get; set; }
 
-        #region 初始化组件
+        /// <summary>
+        /// 展示头
+        /// </summary>
+        public Tab SideTabItems { get; set; } = new Tab();
+
+        /// <summary>
+        /// 展示的地址
+        /// </summary>
+        public string ActivePage { get; set; }
+
         protected override void OnInitialized()
         {
             base.OnInitialized();
@@ -64,47 +37,51 @@ namespace NewLife.Cube.Blazor.Views.Blazor
 
         protected override async Task OnInitializedAsync()
         {
-            await base.OnInitializedAsync();
-
-            // 菜单获取可以通过数据库获取，此处为示例直接拼装的菜单集合
-            TabItemTextDictionary = new()
+            //var menus = new List<MenuItem>();
+            //var parent = new MenuItem("Blazor", "#", "fa fa-fa");
+            //var childs = new List<MenuItem>();
+            //childs.Add(new MenuItem("List", "/Blazor/List", "fa fa-fa")
+            //{
+            //    Parent = parent
+            //});
+            //childs.Add(new MenuItem("List1", "/Blazor/List1", "fa fa-fa")
+            //{
+            //    Parent = parent
+            //});
+            //parent.Items = childs;
+            //menus.Add(parent);
+            //IconSideMenuItems = menus;
+            var menus = GetMenu();
+            if (menus != null)
             {
-                [""] = "Index"
-            };
-            Menus = GetIconSideMenuItems();
+                var cmenus = new List<MenuItem>();
+                foreach (var item in menus)
+                {
+                    var childs = new List<MenuItem>();
+                    var parent = new MenuItem(item.Name, item.Url, "fa fa-fa");
+                    if (item.Children != null)
+                        foreach (var child in item.Children)
+                            childs.Add(new MenuItem(child.Name, child.Url, "fa fa-fa")
+                            {
+                                Parent = parent
+                            });
+                    parent.Items = childs;
+                    cmenus.Add(parent);
+                }
+                var first = cmenus.FirstOrDefault();
+                if (first != null) first.IsActive = true;
+                IconSideMenuItems = cmenus;
+            }
+            await base.OnInitializedAsync();
         }
-        #endregion
 
-        /// <summary>
-        /// 设置参数前
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        //public override async Task SetParametersAsync(ParameterView parameters)
-        //{
-        //    await base.SetParametersAsync(parameters);
-        //}
+        public override async Task SetParametersAsync(ParameterView parameters)
+        {
+            await base.SetParametersAsync(parameters);
+        }
 
-        #region 设置参数之后
         protected override void OnParametersSet()
         {
-            var cmenus = new List<MenuItem>();
-            foreach (var item in menus)
-            {
-                var childs = new List<MenuItem>();
-                var parent = new MenuItem(item.Name, item.Url, "fa fa-fa");
-                if (item.Children != null)
-                    foreach (var child in item.Children)
-                        childs.Add(new MenuItem(child.Name, child.Url, "fa fa-fa")
-                        {
-                            Parent = parent
-                        });
-                parent.Items = childs;
-                cmenus.Add(parent);
-            }
-            var first = cmenus.FirstOrDefault();
-            if (first != null) first.IsActive = true;
-            IconSideMenuItems = cmenus;
             base.OnParametersSet();
         }
 
@@ -112,9 +89,7 @@ namespace NewLife.Cube.Blazor.Views.Blazor
         {
             await base.OnParametersSetAsync();
         }
-        #endregion
 
-        #region 组件呈现之后
         protected override void OnAfterRender(bool firstRender)
         {
             base.OnAfterRender(firstRender);
@@ -122,8 +97,78 @@ namespace NewLife.Cube.Blazor.Views.Blazor
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            base.OnAfterRenderAsync(firstRender);
+            await base.OnAfterRenderAsync(firstRender);
         }
-        #endregion
+
+        private async Task CallBackMenuClick(MenuItem item)
+        {
+            if (item.Url.Contains("/")
+                && SideTabItems.Items.FirstOrDefault(x => x.Text == item.Text) == null)
+            {
+                SideTabItems.AddTab(new Dictionary<string, object?>
+                {
+                    [nameof(TabItem.Text)] = item.Text,
+                    [nameof(TabItem.IsActive)] = true,
+                    [nameof(TabItem.Icon)] = item.Icon,
+                    [nameof(TabItem.Url)] = item.Url,
+                    [nameof(TabItem.ChildContent)] = new RenderFragment(builder =>
+                    {
+                        var index = 0;
+                        builder.OpenElement(index++, "div");
+                        builder.OpenElement(index++, "iframe");
+                        builder.AddAttribute(index++, "src", item.Url);
+                        builder.AddAttribute(index++, "width", "100%");
+                        builder.AddAttribute(index++, "height", "100%");
+                        builder.CloseElement();
+                        builder.CloseElement();
+                    })
+                });
+            }
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// 获取菜单
+        /// </summary>
+        /// <returns>菜单列表</returns>
+        private IList<MenuTree> GetMenu()
+        {
+            var user = _provider.Current as IUser ?? XCode.Membership.User.FindAll().FirstOrDefault();
+
+            var fact = ManageProvider.Menu;
+            var menus = fact.Root.Childs;
+            if (user?.Role != null)
+            {
+                menus = fact.GetMySubMenus(fact.Root.ID, user, true);
+            }
+
+            // 如果顶级只有一层，并且至少有三级目录，则提升一级
+            if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
+
+            var menuTree = MenuTree.GetMenuTree(pMenuTree =>
+            {
+                var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
+                return subMenus;
+            }, list =>
+            {
+
+                var menuList = (from menu in list
+                                    // where m.Visible
+                                select new MenuTree
+                                {
+                                    ID = menu.ID,
+                                    Name = menu.Name,
+                                    DisplayName = menu.DisplayName ?? menu.Name,
+                                    Url = menu.Url,
+                                    Icon = menu.Icon,
+                                    Visible = menu.Visible,
+                                    ParentID = menu.ParentID,
+                                    Permissions = menu.Permissions
+                                }).ToList();
+                return menuList.Count > 0 ? menuList : null;
+            }, menus);
+
+            return menuTree;
+        }
     }
 }
