@@ -47,9 +47,9 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 扩展属性
-        /// <summary>模型列集合</summary>
-        [XmlIgnore, ScriptIgnore, IgnoreDataMember]
-        public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAllByTableId(Id));
+        ///// <summary>模型列集合</summary>
+        //[XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        //public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAllByTableId(Id));
         #endregion
 
         #region 扩展查询
@@ -80,6 +80,13 @@ namespace NewLife.Cube.Entity
 
             return Find(_.Category == category & _.Name == name);
         }
+
+        /// <summary>
+        /// 获取模型列集合
+        /// </summary>
+        /// <returns></returns>
+        public IList<ModelColumn> GetColumns() => ModelColumn.FindAll(ModelColumn._.TableId == Id);
+
         #endregion
 
         #region 高级查询

@@ -18,13 +18,13 @@
                     @foreach (var item in fields)
                     {
                         @*// 默认隐藏审计属性
-                        if (item.ColumnName.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "UpdateUserID", "UpdateUser", "UpdateTime",
+                        if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "UpdateUserID", "UpdateUser", "UpdateTime",
                             "CreateIP", "UpdateIP") && set.HidenAuditProperty)
                             continue;*@
 
-                        if (!item.IsIdentity && !item.ColumnName.EqualIgnoreCase("Permission"))
+                        if (!item.PrimaryKey && !item.Name.EqualIgnoreCase("Permission"))
                         {
-                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, FieldItem>(entity, item))
+                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
                         }
                     }
                 </div>

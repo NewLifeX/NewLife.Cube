@@ -7,9 +7,9 @@
 }
 @foreach (var item in fields)
 {
-    if (!item.IsIdentity)
+    if (!item.PrimaryKey)
     {
-        @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, FieldItem>(entity, item))
+        @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
     }
 }
 @await Html.PartialAsync("_Form_Footer", entity)

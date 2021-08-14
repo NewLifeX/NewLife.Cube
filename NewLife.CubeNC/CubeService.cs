@@ -108,6 +108,9 @@ namespace NewLife.Cube
                 o.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
             });
 
+            // UI服务
+            services.AddSingleton<UIService>();
+
             services.AddHostedService<JobService>();
 
             XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));

@@ -1,0 +1,38 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = Model.Type;
+}
+@if (Model.Type.IsEnum)
+{
+    var dic = EnumHelper.GetDescriptions(value.GetType());
+    var data = new SelectList(dic, "Key", "Value", value.ToInt());
+    // 由于 Html.DropDownList 获取默认值，会从 ViewData，ViewData.Model，中获取name的值
+    // 如果获取到了，则不会再看传入的selectlist的默认值，由于此处是枚举，所以通过 Html.ViewData.Eval(name) 会得到字符串值，所以导致绑定默认值失败
+    // 通过 Html.ViewData[name]=(Int32)value，可以让  Html.DropDownList 优先拿到手动设置的值，就不会再从 ViewData.Model 里面找
+    // 当然这里会有一个问题，如果外部同样设置ViewData[name]，则就会出现潜在的bug,所以把之前值保存到oldvalue
+    var oldvalue = Html.ViewData[name];
+    Html.ViewData[name] = value.ToInt();
+
+    @Html.DropDownList(name, data, null, new { @class = "multiselect" })
+
+    //还原ViewData现场
+    if (oldvalue != null)
+        // 如果外部刚好设置这个值，则还原
+        Html.ViewData[name] = oldvalue;
+    else
+        // 输出html后，删除垃圾
+        Html.ViewData.Remove(name);
+}
+else
+{
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+    if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+    if (!atts.ContainsKey("role")) atts.Add("role", "number");
+    @Html.TextBox(name, value, Model.Format, atts)
+}

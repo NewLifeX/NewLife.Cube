@@ -71,7 +71,7 @@ namespace NewLife.Cube.Entity
         /// <summary>控制器。控制器类型全名</summary>
         [DisplayName("控制器")]
         [Description("控制器。控制器类型全名")]
-        [DataObjectField(false, false, true, 50)]
+        [DataObjectField(false, false, true, 100)]
         [BindColumn("Controller", "控制器。控制器类型全名", "")]
         public String Controller { get => _Controller; set { if (OnPropertyChanging("Controller", value)) { _Controller = value; OnPropertyChanged("Controller"); } } }
 

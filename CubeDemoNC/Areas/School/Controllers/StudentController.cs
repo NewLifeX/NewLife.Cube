@@ -28,6 +28,7 @@ namespace CubeDemo.Areas.School.Controllers
 
         protected override IEnumerable<Student> Search(Pager p)
         {
+            return base.Search(p);
             var classid = p["classid"].ToInt();
             return Student.Search(null,p);
         }

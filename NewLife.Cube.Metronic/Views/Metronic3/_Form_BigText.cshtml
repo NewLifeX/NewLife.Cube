@@ -3,7 +3,7 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = (ValueTuple<IEntity, DataField>)Model;
     var entity = pair.Item1;
     var field = pair.Item2;
 
@@ -19,7 +19,7 @@
 
 <!-- 字段标签（含帮助说明信息） -->
 <div class="d-inline-flex align-items-center justify-content-lg-end bigitem-label" style="padding-right:12.5px;">
-    <label class="col-form-label mb-lg-0 mb-md-0" for="@field.ColumnName">@display</label>
+    <label class="col-form-label mb-lg-0 mb-md-0" for="@field.Name">@display</label>
     @if (!des.IsNullOrEmpty())
     {
         <div class="d-none d-md-block d-lg-block" style="text-align: center; font-size: 1.5rem;">
@@ -30,7 +30,8 @@
 
 <div class="flex-grow-1">
     <div class="input-group">
-        @Html.ForEditor(field, entity, null, null, new { @class = "form-control form-control-textarea" }.ToDictionary())
+        @*@Html.ForString(field.Name, (String)entity[field.Name], field.Length, new { @class = "form-control form-control-textarea" }.ToDictionary())*@
+        @await Html.PartialAsync("_Form_String", new ItemModel(field.Name, entity[field.Name], field.Type, null, new { @class = "form-control form-control-textarea" }) { Length = field.Length })
     </div>
     <span class="form-text text-muted d-sm-none"><span class="middle">@des</span></span>
     @if (err > 0)

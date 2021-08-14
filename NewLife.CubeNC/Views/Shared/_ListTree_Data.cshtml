@@ -7,7 +7,7 @@
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var fields = ViewBag.Fields as IList<FieldItem>;
+    var fields = ViewBag.Fields as FieldCollection;
     var fk = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
 }
@@ -20,7 +20,7 @@
             }
             @foreach (var item in fields)
             {
-                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+                var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
                 <th class="text-center" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
             }
             <th class="text-center">升</th>
@@ -34,7 +34,6 @@
     <tbody>
         @foreach (IEntityTree entity in Model)
         {
-            var FirstFlag = 0;
             var p = entity.Parent as IEntityTree;
             if (p == null)
             {
@@ -48,16 +47,7 @@
                 }
                 @foreach (var item in fields)
                 {
-                    if (FirstFlag == 0)
-                    {
-                        @await Html.PartialAsync("_List_Data_Item_First", new ValueTuple<IEntity, FieldItem>(entity, item))
-                    }
-                    else
-                    {
-                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
-                    }
-
-                    FirstFlag++;
+                    @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
                 }
                 <td class="text-center">
                     @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])

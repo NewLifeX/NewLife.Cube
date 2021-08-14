@@ -1,5 +1,6 @@
 ﻿@using NewLife;
 @using NewLife.Cube
+@using NewLife.Cube.ViewModels;
 @using NewLife.Reflection
 @using NewLife.Web;
 @using XCode;
@@ -7,7 +8,7 @@
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var fields = ViewBag.Fields as IList<FieldItem>;
+    var fields = ViewBag.Fields as FieldCollection;
     var fk = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
 }
@@ -20,14 +21,18 @@
             }
             @foreach (var item in fields)
             {
-                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+                var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                var df = item as ListField;
+                var name = df?.Header ?? item.DisplayName;
+                var title = df?.HeaderTitle ?? item.Description;
+             
                 if (item.Type == typeof(DateTime) || item.Type == typeof(Boolean))
                 {
                     var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
                     <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                 }
                 else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)
-                    || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
+                || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
                 {
                     <th class="text-right" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                 }
@@ -47,7 +52,6 @@
     <tbody>
         @foreach (IEntityTree entity in Model)
         {
-            var FirstFlag = 0;
             var p = entity.Parent as IEntityTree;
             if (p == null)
             {
@@ -57,20 +61,11 @@
             <tr>
                 @if (set.EnableSelect)
                 {
-                    <td class="text-center"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity[fk.Name]" /><span/></label></td>
+                    <td class="text-center"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity[fk.Name]" /><span /></label></td>
                 }
                 @foreach (var item in fields)
                 {
-                    if (FirstFlag == 0)
-                    {
-                        @await Html.PartialAsync("_List_Data_Item_First", new ValueTuple<IEntity, FieldItem>(entity, item))
-                    }
-                    else
-                    {
-                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
-                    }
-
-                    FirstFlag++;
+                    @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
                 }
                 <td class="text-center">
                     @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])

@@ -63,6 +63,10 @@ namespace NewLife.Cube.Entity
         /// <summary>模型表</summary>
         [Map(__.TableId, typeof(ModelTable), "Id")]
         public String TableName => Table + "";
+
+        /// <summary>对应字段</summary>
+        [XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        public Field Field => Meta.Table.FindByName(Name);
         #endregion
 
         #region 扩展查询

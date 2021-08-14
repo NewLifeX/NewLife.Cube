@@ -2,7 +2,7 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = (ValueTuple<IEntity, DataField>)Model;
     var entity = pair.Item1;
     var item = pair.Item2;
 
@@ -20,6 +20,6 @@
 else
 {
     <div class="@cls">
-        @await Html.PartialAsync("_Form_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
+        @await Html.PartialAsync("_Form_Item", new ValueTuple<IEntity, DataField>(entity, item))
     </div>
 }

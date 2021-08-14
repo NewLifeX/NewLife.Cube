@@ -1,0 +1,14 @@
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model.Item1;
+    var field = Model.Item2;
+
+    var accept = "";
+    if (field.ItemType.EqualIgnoreCase("image")) accept = "image/*";
+}
+<label class="">@entity[field.Name]</label> &nbsp; 
+@Html.TextBox(field.Name, entity[field.Name], new { type = "file", accept })

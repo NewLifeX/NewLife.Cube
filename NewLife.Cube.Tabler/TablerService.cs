@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Services;
+using NewLife.Model;
 
 namespace NewLife.Cube
 {
@@ -22,6 +24,13 @@ namespace NewLife.Cube
                 options.FileProvider = embeddedProvider;
             }
             app.UseStaticFiles(options);
+
+            var ui = ModelExtension.GetService<UIService>(app.ApplicationServices);
+            if (ui != null)
+            {
+                ui.AddTheme("Tabler");
+                ui.AddSkin("Tabler");
+            }
 
             return app;
         }

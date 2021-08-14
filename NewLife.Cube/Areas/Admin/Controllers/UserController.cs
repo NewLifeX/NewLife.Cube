@@ -40,48 +40,52 @@ namespace NewLife.Cube.Admin.Controllers
         {
             MenuOrder = 100;
 
-            ListFields.RemoveField("Avatar", "RoldIds", "Online", "RegisterIP", "RegisterTime");
+            ListFields.RemoveField("Avatar", "RoleIds", "Online", "RegisterIP", "RegisterTime");
             ListFields.RemoveField("Phone", "Code", "Question", "Answer");
             ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
             ListFields.RemoveUpdateField();
             ListFields.RemoveField("Remark");
 
             {
-                var df = ListFields.AddDataField("Link", "Logins");
+                var df = ListFields.AddListField("Link", "Logins");
                 df.Header = "链接";
+                df.HeaderTitle = "第三方登录的链接信息";
                 df.DisplayName = "链接";
+                df.Title = "第三方登录的链接信息";
                 df.Url = "UserConnect?userId={ID}";
             }
 
             {
-                var df = ListFields.AddDataField("Token", "Logins");
+                var df = ListFields.AddListField("Token", "Logins");
                 df.Header = "令牌";
                 df.DisplayName = "令牌";
                 df.Url = "UserToken?userId={ID}";
             }
 
             {
-                var df = ListFields.AddDataField("Log", "Logins");
+                var df = ListFields.AddListField("Log", "Logins");
                 df.Header = "日志";
                 df.DisplayName = "日志";
                 df.Url = "Log?userId={ID}";
             }
 
             {
-                var df = ListFields.AddDataField("OAuthLog", "Logins");
+                var df = ListFields.AddListField("OAuthLog", "Logins");
                 df.Header = "OAuth日志";
                 df.DisplayName = "OAuth日志";
                 df.Url = "OAuthLog?userId={ID}";
             }
 
             {
-                var df = AddFormFields.AddDataField("RoleIds");
+                var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
                 df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                AddFormFields.RemoveField("RoleNames");
             }
 
             {
-                var df = EditFormFields.AddDataField("RoleIds");
+                var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
                 df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                EditFormFields.RemoveField("RoleNames");
             }
         }
 
@@ -288,6 +292,10 @@ namespace NewLife.Cube.Admin.Controllers
                 var provider = ManageProvider.Provider;
                 if (ModelState.IsValid && provider.Login(username, password, remember) != null)
                 {
+                    // 登录成功，清空错误数
+                    if (errors > 0) _cache.Remove(key);
+                    if (ipErrors > 0) _cache.Remove(ipKey);
+
                     if (IsJsonRequest)
                     {
                         var token = HttpContext.Items["jwtToken"];
@@ -300,10 +308,6 @@ namespace NewLife.Cube.Admin.Controllers
 
                     // 不要嵌入自己
                     if (returnUrl.EndsWithIgnoreCase("/Admin", "/Admin/User/Login")) returnUrl = null;
-
-                    // 登录成功，清空错误数
-                    if (errors > 0) _cache.Remove(key);
-                    if (ipErrors > 0) _cache.Remove(ipKey);
 
                     // 登录后自动绑定
                     var logId = Session["Cube_OAuthId"].ToLong();
@@ -326,6 +330,12 @@ namespace NewLife.Cube.Admin.Controllers
                 XTrace.WriteLine("[{0}]登录失败！{1}", username, ex.Message);
                 XTrace.WriteException(ex);
 
+                // 累加错误数，首次出错时设置过期时间
+                _cache.Increment(key, 1);
+                _cache.Increment(ipKey, 1);
+                if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(60));
+                if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(60));
+
                 if (IsJsonRequest)
                 {
                     return Json(500, ex.Message);
@@ -333,10 +343,6 @@ namespace NewLife.Cube.Admin.Controllers
 
                 ModelState.AddModelError("", ex.Message);
             }
-
-            // 累加错误数，首次出错时设置过期时间
-            _cache.Increment(key, 1);
-            if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(60));
 
             ////云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
             //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;

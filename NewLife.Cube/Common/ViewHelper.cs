@@ -97,7 +97,7 @@ namespace NewLife.Cube
             return dic;
         }
 
-        internal static Boolean MakeListView(Type entityType, String vpath, List<FieldItem> fields)
+        internal static Boolean MakeListView(Type entityType, String vpath, List<DataField> fields)
         {
 #if __CORE__
             var tmp = @"@model IList<{EntityType}>
@@ -111,7 +111,6 @@ namespace NewLife.Cube
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var fields = ViewBag.Fields as IList<FieldItem>;
     var ukey = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
     //var provider = ManageProvider.Provider;
@@ -144,7 +143,7 @@ namespace NewLife.Cube
                 }
                 @foreach (var item in fields)
                 {
-                    @await Html.PartialAsync(""_List_Data_Item"", new ValueTuple<IEntity, FieldItem>(entity, item))
+                    @await Html.PartialAsync(""_List_Data_Item"", new ValueTuple<IEntity, DataField>(entity, item))
                 }
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                 {
@@ -187,7 +186,6 @@ namespace NewLife.Cube
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var fields = ViewBag.Fields as IList<FieldItem>;
     var ukey = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
     //var provider = ManageProvider.Provider;
@@ -267,7 +265,7 @@ namespace NewLife.Cube
                 // 缩进
                 sb.Append(ident);
 
-                var name = item.OriField?.Name ?? item.Name;
+                var name = item.MapField ?? item.Name;
                 var des = item.DisplayName ?? item.Name;
 
                 // 样式
@@ -299,12 +297,12 @@ namespace NewLife.Cube
             sb.Append("            @if (this.Has");
             sb.Append(str);
 
+            var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
             ident = new String(' ', 4 * 4);
             foreach (var item in fields)
             {
                 // 第二名称，去掉后面的数字，便于模式匹配
-                var name2 = item.Name;
-                while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) name2 = name2.Substring(0, name2.Length - 1);
+                var name2 = item.Name.TrimEnd(digits);
 
                 // 缩进
                 sb.Append(ident);
@@ -337,8 +335,12 @@ namespace NewLife.Cube
                             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
-                                if (des.Contains("百分之一"))
+                                if (des.Contains("十分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("百分之一"))
                                     sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("千分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
                                 else if (des.Contains("万分之一"))
                                     sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
                                 else
@@ -364,10 +366,14 @@ namespace NewLife.Cube
                             else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
-                                if (des.Contains("百分之一"))
-                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
+                                if (des.Contains("十分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("百分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("千分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
                                 else if (des.Contains("万分之一"))
-                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
                                 else
                                     sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
                             }
@@ -375,12 +381,12 @@ namespace NewLife.Cube
                                 sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n0"")</td>", item.Name);
                             break;
                         case TypeCode.String:
-                            if (item.Map != null)
+                            if (!item.MapField.IsNullOrEmpty())
                             {
-                                if (item.Map.Provider != null)
+                                if (item.MapProvider != null)
                                 {
-                                    var prv = item.Map.Provider;
-                                    sb.AppendFormat(@"<td><a href=""{1}?{2}=@entity.{3}"">@entity.{0}</a></td>", item.Name, prv.EntityType.Name, prv.Key, item.OriField?.Name);
+                                    var prv = item.MapProvider;
+                                    sb.AppendFormat(@"<td><a href=""{1}?{2}=@entity.{3}"">@entity.{0}</a></td>", item.Name, prv.EntityType.Name, prv.Key, item.MapField);
                                 }
                                 else
                                 {
@@ -417,19 +423,19 @@ namespace NewLife.Cube
             return true;
         }
 
-        private static void BuildUser(FieldItem item, StringBuilder sb) => sb.AppendFormat(@"<td class=""text-center"">@provider.FindByID(entity.{0})</td>", item.Name);
+        private static void BuildUser(DataField item, StringBuilder sb) => sb.AppendFormat(@"<td class=""text-center"">@provider.FindByID(entity.{0})</td>", item.Name);
 
-        private static void BuildIP(FieldItem item, StringBuilder sb) => sb.AppendFormat(@"<td class=""text-center"" title=""@entity.{0}.IPToAddress()"">@entity.{0}</td>", item.Name);
+        private static void BuildIP(DataField item, StringBuilder sb) => sb.AppendFormat(@"<td class=""text-center"" title=""@entity.{0}.IPToAddress()"">@entity.{0}</td>", item.Name);
 
-        private static String BuildStat(IList<FieldItem> fields)
+        private static String BuildStat(IList<DataField> fields)
         {
+            var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
             var ident = new String(' ', 4 * 4);
             var sb = new StringBuilder();
             foreach (var item in fields)
             {
                 // 第二名称，去掉后面的数字，便于模式匹配
-                var name2 = item.Name;
-                while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) name2 = name2.Substring(0, name2.Length - 1);
+                var name2 = item.Name.TrimEnd(digits);
 
                 // 缩进
                 sb.Append(ident);
@@ -451,8 +457,12 @@ namespace NewLife.Cube
                             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
-                                if (des.Contains("百分之一"))
+                                if (des.Contains("十分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("百分之一"))
                                     sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("千分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
                                 else if (des.Contains("万分之一"))
                                     sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
                                 else
@@ -479,10 +489,14 @@ namespace NewLife.Cube
                             else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                             {
                                 var des = item.Description + "";
-                                if (des.Contains("百分之一"))
-                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
+                                if (des.Contains("十分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("百分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                else if (des.Contains("千分之一"))
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
                                 else if (des.Contains("万分之一"))
-                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
+                                    sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
                                 else
                                     sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
                             }
@@ -501,7 +515,7 @@ namespace NewLife.Cube
             return sb.ToString();
         }
 
-        internal static Boolean MakeFormView(Type entityType, String vpath, List<FieldItem> fields)
+        internal static Boolean MakeFormView(Type entityType, String vpath, List<DataField> fields)
         {
 #if __CORE__
             var tmp = @"@model {EntityType}
@@ -514,12 +528,11 @@ namespace NewLife.Cube
 @using NewLife.Cube;
 @{
     var entity = Model;
-    var fields = ViewBag.Fields as IList<FieldItem>;
     var isNew = (entity as IEntity).IsNullKey;
 }
 @foreach (var item in fields)
 {
-    if (!item.IsIdentity)
+    if (!item.PrimaryKey)
     {
         <div class=""@cls"">
             @await Html.PartialAsync(""_Form_Item"", new Pair(entity, item))
@@ -546,12 +559,11 @@ namespace NewLife.Cube
 @using NewLife.Cube;
 @{
     var entity = Model;
-    var fields = ViewBag.Fields as IList<FieldItem>;
     var isNew = (entity as IEntity).IsNullKey;
 }
 @foreach (var item in fields)
 {
-    if (!item.IsIdentity)
+    if (!item.PrimaryKey)
     {
         <div class=""@cls"">
             @Html.Partial(""_Form_Item"", new Pair(entity, item))
@@ -587,7 +599,7 @@ namespace NewLife.Cube
             var ident = new String(' ', 4 * 1);
             foreach (var item in fields)
             {
-                if (item.IsIdentity) continue;
+                if (item.PrimaryKey) continue;
 
                 sb.AppendLine($"<div class=\"{cls}\">");
                 BuildFormItem(item, sb, fact);
@@ -606,7 +618,7 @@ namespace NewLife.Cube
             return true;
         }
 
-        private static void BuildFormItem(FieldItem field, StringBuilder sb, IEntityFactory fact)
+        private static void BuildFormItem(DataField field, StringBuilder sb, IEntityFactory fact)
         {
             var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
 
@@ -630,13 +642,11 @@ namespace NewLife.Cube
             sb.AppendLine($"    <div class=\"input-group col-xs-{total - label} col-sm-{input}\">");
 
             // 优先处理映射。因为映射可能是字符串
-            var map = field.Map;
-            if (map?.Provider != null)
+            if (!field.MapField.IsNullOrEmpty() && field.MapProvider != null)
             {
-                var field2 = field?.OriField ?? field;
-                sb.AppendLine($"        @Html.ForDropDownList(\"{field2.Name}\", {fact.EntityType.Name}.Meta.AllFields.First(e=>e.Name==\"{field.Name}\").Map.Provider.GetDataSource(), @entity.{map.Name})");
+                sb.AppendLine($"        @Html.ForDropDownList(\"{field.MapField}\", {fact.EntityType.Name}.Meta.AllFields.First(e=>e.Name==\"{field.Name}\").Map.Provider.GetDataSource(), @entity.{field.Name})");
             }
-            else if (field.ReadOnly)
+            else if (field.Readonly)
                 sb.AppendLine($"        <label class=\"form-control\">@entity.{field.Name}</label>");
             else if (field.Type == typeof(String))
                 BuildStringItem(field, sb);
@@ -691,7 +701,7 @@ namespace NewLife.Cube
             if (!des.IsNullOrEmpty()) sb.AppendLine($"    <span class=\"hidden-xs col-sm-{span}\"><span class=\"middle\">{des}</span></span>");
         }
 
-        private static void BuildStringItem(FieldItem field, StringBuilder sb)
+        private static void BuildStringItem(DataField field, StringBuilder sb)
         {
             var cls = "form-control";
             var type = "text";
@@ -736,7 +746,7 @@ namespace NewLife.Cube
             sb.AppendLine($"        {txt}");
         }
 
-        internal static Boolean MakeSearchView(Type entityType, String vpath, List<FieldItem> fields)
+        internal static Boolean MakeSearchView(Type entityType, String vpath, List<DataField> fields)
         {
 #if __CORE__
             var tmp = @"@using {Namespace}

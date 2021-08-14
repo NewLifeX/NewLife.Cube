@@ -1,0 +1,59 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+	var name = Model.Name;
+	var value = Model.Value;
+	var type = Model.Type;
+	var length = Model.Length;
+
+	var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+	if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+}
+@if (name.EqualIgnoreCase("Pass", "Password"))
+{
+	if (!atts.ContainsKey("autocomplete")) atts.Add("autocomplete", "off");
+	@Html.Password(name, value, atts)
+}
+else if (name.EqualIgnoreCase("Phone", "TelPhone", "OfficePhone", "HomePhone", "Fax"))
+{
+	if (!atts.ContainsKey("type")) atts.Add("type", "tel");
+	<div class="input-group-prepend">
+		<span class="input-group-text"><i class="la la-mobile"></i></span>
+		@Html.TextBox(name, value, atts)
+	</div>
+}
+else if (name.EqualIgnoreCase("Mobile", "MobilePhone", "CellularPhone"))
+{
+	if (!atts.ContainsKey("type")) atts.Add("type", "tel");
+	<div class="input-group-prepend">
+		<span class="input-group-text"><i class="la la-mobile"></i></span>
+		@Html.TextBox(name, value, atts)
+	</div>
+}
+else if (name.EqualIgnoreCase("email", "mail"))
+{
+	if (!atts.ContainsKey("type")) atts.Add("type", "email");
+	<div class="input-group-prepend">
+		<span class="input-group-text"><i class="la la-envelope"></i></span>
+		@Html.TextBox(name, value, atts)
+	</div>
+}
+else if (name.EndsWithIgnoreCase("url"))
+{
+	//if (!atts.ContainsKey("type")) atts.Add("type", "url");
+	<div class="input-group-prepend">
+		<span class="input-group-text"><i class="la la-home"></i></span>
+		@Html.TextBox(name, value, atts)
+	</div>
+}
+else if (length < 0 || length >= 300 || (length >= 200 && name.EqualIgnoreCase("Remark", "Description", "Comment")))
+{
+	@Html.TextArea(name, (String)value, 3, 20, atts)
+}
+else
+{
+	@Html.TextBox(name, value, atts)
+}

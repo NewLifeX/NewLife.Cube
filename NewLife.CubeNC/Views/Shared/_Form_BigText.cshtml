@@ -3,20 +3,16 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = (ValueTuple<IEntity, DataField>)Model;
     var entity = pair.Item1;
     var field = pair.Item2;
-
-    var fields = ViewBag.Fields as FieldCollection;
-    var dataField = fields.GetField(field.Name);
 
     var err = 0;
     if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
 
     var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
-    var display = dataField?.DisplayName ?? field.DisplayName;
 }
-<label class="control-label col-sm-3 col-md-2 col-lg-1">@display</label>
+<label class="control-label col-sm-3 col-md-2 col-lg-1">@field.DisplayName</label>
 @if (err > 0)
 {
     <span class="col-sm-9 alert alert-danger">
@@ -25,8 +21,16 @@
 }
 else if (!des.IsNullOrEmpty())
 {
-    <span class="col-sm-9">@Html.ForDescription(field)</span>
+    <span class="col-sm-9"><span class="middle">@des</span></span>
 }
-<div class="input-group col-sm-12">
-    @Html.ForEditor(field, entity)
+<div class="input-group col-sm-11 col-md-offset-1">
+    @if (field.Readonly)
+    {
+        <label class="form-control">@entity[field.Name]</label>
+    }
+    else
+    {
+        @*@Html.ForString(field.Name, (String)entity[field.Name], field.Length)*@
+        @await Html.PartialAsync("_Form_String", new ItemModel(field.Name, entity[field.Name], field.Type) { Length = field.Length })
+    }
 </div>

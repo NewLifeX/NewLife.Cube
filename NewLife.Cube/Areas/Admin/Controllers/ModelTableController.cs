@@ -21,7 +21,7 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.RemoveField("Controller", "TableName", "ConnName");
 
             {
-                var df = ListFields.AddDataField("Columns", "Enable");
+                var df = ListFields.AddListField("Columns", "Enable");
                 df.Header = "列集合";
                 df.DisplayName = "列集合";
                 df.Url = "ModelColumn?tableId={Id}";
@@ -29,7 +29,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             ModelTableSetting = table =>
             {
-                var columns = table.Columns;
+                var columns = table.GetColumns();
 
                 // 不在列表页显示
                 var fields = columns.FindAll(fa =>

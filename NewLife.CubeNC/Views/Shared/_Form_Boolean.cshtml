@@ -1,0 +1,14 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var name = Model.Name;
+    var value = (Boolean)Model.Value;
+    var type = Model.Type;
+
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+    if (!atts.ContainsKey("class")) atts.Add("class", "chkSwitch");
+}
+@Html.CheckBox(name, value, atts)

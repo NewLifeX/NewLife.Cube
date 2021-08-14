@@ -18,59 +18,23 @@
             }
             @foreach (var item in fields)
             {
-                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+                var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                var df = item as ListField;
+                var name = df?.Header ?? item.DisplayName;
+                var title = df?.HeaderTitle ?? item.Description;
 
-                // 要替换的字段
-                var df = fields.GetField(item.Name);
-                if (df != null)
+                if (item.Type == typeof(DateTime))
                 {
-                    var header = df.Header ?? df.DisplayName ?? df.Name;
-                    var url = df.HeaderUrl ?? sortUrl;
-                    <th class="text-center" title="@df.HeaderTitle"><a href="@Html.Raw(url)">@header</a></th>
+                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                    <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                }
+                else if (item.Type == null)
+                {
+                    <th class="text-center" title="@title">@name</th>
                 }
                 else
                 {
-                    // 在该字段之前插入的字段
-                    var dfs = fields.GetBeforeFields(item.Name);
-                    foreach (var elm in dfs)
-                    {
-                        df = elm;
-                        var header = df.Header ?? df.DisplayName ?? df.Name;
-                        if (df.HeaderUrl.IsNullOrEmpty())
-                        {
-                            <th class="text-center" title="@df.HeaderTitle">@header</th>
-                        }
-                        else
-                        {
-                            <th class="text-center" title="@df.HeaderTitle"><a href="@Html.Raw(df.HeaderUrl)">@header</a></th>
-                        }
-                    }
-
-                    if (item.Type == typeof(DateTime))
-                    {
-                        var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
-                        <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
-                    }
-                    else
-                    {
-                        <th class="text-center" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
-                    }
-
-                    // 在该字段之后插入的字段
-                    dfs = fields.GetAfterFields(item.Name);
-                    foreach (var elm in dfs)
-                    {
-                        df = elm;
-                        var header = df.Header ?? df.DisplayName ?? df.Name;
-                        if (df.HeaderUrl.IsNullOrEmpty())
-                        {
-                            <th class="text-center" title="@df.HeaderTitle">@header</th>
-                        }
-                        else
-                        {
-                            <th class="text-center" title="@df.HeaderTitle"><a href="@Html.Raw(df.HeaderUrl)">@header</a></th>
-                        }
-                    }
+                    <th class="text-center" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                 }
             }
             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
@@ -89,91 +53,26 @@
                 }
                 @foreach (var item in fields)
                 {
-                    // 要替换的字段
-                    var df = fields.GetField(item.Name);
-                    if (df != null)
+                    var df = item as ListField;
+                    if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
                     {
-                        var name = df.GetDisplayName(entity) ?? entity[item.Name];
-                        if (df.DataVisible != null && !df.DataVisible(entity, item))
-                        {
-                            <td></td>
-                        }
-                        else if (df.Url.IsNullOrEmpty())
-                        {
-                            <td class="text-center" title="@df.Title">@name</td>
-                        }
-                        else
-                        {
-                            var url = df.GetUrl(entity);
-                            if (df.DataAction.IsNullOrEmpty())
-                            {
-                                <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
-                            }
-                            else
-                            {
-                                <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
-                            }
-                        }
+                        <td></td>
+                    }
+                    else if (df != null && !df.DataAction.IsNullOrEmpty())
+                    {
+                        var url = df.GetUrl(entity);
+                        var name = df.GetDisplayName(entity) ?? df.Header;
+                        <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                    }
+                    else if (df != null && !df.Url.IsNullOrEmpty())
+                    {
+                        var url = df.GetUrl(entity);
+                        var name = df.GetDisplayName(entity) ?? df.Header;
+                        <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
                     }
                     else
                     {
-                        // 在该字段之前插入的字段
-                        var dfs = fields.GetBeforeFields(item.Name);
-                        foreach (var elm in dfs)
-                        {
-                            df = elm;
-                            var name = df.GetDisplayName(entity) ?? df.Header;
-                            if (df.DataVisible != null && !df.DataVisible(entity, item))
-                            {
-                                <td></td>
-                            }
-                            else if (df.Url.IsNullOrEmpty())
-                            {
-                                <td class="text-center" title="@df.Title">@name</td>
-                            }
-                            else
-                            {
-                                var url = df.GetUrl(entity);
-                                if (df.DataAction.IsNullOrEmpty())
-                                {
-                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
-                                }
-                                else
-                                {
-                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
-                                }
-                            }
-                        }
-
-                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
-
-                        // 在该字段之后插入的字段
-                        dfs = fields.GetAfterFields(item.Name);
-                        foreach (var elm in dfs)
-                        {
-                            df = elm;
-                            var name = df.GetDisplayName(entity) ?? df.Header;
-                            if (df.DataVisible != null && !df.DataVisible(entity, item))
-                            {
-                                <td></td>
-                            }
-                            else if (df.Url.IsNullOrEmpty())
-                            {
-                                <td class="text-center" title="@df.Title">@name</td>
-                            }
-                            else
-                            {
-                                var url = df.GetUrl(entity);
-                                if (df.DataAction.IsNullOrEmpty())
-                                {
-                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
-                                }
-                                else
-                                {
-                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
-                                }
-                            }
-                        }
+                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
                     }
                 }
                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
