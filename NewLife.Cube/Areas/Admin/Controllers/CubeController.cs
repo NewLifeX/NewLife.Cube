@@ -35,13 +35,19 @@ namespace NewLife.Cube.Admin.Controllers
             if (!_has)
             {
                 var list = GetMembers(typeof(Setting));
-                var pi = list.FirstOrDefault(e => e.Name == "Theme");
-                if (pi != null)
-                    pi.Description = $"可选主题 {_uIService.Themes.Join("/")}";
+                var df = list.FirstOrDefault(e => e.Name == "Theme");
+                if (df != null)
+                {
+                    df.Description = $"可选主题 {_uIService.Themes.Join("/")}";
+                    df.DataSource = (f, e) => _uIService.Themes.ToDictionary(e => e, e => e);
+                }
 
-                pi = list.FirstOrDefault(e => e.Name == "Skin");
-                if (pi != null)
-                    pi.Description = $"可选皮肤 {_uIService.Skins.Join("/")}";
+                df = list.FirstOrDefault(e => e.Name == "Skin");
+                if (df != null)
+                {
+                    df.Description = $"可选皮肤 {_uIService.Skins.Join("/")}";
+                    df.DataSource = (f, e) => _uIService.Skins.ToDictionary(e => e, e => e);
+                }
 
                 _has = true;
             }

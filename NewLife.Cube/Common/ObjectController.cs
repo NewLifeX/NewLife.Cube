@@ -72,11 +72,12 @@ namespace NewLife.Cube
         [EntityAuthorize(PermissionFlags.Detail)]
         public ActionResult Index(FormatType formatType = FormatType.CamelCase)
         {
-            var model = new ObjectModel { Value = Value };
+            //var model = new ObjectModel { Value = Value };
 
-            if (Value != null)
+            var list = GetMembers(Value?.GetType());
+            if (IsJsonRequest)
             {
-                var list = GetMembers(Value?.GetType()).Select(e => e.Clone()).ToList();
+                list = list.Select(e => e.Clone()).ToList();
                 foreach (var item in list)
                 {
                     item.Name = FormatHelper.FormatName(item.Name, formatType);
@@ -86,12 +87,15 @@ namespace NewLife.Cube
                     .GroupBy(e => e.Category + "")
                     .ToDictionary(e => e.Key, e => e.ToList());
 
-                model.Properties = dic;
+                //model.Properties = dic;
+
+                return Ok(data: new { Value, Properties = dic });
             }
-
-            if (!IsJsonRequest) return View("ObjectForm", model);
-
-            return Ok(data: model);
+            else
+            {
+                ViewBag.Fields = list;
+                return View("ObjectForm", Value);
+            }
         }
 
         /// <summary>保存对象</summary>
@@ -178,16 +182,16 @@ namespace NewLife.Cube
             WriteLog("修改", true, sb.ToString());
         }
 
-        private static Dictionary<Type, IList<CubePropertyInfo>> _cache = new();
+        private static Dictionary<Type, IList<DataField>> _cache = new();
         /// <summary>获取指定类型的成员集合（带缓存）</summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static IList<CubePropertyInfo> GetMembers(Type type)
+        public static IList<DataField> GetMembers(Type type)
         {
             if (_cache.TryGetValue(type, out var rs)) return rs;
 
             var pis = type.GetProperties(true);
-            var list = new List<CubePropertyInfo>();
+            var list = new List<DataField>();
             foreach (var pi in pis)
             {
                 var cat = pi.GetCustomAttribute<CategoryAttribute>();
@@ -201,16 +205,17 @@ namespace NewLife.Cube
                     dis = dis.Substring(null, "。");
                 }
 
-                var cpi = new CubePropertyInfo
+                var df = new DataField
                 {
                     Name = pi.Name,
                     DisplayName = dis ?? pi.Name,
                     Description = des,
-                    PropertyType = pi.PropertyType,
+                    Type = pi.PropertyType,
+                    DataType = pi.PropertyType.FullName,
                     Category = category,
                 };
 
-                list.Add(cpi);
+                list.Add(df);
             }
 
             _cache[type] = list;

@@ -1,71 +1,81 @@
-﻿@model NewLife.Cube.ViewModels.ObjectModel
-@using NewLife;
+﻿@using NewLife;
 @using System.ComponentModel;
 @using System.Reflection;
 @using NewLife.Reflection;
 @{
-    //Layout = NewLife.Cube.Setting.Current.Layout;
+	//Layout = NewLife.Cube.Setting.Current.Layout;
 
-    var obj = Model.Value;
-    var dic = Model.Properties;
+	var obj = (Object)Model;
+	var list = ViewBag.Fields as IList<DataField>;
+	var dic = list
+		.GroupBy(e => e.Category + "")
+		.ToDictionary(e => e.Key, e => e.ToList());
 }
 
 <div class="card card-custom gutter-b">
-    @using (Html.BeginForm("Update", null))
-    {
-        <div class="card-body">
-            <div class="form-horizontal">
-                <div class="row">
-                    <div class="col-xl-3"></div>
-                    <div class="col-xl-6">
-                        @Html.AntiForgeryToken()
-                        @Html.ValidationSummary(true)
-                        @foreach (var item in Model.Properties)
-                        {
-                            if (dic.Count > 1)
-                            {
-                                <div class="form-group col-sm-12 col-md-12 col-xd-12">
-                                    <div class="separator separator-border-3"></div>
-                                    <label class="control-label col-xs-2 col-md-3 no-padding-left">
-                                        <h2>@item.Key</h2>
-                                    </label>
-                                </div>
-                            }
-                            @foreach (var pi in item.Value)
-                            {
-                                var name = pi.Name;
-                                var dis = pi.DisplayName;
-                                var des = pi.Description;
+	@using (Html.BeginForm("Update", null))
+	{
+		<div class="card-body">
+			<div class="form-horizontal">
+				<div class="row">
+					<div class="col-xl-3"></div>
+					<div class="col-xl-6">
+						@Html.AntiForgeryToken()
+						@Html.ValidationSummary(true)
+						@foreach (var item in dic)
+						{
+							if (dic.Count > 1)
+							{
+								<div class="form-group col-sm-12 col-md-12 col-xd-12">
+									<div class="separator separator-border-3"></div>
+									<label class="control-label col-xs-2 col-md-3 no-padding-left">
+										<h2>@item.Key</h2>
+									</label>
+								</div>
+							}
+							@foreach (var pi in item.Value)
+							{
+								var name = pi.Name;
+								var val = obj.GetValue(name);
+								var dis = pi.DisplayName;
+								var des = pi.Description;
+								var dataSource = pi.DataSource;
 
-                                <div class="form-group col-sm-12 col-md-12">
-                                    <label class="control-label pl-0" for="@name">@(dis)</label>
-                                    <div class="input-group">
-                                        
-                                        @Html.ForEditor(name, obj.GetValue(name), pi.PropertyType)
-                                        @Html.ValidationMessage(name)
-                                    </div>
-                                    <span class="form-text text-muted pl-0">@des</span>
-                                </div>
-                            }
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-footer">
-            @if (this.Has(PermissionFlags.Update))
-            {
-                <div class="row">
-                    <div class="col-xl-3"></div>
-                    <div class="col-xl-6 d-flex justify-content-between" style="padding-right: 25px;">
-                        <label class="control-label"></label>
-                        <div>
-                            <button type="submit" class="btn btn-primary mr-2"><i class="fa fa-save"></i><strong>保存</strong></button>
-                            <button type="button" class="btn btn-danger" onclick="history.go(-1);"><i class="fa fa-remove"></i><strong>取消</strong></button>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
+								<div class="form-group col-sm-12 col-md-12">
+									<label class="control-label pl-0" for="@name">@(dis)</label>
+									<div class="input-group">
+										@if (dataSource != null)
+										{
+											@await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
+										}
+										else
+										{
+											@await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+										}
+										@Html.ValidationMessage(name)
+									</div>
+									<span class="form-text text-muted pl-0">@des</span>
+								</div>
+							}
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card-footer">
+			@if (this.Has(PermissionFlags.Update))
+			{
+				<div class="row">
+					<div class="col-xl-3"></div>
+					<div class="col-xl-6 d-flex justify-content-between" style="padding-right: 25px;">
+						<label class="control-label"></label>
+						<div>
+							<button type="submit" class="btn btn-primary mr-2"><i class="fa fa-save"></i><strong>保存</strong></button>
+							<button type="button" class="btn btn-danger" onclick="history.go(-1);"><i class="fa fa-remove"></i><strong>取消</strong></button>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	}
 </div>
