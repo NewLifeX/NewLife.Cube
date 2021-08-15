@@ -1,0 +1,91 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using NewLife.Cube.ViewModels;
+@using NewLife.Reflection
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var fk = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+<table class="table table-hover table-data-list">
+    <thead>
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <th class="text-center" style="width:10px;"><label class="checkbox checkbox-single"><input type="checkbox" id="chkAll" title="全选" /><span /></label></th>
+            }
+            @foreach (var item in fields)
+            {
+                var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                var df = item as ListField;
+                var name = df?.Header ?? item.DisplayName;
+                var title = df?.HeaderTitle ?? item.Description;
+             
+                if (item.Type == typeof(DateTime) || item.Type == typeof(Boolean))
+                {
+                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                    <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                }
+                else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)
+                || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
+                {
+                    <th class="text-right" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                }
+                else
+                {
+                    <th title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                }
+            }
+            <th class="text-center">升</th>
+            <th class="text-center">降</th>
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (IEntityTree entity in Model)
+        {
+            var p = entity.Parent as IEntityTree;
+            if (p == null)
+            {
+                p = fact.EntityType.GetValue("Root") as IEntityTree;
+            }
+            var id = entity["ID"];
+            <tr>
+                @if (set.EnableSelect)
+                {
+                    <td class="text-center"><label class="checkbox checkbox-single"><input type="checkbox" name="keys" value="@entity[fk.Name]" /><span /></label></td>
+                }
+                @foreach (var item in fields)
+                {
+                    @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                }
+                <td class="text-center">
+                    @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
+                    {
+                        <a href="@Url.Action("Up", new { id })"><span class="la la-arrow-up" style="color: green;"></span></a>
+                    }
+                </td>
+                <td class="text-center">
+                    @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[p.Childs.Count - 1])
+                    {
+                        <a href="@Url.Action("Down", new { id })"><span class="la la-arrow-down" style="color: red;"></span></a>
+                    }
+                </td>
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td class="text-center">
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

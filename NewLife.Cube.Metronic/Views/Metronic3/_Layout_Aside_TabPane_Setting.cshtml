@@ -1,0 +1,102 @@
+﻿@using XCode;
+@using NewLife.Model;
+@using NewLife.Cube.ViewModels;
+
+<div class="tab-pane p-3 px-lg-7 py-lg-5 fade show" id="cube_aside_menu_setting">
+    <div class="list list-hover">
+        <!-- 基本设置 -->
+        <div class="list-item hoverable p-2 p-lg-3 mb-2">
+            <div class="d-flex align-items-center">
+                <!--begin::Symbol-->
+                <div class="symbol symbol-40 symbol-light mr-4">
+                    <span class="symbol-label bg-hover-white">
+                        <img src="~/metronic/media/svg/icons/Code/Compiling.svg" class="h-50 align-self-center" />
+                    </span>
+                </div>
+                <!--end::Symbol-->
+                <!--begin::Text-->
+                <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <span class="text-dark-75 font-size-h5 mb-0">基本设置</span>
+                    <a href="@Url.Content("~/Admin/Core")" target="_self" class="text-muted text-hover-primary font-weight-bold">配置系统调试开关、日志及数据目录等</a>
+                </div>
+                <!--begin::End-->
+            </div>
+        </div>
+
+        <!-- 系统设置 -->
+        <div class="list-item hoverable p-2 p-lg-3 mb-2">
+            <div class="d-flex align-items-center">
+                <!--begin::Symbol-->
+                <div class="symbol symbol-40 symbol-light mr-4">
+                    <span class="symbol-label bg-hover-white">
+                        <img src="~/metronic/media/svg/icons/Code/Settings4.svg" class="h-50 align-self-center" />
+                    </span>
+                </div>
+                <!--end::Symbol-->
+                <!--begin::Text-->
+                <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <span class="text-dark-75 font-size-h5 mb-0">系统设置</span>
+                    <a href="@Url.Content("~/Admin/Sys")" target="_self" class="text-muted text-hover-primary font-weight-bold">设置系统名称、公司，是否为开发者模式等</a>
+                </div>
+                <!--begin::End-->
+            </div>
+        </div>
+
+        <!-- 数据中间件 -->
+        <div class="list-item hoverable p-2 p-lg-3 mb-2">
+            <div class="d-flex align-items-center">
+                <!--begin::Symbol-->
+                <div class="symbol symbol-40 symbol-light mr-4">
+                    <span class="symbol-label bg-hover-white">
+                        <img src="~/metronic/media/svg/icons/Design/Substract.svg" class="h-50 align-self-center" />
+                    </span>
+                </div>
+                <!--end::Symbol-->
+                <!--begin::Text-->
+                <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <span class="text-dark-75 font-size-h5 mb-0">数据库中间件</span>
+                    <a href="@Url.Content("~/Admin/XCode")" target="_self" class="text-muted text-hover-primary font-weight-bold">配置SQL输出目录、命令超时、实体缓存等</a>
+                </div>
+                <!--begin::End-->
+            </div>
+        </div>
+
+        <!-- 魔方设置 -->
+        <div class="list-item hoverable p-2 p-lg-3 mb-2">
+            <div class="d-flex align-items-center">
+                <!--begin::Symbol-->
+                <div class="symbol symbol-40 symbol-light mr-4">
+                    <span class="symbol-label bg-hover-white">
+                        <img src="~/metronic/media/svg/icons/Layout/Layout-polygon.svg" class="h-50 align-self-center" />
+                    </span>
+                </div>
+                <!--end::Symbol-->
+                <!--begin::Text-->
+                <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <span class="text-dark-75 font-size-h5 mb-0">魔方设置</span>
+                    <a href="@Url.Content("~/Admin/Cube")" target="_self" class="text-muted text-hover-primary font-weight-bold">设置魔方开发新平台相关参数</a>
+                </div>
+                <!--begin::End-->
+            </div>
+        </div>
+
+        <!-- OAuth设置 -->
+        <div class="list-item hoverable p-2 p-lg-3 mb-2">
+            <div class="d-flex align-items-center">
+                <!--begin::Symbol-->
+                <div class="symbol symbol-40 symbol-light mr-4">
+                    <span class="symbol-label bg-hover-white">
+                        <img src="~/metronic/media/svg/icons/General/Notification2.svg" class="h-50 align-self-center" />
+                    </span>
+                </div>
+                <!--end::Symbol-->
+                <!--begin::Text-->
+                <div class="d-flex flex-column flex-grow-1 mr-2">
+                    <span class="text-dark-75 font-size-h5 mb-0">OAuth设置</span>
+                    <a href="@Url.Content("~/Admin/OAuthConfig")" target="_self" class="text-muted text-hover-primary font-weight-bold">第三方登录授权设置</a>
+                </div>
+                <!--begin::End-->
+            </div>
+        </div>
+    </div>
+</div>

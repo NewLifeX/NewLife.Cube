@@ -1,0 +1,61 @@
+﻿@inherits LayoutComponentBase
+
+<div class="pg-header">
+
+</div>
+<div class="pg-content">
+    <div class="menu fl">
+        <Menu Items="@IconSideMenuItems" DisableNavigation="true" IsVertical="true" OnClick="@((e) => { return CallBackMenuClick(e); })" />
+    </div>
+    <div class="content fr">
+        <Tab ShowExtendButtons="true" ShowClose="true" @ref="SideTabItems" OnClickTab="@((e) => { return CallBackTabClick(e); })" />
+    </div>
+</div>
+<div class="pg-footer">
+</div>
+
+<style scoped>
+    .fl {
+        float: left;
+    }
+
+    .fr {
+        float: right;
+    }
+
+    body {
+        margin: 0;
+    }
+
+    .pg-header {
+        margin: 0 auto;
+        height: 48px;
+    }
+
+    .pg-footer {
+        margin: 0 auto;
+        position: fixed;
+        height: 30px;
+        left: 250px;
+        right: 0;
+        bottom: 0px;
+        background-color: green;
+    }
+
+    .pg-content .menu {
+        width: 250px;
+        position: fixed;
+        top: 48px;
+        left: 0;
+        bottom: 0;
+    }
+
+    .pg-content .content {
+        position: fixed;
+        top: 48px;
+        left: 250px;
+        right: 0;
+        bottom: 0;
+        overflow: auto;
+    }
+</style>

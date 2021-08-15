@@ -1,0 +1,91 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var ukey = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+<table class="table table-vcenter text-nowrap datatable">
+    <thead>
+        <tr>
+            @if (set.EnableSelect && ukey != null)
+            {
+                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+            }
+            @foreach (var item in fields)
+            {
+                var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                var df = item as ListField;
+                var name = df?.Header ?? item.DisplayName;
+                var title = df?.HeaderTitle ?? item.Description;
+
+                if (item.Type == typeof(DateTime))
+                {
+                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                    <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                }
+                else if (item.Type == null)
+                {
+                    <th class="text-center" title="@title">@name</th>
+                }
+                else
+                {
+                    <th class="text-center" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                }
+            }
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            <tr>
+                @if (set.EnableSelect && ukey != null)
+                {
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity[ukey.Name]" /></td>
+                }
+                @foreach (var item in fields)
+                {
+                    var df = item as ListField;
+                    if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
+                    {
+                        <td></td>
+                    }
+                    else if (df != null && !df.DataAction.IsNullOrEmpty())
+                    {
+                        var url = df.GetUrl(entity);
+                        var name = df.GetDisplayName(entity) ?? df.Header;
+                        <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                    }
+                    else if (df != null && !df.Url.IsNullOrEmpty())
+                    {
+                        var url = df.GetUrl(entity);
+                        var name = df.GetDisplayName(entity) ?? df.Header;
+                        <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                    }
+                }
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td class="text-center">
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                    </td>
+                }
+            </tr>
+        }
+        @if (page.State is IEntity entity2)
+        {
+            @await Html.PartialAsync("_List_Data_Stat", entity2)
+        }
+    </tbody>
+</table>

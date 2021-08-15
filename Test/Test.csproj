@@ -1,90 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Test</RootNamespace>
-    <AssemblyName>Test</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <TargetFramework>net5.0</TargetFramework>
     <OutputPath>..\BinTest\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>latest</LangVersion>
+    <Version>1.0.0.1130</Version>
+    <FileVersion>1.0.0.1130</FileVersion>
+    <AssemblyVersion>1.0.*</AssemblyVersion>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\BinTest\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q" />
+  </Target>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <Compile Include="..\CubeDemo\Entity\交易.Biz.cs" Link="Entity\交易.Biz.cs" />
+    <Compile Include="..\CubeDemo\Entity\交易.cs" Link="Entity\交易.cs" />
+    <Compile Include="..\CubeDemo\Entity\学生.Biz.cs" Link="Entity\学生.Biz.cs" />
+    <Compile Include="..\CubeDemo\Entity\学生.cs" Link="Entity\学生.cs" />
+    <Compile Include="..\CubeDemo\Entity\班级.Biz.cs" Link="Entity\班级.Biz.cs" />
+    <Compile Include="..\CubeDemo\Entity\班级.cs" Link="Entity\班级.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\CubeDemo\Entity\交易.Biz.cs">
-      <Link>Entity\交易.Biz.cs</Link>
-    </Compile>
-    <Compile Include="..\CubeDemo\Entity\交易.cs">
-      <Link>Entity\交易.cs</Link>
-    </Compile>
-    <Compile Include="..\CubeDemo\Entity\学生.Biz.cs">
-      <Link>Entity\学生.Biz.cs</Link>
-    </Compile>
-    <Compile Include="..\CubeDemo\Entity\学生.cs">
-      <Link>Entity\学生.cs</Link>
-    </Compile>
-    <Compile Include="..\CubeDemo\Entity\班级.Biz.cs">
-      <Link>Entity\班级.Biz.cs</Link>
-    </Compile>
-    <Compile Include="..\CubeDemo\Entity\班级.cs">
-      <Link>Entity\班级.cs</Link>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.809" />
+    <PackageReference Include="NewLife.XCode" Version="10.2.2021.809" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <Folder Include="Entity\" />
   </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="NewLife.XCode">
-      <Version>10.1.2021.519-beta5</Version>
-    </PackageReference>
-    <PackageReference Include="System.IO.Compression">
-      <Version>4.3.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

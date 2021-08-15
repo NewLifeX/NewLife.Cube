@@ -1,0 +1,90 @@
+.login.login-6 .login-signin,
+.login.login-6 .login-signup,
+.login.login-6 .login-forgot {
+  display: none;
+}
+.login.login-6.login-signin-on .login-signup {
+  display: none;
+}
+.login.login-6.login-signin-on .login-signin {
+  display: block;
+}
+.login.login-6.login-signin-on .login-forgot {
+  display: none;
+}
+.login.login-6.login-signup-on .login-signup {
+  display: block;
+}
+.login.login-6.login-signup-on .login-signin {
+  display: none;
+}
+.login.login-6.login-signup-on .login-forgot {
+  display: none;
+}
+.login.login-6.login-forgot-on .login-signup {
+  display: none;
+}
+.login.login-6.login-forgot-on .login-signin {
+  display: none;
+}
+.login.login-6.login-forgot-on .login-forgot {
+  display: block;
+}
+.login.login-6 .login-divider {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.login.login-6 .login-divider > div {
+  height: 400px;
+  background: #ffffff;
+  width: 30px;
+  -webkit-box-shadow: -19px 0 35px -7px rgba(0, 0, 0, 0.05);
+  box-shadow: -19px 0 35px -7px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 992px) {
+  .login.login-6 .login-wrapper {
+    width: 100%;
+    max-width: 450px;
+  }
+}
+@media (max-width: 991.98px) {
+  .login.login-6 .login-wrapper {
+    width: 100%;
+    max-width: 350px;
+  }
+  .login.login-6 .login-divider {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    padding-top: 0;
+    width: 60%;
+    margin: 5px auto;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+  }
+  .login.login-6 .login-divider > div {
+    height: 30px;
+    background: #ffffff;
+    width: 100%;
+    -webkit-box-shadow: 0 -15px 30px -10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -15px 30px -10px rgba(0, 0, 0, 0.1);
+  }
+}
+@media (max-width: 767.98px) {
+  .login.login-6 .login-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+}

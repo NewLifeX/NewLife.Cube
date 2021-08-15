@@ -1,0 +1,49 @@
+﻿@model ListBoxModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@using System.Collections;
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = value.GetType();
+
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+    if (NewLife.Cube.Setting.Current.BootstrapSelect)
+        atts.Add("class", "multiselect");
+    else
+        atts.Add("class", "form-control");
+
+    // 处理自动回发
+    if (Model.AutoPostback) atts.Add("onchange", "$(this).parents('form').submit();");
+
+    var optionLabel = Model.OptionLabel;
+
+    var selectedValue = Model.SelectedValues;
+}
+@if (value is IEnumerable<SelectListItem> selectList)
+{
+    @Html.DropDownList(name, selectList, atts)
+}
+else if (type is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
+{
+    IEntityFactory factory = null;
+    var dic = new Dictionary<String, String>();
+    foreach (IEntity entity in data)
+    {
+        if (factory == null) factory = entity.GetType().AsFactory();
+
+        var key = entity[factory.Unique.Name] + "";
+        dic[key] = entity + "";
+    }
+    @Html.DropDownList(name, new SelectList(dic, "Key", "Value", selectedValue), optionLabel,  atts)
+}
+else if (value is IDictionary dic)
+{
+    @Html.DropDownList(name, new SelectList(dic, "Key", "Value", selectedValue), optionLabel,  atts)
+}
+else if (value is IEnumerable items)
+{
+    @Html.DropDownList(name, new SelectList(items, selectedValue), optionLabel, atts)
+}

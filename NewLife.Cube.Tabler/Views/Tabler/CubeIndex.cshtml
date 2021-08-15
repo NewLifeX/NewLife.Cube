@@ -1,0 +1,23 @@
+﻿@{
+    //Layout = null;
+
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var roleNames = "";
+    if (user != null) roleNames = user.Roles == null ? "" : user.Roles.Join();
+
+    var cfg = ViewBag.Config as NewLife.Common.SysConfig;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var name = cfg == null ? "" : cfg.DisplayName;
+
+    ViewBag.MyAsms = NewLife.Cube.Admin.Controllers.IndexController.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+}
+@await Html.PartialAsync("Main")

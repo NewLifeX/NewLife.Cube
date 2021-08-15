@@ -1,0 +1,15 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Entity;
+@using NewLife.Cube.Extensions
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var providers = NewLife.Cube.Entity.OAuthConfig.FindAllWithCache().ToDictionary(e => e.Name, e => e.NickName ?? e.Name);
+}
+<div class="d-inline-flex align-items-center">
+    <label for="provider" class="control-label">提供商：</label>
+    @Html.ForDropDownList("provider", providers, page["provider"], "全部", true)
+</div>
+@*@Html.Partial("_DateRange")*@

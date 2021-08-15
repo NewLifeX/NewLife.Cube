@@ -3,7 +3,7 @@
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = (ValueTuple<IEntity, DataField>)Model;
     var entity = pair.Item1;
     var item = pair.Item2;
     var factory = entity.GetType().AsFactory();
@@ -16,7 +16,7 @@
     while (name2.Length > 1 && Char.IsDigit(name2[name2.Length - 1])) { name2 = name2.Substring(0, name2.Length - 1); }
 }
 
-@if (item.IsIdentity)
+@if (item.PrimaryKey)
 {
     <td>@value</td>
 }
@@ -77,7 +77,9 @@ else
             {
                 var dd = (Double)value;
                 var des = item.Description + "";
+                if (des.Contains("十分之一")) { dd /= 10; }
                 if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
                 <td>@dd.ToString("p2")</td>
@@ -122,7 +124,9 @@ else
             {
                 var dd = Convert.ToDouble(value);
                 var des = item.Description + "";
+                if (des.Contains("十分之一")) { dd /= 10; }
                 if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
                 <td>@dd.ToString("p2")</td>
@@ -136,14 +140,13 @@ else
         default:
             {
                 var val = value;
-                var map = item.Map;
-                if (map != null && val + "" != "")
+                if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null && val + "" != "")
                 {
-                    if (map.Provider != null)
+                    if (item.MapProvider != null)
                     {
-                        var name = map.Provider.EntityType.Name;
-                        var key = map.Provider.Key;
-                        val = entity[item.OriField.Name];
+                        var name = item.MapProvider.EntityType.Name;
+                        var key = item.MapProvider.Key;
+                        val = entity[item.MapField];
                         <td><a href="@name?@key=@val">@value</a></td>
                     }
                     else
@@ -155,12 +158,7 @@ else
                 {
                     <td title="@((value+"").IPToAddress())">@value</td>
                 }
-                else if (item.Name.EqualIgnoreCase("Remark", "Description"))
-                {
-                    //防止内容过长
-                    <td title="@value">@value</td>
-                }
-                else if (item.Length >= 500)
+                else if (item.IsBigText())
                 {
                     //防止内容过长
                     <td title="@value">@value</td>

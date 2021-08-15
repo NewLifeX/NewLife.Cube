@@ -1,8 +1,9 @@
-﻿@using NewLife;
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
+    var pair = Model;
     var entity = pair.Item1;
     var field = pair.Item2;
 

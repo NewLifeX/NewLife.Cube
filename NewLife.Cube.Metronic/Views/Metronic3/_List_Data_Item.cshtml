@@ -1,0 +1,173 @@
+﻿@using NewLife;
+@using Microsoft.AspNetCore.Routing
+@using XCode;
+@using XCode.Configuration;
+@{
+    var pair = (ValueTuple<IEntity, DataField>)Model;
+    var entity = pair.Item1;
+    var item = pair.Item2;
+    var factory = entity.GetType().AsFactory();
+
+    var value = entity[item.Name];
+    var provider = ManageProvider.Provider;
+
+    // 第二名称，去掉后面的数字，便于模式匹配
+    var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+    var name2 = item.Name.TrimEnd(digits);
+
+}
+@if (item.PrimaryKey)
+{
+    <td class="text-center align-middle">@value</td>
+}
+else
+{
+    switch (Type.GetTypeCode(item.Type))
+    {
+        case TypeCode.Boolean:
+            var bval = (Boolean)value;
+            <td class="text-center align-middle">
+                @if (item.Name.EqualIgnoreCase("Enable") && factory.Unique != null)
+                {
+                    var key = entity[factory.Unique.Name];
+                    if (bval)
+                    {
+                        <a href="@Url.Action("SetEnable",null,new { id=key, enable=false })" data-action="action">
+                            <i class="la la-check" style="color: green;"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("SetEnable",null,new { id=key, enable=true })" data-action="action">
+                            <i class="la la-remove" style="color: red;"></i>
+                        </a>
+                    }
+                }
+                else
+                {
+                    if (bval)
+                    {
+                        <i class="la la-check" style="color: green;"></i>
+                    }
+                    else
+                    {
+                        <i class="la la-remove" style="color: red;"></i>
+                    }
+                }
+            </td>
+            break;
+        case TypeCode.DateTime:
+            var dt = (DateTime)value;
+            if (name2.EndsWith("Date"))
+            {
+                <td class="text-center align-middle">@dt.ToString("yyyy-MM-dd", "")</td>
+            }
+            else
+            {
+                <td class="text-center align-middle">@dt.ToFullString("")</td>
+            }
+            break;
+        case TypeCode.Decimal:
+            var dc = (Decimal)value;
+            <td class="text-right align-middle">@dc.ToString("n2")</td>
+            break;
+        case TypeCode.Single:
+        case TypeCode.Double:
+            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+            {
+                var dd = (Double)value;
+                var des = item.Description + "";
+                if (des.Contains("十分之一")) { dd /= 10; }
+                if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("千分之一")) { dd /= 1000; }
+                if (des.Contains("万分之一")) { dd /= 10000; }
+
+                <td class="text-right align-middle">@dd.ToString("p2")</td>
+            }
+            else
+            {
+                var dd = (Double)value;
+                <td class="text-right align-middle">@dd.ToString("n2")</td>
+            }
+            break;
+        case TypeCode.Byte:
+        case TypeCode.Int16:
+        case TypeCode.Int32:
+        case TypeCode.Int64:
+        case TypeCode.UInt16:
+        case TypeCode.UInt32:
+        case TypeCode.UInt64:
+            //特殊处理枚举
+            if (item.Type.IsEnum)
+            {
+                var val = "";
+                try
+                {
+                    val = EnumHelper.GetDescription((Enum)value) ?? value + "";
+                }
+                catch { }
+                <td class="text-center align-middle">@val</td>
+            }
+            else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+            {
+                //var provider = ViewData["Provider"] as IManageProvider;
+                if (provider != null)
+                {
+                    <td class="text-center align-middle">@provider?.FindByID(value)</td>
+                }
+                else
+                {
+                    <td class="text-center align-middle">@value</td>
+                }
+            }
+            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+            {
+                var dd = Convert.ToDouble(value);
+                var des = item.Description + "";
+                if (des.Contains("十分之一")) { dd /= 10; }
+                if (des.Contains("百分之一")) { dd /= 100; }
+                if (des.Contains("千分之一")) { dd /= 1000; }
+                if (des.Contains("万分之一")) { dd /= 10000; }
+
+                <td class="text-right align-middle">@dd.ToString("p2")</td>
+            }
+            else
+            {
+                <td class="text-right align-middle">@Convert.ToInt64(value).ToString("n0")</td>
+            }
+            break;
+        case TypeCode.String:
+        default:
+            {
+                var val = value;
+                if (!item.MapField.IsNullOrEmpty() && val + "" != "")
+                {
+                    if (item.MapProvider != null)
+                    {
+                        var name = item.MapProvider.EntityType.Name;
+                        var key = item.MapProvider.Key;
+                        val = entity[item.MapField];
+                        <td class="align-middle"><a href="@name?@key=@val">@value</a></td>
+                    }
+                    else
+                    {
+                        <td class="align-middle">@value</td>
+                    }
+                }
+                else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
+                {
+                    <td class="text-center align-middle" title="@((value+"").IPToAddress())">@value</td>
+                }
+                else if (item.IsBigText())
+                {
+                    //防止内容过长
+                    <td class="align-middle" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-toggle="tooltip" data-placement="top" title="@value">@value</td>
+                }
+                else
+                {
+                    <td class="align-middle">@value</td>
+                }
+            }
+            break;
+    }
+}

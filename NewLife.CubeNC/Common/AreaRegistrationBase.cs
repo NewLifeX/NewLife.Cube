@@ -2,10 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using NewLife.Cube.Entity;
 using NewLife.Log;
+using NewLife.Reflection;
+using NewLife.Threading;
 using XCode;
 using XCode.Membership;
 
@@ -56,13 +60,15 @@ namespace NewLife.Cube
         protected static void ScanController(Type areaType)
         {
             var areaName = areaType.Name.TrimEnd("Area");
-            XTrace.WriteLine("初始化[{0}]的菜单体系", areaName);
+            XTrace.WriteLine("start------初始化[{0}]的菜单体系------start", areaName);
 
             var mf = ManageProvider.Menu;
             if (mf == null) return;
 
             // 初始化数据库
             _ = Menu.Meta.Count;
+            _ = ModelTable.Meta.Count;
+            _ = ModelColumn.Meta.Count;
 
             using var tran = (mf as IEntityFactory).Session.CreateTrans();
 
@@ -85,6 +91,16 @@ namespace NewLife.Cube
 
             //// 扫描模型表
             //ScanModel(areaName, menus);
+
+            // 再次检查菜单权限，因为上面的ScanController里开启菜单权限检查时，菜单可能还没有生成
+            ThreadPoolX.QueueUserWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                XTrace.WriteLine("新增了菜单，需要检查权限。二次检查，双重保障");
+                typeof(Role).Invoke("CheckRole");
+            });
+
+            XTrace.WriteLine("end---------初始化[{0}]的菜单体系---------end", areaName);
         }
 
         private static ICollection<String> _namespaces;

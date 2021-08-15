@@ -1,0 +1,61 @@
+.login.login-2 .login-signin,
+.login.login-2 .login-signup,
+.login.login-2 .login-forgot {
+  display: none;
+}
+.login.login-2.login-signin-on .login-signup {
+  display: none;
+}
+.login.login-2.login-signin-on .login-signin {
+  display: block;
+}
+.login.login-2.login-signin-on .login-forgot {
+  display: none;
+}
+.login.login-2.login-signup-on .login-signup {
+  display: block;
+}
+.login.login-2.login-signup-on .login-signin {
+  display: none;
+}
+.login.login-2.login-signup-on .login-forgot {
+  display: none;
+}
+.login.login-2.login-forgot-on .login-signup {
+  display: none;
+}
+.login.login-2.login-forgot-on .login-signin {
+  display: none;
+}
+.login.login-2.login-forgot-on .login-forgot {
+  display: block;
+}
+
+@media (min-width: 992px) {
+  .login.login-2 .login-aside {
+    width: 100%;
+    max-width: 600px;
+  }
+  .login.login-2 .login-form {
+    width: 100%;
+    max-width: 450px;
+  }
+}
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .login.login-2 .login-aside {
+    width: 100%;
+    max-width: 450px;
+  }
+}
+@media (max-width: 991.98px) {
+  .login.login-2 .login-form {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+@media (max-width: 575.98px) {
+  .login.login-2 .login-form {
+    width: 100%;
+    max-width: 100%;
+  }
+}

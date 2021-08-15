@@ -1,18 +1,19 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using NewLife;
 using NewLife.Cube;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
-using NewLife.Threading;
-using Stardust;
 using Stardust.Monitors;
 using Setting = NewLife.Cube.Setting;
 
@@ -38,6 +39,12 @@ namespace CubeDemoNC
 
             services.AddControllersWithViews();
             services.AddCube();
+
+            //services.AddHttpContextAccessor();
+            // Blazor Server方式渲染
+            //services.AddBootstrapBlazor();
+            services.AddRazorPages();
+            services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -98,6 +105,10 @@ namespace CubeDemoNC
             //app.UseMiddleware<TracerMiddleware>();
 
             app.UseCube(env);
+            app.UseAdminLTE(env);
+            app.UseTabler(env);
+            app.UseMetronic(env);
+            app.UseBlazor(env);
 
             app.UseAuthorization();
 

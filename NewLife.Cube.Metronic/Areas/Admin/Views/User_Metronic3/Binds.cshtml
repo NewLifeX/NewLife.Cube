@@ -1,0 +1,93 @@
+﻿@model BindsModel
+@using System.Linq
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using NewLife.Cube.Entity;
+@using NewLife.Cube.Areas.Admin.Models;
+@{
+    var ms = Model.OAuthItems;
+    var binds = Model.Connects;
+}
+
+<div class="card card-custom gutter-b">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="h5">第三方绑定</div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="form-horizontal">
+            <div class="row">
+                <div class="col-xl-3"></div>
+                <div class="col-xl-6">
+                    @if (ms.Count > 0)
+                    {
+                        <div class="navi navi-bold navi-hover navi-active navi-link-rounded">
+                            @foreach (var mi in ms)
+                            {
+                                <div class="form-group col-sm-12 col-md-12">
+                                    @{
+                                        var uc = binds.FirstOrDefault(e => e.Enable && e.Provider.EqualIgnoreCase(mi.Name));
+                                        var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
+                                        var url = "Sso/Login?name=" + mi.Name;
+                                        url = "/" + url;
+                                        var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
+                                    }
+
+                                    <div class="navi-item mb-2">
+                                        @if (uc != null)
+                                        {
+                                            <a href="~/Sso/UnBind/@mi.Name" class="navi-link d-flex align-items-center font-size-h6 mb-0" data-toggle="tooltip" data-placement="top" title="取消绑定 @mi.Name">
+                                                <div class="symbol symbol-40 symbol-light mr-4">
+                                                    <span class="symbol-label bg-hover-white">
+                                                        @if (!logo.IsNullOrEmpty())
+                                                        {
+                                                            <img class="h-75 align-self-center" src="@logo">
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="symbol-label font-size-h5">@mi.Name.Substring(0, 1).ToUpper()</span>
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div class="d-flex flex-column flex-grow-1">
+                                                    <span class="text-dark-75 font-size-h6 mb-0">@mi.NickName</span>
+                                                    <span class="text-muted text-hover-primary font-weight-bold">@mi.Name（已绑定）</span>
+                                                </div>
+                                            </a>
+
+                                        }
+                                        else
+                                        {
+                                            <a href="~/Sso/Bind/@mi.Name" target="_blank" class="navi-link d-flex align-items-center text-dark-75 font-size-h6 mb-0" data-toggle="tooltip" data-placement="top" title="绑定 @mi.Name">
+                                                <div class="symbol symbol-40 symbol-light mr-4">
+                                                    <span class="symbol-label bg-hover-white">
+                                                        @if (!logo.IsNullOrEmpty())
+                                                        {
+                                                            <img class="h-75 align-self-center" src="@logo">
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="symbol-label font-size-h5">@mi.Name.Substring(0, 1).ToUpper()</span>
+                                                        }
+                                                    </span>
+                                                </div>
+                                                <div class="d-flex flex-column flex-grow-1">
+                                                    <span class="text-dark-75 font-size-h6 mb-0">@mi.NickName</span>
+                                                    <span class="text-muted text-hover-primary font-weight-bold">@mi.Name（未绑定）</span>
+                                                </div>
+                                            </a>
+
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

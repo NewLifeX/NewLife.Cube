@@ -31,7 +31,7 @@ namespace NewLife.Cube
         public virtual IEnumerable<String> ExpandViewLocations(ViewLocationExpanderContext context, IEnumerable<String> viewLocations)
         {
             var theme = context.Values["theme"];
-            if (theme.IsNullOrEmpty() || theme.EqualIgnoreCase("ACE")) return viewLocations;
+            if (theme.IsNullOrEmpty()) return viewLocations;
 
             var vs = viewLocations.ToList();
 

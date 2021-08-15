@@ -1,0 +1,61 @@
+﻿@model IList<XCode.Membership.Log>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+            }
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
+            <th><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
+            <th><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
+            <th class="text-center">附近</th>
+            @if (this.Has(PermissionFlags.Detail))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            <tr>
+                @if (set.EnableSelect)
+                {
+                    <td class="text-center align-middle"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                }
+                <td class="text-center align-middle">@entity.Category</td>
+                <td class="align-middle">@entity.Action</td>
+                <td class="text-center align-middle">
+                    <i class="la la-@(entity.Success ? "check" : "remove")" style="color: @(entity.Success ? "green" : "red");"></i>
+                </td>
+                <td class="align-middle" style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Remark">@entity.Remark</td>
+                <td class="align-middle">@entity.UserName</td>
+                <td class="align-middle">@entity.CreateIP.IPToAddress()</td>
+                <td class="text-center align-middle" style="max-width:150px">@entity.CreateTime.ToFullString("")</td>
+                <td class="text-center align-middle">
+                    <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
+                </td>
+                @if (this.Has(PermissionFlags.Detail))
+                {
+                    <td class="text-center align-middle" style="width: 90px;">
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

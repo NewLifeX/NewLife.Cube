@@ -1,0 +1,48 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@{
+    var pager = ViewBag.Page as Pager;
+    //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
+    // 没有总记录数的时候不显示分页，可以认为不启用分页
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+}
+
+@if (pager.TotalCount > 0)
+{
+    <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
+        <div class="d-flex justify-content-between align-items-center flex-wrap pt-lg-3">
+            <div class="d-inline-flex flex-shrink-0">
+                共<span>@pager.TotalCount.ToString("n0")</span>条&nbsp;
+                每页<span>@pager.PageSize</span>条&nbsp;
+                当前第<span>@pager.PageIndex.ToString("n0")</span>页/共<span>@pager.PageCount.ToString("n0")</span>页&nbsp;
+            </div>
+
+            <div class="d-inline-flex flex-shrink-0 align-items-center">
+                @Html.Raw(pager.GetPage("首页"))&nbsp;
+                @Html.Raw(pager.GetPage("上一页"))&nbsp;
+                @Html.Raw(pager.GetPage("下一页"))&nbsp;
+                @Html.Raw(pager.GetPage("尾页")) &nbsp;
+                转到第<input name="PageIndex" type="text" value="@pager.PageIndex" class="form-control form-control-sm" style="width: 40px; height:25px; padding-left: 5px; margin: 0 5px;" />页
+                <input type="submit" value="GO" class="btn btn-sm btn-primary" style=" padding: 0; width: 30px; height:25px; line-height: 25px;margin-top: -1px;" />
+                页大小&nbsp
+                <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();" class="form-control form-control-sm" style="width:70px; height:25px; padding-top: 0;padding-bottom: 0;">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="500">100</option>
+                    <option value="1000">1000</option>
+                </select>
+                <script type="text/javascript">
+                    $(function() {
+                        $('#PageSize').val(@pager.PageSize);
+                    });
+                </script>
+            </div>
+        </div>
+    </form>
+}

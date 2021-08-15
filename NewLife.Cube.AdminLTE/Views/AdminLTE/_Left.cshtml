@@ -1,0 +1,32 @@
+﻿@using NewLife.Model;
+@using NewLife.Cube.ViewModels;
+@{
+    String[] icos = new String[] { "fa-tachometer-alt", "fa-th", "fa-copy", "fa-chart-pie", "fa-tree", "fa-edit", "fa-table", "fa-columns", "fa-book" };
+    Int32 _idx = 0;
+    var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
+}
+<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+    @foreach (var menu in menus.Where(w => w.Visible))
+    {
+        var childs = menu.Children ?? new List<MenuTree>();
+        if (_idx >= icos.Length) { _idx = 0; }
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon fas @icos[_idx++]"></i>
+                <p>
+                    @menu.DisplayName
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            @if (childs.Any())
+            {
+                <ul class="nav nav-treeview">
+                    @foreach (var menu2 in childs.Where(w => w.Visible))
+                    {
+                        @await Html.PartialAsync("_Left_Item", menu2);
+                    }
+                </ul>
+            }
+        </li>
+    }
+</ul>

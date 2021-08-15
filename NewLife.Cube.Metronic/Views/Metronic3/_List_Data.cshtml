@@ -1,0 +1,104 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var ukey = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            @if (set.EnableSelect && ukey != null)
+            {
+                <th class="text-center" style="width:10px;">
+                    <label class="checkbox checkbox-single">
+                        <input type="checkbox" id="chkAll" title="全选" />
+                        <span></span>
+                    </label>
+                </th>
+            }
+            @foreach (var item in fields)
+            {
+                var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                var df = item as ListField;
+                var name = df?.Header ?? item.DisplayName;
+                var title = df?.HeaderTitle ?? item.Description;
+
+                if (item.Type == typeof(DateTime) || item.Type == typeof(Boolean))
+                {
+                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                    <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                }
+                else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)
+                || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
+                {
+                    <th class="text-right" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                }
+                else
+                {
+                    <th title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                }
+            }
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            <tr>
+                @if (set.EnableSelect && ukey != null)
+                {
+                    <td class="text-center align-middle">
+                        <label class="checkbox checkbox-single">
+                            <input class="checkable" type="checkbox" name="keys" value="@entity[ukey.Name]" />
+                            <span></span>
+                        </label>
+                    </td>
+                }
+                @foreach (var item in fields)
+                {
+                    var df = item as ListField;
+                    if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
+                    {
+                        <td></td>
+                    }
+                    else if (df != null && !df.DataAction.IsNullOrEmpty())
+                    {
+                        var url = df.GetUrl(entity);
+                        var name = df.GetDisplayName(entity) ?? df.Header;
+                        <td class="text-center align-middle" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                    }
+                    else if (df != null && !df.Url.IsNullOrEmpty())
+                    {
+                        var url = df.GetUrl(entity);
+                        var name = df.GetDisplayName(entity) ?? df.Header;
+                        <td class="text-center align-middle" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                    }
+                }
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td class="text-center align-middle">
+                        <div class="d-flex d-inline-flex">
+                            @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                        </div>
+                    </td>
+                }
+            </tr>
+        }
+        @if (page.State is IEntity entity2)
+        {
+            @await Html.PartialAsync("_List_Data_Stat", entity2)
+        }
+    </tbody>
+</table>

@@ -1,0 +1,5 @@
+﻿@model Boolean
+@{
+    var flag = Model;
+}
+<i class="glyphicon glyphicon-@(flag ? "ok" : "remove")" style="color: @(flag ? "green" : "red");"></i>

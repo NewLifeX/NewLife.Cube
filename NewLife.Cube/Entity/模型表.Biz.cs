@@ -49,7 +49,7 @@ namespace NewLife.Cube.Entity
         #region 扩展属性
         ///// <summary>模型列集合</summary>
         //[XmlIgnore, ScriptIgnore, IgnoreDataMember]
-        //public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAll());
+        //public IList<ModelColumn> Columns => Extends.Get(nameof(Columns), k => ModelColumn.FindAllByTableId(Id));
         #endregion
 
         #region 扩展查询
@@ -80,6 +80,13 @@ namespace NewLife.Cube.Entity
 
             return Find(_.Category == category & _.Name == name);
         }
+
+        /// <summary>
+        /// 获取模型列集合
+        /// </summary>
+        /// <returns></returns>
+        public IList<ModelColumn> GetColumns() => ModelColumn.FindAll(ModelColumn._.TableId == Id);
+
         #endregion
 
         #region 高级查询
@@ -139,7 +146,6 @@ namespace NewLife.Cube.Entity
             foreach (var menu in menus.OrderByDescending(e => e.Sort))
             {
                 if (menu.FullName.IsNullOrEmpty()) continue;
-
                 var ctrl = menu.FullName.GetTypeEx();
                 if (ctrl == null || !ctrl.BaseType.IsGenericType) continue;
 
@@ -149,44 +155,73 @@ namespace NewLife.Cube.Entity
                 var factory = entityType.AsFactory();
                 if (factory == null) continue;
 
-                var table = models.FirstOrDefault(e => e.Name == entityType.Name);
-                if (table == null) table = new ModelTable { Name = entityType.Name, Enable = true };
-
-                table.Category = areaName;
-                table.Url = menu.Url.TrimStart("~");
-                table.Controller = ctrl.FullName;
-
-                table.Fill(factory.Table);
-                table.Save();
-
-                var columns = ModelColumn.FindAllByTableId(table.Id);
-                var idx = 1;
-                foreach (var field in factory.AllFields)
-                {
-                    if (!field.IsDataObjectField && field.Type.GetTypeCode() == TypeCode.Object) continue;
-
-                    var column = columns.FirstOrDefault(e => e.Name == field.Name);
-                    if (column == null)
-                    {
-                        column = new ModelColumn
-                        {
-                            Name = field.Name,
-                            Enable = true,
-
-                            ShowInList = true,
-                            ShowInForm = true,
-                        };
-                        columns.Add(column);
-                    }
-
-                    column.TableId = table.Id;
-                    column.Sort = idx++;
-
-                    column.Fill(field);
-                    //column.Save();
-                }
-                columns.Save();
+                ScanModel(areaName, menu, factory);
             }
+        }
+
+        /// <summary>
+        /// 根据菜单和实体工厂创建模型表和模型列
+        /// </summary>
+        /// <param name="menu"></param>
+        /// <param name="factory"></param>
+        public static ModelTable ScanModel(String areaName, IMenu menu, IEntityFactory factory) => ScanModel(areaName, menu.Name, menu.FullName, menu.Url.TrimStart("~"), factory);
+
+        /// <summary> 
+        /// 根据菜单和实体工厂创建模型表和模型列
+        /// </summary>
+        /// <param name="factory"></param>
+        public static ModelTable ScanModel(String areaName, String ctrlName, String ctrlFullName, String url, IEntityFactory factory)
+        {
+            //var entityTypeName = menu.Name; // 菜单名从控制器名称里面取
+            //var ctrlFullName = menu.FullName;
+            //var url = menu.Url.TrimStart("~");
+
+
+            //if (areaName.IsNullOrWhiteSpace()) areaName = menu.Parent.Name;
+            //// var areaName = menu.Parent.Name; // 这里Parent有可能为空，读取不到父级
+
+            var table = ModelTable.FindByCategoryAndName(areaName, ctrlName);
+            // var table = ModelTable.Meta.Cache.Find(e => e.Category.EqualIgnoreCase(areaName) && e.Name == entityTypeName);
+            // var table = ModelTable.Find(ModelTable._.Category == areaName & ModelTable._.Name == entityTypeName);
+
+            if (table == null) table = new ModelTable { Name = ctrlName, Enable = true };
+
+            table.Category = areaName;
+            table.Url = url;
+            table.Controller = ctrlFullName;
+
+            table.Fill(factory.Table);
+            table.Save();
+
+            var columns = ModelColumn.FindAllByTableId(table.Id);
+            var idx = 1;
+            foreach (var field in factory.AllFields)
+            {
+                if (!field.IsDataObjectField && field.Type.GetTypeCode() == TypeCode.Object) continue;
+
+                var column = columns.FirstOrDefault(e => e.Name == field.Name);
+                if (column == null)
+                {
+                    column = new ModelColumn
+                    {
+                        Name = field.Name,
+                        Enable = true,
+                        ShowInList = true,
+                        ShowInForm = ShowInForm.详情 | ShowInForm.添加 | ShowInForm.编辑,
+                    };
+                    columns.Add(column);
+                }
+
+                column.TableId = table.Id;
+                column.Sort = idx++;
+
+                column.Fill(field);
+                column.SetWidth();
+                column.Save();
+            }
+            //columns.Save(); // 模型表已是异步执行模型表生成，这里使用同步保存模型列
+
+            return table;
         }
         #endregion
     }

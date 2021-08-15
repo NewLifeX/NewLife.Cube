@@ -1,53 +1,104 @@
-﻿@using NewLife;
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
 @using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, FieldItem>)Model;
-    var entity = pair.Item1;
-    var item = pair.Item2;
+	var entity = Model.Item1;
+	var item = Model.Item2;
 
-    var fields = ViewBag.Fields as FieldCollection;
-    var dataField = fields.GetField(item.Name);
-    var dataSource = dataField?.DataSource;
+	var fs = ViewBag.Fields as FieldCollection;
+	var dataField = fs.GetField(item.Name);
+	var dataSource = dataField?.DataSource;
 
-    var err = 0;
-    if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
+	var err = 0;
+	if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
 
-    var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
-    var display = dataField?.DisplayName ?? item.DisplayName;
+	var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+	var display = dataField?.DisplayName ?? item.DisplayName;
 
-    var total = 12;
-    var label = 3;
-    var span = 4;
-    if (err == 0 && des.IsNullOrEmpty())
-    {
-        span = 0;
-    }
-    else if (item.Type == typeof(Boolean) || item.Type.IsEnum)
-    {
-        span += 1;
-    }
-    var input = total - label - span;
+	var total = 12;
+	var label = 3;
+	var span = 4;
+	if (err == 0 && des.IsNullOrEmpty())
+	{
+		span = 0;
+	}
+	else if (item.Type == typeof(Boolean) || item.Type.IsEnum)
+	{
+		span += 1;
+	}
+	var input = total - label - span;
 }
 <label class="control-label col-xs-@(label) col-sm-@label">@display</label>
 <div class="input-group col-xs-@(total - label) col-sm-@input">
-    @if (dataSource != null)
-    {
-        @Html.ForListBox(item.Name, dataSource(entity, item), entity[item.Name] as String)
-    }
-    else
-    {
-        @Html.ForEditor(item, entity)
-    }
+	@if (dataSource != null)
+	{
+		@*@Html.ForListBox(item.Name, dataSource(entity, item), entity[item.Name] as String)*@
+		@await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+	}
+	else
+	{
+		var itemModel = new ItemModel(item.Name, entity[item.Name], item.Type) { Length = item.Length };
+		@*@Html.ForEditor(item, entity)*@
+		if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null)
+		{
+			@await Html.PartialAsync("_Form_Map", Model)
+		}
+		else if (item.Readonly)
+		{
+			<label class="form-control">@entity[item.Name]</label>
+		}
+		else if (item.Type == typeof(String))
+		{
+			if (item.ItemType.EqualIgnoreCase("file", "image"))
+			{
+				@await Html.PartialAsync("_Form_File", Model)
+			}
+			else
+			{
+				@*@Html.ForString(item.Name, (String)entity[item.Name], item.Length)*@
+				@await Html.PartialAsync("_Form_String", itemModel)
+			}
+		}
+		else if (entity is IEntityTree treeEntity)
+		{
+			var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+			if (set == null || set.Parent != item.Name)
+			{
+				@await Html.PartialAsync("_Form_Editor", itemModel)
+			}
+			else
+			{
+				var root = entity.GetType().GetValue("Root") as IEntityTree;
+				// 找到完整菜单树，但是排除当前节点这个分支
+				var list = root.FindAllChildsExcept(treeEntity);
+				var data = new SelectList(list, set.Key, "TreeNodeText", entity[item.Name]);
+				@Html.DropDownList(item.Name, data, new { @class = "multiselect" })
+			}
+		}
+		else
+		{
+			@*@Html.ForEditor(item.Name, entity[item.Name], item.Type)*@
+			@await Html.PartialAsync("_Form_Editor", itemModel)
+		}
+	}
 </div>
 @if (err > 0)
 {
-    <span class="col-sm-@span alert alert-danger">
-        @Html.ValidationMessage(item.Name)
-    </span>
+	<span class="col-sm-@span alert alert-danger">
+		@Html.ValidationMessage(item.Name)
+	</span>
 }
 else if (!des.IsNullOrEmpty())
 {
-    <span class="hidden-xs col-sm-@span">@Html.ForDescription(item)</span>
+	<span class="hidden-xs col-sm-@span">
+		@{
+			//var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+			if (!des.IsNullOrWhiteSpace())
+			{
+				<span class="middle">@des</span>
+			}
+		}
+	</span>
 }

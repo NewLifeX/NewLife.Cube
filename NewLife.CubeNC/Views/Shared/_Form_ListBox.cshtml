@@ -1,0 +1,48 @@
+﻿@model ListBoxModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@using System.Collections;
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = value.GetType();
+
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+    if (NewLife.Cube.Setting.Current.BootstrapSelect)
+        atts.Add("class", "multiselect");
+    else
+        atts.Add("class", "form-control");
+    atts.Add("multiple", "");
+
+    var selectedValues = Model.SelectedValues as String;
+    var selectedList = selectedValues?.Split(",");
+}
+@if (value is IEnumerable<SelectListItem> selectList)
+{
+    @Html.ListBox(name, selectList, atts)
+}
+else if (type is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
+{
+    //var vs = EntityExtension.ToDictionary(value);
+    //var vs = typeof(EntityExtension).Invoke("ToDictionary", value);
+    IEntityFactory factory = null;
+    var dic = new Dictionary<String, String>();
+    foreach (IEntity entity in data)
+    {
+        if (factory == null) factory = entity.GetType().AsFactory();
+
+        var key = entity[factory.Unique.Name] + "";
+        dic[key] = entity + "";
+    }
+    @Html.ListBox(name, new MultiSelectList(dic, "Key", "Value", selectedList), atts)
+}
+else if (value is IDictionary dic)
+{
+    @Html.ListBox(name, new MultiSelectList(dic, "Key", "Value", selectedList), atts)
+}
+else if (value is IEnumerable items)
+{
+    @Html.ListBox(name, new MultiSelectList(items, selectedList), atts)
+}

@@ -1,0 +1,28 @@
+﻿@using NewLife.Model;
+@using XCode.Membership;
+@using NewLife.Cube.ViewModels;
+@{
+    var item = Model as MenuTree;
+    var childs = item.Children ?? new List<MenuTree>();
+    var url = item.Url.IsNullOrEmpty() ? "" : Url.Content(item.Url);
+}
+@if (childs == null || childs.Count == 0)
+{
+    <a class="dropdown-item" href="@url">
+        @item.DisplayName
+    </a>
+}
+else
+{
+    <div class="dropend">
+        <a class="dropdown-item dropdown-toggle" href="#sidebar-authentication" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+            @item.DisplayName
+        </a>
+        <div class="dropdown-menu">
+            @foreach (var menu in childs.Where(w => w.Visible))
+            {
+                @await Html.PartialAsync("_Layout_Menu_Item", menu)
+            }
+        </div>
+    </div>
+}

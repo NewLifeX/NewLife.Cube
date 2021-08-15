@@ -10,39 +10,39 @@
 }
 
 @section css{
-    <style>
-        /* 移动端 */
+<style>
+    /* 移动端 */
 
-        @@media screen and (max-width: 768px) {
+    @@media screen and (max-width: 768px) {
 
-            #cube_panel .layui-form .layui-form-item {
-                margin-left: 0px;
-            }
-
-            #cube_panel .layui-form .layui-form-label {
-                margin-right: 0px;
-            }
+        #cube_panel .layui-form .layui-form-item {
+            margin-left: 0px;
         }
 
-        .layui-form .layui-form-label {
-            width: 100px;
-            padding: 9px 5px;
-            margin-right: 20px
+        #cube_panel .layui-form .layui-form-label {
+            margin-right: 0px;
         }
+    }
 
-        .layui-form .layui-form-item {
-            margin-left: 80px;
+    .layui-form .layui-form-label {
+        width: 100px;
+        padding: 9px 5px;
+        margin-right: 20px
+    }
+
+    .layui-form .layui-form-item {
+        margin-left: 80px;
+    }
+
+    #cube_panel {
+        padding: 20px;
+    }
+
+        #cube_panel .layui-btn-container {
+            text-align: center;
+            padding-top: 15px;
         }
-
-        #cube_panel {
-            padding: 20px;
-        }
-
-            #cube_panel .layui-btn-container {
-                text-align: center;
-                padding-top: 15px;
-            }
-    </style>
+</style>
 }
 
 <div class="layui-fluid" id="mainpage">
@@ -71,6 +71,8 @@
                             var name = pi.Name;
                             var dis = pi.DisplayName;
                             var des = pi.Description;
+                            var val = obj.GetValue(name);
+                            var model = new ItemModel(name, val, pi.PropertyType);
 
                             <div class="layui-form-item">
                                 <label class="layui-form-label" for="@name">@(dis)</label>
@@ -78,13 +80,16 @@
                                     @switch (Type.GetTypeCode(pi.PropertyType))
                                     {
                                         case TypeCode.Boolean:
-                                            @Html.ForEditor(name, obj.GetValue(name), pi.PropertyType, null, new Dictionary<string, object> { { "lay-skin", "switch" }, { "lay-text", "on|off" } })
+                                            model.HtmlAttributes = new Dictionary<string, object> { { "lay-skin", "switch" }, { "lay-text", "on|off" } };
+                                            @await Html.PartialAsync("_Form_Boolean", model)
                                             break;
                                         case TypeCode.DateTime:
-                                            @Html.ForEditor(name, obj.GetValue(name), pi.PropertyType, null, new { @class = "layui-input dtController" })
+                                            model.HtmlAttributes = new { @@class = "layui-input dtController" };
+                                            @await Html.PartialAsync("_Form_DateTime", model)
                                             break;
                                         default:
-                                            @Html.ForEditor(name, obj.GetValue(name), pi.PropertyType, null, new { @class = "layui-input" })
+                                            model.HtmlAttributes = new { @@class = "layui-input" };
+                                            @await Html.PartialAsync("_Form_Editor", model)
                                             break;
                                     }
                                 </div>
@@ -107,16 +112,16 @@
 </div>
 
 @section scripts{
-    <script>
-        layui.use(['form', 'laydate'], function () {
-            var form = layui.form,
-                laydate = layui.laydate;
+<script>
+    layui.use(['form', 'laydate'], function () {
+        var form = layui.form,
+            laydate = layui.laydate;
 
-            //日期时间选择器
-            laydate.render({
-                elem: '.dtController'
-                , type: 'datetime'
-            });
+        //日期时间选择器
+        laydate.render({
+            elem: '.dtController'
+            , type: 'datetime'
         });
-    </script>
+    });
+</script>
 }

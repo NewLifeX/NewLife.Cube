@@ -116,11 +116,11 @@ namespace NewLife.Cube.Entity
         public String RoleIds { get => _RoleIds; set { if (OnPropertyChanging("RoleIds", value)) { _RoleIds = value; OnPropertyChanged("RoleIds"); } } }
 
         private String _Scopes;
-        /// <summary>能力集合。password/client_credentials</summary>
+        /// <summary>能力集合。逗号分隔，password，client_credentials</summary>
         [DisplayName("能力集合")]
-        [Description("能力集合。password/client_credentials")]
+        [Description("能力集合。逗号分隔，password，client_credentials")]
         [DataObjectField(false, false, true, 200)]
-        [BindColumn("Scopes", "能力集合。password/client_credentials", "")]
+        [BindColumn("Scopes", "能力集合。逗号分隔，password，client_credentials", "")]
         public String Scopes { get => _Scopes; set { if (OnPropertyChanging("Scopes", value)) { _Scopes = value; OnPropertyChanged("Scopes"); } } }
 
         private Int32 _Auths;
@@ -303,7 +303,7 @@ namespace NewLife.Cube.Entity
             /// <summary>授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制</summary>
             public static readonly Field RoleIds = FindByName("RoleIds");
 
-            /// <summary>能力集合。password/client_credentials</summary>
+            /// <summary>能力集合。逗号分隔，password，client_credentials</summary>
             public static readonly Field Scopes = FindByName("Scopes");
 
             /// <summary>次数</summary>
@@ -375,7 +375,7 @@ namespace NewLife.Cube.Entity
             /// <summary>授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制</summary>
             public const String RoleIds = "RoleIds";
 
-            /// <summary>能力集合。password/client_credentials</summary>
+            /// <summary>能力集合。逗号分隔，password，client_credentials</summary>
             public const String Scopes = "Scopes";
 
             /// <summary>次数</summary>

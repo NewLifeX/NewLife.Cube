@@ -1,0 +1,222 @@
+.login.login-5 .login-aside {
+  background-color: #ffffff;
+  -webkit-box-shadow: 0px 0px 40px rgba(177, 187, 208, 0.15);
+  box-shadow: 0px 0px 40px rgba(177, 187, 208, 0.15);
+}
+.login.login-5 .login-aside .wizard-nav {
+  padding: 0;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step {
+  padding: 0.75rem 0;
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+  margin-bottom: 1.5rem;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step:last-child {
+  margin-bottom: 0;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step .wizard-wrapper {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step .wizard-icon {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+  background-color: #F3F6F9;
+  margin-right: 1.4rem;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step .wizard-icon .wizard-check {
+  display: none;
+  font-size: 1.4rem;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step .wizard-icon .wizard-number {
+  font-weight: 600;
+  color: #3F4254;
+  font-size: 1.35rem;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step .wizard-label {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step .wizard-label .wizard-title {
+  color: #181C32;
+  font-weight: 500;
+  font-size: 1.4rem;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step .wizard-label .wizard-desc {
+  color: #B5B5C3;
+  font-size: 1.08rem;
+  font-weight: 500;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-icon {
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+  background-color: #E1F0FF;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-icon .wizard-check {
+  color: #3699FF;
+  display: inline-block;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-icon .wizard-number {
+  display: none;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-label .wizard-title {
+  color: #B5B5C3;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=done] .wizard-label .wizard-desc {
+  color: #D1D3E0;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] {
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-icon {
+  -webkit-transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, -webkit-box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, -webkit-box-shadow 0.15s ease;
+  background-color: #E1F0FF;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-icon .wizard-check {
+  color: #3699FF;
+  display: none;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-icon .wizard-number {
+  color: #3699FF;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-label .wizard-title {
+  color: #181C32;
+}
+.login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step[data-wizard-state=current] .wizard-label .wizard-desc {
+  color: #B5B5C3;
+}
+.login.login-5 .login-aside .aside-img-wizard {
+  min-height: 320px !important;
+  background-size: 400px;
+}
+.login.login-5 .login-content {
+  background-color: #F3F5F9;
+}
+.login.login-5 .login-content .form-group .fv-help-block {
+  font-size: 1.1rem !important;
+  padding-top: 3px;
+}
+
+@media (min-width: 992px) {
+  .login.login-5 .login-aside {
+    width: 100%;
+    max-width: 600px;
+  }
+  .login.login-5 .login-aside .aside-img {
+    min-height: 550px !important;
+    background-size: 630px;
+  }
+  .login.login-5 .login-content .top-signup {
+    max-width: 650px;
+    width: 100%;
+  }
+  .login.login-5 .login-content .top-signin {
+    max-width: 450px;
+    width: 100%;
+  }
+  .login.login-5 .login-content .top-forgot {
+    max-width: 450px;
+    width: 100%;
+  }
+  .login.login-5 .login-content .login-form {
+    width: 100%;
+    max-width: 450px;
+  }
+  .login.login-5 .login-content .login-form.login-form-signup {
+    max-width: 650px;
+  }
+}
+@media (min-width: 992px) and (max-width: 1399.98px) {
+  .login.login-5 .login-aside {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+@media (max-width: 991.98px) {
+  .login.login-5 .login-aside .aside-img {
+    min-height: 500px !important;
+    background-size: 500px;
+  }
+  .login.login-5 .login-aside .login-logo {
+    text-align: center;
+  }
+  .login.login-5 .login-aside .wizard-nav {
+    padding: 0;
+    -ms-flex-line-pack: center;
+    align-content: center;
+  }
+  .login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step {
+    margin-bottom: 0.5rem;
+  }
+  .login.login-5 .login-aside .wizard-nav .wizard-steps .wizard-step:last-child {
+    margin-bottom: 0;
+  }
+  .login.login-5 .login-content .top-signup {
+    width: 100%;
+    max-width: 400px;
+  }
+  .login.login-5 .login-content .top-signin {
+    max-width: 400px;
+    width: 100%;
+  }
+  .login.login-5 .login-content .top-forgot {
+    max-width: 400px;
+    width: 100%;
+  }
+  .login.login-5 .login-content .login-form {
+    width: 100%;
+    max-width: 400px;
+  }
+}
+@media (max-width: 575.98px) {
+  .login.login-5 .login-aside .aside-img {
+    min-height: 300px !important;
+    background-size: 350px;
+  }
+}

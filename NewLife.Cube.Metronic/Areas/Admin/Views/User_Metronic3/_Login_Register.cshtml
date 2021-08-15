@@ -1,0 +1,55 @@
+﻿@model LoginViewModel
+@using NewLife.Common
+@{
+    var set = Model;
+    //var returnUrl = (String)ViewBag.ReturnUrl;
+    //var url = Url.Action("Register", "User", new { r = returnUrl });
+}
+
+<div class="login-form login-signup">
+    <!--begin::Form-->
+    <form class="form" action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" method="post" id="kt_login_signup_form">
+        @Html.ValidationSummary()
+        <!--begin::Title-->
+        <div class="pb-13 pt-lg-0 pt-5">
+            <h3 class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg">@set.DisplayName 注册</h3>
+            <p class="text-muted font-weight-bold font-size-h4">填写注册帐号明细资料</p>
+        </div>
+        <!--end::Title-->
+        <!--begin::Form group-->
+        <div class="form-group">
+            <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg font-size-h6" type="email" id="reg_email" name="email" placeholder="输入你的邮箱地址" autocomplete="off" />
+        </div>
+        <!--end::Form group-->
+
+        <div class="form-group">
+            <input type="text" class="form-control form-control-solid h-auto py-6 px-6 rounded-lg font-size-h6" id="reg_username" name="username" placeholder="用户名" autocomplete="off">
+        </div>
+        <!--begin::Form group-->
+        <div class="form-group">
+            <input type="password" class="form-control form-control-solid h-auto py-6 px-6 rounded-lg font-size-h6" id="reg_password" name="password" placeholder="密码" autocomplete="off">
+        </div>
+        <!--end::Form group-->
+        <!--begin::Form group-->
+        <div class="form-group">
+            <input type="password" class="form-control form-control-solid h-auto py-6 px-6 rounded-lg font-size-h6" id="reg_password2" name="password2" placeholder="重复密码" autocomplete="off">
+        </div>
+        <!--end::Form group-->
+        <!--begin::Form group-->
+        <div class="form-group">
+            <label class="checkbox mb-0">
+                <input type="checkbox" name="agree" />
+                <span></span>
+                我同意 <a href="#">条款和协议</a>
+            </label>
+        </div>
+        <!--end::Form group-->
+        <!--begin::Form group-->
+        <div class="form-group d-flex flex-wrap pb-lg-0 pb-3">
+            <button type="submit" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-4">注册</button>
+            <button type="button" id="kt_login_signup_cancel" class="btn btn-light-primary font-weight-bolder font-size-h6 px-8 py-4 my-3">返回登录</button>
+        </div>
+        <!--end::Form group-->
+    </form>
+    <!--end::Form-->
+</div>

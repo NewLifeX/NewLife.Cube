@@ -18,11 +18,11 @@
 }
 
 @section css{
-    <style>
-        .layui-fluid {
-            padding: 10px;
-        }
-    </style>
+<style>
+    .layui-fluid {
+        padding: 10px;
+    }
+</style>
 }
 
 <div class="layui-fluid" id="mainpage">
@@ -35,57 +35,14 @@
                             <tr>
                                 @foreach (var item in fields)
                                 {
-                                    // 要替换的字段
-                                    var df = fields.GetField(item.Name);
-                                    if (df != null)
+                                    if (item.Type == typeof(DateTime))
                                     {
-                                        var header = df.Header ?? df.DisplayName ?? df.Name;
-
-                                        <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle',sort:''}">@header</th>
+                                        var width = item.Name.EndsWithIgnoreCase("Date") ? 96 : 150;
+                                        <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
                                     }
                                     else
                                     {
-                                        // 在该字段之前插入的字段
-                                        var dfs = fields.GetBeforeFields(item.Name);
-                                        foreach (var elm in dfs)
-                                        {
-                                            df = elm;
-                                            var header = df.Header ?? df.DisplayName ?? df.Name;
-                                            if (df.HeaderUrl.IsNullOrEmpty())
-                                            {
-                                                <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle'}">@header</th>
-                                            }
-                                            else
-                                            {
-                                                <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle'}">@header</th>
-                                            }
-                                        }
-
-                                        if (item.Type == typeof(DateTime))
-                                        {
-                                            var width = item.Name.EndsWithIgnoreCase("Date") ? 96 : 150;
-                                            <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
-                                        }
-                                        else
-                                        {
-                                            <th lay-data="{field:'@item.Name',title:'@item.Description'}">@item.DisplayName</th>
-                                        }
-
-                                        // 在该字段之后插入的字段
-                                        dfs = fields.GetAfterFields(item.Name);
-                                        foreach (var elm in dfs)
-                                        {
-                                            df = elm;
-                                            var header = df.Header ?? df.DisplayName ?? df.Name;
-                                            if (df.HeaderUrl.IsNullOrEmpty())
-                                            {
-                                                <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle'}">@header</th>
-                                            }
-                                            else
-                                            {
-                                                <th lay-data="{field:'@item.Name',title:'@df.HeaderTitle'}">@header</th>
-                                            }
-                                        }
+                                        <th lay-data="{field:'@item.Name',title:'@item.Description'}">@item.DisplayName</th>
                                     }
                                 }
 
@@ -101,91 +58,20 @@
                                 <tr>
                                     @foreach (var item in fields)
                                     {
-                                        // 要替换的字段
-                                        var df = fields.GetField(item.Name);
-                                        if (df != null)
+                                        var df = item as ListField;
+                                        if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
                                         {
-                                            var name = df.GetDisplayName(entity) ?? entity[item.Name];
-                                            if (df.DataVisible != null && !df.DataVisible(entity, item))
-                                            {
-                                                <td></td>
-                                            }
-                                            else if (df.Url.IsNullOrEmpty())
-                                            {
-                                                <td title="@df.Title">@name</td>
-                                            }
-                                            else
-                                            {
-                                                var url = df.GetUrl(entity);
-                                                if (df.DataAction.IsNullOrEmpty())
-                                                {
-                                                    <td title="@df.Title">@name</td>
-                                                }
-                                                else
-                                                {
-                                                    <td title="@df.Title">@name</td>
-                                                }
-                                            }
+                                            <td></td>
+                                        }
+                                        else if (df != null && !df.DataAction.IsNullOrEmpty())
+                                        {
+                                            var url = df.GetUrl(entity);
+                                            var name = df.GetDisplayName(entity) ?? df.Header;
+                                            <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
                                         }
                                         else
                                         {
-                                            // 在该字段之前插入的字段
-                                            var dfs = fields.GetBeforeFields(item.Name);
-                                            foreach (var elm in dfs)
-                                            {
-                                                df = elm;
-                                                var name = df.GetDisplayName(entity) ?? df.Header;
-                                                if (df.DataVisible != null && !df.DataVisible(entity, item))
-                                                {
-                                                    <td></td>
-                                                }
-                                                else if (df.Url.IsNullOrEmpty())
-                                                {
-                                                    <td title="@df.Title">@name</td>
-                                                }
-                                                else
-                                                {
-                                                    var url = df.GetUrl(entity);
-                                                    if (df.DataAction.IsNullOrEmpty())
-                                                    {
-                                                        <td title="@df.Title">@name</td>
-                                                    }
-                                                    else
-                                                    {
-                                                        <td title="@df.Title">@name</td>
-                                                    }
-                                                }
-                                            }
-
-                                            @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, FieldItem>(entity, item))
-
-                                            // 在该字段之后插入的字段
-                                            dfs = fields.GetAfterFields(item.Name);
-                                            foreach (var elm in dfs)
-                                            {
-                                                df = elm;
-                                                var name = df.GetDisplayName(entity) ?? df.Header;
-                                                if (df.DataVisible != null && !df.DataVisible(entity, item))
-                                                {
-                                                    <td></td>
-                                                }
-                                                else if (df.Url.IsNullOrEmpty())
-                                                {
-                                                    <td title="@df.Title">@name</td>
-                                                }
-                                                else
-                                                {
-                                                    var url = df.GetUrl(entity);
-                                                    if (df.DataAction.IsNullOrEmpty())
-                                                    {
-                                                        <td title="@df.Title">@name</td>
-                                                    }
-                                                    else
-                                                    {
-                                                        <td title="@df.Title">@name</td>
-                                                    }
-                                                }
-                                            }
+                                            @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
                                         }
                                     }
                                 </tr>
@@ -199,29 +85,29 @@
 </div>
 
 @section scripts{
-    <script>
-        layui.use('table', function () {
-            var table = layui.table
-            $ = layui.$;
+<script>
+    layui.use('table', function () {
+        var table = layui.table
+        $ = layui.$;
 
-            table.init('parse-table-demo', { //转化静态表格
-                page: true,
-                limit: 20,
-                limits: [20, 50, 100],
-                size: "sm",
-                even: true,
-                toolbar: "#toolbarDemo"
-            });
+        table.init('parse-table-demo', { //转化静态表格
+            page: true,
+            limit: 20,
+            limits: [20, 50, 100],
+            size: "sm",
+            even: true,
+            toolbar: "#toolbarDemo"
         });
-    </script>
+    });
+</script>
 
-    <script type="text/html" id="toolbarDemo">
-        <div class="layui-btn-container">
-            <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
-            <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
-            <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
-        </div>
-    </script>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+        <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+    </div>
+</script>
 
     @* 设置行操作按钮*@
     @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))

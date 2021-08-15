@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.202
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31521.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Others", "Others", "{32891F65-FBA1-42B2-918E-61F3A9623F2A}"
 	ProjectSection(SolutionItems) = preProject
@@ -11,17 +11,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Others", "Others", "{32891F
 		Readme.MD = Readme.MD
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewLife.Cube", "NewLife.Cube\NewLife.Cube.csproj", "{7AC0E99B-CFD8-4B59-8838-503EAA30523F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.CubeNC", "NewLife.CubeNC\NewLife.CubeNC.csproj", "{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CubeDemo", "CubeDemo\CubeDemo.csproj", "{188BFE7C-542D-4C9B-98BB-EFEA95C2CCDB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CubeDemoNC", "CubeDemoNC\CubeDemoNC.csproj", "{C9830F6C-8EB3-4115-A7CA-821F02349E3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnitTest", "XUnitTest\XUnitTest.csproj", "{E3B44ECB-BE8B-4878-B987-CAF116D57961}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.AdminLTE", "NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj", "{B18A926E-842E-45DD-A0D0-0078D898D72B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Tabler", "NewLife.Cube.Tabler\NewLife.Cube.Tabler.csproj", "{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Metronic", "NewLife.Cube.Metronic\NewLife.Cube.Metronic.csproj", "{FD226577-A7C3-4A67-AEA6-B89745A6A950}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Blazor", "NewLife.Cube.Blazor\NewLife.Cube.Blazor.csproj", "{664872A2-7E4D-41D2-8606-95B1E416EB08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,18 +33,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7AC0E99B-CFD8-4B59-8838-503EAA30523F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7AC0E99B-CFD8-4B59-8838-503EAA30523F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7AC0E99B-CFD8-4B59-8838-503EAA30523F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7AC0E99B-CFD8-4B59-8838-503EAA30523F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{188BFE7C-542D-4C9B-98BB-EFEA95C2CCDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{188BFE7C-542D-4C9B-98BB-EFEA95C2CCDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{188BFE7C-542D-4C9B-98BB-EFEA95C2CCDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{188BFE7C-542D-4C9B-98BB-EFEA95C2CCDB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C9830F6C-8EB3-4115-A7CA-821F02349E3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9830F6C-8EB3-4115-A7CA-821F02349E3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9830F6C-8EB3-4115-A7CA-821F02349E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,6 +49,22 @@ Global
 		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B18A926E-842E-45DD-A0D0-0078D898D72B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CF34F4E-E080-410C-B5F1-24BCFD64BFE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD226577-A7C3-4A67-AEA6-B89745A6A950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD226577-A7C3-4A67-AEA6-B89745A6A950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD226577-A7C3-4A67-AEA6-B89745A6A950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD226577-A7C3-4A67-AEA6-B89745A6A950}.Release|Any CPU.Build.0 = Release|Any CPU
+		{664872A2-7E4D-41D2-8606-95B1E416EB08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{664872A2-7E4D-41D2-8606-95B1E416EB08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{664872A2-7E4D-41D2-8606-95B1E416EB08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{664872A2-7E4D-41D2-8606-95B1E416EB08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

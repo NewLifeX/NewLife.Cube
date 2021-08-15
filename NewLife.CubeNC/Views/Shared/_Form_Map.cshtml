@@ -1,0 +1,54 @@
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+	var entity = Model.Item1;
+	var field = Model.Item2;
+
+	var fs = ViewBag.Fields as FieldCollection;
+	var set = NewLife.Cube.Setting.Current;
+	var map = field.MapProvider;
+
+	// 如果没有外部关联，输出数字编辑框和标签
+	// 如果映射目标列表项过多，不能使用下拉
+	var fact = map == null ? null : EntityFactory.CreateOperate(map.EntityType);
+
+}
+@if (map == null || fact != null && fact.Session.Count > set.MaxDropDownList)
+{
+	if (!field.MapField.IsNullOrEmpty()) field = fs.GetField(field.MapField) ?? field;
+
+	@await Html.PartialAsync("_Form_Editor", new ItemModel(field.Name, entity[field.Name], field.Type){Length=field.Length})
+	<text>&nbsp;</text>
+	<label class="">@entity[field.Name]</label>
+}
+@{
+	// 为该字段创建下拉菜单
+	var dic = map?.GetDataSource();
+	if (dic != null)
+	{
+		// 表单页的映射下拉，开头增加无效值选项
+		if (fact != null && !map.Key.IsNullOrEmpty())
+		{
+			if (fact.Table.FindByName(map.Key) is FieldItem fi && fi.Type.IsInt())
+			{
+				var dic2 = new Dictionary<Object, String>();
+				if (!dic.ContainsKey(-1))
+				{
+					dic2[0] = "<0>";
+					foreach (var item in dic)
+					{
+						dic2[item.Key] = item.Value;
+					}
+					dic = dic2;
+				}
+			}
+		}
+		var dic3 = dic.ToDictionary(e => e.Key + "", e => e.Value);
+
+		//@Html.ForDropDownList(field.MapField, dic, entity[field.MapField])
+		@await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(field.MapField, dic3,  entity[field.MapField] + ""))
+	}
+}

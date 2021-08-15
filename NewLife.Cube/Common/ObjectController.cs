@@ -76,46 +76,20 @@ namespace NewLife.Cube
 
             if (Value != null)
             {
-                var pis = GetMembers(Value);
-                var dic = new Dictionary<String, List<CubePropertyInfo>>();
-                foreach (var pi in pis)
+                var list = GetMembers(Value?.GetType()).Select(e => e.Clone()).ToList();
+                foreach (var item in list)
                 {
-                    var cat = pi.GetCustomAttribute<CategoryAttribute>();
-                    var category = cat?.Category ?? "";
-                    if (!dic.TryGetValue(category, out var list)) dic[category] = list = new List<CubePropertyInfo>();
-
-                    var dis = pi.GetDisplayName();
-                    var des = pi.GetDescription();
-                    if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
-                    if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
-                    {
-                        des = dis.Substring("。");
-                        dis = dis.Substring(null, "。");
-                    }
-
-                    var cpi = new CubePropertyInfo
-                    {
-                        Name = pi.Name,
-                        DisplayName = dis ?? pi.Name,
-                        Description = des,
-                        PropertyType = pi.PropertyType,
-                        TypeStr = pi.PropertyType.Name
-                    };
-
-                    list.Add(cpi);
+                    item.Name = FormatHelper.FormatName(item.Name, formatType);
+                    //item.FormatType = formatType;
                 }
+                var dic = list
+                    .GroupBy(e => e.Category + "")
+                    .ToDictionary(e => e.Key, e => e.ToList());
+
                 model.Properties = dic;
             }
 
             if (!IsJsonRequest) return View("ObjectForm", model);
-
-            foreach (var property in model.Properties)
-            {
-                foreach (var item in property.Value)
-                {
-                    item.FormatType = formatType;
-                }
-            }
 
             return Ok(data: model);
         }
@@ -204,17 +178,44 @@ namespace NewLife.Cube
             WriteLog("修改", true, sb.ToString());
         }
 
-        /// <summary>获取要显示编辑的成员</summary>
-        /// <param name="obj"></param>
+        private static Dictionary<Type, IList<CubePropertyInfo>> _cache = new();
+        /// <summary>获取指定类型的成员集合（带缓存）</summary>
+        /// <param name="type"></param>
         /// <returns></returns>
-        protected virtual PropertyInfo[] GetMembers(Object obj)
+        public static IList<CubePropertyInfo> GetMembers(Type type)
         {
-            var type = Value as Type;
-            if (type == null) type = obj.GetType();
+            if (_cache.TryGetValue(type, out var rs)) return rs;
 
             var pis = type.GetProperties(true);
-            //pis = pis.Where(pi => pi.CanWrite && pi.GetIndexParameters().Length == 0 && pi.GetCustomAttribute<XmlIgnoreAttribute>() == null).ToArray();
-            return pis.ToArray();
+            var list = new List<CubePropertyInfo>();
+            foreach (var pi in pis)
+            {
+                var cat = pi.GetCustomAttribute<CategoryAttribute>();
+                var category = cat?.Category ?? "";
+                var dis = pi.GetDisplayName();
+                var des = pi.GetDescription();
+                if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
+                if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
+                {
+                    des = dis.Substring("。");
+                    dis = dis.Substring(null, "。");
+                }
+
+                var cpi = new CubePropertyInfo
+                {
+                    Name = pi.Name,
+                    DisplayName = dis ?? pi.Name,
+                    Description = des,
+                    PropertyType = pi.PropertyType,
+                    Category = category,
+                };
+
+                list.Add(cpi);
+            }
+
+            _cache[type] = list;
+
+            return list;
         }
     }
 }

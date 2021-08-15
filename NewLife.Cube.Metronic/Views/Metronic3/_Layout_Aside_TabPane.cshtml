@@ -1,0 +1,57 @@
+﻿@using NewLife.Common;
+@using NewLife.Model;
+@using NewLife.Cube.ViewModels;
+@using XCode;
+@{
+    var user = ViewBag.User as IUser ?? ManageProvider.User;
+    var fact = ManageProvider.Menu;
+
+    var menus = fact.Root.Childs;
+    if (user?.Role != null)
+    {
+        menus = fact.GetMySubMenus(fact.Root.ID, user, true);
+    }
+
+    // 如果顶级只有一层，并且至少有三级目录，则提升一级
+    if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
+
+    var menuTree = MenuTree.GetMenuTree(pMenuTree =>
+    {
+        var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
+        return subMenus;
+    }, list =>
+    {
+
+        var menuList = (from menu in list
+                            // where m.Visible
+                        select new MenuTree
+                        {
+                            ID = menu.ID,
+                            Name = menu.Name,
+                            DisplayName = menu.DisplayName ?? menu.Name,
+                            Url = Url.Content(menu.Url),
+                            Icon = menu.Icon,
+                            Visible = menu.Visible,
+                            ParentID = menu.ParentID,
+                            Permissions = menu.Permissions
+                        }).ToList();
+        return menuList.Count > 0 ? menuList : null;
+    }, menus);
+}
+
+<!-- 开始副侧边栏-->
+<div class="aside-secondary d-flex flex-row-fluid">
+    <!--begin::Workspace-->
+    <div class="aside-workspace scroll scroll-push my-2">
+        <div class="tab-content">
+            <div class="tab-pane fade active show" id="cube_aside_menu_admin">
+                @await Html.PartialAsync("_Layout_Aside_Menu", menuTree)
+            </div>
+            <div class="tab-pane fade" id="cube_aside_menu_setting">
+                @await Html.PartialAsync("_Layout_Aside_TabPane_Setting")
+            </div>
+        </div>
+    </div>
+    <!--end::Workspace-->
+</div>
+<!-- 结束副侧边栏-->

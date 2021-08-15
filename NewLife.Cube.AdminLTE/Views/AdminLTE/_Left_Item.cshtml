@@ -1,0 +1,32 @@
+﻿@using NewLife.Model;
+@using XCode.Membership;
+@using NewLife.Cube.ViewModels;
+@{
+    var item = Model as MenuTree;
+    var childs = item.Children ?? new List<MenuTree>();
+    var url = item.Url.IsNullOrEmpty() ? "" : Url.Content(item.Url);
+
+    var icos = new[] { "text-danger", "text-warning", "text-info" };
+}
+<li class="nav-item">
+    @if (childs.Any())
+    {
+        <a href="#" class="nav-link">
+            <i class="nav-icon fa fa-caret-right"></i>
+            @item.DisplayName
+        </a>
+        <ul class="nav nav-treeview">
+            @foreach (var menu2 in childs.Where(w => w.Visible))
+            {
+                @await Html.PartialAsync("_Left_Item", menu2);
+            }
+        </ul>
+    }
+    else
+    {
+        <a href="@url" target="main" class="nav-link">
+            <i class="far fa-circle nav-icon @icos[item.ID % icos.Length]"></i>
+            <p>@item.DisplayName</p>
+        </a>
+    }
+</li>

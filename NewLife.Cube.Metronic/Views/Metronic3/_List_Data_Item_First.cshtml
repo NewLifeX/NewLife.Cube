@@ -1,0 +1,97 @@
+﻿@using NewLife;
+@using Microsoft.AspNetCore.Routing
+@using XCode;
+@using XCode.Configuration;
+@{
+    var pair = (ValueTuple<IEntity, DataField>)Model;
+    var entity = pair.Item1;
+    var item = pair.Item2;
+
+    var value = entity[item.Name];
+}
+@if (item.PrimaryKey)
+{
+    <td class="text-center">@value</td>
+}
+else
+{
+    switch (Type.GetTypeCode(item.Type))
+    {
+        case TypeCode.Boolean:
+            if ((Boolean)value)
+            {
+                <td class="text-center text-primary align-middle">
+                    <i class="la la-check"></i>
+                </td>
+            }
+            else
+            {
+                <td class="text-center text-danger align-middle">
+                    <i class="la la-remove"></i>
+                </td>
+            }
+            break;
+        case TypeCode.DateTime:
+            var dt = (DateTime)value;
+            if (dt > DateTime.MinValue && dt.Year > 1900)
+            {
+                <td class="text-center align-middle">@(((DateTime)value).ToFullString(""))</td>
+            }
+            else
+            {
+                <td class="text-center align-middle"></td>
+            }
+            break;
+        case TypeCode.Decimal:
+            <td class="text-right align-middle">@value</td>
+            break;
+        case TypeCode.Single:
+        case TypeCode.Double:
+            <td class="text-right align-middle">@value</td>
+            break;
+        case TypeCode.Byte:
+        case TypeCode.Int16:
+        case TypeCode.Int32:
+        case TypeCode.Int64:
+        case TypeCode.UInt16:
+        case TypeCode.UInt32:
+        case TypeCode.UInt64:
+            //特殊处理枚举
+            if (item.Type.IsEnum)
+            {
+                var v = value;
+                var val = v + "";
+                try
+                {
+                    val = EnumHelper.GetDescription((Enum)v) ?? v + "";
+                }
+                catch { }
+                <td class="align-middle">@val</td>
+            }
+            else
+            {
+                <td class="text-right align-middle">@Convert.ToInt64(value).ToString("n0")</td>
+            }
+            break;
+        case TypeCode.String:
+        default:
+            {
+                var map = item.Map;
+                if (map != null && map.Provider != null && value + "" != "")
+                {
+                    var name = map.Provider.EntityType.Name;
+                    var key = map.Provider.Key;
+                    var val = entity[item.OriField.Name];
+                    <td class="align-middle"><a href="@name?@key=@val">@value</a></td>
+                }
+                else
+                {
+                    <td class="align-middle">@value</td>
+                }
+            }
+            break;
+            @*default:
+                <td>@value</td>
+                break;*@
+    }
+}

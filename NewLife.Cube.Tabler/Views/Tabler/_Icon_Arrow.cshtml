@@ -1,0 +1,5 @@
+﻿@model Boolean
+@{
+    var flag = Model;
+}
+<i class="ti ti-@(flag ? "arrow-up" : "arrow-down")" style="color: @(flag ? "green" : "red");font-size:20px"></i>

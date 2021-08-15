@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace NewLife.Cube.Services
 
         /// <summary>实例化作业服务</summary>
         /// <param name="provider"></param>
-        public JobService(IServiceProvider provider) => _tracer = provider.GetService<ITracer>();
+        public JobService(IServiceProvider provider) => _tracer = ModelExtension.GetService<ITracer>(provider);
 
         private static TimerX _timer;
         /// <summary>启动</summary>
@@ -134,14 +135,39 @@ namespace NewLife.Cube.Services
             }
 
             var job = TimerX.Current?.State as CronJob;
-            WriteLog("执行", success, message, job);
+            WriteLog(nameof(RunSql), success, message, job);
         }
 
         /// <summary></summary>
-        /// <param name="connName"></param>
+        /// <param name="connNames"></param>
         [DisplayName("备份数据库")]
-        [Description("参数是连接名connName")]
-        public static void BackupDb(String connName) => XTrace.WriteLine("在[{0}]上备份数据库", connName);
+        [Description("参数是连接名connName，多个逗号隔开。仅支持SQLite")]
+        public static void BackupDb(String connNames)
+        {
+            var ns = connNames.Split(",", ";");
+            foreach (var name in ns)
+            {
+                if (DAL.ConnStrs.ContainsKey(name))
+                {
+                    // 仅支持备份SQLite
+                    var dal = DAL.Create(name);
+                    if (dal.DbType == DatabaseType.SQLite)
+                    {
+                        XTrace.WriteLine("在[{0}]上备份数据库", name);
+
+                        var sw = Stopwatch.StartNew();
+
+                        //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, false);
+                        var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
+
+                        sw.Stop();
+
+                        var job = TimerX.Current?.State as CronJob;
+                        WriteLog(nameof(BackupDb), true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}", job);
+                    }
+                }
+            }
+        }
         #endregion
     }
 
@@ -193,12 +219,7 @@ namespace NewLife.Cube.Services
             _timer.TryDispose();
             _timer = new TimerX(DoJobWork, job, expession) { Async = true };
 
-            // 如果下一次执行时间在未来，表示用户希望尽快执行一次
-            var ts = job.NextTime - DateTime.Now;
-            if (ts.TotalMilliseconds >= 1000)
-                _timer.SetNext((Int32)ts.TotalMilliseconds);
-            else
-                job.NextTime = _timer.Cron.GetNext(_timer.NextTime);
+            job.NextTime = _timer.NextTime;
             job.Update();
 
             _id = id;

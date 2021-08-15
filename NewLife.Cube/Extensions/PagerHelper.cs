@@ -40,7 +40,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static String GetFormAction(this Pager pager, String action = null)
         {
-            var req = HttpContext.Current?.Request;
+            var req = NewLife.Web.HttpContext.Current?.Request;
             if (req == null) return action;
 
             // 表单提交，不需要排序、分页，不需要表单提交上来的数据，只要请求字符串过来的数据

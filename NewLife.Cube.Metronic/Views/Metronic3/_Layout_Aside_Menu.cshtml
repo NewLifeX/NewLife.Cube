@@ -1,0 +1,17 @@
+﻿@using XCode;
+@using NewLife.Model;
+@using NewLife.Cube.ViewModels;
+@{
+    var menus = Model as IList<MenuTree> ?? new List<MenuTree>();
+}
+
+<div class="aside-menu-wrapper flex-column-fluid px-3 px-lg-10 py-5" id="kt_aside_menu_wrapper">
+    <div class="aside-menu min-h-lg-800px" data-menu-vertical="1" data-menu-scroll="1" id="kt_aside_menu">
+        <ul class="menu-nav">
+            @foreach (var menu in menus.Where(w => w.Visible))
+            {
+                @await Html.PartialAsync("_Layout_Aside_MenuItem", menu)
+            }
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,126 @@
+﻿@using NewLife.Common;
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var page = ViewBag.Page as Pager;
+}
+<div class="btn-group">
+    <button data-toggle="dropdown" class="btn btn-success btn-sm btn-sm-force dropdown-toggle" aria-expanded="false">
+        高级
+        <span class="ace-icon fa fa-caret-down icon-on-right"></span>
+    </button>
+
+    <div class="dropdown-menu dropdown-menu-md dropdown-menu-right">
+        <ul class="navi navi-hover py-5">
+            <li class="navi-item">
+                <a href="@Url.Action("ExportExcel")" class="navi-link" data-toggle="tooltip" data-placement="top" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据">
+                    <span class="navi-icon"><i class="la la-file-excel"></i></span>
+                    <span class="navi-text">导出Excel</span>
+                </a>
+            </li>
+            <li class="navi-item">
+                <a href="@Url.Action("ExportCsv")" class="navi-link" data-toggle="tooltip" data-placement="top" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输">
+                    <span class="navi-icon"><i class="la la-file-csv"></i></span>
+                    <span class="navi-text">导出CSV</span>
+                </a>
+            </li>
+            <li class="navi-item">
+                <a href="@Url.Action("ExportXml")" class="navi-link">
+                    <span class="navi-icon"><i class="la la-file-alt"></i></span>
+                    <span class="navi-text">导出XML</span>
+                </a>
+            </li>
+            <li class="navi-item">
+                <a href="@Url.Action("ExportJson")" class="navi-link">
+                    <span class="navi-icon"><i class="la la-file"></i></span>
+                    <span class="navi-text">导出Json</span>
+                </a>
+            </li>
+            <li class="navi-separator"></li>
+            <li class="navi-item">
+                <a href="@Url.Action("Share")" class="navi-link" data-toggle="tooltip" data-placement="top" title="把当前页数据分享给其他人">
+                    <span class="navi-icon"><i class="la la-share-alt-square"></i></span>
+                    <span class="navi-text">分享</span>
+                </a>
+            </li>
+            <li class="navi-item">
+                <a href="@Url.Action("Sync")" class="navi-link" data-action="action" data-confirm="该操作将清空数据并不可恢复！确认同步？" data-toggle="tooltip" data-placement="top" title="清空并从主服务器同步数据">
+                    <span class="navi-icon"><i class="la la-sync"></i></span>
+                    <span class="navi-text">同步</span>
+                </a>
+            </li>
+            @if (this.Has(PermissionFlags.Delete))
+            {
+                <li class="navi-separator"></li>
+                <li class="navi-item">
+                    <a href="@Url.Action("DeleteSelect")" class="navi-link" data-action="action" data-fields="keys" data-confirm="该操作将删除选中数据并不可恢复！确认删除？" data-toggle="tooltip" data-placement="top" title="删除选中数据">
+                        <span class="navi-icon"><i class="la la-remove"></i></span>
+                        <span class="navi-text">删除选中对象</span>
+                    </a>
+                </li>
+                <li class="navi-item">
+                    <a href="@Url.Action("DeleteAll")" class="navi-link" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" data-toggle="tooltip" data-placement="top" title="删除当前查询的所有数据">
+                        <span class="navi-icon"><i class="la la-circle-o"></i></span>
+                        <span class="navi-text">删除全部对象</span>
+                        <span class="label label-light-danger label-rounded font-weight-bold">!</span>
+                    </a>
+                </li>
+            }
+            @if (SysConfig.Current.Develop && user != null && user.Role.IsSystem)
+            {
+                <li class="navi-separator"></li>
+                <li class="navi-item">
+                    <a href="@Url.Action("Backup")" class="navi-link" data-action="action" data-toggle="tooltip" data-placement="top" title="备份到服务器本地目录">
+                        <span class="navi-icon"><i class="la la-cloud-upload"></i></span>
+                        <span class="navi-text">备份</span>
+                    </a>
+                </li>
+                <li class="navi-item">
+                    <a href="@Url.Action("Restore")" class="navi-link" data-action="action" data-toggle="tooltip" data-placement="top" title="从服务器本地目录还原">
+                        <span class="navi-icon"><i class="la la-cloud-download"></i></span>
+                        <span class="navi-text">还原</span>
+                    </a>
+                </li>
+                <li class="navi-item">
+                    <a href="@Url.Action("BackupAndExport")" class="navi-link" data-toggle="tooltip" data-placement="top" title="备份并下载">
+                        <span class="navi-icon"><i class="la la-archive"></i></span>
+                        <span class="navi-text">备份导出压缩文件</span>
+                    </a>
+                </li>
+                if (page == null || page.Params.Count == 0)
+                {
+                    <li class="navi-separator"></li>
+                    <li class="navi-item">
+                        <a href="@Url.Action("Clear")" class="navi-link" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" data-toggle="tooltip" data-placement="top" title="删除数据表所有数据，并重置自增字段">
+                            <span class="navi-icon"><i class="la la-trash"></i></span>
+                            <span class="navi-text">清空数据表</span>
+                            <span class="label label-light-danger label-rounded font-weight-bold">!</span>
+                        </a>
+                    </li>
+                }
+                <li class="navi-separator"></li>
+                <li class="navi-item">
+                    <a href="@Url.Action("MakeList")" class="navi-link">
+                        <span class="navi-icon"><i class="la la-th-list"></i></span>
+                        <span class="navi-text">生成列表</span>
+                        
+                    </a>
+                </li>
+                <li class="navi-item">
+                    <a href="@Url.Action("MakeForm")" class="navi-link">
+                        <span class="navi-icon"><i class="la la-pencil-square-o"></i></span>
+                        <span class="navi-text">生成表单</span>
+                        
+                    </a>
+                </li>
+                <li class="navi-item">
+                    <a href="@Url.Action("MakeSearch")" class="navi-link">
+                        <span class="navi-icon"><i class="la la-search"></i></span>
+                        <span class="navi-text">生成搜索</span>
+                        
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+    
+</div><!-- /.btn-group -->

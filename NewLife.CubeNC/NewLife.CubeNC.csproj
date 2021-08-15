@@ -2,16 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方平台</AssemblyTitle>
     <Description>魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2021 NewLife</Copyright>
-    <Version>3.10.2021.0520-beta5</Version>
-    <FileVersion>3.10.2021.0520</FileVersion>
-    <AssemblyVersion>3.10.*</AssemblyVersion>
+    <Version>4.0.2021.0809</Version>
+    <FileVersion>4.0.2021.0809</FileVersion>
+    <AssemblyVersion>4.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\Bin</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
@@ -28,7 +28,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>新增代理委托功能；初步支持用户资源作为子系统数据权限</PackageReleaseNotes>
+    <PackageReleaseNotes>重构视图引擎，支持多皮肤模板</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -60,8 +60,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.10.2021.519-beta5" />
-    <PackageReference Include="NewLife.XCode" Version="10.1.2021.519-beta5" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.809" />
+    <PackageReference Include="NewLife.XCode" Version="10.2.2021.809" />
   </ItemGroup>
 
   <ItemGroup>
@@ -97,11 +97,9 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\UserModel.cs" Link="Areas\Admin\Models\UserModel.cs" />
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
-    <Compile Include="..\NewLife.Cube\Common\DataField.cs" Link="Common\DataField.cs" />
     <Compile Include="..\NewLife.Cube\Common\DataPermissionAttribute.cs" Link="Common\DataPermissionAttribute.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityController.cs" Link="Common\EntityController.cs" />
     <Compile Include="..\NewLife.Cube\Common\EntityTreeController.cs" Link="Common\EntityTreeController.cs" />
-    <Compile Include="..\NewLife.Cube\Common\FieldCollection.cs" Link="Common\FieldCollection.cs" />
     <Compile Include="..\NewLife.Cube\Common\FormatType.cs" Link="Common\FormatType.cs" />
     <Compile Include="..\NewLife.Cube\Common\MembershipExtensions.cs" Link="Common\MembershipExtensions.cs" />
     <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
@@ -176,22 +174,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Shared\_ValidationScriptsPartial.cshtml" />
-    <Content Remove="wwwroot\Content\js\jquery-3.6.0.min.js" />
-    <Content Remove="wwwroot\Content\js\jquery.autosize.min.js" />
-    <Content Remove="wwwroot\Content\js\jquery.bootstrap-duallistbox.min.js" />
-    <Content Remove="wwwroot\Content\js\jquery.colorbox.min.js" />
-    <Content Remove="wwwroot\Content\js\jquery1x.min.js" />
-    <Content Remove="wwwroot\Content\layui\css\layui_main_cube.css" />
-    <Content Remove="wwwroot\Content\layui\layui_cube.js" />
+    <Content Remove="Views\Shared\_List_Data_Item_First.cshtml" />
+    <Content Remove="Views\Shared\_StatLevel.cshtml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Remove="wwwroot\Content\js\jquery.autosize.min.js" />
-    <EmbeddedResource Remove="wwwroot\Content\js\jquery.bootstrap-duallistbox.min.js" />
-    <EmbeddedResource Remove="wwwroot\Content\js\jquery.colorbox.min.js" />
-    <EmbeddedResource Remove="wwwroot\Content\js\jquery1x.min.js" />
-  </ItemGroup>
   <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
@@ -212,11 +198,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Web\Models\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Update="Areas\Admin\Views\_ViewStart.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
   </ItemGroup>
 </Project>

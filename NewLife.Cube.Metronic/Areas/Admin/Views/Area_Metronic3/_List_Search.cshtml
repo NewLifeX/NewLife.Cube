@@ -1,0 +1,28 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using NewLife.Cube;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var p = ViewBag.Page as Pager;
+}
+
+<div class="d-inline-flex align-items-center flex-shrink-0">
+    @Html.ActionLink("所有省份", "Index", new { ParentID = 0 }, new { @class = "btn btn-primary btn-sm mr-2" }.ToDictionary())
+    @await Html.PartialAsync("_Area3", "")
+
+    <div class="d-inline-flex align-items-center">
+        <label for="idStart" class="text-nowrap mb-0">编码范围：</label>
+        <div class="input-group">
+            <input name="idStart" id="idStart" type="text" value="@p["idStart"]" class="form-control form-control-sm" style="width: 60px;" />
+        </div>
+    </div>
+    <div class="d-inline-flex align-items-center">
+        <label for="idEnd" class="mb-0">～</label>
+        <div class="input-group">
+            <input name="idEnd" id="idEnd" type="text" value="@p["idEnd"]" class="form-control form-control-sm" style="width: 60px;" />
+        </div>
+    </div>
+</div>
+
+@*@await Html.PartialAsync("_Enable")*@

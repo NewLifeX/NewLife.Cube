@@ -10,6 +10,20 @@ using XCode.Membership;
 
 namespace NewLife.Cube.Entity
 {
+    /// <summary>表单显示</summary>
+    [Flags]
+    public enum ShowInForm
+    {
+        /// <summary>详情</summary>
+        详情 = 1,
+
+        /// <summary>添加</summary>
+        添加 = 2,
+
+        /// <summary>编辑</summary>
+        编辑 = 4
+    }
+
     /// <summary>模型列。实体表的数据列</summary>
     public partial class ModelColumn : Entity<ModelColumn>
     {
@@ -49,6 +63,10 @@ namespace NewLife.Cube.Entity
         /// <summary>模型表</summary>
         [Map(__.TableId, typeof(ModelTable), "Id")]
         public String TableName => Table + "";
+
+        /// <summary>对应字段</summary>
+        [XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        public Field Field => Meta.Table.FindByName(Name);
         #endregion
 
         #region 扩展查询
@@ -139,6 +157,29 @@ namespace NewLife.Cube.Entity
             }
 
             IsDataObjectField = field.IsDataObjectField;
+        }
+
+        /// <summary>
+        /// 根据DisplayName长度设置列宽，两个字-80，三个字-90，四个字-105，五个字-115
+        /// </summary>
+        public void SetWidth()
+        {
+            var length = DisplayName.Length;
+            var width = length switch
+            {
+                < 3 => "80",
+                3 => "90",
+                4 => "105",
+                > 4 => "115",
+            };
+
+            // 特殊类型处理
+            if (DataType == nameof(DateTime))
+            {
+                width = "155";
+            }
+
+            Width = width;
         }
         #endregion
     }
