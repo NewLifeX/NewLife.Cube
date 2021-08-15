@@ -28,6 +28,12 @@ namespace NewLife.Cube
         /// <summary>菜单顺序。扫描时会反射读取</summary>
         protected static Int32 MenuOrder { get; set; }
 
+        /// <summary>实例化</summary>
+        public ObjectController()
+        {
+            PageSetting.EnableNavbar = false;
+        }
+
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
 #if __CORE__
