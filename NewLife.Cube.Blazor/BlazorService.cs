@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using NewLife.Cube.Extensions;
 
 namespace NewLife.Cube
@@ -27,9 +25,10 @@ namespace NewLife.Cube
             app.UseEndpoints(endpoint =>
             {
                 // Razor路由方案
-                endpoint.MapRazorPages();
+                var razor = endpoint.MapRazorPages();
                 // Blazor通信方案
-                endpoint.MapBlazorHub();
+                var component = endpoint.MapBlazorHub();
+                endpoint.MapFallbackToPage("{area=}/{controller=}/{action=}", "/CubeIndex");
             });
 
             return app;
