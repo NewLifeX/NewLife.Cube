@@ -108,7 +108,7 @@ namespace CubeDemoNC
             app.UseAdminLTE(env);
             app.UseTabler(env);
             app.UseMetronic(env);
-            app.UseBlazor(env);
+            //app.UseBlazor(env);
 
             app.UseAuthorization();
 
