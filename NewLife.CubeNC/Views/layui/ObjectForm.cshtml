@@ -1,12 +1,15 @@
-﻿@model NewLife.Cube.ViewModels.ObjectModel
-@using NewLife;
+﻿@using NewLife;
 @using System.ComponentModel;
 @using System.Reflection;
 @using NewLife.Reflection;
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
-    var obj = Model.Value;
-    var dic = Model.Properties;
+
+	var obj = (Object)Model;
+	var list = ViewBag.Fields as IList<DataField>;
+	var dic = list
+		.GroupBy(e => e.Category + "")
+		.ToDictionary(e => e.Key, e => e.ToList());
 }
 
 @section css{
@@ -50,14 +53,14 @@
         <div class="layui-col-md12">
             <div class="layui-panel" id="cube_panel">
                 <div class="layui-btn-container">
-                    @await Html.PartialAsync("_Object_Nav", Model.Value)
+                    @await Html.PartialAsync("_Object_Nav", obj)
                 </div>
 
                 @using (Html.BeginForm("Update", null, FormMethod.Post, new { @class = "layui-form", @ha = "123" }))
                 {
                     @Html.AntiForgeryToken()
                     @Html.ValidationSummary(true)
-                    foreach (var item in Model.Properties)
+                    foreach (var item in dic)
                     {
                         if (dic.Count > 1)
                         {
@@ -68,16 +71,23 @@
 
                         foreach (var pi in item.Value)
                         {
-                            var name = pi.Name;
-                            var dis = pi.DisplayName;
-                            var des = pi.Description;
-                            var val = obj.GetValue(name);
-                            var model = new ItemModel(name, val, pi.PropertyType);
+						var name = pi.Name;
+						var val = obj.GetValue(name);
+						var dis = pi.DisplayName;
+						var des = pi.Description;
+						var dataSource = pi.DataSource;
+                            var model = new ItemModel(name, val, pi.Type);
 
                             <div class="layui-form-item">
                                 <label class="layui-form-label" for="@name">@(dis)</label>
                                 <div class="layui-input-inline">
-                                    @switch (Type.GetTypeCode(pi.PropertyType))
+								@if (dataSource != null)
+								{
+									@await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
+								}
+								else
+								{
+                                    @switch (Type.GetTypeCode(pi.Type))
                                     {
                                         case TypeCode.Boolean:
                                             model.HtmlAttributes = new Dictionary<string, object> { { "lay-skin", "switch" }, { "lay-text", "on|off" } };
@@ -92,7 +102,8 @@
                                             @await Html.PartialAsync("_Form_Editor", model)
                                             break;
                                     }
-                                </div>
+                          								}
+      </div>
                                 <div class="layui-form-mid layui-word-aux">@des</div>
                             </div>
                         }

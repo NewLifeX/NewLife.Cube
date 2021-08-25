@@ -143,7 +143,6 @@
     <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
     <Compile Include="..\NewLife.Cube\ViewModels\FieldModel.cs" Link="ViewModels\FieldModel.cs" />
     <Compile Include="..\NewLife.Cube\ViewModels\LoginConfigModel.cs" Link="ViewModels\LoginConfigModel.cs" />
-    <Compile Include="..\NewLife.Cube\ViewModels\ObjectModel.cs" Link="ViewModels\ObjectModel.cs" />
     <Compile Include="..\NewLife.Cube\ViewModels\SelectUserModel.cs" Link="ViewModels\SelectUserModel.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />

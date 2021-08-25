@@ -1,0 +1,20 @@
+﻿@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+	var entity = Model as IEntity;
+	var fields = ViewBag.Fields as FieldCollection;
+}
+<div class="card-body">
+	<div class="row">
+		@foreach (var item in fields)
+		{
+			if (!item.PrimaryKey)
+			{
+				@await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+			}
+		}
+	</div>
+</div>
+@await Html.PartialAsync("_Form_Footer", entity)
+@await Html.PartialAsync("_Form_Action", entity)

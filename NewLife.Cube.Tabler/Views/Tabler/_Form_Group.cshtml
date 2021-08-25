@@ -1,0 +1,27 @@
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+	var pair = Model;
+	var entity = pair.Item1;
+	var field = pair.Item2;
+
+	//var set = NewLife.Cube.Setting.Current;
+	//var cls = set.FormGroupClass;
+	//if (cls.IsNullOrEmpty()) { cls = "form-group col-xs-12 col-sm-6 col-lg-4"; }
+}
+@if (field.IsBigText())
+{
+	<div class="form-group col-md-12">
+		@await Html.PartialAsync("_Form_BigText", (Object)Model)
+	</div>
+}
+else
+{
+	<div class="col-xs-12 col-sm-6">
+		<div class="form-group mb-3 row">
+			@await Html.PartialAsync("_Form_Item", (Object)Model)
+		</div>
+	</div>
+}
