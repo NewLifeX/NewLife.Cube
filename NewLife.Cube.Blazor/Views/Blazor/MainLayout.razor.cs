@@ -5,20 +5,24 @@ using System.Threading.Tasks;
 using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using NewLife.Common;
 using NewLife.Cube.ViewModels;
+using NewLife.Model;
 using XCode.Membership;
 
 namespace NewLife.Cube.Blazor.Views.Blazor
 {
     public partial class MainLayout
     {
-
         [Inject] private IManageProvider _provider { get; set; }
+
+        private IManageUser User { get => _provider.Current; }
+        private SysConfig Config { get => SysConfig.Current; }
 
         /// <summary>
         /// 菜单列表
         /// </summary>
-        public IEnumerable<MenuItem> IconSideMenuItems { get; set; }
+        public IEnumerable<MenuItem> MenuItems { get; set; }
 
         /// <summary>
         /// 展示头
@@ -26,9 +30,11 @@ namespace NewLife.Cube.Blazor.Views.Blazor
         public Tab SideTabItems { get; set; } = new Tab();
 
         /// <summary>
-        /// 展示的地址
+        /// 主框架操作列表
         /// </summary>
-        public string ActivePage { get; set; }
+        public IEnumerable<MenuItem> MainInfoItems { get; set; }
+
+
 
         protected override void OnInitialized()
         {
@@ -37,41 +43,45 @@ namespace NewLife.Cube.Blazor.Views.Blazor
 
         protected override async Task OnInitializedAsync()
         {
-            //var menus = new List<MenuItem>();
-            //var parent = new MenuItem("Blazor", "#", "fa fa-fa");
-            //var childs = new List<MenuItem>();
-            //childs.Add(new MenuItem("List", "/Blazor/List", "fa fa-fa")
-            //{
-            //    Parent = parent
-            //});
-            //childs.Add(new MenuItem("List1", "/Blazor/List1", "fa fa-fa")
-            //{
-            //    Parent = parent
-            //});
-            //parent.Items = childs;
-            //menus.Add(parent);
-            //IconSideMenuItems = menus;
+            #region 菜单转换
             var menus = GetMenu();
             if (menus != null)
             {
                 var cmenus = new List<MenuItem>();
-                foreach (var item in menus)
+                menus.ToList().ForEach(item =>
                 {
                     var childs = new List<MenuItem>();
                     var parent = new MenuItem(item.Name, item.Url, "fa fa-fa");
                     if (item.Children != null)
-                        foreach (var child in item.Children)
+                        item.Children.ToList().ForEach(child =>
+                        {
                             childs.Add(new MenuItem(child.Name, child.Url, "fa fa-fa")
                             {
                                 Parent = parent
                             });
+                        });
                     parent.Items = childs;
                     cmenus.Add(parent);
-                }
-                var first = cmenus.FirstOrDefault();
-                if (first != null) first.IsActive = true;
-                IconSideMenuItems = cmenus;
+                });
+                cmenus.FirstOrDefault().IsActive = true;
+                MenuItems = cmenus;
             }
+            #endregion
+
+            MainInfoItems = new List<MenuItem>
+                {
+                    new MenuItem(User.NickName)
+                    {
+                        IsActive = true,
+                        Items = new List<MenuItem>
+                        {
+                            new("网站首页", icon:"fa fa-cog"),
+                            new("个人信息", icon:"fa fa-user"),
+                            new("注销", icon:"fa fa-power-off"),
+                        }
+                    },
+                };
+
             await base.OnInitializedAsync();
         }
 
@@ -116,7 +126,7 @@ namespace NewLife.Cube.Blazor.Views.Blazor
                         var index = 0;
                         builder.OpenElement(index++, "div");
                         builder.OpenElement(index++, "iframe");
-                        builder.AddAttribute(index++, "src", item.Url);
+                        builder.AddAttribute(index++, "src", "Blazor/" + item.Url);
                         builder.AddAttribute(index++, "width", "100%");
                         builder.AddAttribute(index++, "height", "100%");
                         builder.CloseElement();
