@@ -78,7 +78,7 @@ namespace NewLife.Cube.ViewModels
 
         /// <summary>扩展属性</summary>
         [XmlIgnore, IgnoreDataMember]
-        public IDictionary<String, String> Properties { get; } = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<String, String> Properties { get; set; } = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
         #endregion
 
         #region 构造
@@ -132,6 +132,35 @@ namespace NewLife.Cube.ViewModels
                     }
                 }
             }
+        }
+
+        /// <summary>克隆</summary>
+        /// <returns></returns>
+        public virtual DataField Clone()
+        {
+            //var df = GetType().CreateInstance() as DataField;
+
+            //df.Name = Name;
+            //df.DisplayName = DisplayName;
+            //df.Description = Description;
+            //df.Category = Category;
+            //df.Type = Type;
+            //df.DataType = DataType;
+            //df.ItemType = ItemType;
+            //df.Length = Length;
+            //df.Precision = Precision;
+            //df.Scale = Scale;
+            //df.Nullable = Nullable;
+            //df.PrimaryKey = PrimaryKey;
+            //df.Readonly = Readonly;
+            //df.MapField = MapField;
+            //df.MapProvider = MapProvider;
+            //df.DataSource = DataSource;
+            //df.Properties = Properties;
+
+            //return df;
+
+            return MemberwiseClone() as DataField;
         }
 
         /// <summary>是否大文本字段</summary>
