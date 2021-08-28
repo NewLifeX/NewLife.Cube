@@ -1,6 +1,8 @@
-﻿using System.Reflection;
+﻿using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using NewLife.Cube.Extensions;
@@ -21,6 +23,12 @@ namespace NewLife.Cube
             services.AddRazorPages(options => { options.RootDirectory = "/Views/Blazor"; });
             services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
             services.AddBootstrapBlazor();
+
+            services.AddHttpContextAccessor();
+            services.AddScoped<HttpContextAccessor>();
+
+            services.AddHttpClient();
+            services.AddScoped<HttpClient>();
 
             return services;
         }

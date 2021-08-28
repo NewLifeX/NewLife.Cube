@@ -444,6 +444,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("{type}管理")]
+        [AllowAnonymous]
         public virtual ActionResult Index(Pager p = null)
         {
             if (p == null) p = ViewBag.Page as Pager;

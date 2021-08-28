@@ -1,10 +1,5 @@
 ﻿@page "/Blazor/{Module}/{Action}"
 @page "/Blazor/{Area}/{Module}/{Action}"
-@code {
-    [Parameter] public string Area { get; set; }
-    [Parameter] public string Module { get; set; }
-    [Parameter] public string Action { get; set; }
-}
 <h1>@Area</h1>
 <h1>@Module</h1>
 <h1>@Action</h1>
