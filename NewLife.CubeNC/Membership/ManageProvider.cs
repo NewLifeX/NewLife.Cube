@@ -5,6 +5,7 @@ using System.Security.Principal;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.Entity;
@@ -23,6 +24,7 @@ namespace NewLife.Cube
     {
         #region 静态实例
         internal static IHttpContextAccessor Context;
+        public static IEndpointRouteBuilder EndpointRoute;
         #endregion
 
         #region 属性
@@ -363,6 +365,7 @@ namespace NewLife.Cube
 
             var provider = app.ApplicationServices;
             ManageProvider.Provider = ModelExtension.GetService<IManageProvider>(provider);
+            ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
             ManageProvider2.Context = ModelExtension.GetService<IHttpContextAccessor>(provider);
 
             // 初始化数据库

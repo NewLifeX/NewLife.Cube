@@ -1,0 +1,7 @@
+﻿@page "/Blazor/{**segment}"
+@namespace NewLife.Cube.Blazor.Views.Blazor
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_BlazorLayout";
+}
+<component type="typeof(LevelLayout)" render-mode="ServerPrerendered" />

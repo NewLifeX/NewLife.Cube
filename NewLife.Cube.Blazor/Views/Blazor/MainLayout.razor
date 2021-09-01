@@ -1,14 +1,30 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="pg-header">
-
+    <div class="row g-3">
+        <div class="col-12">
+            <div style="float:left;font-size:28px;font-weight:600;padding:3px 20px;">
+                @Config.DisplayName
+            </div>
+            <div style="float:right;display:flex;">
+                <div style="display:inline-block;padding-top:5px;">
+                    <Avatar Url="Content/images/Argo-C.png" IsCircle="true" Size="Size.Small" />
+                </div>
+                <div style="display:inline-block;padding-top:5px;">
+                    <Menu Items="@MainInfoItems" DisableNavigation="true" />
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <div class="pg-content">
     <div class="menu fl">
-        <Menu Items="@IconSideMenuItems" DisableNavigation="true" IsVertical="true" OnClick="@((e) => { return CallBackMenuClick(e); })" />
+        <div style="height:100%;width:100%;overflow-y:auto;">
+            <Menu Items="@MenuItems" DisableNavigation="true" IsVertical="true" OnClick="@((e) => { return CallBackMenuClick(e); })" />
+        </div>
     </div>
     <div class="content fr">
-        <Tab ShowExtendButtons="true" ShowClose="true" @ref="SideTabItems" OnClickTab="@((e) => { return CallBackTabClick(e); })" />
+        <Tab ShowExtendButtons="true" ShowClose="true" @ref="SideTabItems" />
     </div>
 </div>
 <div class="pg-footer">
@@ -29,7 +45,7 @@
 
     .pg-header {
         margin: 0 auto;
-        height: 48px;
+        height: auto;
     }
 
     .pg-footer {
