@@ -12,6 +12,7 @@ using XCode;
 using XCode.Membership;
 using static XCode.Membership.User;
 using AreaX = XCode.Membership.Area;
+using System.IO;
 
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
@@ -362,6 +363,31 @@ namespace NewLife.Cube.Controllers
             }
 
             return Json(0, null, list);
+        }
+        #endregion
+
+        #region 头像
+        /// <summary>获取用户头像</summary>
+        /// <param name="id">用户编号</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public virtual ActionResult Avatar(Int32 id)
+        {
+            if (id <= 0) throw new ArgumentNullException(nameof(id));
+
+            var user = ManageProvider.Provider?.FindByID(id) as IUser;
+            if (user == null) throw new Exception("用户不存在 " + id);
+
+            var set = Setting.Current;
+            var av = set.UploadPath.CombinePath(user.Avatar).GetBasePath();
+            if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
+
+#if __CORE__
+            var vs = System.IO.File.ReadAllBytes(av);
+            return File(vs, "image/png");
+#else
+            return File(av, "image/png");
+#endif
         }
         #endregion
     }

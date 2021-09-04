@@ -824,13 +824,20 @@ namespace NewLife.Cube
             if (user == null || user.Avatar.IsNullOrEmpty()) return null;
 
             var set = Setting.Current;
-            if (set.AvatarPath.IsNullOrEmpty()) return null;
 
-            var av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
+            if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWithIgnoreCase("/Sso/"))
+            {
+                var av = set.UploadPath.CombinePath(user.Avatar).GetBasePath();
+                if (File.Exists(av)) return "/Cube/Avatar?id=" + user.ID;
+            }
 
-            if (File.Exists(av)) return "/Sso/Avatar?id=" + user.ID;
+            if (!set.AvatarPath.IsNullOrEmpty())
+            {
+                var av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
+                if (File.Exists(av)) return "/Sso/Avatar?id=" + user.ID;
+            }
 
-            return user.Avatar;
+            return null;
         }
 
         private static Boolean? _IsDevelop;

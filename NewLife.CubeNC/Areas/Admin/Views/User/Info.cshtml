@@ -21,7 +21,7 @@
                     <strong>@ViewBag.StatusMessage</strong>
                 </div>
             }
-            @using (Html.BeginForm("Info", null, new { id = Model[fact.Unique.Name] }))
+            @using (Html.BeginForm("Info", null, new { id = Model[fact.Unique.Name] }, FormMethod.Post, null, new { enctype = "multipart/form-data" }))
             {
                 @Html.ValidationSummary()
                 if (!user.Avatar.IsNullOrEmpty())
@@ -29,7 +29,7 @@
                     <div class="form-group">
                         <label class="control-label col-md-2"></label>
                         <div class="input-group col-md-6">
-                            <img src="@user.Avatar" />
+                            <img src="@user.GetAvatarUrl()" style="max-width: 400px; max-height: 400px" />
                         </div>
                     </div>
                 }
@@ -77,6 +77,14 @@
                     <div class="input-group col-md-2">
                         @(user.Roles.Join(",", r => r + ""))
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">头像</label>
+                    <div class="input-group col-md-2">
+                        <label class="">@user.Avatar</label> &nbsp;
+                        <input accept="image/*" id="Avatar" name="Avatar" type="file" />
+                    </div>
+
                 </div>
                 <div class="form-group">
                     <label class="control-label col-md-2">登录次数</label>
