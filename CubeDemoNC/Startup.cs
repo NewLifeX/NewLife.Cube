@@ -39,12 +39,9 @@ namespace CubeDemoNC
 
             services.AddControllersWithViews();
             services.AddCube();
-
-            //services.AddHttpContextAccessor();
-            // Blazor Server方式渲染
-            //services.AddBootstrapBlazor();
-            services.AddRazorPages();
-            services.AddServerSideBlazor().AddCircuitOptions(options => { options.DetailedErrors = true; });
+#if NET50
+            services.AddBlazor();
+#endif
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -108,7 +105,9 @@ namespace CubeDemoNC
             app.UseAdminLTE(env);
             app.UseTabler(env);
             app.UseMetronic(env);
-            //app.UseBlazor(env);
+#if NET50
+            app.UseBlazor(env);
+#endif
 
             app.UseAuthorization();
 

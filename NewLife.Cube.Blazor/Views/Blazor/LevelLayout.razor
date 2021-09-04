@@ -1,8 +1,13 @@
 ﻿@inherits LayoutComponentBase
 
-<div id="main">
-    @Body
-</div>
+<Router AppAssembly="@this.GetType().Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound>
+        <p>Sorry, there's nothing at this address.</p>
+    </NotFound>
+</Router>
 
 <Toast />
 <Dialog />
