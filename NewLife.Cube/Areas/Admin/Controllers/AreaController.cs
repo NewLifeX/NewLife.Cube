@@ -87,5 +87,12 @@ namespace NewLife.Cube.Admin.Controllers
 
             return base.ScanActionMenu(menu);
         }
+
+        public ActionResult Map()
+        {
+            PageSetting.EnableNavbar = false;
+
+            return View("Map");
+        }
     }
 }
