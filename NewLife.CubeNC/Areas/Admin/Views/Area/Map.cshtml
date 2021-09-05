@@ -1,0 +1,263 @@
+﻿@model XCode.Membership.User
+@using System.Linq
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using NewLife.Cube.Entity;
+@using NewLife;
+@using NewLife.Security;
+@using NewLife.Serialization;
+@{
+    Layout = null;
+
+    var cfg = NewLife.Common.SysConfig.Current;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var provinces = Area.Root.Childs;
+    var cities = provinces.SelectMany(e => e.Childs.Where(e => e.Longitude > 0)).ToList();
+    var all = provinces.Union(cities).ToList();
+    var data = new List<Object>();
+    var data2 = new List<Object>();
+    foreach (var item in all)
+    {
+        if (item.Longitude != 0 || item.Latitude != 0)
+        {
+            if (item.Kind != "直辖市")
+            {
+                data.Add(new
+                {
+                    name = item.Name,
+                    value = new[] { item.Longitude, item.Latitude, Rand.Next(10, 300) },
+                });
+            }
+            else
+            {
+                data2.Add(new
+                {
+                    name = item.Name,
+                    value = new[] { item.Longitude, item.Latitude, Rand.Next(10, 300) },
+                });
+            }
+        }
+    }
+}
+<!DOCTYPE html>
+<html lang="zh-CN" style="height: 100%">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+    <title>@title</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!-- JQuery作为一等公民，页面内部随时可能使用 -->
+    <script src="@res/js/jquery-3.6.0.min.js"></script>
+    <script src="@res/echarts/echarts.min.js"></script>
+    <script src="@res/echarts/dataTool.min.js"></script>
+    <script src="@res/echarts/bmap.min.js"></script>
+    @*<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>*@
+    @*<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@5/dist/extension/dataTool.min.js"></script>*@
+    @*<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-gl@2/dist/echarts-gl.min.js"></script>*@
+    @*<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts-stat@latest/dist/ecStat.min.js"></script>*@
+    @*<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/china.js"></script>*@
+    @*<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>*@
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=1oZMeCCk9B0EzP5CrzaT4S7i6VFH0o2b"></script>
+    @*<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@5/dist/extension/bmap.min.js"></script>*@
+
+    <style type="text/css">
+        .anchorBL {
+            display: none
+        }
+    </style>
+</head>
+<body style="height: 100%; margin: 0">
+    <div id="main" style="height: 100%;"></div>
+    <script type="text/javascript">
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom);
+        var option;
+
+        var data = @Html.Raw(data.ToJson(true));
+        var data2 = @Html.Raw(data2.ToJson(true));
+
+        option = {
+            title: {
+                text: '全国主要城市空气质量 - 模拟数据',
+                subtext: '魔方快速开发平台',
+                sublink: 'http://cube.newlifex.com',
+                left: 'center'
+            },
+            tooltip : {
+                trigger: 'item'
+            },
+            bmap: {
+                center: [104.114129, 37.550339],
+                zoom: 5,
+                roam: true,
+                mapStyle: {
+                    styleJson: [{
+                        'featureType': 'water',
+                        'elementType': 'all',
+                        'stylers': {
+                            'color': '#d1d1d1'
+                        }
+                    }, {
+                        'featureType': 'land',
+                        'elementType': 'all',
+                        'stylers': {
+                            'color': '#f3f3f3'
+                        }
+                    }, {
+                        'featureType': 'railway',
+                        'elementType': 'all',
+                        'stylers': {
+                            'visibility': 'off'
+                        }
+                    }, {
+                        'featureType': 'highway',
+                        'elementType': 'all',
+                        'stylers': {
+                            'color': '#fdfdfd'
+                        }
+                    }, {
+                        'featureType': 'highway',
+                        'elementType': 'labels',
+                        'stylers': {
+                            'visibility': 'off'
+                        }
+                    }, {
+                        'featureType': 'arterial',
+                        'elementType': 'geometry',
+                        'stylers': {
+                            'color': '#fefefe'
+                        }
+                    }, {
+                        'featureType': 'arterial',
+                        'elementType': 'geometry.fill',
+                        'stylers': {
+                            'color': '#fefefe'
+                        }
+                    }, {
+                        'featureType': 'poi',
+                        'elementType': 'all',
+                        'stylers': {
+                            'visibility': 'off'
+                        }
+                    }, {
+                        'featureType': 'green',
+                        'elementType': 'all',
+                        'stylers': {
+                            'visibility': 'off'
+                        }
+                    }, {
+                        'featureType': 'subway',
+                        'elementType': 'all',
+                        'stylers': {
+                            'visibility': 'off'
+                        }
+                    }, {
+                        'featureType': 'manmade',
+                        'elementType': 'all',
+                        'stylers': {
+                            'color': '#d1d1d1'
+                        }
+                    }, {
+                        'featureType': 'local',
+                        'elementType': 'all',
+                        'stylers': {
+                            'color': '#d1d1d1'
+                        }
+                    }, {
+                        'featureType': 'arterial',
+                        'elementType': 'labels',
+                        'stylers': {
+                            'visibility': 'off'
+                        }
+                    }, {
+                        'featureType': 'boundary',
+                        'elementType': 'all',
+                        'stylers': {
+                            'color': '#fefefe'
+                        }
+                    }, {
+                        'featureType': 'building',
+                        'elementType': 'all',
+                        'stylers': {
+                            'color': '#d1d1d1'
+                        }
+                    }, {
+                        'featureType': 'label',
+                        'elementType': 'labels.text.fill',
+                        'stylers': {
+                            'color': '#999999'
+                        }
+                    }]
+                }
+            },
+            series : [
+                {
+                    name: 'pm2.5',
+                    type: 'scatter',
+                    coordinateSystem: 'bmap',
+                    data: data,
+                    symbolSize: function (val) {
+                        return val[2] / 10;
+                    },
+                    encode: {
+                        value: 2
+                    },
+                    label: {
+                        formatter: '{b}',
+                        position: 'right',
+                        show: false
+                    },
+                    emphasis: {
+                        label: {
+                            show: true
+                        }
+                    }
+                },
+                {
+                    name: 'Top 5',
+                    type: 'effectScatter',
+                    coordinateSystem: 'bmap',
+                    data: data2,
+                    symbolSize: function (val) {
+                        return val[2] / 10;
+                    },
+                    encode: {
+                        value: 2
+                    },
+                    showEffectOn: 'render',
+                    rippleEffect: {
+                        brushType: 'stroke'
+                    },
+                    hoverAnimation: true,
+                    label: {
+                        formatter: '{b}',
+                        position: 'right',
+                        show: true
+                    },
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowColor: '#333'
+                    },
+                    zlevel: 1
+                }
+            ]
+        };
+
+        option && myChart.setOption(option);
+    </script>
+</body>
+</html>
