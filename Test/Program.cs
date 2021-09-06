@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
+using NewLife.IO;
 using NewLife.Log;
 using NewLife.School.Entity;
 using NewLife.Security;
@@ -78,7 +79,17 @@ namespace Test
 
         static void Test3()
         {
+            using var csv = new CsvFile("Area.csv");
+            while (true)
+            {
+                var line = csv.ReadLine();
+                if (line == null) break;
 
+                for (int i = 0; i < line.Length; i++)
+                {
+                    if (line[i].Length >= 45) XTrace.WriteLine(line[i]);
+                }
+            }
         }
     }
 }

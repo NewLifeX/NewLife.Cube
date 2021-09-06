@@ -6,6 +6,7 @@
     var fact = ViewBag.Factory as IEntityFactory;
     var p = ViewBag.Page as Pager;
 }
+<a href="/Admin/Area/Map" target="_blank">地图</a> &nbsp;
 @Html.ActionLink("所有省份", "Index", new { ParentID = 0 })
 @await Html.PartialAsync("_Area3", "")
 <div class="form-group">
