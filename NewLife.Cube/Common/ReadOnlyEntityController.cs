@@ -717,7 +717,7 @@ namespace NewLife.Cube
         /// <param name="p">分页</param>
         /// <returns></returns>
         [AllowAnonymous]
-        [DisplayName("Csv接口")]
+        [DisplayName("Excel接口")]
         public virtual async Task<ActionResult> Csv(String token, Pager p)
         {
             var issuer = ValidToken(token);
@@ -740,7 +740,7 @@ namespace NewLife.Cube
             //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
             //if (ft != null) ft.AllowSynchronousIO = true;
 
-            OnExportCsv(fs, list, rs.Body);
+            await OnExportCsv(fs, list, rs.Body);
 #else
             var rs = Response;
             rs.Charset = "UTF-8";
@@ -748,6 +748,68 @@ namespace NewLife.Cube
             //rs.ContentType = "application/vnd.ms-excel";
 
             await OnExportCsv(fs, list, rs.OutputStream);
+
+            rs.Flush();
+#endif
+
+            return new EmptyResult();
+        }
+
+        /// <summary>Csv接口</summary>
+        /// <param name="token">令牌</param>
+        /// <param name="p">分页</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [DisplayName("Excel接口")]
+        public virtual async Task<ActionResult> Excel(String token, Pager p)
+        {
+            var issuer = ValidToken(token);
+
+            var list = SearchData(p);
+
+            // 准备需要输出的列
+            var fs = new List<FieldItem>();
+            foreach (var fi in Factory.AllFields)
+            {
+                if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
+                if (!fi.IsDataObjectField)
+                {
+                    var pi = Factory.EntityType.GetProperty(fi.Name);
+                    if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
+                }
+
+                fs.Add(fi);
+            }
+
+            // 基本属性与扩展属性对调顺序
+            for (var i = 0; i < fs.Count; i++)
+            {
+                var fi = fs[i];
+                if (fi.OriField != null)
+                {
+                    var k = fs.IndexOf(fi.OriField);
+                    if (k >= 0)
+                    {
+                        fs[i] = fs[k];
+                        fs[k] = fi;
+                    }
+                }
+            }
+
+#if __CORE__
+            var rs = Response;
+            var headers = rs.Headers;
+            headers[HeaderNames.ContentEncoding] = "UTF8";
+            //headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+
+            await OnExportExcel(fs, list, rs.Body);
+#else
+            var rs = Response;
+            rs.Charset = "UTF-8";
+            rs.ContentEncoding = Encoding.UTF8;
+            //rs.ContentType = "application/vnd.ms-excel";
+
+            await OnExportExcel(fs, list, rs.OutputStream);
 
             rs.Flush();
 #endif
@@ -891,10 +953,6 @@ namespace NewLife.Cube
             headers[HeaderNames.ContentEncoding] = "UTF8";
             headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
-            //// 允许同步IO，便于CsvFile刷数据Flush
-            //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            //if (ft != null) ft.AllowSynchronousIO = true;
-
             var data = ExportData();
             await OnExportExcel(fs, data, rs.Body);
 #else
@@ -991,7 +1049,7 @@ namespace NewLife.Cube
             //if (ft != null) ft.AllowSynchronousIO = true;
 
             var data = ExportData();
-            OnExportCsv(fs, data, rs.Body);
+            await OnExportCsv(fs, data, rs.Body);
 #else
             var rs = Response;
             rs.Charset = "UTF-8";
@@ -1465,6 +1523,7 @@ namespace NewLife.Cube
         /// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
         /// </summary>
         /// <param name="entity"></param>
+        /// <param name="showInForm"></param>
         /// <returns></returns>
         protected virtual TEntity EntityFilter(TEntity entity, ShowInForm showInForm)
         {
