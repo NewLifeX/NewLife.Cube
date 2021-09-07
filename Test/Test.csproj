@@ -8,6 +8,7 @@
     <FileVersion>1.0.0.1130</FileVersion>
     <AssemblyVersion>1.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q" />
@@ -21,8 +22,8 @@
     <Compile Include="..\CubeDemo\Entity\班级.cs" Link="Entity\班级.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="8.11.2021.809" />
-    <PackageReference Include="NewLife.XCode" Version="10.2.2021.809" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.904" />
+    <PackageReference Include="NewLife.XCode" Version="10.2.2021.904" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entity\" />

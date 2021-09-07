@@ -1,6 +1,7 @@
 ﻿using System;
 using XCode.Membership;
 using System.Linq;
+using System.Threading;
 #if __CORE__
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -119,7 +120,9 @@ namespace NewLife.Cube
         public static Boolean Has(this IRazorPage page, params PermissionFlags[] flags)
         {
             // 没有用户时无权
-            var user = page.ViewContext.ViewBag.User as IUser ?? page.ViewContext.HttpContext.User.Identity as IUser;
+            var user = page.ViewContext.ViewBag.User as IUser ?? 
+                page.ViewContext.HttpContext.User.Identity as IUser ?? 
+                Thread.CurrentPrincipal?.Identity as IUser;
             if (user == null) return false;
 
             // 没有菜单时不做权限控制

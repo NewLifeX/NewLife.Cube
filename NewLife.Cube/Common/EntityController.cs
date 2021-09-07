@@ -289,7 +289,6 @@ namespace NewLife.Cube
         protected virtual IList<String> SaveFiles(TEntity entity)
         {
             var list = new List<String>();
-            var uploadpath = Setting.Current.UploadPath;
 
 #if __CORE__
             if (!Request.HasFormContentType) return list;
@@ -298,6 +297,7 @@ namespace NewLife.Cube
             var files = Request.Files;
 #endif
             var fields = Factory.Fields;
+            var uploadpath = Setting.Current.UploadPath;
             foreach (var fi in fields)
             {
                 var dc = fi.Field;

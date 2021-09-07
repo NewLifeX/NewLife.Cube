@@ -195,6 +195,7 @@ namespace NewLife.Cube.Web
                 //user3.Save();
                 //(user3 as IEntity).Update();
             }
+            if (user is IUser user4) user4.Online = true;
             if (user is IEntity entity) entity.Update();
 
             // 写日志
