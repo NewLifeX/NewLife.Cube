@@ -14,6 +14,7 @@ using NewLife.Log;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Common;
 using NewLife.Reflection;
+using System.IO;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -440,16 +441,33 @@ namespace NewLife.Cube.Admin.Controllers
             if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
             if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
 
-            //var av = HttpContext.Request.Form.Files.GetFile("Avatar");
-            //if (av != null)
-            //{
-            //    av.SaveAs();
-            //}
-            SaveFiles(user);
+            var file = HttpContext.Request.Form.Files["avatar"];
+            if (file != null)
+            {
+                var set = Setting.Current;
+                var fileName = user.ID + Path.GetExtension(file.FileName);
+                user.Avatar = SaveFile(user, file, set.AvatarPath, null, fileName);
+            }
 
             user.Update();
 
             return Info(user.ID);
+        }
+
+        /// <summary>保存文件</summary>
+        /// <param name="entity">实体对象</param>
+        /// <param name="file">文件</param>
+        /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
+        /// <param name="datePath">日期目录，可以在中间增加应用和日期的子目录</param>
+        /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
+        /// <returns></returns>
+        protected override String SaveFile(User entity, IFormFile file, String uploadPath, String datePath, String fileName)
+        {
+            // 修改保存目录和文件名
+            var set = Setting.Current;
+            if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
+
+            return base.SaveFile(entity, file, set.AvatarPath, null, fileName);
         }
 
         /// <summary>修改密码</summary>

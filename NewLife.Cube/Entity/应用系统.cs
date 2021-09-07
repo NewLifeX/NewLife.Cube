@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
@@ -60,11 +60,11 @@ namespace NewLife.Cube.Entity
         public String HomePage { get => _HomePage; set { if (OnPropertyChanging("HomePage", value)) { _HomePage = value; OnPropertyChanged("HomePage"); } } }
 
         private String _Logo;
-        /// <summary>图标。附件编号列表</summary>
+        /// <summary>图标。附件路径</summary>
         [DisplayName("图标")]
-        [Description("图标。附件编号列表")]
+        [Description("图标。附件路径")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Logo", "图标。附件编号列表", "", ItemType = "image")]
+        [BindColumn("Logo", "图标。附件路径", "", ItemType = "image")]
         public String Logo { get => _Logo; set { if (OnPropertyChanging("Logo", value)) { _Logo = value; OnPropertyChanged("Logo"); } } }
 
         private String _White;
