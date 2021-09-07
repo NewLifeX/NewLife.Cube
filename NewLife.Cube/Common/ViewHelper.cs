@@ -827,10 +827,11 @@ namespace NewLife.Cube
 
             if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWithIgnoreCase("/Sso/"))
             {
-                var av = set.UploadPath.CombinePath(user.Avatar).GetBasePath();
+                var av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath();
                 if (File.Exists(av)) return "/Cube/Avatar?id=" + user.ID;
             }
 
+            // 兼容旧版头像
             if (!set.AvatarPath.IsNullOrEmpty())
             {
                 var av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
