@@ -41,7 +41,7 @@
 	{
 		var itemModel = new ItemModel(item.Name, entity[item.Name], item.Type) { Length = item.Length };
 		@*@Html.ForEditor(item, entity)*@
-		if (!item.MapField.IsNullOrEmpty() && item.MapProvider != null)
+		if (!item.MapField.IsNullOrEmpty())
 		{
 			@await Html.PartialAsync("_Form_Map", Model)
 		}
