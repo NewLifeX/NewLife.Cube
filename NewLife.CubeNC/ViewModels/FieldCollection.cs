@@ -126,7 +126,7 @@ namespace NewLife.Cube
                 if (fi.Type == typeof(String) && fi.MapField.IsNullOrEmpty())
                 {
                     if (fi.Length <= 0 || fi.Length > 1000 ||
-                        fi.Name.EqualIgnoreCase("password", "pass", "pwd"))
+                        fi.Name.EqualIgnoreCase("password", "pass", "pwd", "Secret"))
                     {
                         RemoveAt(i);
                     }
