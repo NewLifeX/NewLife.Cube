@@ -71,7 +71,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q" />
+    <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q&#xD;&#xA;del &quot;$(TargetDir)*.staticwebassets.runtime.json&quot; /q" />
   </Target>
 
 </Project>
