@@ -5,8 +5,8 @@
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
-    <Version>4.0.2021.0725-beta1</Version>
-    <FileVersion>4.0.2021.0725</FileVersion>
+    <Version>4.0.2021.0923-beta1</Version>
+    <FileVersion>4.0.2021.0923</FileVersion>
     <AssemblyVersion>4.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
