@@ -31,7 +31,7 @@ namespace NewLife.Web.OAuth
         /// <param name="userAgent"></param>
         /// <returns></returns>
         public override Boolean Support(String userAgent) =>
-            !userAgent.IsNullOrEmpty() &&
+            !userAgent.IsNullOrEmpty() && !userAgent.Contains(" wxwork/") &&
             (userAgent.Contains(" MicroMessenger/") || userAgent.Contains(" MICROMESSENGER/"));
 
         /// <summary>只有snsapi_userinfo获取用户信息</summary>

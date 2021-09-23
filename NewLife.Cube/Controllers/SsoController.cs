@@ -124,7 +124,8 @@ namespace NewLife.Cube.Controllers
                 Scope = client.Scope,
                 State = state,
                 RedirectUri = returnUrl,
-                Source = source
+                Source = source,
+                Remark = GetUserAgent(),
             };
             log.Insert();
 
