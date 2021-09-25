@@ -31,6 +31,7 @@
     @*上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！*@
     <title>@title</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon">
+	<script src="~/metronic/plugins/global/plugins.bundle.js"></script>
 
     <!-- 页面内联样式 -->
     @RenderSection("css", required: false)
@@ -179,7 +180,7 @@
     </script>
 
     <!-- Metronic模板脚本 -->
-    <script src="~/metronic/plugins/global/plugins.bundle.js"></script>
+    
     <script src="~/metronic/plugins/custom/prismjs/prismjs.bundle.js"></script>
     <script src="~/metronic/js/scripts.bundle.min.js"></script>
 

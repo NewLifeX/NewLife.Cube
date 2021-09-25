@@ -12,5 +12,5 @@
     @await Html.PartialAsync("_Form_ListBox", new ListBoxModel("roleIds", Role.FindAllWithCache(), page["roleIds"]))
 </div>
 @await Html.PartialAsync("_List_Toolbar_Enable")
-@*@await Html.PartialAsync("_List_Toolbar_SelectDepartment", "departmentId")*@
+@await Html.PartialAsync("_List_Toolbar_SelectDepartment", "departmentId")
 @*@await Html.PartialAsync("_List_Toolbar_DateRange")*@
