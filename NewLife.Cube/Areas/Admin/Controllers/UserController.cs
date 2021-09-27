@@ -153,9 +153,13 @@ namespace NewLife.Cube.Admin.Controllers
 
             if (post && type == DataObjectMethodType.Update)
             {
-                if ((entity as IEntity).Dirtys["Password"])
+                var ds = (entity as IEntity).Dirtys;
+                if (ds["Password"])
                 {
-                    entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
+                    if (entity.Password.IsNullOrEmpty())
+                        ds["Password"] = false;
+                    else
+                        entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
                 }
             }
 
