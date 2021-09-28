@@ -12,7 +12,8 @@
 }
 @if (field.IsBigText())
 {
-    <div class="form-group col-xs-12 col-sm-12">
+    var isRow = cls.Contains("row") ? "row" : "";
+    <div class="form-group @(isRow) col-xs-12 col-sm-11">
         @await Html.PartialAsync("_Form_BigText", (Object)Model)
     </div>
 }
