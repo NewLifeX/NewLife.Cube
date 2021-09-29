@@ -379,7 +379,20 @@ namespace NewLife.Cube.Controllers
             if (user == null) throw new Exception("用户不存在 " + id);
 
             var set = Setting.Current;
-            var av = set.UploadPath.CombinePath(user.Avatar).GetBasePath();
+            var av = "";
+            if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
+            {
+                av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath();
+                if (!System.IO.File.Exists(av)) av = null;
+            }
+
+            // 用于兼容旧代码
+            if (av.IsNullOrEmpty() && !set.AvatarPath.IsNullOrEmpty())
+            {
+                av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
+                if (!System.IO.File.Exists(av)) av = null;
+            }
+
             if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
 
 #if __CORE__

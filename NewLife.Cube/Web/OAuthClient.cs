@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Web;
 using NewLife.Cube.Entity;
+using NewLife.Http;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
@@ -318,7 +320,7 @@ namespace NewLife.Web
         /// <summary>头像</summary>
         public String Avatar { get; set; }
 
-        /// <summary>明细</summary>
+        /// <summary>明细。用户个人描述，座右铭等</summary>
         public String Detail { get; set; }
 
         /// <summary>设备标识。</summary>
@@ -402,7 +404,7 @@ namespace NewLife.Web
         /// <returns></returns>
         protected virtual String GetUrl(String url)
         {
-            if (!url.StartsWithIgnoreCase("http://", "https://"))
+            if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
             {
                 // 授权以外的连接，使用令牌服务地址
                 if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize"))
@@ -419,6 +421,7 @@ namespace NewLife.Web
                .Replace("{code}", HttpUtility.UrlEncode(Code + ""))
                .Replace("{openid}", HttpUtility.UrlEncode(OpenID + ""))
                .Replace("{unionid}", HttpUtility.UrlEncode(UnionID + ""))
+               .Replace("{userid}", UserID + "")
                .Replace("{redirect}", HttpUtility.UrlEncode(_redirect + ""))
                .Replace("{scope}", HttpUtility.UrlEncode(Scope + ""))
                .Replace("{state}", HttpUtility.UrlEncode(_state + ""));
@@ -473,7 +476,19 @@ namespace NewLife.Web
         {
             // 部分提供者密钥写在头部
             var client = GetClient();
-            var html = client.GetStringAsync(url).Result;
+            var html = "";
+            if (url[0] == '#')
+            {
+                var p = url.IndexOf('?');
+                var data = p > 0 ? url.Substring(p + 1) : "";
+                url = url.Substring(1, p - 1);
+                var rs = client.PostAsync(url, new StringContent(data, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
+                html = rs.Content.ReadAsStringAsync().Result;
+            }
+            else
+            {
+                html = client.GetStringAsync(url).Result;
+            }
             if (html.IsNullOrEmpty()) return null;
 
             html = html.Trim();

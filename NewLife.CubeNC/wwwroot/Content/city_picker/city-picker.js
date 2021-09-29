@@ -109,7 +109,7 @@
                     closebtn +
                     '<span class="title"></span><div class="arrow"></div>' + '</span>',
                 domclear = '<input name=\'' + $(this.$element).attr("id") + '\' type=\'text\' class=\'.picker-clear\' style=\'float:left;display:none\' value=\'\'/>';
-            var dropdown = '<div class="city-picker-dropdown" style="left:0px;top:100%;' +
+            var dropdown = '<div class="city-picker-dropdown" style="left:' + p.left + 'px;top:' + (p.top + p.height) + 'px;' + //style="left:0px;top:100%;' 备份
                 this.getWidthStyle(p.width, true) + '">' +
                 '<div class="city-select-wrap">' +
                 '<div class="city-select-tab">' +

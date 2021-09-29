@@ -34,14 +34,7 @@ namespace NewLife.Web.OAuth
             //if (dic.TryGetValue("nickname", out var str)) NickName = str.Trim();
             //if (dic.TryGetValue("client_id", out var str)) UserID = str.ToLong();
             // 修改性别数据，本地是1男2女
-            if (dic.TryGetValue("gender", out var str))
-            {
-                switch (str)
-                {
-                    case "男": Sex = 1; break;
-                    case "女": Sex = 2; break;
-                }
-            }
+            if (dic.TryGetValue("gender", out var str)) Sex = str == "男" ? 1 : (str == "女" ? 2 : 0);
 
             // 从大到小找头像
             var avs = "figureurl_qq_2,figureurl_qq_1,figureurl_2,figureurl_1,figureurl".Split(",");

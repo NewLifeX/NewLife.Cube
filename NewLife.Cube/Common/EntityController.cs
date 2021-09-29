@@ -13,6 +13,7 @@ using NewLife.Remoting;
 using System.IO;
 using NewLife.Cube.Entity;
 using NewLife.Reflection;
+using Microsoft.AspNetCore.Http;
 #if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
@@ -284,9 +285,10 @@ namespace NewLife.Cube
         }
 
         /// <summary>保存上传文件</summary>
-        /// <param name="entity"></param>
+        /// <param name="entity">实体对象</param>
+        /// <param name="uploadPath">上传目录。为空时默认UploadPath配置</param>
         /// <returns></returns>
-        protected virtual IList<String> SaveFiles(TEntity entity)
+        protected virtual IList<String> SaveFiles(TEntity entity, String uploadPath = null)
         {
             var list = new List<String>();
 
@@ -297,49 +299,61 @@ namespace NewLife.Cube
             var files = Request.Files;
 #endif
             var fields = Factory.Fields;
-            var uploadpath = Setting.Current.UploadPath;
+            if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
+            var datePath = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\";
             foreach (var fi in fields)
             {
                 var dc = fi.Field;
                 if (dc.ItemType.EqualIgnoreCase("file", "image"))
                 {
-                    var f = files[dc.Name];
-                    if (f != null)
+                    var file = files[dc.Name];
+                    if (file != null)
                     {
-                        // 保存文件，优先原名字
-                        var fileName = f.FileName;
-                        fileName = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\{fileName}";
-                        var fullFile = uploadpath.CombinePath(fileName).GetBasePath();
-                        if (System.IO.File.Exists(fullFile))
-                        {
-                            fileName = entity[Factory.Unique] + Path.GetExtension(f.FileName);
-                            fileName = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\{fileName}";
-                            fullFile = uploadpath.CombinePath(fileName).GetBasePath();
-                        }
-                        fullFile.EnsureDirectory(true);
-
-                        f.SaveAs(fullFile);
+                        var fileName = SaveFile(entity, file, uploadPath, datePath, null);
 
                         entity.SetItem(fi.Name, fileName);
-                        list.Add(f.FileName);
-
-                        // 写日志，取category比较麻烦，待升级XCode后可以简化
-                        var type = entity.GetType();
-                        var cat = "";
-                        if (type.As<IEntity>())
-                        {
-                            var fact = EntityFactory.CreateOperate(type);
-                            if (fact != null) cat = fact.Table.DataTable.DisplayName;
-                        }
-                        if (cat.IsNullOrEmpty()) cat = type.GetDisplayName() ?? type.GetDescription() ?? type.Name;
-                        var log = LogProvider.Provider.CreateLog(cat, "上传", true, $"上传{f.FileName}，保存为{fileName}", 0, null, UserHost);
-                        if (Factory.Unique != null) log.LinkID = entity[Factory.Unique].ToInt();
-                        log.SaveAsync();
+                        list.Add(file.FileName);
                     }
                 }
             }
 
             return list;
+        }
+
+        /// <summary>保存文件</summary>
+        /// <param name="entity">实体对象</param>
+        /// <param name="file">文件</param>
+        /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
+        /// <param name="datePath">日期目录，可以在中间增加应用和日期的子目录</param>
+        /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
+        /// <returns></returns>
+        protected virtual String SaveFile(TEntity entity, IFormFile file, String uploadPath, String datePath, String fileName)
+        {
+            // 保存文件，优先原名字
+            var fullFile = "";
+            if (fileName.IsNullOrEmpty())
+            {
+                fileName = file.FileName;
+                if (!datePath.IsNullOrEmpty()) fileName = datePath.CombinePath(fileName);
+                fullFile = uploadPath.CombinePath(fileName).GetBasePath();
+                if (System.IO.File.Exists(fullFile))
+                {
+                    fileName = entity[Factory.Unique] + Path.GetExtension(file.FileName);
+                    if (!datePath.IsNullOrEmpty()) fileName = datePath.CombinePath(fileName);
+                }
+            }
+            fullFile = uploadPath.CombinePath(fileName).GetBasePath();
+            fullFile.EnsureDirectory(true);
+
+            file.SaveAs(fullFile);
+
+            // 写日志
+            var type = entity.GetType();
+            var log = LogProvider.Provider.CreateLog(type, "上传", true, $"上传{file.FileName}，保存为{fileName}", 0, null, UserHost);
+            if (Factory.Unique != null) log.LinkID = entity[Factory.Unique].ToInt();
+            log.SaveAsync();
+
+            return fileName;
         }
         #endregion
 

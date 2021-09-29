@@ -32,7 +32,7 @@ namespace NewLife.Cube.Services
         /// <returns></returns>
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new TimerX(DoJob, null, 1_000, 60_000);
+            _timer = new TimerX(DoJob, null, 1_000, 3600_000);
 
             return Task.CompletedTask;
         }
@@ -90,8 +90,8 @@ namespace NewLife.Cube.Services
                 }
             }
 
-            // 如果没有作业，10分钟跑一次
-            _timer.Period = list.Any(e => e.Enable) ? 60_000 : 3600_000;
+            //// 如果没有作业，10分钟跑一次
+            //_timer.Period = list.Any(e => e.Enable) ? 60_000 : 3600_000;
         }
         #endregion
 

@@ -742,7 +742,7 @@ namespace NewLife.Cube.Web
                     rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
                     departmentCode = user2.Department?.Code,
                     departmentName = user2.Department?.Name,
-                    avatar = user2.Avatar,
+                    avatar = "/Cube/Avatar?id=" + user2.ID,
                     detail = user2.Remark,
                     resources = dic,
                 };
