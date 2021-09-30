@@ -3,8 +3,13 @@
 @using XCode.Configuration
 @{
     Layout = null;
-
-    var role = Model.Role as Role;
+    //2021年9月30日 照月(zshankang)修改，在非ACE主题下，直接使用 Model.Role 会报错。
+    Role role = null;
+    if (Model.GetType().GetProperties().Length > 0)
+    {
+        role = ((System.Reflection.PropertyInfo[])Model.GetType().GetProperties())[0].GetValue(Model, null);
+    }
+    //var role = Model.Role as Role;
     var menus = Menu.Root.AllChilds;
     //var pfs = EnumHelper.GetDescriptions<PermissionFlags>().Where(e => e.Key > PermissionFlags.None);
 }
