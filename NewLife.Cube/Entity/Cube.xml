@@ -109,7 +109,7 @@
       <Index Columns="UserID" />
     </Indexes>
   </Table>
-  <Table Name="App" Description="应用系统。用于OAuthServer的子系统">
+  <Table Name="App" TableName="OAuthApp" Description="应用系统。用于OAuthServer的子系统">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
       <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。AppID" />

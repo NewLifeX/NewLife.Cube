@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.Serialization;
@@ -14,8 +14,8 @@ namespace NewLife.Cube.Entity
     [Serializable]
     [DataObject]
     [Description("应用系统。用于OAuthServer的子系统")]
-    [BindIndex("IU_App_Name", true, "Name")]
-    [BindTable("App", Description = "应用系统。用于OAuthServer的子系统", ConnName = "Cube", DbType = DatabaseType.None)]
+    [BindIndex("IU_OAuthApp_Name", true, "Name")]
+    [BindTable("OAuthApp", Description = "应用系统。用于OAuthServer的子系统", ConnName = "Cube", DbType = DatabaseType.None)]
     public partial class App
     {
         #region 属性
@@ -282,7 +282,7 @@ namespace NewLife.Cube.Entity
             /// <summary>首页</summary>
             public static readonly Field HomePage = FindByName("HomePage");
 
-            /// <summary>图标。附件编号列表</summary>
+            /// <summary>图标。附件路径</summary>
             public static readonly Field Logo = FindByName("Logo");
 
             /// <summary>白名单</summary>
@@ -354,7 +354,7 @@ namespace NewLife.Cube.Entity
             /// <summary>首页</summary>
             public const String HomePage = "HomePage";
 
-            /// <summary>图标。附件编号列表</summary>
+            /// <summary>图标。附件路径</summary>
             public const String Logo = "Logo";
 
             /// <summary>白名单</summary>

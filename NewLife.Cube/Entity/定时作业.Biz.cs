@@ -8,6 +8,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Entity
 {
     /// <summary>定时作业。定时执行任务</summary>
+    [ModelCheckMode(ModelCheckModes.CheckTableWhenFirstUse)]
     public partial class CronJob : Entity<CronJob>
     {
         #region 对象操作
