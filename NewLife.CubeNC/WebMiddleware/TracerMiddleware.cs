@@ -30,7 +30,7 @@ namespace NewLife.Cube.WebMiddleware
         {
             // APM跟踪
             ISpan span = null;
-            if (Tracer != null)
+            if (Tracer != null && !ctx.WebSockets.IsWebSocketRequest)
             {
                 var action = GetAction(ctx);
                 if (!action.IsNullOrEmpty())
