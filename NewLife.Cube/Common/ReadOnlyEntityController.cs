@@ -175,7 +175,6 @@ namespace NewLife.Cube
             }
 
             // 根据模型列设置，拼接作为搜索字段的字段
-
             var modelTable = ModelTable;
             var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
 
@@ -1475,8 +1474,9 @@ namespace NewLife.Cube
             {
                 var menu = CurrentMenu;
                 var pmenu = menu?.Parent;
-                return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name) ??
-                    ModelTableSetting(ModelTable.ScanModel(pmenu?.Name, menu?.Name, menu?.FullName, menu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
+                return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name);
+                //return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name) ??
+                //    ModelTableSetting(ModelTable.ScanModel(pmenu?.Name, menu?.Name, menu?.FullName, menu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
             }
         }
 
@@ -1502,25 +1502,25 @@ namespace NewLife.Cube
                 dic = dic.Where(e => !arr.Contains(e.Value)).ToDictionary(e => e.Key, e => e.Value);
             }
 
-            ThreadPoolX.QueueUserWorkItem(() =>
-            {
-                // 等菜单缓存准备好
-                Thread.Sleep(1000);
+            //ThreadPoolX.QueueUserWorkItem(() =>
+            //{
+            //    // 等菜单缓存准备好
+            //    Thread.Sleep(1000);
 
-                // TODO 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
-                // var list = GetType().GetCustomAttributes();
-                // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
-                // 生成模型表模型列
-                var modelTable = ModelTable.ScanModel(menu.Parent?.Name, menu, Entity<TEntity>.Meta.Factory);
+            //    // TODO 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
+            //    // var list = GetType().GetCustomAttributes();
+            //    // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
+            //    // 生成模型表模型列
+            //    var modelTable = ModelTable.ScanModel(menu.Parent?.Name, menu, Entity<TEntity>.Meta.Factory);
 
-                // 模型表已是异步执行模型表生成，这里使用同步保存模型列
-                //ThreadPoolX.QueueUserWorkItem(() =>
-                //{
-                // 等模型列缓存准备好
-                //Thread.Sleep(1000);
-                ModelTableSetting(modelTable);
-                //});
-            });
+            //    // 模型表已是异步执行模型表生成，这里使用同步保存模型列
+            //    //ThreadPoolX.QueueUserWorkItem(() =>
+            //    //{
+            //    // 等模型列缓存准备好
+            //    //Thread.Sleep(1000);
+            //    ModelTableSetting(modelTable);
+            //    //});
+            //});
 
             CurrentMenu = menu;
 

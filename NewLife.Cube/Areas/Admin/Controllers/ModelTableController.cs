@@ -29,6 +29,8 @@ namespace NewLife.Cube.Admin.Controllers
 
             ModelTableSetting = table =>
             {
+                if (table == null) return null;
+
                 var columns = table.GetColumns();
 
                 // 不在列表页显示
@@ -100,7 +102,7 @@ namespace NewLife.Cube.Admin.Controllers
 
         protected override IEnumerable<ModelTable> Search(Pager p)
         {
-            //Init();
+            Init();
 
             var category = p["category"];
             var start = p["dtStart"].ToDateTime();
