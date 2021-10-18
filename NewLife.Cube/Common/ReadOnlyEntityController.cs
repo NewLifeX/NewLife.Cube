@@ -1470,7 +1470,15 @@ namespace NewLife.Cube
 
         /// <summary>控制器对应模型表</summary>
         protected static ModelTable ModelTable
-          => ModelTable.FindByCategoryAndName(CurrentMenu?.Parent?.Name, CurrentMenu?.Name) ?? ModelTableSetting(ModelTable.ScanModel(CurrentMenu?.Parent?.Name, CurrentMenu?.Name, CurrentMenu?.FullName, CurrentMenu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
+        {
+            get
+            {
+                var menu = CurrentMenu;
+                var pmenu = menu?.Parent;
+                return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name) ??
+                    ModelTableSetting(ModelTable.ScanModel(pmenu?.Name, menu?.Name, menu?.FullName, menu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
+            }
+        }
 
         /// <summary>自动从实体类拿到显示名</summary>
         /// <param name="menu"></param>
