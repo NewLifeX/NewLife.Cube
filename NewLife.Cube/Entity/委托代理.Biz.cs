@@ -10,6 +10,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Entity
 {
     /// <summary>委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份，一次有效</summary>
+    [ModelCheckMode(ModelCheckModes.CheckTableWhenFirstUse)]
     public partial class PrincipalAgent : Entity<PrincipalAgent>
     {
         #region 对象操作

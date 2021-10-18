@@ -36,6 +36,8 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IServiceCollection AddCube(this IServiceCollection services)
         {
+            using var span = DefaultTracer.Instance?.NewSpan(nameof(AddCube));
+
             XTrace.WriteLine("{0} Start 配置魔方 {0}", new String('=', 32));
             Assembly.GetExecutingAssembly().WriteVersion();
 
@@ -207,7 +209,12 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IApplicationBuilder UseCube(this IApplicationBuilder app, IWebHostEnvironment env)
         {
+            using var span = DefaultTracer.Instance?.NewSpan(nameof(UseCube));
+
             XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
+
+            // 调整魔方表名
+            FixAppTableName();
 
             var set = Setting.Current;
 
@@ -264,6 +271,26 @@ namespace NewLife.Cube
             XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
             return app;
+        }
+
+        private static void FixAppTableName()
+        {
+            var dal = DAL.Create("Cube");
+            var tables = dal.Tables;
+            if (!tables.Any(e => e.TableName.EqualIgnoreCase("OAuthApp")))
+            {
+                XTrace.WriteLine("未发现OAuth应用新表 OAuthApp");
+
+                // 验证表名和部分字段名，避免误改其它表
+                var dt = tables.FirstOrDefault(e => e.TableName.EqualIgnoreCase("App"));
+                if (dt != null && dt.Columns.Any(e => e.ColumnName.EqualIgnoreCase("RoleIds")))
+                {
+                    XTrace.WriteLine("发现OAuth应用旧表 App ，准备重命名");
+
+                    var rs = dal.Execute($"Alter Table App Rename To OAuthApp");
+                    XTrace.WriteLine("重命名结果：{0}", rs);
+                }
+            }
         }
 
         /// <summary>使用魔方首页</summary>
