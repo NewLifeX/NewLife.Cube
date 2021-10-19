@@ -1,0 +1,212 @@
+﻿@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Charts;
+@{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    var charts = ViewBag.Charts as ECharts[];
+    var charts2 = ViewBag.Charts2 as ECharts[];
+
+    var fields = ViewBag.Fields as FieldCollection;
+}
+
+
+@if (set.EnableToolbar)
+{
+    <div class="clearfix">
+        @await Html.PartialAsync("_List_Toolbar")
+    </div>
+}
+@if (charts != null && charts.Length > 0)
+{
+    //未实现
+    <div class="clearfix">
+        @foreach (var item in charts)
+        {
+            @await Html.PartialAsync("_ECharts", item)
+        }
+    </div>
+}
+<div class="table-responsive">
+    @await Html.PartialAsync("_List_Data")
+</div>
+<div class="panel-footer">
+    @await Html.PartialAsync("_List_Pager")
+</div>
+@if (charts2 != null && charts2.Length > 0)
+{
+    //未实现
+    <div class="clearfix">
+        @foreach (var item in charts2)
+        {
+            @await Html.PartialAsync("_ECharts", item)
+        }
+    </div>
+}
+
+
+<!-- 编辑 or 添加 -->
+<el-dialog v-bind:visible.sync="dialogFormVisible" :close-on-click-modal="false">
+    <el-form v-bind:model="modelForm" size="mini" ref="modelForm" label-width="100px">
+
+
+        @foreach (var item in fields)
+        {
+            var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+            var df = item as ListField;
+            var name = df?.Header ?? item.DisplayName;
+            var title = df?.HeaderTitle ?? item.Description;
+
+            if (item.PrimaryKey)
+                continue;
+
+            var fieldName = string.Empty;
+
+            if (item.Name == "ID")
+                fieldName = "id";
+            else
+                fieldName = item.Name.Substring(0, 1).ToLower() + item.Name.Substring(1);//转为驼峰
+
+            <el-form-item label="@Html.Raw(item.DisplayName)" prop="content">
+
+                @switch (Type.GetTypeCode(item.Type))
+                {
+                    case TypeCode.Boolean:
+                        <el-switch v-model="modelForm.@fieldName" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+                        break;
+                    case TypeCode.DateTime:
+                        <el-date-picker v-model="modelForm.@fieldName" placeholder="选择时间" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" editable></el-date-picker>
+                        break;
+                    case TypeCode.String:
+                    default:
+                        <el-input v-model="modelForm.@fieldName" placeholder="@Html.Raw(item.Description)" maxlength="200"></el-input>
+                        break;
+
+                }
+
+
+
+
+            </el-form-item>
+
+
+        }
+
+
+
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+        <el-button v-on:click="onCloseModelFrom('modelForm')">取 消</el-button>
+        <el-button type="primary" v-on:click="onSaveSubmit('modelForm')">
+            确 定
+        </el-button>
+    </div>
+</el-dialog>
+
+
+@section scripts{
+
+    <script>
+        //Vue2.0 桌面端组件库: https://element.eleme.cn/#/zh-CN/component/cascader
+
+        var main = new Vue({
+            el: '#app',
+            data: {
+                loading: false,
+                dialogFormVisible: false,
+                tableData: dataList,
+                screenForm: [],
+                modelForm: { enable: true },
+                //分页
+                pageParams: pageParams,
+            },
+            //页面初始化
+            created() {
+
+            },
+            methods: {
+                //加载数据
+                loadPage() {
+                    let self = this;
+                    axios.get('@HttpContext.Current.Request.Path.Value/Index', { params: this.pageParams })
+                        .then(function (response) {
+                            console.log(response);
+                            self.tableData = response.data.data;
+                            self.pageParams = response.data.pager;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                },
+                //插入数据
+                onInsert() {
+                    this.modelForm = { Enable: true };
+                    this.dialogFormVisible = true;
+
+                },
+                //编辑数据
+                onUpdate(row) {
+                    this.modelForm = { ...row, isUpdate:true };
+                    this.dialogFormVisible = true;
+                },
+                //删除数据
+                onDelete(rows) {
+                    let This = this;
+                    this.$confirm('此操作将永久删除该数据, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        var formData = new FormData();
+                        formData.append('id', rows.id);
+
+                        axios.post('@HttpContext.Current.Request.Path.Value/Delete', formData)
+                            .then(function (response) {
+                                This.loadPage();
+                                This.$message.success('操作成功');
+                            }).catch((error) => {
+                                console.log(error);
+                                This.$message.error('操作失败');
+                            });
+                    }).catch((error) => {
+                        console.log(error);
+                        This.$message('取消操作');
+                    });
+                },
+                //编辑表单提交
+                onSaveSubmit(formName) {
+
+                    let self = this;
+                    var formData = new FormData();
+                    for (const key in this.modelForm) {
+                        formData.append(key, this.modelForm[key]);
+                    }
+
+                    var url = this.modelForm.isUpdate ? "/Edit" : "/Add";
+
+                    axios.post('@HttpContext.Current.Request.Path.Value' + url, formData)
+                        .then(function (response) {
+                            self.$message.success(response.data.message);
+                            self.loadPage();
+                            self.onCloseModelFrom();
+                        }).catch((error) => {
+                            console.log(error);
+                            self.$message.error('操作失败');
+
+                        });
+                },
+                //编辑窗口关闭
+                onCloseModelFrom() {
+                    this.dialogFormVisible = false;
+                },
+            },
+
+        });
+
+    </script>
+
+}
