@@ -1,0 +1,16 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using System.Linq;
+@{
+    var page = ViewBag.Page as Pager;
+
+    var dic = new Dictionary<Int32, String>();
+    dic.Add(1, "启用");
+    dic.Add(0, "禁用");
+}
+
+<el-form-item label="状态：">
+    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel("enable", dic, page["enable"], "全部", true, null))
+</el-form-item>
+

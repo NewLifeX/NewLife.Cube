@@ -1,0 +1,28 @@
+﻿@using NewLife;
+@using XCode
+@using XCode.Membership
+@{
+    var menu = ViewBag.Menu as IMenu;
+    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
+
+    var url = Context.Request.Headers["Referer"].FirstOrDefault() + "";
+    var us = url.TrimStart("http://", "https://").Split('/', StringSplitOptions.RemoveEmptyEntries);
+}
+
+<!-- 面包屑 -->
+<el-breadcrumb separator-class="el-icon-arrow-right" >
+    <el-breadcrumb-item>
+        @if (menu != null)
+        {
+            foreach (IMenu item in (menu as IEntityTree).AllParents)
+            {
+                if (item.ID != 0)
+                {
+                    @item.DisplayName
+                }
+            }
+        }
+    </el-breadcrumb-item>
+    <el-breadcrumb-item>@(menu != null ? menu.DisplayName : ViewBag.Title)</el-breadcrumb-item>
+
+</el-breadcrumb>
