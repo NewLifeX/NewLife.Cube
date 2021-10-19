@@ -105,6 +105,7 @@ namespace CubeDemoNC
             app.UseAdminLTE(env);
             app.UseTabler(env);
             app.UseMetronic(env);
+            app.UseElementUI(env);
 #if NET50
             app.UseBlazor(env);
 #endif

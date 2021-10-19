@@ -1,0 +1,11 @@
+﻿@using NewLife.Common;
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var fact = ViewBag.Factory as XCode.IEntityFactory;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+@if (set.EnableSelect)
+{
+    <el-button type="primary" size="mini" plain> 批量启用 </el-button>
+    <el-button type="success" size="mini" plain> 批量禁用 </el-button>
+}
