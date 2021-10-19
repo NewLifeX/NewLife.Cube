@@ -21,13 +21,11 @@
     }
     @if (set.EnableSelect)
     {
-
-        @await Html.PartialAsync("_List_Toolbar_Batch2")
-
+        @await Html.PartialAsync("_List_Toolbar_Batch")
     }
     @await Html.PartialAsync("_List_Toolbar_Custom")
     <div style="float: right !important;">
-        @await Html.PartialAsync("_List_Search2")
+        @await Html.PartialAsync("_List_Search")
         @await Html.PartialAsync("_List_Toolbar_Search")
         @await Html.PartialAsync("_List_Toolbar_Adv")
     </div>
