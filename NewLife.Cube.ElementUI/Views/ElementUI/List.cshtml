@@ -1,6 +1,7 @@
 ﻿@using NewLife.Web;
 @using XCode;
 @using NewLife.Cube.Charts;
+@using NewLife.Serialization;
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
@@ -112,6 +113,8 @@
 
     <script>
         //Vue2.0 桌面端组件库: https://element.eleme.cn/#/zh-CN/component/cascader
+    
+        var dataPager = @Html.Raw(page.ToJson(false, true, true));
 
         var main = new Vue({
             el: '#app',
@@ -119,7 +122,7 @@
                 loading: false,
                 dialogFormVisible: false,
                 tableData: dataList,
-                screenForm: [],
+                screenForm: dataPager,
                 modelForm: { enable: true },
                 //分页
                 pageParams: pageParams,

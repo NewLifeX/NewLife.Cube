@@ -15,12 +15,16 @@
     </script>
     <!-- 分页 -->
     <el-pagination :total="pageParams.totalCount||1"
-                   :page-size="pageParams.pageSize"
-                   :current-page.sync="pageParams.pageIndex"
-                   :page-sizes="[pageParams.pageSize]"
-                   layout="total ,prev, pager, next, sizes" small background
-                   v-on:current-change="loadPage">
+               :page-size="pageParams.pageSize"
+               :current-page.sync="pageParams.pageIndex"
+               :page-sizes="[pageParams.pageSize]"
+               layout="total ,prev, pager, next, sizes" small background
+               v-on:current-change="loadPage">
     </el-pagination>
-
-
+}
+else
+{
+    <script>
+        var pageParams =[];
+    </script>
 }
