@@ -198,6 +198,9 @@ namespace NewLife.Cube.Web
             if (user is IUser user4) user4.Online = true;
             if (user is IEntity entity) entity.Update();
 
+            // 用户角色可能有更新，需要清空扩展属性，避免Roles保留脏数据，导致用户首次访问显示无权限
+            (user as EntityBase).Extends = null;
+
             // 写日志
             var log = LogProvider.Provider;
             log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName ?? client.NickName}]登录", user.ID, user + "");
@@ -253,7 +256,7 @@ namespace NewLife.Cube.Web
                     var sys = user2.Roles.Where(e => e.IsSystem).Select(e => e.ID).ToList();
                     if (sys.Count > 0)
                     {
-                        roleId = user2.RoleID;
+                        //roleId = user2.RoleID;
                         if (roleIds == null) roleIds = new List<Int32>();
                         roleIds.AddRange(sys);
                     }
