@@ -1,0 +1,22 @@
+﻿@using NewLife.Web;
+@using XCode;
+@{
+    Layout = "~/Views/ElementUI/_LayoutForBs.cshtml"; //NewLife.Cube.Setting.Current.Layout;
+
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+
+@if (set.EnableToolbar)
+{
+    <div class="clearfix">
+        @await Html.PartialAsync("_List_Toolbar")
+    </div>
+}
+<div class="table-responsive">
+    @await Html.PartialAsync("_ListTree_Data")
+</div>
+<div class="panel-footer">
+    @await Html.PartialAsync("_List_Pager")
+</div>
