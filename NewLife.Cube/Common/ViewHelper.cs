@@ -65,7 +65,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static RouteValueDictionary GetRouteKey(this IEntity entity)
         {
-            var fact = EntityFactory.CreateOperate(entity.GetType());
+            var fact = EntityFactory.CreateFactory(entity.GetType());
             var pks = fact.Table.PrimaryKeys;
 
             var rv = new RouteValueDictionary();
@@ -247,7 +247,7 @@ namespace NewLife.Cube
 </table>";
 #endif
             var sb = new StringBuilder();
-            var fact = EntityFactory.CreateOperate(entityType);
+            var fact = EntityFactory.CreateFactory(entityType);
 
             tmp = tmp.Replace("{EntityType}", entityType.Name);
             tmp = tmp.Replace("{Namespace}", entityType.Namespace);
@@ -582,7 +582,7 @@ namespace NewLife.Cube
 #endif
 
             var sb = new StringBuilder();
-            var fact = EntityFactory.CreateOperate(entityType);
+            var fact = EntityFactory.CreateFactory(entityType);
 
             tmp = tmp.Replace("{EntityType}", entityType.Name);
             tmp = tmp.Replace("{Namespace}", entityType.Namespace);
@@ -789,7 +789,7 @@ namespace NewLife.Cube
 #endif
 
             //var sb = new StringBuilder();
-            //var fact = EntityFactory.CreateOperate(entityType);
+            //var fact = EntityFactory.CreateFactory(entityType);
 
             tmp = tmp.Replace("{EntityType}", entityType.Name);
             tmp = tmp.Replace("{Namespace}", entityType.Namespace);

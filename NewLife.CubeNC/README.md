@@ -145,7 +145,7 @@ app.UseStaticHttpContext();
             var controllerContext = bindingContext.ActionContext;
             if (modelType.As<IEntity>())
             {
-                var fact = EntityFactory.CreateOperate(modelType);
+                var fact = EntityFactory.CreateFactory(modelType);
                 if (fact != null)
                 {
                     bindingContext.Result = ModelBindingResult.Success(fact.Create());

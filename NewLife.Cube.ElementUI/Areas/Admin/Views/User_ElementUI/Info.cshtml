@@ -6,7 +6,7 @@
 @using NewLife.Cube.Entity;
 @using NewLife.Serialization;
 @{
-    var fact = EntityFactory.CreateOperate(ViewData.ModelMetadata.ModelType);
+    var fact = EntityFactory.CreateFactory(ViewData.ModelMetadata.ModelType);
     var user = Model as IUser;
 
     var obj = (Object)Model;

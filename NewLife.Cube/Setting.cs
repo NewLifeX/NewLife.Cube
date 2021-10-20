@@ -128,10 +128,10 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public Boolean UseSsoDepartment { get; set; } = true;
 
-        /// <summary>注销所有系统。默认false仅注销本系统，true时注销SsoServer</summary>
-        [Description("注销所有系统。默认false仅注销本系统，true时注销SsoServer")]
+        /// <summary>注销所有系统。false仅注销本系统，默认true时注销SsoServer</summary>
+        [Description("注销所有系统。false仅注销本系统，默认true时注销SsoServer")]
         [Category("用户登录")]
-        public Boolean LogoutAll { get; set; } = false;
+        public Boolean LogoutAll { get; set; } = true;
 
         /// <summary>会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s</summary>
         [Description("会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s")]
