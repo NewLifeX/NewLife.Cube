@@ -365,11 +365,14 @@ namespace NewLife.Cube
 
             var provider = app.ApplicationServices;
             ManageProvider.Provider = ModelExtension.GetService<IManageProvider>(provider);
-            ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
+            //ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
             ManageProvider2.Context = ModelExtension.GetService<IHttpContextAccessor>(provider);
 
             // 初始化数据库
-            _ = Role.Meta.Count;
+            //_ = Role.Meta.Count;
+            EntityFactory.InitConnection("Membership");
+            EntityFactory.InitConnection("Log");
+            EntityFactory.InitConnection("Cube");
         }
     }
 }

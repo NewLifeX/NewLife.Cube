@@ -10,7 +10,6 @@ using XCode.Membership;
 namespace NewLife.Cube.Entity
 {
     /// <summary>应用系统</summary>
-    [ModelCheckMode(ModelCheckModes.CheckTableWhenFirstUse)]
     public partial class App : Entity<App>
     {
         #region 对象操作

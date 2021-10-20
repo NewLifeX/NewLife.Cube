@@ -13,7 +13,6 @@ using XCode.Membership;
 namespace NewLife.Cube.Entity
 {
     /// <summary>用户链接。第三方绑定</summary>
-    [ModelCheckMode(ModelCheckModes.CheckTableWhenFirstUse)]
     public partial class UserConnect : Entity<UserConnect>
     {
         #region 对象操作

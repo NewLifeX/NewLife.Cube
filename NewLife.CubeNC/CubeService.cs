@@ -213,6 +213,9 @@ namespace NewLife.Cube
 
             XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
 
+            // 使用管理提供者
+            app.UseManagerProvider();
+
             // 调整魔方表名
             FixAppTableName();
 
@@ -262,8 +265,7 @@ namespace NewLife.Cube
                     "{area}/{controller=Index}/{action=Index}/{id?}");
             });
 
-            // 使用管理提供者
-            app.UseManagerProvider();
+            ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
 
             // 自动检查并添加菜单
             AreaBase.RegisterArea<Admin.AdminArea>();

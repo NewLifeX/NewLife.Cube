@@ -8,7 +8,6 @@ using XCode.Membership;
 namespace NewLife.Cube.Entity
 {
     /// <summary>附件。用于记录各系统模块使用的文件</summary>
-    [ModelCheckMode(ModelCheckModes.CheckTableWhenFirstUse)]
     public partial class Attachment : Entity<Attachment>
     {
         #region 对象操作

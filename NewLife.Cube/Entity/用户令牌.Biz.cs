@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
@@ -11,7 +10,6 @@ using XCode.Membership;
 namespace NewLife.Cube.Entity
 {
     /// <summary>用户令牌。授权其他人直接拥有指定用户的身份，支持有效期，支持数据接口</summary>
-    [ModelCheckMode(ModelCheckModes.CheckTableWhenFirstUse)]
     public partial class UserToken : Entity<UserToken>
     {
         #region 对象操作
