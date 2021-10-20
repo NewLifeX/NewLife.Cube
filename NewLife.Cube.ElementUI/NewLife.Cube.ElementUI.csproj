@@ -50,6 +50,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\Content\bootstrap\css\bootstrap-multiselect.css" />
+    <Content Remove="wwwroot\Content\bootstrap\css\bootstrap-responsive.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap\css\bootstrap-theme.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap\css\bootstrap.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap\css\font-awesome.min.css" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.eot" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.svg" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.ttf" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.woff" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\FontAwesome.otf" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.eot" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.svg" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.ttf" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.woff" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap-colorpicker.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap-multiselect.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap-tag.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap-wysiwyg.min.js" />
+    <Content Remove="wwwroot\Content\bootstrap\js\bootstrap.min.js" />
     <Content Remove="wwwroot\Content\elementui\css\fonts\layout.css" />
   </ItemGroup>
 
