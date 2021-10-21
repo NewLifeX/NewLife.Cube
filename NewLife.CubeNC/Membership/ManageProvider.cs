@@ -10,8 +10,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
+using NewLife.Serialization;
 using XCode;
 using XCode.Membership;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
@@ -24,7 +26,11 @@ namespace NewLife.Cube
     {
         #region 静态实例
         internal static IHttpContextAccessor Context;
-        public static IEndpointRouteBuilder EndpointRoute;
+
+        /// <summary>
+        /// 节点路由
+        /// </summary>
+        public static IEndpointRouteBuilder EndpointRoute { get; set; }
         #endregion
 
         #region 属性
@@ -99,7 +105,14 @@ namespace NewLife.Cube
         /// <returns></returns>
         public override IManageUser Login(String name, String password, Boolean remember)
         {
-            var user = base.Login(name, password, remember);
+            IManageUser user = null;
+
+            // OAuth密码模式登录
+            var oauths = OAuthConfig.GetValids(GrantTypes.Password);
+            if (oauths.Count > 0)
+                user = LoginByOAuth(oauths[0], name, password);
+            else
+                user = base.Login(name, password, remember);
 
             user = CheckAgent(user) as User;
             Current = user;
@@ -120,6 +133,46 @@ namespace NewLife.Cube
             // 保存Cookie
             var context = Context?.HttpContext;
             this.SaveCookie(user, expire, context);
+
+            return user;
+        }
+
+        private SsoClient _client;
+        private IManageUser LoginByOAuth(OAuthConfig oa, String username, String password)
+        {
+            if (_client == null)
+            {
+                _client = new SsoClient
+                {
+                    Server = oa.Server,
+                    AppId = oa.AppId,
+                    Secret = oa.Secret,
+                    SecurityKey = oa.SecurityKey,
+                };
+            }
+
+            var ti = _client.GetToken(username, password).Result;
+            var ui = _client.GetUser(ti.AccessToken).Result as User;
+
+            // 仅验证登录，不要角色信息
+            if (FindByName(ui.Name) is not User user)
+            {
+                user = new User
+                {
+                    Code = ui.Code,
+                    Name = ui.Name,
+                    DisplayName = ui.DisplayName,
+
+                    Enable = true,
+                    RegisterTime = DateTime.Now,
+                };
+            }
+
+            user.Logins++;
+            user.LastLogin = DateTime.Now;
+            user.Save();
+
+            LogProvider.Provider.WriteLog(user.GetType(), "OAuth登录", true, $"用户[{user}]使用[{username}]登录[{_client.AppId}]成功！" + Environment.NewLine + ui.ToJson());
 
             return user;
         }

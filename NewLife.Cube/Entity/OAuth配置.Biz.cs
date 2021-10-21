@@ -1,31 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Script.Serialization;
-using System.Xml.Serialization;
-using NewLife;
 using NewLife.Data;
 using NewLife.Log;
-using NewLife.Model;
-using NewLife.Reflection;
 using NewLife.Security;
-using NewLife.Threading;
-using NewLife.Web;
 using XCode;
-using XCode.Cache;
-using XCode.Configuration;
-using XCode.DataAccessLayer;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity
 {
+    /// <summary>OAuth2.0授权类型</summary>
+    public enum GrantTypes
+    {
+        /// <summary>
+        /// 授权码
+        /// </summary>
+        AuthorizationCode = 0,
+
+        /// <summary>
+        /// 隐藏式
+        /// </summary>
+        Implicit,
+
+        /// <summary>
+        /// 密码式
+        /// </summary>
+        Password,
+
+        /// <summary>
+        /// 客户端凭证
+        /// </summary>
+        ClientCredentials,
+    }
+
     /// <summary>OAuth配置。需要连接的OAuth认证方</summary>
     public partial class OAuthConfig : Entity<OAuthConfig>
     {
@@ -59,22 +67,6 @@ namespace NewLife.Cube.Entity
 
             // 建议先调用基类方法，基类方法会做一些统一处理
             base.Valid(isNew);
-
-            // 在新插入数据或者修改了指定字段时进行修正
-            // 处理当前已登录用户信息，可以由UserModule过滤器代劳
-            /*var user = ManageProvider.User;
-            if (user != null)
-            {
-                if (isNew && !Dirtys[nameof(CreateUserID)]) CreateUserID = user.ID;
-                if (!Dirtys[nameof(UpdateUserID)]) UpdateUserID = user.ID;
-            }*/
-            //if (isNew && !Dirtys[nameof(CreateTime)]) CreateTime = DateTime.Now;
-            //if (!Dirtys[nameof(UpdateTime)]) UpdateTime = DateTime.Now;
-            //if (isNew && !Dirtys[nameof(CreateIP)]) CreateIP = ManageProvider.UserHost;
-            //if (!Dirtys[nameof(UpdateIP)]) UpdateIP = ManageProvider.UserHost;
-
-            // 检查唯一索引
-            // CheckExist(isNew, nameof(Name));
         }
 
         /// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
@@ -216,8 +208,9 @@ namespace NewLife.Cube.Entity
         }
 
         /// <summary>获取全部有效设置</summary>
+        /// <param name="grantType">授权类型</param>
         /// <returns></returns>
-        public static IList<OAuthConfig> GetValids() => FindAllWithCache().Where(e => e.Enable).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
+        public static IList<OAuthConfig> GetValids(GrantTypes grantType) => FindAllWithCache().Where(e => e.Enable && e.GrantType == grantType).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
 
         /// <summary>获取全部有效且可见设置</summary>
         /// <returns></returns>

@@ -20,7 +20,7 @@ namespace NewLife.Cube.Admin.Controllers
             MenuOrder = 38;
             LogOnChange = true;
 
-            ListFields.RemoveField("Secret", "Logo", "White", "Black", "Urls", "Remark");
+            ListFields.RemoveField("Secret", "HomePage", "Logo", "White", "Black", "Urls", "Remark");
 
             {
                 var df = ListFields.AddListField("AppLog", "Enable");

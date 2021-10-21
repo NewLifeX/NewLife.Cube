@@ -125,7 +125,7 @@ namespace NewLife.Web
 
             if (name.IsNullOrEmpty())
             {
-                var ms = OAuthConfig.GetValids();
+                var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
                 if (ms.Count > 0) name = ms[0].Name;
             }
             if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name), "未正确配置OAuth");
@@ -149,7 +149,7 @@ namespace NewLife.Web
         /// <param name="name"></param>
         public void Apply(String name)
         {
-            var ms = OAuthConfig.GetValids();
+            var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
             if (ms.Count == 0) throw new InvalidOperationException("未设置OAuth服务端");
 
             var mi = ms.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
