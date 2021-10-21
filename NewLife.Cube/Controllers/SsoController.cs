@@ -748,7 +748,7 @@ namespace NewLife.Cube.Controllers
         {
             try
             {
-                var app = OAuth.Auth(client_id, client_secret, UserHost);
+                var app = OAuth.Auth(client_id, client_secret + "", UserHost);
                 if (app == null) throw new ArgumentException($"无效应用[{client_id}]");
 
                 var prv = OAuth.GetProvider();

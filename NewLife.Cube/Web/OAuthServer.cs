@@ -36,30 +36,6 @@ namespace NewLife.Web
         /// <summary>验证应用</summary>
         /// <param name="client_id"></param>
         /// <param name="client_secret"></param>
-        /// <returns></returns>
-        public virtual App Auth(String client_id, String client_secret)
-        {
-            var app = App.FindByName(client_id);
-            //if (app == null) throw new XException("未找到应用[{0}]", appid);
-            // 找不到应用时自动创建，但处于禁用状态
-            if (app == null)
-            {
-                app = new App { Name = client_id };
-                app.Insert();
-            }
-
-            if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
-            if (!client_secret.IsNullOrEmpty())
-            {
-                if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
-            }
-
-            return app;
-        }
-
-        /// <summary>验证应用</summary>
-        /// <param name="client_id"></param>
-        /// <param name="client_secret"></param>
         /// <param name="ip"></param>
         /// <returns></returns>
         public virtual App Auth(String client_id, String client_secret, String ip)
@@ -74,10 +50,11 @@ namespace NewLife.Web
             }
 
             if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
+            if (app.Expired.Year > 2000 && app.Expired < DateTime.Now) throw new XException("应用[{0}]已过期", client_id);
 
-            if (!app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);
+            if (!ip.IsNullOrEmpty() && !app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);
 
-            if (!client_secret.IsNullOrEmpty())
+            if (client_secret != null)
             {
                 if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
             }
@@ -119,10 +96,10 @@ namespace NewLife.Web
                 //if (!response_type.EqualIgnoreCase("code")) throw new NotSupportedException(nameof(response_type));
 
                 var app = App.FindByName(client_id);
-                if (app != null) log.AppId = app.ID;
+                if (app != null) log.AppId = app.Id;
 
-                app = Auth(client_id, null);
-                log.AppId = app.ID;
+                app = Auth(client_id, null, ip);
+                log.AppId = app.Id;
 
                 // 验证回调地址
                 if (!app.ValidCallback(redirect_uri)) throw new XException("回调地址不合法 {0}", redirect_uri);

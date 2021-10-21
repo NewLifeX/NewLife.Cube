@@ -30,10 +30,10 @@ namespace NewLife.Cube.Entity
         #region 扩展属性
         /// <summary>应用</summary>
         [XmlIgnore, ScriptIgnore, IgnoreDataMember]
-        public App App => Extends.Get(nameof(App), k => App.FindByID(AppId));
+        public App App => Extends.Get(nameof(App), k => App.FindById(AppId));
 
         /// <summary>应用</summary>
-        [Map(__.AppId, typeof(App), "ID")]
+        [Map(__.AppId, typeof(App), "Id")]
         public String AppName => App + "";
         #endregion
 

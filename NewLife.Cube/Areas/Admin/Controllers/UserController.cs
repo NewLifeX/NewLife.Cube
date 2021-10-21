@@ -259,7 +259,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 是否使用Sso登录
             var appId = GetRequest("ssoAppId").ToInt();
-            var app = App.FindByID(appId);
+            var app = App.FindById(appId);
             if (app != null)
             {
                 model.DisplayName = app + "";

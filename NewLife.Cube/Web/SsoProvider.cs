@@ -507,7 +507,7 @@ namespace NewLife.Cube.Web
             using var span = Tracer?.NewSpan(nameof(GetAccessToken), client_id);
             try
             {
-                sso.Auth(client_id, client_secret, ip);
+                sso.Auth(client_id, client_secret + "", ip);
 
                 var token = sso.GetToken(code);
                 token.Scope = "basic,UserInfo";
@@ -546,7 +546,7 @@ namespace NewLife.Cube.Web
             try
             {
                 var app = sso.Auth(client_id, null, ip);
-                log.AppId = app.ID;
+                log.AppId = app.Id;
 
                 // 验证应用能力
                 var scopes = app.Scopes?.Split(",");
@@ -635,10 +635,10 @@ namespace NewLife.Cube.Web
             try
             {
                 var app = App.FindByName(client_id);
-                if (app != null) log.AppId = app.ID;
+                if (app != null) log.AppId = app.Id;
 
-                app = sso.Auth(client_id, client_secret, ip);
-                log.AppId = app.ID;
+                app = sso.Auth(client_id, client_secret + "", ip);
+                log.AppId = app.Id;
 
                 // 验证应用能力
                 var scopes = app.Scopes?.Split(",");
@@ -695,10 +695,10 @@ namespace NewLife.Cube.Web
             try
             {
                 var app = App.FindByName(client_id);
-                if (app != null) log.AppId = app.ID;
+                if (app != null) log.AppId = app.Id;
 
                 app = sso.Auth(client_id, null, ip);
-                log.AppId = app.ID;
+                log.AppId = app.Id;
 
                 var name = sso.Decode(refresh_token);
                 var ss = name.Split("#");

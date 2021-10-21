@@ -111,7 +111,7 @@
   </Table>
   <Table Name="App" TableName="OAuthApp" Description="应用系统。用于OAuthServer的子系统">
     <Columns>
-      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
       <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。AppID" />
       <Column Name="DisplayName" DataType="String" Description="显示名" />
       <Column Name="Secret" DataType="String" Description="密钥。AppSecret" />
@@ -124,6 +124,7 @@
       <Column Name="Urls" DataType="String" Length="500" Description="回调地址。用于限制回调地址安全性，多个地址逗号隔开" />
       <Column Name="RoleIds" DataType="String" Description="授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制" />
       <Column Name="Scopes" DataType="String" Length="200" Description="能力集合。逗号分隔，password，client_credentials" />
+      <Column Name="Expired" DataType="DateTime" Description="过期时间。空表示永不过期" />
       <Column Name="Auths" DataType="Int32" Description="次数" />
       <Column Name="LastAuth" DataType="DateTime" Description="最后请求" />
       <Column Name="Remark" DataType="String" Length="500" Description="内容" />
