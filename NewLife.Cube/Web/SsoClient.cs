@@ -142,6 +142,40 @@ namespace NewLife.Cube.Web
             return user;
         }
 
+        /// <summary>验证用户，并获取用户信息</summary>
+        /// <param name="username">账号</param>
+        /// <param name="password">密码</param>
+        /// <returns></returns>
+        public async Task<IDictionary<String, Object>> UserAuth(String username, String password)
+        {
+            var client = GetClient();
+
+            var key = SecurityKey;
+            if (!key.IsNullOrEmpty())
+            {
+                var name = "";
+                var p = key.IndexOf('$');
+                if (p >= 0)
+                {
+                    name = key.Substring(0, p);
+                    key = key.Substring(p + 1);
+                }
+
+                // RSA公钥加密
+                var pass = RSAHelper.Encrypt(password.GetBytes(), key).ToBase64();
+                password = $"$rsa${name}${pass}";
+            }
+
+            return await client.PostAsync<IDictionary<String, Object>>("sso/userauth", new
+            {
+                //grant_type = "password",
+                client_id = AppId,
+                //client_secret = Secret,
+                username,
+                password
+            });
+        }
+
         /// <summary>获取应用公钥，用于验证令牌</summary>
         /// <param name="client_id">应用</param>
         /// <param name="client_secret">密钥</param>

@@ -151,8 +151,9 @@ namespace NewLife.Cube
                 };
             }
 
-            var ti = _client.GetToken(username, password).Result;
-            var ui = _client.GetUser(ti.AccessToken).Result as User;
+            //var ti = _client.GetToken(username, password).Result;
+            //var ui = _client.GetUser(ti.AccessToken).Result as User;
+            var ui = _client.UserAuth(username, password).Result;
 
             var set = Setting.Current;
             var log = LogProvider.Provider;
@@ -169,9 +170,9 @@ namespace NewLife.Cube
 
                 user = new User
                 {
-                    Code = ui.Code,
-                    Name = ui.Name,
-                    DisplayName = ui.DisplayName,
+                    Code = ui["usercode"] as String,
+                    Name = username,
+                    DisplayName = ui["nickname"] as String,
 
                     Enable = true,
                     RegisterTime = DateTime.Now,

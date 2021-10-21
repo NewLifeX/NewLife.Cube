@@ -920,7 +920,7 @@ namespace NewLife.Cube.Web
                 {
                     file.EnsureDirectory(true);
 
-                    var ks = RSAHelper.GenerateParameters();
+                    var ks = RSAHelper.GenerateKey();
                     File.WriteAllText(file, ks[0]);
                     File.WriteAllText(file.TrimEnd(".prvkey") + ".pubkey", ks[1]);
                     key = ks[0];

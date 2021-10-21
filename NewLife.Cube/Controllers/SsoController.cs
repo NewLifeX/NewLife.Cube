@@ -795,8 +795,11 @@ namespace NewLife.Cube.Controllers
         /// <param name="password">密码</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public virtual ActionResult UserAuth(String client_id, String client_secret, String username, String password)
+        public virtual ActionResult UserAuth([FromBody] SsoTokenModel model)
         {
+            var client_id = model.client_id;
+            var username = model.UserName;
+            var password = model.Password;
             if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
 
             try
@@ -820,13 +823,13 @@ namespace NewLife.Cube.Controllers
                 var rs2 = Provider.GetUserInfo(OAuth, token.AccessToken, user);
                 dic.Merge(rs2);
 
-                return SsoJsonOK(dic);
+                return Json(0, null, dic);
             }
             catch (Exception ex)
             {
                 XTrace.WriteLine($"UserAuth client_id={client_id} username={username}");
                 XTrace.WriteException(ex);
-                return SsoJsonError(ex);
+                return Json(0, null, ex);
             }
         }
         #endregion
