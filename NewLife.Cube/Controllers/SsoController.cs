@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using NewLife.Security;
 using NewLife.Cube.Web.Models;
 using NewLife.Remoting;
+using System.Collections.Generic;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -785,6 +786,48 @@ namespace NewLife.Cube.Controllers
             if (redirect_uri.IsNullOrEmpty()) return Content("ok");
 
             return Redirect(redirect_uri);
+        }
+
+        /// <summary>用户验证。借助OAuth密码式验证，并返回用户信息</summary>
+        /// <param name="client_id">应用标识</param>
+        /// <param name="client_secret">密钥</param>
+        /// <param name="username">用户名。可以是设备编码等唯一使用者标识</param>
+        /// <param name="password">密码</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public virtual ActionResult UserAuth(String client_id, String client_secret, String username, String password)
+        {
+            if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
+
+            try
+            {
+                if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username));
+                if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
+
+                var token = Provider.GetAccessTokenByPassword(OAuth, client_id, username, password, UserHost);
+                var rs = new
+                {
+                    access_token = token.AccessToken,
+                    refresh_token = token.RefreshToken,
+                    expires_in = token.Expire,
+                    scope = token.Scope,
+                };
+                var dic = rs.ToDictionary();
+
+                var user = Provider?.GetUser(OAuth, username);
+                if (user == null) throw new XException("用户[{0}]不存在", username);
+
+                var rs2 = Provider.GetUserInfo(OAuth, token.AccessToken, user);
+                dic.Merge(rs2);
+
+                return SsoJsonOK(dic);
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteLine($"UserAuth client_id={client_id} username={username}");
+                XTrace.WriteException(ex);
+                return SsoJsonError(ex);
+            }
         }
         #endregion
 

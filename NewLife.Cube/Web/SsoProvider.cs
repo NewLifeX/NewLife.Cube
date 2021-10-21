@@ -912,7 +912,8 @@ namespace NewLife.Cube.Web
             var key = SecurityKey;
             if (key.IsNullOrEmpty())
             {
-                var file = "..\\Keys\\SsoSecurity.prvkey".GetFullPath();
+                if (name.IsNullOrEmpty()) name = "SsoSecurity";
+                 var file = $"..\\Keys\\{name}.prvkey".GetFullPath();
                 if (File.Exists(file)) key = File.ReadAllText(file);
 
                 if (key.IsNullOrEmpty())

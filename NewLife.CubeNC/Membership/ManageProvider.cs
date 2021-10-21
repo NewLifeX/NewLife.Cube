@@ -154,9 +154,19 @@ namespace NewLife.Cube
             var ti = _client.GetToken(username, password).Result;
             var ui = _client.GetUser(ti.AccessToken).Result as User;
 
+            var set = Setting.Current;
+            var log = LogProvider.Provider;
+
             // 仅验证登录，不要角色信息
-            if (FindByName(ui.Name) is not User user)
+            if (FindByName(username) is not User user)
             {
+                if (!set.AutoRegister && !oa.AutoRegister)
+                {
+                    log.WriteLog(typeof(User), "SSO登录", false, $"无法找到[{username}]，且没有打开自动注册", 0, username);
+
+                    throw new XException($"无法找到[{username}]，且没有打开自动注册");
+                }
+
                 user = new User
                 {
                     Code = ui.Code,
@@ -166,13 +176,18 @@ namespace NewLife.Cube
                     Enable = true,
                     RegisterTime = DateTime.Now,
                 };
+
+                // 新注册用户采用魔方默认角色
+                var defRole = oa.AutoRole;
+                if (defRole.IsNullOrEmpty()) defRole = set.DefaultRole;
+                user.RoleID = Role.GetOrAdd(defRole).ID;
             }
 
             user.Logins++;
             user.LastLogin = DateTime.Now;
             user.Save();
 
-            LogProvider.Provider.WriteLog(user.GetType(), "OAuth登录", true, $"用户[{user}]使用[{username}]登录[{_client.AppId}]成功！" + Environment.NewLine + ui.ToJson());
+            log.WriteLog(user.GetType(), "OAuth登录", true, $"用户[{user}]使用[{username}]登录[{_client.AppId}]成功！" + Environment.NewLine + ui.ToJson());
 
             return user;
         }
