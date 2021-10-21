@@ -111,7 +111,7 @@ namespace NewLife.Cube.Web
         {
             var url = LoginUrl;
 
-            var log = AppLog.FindByID(logId.ToLong());
+            var log = AppLog.FindById(logId.ToLong());
             if (log != null)
             {
                 url += url.Contains("?") ? "&" : "?";

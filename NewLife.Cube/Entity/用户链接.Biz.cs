@@ -62,9 +62,9 @@ namespace NewLife.Cube.Entity
             if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
 
             // 单对象缓存
-            //return Meta.SingleCache[id];
+            return Meta.SingleCache[id];
 
-            return Find(_.ID == id);
+            //return Find(_.ID == id);
         }
 
         /// <summary>根据UnionID查找。跨多应用，因为微信公众号和微信开放平台可能共用UnionID</summary>

@@ -76,7 +76,7 @@ namespace NewLife.Cube.Entity
             if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Token.EqualIgnoreCase(token));
 
             //return Find(_.Token == token);
-            return Meta.SingleCache[token] as UserToken;
+            return Meta.SingleCache[token];
         }
 
         /// <summary>根据用户查找</summary>

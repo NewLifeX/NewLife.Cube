@@ -142,7 +142,7 @@ namespace NewLife.Web
                 log.Insert();
             }
 
-            return log.ID + "";
+            return log.Id + "";
         }
 
         /// <summary>根据验证结果获取跳转回子系统的Url</summary>
@@ -151,11 +151,11 @@ namespace NewLife.Web
         /// <returns></returns>
         public virtual String GetResult(String key, IManageUser user)
         {
-            var log = AppLog.FindByID(key.ToLong());
+            var log = AppLog.FindById(key.ToLong());
             if (log == null) throw new ArgumentOutOfRangeException(nameof(key), "操作超时，请重试！");
 
             //var prv = GetProvider();
-            var code = log.ID + "";
+            var code = log.Id + "";
 
             var token = CreateToken(log.App, user.Name, null, $"{log.App?.Name}#{user.Name}");
 
@@ -259,7 +259,7 @@ namespace NewLife.Web
         /// <returns></returns>
         public virtual TokenInfo GetToken(String code)
         {
-            var log = AppLog.FindByID(code.ToLong());
+            var log = AppLog.FindById(code.ToLong());
             if (log == null || log.CreateTime.AddMinutes(5) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
             if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);

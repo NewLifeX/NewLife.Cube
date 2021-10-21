@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
@@ -42,17 +41,17 @@ namespace NewLife.Cube.Entity
         /// <summary>根据编号查找</summary>
         /// <param name="id">编号</param>
         /// <returns>实体对象</returns>
-        public static AppLog FindByID(Int64 id)
+        public static AppLog FindById(Int64 id)
         {
             if (id <= 0) return null;
 
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
+            //// 实体缓存
+            //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
 
             // 单对象缓存
-            //return Meta.SingleCache[id];
+            return Meta.SingleCache[id];
 
-            return Find(_.ID == id);
+            //return Find(_.Id == id);
         }
         #endregion
 
@@ -69,7 +68,7 @@ namespace NewLife.Cube.Entity
             var exp = new WhereExpression();
 
             if (appId >= 0) exp &= _.AppId == appId;
-            exp &= _.ID.Between(start, end, Meta.Factory.Snow);
+            exp &= _.Id.Between(start, end, Meta.Factory.Snow);
 
             return FindAll(exp, page);
         }
