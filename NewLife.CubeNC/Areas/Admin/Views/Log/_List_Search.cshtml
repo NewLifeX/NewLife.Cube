@@ -2,6 +2,10 @@
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
+
+    var dic = new Dictionary<Int32, String>();
+    dic.Add(1, "成功");
+    dic.Add(0, "失败");
 }
 <div class="form-group">
     @*@Html.ActionLink("访问统计", "Index", "VisitStat", null, new { @class = "btn btn-success btn-sm" })*@
@@ -9,6 +13,8 @@
     @Html.ForDropDownList("category", Log.FindAllCategoryName(), page["category"], "全部", true)
     <label for="act" class="control-label">操作：</label>
     @Html.ForDropDownList("act", Log.FindAllActionName(), page["act"], "全部", true)
+    <label for="enable" class="control-label">状态：</label>
+    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel("success", dic,  page["success"], "全部", true, null))
 </div>
 @await Html.PartialAsync("_SelectUser", new SelectUserModel { Id = "userId", UserId = page["userId"].ToInt(-1) })
 @await Html.PartialAsync("_DateRange")

@@ -523,7 +523,9 @@ namespace NewLife.Cube.Web
 
                 ClientId = client_id,
                 ResponseType = "password",
+
                 CreateIP = ip,
+                CreateTime = DateTime.Now,
             };
 
             try
@@ -607,7 +609,9 @@ namespace NewLife.Cube.Web
 
                 ClientId = client_id,
                 ResponseType = "client_credentials",
+
                 CreateIP = ip,
+                CreateTime = DateTime.Now,
             };
 
             try
@@ -651,7 +655,7 @@ namespace NewLife.Cube.Web
         /// <param name="sso"></param>
         /// <param name="client_id">应用标识</param>
         /// <param name="refresh_token">刷新令牌</param>
-        /// <param name="ip"></param>
+        /// <param name="ip">IP地址</param>
         /// <returns></returns>
         public virtual TokenInfo RefreshToken(OAuthServer sso, String client_id, String refresh_token, String ip)
         {
@@ -662,7 +666,9 @@ namespace NewLife.Cube.Web
 
                 ClientId = client_id,
                 ResponseType = "refresh_token",
+
                 CreateIP = ip,
+                CreateTime = DateTime.Now,
             };
 
             try

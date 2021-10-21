@@ -416,7 +416,7 @@ namespace NewLife.Cube.Controllers
             if (response_type.IsNullOrEmpty()) response_type = "code";
 
             // 判断合法性，然后跳转到登录页面，登录完成后跳转回来
-            var key = OAuth.Authorize(client_id, redirect_uri, response_type, scope, state);
+            var key = OAuth.Authorize(client_id, redirect_uri, response_type, scope, state, UserHost);
 
             var prov = Provider;
             var url = "";

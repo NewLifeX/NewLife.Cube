@@ -76,7 +76,7 @@ namespace NewLife.Web
             if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
 
             if (!app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);
-            
+
             if (!client_secret.IsNullOrEmpty())
             {
                 if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
@@ -95,8 +95,9 @@ namespace NewLife.Web
         /// <param name="response_type">响应类型。默认code</param>
         /// <param name="scope">授权域</param>
         /// <param name="state">用户状态数据</param>
+        /// <param name="ip">IP地址</param>
         /// <returns></returns>
-        public virtual String Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null)
+        public virtual String Authorize(String client_id, String redirect_uri, String response_type, String scope, String state, String ip)
         {
             var log = new AppLog
             {
@@ -107,7 +108,10 @@ namespace NewLife.Web
                 RedirectUri = redirect_uri,
                 ResponseType = response_type,
                 Scope = scope,
-                State = state
+                State = state,
+
+                CreateIP = ip,
+                CreateTime = DateTime.Now,
             };
 
             try
