@@ -25,6 +25,23 @@ namespace NewLife.Web.OAuth
         /// <returns></returns>
         public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains(" QQ/");
 
+        /// <summary>发起请求，获取内容</summary>
+        /// <param name="action"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        protected override String GetHtml(String action, String url)
+        {
+            var html = base.GetHtml(action, url);
+
+            // 去掉js回调函数
+            if (!html.IsNullOrEmpty() && html.StartsWithIgnoreCase("callback("))
+            {
+                html = html.Substring("callback(").TrimEnd(");").Trim();
+            }
+
+            return html;
+        }
+
         /// <summary>从响应数据中获取信息</summary>
         /// <param name="dic"></param>
         protected override void OnGetInfo(IDictionary<String, String> dic)
@@ -46,6 +63,9 @@ namespace NewLife.Web.OAuth
                     break;
                 }
             }
+
+            // 获取用户信息出错时抛出异常
+            if (dic.TryGetValue("error_description", out str)) throw new InvalidOperationException(str);
         }
     }
 }

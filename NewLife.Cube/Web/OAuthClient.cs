@@ -575,7 +575,7 @@ namespace NewLife.Web
 
             // 获取用户信息出错时抛出异常
             // 2021-07-19 企业微信正常请求返回"errmsg": "ok"，导致登录报错，所以暂时注释
-            //if (dic.TryGetValue("error", out str) || dic.TryGetValue("errmsg", out str)) throw new InvalidOperationException(str);
+            if ((dic.TryGetValue("error", out str) || dic.TryGetValue("errmsg", out str)) && str != "ok") throw new InvalidOperationException(str);
         }
         #endregion
 

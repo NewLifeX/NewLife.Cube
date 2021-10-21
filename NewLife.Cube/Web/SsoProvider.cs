@@ -31,6 +31,11 @@ namespace NewLife.Cube.Web
         /// <summary>用户管理提供者</summary>
         public IManageProvider Provider { get; set; }
 
+        /// <summary>
+        /// 性能追踪器
+        /// </summary>
+        public ITracer Tracer { get; set; }
+
         ///// <summary>重定向地址。~/Sso/LoginInfo</summary>
         //public String RedirectUrl { get; set; }
 
@@ -499,12 +504,21 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual TokenInfo GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
         {
-            sso.Auth(client_id, client_secret, ip);
+            using var span = Tracer?.NewSpan(nameof(GetAccessToken), client_id);
+            try
+            {
+                sso.Auth(client_id, client_secret, ip);
 
-            var token = sso.GetToken(code);
-            token.Scope = "basic,UserInfo";
+                var token = sso.GetToken(code);
+                token.Scope = "basic,UserInfo";
 
-            return token;
+                return token;
+            }
+            catch (Exception ex)
+            {
+                span?.SetError(ex, new { client_id, client_secret, code, ip });
+                throw;
+            }
         }
 
         /// <summary>密码式获取令牌</summary>
@@ -528,6 +542,7 @@ namespace NewLife.Cube.Web
                 CreateTime = DateTime.Now,
             };
 
+            using var span = Tracer?.NewSpan(nameof(GetAccessTokenByPassword), username);
             try
             {
                 var app = sso.Auth(client_id, null, ip);
@@ -585,6 +600,8 @@ namespace NewLife.Cube.Web
                 log.Success = false;
                 log.Remark = ex.GetTrue()?.Message;
 
+                span?.SetError(ex, new { client_id, username, ip });
+
                 throw;
             }
             finally
@@ -614,6 +631,7 @@ namespace NewLife.Cube.Web
                 CreateTime = DateTime.Now,
             };
 
+            using var span = Tracer?.NewSpan(nameof(GetAccessTokenByClientCredentials), username);
             try
             {
                 var app = App.FindByName(client_id);
@@ -643,6 +661,8 @@ namespace NewLife.Cube.Web
                 log.Success = false;
                 log.Remark = ex.GetTrue()?.Message;
 
+                span?.SetError(ex, new { client_id, client_secret, username, ip });
+
                 throw;
             }
             finally
@@ -671,6 +691,7 @@ namespace NewLife.Cube.Web
                 CreateTime = DateTime.Now,
             };
 
+            using var span = Tracer?.NewSpan(nameof(RefreshToken), refresh_token);
             try
             {
                 var app = App.FindByName(client_id);
@@ -699,6 +720,8 @@ namespace NewLife.Cube.Web
             {
                 log.Success = false;
                 log.Remark = ex.GetTrue()?.Message;
+
+                span?.SetError(ex, new { client_id, refresh_token, ip });
 
                 throw;
             }
@@ -773,6 +796,8 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual Boolean FetchAvatar(IManageUser user, String url = null)
         {
+            using var span = Tracer?.NewSpan(nameof(FetchAvatar), user + "");
+
             if (url.IsNullOrEmpty()) url = user.GetValue("Avatar") as String;
             //if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
 
@@ -816,6 +841,8 @@ namespace NewLife.Cube.Web
             {
                 XTrace.WriteLine("抓取头像失败，{0}, {1}", user, url);
                 XTrace.WriteException(ex);
+
+                span?.SetError(ex, null);
             }
 
             return false;
