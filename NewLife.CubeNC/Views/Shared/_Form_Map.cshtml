@@ -19,6 +19,7 @@
 @if (map == null || fact != null && fact.Session.Count > set.MaxDropDownList)
 {
     var label = entity[field.Name];
+    if (label is DateTime dt) label = dt.ToFullString("");
     if (!field.MapField.IsNullOrEmpty())
     {
         var fi = entity.GetType().AsFactory().Table.FindByName(field.MapField) as FieldItem;
