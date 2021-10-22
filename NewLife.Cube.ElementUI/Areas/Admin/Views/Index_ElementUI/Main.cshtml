@@ -1,0 +1,180 @@
+﻿@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime;
+@using System.Runtime.Versioning;
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Http.Extensions
+@using NewLife.Caching
+@using NewLife.Common;
+@using NewLife.Serialization;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject IWebHostEnvironment Env
+@{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
+    ViewBag.Title = "服务器信息";
+
+    //var os = Environment.OSVersion + "";
+    //if (Runtime.Linux) os = WebHelper2.GetLinuxName();
+    var asm = Assembly.GetExecutingAssembly();
+    var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
+    var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
+    var httpContext = HttpContextAccessor.HttpContext;
+    var req = httpContext.Request;
+    //var req = NewLife.Web.HttpContext.Current.Request;
+    var conn = httpContext.Connection;
+
+    var mi = MachineInfo.Current ?? new MachineInfo();
+
+    // GC设置
+    var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
+
+    var dataList = new List<object>();
+}
+
+<!-- 面包屑 -->
+<el-breadcrumb separator-class="el-icon-arrow-right" class="breadcrumb">
+    <el-breadcrumb-item>首页</el-breadcrumb-item>
+    <el-breadcrumb-item>服务器信息</el-breadcrumb-item>
+</el-breadcrumb>
+
+<el-descriptions title="服务器信息" border :column=2>
+    <el-descriptions-item label="应用系统">
+        @*据说此功能已被干掉*@
+        @*@HttpRuntime.AppDomainAppVirtualPath*@
+        &nbsp;
+        @if (this.Has((PermissionFlags)16))
+        {
+            <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>
+        }
+        &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
+    </el-descriptions-item>
+    <el-descriptions-item label="目录"> @Env.ContentRootPath</el-descriptions-item>
+    <el-descriptions-item label="域名地址">
+        @{
+            var addrLocal = conn.LocalIpAddress;
+            var addrRemote = conn.RemoteIpAddress;
+            if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+            if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+            var userHost = httpContext.GetUserHost();
+        }
+        <span title="主机">@req.Headers["Host"]</span>，
+        <span title="本地">@addrLocal:@conn.LocalPort</span>
+        &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
+        @if (addrRemote + "" != userHost)
+        {
+            <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
+        }
+    </el-descriptions-item>
+    <el-descriptions-item label="应用程序">
+        @AppDomain.CurrentDomain.FriendlyName
+        <a href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
+        <a href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
+        <a href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
+    </el-descriptions-item>
+    <el-descriptions-item label=" .Net 版本" :contentStyle="{'text-align': 'right'}"> @Environment.Version &nbsp;@ver</el-descriptions-item>
+    <el-descriptions-item label=" 操作系统">@mi.OSName @mi.OSVersion</el-descriptions-item>
+    <el-descriptions-item label=" 机器用户">
+        @if (!mi.Product.IsNullOrEmpty())
+        {
+            <apan>@mi.Product，</apan>
+        }
+        @Environment.UserName/@Environment.MachineName
+    </el-descriptions-item>
+    <el-descriptions-item label="处理器：">
+        @mi.Processor，
+        @Environment.ProcessorCount
+        核心，@mi.CpuRate.ToString("p0")
+        @if (mi.Temperature > 0)
+        {
+            <span>，@mi.Temperature ℃</span>
+        }
+    </el-descriptions-item>
+    <el-descriptions-item label=" 时间：">
+        @{
+            //var uptime = TimeSpan.FromTicks(Environment.TickCount64);
+            var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+        }
+    </el-descriptions-item>
+    <el-descriptions-item label="内存">
+        @{ var process = Process.GetCurrentProcess();}
+        物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
+        工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
+        GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
+        <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+    </el-descriptions-item>
+    <el-descriptions-item label="进程时间">@process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()</el-descriptions-item>
+    <el-descriptions-item label="Session">
+        @httpContext.Session.Keys.Count() 个
+        <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
+        ，@gc
+    </el-descriptions-item>
+</el-descriptions>
+
+<el-table :data="tableData"
+          style="width: 100%">
+    <el-table-column prop="Name"
+                     label="名称"
+                     width="180">
+    </el-table-column>
+    <el-table-column prop="Title"
+                     label="标题"
+                     width="180">
+    </el-table-column>
+    <el-table-column prop="FileVersion"
+                     label="文件版本"
+                     width="180">
+    </el-table-column>
+    <el-table-column prop="Version"
+                     label="内部版本"
+                     width="180">
+    </el-table-column>
+    <el-table-column prop="CreateTime"
+                     label="编译时间"
+                     width="180">
+    </el-table-column>
+    <el-table-column prop="Desc"
+                     label="描述">
+    </el-table-column>
+</el-table>
+
+
+@foreach (AssemblyX item in ViewBag.MyAsms)
+{
+    dataList.Add(new  {
+        Name= item.Name,
+        Title = item.Title,
+        FileVersion = item.FileVersion,
+        Version = item.Version,
+        CreateTime= item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString(),
+        Desc = item.Description,
+    });
+}
+
+@section scripts{
+
+    <script>
+        //Vue2.0 桌面端组件库: https://element.eleme.cn/#/zh-CN/component/cascader
+
+        var main = new Vue({
+            el: '#app',
+            data: {
+ 
+                tableData: @Html.Raw(dataList.ToJson()),
+
+            },
+            //页面初始化
+            created() {
+
+            },
+            methods: {
+
+            },
+
+        });
+
+    </script>
+
+}
+

@@ -1,0 +1,27 @@
+name: .NET
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        include-prerelease: true
+    - name: Restore dependencies
+      run: dotnet restore NewLife.CubeNC/NewLife.CubeNC.csproj
+    - name: Build
+      run: dotnet pack --no-restore --version-suffix $(date "+%Y%m%d%H%M%S") -o out NewLife.CubeNC/NewLife.CubeNC.csproj
+    - name: Publish
+      run: dotnet nuget push ./out/*.nupkg  --source https://nuget.pkg.github.com/NewLifeX/index.json   --api-key ${{ github.token }}
+      
