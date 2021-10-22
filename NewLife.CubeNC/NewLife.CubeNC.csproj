@@ -10,7 +10,7 @@
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2021 NewLife</Copyright>
     <VersionPrefix>4.0</VersionPrefix>
-    <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMddHHmm`))</VersionSuffix>
+    <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>4.0.*</AssemblyVersion>
