@@ -207,7 +207,9 @@ namespace NewLife.Cube.Entity
                         Name = field.Name,
                         Enable = true,
                         ShowInList = true,
-                        ShowInForm = ShowInForm.详情 | ShowInForm.添加 | ShowInForm.编辑,
+                        ShowInDetailForm = true,
+                        ShowInAddForm = true,
+                        ShowInEditForm = true,
                     };
                     columns.Add(column);
                 }

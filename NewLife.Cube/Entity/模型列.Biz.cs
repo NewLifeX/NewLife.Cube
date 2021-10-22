@@ -67,6 +67,23 @@ namespace NewLife.Cube.Entity
         /// <summary>对应字段</summary>
         [XmlIgnore, ScriptIgnore, IgnoreDataMember]
         public Field Field => Meta.Table.FindByName(Name);
+
+        /// <summary>
+        /// 表单页显示，仅仅用于判断快速在哪种表单显示
+        /// </summary>
+        [XmlIgnore, ScriptIgnore, IgnoreDataMember]
+        public ShowInForm ShowInForm
+        {
+            get
+            {
+                var showType = default(ShowInForm);
+                if (ShowInDetailForm) showType |= ShowInForm.详情;
+                if (ShowInAddForm) showType |= ShowInForm.添加;
+                if (ShowInEditForm) showType |= ShowInForm.编辑;
+                return showType;
+            }
+        }
+
         #endregion
 
         #region 扩展查询
