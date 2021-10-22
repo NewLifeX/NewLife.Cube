@@ -1,0 +1,46 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = Model.Type;
+    var length = Model.Length;
+
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+    if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+}
+@if (name.EqualIgnoreCase("Pass", "Password"))
+{
+    <el-input v-model="modelForm.@name" placeholder="请输入内容" show-password></el-input>
+}
+else if (name.EqualIgnoreCase("Phone", "TelPhone", "OfficePhone", "HomePhone", "Fax"))
+{
+<el-input v-model="modelForm.@name" placeholder="请输入内容"></el-input>
+}
+else if (name.EqualIgnoreCase("Mobile", "MobilePhone", "CellularPhone"))
+{
+<el-input v-model="modelForm.@name" placeholder="请输入内容"></el-input>
+}
+else if (name.EqualIgnoreCase("email", "mail"))
+{
+<el-input v-model="modelForm.@name" placeholder="请输入内容"></el-input>
+}
+else if (name.EndsWithIgnoreCase("url"))
+{
+<el-input v-model="modelForm.@name" placeholder="请输入内容"></el-input>
+}
+else if (length < 0 || length >= 300 || (length >= 200 && name.EqualIgnoreCase("Remark", "Description", "Comment")))
+{
+<el-input type="textarea"
+          :rows="2"
+          placeholder="请输入内容"
+          v-model="modelForm.@name">
+</el-input>
+}
+else
+{
+    <el-input v-model="modelForm.@name" placeholder="请输入内容" maxlength="200"></el-input>
+}

@@ -277,7 +277,7 @@ namespace NewLife.Cube
         {
             var dal = DAL.Create("Cube");
             var tables = dal.Tables;
-            if (!tables.Any(e => e.TableName.EqualIgnoreCase("OAuthApp")))
+            if (tables != null && !tables.Any(e => e.TableName.EqualIgnoreCase("OAuthApp")))
             {
                 XTrace.WriteLine("未发现OAuth应用新表 OAuthApp");
 
