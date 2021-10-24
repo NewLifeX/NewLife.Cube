@@ -15,10 +15,10 @@ using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Common;
 using NewLife.Reflection;
 using System.IO;
+using NewLife.Cube.Services;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using NewLife.Cube.Extensions;
 #else
 using System.Web.Mvc;
 using System.Web.Security;
@@ -35,7 +35,8 @@ namespace NewLife.Cube.Admin.Controllers
     public class UserController : EntityController<User>
     {
         /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
-        private static ICache _cache = Cache.Default ?? new MemoryCache();
+        private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
+        private readonly PasswordService _passwordService;
 
         static UserController()
         {
@@ -89,6 +90,12 @@ namespace NewLife.Cube.Admin.Controllers
                 EditFormFields.RemoveField("RoleNames");
             }
         }
+
+        /// <summary>
+        /// 实例化用户控制器
+        /// </summary>
+        /// <param name="passwordService"></param>
+        public UserController(PasswordService passwordService) => _passwordService = passwordService;
 
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
@@ -505,8 +512,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"确认密码不能为 Null 或空白", nameof(model.NewPassword2));
             if (model.NewPassword != model.NewPassword2) throw new ArgumentException($"两次输入密码不一致", nameof(model.NewPassword));
 
-            var set = Setting.Current;
-            if (model.NewPassword.Length < set.MinPasswordLength) throw new ArgumentException($"最短密码要求{set.MinPasswordLength}位", nameof(model.NewPassword));
+            if (!_passwordService.Valid(model.NewPassword)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
 
             // SSO 登录不需要知道原密码就可以修改，原则上更相信外方，同时也避免了直接第三方登录没有设置密码的尴尬
             var ssoName = Session["Cube_Sso"] as String;
@@ -581,7 +587,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
                 if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
 
-                if (password.Length < set.MinPasswordLength) throw new ArgumentException($"最短密码要求{set.MinPasswordLength}位", nameof(password));
+                if (!_passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
 
                 // 去重判断
                 var user = FindByName(username);
