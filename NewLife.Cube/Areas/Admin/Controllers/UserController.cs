@@ -292,14 +292,15 @@ namespace NewLife.Cube.Admin.Controllers
             var ipKey = $"Login:{UserHost}";
             var ipErrors = _cache.Get<Int32>(ipKey);
 
+            var set = Setting.Current;
             var returnUrl = GetRequest("r");
             try
             {
                 if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
                 if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password), "密码不能为空！");
 
-                if (errors >= 5) throw new InvalidOperationException($"[{username}]登录错误过多，请在60秒后再试！");
-                if (ipErrors >= 5) throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在60秒后再试！");
+                if (errors >= set.MaxLoginError && set.MaxLoginError > 0) throw new InvalidOperationException($"[{username}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0) throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
                 var provider = ManageProvider.Provider;
                 if (ModelState.IsValid && provider.Login(username, password, remember) != null)
@@ -339,14 +340,18 @@ namespace NewLife.Cube.Admin.Controllers
             catch (Exception ex)
             {
                 // 登录失败比较重要，记录一下
+                var action = ex is InvalidOperationException ? "风控" : "登录";
+                LogProvider.Provider.WriteLog(typeof(User), action, false, ex.Message, 0, username, UserHost);
                 XTrace.WriteLine("[{0}]登录失败！{1}", username, ex.Message);
                 XTrace.WriteException(ex);
 
                 // 累加错误数，首次出错时设置过期时间
                 _cache.Increment(key, 1);
                 _cache.Increment(ipKey, 1);
-                if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(60));
-                if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(60));
+                var time = 300;
+                if (set.LoginForbiddenTime > 0) time = set.LoginForbiddenTime;
+                if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(time));
+                if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(time));
 
                 if (IsJsonRequest)
                 {

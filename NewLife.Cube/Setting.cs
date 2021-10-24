@@ -98,6 +98,16 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public String PaswordStrength { get; set; } = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
 
+        /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
+        [Description("登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5")]
+        [Category("用户登录")]
+        public Int32 MaxLoginError { get; set; } = 5;
+
+        /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
+        [Description("登录封禁时间。触发风控禁止登录后的禁止时间，默认300秒")]
+        [Category("用户登录")]
+        public Int32 LoginForbiddenTime { get; set; } = 300;
+
         /// <summary>强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
         [Description("强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
         [Category("用户登录")]
@@ -251,6 +261,8 @@ namespace NewLife.Cube
             }
 
             if (PaswordStrength.IsNullOrEmpty()) PaswordStrength = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
+            if (MaxLoginError <= 0) MaxLoginError = 5;
+            if (LoginForbiddenTime <= 0) LoginForbiddenTime = 300;
 
             base.OnLoaded();
         }
