@@ -1502,6 +1502,7 @@ namespace NewLife.Cube
                 dic = dic.Where(e => !arr.Contains(e.Value)).ToDictionary(e => e.Key, e => e.Value);
             }
 
+            // 由于初始化内容太多了，这里注释掉，通过模型表搜索列表触发
             //ThreadPoolX.QueueUserWorkItem(() =>
             //{
             //    // 等菜单缓存准备好
@@ -1537,7 +1538,10 @@ namespace NewLife.Cube
         {
             if (entity == null) return null;
             var modelTable = ModelTable;
-            var modelColumns = modelTable.GetColumns()?.Where(w => !w.ShowInForm.HasFlag(showInForm));
+
+            var modelColumns = modelTable?.GetColumns()?.Where(w => !w.ShowInForm.HasFlag(showInForm));
+
+            if (modelColumns == null) return entity;
 
             foreach (var column in modelColumns)
             {
