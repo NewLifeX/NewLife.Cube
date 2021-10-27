@@ -177,17 +177,17 @@ namespace NewLife.Cube.Entity
         }
 
         /// <summary>
-        /// 根据DisplayName长度设置列宽，两个字-80，三个字-90，四个字-105，五个字-115
+        /// 根据DisplayName长度设置列宽，两个字-85，三个字-95，四个字-110，五个字-120
         /// </summary>
         public void SetWidth()
         {
             var length = DisplayName.Length;
             var width = length switch
             {
-                < 3 => "80",
-                3 => "90",
-                4 => "105",
-                > 4 => "115",
+                < 3 => "95",
+                3 => "105",
+                4 => "120",
+                > 4 => "130",
             };
 
             // 特殊类型处理
