@@ -112,6 +112,7 @@ namespace NewLife.Cube
 
             // UI服务
             services.AddSingleton<UIService>();
+            services.AddSingleton<PasswordService>();
 
             services.AddHostedService<JobService>();
 
@@ -216,6 +217,9 @@ namespace NewLife.Cube
             // 调整魔方表名
             FixAppTableName();
 
+            // 使用管理提供者
+            app.UseManagerProvider();
+
             var set = Setting.Current;
 
             // 使用Cube前添加自己的管道
@@ -262,8 +266,7 @@ namespace NewLife.Cube
                     "{area}/{controller=Index}/{action=Index}/{id?}");
             });
 
-            // 使用管理提供者
-            app.UseManagerProvider();
+            ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
 
             // 自动检查并添加菜单
             AreaBase.RegisterArea<Admin.AdminArea>();

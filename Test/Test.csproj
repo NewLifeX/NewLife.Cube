@@ -10,9 +10,6 @@
     <Deterministic>false</Deterministic>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q" />
-  </Target>
   <ItemGroup>
     <Compile Include="..\CubeDemo\Entity\交易.Biz.cs" Link="Entity\交易.Biz.cs" />
     <Compile Include="..\CubeDemo\Entity\交易.cs" Link="Entity\交易.cs" />
@@ -22,8 +19,8 @@
     <Compile Include="..\CubeDemo\Entity\班级.cs" Link="Entity\班级.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="8.11.2021.1017-beta1" />
-    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1017-beta1" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.1020-beta2" />
+    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1020-beta2" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entity\" />

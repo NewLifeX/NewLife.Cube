@@ -9,6 +9,8 @@ using XCode.Membership;
 using System.Security.Cryptography;
 using NewLife.Security;
 using NewLife.Cube.Web.Models;
+using NewLife.Remoting;
+using System.Collections.Generic;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -65,7 +67,7 @@ namespace NewLife.Cube.Controllers
 
         static SsoController()
         {
-            Provider = new SsoProvider();
+            Provider = new SsoProvider { Tracer = DefaultTracer.Instance };
             OAuth = new OAuthServer
             {
                 Log = LogProvider.Provider.AsLog("OAuth")
@@ -416,7 +418,7 @@ namespace NewLife.Cube.Controllers
             if (response_type.IsNullOrEmpty()) response_type = "code";
 
             // 判断合法性，然后跳转到登录页面，登录完成后跳转回来
-            var key = OAuth.Authorize(client_id, redirect_uri, response_type, scope, state);
+            var key = OAuth.Authorize(client_id, redirect_uri, response_type, scope, state, UserHost);
 
             var prov = Provider;
             var url = "";
@@ -503,21 +505,13 @@ namespace NewLife.Cube.Controllers
                     expires_in = token.Expire,
                     scope = token.Scope,
                 };
-#if __CORE__
-                return Json(rs);
-#else
-                return Json(rs, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonOK(rs);
             }
             catch (Exception ex)
             {
                 XTrace.WriteLine($"Access_Token client_id={client_id} client_secret={client_secret} code={code}");
                 XTrace.WriteException(ex);
-#if __CORE__
-                return Json(new { errcode = 500, error = ex.GetTrue().Message });
-#else
-                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonError(ex);
             }
         }
 
@@ -582,21 +576,13 @@ namespace NewLife.Cube.Controllers
                     expires_in = token.Expire,
                     scope = token.Scope,
                 };
-#if __CORE__
-                return Json(rs);
-#else
-                return Json(rs, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonOK(rs);
             }
             catch (Exception ex)
             {
                 XTrace.WriteLine($"Token client_id={client_id} username={username} grant_type={grant_type}");
                 XTrace.WriteException(ex);
-#if __CORE__
-                return Json(new { errcode = 500, error = ex.GetTrue().Message });
-#else
-                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonError(ex);
             }
         }
 
@@ -643,21 +629,13 @@ namespace NewLife.Cube.Controllers
                     expires_in = token.Expire,
                     scope = token.Scope,
                 };
-#if __CORE__
-                return Json(rs);
-#else
-                return Json(rs, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonOK(rs);
             }
             catch (Exception ex)
             {
                 XTrace.WriteLine($"Token client_id={model.client_id} username={model.UserName} grant_type={model.grant_type}");
                 XTrace.WriteException(ex);
-#if __CORE__
-                return Json(new { errcode = 500, error = ex.GetTrue().Message });
-#else
-                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonError(ex);
             }
         }
 
@@ -680,11 +658,7 @@ namespace NewLife.Cube.Controllers
                 if (user == null) throw new XException("用户[{0}]不存在", username);
 
                 var rs = Provider.GetUserInfo(sso, access_token, user);
-#if __CORE__
-                return Json(rs);
-#else
-                return Json(rs, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonOK(rs);
             }
             catch (Exception ex)
             {
@@ -692,11 +666,7 @@ namespace NewLife.Cube.Controllers
 
                 XTrace.WriteLine($"UserInfo {access_token}");
                 XTrace.WriteException(ex);
-#if __CORE__
-                return Json(new { errcode = 500, error = ex.GetTrue().Message });
-#else
-                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonError(ex);
             }
             finally
             {
@@ -721,10 +691,10 @@ namespace NewLife.Cube.Controllers
 
             //!!! 由于访问令牌使用JWT，做不到微信的机制，刷新令牌时access_token不改变且续期。JWT想要续期，就必须重新颁发。
 
+            if (refresh_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(refresh_token));
+
             try
             {
-                if (refresh_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(refresh_token));
-
                 var token = Provider.RefreshToken(OAuth, client_id, refresh_token, UserHost);
 
                 var rs = new
@@ -734,21 +704,14 @@ namespace NewLife.Cube.Controllers
                     expires_in = token.Expire,
                     scope = token.Scope,
                 };
-#if __CORE__
-                return Json(rs);
-#else
-                return Json(rs, JsonRequestBehavior.AllowGet);
-#endif
+
+                return SsoJsonOK(rs);
             }
             catch (Exception ex)
             {
                 XTrace.WriteLine($"RefreshToken client_id={client_id} grant_type={grant_type} refresh_token={refresh_token}");
                 XTrace.WriteException(ex);
-#if __CORE__
-                return Json(new { errcode = 500, error = ex.GetTrue().Message });
-#else
-                return Json(new { errcode = 500, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonError(ex);
             }
         }
 
@@ -758,20 +721,23 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public ActionResult Auth(String access_token)
         {
-            if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
+            try
+            {
+                if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
 
-            var prv = Provider.Provider;
-            var username = OAuth.Decode(access_token);
+                var prv = Provider.Provider;
+                var username = OAuth.Decode(access_token);
 
-            // 设置登录用户，
-            var user = prv.FindByName(username);
-            prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
+                // 设置登录用户，
+                var user = prv.FindByName(username);
+                prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
 
-#if __CORE__
-            return Json(new { errcode = 0, error = "ok" });
-#else
-            return Json(new { errcode = 0, error = "ok" }, JsonRequestBehavior.AllowGet);
-#endif
+                return SsoJsonOK(new { errcode = 0, error = "ok" });
+            }
+            catch (Exception ex)
+            {
+                return SsoJsonError(ex);
+            }
         }
 
         /// <summary>获取应用公钥，用于验证令牌</summary>
@@ -781,21 +747,24 @@ namespace NewLife.Cube.Controllers
         [AllowAnonymous]
         public ActionResult GetKey(String client_id, String client_secret)
         {
-            var app = OAuth.Auth(client_id, client_secret, UserHost);
-            if (app == null) throw new ArgumentException($"无效应用[{client_id}]");
+            try
+            {
+                var app = OAuth.Auth(client_id, client_secret + "", UserHost);
+                if (app == null) throw new ArgumentException($"无效应用[{client_id}]");
 
-            var prv = OAuth.GetProvider();
-            var dsa = new DSACryptoServiceProvider();
-            dsa.FromXmlStringX(prv.Key);
+                var prv = OAuth.GetProvider();
+                var dsa = new DSACryptoServiceProvider();
+                dsa.FromXmlStringX(prv.Key);
 
-            _ = dsa.ExportParameters(true);
-            var key = dsa.ToXmlString(false);
-            var rs = new { algorithm = "DSA", key };
-#if __CORE__
-            return Json(rs);
-#else
-            return Json(rs, JsonRequestBehavior.AllowGet);
-#endif
+                _ = dsa.ExportParameters(true);
+                var key = dsa.ToXmlString(false);
+                var rs = new { algorithm = "DSA", key };
+                return SsoJsonOK(rs);
+            }
+            catch (Exception ex)
+            {
+                return SsoJsonError(ex);
+            }
         }
 
         /// <summary>验证令牌，回写cookie</summary>
@@ -817,6 +786,51 @@ namespace NewLife.Cube.Controllers
             if (redirect_uri.IsNullOrEmpty()) return Content("ok");
 
             return Redirect(redirect_uri);
+        }
+
+        /// <summary>用户验证。借助OAuth密码式验证，并返回用户信息</summary>
+        /// <param name="client_id">应用标识</param>
+        /// <param name="client_secret">密钥</param>
+        /// <param name="username">用户名。可以是设备编码等唯一使用者标识</param>
+        /// <param name="password">密码</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public virtual ActionResult UserAuth([FromBody] SsoTokenModel model)
+        {
+            var client_id = model.client_id;
+            var username = model.UserName;
+            var password = model.Password;
+            if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
+
+            try
+            {
+                if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username));
+                if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
+
+                var token = Provider.GetAccessTokenByPassword(OAuth, client_id, username, password, UserHost);
+                var rs = new
+                {
+                    access_token = token.AccessToken,
+                    refresh_token = token.RefreshToken,
+                    expires_in = token.Expire,
+                    scope = token.Scope,
+                };
+                var dic = rs.ToDictionary();
+
+                var user = Provider?.GetUser(OAuth, username);
+                if (user == null) throw new XException("用户[{0}]不存在", username);
+
+                var rs2 = Provider.GetUserInfo(OAuth, token.AccessToken, user);
+                dic.Merge(rs2);
+
+                return Json(0, null, dic);
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteLine($"UserAuth client_id={client_id} username={username}");
+                XTrace.WriteException(ex);
+                return Json(0, null, ex);
+            }
         }
         #endregion
 
@@ -857,6 +871,26 @@ namespace NewLife.Cube.Controllers
             return File(vs, "image/png");
 #else
             return File(av, "image/png");
+#endif
+        }
+
+        private ActionResult SsoJsonOK(Object data)
+        {
+#if __CORE__
+            return Json(data);
+#else
+            return Json(data, JsonRequestBehavior.AllowGet);
+#endif
+        }
+
+        private ActionResult SsoJsonError(Exception ex)
+        {
+            var code = 500;
+            if (ex is ApiException aex && code > 0) code = aex.Code;
+#if __CORE__
+            return Json(new { errcode = code, error = ex.GetTrue().Message });
+#else
+            return Json(new { errcode = code, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
 #endif
         }
         #endregion

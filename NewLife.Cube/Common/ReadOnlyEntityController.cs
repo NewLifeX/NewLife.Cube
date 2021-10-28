@@ -1460,7 +1460,7 @@ namespace NewLife.Cube
         protected static Int32 MenuOrder { get; set; }
 
         /// <summary>控制器对应菜单</summary>
-        protected static IMenu CurrentMenu { get; set; }
+        protected static IMenu ThisMenu { get; set; }
 
         /// <summary>
         /// 模型表设置，生成模型表数据之后调用
@@ -1472,7 +1472,7 @@ namespace NewLife.Cube
         {
             get
             {
-                var menu = CurrentMenu;
+                var menu = ThisMenu;
                 var pmenu = menu?.Parent;
                 return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name);
                 //return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name) ??
@@ -1523,7 +1523,7 @@ namespace NewLife.Cube
             //    //});
             //});
 
-            CurrentMenu = menu;
+            ThisMenu = menu;
 
             return dic;
         }

@@ -60,9 +60,6 @@ namespace NewLife.Cube.Entity
         {
             if (id <= 0) return null;
 
-            //// 实体缓存
-            //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
-
             // 单对象缓存
             return Meta.SingleCache[id];
 
@@ -72,35 +69,17 @@ namespace NewLife.Cube.Entity
         /// <summary>根据提供商查找</summary>
         /// <param name="provider">提供商</param>
         /// <returns>实体列表</returns>
-        public static IList<OAuthLog> FindAllByProvider(String provider)
-        {
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.Provider.EqualIgnoreCase(provider));
-
-            return FindAll(_.Provider == provider);
-        }
+        public static IList<OAuthLog> FindAllByProvider(String provider) => FindAll(_.Provider == provider);
 
         /// <summary>根据链接查找</summary>
         /// <param name="connectId">链接</param>
         /// <returns>实体列表</returns>
-        public static IList<OAuthLog> FindAllByConnectId(Int32 connectId)
-        {
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.ConnectId == connectId);
-
-            return FindAll(_.ConnectId == connectId);
-        }
+        public static IList<OAuthLog> FindAllByConnectId(Int32 connectId) => FindAll(_.ConnectId == connectId);
 
         /// <summary>根据用户查找</summary>
         /// <param name="userId">用户</param>
         /// <returns>实体列表</returns>
-        public static IList<OAuthLog> FindAllByUserId(Int32 userId)
-        {
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UserId == userId);
-
-            return FindAll(_.UserId == userId);
-        }
+        public static IList<OAuthLog> FindAllByUserId(Int32 userId) => FindAll(_.UserId == userId);
         #endregion
 
         #region 高级查询

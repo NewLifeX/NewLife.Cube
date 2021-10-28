@@ -25,16 +25,37 @@ namespace NewLife.Web.OAuth
         /// <returns></returns>
         public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains(" QQ/");
 
+        /// <summary>发起请求，获取内容</summary>
+        /// <param name="action"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        protected override String GetHtml(String action, String url)
+        {
+            var html = base.GetHtml(action, url);
+
+            // 去掉js回调函数
+            if (!html.IsNullOrEmpty() && html.StartsWithIgnoreCase("callback("))
+            {
+                html = html.Substring("callback(").TrimEnd(");").Trim();
+            }
+
+            return html;
+        }
+
         /// <summary>从响应数据中获取信息</summary>
         /// <param name="dic"></param>
         protected override void OnGetInfo(IDictionary<String, String> dic)
         {
+            // 获取用户信息出错时抛出异常
+            if (dic.TryGetValue("error", out var str) && str.ToInt() != 0 &&
+                dic.TryGetValue("error_description", out str)) throw new InvalidOperationException(str);
+
             base.OnGetInfo(dic);
 
             //if (dic.TryGetValue("nickname", out var str)) NickName = str.Trim();
             //if (dic.TryGetValue("client_id", out var str)) UserID = str.ToLong();
             // 修改性别数据，本地是1男2女
-            if (dic.TryGetValue("gender", out var str)) Sex = str == "男" ? 1 : (str == "女" ? 2 : 0);
+            if (dic.TryGetValue("gender", out str)) Sex = str == "男" ? 1 : (str == "女" ? 2 : 0);
 
             // 从大到小找头像
             var avs = "figureurl_qq_2,figureurl_qq_1,figureurl_2,figureurl_1,figureurl".Split(",");

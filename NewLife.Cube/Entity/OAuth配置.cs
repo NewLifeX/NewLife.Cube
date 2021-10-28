@@ -83,6 +83,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("AccessServer", "令牌服务地址。可以不同于验证地址的内网直达地址", "")]
         public String AccessServer { get => _AccessServer; set { if (OnPropertyChanging("AccessServer", value)) { _AccessServer = value; OnPropertyChanged("AccessServer"); } } }
 
+        private GrantTypes _GrantType;
+        /// <summary>授权类型</summary>
+        [DisplayName("授权类型")]
+        [Description("授权类型")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("GrantType", "授权类型", "")]
+        public GrantTypes GrantType { get => _GrantType; set { if (OnPropertyChanging("GrantType", value)) { _GrantType = value; OnPropertyChanged("GrantType"); } } }
+
         private String _Scope;
         /// <summary>授权范围</summary>
         [DisplayName("授权范围")]
@@ -146,6 +154,14 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, false, 0)]
         [BindColumn("Sort", "排序。较大者在前面", "")]
         public Int32 Sort { get => _Sort; set { if (OnPropertyChanging("Sort", value)) { _Sort = value; OnPropertyChanged("Sort"); } } }
+
+        private String _SecurityKey;
+        /// <summary>安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。</summary>
+        [DisplayName("安全密钥")]
+        [Description("安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。")]
+        [DataObjectField(false, false, true, 500)]
+        [BindColumn("SecurityKey", "安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。", "")]
+        public String SecurityKey { get => _SecurityKey; set { if (OnPropertyChanging("SecurityKey", value)) { _SecurityKey = value; OnPropertyChanged("SecurityKey"); } } }
 
         private Int32 _CreateUserID;
         /// <summary>创建者</summary>
@@ -222,6 +238,7 @@ namespace NewLife.Cube.Entity
                     case "Secret": return _Secret;
                     case "Server": return _Server;
                     case "AccessServer": return _AccessServer;
+                    case "GrantType": return _GrantType;
                     case "Scope": return _Scope;
                     case "AppUrl": return _AppUrl;
                     case "Enable": return _Enable;
@@ -230,6 +247,7 @@ namespace NewLife.Cube.Entity
                     case "AutoRegister": return _AutoRegister;
                     case "AutoRole": return _AutoRole;
                     case "Sort": return _Sort;
+                    case "SecurityKey": return _SecurityKey;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
                     case "CreateIP": return _CreateIP;
@@ -252,6 +270,7 @@ namespace NewLife.Cube.Entity
                     case "Secret": _Secret = Convert.ToString(value); break;
                     case "Server": _Server = Convert.ToString(value); break;
                     case "AccessServer": _AccessServer = Convert.ToString(value); break;
+                    case "GrantType": _GrantType = (GrantTypes)value.ToInt(); break;
                     case "Scope": _Scope = Convert.ToString(value); break;
                     case "AppUrl": _AppUrl = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
@@ -260,6 +279,7 @@ namespace NewLife.Cube.Entity
                     case "AutoRegister": _AutoRegister = value.ToBoolean(); break;
                     case "AutoRole": _AutoRole = Convert.ToString(value); break;
                     case "Sort": _Sort = value.ToInt(); break;
+                    case "SecurityKey": _SecurityKey = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -301,6 +321,9 @@ namespace NewLife.Cube.Entity
             /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
             public static readonly Field AccessServer = FindByName("AccessServer");
 
+            /// <summary>授权类型</summary>
+            public static readonly Field GrantType = FindByName("GrantType");
+
             /// <summary>授权范围</summary>
             public static readonly Field Scope = FindByName("Scope");
 
@@ -324,6 +347,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>排序。较大者在前面</summary>
             public static readonly Field Sort = FindByName("Sort");
+
+            /// <summary>安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。</summary>
+            public static readonly Field SecurityKey = FindByName("SecurityKey");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -376,6 +402,9 @@ namespace NewLife.Cube.Entity
             /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
             public const String AccessServer = "AccessServer";
 
+            /// <summary>授权类型</summary>
+            public const String GrantType = "GrantType";
+
             /// <summary>授权范围</summary>
             public const String Scope = "Scope";
 
@@ -399,6 +428,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>排序。较大者在前面</summary>
             public const String Sort = "Sort";
+
+            /// <summary>安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。</summary>
+            public const String SecurityKey = "SecurityKey";
 
             /// <summary>创建者</summary>
             public const String CreateUserID = "CreateUserID";
