@@ -5,7 +5,7 @@
 @using XCode.Configuration
 @using NewLife.Cube.Entity;
 @{
-    var fact = EntityFactory.CreateOperate(ViewData.ModelMetadata.ModelType);
+    var fact = EntityFactory.CreateFactory(ViewData.ModelMetadata.ModelType);
     var user = Model as IUser;
 }
 <div class="row">

@@ -19,13 +19,13 @@ namespace NewLife.Cube.Entity
     public partial class App
     {
         #region 属性
-        private Int32 _ID;
+        private Int32 _Id;
         /// <summary>编号</summary>
         [DisplayName("编号")]
         [Description("编号")]
         [DataObjectField(true, true, false, 0)]
-        [BindColumn("ID", "编号", "")]
-        public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+        [BindColumn("Id", "编号", "")]
+        public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
         private String _Name;
         /// <summary>名称。AppID</summary>
@@ -123,6 +123,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("Scopes", "能力集合。逗号分隔，password，client_credentials", "")]
         public String Scopes { get => _Scopes; set { if (OnPropertyChanging("Scopes", value)) { _Scopes = value; OnPropertyChanged("Scopes"); } } }
 
+        private DateTime _Expired;
+        /// <summary>过期时间。空表示永不过期</summary>
+        [DisplayName("过期时间")]
+        [Description("过期时间。空表示永不过期")]
+        [DataObjectField(false, false, true, 0)]
+        [BindColumn("Expired", "过期时间。空表示永不过期", "")]
+        public DateTime Expired { get => _Expired; set { if (OnPropertyChanging("Expired", value)) { _Expired = value; OnPropertyChanged("Expired"); } } }
+
         private Int32 _Auths;
         /// <summary>次数</summary>
         [DisplayName("次数")]
@@ -206,7 +214,7 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case "ID": return _ID;
+                    case "Id": return _Id;
                     case "Name": return _Name;
                     case "DisplayName": return _DisplayName;
                     case "Secret": return _Secret;
@@ -219,6 +227,7 @@ namespace NewLife.Cube.Entity
                     case "Urls": return _Urls;
                     case "RoleIds": return _RoleIds;
                     case "Scopes": return _Scopes;
+                    case "Expired": return _Expired;
                     case "Auths": return _Auths;
                     case "LastAuth": return _LastAuth;
                     case "Remark": return _Remark;
@@ -235,7 +244,7 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case "ID": _ID = value.ToInt(); break;
+                    case "Id": _Id = value.ToInt(); break;
                     case "Name": _Name = Convert.ToString(value); break;
                     case "DisplayName": _DisplayName = Convert.ToString(value); break;
                     case "Secret": _Secret = Convert.ToString(value); break;
@@ -248,6 +257,7 @@ namespace NewLife.Cube.Entity
                     case "Urls": _Urls = Convert.ToString(value); break;
                     case "RoleIds": _RoleIds = Convert.ToString(value); break;
                     case "Scopes": _Scopes = Convert.ToString(value); break;
+                    case "Expired": _Expired = value.ToDateTime(); break;
                     case "Auths": _Auths = value.ToInt(); break;
                     case "LastAuth": _LastAuth = value.ToDateTime(); break;
                     case "Remark": _Remark = Convert.ToString(value); break;
@@ -268,7 +278,7 @@ namespace NewLife.Cube.Entity
         public partial class _
         {
             /// <summary>编号</summary>
-            public static readonly Field ID = FindByName("ID");
+            public static readonly Field Id = FindByName("Id");
 
             /// <summary>名称。AppID</summary>
             public static readonly Field Name = FindByName("Name");
@@ -306,6 +316,9 @@ namespace NewLife.Cube.Entity
             /// <summary>能力集合。逗号分隔，password，client_credentials</summary>
             public static readonly Field Scopes = FindByName("Scopes");
 
+            /// <summary>过期时间。空表示永不过期</summary>
+            public static readonly Field Expired = FindByName("Expired");
+
             /// <summary>次数</summary>
             public static readonly Field Auths = FindByName("Auths");
 
@@ -340,7 +353,7 @@ namespace NewLife.Cube.Entity
         public partial class __
         {
             /// <summary>编号</summary>
-            public const String ID = "ID";
+            public const String Id = "Id";
 
             /// <summary>名称。AppID</summary>
             public const String Name = "Name";
@@ -377,6 +390,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>能力集合。逗号分隔，password，client_credentials</summary>
             public const String Scopes = "Scopes";
+
+            /// <summary>过期时间。空表示永不过期</summary>
+            public const String Expired = "Expired";
 
             /// <summary>次数</summary>
             public const String Auths = "Auths";

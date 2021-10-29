@@ -125,7 +125,7 @@ namespace NewLife.Web
 
             if (name.IsNullOrEmpty())
             {
-                var ms = OAuthConfig.GetValids();
+                var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
                 if (ms.Count > 0) name = ms[0].Name;
             }
             if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name), "未正确配置OAuth");
@@ -149,7 +149,7 @@ namespace NewLife.Web
         /// <param name="name"></param>
         public void Apply(String name)
         {
-            var ms = OAuthConfig.GetValids();
+            var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
             if (ms.Count == 0) throw new InvalidOperationException("未设置OAuth服务端");
 
             var mi = ms.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
@@ -575,7 +575,7 @@ namespace NewLife.Web
 
             // 获取用户信息出错时抛出异常
             // 2021-07-19 企业微信正常请求返回"errmsg": "ok"，导致登录报错，所以暂时注释
-            //if (dic.TryGetValue("error", out str) || dic.TryGetValue("errmsg", out str)) throw new InvalidOperationException(str);
+            if ((dic.TryGetValue("error", out str) || dic.TryGetValue("errmsg", out str)) && str != "ok") throw new InvalidOperationException(str);
         }
         #endregion
 

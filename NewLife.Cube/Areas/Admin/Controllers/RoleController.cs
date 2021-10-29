@@ -25,6 +25,13 @@ namespace NewLife.Cube.Admin.Controllers
         static RoleController()
         {
             MenuOrder = 90;
+
+            ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "Remark");
+            ListFields.RemoveCreateField();
+
+            {
+                var df = ListFields.AddListField("Remark", "UpdateUser");
+            }
         }
 
         /// <summary>动作执行前</summary>

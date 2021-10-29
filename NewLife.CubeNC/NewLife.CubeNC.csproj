@@ -2,15 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2021 NewLife</Copyright>
-    <Version>4.0.2021.1003</Version>
-    <FileVersion>4.0.2021.1003</FileVersion>
+    <VersionPrefix>4.0</VersionPrefix>
+    <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
+    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>4.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\Bin</OutputPath>
@@ -60,8 +62,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.11.2021.1001" />
-    <PackageReference Include="NewLife.XCode" Version="10.2.2021.1001" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.1020-beta2" />
+    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1020-beta2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -185,11 +187,6 @@
   <ItemGroup>
     <None Include="..\NewLife.Cube\Entity\Cube.xml">
       <Link>Entity\Cube.xml</Link>
-    </None>
-    <None Include="..\NewLife.Cube\Entity\XCoder.log">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>XCoder.tt</DependentUpon>
     </None>
     <None Include="..\NewLife.Cube\Entity\XCoder.tt">
       <Link>Entity\XCoder.tt</Link>

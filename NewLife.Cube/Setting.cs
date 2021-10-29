@@ -88,10 +88,25 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public Boolean AutoRegister { get; set; } = true;
 
-        /// <summary>密码强度。最小密码长度，默认6</summary>
-        [Description("密码强度。最小密码长度，默认6")]
+        ///// <summary>密码强度。最小密码长度，默认6</summary>
+        //[Description("密码强度。最小密码长度，默认6")]
+        //[Category("用户登录")]
+        //public Int32 MinPasswordLength { get; set; } = 6;
+
+        /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号</summary>
+        [Description("密码强度。*表示无限制，默认8位起，数字大小写字母和符号")]
         [Category("用户登录")]
-        public Int32 MinPasswordLength { get; set; } = 6;
+        public String PaswordStrength { get; set; } = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
+
+        /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
+        [Description("登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5")]
+        [Category("用户登录")]
+        public Int32 MaxLoginError { get; set; } = 5;
+
+        /// <summary>登录失败次数。短时间内，相同用户或IP地址连续登录错误次数达到该值后禁止登录，默认5</summary>
+        [Description("登录封禁时间。触发风控禁止登录后的禁止时间，默认300秒")]
+        [Category("用户登录")]
+        public Int32 LoginForbiddenTime { get; set; } = 300;
 
         /// <summary>强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
         [Description("强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
@@ -128,10 +143,10 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public Boolean UseSsoDepartment { get; set; } = true;
 
-        /// <summary>注销所有系统。默认false仅注销本系统，true时注销SsoServer</summary>
-        [Description("注销所有系统。默认false仅注销本系统，true时注销SsoServer")]
+        /// <summary>注销所有系统。false仅注销本系统，默认true时注销SsoServer</summary>
+        [Description("注销所有系统。false仅注销本系统，默认true时注销SsoServer")]
         [Category("用户登录")]
-        public Boolean LogoutAll { get; set; } = false;
+        public Boolean LogoutAll { get; set; } = true;
 
         /// <summary>会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s</summary>
         [Description("会话超时。单点登录后会话超时时间，该时间内可借助Cookie登录，默认0s")]
@@ -244,6 +259,10 @@ namespace NewLife.Cube
                     }
                 }
             }
+
+            if (PaswordStrength.IsNullOrEmpty()) PaswordStrength = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
+            if (MaxLoginError <= 0) MaxLoginError = 5;
+            if (LoginForbiddenTime <= 0) LoginForbiddenTime = 300;
 
             base.OnLoaded();
         }

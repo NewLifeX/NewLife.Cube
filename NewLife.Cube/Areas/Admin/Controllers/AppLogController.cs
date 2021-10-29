@@ -30,7 +30,7 @@ namespace NewLife.Cube.Admin.Controllers
             var end = p["dtEnd"].ToDateTime();
             var key = p["Q"];
 
-            if (p.Sort.IsNullOrEmpty()) p.Sort = AppLog._.ID.Desc();
+            if (p.Sort.IsNullOrEmpty()) p.Sort = AppLog._.Id.Desc();
 
             return AppLog.Search(appId, start, end, key, p);
         }

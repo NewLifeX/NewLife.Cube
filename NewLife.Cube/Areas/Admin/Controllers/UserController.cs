@@ -15,10 +15,10 @@ using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Common;
 using NewLife.Reflection;
 using System.IO;
+using NewLife.Cube.Services;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using NewLife.Cube.Extensions;
 #else
 using System.Web.Mvc;
 using System.Web.Security;
@@ -35,7 +35,8 @@ namespace NewLife.Cube.Admin.Controllers
     public class UserController : EntityController<User>
     {
         /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
-        private static ICache _cache = Cache.Default ?? new MemoryCache();
+        private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
+        private readonly PasswordService _passwordService;
 
         static UserController()
         {
@@ -89,6 +90,12 @@ namespace NewLife.Cube.Admin.Controllers
                 EditFormFields.RemoveField("RoleNames");
             }
         }
+
+        /// <summary>
+        /// 实例化用户控制器
+        /// </summary>
+        /// <param name="passwordService"></param>
+        public UserController(PasswordService passwordService) => _passwordService = passwordService;
 
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
@@ -186,7 +193,7 @@ namespace NewLife.Cube.Admin.Controllers
             var logId = Session["Cube_OAuthId"].ToLong();
 
             // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-            var ms = OAuthConfig.GetValids();
+            var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
             if (ms != null && !Setting.Current.AllowLogin)
             {
                 if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
@@ -259,7 +266,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 是否使用Sso登录
             var appId = GetRequest("ssoAppId").ToInt();
-            var app = App.FindByID(appId);
+            var app = App.FindById(appId);
             if (app != null)
             {
                 model.DisplayName = app + "";
@@ -285,14 +292,15 @@ namespace NewLife.Cube.Admin.Controllers
             var ipKey = $"Login:{UserHost}";
             var ipErrors = _cache.Get<Int32>(ipKey);
 
+            var set = Setting.Current;
             var returnUrl = GetRequest("r");
             try
             {
                 if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
                 if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password), "密码不能为空！");
 
-                if (errors >= 5) throw new InvalidOperationException($"[{username}]登录错误过多，请在60秒后再试！");
-                if (ipErrors >= 5) throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在60秒后再试！");
+                if (errors >= set.MaxLoginError && set.MaxLoginError > 0) throw new InvalidOperationException($"[{username}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+                if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0) throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
                 var provider = ManageProvider.Provider;
                 if (ModelState.IsValid && provider.Login(username, password, remember) != null)
@@ -332,14 +340,18 @@ namespace NewLife.Cube.Admin.Controllers
             catch (Exception ex)
             {
                 // 登录失败比较重要，记录一下
+                var action = ex is InvalidOperationException ? "风控" : "登录";
+                LogProvider.Provider.WriteLog(typeof(User), action, false, ex.Message, 0, username, UserHost);
                 XTrace.WriteLine("[{0}]登录失败！{1}", username, ex.Message);
                 XTrace.WriteException(ex);
 
                 // 累加错误数，首次出错时设置过期时间
                 _cache.Increment(key, 1);
                 _cache.Increment(ipKey, 1);
-                if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(60));
-                if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(60));
+                var time = 300;
+                if (set.LoginForbiddenTime > 0) time = set.LoginForbiddenTime;
+                if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(time));
+                if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(time));
 
                 if (IsJsonRequest)
                 {
@@ -505,8 +517,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"确认密码不能为 Null 或空白", nameof(model.NewPassword2));
             if (model.NewPassword != model.NewPassword2) throw new ArgumentException($"两次输入密码不一致", nameof(model.NewPassword));
 
-            var set = Setting.Current;
-            if (model.NewPassword.Length < set.MinPasswordLength) throw new ArgumentException($"最短密码要求{set.MinPasswordLength}位", nameof(model.NewPassword));
+            if (!_passwordService.Valid(model.NewPassword)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(model.NewPassword));
 
             // SSO 登录不需要知道原密码就可以修改，原则上更相信外方，同时也避免了直接第三方登录没有设置密码的尴尬
             var ssoName = Session["Cube_Sso"] as String;
@@ -545,7 +556,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 第三方绑定
             var ucs = UserConnect.FindAllByUserID(user.ID);
-            var ms = OAuthConfig.GetValids();
+            var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
 
             var model = new BindsModel
             {
@@ -581,7 +592,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (String.IsNullOrEmpty(password2)) throw new ArgumentNullException("password2", "重复密码不能为空！");
                 if (password != password2) throw new ArgumentOutOfRangeException("password2", "两次密码必须一致！");
 
-                if (password.Length < set.MinPasswordLength) throw new ArgumentException($"最短密码要求{set.MinPasswordLength}位", nameof(password));
+                if (!_passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
 
                 // 去重判断
                 var user = FindByName(username);

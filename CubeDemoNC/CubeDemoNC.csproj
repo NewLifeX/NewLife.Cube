@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>net5.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
-    <Version>4.0.2021.1003</Version>
-    <FileVersion>4.0.2021.1003</FileVersion>
+    <Version>4.0.2021.1020</Version>
+    <FileVersion>4.0.2021.1020</FileVersion>
     <AssemblyVersion>4.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
@@ -39,8 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.505" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.10" Condition="'$(TargetFramework)'=='net5.0'" />
+    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.1001" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.11" Condition="'$(TargetFramework)'=='net5.0'" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.14" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>
 
@@ -50,6 +50,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.ElementUI\NewLife.Cube.ElementUI.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Metronic\NewLife.Cube.Metronic.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Tabler\NewLife.Cube.Tabler.csproj" />
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
@@ -69,9 +70,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="del &quot;$(TargetDir)*.xml&quot; /q&#xD;&#xA;del &quot;$(TargetDir)*.staticwebassets.runtime.json&quot; /q" />
-  </Target>
 
 </Project>

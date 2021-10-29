@@ -63,6 +63,7 @@
       <Column Name="Secret" DataType="String" Length="200" Description="应用密钥" />
       <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
       <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
+      <Column Name="GrantType" DataType="Int32" Description="授权类型" Type="GrantTypes" />
       <Column Name="Scope" DataType="String" Description="授权范围" />
       <Column Name="AppUrl" DataType="String" Length="200" Description="应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
@@ -71,6 +72,7 @@
       <Column Name="AutoRegister" DataType="Boolean" Description="自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定" />
       <Column Name="AutoRole" DataType="String" Description="自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开" />
       <Column Name="Sort" DataType="Int32" Description="排序。较大者在前面" />
+      <Column Name="SecurityKey" DataType="String" Length="500" Description="安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
       <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" />
@@ -111,7 +113,7 @@
   </Table>
   <Table Name="App" TableName="OAuthApp" Description="应用系统。用于OAuthServer的子系统">
     <Columns>
-      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
       <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。AppID" />
       <Column Name="DisplayName" DataType="String" Description="显示名" />
       <Column Name="Secret" DataType="String" Description="密钥。AppSecret" />
@@ -124,6 +126,7 @@
       <Column Name="Urls" DataType="String" Length="500" Description="回调地址。用于限制回调地址安全性，多个地址逗号隔开" />
       <Column Name="RoleIds" DataType="String" Description="授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制" />
       <Column Name="Scopes" DataType="String" Length="200" Description="能力集合。逗号分隔，password，client_credentials" />
+      <Column Name="Expired" DataType="DateTime" Description="过期时间。空表示永不过期" />
       <Column Name="Auths" DataType="Int32" Description="次数" />
       <Column Name="LastAuth" DataType="DateTime" Description="最后请求" />
       <Column Name="Remark" DataType="String" Length="500" Description="内容" />
@@ -140,7 +143,7 @@
   </Table>
   <Table Name="AppLog" Description="应用日志。用于OAuthServer的子系统">
     <Columns>
-      <Column Name="ID" DataType="Int64" PrimaryKey="True" Description="编号" />
+      <Column Name="Id" DataType="Int64" PrimaryKey="True" Description="编号" />
       <Column Name="AppId" DataType="Int32" Description="应用" />
       <Column Name="Action" DataType="String" Description="操作" />
       <Column Name="Success" DataType="Boolean" Description="成功" />
@@ -226,7 +229,9 @@
       <Column Name="IsDataObjectField" DataType="Boolean" Description="数据字段" />
       <Column Name="Description" DataType="String" Length="500" Description="说明" />
       <Column Name="ShowInList" DataType="Boolean" Description="列表页显示" />
-      <Column Name="ShowInForm" DataType="Int32" Description="表单页显示" Type="ShowInForm" />
+      <Column Name="ShowInAddForm" DataType="Boolean" Description="添加表单页显示" />
+      <Column Name="ShowInEditForm" DataType="Boolean" Description="编辑表单页显示" />
+      <Column Name="ShowInDetailForm" DataType="Boolean" Description="详情表单页显示" />
       <Column Name="ShowInSearch" DataType="Boolean" Description="搜索显示" />
       <Column Name="Sort" DataType="Int32" Description="排序" />
       <Column Name="Width" DataType="String" Description="宽度" />

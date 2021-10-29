@@ -1,0 +1,33 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+
+    var set = ViewBag.PageSetting as PageSetting;
+}
+
+<el-form v-bind:inline="true" v-bind:model="screenForm" ref="screenForm" class="form-inline" size="mini">
+
+    @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+    {
+        var rv = page.GetRouteValue();
+        <el-button type="primary" size="mini" v-on:click="onInsert">添加</el-button>
+        //@Html.ActionLink("添加", "Add", rv, new { @class = "btn btn-success btn-sm" }.ToDictionary())
+    }
+    @if (set.EnableSelect)
+    {
+        @await Html.PartialAsync("_List_Toolbar_Batch")
+    }
+    @await Html.PartialAsync("_List_Toolbar_Custom")
+    <div style="float: right !important;">
+        @await Html.PartialAsync("_List_Search")
+        @await Html.PartialAsync("_List_Toolbar_Search")
+        @await Html.PartialAsync("_List_Toolbar_Adv")
+    </div>
+
+</el-form>

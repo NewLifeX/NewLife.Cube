@@ -18,13 +18,13 @@ namespace NewLife.Cube.Entity
     public partial class AppLog
     {
         #region 属性
-        private Int64 _ID;
+        private Int64 _Id;
         /// <summary>编号</summary>
         [DisplayName("编号")]
         [Description("编号")]
         [DataObjectField(true, false, false, 0)]
-        [BindColumn("ID", "编号", "")]
-        public Int64 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+        [BindColumn("Id", "编号", "")]
+        public Int64 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
         private Int32 _AppId;
         /// <summary>应用</summary>
@@ -165,7 +165,7 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case "ID": return _ID;
+                    case "Id": return _Id;
                     case "AppId": return _AppId;
                     case "Action": return _Action;
                     case "Success": return _Success;
@@ -189,7 +189,7 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case "ID": _ID = value.ToLong(); break;
+                    case "Id": _Id = value.ToLong(); break;
                     case "AppId": _AppId = value.ToInt(); break;
                     case "Action": _Action = Convert.ToString(value); break;
                     case "Success": _Success = value.ToBoolean(); break;
@@ -217,7 +217,7 @@ namespace NewLife.Cube.Entity
         public partial class _
         {
             /// <summary>编号</summary>
-            public static readonly Field ID = FindByName("ID");
+            public static readonly Field Id = FindByName("Id");
 
             /// <summary>应用</summary>
             public static readonly Field AppId = FindByName("AppId");
@@ -274,7 +274,7 @@ namespace NewLife.Cube.Entity
         public partial class __
         {
             /// <summary>编号</summary>
-            public const String ID = "ID";
+            public const String Id = "Id";
 
             /// <summary>应用</summary>
             public const String AppId = "AppId";

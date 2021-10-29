@@ -1,0 +1,92 @@
+﻿@model IList<XCode.Membership.Log>
+@using NewLife;
+@using NewLife.Web;
+@using NewLife.Serialization;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var ukey = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    var dataList = new List<object>();
+}
+
+<el-table v-loading="loading" v-bind:data="tableData" style="width: 100%; margin-bottom: 20px;" row-key="id" border size="mini">
+
+    @if (set.EnableSelect && ukey != null)
+    {
+        <el-table-column type="selection" width="55"></el-table-column>
+    }
+    @foreach (var item in fields)
+    {
+        var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+        var df = item as ListField;
+        var name = df?.Header ?? item.DisplayName;
+        var title = df?.HeaderTitle ?? item.Description;
+
+        var fieldName = string.Empty;
+
+        var width = "100px";
+        if (item.Name.Contains("Remark") || item.Name.Contains("Content"))
+            width = "500px";
+
+        if (item.Name == "ID")
+            fieldName = "id";
+        else
+            fieldName = item.Name.Substring(0, 1).ToLower() + item.Name.Substring(1);//转为驼峰
+
+
+        if (item.Type == typeof(DateTime))
+        {
+            //var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+            //<th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+
+
+        }
+        else if (item.Type == null)
+        {
+            //<th class="text-center" title="@title">@name</th>
+        }
+        else
+        {
+            //<th class="text-center" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+        }
+
+
+
+        <el-table-column prop="@Html.Raw(fieldName)" label="@Html.Raw(name)" width="@Html.Raw(width)" show-overflow-tooltip align="left"></el-table-column>
+
+    }
+    @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+    {
+
+        <el-table-column label="操作" min-width="220" fixed="right">
+            <template slot-scope="scope">
+                @if (this.Has(PermissionFlags.Update))
+                {
+                    <el-button type="text" size="mini" v-on:click="onUpdate(scope.row)">编辑</el-button>
+                }
+
+                @if (this.Has(PermissionFlags.Update))
+                {
+                    <el-button type="text" size="mini" v-on:click="onDelete(scope.row)">删除</el-button>
+                }
+            </template>
+        </el-table-column>
+    }
+
+</el-table>
+
+
+
+@foreach (var entity in Model)
+{
+    dataList.Add(entity);
+}
+
+<script>
+    var dataList =@Html.Raw(dataList.ToJson(false, true, true));
+</script>

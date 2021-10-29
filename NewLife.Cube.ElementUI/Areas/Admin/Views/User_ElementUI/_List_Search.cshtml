@@ -1,0 +1,15 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+}
+<el-form-item label="角色：">
+    @await Html.PartialAsync("_Form_ListBox", new ListBoxModel("roleIds", Role.FindAllWithCache(), page["roleIds"]))
+</el-form-item>
+
+@await Html.PartialAsync("_Enable")
+<el-form-item label="部门：">
+    <el-input placeholder="搜索部门"></el-input>
+</el-form-item>

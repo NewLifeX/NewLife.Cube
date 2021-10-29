@@ -33,7 +33,7 @@ namespace NewLife.Cube
             var modelType = bindingContext.ModelType;
             if (!modelType.As<IEntity>()) return base.CreateModel(bindingContext);
 
-            var fact = EntityFactory.CreateOperate(modelType);
+            var fact = EntityFactory.CreateFactory(modelType);
 
             if (fact == null) return base.CreateModel(bindingContext);
 

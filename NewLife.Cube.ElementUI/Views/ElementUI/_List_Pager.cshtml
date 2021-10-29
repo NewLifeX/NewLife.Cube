@@ -1,0 +1,30 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@{
+    var pager = ViewBag.Page as Pager;
+    //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
+    // 没有总记录数的时候不显示分页，可以认为不启用分页
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+}
+@if (pager.TotalCount > 0)
+{
+    <script>
+        var pageParams = { totalCount:@pager.TotalCount, pageSize:@pager.PageSize, pageIndex:@pager.PageIndex };
+    </script>
+    <!-- 分页 -->
+    <el-pagination :total="pageParams.totalCount||1"
+               :page-size="pageParams.pageSize"
+               :current-page.sync="pageParams.pageIndex"
+               :page-sizes="[pageParams.pageSize]"
+               layout="total ,prev, pager, next, sizes" small background
+               v-on:current-change="loadPage">
+    </el-pagination>
+}
+else
+{
+    <script>
+        var pageParams =[];
+    </script>
+}

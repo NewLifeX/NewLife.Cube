@@ -8,7 +8,6 @@ using XCode.Membership;
 namespace NewLife.Cube.Entity
 {
     /// <summary>定时作业。定时执行任务</summary>
-    [ModelCheckMode(ModelCheckModes.CheckTableWhenFirstUse)]
     public partial class CronJob : Entity<CronJob>
     {
         #region 对象操作
@@ -58,10 +57,10 @@ namespace NewLife.Cube.Entity
             // 实体缓存
             if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Id == id);
 
-            // 单对象缓存
-            return Meta.SingleCache[id];
+            //// 单对象缓存
+            //return Meta.SingleCache[id];
 
-            //return Find(_.Id == id);
+            return Find(_.Id == id);
         }
 
         /// <summary>根据名称查找</summary>

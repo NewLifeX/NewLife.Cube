@@ -20,13 +20,13 @@ namespace NewLife.Cube.Admin.Controllers
             MenuOrder = 38;
             LogOnChange = true;
 
-            ListFields.RemoveField("Secret", "Logo", "White", "Black", "Urls", "Remark");
+            ListFields.RemoveField("Secret", "HomePage", "Logo", "White", "Black", "Urls", "Remark");
 
             {
                 var df = ListFields.AddListField("AppLog", "Enable");
                 df.Header = "日志";
                 df.DisplayName = "日志";
-                df.Url = "AppLog?appId={ID}";
+                df.Url = "AppLog?appId={Id}";
             }
 
             {
