@@ -224,6 +224,11 @@ namespace NewLife.Cube
         [Description("启用新UI")]
         [Category("界面配置")]
         public Boolean EnableNewUI { get; set; }
+
+        /// <summary>ECharts主题。图表样式主题</summary>
+        [Description("ECharts主题。图表样式主题")]
+        [Category("界面配置")]
+        public String EChartsTheme { get; set; }
         #endregion
 
         #region 方法

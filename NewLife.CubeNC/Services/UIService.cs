@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace NewLife.Cube.Services
 {
@@ -26,6 +28,19 @@ namespace NewLife.Cube.Services
         public void AddSkin(String skin)
         {
             if (!Skins.Contains(skin)) Skins.Add(skin);
+        }
+
+        /// <summary>
+        /// 获取EChart图表主题
+        /// </summary>
+        /// <returns></returns>
+        public IList<String> GetEChartsThemes()
+        {
+            var asm = Assembly.GetExecutingAssembly();
+            var names = asm.GetManifestResourceNames();
+            names = names.Where(e => e.Contains(".echarts.theme.")).ToArray();
+
+            return names.Select(e => e.Substring(".echarts.theme.", null)?.TrimEnd(".js")).Where(e => !e.IsNullOrEmpty()).ToList();
         }
     }
 }
