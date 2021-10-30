@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Charts;
-using NewLife.Threading;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -81,25 +80,20 @@ namespace NewLife.Cube.Admin.Controllers
                 exp &= _.ID <= 999999;
                 var list2 = Area.FindAll(exp.GroupBy(_.Kind), null, _.ID.Count() & _.Kind, 0, 0);
                 list2 = list2.OrderByDescending(e => e.ID).ToList();
-                //if (list2.Count >= 0)
-                //{
-                //    var chart = new ECharts
-                //    {
-                //        Height = 400,
-                //    };
-                //    chart.SetX(list2, _.StatDate, e => e.StatDate.ToString("MM-dd"));
-                //    chart.SetY("调用次数");
-                //    chart.AddLine(list2, _.Total, null, true);
-                //    chart.Add(list2, _.Errors);
-                //    chart.Add(list2, _.Apis);
-                //    chart.Add(list2, _.Https);
-                //    chart.Add(list2, _.Dbs);
-                //    chart.Add(list2, _.Mqs);
-                //    chart.Add(list2, _.Redis);
-                //    chart.Add(list2, _.Others);
-                //    chart.SetTooltip();
-                //    ViewBag.Charts = new[] { chart };
-                //}
+                if (list2.Count >= 0)
+                {
+                    var chart = new ECharts
+                    {
+                        Height = 400,
+                    };
+                    chart.SetX(list2, _.Kind, e => e.Kind ?? "未知");
+                    chart.SetY(null, "value");
+                    chart.SetTooltip();
+
+                    var bar = chart.AddBar(list2, _.Kind, e => e.ID);
+
+                    ViewBag.Charts = new[] { chart };
+                }
                 if (list2.Count >= 0)
                 {
                     var chart = new ECharts
@@ -107,10 +101,10 @@ namespace NewLife.Cube.Admin.Controllers
                         Height = 400,
                     };
                     //chart.SetX(list2, _.Kind);
-                    //chart.SetY("耗时");
+                    //chart.SetY(null, "value");
                     chart.Legend = new { top = "5%", left = "center" };
 
-                    var pie = chart.AddPie(list2, _.Kind, e => new { name = e.Kind ?? "未知", value = e.ID });
+                    var pie = chart.AddPie(list2, _.Kind, e => new NameValue(e.Kind ?? "未知", e.ID));
                     pie["radius"] = new[] { "40%", "70%" };
                     pie["avoidLabelOverlap"] = false;
                     pie["itemStyle"] = new { borderRadius = 10, borderColor = "#fff", borderWidth = 2 };

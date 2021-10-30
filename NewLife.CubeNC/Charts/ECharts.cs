@@ -111,19 +111,39 @@ namespace NewLife.Cube.Charts
             return sr;
         }
 
+        /// <summary>添加饼图</summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list">实体列表</param>
+        /// <param name="field">要使用数据的字段</param>
+        /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
+        /// <returns></returns>
+        public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IEntity
+        {
+            var sr = new Series
+            {
+                Name = field?.DisplayName ?? field.Name,
+                Type = "bar",
+                Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
+            };
+
+            Add(sr);
+            return sr;
+        }
+
         /// <summary>添加曲线系列数据</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="list">实体列表</param>
         /// <param name="field">要使用数据的字段</param>
         /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
         /// <returns></returns>
-        public Series AddPie<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IEntity
+        public Series AddPie<T>(IList<T> list, FieldItem field, Func<T, NameValue> selector = null) where T : IEntity
         {
+            var nameKey = field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
             var sr = new Series
             {
                 Name = field?.DisplayName ?? field.Name,
                 Type = "pie",
-                Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
+                Data = list.Select(e => selector == null ? new NameValue(e[nameKey] + "", e[field.Name]) : selector(e)).ToArray(),
             };
 
             Add(sr);
