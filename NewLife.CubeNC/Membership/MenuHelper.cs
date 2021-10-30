@@ -121,13 +121,14 @@ namespace NewLife.Cube.Membership
                 }
             }
 
+            var rs = 0;
             for (var i = 0; i < ms.Count; i++)
             {
-                (ms[i] as IEntity).Save();
+                rs += (ms[i] as IEntity).Save();
             }
 
             // 如果新增了菜单，需要检查权限
-            if (list.Count > 0)
+            if (rs > 0)
             {
                 ThreadPoolX.QueueUserWorkItem(() =>
                 {
