@@ -77,6 +77,7 @@ namespace NewLife.Cube.WebMiddleware
             {
                 var sessionId = token?.MD5_16() ?? ip;
                 olt = _userService.SetWebStatus(sessionId, p, null, user, ip);
+                ctx.Items["Cube_Online"] = olt;
             }
             try
             {

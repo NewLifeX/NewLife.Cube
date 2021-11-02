@@ -37,6 +37,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
         private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
         private readonly PasswordService _passwordService;
+        private readonly UserService _userService;
 
         static UserController()
         {
@@ -95,7 +96,11 @@ namespace NewLife.Cube.Admin.Controllers
         /// 实例化用户控制器
         /// </summary>
         /// <param name="passwordService"></param>
-        public UserController(PasswordService passwordService) => _passwordService = passwordService;
+        public UserController(PasswordService passwordService, UserService userService)
+        {
+            _passwordService = passwordService;
+            _userService = userService;
+        }
 
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
@@ -322,6 +327,15 @@ namespace NewLife.Cube.Admin.Controllers
 
                     //FormsAuthentication.SetAuthCookie(username, remember ?? false);
 
+
+                    // 记录在线统计
+                    var stat = UserStat.GetOrAdd(DateTime.Today);
+                    if (stat != null)
+                    {
+                        stat.Logins++;
+                        stat.SaveAsync(5_000);
+                    }
+
                     if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
 
                     // 不要嵌入自己
@@ -387,7 +401,12 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 // 如果是单点登录，则走单点登录注销
                 var name = Session["Cube_Sso"] as String;
-                if (!name.IsNullOrEmpty()) return Redirect($"~/Sso/Logout?name={name}&r={HttpUtility.UrlEncode(returnUrl)}");
+                if (!name.IsNullOrEmpty())
+                {
+                    UserService.ClearOnline(ManageProvider.User as User);
+
+                    return Redirect($"~/Sso/Logout?name={name}&r={HttpUtility.UrlEncode(returnUrl)}");
+                }
                 //if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso", new
                 //{
                 //    area = "",

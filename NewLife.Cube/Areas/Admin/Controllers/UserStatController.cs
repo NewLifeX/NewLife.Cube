@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Charts;
@@ -30,36 +31,39 @@ namespace NewLife.Cube.Admin.Controllers
 
             if (list.Count > 0)
             {
+                var list2 = list.OrderBy(e => e.Date).ToList();
                 var chart = new ECharts
                 {
                     Height = 400,
                 };
-                chart.SetX(list, _.Date, e => e.Date.ToString("MMdd"));
+                chart.SetX(list2, _.Date, e => e.Date.ToString("MMdd"));
                 //chart.SetY("数值");
                 chart.YAxis = new[] {
                     new { name = "数值", type = "value" },
                     new { name = "总数", type = "value" }
                 };
 
-                var line = chart.AddLine(list, _.Total, null, true);
+                var line = chart.AddLine(list2, _.Total, null, true);
                 line["yAxisIndex"] = 1;
 
-                chart.Add(list, _.MaxOnline);
-                chart.Add(list, _.Actives);
-                chart.Add(list, _.ActivesT7);
-                chart.Add(list, _.ActivesT30);
-                chart.Add(list, _.News);
-                chart.Add(list, _.NewsT7);
-                chart.Add(list, _.NewsT30);
-                chart.Add(list, _.OnlineTime);
+                chart.Add(list2, _.Logins);
+                chart.Add(list2, _.OAuths);
+                chart.Add(list2, _.MaxOnline);
+                chart.Add(list2, _.Actives);
+                chart.Add(list2, _.ActivesT7);
+                chart.Add(list2, _.ActivesT30);
+                chart.Add(list2, _.News);
+                chart.Add(list2, _.NewsT7);
+                chart.Add(list2, _.NewsT30);
+                //chart.Add(list2, _.OnlineTime);
                 chart.SetTooltip();
 
-                var chart2 = new ECharts();
-                chart2.AddPie(list, _.Total, e => new NameValue(e.Date.ToString("yyyy-MM-dd"), e.Total));
-                chart2.AddPie(list, _.MaxOnline, e => new NameValue(e.Date.ToString("yyyy-MM-dd"), e.Total));
+                //var chart2 = new ECharts();
+                //chart2.AddPie(list, _.Total, e => new NameValue(e.Date.ToString("yyyy-MM-dd"), e.Total));
+                //chart2.AddPie(list, _.MaxOnline, e => new NameValue(e.Date.ToString("yyyy-MM-dd"), e.Total));
 
                 ViewBag.Charts = new[] { chart };
-                ViewBag.Charts2 = new[] { chart2 };
+                //ViewBag.Charts2 = new[] { chart2 };
             }
 
             return list;

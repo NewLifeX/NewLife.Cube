@@ -43,6 +43,22 @@ namespace NewLife.Cube.Entity
         [BindColumn("Total", "总数。总用户数", "")]
         public Int32 Total { get => _Total; set { if (OnPropertyChanging("Total", value)) { _Total = value; OnPropertyChanged("Total"); } } }
 
+        private Int32 _Logins;
+        /// <summary>登录数。总登录数</summary>
+        [DisplayName("登录数")]
+        [Description("登录数。总登录数")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("Logins", "登录数。总登录数", "")]
+        public Int32 Logins { get => _Logins; set { if (OnPropertyChanging("Logins", value)) { _Logins = value; OnPropertyChanged("Logins"); } } }
+
+        private Int32 _OAuths;
+        /// <summary>OAuth登录。OAuth总登录数</summary>
+        [DisplayName("OAuth登录")]
+        [Description("OAuth登录。OAuth总登录数")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("OAuths", "OAuth登录。OAuth总登录数", "")]
+        public Int32 OAuths { get => _OAuths; set { if (OnPropertyChanging("OAuths", value)) { _OAuths = value; OnPropertyChanged("OAuths"); } } }
+
         private Int32 _MaxOnline;
         /// <summary>最大在线。最大在线用户数</summary>
         [DisplayName("最大在线")]
@@ -145,6 +161,8 @@ namespace NewLife.Cube.Entity
                     case "ID": return _ID;
                     case "Date": return _Date;
                     case "Total": return _Total;
+                    case "Logins": return _Logins;
+                    case "OAuths": return _OAuths;
                     case "MaxOnline": return _MaxOnline;
                     case "Actives": return _Actives;
                     case "ActivesT7": return _ActivesT7;
@@ -166,6 +184,8 @@ namespace NewLife.Cube.Entity
                     case "ID": _ID = value.ToInt(); break;
                     case "Date": _Date = value.ToDateTime(); break;
                     case "Total": _Total = value.ToInt(); break;
+                    case "Logins": _Logins = value.ToInt(); break;
+                    case "OAuths": _OAuths = value.ToInt(); break;
                     case "MaxOnline": _MaxOnline = value.ToInt(); break;
                     case "Actives": _Actives = value.ToInt(); break;
                     case "ActivesT7": _ActivesT7 = value.ToInt(); break;
@@ -195,6 +215,12 @@ namespace NewLife.Cube.Entity
 
             /// <summary>总数。总用户数</summary>
             public static readonly Field Total = FindByName("Total");
+
+            /// <summary>登录数。总登录数</summary>
+            public static readonly Field Logins = FindByName("Logins");
+
+            /// <summary>OAuth登录。OAuth总登录数</summary>
+            public static readonly Field OAuths = FindByName("OAuths");
 
             /// <summary>最大在线。最大在线用户数</summary>
             public static readonly Field MaxOnline = FindByName("MaxOnline");
@@ -243,6 +269,12 @@ namespace NewLife.Cube.Entity
 
             /// <summary>总数。总用户数</summary>
             public const String Total = "Total";
+
+            /// <summary>登录数。总登录数</summary>
+            public const String Logins = "Logins";
+
+            /// <summary>OAuth登录。OAuth总登录数</summary>
+            public const String OAuths = "OAuths";
 
             /// <summary>最大在线。最大在线用户数</summary>
             public const String MaxOnline = "MaxOnline";

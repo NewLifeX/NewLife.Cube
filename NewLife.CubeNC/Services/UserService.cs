@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using NewLife.Cube.Entity;
-using NewLife.Security;
 using NewLife.Threading;
 using XCode;
 using XCode.Membership;
@@ -15,34 +14,50 @@ namespace NewLife.Cube.Services
     /// <summary>
     /// 用户服务
     /// </summary>
-    public class UserService : IHostedService
+    public class UserService //: IHostedService
     {
         #region 核心控制
         private TimerX _timer;
         private TimerX _timer2;
         private Int32 _onlines;
 
-        /// <summary>启动</summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task StartAsync(CancellationToken cancellationToken)
+        private void StartTimer()
         {
-            _timer = new TimerX(s => ClearExpire(), null, 1000, 60 * 1000) { Async = true };
-            _timer2 = new TimerX(DoStat, null, 1000, 60 * 1000) { Async = true };
+            if (_timer != null) return;
 
-            return Task.CompletedTask;
+            lock (this)
+            {
+                if (_timer != null) return;
+
+                //!!! 临时关闭OnlineTime累加字段
+                User.Meta.Factory.AdditionalFields.Remove(nameof(User.__.OnlineTime));
+
+                _timer = new TimerX(s => ClearExpire(), null, 1000, 60 * 1000) { Async = true };
+                _timer2 = new TimerX(DoStat, null, 1000, 60 * 1000) { Async = true };
+            }
         }
 
-        /// <summary>停止</summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _timer.TryDispose();
-            _timer2.TryDispose();
+        ///// <summary>启动</summary>
+        ///// <param name="cancellationToken"></param>
+        ///// <returns></returns>
+        //public Task StartAsync(CancellationToken cancellationToken)
+        //{
+        //    _timer = new TimerX(s => ClearExpire(), null, 1000, 60 * 1000) { Async = true };
+        //    _timer2 = new TimerX(DoStat, null, 1000, 60 * 1000) { Async = true };
 
-            return Task.CompletedTask;
-        }
+        //    return Task.CompletedTask;
+        //}
+
+        ///// <summary>停止</summary>
+        ///// <param name="cancellationToken"></param>
+        ///// <returns></returns>
+        //public Task StopAsync(CancellationToken cancellationToken)
+        //{
+        //    _timer.TryDispose();
+        //    _timer2.TryDispose();
+
+        //    return Task.CompletedTask;
+        //}
         #endregion
 
         #region 用户在线
@@ -87,8 +102,8 @@ namespace NewLife.Cube.Services
         /// <returns></returns>
         public UserOnline SetWebStatus(String sessionid, String page, String status, IUser user, String ip)
         {
-            //// 网页使用一个定时器来清理过期
-            //StartTimer();
+            // 网页使用一个定时器来清理过期
+            StartTimer();
 
             if (user == null) return SetStatus(sessionid, page, status, 0, null, ip);
 
@@ -139,6 +154,13 @@ namespace NewLife.Cube.Services
             var total = UserOnline.Meta.Count;
             _onlines = total - list.Count;
 
+            // 设置统计
+            var stat = UserStat.GetOrAdd(DateTime.Today);
+            if (stat != null)
+            {
+                if (total > stat.MaxOnline) stat.MaxOnline = total;
+            }
+
             // 设置离线
             foreach (var item in list)
             {
@@ -148,17 +170,38 @@ namespace NewLife.Cube.Services
                     user2.Online = false;
                     user2.OnlineTime += item.OnlineTime;
                     user2.Save();
+
+                    if (stat != null) stat.OnlineTime += item.OnlineTime;
                 }
             }
-
-            // 设置统计
-            var stat = UserStat.GetOrAdd(DateTime.Today);
-            if (stat != null)
-            {
-                if (total > stat.MaxOnline) stat.MaxOnline = total;
-            }
+            stat.SaveAsync();
 
             return list;
+        }
+
+        /// <summary>
+        /// 注销用户时，更新在线表和统计表
+        /// </summary>
+        /// <param name="user"></param>
+        public static void ClearOnline(User user)
+        {
+            // 在线表删除
+            var olts = UserOnline.FindAllByUserID(user.ID);
+            if (olts.Count > 0)
+            {
+                var stat = UserStat.GetOrAdd(DateTime.Today);
+                foreach (var olt in olts)
+                {
+                    user.OnlineTime += olt.OnlineTime;
+                    olt.Delete();
+
+                    if (stat != null) stat.OnlineTime += olt.OnlineTime;
+                }
+                stat.SaveAsync();
+            }
+
+            user.Online = false;
+            user.SaveAsync();
         }
         #endregion
 
@@ -179,7 +222,7 @@ namespace NewLife.Cube.Services
             selects &= User._.RegisterTime.SumLarge($"'{t1:yyyy-MM-dd}'", "newT1");
             selects &= User._.RegisterTime.SumLarge($"'{t7:yyyy-MM-dd}'", "newT7");
             selects &= User._.RegisterTime.SumLarge($"'{t30:yyyy-MM-dd}'", "newT30");
-            selects &= User._.OnlineTime.Sum();
+            //selects &= User._.OnlineTime.Sum();
 
             var list = User.FindAll(null, null, selects, 0, 1);
             if (list.Count > 0)
@@ -195,11 +238,11 @@ namespace NewLife.Cube.Services
                 st.NewsT7 = user["newT7"].ToInt();
                 st.NewsT30 = user["newT30"].ToInt();
 
-                var sty = UserStat.FindByDate(DateTime.Today.AddDays(-1));
-                if (sty != null)
-                    st.OnlineTime = user.OnlineTime - sty.OnlineTime;
-                else
-                    st.OnlineTime = user.OnlineTime;
+                //var sty = UserStat.FindByDate(DateTime.Today.AddDays(-1));
+                //if (sty != null)
+                //    st.OnlineTime = user.OnlineTime - sty.OnlineTime;
+                //else
+                //    st.OnlineTime = user.OnlineTime;
 
                 st.Update();
             }

@@ -53,6 +53,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("SessionID", "会话。Web的SessionID或Server的会话编号", "")]
         public String SessionID { get => _SessionID; set { if (OnPropertyChanging("SessionID", value)) { _SessionID = value; OnPropertyChanged("SessionID"); } } }
 
+        private String _OAuthProvider;
+        /// <summary>OAuth提供商。从哪个渠道登录</summary>
+        [DisplayName("OAuth提供商")]
+        [Description("OAuth提供商。从哪个渠道登录")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("OAuthProvider", "OAuth提供商。从哪个渠道登录", "")]
+        public String OAuthProvider { get => _OAuthProvider; set { if (OnPropertyChanging("OAuthProvider", value)) { _OAuthProvider = value; OnPropertyChanged("OAuthProvider"); } } }
+
         private Int32 _Times;
         /// <summary>次数</summary>
         [DisplayName("次数")]
@@ -140,6 +148,7 @@ namespace NewLife.Cube.Entity
                     case "UserID": return _UserID;
                     case "Name": return _Name;
                     case "SessionID": return _SessionID;
+                    case "OAuthProvider": return _OAuthProvider;
                     case "Times": return _Times;
                     case "Page": return _Page;
                     case "Status": return _Status;
@@ -160,6 +169,7 @@ namespace NewLife.Cube.Entity
                     case "UserID": _UserID = value.ToInt(); break;
                     case "Name": _Name = Convert.ToString(value); break;
                     case "SessionID": _SessionID = Convert.ToString(value); break;
+                    case "OAuthProvider": _OAuthProvider = Convert.ToString(value); break;
                     case "Times": _Times = value.ToInt(); break;
                     case "Page": _Page = Convert.ToString(value); break;
                     case "Status": _Status = Convert.ToString(value); break;
@@ -190,6 +200,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>会话。Web的SessionID或Server的会话编号</summary>
             public static readonly Field SessionID = FindByName("SessionID");
+
+            /// <summary>OAuth提供商。从哪个渠道登录</summary>
+            public static readonly Field OAuthProvider = FindByName("OAuthProvider");
 
             /// <summary>次数</summary>
             public static readonly Field Times = FindByName("Times");
@@ -235,6 +248,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>会话。Web的SessionID或Server的会话编号</summary>
             public const String SessionID = "SessionID";
+
+            /// <summary>OAuth提供商。从哪个渠道登录</summary>
+            public const String OAuthProvider = "OAuthProvider";
 
             /// <summary>次数</summary>
             public const String Times = "Times";

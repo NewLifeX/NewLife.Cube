@@ -116,7 +116,7 @@ namespace NewLife.Cube
             services.AddSingleton<UserService>();
 
             services.AddHostedService<JobService>();
-            services.AddHostedService<UserService>();
+            //services.AddHostedService<UserService>();
 
             XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
 

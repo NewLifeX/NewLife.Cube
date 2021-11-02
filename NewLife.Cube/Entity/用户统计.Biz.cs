@@ -14,7 +14,9 @@ namespace NewLife.Cube.Entity
         {
             // 累加字段，生成 Update xx Set Count=Count+1234 Where xxx
             var df = Meta.Factory.AdditionalFields;
-            df.Add(nameof(Total));
+            //df.Add(nameof(Total));
+            df.Add(nameof(Logins));
+            df.Add(nameof(OAuths));
 
             // 过滤器 UserModule、TimeModule、IPModule
             Meta.Modules.Add<TimeModule>();

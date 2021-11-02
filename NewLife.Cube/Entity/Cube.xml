@@ -117,6 +117,7 @@
       <Column Name="UserID" DataType="Int32" Description="用户" />
       <Column Name="Name" DataType="String" Master="True" Description="名称" />
       <Column Name="SessionID" DataType="String" Description="会话。Web的SessionID或Server的会话编号" />
+      <Column Name="OAuthProvider" DataType="String" Description="OAuth提供商。从哪个渠道登录" />
       <Column Name="Times" DataType="Int32" Description="次数" />
       <Column Name="Page" DataType="String" Description="页面" />
       <Column Name="Status" DataType="String" Description="状态" />
@@ -138,6 +139,8 @@
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
       <Column Name="Date" DataType="DateTime" Description="统计日期" />
       <Column Name="Total" DataType="Int32" Description="总数。总用户数" />
+      <Column Name="Logins" DataType="Int32" Description="登录数。总登录数" />
+      <Column Name="OAuths" DataType="Int32" Description="OAuth登录。OAuth总登录数" />
       <Column Name="MaxOnline" DataType="Int32" Description="最大在线。最大在线用户数" />
       <Column Name="Actives" DataType="Int32" Description="活跃。今天活跃用户数" />
       <Column Name="ActivesT7" DataType="Int32" Description="7天活跃。7天活跃用户数" />

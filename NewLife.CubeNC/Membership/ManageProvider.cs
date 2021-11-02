@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Services;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
@@ -244,19 +245,7 @@ namespace NewLife.Cube
         /// <summary>注销</summary>
         public override void Logout()
         {
-            if (Current is User user)
-            {
-                // 在线表删除
-                var olts = UserOnline.FindAllByUserID(user.ID);
-                if (olts.Count == 1)
-                {
-                    user.OnlineTime += olts[0].OnlineTime;
-                    olts[0].Delete();
-                }
-
-                user.Online = false;
-                user.SaveAsync();
-            }
+            if (Current is User user) UserService.ClearOnline(user);
 
             // 注销时销毁所有Session
             var context = Context?.HttpContext;
