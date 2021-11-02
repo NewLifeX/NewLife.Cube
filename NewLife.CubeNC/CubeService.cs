@@ -113,6 +113,7 @@ namespace NewLife.Cube
             // UI服务
             services.AddSingleton<UIService>();
             services.AddSingleton<PasswordService>();
+            services.AddSingleton<UserService>();
 
             services.AddHostedService<JobService>();
 

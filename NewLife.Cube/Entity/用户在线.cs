@@ -65,7 +65,7 @@ namespace NewLife.Cube.Entity
         /// <summary>页面</summary>
         [DisplayName("页面")]
         [Description("页面")]
-        [DataObjectField(false, false, true, 200)]
+        [DataObjectField(false, false, true, 50)]
         [BindColumn("Page", "页面", "")]
         public String Page { get => _Page; set { if (OnPropertyChanging("Page", value)) { _Page = value; OnPropertyChanged("Page"); } } }
 
@@ -73,7 +73,7 @@ namespace NewLife.Cube.Entity
         /// <summary>状态</summary>
         [DisplayName("状态")]
         [Description("状态")]
-        [DataObjectField(false, false, true, 200)]
+        [DataObjectField(false, false, true, 50)]
         [BindColumn("Status", "状态", "")]
         public String Status { get => _Status; set { if (OnPropertyChanging("Status", value)) { _Status = value; OnPropertyChanged("Status"); } } }
 
@@ -84,6 +84,14 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, false, 0)]
         [BindColumn("OnlineTime", "在线时间。本次在线总时间，秒", "")]
         public Int32 OnlineTime { get => _OnlineTime; set { if (OnPropertyChanging("OnlineTime", value)) { _OnlineTime = value; OnPropertyChanged("OnlineTime"); } } }
+
+        private DateTime _LastError;
+        /// <summary>最后错误</summary>
+        [DisplayName("最后错误")]
+        [Description("最后错误")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("LastError", "最后错误", "")]
+        public DateTime LastError { get => _LastError; set { if (OnPropertyChanging("LastError", value)) { _LastError = value; OnPropertyChanged("LastError"); } } }
 
         private String _CreateIP;
         /// <summary>创建地址</summary>
@@ -136,6 +144,7 @@ namespace NewLife.Cube.Entity
                     case "Page": return _Page;
                     case "Status": return _Status;
                     case "OnlineTime": return _OnlineTime;
+                    case "LastError": return _LastError;
                     case "CreateIP": return _CreateIP;
                     case "CreateTime": return _CreateTime;
                     case "UpdateIP": return _UpdateIP;
@@ -155,6 +164,7 @@ namespace NewLife.Cube.Entity
                     case "Page": _Page = Convert.ToString(value); break;
                     case "Status": _Status = Convert.ToString(value); break;
                     case "OnlineTime": _OnlineTime = value.ToInt(); break;
+                    case "LastError": _LastError = value.ToDateTime(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
@@ -192,6 +202,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>在线时间。本次在线总时间，秒</summary>
             public static readonly Field OnlineTime = FindByName("OnlineTime");
+
+            /// <summary>最后错误</summary>
+            public static readonly Field LastError = FindByName("LastError");
 
             /// <summary>创建地址</summary>
             public static readonly Field CreateIP = FindByName("CreateIP");
@@ -234,6 +247,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>在线时间。本次在线总时间，秒</summary>
             public const String OnlineTime = "OnlineTime";
+
+            /// <summary>最后错误</summary>
+            public const String LastError = "LastError";
 
             /// <summary>创建地址</summary>
             public const String CreateIP = "CreateIP";

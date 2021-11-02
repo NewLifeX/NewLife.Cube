@@ -118,9 +118,10 @@
       <Column Name="Name" DataType="String" Master="True" Description="名称" />
       <Column Name="SessionID" DataType="String" Description="会话。Web的SessionID或Server的会话编号" />
       <Column Name="Times" DataType="Int32" Description="次数" />
-      <Column Name="Page" DataType="String" Length="200" Description="页面" />
-      <Column Name="Status" DataType="String" Length="200" Description="状态" />
+      <Column Name="Page" DataType="String" Description="页面" />
+      <Column Name="Status" DataType="String" Description="状态" />
       <Column Name="OnlineTime" DataType="Int32" Description="在线时间。本次在线总时间，秒" />
+      <Column Name="LastError" DataType="DateTime" Nullable="False" Description="最后错误" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" />
       <Column Name="CreateTime" DataType="DateTime" Nullable="False" Description="创建时间" />
       <Column Name="UpdateIP" DataType="String" Description="更新地址" />
