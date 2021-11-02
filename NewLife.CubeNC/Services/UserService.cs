@@ -146,6 +146,7 @@ namespace NewLife.Cube.Services
                 if (user is User user2)
                 {
                     user2.Online = false;
+                    user2.OnlineTime += item.OnlineTime;
                     user2.Save();
                 }
             }
@@ -162,8 +163,11 @@ namespace NewLife.Cube.Services
         #endregion
 
         #region 用户统计
-        private static void DoStat(Object state)
+        private void DoStat(Object state)
         {
+            // 无在线则不执行
+            if (_onlines == 0) return;
+
             var t1 = DateTime.Today.AddDays(-0);
             var t7 = DateTime.Today.AddDays(-7);
             var t30 = DateTime.Today.AddDays(-30);
@@ -175,7 +179,7 @@ namespace NewLife.Cube.Services
             selects &= User._.RegisterTime.SumLarge($"'{t1:yyyy-MM-dd}'", "newT1");
             selects &= User._.RegisterTime.SumLarge($"'{t7:yyyy-MM-dd}'", "newT7");
             selects &= User._.RegisterTime.SumLarge($"'{t30:yyyy-MM-dd}'", "newT30");
-            //selects &= User._.OnlineTime.Sum();
+            selects &= User._.OnlineTime.Sum();
 
             var list = User.FindAll(null, null, selects, 0, 1);
             if (list.Count > 0)
@@ -191,26 +195,13 @@ namespace NewLife.Cube.Services
                 st.NewsT7 = user["newT7"].ToInt();
                 st.NewsT30 = user["newT30"].ToInt();
 
-                //var sty = UserStat.FindByDate(DateTime.Today.AddDays(-1));
-                //if (sty != null)
-                //    st.OnlineTime = user.OnlineTime - sty.OnlineTime;
-                //else
-                //    st.OnlineTime = user.OnlineTime;
+                var sty = UserStat.FindByDate(DateTime.Today.AddDays(-1));
+                if (sty != null)
+                    st.OnlineTime = user.OnlineTime - sty.OnlineTime;
+                else
+                    st.OnlineTime = user.OnlineTime;
 
                 st.Update();
-
-                //for (int i = 0; i < 7; i++)
-                //{
-                //    st = new UserStat();
-                //    st.Date = DateTime.Today.AddDays(-7 + i);
-                //    st.Actives = Rand.Next(100);
-                //    st.ActivesT7 = Rand.Next(100);
-                //    st.ActivesT30 = Rand.Next(100);
-                //    st.News = Rand.Next(100);
-                //    st.NewsT7 = Rand.Next(100);
-                //    st.NewsT30 = Rand.Next(100);
-                //    st.Insert();
-                //}
             }
         }
         #endregion

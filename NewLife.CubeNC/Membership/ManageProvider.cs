@@ -244,6 +244,20 @@ namespace NewLife.Cube
         /// <summary>注销</summary>
         public override void Logout()
         {
+            if (Current is User user)
+            {
+                // 在线表删除
+                var olts = UserOnline.FindAllByUserID(user.ID);
+                if (olts.Count == 1)
+                {
+                    user.OnlineTime += olts[0].OnlineTime;
+                    olts[0].Delete();
+                }
+
+                user.Online = false;
+                user.SaveAsync();
+            }
+
             // 注销时销毁所有Session
             var context = Context?.HttpContext;
             var session = context.Items["Session"] as IDictionary<String, Object>;
