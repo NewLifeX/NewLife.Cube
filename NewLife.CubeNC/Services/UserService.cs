@@ -107,8 +107,25 @@ namespace NewLife.Cube.Services
 
             if (user == null) return SetStatus(sessionid, page, status, 0, null, ip);
 
-            //if (user is IAuthUser user2) user2.Online = true;
-            //(user as IEntity).SaveAsync(1000);
+            // 根据IP修正用户城市
+            if (user is User user2 && (user2.AreaId == 0 || user2.AreaId % 10000 == 0))
+            {
+                var addr = ip.IPToAddress();
+                if (!addr.IsNullOrEmpty())
+                {
+                    if (ip.StartsWith("广西")) ip = "广西自治区" + ip.Substring(2);
+                    var addrs = ip.Split("省", "自治区", "市", "区", "县");
+                    if (addrs != null && addrs.Length >= 2)
+                    {
+                        var r = Area.FindByNames(addrs);
+                        if (r != null)
+                        {
+                            user2.AreaId = r.ID;
+                            user2.SaveAsync();
+                        }
+                    }
+                }
+            }
 
             return SetStatus(sessionid, page, status, user.ID, user + "", ip);
         }
