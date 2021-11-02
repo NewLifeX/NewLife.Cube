@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using XCode;
+using NewLife.Cube.Entity;
+using NewLife.Web;
 using XCode.Membership;
 #if __CORE__
-using Microsoft.AspNetCore.Http;
-using NewLife.Cube.Extensions;
 #else
 using System.Web;
 using System.Web.Mvc;
@@ -17,11 +16,17 @@ namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>用户在线控制器</summary>
     [DataPermission(null, "UserID={#userId}")]
-    [DisplayName("用户在线")]
-    [Description("已登录系统的用户，操作情况。")]
     [Area("Admin")]
     public class UserOnlineController : EntityController<UserOnline>
     {
+        /// <summary>
+        /// 实例化
+        /// </summary>
+        public UserOnlineController()
+        {
+            PageSetting.EnableAdd = false;
+        }
+
         /// <summary>不允许添加修改日志</summary>
         /// <param name="entity"></param>
         /// <returns></returns>
@@ -32,18 +37,23 @@ namespace NewLife.Cube.Admin.Controllers
             throw new Exception("不允许添加/修改记录");
         }
 
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
+        /// <summary>搜索数据集</summary>
+        /// <param name="p"></param>
         /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
+        protected override IEnumerable<UserOnline> Search(Pager p)
         {
-            if (menu.Visible)
+            var userid = p["UserID"].ToInt(-1);
+            var start = p["dtStart"].ToDateTime();
+            var end = p["dtEnd"].ToDateTime();
+
+            // 强制当前用户
+            if (userid < 0)
             {
-                menu.Visible = false;
-                (menu as IEntity).Update();
+                var user = ManageProvider.User;
+                if (!user.Roles.Any(e => e.IsSystem)) userid = user.ID;
             }
 
-            return base.ScanActionMenu(menu);
+            return UserOnline.Search(userid, null, start, end, p["Q"], p);
         }
     }
 }

@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.Http;
 using NewLife.Common;
+using NewLife.Cube.Entity;
+using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
+using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Web;
@@ -21,23 +24,30 @@ namespace NewLife.Cube.WebMiddleware
     public class RunTimeMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly UserService _userService;
 
         /// <summary>会话提供者</summary>
         static readonly SessionProvider _sessionProvider = new SessionProvider();
 
         /// <summary>实例化</summary>
         /// <param name="next"></param>
-        public RunTimeMiddleware(RequestDelegate next) => _next = next ?? throw new ArgumentNullException(nameof(next));
+        /// <param name="userService"></param>
+        public RunTimeMiddleware(RequestDelegate next, UserService userService)
+        {
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _userService = userService;
+        }
 
         /// <summary>调用</summary>
         /// <param name="ctx"></param>
         /// <returns></returns>
         public async Task Invoke(HttpContext ctx)
         {
-            ManageProvider.UserHost = ctx.GetUserHost();
+            var ip = ctx.GetUserHost();
+            ManageProvider.UserHost = ip;
 
             // 创建Session集合
-            CreateSession(ctx);
+            var token = CreateSession(ctx);
 
             var inf = new RunTimeInfo();
             ctx.Items[nameof(RunTimeInfo)] = inf;
@@ -60,6 +70,14 @@ namespace NewLife.Cube.WebMiddleware
             // 日志控制，精确标注Web类型线程
             WriteLogEventArgs.Current.IsWeb = true;
 
+            UserOnline olt = null;
+            var user = ManageProvider.User;
+            var p = ctx.Request.Path + "";
+            if (!p.EndsWithIgnoreCase(ExcludeSuffixes))
+            {
+                var sessionId = token?.MD5_16() ?? ip;
+                olt = _userService.SetWebStatus(sessionId, p, null, user, ip);
+            }
             try
             {
                 await _next.Invoke(ctx);
@@ -67,11 +85,11 @@ namespace NewLife.Cube.WebMiddleware
             catch (Exception ex)
             {
                 var uri = ctx.Request.GetRawUrl();
-                var ps = uri.AbsolutePath.Split('/');
+                if (olt != null) olt.SetError(ex.Message);
 
-                XTrace.Log.Error("[{0}]的错误[{1}] {2}", uri, ManageProvider.UserHost, ctx.TraceIdentifier);
+                XTrace.Log.Error("[{0}]的错误[{1}] {2}", uri, ip, ctx.TraceIdentifier);
 
-                LogProvider.Provider?.WriteLog("访问", "错误", false, ex.Message + " " + uri + Environment.NewLine + ex.GetMessage());
+                LogProvider.Provider?.WriteLog("访问", "错误", false, ex.Message + " " + uri + Environment.NewLine + ex.GetMessage(), user?.ID ?? 0, user + "", ip);
 
                 XTrace.WriteException(ex);
 
@@ -123,7 +141,7 @@ namespace NewLife.Cube.WebMiddleware
             return inf;
         }
 
-        private static void CreateSession(HttpContext ctx)
+        private static String CreateSession(HttpContext ctx)
         {
             // 准备Session
             var ss = ctx.Session;
@@ -140,8 +158,18 @@ namespace NewLife.Cube.WebMiddleware
 
                 //Session = _sessionProvider.GetSession(ss.Id);
                 ctx.Items["Session"] = _sessionProvider.GetSession(token);
+
+                return token;
             }
+
+            return null;
         }
+
+        /// <summary>忽略的后缀</summary>
+        public static String[] ExcludeSuffixes { get; set; } = new[] {
+            ".html", ".htm", ".js", ".css", ".map", ".png", ".jpg", ".gif", ".ico",  // 脚本样式图片
+            ".woff", ".woff2", ".svg", ".ttf", ".otf", ".eot"   // 字体
+        };
     }
 
     /// <summary>运行时间信息</summary>

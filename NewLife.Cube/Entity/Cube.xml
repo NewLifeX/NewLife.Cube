@@ -111,6 +111,49 @@
       <Index Columns="UserID" />
     </Indexes>
   </Table>
+  <Table Name="UserOnline" Description="用户在线" ConnName="Membership">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="UserID" DataType="Int32" Description="用户" />
+      <Column Name="Name" DataType="String" Master="True" Description="名称" />
+      <Column Name="SessionID" DataType="String" Description="会话。Web的SessionID或Server的会话编号" />
+      <Column Name="Times" DataType="Int32" Description="次数" />
+      <Column Name="Page" DataType="String" Description="页面" />
+      <Column Name="Status" DataType="String" Description="状态" />
+      <Column Name="OnlineTime" DataType="Int32" Description="在线时间。本次在线总时间，秒" />
+      <Column Name="LastError" DataType="DateTime" Nullable="False" Description="最后错误" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" />
+      <Column Name="CreateTime" DataType="DateTime" Nullable="False" Description="创建时间" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
+      <Column Name="UpdateTime" DataType="DateTime" Nullable="False" Description="修改时间" />
+    </Columns>
+    <Indexes>
+      <Index Columns="UserID" />
+      <Index Columns="SessionID" />
+      <Index Columns="CreateTime" />
+    </Indexes>
+  </Table>
+  <Table Name="UserStat" Description="用户统计" ConnName="Membership">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Date" DataType="DateTime" Description="统计日期" />
+      <Column Name="Total" DataType="Int32" Description="总数。总用户数" />
+      <Column Name="MaxOnline" DataType="Int32" Description="最大在线。最大在线用户数" />
+      <Column Name="Actives" DataType="Int32" Description="活跃。今天活跃用户数" />
+      <Column Name="ActivesT7" DataType="Int32" Description="7天活跃。7天活跃用户数" />
+      <Column Name="ActivesT30" DataType="Int32" Description="30天活跃。30天活跃用户数" />
+      <Column Name="News" DataType="Int32" Description="新用户。今天注册新用户数" />
+      <Column Name="NewsT7" DataType="Int32" Description="7天注册。7天内注册新用户数" />
+      <Column Name="NewsT30" DataType="Int32" Description="30天注册。30天注册新用户数" />
+      <Column Name="OnlineTime" DataType="Int32" Description="在线时间。累计在线总时间，秒" />
+      <Column Name="CreateTime" DataType="DateTime" Nullable="False" Description="创建时间" />
+      <Column Name="UpdateTime" DataType="DateTime" Nullable="False" Description="更新时间" />
+      <Column Name="Remark" DataType="String" Length="1000" Description="详细信息" />
+    </Columns>
+    <Indexes>
+      <Index Columns="Date" Unique="True" />
+    </Indexes>
+  </Table>
   <Table Name="App" TableName="OAuthApp" Description="应用系统。用于OAuthServer的子系统">
     <Columns>
       <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
