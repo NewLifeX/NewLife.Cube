@@ -89,6 +89,8 @@
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserConnectController.cs" Link="Areas\Admin\Controllers\UserConnectController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserController.cs" Link="Areas\Admin\Controllers\UserController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserOnlineController.cs" Link="Areas\Admin\Controllers\UserOnlineController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserStatController.cs" Link="Areas\Admin\Controllers\UserStatController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserTokenController.cs" Link="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\ChangePasswordModel.cs" Link="Areas\Admin\Models\ChangePasswordModel.cs" />
@@ -131,6 +133,10 @@
     <Compile Include="..\NewLife.Cube\Entity\模型表.cs" Link="Entity\模型表.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs" Link="Entity\用户令牌.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.cs" Link="Entity\用户令牌.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户在线.Biz.cs" Link="Entity\用户在线.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户在线.cs" Link="Entity\用户在线.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户统计.Biz.cs" Link="Entity\用户统计.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户统计.cs" Link="Entity\用户统计.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户链接.Biz.cs">
       <Link>Entity\用户链接.Biz.cs</Link>
     </Compile>
@@ -187,6 +193,11 @@
   <ItemGroup>
     <None Include="..\NewLife.Cube\Entity\Cube.xml">
       <Link>Entity\Cube.xml</Link>
+    </None>
+    <None Include="..\NewLife.Cube\Entity\XCoder.log">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>XCoder.tt</DependentUpon>
     </None>
     <None Include="..\NewLife.Cube\Entity\XCoder.tt">
       <Link>Entity\XCoder.tt</Link>
