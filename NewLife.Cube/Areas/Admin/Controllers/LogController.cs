@@ -7,6 +7,8 @@ using XCode.Membership;
 using XLog = XCode.Membership.Log;
 using static XCode.Membership.Log;
 using XCode;
+using NewLife.Cube.ViewModels;
+using NewLife.Cube.Extensions;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -25,6 +27,13 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.AddField("Action", "Remark");
             ListFields.RemoveField("CreateUserID");
             //FormFields.RemoveField("Remark");
+
+            //{
+            //    var df = ListFields.GetField("TraceId") as ListField;
+            //    df.DisplayName = "跟踪";
+            //    df.Url = StarHelper.BuildUrl("{TraceId}");
+            //    df.DataVisible = (e, f) => !(e as XLog).TraceId.IsNullOrEmpty();
+            //}
         }
 
         /// <summary>搜索数据集</summary>
