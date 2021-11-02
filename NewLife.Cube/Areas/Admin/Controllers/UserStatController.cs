@@ -13,8 +13,6 @@ using static NewLife.Cube.Entity.UserStat;
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>访问统计控制器</summary>
-    [DisplayName("访问统计")]
-    [Description("每个页面每天的访问统计信息")]
     [Area("Admin")]
     public class UserStatController : ReadOnlyEntityController<UserStat>
     {
@@ -32,10 +30,20 @@ namespace NewLife.Cube.Admin.Controllers
 
             if (list.Count > 0)
             {
-                var chart = new ECharts();
-                chart.SetX(list, _.Date, e => e.Date.ToString("yyyy-MM-dd"));
-                //chart.SetY(_.Times);
-                chart.AddLine(list, _.Total, null, true);
+                var chart = new ECharts
+                {
+                    Height = 400,
+                };
+                chart.SetX(list, _.Date, e => e.Date.ToString("MMdd"));
+                //chart.SetY("数值");
+                chart.YAxis = new[] {
+                    new { name = "数值", type = "value" },
+                    new { name = "总数", type = "value" }
+                };
+
+                var line = chart.AddLine(list, _.Total, null, true);
+                line["yAxisIndex"] = 1;
+
                 chart.Add(list, _.MaxOnline);
                 chart.Add(list, _.Actives);
                 chart.Add(list, _.ActivesT7);
@@ -48,6 +56,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 var chart2 = new ECharts();
                 chart2.AddPie(list, _.Total, e => new NameValue(e.Date.ToString("yyyy-MM-dd"), e.Total));
+                chart2.AddPie(list, _.MaxOnline, e => new NameValue(e.Date.ToString("yyyy-MM-dd"), e.Total));
 
                 ViewBag.Charts = new[] { chart };
                 ViewBag.Charts2 = new[] { chart2 };

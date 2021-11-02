@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using NewLife.Cube.Entity;
-using NewLife.Model;
+using NewLife.Security;
 using NewLife.Threading;
 using XCode;
 using XCode.Membership;
@@ -12,8 +15,36 @@ namespace NewLife.Cube.Services
     /// <summary>
     /// 用户服务
     /// </summary>
-    public class UserService
+    public class UserService : IHostedService
     {
+        #region 核心控制
+        private TimerX _timer;
+        private TimerX _timer2;
+        private Int32 _onlines;
+
+        /// <summary>启动</summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _timer = new TimerX(s => ClearExpire(), null, 1000, 60 * 1000) { Async = true };
+            _timer2 = new TimerX(DoStat, null, 1000, 60 * 1000) { Async = true };
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>停止</summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _timer.TryDispose();
+            _timer2.TryDispose();
+
+            return Task.CompletedTask;
+        }
+        #endregion
+
         #region 用户在线
         /// <summary>设置会话状态</summary>
         /// <param name="sessionid"></param>
@@ -54,10 +85,10 @@ namespace NewLife.Cube.Services
         /// <param name="user"></param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public UserOnline SetWebStatus(String sessionid, String page, String status, IManageUser user, String ip)
+        public UserOnline SetWebStatus(String sessionid, String page, String status, IUser user, String ip)
         {
-            // 网页使用一个定时器来清理过期
-            StartTimer();
+            //// 网页使用一个定时器来清理过期
+            //StartTimer();
 
             if (user == null) return SetStatus(sessionid, page, status, 0, null, ip);
 
@@ -67,36 +98,34 @@ namespace NewLife.Cube.Services
             return SetStatus(sessionid, page, status, user.ID, user + "", ip);
         }
 
-        private static TimerX _timer;
-        private static Int32 _onlines;
-        /// <summary>
-        /// 启动定时器，定时清理离线用户
-        /// </summary>
-        /// <param name="period"></param>
-        public static void StartTimer(Int32 period = 60)
-        {
-            if (_timer == null)
-            {
-                lock (typeof(UserOnline))
-                {
-                    if (_timer == null) _timer = new TimerX(s => ClearExpire(), null, 1000, period * 1000) { Async = true };
-                }
-            }
-        }
+        ///// <summary>
+        ///// 启动定时器，定时清理离线用户
+        ///// </summary>
+        ///// <param name="period"></param>
+        //public static void StartTimer(Int32 period = 60)
+        //{
+        //    if (_timer == null)
+        //    {
+        //        lock (typeof(UserOnline))
+        //        {
+        //            if (_timer == null) _timer = new TimerX(s => ClearExpire(), null, 1000, period * 1000) { Async = true };
+        //        }
+        //    }
+        //}
 
-        /// <summary>
-        /// 关闭定时器
-        /// </summary>
-        public static void StopTimer()
-        {
-            _timer.TryDispose();
-            _timer = null;
-        }
+        ///// <summary>
+        ///// 关闭定时器
+        ///// </summary>
+        //public static void StopTimer()
+        //{
+        //    _timer.TryDispose();
+        //    _timer = null;
+        //}
 
         /// <summary>删除过期，指定过期时间</summary>
         /// <param name="secTimeout">超时时间，20 * 60秒</param>
         /// <returns></returns>
-        public static IList<UserOnline> ClearExpire(Int32 secTimeout = 20 * 60)
+        public IList<UserOnline> ClearExpire(Int32 secTimeout = 20 * 60)
         {
             // 无在线则不执行
             if (_onlines == 0 || UserOnline.Meta.Count == 0) return new List<UserOnline>();
@@ -129,6 +158,60 @@ namespace NewLife.Cube.Services
             }
 
             return list;
+        }
+        #endregion
+
+        #region 用户统计
+        private static void DoStat(Object state)
+        {
+            var t1 = DateTime.Today.AddDays(-0);
+            var t7 = DateTime.Today.AddDays(-7);
+            var t30 = DateTime.Today.AddDays(-30);
+
+            var selects = UserStat._.ID.Count();
+            selects &= User._.LastLogin.SumLarge($"'{t1:yyyy-MM-dd}'", "activeT1");
+            selects &= User._.LastLogin.SumLarge($"'{t7:yyyy-MM-dd}'", "activeT7");
+            selects &= User._.LastLogin.SumLarge($"'{t30:yyyy-MM-dd}'", "activeT30");
+            selects &= User._.RegisterTime.SumLarge($"'{t1:yyyy-MM-dd}'", "newT1");
+            selects &= User._.RegisterTime.SumLarge($"'{t7:yyyy-MM-dd}'", "newT7");
+            selects &= User._.RegisterTime.SumLarge($"'{t30:yyyy-MM-dd}'", "newT30");
+            //selects &= User._.OnlineTime.Sum();
+
+            var list = User.FindAll(null, null, selects, 0, 1);
+            if (list.Count > 0)
+            {
+                var user = list[0];
+
+                var st = UserStat.GetOrAdd(DateTime.Today);
+                st.Total = user.ID;
+                st.Actives = user["activeT1"].ToInt();
+                st.ActivesT7 = user["activeT7"].ToInt();
+                st.ActivesT30 = user["activeT30"].ToInt();
+                st.News = user["newT1"].ToInt();
+                st.NewsT7 = user["newT7"].ToInt();
+                st.NewsT30 = user["newT30"].ToInt();
+
+                //var sty = UserStat.FindByDate(DateTime.Today.AddDays(-1));
+                //if (sty != null)
+                //    st.OnlineTime = user.OnlineTime - sty.OnlineTime;
+                //else
+                //    st.OnlineTime = user.OnlineTime;
+
+                st.Update();
+
+                //for (int i = 0; i < 7; i++)
+                //{
+                //    st = new UserStat();
+                //    st.Date = DateTime.Today.AddDays(-7 + i);
+                //    st.Actives = Rand.Next(100);
+                //    st.ActivesT7 = Rand.Next(100);
+                //    st.ActivesT30 = Rand.Next(100);
+                //    st.News = Rand.Next(100);
+                //    st.NewsT7 = Rand.Next(100);
+                //    st.NewsT30 = Rand.Next(100);
+                //    st.Insert();
+                //}
+            }
         }
         #endregion
     }

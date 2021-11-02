@@ -76,7 +76,7 @@ namespace NewLife.Cube.WebMiddleware
             if (!p.EndsWithIgnoreCase(ExcludeSuffixes))
             {
                 var sessionId = token?.MD5_16() ?? ip;
-                olt = _userService.SetWebStatus(sessionId, p, null, user as IManageUser, ip);
+                olt = _userService.SetWebStatus(sessionId, p, null, user, ip);
             }
             try
             {
