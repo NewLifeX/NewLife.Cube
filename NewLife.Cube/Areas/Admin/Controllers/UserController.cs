@@ -112,10 +112,11 @@ namespace NewLife.Cube.Admin.Controllers
                 return list;
             }
 
-            var roleId = p["roleId"].ToInt(-1);
-            var roleIds = p["roleIds"]?.Split(",");
-            var departmentId = p["departmentId"].ToInt(-1);
-            var departmentIds = p["departmentIds"]?.Split(",");
+            //var roleId = p["roleId"].ToInt(-1);
+            var roleIds = p["roleIds"].SplitAsInt();
+            //var departmentId = p["departmentId"].ToInt(-1);
+            var departmentIds = p["departmentId"].SplitAsInt();
+            var areaIds = p["areaId"].SplitAsInt("/");
             var enable = p["enable"]?.ToBoolean();
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
@@ -125,16 +126,20 @@ namespace NewLife.Cube.Admin.Controllers
 
             //return XCode.Membership.User.Search(roleId, departmentId, enable, start, end, key, p);
 
-            var exp = new WhereExpression();
-            if (roleId >= 0) exp &= _.RoleID == roleId | _.RoleIds.Contains("," + roleId + ",");
-            if (roleIds != null && roleIds.Length > 0) exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
-            if (departmentId >= 0) exp &= _.DepartmentID == departmentId;
-            if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
-            if (enable != null) exp &= _.Enable == enable.Value;
-            exp &= _.LastLogin.Between(start, end);
-            if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
+            //var exp = new WhereExpression();
+            //if (roleId >= 0) exp &= _.RoleID == roleId | _.RoleIds.Contains("," + roleId + ",");
+            //if (roleIds != null && roleIds.Length > 0) exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
+            //if (departmentId >= 0) exp &= _.DepartmentID == departmentId;
+            //if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
+            //if (enable != null) exp &= _.Enable == enable.Value;
+            //exp &= _.LastLogin.Between(start, end);
+            //if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
 
-            var list2 = XCode.Membership.User.FindAll(exp, p);
+            //var list2 = XCode.Membership.User.FindAll(exp, p);
+
+            //if (roleId > 0) roleIds.Add(roleId);
+            //if (departmentId > 0) departmentIds.Add(departmentId);
+            var list2 = XCode.Membership.User.Search(roleIds, departmentIds, /*areaIds,*/ enable, start, end, key, p);
 
             foreach (var user in list2)
             {
