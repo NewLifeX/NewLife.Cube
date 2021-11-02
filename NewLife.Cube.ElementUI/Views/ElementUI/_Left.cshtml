@@ -7,6 +7,13 @@
     Int32 _idx = 0;
     var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
 
+    var curPath = HttpContext.Current.Request.Path.ToString();
+    var safeCode = string.Empty;
+    if (curPath != "/Admin/")
+    {
+        safeCode = $"/{ curPath.Split('/')[1]}";//使用安全码
+    }
+
     var menusJson = new List<object>();
 
     foreach (var menu in menus.Where(w => w.Visible))
@@ -28,14 +35,14 @@
                 if (!menu2.Icon.IsNullOrEmpty())
                     cIcon = menu2.Icon;
 
-                childJson.Add(new { id = menu2.ID, icon = cIcon, title = menu2.DisplayName, link = menu2.Url.Replace("~","") });
+                childJson.Add(new { id = menu2.ID, icon = cIcon, title = menu2.DisplayName, link = safeCode + menu2.Url.Replace("~", "") });
             }
 
             menusJson.Add(new { id = menu.ID, icon = icon, title = menu.DisplayName, children = childJson });
         }
         else
         {
-            menusJson.Add(new { id = menu.ID, icon = icon, title = menu.DisplayName, link = menu.Url.Replace("~", "") });
+            menusJson.Add(new { id = menu.ID, icon = icon, title = menu.DisplayName, link = safeCode + menu.Url.Replace("~", "") });
         }
     }
 

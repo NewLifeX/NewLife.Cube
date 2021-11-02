@@ -1,7 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using NewLife.Log;
-using XCode.Membership;
 
 namespace NewLife.Cube.Admin
 {
@@ -11,6 +9,9 @@ namespace NewLife.Cube.Admin
     {
         /// <summary>区域名</summary>
         public static String AreaName => nameof(AdminArea).TrimEnd("Area");
+
+        /// <summary>菜单顺序。扫描时会反射读取</summary>
+        public static Int32 MenuOrder { get; set; } = 1;
 
         /// <inheritdoc />
         public AdminArea() : base(AreaName) { }

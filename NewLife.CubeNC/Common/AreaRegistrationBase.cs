@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Membership;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Threading;
@@ -24,7 +25,7 @@ namespace NewLife.Cube
     /// </remarks>
     public class AreaBase : AreaAttribute
     {
-        private static readonly ConcurrentDictionary<Type, Type> _areas = new ConcurrentDictionary<Type, Type>();
+        private static readonly ConcurrentDictionary<Type, Type> _areas = new();
 
         /// <summary>实例化区域注册</summary>
         public AreaBase(String areaName) : base(areaName) => RegisterArea(GetType());
@@ -72,7 +73,8 @@ namespace NewLife.Cube
 
             using var tran = (mf as IEntityFactory).Session.CreateTrans();
 
-            var menus = mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
+            //var menus = mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
+            var menus = MenuHelper.ScanController(mf, areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
 
             // 更新区域名称为友好中文名
             var menu = mf.Root.FindByPath(areaName);

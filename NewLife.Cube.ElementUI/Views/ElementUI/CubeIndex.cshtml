@@ -17,6 +17,13 @@
     res = res.TrimEnd('/');
 
     var name = cfg == null ? "" : cfg.DisplayName;
+
+    var curPath = HttpContext.Current.Request.Path.ToString();
+    var safeCode = string.Empty;
+    if (curPath != "/Admin/")
+    {
+        safeCode = $"/{ curPath.Split('/')[1]}";//使用安全码
+    }
 }
 
 
@@ -94,7 +101,8 @@
                             <template slot="title">
                                 @user
                             </template>
-                            <el-menu-item index="signOut">注销登录</el-menu-item>
+                            
+                            <el-link href="@safeCode/Admin/User/Logout?r=@safeCode/Admin/User/Login">注销登录</el-link>
                         </el-submenu>
 
                     </el-menu>
