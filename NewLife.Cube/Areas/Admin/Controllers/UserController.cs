@@ -142,9 +142,33 @@ namespace NewLife.Cube.Admin.Controllers
 
             //var list2 = XCode.Membership.User.FindAll(exp, p);
 
+            if (areaIds.Length > 0)
+            {
+                var rs = areaIds.ToList();
+                var r = Area.FindByID(areaIds[areaIds.Length - 1]);
+                if (r != null)
+                {
+                    // 城市，要下一级
+                    if (r.Level == 2)
+                    {
+                        rs.AddRange(r.Childs.Select(e => e.ID));
+                    }
+                    // 省份，要下面两级
+                    else if (r.Level == 1)
+                    {
+                        rs.AddRange(r.Childs.Select(e => e.ID));
+                        foreach (var item in r.Childs)
+                        {
+                            rs.AddRange(item.Childs.Select(e => e.ID));
+                        }
+                    }
+                }
+                areaIds = rs.ToArray();
+            }
+
             //if (roleId > 0) roleIds.Add(roleId);
             //if (departmentId > 0) departmentIds.Add(departmentId);
-            var list2 = XCode.Membership.User.Search(roleIds, departmentIds, /*areaIds,*/ enable, start, end, key, p);
+            var list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
 
             foreach (var user in list2)
             {
