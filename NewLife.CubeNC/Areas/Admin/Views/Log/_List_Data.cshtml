@@ -46,7 +46,7 @@
                     @await Html.PartialAsync("_Icon_Boolean", entity.Success)
                 </td>
                 <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Remark">@entity.Remark</td>
-                <td>
+                <td class="text-center">
                     @if (!entity.TraceId.IsNullOrEmpty())
                     {
                         <a href="@StarHelper.BuildUrl(entity.TraceId)" target="_blank">追踪</a>

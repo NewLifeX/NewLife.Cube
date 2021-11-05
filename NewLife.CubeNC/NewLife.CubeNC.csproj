@@ -194,11 +194,6 @@
     <None Include="..\NewLife.Cube\Entity\Cube.xml">
       <Link>Entity\Cube.xml</Link>
     </None>
-    <None Include="..\NewLife.Cube\Entity\XCoder.log">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>XCoder.tt</DependentUpon>
-    </None>
     <None Include="..\NewLife.Cube\Entity\XCoder.tt">
       <Link>Entity\XCoder.tt</Link>
       <Generator>TextTemplatingFileGenerator</Generator>
