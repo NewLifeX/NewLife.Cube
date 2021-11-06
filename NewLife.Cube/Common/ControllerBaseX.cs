@@ -259,6 +259,7 @@ namespace NewLife.Cube
         {
             if (data is Exception ex)
             {
+                if (code == 0 && data is ApiException aex) code = aex.Code;
                 if (code == 0) code = 500;
                 if (message.IsNullOrEmpty()) message = ex.GetTrue()?.Message;
                 data = null;

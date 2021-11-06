@@ -36,30 +36,6 @@ namespace NewLife.Web
         /// <summary>验证应用</summary>
         /// <param name="client_id"></param>
         /// <param name="client_secret"></param>
-        /// <returns></returns>
-        public virtual App Auth(String client_id, String client_secret)
-        {
-            var app = App.FindByName(client_id);
-            //if (app == null) throw new XException("未找到应用[{0}]", appid);
-            // 找不到应用时自动创建，但处于禁用状态
-            if (app == null)
-            {
-                app = new App { Name = client_id };
-                app.Insert();
-            }
-
-            if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
-            if (!client_secret.IsNullOrEmpty())
-            {
-                if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
-            }
-
-            return app;
-        }
-
-        /// <summary>验证应用</summary>
-        /// <param name="client_id"></param>
-        /// <param name="client_secret"></param>
         /// <param name="ip"></param>
         /// <returns></returns>
         public virtual App Auth(String client_id, String client_secret, String ip)
@@ -74,10 +50,11 @@ namespace NewLife.Web
             }
 
             if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
+            if (app.Expired.Year > 2000 && app.Expired < DateTime.Now) throw new XException("应用[{0}]已过期", client_id);
 
-            if (!app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);
-            
-            if (!client_secret.IsNullOrEmpty())
+            if (!ip.IsNullOrEmpty() && !app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);
+
+            if (client_secret != null)
             {
                 if (!app.Secret.IsNullOrEmpty() && !app.Secret.EqualIgnoreCase(client_secret)) throw new XException("应用密钥错误");
             }
@@ -95,8 +72,9 @@ namespace NewLife.Web
         /// <param name="response_type">响应类型。默认code</param>
         /// <param name="scope">授权域</param>
         /// <param name="state">用户状态数据</param>
+        /// <param name="ip">IP地址</param>
         /// <returns></returns>
-        public virtual String Authorize(String client_id, String redirect_uri, String response_type = null, String scope = null, String state = null)
+        public virtual String Authorize(String client_id, String redirect_uri, String response_type, String scope, String state, String ip)
         {
             var log = new AppLog
             {
@@ -107,7 +85,10 @@ namespace NewLife.Web
                 RedirectUri = redirect_uri,
                 ResponseType = response_type,
                 Scope = scope,
-                State = state
+                State = state,
+
+                CreateIP = ip,
+                CreateTime = DateTime.Now,
             };
 
             try
@@ -115,10 +96,10 @@ namespace NewLife.Web
                 //if (!response_type.EqualIgnoreCase("code")) throw new NotSupportedException(nameof(response_type));
 
                 var app = App.FindByName(client_id);
-                if (app != null) log.AppId = app.ID;
+                if (app != null) log.AppId = app.Id;
 
-                app = Auth(client_id, null);
-                log.AppId = app.ID;
+                app = Auth(client_id, null, ip);
+                log.AppId = app.Id;
 
                 // 验证回调地址
                 if (!app.ValidCallback(redirect_uri)) throw new XException("回调地址不合法 {0}", redirect_uri);
@@ -142,7 +123,7 @@ namespace NewLife.Web
                 log.Insert();
             }
 
-            return log.ID + "";
+            return log.Id + "";
         }
 
         /// <summary>根据验证结果获取跳转回子系统的Url</summary>
@@ -151,11 +132,11 @@ namespace NewLife.Web
         /// <returns></returns>
         public virtual String GetResult(String key, IManageUser user)
         {
-            var log = AppLog.FindByID(key.ToLong());
+            var log = AppLog.FindById(key.ToLong());
             if (log == null) throw new ArgumentOutOfRangeException(nameof(key), "操作超时，请重试！");
 
             //var prv = GetProvider();
-            var code = log.ID + "";
+            var code = log.Id + "";
 
             var token = CreateToken(log.App, user.Name, null, $"{log.App?.Name}#{user.Name}");
 
@@ -259,7 +240,7 @@ namespace NewLife.Web
         /// <returns></returns>
         public virtual TokenInfo GetToken(String code)
         {
-            var log = AppLog.FindByID(code.ToLong());
+            var log = AppLog.FindById(code.ToLong());
             if (log == null || log.CreateTime.AddMinutes(5) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
             if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);

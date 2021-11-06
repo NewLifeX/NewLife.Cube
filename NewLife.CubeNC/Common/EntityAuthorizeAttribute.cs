@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Membership;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -229,7 +230,8 @@ namespace NewLife.Cube
             if (!_ss.TryAdd(type.Namespace, type)) return false;
 
             var mf = ManageProvider.Menu;
-            var ms = mf.ScanController(type.Namespace.TrimEnd(".Controllers"), type.Assembly, type.Namespace);
+            //var ms = mf.ScanController(type.Namespace.TrimEnd(".Controllers"), type.Assembly, type.Namespace);
+            var ms = MenuHelper.ScanController(mf, type.Namespace.TrimEnd(".Controllers"), type.Assembly, type.Namespace);
 
             var root = mf.FindByFullName(type.Namespace);
             if (root != null)

@@ -1,0 +1,43 @@
+﻿@using NewLife.Common;
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var page = ViewBag.Page as Pager;
+}
+<el-dropdown>
+    <span class="el-dropdown-link">
+        高级<i class="el-icon-arrow-down el-icon--right"></i>
+    </span>
+    <el-dropdown-menu slot="dropdown">
+        <el-dropdown-item><el-link href="@Url.Action("ExportExcel")">导出Excel</el-link></el-dropdown-item>
+        <el-dropdown-item><el-link href="@Url.Action("ExportCsv")">导出Csv</el-link></el-dropdown-item>
+        <el-dropdown-item><el-link href="@Url.Action("ExportXml")">导出Xml</el-link></el-dropdown-item>
+        <el-dropdown-item><el-link href="@Url.Action("ExportJson")">导出Json</el-link></el-dropdown-item>
+
+        <el-divider></el-divider>
+        <el-dropdown-item><el-link href="@Url.Action("Share")">分享</el-link></el-dropdown-item>
+        <el-dropdown-item><el-link href="@Url.Action("Sync")">同步</el-link></el-dropdown-item>
+        @if (this.Has(PermissionFlags.Delete))
+        {
+            <el-dropdown-item><el-link href="@Url.Action("DeleteSelect")">删除选中</el-link></el-dropdown-item>
+            <el-dropdown-item><el-link href="@Url.Action("DeleteAll")">删除全部</el-link></el-dropdown-item>
+        }
+
+        @if (SysConfig.Current.Develop && user != null && user.Role.IsSystem)
+        {
+            <el-divider></el-divider>
+            <el-dropdown-item><el-link href="@Url.Action("Backup")">备份</el-link></el-dropdown-item>
+            <el-dropdown-item><el-link href="@Url.Action("Restore")">还原</el-link></el-dropdown-item>
+            <el-dropdown-item><el-link href="@Url.Action("BackupAndExport")">备份导出</el-link></el-dropdown-item>
+
+            <el-divider></el-divider>
+            if (page == null || page.Params.Count == 0)
+            {
+                <el-dropdown-item><el-link href="@Url.Action("Clear")">清空数据表</el-link></el-dropdown-item>
+            }
+            <el-dropdown-item><el-link href="@Url.Action("MakeList")">生成列表</el-link></el-dropdown-item>
+            <el-dropdown-item><el-link href="@Url.Action("MakeForm")">生成表单</el-link></el-dropdown-item>
+            <el-dropdown-item><el-link href="@Url.Action("MakeSearch")">生成搜索</el-link></el-dropdown-item>
+
+        }
+    </el-dropdown-menu>
+</el-dropdown>

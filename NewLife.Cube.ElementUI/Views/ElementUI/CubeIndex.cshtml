@@ -1,0 +1,300 @@
+﻿@{
+    Layout = null;
+
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var roleNames = "";
+    if (user != null) roleNames = user.Roles == null ? "" : user.Roles.Join();
+
+    var cfg = ViewBag.Config as NewLife.Common.SysConfig;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var name = cfg == null ? "" : cfg.DisplayName;
+
+    var curPath = HttpContext.Current.Request.Path.ToString();
+    var safeCode = string.Empty;
+    if (curPath != "/Admin/")
+    {
+        safeCode = $"/{ curPath.Split('/')[1]}";//使用安全码
+    }
+}
+
+
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <title>@title</title>
+    <link href="@res/elementui/css/element.css" rel="stylesheet" />
+    <link href="@res/elementui/css/layout.css" rel="stylesheet" />
+    <style>
+        .el-header {
+            padding: 0px 0px 0px 0px;
+            border-bottom: 0px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+        ::-webkit-scrollbar {
+            width: 1px;
+            height: 1px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #a1a3a9;
+            border-radius: 3px;
+        }
+
+    </style>
+</head>
+
+<body id="layout">
+    <template id="app">
+
+        <el-container>
+            <el-menu :default-active="tabIndex" class="el-menu-vertical-demo" background-color="#001529"
+                     text-color="hsla(0,0%,100%,.65)" @@select="menuSelect" active-text-color="#1890ff" unique-opened="true"
+                     :collapse="isCollapse">
+
+                <template v-for="router in routers" :key="router.id">
+                    <el-menu-item v-if="!router.children" :index="router.id">
+                        <i :class="router.icon"></i>
+                        <span slot="title">{{router.title}}</span>
+                    </el-menu-item>
+                    <el-submenu v-if="router.children" :index="router.id">
+                        <template slot="title">
+                            <i :class="router.icon"></i>
+                            <span slot="title">{{router.title}}</span>
+                        </template>
+                        <template v-for="child in router.children" :key="child.id">
+                            <el-menu-item v-if="!child.children" :index="child.id">
+                                <i :class="child.icon"></i>
+                                <span slot="title">{{child.title}}</span>
+                            </el-menu-item>
+                        </template>
+                    </el-submenu>
+                </template>
+            </el-menu>
+            <el-container>
+                <el-header>
+                    <el-button type="text" v-bind:icon="isCollapse?'el-icon-s-unfold':'el-icon-s-fold'" class="collapse"
+                               v-on:click="handleCollapse">
+                    </el-button>
+
+                    <el-menu class="el-menu-demo" :default-active="activeIndex" mode="horizontal" active-text-color="#409EFF" style="float: right;" v-on:select="handleSelect">
+
+                        <template v-for="site in globalSite">
+                            <el-menu-item :index="site.id">{{site.name}}</el-menu-item>
+                        </template>
+
+                        <el-submenu index="userInfo">
+                            <template slot="title">
+                                @user
+                            </template>
+                            
+                            <el-link href="@safeCode/Admin/User/Logout?r=@safeCode/Admin/User/Login">注销登录</el-link>
+                        </el-submenu>
+
+                    </el-menu>
+
+                </el-header>
+
+                <el-main style="height:100%;border-top: 1px solid #DCDFE6;">
+                    <el-tabs v-model="tabIndex" type="border-card" @@tab-remove="removeTab" @@tab-click="clickTab">
+                        <el-tab-pane v-for="item in tabs" :key="item.id" :name="item.id" :closable="item.closable">
+                            <span slot="label">@*<i :class="item.icon"></i>*@{{item.title}}</span>
+                            <iframe :Id="'frame-' + item.id" :src="item.link" frameborder="0" class="iframe"></iframe>
+                        </el-tab-pane>
+                    </el-tabs>
+                </el-main>
+
+            </el-container>
+        </el-container>
+    </template>
+
+ 
+
+    <script src="@res/elementui/js/moment.min.js"></script>
+    <script src="@res/elementui/js/axios.min.js"></script>
+    <script src="@res/elementui/js/vue.min.js"></script>
+    <script src="@res/elementui/js/element.min.js"></script>
+
+    <script>
+        //Vue2.0 桌面端组件库: https://element.eleme.cn/#/zh-CN/component/cascader
+
+        var main = new Vue({
+            el: '#app',
+            data: {
+                //菜单折叠状态
+                isCollapse: false,
+                //身份信息
+                adminInfo: null,
+                activeIndex: "book",
+                //菜单 仅支持两级菜单
+                routers: @await Html.PartialAsync("_Left"),
+                //选项卡
+                tabs1: [],
+                tabs: [
+                    {
+                        id: 10000,
+                        title: "欢迎",
+                        link: '@ViewBag.Main',
+                        icon: 'el-icon-s-home',
+                    },
+                ],
+                globalSite: [],
+                //选项卡选中项id
+                tabIndex: 10000
+            },
+            //页面初始化
+            created() {
+                this.loadUser();
+                this.loadGlobalSite();
+            },
+            methods: {
+                handleSelect(key, keyPath) {
+                    if (key == 'signOut') {
+                        let This = this;
+                        axios.get('/KLF4TY/login/logout')
+                            .then(function (response) {
+                                This.navigation("/login");
+                            })
+                            .catch(function (error) {
+                                console.log(error);
+                            });
+                    } else {
+                        var site = this.globalSite.filter(t => t.id == key)[0];
+                        if (site) {
+                            this.navigation(site.link);
+                        }
+                    }
+                },
+                loadGlobalSite() {
+                    let This = this;
+                    This.loading = true;
+                    axios.get('?action=site')
+                        .then(function (response) {
+                            This.globalSite = response.data.data;
+                            This.loading = false;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                },
+                //加载用户信息
+                loadUser() {
+                    let This = this;
+                    This.loading = true;
+                    axios.get('?action=userinfo')
+                        .then(function (response) {
+                            This.adminInfo = response.data.data;
+                            This.loading = false;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                },
+                //菜单折叠状态
+                handleCollapse() {
+                    this.isCollapse = !this.isCollapse;
+                },
+                clickTab(tab, event) {
+                    this.tabIndex = tab.name;
+                    //this.RefreshTab(tab.name);
+                },
+
+                //移除选项卡
+                removeTab(targetName) {
+                    let tabs1 = this.tabs;
+                    let activeName = this.tabIndex;
+                    if (activeName === targetName) {
+                        tabs1.forEach((tab, index) => {
+                            if (tab.id === targetName) {
+                                let nextTab = tabs1[index + 1] || tabs1[index - 1];
+                                if (nextTab) {
+                                    activeName = nextTab.id;
+                                }
+                            }
+                        });
+                    }
+                    this.tabIndex = activeName;
+                    this.tabs = tabs1.filter(tab => tab.id !== targetName);
+                },
+                //菜单点击
+                menuSelect(index, path) {
+                    if (index == this.tabIndex) {
+                        this.RefreshTab(index);
+                        return;
+                    }
+                    var data = findChildren(this.routers, index);
+                    //console.log(data);
+                    this.insertTab(data);
+                    this.tabIndex = index;
+                },
+                //添加选项卡
+                insertTab(tab) {
+                    var data = this.tabs.find(t => t.id == tab.id);
+                    if (!data) {
+                        this.tabs.push({ ...tab, closable: true });
+                    }
+                },
+                //刷新iframe
+                RefreshTab(index) {
+                    var name = "#frame-" + index;
+                    var iframeSrc = $(name).attr("src");
+                    if (iframeSrc) {
+                        $(name).attr('src', iframeSrc);
+                    }
+                },
+                navigation(url) {
+                    //console.log(url);
+                    location.href = url;
+                }
+            },
+        });
+
+        function findChildren(data, id) {
+            var model = data.find(t => t.id == id);
+            if (model) {
+                return model;
+            }
+            var data = data.filter(t => t.children);
+            for (const key in data) {
+                model = findChildren(data[key].children, id);
+                if (model) {
+                    return model;
+                }
+            }
+            return model;
+        }
+
+        function addTabToMain(id, name, path) {
+            main.tabs.push({
+                id: id,
+                title: name,
+                link: path,
+                icon: 'el-icon-user',
+                closable: true
+            });
+            main.tabIndex = id;
+        }
+
+        function removeTabToMain(targetName) {
+            main.removeTab(targetName);
+        }
+        /*Vue.prototype.$addTab = parent.addTabToMain;*/
+
+    </script>
+
+</body>
+</html>

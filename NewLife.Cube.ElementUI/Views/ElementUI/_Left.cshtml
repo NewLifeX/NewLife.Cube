@@ -1,0 +1,50 @@
+﻿@using NewLife.Model;
+@using NewLife.Cube.ViewModels;
+@using NewLife.Serialization;
+@{
+    String[] icos = new String[] { "el-icon-house", "el-icon-user-solid", "el-icon-edit", "el-icon-setting", "el-icon-s-unfold", "el-icon-menu", "el-icon-document-copy", "el-icon-notebook-1", "el-icon-coin" };
+    var defaultChildIcon = "el-icon-caret-right";
+    Int32 _idx = 0;
+    var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
+
+    var curPath = HttpContext.Current.Request.Path.ToString();
+    var safeCode = string.Empty;
+    if (curPath != "/Admin/")
+    {
+        safeCode = $"/{ curPath.Split('/')[1]}";//使用安全码
+    }
+
+    var menusJson = new List<object>();
+
+    foreach (var menu in menus.Where(w => w.Visible))
+    {
+        var childs = menu.Children ?? new List<MenuTree>();
+        if (_idx >= icos.Length)
+            _idx = 0;
+
+        var icon = icos[_idx++];
+        if (!menu.Icon.IsNullOrEmpty())
+            icon = menu.Icon;
+
+        if (childs.Any())
+        {
+            var childJson = new List<object>();
+            foreach (var menu2 in childs.Where(w => w.Visible))
+            {
+                var cIcon = defaultChildIcon;
+                if (!menu2.Icon.IsNullOrEmpty())
+                    cIcon = menu2.Icon;
+
+                childJson.Add(new { id = menu2.ID, icon = cIcon, title = menu2.DisplayName, link = safeCode + menu2.Url.Replace("~", "") });
+            }
+
+            menusJson.Add(new { id = menu.ID, icon = icon, title = menu.DisplayName, children = childJson });
+        }
+        else
+        {
+            menusJson.Add(new { id = menu.ID, icon = icon, title = menu.DisplayName, link = safeCode + menu.Url.Replace("~", "") });
+        }
+    }
+
+}
+@Html.Raw(menusJson.ToJson())

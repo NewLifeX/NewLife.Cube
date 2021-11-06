@@ -49,6 +49,15 @@ namespace NewLife.Cube.Admin.Controllers
                     df.DataSource = (f, e) => _uIService.Skins.ToDictionary(e => e, e => e);
                 }
 
+                df = list.FirstOrDefault(e => e.Name == "EChartsTheme");
+                if (df != null)
+                {
+                    var themes = _uIService.GetEChartsThemes();
+                    df.Description = $"可选主题 {themes.Join("/")}";
+                    themes.Insert(0, "default");
+                    df.DataSource = (f, e) => themes.ToDictionary(e => e, e => e);
+                }
+
                 _has = true;
             }
 

@@ -140,6 +140,11 @@ namespace NewLife.Cube.Entity
             InsertOnly = dt.InsertOnly;
         }
 
+        /// <summary>
+        /// 扫描模型
+        /// </summary>
+        /// <param name="areaName"></param>
+        /// <param name="menus"></param>
         public static void ScanModel(String areaName, IList<IMenu> menus)
         {
             var models = ModelTable.FindAll().Where(e => e.Category.EqualIgnoreCase(areaName)).ToList();
@@ -162,6 +167,7 @@ namespace NewLife.Cube.Entity
         /// <summary>
         /// 根据菜单和实体工厂创建模型表和模型列
         /// </summary>
+        /// <param name="areaName"></param>
         /// <param name="menu"></param>
         /// <param name="factory"></param>
         public static ModelTable ScanModel(String areaName, IMenu menu, IEntityFactory factory) => ScanModel(areaName, menu.Name, menu.FullName, menu.Url.TrimStart("~"), factory);
@@ -169,9 +175,15 @@ namespace NewLife.Cube.Entity
         /// <summary> 
         /// 根据菜单和实体工厂创建模型表和模型列
         /// </summary>
+        /// <param name="areaName"></param>
+        /// <param name="ctrlName"></param>
+        /// <param name="ctrlFullName"></param>
+        /// <param name="url"></param>
         /// <param name="factory"></param>
         public static ModelTable ScanModel(String areaName, String ctrlName, String ctrlFullName, String url, IEntityFactory factory)
         {
+            if (areaName.IsNullOrEmpty()) return null;
+
             //var entityTypeName = menu.Name; // 菜单名从控制器名称里面取
             //var ctrlFullName = menu.FullName;
             //var url = menu.Url.TrimStart("~");
@@ -207,7 +219,9 @@ namespace NewLife.Cube.Entity
                         Name = field.Name,
                         Enable = true,
                         ShowInList = true,
-                        ShowInForm = ShowInForm.详情 | ShowInForm.添加 | ShowInForm.编辑,
+                        ShowInDetailForm = true,
+                        ShowInAddForm = true,
+                        ShowInEditForm = true,
                     };
                     columns.Add(column);
                 }

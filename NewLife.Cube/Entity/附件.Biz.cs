@@ -1,26 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Script.Serialization;
-using System.Xml.Serialization;
-using NewLife;
 using NewLife.Data;
-using NewLife.Log;
-using NewLife.Model;
-using NewLife.Reflection;
-using NewLife.Threading;
-using NewLife.Web;
 using XCode;
 using XCode.Cache;
-using XCode.Configuration;
-using XCode.DataAccessLayer;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity
@@ -77,8 +59,8 @@ namespace NewLife.Cube.Entity
         {
             if (id <= 0) return null;
 
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
+            //// 实体缓存
+            //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
 
             // 单对象缓存
             return Meta.SingleCache[id];
@@ -89,13 +71,7 @@ namespace NewLife.Cube.Entity
         /// <summary>根据分类查找</summary>
         /// <param name="category">分类</param>
         /// <returns>实体列表</returns>
-        public static IList<Attachment> FindAllByCategory(String category)
-        {
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.Category.EqualIgnoreCase(category));
-
-            return FindAll(_.Category == category);
-        }
+        public static IList<Attachment> FindAllByCategory(String category) => FindAll(_.Category == category);
         #endregion
 
         #region 高级查询

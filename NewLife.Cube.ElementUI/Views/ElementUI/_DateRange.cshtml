@@ -1,0 +1,19 @@
+﻿@using NewLife;
+@{
+    var fmt = Model as String;
+    var formatStr = !fmt.IsNullOrEmpty() ? fmt : "yyyy-MM-dd";
+    //var name = fmt == "yyyy-MM-dd" ? "日期" : "时间";
+    var p = ViewBag.Page as Pager;
+
+    var dtStart = p["dtStart"].ToDateTime();
+    var dtEnd = p["dtEnd"].ToDateTime();
+
+    var start = dtStart.ToString(formatStr, "");
+    var end = dtEnd.ToString(formatStr, "");
+}
+<el-date-picker v-model="screenForm.dtStart"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期">
+</el-date-picker>

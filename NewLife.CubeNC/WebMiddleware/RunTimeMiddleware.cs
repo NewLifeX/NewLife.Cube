@@ -71,7 +71,7 @@ namespace NewLife.Cube.WebMiddleware
 
                 XTrace.Log.Error("[{0}]的错误[{1}] {2}", uri, ManageProvider.UserHost, ctx.TraceIdentifier);
 
-                LogProvider.Provider?.WriteLog("访问", "错误", false, uri + Environment.NewLine + ex.GetMessage());
+                LogProvider.Provider?.WriteLog("访问", "错误", false, ex.Message + " " + uri + Environment.NewLine + ex.GetMessage());
 
                 XTrace.WriteException(ex);
 

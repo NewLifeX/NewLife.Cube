@@ -19,10 +19,14 @@
         style += $"height: {chart.Height}px;";
     else if (chart.Height < 0)
         style += $"height: {-chart.Height}%;";
+
+    var set = NewLife.Cube.Setting.Current;
+    var theme = set.EChartsTheme;
+    if (theme.EqualIgnoreCase("Default")) theme = "";
 }
 <div id="@name" style="@style" class="@chart.Class"></div>
 <script type="text/javascript">
-    var @chartName = echarts.init(document.getElementById('@name'));
+    var @chartName = echarts.init(document.getElementById('@name'), '@theme');
     var @optionName = @Html.Raw(chart.Build());
     @(chartName).setOption(@optionName);
 </script>

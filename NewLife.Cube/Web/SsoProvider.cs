@@ -31,6 +31,11 @@ namespace NewLife.Cube.Web
         /// <summary>用户管理提供者</summary>
         public IManageProvider Provider { get; set; }
 
+        /// <summary>
+        /// 性能追踪器
+        /// </summary>
+        public ITracer Tracer { get; set; }
+
         ///// <summary>重定向地址。~/Sso/LoginInfo</summary>
         //public String RedirectUrl { get; set; }
 
@@ -111,7 +116,7 @@ namespace NewLife.Cube.Web
         {
             var url = LoginUrl;
 
-            var log = AppLog.FindByID(logId.ToLong());
+            var log = AppLog.FindById(logId.ToLong());
             if (log != null)
             {
                 url += url.Contains("?") ? "&" : "?";
@@ -198,6 +203,9 @@ namespace NewLife.Cube.Web
             if (user is IUser user4) user4.Online = true;
             if (user is IEntity entity) entity.Update();
 
+            // 用户角色可能有更新，需要清空扩展属性，避免Roles保留脏数据，导致用户首次访问显示无权限
+            (user as EntityBase).Extends = null;
+
             // 写日志
             var log = LogProvider.Provider;
             log?.WriteLog(typeof(User), "SSO登录", true, $"[{user}]从[{client.Name}]的[{client.UserName ?? client.NickName}]登录", user.ID, user + "");
@@ -253,7 +261,7 @@ namespace NewLife.Cube.Web
                     var sys = user2.Roles.Where(e => e.IsSystem).Select(e => e.ID).ToList();
                     if (sys.Count > 0)
                     {
-                        roleId = user2.RoleID;
+                        //roleId = user2.RoleID;
                         if (roleIds == null) roleIds = new List<Int32>();
                         roleIds.AddRange(sys);
                     }
@@ -496,12 +504,21 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual TokenInfo GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
         {
-            sso.Auth(client_id, client_secret, ip);
+            using var span = Tracer?.NewSpan(nameof(GetAccessToken), client_id);
+            try
+            {
+                sso.Auth(client_id, client_secret + "", ip);
 
-            var token = sso.GetToken(code);
-            token.Scope = "basic,UserInfo";
+                var token = sso.GetToken(code);
+                token.Scope = "basic,UserInfo";
 
-            return token;
+                return token;
+            }
+            catch (Exception ex)
+            {
+                span?.SetError(ex, new { client_id, client_secret, code, ip });
+                throw;
+            }
         }
 
         /// <summary>密码式获取令牌</summary>
@@ -520,13 +537,16 @@ namespace NewLife.Cube.Web
 
                 ClientId = client_id,
                 ResponseType = "password",
+
                 CreateIP = ip,
+                CreateTime = DateTime.Now,
             };
 
+            using var span = Tracer?.NewSpan(nameof(GetAccessTokenByPassword), username);
             try
             {
                 var app = sso.Auth(client_id, null, ip);
-                log.AppId = app.ID;
+                log.AppId = app.Id;
 
                 // 验证应用能力
                 var scopes = app.Scopes?.Split(",");
@@ -580,6 +600,8 @@ namespace NewLife.Cube.Web
                 log.Success = false;
                 log.Remark = ex.GetTrue()?.Message;
 
+                span?.SetError(ex, new { client_id, username, ip });
+
                 throw;
             }
             finally
@@ -604,16 +626,19 @@ namespace NewLife.Cube.Web
 
                 ClientId = client_id,
                 ResponseType = "client_credentials",
+
                 CreateIP = ip,
+                CreateTime = DateTime.Now,
             };
 
+            using var span = Tracer?.NewSpan(nameof(GetAccessTokenByClientCredentials), username);
             try
             {
                 var app = App.FindByName(client_id);
-                if (app != null) log.AppId = app.ID;
+                if (app != null) log.AppId = app.Id;
 
-                app = sso.Auth(client_id, client_secret, ip);
-                log.AppId = app.ID;
+                app = sso.Auth(client_id, client_secret + "", ip);
+                log.AppId = app.Id;
 
                 // 验证应用能力
                 var scopes = app.Scopes?.Split(",");
@@ -636,6 +661,8 @@ namespace NewLife.Cube.Web
                 log.Success = false;
                 log.Remark = ex.GetTrue()?.Message;
 
+                span?.SetError(ex, new { client_id, client_secret, username, ip });
+
                 throw;
             }
             finally
@@ -648,7 +675,7 @@ namespace NewLife.Cube.Web
         /// <param name="sso"></param>
         /// <param name="client_id">应用标识</param>
         /// <param name="refresh_token">刷新令牌</param>
-        /// <param name="ip"></param>
+        /// <param name="ip">IP地址</param>
         /// <returns></returns>
         public virtual TokenInfo RefreshToken(OAuthServer sso, String client_id, String refresh_token, String ip)
         {
@@ -659,16 +686,19 @@ namespace NewLife.Cube.Web
 
                 ClientId = client_id,
                 ResponseType = "refresh_token",
+
                 CreateIP = ip,
+                CreateTime = DateTime.Now,
             };
 
+            using var span = Tracer?.NewSpan(nameof(RefreshToken), refresh_token);
             try
             {
                 var app = App.FindByName(client_id);
-                if (app != null) log.AppId = app.ID;
+                if (app != null) log.AppId = app.Id;
 
                 app = sso.Auth(client_id, null, ip);
-                log.AppId = app.ID;
+                log.AppId = app.Id;
 
                 var name = sso.Decode(refresh_token);
                 var ss = name.Split("#");
@@ -690,6 +720,8 @@ namespace NewLife.Cube.Web
             {
                 log.Success = false;
                 log.Remark = ex.GetTrue()?.Message;
+
+                span?.SetError(ex, new { client_id, refresh_token, ip });
 
                 throw;
             }
@@ -764,6 +796,8 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual Boolean FetchAvatar(IManageUser user, String url = null)
         {
+            using var span = Tracer?.NewSpan(nameof(FetchAvatar), user + "");
+
             if (url.IsNullOrEmpty()) url = user.GetValue("Avatar") as String;
             //if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
 
@@ -807,6 +841,8 @@ namespace NewLife.Cube.Web
             {
                 XTrace.WriteLine("抓取头像失败，{0}, {1}", user, url);
                 XTrace.WriteException(ex);
+
+                span?.SetError(ex, null);
             }
 
             return false;
@@ -876,14 +912,15 @@ namespace NewLife.Cube.Web
             var key = SecurityKey;
             if (key.IsNullOrEmpty())
             {
-                var file = "..\\Keys\\SsoSecurity.prvkey".GetFullPath();
+                if (name.IsNullOrEmpty()) name = "SsoSecurity";
+                 var file = $"..\\Keys\\{name}.prvkey".GetFullPath();
                 if (File.Exists(file)) key = File.ReadAllText(file);
 
                 if (key.IsNullOrEmpty())
                 {
                     file.EnsureDirectory(true);
 
-                    var ks = RSAHelper.GenerateParameters();
+                    var ks = RSAHelper.GenerateKey();
                     File.WriteAllText(file, ks[0]);
                     File.WriteAllText(file.TrimEnd(".prvkey") + ".pubkey", ks[1]);
                     key = ks[0];

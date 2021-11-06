@@ -175,7 +175,6 @@ namespace NewLife.Cube
             }
 
             // 根据模型列设置，拼接作为搜索字段的字段
-
             var modelTable = ModelTable;
             var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
 
@@ -1461,7 +1460,7 @@ namespace NewLife.Cube
         protected static Int32 MenuOrder { get; set; }
 
         /// <summary>控制器对应菜单</summary>
-        protected static IMenu CurrentMenu { get; set; }
+        protected static IMenu ThisMenu { get; set; }
 
         /// <summary>
         /// 模型表设置，生成模型表数据之后调用
@@ -1470,7 +1469,16 @@ namespace NewLife.Cube
 
         /// <summary>控制器对应模型表</summary>
         protected static ModelTable ModelTable
-          => ModelTable.FindByCategoryAndName(CurrentMenu?.Parent?.Name, CurrentMenu?.Name) ?? ModelTableSetting(ModelTable.ScanModel(CurrentMenu?.Parent?.Name, CurrentMenu?.Name, CurrentMenu?.FullName, CurrentMenu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
+        {
+            get
+            {
+                var menu = ThisMenu;
+                var pmenu = menu?.Parent;
+                return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name);
+                //return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name) ??
+                //    ModelTableSetting(ModelTable.ScanModel(pmenu?.Name, menu?.Name, menu?.FullName, menu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
+            }
+        }
 
         /// <summary>自动从实体类拿到显示名</summary>
         /// <param name="menu"></param>
@@ -1494,27 +1502,28 @@ namespace NewLife.Cube
                 dic = dic.Where(e => !arr.Contains(e.Value)).ToDictionary(e => e.Key, e => e.Value);
             }
 
-            ThreadPoolX.QueueUserWorkItem(() =>
-            {
-                // 等菜单缓存准备好
-                Thread.Sleep(1000);
+            // 由于初始化内容太多了，这里注释掉，通过模型表搜索列表触发
+            //ThreadPoolX.QueueUserWorkItem(() =>
+            //{
+            //    // 等菜单缓存准备好
+            //    Thread.Sleep(1000);
 
-                // TODO 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
-                // var list = GetType().GetCustomAttributes();
-                // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
-                // 生成模型表模型列
-                var modelTable = ModelTable.ScanModel(menu.Parent?.Name, menu, Entity<TEntity>.Meta.Factory);
+            //    // TODO 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
+            //    // var list = GetType().GetCustomAttributes();
+            //    // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
+            //    // 生成模型表模型列
+            //    var modelTable = ModelTable.ScanModel(menu.Parent?.Name, menu, Entity<TEntity>.Meta.Factory);
 
-                // 模型表已是异步执行模型表生成，这里使用同步保存模型列
-                //ThreadPoolX.QueueUserWorkItem(() =>
-                //{
-                // 等模型列缓存准备好
-                //Thread.Sleep(1000);
-                ModelTableSetting(modelTable);
-                //});
-            });
+            //    // 模型表已是异步执行模型表生成，这里使用同步保存模型列
+            //    //ThreadPoolX.QueueUserWorkItem(() =>
+            //    //{
+            //    // 等模型列缓存准备好
+            //    //Thread.Sleep(1000);
+            //    ModelTableSetting(modelTable);
+            //    //});
+            //});
 
-            CurrentMenu = menu;
+            ThisMenu = menu;
 
             return dic;
         }
@@ -1529,7 +1538,10 @@ namespace NewLife.Cube
         {
             if (entity == null) return null;
             var modelTable = ModelTable;
-            var modelColumns = modelTable.GetColumns()?.Where(w => !w.ShowInForm.HasFlag(showInForm));
+
+            var modelColumns = modelTable?.GetColumns()?.Where(w => !w.ShowInForm.HasFlag(showInForm));
+
+            if (modelColumns == null) return entity;
 
             foreach (var column in modelColumns)
             {

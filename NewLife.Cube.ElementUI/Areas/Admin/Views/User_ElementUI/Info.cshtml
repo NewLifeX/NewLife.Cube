@@ -1,0 +1,134 @@
+﻿@model XCode.Membership.User
+@using System.Linq
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using NewLife.Cube.Entity;
+@using NewLife.Serialization;
+@{
+    var fact = EntityFactory.CreateFactory(ViewData.ModelMetadata.ModelType);
+    var user = Model as IUser;
+
+    var obj = (Object)Model;
+    var list = ViewBag.Fields as IList<DataField>;
+
+    var dic = list
+    .GroupBy(e => e.Category + "")
+    .ToDictionary(e => e.Key, e => e.ToList());
+
+    //var modelDict = new Dictionary<string, object>();
+
+
+
+    //foreach (var item in list)
+    //{
+    //    modelDict[item.Name] = obj.GetValue(item.Name);
+    //}
+
+
+}
+<div class="row">
+    @await Html.PartialAsync("_User_Nav")
+</div>
+
+
+
+<el-form v-bind:model="modelForm" size="mini" ref="modelForm" label-width="100px">
+
+    @foreach (var item in dic)
+    {
+        if (dic.Count > 1)
+        {
+            <div class="form-group col-sm-12 col-md-12 col-xd-12">
+                <label class="control-label col-xs-2 col-md-3 no-padding-left">
+                    <h2>@item.Key</h2>
+                </label>
+            </div>
+        }
+        foreach (var pi in item.Value)
+        {
+            try
+            {
+                var name = pi.Name;
+                var val = obj.GetValue(name);
+                var dis = pi.DisplayName;
+                var des = pi.Description;
+                var dataSource = pi.DataSource;
+
+
+                <el-form-item label="@dis" prop="@name">
+
+                    @if (dataSource != null)
+                    {
+                        @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+                    }
+
+                    @des
+                </el-form-item>
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+    }
+
+    @if (this.Has(PermissionFlags.Update))
+    {
+        <el-form-item>
+            <el-button v-on:click="onCloseModelFrom('modelForm')">取 消</el-button>
+            <el-button type="primary" v-on:click="onSaveSubmit('modelForm')">保 存</el-button>
+        </el-form-item>
+
+    }
+</el-form>
+
+@section scripts{
+
+    <script>
+        //Vue2.0 桌面端组件库: https://element.eleme.cn/#/zh-CN/component/cascader
+
+        var main = new Vue({
+            el: '#app',
+            data: {
+                modelForm: {},
+                //选项卡选中项id
+                tabIndex: 10000
+            },
+            //页面初始化
+            created() {
+
+            },
+            methods: {
+                //编辑表单提交
+                onSaveSubmit(formName) {
+                    let self = this;
+                    var formData = new FormData();
+                    for (const key in this.modelForm) {
+                        if (this.modelForm[key] != null) {
+                            formData.append(key, this.modelForm[key]);
+                        }
+                    }
+
+                    axios.post('@HttpContext.Current.Request.Path.Value/Update', formData)
+                        .then(function (response) {
+
+                            self.$message.success('操作成功');
+
+                        }).catch((error) => {
+                            console.log(error);
+                            self.$message.error('操作失败');
+
+                        });
+
+                },
+            },
+        });
+
+    </script>
+
+}
