@@ -42,9 +42,24 @@ namespace NewLife.Cube.Areas.Admin.Models
     /// <summary>注册模型</summary>
     public class RegisterModel : ICubeModel
     {
+        /// <summary>
+        /// 电子邮箱
+        /// </summary>
         public String Email { get; set; }
+
+        /// <summary>
+        /// 用户名
+        /// </summary>
         public String Username { get; set; }
+
+        /// <summary>
+        /// 密码
+        /// </summary>
         public String Password { get; set; }
+
+        /// <summary>
+        /// 确认密码
+        /// </summary>
         public String Password2 { get; set; }
     }
 
@@ -53,6 +68,9 @@ namespace NewLife.Cube.Areas.Admin.Models
     /// </summary>
     public class UserInfo
     {
+        /// <summary>
+        /// 编号
+        /// </summary>
         public Int32 ID { get; set; }
 
         /// <summary>名称。登录用户名</summary>

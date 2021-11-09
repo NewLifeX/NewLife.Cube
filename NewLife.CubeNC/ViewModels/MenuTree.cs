@@ -69,6 +69,10 @@ namespace NewLife.Cube.ViewModels
             return getMenuList?.Invoke(src);
         }
 
+        /// <summary>
+        /// 已重载。
+        /// </summary>
+        /// <returns></returns>
         public override String ToString() => Name;
     }
 }

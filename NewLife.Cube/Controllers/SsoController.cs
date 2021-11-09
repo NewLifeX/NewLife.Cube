@@ -804,10 +804,7 @@ namespace NewLife.Cube.Controllers
         }
 
         /// <summary>用户验证。借助OAuth密码式验证，并返回用户信息</summary>
-        /// <param name="client_id">应用标识</param>
-        /// <param name="client_secret">密钥</param>
-        /// <param name="username">用户名。可以是设备编码等唯一使用者标识</param>
-        /// <param name="password">密码</param>
+        /// <param name="model">令牌模型</param>
         /// <returns></returns>
         [AllowAnonymous]
         public virtual ActionResult UserAuth([FromBody] SsoTokenModel model)

@@ -20,7 +20,11 @@ namespace NewLife.Cube.Admin.Controllers
             ListFields.RemoveField("TableId");
         }
 
-
+        /// <summary>
+        /// 高级搜索
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
         protected override IEnumerable<ModelColumn> Search(Pager p)
         {
             var tableId = p["tableId"].ToInt(-1);

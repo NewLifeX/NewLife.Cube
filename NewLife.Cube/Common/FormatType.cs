@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace NewLife.Cube.Common
 {
+    /// <summary>
+    /// 格式化类型
+    /// </summary>
     public enum FormatType
     {
         /// <summary>
@@ -23,6 +23,9 @@ namespace NewLife.Cube.Common
         DefaultCase = 2
     }
 
+    /// <summary>
+    /// 格式化助手
+    /// </summary>
     public static class FormatHelper
     {
         /// <summary>根据小写和驼峰格式化名称</summary>

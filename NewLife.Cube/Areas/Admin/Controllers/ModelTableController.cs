@@ -100,6 +100,11 @@ namespace NewLife.Cube.Admin.Controllers
             });
         }
 
+        /// <summary>
+        /// 高级搜索
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
         protected override IEnumerable<ModelTable> Search(Pager p)
         {
             Init();
