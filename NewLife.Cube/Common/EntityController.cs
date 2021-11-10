@@ -284,7 +284,7 @@ namespace NewLife.Cube
             return View("EditForm", entity);
         }
 
-        /// <summary>保存上传文件</summary>
+        /// <summary>保存所有上传文件</summary>
         /// <param name="entity">实体对象</param>
         /// <param name="uploadPath">上传目录。为空时默认UploadPath配置</param>
         /// <returns></returns>
@@ -320,7 +320,7 @@ namespace NewLife.Cube
             return list;
         }
 
-        /// <summary>保存文件</summary>
+        /// <summary>保存单个文件</summary>
         /// <param name="entity">实体对象</param>
         /// <param name="file">文件</param>
         /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
