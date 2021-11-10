@@ -168,6 +168,7 @@ namespace NewLife.Cube
                 }
             }
 
+#if !NET6_0_OR_GREATER
             // 反射 *.Views.dll
             foreach (var item in ".".AsDirectory().GetFiles("*.Views.dll"))
             {
@@ -187,6 +188,7 @@ namespace NewLife.Cube
                     list.Add(asm);
                 }
             }
+#endif
 
             // 为了能够实现模板覆盖，程序集相互引用需要排序，父程序集在前
             list.Sort((x, y) =>
