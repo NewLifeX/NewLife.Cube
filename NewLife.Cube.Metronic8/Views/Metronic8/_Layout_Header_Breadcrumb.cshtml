@@ -1,0 +1,38 @@
+﻿@using NewLife.Common;
+@using NewLife.Model;
+@using XCode.Membership;
+@{
+    var menu = ViewBag.Menu as IMenu;
+    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
+    <!--可以通过判断手机端隐藏-->
+    var mb = Context.Request.Headers["User-Agent"].ToString().ToLower();
+
+    String[] mobileAgents = { "iphone", "android", "phone", "mobile", "wap", "netfront", "java", "opera mobi", "opera mini", "ucweb", "windows ce", "symbian", "series", "webos", "sony", "blackberry", "dopod", "nokia", "samsung", "palmsource", "xda", "pieplus", "meizu", "midp", "cldc", "motorola", "foma", "docomo", "up.browser", "up.link", "blazer", "helio", "hosin", "huawei", "novarra", "coolpad", "webos", "techfaith", "palmsource", "alcatel", "amoi", "ktouch", "nexian", "ericsson", "philips", "sagem", "wellcom", "bunjalloo", "maui", "smartphone", "iemobile", "spice", "bird", "zte-", "longcos", "pantech", "gionee", "portalmmm", "jig browser", "hiptop", "benq", "haier", "^lct", "320x320", "240x320", "176x220", "w3c ", "acs-", "alav", "alca", "amoi", "audi", "avan", "benq", "bird", "blac", "blaz", "brew", "cell", "cldc", "cmd-", "dang", "doco", "eric", "hipt", "inno", "ipaq", "java", "jigs", "kddi", "keji", "leno", "lg-c", "lg-d", "lg-g", "lge-", "maui", "maxo", "midp", "mits", "mmef", "mobi", "mot-", "moto", "mwbp", "nec-", "newt", "noki", "oper", "palm", "pana", "pant", "phil", "play", "port", "prox", "qwap", "sage", "sams", "sany", "sch-", "sec-", "send", "seri", "sgh-", "shar", "sie-", "siem", "smal", "smar", "sony", "sph-", "symb", "t-mo", "teli", "tim-", "tosh", "tsm-", "upg1", "upsi", "vk-v", "voda", "wap-", "wapa", "wapi", "wapp", "wapr", "webc", "winw", "winw", "xda", "xda-", "Googlebot-Mobile" };
+    var isMoblie = false;
+    if (mb != null)
+    {
+        for (int i = 0; i < mobileAgents.Length; i++)
+        {
+            if (mb.IndexOf(mobileAgents[i]) >= 0)
+            {
+                isMoblie = true;
+                break;
+            }
+        }
+    }
+}
+@if (menu != null && !isMoblie)
+{
+    <!-- 面包屑导航 -->
+    <div class="d-flex align-items-stretch" id="kt_header_nav">
+
+        <ol class="breadcrumb text-muted fs-6 fw-bold p-3 m-lg-1">
+            <li class="breadcrumb-item pe-3">&nbsp;&nbsp;<a href="@(menu.Url!=null? Url.Content(menu.Url):"#")" class="pe-3 text-muted">@menu.DisplayName</a></li>
+            @if (menu.Parent != null && menu.ParentID > 0)
+            {
+                @await Html.PartialAsync("_Layout_Header_Breadcrumb_Item", (Object)menu.Parent)
+            }
+        </ol>
+
+    </div>
+}

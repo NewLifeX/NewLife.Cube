@@ -1,0 +1,66 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@model ValueTuple<IEntity, DataField>
+
+@{
+    var entity = Model.Item1;
+    var item = Model.Item2;
+
+    var type = item.Type;
+
+    var fs = ViewBag.Fields as FieldCollection;
+    var dataField = fs.GetField(item.Name);
+    var dataSource = dataField?.DataSource;
+
+    var fn = entity[item.Name];
+
+    var itemModel = new ItemModel(item.Name, entity[item.Name], item.Type) { Length = item.Length };
+}
+
+@if (dataSource != null)
+{
+    // 数据字段以s结尾，表示多选，其它单选
+    if (item.Name.EndsWith("s"))
+    {
+        @await Html.PartialAsync("_Form_Type_ListBox", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+    }
+    else
+    {
+        @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+    }
+}
+else
+{
+    //映射字段
+    if (!item.MapField.IsNullOrEmpty())
+    {
+        @await Html.PartialAsync("_Form_Type_Map", Model)
+    }
+    //自读属性
+    else if (item.Name.EqualIgnoreCase("ID"))
+    {
+        <label class="form-control form-control-sm border-0">@entity[item.Name]</label>
+    }
+    else if (entity is IEntityTree treeEntity)
+    {
+        var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+        if (set == null || set.Parent != item.Name)
+        {
+            @await Html.PartialAsync("_Form_Editor_Item", itemModel)
+        }
+        else
+        {
+            var root = entity.GetType().GetValue("Root") as IEntityTree;
+            // 找到完整菜单树，但是排除当前节点这个分支
+            var list = root.FindAllChildsExcept(treeEntity);
+            var data = new SelectList(list, set.Key, "TreeNodeText", entity[item.Name]);
+            @Html.DropDownList(item.Name, data, new { @class = "form-select form-select-sm"})
+        }
+    }
+    else
+    {
+        @await Html.PartialAsync("_Form_Editor_Item", itemModel)
+    }
+}

@@ -1,0 +1,51 @@
+﻿@model ValueTuple<IMenu, IMenu>
+
+@{
+    var menu = Model.Item1;
+    var item = Model.Item2;
+
+    var rs = item.AllChilds.Where(m => m.ID == menu.ParentID).Count() > 0;
+    var rs_active = item.ID == menu.ID;
+
+    var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : item.Icon;
+}
+
+@if (item.Visible)
+{
+    if (item.Childs.Any())
+    {
+        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID==menu.ParentID||rs?"show":"")">
+            <span class="menu-link">
+                <span class="menu-bullet">
+                    <span class="fas fa-@icon text-primary"></span>
+                </span>
+                <span class="menu-title">@item.DisplayName</span>
+                <span class="menu-arrow"></span>
+            </span>
+
+
+            <div class="menu-sub menu-sub-accordion menu-active-bg">
+                @foreach (var sub in item.Childs)
+                {
+                    @await Html.PartialAsync("_Layout_Aside_Menu_Item2", new ValueTuple<IMenu, IMenu>(menu, sub))
+                }
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+
+        <div class="menu-item">
+            <a class="menu-link @(rs_active?"active":"")" href="@(item.Url != null ? Url.Content(item.Url) : "#")">
+                <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                </span>
+                <span class="menu-title">@item.DisplayName</span>
+            </a>
+        </div>
+    }
+
+
+}

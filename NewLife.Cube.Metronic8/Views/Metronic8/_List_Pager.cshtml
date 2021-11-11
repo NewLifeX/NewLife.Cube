@@ -1,0 +1,95 @@
+﻿@*
+    列表分页
+*@
+@using NewLife;
+@using NewLife.Web;
+@{
+    var pager = ViewBag.Page as Pager;
+    //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
+    // 没有总记录数的时候不显示分页，可以认为不启用分页
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty())
+    {
+        act = Url.Action("Index");
+    }
+
+    var list_next = new List<int>();
+    var list_prev = new List<int>();
+
+    var c = pager.PageIndex;
+    var max = pager.PageCount;
+    for (int i = 2; i > 0; i--)
+    {
+        var t = c - i;
+        if (t > 0) { list_next.Add(t); };
+    }
+
+    for (int i = 1; i < 3; i++)
+    {
+        var t = c + i;
+        if (max >= t) { list_prev.Add(t); };
+    }
+}
+
+@if (pager.TotalCount > 0)
+{
+    <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
+        <div class="row pt-0 pb-8 m-0 border">
+            <div class="col-sm-12 col-md-5 d-flex align-items-center justify-content-center justify-content-md-start">
+                <div class="dataTables_length px-5" id="kt_permissions_table_length">
+
+                    共&nbsp;<span>@pager.TotalCount.ToString("n0")</span>&nbsp;条&nbsp;&nbsp;
+                    每页&nbsp;<span>@pager.PageSize</span>&nbsp;条&nbsp;&nbsp;
+                    当前&nbsp;<span>@pager.PageIndex.ToString("n0")</span> /
+                    <span>@pager.PageCount.ToString("n0")</span>&nbsp;&nbsp;
+                    转到第
+                    <input name="PageIndex" type="text" value="@pager.PageIndex" class="form-control h-30px w-50px" style="display: inline; margin-top: -2px;" />
+                    页 &nbsp;
+                    <input type="submit" value="GO" class="btn btn-icon btn-bg-light btn-outline btn-outline-dashed btn-outline-default h-30px w-40px" style="margin-top:-2px;" />
+
+                    &nbsp;页大小&nbsp;
+                    <label>
+                        <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();" class="form-select form-select-sm form-select-solid h-30px">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                            <option value="500">500</option>
+                            <option value="1000">1000</option>
+                        </select>
+                    </label>
+                </div>
+
+            </div>
+            <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
+                <div class="dataTables_paginate paging_simple_numbers pe-5 pt-3" id="kt_table_users_paginate">
+                    <ul class="pagination">
+                        <li class="paginate_button page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("首页"))</li>
+                        <li class="paginate_button page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("上一页"))</li>
+                        @foreach (var item in list_next)
+                        {
+                            <li class="paginate_button page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPageUrl(item + "", item))</li>
+                        }
+                        <li class="paginate_button page-item h-30px pe-3 active" >
+                        <a href="#" class=" btn btn-outline btn-outline-dashed btn-outline-info btn-active-light-info h-20px w-30px p-0 mt-1">@c</a>
+                        </li>
+                        @foreach (var item in list_prev)
+                        {
+                            <li class="paginate_button page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPageUrl(item + "", item))</li>
+                        }
+                        <li class="paginate_button page-item  h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("下一页"))</li>
+                        <li class="paginate_button page-item  h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("尾页"))</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+        $(function () {
+            $('#PageSize').val(@pager.PageSize);
+        });
+        </script>
+    </form>
+}

@@ -1,0 +1,11 @@
+﻿@{
+    var menu = Model as IMenu;
+}
+@if (menu.ID > 0)
+{
+    <li class="breadcrumb-item pe-3"><a href="@(menu.Url!=null? Url.Content(menu.Url):"#")" class="pe-3">@menu.DisplayName</a></li>
+    if (menu.Parent != null && menu.ParentID > 0)
+    {
+        @await Html.PartialAsync("_Layout_Header_Breadcrumb_Item", (Object)menu.Parent)
+    }
+}

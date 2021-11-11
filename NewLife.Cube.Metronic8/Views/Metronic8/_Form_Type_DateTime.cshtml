@@ -1,0 +1,27 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+
+@{
+    var name = Model.Name;
+    var value = (DateTime)Model.Value;
+    var type = Model.Type;
+
+    var cls = "form_datetime_hms";
+    var dt = value == DateTime.MinValue ? DateTime.Now : value;
+    // 最小时间不显示
+    if (value <= DateTime.MinValue || value.Year <= 1900) dt = DateTime.Now;
+    // 日期
+    if (name.EndsWithIgnoreCase("Date"))
+    {
+        cls = "form_datetime";
+    }   
+
+}
+
+<div class="input-group">
+    <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
+    <input id="@name" name="@name" type="text" class="form-control form-control-sm @cls" value="@dt" />
+</div>

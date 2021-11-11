@@ -1,0 +1,28 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+
+@{
+    var name = Model.Name;
+    var value = (Boolean)Model.Value;
+    var type = Model.Type;
+
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(new object { });
+    if (!atts.ContainsKey("class")) atts.Add("class", "form-check-input");
+}
+
+<div class="input-group pt-3">
+    @Html.CheckBox(name, value, atts)
+    @*<label class="form-check form-switch form-switch-sm form-check-custom form-check-solid">
+            <input id="@name" name="@name" class="form-check-input" type="checkbox" @(value?"checked":"")>
+            <span class="form-check-label fw-bold text-gray-400" for="@name"></span>
+        </label>*@
+
+    @*<div class="form-check">
+            <input id="@name" name="@name" class="form-check-input" type="checkbox" value="@value">
+            <label class="form-check-label" for="@name">
+            </label>
+        </div>*@
+</div>

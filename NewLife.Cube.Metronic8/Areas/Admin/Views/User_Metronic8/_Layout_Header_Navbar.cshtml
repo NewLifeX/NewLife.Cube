@@ -1,0 +1,96 @@
+﻿@*
+    表单头
+*@
+
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Extensions;
+@using NewLife.Cube;
+@using XCode.Membership;
+
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty())
+    {
+        act = Url.Action("Index");
+    }
+
+    var set = ViewBag.PageSetting as PageSetting;
+    var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
+    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info")
+    || an.Contains("changepassword") || an.Contains("binds");
+
+    <!--可以通过判断手机端隐藏-->
+    var mb = Context.Request.Headers["User-Agent"].ToString().ToLower();
+
+    String[] mobileAgents = { "iphone", "android", "phone", "mobile", "wap", "netfront", "java", "opera mobi", "opera mini", "ucweb", "windows ce", "symbian", "series", "webos", "sony", "blackberry", "dopod", "nokia", "samsung", "palmsource", "xda", "pieplus", "meizu", "midp", "cldc", "motorola", "foma", "docomo", "up.browser", "up.link", "blazer", "helio", "hosin", "huawei", "novarra", "coolpad", "webos", "techfaith", "palmsource", "alcatel", "amoi", "ktouch", "nexian", "ericsson", "philips", "sagem", "wellcom", "bunjalloo", "maui", "smartphone", "iemobile", "spice", "bird", "zte-", "longcos", "pantech", "gionee", "portalmmm", "jig browser", "hiptop", "benq", "haier", "^lct", "320x320", "240x320", "176x220", "w3c ", "acs-", "alav", "alca", "amoi", "audi", "avan", "benq", "bird", "blac", "blaz", "brew", "cell", "cldc", "cmd-", "dang", "doco", "eric", "hipt", "inno", "ipaq", "java", "jigs", "kddi", "keji", "leno", "lg-c", "lg-d", "lg-g", "lge-", "maui", "maxo", "midp", "mits", "mmef", "mobi", "mot-", "moto", "mwbp", "nec-", "newt", "noki", "oper", "palm", "pana", "pant", "phil", "play", "port", "prox", "qwap", "sage", "sams", "sany", "sch-", "sec-", "send", "seri", "sgh-", "shar", "sie-", "siem", "smal", "smar", "sony", "sph-", "symb", "t-mo", "teli", "tim-", "tosh", "tsm-", "upg1", "upsi", "vk-v", "voda", "wap-", "wapa", "wapi", "wapp", "wapr", "webc", "winw", "winw", "xda", "xda-", "Googlebot-Mobile" };
+    var isMoblie = false;
+    if (mb != null)
+    {
+        for (int i = 0; i < mobileAgents.Length; i++)
+        {
+            if (mb.IndexOf(mobileAgents[i]) >= 0)
+            {
+                isMoblie = true;
+                break;
+            }
+        }
+    }
+
+    var cls = isMoblie ? "" : "d-flex align-items-stretch flex-shrink-0";
+
+}
+
+@if (page != null)
+{
+
+    if (!isdis)
+    {
+        var rv = page.GetRouteValue();
+
+        <div class="@cls pe-2">
+            <div class="@cls p-3">
+                <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+                    <div class="d-flex justify-content" data-kt-user-table-toolbar="base">
+
+                        <div class="input-group input-group-sm flex-nowrap align-items-stretch me-1">
+                            <input type="text" name="dtStart" class="form-control form_datetime h-30px w-110px" placeholder="开始时间" value="@Context.Request.GetRequestValue("dtStart")">
+                            <input type="text" name="dtEnd" class="form-control form_datetime h-30px w-110px"  placeholder="结束时间" value="@Context.Request.GetRequestValue("dtEnd")">
+                        </div>
+
+                        <div class="input-group input-group-sm flex-nowrap align-items-stretch me-3">
+                            <input type="search" class="form-control h-30px w-100px " style="border-radius:0px;" placeholder="查询关键字..." id="q" name="q" value="@Context.Request.GetRequestValue("q")">
+                            <button id="btn_query" class="btn btn-icon btn-bg-light btn-active-color-primary btn-active-light-info h-30px w-40px me-1" style="border-radius:0px;" type="submit"><i class="fas fa-search text-info"></i></button>
+                            <a id="kt_drawer_chat_toggle" href="#" class="btn btn-icon btn-active-color-primary btn-active-light-info h-30px w-40px" title="高级查询" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-grip-vertical text-info"></i></a>
+                        </div>
+
+                        <a href="#" class="btn btn-icon btn-outline btn-outline-dashed btn-outline-info btn-active-light-info h-30px w-70px me-3" title="导出数据" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-file-excel text-info"></i></a>
+                        @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+                        {
+                            <a href="@Url.Action("Add", rv)" class="btn btn-icon btn-outline btn-outline-dashed btn-outline-success btn-active-light-success h-30px w-70px" title="新增" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-plus text-success"></i></a>
+                        }
+                    </div>
+                    <input type="hidden" id="tn" name="tn" />
+
+                </form>
+            </div>
+
+        </div>
+    }
+}
+
+<script>
+
+    $(function () {
+        //记录列表项
+        $("#btn_query").click(function () {
+            $("#tn").val($("#tn_test").val());
+        });
+
+    })
+
+</script>
