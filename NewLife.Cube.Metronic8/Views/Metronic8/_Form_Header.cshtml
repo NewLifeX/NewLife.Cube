@@ -1,0 +1,37 @@
+﻿@*
+    表单头
+*@
+
+@using XCode.Configuration;
+@using XCode.Membership;
+@using XCode;
+
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+
+}
+
+<div class="card-body">
+    <div class="row">
+        <div class="col-lg-7">
+            <a href="@Url.Action("Index")" class="btn btn-sm btn-outline btn-outline-dashed btn-outline-default">
+                <i class="fas fa-reply"></i>
+                <span class="kt-hidden-mobile">返 回</span>
+            </a>
+        </div>
+        <div class="col-lg-5">
+
+            <div class="d-flex justify-content-end pb-0 px-0">
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-sm btn-info btn-outline-dashed btn-outline-info ">
+                        <i class="fas fa-@(isNew ? "plus" : "save")" style="margin-top: -1px;"></i>
+                        <span class="kt-hidden-mobile">@(isNew ? "保 存" : "更 新")</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,49 @@
+﻿@model ValueTuple<IMenu, IMenu>
+
+@{
+    var menu = Model.Item1;
+    var item = Model.Item2;
+
+    var rs = item.AllChilds.Where(m => m.ID == menu.ParentID).Count() > 0;
+    var rs_p = item.ParentID != 0;
+    var rs_active = item.ID == menu.ID;
+
+    var icons = new string[] {
+    "home", "bars", "book", "chess-queen", "certificate", "chrome", "cloud", "comment", "feather","fighter-jet",
+    "hammer","link","leaf","layer-group","paper-plane","cogs","seedling","shopping-bag","sitemap","trophy",
+    "tree","trophy","twitter","truck","tshirt","user","wine-glass-alt","windows","video","tint"};
+
+    var icon = item.Icon.IsNullOrEmpty() ? "cogs" : item.Icon;
+    if (!item.Name.EqualIgnoreCase("admin") && item.Icon.IsNullOrEmpty())
+    {
+        var indx = item.ID % 30;
+        icon = icons[indx];
+    }
+}
+
+
+@if (item.Visible)
+{
+
+    <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
+        <span class="menu-link">
+            <span class="@(rs_p ? "menu-icon" : "menu-bullet")">
+                <span class="fas fa-@icon text-primary @(rs_p ? "fs-3" : "")"></span>
+            </span>
+            <span class="menu-title">@item.DisplayName</span>
+            <span class="menu-arrow"></span>
+        </span>
+        @if (item.Childs.Any())
+        {
+            <div class="menu-sub menu-sub-accordion menu-active-bg">
+                @foreach (var child in item.Childs)
+                {
+                    @await Html.PartialAsync("_Layout_Aside_Menu_Item2", new ValueTuple<IMenu, IMenu>(menu, child))
+                }
+            </div>
+        }
+
+
+    </div>
+
+}

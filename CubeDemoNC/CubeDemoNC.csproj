@@ -51,6 +51,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj" />
     <ProjectReference Include="..\NewLife.Cube.ElementUI\NewLife.Cube.ElementUI.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.Metronic8\NewLife.Cube.Metronic8.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Metronic\NewLife.Cube.Metronic.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Tabler\NewLife.Cube.Tabler.csproj" />
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />

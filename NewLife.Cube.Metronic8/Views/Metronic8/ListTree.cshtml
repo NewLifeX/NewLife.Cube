@@ -1,0 +1,16 @@
+﻿@using NewLife.Web;
+@using XCode;
+@{ var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting; }
+
+<!--列表集合表头-->
+@await Html.PartialAsync("_List_Toolbar")
+<!--列表集合内容-->
+<div class="scroll-x style-3">
+    @await Html.PartialAsync("_ListTree_Data")
+</div>
+<!--列表分页-->
+@await Html.PartialAsync("_List_Pager")
+<!--列表页脚-->
+@await Html.PartialAsync("_List_Footer")

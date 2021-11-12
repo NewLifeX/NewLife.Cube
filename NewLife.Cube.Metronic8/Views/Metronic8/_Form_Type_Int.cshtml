@@ -1,0 +1,18 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = Model.Type;
+}
+
+<div class="input-group">
+
+    <span class="input-group-text"><i class="bi bi-sort-numeric-up"></i></span>
+    <input id="@name" name="@name" type="number" class="form-control form-control-sm" autocomplete="off" value="@value" />
+
+</div>

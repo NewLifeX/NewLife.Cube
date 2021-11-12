@@ -1,0 +1,76 @@
+﻿@*
+    表单脚
+*@
+
+@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime.Versioning;
+@using NewLife.Common;
+@using NewLife.Cube.Extensions
+
+@{
+    ViewBag.Title = "进程模块";
+
+    var isAll = String.Equals("All", Context.Request.GetRequestValue("Mode"), StringComparison.OrdinalIgnoreCase);
+
+    var process = Process.GetCurrentProcess();
+    var list = new List<ProcessModule>();
+    foreach (ProcessModule item in process.Modules)
+    {
+        try
+        {
+            if (isAll || item.FileVersionInfo.CompanyName != "Microsoft Corporation") { list.Add(item); }
+        }
+        catch { }
+    }
+
+}
+
+<div class="card scroll-x style-3">
+    <div class="card-body p-0">
+
+        <table class="table table-bordered table-hover table-striped table-condensed">
+            <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+                <tr>
+                    <th class="ps-2" colspan="7">
+                        进程模块(@process.ProcessName , PID=@process.Id )
+                        @if (!isAll)
+                        {
+                            <text>（<a href="?Mode=All">完整</a>，仅用户）：</text>
+                        }
+                        else
+                        {
+                            <text>（完整，<a href="?Mode=OnlyUser">仅用户</a>）：</text>
+                        }
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="border border-gray-200">
+                <tr>
+                    <th>模块名称</th>
+                    <th>公司名称</th>
+                    <th>产品名称</th>
+                    <th>描述</th>
+                    <th>版本</th>
+                    <th>大小</th>
+                    <th>路径</th>
+                </tr>
+                @foreach (ProcessModule item in list)
+                {
+                    <tr>
+                        <td>@item.ModuleName </td>
+                        <td>@item.FileVersionInfo.CompanyName </td>
+                        <td>@item.FileVersionInfo.ProductName</td>
+                        <td>@item.FileVersionInfo.FileDescription</td>
+                        <td>@item.FileVersionInfo.FileVersion</td>
+                        <td>@item.ModuleMemorySize</td>
+                        <td>@item.FileName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+</div>
+

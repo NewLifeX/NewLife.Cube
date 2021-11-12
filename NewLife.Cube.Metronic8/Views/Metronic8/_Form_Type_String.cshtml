@@ -1,0 +1,43 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = Model.Type;
+    var length = Model.Length;
+}
+
+@if (name.EqualIgnoreCase("file", "image"))
+{
+    @await Html.PartialAsync("_Form_Type_File", Model)
+}
+else if (name.EqualIgnoreCase("Pass", "Password"))
+{
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(new object());
+    if (!atts.ContainsKey("class")) atts.Add("class", "form-control form-control-sm");
+    if (!atts.ContainsKey("autocomplete")) atts.Add("autocomplete", "off");
+    @Html.Password(name, value, atts)
+}
+else
+{
+    <div class="input-group">
+
+        @if (name.EqualIgnoreCase("url"))
+        {
+            <span class="input-group-text"><i class="bi bi-pin-map"></i></span>
+        }
+
+        @if (length < 0 || length >= 300 || name.EqualIgnoreCase("Remark", "Description", "Comment"))
+        {
+            <textarea id="@name" name="@name" class="form-control" rows="3">@value</textarea>
+        }
+        else
+        {
+            <input id="@name" name="@name" type="text" class="form-control form-control-sm" autocomplete="off" value="@value" />
+        }
+    </div>
+}

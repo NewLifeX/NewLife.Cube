@@ -106,6 +106,7 @@ namespace CubeDemoNC
             app.UseTabler(env);
             app.UseMetronic(env);
             app.UseElementUI(env);
+            app.UseMetronic8(env);
 #if NET50
             app.UseBlazor(env);
 #endif

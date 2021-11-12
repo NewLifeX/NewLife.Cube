@@ -1,0 +1,84 @@
+﻿@*
+    表单内容
+*@
+
+@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+
+    var msg = ViewBag.StatusMessage as String;
+
+    var list_colors = new[] { "primary", "secondary", "success", "danger", "warning", "info" };
+    var colors = "warning";//list_colors[new Random().Next(0, 6)];
+
+    if (msg != null && msg.Contains("成功")) { colors = "success"; }
+    else if (msg != null && msg.Contains("失败")) { colors = "danger"; }
+
+}
+
+
+
+<div class="card-body m-1 border-top border-bottom pb-20">
+
+    @if (!msg.IsNullOrEmpty())
+    {
+        <!-- 错误信息 -->
+        <div class="alert d-flex bg-light-@colors rounded border-@colors border border-dashed mb-10 p-6 ">
+            <span class="svg-icon svg-icon-2tx svg-icon-@colors me-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                    <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10"></circle>
+                    <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1"></rect>
+                    <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1"></rect>
+                </svg>
+            </span>
+            <div class="d-flex flex-stack flex-grow-1">
+                <div class="fw-bold">
+                    <h4 class="text-gray-800 fw-bolder">@msg</h4>
+                    <div class="fs-6 text-gray-600">
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
+                <i class="bi bi-x fs-1 text-@colors"></i>
+            </button>
+        </div>
+    }
+
+
+    <div class="tab-pane fade show active mt-8">
+        <div class="row gx-9 gy-6">
+            @foreach (var item in fields)
+            {
+                <div class="col-xl-6 mt-0">
+                    <div class="kt-portlet shadow-none">
+                        <div class="kt-form kt-form--label-right">
+                            <div class="row">
+
+                                <label class="col-3 col-form-label d-flex justify-content-end">
+                                    @item.DisplayName
+                                </label>
+                                <div class="col-6">
+                                    @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                </div>
+                                <label class="col-3 col-form-label d-flex justify-content-start text-gray-500 fs-8">
+                                    @item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。")
+                                </label>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>
+
+
+
+
