@@ -19,6 +19,7 @@
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
+            <th class="text-center" title="追踪标识。用于记录调用链追踪标识，在APM查找调用链"><a href="@Html.Raw(page.GetSortUrl("TraceId"))">追踪标识</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">IP地址</a></th>
@@ -45,6 +46,12 @@
                     @await Html.PartialAsync("_Icon_Boolean", entity.Success)
                 </td>
                 <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Remark">@entity.Remark</td>
+                <td class="text-center">
+                    @if (!entity.TraceId.IsNullOrEmpty())
+                    {
+                        <a href="@StarHelper.BuildUrl(entity.TraceId)" target="_blank">追踪</a>
+                    }
+                </td>
                 <td class="text-right">@entity.LinkID.ToString("n0")</td>
                 <td>@entity.UserName</td>
                 <td>@entity.CreateIP</td>

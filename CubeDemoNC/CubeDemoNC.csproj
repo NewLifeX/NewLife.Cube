@@ -5,8 +5,8 @@
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
-    <Version>4.0.2021.1020</Version>
-    <FileVersion>4.0.2021.1020</FileVersion>
+    <Version>4.0.2021.1109</Version>
+    <FileVersion>4.0.2021.1109</FileVersion>
     <AssemblyVersion>4.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.1001" />
+    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.1030-beta3" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.11" Condition="'$(TargetFramework)'=='net5.0'" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.14" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>

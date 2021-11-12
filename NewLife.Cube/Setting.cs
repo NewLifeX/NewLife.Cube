@@ -229,6 +229,11 @@ namespace NewLife.Cube
         [Description("ECharts主题。图表样式主题")]
         [Category("界面配置")]
         public String EChartsTheme { get; set; }
+
+        /// <summary>星尘Web。星尘控制台地址</summary>
+        [Description("星尘Web。星尘控制台地址")]
+        [Category("界面配置")]
+        public String StarWeb { get; set; } = "http://star.newlifex.com";
         #endregion
 
         #region 方法

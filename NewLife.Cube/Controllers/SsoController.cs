@@ -234,6 +234,21 @@ namespace NewLife.Cube.Controllers
                 // 标记登录提供商
                 Session["Cube_Sso"] = client.Name;
 
+                // 记录在线统计
+                var olt = HttpContext.Items["Cube_Online"] as UserOnline;
+                if (olt != null)
+                {
+                    olt.OAuthProvider = client.Name;
+                    olt.SaveAsync();
+                }
+                var stat = UserStat.GetOrAdd(DateTime.Today);
+                if (stat != null)
+                {
+                    stat.Logins++;
+                    stat.OAuths++;
+                    stat.SaveAsync(5_000);
+                }
+
                 // 如果验证成功但登录失败，直接跳走
                 if (url.IsNullOrEmpty())
                 {

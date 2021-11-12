@@ -17,12 +17,6 @@
     }
     @foreach (var item in fields)
     {
-        // 在该字段之前插入的字段
-        var dfs = fields.GetBeforeFields(item.Name);
-        foreach (var elm in dfs)
-        {
-            <td></td>
-        }
         if (item.PrimaryKey)
         {
             <td>总计</td>

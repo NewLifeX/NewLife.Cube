@@ -250,6 +250,9 @@ namespace NewLife.Cube.Web
                 if (user2.Sex == SexKinds.未知 && client.Sex != 0) user2.Sex = (SexKinds)client.Sex;
                 if (user2.Remark.IsNullOrEmpty()) user2.Remark = client.Detail;
 
+                if (user2.AreaId % 10000 == 0 && dic.TryGetValue("areaid", out var str) && !str.IsNullOrEmpty())
+                    user2.AreaId = str.ToInt();
+
                 var set = Setting.Current;
                 var roleId = 0;
                 List<Int32> roleIds = null;
@@ -774,6 +777,7 @@ namespace NewLife.Cube.Web
                     rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
                     departmentCode = user2.Department?.Code,
                     departmentName = user2.Department?.Name,
+                    areaid = user2.AreaId,
                     avatar = "/Cube/Avatar?id=" + user2.ID,
                     detail = user2.Remark,
                     resources = dic,
@@ -913,7 +917,7 @@ namespace NewLife.Cube.Web
             if (key.IsNullOrEmpty())
             {
                 if (name.IsNullOrEmpty()) name = "SsoSecurity";
-                 var file = $"..\\Keys\\{name}.prvkey".GetFullPath();
+                var file = $"..\\Keys\\{name}.prvkey".GetFullPath();
                 if (File.Exists(file)) key = File.ReadAllText(file);
 
                 if (key.IsNullOrEmpty())
