@@ -96,6 +96,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// 实例化用户控制器
         /// </summary>
         /// <param name="passwordService"></param>
+        /// <param name="userService"></param>
         public UserController(PasswordService passwordService, UserService userService)
         {
             _passwordService = passwordService;

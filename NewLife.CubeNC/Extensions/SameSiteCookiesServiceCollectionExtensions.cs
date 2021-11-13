@@ -12,6 +12,11 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         private const SameSiteMode Unspecified = (SameSiteMode)(-1);
 
+        /// <summary>
+        /// 配置SameSite
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public static IServiceCollection ConfigureNonBreakingSameSiteCookies(this IServiceCollection services)
         {
             services.Configure<CookiePolicyOptions>(options =>

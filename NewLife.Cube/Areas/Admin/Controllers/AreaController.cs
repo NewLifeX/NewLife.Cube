@@ -134,6 +134,10 @@ namespace NewLife.Cube.Admin.Controllers
             return base.ScanActionMenu(menu);
         }
 
+        /// <summary>
+        /// 中国地图
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Map()
         {
             PageSetting.EnableNavbar = false;

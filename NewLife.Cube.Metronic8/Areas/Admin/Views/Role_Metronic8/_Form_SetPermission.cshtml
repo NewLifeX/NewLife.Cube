@@ -1,0 +1,99 @@
+﻿@*
+    表单 Permission
+*@
+
+@using XCode.Configuration;
+@using XCode.Membership;
+@using XCode;
+
+@{
+    Role role = null;
+    if (Model.GetType().GetProperties().Length > 0)
+    {
+        role = ((System.Reflection.PropertyInfo[])Model.GetType().GetProperties())[0].GetValue(Model, null);
+    }
+    var menus = Menu.Root.AllChilds;
+
+}
+
+<script type="text/javascript">
+    $(function () {
+        $('input.authorize').on('change', function () {
+            var $this = $(this);
+            var status = $this.prop('checked');
+            var childkey = $this.attr('child');
+            // 规避change 需要在失去焦点时触发的问题，设置值完成后手工再次触发该事件
+            $('input[parentkey="' + childkey + '"]').prop('checked', status).change();
+        });
+        // 只读/查看
+        $('input.pro_detail').on('change', function () {
+            $this = $(this);
+            var status = $this.prop('checked');
+            var key = $this.attr('prochildkey');
+            $('input[proparentkey=' + key + ']').prop('checked', status);
+        });
+        // 全部权限
+        $('input.pro_all').on('change', function () {
+            $this = $(this);
+            var status = $this.prop('checked');
+            var key = $this.attr('prochildkey');
+            $('input[prokey=' + key + ']').prop('checked', status);
+        });
+    });
+</script>
+
+<div class="accordion accordion-icon-toggle mb-10" id="kt_accordion_1">
+    <div class="accordion-item p-5 bg-light-info text-info">
+        <div class="accordion-header d-flex ms-20 ps-20 pt-5 mb-5 " data-bs-toggle="collapse" data-bs-target="#kt_accordion_1_body_1">
+            <span class="accordion-icon"><span class="fas fa-arrow-right text-info"></span></span>
+            <h3 class="fs-4 fw-bold mb-0 ms-4 text-info">菜单操作授权</h3>
+        </div>
+        <div id="kt_accordion_1_body_1" class="fs-6 collapse show" data-bs-parent="#kt_accordion_1">
+            <div class="row m-0 mb-10 pb-5 bg-light-dark">
+                <table class="table table-bordered table-hover table-striped table-condensed">
+                    <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+                        <tr>
+                            <th class="ps-5">名称</th>
+                            <th>显示名</th>
+                            <th>授权</th>
+                            <th>操作权限</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border border-gray-300">
+                        @foreach (var entity in menus)
+                        {
+                            <tr>
+                                <td class="ps-5">@entity.TreeNodeName</td>
+                                <td>@entity.DisplayName</td>
+                                <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID })</td>
+                                <td>
+                                    @if (entity.Childs.Count == 0)
+                                    {
+                                        foreach (var item in entity.Permissions.OrderBy(e => e.Key))
+                                        {
+                                            var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
+                                            @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID })
+                                            @Html.Label(id, item.Value)
+                                            <text>&nbsp;</text> }
+                                    }
+                                    else
+                                    {
+
+                                        @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID })
+                                        @Html.Label("pc_readonly_" + entity.ID, "只读")
+                                        <text>&nbsp;</text>
+                                        @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ID })
+                                        @Html.Label("pc_all_" + entity.ID, "全部")}
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+

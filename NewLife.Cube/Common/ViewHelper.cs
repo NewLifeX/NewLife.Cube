@@ -894,6 +894,11 @@ namespace NewLife.Cube
             return logo;
         }
 
+        /// <summary>
+        /// 获取用户所拥有的菜单
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public static IList<MenuTree> GetMenus(this IUser user)
         {
             if (user == null) user = XCode.Membership.User.FindAll().FirstOrDefault();

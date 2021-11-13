@@ -13,6 +13,13 @@ namespace NewLife.Cube.Admin.Controllers
     [Area("Admin")]
     public class PrincipalAgentController : EntityController<PrincipalAgent>
     {
+        /// <summary>
+        /// 添加页面初始化数据
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="type"></param>
+        /// <param name="post"></param>
+        /// <returns></returns>
         protected override Boolean Valid(PrincipalAgent entity, DataObjectMethodType type, Boolean post)
         {
             if (!post && type == DataObjectMethodType.Insert)

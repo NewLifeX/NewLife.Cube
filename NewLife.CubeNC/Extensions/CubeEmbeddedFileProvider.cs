@@ -27,7 +27,7 @@ namespace NewLife.Cube.Extensions
         /// <summary>实例化</summary>
         /// <param name="assembly"></param>
         /// <param name="baseNamespace"></param>
-        public CubeEmbeddedFileProvider(Assembly assembly, String? baseNamespace)
+        public CubeEmbeddedFileProvider(Assembly assembly, String baseNamespace)
         {
             if (assembly == null) throw new ArgumentNullException("assembly");
 

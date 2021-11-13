@@ -153,6 +153,10 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 业务操作
+        /// <summary>
+        /// 设置错误
+        /// </summary>
+        /// <param name="error"></param>
         public void SetError(String error)
         {
             Status = error;
