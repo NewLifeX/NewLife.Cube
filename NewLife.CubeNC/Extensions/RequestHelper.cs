@@ -90,6 +90,7 @@ namespace NewLife.Cube.Extensions
             request.Body.Seek(0, SeekOrigin.Begin);
             var reader = new StreamReader(request.Body);
             var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
+            request.Body.Seek(0, SeekOrigin.Begin);
 
             var entityBody = body.ToJsonEntity(type);
             request.HttpContext.Items["RequestBody"] = entityBody;
