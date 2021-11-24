@@ -45,12 +45,14 @@ namespace NewLife.Cube
             // 自动检查并添加菜单
             Task.Run(() =>
             {
+                using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanController), areaType.FullName);
                 try
                 {
                     ScanController(areaType);
                 }
                 catch (Exception ex)
                 {
+                    span?.SetError(ex, null);
                     XTrace.WriteException(ex);
                 }
             });

@@ -23,6 +23,8 @@ namespace NewLife.Cube.Membership
         /// <returns></returns>
         public static IList<IMenu> ScanController(this IMenuFactory menuFactory, String rootName, Assembly asm, String nameSpace)
         {
+            using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanController), rootName);
+
             var list = new List<IMenu>();
 
             // 所有控制器
@@ -31,7 +33,7 @@ namespace NewLife.Cube.Membership
             if (controllerTypes.Count == 0) return list;
 
             // 如果根菜单不存在，则添加
-            var r = menuFactory.Root as IMenu;
+            var r = menuFactory.Root;
             var root = menuFactory.FindByFullName(nameSpace);
             if (root == null) root = r.FindByPath(rootName);
             //if (root == null) root = r.Childs.FirstOrDefault(e => e.Name.EqualIgnoreCase(rootName));

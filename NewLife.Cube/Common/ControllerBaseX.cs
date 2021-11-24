@@ -7,7 +7,6 @@ using NewLife.Serialization;
 using XCode.Membership;
 using NewLife.Remoting;
 using System.Linq;
-using NewLife.Security;
 #if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
