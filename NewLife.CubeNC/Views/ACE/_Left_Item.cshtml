@@ -5,19 +5,20 @@
     var item = Model as MenuTree;
     var childs = item.Children ?? new List<MenuTree>();
     var url = item.Url.IsNullOrEmpty() ? "" : Url.Content(item.Url);
+    var ico = !item.Icon.IsNullOrEmpty() ? item.Icon : "fa-caret-right";
 }
 <li>
     @if (childs.Any())
     {
         <a href="#" class="dropdown-toggle">
-            <i class="menu-icon fa fa-caret-right"></i>
+            <i class="menu-icon fa @ico"></i>
             @item.DisplayName
         </a>
     }
     else
     {
         <a href="@url" target="main">
-            <i class="menu-icon fa fa-caret-right"></i>
+            <i class="menu-icon fa @ico"></i>
             @item.DisplayName
         </a>
 

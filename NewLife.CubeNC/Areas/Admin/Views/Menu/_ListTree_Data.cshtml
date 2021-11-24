@@ -17,6 +17,7 @@
             }
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("TreeNodeName"))">节点名</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Icon"))">图标</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">显示名</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Url"))">链接</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Sort"))">排序</a></th>
@@ -48,6 +49,16 @@
                 }
                 <td class="text-center">@entity.ID</td>
                 <td>@entity.TreeNodeName</td>
+                <td class="text-center">
+                    @if (entity.Icon.StartsWithIgnoreCase("fa-"))
+                    {
+                        <i class="menu-icon fa @entity.Icon"></i>
+                    }
+                    else
+                    {
+                        <text>@entity.Icon</text>
+                    }
+                </td>
                 <td>@entity.DisplayName</td>
                 <td>@entity.Url</td>
                 <td class="text-right">@entity.Sort.ToString("n0")</td>

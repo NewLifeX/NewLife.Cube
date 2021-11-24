@@ -10,9 +10,10 @@
     {
         var childs = menu.Children ?? new List<MenuTree>();
         if (_idx >= icos.Length) { _idx = 0; }
+        var ico = !menu.Icon.IsNullOrEmpty() ? menu.Icon : icos[_idx++];
         <li @Html.Raw(menu == menus[0] ? "class=\"active open\"" : "")>
             <a href="#" class="dropdown-toggle">
-                <i class="menu-icon fa @icos[_idx++]"></i>
+                <i class="menu-icon fa @ico"></i>
                 <span class="menu-text">@menu.DisplayName</span>
 
                 <b class="arrow fa fa-angle-down"></b>

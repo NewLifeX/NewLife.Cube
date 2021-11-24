@@ -233,7 +233,7 @@ namespace NewLife.Cube
 
             var mf = ManageProvider.Menu;
             //var ms = mf.ScanController(type.Namespace.TrimEnd(".Controllers"), type.Assembly, type.Namespace);
-            var ms = MenuHelper.ScanController(mf, type.Namespace.TrimEnd(".Controllers"), type.Assembly, type.Namespace);
+            var ms = MenuHelper.ScanController(mf, type.Namespace.TrimEnd(".Controllers"), type);
 
             var root = mf.FindByFullName(type.Namespace);
             if (root != null)

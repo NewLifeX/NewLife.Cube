@@ -76,7 +76,7 @@ namespace NewLife.Cube
             using var tran = (mf as IEntityFactory).Session.CreateTrans();
 
             //var menus = mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
-            var menus = MenuHelper.ScanController(mf, areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
+            var menus = MenuHelper.ScanController(mf, areaName, areaType);
 
             // 更新区域名称为友好中文名
             var menu = mf.Root.FindByPath(areaName);

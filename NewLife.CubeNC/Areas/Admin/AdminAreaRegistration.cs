@@ -5,6 +5,7 @@ namespace NewLife.Cube.Admin
 {
     /// <summary>权限管理区域注册</summary>
     [DisplayName("系统管理")]
+    [Menu(-1, true, Icon = "fa-desktop")]
     public class AdminArea : AreaBase
     {
         /// <summary>区域名</summary>

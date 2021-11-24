@@ -18,17 +18,17 @@ namespace NewLife.Cube.Membership
         /// <summary>扫描命名空间下的控制器并添加为菜单</summary>
         /// <param name="menuFactory">菜单工厂</param>
         /// <param name="rootName">根菜单名称，所有菜单附属在其下</param>
-        /// <param name="asm">要扫描的程序集</param>
-        /// <param name="nameSpace">要扫描的命名空间</param>
+        /// <param name="areaType">区域类型</param>
         /// <returns></returns>
-        public static IList<IMenu> ScanController(this IMenuFactory menuFactory, String rootName, Assembly asm, String nameSpace)
+        public static IList<IMenu> ScanController(this IMenuFactory menuFactory, String rootName, Type areaType)
         {
+            var nameSpace = areaType.Namespace.EnsureEnd(".Controllers");
             using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanController), rootName);
 
             var list = new List<IMenu>();
 
             // 所有控制器
-            var types = asm.GetTypes();
+            var types = areaType.Assembly.GetTypes();
             var controllerTypes = types.Where(e => e.Name.EndsWith("Controller") && e.Namespace == nameSpace).ToList();
             if (controllerTypes.Count == 0) return list;
 
@@ -42,17 +42,13 @@ namespace NewLife.Cube.Membership
             {
                 root = r.Add(rootName, null, nameSpace, "~/" + rootName);
                 list.Add(root);
-            }
-            if (root.Sort == 0)
-            {
-                // 找到区域类
-                var typeName = rootName + "Area";
-                var areaType = types.FirstOrDefault(e => e?.Name == typeName);
-                var pi = areaType?.GetProperty("MenuOrder", BindingFlags.Public | BindingFlags.Static);
-                if (pi != null)
+
+                var att = areaType.GetCustomAttribute<MenuAttribute>();
+                if (att != null)
                 {
-                    var n = pi.GetValue(null, null).ToInt(-1);
-                    if (n > 0) root.Sort = n;
+                    root.Sort = att.Order;
+                    root.Visible = att.Visible;
+                    root.Icon = att.Icon;
                 }
             }
             if (root.FullName != nameSpace) root.FullName = nameSpace;
@@ -118,8 +114,18 @@ namespace NewLife.Cube.Membership
                 // 排序
                 if (controller.Sort == 0)
                 {
-                    var pi = type.GetPropertyEx("MenuOrder");
-                    if (pi != null) controller.Sort = pi.GetValue(null).ToInt();
+                    var att = type.GetCustomAttribute<MenuAttribute>();
+                    if (att != null)
+                    {
+                        controller.Sort = att.Order;
+                        controller.Visible = att.Visible;
+                        controller.Icon = att.Icon;
+                    }
+                    else
+                    {
+                        var pi = type.GetPropertyEx("MenuOrder");
+                        if (pi != null) controller.Sort = pi.GetValue(null).ToInt();
+                    }
                 }
             }
 

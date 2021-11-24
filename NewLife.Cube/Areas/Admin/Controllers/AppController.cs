@@ -13,11 +13,11 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>应用系统</summary>
     [DisplayName("应用系统")]
     [Area("Admin")]
+    [Menu(38, false, Icon = "fa-star")]
     public class AppController : EntityController<App>
     {
         static AppController()
         {
-            MenuOrder = 38;
             LogOnChange = true;
 
             ListFields.RemoveField("Secret", "HomePage", "Logo", "White", "Black", "Urls", "Remark");
@@ -45,20 +45,6 @@ namespace NewLife.Cube.Admin.Controllers
                 df.Header = "修改日志";
                 df.Url = "/Admin/Log?category=应用系统&linkId={ID}";
             }
-        }
-
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible && !menu.Necessary)
-            {
-                menu.Visible = false;
-                (menu as IEntity).Update();
-            }
-
-            return base.ScanActionMenu(menu);
         }
     }
 }

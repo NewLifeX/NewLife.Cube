@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace NewLife.Cube.Common
+namespace NewLife.Cube
 {
     /// <summary>菜单特性</summary>
     public class MenuAttribute : Attribute
     {
         #region 属性
         /// <summary>
-        /// 顺序
+        /// 顺序。较大者在前面
         /// </summary>
         public Int32 Order { get; set; }
 
@@ -15,6 +15,11 @@ namespace NewLife.Cube.Common
         /// 可见
         /// </summary>
         public Boolean Visible { get; set; } = true;
+
+        /// <summary>
+        /// 图标
+        /// </summary>
+        public String Icon { get; set; }
         #endregion
 
         /// <summary>
