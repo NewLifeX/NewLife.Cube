@@ -274,6 +274,7 @@ namespace NewLife.Cube
 
             // 自动检查并添加菜单
             AreaBase.RegisterArea<Admin.AdminArea>();
+            AreaBase.RegisterArea<Cube.CubeArea>();
 
             XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 

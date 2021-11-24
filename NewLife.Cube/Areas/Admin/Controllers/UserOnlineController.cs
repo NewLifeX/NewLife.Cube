@@ -17,25 +17,21 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>用户在线控制器</summary>
     [DataPermission(null, "UserID={#userId}")]
     [Area("Admin")]
+    [Menu(0, false)]
     public class UserOnlineController : EntityController<UserOnline>
     {
         /// <summary>
         /// 实例化
         /// </summary>
-        public UserOnlineController()
-        {
-            PageSetting.EnableAdd = false;
-        }
+        public UserOnlineController() => PageSetting.EnableAdd = false;
 
         /// <summary>不允许添加修改日志</summary>
         /// <param name="entity"></param>
         /// <returns></returns>
         [DisplayName()]
-        public override ActionResult Add(UserOnline entity)
-        {
+        public override ActionResult Add(UserOnline entity) =>
             //return base.Save(entity);
             throw new Exception("不允许添加/修改记录");
-        }
 
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
@@ -54,20 +50,6 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             return UserOnline.Search(userid, null, start, end, p["Q"], p);
-        }
-
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<System.Reflection.MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible && !menu.Necessary)
-            {
-                menu.Visible = false;
-                (menu as XCode.IEntity).Update();
-            }
-
-            return base.ScanActionMenu(menu);
         }
     }
 }

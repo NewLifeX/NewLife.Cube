@@ -7,11 +7,11 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers
+namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>应用日志</summary>
     [DisplayName("应用日志")]
-    [Area("Admin")]
+    [Area("Cube")]
     [Menu(0, false)]
     public class AppLogController : ReadOnlyEntityController<AppLog>
     {

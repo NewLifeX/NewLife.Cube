@@ -1,19 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers
+namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>应用系统</summary>
     [DisplayName("应用系统")]
-    [Area("Admin")]
-    [Menu(38, false, Icon = "fa-star")]
+    [Area("Cube")]
+    [Menu(38, true, Icon = "fa-star")]
     public class AppController : EntityController<App>
     {
         static AppController()

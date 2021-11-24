@@ -6,13 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
@@ -22,13 +19,13 @@ using NewLife.Remoting;
 using NewLife.Threading;
 using XCode;
 using XCode.Membership;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>首页</summary>
     [DisplayName("首页")]
     [Area("Admin")]
+    [Menu(0, false, Icon = "fa-home")]
     public class IndexController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
@@ -79,6 +76,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         [DisplayName("服务器信息")]
         [EntityAuthorize(PermissionFlags.Detail)]
+        [Menu(10, true, Icon = "fa-home")]
         public ActionResult Main(String id)
         {
             ViewBag.Act = id;
@@ -216,7 +214,7 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         [DllImport("kernel32.dll")]
-        extern static Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
+        private static extern Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
 
         /// <summary>
         /// 获取菜单树
@@ -281,6 +279,14 @@ namespace NewLife.Cube.Admin.Controllers
             if (m2 == null)
             {
                 m2 = menu.Parent.Add("Main", "系统信息", null, "/Admin/Index/Main");
+
+                var att = GetType().GetMethodEx("Main")?.GetCustomAttribute<MenuAttribute>();
+                if (att != null)
+                {
+                    m2.Sort = att.Order;
+                    m2.Icon = att.Icon;
+                    if (m2 is IEntity entity) entity.Update();
+                }
             }
 
             return base.ScanActionMenu(menu);

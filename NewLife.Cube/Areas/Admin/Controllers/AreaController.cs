@@ -9,12 +9,12 @@ using XCode;
 using XCode.Membership;
 using static XCode.Membership.Area;
 
-namespace NewLife.Cube.Admin.Controllers
+namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>地区</summary>
     [DisplayName("地区")]
-    [Area("Admin")]
-    [Menu(50, false, Icon = "fa-area-chart")]
+    [Area("Cube")]
+    [Menu(50, true, Icon = "fa-area-chart")]
     public class AreaController : EntityController<Area>
     {
         static AreaController() => ListFields.RemoveCreateField();

@@ -12,6 +12,7 @@ namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>访问统计控制器</summary>
     [Area("Admin")]
+    [Menu(0, false)]
     public class UserStatController : ReadOnlyEntityController<UserStat>
     {
         /// <summary>搜索数据集</summary>
@@ -64,20 +65,6 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             return list;
-        }
-
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<System.Reflection.MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible && !menu.Necessary)
-            {
-                menu.Visible = false;
-                (menu as XCode.IEntity).Update();
-            }
-
-            return base.ScanActionMenu(menu);
         }
     }
 }

@@ -54,6 +54,10 @@ namespace NewLife.Cube.Membership
             if (root.FullName != nameSpace) root.FullName = nameSpace;
             (root as IEntity).Save();
 
+            // 菜单迁移 Admin->Cube
+            IMenu adminRoot = null;
+            if (rootName == "Cube") adminRoot = r.FindByPath("Admin");
+
             var ms = new List<IMenu>();
 
             // 遍历该程序集所有类型
@@ -65,6 +69,24 @@ namespace NewLife.Cube.Membership
 
                 // 添加Controller
                 var controller = node.FindByPath(name);
+                // 旧菜单迁移到新菜单
+                if (adminRoot != null)
+                {
+                    if (controller == null)
+                    {
+                        controller = adminRoot.FindByPath(name);
+                        if (controller != null)
+                        {
+                            controller.ParentID = root.ID;
+                            controller.Url = url + "/" + name;
+                        }
+                    }
+                    else
+                    {
+                        var controller2 = adminRoot.FindByPath(name);
+                        if (controller2 is IEntity entity) entity.Delete();
+                    }
+                }
                 if (controller == null)
                 {
                     url += "/" + name;
@@ -73,8 +95,6 @@ namespace NewLife.Cube.Membership
                     {
                         // DisplayName特性作为中文名
                         controller = node.Add(name, type.GetDisplayName(), type.FullName, url);
-
-                        //list.Add(controller);
                     }
                 }
                 if (controller.FullName.IsNullOrEmpty()) controller.FullName = type.FullName;
@@ -85,41 +105,47 @@ namespace NewLife.Cube.Membership
 
                 // 反射调用控制器的方法来获取动作
                 var func = type.GetMethodEx("ScanActionMenu");
-                if (func == null) continue;
-
-                // 由于控制器使用IOC，无法直接实例化控制器，需要给各个参数传入空
-                var ctor = type.GetConstructors()?.FirstOrDefault();
-                var ctrl = ctor.Invoke(new Object[ctor.GetParameters().Length]);
-                //var ctrl = type.CreateInstance();
-
-                var acts = func.As<Func<IMenu, IDictionary<MethodInfo, Int32>>>(ctrl).Invoke(controller);
-                if (acts == null || acts.Count == 0) continue;
-
-                // 可选权限子项
-                controller.Permissions.Clear();
-
-                // 添加该类型下的所有Action作为可选权限子项
-                foreach (var item in acts)
+                if (func != null)
                 {
-                    var method = item.Key;
+                    // 由于控制器使用IOC，无法直接实例化控制器，需要给各个参数传入空
+                    var ctor = type.GetConstructors()?.FirstOrDefault();
+                    var ctrl = ctor.Invoke(new Object[ctor.GetParameters().Length]);
+                    //var ctrl = type.CreateInstance();
 
-                    var dn = method.GetDisplayName();
-                    if (!dn.IsNullOrEmpty()) dn = dn.Replace("{type}", (controller as Menu)?.FriendName);
+                    var acts = func.As<Func<IMenu, IDictionary<MethodInfo, Int32>>>(ctrl).Invoke(controller);
+                    if (acts != null && acts.Count > 0)
+                    {
+                        // 可选权限子项
+                        controller.Permissions.Clear();
 
-                    var pmName = !dn.IsNullOrEmpty() ? dn : method.Name;
-                    if (item.Value <= (Int32)PermissionFlags.Delete) pmName = ((PermissionFlags)item.Value).GetDescription();
-                    controller.Permissions[item.Value] = pmName;
+                        // 添加该类型下的所有Action作为可选权限子项
+                        foreach (var item in acts)
+                        {
+                            var method = item.Key;
+
+                            var dn = method.GetDisplayName();
+                            if (!dn.IsNullOrEmpty()) dn = dn.Replace("{type}", (controller as Menu)?.FriendName);
+
+                            var pmName = !dn.IsNullOrEmpty() ? dn : method.Name;
+                            if (item.Value <= (Int32)PermissionFlags.Delete) pmName = ((PermissionFlags)item.Value).GetDescription();
+                            controller.Permissions[item.Value] = pmName;
+                        }
+                    }
+                }
+
+                var att = type.GetCustomAttribute<MenuAttribute>();
+                if (att != null)
+                {
+                    if (controller.Icon.IsNullOrEmpty()) controller.Icon = att.Icon;
                 }
 
                 // 排序
                 if (controller.Sort == 0)
                 {
-                    var att = type.GetCustomAttribute<MenuAttribute>();
                     if (att != null)
                     {
                         controller.Sort = att.Order;
                         controller.Visible = att.Visible;
-                        controller.Icon = att.Icon;
                     }
                     else
                     {

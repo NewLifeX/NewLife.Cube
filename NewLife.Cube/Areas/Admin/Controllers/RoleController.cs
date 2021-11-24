@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Web;
-using XCode;
 using XCode.Membership;
 #if __CORE__
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife.Cube.Extensions;
 #else
 using System.Web;
 using System.Web.Mvc;
@@ -20,12 +17,11 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("角色")]
     [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
     [Area("Admin")]
+    [Menu(90, true, Icon = "fa-user-plus")]
     public class RoleController : EntityController<Role>
     {
         static RoleController()
         {
-            MenuOrder = 90;
-
             ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "Remark");
             ListFields.RemoveCreateField();
 
@@ -126,7 +122,7 @@ namespace NewLife.Cube.Admin.Controllers
             return rs;
         }
 
-        Boolean GetBool(String name)
+        private Boolean GetBool(String name)
         {
             var v = GetRequest(name);
             if (v.IsNullOrEmpty()) return false;
