@@ -11,7 +11,6 @@ using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Reflection;
-using NewLife.Serialization;
 using XCode;
 
 namespace NewLife.Cube
@@ -69,7 +68,7 @@ namespace NewLife.Cube
                 foreach (var item in pks)
                 {
                     var v = bindingContext.ValueProvider.GetValue(item.Name);
-                    if(v == ValueProviderResult.None) continue;
+                    if (v == ValueProviderResult.None) continue;
                     exp &= item.Equal(v.ChangeType(item.Type));
                 }
 
@@ -124,7 +123,7 @@ namespace NewLife.Cube
                 case TypeCode.String:
                     // 如果有多个值，则修改结果，避免 3,2,5 变成只有3
                     var vs = bindingContext.ValueProvider.GetValue(modelName).Values;
-                    if (vs.Count > 1) result = ModelBindingResult.Success(vs.ToString());
+                    if (vs.Count > 1) result = ModelBindingResult.Success($",{vs.Where(e => e != "0").Join()},");
                     break;
             }
 

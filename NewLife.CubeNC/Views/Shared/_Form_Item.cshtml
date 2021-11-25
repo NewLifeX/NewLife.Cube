@@ -3,6 +3,7 @@
 @using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
+@using System.Collections;
 @{
     var entity = Model.Item1;
     var item = Model.Item2;
@@ -34,14 +35,23 @@
 <div class="input-group col-xs-@(total - label) col-sm-@input">
     @if (dataSource != null)
     {
+        var ds = dataSource(entity, item);
+        if(ds is IDictionary dic)
+        {
+            if (!ds.Contains("0") && !ds.Contains(0))
+            {
+                ds.Add(0, "<无>");
+            }
+        }
+
         // 数据字段以s结尾，表示多选，其它单选
         if (item.Name.EndsWith("s"))
         {
-            @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+            @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, ds, entity[item.Name]))
         }
         else
         {
-            @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+            @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(item.Name, ds, entity[item.Name]))
         }
     }
     else

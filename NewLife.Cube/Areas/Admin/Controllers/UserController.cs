@@ -202,6 +202,8 @@ namespace NewLife.Cube.Admin.Controllers
                     else
                         entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
                 }
+
+                //entity.RoleIds = entity.RoleIds == "0" ? null : entity.RoleIds.Replace(",0,", ",");
             }
 
             return base.Valid(entity, type, post);
