@@ -62,29 +62,29 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.11.2021.1109" />
-    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1109" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.1124-beta1" />
+    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1124-beta1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Admin\Controllers\AppController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Admin\Controllers\AppLogController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AreaController.cs" Link="Areas\Admin\Controllers\AreaController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AttachmentController.cs" Link="Areas\Admin\Controllers\AttachmentController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Cube\Controllers\AppController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Cube\Controllers\AppLogController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AreaController.cs" Link="Areas\Cube\Controllers\AreaController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AttachmentController.cs" Link="Areas\Cube\Controllers\AttachmentController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Controllers\CoreController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CronJobController.cs" Link="Areas\Admin\Controllers\CronJobController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CronJobController.cs" Link="Areas\Cube\Controllers\CronJobController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Controllers\CubeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DbController.cs" Link="Areas\Admin\Controllers\DbController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DepartmentController.cs" Link="Areas\Admin\Controllers\DepartmentController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Controllers\FileController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\LogController.cs" Link="Areas\Admin\Controllers\LogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\MenuController.cs" Link="Areas\Admin\Controllers\MenuController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelColumnController.cs" Link="Areas\Admin\Controllers\ModelColumnController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelTableController.cs" Link="Areas\Admin\Controllers\ModelTableController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelColumnController.cs" Link="Areas\Cube\Controllers\ModelColumnController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelTableController.cs" Link="Areas\Cube\Controllers\ModelTableController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthConfigController.cs" Link="Areas\Admin\Controllers\OAuthConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthLogController.cs" Link="Areas\Admin\Controllers\OAuthLogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ParameterController.cs" Link="Areas\Admin\Controllers\ParameterController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\PrincipalAgentController.cs" Link="Areas\Admin\Controllers\PrincipalAgentController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\PrincipalAgentController.cs" Link="Areas\Cube\Controllers\PrincipalAgentController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Controllers\RoleController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserConnectController.cs" Link="Areas\Admin\Controllers\UserConnectController.cs" />
@@ -185,6 +185,7 @@
   <ItemGroup>
     <Content Remove="Views\Shared\_List_Data_Item_First.cshtml" />
     <Content Remove="Views\Shared\_StatLevel.cshtml" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.woff2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -200,12 +201,13 @@
       <LastGenOutput>XCoder.log</LastGenOutput>
     </None>
     <None Include="appsettings.json" />
-    <None Include="Areas\Admin\Views\PrincipalAgent\_Form_Body.cshtml" />
+    <None Include="Areas\Cube\Views\PrincipalAgent\_Form_Body.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Areas\Cube\Controllers\" />
     <Folder Include="Web\Models\" />
   </ItemGroup>
 </Project>

@@ -261,7 +261,7 @@ namespace NewLife.Cube.Controllers
                 if (logId > 0 && logId != log.Id)
                 {
                     Session["Cube_OAuthId"] = null;
-                    var log2 = Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
+                    var log2 = Provider.BindAfterLogin(logId);
                     if (log2 != null && log2.Success && !log2.RedirectUri.IsNullOrEmpty()) return Redirect(log2.RedirectUri);
                 }
 

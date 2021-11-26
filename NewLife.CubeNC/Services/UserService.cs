@@ -160,40 +160,51 @@ namespace NewLife.Cube.Services
         public IList<UserOnline> ClearExpire(Int32 secTimeout = 20 * 60)
         {
             // 无在线则不执行
-            if (_onlines == 0 || UserOnline.Meta.Count == 0) return new List<UserOnline>();
+            if (_onlines == 0) return new List<UserOnline>();
 
-            // 10分钟不活跃将会被删除
-            var exp = UserOnline._.UpdateTime < DateTime.Now.AddSeconds(-secTimeout);
-            var list = UserOnline.FindAll(exp, null, null, 0, 0);
-            list.Delete();
-
-            // 修正在线数
-            var total = UserOnline.Meta.Count;
-            _onlines = total - list.Count;
-
-            // 设置统计
-            var stat = UserStat.GetOrAdd(DateTime.Today);
-            if (stat != null)
+            // 减少Sql日志
+            var dal = UserOnline.Meta.Session.Dal;
+            var oldSql = dal.Session.ShowSQL;
+            dal.Session.ShowSQL = false;
+            try
             {
-                if (total > stat.MaxOnline) stat.MaxOnline = total;
-            }
+                // 10分钟不活跃将会被删除
+                var exp = UserOnline._.UpdateTime < DateTime.Now.AddSeconds(-secTimeout);
+                var list = UserOnline.FindAll(exp, null, null, 0, 0);
+                list.Delete();
 
-            // 设置离线
-            foreach (var item in list)
-            {
-                var user = ManageProvider.Provider.FindByID(item.UserID);
-                if (user is User user2)
+                // 修正在线数
+                var total = UserOnline.Meta.Count;
+                _onlines = total - list.Count;
+
+                // 设置统计
+                var stat = UserStat.GetOrAdd(DateTime.Today);
+                if (stat != null)
                 {
-                    user2.Online = false;
-                    user2.OnlineTime += item.OnlineTime;
-                    user2.Save();
-
-                    if (stat != null) stat.OnlineTime += item.OnlineTime;
+                    if (total > stat.MaxOnline) stat.MaxOnline = total;
                 }
-            }
-            stat.SaveAsync();
 
-            return list;
+                // 设置离线
+                foreach (var item in list)
+                {
+                    var user = ManageProvider.Provider.FindByID(item.UserID);
+                    if (user is User user2)
+                    {
+                        user2.Online = false;
+                        user2.OnlineTime += item.OnlineTime;
+                        user2.Save();
+
+                        if (stat != null) stat.OnlineTime += item.OnlineTime;
+                    }
+                }
+                stat.SaveAsync();
+
+                return list;
+            }
+            finally
+            {
+                dal.Session.ShowSQL = oldSql;
+            }
         }
 
         /// <summary>
@@ -241,27 +252,38 @@ namespace NewLife.Cube.Services
             selects &= User._.RegisterTime.SumLarge($"'{t30:yyyy-MM-dd}'", "newT30");
             //selects &= User._.OnlineTime.Sum();
 
-            var list = User.FindAll(null, null, selects, 0, 1);
-            if (list.Count > 0)
+            // 减少Sql日志
+            var dal = UserOnline.Meta.Session.Dal;
+            var oldSql = dal.Session.ShowSQL;
+            dal.Session.ShowSQL = false;
+            try
             {
-                var user = list[0];
+                var list = User.FindAll(null, null, selects, 0, 1);
+                if (list.Count > 0)
+                {
+                    var user = list[0];
 
-                var st = UserStat.GetOrAdd(DateTime.Today);
-                st.Total = user.ID;
-                st.Actives = user["activeT1"].ToInt();
-                st.ActivesT7 = user["activeT7"].ToInt();
-                st.ActivesT30 = user["activeT30"].ToInt();
-                st.News = user["newT1"].ToInt();
-                st.NewsT7 = user["newT7"].ToInt();
-                st.NewsT30 = user["newT30"].ToInt();
+                    var st = UserStat.GetOrAdd(DateTime.Today);
+                    st.Total = user.ID;
+                    st.Actives = user["activeT1"].ToInt();
+                    st.ActivesT7 = user["activeT7"].ToInt();
+                    st.ActivesT30 = user["activeT30"].ToInt();
+                    st.News = user["newT1"].ToInt();
+                    st.NewsT7 = user["newT7"].ToInt();
+                    st.NewsT30 = user["newT30"].ToInt();
 
-                //var sty = UserStat.FindByDate(DateTime.Today.AddDays(-1));
-                //if (sty != null)
-                //    st.OnlineTime = user.OnlineTime - sty.OnlineTime;
-                //else
-                //    st.OnlineTime = user.OnlineTime;
+                    //var sty = UserStat.FindByDate(DateTime.Today.AddDays(-1));
+                    //if (sty != null)
+                    //    st.OnlineTime = user.OnlineTime - sty.OnlineTime;
+                    //else
+                    //    st.OnlineTime = user.OnlineTime;
 
-                st.Update();
+                    st.Update();
+                }
+            }
+            finally
+            {
+                dal.Session.ShowSQL = oldSql;
             }
         }
         #endregion

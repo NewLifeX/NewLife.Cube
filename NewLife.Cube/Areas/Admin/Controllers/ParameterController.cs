@@ -7,6 +7,7 @@ namespace NewLife.Cube.Admin.Controllers
     /// <summary>字典参数</summary>
     [DisplayName("字典参数")]
     [Area("Admin")]
+    [Menu(65, false)]
     public class ParameterController : EntityController<Parameter>
     {
         static ParameterController()

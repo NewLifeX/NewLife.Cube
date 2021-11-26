@@ -16,6 +16,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("用户令牌")]
     [Description("授权指定用户访问接口数据，支持有效期")]
     [Area("Admin")]
+    [Menu(0, false)]
     public class UserTokenController : EntityController<UserToken>
     {
         static UserTokenController()
@@ -65,20 +66,6 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             return entity.UserID == user.ID;
-        }
-
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible)
-            {
-                menu.Visible = false;
-                (menu as IEntity).Save();
-            }
-
-            return base.ScanActionMenu(menu);
         }
     }
 }

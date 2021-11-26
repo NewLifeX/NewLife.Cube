@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyTitle>魔方用户中心（SSO服务端）</AssemblyTitle>
+    <Version>4.2.2021.1124</Version>
+    <FileVersion>4.2.2021.1124</FileVersion>
+    <AssemblyVersion>4.2.*</AssemblyVersion>
+    <Deterministic>false</Deterministic>
+    <OutputPath>..\BinSSO</OutputPath>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.1109" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
+  </ItemGroup>
+
+</Project>

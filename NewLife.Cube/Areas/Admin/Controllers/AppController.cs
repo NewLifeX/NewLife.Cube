@@ -1,23 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers
+namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>应用系统</summary>
     [DisplayName("应用系统")]
-    [Area("Admin")]
+    [Area("Cube")]
+    [Menu(38, true, Icon = "fa-star")]
     public class AppController : EntityController<App>
     {
         static AppController()
         {
-            MenuOrder = 38;
             LogOnChange = true;
 
             ListFields.RemoveField("Secret", "HomePage", "Logo", "White", "Black", "Urls", "Remark");
@@ -45,20 +43,6 @@ namespace NewLife.Cube.Admin.Controllers
                 df.Header = "修改日志";
                 df.Url = "/Admin/Log?category=应用系统&linkId={ID}";
             }
-        }
-
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible && !menu.Necessary)
-            {
-                menu.Visible = false;
-                (menu as IEntity).Update();
-            }
-
-            return base.ScanActionMenu(menu);
         }
     }
 }

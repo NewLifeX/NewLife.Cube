@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.ElementUI", "N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Metronic8", "NewLife.Cube.Metronic8\NewLife.Cube.Metronic8.csproj", "{3E49E9CA-6C90-4BDC-9DFD-50152DFA6524}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CubeSSO", "CubeSSO\CubeSSO.csproj", "{CBCBA758-456E-4852-85E1-D40E56A929D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{3E49E9CA-6C90-4BDC-9DFD-50152DFA6524}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E49E9CA-6C90-4BDC-9DFD-50152DFA6524}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E49E9CA-6C90-4BDC-9DFD-50152DFA6524}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBCBA758-456E-4852-85E1-D40E56A929D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBCBA758-456E-4852-85E1-D40E56A929D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBCBA758-456E-4852-85E1-D40E56A929D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBCBA758-456E-4852-85E1-D40E56A929D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

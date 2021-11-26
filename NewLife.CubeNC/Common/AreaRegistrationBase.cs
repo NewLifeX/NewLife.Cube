@@ -45,12 +45,14 @@ namespace NewLife.Cube
             // 自动检查并添加菜单
             Task.Run(() =>
             {
+                using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanController), areaType.FullName);
                 try
                 {
                     ScanController(areaType);
                 }
                 catch (Exception ex)
                 {
+                    span?.SetError(ex, null);
                     XTrace.WriteException(ex);
                 }
             });
@@ -71,10 +73,10 @@ namespace NewLife.Cube
             _ = ModelTable.Meta.Count;
             _ = ModelColumn.Meta.Count;
 
-            using var tran = (mf as IEntityFactory).Session.CreateTrans();
+            //using var tran = (mf as IEntityFactory).Session.CreateTrans();
 
             //var menus = mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
-            var menus = MenuHelper.ScanController(mf, areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
+            var menus = MenuHelper.ScanController(mf, areaName, areaType);
 
             // 更新区域名称为友好中文名
             var menu = mf.Root.FindByPath(areaName);
@@ -89,7 +91,7 @@ namespace NewLife.Cube
                 (menu as IEntity).Update();
             }
 
-            tran.Commit();
+            //tran.Commit();
 
             //// 扫描模型表
             //ScanModel(areaName, menus);

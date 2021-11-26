@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Threading;
@@ -8,16 +7,15 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers
+namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>模型表</summary>
-    [Area("Admin")]
+    [Area("Cube")]
+    [Menu(59, true, Icon = "fa-table")]
     public class ModelTableController : EntityController<ModelTable>
     {
         static ModelTableController()
         {
-            MenuOrder = 55;
-
             ListFields.RemoveField("Controller", "TableName", "ConnName");
 
             {
@@ -74,7 +72,8 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         private static Boolean _inited;
-        static void Init()
+
+        private static void Init()
         {
             if (_inited) return;
 
@@ -115,20 +114,6 @@ namespace NewLife.Cube.Admin.Controllers
             var key = p["Q"];
 
             return ModelTable.Search(category, null, start, end, key, p);
-        }
-
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible && !menu.Necessary)
-            {
-                menu.Visible = false;
-                (menu as IEntity).Update();
-            }
-
-            return base.ScanActionMenu(menu);
         }
     }
 }

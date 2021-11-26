@@ -32,6 +32,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("用户")]
     [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
     [Area("Admin")]
+    [Menu(100, true, Icon = "fa-user")]
     public class UserController : EntityController<User>
     {
         /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
@@ -41,8 +42,6 @@ namespace NewLife.Cube.Admin.Controllers
 
         static UserController()
         {
-            MenuOrder = 100;
-
             ListFields.RemoveField("Avatar", "RoleIds", "Online", "LastLoginIP", "RegisterIP", "RegisterTime");
             ListFields.RemoveField("Phone", "Code", "Question", "Answer");
             ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
@@ -203,6 +202,8 @@ namespace NewLife.Cube.Admin.Controllers
                     else
                         entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
                 }
+
+                //entity.RoleIds = entity.RoleIds == "0" ? null : entity.RoleIds.Replace(",0,", ",");
             }
 
             return base.Valid(entity, type, post);
@@ -371,7 +372,7 @@ namespace NewLife.Cube.Admin.Controllers
                     if (logId > 0)
                     {
                         Session["Cube_OAuthId"] = null;
-                        var log = Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
+                        var log = NewLife.Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
                         if (log != null && log.Success && !log.RedirectUri.IsNullOrEmpty()) return Redirect(log.RedirectUri);
                     }
 
