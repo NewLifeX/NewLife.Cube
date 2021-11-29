@@ -123,7 +123,7 @@ namespace NewLife.Cube
                 case TypeCode.String:
                     // 如果有多个值，则修改结果，避免 3,2,5 变成只有3
                     var vs = bindingContext.ValueProvider.GetValue(modelName).Values;
-                    if (vs.Count > 1) result = ModelBindingResult.Success($",{vs.Where(e => e != "0").Join()},");
+                    if (vs.Count > 1) result = ModelBindingResult.Success($",{vs.Where(e => e != "-1").Join()},");
                     break;
             }
 
