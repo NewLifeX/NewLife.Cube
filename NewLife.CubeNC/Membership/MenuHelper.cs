@@ -40,7 +40,7 @@ namespace NewLife.Cube.Membership
             //if (root == null) root = r.Childs.FirstOrDefault(e => e.Url.EqualIgnoreCase("~/" + rootName));
             if (root == null)
             {
-                root = r.Add(rootName, null, nameSpace, "~/" + rootName);
+                root = r.Add(rootName, null, nameSpace, "/" + rootName);
                 list.Add(root);
 
                 var att = areaType.GetCustomAttribute<MenuAttribute>();
@@ -97,7 +97,8 @@ namespace NewLife.Cube.Membership
                         controller = node.Add(name, type.GetDisplayName(), type.FullName, url);
                     }
                 }
-                if (controller.FullName.IsNullOrEmpty()) controller.FullName = type.FullName;
+                controller.Url = url + "/" + name;
+                controller.FullName = type.FullName;
                 if (controller.Remark.IsNullOrEmpty()) controller.Remark = type.GetDescription();
 
                 ms.Add(controller);
