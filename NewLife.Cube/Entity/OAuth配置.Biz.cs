@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using NewLife.Cube.Web.Models;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Security;
+using NewLife.Serialization;
 using XCode;
 using XCode.Membership;
 
@@ -70,6 +72,8 @@ namespace NewLife.Cube.Entity
 
             if (AuthUrl.IsNullOrEmpty()) AuthUrl = "authorize?response_type={response_type}&client_id={key}&redirect_uri={redirect}&state={state}&scope={scope}";
             if (AccessUrl.IsNullOrEmpty()) AccessUrl = "access_token?grant_type=authorization_code&client_id={key}&client_secret={secret}&code={code}&state={state}&redirect_uri={redirect}";
+
+            if (FieldMap.IsNullOrEmpty()) FieldMap = new OAuthFieldMap().ToJson(true);
         }
 
         /// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>

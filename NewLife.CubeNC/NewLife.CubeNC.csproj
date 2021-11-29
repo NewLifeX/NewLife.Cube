@@ -213,6 +213,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\Cube\Controllers\" />
-    <Folder Include="Web\Models\" />
   </ItemGroup>
 </Project>
