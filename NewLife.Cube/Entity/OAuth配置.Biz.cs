@@ -67,6 +67,9 @@ namespace NewLife.Cube.Entity
 
             // 建议先调用基类方法，基类方法会做一些统一处理
             base.Valid(isNew);
+
+            if (AuthUrl.IsNullOrEmpty()) AuthUrl = "authorize?response_type={response_type}&client_id={key}&redirect_uri={redirect}&state={state}&scope={scope}";
+            if (AccessUrl.IsNullOrEmpty()) AccessUrl = "access_token?grant_type=authorization_code&client_id={key}&client_secret={secret}&code={code}&state={state}&redirect_uri={redirect}";
         }
 
         /// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>

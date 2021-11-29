@@ -9,6 +9,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Menu(0, false)]
     public class OAuthConfigController : EntityController<OAuthConfig>
     {
-        static OAuthConfigController() => ListFields.RemoveField("Secret", "Logo", "Remark");
+        static OAuthConfigController() => ListFields.RemoveField("Secret", "Logo", "AuthUrl", "AccessUrl", "UserUrl", "Remark");
     }
 }

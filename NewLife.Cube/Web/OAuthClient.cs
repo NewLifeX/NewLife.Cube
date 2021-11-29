@@ -170,6 +170,9 @@ namespace NewLife.Web
             Name = mi.Name;
             if (!mi.Server.IsNullOrEmpty()) Server = mi.Server;
             if (!mi.AccessServer.IsNullOrEmpty()) AccessServer = mi.AccessServer;
+            if (!mi.AuthUrl.IsNullOrEmpty()) AuthUrl = mi.AuthUrl;
+            if (!mi.AccessUrl.IsNullOrEmpty()) AccessUrl = mi.AccessUrl;
+            if (!mi.UserUrl.IsNullOrEmpty()) UserUrl = mi.UserUrl;
             if (!mi.AppId.IsNullOrEmpty()) Key = mi.AppId;
             if (!mi.Secret.IsNullOrEmpty()) Secret = mi.Secret;
             if (!mi.Scope.IsNullOrEmpty()) Scope = mi.Scope;

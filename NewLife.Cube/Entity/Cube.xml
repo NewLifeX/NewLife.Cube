@@ -65,6 +65,9 @@
       <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
       <Column Name="GrantType" DataType="Int32" Description="授权类型" Type="GrantTypes" />
       <Column Name="Scope" DataType="String" Description="授权范围" />
+      <Column Name="AuthUrl" DataType="String" Length="200" Description="验证地址。跳转SSO的验证地址" />
+      <Column Name="AccessUrl" DataType="String" Length="200" Description="令牌地址。根据code换取令牌的地址" />
+      <Column Name="UserUrl" DataType="String" Length="200" Description="用户地址。根据令牌获取用户信息的地址" />
       <Column Name="AppUrl" DataType="String" Length="200" Description="应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="Debug" DataType="Boolean" Description="调试。设置处于调试状态，输出详细日志" />

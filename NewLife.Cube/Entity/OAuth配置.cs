@@ -99,6 +99,30 @@ namespace NewLife.Cube.Entity
         [BindColumn("Scope", "授权范围", "")]
         public String Scope { get => _Scope; set { if (OnPropertyChanging("Scope", value)) { _Scope = value; OnPropertyChanged("Scope"); } } }
 
+        private String _AuthUrl;
+        /// <summary>验证地址。跳转SSO的验证地址</summary>
+        [DisplayName("验证地址")]
+        [Description("验证地址。跳转SSO的验证地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("AuthUrl", "验证地址。跳转SSO的验证地址", "")]
+        public String AuthUrl { get => _AuthUrl; set { if (OnPropertyChanging("AuthUrl", value)) { _AuthUrl = value; OnPropertyChanged("AuthUrl"); } } }
+
+        private String _AccessUrl;
+        /// <summary>令牌地址。根据code换取令牌的地址</summary>
+        [DisplayName("令牌地址")]
+        [Description("令牌地址。根据code换取令牌的地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("AccessUrl", "令牌地址。根据code换取令牌的地址", "")]
+        public String AccessUrl { get => _AccessUrl; set { if (OnPropertyChanging("AccessUrl", value)) { _AccessUrl = value; OnPropertyChanged("AccessUrl"); } } }
+
+        private String _UserUrl;
+        /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
+        [DisplayName("用户地址")]
+        [Description("用户地址。根据令牌获取用户信息的地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("UserUrl", "用户地址。根据令牌获取用户信息的地址", "")]
+        public String UserUrl { get => _UserUrl; set { if (OnPropertyChanging("UserUrl", value)) { _UserUrl = value; OnPropertyChanged("UserUrl"); } } }
+
         private String _AppUrl;
         /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
         [DisplayName("应用地址")]
@@ -240,6 +264,9 @@ namespace NewLife.Cube.Entity
                     case "AccessServer": return _AccessServer;
                     case "GrantType": return _GrantType;
                     case "Scope": return _Scope;
+                    case "AuthUrl": return _AuthUrl;
+                    case "AccessUrl": return _AccessUrl;
+                    case "UserUrl": return _UserUrl;
                     case "AppUrl": return _AppUrl;
                     case "Enable": return _Enable;
                     case "Debug": return _Debug;
@@ -272,6 +299,9 @@ namespace NewLife.Cube.Entity
                     case "AccessServer": _AccessServer = Convert.ToString(value); break;
                     case "GrantType": _GrantType = (GrantTypes)value.ToInt(); break;
                     case "Scope": _Scope = Convert.ToString(value); break;
+                    case "AuthUrl": _AuthUrl = Convert.ToString(value); break;
+                    case "AccessUrl": _AccessUrl = Convert.ToString(value); break;
+                    case "UserUrl": _UserUrl = Convert.ToString(value); break;
                     case "AppUrl": _AppUrl = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
                     case "Debug": _Debug = value.ToBoolean(); break;
@@ -326,6 +356,15 @@ namespace NewLife.Cube.Entity
 
             /// <summary>授权范围</summary>
             public static readonly Field Scope = FindByName("Scope");
+
+            /// <summary>验证地址。跳转SSO的验证地址</summary>
+            public static readonly Field AuthUrl = FindByName("AuthUrl");
+
+            /// <summary>令牌地址。根据code换取令牌的地址</summary>
+            public static readonly Field AccessUrl = FindByName("AccessUrl");
+
+            /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
+            public static readonly Field UserUrl = FindByName("UserUrl");
 
             /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
             public static readonly Field AppUrl = FindByName("AppUrl");
@@ -407,6 +446,15 @@ namespace NewLife.Cube.Entity
 
             /// <summary>授权范围</summary>
             public const String Scope = "Scope";
+
+            /// <summary>验证地址。跳转SSO的验证地址</summary>
+            public const String AuthUrl = "AuthUrl";
+
+            /// <summary>令牌地址。根据code换取令牌的地址</summary>
+            public const String AccessUrl = "AccessUrl";
+
+            /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
+            public const String UserUrl = "UserUrl";
 
             /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
             public const String AppUrl = "AppUrl";
