@@ -68,17 +68,17 @@ namespace NewLife.Cube.Extensions
 
             env.WebRootPath = root;
 
-            XTrace.WriteLine("WebRootPath={0}", env.WebRootPath);
             XTrace.WriteLine("ContentRootPath={0}", env.ContentRootPath);
+            XTrace.WriteLine("WebRootPath={0}", env.WebRootPath);
 
             // 独立静态文件设置，魔方自己的静态资源内嵌在程序集里面
             var options = new StaticFileOptions();
             {
-                //var physicalProvider = env.ContentRootFileProvider;
+                var physicalProvider = new PhysicalFileProvider(env.WebRootPath);
                 var embeddedProvider = new CubeEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
-                //var compositeProvider = new CompositeFileProvider(physicalProvider, embeddedProvider);
+                var compositeProvider = new CompositeFileProvider(physicalProvider, embeddedProvider);
 
-                options.FileProvider = embeddedProvider;
+                options.FileProvider = compositeProvider;
             }
             app.UseStaticFiles(options);
 
