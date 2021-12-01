@@ -203,7 +203,7 @@ namespace NewLife.Cube.Admin.Controllers
                         entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
                 }
 
-                entity.RoleIds = entity.RoleIds == "-1" ? null : entity.RoleIds.Replace(",-1,", ",");
+                if (!entity.RoleIds.IsNullOrEmpty()) entity.RoleIds = entity.RoleIds == "-1" ? null : entity.RoleIds.Replace(",-1,", ",");
             }
 
             return base.Valid(entity, type, post);
