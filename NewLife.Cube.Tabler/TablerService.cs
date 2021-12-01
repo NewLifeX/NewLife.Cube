@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
@@ -20,11 +21,11 @@ namespace NewLife.Cube
             // 独立静态文件设置，魔方自己的静态资源内嵌在程序集里面
             var options = new StaticFileOptions();
             {
-                var physicalProvider = new PhysicalFileProvider(env.WebRootPath);
                 var embeddedProvider = new CubeEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.Tabler.wwwroot");
-                var compositeProvider = new CompositeFileProvider(physicalProvider, embeddedProvider);
-
-                options.FileProvider = compositeProvider;
+                if (!env.WebRootPath.IsNullOrEmpty() && Directory.Exists(env.WebRootPath))
+                    options.FileProvider = new CompositeFileProvider(new PhysicalFileProvider(env.WebRootPath), embeddedProvider);
+                else
+                    options.FileProvider = embeddedProvider;
             }
             app.UseStaticFiles(options);
 
