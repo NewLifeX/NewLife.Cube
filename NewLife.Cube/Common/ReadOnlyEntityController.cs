@@ -52,6 +52,9 @@ namespace NewLife.Cube
         /// <summary>实体改变时写日志。默认false</summary>
         protected static Boolean LogOnChange { get; set; }
 
+        /// <summary>系统配置</summary>
+        public SysConfig SysConfig { get; set; }
+
         private String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
         #endregion
 
@@ -63,7 +66,12 @@ namespace NewLife.Cube
         }
 
         /// <summary>构造函数</summary>
-        public ReadOnlyEntityController() => PageSetting.IsReadOnly = true;
+        public ReadOnlyEntityController()
+        {
+            PageSetting.IsReadOnly = true;
+
+            SysConfig = SysConfig.Current;
+        }
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>

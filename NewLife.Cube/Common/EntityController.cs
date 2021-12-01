@@ -177,7 +177,8 @@ namespace NewLife.Cube
             {
                 WriteLog("Add", false, err);
 
-                ViewBag.StatusMessage = "添加失败！" + err;
+                ViewBag.StatusMessage = SysConfig.Develop ? ("添加失败！" + err) : "添加失败！";
+
                 // 添加失败，ID清零，否则会显示保存按钮
                 entity[Entity<TEntity>.Meta.Unique.Name] = 0;
 
@@ -272,7 +273,7 @@ namespace NewLife.Cube
             {
                 WriteLog("Edit", false, err);
 
-                ViewBag.StatusMessage = "保存失败！" + err;
+                ViewBag.StatusMessage = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
             }
             else
                 ViewBag.StatusMessage = "保存成功！";
