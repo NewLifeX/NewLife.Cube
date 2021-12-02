@@ -11,22 +11,22 @@
     @if (childs.Any())
     {
         <a href="#" class="dropdown-toggle">
-            <i class="fa @ico"></i> &nbsp;
+            <i class="menu-icon fa @ico"></i> &nbsp;
             @item.DisplayName
         </a>
     }
     else
     {
         <a href="@url" target="main">
-            <i class="fa @ico"></i> &nbsp;
+            <i class="menu-icon fa @ico"></i> &nbsp;
             @item.DisplayName
         </a>
 
         <b class="arrow"></b>
         <ul class="submenu">
-            @foreach (var menu in childs.Where(w=>w.Visible))
+            @foreach (var menu in childs.Where(w => w.Visible))
             {
-                @await Html.PartialAsync("_Left_Item", menu);
+                @await Html.PartialAsync("_Left_Item", menu)
             }
         </ul>
     }
