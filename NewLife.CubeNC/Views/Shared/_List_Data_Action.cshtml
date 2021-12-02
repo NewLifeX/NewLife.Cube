@@ -12,18 +12,18 @@
     if (this.Has(PermissionFlags.Detail))
     {
         <i class="glyphicon glyphicon-edit" style="color: blue;"></i>
-        <a href="@Url.Action("Detail", rv)" class="editcell">查看</a>
+        <a href="@Url.Action("Detail", rv)" class="editcell" title="双击本行任意地方也可以进入查看页">查看</a>
     }
 }
 else if (this.Has(PermissionFlags.Update))
 {
     <i class="glyphicon glyphicon-edit" style="color: blue;"></i>
-    <a href="@Url.Action("Edit", rv)" class="editcell">编辑</a>
+    <a href="@Url.Action("Edit", rv)" class="editcell" title="双击本行任意地方也可以进入编辑表单页">编辑</a>
 }
 else if (this.Has(PermissionFlags.Detail))
 {
     <i class="glyphicon glyphicon-edit" style="color: blue;"></i>
-    <a href="@Url.Action("Detail", rv)" class="editcell">查看</a>
+    <a href="@Url.Action("Detail", rv)" class="editcell" title="双击本行任意地方也可以进入查看页">查看</a>
 }
 @if (this.Has(PermissionFlags.Delete))
 {
