@@ -14,6 +14,14 @@
 {
     if (item.Childs.Any())
     {
+        var user = ViewBag.User as IUser ?? ManageProvider.User;
+        var fact = ManageProvider.Menu;
+        var menus = fact.Root.Childs;
+        if (user?.Role != null)
+        {
+            menus = fact.GetMySubMenus(item.ID, user, true);
+        }
+
         <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID==menu.ParentID||rs?"show":"")">
             <span class="menu-link">
                 <span class="menu-bullet">
@@ -23,9 +31,8 @@
                 <span class="menu-arrow"></span>
             </span>
 
-
             <div class="menu-sub menu-sub-accordion menu-active-bg">
-                @foreach (var sub in item.Childs)
+                @foreach (var sub in menus)
                 {
                     @await Html.PartialAsync("_Layout_Aside_Menu_Item2", new ValueTuple<IMenu, IMenu>(menu, sub))
                 }
