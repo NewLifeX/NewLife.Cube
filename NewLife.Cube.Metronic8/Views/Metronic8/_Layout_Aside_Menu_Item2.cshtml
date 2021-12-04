@@ -8,6 +8,14 @@
     var rs_active = item.ID == menu.ID;
 
     var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : item.Icon;
+
+    //特殊处理
+    var list_cube = new List<string>() { "~/Admin/Cube", "~/Admin/Sys", "~/Admin/XCode", "~/Admin/Core", "~/Admin/OAuthConfig" };
+    if (list_cube.Contains(menu.Url)&&list_cube.Contains(item.Url))
+    {
+        rs_active=true;
+    }
+
 }
 
 @if (item.Visible)
