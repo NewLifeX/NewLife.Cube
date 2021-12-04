@@ -1488,53 +1488,53 @@ namespace NewLife.Cube
             }
         }
 
-        /// <summary>自动从实体类拿到显示名</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            // 设置显示名
-            if (menu.DisplayName.IsNullOrEmpty())
-            {
-                menu.DisplayName = Entity<TEntity>.Meta.Table.DataTable.DisplayName;
-                menu.Visible = true;
-                //menu.Save();
-            }
+        ///// <summary>自动从实体类拿到显示名</summary>
+        ///// <param name="menu"></param>
+        ///// <returns></returns>
+        //protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
+        //{
+        //    // 设置显示名
+        //    if (menu.DisplayName.IsNullOrEmpty())
+        //    {
+        //        menu.DisplayName = Entity<TEntity>.Meta.Table.DataTable.DisplayName;
+        //        menu.Visible = true;
+        //        //menu.Save();
+        //    }
 
-            var dic = base.ScanActionMenu(menu);
+        //    var dic = base.ScanActionMenu(menu);
 
-            // 只写实体类过滤掉添删改权限
-            if (Factory.Table.DataTable.InsertOnly)
-            {
-                var arr = new[] { PermissionFlags.Insert, PermissionFlags.Update, PermissionFlags.Delete }.Select(e => (Int32)e).ToArray();
-                dic = dic.Where(e => !arr.Contains(e.Value)).ToDictionary(e => e.Key, e => e.Value);
-            }
+        //    // 只写实体类过滤掉添删改权限
+        //    if (Factory.Table.DataTable.InsertOnly)
+        //    {
+        //        var arr = new[] { PermissionFlags.Insert, PermissionFlags.Update, PermissionFlags.Delete }.Select(e => (Int32)e).ToArray();
+        //        dic = dic.Where(e => !arr.Contains(e.Value)).ToDictionary(e => e.Key, e => e.Value);
+        //    }
 
-            // 由于初始化内容太多了，这里注释掉，通过模型表搜索列表触发
-            //ThreadPoolX.QueueUserWorkItem(() =>
-            //{
-            //    // 等菜单缓存准备好
-            //    Thread.Sleep(1000);
+        //    // 由于初始化内容太多了，这里注释掉，通过模型表搜索列表触发
+        //    //ThreadPoolX.QueueUserWorkItem(() =>
+        //    //{
+        //    //    // 等菜单缓存准备好
+        //    //    Thread.Sleep(1000);
 
-            //    // TODO 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
-            //    // var list = GetType().GetCustomAttributes();
-            //    // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
-            //    // 生成模型表模型列
-            //    var modelTable = ModelTable.ScanModel(menu.Parent?.Name, menu, Entity<TEntity>.Meta.Factory);
+        //    //    // TODO 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
+        //    //    // var list = GetType().GetCustomAttributes();
+        //    //    // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
+        //    //    // 生成模型表模型列
+        //    //    var modelTable = ModelTable.ScanModel(menu.Parent?.Name, menu, Entity<TEntity>.Meta.Factory);
 
-            //    // 模型表已是异步执行模型表生成，这里使用同步保存模型列
-            //    //ThreadPoolX.QueueUserWorkItem(() =>
-            //    //{
-            //    // 等模型列缓存准备好
-            //    //Thread.Sleep(1000);
-            //    ModelTableSetting(modelTable);
-            //    //});
-            //});
+        //    //    // 模型表已是异步执行模型表生成，这里使用同步保存模型列
+        //    //    //ThreadPoolX.QueueUserWorkItem(() =>
+        //    //    //{
+        //    //    // 等模型列缓存准备好
+        //    //    //Thread.Sleep(1000);
+        //    //    ModelTableSetting(modelTable);
+        //    //    //});
+        //    //});
 
-            ThisMenu = menu;
+        //    ThisMenu = menu;
 
-            return dic;
-        }
+        //    return dic;
+        //}
 
         /// <summary>
         /// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉

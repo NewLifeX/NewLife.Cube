@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NewLife.Log;
 using NewLife.Reflection;
-using NewLife.Threading;
 using XCode;
 using XCode.Membership;
 
@@ -104,7 +105,28 @@ namespace NewLife.Cube.Membership
                 ms.Add(controller);
                 list.Add(controller);
 
-                // 反射调用控制器的方法来获取动作
+                // 获取动作
+                var acts = ScanActionMenu(type, controller);
+                if (acts != null && acts.Count > 0)
+                {
+                    // 可选权限子项
+                    controller.Permissions.Clear();
+
+                    // 添加该类型下的所有Action作为可选权限子项
+                    foreach (var item in acts)
+                    {
+                        var method = item.Key;
+
+                        var dn = method.GetDisplayName();
+                        if (!dn.IsNullOrEmpty()) dn = dn.Replace("{type}", (controller as Menu)?.FriendName);
+
+                        var pmName = !dn.IsNullOrEmpty() ? dn : method.Name;
+                        if (item.Value <= (Int32)PermissionFlags.Delete) pmName = ((PermissionFlags)item.Value).GetDescription();
+                        controller.Permissions[item.Value] = pmName;
+                    }
+                }
+
+                // 反射调用控制器的方法来获取动作。作为过渡，将来取消
                 var func = type.GetMethodEx("ScanActionMenu");
                 if (func != null)
                 {
@@ -113,7 +135,7 @@ namespace NewLife.Cube.Membership
                     var ctrl = ctor.Invoke(new Object[ctor.GetParameters().Length]);
                     //var ctrl = type.CreateInstance();
 
-                    var acts = func.As<Func<IMenu, IDictionary<MethodInfo, Int32>>>(ctrl).Invoke(controller);
+                    acts = func.As<Func<IMenu, IDictionary<MethodInfo, Int32>>>(ctrl).Invoke(controller);
                     if (acts != null && acts.Count > 0)
                     {
                         // 可选权限子项
@@ -176,6 +198,71 @@ namespace NewLife.Cube.Membership
             }
 
             return list;
+        }
+
+        /// <summary>获取可用于生成权限菜单的Action集合</summary>
+        /// <param name="menu">该控制器所在菜单</param>
+        /// <returns></returns>
+        private static IDictionary<MethodInfo, Int32> ScanActionMenu(Type type, IMenu menu)
+        {
+            var dic = new Dictionary<MethodInfo, Int32>();
+
+            //var factory = type.GetProperty("Factory", BindingFlags.Static | BindingFlags.Public | BindingFlags.GetProperty) as IEntityFactory;
+            var pi = type.GetPropertyEx("Factory");
+            var factory = pi?.GetValue(null, null) as IEntityFactory;
+            //if (factory == null) return dic;
+
+            // 设置显示名
+            if (menu.DisplayName.IsNullOrEmpty() && factory != null)
+            {
+                menu.DisplayName = factory.Table.DataTable.DisplayName;
+                menu.Visible = true;
+                //menu.Save();
+            }
+
+            // 添加该类型下的所有Action
+            foreach (var method in type.GetMethods())
+            {
+                if (method.IsStatic || !method.IsPublic) continue;
+
+                if (!method.ReturnType.As<ActionResult>()) continue;
+
+                //if (method.GetCustomAttribute<HttpPostAttribute>() != null) continue;
+                if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
+
+                var attAuth = method.GetCustomAttribute<EntityAuthorizeAttribute>();
+
+                // 添加菜单
+                var attMenu = method.GetCustomAttribute<MenuAttribute>();
+                if (attMenu != null)
+                {
+                    // 添加系统信息菜单
+                    var name = method.Name;
+                    var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == name);
+                    if (m2 == null)
+                    {
+                        m2 = menu.Parent.Add(name, method.GetDisplayName(), $"{type.FullName}.{name}", $"{menu.Url}/{name}");
+                        m2.Sort = attMenu.Order;
+                        m2.Icon = attMenu.Icon;
+                        if (attAuth != null) m2.Permissions[(Int32)attAuth.Permission] = attAuth.Permission.GetDescription();
+                        if (m2 is IEntity entity) entity.Update();
+                    }
+                }
+                else
+                {
+                    //var attAuth = method.GetCustomAttribute<EntityAuthorizeAttribute>();
+                    if (attAuth != null && attAuth.Permission > PermissionFlags.None) dic.Add(method, (Int32)attAuth.Permission);
+                }
+            }
+
+            // 只写实体类过滤掉添删改权限
+            if (factory != null && factory.Table.DataTable.InsertOnly)
+            {
+                var arr = new[] { PermissionFlags.Insert, PermissionFlags.Update, PermissionFlags.Delete }.Select(e => (Int32)e).ToArray();
+                dic = dic.Where(e => !arr.Contains(e.Value)).ToDictionary(e => e.Key, e => e.Value);
+            }
+
+            return dic;
         }
     }
 }
