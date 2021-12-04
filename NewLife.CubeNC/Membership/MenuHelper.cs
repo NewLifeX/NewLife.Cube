@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Threading;
@@ -64,7 +65,7 @@ namespace NewLife.Cube.Membership
             foreach (var type in controllerTypes)
             {
                 var name = type.Name.TrimEnd("Controller");
-                var url = root.Url;
+                var url = root.Url + "/" + name;
                 var node = root;
 
                 // 添加Controller
@@ -78,7 +79,7 @@ namespace NewLife.Cube.Membership
                         if (controller != null)
                         {
                             controller.ParentID = root.ID;
-                            controller.Url = url + "/" + name;
+                            controller.Url = url;
                         }
                     }
                     else
@@ -89,7 +90,6 @@ namespace NewLife.Cube.Membership
                 }
                 if (controller == null)
                 {
-                    url += "/" + name;
                     controller = menuFactory.FindByUrl(url);
                     if (controller == null)
                     {
@@ -97,7 +97,7 @@ namespace NewLife.Cube.Membership
                         controller = node.Add(name, type.GetDisplayName(), type.FullName, url);
                     }
                 }
-                controller.Url = url + "/" + name;
+                controller.Url = url;
                 controller.FullName = type.FullName;
                 if (controller.Remark.IsNullOrEmpty()) controller.Remark = type.GetDescription();
 
@@ -165,13 +165,14 @@ namespace NewLife.Cube.Membership
             // 如果新增了菜单，需要检查权限
             if (rs > 0)
             {
-                ThreadPoolX.QueueUserWorkItem(() =>
+                var task = Task.Run(() =>
                 {
                     XTrace.WriteLine("新增了菜单，需要检查权限");
                     //var fact = ManageProvider.GetFactory<IRole>();
                     var fact = typeof(Role).AsFactory();
                     fact.EntityType.Invoke("CheckRole");
                 });
+                task.Wait(5_000);
             }
 
             return list;

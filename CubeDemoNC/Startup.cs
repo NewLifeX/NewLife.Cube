@@ -14,6 +14,8 @@ using NewLife.Cube;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
+using NewLife.Threading;
+using Stardust;
 using Stardust.Monitors;
 using Setting = NewLife.Cube.Setting;
 
@@ -120,12 +122,12 @@ namespace CubeDemoNC
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            //// 探测星尘
-            //ThreadPoolX.QueueUserWorkItem(() =>
-            //{
-            //    var client = new LocalStarClient();
-            //    client.ProbeAndInstall(null, "1.1");
-            //});
+            // 探测星尘
+            ThreadPoolX.QueueUserWorkItem(() =>
+            {
+                var client = new LocalStarClient();
+                client.ProbeAndInstall(null, "1.1");
+            });
 
 #if !NET60
             // 所有请求没有命中的，统一在这里处理
