@@ -19,6 +19,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("文件")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [Area("Admin")]
+    [Menu(28, false, Icon = "fa-file")]
     public class FileController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>

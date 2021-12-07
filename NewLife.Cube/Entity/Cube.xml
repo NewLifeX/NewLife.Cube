@@ -20,7 +20,7 @@
       <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" />
       <Column Name="UpdateIP" DataType="String" Description="更新地址" />
       <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
-      <Column Name="Remark" DataType="String" Length="2000" Description="备注" />
+      <Column Name="Remark" DataType="String" Length="5000" Description="备注" />
     </Columns>
     <Indexes>
       <Index Columns="Provider,OpenID" Unique="True" />
@@ -65,6 +65,9 @@
       <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
       <Column Name="GrantType" DataType="Int32" Description="授权类型" Type="GrantTypes" />
       <Column Name="Scope" DataType="String" Description="授权范围" />
+      <Column Name="AuthUrl" DataType="String" Length="200" Description="验证地址。跳转SSO的验证地址" />
+      <Column Name="AccessUrl" DataType="String" Length="200" Description="令牌地址。根据code换取令牌的地址" />
+      <Column Name="UserUrl" DataType="String" Length="200" Description="用户地址。根据令牌获取用户信息的地址" />
       <Column Name="AppUrl" DataType="String" Length="200" Description="应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="Debug" DataType="Boolean" Description="调试。设置处于调试状态，输出详细日志" />
@@ -73,6 +76,7 @@
       <Column Name="AutoRole" DataType="String" Description="自动角色。该渠道登录的用户，将会自动得到指定角色名，多个角色逗号隔开" />
       <Column Name="Sort" DataType="Int32" Description="排序。较大者在前面" />
       <Column Name="SecurityKey" DataType="String" Length="500" Description="安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。" />
+      <Column Name="FieldMap" DataType="String" Length="500" Description="字段映射。SSO用户字段如何映射到OAuthClient内部属性" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
       <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" />
@@ -109,6 +113,52 @@
     <Indexes>
       <Index Columns="Token" Unique="True" />
       <Index Columns="UserID" />
+    </Indexes>
+  </Table>
+  <Table Name="UserOnline" Description="用户在线" ConnName="Membership">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="UserID" DataType="Int32" Description="用户" />
+      <Column Name="Name" DataType="String" Master="True" Description="名称" />
+      <Column Name="SessionID" DataType="String" Description="会话。Web的SessionID或Server的会话编号" />
+      <Column Name="OAuthProvider" DataType="String" Description="OAuth提供商。从哪个渠道登录" />
+      <Column Name="Times" DataType="Int32" Description="次数" />
+      <Column Name="Page" DataType="String" Description="页面" />
+      <Column Name="Status" DataType="String" Description="状态" />
+      <Column Name="OnlineTime" DataType="Int32" Description="在线时间。本次在线总时间，秒" />
+      <Column Name="LastError" DataType="DateTime" Nullable="False" Description="最后错误" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" />
+      <Column Name="CreateTime" DataType="DateTime" Nullable="False" Description="创建时间" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
+      <Column Name="UpdateTime" DataType="DateTime" Nullable="False" Description="修改时间" />
+    </Columns>
+    <Indexes>
+      <Index Columns="UserID" />
+      <Index Columns="SessionID" />
+      <Index Columns="CreateTime" />
+    </Indexes>
+  </Table>
+  <Table Name="UserStat" Description="用户统计" ConnName="Membership">
+    <Columns>
+      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Date" DataType="DateTime" Description="统计日期" />
+      <Column Name="Total" DataType="Int32" Description="总数。总用户数" />
+      <Column Name="Logins" DataType="Int32" Description="登录数。总登录数" />
+      <Column Name="OAuths" DataType="Int32" Description="OAuth登录。OAuth总登录数" />
+      <Column Name="MaxOnline" DataType="Int32" Description="最大在线。最大在线用户数" />
+      <Column Name="Actives" DataType="Int32" Description="活跃。今天活跃用户数" />
+      <Column Name="ActivesT7" DataType="Int32" Description="7天活跃。7天活跃用户数" />
+      <Column Name="ActivesT30" DataType="Int32" Description="30天活跃。30天活跃用户数" />
+      <Column Name="News" DataType="Int32" Description="新用户。今天注册新用户数" />
+      <Column Name="NewsT7" DataType="Int32" Description="7天注册。7天内注册新用户数" />
+      <Column Name="NewsT30" DataType="Int32" Description="30天注册。30天注册新用户数" />
+      <Column Name="OnlineTime" DataType="Int32" Description="在线时间。累计在线总时间，秒" />
+      <Column Name="CreateTime" DataType="DateTime" Nullable="False" Description="创建时间" />
+      <Column Name="UpdateTime" DataType="DateTime" Nullable="False" Description="更新时间" />
+      <Column Name="Remark" DataType="String" Length="1000" Description="详细信息" />
+    </Columns>
+    <Indexes>
+      <Index Columns="Date" Unique="True" />
     </Indexes>
   </Table>
   <Table Name="App" TableName="OAuthApp" Description="应用系统。用于OAuthServer的子系统">

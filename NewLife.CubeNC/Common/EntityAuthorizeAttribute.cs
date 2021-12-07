@@ -104,7 +104,17 @@ namespace NewLife.Cube
             if (user == null) return false;
 
             // 判断权限
-            if (ctx.Items["CurrentMenu"] is IMenu menu && user is IUser user2) return user2.Has(menu, Permission);
+            if (ctx.Items["CurrentMenu"] is IMenu menu)
+            {
+                if (user is IUser user2) return user2.Has(menu, Permission);
+
+                var msg = $"访问菜单 {menu} 需要 {Permission.GetDescription()} 权限";
+                LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
+            }
+            else
+            {
+                LogProvider.Provider.WriteLog("访问", "拒绝", false, "无法找到菜单", ip: ctx.GetUserHost());
+            }
 
             return false;
         }
@@ -183,13 +193,14 @@ namespace NewLife.Cube
             //var ctrl = act.ControllerDescriptor;
             var type = act.ControllerTypeInfo;
             var fullName = type.FullName + "." + act.ActionName;
+            var url = filterContext.HttpContext.Request.Path;
 
             var ctx = filterContext.HttpContext;
             var mf = ManageProvider.Menu;
             var menu = ctx.Items["CurrentMenu"] as IMenu;
             if (menu == null)
             {
-                menu = mf.FindByFullName(fullName) ?? mf.FindByFullName(type.FullName);
+                menu = mf.FindByFullName(fullName) ?? mf.FindByFullName(type.FullName) ?? mf.FindByUrl(url) ?? mf.FindByUrl("~" + url);
 
                 // 当前菜单
                 //filterContext.Controller.ViewBag.Menu = menu;
@@ -229,9 +240,11 @@ namespace NewLife.Cube
         {
             if (!_ss.TryAdd(type.Namespace, type)) return false;
 
+            using var span = DefaultTracer.Instance?.NewSpan(nameof(CreateMenu), type.FullName);
+
             var mf = ManageProvider.Menu;
             //var ms = mf.ScanController(type.Namespace.TrimEnd(".Controllers"), type.Assembly, type.Namespace);
-            var ms = MenuHelper.ScanController(mf, type.Namespace.TrimEnd(".Controllers"), type.Assembly, type.Namespace);
+            var ms = MenuHelper.ScanController(mf, type.Namespace.TrimEnd(".Controllers"), type);
 
             var root = mf.FindByFullName(type.Namespace);
             if (root != null)

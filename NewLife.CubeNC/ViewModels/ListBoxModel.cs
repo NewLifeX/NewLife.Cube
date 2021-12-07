@@ -44,6 +44,7 @@ namespace NewLife.Cube.ViewModels
         /// <param name="selectedValues"></param>
         /// <param name="optionLabel"></param>
         /// <param name="autoPostback"></param>
+        /// <param name="htmlAttributes"></param>
         public ListBoxModel(String name, IEnumerable value, Object selectedValues, String optionLabel, Boolean autoPostback, Object htmlAttributes)
         {
             Name = name;

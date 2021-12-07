@@ -9,11 +9,11 @@
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2021 NewLife</Copyright>
-    <VersionPrefix>4.0</VersionPrefix>
+    <VersionPrefix>4.3</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
-    <AssemblyVersion>4.0.*</AssemblyVersion>
+    <AssemblyVersion>4.3.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\Bin</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
@@ -30,7 +30,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>ECharts增加多主题选择</PackageReleaseNotes>
+    <PackageReleaseNotes>新增MenuAttribute优化控制器菜单管理；新增魔方管理区域；增强OAuth配置</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -58,37 +58,39 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0-beta-20204-02">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.11.2021.1030-beta3" />
-    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1030-beta3" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.1204" />
+    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1204" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Admin\Controllers\AppController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Admin\Controllers\AppLogController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AreaController.cs" Link="Areas\Admin\Controllers\AreaController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AttachmentController.cs" Link="Areas\Admin\Controllers\AttachmentController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Cube\Controllers\AppController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Cube\Controllers\AppLogController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AreaController.cs" Link="Areas\Cube\Controllers\AreaController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AttachmentController.cs" Link="Areas\Cube\Controllers\AttachmentController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Controllers\CoreController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CronJobController.cs" Link="Areas\Admin\Controllers\CronJobController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CronJobController.cs" Link="Areas\Cube\Controllers\CronJobController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Controllers\CubeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DbController.cs" Link="Areas\Admin\Controllers\DbController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DepartmentController.cs" Link="Areas\Admin\Controllers\DepartmentController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Controllers\FileController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\LogController.cs" Link="Areas\Admin\Controllers\LogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\MenuController.cs" Link="Areas\Admin\Controllers\MenuController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelColumnController.cs" Link="Areas\Admin\Controllers\ModelColumnController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelTableController.cs" Link="Areas\Admin\Controllers\ModelTableController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelColumnController.cs" Link="Areas\Cube\Controllers\ModelColumnController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelTableController.cs" Link="Areas\Cube\Controllers\ModelTableController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthConfigController.cs" Link="Areas\Admin\Controllers\OAuthConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthLogController.cs" Link="Areas\Admin\Controllers\OAuthLogController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ParameterController.cs" Link="Areas\Admin\Controllers\ParameterController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\PrincipalAgentController.cs" Link="Areas\Admin\Controllers\PrincipalAgentController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\PrincipalAgentController.cs" Link="Areas\Cube\Controllers\PrincipalAgentController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Controllers\RoleController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserConnectController.cs" Link="Areas\Admin\Controllers\UserConnectController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserController.cs" Link="Areas\Admin\Controllers\UserController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserOnlineController.cs" Link="Areas\Admin\Controllers\UserOnlineController.cs" />
+    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserStatController.cs" Link="Areas\Admin\Controllers\UserStatController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserTokenController.cs" Link="Areas\Admin\Controllers\UserTokenController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
     <Compile Include="..\NewLife.Cube\Areas\Admin\Models\ChangePasswordModel.cs" Link="Areas\Admin\Models\ChangePasswordModel.cs" />
@@ -131,6 +133,10 @@
     <Compile Include="..\NewLife.Cube\Entity\模型表.cs" Link="Entity\模型表.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs" Link="Entity\用户令牌.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.cs" Link="Entity\用户令牌.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户在线.Biz.cs" Link="Entity\用户在线.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户在线.cs" Link="Entity\用户在线.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户统计.Biz.cs" Link="Entity\用户统计.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\用户统计.cs" Link="Entity\用户统计.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户链接.Biz.cs">
       <Link>Entity\用户链接.Biz.cs</Link>
     </Compile>
@@ -179,6 +185,7 @@
   <ItemGroup>
     <Content Remove="Views\Shared\_List_Data_Item_First.cshtml" />
     <Content Remove="Views\Shared\_StatLevel.cshtml" />
+    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.woff2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -194,12 +201,12 @@
       <LastGenOutput>XCoder.log</LastGenOutput>
     </None>
     <None Include="appsettings.json" />
-    <None Include="Areas\Admin\Views\PrincipalAgent\_Form_Body.cshtml" />
+    <None Include="Areas\Cube\Views\PrincipalAgent\_Form_Body.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Web\Models\" />
+    <Folder Include="Areas\Cube\Controllers\" />
   </ItemGroup>
 </Project>

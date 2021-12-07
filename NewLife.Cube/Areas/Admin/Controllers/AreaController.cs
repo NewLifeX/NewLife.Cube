@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Charts;
 using NewLife.Web;
@@ -10,19 +9,15 @@ using XCode;
 using XCode.Membership;
 using static XCode.Membership.Area;
 
-namespace NewLife.Cube.Admin.Controllers
+namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>地区</summary>
     [DisplayName("地区")]
-    [Area("Admin")]
+    [Area("Cube")]
+    [Menu(50, true, Icon = "fa-area-chart")]
     public class AreaController : EntityController<Area>
     {
-        static AreaController()
-        {
-            MenuOrder = 50;
-
-            ListFields.RemoveCreateField();
-        }
+        static AreaController() => ListFields.RemoveCreateField();
 
         private static Boolean _inited;
 
@@ -120,20 +115,10 @@ namespace NewLife.Cube.Admin.Controllers
             return list;
         }
 
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
+        /// <summary>
+        /// 中国地图
+        /// </summary>
         /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible && !menu.Necessary)
-            {
-                menu.Visible = false;
-                (menu as IEntity).Update();
-            }
-
-            return base.ScanActionMenu(menu);
-        }
-
         public ActionResult Map()
         {
             PageSetting.EnableNavbar = false;

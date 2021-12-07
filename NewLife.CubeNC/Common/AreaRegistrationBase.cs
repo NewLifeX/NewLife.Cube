@@ -43,17 +43,20 @@ namespace NewLife.Cube
             XTrace.WriteLine("开始注册权限管理区域[{0}]，控制器命名空间[{1}]", areaName, ns);
 
             // 自动检查并添加菜单
-            Task.Run(() =>
+            var task = Task.Run(() =>
             {
+                using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanController), areaType.FullName);
                 try
                 {
                     ScanController(areaType);
                 }
                 catch (Exception ex)
                 {
+                    span?.SetError(ex, null);
                     XTrace.WriteException(ex);
                 }
             });
+            task.Wait(5_000);
         }
 
         /// <summary>自动扫描控制器，并添加到菜单</summary>
@@ -71,10 +74,10 @@ namespace NewLife.Cube
             _ = ModelTable.Meta.Count;
             _ = ModelColumn.Meta.Count;
 
-            using var tran = (mf as IEntityFactory).Session.CreateTrans();
+            //using var tran = (mf as IEntityFactory).Session.CreateTrans();
 
             //var menus = mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
-            var menus = MenuHelper.ScanController(mf, areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
+            var menus = MenuHelper.ScanController(mf, areaName, areaType);
 
             // 更新区域名称为友好中文名
             var menu = mf.Root.FindByPath(areaName);
@@ -89,18 +92,19 @@ namespace NewLife.Cube
                 (menu as IEntity).Update();
             }
 
-            tran.Commit();
+            //tran.Commit();
 
             //// 扫描模型表
             //ScanModel(areaName, menus);
 
             // 再次检查菜单权限，因为上面的ScanController里开启菜单权限检查时，菜单可能还没有生成
-            ThreadPoolX.QueueUserWorkItem(() =>
+            var task = Task.Run(() =>
             {
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
                 XTrace.WriteLine("新增了菜单，需要检查权限。二次检查，双重保障");
                 typeof(Role).Invoke("CheckRole");
             });
+            task.Wait(5_000);
 
             XTrace.WriteLine("end---------初始化[{0}]的菜单体系---------end", areaName);
         }

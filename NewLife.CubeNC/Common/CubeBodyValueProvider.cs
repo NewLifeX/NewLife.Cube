@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NewLife.Collections;
 
@@ -13,14 +10,31 @@ namespace NewLife.Cube.Common
         private readonly IValueProvider _valueProvider;
         private readonly NullableDictionary<String, Object> _body;
 
+        /// <summary>
+        /// 实例化
+        /// </summary>
+        /// <param name="valueProvider"></param>
+        /// <param name="body"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         public CubeBodyValueProvider(IValueProvider valueProvider, NullableDictionary<String, Object> body)
         {
             _valueProvider = valueProvider;
             _body = body ?? throw new ArgumentNullException(nameof(body));
         }
 
+        /// <summary>
+        /// 是否包含指定前缀
+        /// </summary>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
         public Boolean ContainsPrefix(String prefix) => true;
 
+        /// <summary>
+        /// 取值
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public ValueProviderResult GetValue(String key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));

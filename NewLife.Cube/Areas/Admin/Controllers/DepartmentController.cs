@@ -11,12 +11,11 @@ namespace NewLife.Cube.Admin.Controllers
     [DataPermission(null, "ManagerID={#userId}")]
     [DisplayName("部门")]
     [Area("Admin")]
+    [Menu(95, true, Icon = "fa-users")]
     public class DepartmentController : EntityController<Department>
     {
         static DepartmentController()
         {
-            MenuOrder = 95;
-
             ListFields.RemoveField("Ex1");
             ListFields.RemoveField("Ex2");
             ListFields.RemoveField("Ex3");

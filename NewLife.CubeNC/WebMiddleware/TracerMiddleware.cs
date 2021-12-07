@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NewLife.Log;
@@ -35,14 +36,29 @@ namespace NewLife.Cube.WebMiddleware
                 var action = GetAction(ctx);
                 if (!action.IsNullOrEmpty())
                 {
-                    // 聚合请求头作为强制采样的数据标签
-                    var vs = ctx.Request.Headers.ToDictionary(e => e.Key, e => e.Value + "");
+                    // 请求主体作为强制采样的数据标签，便于分析链路
+                    var req = ctx.Request;
 
                     span = Tracer.NewSpan(action);
-                    span.Tag = $"{ctx.GetUserHost()} {ctx.Request.Method} {ctx.Request.GetRawUrl()}";
+                    span.Tag = $"{ctx.GetUserHost()} {req.Method} {req.GetRawUrl()}";
                     if (span is DefaultSpan ds && ds.TraceFlag > 0)
-                        span.Tag += Environment.NewLine + vs.Join(Environment.NewLine, e => $"{e.Key}:{e.Value}");
-                    span.Detach(vs);
+                    {
+                        if (req.ContentLength != null && req.ContentLength < 1024 * 8)
+                        {
+                            req.EnableBuffering();
+
+                            var buf = new Byte[1024];
+                            var count = await req.Body.ReadAsync(buf, 0, buf.Length);
+                            span.Tag = buf.ToStr(null, 0, count);
+                            req.Body.Position = 0;
+                        }
+                        else
+                        {
+                            var vs = req.Headers.Where(e => !e.Key.EqualIgnoreCase(ExcludeHeaders)).ToDictionary(e => e.Key, e => e.Value + "");
+                            span.Tag += Environment.NewLine + vs.Join(Environment.NewLine, e => $"{e.Key}:{e.Value}");
+                        }
+                    }
+                    span.Detach(req.Headers);
                 }
             }
 
@@ -68,6 +84,11 @@ namespace NewLife.Cube.WebMiddleware
                 span?.Dispose();
             }
         }
+
+        /// <summary>忽略的头部</summary>
+        public static String[] ExcludeHeaders { get; set; } = new[] {
+            "traceparent", "Authorization", "Cookie"
+        };
 
         /// <summary>忽略的后缀</summary>
         public static String[] ExcludeSuffixes { get; set; } = new[] {

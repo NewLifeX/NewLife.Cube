@@ -26,7 +26,7 @@
 {
     @Html.DropDownList(name, selectList, atts)
 }
-else if (type is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
+else if (value is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
 {
     IEntityFactory factory = null;
     var dic = new Dictionary<String, String>();

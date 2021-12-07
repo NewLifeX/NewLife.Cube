@@ -1,0 +1,33 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+
+@{
+    var name = Model.Name;
+    var value = Model.Value.ToInt();
+    var type = Model.Type;
+
+    var dic = EnumHelper.GetDescriptions(type);
+}
+
+<div class="input-group">
+
+    <select class="form-select form-select-sm" data-control="select2" id="@name" name="@name">
+        @foreach (var item in dic)
+        {
+            var sel = item.Key == value;
+            if (sel)
+            {
+                <option value="@item.Key" selected>@item.Value  </option>
+            }
+            else
+            {
+                <option value="@item.Key">@item.Value  </option>
+            }
+
+        }
+    </select>
+
+</div>

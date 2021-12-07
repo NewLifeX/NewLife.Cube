@@ -5,9 +5,12 @@
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
 }
+@Html.ActionLink("用户在线","Index","UserOnline") &nbsp;
+@Html.ActionLink("用户统计","Index","UserStat") &nbsp;
 <div class="form-group">
     <label for="roleId" class="control-label">角色：</label>
     @await Html.PartialAsync("_Form_ListBox", new ListBoxModel("roleIds", Role.FindAllWithCache(), page["roleIds"]))
 </div>
 @await Html.PartialAsync("_Enable")
 @await Html.PartialAsync("_SelectDepartment", "departmentId")
+@await Html.PartialAsync("_Area2", "")

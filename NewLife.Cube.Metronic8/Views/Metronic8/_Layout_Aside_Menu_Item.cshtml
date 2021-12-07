@@ -1,0 +1,78 @@
+﻿@model ValueTuple<IMenu, IMenu>
+
+@{
+    var menu = Model.Item1;
+    var item = Model.Item2;
+
+    var rs = item.AllChilds.Where(m => m.ID == menu.ParentID).Count() > 0;
+    var rs_p = item.ParentID == 0;
+    var rs_active = item.ID == menu.ID|| item.ID==menu.ParentID;
+
+    var icons = new string[] {
+    "home", "bars", "book", "chess-queen", "certificate", "chrome", "cloud", "comment", "feather","fighter-jet",
+    "hammer","link","leaf","layer-group","paper-plane","cogs","seedling","shopping-bag","sitemap","trophy",
+    "tree","trophy","twitter","truck","tshirt","user","wine-glass-alt","windows","video","tint"};
+
+    var icon = item.Icon.IsNullOrEmpty() ? "cogs" : item.Icon;
+    if (!item.Name.EqualIgnoreCase("admin") && item.Icon.IsNullOrEmpty())
+    {
+        var indx = item.ID % 30;
+        icon = icons[indx];
+    }
+}
+
+
+@if (item.Visible)
+{
+    @if (item.Childs.Any())
+    {
+        var user = ViewBag.User as IUser ?? ManageProvider.User;
+        var fact = ManageProvider.Menu;
+        var menus = fact.Root.Childs;
+        if (user?.Role != null)
+        {
+            menus = fact.GetMySubMenus(item.ID, user, true);
+        }
+
+        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
+            <span class="menu-link">
+                @* <span class="@(rs_p ? "menu-icon" : "menu-bullet")">*@
+                <span class="menu-icon">
+                    <span class="fas fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></span>
+                </span>
+                <span class="menu-title fs-4">@item.DisplayName</span>
+                <span class="menu-arrow"></span>
+            </span>
+
+            <div class="menu-sub menu-sub-accordion menu-active-bg">
+                @foreach (var child in menus)
+                {
+                    @await Html.PartialAsync("_Layout_Aside_Menu_Item2", new ValueTuple<IMenu, IMenu>(menu, child))
+                }
+            </div>
+
+
+
+        </div>
+    }
+    else
+    {
+        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
+            <span class="menu-link">
+                <span class="@(rs_p ? "menu-icon" : "menu-bullet") text-gray-700">
+                    <span class="fas fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></span>
+                </span>
+                <a class="menu-link @(rs_active?"active":"")" href="@(item.Url != null ? Url.Content(item.Url) : "#")">
+                    <span class="menu-bullet">
+                        <span class="bullet bullet-dot"></span>
+                    </span>
+                    <span class="menu-title fs-4">@item.DisplayName</span>
+                </a>
+            </span>
+
+
+
+        </div>
+
+    }
+}

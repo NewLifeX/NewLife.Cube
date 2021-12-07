@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Web.Models;
 using NewLife.Http;
 using NewLife.Log;
 using NewLife.Model;
@@ -58,6 +59,11 @@ namespace NewLife.Web
 
         /// <summary>作用域</summary>
         public String Scope { get; set; }
+
+        /// <summary>
+        /// 字段映射
+        /// </summary>
+        public IDictionary<String, Object> FieldMap { get; set; }
 
         /// <summary>APM跟踪器</summary>
         public static ITracer Tracer { get; set; } = DefaultTracer.Instance;
@@ -170,9 +176,13 @@ namespace NewLife.Web
             Name = mi.Name;
             if (!mi.Server.IsNullOrEmpty()) Server = mi.Server;
             if (!mi.AccessServer.IsNullOrEmpty()) AccessServer = mi.AccessServer;
+            if (!mi.AuthUrl.IsNullOrEmpty()) AuthUrl = mi.AuthUrl;
+            if (!mi.AccessUrl.IsNullOrEmpty()) AccessUrl = mi.AccessUrl;
+            if (!mi.UserUrl.IsNullOrEmpty()) UserUrl = mi.UserUrl;
             if (!mi.AppId.IsNullOrEmpty()) Key = mi.AppId;
             if (!mi.Secret.IsNullOrEmpty()) Secret = mi.Secret;
             if (!mi.Scope.IsNullOrEmpty()) Scope = mi.Scope;
+            if (!mi.FieldMap.IsNullOrEmpty()) FieldMap = JsonParser.Decode(mi.FieldMap);
         }
 
         /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
@@ -572,6 +582,29 @@ namespace NewLife.Web
             if (dic.TryGetValue("user_detail", out str)) Detail = str.Trim();
 
             if (dic.TryGetValue("Avatar", out str)) Avatar = str.Trim();
+
+            // 字段映射
+            var maps = FieldMap;
+            if (maps != null && maps.Count > 0)
+            {
+                var pis = GetType().GetProperties(true);
+                foreach (var map in maps)
+                {
+                    var pi = pis.FirstOrDefault(e => e.Name.EqualIgnoreCase(map.Key));
+                    if (pi == null) continue;
+
+                    // 多个映射字段，顺序执行
+                    var names = (map.Value + "").Split(",");
+                    foreach (var item in names)
+                    {
+                        if (dic.TryGetValue(item, out str) && !str.IsNullOrWhiteSpace())
+                        {
+                            pi.SetValue(this, str.Trim().ChangeType(pi.PropertyType));
+                            break;
+                        }
+                    }
+                }
+            }
 
             // 获取用户信息出错时抛出异常
             // 2021-07-19 企业微信正常请求返回"errmsg": "ok"，导致登录报错，所以暂时注释

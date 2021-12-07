@@ -1,0 +1,78 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube
+@{
+    var set = NewLife.Cube.Setting.Current;
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    <meta name="description" content="@SysConfig.Current.Company" />
+    <meta name="keywords" content="@SysConfig.Current.Company" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" href="~/assets/favicon.ico" />
+    <!-- 网页字体 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
+    <!-- 自定义样式 -->
+    @RenderSection("css", required: false)
+    <!-- 核心脚本 -->
+    <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
+
+    <style>
+        .style-3::-webkit-scrollbar {
+            height: 15px;
+        }
+
+        .style-3::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
+        }
+    </style>
+
+    <!-- 全局脚本 -->
+    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/js/scripts.bundle.js"></script>
+    <script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+
+</head>
+
+<!--begin::Body-->
+<body id="kt_body" class="bg-light-dark header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed toolbar-tablet-and-mobile-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:1px;--kt-toolbar-height-tablet-and-mobile:1px">
+    <div class="d-flex flex-column flex-root">
+        @await Html.PartialAsync("_Layout_Aside")
+        <div class="page d-flex flex-row flex-column-fluid">
+            @await Html.PartialAsync("_Layout_Header")
+            <div class="wrapper d-flex flex-column flex-row-fluid pb-20" id="kt_wrapper">
+                <!-- 内容 -->
+                <div class="content d-flex flex-column flex-column-fluid bg-light-dark pe-1 ps-1" id="kt_content">
+                    @RenderBody()
+                </div>
+                <!-- 内容底部 -->
+                @await Html.PartialAsync("_Layout_Content_Footer")
+            </div>
+        </div>
+    </div>
+    <!-- 侧边栏 -->
+    @await Html.PartialAsync("_Layout_Drawer_900")
+    @await Html.PartialAsync("_Layout_Drawer_500")
+    @await Html.PartialAsync("_Layout_Explore")
+    @await Html.PartialAsync("_Layout_Modals")
+
+    <!-- 滚动条 -->
+    @await Html.PartialAsync("_Layout_Scrolltop")
+
+
+    <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
+    <!--魔方自定义脚本-->
+    <script src="~/assets/cube.js"></script>
+
+    <!--自定义脚本-->
+    @RenderSection("scripts", required: false)
+
+</body>
+<!--end::Body-->
+</html>

@@ -1,0 +1,69 @@
+﻿@using NewLife.Common;
+@using NewLife.Model;
+@using XCode.Membership;
+@using NewLife.Cube;
+@using XCode;
+@using NewLife.Cube.ViewModels;
+
+@{
+    var menu = ViewBag.Menu as IMenu;
+    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
+
+    var user = ViewBag.User as IUser ?? ManageProvider.User;
+    var fact = ManageProvider.Menu;
+    var menus = fact.Root.Childs;
+    if (user?.Role != null)
+    {
+        menus = fact.GetMySubMenus(fact.Root.ID, user, true);
+    }
+    //var menus = fact.Root;
+}
+
+
+<!-- 左侧菜单 -->
+<div class="aside-menu flex-column-fluid">
+    <!--begin::Aside Menu-->
+    <div class="hover-scroll-overlay-y my-5 my-lg-5" id="kt_aside_menu_wrapper" data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_aside_logo, #kt_aside_footer" data-kt-scroll-wrappers="#kt_aside_menu" data-kt-scroll-offset="0">
+        <!--begin::Menu-->
+        <div class="menu menu-column menu-title-gray-800 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-500" id="#kt_aside_menu" data-kt-menu="true">
+            <div class="menu-item">
+                <a class="menu-link" href="@NewLife.Cube.Setting.Current.StartPage">
+                    <span class="menu-icon">
+                        <span class="fas fa-tv fs-3 text-gray-700"></span>
+                    </span>
+                    <span class="menu-title fs-4">控制台</span>
+                </a>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-content">
+                    <div class="separator mx-1"></div>
+                </div>
+            </div>
+
+            @if (menu != null)
+            {
+                foreach (IMenu item in menus)
+                {
+                    if (item.ParentID == 0)
+                    {
+                        @await Html.PartialAsync("_Layout_Aside_Menu_Item", new ValueTuple<IMenu, IMenu>(menu, item))
+                    }
+                }
+            }
+
+
+
+            <div class="menu-item">
+                <div class="menu-content">
+                    <div class="separator mx-1 my-4"></div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+            </div>
+        </div>
+        <!--end::Menu-->
+    </div>
+</div>
+<!--end::Aside menu-->

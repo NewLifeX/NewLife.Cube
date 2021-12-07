@@ -1,0 +1,66 @@
+﻿@model ValueTuple<IMenu, IMenu>
+
+@{
+    var menu = Model.Item1;
+    var item = Model.Item2;
+
+    var rs = item.AllChilds.Where(m => m.ID == menu.ParentID).Count() > 0;
+    var rs_active = item.ID == menu.ID;
+
+    var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : item.Icon;
+
+    //特殊处理
+    var list_cube = new List<string>() { "~/Admin/Cube", "~/Admin/Sys", "~/Admin/XCode", "~/Admin/Core", "~/Admin/OAuthConfig" };
+    if (list_cube.Contains(menu.Url)&&list_cube.Contains(item.Url))
+    {
+        rs_active=true;
+    }
+
+}
+
+@if (item.Visible)
+{
+    if (item.Childs.Any())
+    {
+        var user = ViewBag.User as IUser ?? ManageProvider.User;
+        var fact = ManageProvider.Menu;
+        var menus = fact.Root.Childs;
+        if (user?.Role != null)
+        {
+            menus = fact.GetMySubMenus(item.ID, user, true);
+        }
+
+        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID==menu.ParentID||rs?"show":"")">
+            <span class="menu-link">
+                <span class="menu-bullet">
+                    <span class="fas fa-@icon text-primary"></span>
+                </span>
+                <span class="menu-title">@item.DisplayName</span>
+                <span class="menu-arrow"></span>
+            </span>
+
+            <div class="menu-sub menu-sub-accordion menu-active-bg">
+                @foreach (var sub in menus)
+                {
+                    @await Html.PartialAsync("_Layout_Aside_Menu_Item2", new ValueTuple<IMenu, IMenu>(menu, sub))
+                }
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+
+        <div class="menu-item">
+            <a class="menu-link @(rs_active?"active":"")" href="@(item.Url != null ? Url.Content(item.Url) : "#")">
+                <span class="menu-bullet">
+                    <span class="bullet bullet-dot"></span>
+                </span>
+                <span class="menu-title">@item.DisplayName</span>
+            </a>
+        </div>
+    }
+
+
+}

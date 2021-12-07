@@ -23,7 +23,7 @@
 {
     @Html.ListBox(name, selectList, atts)
 }
-else if (type is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
+else if (value is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
 {
     //var vs = EntityExtension.ToDictionary(value);
     //var vs = typeof(EntityExtension).Invoke("ToDictionary", value);

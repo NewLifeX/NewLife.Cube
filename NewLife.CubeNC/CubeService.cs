@@ -113,8 +113,10 @@ namespace NewLife.Cube
             // UI服务
             services.AddSingleton<UIService>();
             services.AddSingleton<PasswordService>();
+            services.AddSingleton<UserService>();
 
             services.AddHostedService<JobService>();
+            //services.AddHostedService<UserService>();
 
             XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
 
@@ -166,6 +168,7 @@ namespace NewLife.Cube
                 }
             }
 
+#if !NET6_0_OR_GREATER
             // 反射 *.Views.dll
             foreach (var item in ".".AsDirectory().GetFiles("*.Views.dll"))
             {
@@ -185,6 +188,7 @@ namespace NewLife.Cube
                     list.Add(asm);
                 }
             }
+#endif
 
             // 为了能够实现模板覆盖，程序集相互引用需要排序，父程序集在前
             list.Sort((x, y) =>
@@ -270,6 +274,7 @@ namespace NewLife.Cube
 
             // 自动检查并添加菜单
             AreaBase.RegisterArea<Admin.AdminArea>();
+            AreaBase.RegisterArea<Cube.CubeArea>();
 
             XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
@@ -278,21 +283,28 @@ namespace NewLife.Cube
 
         private static void FixAppTableName()
         {
-            var dal = DAL.Create("Cube");
-            var tables = dal.Tables;
-            if (tables != null && !tables.Any(e => e.TableName.EqualIgnoreCase("OAuthApp")))
+            try
             {
-                XTrace.WriteLine("未发现OAuth应用新表 OAuthApp");
-
-                // 验证表名和部分字段名，避免误改其它表
-                var dt = tables.FirstOrDefault(e => e.TableName.EqualIgnoreCase("App"));
-                if (dt != null && dt.Columns.Any(e => e.ColumnName.EqualIgnoreCase("RoleIds")))
+                var dal = DAL.Create("Cube");
+                var tables = dal.Tables;
+                if (tables != null && !tables.Any(e => e.TableName.EqualIgnoreCase("OAuthApp")))
                 {
-                    XTrace.WriteLine("发现OAuth应用旧表 App ，准备重命名");
+                    XTrace.WriteLine("未发现OAuth应用新表 OAuthApp");
 
-                    var rs = dal.Execute($"Alter Table App Rename To OAuthApp");
-                    XTrace.WriteLine("重命名结果：{0}", rs);
+                    // 验证表名和部分字段名，避免误改其它表
+                    var dt = tables.FirstOrDefault(e => e.TableName.EqualIgnoreCase("App"));
+                    if (dt != null && dt.Columns.Any(e => e.ColumnName.EqualIgnoreCase("RoleIds")))
+                    {
+                        XTrace.WriteLine("发现OAuth应用旧表 App ，准备重命名");
+
+                        var rs = dal.Execute($"Alter Table App Rename To OAuthApp");
+                        XTrace.WriteLine("重命名结果：{0}", rs);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
             }
         }
 

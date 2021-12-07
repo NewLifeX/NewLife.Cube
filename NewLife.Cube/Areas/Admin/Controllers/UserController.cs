@@ -32,17 +32,17 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("用户")]
     [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
     [Area("Admin")]
+    [Menu(100, true, Icon = "fa-user")]
     public class UserController : EntityController<User>
     {
         /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
         private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
         private readonly PasswordService _passwordService;
+        private readonly UserService _userService;
 
         static UserController()
         {
-            MenuOrder = 100;
-
-            ListFields.RemoveField("Avatar", "RoleIds", "Online", "RegisterIP", "RegisterTime");
+            ListFields.RemoveField("Avatar", "RoleIds", "Online", "LastLoginIP", "RegisterIP", "RegisterTime");
             ListFields.RemoveField("Phone", "Code", "Question", "Answer");
             ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
             ListFields.RemoveUpdateField();
@@ -86,7 +86,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             {
                 var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID + "", e => e.Name);
                 EditFormFields.RemoveField("RoleNames");
             }
         }
@@ -95,7 +95,12 @@ namespace NewLife.Cube.Admin.Controllers
         /// 实例化用户控制器
         /// </summary>
         /// <param name="passwordService"></param>
-        public UserController(PasswordService passwordService) => _passwordService = passwordService;
+        /// <param name="userService"></param>
+        public UserController(PasswordService passwordService, UserService userService)
+        {
+            _passwordService = passwordService;
+            _userService = userService;
+        }
 
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
@@ -112,10 +117,11 @@ namespace NewLife.Cube.Admin.Controllers
                 return list;
             }
 
-            var roleId = p["roleId"].ToInt(-1);
-            var roleIds = p["roleIds"]?.Split(",");
-            var departmentId = p["departmentId"].ToInt(-1);
-            var departmentIds = p["departmentIds"]?.Split(",");
+            //var roleId = p["roleId"].ToInt(-1);
+            var roleIds = p["roleIds"].SplitAsInt();
+            //var departmentId = p["departmentId"].ToInt(-1);
+            var departmentIds = p["departmentId"].SplitAsInt();
+            var areaIds = p["areaId"].SplitAsInt("/");
             var enable = p["enable"]?.ToBoolean();
             var start = p["dtStart"].ToDateTime();
             var end = p["dtEnd"].ToDateTime();
@@ -125,16 +131,44 @@ namespace NewLife.Cube.Admin.Controllers
 
             //return XCode.Membership.User.Search(roleId, departmentId, enable, start, end, key, p);
 
-            var exp = new WhereExpression();
-            if (roleId >= 0) exp &= _.RoleID == roleId | _.RoleIds.Contains("," + roleId + ",");
-            if (roleIds != null && roleIds.Length > 0) exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
-            if (departmentId >= 0) exp &= _.DepartmentID == departmentId;
-            if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
-            if (enable != null) exp &= _.Enable == enable.Value;
-            exp &= _.LastLogin.Between(start, end);
-            if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
+            //var exp = new WhereExpression();
+            //if (roleId >= 0) exp &= _.RoleID == roleId | _.RoleIds.Contains("," + roleId + ",");
+            //if (roleIds != null && roleIds.Length > 0) exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
+            //if (departmentId >= 0) exp &= _.DepartmentID == departmentId;
+            //if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
+            //if (enable != null) exp &= _.Enable == enable.Value;
+            //exp &= _.LastLogin.Between(start, end);
+            //if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
 
-            var list2 = XCode.Membership.User.FindAll(exp, p);
+            //var list2 = XCode.Membership.User.FindAll(exp, p);
+
+            if (areaIds.Length > 0)
+            {
+                var rs = areaIds.ToList();
+                var r = Area.FindByID(areaIds[areaIds.Length - 1]);
+                if (r != null)
+                {
+                    // 城市，要下一级
+                    if (r.Level == 2)
+                    {
+                        rs.AddRange(r.Childs.Select(e => e.ID));
+                    }
+                    // 省份，要下面两级
+                    else if (r.Level == 1)
+                    {
+                        rs.AddRange(r.Childs.Select(e => e.ID));
+                        foreach (var item in r.Childs)
+                        {
+                            rs.AddRange(item.Childs.Select(e => e.ID));
+                        }
+                    }
+                }
+                areaIds = rs.ToArray();
+            }
+
+            //if (roleId > 0) roleIds.Add(roleId);
+            //if (departmentId > 0) departmentIds.Add(departmentId);
+            var list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
 
             foreach (var user in list2)
             {
@@ -168,6 +202,8 @@ namespace NewLife.Cube.Admin.Controllers
                     else
                         entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
                 }
+
+                if (!entity.RoleIds.IsNullOrEmpty()) entity.RoleIds = entity.RoleIds == "-1" ? null : entity.RoleIds.Replace(",-1,", ",");
             }
 
             return base.Valid(entity, type, post);
@@ -317,6 +353,15 @@ namespace NewLife.Cube.Admin.Controllers
 
                     //FormsAuthentication.SetAuthCookie(username, remember ?? false);
 
+
+                    // 记录在线统计
+                    var stat = UserStat.GetOrAdd(DateTime.Today);
+                    if (stat != null)
+                    {
+                        stat.Logins++;
+                        stat.SaveAsync(5_000);
+                    }
+
                     if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
 
                     // 不要嵌入自己
@@ -327,7 +372,7 @@ namespace NewLife.Cube.Admin.Controllers
                     if (logId > 0)
                     {
                         Session["Cube_OAuthId"] = null;
-                        var log = Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
+                        var log = NewLife.Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
                         if (log != null && log.Success && !log.RedirectUri.IsNullOrEmpty()) return Redirect(log.RedirectUri);
                     }
 
@@ -382,7 +427,12 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 // 如果是单点登录，则走单点登录注销
                 var name = Session["Cube_Sso"] as String;
-                if (!name.IsNullOrEmpty()) return Redirect($"~/Sso/Logout?name={name}&r={HttpUtility.UrlEncode(returnUrl)}");
+                if (!name.IsNullOrEmpty())
+                {
+                    UserService.ClearOnline(ManageProvider.User as User);
+
+                    return Redirect($"~/Sso/Logout?name={name}&r={HttpUtility.UrlEncode(returnUrl)}");
+                }
                 //if (!name.IsNullOrEmpty()) return RedirectToAction("Logout", "Sso", new
                 //{
                 //    area = "",

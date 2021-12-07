@@ -1,0 +1,223 @@
+﻿@*
+*@
+
+@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime;
+@using System.Runtime.Versioning;
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Http.Extensions
+@using NewLife.Caching
+@using NewLife.Common;
+@using NewLife.Messaging;
+@using NewLife.Cube;
+@using NewLife;
+@using XCode.Membership;
+@using NewLife.Reflection;
+@using NewLife.Web;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject IWebHostEnvironment Env
+
+@{
+    ViewBag.Title = "服务器信息";
+
+    var asm = Assembly.GetExecutingAssembly();
+    var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
+    var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
+    var httpContext = HttpContextAccessor.HttpContext;
+    var req = httpContext.Request;
+    //var req = NewLife.Web.HttpContext.Current.Request;
+    var conn = httpContext.Connection;
+    var mi = MachineInfo.Current ?? new MachineInfo();
+    // GC设置
+    var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
+}
+
+<div class="d-flex flex-column-fluid">
+    <div class="container">
+        <!-- 内容 -->
+        <div class="card mb-3">
+            <div class="card-body p-0 m-0 scroll-x pb-10">
+                <table class="table table-bordered table-hover table-striped table-condensed m-0">
+                    <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+                        <tr>
+                            <th class="ps-1" colspan="4">
+                                服务器信息
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="border border-gray-200">
+                        <tr>
+                            <td class="name">
+                                应用系统：
+                            </td>
+                            <td class="value">
+                                &nbsp;
+                                @if (this.Has((PermissionFlags)16))
+                                {
+                                    <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>}
+                                &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
+                            </td>
+                            <td class="name">
+                                目录：
+                            </td>
+                            <td class="value">
+                                @Env.ContentRootPath
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">
+                                域名地址：
+                            </td>
+                            <td class="value">
+                                @{ var addrLocal = conn.LocalIpAddress;
+                                    var addrRemote = conn.RemoteIpAddress;
+                                    if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+                                    if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+                                    var userHost = httpContext.GetUserHost(); }
+                                <span title="主机">@req.Headers["Host"]</span>，
+                                <span title="本地">@addrLocal:@conn.LocalPort</span>
+                                &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
+                                @if (addrRemote + "" != userHost)
+                                {
+                                    <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>}
+                            </td>
+                            <td class="name">
+                                应用程序：
+                            </td>
+                            <td class="value">
+                                <span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">
+                                应用域：
+                            </td>
+                            <td class="value">
+                                @AppDomain.CurrentDomain.FriendlyName
+                                <a class="ps-5" href="@Url.Action("Main", new{ id = "Assembly" })" title="点击打开进程程序集列表">程序集列表</a>
+                                <a class="ps-5" href="@Url.Action("Main", new{ id = "ProcessModules" })" title="点击打开进程模块列表">模块列表</a>
+                                <a class="ps-5" href="@Url.Action("Main", new{ id = "ServerVar" })" title="点击打开服务器变量列表">服务器变量列表</a>
+                            </td>
+                            <td class="name">
+                                .Net 版本：
+                            </td>
+                            <td class="value">
+                                @Environment.Version &nbsp;@ver
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">
+                                操作系统：
+                            </td>
+                            <td class="value" title="@mi.Guid">
+                                @mi.OSName @mi.OSVersion
+                            </td>
+                            <td class="name">
+                                机器用户：
+                            </td>
+                            <td class="value" title="@mi.UUID">
+                                @if (!mi.Product.IsNullOrEmpty())
+                                {
+                                    <apan>@mi.Product，</apan>}
+                                @Environment.UserName/@Environment.MachineName
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">
+                                处理器：
+                            </td>
+                            <td class="value" title="@mi.CpuID">
+                                @mi.Processor，
+                                @Environment.ProcessorCount
+                                核心，@mi.CpuRate.ToString("p0")
+                                @if (mi.Temperature > 0)
+                                {
+                                    <span>，@mi.Temperature ℃</span>
+                                }
+                            </td>
+                            <td class="name">
+                                时间：
+                            </td>
+                            <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
+                                @DateTimeOffset.Now，开机@(TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"))
+                            </td>
+                        </tr>
+                        <tr>
+                            @{ var process = Process.GetCurrentProcess();}
+                            <td class="name">
+                                内存：
+                            </td>
+                            <td class="value">
+                                物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
+                                工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
+                                GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
+                                <a class="ps-5" href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+                            </td>
+                            <td class="name">
+                                进程时间：
+                            </td>
+                            <td class="value">
+                                @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="name">
+                                Session：
+                            </td>
+                            <td class="value">
+                                @httpContext.Session.Keys.Count() 个
+                                <a class="ps-1" href="@Url.Action("Main", new{ id = "Session" })" title="点击打开Session列表">Session列表</a>
+                                ，@gc
+                            </td>
+                            <td class="name">
+                                应用启动：
+                            </td>
+                            <td class="value">
+                                启动于 @ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card scroll-x style-3">
+            <div class="card-body p-0 ">
+                <table class="table table-bordered table-hover table-striped table-condensed">
+                    <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+                        <tr>
+                            <th class="ps-1">名称</th>
+                            <th>标题</th>
+                            <th>文件版本</th>
+                            <th>内部版本</th>
+                            <th style="min-width:134px;">编译时间</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border border-gray-200">
+                        @foreach (AssemblyX item in ViewBag.MyAsms)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@item.Title</td>
+                                <td>@item.FileVersion</td>
+                                <td>@item.Version</td>
+                                <td title="@item.Version">@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
+                                <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@item.Description">@item.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+
+
+@section scripts{
+}

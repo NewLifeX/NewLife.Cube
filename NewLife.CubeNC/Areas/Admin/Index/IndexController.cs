@@ -4,15 +4,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
@@ -20,15 +16,14 @@ using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Remoting;
 using NewLife.Threading;
-using XCode;
 using XCode.Membership;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace NewLife.Cube.Admin.Controllers
 {
     /// <summary>首页</summary>
     [DisplayName("首页")]
     [Area("Admin")]
+    [Menu(0, false, Icon = "fa-home")]
     public class IndexController : ControllerBaseX
     {
         /// <summary>菜单顺序。扫描是会反射读取</summary>
@@ -79,6 +74,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <returns></returns>
         [DisplayName("服务器信息")]
         [EntityAuthorize(PermissionFlags.Detail)]
+        [Menu(10, true, Icon = "fa-home")]
         public ActionResult Main(String id)
         {
             ViewBag.Act = id;
@@ -216,7 +212,7 @@ namespace NewLife.Cube.Admin.Controllers
         }
 
         [DllImport("kernel32.dll")]
-        extern static Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
+        private static extern Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
 
         /// <summary>
         /// 获取菜单树
@@ -263,27 +259,6 @@ namespace NewLife.Cube.Admin.Controllers
             }, menus);
 
             return menuTree;
-        }
-
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible)
-            {
-                menu.Visible = false;
-                (menu as IEntity).Update();
-            }
-
-            // 添加系统信息菜单
-            var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == "Main");
-            if (m2 == null)
-            {
-                m2 = menu.Parent.Add("Main", "系统信息", null, "/Admin/Index/Main");
-            }
-
-            return base.ScanActionMenu(menu);
         }
     }
 }

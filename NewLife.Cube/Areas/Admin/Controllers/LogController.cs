@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Web;
-using XCode.Membership;
-using XLog = XCode.Membership.Log;
-using static XCode.Membership.Log;
 using XCode;
+using XCode.Membership;
+using static XCode.Membership.Log;
+using XLog = XCode.Membership.Log;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -15,16 +15,22 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("审计日志")]
     [Description("系统内重要操作均记录日志，便于审计。任何人都不能删除、修改或伪造操作日志。")]
     [Area("Admin")]
+    [Menu(70, true, Icon = "fa-history")]
     public class LogController : ReadOnlyEntityController<XLog>
     {
         static LogController()
         {
-            MenuOrder = 70;
-
             // 日志列表需要显示详细信息，不需要显示用户编号
             ListFields.AddField("Action", "Remark");
             ListFields.RemoveField("CreateUserID");
             //FormFields.RemoveField("Remark");
+
+            //{
+            //    var df = ListFields.GetField("TraceId") as ListField;
+            //    df.DisplayName = "跟踪";
+            //    df.Url = StarHelper.BuildUrl("{TraceId}");
+            //    df.DataVisible = (e, f) => !(e as XLog).TraceId.IsNullOrEmpty();
+            //}
         }
 
         /// <summary>搜索数据集</summary>

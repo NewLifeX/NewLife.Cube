@@ -67,6 +67,12 @@ namespace NewLife.Cube.Extensions
         /// <remarks>如果类型是Object，返回的类型则是<see cref="NullableDictionary{String,Object}"/></remarks>
         public static T GetRequestBody<T>(this HttpRequest request) where T : class, new() => GetRequestBody(request, typeof(T)) as T;
 
+        /// <summary>
+        /// 获取请求主体部分
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static Object GetRequestBody(this HttpRequest request, Type type)
         {
             if (!request.IsAjaxRequest()) return null;
@@ -84,6 +90,7 @@ namespace NewLife.Cube.Extensions
             request.Body.Seek(0, SeekOrigin.Begin);
             var reader = new StreamReader(request.Body);
             var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
+            request.Body.Seek(0, SeekOrigin.Begin);
 
             var entityBody = body.ToJsonEntity(type);
             request.HttpContext.Items["RequestBody"] = entityBody;

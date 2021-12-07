@@ -1,0 +1,20 @@
+﻿@using NewLife.Common;
+@using XCode.Membership;
+@using NewLife;
+
+@{
+    var user = ManageProvider.User as IUser ?? User.Identity as IUser;
+    var startpage = user.Role.Ex4.IsNullOrEmpty() ? NewLife.Cube.Setting.Current.StartPage : user.Role.Ex4;
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="refresh" content="0;url=@startpage">
+</head>
+<body>
+    <div>
+    </div>
+</body>
+</html>

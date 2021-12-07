@@ -234,6 +234,21 @@ namespace NewLife.Cube.Controllers
                 // 标记登录提供商
                 Session["Cube_Sso"] = client.Name;
 
+                // 记录在线统计
+                var olt = HttpContext.Items["Cube_Online"] as UserOnline;
+                if (olt != null)
+                {
+                    olt.OAuthProvider = client.Name;
+                    olt.SaveAsync();
+                }
+                var stat = UserStat.GetOrAdd(DateTime.Today);
+                if (stat != null)
+                {
+                    stat.Logins++;
+                    stat.OAuths++;
+                    stat.SaveAsync(5_000);
+                }
+
                 // 如果验证成功但登录失败，直接跳走
                 if (url.IsNullOrEmpty())
                 {
@@ -246,7 +261,7 @@ namespace NewLife.Cube.Controllers
                 if (logId > 0 && logId != log.Id)
                 {
                     Session["Cube_OAuthId"] = null;
-                    var log2 = Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
+                    var log2 = Provider.BindAfterLogin(logId);
                     if (log2 != null && log2.Success && !log2.RedirectUri.IsNullOrEmpty()) return Redirect(log2.RedirectUri);
                 }
 
@@ -789,10 +804,7 @@ namespace NewLife.Cube.Controllers
         }
 
         /// <summary>用户验证。借助OAuth密码式验证，并返回用户信息</summary>
-        /// <param name="client_id">应用标识</param>
-        /// <param name="client_secret">密钥</param>
-        /// <param name="username">用户名。可以是设备编码等唯一使用者标识</param>
-        /// <param name="password">密码</param>
+        /// <param name="model">令牌模型</param>
         /// <returns></returns>
         [AllowAnonymous]
         public virtual ActionResult UserAuth([FromBody] SsoTokenModel model)

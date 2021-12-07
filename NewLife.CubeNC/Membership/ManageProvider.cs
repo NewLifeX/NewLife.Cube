@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Services;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
@@ -244,6 +245,8 @@ namespace NewLife.Cube
         /// <summary>注销</summary>
         public override void Logout()
         {
+            if (Current is User user) UserService.ClearOnline(user);
+
             // 注销时销毁所有Session
             var context = Context?.HttpContext;
             var session = context.Items["Session"] as IDictionary<String, Object>;
