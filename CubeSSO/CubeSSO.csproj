@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyTitle>魔方用户中心（SSO服务端）</AssemblyTitle>
-    <Version>4.3.2021.1216-beta1</Version>
+    <Version>4.3.2021.1216-beta2</Version>
     <FileVersion>4.3.2021.1216</FileVersion>
     <AssemblyVersion>4.3.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
