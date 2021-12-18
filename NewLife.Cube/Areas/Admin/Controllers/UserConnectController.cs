@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode.Membership;
 
@@ -24,13 +25,13 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 提供者列，增加查询
             {
-                var df = ListFields.AddListField(UserConnect._.Provider);
+                var df = ListFields.GetField("Provider") as ListField;
                 df.Url = "?provider={Provider}";
             }
 
             // 用户列，增加连接
             {
-                var df = ListFields.AddListField("UserName");
+                var df = ListFields.GetField("UserName") as ListField;
                 df.Header = "用户";
                 df.HeaderTitle = "对应的本地用户信息";
                 df.DisplayName = "{UserName}";

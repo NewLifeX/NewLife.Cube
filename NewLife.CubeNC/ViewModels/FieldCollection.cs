@@ -62,7 +62,7 @@ namespace NewLife.Cube
         #endregion
 
         #region 方法
-        /// <summary>为指定字段创建数据字段</summary>
+        /// <summary>为指定字段创建数据字段，可以为空</summary>
         /// <param name="field"></param>
         /// <returns></returns>
         public DataField Create(FieldItem field)
@@ -152,21 +152,6 @@ namespace NewLife.Cube
             return this;
         }
 
-        /// <summary>在指定字段之后添加扩展属性</summary>
-        /// <param name="oriName"></param>
-        /// <param name="newName"></param>
-        /// <returns></returns>
-        public FieldCollection AddField(String oriName, String newName)
-        {
-            var idx = FindIndex(oriName);
-            if (idx < 0) return this;
-
-            var fi = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(newName));
-            if (fi != null) Insert(idx + 1, Create(fi));
-
-            return this;
-        }
-
         /// <summary>删除字段</summary>
         /// <param name="names"></param>
         /// <returns></returns>
@@ -232,12 +217,7 @@ namespace NewLife.Cube
         #endregion
 
         #region 自定义字段
-        /// <summary>添加定制版数据字段</summary>
-        /// <param name="fi"></param>
-        /// <returns></returns>
-        public DataField AddDataField(FieldItem fi) => Add(fi);
-
-        /// <summary>添加定制字段，插入指定列之前</summary>
+        /// <summary>添加定制字段，插入指定列前后</summary>
         /// <param name="name"></param>
         /// <param name="beforeName"></param>
         /// <param name="afterName"></param>
@@ -253,7 +233,7 @@ namespace NewLife.Cube
                 var idx = FindIndex(beforeName);
                 if (idx >= 0) Insert(idx, field);
             }
-            else if (!beforeName.IsNullOrEmpty())
+            else if (!afterName.IsNullOrEmpty())
             {
                 var idx = FindIndex(afterName);
                 if (idx >= 0) Insert(idx + 1, field);
@@ -264,103 +244,17 @@ namespace NewLife.Cube
             return field;
         }
 
-        /// <summary>添加定制字段，插入指定列之前</summary>
-        /// <param name="field"></param>
-        /// <returns></returns>
-        public DataField AddDataField(DataField field)
-        {
-            Add(field);
-
-            return field;
-        }
-
-        /// <summary>添加定制版数据字段</summary>
-        /// <param name="fi"></param>
-        /// <returns></returns>
-        public ListField AddListField(FieldItem fi)
-        {
-            var field = new ListField();
-            field.Fill(fi);
-
-            Add(field);
-
-            return field;
-        }
-
-        /// <summary>添加定制字段，插入指定列之前</summary>
+        /// <summary>添加定制字段，插入指定列前后</summary>
         /// <param name="name"></param>
         /// <param name="beforeName"></param>
         /// <param name="afterName"></param>
         /// <returns></returns>
-        public ListField AddListField(String name, String beforeName = null, String afterName = null)
-        {
-            var fi = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
-            var field = new ListField { Name = name };
-            if (fi != null) field.Fill(fi);
-
-            if (!beforeName.IsNullOrEmpty())
-            {
-                var idx = FindIndex(beforeName);
-                if (idx >= 0) Insert(idx, field);
-            }
-            else if (!beforeName.IsNullOrEmpty())
-            {
-                var idx = FindIndex(afterName);
-                if (idx >= 0) Insert(idx + 1, field);
-            }
-            else
-                Add(field);
-
-            return field;
-        }
+        public ListField AddListField(String name, String beforeName = null, String afterName = null) => AddDataField(name, beforeName, afterName) as ListField;
 
         /// <summary>获取指定名称的定制字段</summary>
         /// <param name="name"></param>
         /// <returns></returns>
         public DataField GetField(String name) => this.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
-
-        ///// <summary>获取指定列名之前的定制字段</summary>
-        ///// <param name="name"></param>
-        ///// <returns></returns>
-        //[Obsolete]
-        //public DataField GetBeforeField(String name) => Fields.FirstOrDefault(e => e.BeforeName == name);
-
-        /// <summary>获取指定列名之前的定制字段</summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public IList<DataField> GetBeforeFields(String name)
-        {
-            var list = new List<DataField>();
-            for (var i = 1; i < Count; i++)
-            {
-                if (this[i].Name.EqualIgnoreCase(name))
-                {
-                    list.Add(this[i - 1]);
-                    break;
-                }
-            }
-
-            return list;
-        }
-
-        /// <summary>获取指定列名之后的定制字段</summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public IList<DataField> GetAfterFields(String name)
-        {
-            var list = new List<DataField>();
-            for (var i = 0; i < Count - 1; i++)
-            {
-                if (this[i].Name.EqualIgnoreCase(name))
-                {
-                    list.Add(this[i + 1]);
-                    break;
-                }
-            }
-
-            return list;
-        }
-
         #endregion
     }
 }
