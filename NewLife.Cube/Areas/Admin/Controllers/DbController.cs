@@ -27,9 +27,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Menu(26, true, Icon = "fa-database")]
     public class DbController : ControllerBaseX
     {
-        /// <summary>菜单顺序。扫描是会反射读取</summary>
-        protected static Int32 MenuOrder { get; set; }
-
         /// <summary>数据库列表</summary>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]

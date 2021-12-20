@@ -26,9 +26,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Menu(0, false, Icon = "fa-home")]
     public class IndexController : ControllerBaseX
     {
-        /// <summary>菜单顺序。扫描是会反射读取</summary>
-        protected static Int32 MenuOrder { get; set; } = 10;
-
         private readonly IManageProvider _provider;
         private readonly IHostApplicationLifetime _applicationLifetime;
 

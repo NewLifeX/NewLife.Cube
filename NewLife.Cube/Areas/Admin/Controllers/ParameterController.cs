@@ -12,8 +12,6 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static ParameterController()
         {
-            MenuOrder = 65;
-
             ListFields.RemoveField("Ex1");
             ListFields.RemoveField("Ex2");
             ListFields.RemoveField("Ex3");
