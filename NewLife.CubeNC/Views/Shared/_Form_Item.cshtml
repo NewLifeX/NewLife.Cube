@@ -36,11 +36,18 @@
     @if (dataSource != null)
     {
         var ds = dataSource(entity, item);
-        if(ds is IDictionary dic)
+        if (ds is IDictionary<Int32, String> dic)
         {
-            if (!ds.Contains("0") && !ds.Contains(0))
+            if (!ds.Contains(-1))
             {
-                ds.Add(0, "<无>");
+                ds.Add(-1, "<无>");
+            }
+        }
+        else if (ds is IDictionary<String, String> dic2)
+        {
+            if (!ds.Contains("-1"))
+            {
+                ds.Add("-1", "<无>");
             }
         }
 

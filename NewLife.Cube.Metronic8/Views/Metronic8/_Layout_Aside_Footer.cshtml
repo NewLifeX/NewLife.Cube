@@ -4,41 +4,43 @@
     var user = ManageProvider.User as IUser ?? User.Identity as IUser;
 
 }
-
-<!-- 菜单 Footer -->
-<div class="aside-footer flex-column-auto pt-5 pb-15 px-5" id="kt_aside_footer">
-    <div class="d-flex align-items-center" id="kt_header_user_menu_toggle">
-        <div class="cursor-pointer symbol symbol-40px" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start" data-kt-menu-flip="top-end" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-dismiss="click" title="账号">
-            <img src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" />
-            <span class="text-info p-5">@user.DisplayName (@user.Name) </span>
-        </div>
-        <!-- 用户菜单 -->
+@if (user!=null)
+{
+    <!-- 菜单 Footer -->
+    <div class="aside-footer flex-column-auto pt-5 pb-15 px-5" >
+        <div class="d-flex align-items-center" id="kt_header_user_menu_toggle">
+            <div class="cursor-pointer symbol symbol-40px" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start" data-kt-menu-flip="top-end" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-dismiss="click" title="账号">
+                <img src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" />
+                <span class="text-info p-5">@user.DisplayName (@user.Name) </span>
+            </div>
+            <!-- 用户菜单 -->
         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px bg-dark" data-kt-menu="true">
-            <div class="menu-item px-3">
-                <div class="menu-content d-flex align-items-center px-3 text-white">
-                    <div class="symbol symbol-50px me-5">
-                        <img alt="Logo" src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" />
-                    </div>
-                    <div class="d-flex flex-column">
-                        <div class="d-flex align-items-center fs-5">
-                            @user.DisplayName (@user.Name)
-                            <span class="badge badge-light-success fs-8 px-2 py-1 ms-2">@user.RoleName</span>
+                <div class="menu-item px-3">
+                    <div class="menu-content d-flex align-items-center px-3 text-white">
+                        <div class="symbol symbol-50px me-5">
+                            <img alt="Logo" src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" />
                         </div>
-                        <a href="~/Admin/User/Info/@user.ID" class="text-muted text-hover-primary fs-7"> @user.Mail</a>
+                        <div class="d-flex flex-column">
+                            <div class="d-flex align-items-center fs-5">
+                                @user.DisplayName (@user.Name)
+                                <span class="badge badge-light-success fs-8 px-2 py-1 ms-2">@user.RoleName</span>
+                            </div>
+                            <a href="~/Admin/User/Info/@user.ID" class="text-muted text-hover-primary fs-7"> @user.Mail</a>
+                        </div>
+                    </div>
+                    <div class="menu-content d-flex align-items-center px-3">
+                        <a href="~/Admin/User/Edit/@user.ID" class="btn btn-icon btn-active-primary m-1" title="账号编辑"><i class="las la-edit fs-2 text-info"></i></a>
                     </div>
                 </div>
-                <div class="menu-content d-flex align-items-center px-3">
-                    <a href="~/Admin/User/Edit/@user.ID" class="btn btn-icon btn-active-primary m-1" title="账号编辑"><i class="las la-edit fs-2 text-info"></i></a>
+                <div class="menu-item px-3 text-center">
+                    <a class="text-light" href="@NewLife.Cube.Setting.Current.StartPage">
+                        <span class="fs-7 fw-light">@SysConfig.Current.DisplayName V @SysConfig.Current.Version</span>
+                    </a>
                 </div>
-            </div>
-            <div class="menu-item px-3 text-center">
-                <a class="text-light" href="@NewLife.Cube.Setting.Current.StartPage">
-                    <span class="fs-7 fw-light">@SysConfig.Current.DisplayName V @SysConfig.Current.Version</span>
-                </a>
-            </div>
-            <div class="menu-item px-5 mt-5">
-                <a href="~/Admin/User/Logout" class="d-flex flex-column btn btn-outline btn-outline-dashed btn-outline-danger btn-active-light-danger">账号退出</a>
+                <div class="menu-item px-5 mt-5">
+                    <a href="~/Admin/User/Logout" class="d-flex flex-column btn btn-outline btn-outline-dashed btn-outline-danger btn-active-light-danger">账号退出</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}

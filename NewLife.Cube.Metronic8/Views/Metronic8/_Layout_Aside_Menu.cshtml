@@ -3,6 +3,7 @@
 @using XCode.Membership;
 @using NewLife.Cube;
 @using XCode;
+@using NewLife.Cube.ViewModels;
 
 @{
     var menu = ViewBag.Menu as IMenu;
@@ -10,9 +11,12 @@
 
     var user = ViewBag.User as IUser ?? ManageProvider.User;
     var fact = ManageProvider.Menu;
-
-    var menus = fact.Root;
-
+    var menus = fact.Root.Childs;
+    if (user?.Role != null)
+    {
+        menus = fact.GetMySubMenus(fact.Root.ID, user, true);
+    }
+    //var menus = fact.Root;
 }
 
 
@@ -27,7 +31,7 @@
                     <span class="menu-icon">
                         <span class="fas fa-tv fs-3 text-gray-700"></span>
                     </span>
-                    <span class="menu-title">控制台</span>
+                    <span class="menu-title fs-4">控制台</span>
                 </a>
             </div>
 
@@ -39,7 +43,7 @@
 
             @if (menu != null)
             {
-                foreach (IMenu item in menus.Childs)
+                foreach (IMenu item in menus)
                 {
                     if (item.ParentID == 0)
                     {
@@ -57,7 +61,6 @@
             </div>
 
             <div class="menu-item">
-
             </div>
         </div>
         <!--end::Menu-->

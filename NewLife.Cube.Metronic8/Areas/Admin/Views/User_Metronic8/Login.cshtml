@@ -2,89 +2,175 @@
 @using NewLife.Cube.Areas.Admin.Models;
 @model LoginViewModel
 @{
-    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    Layout = null;
     ViewBag.Title = "登录";
     var set = Model;
 }
+<!DOCTYPE html>
+<html>
 
-@if (Html.ValidationSummary(true).ToDictionary().Count()>1)
-{
-    <div class="alert alert-dismissible bg-light-danger border border-danger border-dashed d-flex flex-column flex-sm-row m-10">
-        <!--begin::Icon-->
-        <!--begin::Svg Icon | path: icons/duotone/Interface/Comment.svg-->
-    <span class="svg-icon svg-icon-2hx svg-icon-danger me-4 mb-5 mb-sm-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M5.69477 2.48932C4.00472 2.74648 2.66565 3.98488 2.37546 5.66957C2.17321 6.84372 2 8.33525 2 10C2 11.6647 2.17321 13.1563 2.37546 14.3304C2.62456 15.7766 3.64656 16.8939 5 17.344V20.7476C5 21.5219 5.84211 22.0024 6.50873 21.6085L12.6241 17.9949C14.8384 17.9586 16.8238 17.7361 18.3052 17.5107C19.9953 17.2535 21.3344 16.0151 21.6245 14.3304C21.8268 13.1563 22 11.6647 22 10C22 8.33525 21.8268 6.84372 21.6245 5.66957C21.3344 3.98488 19.9953 2.74648 18.3052 2.48932C16.6859 2.24293 14.4644 2 12 2C9.53559 2 7.31411 2.24293 5.69477 2.48932Z" fill="#191213"></path>
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M7 7C6.44772 7 6 7.44772 6 8C6 8.55228 6.44772 9 7 9H17C17.5523 9 18 8.55228 18 8C18 7.44772 17.5523 7 17 7H7ZM7 11C6.44772 11 6 11.4477 6 12C6 12.5523 6.44772 13 7 13H11C11.5523 13 12 12.5523 12 12C12 11.4477 11.5523 11 11 11H7Z" fill="#121319"></path>
-            </svg>
-        </span>
-        <!--end::Svg Icon-->
-        <!--end::Icon-->
-        <!--begin::Content-->
-    <div class="d-flex flex-column pe-0 pe-sm-10">
-            <h5 class="mb-1 text-danger">信息</h5>
-            <span class="text-danger">@Html.ValidationSummary()</span>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - @SysConfig.Current.DisplayName</title>
+    <meta name="description" content="@SysConfig.Current.Company">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="~/assets/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
+    <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+</head>
+<body id="kt_body" class="bg-white">
+    <div class="d-flex flex-column flex-root">
+        <div class="d-flex flex-column flex-lg-row flex-column-fluid">
+            <div class="d-flex flex-column flex-lg-row-auto w-xl-1000px positon-xl-relative" style="background-image: url(../../assets/media/bg-4.jpg) ">
+                <div class="d-flex flex-column position-xl-fixed top-0 bottom-0 w-xl-1000px scroll-y">
+                    <div class="d-flex flex-row-fluid flex-column text-center p-10 pt-lg-20">
+                        <h1 class="fw-bolder fs-2qx pb-5 pb-md-10 text-white">@SysConfig.Current.DisplayName</h1>
+                        <p class="fw-bold fs-3 text-muted">
+                            @SysConfig.Current.Company
+                            <br />
+                        </p>
+
+                    </div>
+                    <div class="d-flex flex-row-auto bgi-no-repeat bgi-position-x-center bgi-size-contain bgi-position-y-bottom min-h-100px min-h-lg-350px" style="background-image: url(../../assets/media/verification.png) "></div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column flex-lg-row-fluid py-10">
+
+                @if (Html.ValidationSummary(true).ToDictionary().Count()>1)
+                {
+                    <div class="alert alert-dismissible bg-light-danger border border-danger border-dashed d-flex flex-column flex-sm-row m-10">
+                        <!--begin::Icon-->
+                        <!--begin::Svg Icon | path: icons/duotone/Interface/Comment.svg-->
+                    <span class="svg-icon svg-icon-2hx svg-icon-danger me-4 mb-5 mb-sm-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M5.69477 2.48932C4.00472 2.74648 2.66565 3.98488 2.37546 5.66957C2.17321 6.84372 2 8.33525 2 10C2 11.6647 2.17321 13.1563 2.37546 14.3304C2.62456 15.7766 3.64656 16.8939 5 17.344V20.7476C5 21.5219 5.84211 22.0024 6.50873 21.6085L12.6241 17.9949C14.8384 17.9586 16.8238 17.7361 18.3052 17.5107C19.9953 17.2535 21.3344 16.0151 21.6245 14.3304C21.8268 13.1563 22 11.6647 22 10C22 8.33525 21.8268 6.84372 21.6245 5.66957C21.3344 3.98488 19.9953 2.74648 18.3052 2.48932C16.6859 2.24293 14.4644 2 12 2C9.53559 2 7.31411 2.24293 5.69477 2.48932Z" fill="#191213"></path>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7 7C6.44772 7 6 7.44772 6 8C6 8.55228 6.44772 9 7 9H17C17.5523 9 18 8.55228 18 8C18 7.44772 17.5523 7 17 7H7ZM7 11C6.44772 11 6 11.4477 6 12C6 12.5523 6.44772 13 7 13H11C11.5523 13 12 12.5523 12 12C12 11.4477 11.5523 11 11 11H7Z" fill="#121319"></path>
+                            </svg>
+                        </span>
+                        <!--end::Svg Icon-->
+                        <!--end::Icon-->
+                        <!--begin::Content-->
+                    <div class="d-flex flex-column pe-0 pe-sm-10">
+                            <h5 class="mb-1 text-danger">信息</h5>
+                            <span class="text-danger">@Html.ValidationSummary()</span>
+                        </div>
+                        <!--end::Content-->
+                        <!--begin::Close-->
+                    <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
+                            <i class="bi bi-x fs-1 text-danger"></i>
+                        </button>
+                        <!--end::Close-->
+                </div>
+
+                }
+                <!--begin::Content-->
+                <div class="d-flex flex-center flex-column flex-column-fluid">
+                    <!--begin::Wrapper-->
+                    <div class="w-lg-500px p-10 p-lg-15 mx-auto">
+                        <!--begin::Form-->
+                        <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" id="kt_sign_in_form">
+
+
+                            <!--begin::Heading--><div class="text-center mb-10">
+                                <h1 class="text-dark mb-3">
+                                    <a href="#" class="py-9">
+                                        <img alt="Logo" src="~/assets/logo/logo.png" class="h-70px" />
+                                    </a>
+                                </h1>
+
+                            </div>
+
+                            <!--begin::Heading-->
+                            <!--begin::Input group-->
+                            <div class="fv-row mb-10">
+                                <!--begin::Label-->
+                                <label class="form-label fs-6 fw-bolder text-dark">用户名</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input class="form-control form-control-lg" type="text" name="username" id="username" autocomplete="off" placeholder="用户名" />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Input group-->
+                            <!--begin::Input group-->
+                            <div class="fv-row mb-10">
+                                <!--begin::Wrapper-->
+                                <div class="d-flex flex-stack mb-2">
+                                    <!--begin::Label-->
+                                    <label class="form-label fw-bolder text-dark fs-6 mb-0">密码</label>
+                                    <!--end::Label-->
+                                </div>
+                                <!--end::Wrapper-->
+                                <!--begin::Input-->
+                                <input class="form-control form-control-lg" type="password" name="password" id="password" autocomplete="off" placeholder="密码" />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Input group-->
+                            <!--begin::Actions-->
+                            <div class="text-center">
+                                <!--begin::Submit button-->
+                                <button type="submit" class="btn btn-lg btn-bg-info w-100 mb-5">
+                                    <span class="indicator-label text-white">登 录</span>
+                                    <span class="indicator-progress">
+                                        Please wait...
+                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                    </span>
+                                </button>
+                                <!--end::Submit button-->
+
+                            </div>
+                            <!--end::Actions-->
+                        </form>
+                        <!--end::Form-->
+                    </div>
+                    <!--end::Wrapper-->
+                </div>
+                <!--end::Content-->
+
+                <div class="d-flex flex-center flex-wrap fs-6 p-5 pb-0">
+                    <div class="d-flex flex-center fw-bold fs-6">
+                        <p class="fs-10 text-muted">
+                            Version: @SysConfig.Current.Version
+                        </p>
+                    </div>
+                </div>
+            </div>
+
         </div>
-        <!--end::Content-->
-        <!--begin::Close-->
-    <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
-            <i class="bi bi-x fs-1 text-danger"></i>
-        </button>
-        <!--end::Close-->
-</div>
-
-}
-<!--begin::Content-->
-<div class="d-flex flex-center flex-column flex-column-fluid">
-    <!--begin::Wrapper-->
-    <div class="w-lg-500px p-10 p-lg-15 mx-auto">
-        <!--begin::Form-->
-        <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" id="kt_sign_in_form">
-
-            <div class="text-center mb-10">
-                <h1 class="text-dark mb-3">
-                    <a href="#" class="py-9">
-                        <img alt="Logo" src="~/assets/logo/logo.png" class="h-70px" />
-                    </a>
-                </h1>
-
-            </div>
-
-            <div class="fv-row mb-10">
-                <label class="form-label fs-6 fw-bolder text-dark">用户名</label>
-                <input class="form-control form-control-lg" type="text" name="username" id="username" autocomplete="off" placeholder="用户名" />
-            </div>
-            <div class="fv-row mb-10">
-                <div class="d-flex flex-stack mb-2">
-                    <label class="form-label fw-bolder text-dark fs-6 mb-0">密码</label>
-                </div>
-                <input class="form-control form-control-lg" type="password" name="password" id="password" autocomplete="off" placeholder="密码" />
-            </div>
-            <div class="fv-row mb-10">
-                <div class="d-flex flex-stack mb-2">
-                </div>
-                <input type="checkbox" value="true" id="remember" name="remember" class="form-check-input" />
-                <label for="remember" class="ps-2">记住密码</label>
-            </div>
-
-
-            <!--begin::Actions-->
-            <div class="text-center">
-                <!--begin::Submit button-->
-                <button type="submit" class="btn btn-lg btn-bg-info w-100 mb-5">
-                    <span class="indicator-label text-white">登 录</span>
-                    <span class="indicator-progress">
-                        Please wait...
-                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                    </span>
-                </button>
-                <!--end::Submit button-->
-
-            </div>
-            <!--end::Actions-->
-        </form>
-        <!--end::Form-->
     </div>
-    <!--end::Wrapper-->
-</div>
-<!--end::Content-->
+    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/js/scripts.bundle.js"></script>
+    <script src="~/assets/js/custom/authentication/sign-in/general.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -9,11 +9,11 @@
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2021 NewLife</Copyright>
-    <VersionPrefix>4.1</VersionPrefix>
+    <VersionPrefix>4.3</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
-    <AssemblyVersion>4.1.*</AssemblyVersion>
+    <AssemblyVersion>4.3.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\Bin</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
@@ -30,7 +30,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>ECharts增加多主题选择</PackageReleaseNotes>
+    <PackageReleaseNotes>新增MenuAttribute优化控制器菜单管理；新增魔方管理区域；增强OAuth配置</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -58,12 +58,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.11.2021.1124-beta1" />
-    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1124-beta1" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.1216-beta2" />
+    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1216-beta2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -208,6 +208,5 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\Cube\Controllers\" />
-    <Folder Include="Web\Models\" />
   </ItemGroup>
 </Project>

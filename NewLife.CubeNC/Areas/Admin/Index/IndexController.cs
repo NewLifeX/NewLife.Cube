@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -17,7 +16,6 @@ using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Remoting;
 using NewLife.Threading;
-using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers
@@ -261,35 +259,6 @@ namespace NewLife.Cube.Admin.Controllers
             }, menus);
 
             return menuTree;
-        }
-
-        /// <summary>菜单不可见</summary>
-        /// <param name="menu"></param>
-        /// <returns></returns>
-        protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            if (menu.Visible)
-            {
-                menu.Visible = false;
-                (menu as IEntity).Update();
-            }
-
-            // 添加系统信息菜单
-            var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == "Main");
-            if (m2 == null)
-            {
-                m2 = menu.Parent.Add("Main", "系统信息", null, "/Admin/Index/Main");
-
-                var att = GetType().GetMethodEx("Main")?.GetCustomAttribute<MenuAttribute>();
-                if (att != null)
-                {
-                    m2.Sort = att.Order;
-                    m2.Icon = att.Icon;
-                    if (m2 is IEntity entity) entity.Update();
-                }
-            }
-
-            return base.ScanActionMenu(menu);
         }
     }
 }

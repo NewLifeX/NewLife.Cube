@@ -99,6 +99,30 @@ namespace NewLife.Cube.Entity
         [BindColumn("Scope", "授权范围", "")]
         public String Scope { get => _Scope; set { if (OnPropertyChanging("Scope", value)) { _Scope = value; OnPropertyChanged("Scope"); } } }
 
+        private String _AuthUrl;
+        /// <summary>验证地址。跳转SSO的验证地址</summary>
+        [DisplayName("验证地址")]
+        [Description("验证地址。跳转SSO的验证地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("AuthUrl", "验证地址。跳转SSO的验证地址", "")]
+        public String AuthUrl { get => _AuthUrl; set { if (OnPropertyChanging("AuthUrl", value)) { _AuthUrl = value; OnPropertyChanged("AuthUrl"); } } }
+
+        private String _AccessUrl;
+        /// <summary>令牌地址。根据code换取令牌的地址</summary>
+        [DisplayName("令牌地址")]
+        [Description("令牌地址。根据code换取令牌的地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("AccessUrl", "令牌地址。根据code换取令牌的地址", "")]
+        public String AccessUrl { get => _AccessUrl; set { if (OnPropertyChanging("AccessUrl", value)) { _AccessUrl = value; OnPropertyChanged("AccessUrl"); } } }
+
+        private String _UserUrl;
+        /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
+        [DisplayName("用户地址")]
+        [Description("用户地址。根据令牌获取用户信息的地址")]
+        [DataObjectField(false, false, true, 200)]
+        [BindColumn("UserUrl", "用户地址。根据令牌获取用户信息的地址", "")]
+        public String UserUrl { get => _UserUrl; set { if (OnPropertyChanging("UserUrl", value)) { _UserUrl = value; OnPropertyChanged("UserUrl"); } } }
+
         private String _AppUrl;
         /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
         [DisplayName("应用地址")]
@@ -162,6 +186,14 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, true, 500)]
         [BindColumn("SecurityKey", "安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。", "")]
         public String SecurityKey { get => _SecurityKey; set { if (OnPropertyChanging("SecurityKey", value)) { _SecurityKey = value; OnPropertyChanged("SecurityKey"); } } }
+
+        private String _FieldMap;
+        /// <summary>字段映射。SSO用户字段如何映射到OAuthClient内部属性</summary>
+        [DisplayName("字段映射")]
+        [Description("字段映射。SSO用户字段如何映射到OAuthClient内部属性")]
+        [DataObjectField(false, false, true, 500)]
+        [BindColumn("FieldMap", "字段映射。SSO用户字段如何映射到OAuthClient内部属性", "")]
+        public String FieldMap { get => _FieldMap; set { if (OnPropertyChanging("FieldMap", value)) { _FieldMap = value; OnPropertyChanged("FieldMap"); } } }
 
         private Int32 _CreateUserID;
         /// <summary>创建者</summary>
@@ -240,6 +272,9 @@ namespace NewLife.Cube.Entity
                     case "AccessServer": return _AccessServer;
                     case "GrantType": return _GrantType;
                     case "Scope": return _Scope;
+                    case "AuthUrl": return _AuthUrl;
+                    case "AccessUrl": return _AccessUrl;
+                    case "UserUrl": return _UserUrl;
                     case "AppUrl": return _AppUrl;
                     case "Enable": return _Enable;
                     case "Debug": return _Debug;
@@ -248,6 +283,7 @@ namespace NewLife.Cube.Entity
                     case "AutoRole": return _AutoRole;
                     case "Sort": return _Sort;
                     case "SecurityKey": return _SecurityKey;
+                    case "FieldMap": return _FieldMap;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
                     case "CreateIP": return _CreateIP;
@@ -272,6 +308,9 @@ namespace NewLife.Cube.Entity
                     case "AccessServer": _AccessServer = Convert.ToString(value); break;
                     case "GrantType": _GrantType = (GrantTypes)value.ToInt(); break;
                     case "Scope": _Scope = Convert.ToString(value); break;
+                    case "AuthUrl": _AuthUrl = Convert.ToString(value); break;
+                    case "AccessUrl": _AccessUrl = Convert.ToString(value); break;
+                    case "UserUrl": _UserUrl = Convert.ToString(value); break;
                     case "AppUrl": _AppUrl = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
                     case "Debug": _Debug = value.ToBoolean(); break;
@@ -280,6 +319,7 @@ namespace NewLife.Cube.Entity
                     case "AutoRole": _AutoRole = Convert.ToString(value); break;
                     case "Sort": _Sort = value.ToInt(); break;
                     case "SecurityKey": _SecurityKey = Convert.ToString(value); break;
+                    case "FieldMap": _FieldMap = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -327,6 +367,15 @@ namespace NewLife.Cube.Entity
             /// <summary>授权范围</summary>
             public static readonly Field Scope = FindByName("Scope");
 
+            /// <summary>验证地址。跳转SSO的验证地址</summary>
+            public static readonly Field AuthUrl = FindByName("AuthUrl");
+
+            /// <summary>令牌地址。根据code换取令牌的地址</summary>
+            public static readonly Field AccessUrl = FindByName("AccessUrl");
+
+            /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
+            public static readonly Field UserUrl = FindByName("UserUrl");
+
             /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
             public static readonly Field AppUrl = FindByName("AppUrl");
 
@@ -350,6 +399,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。</summary>
             public static readonly Field SecurityKey = FindByName("SecurityKey");
+
+            /// <summary>字段映射。SSO用户字段如何映射到OAuthClient内部属性</summary>
+            public static readonly Field FieldMap = FindByName("FieldMap");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -408,6 +460,15 @@ namespace NewLife.Cube.Entity
             /// <summary>授权范围</summary>
             public const String Scope = "Scope";
 
+            /// <summary>验证地址。跳转SSO的验证地址</summary>
+            public const String AuthUrl = "AuthUrl";
+
+            /// <summary>令牌地址。根据code换取令牌的地址</summary>
+            public const String AccessUrl = "AccessUrl";
+
+            /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
+            public const String UserUrl = "UserUrl";
+
             /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
             public const String AppUrl = "AppUrl";
 
@@ -431,6 +492,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。</summary>
             public const String SecurityKey = "SecurityKey";
+
+            /// <summary>字段映射。SSO用户字段如何映射到OAuthClient内部属性</summary>
+            public const String FieldMap = "FieldMap";
 
             /// <summary>创建者</summary>
             public const String CreateUserID = "CreateUserID";

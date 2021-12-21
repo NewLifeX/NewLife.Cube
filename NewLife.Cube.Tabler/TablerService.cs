@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
@@ -21,7 +22,10 @@ namespace NewLife.Cube
             var options = new StaticFileOptions();
             {
                 var embeddedProvider = new CubeEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.Tabler.wwwroot");
-                options.FileProvider = embeddedProvider;
+                if (!env.WebRootPath.IsNullOrEmpty() && Directory.Exists(env.WebRootPath))
+                    options.FileProvider = new CompositeFileProvider(new PhysicalFileProvider(env.WebRootPath), embeddedProvider);
+                else
+                    options.FileProvider = embeddedProvider;
             }
             app.UseStaticFiles(options);
 

@@ -171,28 +171,8 @@ namespace NewLife.Cube
         /// <summary>获取可用于生成权限菜单的Action集合</summary>
         /// <param name="menu">该控制器所在菜单</param>
         /// <returns></returns>
-        protected virtual IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        {
-            var dic = new Dictionary<MethodInfo, Int32>();
-
-            var type = GetType();
-
-            // 添加该类型下的所有Action
-            foreach (var method in type.GetMethods())
-            {
-                if (method.IsStatic || !method.IsPublic) continue;
-
-                if (!method.ReturnType.As<ActionResult>()) continue;
-
-                //if (method.GetCustomAttribute<HttpPostAttribute>() != null) continue;
-                if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
-
-                var att = method.GetCustomAttribute<EntityAuthorizeAttribute>();
-                if (att != null && att.Permission > PermissionFlags.None) dic.Add(method, (Int32)att.Permission);
-            }
-
-            return dic;
-        }
+        [Obsolete("=>MenuAttribute")]
+        protected virtual IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu) => new Dictionary<MethodInfo, Int32>();
         #endregion
 
         #region Ajax处理

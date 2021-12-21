@@ -86,7 +86,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             {
                 var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID + "", e => e.Name);
                 EditFormFields.RemoveField("RoleNames");
             }
         }
@@ -203,7 +203,7 @@ namespace NewLife.Cube.Admin.Controllers
                         entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
                 }
 
-                //entity.RoleIds = entity.RoleIds == "0" ? null : entity.RoleIds.Replace(",0,", ",");
+                if (!entity.RoleIds.IsNullOrEmpty()) entity.RoleIds = entity.RoleIds == "-1" ? null : entity.RoleIds.Replace(",-1,", ",");
             }
 
             return base.Valid(entity, type, post);

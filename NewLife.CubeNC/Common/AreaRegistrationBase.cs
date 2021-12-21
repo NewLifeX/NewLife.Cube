@@ -43,7 +43,7 @@ namespace NewLife.Cube
             XTrace.WriteLine("开始注册权限管理区域[{0}]，控制器命名空间[{1}]", areaName, ns);
 
             // 自动检查并添加菜单
-            Task.Run(() =>
+            var task = Task.Run(() =>
             {
                 using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanController), areaType.FullName);
                 try
@@ -56,6 +56,7 @@ namespace NewLife.Cube
                     XTrace.WriteException(ex);
                 }
             });
+            task.Wait(5_000);
         }
 
         /// <summary>自动扫描控制器，并添加到菜单</summary>
@@ -97,12 +98,13 @@ namespace NewLife.Cube
             //ScanModel(areaName, menus);
 
             // 再次检查菜单权限，因为上面的ScanController里开启菜单权限检查时，菜单可能还没有生成
-            ThreadPoolX.QueueUserWorkItem(() =>
+            var task = Task.Run(() =>
             {
-                Thread.Sleep(1000);
+                //Thread.Sleep(1000);
                 XTrace.WriteLine("新增了菜单，需要检查权限。二次检查，双重保障");
                 typeof(Role).Invoke("CheckRole");
             });
+            task.Wait(5_000);
 
             XTrace.WriteLine("end---------初始化[{0}]的菜单体系---------end", areaName);
         }
