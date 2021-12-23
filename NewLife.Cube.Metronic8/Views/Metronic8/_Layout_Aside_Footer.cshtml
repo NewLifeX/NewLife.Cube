@@ -4,38 +4,42 @@
     var user = ManageProvider.User as IUser ?? User.Identity as IUser;
 
 }
-@user
 @if (user!=null)
 {
     <!-- 菜单 Footer -->
-    <div class="fixed-bottom aside-footer flex-column-auto pb-5 px-5">
-        <div class="d-flex align-items-center">
-            <div class="cursor-pointer symbol symbol-40px" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start" data-kt-menu-flip="top-end" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-dismiss="click" title="账号">
-                <img src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" />
-                <span class="text-info p-5">@user.DisplayName (@user.Name) </span>
+    <div class="aside-footer d-flex flex-column align-items-center flex-column-auto" id="kt_aside_footer">
+        <div class="d-flex align-items-center mb-2" id="kt_header_user_menu_toggle">
+            <div class="cursor-pointer symbol symbol-40px" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start" data-kt-menu-flip="top-end" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-dismiss="click">
+
+                <a href="#" class="btn btn-custom w-100 p-3" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss-="click">
+                    <img src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" class="rounded float-start w-35px h-35px" />
+                    <span class="btn-label text-info px-4">@user.DisplayName (@user.Name) </span>
+                </a>
             </div>
-            <!-- 用户菜单 -->
-        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px bg-dark" data-kt-menu="true">
-                <div class="menu-item px-3">
-                    <div class="menu-content d-flex align-items-center px-3 text-white">
+            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px" data-kt-menu="true">
+                <div class="menu-item p-0 px-3">
+                    <div class="menu-content p-0 d-flex align-items-center px-3">
                         <div class="symbol symbol-50px me-5">
                             <img alt="Logo" src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" />
                         </div>
                         <div class="d-flex flex-column">
-                            <div class="d-flex align-items-center fs-5">
+                            <div class="fw-bolder d-flex align-items-center fs-5">
                                 @user.DisplayName (@user.Name)
-                                <span class="badge badge-light-success fs-8 px-2 py-1 ms-2">@user.RoleName</span>
                             </div>
+                            <span class="badge badge-light-info text-start fs-8">@user.RoleName</span>
                             <a href="~/Admin/User/Info/@user.ID" class="text-muted text-hover-primary fs-7"> @user.Mail</a>
                         </div>
                     </div>
-                    <div class="menu-content d-flex align-items-center px-3">
-                        <a href="~/Admin/User/Edit/@user.ID" class="btn btn-icon btn-active-primary m-1" title="账号编辑"><i class="las la-edit fs-2 text-info"></i></a>
-                    </div>
                 </div>
+                 <div class="menu-item p-0 px-3">
+                      <div class="menu-content p-0 d-flex align-items-center p-0 px-3">
+                            <a href="~/Admin/User/Info/@user.ID" class="btn btn-icon btn-light-info m-1" title="账号信息"><i class="fas fa-user-edit fs-2"></i></a>
+                        </div>
+                 </div>
+                <div class="separator my-2"></div>
                 <div class="menu-item px-3 text-center">
                     <a class="text-light" href="@NewLife.Cube.Setting.Current.StartPage">
-                        <span class="fs-7 fw-light">@SysConfig.Current.DisplayName V @SysConfig.Current.Version</span>
+                        <span class="fs-10 fw-normal text-gray-700">V @SysConfig.Current.Version</span>
                     </a>
                 </div>
                 <div class="menu-item px-5 mt-5">
@@ -45,3 +49,4 @@
         </div>
     </div>
 }
+

@@ -39,6 +39,8 @@
     <Content Remove="wwwroot\assets\avatars\150-0.jpg" />
     <Content Remove="wwwroot\assets\avatars\150-1.jpg" />
     <Content Remove="wwwroot\assets\avatars\150-2.jpg" />
+    <Content Remove="wwwroot\assets\baguetteBox\baguetteBox.css" />
+    <Content Remove="wwwroot\assets\baguetteBox\baguetteBox.js" />
     <Content Remove="wwwroot\assets\css\style.bundle.css" />
     <Content Remove="wwwroot\assets\css\style.bundle.js" />
     <Content Remove="wwwroot\assets\cube.js" />
@@ -371,6 +373,8 @@
     <EmbeddedResource Include="wwwroot\assets\avatars\150-0.jpg" />
     <EmbeddedResource Include="wwwroot\assets\avatars\150-1.jpg" />
     <EmbeddedResource Include="wwwroot\assets\avatars\150-2.jpg" />
+    <EmbeddedResource Include="wwwroot\assets\baguetteBox\baguetteBox.css" />
+    <EmbeddedResource Include="wwwroot\assets\baguetteBox\baguetteBox.js" />
     <EmbeddedResource Include="wwwroot\assets\css\style.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\css\style.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\cube.js" />

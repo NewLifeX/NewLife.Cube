@@ -59,7 +59,7 @@
                 </td>
                 @if (this.Has(PermissionFlags.Detail))
                 {
-                    <td class="text-center" style="min-width:60px;">
+                    <td class="text-center w-80px" style="min-width:60px;">
                         @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                     </td>
                 }
