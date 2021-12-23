@@ -61,18 +61,13 @@
     @await Html.PartialAsync("_Layout_Drawer_500")
     @await Html.PartialAsync("_Layout_Explore")
     @await Html.PartialAsync("_Layout_Modals")
-
     <!-- 滚动条 -->
     @await Html.PartialAsync("_Layout_Scrolltop")
-
-
     <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
     <!--魔方自定义脚本-->
     <script src="~/assets/cube.js"></script>
-
     <!--自定义脚本-->
     @RenderSection("scripts", required: false)
-
 </body>
 <!--end::Body-->
 </html>

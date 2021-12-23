@@ -16,10 +16,10 @@
 <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
     <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
         <tr>
-            @if (set.EnableSelect)
+            @*@if (set.EnableSelect)
             {
                 <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
-            }
+            }*@
             @foreach (var item in fields)
             {
                 var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
@@ -43,10 +43,10 @@
             }
             var id = entity["ID"];
             <tr>
-                @if (set.EnableSelect)
+               @* @if (set.EnableSelect)
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity[fk.Name]" /></td>
-                }
+                }*@
                 @foreach (var item in fields)
                 {
                     @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))}

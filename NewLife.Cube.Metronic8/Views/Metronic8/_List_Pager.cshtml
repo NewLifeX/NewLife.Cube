@@ -30,6 +30,7 @@
         var t = c + i;
         if (max >= t) { list_prev.Add(t); };
     }
+
 }
 
 @if (pager.TotalCount > 0)
@@ -51,6 +52,7 @@
                     &nbsp;页大小&nbsp;
                     <label>
                         <select id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();" class="form-select form-select-sm form-select-solid h-30px">
+                            <option value="5">5</option>
                             <option value="10">10</option>
                             <option value="20">20</option>
                             <option value="30">30</option>
@@ -66,30 +68,37 @@
             </div>
             <div class="col-sm-12 col-md-7 d-flex align-items-center justify-content-center justify-content-md-end">
                 <div class="dataTables_paginate paging_simple_numbers pe-5 pt-3" id="kt_table_users_paginate">
-                    <ul class="pagination">
-                        <li class="paginate_button page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("首页"))</li>
-                        <li class="paginate_button page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("上一页"))</li>
+                    <ul class="pagination pagination-circle pagination-outline">
+                        <li class="page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("首页"))</li>
+                        <li class="page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("上一页"))</li>
                         @foreach (var item in list_next)
                         {
-                            <li class="paginate_button page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPageUrl(item + "", item))</li>
+                            pager.PageUrlTemplate="{链接}";
+                            <li class="page-item h-30px pe-1">
+                                <a href="@pager.GetPageUrl("",item)" class=" btn btn-outline btn-outline-dashed btn-outline-info btn-active-light-info h-20px w-30px p-0 mt-1">@item</a>
+                            </li>
                         }
-                        <li class="paginate_button page-item h-30px pe-3 active" >
-                        <a href="#" class=" btn btn-outline btn-outline-dashed btn-outline-info btn-active-light-info h-20px w-30px p-0 mt-1">@c</a>
+                        <li class="page-item h-30px pe-1 active">
+                            <a href="#" class=" btn btn-outline btn-outline-dashed btn-outline-info  h-20px w-30px p-0 mt-1">@c</a>
                         </li>
                         @foreach (var item in list_prev)
                         {
-                            <li class="paginate_button page-item h-30px pe-3 pt-1">@Html.Raw(pager.GetPageUrl(item + "", item))</li>
+                            pager.PageUrlTemplate="{链接}";
+                            <li class="page-item h-30px pe-1">
+                                <a href="@pager.GetPageUrl("",item)" class=" btn btn-outline btn-outline-dashed btn-outline-info btn-active-light-info h-20px w-30px p-0 mt-1">@item</a>
+                            </li>
+                            pager.PageUrlTemplate="<a href=\"{链接}\">{名称}</a>";
                         }
-                        <li class="paginate_button page-item  h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("下一页"))</li>
-                        <li class="paginate_button page-item  h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("尾页"))</li>
+                        <li class="page-item  h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("下一页"))</li>
+                        <li class="page-item  h-30px pe-3 pt-1">@Html.Raw(pager.GetPage("尾页"))</li>
                     </ul>
                 </div>
             </div>
         </div>
         <script type="text/javascript">
-        $(function () {
-            $('#PageSize').val(@pager.PageSize);
-        });
+            $(function () {
+                $('#PageSize').val(@pager.PageSize);
+            });
         </script>
     </form>
 }
