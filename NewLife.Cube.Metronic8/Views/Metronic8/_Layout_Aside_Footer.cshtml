@@ -4,11 +4,12 @@
     var user = ManageProvider.User as IUser ?? User.Identity as IUser;
 
 }
+@user
 @if (user!=null)
 {
     <!-- 菜单 Footer -->
-    <div class="aside-footer flex-column-auto pt-5 pb-15 px-5" >
-        <div class="d-flex align-items-center" id="kt_header_user_menu_toggle">
+    <div class="fixed-bottom aside-footer flex-column-auto pb-5 px-5">
+        <div class="d-flex align-items-center">
             <div class="cursor-pointer symbol symbol-40px" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start" data-kt-menu-flip="top-end" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-dismiss="click" title="账号">
                 <img src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" />
                 <span class="text-info p-5">@user.DisplayName (@user.Name) </span>

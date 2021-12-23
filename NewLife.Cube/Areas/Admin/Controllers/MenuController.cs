@@ -14,8 +14,6 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static MenuController()
         {
-            MenuOrder = 80;
-
             // 过滤要显示的字段
             ListFields.RemoveField("Remark");
         }
