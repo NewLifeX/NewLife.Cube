@@ -62,8 +62,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="8.11.2021.1223-beta3" />
-    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1223-beta3" />
+    <PackageReference Include="NewLife.Core" Version="8.11.2021.1225" />
+    <PackageReference Include="NewLife.XCode" Version="10.3.2021.1225" />
   </ItemGroup>
 
   <ItemGroup>
