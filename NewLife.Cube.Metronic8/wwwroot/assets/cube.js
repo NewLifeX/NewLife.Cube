@@ -61,7 +61,6 @@
         $(this).val('');
     });
 
-
     //双击单元格跳转到form
     $('tr').dblclick(function () {
         var $this = $(this);
@@ -90,6 +89,15 @@
         }
     });
 
+    $('tr').click(function () {
+        if ($(this).css('background-color') === 'rgb(255, 228, 225)') {
+            $(this).css('background-color', 'white');
+        } else {
+            $(this).css('background-color', 'rgb(255, 228, 225)');
+        }
+
+    });
+
     //弹出提示对话框
     $('.swal_tip').click(function (e) {
         var title = $(this).data("title");
@@ -115,5 +123,37 @@
         });
     });
 
-    //
+    //图片跟随鼠标预览功能
+    $(".div_image").hover(function () {
+        var $imgsrc = $(this).attr("src");
+        var $div = "<div class='div_image_append'><img style='width: 500px; height: 400px;' src='" + $imgsrc + "'/></div>";
+        $("#div_footer").append($div);
+        //$("div img").attr("src", $imgsrc);
+    }, function () {
+        // out
+        //鼠标移出的时候把其他列透明度去掉
+        //$(this).siblings().removeClass("opacity_li");
+        $(".div_image_append").remove();
+    }).mousemove(function (e) {
+        var wh = $(window).height();
+        var ph = e.pageY;
+        var diff = wh - ph;
+        var offset = 10;
+        if (diff < 420) offset = diff - 450;
+        //console.log("wh:" + wh + " ph:" + ph + " diff:" + diff + " offset:" + offset);
+        $(".div_image_append").css({
+            position: "absolute",
+            left: e.pageX + 10,
+            top: e.pageY + offset
+        }); //设置div绝对定位 坐标就是距离鼠标当前的位置 
+    });
+
+    //baguetteBox.run('.baguetteBoxThree', {
+    //    animation: 'fadeIn',
+    //    noScrollbars: true,
+    //    captions: function (element) {
+    //        return element.getElementsByTagName('img')[0].alt;
+    //    }
+    //});
+
 });
