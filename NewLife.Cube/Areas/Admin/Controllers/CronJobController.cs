@@ -22,13 +22,13 @@ namespace NewLife.Cube.Cube.Controllers
                 var df = ListFields.AddListField("Log", null, "Enable");
                 df.Header = "日志";
                 df.DisplayName = "日志";
-                df.Url = "Log?category=CronJob&linkId={Id}";
+                df.Url = "../Admin/Log?category=CronJob&linkId={Id}";
             }
             {
                 var df = ListFields.AddListField("JobLog", null, "Enable");
                 df.Header = "作业日志";
                 df.DisplayName = "作业日志";
-                df.Url = "Log?category=JobService&linkId={Id}";
+                df.Url = "../Admin/Log?category=JobService&linkId={Id}";
             }
         }
 

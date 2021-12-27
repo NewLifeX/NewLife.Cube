@@ -243,8 +243,24 @@ namespace NewLife.Cube.Services
             var job = Job;
             job.LastTime = DateTime.Now;
 
-            _action?.Invoke(job.Argument);
-            //_action2?.Invoke(job);
+            var sw = Stopwatch.StartNew();
+            var message = "";
+            var success = true;
+            try
+            {
+                _action?.Invoke(job.Argument);
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+
+                success = false;
+                message = ex.ToString();
+            }
+            sw.Stop();
+            message += $" 耗时 {sw.Elapsed}";
+
+            JobService.WriteLog(job.Name, success, message, job);
 
             job.NextTime = _timer.Cron.GetNext(_timer.NextTime);
             job.Update();
