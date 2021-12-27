@@ -100,6 +100,7 @@ namespace NewLife.Cube.Services
         {
             var log = LogProvider.Provider.CreateLog("JobService", action, success, remark);
             if (job != null) log.LinkID = job.Id;
+            log.TraceId = DefaultSpan.Current?.TraceId;
 
             log.SaveAsync();
         }
