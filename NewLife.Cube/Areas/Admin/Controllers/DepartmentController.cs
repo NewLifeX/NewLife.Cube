@@ -16,6 +16,8 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static DepartmentController()
         {
+            LogOnChange = true;
+
             ListFields.RemoveField("Ex1");
             ListFields.RemoveField("Ex2");
             ListFields.RemoveField("Ex3");

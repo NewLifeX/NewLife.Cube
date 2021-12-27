@@ -16,6 +16,8 @@ namespace NewLife.Cube.Cube.Controllers
     {
         static CronJobController()
         {
+            LogOnChange = true;
+
             ListFields.RemoveCreateField();
 
             {
