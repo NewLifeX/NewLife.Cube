@@ -218,7 +218,7 @@ namespace NewLife.Cube.Services
 
             // 实例化定时器，原定时器销毁
             _timer.TryDispose();
-            _timer = new TimerX(DoJobWork, job, expession) { Async = true };
+            _timer = new TimerX(DoJobWork, job, expession) { Async = true, Tracer = Tracer };
 
             job.NextTime = _timer.NextTime;
             job.Update();
@@ -244,6 +244,7 @@ namespace NewLife.Cube.Services
             var job = Job;
             job.LastTime = DateTime.Now;
 
+            using var span = Tracer?.NewSpan($"job:{job}", job);
             var sw = Stopwatch.StartNew();
             var message = "";
             var success = true;
@@ -253,6 +254,7 @@ namespace NewLife.Cube.Services
             }
             catch (Exception ex)
             {
+                span?.SetError(ex, null);
                 XTrace.WriteException(ex);
 
                 success = false;

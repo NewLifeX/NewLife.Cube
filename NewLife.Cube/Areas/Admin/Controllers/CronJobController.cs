@@ -24,7 +24,7 @@ namespace NewLife.Cube.Cube.Controllers
                 var df = ListFields.AddListField("Log", null, "Enable");
                 df.Header = "日志";
                 df.DisplayName = "日志";
-                df.Url = "../Admin/Log?category=CronJob&linkId={Id}";
+                df.Url = "../Admin/Log?category=定时作业&linkId={Id}";
             }
             {
                 var df = ListFields.AddListField("JobLog", null, "Enable");
