@@ -84,8 +84,8 @@ namespace NewLife.Cube.Extensions
                 var p3 = p2 + _baseNamespace.Length;
                 if (p2 > 0 && p < p3)
                 {
-                    var text2 = text.Substring(0, p3).Replace("-", "_").Replace("@", "_");
-                    text2 += text.Substring(p3);
+                    var text2 = text[..p3].Replace("-", "_").Replace("@", "_");
+                    text2 += text[p3..];
                     if (text2 != text)
                     {
                         if (_assembly.GetManifestResourceInfo(text2) != null)
@@ -112,7 +112,7 @@ namespace NewLife.Cube.Extensions
             {
                 if (text.StartsWith(_baseNamespace, StringComparison.Ordinal))
                 {
-                    list.Add(new EmbeddedResourceFileInfo(_assembly, text, text.Substring(_baseNamespace.Length), _lastModified));
+                    list.Add(new EmbeddedResourceFileInfo(_assembly, text, text[_baseNamespace.Length..], _lastModified));
                 }
             }
             return new EnumerableDirectoryContents(list);

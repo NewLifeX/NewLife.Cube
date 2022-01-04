@@ -108,7 +108,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 计算当前路径
             var fd = di.FullName;
-            if (fd.StartsWith(Root)) fd = fd.Substring(Root.Length);
+            if (fd.StartsWith(Root)) fd = fd[Root.Length..];
             ViewBag.Current = fd;
 
             // 遍历所有子目录

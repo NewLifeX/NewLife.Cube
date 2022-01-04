@@ -18,6 +18,7 @@ namespace NewLife.Cube.Cube.Controllers
         {
             LogOnChange = true;
 
+            ListFields.RemoveField("Method", "Remark");
             ListFields.RemoveCreateField();
 
             {
@@ -31,6 +32,13 @@ namespace NewLife.Cube.Cube.Controllers
                 df.Header = "作业日志";
                 df.DisplayName = "作业日志";
                 df.Url = "../Admin/Log?category=JobService&linkId={Id}";
+            }
+            {
+                var df = ListFields.AddListField("Execute", null, "NextTime");
+                df.Header = "马上执行";
+                df.DisplayName = "马上执行";
+                df.Url = "CronJob/ExecuteNow?id={Id}";
+                df.DataAction = "action";
             }
         }
 
@@ -53,6 +61,24 @@ namespace NewLife.Cube.Cube.Controllers
             }
 
             return base.Valid(entity, type, post);
+        }
+
+        /// <summary>马上执行</summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Update)]
+        public ActionResult ExecuteNow(String id)
+        {
+            var entity = CronJob.FindById(id.ToInt());
+            if (entity != null && entity.Enable)
+            {
+                entity.NextTime = DateTime.Now;
+                entity.Update();
+
+                JobService.Wake(entity.Id, -1);
+            }
+
+            return JsonRefresh($"已安排执行！");
         }
     }
 }
