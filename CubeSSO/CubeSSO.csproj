@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyTitle>魔方用户中心（SSO服务端）</AssemblyTitle>
-    <Version>4.3.2021.1225</Version>
-    <FileVersion>4.3.2021.1225</FileVersion>
-    <AssemblyVersion>4.3.*</AssemblyVersion>
+    <Version>5.0.2022.0101</Version>
+    <FileVersion>5.0.2022.0101</FileVersion>
+    <AssemblyVersion>5.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\BinSSO</OutputPath>
     <Nullable>enable</Nullable>
@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.1204" />
+    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.1225" />
   </ItemGroup>
 
   <ItemGroup>

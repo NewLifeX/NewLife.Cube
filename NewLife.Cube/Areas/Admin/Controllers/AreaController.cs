@@ -17,7 +17,12 @@ namespace NewLife.Cube.Cube.Controllers
     [Menu(50, true, Icon = "fa-area-chart")]
     public class AreaController : EntityController<Area>
     {
-        static AreaController() => ListFields.RemoveCreateField();
+        static AreaController()
+        {
+            LogOnChange = true;
+
+            ListFields.RemoveCreateField();
+        }
 
         private static Boolean _inited;
 
