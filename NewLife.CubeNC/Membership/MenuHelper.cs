@@ -46,7 +46,7 @@ namespace NewLife.Cube.Membership
                 list.Add(root);
 
                 var att = areaType.GetCustomAttribute<MenuAttribute>();
-                if (att != null)
+                if (att != null && (!root.Visible || !root.Necessary))
                 {
                     root.Sort = att.Order;
                     root.Visible = att.Visible;
@@ -167,8 +167,11 @@ namespace NewLife.Cube.Membership
                 {
                     if (att != null)
                     {
-                        controller.Sort = att.Order;
-                        controller.Visible = att.Visible;
+                        if (!root.Visible || !root.Necessary)
+                        {
+                            controller.Sort = att.Order;
+                            controller.Visible = att.Visible;
+                        }
                     }
                     else
                     {
