@@ -1,0 +1,95 @@
+﻿@using Microsoft.AspNetCore.Http.Extensions
+@using NewLife.Common;
+@{
+    var cfg = NewLife.Common.SysConfig.Current;
+    var user = ManageProvider.User;
+    var home = NewLife.Cube.Setting.Current.StartPage;
+    var retUrl = Context.Request.GetEncodedPathAndQuery();
+    var menu = ViewBag.Menu as IMenu;
+}
+
+<div class="d-flex align-items-center ms-1 ms-lg-3" id="kt_header_user_menu_toggle">
+    <!--begin::Menu wrapper-->
+    <div class="cursor-pointer symbol symbol-30px symbol-md-40px" data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
+        @if (!user.Avatar.IsNullOrEmpty())
+        {
+            <img alt="Pic" src="@user.GetAvatarUrl()" class="rounded w-40px h-40px">
+        }
+        else
+        {
+            <span class="symbol-label font-size-h5">@user.Name.Substring(0, 1).ToUpper()</span>
+            <i class="symbol-badge bg-primary"></i>
+        }
+    </div>
+    <!--begin::Menu-->
+    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px" data-kt-menu="true">
+        <!--begin::Menu item-->
+        <div class="menu-item px-3">
+            <div class="menu-content d-flex align-items-center px-3">
+                <!--begin::Avatar-->
+                <div class="symbol symbol-50px me-5">
+                    @if (!user.Avatar.IsNullOrEmpty())
+                    {
+                        <img alt="Pic" src="@user.GetAvatarUrl()">
+                    }
+                    else
+                    {
+                        <span class="symbol-label font-size-h5">@user.Name.Substring(0, 1).ToUpper()</span>
+                        <i class="symbol-badge bg-primary"></i>
+                    }
+                </div>
+                <!--end::Avatar-->
+                <!--begin::Username-->
+                <div class="d-flex flex-column">
+                    <div class="fw-bolder d-flex align-items-center fs-5">
+                        @user.Name
+                        <span class="badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2">@user.RoleName</span>
+                    </div>
+                    <a href="#" class="fw-bold text-muted text-hover-primary fs-7">@user.Mail</a>
+                </div>
+                <!--end::Username-->
+            </div>
+        </div>
+        <!--end::Menu item-->
+        <!--begin::Menu separator-->
+        <div class="separator my-2"></div>
+        <!--end::Menu separator-->
+        <!--begin::Menu item-->
+        <div class="menu-item px-5">
+            <a href="#" class="menu-link px-5">系统首页</a>
+        </div>
+        <!--end::Menu item-->
+        <!--begin::Menu item-->
+        <div class="menu-item px-5">
+            <a href="#" class="menu-link px-5">
+                <span class="menu-text">个人信息</span>
+                <span class="menu-badge">
+                    <span class="badge badge-light-info badge-circle fw-bolder fs-7">修改</span>
+                </span>
+            </a>
+        </div>
+        <!--end::Menu item-->
+        <!--begin::Menu item-->
+        <div class="menu-item px-5">
+            <a href="#" class="menu-link px-5">
+                <span class="menu-title">我的日志</span>
+            </a>
+        </div>
+        <!--end::Menu item-->
+        <!--begin::Menu item-->
+        <div class="menu-item px-5">
+            <a href="#" class="menu-link px-5">第3方登录授权</a>
+        </div>
+        <!--end::Menu item-->
+        <!--begin::Menu separator-->
+        <div class="separator my-2"></div>
+        <!--end::Menu separator-->
+        <!--begin::Menu item-->
+        <div class="menu-item px-5">
+            <a href="~/Admin/User/Logout" class="menu-link px-5">注销</a>
+        </div>
+        <!--end::Menu item-->
+    </div>
+    <!--end::Menu-->
+    <!--end::Menu wrapper-->
+</div>
