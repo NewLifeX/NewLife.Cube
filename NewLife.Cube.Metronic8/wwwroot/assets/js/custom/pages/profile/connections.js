@@ -1,1 +1,58 @@
-"use strict";var KTProfileConnections=function(){var t=document.getElementById("kt_connections_show_more_button"),n=document.getElementById("kt_connections_show_more_cards");return{init:function(){t.addEventListener("click",(function(e){t.setAttribute("data-kt-indicator","on"),t.disabled=!0,setTimeout((function(){t.removeAttribute("data-kt-indicator"),t.disabled=!1,t.classList.add("d-none"),n.classList.remove("d-none"),KTUtil.scrollTo(n,200)}),2e3)}))}}}();KTUtil.onDOMContentLoaded((function(){KTProfileConnections.init()}));
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+var __webpack_exports__ = {};
+/*!**************************************************************************************!*\
+  !*** ../../../themes/metronic/html/demo1/src/js/custom/pages/profile/connections.js ***!
+  \**************************************************************************************/
+
+
+// Class definition
+var KTProfileConnections = function () {
+    // init variables
+    var showMoreButton = document.getElementById('kt_connections_show_more_button');
+    var showMoreCards = document.getElementById('kt_connections_show_more_cards');
+
+    // Private functions
+    var handleShowMore = function () {
+        // Show more click
+        showMoreButton.addEventListener('click', function (e) {
+            showMoreButton.setAttribute('data-kt-indicator', 'on');
+
+            // Disable button to avoid multiple click 
+            showMoreButton.disabled = true;
+
+            setTimeout(function() {
+                // Hide loading indication
+                showMoreButton.removeAttribute('data-kt-indicator');
+
+                // Enable button
+				showMoreButton.disabled = false;
+
+                // Hide button
+                showMoreButton.classList.add('d-none');
+
+                // Show card
+                showMoreCards.classList.remove('d-none');
+
+                // Scroll to card
+                KTUtil.scrollTo(showMoreCards, 200);
+            }, 2000);
+        });
+    }
+
+    // Public methods
+    return {
+        init: function () {
+            handleShowMore();
+        }
+    }
+}();
+
+
+// On document ready
+KTUtil.onDOMContentLoaded(function() {
+    KTProfileConnections.init();
+});
+/******/ })()
+;
+//# sourceMappingURL=connections.js.map

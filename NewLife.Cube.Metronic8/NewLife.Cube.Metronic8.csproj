@@ -34,6 +34,12 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="wwwroot\assets\logo\**" />
+    <Content Remove="wwwroot\assets\logo\**" />
+    <EmbeddedResource Remove="wwwroot\assets\logo\**" />
+    <None Remove="wwwroot\assets\logo\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="wwwroot\assets\avatars\150-0.jpg" />
@@ -167,7 +173,6 @@
     <Content Remove="wwwroot\assets\js\custom\pages\search\horizontal.js" />
     <Content Remove="wwwroot\assets\js\custom\widgets.js" />
     <Content Remove="wwwroot\assets\js\scripts.bundle.js" />
-    <Content Remove="wwwroot\assets\logo\logo.png" />
     <Content Remove="wwwroot\assets\media\bg-4.jpg" />
     <Content Remove="wwwroot\assets\media\verification.png" />
     <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon-block.bundle.js" />
@@ -500,7 +505,6 @@
     <EmbeddedResource Include="wwwroot\assets\js\custom\pages\search\horizontal.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\widgets.js" />
     <EmbeddedResource Include="wwwroot\assets\js\scripts.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\logo\logo.png" />
     <EmbeddedResource Include="wwwroot\assets\media\bg-4.jpg" />
     <EmbeddedResource Include="wwwroot\assets\media\verification.png" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon-block.bundle.js" />

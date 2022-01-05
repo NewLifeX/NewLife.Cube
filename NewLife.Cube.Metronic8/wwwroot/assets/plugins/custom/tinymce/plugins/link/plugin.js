@@ -4,14 +4,14 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$7 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.VK');
+    var global$6 = tinymce.util.Tools.resolve('tinymce.util.VK');
 
     var typeOf = function (x) {
       var t = typeof x;
@@ -45,6 +45,185 @@
     var isNull = eq(null);
     var isBoolean = isSimpleType('boolean');
     var isFunction = isSimpleType('function');
+
+    var noop = function () {
+    };
+    var constant = function (value) {
+      return function () {
+        return value;
+      };
+    };
+    var identity = function (x) {
+      return x;
+    };
+    var tripleEquals = function (a, b) {
+      return a === b;
+    };
+    var never = constant(false);
+    var always = constant(true);
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
+      };
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
+        },
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
+        }
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
+    };
+
+    var nativeIndexOf = Array.prototype.indexOf;
+    var nativePush = Array.prototype.push;
+    var rawIndexOf = function (ts, t) {
+      return nativeIndexOf.call(ts, t);
+    };
+    var contains = function (xs, x) {
+      return rawIndexOf(xs, x) > -1;
+    };
+    var map = function (xs, f) {
+      var len = xs.length;
+      var r = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var x = xs[i];
+        r[i] = f(x, i);
+      }
+      return r;
+    };
+    var each$1 = function (xs, f) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        f(x, i);
+      }
+    };
+    var foldl = function (xs, f, acc) {
+      each$1(xs, function (x, i) {
+        acc = f(acc, x, i);
+      });
+      return acc;
+    };
+    var flatten = function (xs) {
+      var r = [];
+      for (var i = 0, len = xs.length; i < len; ++i) {
+        if (!isArray(xs[i])) {
+          throw new Error('Arr.flatten item ' + i + ' was not an array, input: ' + xs);
+        }
+        nativePush.apply(r, xs[i]);
+      }
+      return r;
+    };
+    var bind = function (xs, f) {
+      return flatten(map(xs, f));
+    };
+    var findMap = function (arr, f) {
+      for (var i = 0; i < arr.length; i++) {
+        var r = f(arr[i], i);
+        if (r.isSome()) {
+          return r;
+        }
+      }
+      return Optional.none();
+    };
+
+    var is = function (lhs, rhs, comparator) {
+      if (comparator === void 0) {
+        comparator = tripleEquals;
+      }
+      return lhs.exists(function (left) {
+        return comparator(left, rhs);
+      });
+    };
+    var cat = function (arr) {
+      var r = [];
+      var push = function (x) {
+        r.push(x);
+      };
+      for (var i = 0; i < arr.length; i++) {
+        arr[i].each(push);
+      }
+      return r;
+    };
+    var someIf = function (b, a) {
+      return b ? Optional.some(a) : Optional.none();
+    };
 
     var assumeExternalTargets = function (editor) {
       var externalTargets = editor.getParam('link_assume_external_targets', false);
@@ -86,189 +265,7 @@
       return editor.getParam('link_default_protocol', 'http', 'string');
     };
 
-    var noop = function () {
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var never = constant(false);
-    var always = constant(true);
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = function (n) {
-        return n;
-      };
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        is: never,
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        is: function (v) {
-          return a === v;
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
-        }
-      };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Optional = {
-      some: some,
-      none: none,
-      from: from
-    };
-
-    var nativeIndexOf = Array.prototype.indexOf;
-    var nativePush = Array.prototype.push;
-    var rawIndexOf = function (ts, t) {
-      return nativeIndexOf.call(ts, t);
-    };
-    var contains = function (xs, x) {
-      return rawIndexOf(xs, x) > -1;
-    };
-    var map = function (xs, f) {
-      var len = xs.length;
-      var r = new Array(len);
-      for (var i = 0; i < len; i++) {
-        var x = xs[i];
-        r[i] = f(x, i);
-      }
-      return r;
-    };
-    var each = function (xs, f) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        f(x, i);
-      }
-    };
-    var foldl = function (xs, f, acc) {
-      each(xs, function (x) {
-        acc = f(acc, x);
-      });
-      return acc;
-    };
-    var flatten = function (xs) {
-      var r = [];
-      for (var i = 0, len = xs.length; i < len; ++i) {
-        if (!isArray(xs[i])) {
-          throw new Error('Arr.flatten item ' + i + ' was not an array, input: ' + xs);
-        }
-        nativePush.apply(r, xs[i]);
-      }
-      return r;
-    };
-    var bind = function (xs, f) {
-      return flatten(map(xs, f));
-    };
-    var findMap = function (arr, f) {
-      for (var i = 0; i < arr.length; i++) {
-        var r = f(arr[i], i);
-        if (r.isSome()) {
-          return r;
-        }
-      }
-      return Optional.none();
-    };
-
-    var cat = function (arr) {
-      var r = [];
-      var push = function (x) {
-        r.push(x);
-      };
-      for (var i = 0; i < arr.length; i++) {
-        arr[i].each(push);
-      }
-      return r;
-    };
-    var someIf = function (b, a) {
-      return b ? Optional.some(a) : Optional.none();
-    };
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$5 = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
     var getValue = function (item) {
       return isString(item.value) ? item.value : '';
@@ -284,7 +281,7 @@
     };
     var sanitizeList = function (list, extractValue) {
       var out = [];
-      global$2.each(list, function (item) {
+      global$5.each(list, function (item) {
         var text = getText(item);
         if (item.menu !== undefined) {
           var items = sanitizeList(item.menu, extractValue);
@@ -347,7 +344,7 @@
 
     var keys = Object.keys;
     var hasOwnProperty = Object.hasOwnProperty;
-    var each$1 = function (obj, f) {
+    var each = function (obj, f) {
       var props = keys(obj);
       for (var k = 0, len = props.length; k < len; k++) {
         var i = props[k];
@@ -362,7 +359,7 @@
     };
     var internalFilter = function (obj, pred, onTrue, onFalse) {
       var r = {};
-      each$1(obj, function (x, i) {
+      each(obj, function (x, i) {
         (pred(x, i) ? onTrue : onFalse)(x, i);
       });
       return r;
@@ -379,7 +376,9 @@
       return has(obj, key) && obj[key] !== undefined && obj[key] !== null;
     };
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.dom.TreeWalker');
+    var global$4 = tinymce.util.Tools.resolve('tinymce.dom.TreeWalker');
+
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.URI');
 
     var isAnchor = function (elm) {
       return elm && elm.nodeName.toLowerCase() === 'a';
@@ -392,7 +391,7 @@
         return [];
       } else {
         var contents = rng.cloneContents();
-        var walker = new global$3(contents.firstChild, contents);
+        var walker = new global$4(contents.firstChild, contents);
         var elements = [];
         var current = contents.firstChild;
         do {
@@ -414,7 +413,7 @@
       var rules = ['noopener'];
       var rels = rel ? rel.split(/\s+/) : [];
       var toString = function (rels) {
-        return global$2.trim(rels.sort().join(' '));
+        return global$5.trim(rels.sort().join(' '));
       };
       var addTargetRules = function (rels) {
         rels = removeTargetRules(rels);
@@ -422,7 +421,7 @@
       };
       var removeTargetRules = function (rels) {
         return rels.filter(function (val) {
-          return global$2.inArray(rules, val) === -1;
+          return global$5.inArray(rules, val) === -1;
         });
       };
       var newRels = isUnsafe ? addTargetRules(rels) : removeTargetRules(rels);
@@ -444,7 +443,7 @@
       return trimCaretContainers(text);
     };
     var hasLinks = function (elements) {
-      return global$2.grep(elements, isLink).length > 0;
+      return global$5.grep(elements, isLink).length > 0;
     };
     var hasLinksInSelection = function (rng) {
       return collectNodesInRange(rng, isLink).length > 0;
@@ -461,12 +460,13 @@
       return elm && elm.nodeName === 'FIGURE' && /\bimage\b/i.test(elm.className);
     };
     var getLinkAttrs = function (data) {
-      return foldl([
+      var attrs = [
         'title',
         'rel',
         'class',
         'target'
-      ], function (acc, key) {
+      ];
+      return foldl(attrs, function (acc, key) {
         data[key].each(function (value) {
           acc[key] = value.length > 0 ? value : null;
         });
@@ -493,7 +493,7 @@
     };
     var updateLink = function (editor, anchorElm, text, linkAttrs) {
       text.each(function (text) {
-        if (anchorElm.hasOwnProperty('innerText')) {
+        if (has(anchorElm, 'innerText')) {
           anchorElm.innerText = text;
         } else {
           anchorElm.textContent = text;
@@ -569,8 +569,13 @@
         return isNull(v) === false;
       });
     };
+    var sanitizeData = function (editor, data) {
+      var href = data.href;
+      return __assign(__assign({}, data), { href: global$3.isDomSafe(href, 'a', editor.settings) ? href : '' });
+    };
     var link = function (editor, attachState, data) {
-      editor.hasPlugin('rtc', true) ? editor.execCommand('createlink', false, unwrapOptions(data)) : linkDomMutation(editor, attachState, data);
+      var sanitizedData = sanitizeData(editor, data);
+      editor.hasPlugin('rtc', true) ? editor.execCommand('createlink', false, unwrapOptions(sanitizedData)) : linkDomMutation(editor, attachState, sanitizedData);
     };
     var unlink = function (editor) {
       editor.hasPlugin('rtc', true) ? editor.execCommand('unlink') : unlinkDomMutation(editor);
@@ -682,13 +687,13 @@
       getDelta: getDelta
     };
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Delay');
 
-    var global$5 = tinymce.util.Tools.resolve('tinymce.util.Promise');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Promise');
 
     var delayedConfirm = function (editor, message, callback) {
       var rng = editor.selection.getRng();
-      global$4.setEditorTimeout(editor, function () {
+      global$2.setEditorTimeout(editor, function () {
         editor.windowManager.confirm(message, function (state) {
           editor.selection.setRng(rng);
           callback(state);
@@ -724,9 +729,9 @@
       ], function (f) {
         return f(data);
       }).fold(function () {
-        return global$5.resolve(data);
+        return global$1.resolve(data);
       }, function (transform) {
-        return new global$5(function (callback) {
+        return new global$1(function (callback) {
           delayedConfirm(editor, transform.message, function (state) {
             callback(state ? transform.preprocess(data) : data);
           });
@@ -760,7 +765,7 @@
     };
     var ClassListOptions = { getClasses: getClasses };
 
-    var global$6 = tinymce.util.Tools.resolve('tinymce.util.XHR');
+    var global = tinymce.util.Tools.resolve('tinymce.util.XHR');
 
     var parseJson = function (text) {
       try {
@@ -774,9 +779,9 @@
         return editor.convertURL(item.value || item.url, 'href');
       };
       var linkList = getLinkList(editor);
-      return new global$5(function (callback) {
+      return new global$1(function (callback) {
         if (isString(linkList)) {
-          global$6.send({
+          global.send({
             url: linkList,
             success: function (text) {
               return callback(parseJson(text));
@@ -811,7 +816,7 @@
     var getRels = function (editor, initialTarget) {
       var list = getRelList(editor);
       if (list.length > 0) {
-        var isTargetBlank_1 = initialTarget.is('_blank');
+        var isTargetBlank_1 = is(initialTarget, '_blank');
         var enforceSafe = allowUnsafeLinkTarget(editor) === false;
         var safeRelExtractor = function (item) {
           return applyRelTargetRules(ListOptions.getValue(item), isTargetBlank_1);
@@ -897,7 +902,7 @@
         }
         var getChangedValue = function (key) {
           return Optional.from(data[key]).filter(function (value) {
-            return !info.anchor[key].is(value);
+            return !is(info.anchor[key], value);
           });
         };
         var changedData = {
@@ -1004,7 +1009,7 @@
         onSubmit: onSubmit
       };
     };
-    var open = function (editor) {
+    var open$1 = function (editor) {
       var data = collectData(editor);
       data.then(function (info) {
         var onSubmit = handleSubmit(editor, info);
@@ -1019,7 +1024,7 @@
       link.dispatchEvent(evt);
       document.body.removeChild(link);
     };
-    var open$1 = function (url) {
+    var open = function (url) {
       var link = document.createElement('a');
       link.target = '_blank';
       link.href = url;
@@ -1047,13 +1052,13 @@
             editor.selection.scrollIntoView(targetEl[0], true);
           }
         } else {
-          open$1(a.href);
+          open(a.href);
         }
       }
     };
     var openDialog = function (editor) {
       return function () {
-        open(editor);
+        open$1(editor);
       };
     };
     var gotoSelectedLink = function (editor) {
@@ -1064,7 +1069,7 @@
     var setupGotoLinks = function (editor) {
       editor.on('click', function (e) {
         var link = getLink(editor, e.target);
-        if (link && global$1.metaKeyPressed(e)) {
+        if (link && global$6.metaKeyPressed(e)) {
           e.preventDefault();
           gotoLink(editor, link);
         }
@@ -1085,9 +1090,11 @@
     };
     var toggleActiveState = function (editor) {
       return function (api) {
-        return toggleState(editor, function () {
-          api.setActive(!editor.mode.isReadOnly() && getAnchorElement(editor, editor.selection.getNode()) !== null);
-        });
+        var updateState = function () {
+          return api.setActive(!editor.mode.isReadOnly() && getAnchorElement(editor, editor.selection.getNode()) !== null);
+        };
+        updateState();
+        return toggleState(editor, updateState);
       };
     };
     var toggleEnabledState = function (editor) {
@@ -1190,6 +1197,16 @@
         buttonApi.setDisabled(!getAnchorElement(editor, node));
         return noop;
       };
+      var getLinkText = function (value) {
+        var anchor = getAnchorElement(editor);
+        var onlyText = isOnlyTextSelected(editor);
+        if (!anchor && onlyText) {
+          var text = getAnchorText(editor.selection, anchor);
+          return Optional.some(text.length > 0 ? text : value);
+        } else {
+          return Optional.none();
+        }
+      };
       editor.ui.registry.addContextForm('quicklink', {
         launch: {
           type: 'contextformtogglebutton',
@@ -1217,33 +1234,22 @@
               return toggleActiveState(editor)(buttonApi);
             },
             onAction: function (formApi) {
-              var anchor = getAnchorElement(editor);
               var value = formApi.getValue();
-              if (!anchor) {
-                var attachState = {
-                  href: value,
-                  attach: noop
-                };
-                var onlyText = isOnlyTextSelected(editor);
-                var text = onlyText ? Optional.some(getAnchorText(editor.selection, anchor)).filter(function (t) {
-                  return t.length > 0;
-                }).or(Optional.from(value)) : Optional.none();
-                link(editor, attachState, {
-                  href: value,
-                  text: text,
-                  title: Optional.none(),
-                  rel: Optional.none(),
-                  target: Optional.none(),
-                  class: Optional.none()
-                });
-                formApi.hide();
-              } else {
-                editor.undoManager.transact(function () {
-                  editor.dom.setAttrib(anchor, 'href', value);
-                  collapseSelectionToEnd(editor);
-                  formApi.hide();
-                });
-              }
+              var text = getLinkText(value);
+              var attachState = {
+                href: value,
+                attach: noop
+              };
+              link(editor, attachState, {
+                href: value,
+                text: text,
+                title: Optional.none(),
+                rel: Optional.none(),
+                target: Optional.none(),
+                class: Optional.none()
+              });
+              collapseSelectionToEnd(editor);
+              formApi.hide();
             }
           },
           {
@@ -1271,7 +1277,7 @@
     };
 
     function Plugin () {
-      global.add('link', function (editor) {
+      global$7.add('link', function (editor) {
         setupButtons(editor);
         setupMenuItems(editor);
         setupContextMenu(editor);

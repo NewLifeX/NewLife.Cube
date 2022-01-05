@@ -4,12 +4,12 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$4 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var eq = function (t) {
       return function (a) {
@@ -18,11 +18,11 @@
     };
     var isUndefined = eq(undefined);
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Delay');
 
     var global$2 = tinymce.util.Tools.resolve('tinymce.util.LocalStorage');
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
     var fireRestoreDraft = function (editor) {
       return editor.fire('RestoreDraft');
@@ -65,7 +65,7 @@
       if (isUndefined(html)) {
         return editor.dom.isEmpty(editor.getBody());
       } else {
-        var trimmedHtml = global$3.trim(html);
+        var trimmedHtml = global$1.trim(html);
         if (trimmedHtml === '') {
           return true;
         } else {
@@ -110,7 +110,7 @@
     };
     var startStoreDraft = function (editor) {
       var interval = getAutoSaveInterval(editor);
-      global$1.setEditorInterval(editor, function () {
+      global$3.setEditorInterval(editor, function () {
         storeDraft(editor);
       }, interval);
     };
@@ -142,12 +142,12 @@
       };
     };
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.EditorManager');
+    var global = tinymce.util.Tools.resolve('tinymce.EditorManager');
 
     var setup = function (editor) {
       editor.editorManager.on('BeforeUnload', function (e) {
         var msg;
-        global$3.each(global$4.get(), function (editor) {
+        global$1.each(global.get(), function (editor) {
           if (editor.plugins.autosave) {
             editor.plugins.autosave.storeDraft();
           }
@@ -195,7 +195,7 @@
     };
 
     function Plugin () {
-      global.add('autosave', function (editor) {
+      global$4.add('autosave', function (editor) {
         setup(editor);
         register(editor);
         editor.on('init', function () {

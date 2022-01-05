@@ -4,7 +4,7 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
@@ -23,9 +23,9 @@
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var get = function (toggleState) {
+    var get$2 = function (toggleState) {
       var isEnabled = function () {
         return toggleState.get();
       };
@@ -48,7 +48,7 @@
         return t;
       }
     };
-    var isType = function (type) {
+    var isType$1 = function (type) {
       return function (value) {
         return typeOf(value) === type;
       };
@@ -58,7 +58,7 @@
         return typeof value === type;
       };
     };
-    var isString = isType('string');
+    var isString = isType$1('string');
     var isBoolean = isSimpleType('boolean');
     var isNumber = isSimpleType('number');
 
@@ -69,6 +69,9 @@
         return value;
       };
     };
+    var identity = function (x) {
+      return x;
+    };
     var never = constant(false);
     var always = constant(true);
 
@@ -76,20 +79,14 @@
       return NONE;
     };
     var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
       var call = function (thunk) {
         return thunk();
       };
-      var id = function (n) {
-        return n;
-      };
+      var id = identity;
       var me = {
         fold: function (n, _s) {
           return n();
         },
-        is: never,
         isSome: never,
         isNone: always,
         getOr: id,
@@ -106,9 +103,9 @@
         bind: none,
         exists: never,
         forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
+        filter: function () {
+          return none();
+        },
         toArray: function () {
           return [];
         },
@@ -127,9 +124,6 @@
       var me = {
         fold: function (n, s) {
           return s(a);
-        },
-        is: function (v) {
-          return a === v;
         },
         isSome: always,
         isNone: never,
@@ -157,14 +151,6 @@
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -187,7 +173,7 @@
       }
       return r;
     };
-    var each = function (xs, f) {
+    var each$1 = function (xs, f) {
       for (var i = 0, len = xs.length; i < len; i++) {
         var x = xs[i];
         f(x, i);
@@ -205,7 +191,7 @@
     };
 
     var keys = Object.keys;
-    var each$1 = function (obj, f) {
+    var each = function (obj, f) {
       var props = keys(obj);
       for (var k = 0, len = props.length; k < len; k++) {
         var i = props[k];
@@ -214,7 +200,7 @@
       }
     };
 
-    var Global = typeof window !== 'undefined' ? window : Function('return this;')();
+    typeof window !== 'undefined' ? window : Function('return this;')();
 
     var TEXT = 3;
 
@@ -224,12 +210,12 @@
     var value = function (element) {
       return element.dom.nodeValue;
     };
-    var isType$1 = function (t) {
+    var isType = function (t) {
       return function (element) {
         return type(element) === t;
       };
     };
-    var isText = isType$1(TEXT);
+    var isText = isType(TEXT);
 
     var rawSet = function (dom, key, value) {
       if (isString(value) || isBoolean(value) || isNumber(value)) {
@@ -246,7 +232,7 @@
       var v = element.dom.getAttribute(key);
       return v === null ? undefined : v;
     };
-    var remove = function (element, key) {
+    var remove$3 = function (element, key) {
       element.dom.removeAttribute(key);
     };
 
@@ -254,20 +240,20 @@
       var value = get$1(element, attr);
       return value === undefined || value === '' ? [] : value.split(' ');
     };
-    var add = function (element, attr, id) {
+    var add$2 = function (element, attr, id) {
       var old = read(element, attr);
       var nu = old.concat([id]);
       set(element, attr, nu.join(' '));
       return true;
     };
-    var remove$1 = function (element, attr, id) {
+    var remove$2 = function (element, attr, id) {
       var nu = filter(read(element, attr), function (v) {
         return v !== id;
       });
       if (nu.length > 0) {
         set(element, attr, nu.join(' '));
       } else {
-        remove(element, attr);
+        remove$3(element, attr);
       }
       return false;
     };
@@ -275,17 +261,17 @@
     var supports = function (element) {
       return element.dom.classList !== undefined;
     };
-    var get$2 = function (element) {
+    var get = function (element) {
       return read(element, 'class');
     };
     var add$1 = function (element, clazz) {
-      return add(element, 'class', clazz);
+      return add$2(element, 'class', clazz);
     };
-    var remove$2 = function (element, clazz) {
-      return remove$1(element, 'class', clazz);
+    var remove$1 = function (element, clazz) {
+      return remove$2(element, 'class', clazz);
     };
 
-    var add$2 = function (element, clazz) {
+    var add = function (element, clazz) {
       if (supports(element)) {
         element.dom.classList.add(clazz);
       } else {
@@ -293,17 +279,17 @@
       }
     };
     var cleanClass = function (element) {
-      var classList = supports(element) ? element.dom.classList : get$2(element);
+      var classList = supports(element) ? element.dom.classList : get(element);
       if (classList.length === 0) {
-        remove(element, 'class');
+        remove$3(element, 'class');
       }
     };
-    var remove$3 = function (element, clazz) {
+    var remove = function (element, clazz) {
       if (supports(element)) {
         var classList = element.dom.classList;
         classList.remove(clazz);
       } else {
-        remove$2(element, clazz);
+        remove$1(element, clazz);
       }
       cleanClass(element);
     };
@@ -351,14 +337,14 @@
     };
     var charMapToRegExp = function (charMap, global) {
       var regExp = '';
-      each$1(charMap, function (_value, key) {
+      each(charMap, function (_value, key) {
         regExp += key;
       });
       return new RegExp('[' + regExp + ']', global ? 'g' : '');
     };
     var charMapToSelector = function (charMap) {
       var selector = '';
-      each$1(charMap, function (value) {
+      each(charMap, function (value) {
         if (selector) {
           selector += ',';
         }
@@ -383,7 +369,7 @@
       var result = [];
       var dom = scope.dom;
       var children = map(dom.childNodes, SugarElement.fromDom);
-      each(children, function (x) {
+      each$1(children, function (x) {
         if (predicate(x)) {
           result = result.concat([x]);
         }
@@ -408,10 +394,10 @@
     };
     var show = function (editor, rootElm) {
       var nodeList = filterDescendants(SugarElement.fromDom(rootElm), isMatch);
-      each(nodeList, function (n) {
+      each$1(nodeList, function (n) {
         var parent = n.dom.parentNode;
         if (isWrappedNbsp(parent)) {
-          add$2(SugarElement.fromDom(parent), nbspClass);
+          add(SugarElement.fromDom(parent), nbspClass);
         } else {
           var withSpans = replaceWithSpans(editor.dom.encode(value(n)));
           var div = editor.dom.create('div', null, withSpans);
@@ -425,9 +411,9 @@
     };
     var hide = function (editor, rootElm) {
       var nodeList = editor.dom.select(selector, rootElm);
-      each(nodeList, function (node) {
+      each$1(nodeList, function (node) {
         if (isWrappedNbsp(node)) {
-          remove$3(SugarElement.fromDom(node), nbspClass);
+          remove(SugarElement.fromDom(node), nbspClass);
         } else {
           editor.dom.remove(node, true);
         }
@@ -459,7 +445,7 @@
       editor.selection.moveToBookmark(bookmark);
     };
 
-    var register = function (editor, toggleState) {
+    var register$1 = function (editor, toggleState) {
       editor.addCommand('mceVisualChars', function () {
         toggleVisualChars(editor, toggleState);
       });
@@ -472,16 +458,16 @@
       return editor.getParam('forced_root_block') !== false;
     };
 
-    var setup = function (editor, toggleState) {
+    var setup$1 = function (editor, toggleState) {
       editor.on('init', function () {
         applyVisualChars(editor, toggleState);
       });
     };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global = tinymce.util.Tools.resolve('tinymce.util.Delay');
 
-    var setup$1 = function (editor, toggleState) {
-      var debouncedToggle = global$1.debounce(function () {
+    var setup = function (editor, toggleState) {
+      var debouncedToggle = global.debounce(function () {
         toggle(editor);
       }, 300);
       if (hasForcedRootBlock(editor)) {
@@ -506,33 +492,32 @@
         };
       };
     };
-    var register$1 = function (editor, toggleState) {
+    var register = function (editor, toggleState) {
+      var onAction = function () {
+        return editor.execCommand('mceVisualChars');
+      };
       editor.ui.registry.addToggleButton('visualchars', {
         tooltip: 'Show invisible characters',
         icon: 'visualchars',
-        onAction: function () {
-          return editor.execCommand('mceVisualChars');
-        },
+        onAction: onAction,
         onSetup: toggleActiveState(editor, toggleState)
       });
       editor.ui.registry.addToggleMenuItem('visualchars', {
         text: 'Show invisible characters',
         icon: 'visualchars',
-        onAction: function () {
-          return editor.execCommand('mceVisualChars');
-        },
+        onAction: onAction,
         onSetup: toggleActiveState(editor, toggleState)
       });
     };
 
     function Plugin () {
-      global.add('visualchars', function (editor) {
+      global$1.add('visualchars', function (editor) {
         var toggleState = Cell(isEnabledByDefault(editor));
-        register(editor, toggleState);
         register$1(editor, toggleState);
-        setup$1(editor, toggleState);
+        register(editor, toggleState);
         setup(editor, toggleState);
-        return get(toggleState);
+        setup$1(editor, toggleState);
+        return get$2(toggleState);
       });
     }
 

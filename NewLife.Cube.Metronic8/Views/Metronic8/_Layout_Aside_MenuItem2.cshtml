@@ -15,7 +15,6 @@
     {
         rs_active=true;
     }
-
 }
 
 @if (item.Visible)
@@ -40,7 +39,7 @@
             <div class="menu-sub menu-sub-accordion menu-active-bg">
                 @foreach (var sub in menus)
                 {
-                    @await Html.PartialAsync("_Layout_Aside_Menu_Item2", new ValueTuple<IMenu, IMenu>(menu, sub))
+                    @await Html.PartialAsync("_Layout_Aside_MenuItem2", new ValueTuple<IMenu, IMenu>(menu, sub))
                 }
             </div>
         </div>

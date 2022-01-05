@@ -4,17 +4,32 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
+    var checkRange = function (str, substr, start) {
+      return substr === '' || str.length >= substr.length && str.substr(start, start + substr.length) === substr;
+    };
+    var contains = function (str, substr) {
+      return str.indexOf(substr) !== -1;
+    };
+    var startsWith = function (str, prefix) {
+      return checkRange(str, prefix, 0);
+    };
 
+    var global = tinymce.util.Tools.resolve('tinymce.Env');
+
+    var link = function () {
+      return /(?:[A-Za-z][A-Za-z\d.+-]{0,14}:\/\/(?:[-.~*+=!&;:'%@?^${}(),\w]+@)?|www\.|[-;:&=+$,.\w]+@)[A-Za-z\d-]+(?:\.[A-Za-z\d-]+)*(?::\d+)?(?:\/(?:[-+~=.,%()\/\w]*[-+~=%()\/\w])?)?(?:\?(?:[-.~*+=!&;:'%@?^${}(),\/\w]+))?(?:#(?:[-.~*+=!&;:'%@?^${}(),\/\w]+))?/g;
+    };
+
+    var defaultLinkPattern = new RegExp('^' + link().source + '$', 'i');
     var getAutoLinkPattern = function (editor) {
-      return editor.getParam('autolink_pattern', /^(https?:\/\/|ssh:\/\/|ftp:\/\/|file:\/|www\.|(?:mailto:)?[A-Z0-9._%+\-]+@(?!.*@))(.+)$/i);
+      return editor.getParam('autolink_pattern', defaultLinkPattern);
     };
     var getDefaultLinkTarget = function (editor) {
       return editor.getParam('default_link_target', false);
@@ -60,6 +75,12 @@
       } else {
         rng.setEndAfter(container);
       }
+    };
+    var hasProtocol = function (url) {
+      return /^([A-Za-z][A-Za-z\d.+-]*:\/\/)|mailto:/.test(url);
+    };
+    var isPunctuation = function (char) {
+      return /[?!,.;:]/.test(char);
     };
     var parseCurrentLine = function (editor, endOffset, delimiter) {
       var end, endContainer, bookmark, text, prev, len, rngText;
@@ -121,21 +142,22 @@
         setEnd(rng, endContainer, start);
       }
       text = rng.toString();
-      if (text.charAt(text.length - 1) === '.') {
+      if (isPunctuation(text.charAt(text.length - 1))) {
         setEnd(rng, endContainer, start - 1);
       }
       text = rng.toString().trim();
       var matches = text.match(autoLinkPattern);
       var protocol = getDefaultLinkProtocol(editor);
       if (matches) {
-        if (matches[1] === 'www.') {
-          matches[1] = protocol + '://www.';
-        } else if (/@$/.test(matches[1]) && !/^mailto:/.test(matches[1])) {
-          matches[1] = 'mailto:' + matches[1];
+        var url = matches[0];
+        if (startsWith(url, 'www.')) {
+          url = protocol + '://' + url;
+        } else if (contains(url, '@') && !hasProtocol(url)) {
+          url = 'mailto:' + url;
         }
         bookmark = editor.selection.getBookmark();
         editor.selection.setRng(rng);
-        editor.execCommand('createlink', false, matches[1] + matches[2]);
+        editor.execCommand('createlink', false, url);
         if (defaultLinkTarget !== false) {
           editor.dom.setAttrib(editor.selection.getNode(), 'target', defaultLinkTarget);
         }
@@ -150,7 +172,7 @@
           return handleEnter(editor);
         }
       });
-      if (global$1.browser.isIE()) {
+      if (global.browser.isIE()) {
         editor.on('focus', function () {
           if (!autoUrlDetectState) {
             autoUrlDetectState = true;
@@ -175,7 +197,7 @@
     };
 
     function Plugin () {
-      global.add('autolink', function (editor) {
+      global$1.add('autolink', function (editor) {
         setup(editor);
       });
     }

@@ -45,7 +45,7 @@
             <div class="menu-sub menu-sub-accordion menu-active-bg">
                 @foreach (var child in menus)
                 {
-                    @await Html.PartialAsync("_Layout_Aside_Menu_Item2", new ValueTuple<IMenu, IMenu>(menu, child))
+                    @await Html.PartialAsync("_Layout_Aside_MenuItem2", new ValueTuple<IMenu, IMenu>(menu, child))
                 }
             </div>
         </div>

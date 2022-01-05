@@ -1,1 +1,67 @@
-"use strict";var KTGeneralPricing=function(){var n,t,e,a=function(t){[].slice.call(n.querySelectorAll("[data-kt-plan-price-month]")).map((function(n){var e=n.getAttribute("data-kt-plan-price-month"),a=n.getAttribute("data-kt-plan-price-annual");"month"===t?n.innerHTML=e:"annual"===t&&(n.innerHTML=a)}))};return{init:function(){n=document.querySelector("#kt_pricing"),t=n.querySelector('[data-kt-plan="month"]'),e=n.querySelector('[data-kt-plan="annual"]'),t.addEventListener("click",(function(n){n.preventDefault(),a("month")})),e.addEventListener("click",(function(n){n.preventDefault(),a("annual")}))}}}();KTUtil.onDOMContentLoaded((function(){KTGeneralPricing.init()}));
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+var __webpack_exports__ = {};
+/*!**********************************************************************************!*\
+  !*** ../../../themes/metronic/html/demo1/src/js/custom/pages/company/pricing.js ***!
+  \**********************************************************************************/
+
+
+// Class definition
+var KTGeneralPricing = function () {
+    // Private variables
+    var element;
+	var planPeriodMonthButton;
+	var planPeriodAnnualButton;
+
+	var changePlanPrices = function(type) {
+		var items = [].slice.call(element.querySelectorAll('[data-kt-plan-price-month]'));
+
+		items.map(function (item) {
+			var monthPrice = item.getAttribute('data-kt-plan-price-month');
+			var annualPrice = item.getAttribute('data-kt-plan-price-annual');
+
+			if ( type === 'month' ) {
+				item.innerHTML = monthPrice;
+			} else if ( type === 'annual' ) {
+				item.innerHTML = annualPrice;
+			}
+		});
+	}
+
+    var handlePlanPeriodSelection = function(e) {
+
+        // Handle period change
+        planPeriodMonthButton.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            changePlanPrices('month');
+        });
+
+		planPeriodAnnualButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            
+            changePlanPrices('annual');
+        });
+    }
+
+    // Public methods
+    return {
+        init: function () {
+            element = document.querySelector('#kt_pricing');
+			planPeriodMonthButton = element.querySelector('[data-kt-plan="month"]');
+			planPeriodAnnualButton = element.querySelector('[data-kt-plan="annual"]');
+
+            // Handlers
+            handlePlanPeriodSelection();
+        }
+    }
+}();
+
+// On document ready
+KTUtil.onDOMContentLoaded(function() {
+    KTGeneralPricing.init();
+});
+
+/******/ })()
+;
+//# sourceMappingURL=pricing.js.map

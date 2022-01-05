@@ -4,7 +4,7 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
@@ -23,9 +23,9 @@
       };
     };
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$3 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var get = function (customTabs) {
+    var get$1 = function (customTabs) {
       var addTab = function (spec) {
         var currentCustomTabs = customTabs.get();
         currentCustomTabs[spec.name] = spec;
@@ -34,11 +34,11 @@
       return { addTab: addTab };
     };
 
-    var register = function (editor, dialogOpener) {
+    var register$1 = function (editor, dialogOpener) {
       editor.addCommand('mceHelp', dialogOpener);
     };
 
-    var register$1 = function (editor, dialogOpener) {
+    var register = function (editor, dialogOpener) {
       editor.ui.registry.addButton('help', {
         icon: 'help',
         tooltip: 'Help',
@@ -72,6 +72,9 @@
         return value;
       };
     };
+    var identity = function (x) {
+      return x;
+    };
     var never = constant(false);
     var always = constant(true);
 
@@ -79,20 +82,14 @@
       return NONE;
     };
     var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
       var call = function (thunk) {
         return thunk();
       };
-      var id = function (n) {
-        return n;
-      };
+      var id = identity;
       var me = {
         fold: function (n, _s) {
           return n();
         },
-        is: never,
         isSome: never,
         isNone: always,
         getOr: id,
@@ -109,9 +106,9 @@
         bind: none,
         exists: never,
         forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
+        filter: function () {
+          return none();
+        },
         toArray: function () {
           return [];
         },
@@ -130,9 +127,6 @@
       var me = {
         fold: function (n, s) {
           return s(a);
-        },
-        is: function (v) {
-          return a === v;
         },
         isSome: always,
         isNone: never,
@@ -160,14 +154,6 @@
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -224,7 +210,7 @@
 
     var keys = Object.keys;
     var hasOwnProperty = Object.hasOwnProperty;
-    var get$1 = function (obj, key) {
+    var get = function (obj, key) {
       return has(obj, key) ? Optional.from(obj[key]) : Optional.none();
     };
     var has = function (obj, key) {
@@ -250,7 +236,7 @@
     };
 
     var description = '<h1>Editor UI keyboard navigation</h1>\n\n<h2>Activating keyboard navigation</h2>\n\n<p>The sections of the outer UI of the editor - the menubar, toolbar, sidebar and footer - are all keyboard navigable. As such, there are multiple ways to activate keyboard navigation:</p>\n<ul>\n  <li>Focus the menubar: Alt + F9 (Windows) or &#x2325;F9 (MacOS)</li>\n  <li>Focus the toolbar: Alt + F10 (Windows) or &#x2325;F10 (MacOS)</li>\n  <li>Focus the footer: Alt + F11 (Windows) or &#x2325;F11 (MacOS)</li>\n</ul>\n\n<p>Focusing the menubar or toolbar will start keyboard navigation at the first item in the menubar or toolbar, which will be highlighted with a gray background. Focusing the footer will start keyboard navigation at the first item in the element path, which will be highlighted with an underline. </p>\n\n<h2>Moving between UI sections</h2>\n\n<p>When keyboard navigation is active, pressing tab will move the focus to the next major section of the UI, where applicable. These sections are:</p>\n<ul>\n  <li>the menubar</li>\n  <li>each group of the toolbar </li>\n  <li>the sidebar</li>\n  <li>the element path in the footer </li>\n  <li>the wordcount toggle button in the footer </li>\n  <li>the branding link in the footer </li>\n  <li>the editor resize handle in the footer</li>\n</ul>\n\n<p>Pressing shift + tab will move backwards through the same sections, except when moving from the footer to the toolbar. Focusing the element path then pressing shift + tab will move focus to the first toolbar group, not the last.</p>\n\n<h2>Moving within UI sections</h2>\n\n<p>Keyboard navigation within UI sections can usually be achieved using the left and right arrow keys. This includes:</p>\n<ul>\n  <li>moving between menus in the menubar</li>\n  <li>moving between buttons in a toolbar group</li>\n  <li>moving between items in the element path</li>\n</ul>\n\n<p>In all these UI sections, keyboard navigation will cycle within the section. For example, focusing the last button in a toolbar group then pressing right arrow will move focus to the first item in the same toolbar group. </p>\n\n<h1>Executing buttons</h1>\n\n<p>To execute a button, navigate the selection to the desired button and hit space or enter.</p>\n\n<h1>Opening, navigating and closing menus</h1>\n\n<p>When focusing a menubar button or a toolbar button with a menu, pressing space, enter or down arrow will open the menu. When the menu opens the first item will be selected. To move up or down the menu, press the up or down arrow key respectively. This is the same for submenus, which can also be opened and closed using the left and right arrow keys.</p>\n\n<p>To close any active menu, hit the escape key. When a menu is closed the selection will be restored to its previous selection. This also works for closing submenus.</p>\n\n<h1>Context toolbars and menus</h1>\n\n<p>To focus an open context toolbar such as the table context toolbar, press Ctrl + F9 (Windows) or &#x2303;F9 (MacOS).</p>\n\n<p>Context toolbar navigation is the same as toolbar navigation, and context menu navigation is the same as standard menu navigation.</p>\n\n<h1>Dialog navigation</h1>\n\n<p>There are two types of dialog UIs in TinyMCE: tabbed dialogs and non-tabbed dialogs.</p>\n\n<p>When a non-tabbed dialog is opened, the first interactive component in the dialog will be focused. Users can navigate between interactive components by pressing tab. This includes any footer buttons. Navigation will cycle back to the first dialog component if tab is pressed while focusing the last component in the dialog. Pressing shift + tab will navigate backwards.</p>\n\n<p>When a tabbed dialog is opened, the first button in the tab menu is focused. Pressing tab will navigate to the first interactive component in that tab, and will cycle through the tab\u2019s components, the footer buttons, then back to the tab button. To switch to another tab, focus the tab button for the current tab, then use the arrow keys to cycle through the tab buttons.</p>';
-    var tab = function () {
+    var tab$3 = function () {
       var body = {
         type: 'htmlpanel',
         presets: 'document',
@@ -263,7 +249,7 @@
       };
     };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
+    var global$2 = tinymce.util.Tools.resolve('tinymce.Env');
 
     var convertText = function (source) {
       var mac = {
@@ -277,13 +263,13 @@
         meta: 'Ctrl ',
         access: 'Shift + Alt '
       };
-      var replace = global$1.mac ? mac : other;
+      var replace = global$2.mac ? mac : other;
       var shortcut = source.split('+');
       var updated = map(shortcut, function (segment) {
         var search = segment.toLowerCase().trim();
         return has(replace, search) ? replace[search] : segment;
       });
-      return global$1.mac ? updated.join('').replace(/\s/, '') : updated.join('+');
+      return global$2.mac ? updated.join('').replace(/\s/, '') : updated.join('+');
     };
 
     var shortcuts = [
@@ -392,7 +378,7 @@
       }
     ];
 
-    var tab$1 = function () {
+    var tab$2 = function () {
       var shortcutList = map(shortcuts, function (shortcut) {
         var shortcutText = map(shortcut.shortcuts, convertText).join(' or ');
         return [
@@ -415,10 +401,8 @@
       };
     };
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.I18n');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.util.I18n');
 
-    var premiumType = 'premium';
-    var openSourceType = 'opensource';
     var urls = map([
       {
         key: 'advlist',
@@ -541,6 +525,10 @@
         name: 'Print'
       },
       {
+        key: 'quickbars',
+        name: 'Quick Toolbars'
+      },
+      {
         key: 'save',
         name: 'Save'
       },
@@ -589,123 +577,113 @@
         name: 'Word Count'
       },
       {
-        key: 'advcode',
-        name: 'Advanced Code Editor*',
-        type: premiumType
-      },
-      {
-        key: 'formatpainter',
-        name: 'Format Painter*',
-        type: premiumType
-      },
-      {
-        key: 'powerpaste',
-        name: 'PowerPaste*',
-        type: premiumType
-      },
-      {
-        key: 'tinydrive',
-        name: 'Tiny Drive*',
-        type: premiumType
-      },
-      {
-        key: 'tinymcespellchecker',
-        name: 'Spell Checker Pro*',
-        type: premiumType
-      },
-      {
         key: 'a11ychecker',
-        name: 'Accessibility Checker*',
-        type: premiumType
+        name: 'Accessibility Checker',
+        type: 'premium'
       },
       {
-        key: 'linkchecker',
-        name: 'Link Checker*',
-        type: premiumType
-      },
-      {
-        key: 'mentions',
-        name: 'Mentions*',
-        type: premiumType
-      },
-      {
-        key: 'mediaembed',
-        name: 'Enhanced Media Embed*',
-        type: premiumType
-      },
-      {
-        key: 'checklist',
-        name: 'Checklist*',
-        type: premiumType
-      },
-      {
-        key: 'casechange',
-        name: 'Case Change*',
-        type: premiumType
-      },
-      {
-        key: 'permanentpen',
-        name: 'Permanent Pen*',
-        type: premiumType
-      },
-      {
-        key: 'pageembed',
-        name: 'Page Embed*',
-        type: premiumType
-      },
-      {
-        key: 'tinycomments',
-        name: 'Tiny Comments*',
-        type: premiumType,
-        slug: 'comments'
+        key: 'advcode',
+        name: 'Advanced Code Editor',
+        type: 'premium'
       },
       {
         key: 'advtable',
-        name: 'Advanced Tables*',
-        type: premiumType
+        name: 'Advanced Tables',
+        type: 'premium'
       },
       {
         key: 'autocorrect',
-        name: 'Autocorrect*',
-        type: premiumType
+        name: 'Autocorrect',
+        type: 'premium'
+      },
+      {
+        key: 'casechange',
+        name: 'Case Change',
+        type: 'premium'
+      },
+      {
+        key: 'checklist',
+        name: 'Checklist',
+        type: 'premium'
       },
       {
         key: 'export',
-        name: 'Export*',
-        type: premiumType
+        name: 'Export',
+        type: 'premium'
+      },
+      {
+        key: 'mediaembed',
+        name: 'Enhanced Media Embed',
+        type: 'premium'
+      },
+      {
+        key: 'formatpainter',
+        name: 'Format Painter',
+        type: 'premium'
+      },
+      {
+        key: 'linkchecker',
+        name: 'Link Checker',
+        type: 'premium'
+      },
+      {
+        key: 'mentions',
+        name: 'Mentions',
+        type: 'premium'
+      },
+      {
+        key: 'pageembed',
+        name: 'Page Embed',
+        type: 'premium'
+      },
+      {
+        key: 'permanentpen',
+        name: 'Permanent Pen',
+        type: 'premium'
+      },
+      {
+        key: 'powerpaste',
+        name: 'PowerPaste',
+        type: 'premium'
+      },
+      {
+        key: 'rtc',
+        name: 'Real-Time Collaboration',
+        type: 'premium'
+      },
+      {
+        key: 'tinymcespellchecker',
+        name: 'Spell Checker Pro',
+        type: 'premium'
+      },
+      {
+        key: 'tinycomments',
+        name: 'Tiny Comments',
+        type: 'premium',
+        slug: 'comments'
+      },
+      {
+        key: 'tinydrive',
+        name: 'Tiny Drive',
+        type: 'premium'
       }
     ], function (item) {
       return __assign(__assign({}, item), {
-        type: item.type || openSourceType,
+        type: item.type || 'opensource',
         slug: item.slug || item.key
       });
     });
 
-    var tab$2 = function (editor) {
+    var tab$1 = function (editor) {
       var availablePlugins = function () {
-        var premiumPlugins = [
-          'Accessibility Checker',
-          'Advanced Code Editor',
-          'Advanced Tables',
-          'Case Change',
-          'Checklist',
-          'Export',
-          'Tiny Comments',
-          'Tiny Drive',
-          'Enhanced Media Embed',
-          'Format Painter',
-          'Link Checker',
-          'Mentions',
-          'MoxieManager',
-          'Page Embed',
-          'Permanent Pen',
-          'PowerPaste',
-          'Spell Checker Pro'
-        ];
+        var premiumPlugins = filter(urls, function (_a) {
+          var key = _a.key, type = _a.type;
+          return key !== 'autocorrect' && type === 'premium';
+        });
         var premiumPluginList = map(premiumPlugins, function (plugin) {
-          return '<li>' + global$2.translate(plugin) + '</li>';
+          return '<li>' + global$1.translate(plugin.name) + '</li>';
         }).join('');
-        return '<div data-mce-tabstop="1" tabindex="-1">' + '<p><b>' + global$2.translate('Premium plugins:') + '</b></p>' + '<ul>' + premiumPluginList + '<li class="tox-help__more-link" "><a href="https://www.tiny.cloud/pricing/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">' + global$2.translate('Learn more...') + '</a></li>' + '</ul>' + '</div>';
+        return '<div data-mce-tabstop="1" tabindex="-1">' + '<p><b>' + global$1.translate('Premium plugins:') + '</b></p>' + '<ul>' + premiumPluginList + '<li class="tox-help__more-link" "><a href="https://www.tiny.cloud/pricing/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">' + global$1.translate('Learn more...') + '</a></li>' + '</ul>' + '</div>';
       };
       var makeLink = function (p) {
         return '<a href="' + p.url + '" target="_blank" rel="noopener">' + p.name + '</a>';
@@ -717,8 +695,9 @@
           var getMetadata = editor.plugins[key].getMetadata;
           return typeof getMetadata === 'function' ? makeLink(getMetadata()) : key;
         }, function (x) {
+          var name = x.type === 'premium' ? x.name + '*' : x.name;
           return makeLink({
-            name: x.name,
+            name: name,
             url: 'https://www.tiny.cloud/docs/plugins/' + x.type + '/' + x.slug
           });
         });
@@ -737,7 +716,7 @@
         });
         var count = pluginLis.length;
         var pluginsString = pluginLis.join('');
-        var html = '<p><b>' + global$2.translate([
+        var html = '<p><b>' + global$1.translate([
           'Plugins installed ({0}):',
           count
         ]) + '</b></p>' + '<ul>' + pluginsString + '</ul>';
@@ -764,17 +743,17 @@
       };
     };
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.EditorManager');
+    var global = tinymce.util.Tools.resolve('tinymce.EditorManager');
 
-    var tab$3 = function () {
+    var tab = function () {
       var getVersion = function (major, minor) {
         return major.indexOf('@') === 0 ? 'X.X.X' : major + '.' + minor;
       };
-      var version = getVersion(global$3.majorVersion, global$3.minorVersion);
+      var version = getVersion(global.majorVersion, global.minorVersion);
       var changeLogLink = '<a href="https://www.tiny.cloud/docs/changelog/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">TinyMCE ' + version + '</a>';
       var htmlPanel = {
         type: 'htmlpanel',
-        html: '<p>' + global$2.translate([
+        html: '<p>' + global$1.translate([
           'You are using {0}',
           changeLogLink
         ]) + '</p>',
@@ -819,10 +798,10 @@
     };
     var parseCustomTabs = function (editor, customTabs) {
       var _a;
-      var shortcuts = tab$1();
-      var nav = tab();
-      var plugins = tab$2(editor);
-      var versions = tab$3();
+      var shortcuts = tab$2();
+      var nav = tab$3();
+      var plugins = tab$1(editor);
+      var versions = tab();
       var tabs = __assign((_a = {}, _a[shortcuts.name] = shortcuts, _a[nav.name] = nav, _a[plugins.name] = plugins, _a[versions.name] = versions, _a), customTabs.get());
       return getHelpTabs(editor).fold(function () {
         return getNamesFromTabs(tabs);
@@ -834,7 +813,7 @@
       return function () {
         var _a = parseCustomTabs(editor, customTabs), tabs = _a.tabs, names = _a.names;
         var foundTabs = map(names, function (name) {
-          return get$1(tabs, name);
+          return get(tabs, name);
         });
         var dialogTabs = cat(foundTabs);
         var body = {
@@ -857,12 +836,12 @@
     };
 
     function Plugin () {
-      global.add('help', function (editor) {
+      global$3.add('help', function (editor) {
         var customTabs = Cell({});
-        var api = get(customTabs);
+        var api = get$1(customTabs);
         var dialogOpener = init(editor, customTabs);
-        register$1(editor, dialogOpener);
         register(editor, dialogOpener);
+        register$1(editor, dialogOpener);
         editor.shortcuts.add('Alt+0', 'Open help dialog', 'mceHelp');
         return api;
       });

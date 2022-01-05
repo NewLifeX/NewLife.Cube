@@ -4,16 +4,16 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$2 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var global$1 = tinymce.util.Tools.resolve('tinymce.dom.RangeUtils');
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
     var allowHtmlInNamedAnchor = function (editor) {
       return editor.getParam('allow_html_in_named_anchor', false, 'boolean');
@@ -40,7 +40,7 @@
     var removeEmptyNamedAnchorsInSelection = function (editor) {
       var dom = editor.dom;
       global$1(dom).walk(editor.selection.getRng(), function (nodes) {
-        global$2.each(nodes, function (node) {
+        global.each(nodes, function (node) {
           if (isEmptyNamedAnchor(node)) {
             dom.remove(node, false);
           }
@@ -137,7 +137,7 @@
       });
     };
 
-    var register = function (editor) {
+    var register$1 = function (editor) {
       editor.addCommand('mceAnchor', function () {
         open(editor);
       });
@@ -180,7 +180,7 @@
       });
     };
 
-    var register$1 = function (editor) {
+    var register = function (editor) {
       editor.ui.registry.addToggleButton('anchor', {
         icon: 'bookmark',
         tooltip: 'Anchor',
@@ -201,10 +201,10 @@
     };
 
     function Plugin () {
-      global.add('anchor', function (editor) {
+      global$2.add('anchor', function (editor) {
         setup(editor);
-        register(editor);
         register$1(editor);
+        register(editor);
         editor.on('PreInit', function () {
           registerFormats(editor);
         });

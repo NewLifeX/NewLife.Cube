@@ -4,12 +4,12 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$3 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var unique = 0;
     var generate = function (prefix) {
@@ -21,12 +21,11 @@
     };
 
     var createTableHtml = function (cols, rows) {
-      var x, y, html;
-      html = '<table data-mce-id="mce" style="width: 100%">';
+      var html = '<table data-mce-id="mce" style="width: 100%">';
       html += '<tbody>';
-      for (y = 0; y < rows; y++) {
+      for (var y = 0; y < rows; y++) {
         html += '<tr>';
-        for (x = 0; x < cols; x++) {
+        for (var x = 0; x < cols; x++) {
           html += '<td><br></td>';
         }
         html += '</tr>';
@@ -58,10 +57,10 @@
       editor.insertContent(editor.dom.createHTML('img', { src: blobInfo.blobUri() }));
     };
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Promise');
+    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Promise');
 
     var blobToBase64 = function (blob) {
-      return new global$1(function (resolve) {
+      return new global$2(function (resolve) {
         var reader = new FileReader();
         reader.onloadend = function () {
           resolve(reader.result.split(',')[1]);
@@ -70,12 +69,12 @@
       });
     };
 
-    var global$2 = tinymce.util.Tools.resolve('tinymce.Env');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+    var global = tinymce.util.Tools.resolve('tinymce.util.Delay');
 
     var pickFile = function (editor) {
-      return new global$1(function (resolve) {
+      return new global$2(function (resolve) {
         var fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'image/*';
@@ -93,8 +92,8 @@
             resolve([]);
             fileInput.parentNode.removeChild(fileInput);
           };
-          if (global$2.os.isAndroid() && e.type !== 'remove') {
-            global$3.setEditorTimeout(editor, cleanup, 0);
+          if (global$1.os.isAndroid() && e.type !== 'remove') {
+            global.setEditorTimeout(editor, cleanup, 0);
           } else {
             cleanup();
           }
@@ -170,6 +169,9 @@
         return value;
       };
     };
+    var identity = function (x) {
+      return x;
+    };
     var never = constant(false);
     var always = constant(true);
 
@@ -177,20 +179,14 @@
       return NONE;
     };
     var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
       var call = function (thunk) {
         return thunk();
       };
-      var id = function (n) {
-        return n;
-      };
+      var id = identity;
       var me = {
         fold: function (n, _s) {
           return n();
         },
-        is: never,
         isSome: never,
         isNone: always,
         getOr: id,
@@ -207,9 +203,9 @@
         bind: none,
         exists: never,
         forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
+        filter: function () {
+          return none();
+        },
         toArray: function () {
           return [];
         },
@@ -228,9 +224,6 @@
       var me = {
         fold: function (n, s) {
           return s(a);
-        },
-        is: function (v) {
-          return a === v;
         },
         isSome: always,
         isNone: never,
@@ -258,14 +251,6 @@
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -348,14 +333,14 @@
       }
     };
 
-    var Global = typeof window !== 'undefined' ? window : Function('return this;')();
+    typeof window !== 'undefined' ? window : Function('return this;')();
 
     var name = function (element) {
       var r = element.dom.nodeName;
       return r.toLowerCase();
     };
 
-    var ancestor = function (scope, predicate, isRoot) {
+    var ancestor$1 = function (scope, predicate, isRoot) {
       var element = scope.dom;
       var stop = isFunction(isRoot) ? isRoot : never;
       while (element.parentNode) {
@@ -369,23 +354,23 @@
       }
       return Optional.none();
     };
-    var closest = function (scope, predicate, isRoot) {
+    var closest$1 = function (scope, predicate, isRoot) {
       var is = function (s, test) {
         return test(s);
       };
-      return ClosestOrAncestor(is, ancestor, scope, predicate, isRoot);
+      return ClosestOrAncestor(is, ancestor$1, scope, predicate, isRoot);
     };
 
-    var ancestor$1 = function (scope, selector, isRoot) {
-      return ancestor(scope, function (e) {
+    var ancestor = function (scope, selector, isRoot) {
+      return ancestor$1(scope, function (e) {
         return is(e, selector);
       }, isRoot);
     };
-    var closest$1 = function (scope, selector, isRoot) {
+    var closest = function (scope, selector, isRoot) {
       var is$1 = function (element, selector) {
         return is(element, selector);
       };
-      return ClosestOrAncestor(is$1, ancestor$1, scope, selector, isRoot);
+      return ClosestOrAncestor(is$1, ancestor, scope, selector, isRoot);
     };
 
     var validDefaultOrDie = function (value, predicate) {
@@ -425,7 +410,7 @@
       return getToolbarItemsOr(editor, 'quickbars_image_toolbar', 'alignleft aligncenter alignright');
     };
 
-    var addToEditor = function (editor) {
+    var addToEditor$1 = function (editor) {
       var insertToolbarItems = getInsertToolbarItems(editor);
       if (insertToolbarItems.trim().length > 0) {
         editor.ui.registry.addContextToolbar('quickblock', {
@@ -435,8 +420,8 @@
             var isRoot = function (elem) {
               return elem.dom === editor.getBody();
             };
-            return closest$1(sugarNode, 'table', isRoot).fold(function () {
-              return closest(sugarNode, function (elem) {
+            return closest(sugarNode, 'table', isRoot).fold(function () {
+              return closest$1(sugarNode, function (elem) {
                 return name(elem) in textBlockElementsMap && editor.dom.isEmpty(elem.dom);
               }, isRoot).isSome();
             }, never);
@@ -448,7 +433,7 @@
       }
     };
 
-    var addToEditor$1 = function (editor) {
+    var addToEditor = function (editor) {
       var isEditable = function (node) {
         return editor.dom.getContentEditableParent(node) !== 'false';
       };
@@ -477,10 +462,10 @@
     };
 
     function Plugin () {
-      global.add('quickbars', function (editor) {
+      global$3.add('quickbars', function (editor) {
         setupButtons(editor);
-        addToEditor(editor);
         addToEditor$1(editor);
+        addToEditor(editor);
       });
     }
 

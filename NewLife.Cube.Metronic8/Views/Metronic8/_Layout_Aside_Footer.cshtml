@@ -10,9 +10,17 @@
     <div class="aside-footer d-flex flex-column align-items-center flex-column-auto" id="kt_aside_footer">
         <div class="d-flex align-items-center mb-2" id="kt_header_user_menu_toggle">
             <div class="cursor-pointer symbol symbol-40px" data-kt-menu-trigger="click" data-kt-menu-overflow="true" data-kt-menu-placement="top-start" data-kt-menu-flip="top-end" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-dismiss="click">
-
-                <a href="#" class="btn btn-custom w-100 p-3" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss-="click">
-                    <img src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" class="rounded float-start w-35px h-35px" />
+                <a href="#" class="btn btn-custom btn-primary w-100 p-3" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss-="click">
+                    <!-- 用户头像 -->
+                    @if (!user.Avatar.IsNullOrEmpty())
+                    {
+                        <img alt="Pic" src="@user.GetAvatarUrl()" class="rounded float-start w-30px h-30px" >
+                    }
+                    else
+                    {
+                        <span class="symbol-label font-size-h5">@user.Name.Substring(0, 1).ToUpper()</span>
+                        <i class="symbol-badge bg-primary"></i>
+                    }
                     <span class="btn-label text-info px-4">@user.DisplayName (@user.Name) </span>
                 </a>
             </div>
@@ -20,7 +28,16 @@
                 <div class="menu-item p-0 px-3">
                     <div class="menu-content p-0 d-flex align-items-center px-3">
                         <div class="symbol symbol-50px me-5">
-                            <img alt="Logo" src="~/assets/avatars/150-@(user.Sex.ToInt()).jpg" />
+                            <!-- 用户头像 -->
+                            @if (!user.Avatar.IsNullOrEmpty())
+                            {
+                                <img alt="Pic" src="@user.GetAvatarUrl()">
+                            }
+                            else
+                            {
+                                <span class="symbol-label font-size-h5">@user.Name.Substring(0, 1).ToUpper()</span>
+                                <i class="symbol-badge bg-primary"></i>
+                            }
                         </div>
                         <div class="d-flex flex-column">
                             <div class="fw-bolder d-flex align-items-center fs-5">
@@ -43,7 +60,7 @@
                     </a>
                 </div>
                 <div class="menu-item px-5 mt-5">
-                    <a href="~/Admin/User/Logout" class="d-flex flex-column btn btn-outline btn-outline-dashed btn-outline-danger btn-active-light-danger">账号退出</a>
+                    <a href="~/Admin/User/Logout" class="d-flex flex-column btn btn-outline btn-outline-dashed btn-outline-danger btn-active-light-danger">注销</a>
                 </div>
             </div>
         </div>

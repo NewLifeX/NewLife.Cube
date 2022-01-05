@@ -4,44 +4,37 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
 
     var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var setDir = function (editor, dir) {
-      var dom = editor.dom;
-      var curDir;
-      var blocks = editor.selection.getSelectedBlocks();
-      if (blocks.length) {
-        curDir = dom.getAttrib(blocks[0], 'dir');
-        global$1.each(blocks, function (block) {
-          if (!dom.getParent(block.parentNode, '*[dir="' + dir + '"]', dom.getRoot())) {
-            dom.setAttrib(block, 'dir', curDir !== dir ? dir : null);
-          }
-        });
-        editor.nodeChanged();
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
       }
     };
-
-    var register = function (editor) {
-      editor.addCommand('mceDirectionLTR', function () {
-        setDir(editor, 'ltr');
-      });
-      editor.addCommand('mceDirectionRTL', function () {
-        setDir(editor, 'rtl');
-      });
+    var isType$1 = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
     };
-
     var isSimpleType = function (type) {
       return function (value) {
         return typeof value === type;
       };
     };
+    var isString = isType$1('string');
+    var isBoolean = isSimpleType('boolean');
     var isNullable = function (a) {
       return a === null || a === undefined;
     };
@@ -49,6 +42,7 @@
       return !isNullable(a);
     };
     var isFunction = isSimpleType('function');
+    var isNumber = isSimpleType('number');
 
     var noop = function () {
     };
@@ -62,6 +56,9 @@
         return value;
       };
     };
+    var identity = function (x) {
+      return x;
+    };
     var never = constant(false);
     var always = constant(true);
 
@@ -69,20 +66,14 @@
       return NONE;
     };
     var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
       var call = function (thunk) {
         return thunk();
       };
-      var id = function (n) {
-        return n;
-      };
+      var id = identity;
       var me = {
         fold: function (n, _s) {
           return n();
         },
-        is: never,
         isSome: never,
         isNone: always,
         getOr: id,
@@ -99,9 +90,9 @@
         bind: none,
         exists: never,
         forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
+        filter: function () {
+          return none();
+        },
         toArray: function () {
           return [];
         },
@@ -120,9 +111,6 @@
       var me = {
         fold: function (n, s) {
           return s(a);
-        },
-        is: function (v) {
-          return a === v;
         },
         isSome: always,
         isNone: never,
@@ -150,14 +138,6 @@
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -171,9 +151,36 @@
       from: from
     };
 
-    var isSupported = function (dom) {
-      return dom.style !== undefined && isFunction(dom.style.getPropertyValue);
+    var map = function (xs, f) {
+      var len = xs.length;
+      var r = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var x = xs[i];
+        r[i] = f(x, i);
+      }
+      return r;
     };
+    var each = function (xs, f) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        f(x, i);
+      }
+    };
+    var filter = function (xs, pred) {
+      var r = [];
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          r.push(x);
+        }
+      }
+      return r;
+    };
+
+    var DOCUMENT = 9;
+    var DOCUMENT_FRAGMENT = 11;
+    var ELEMENT = 1;
+    var TEXT = 3;
 
     var fromHtml = function (html, scope) {
       var doc = scope || document;
@@ -212,12 +219,32 @@
       fromPoint: fromPoint
     };
 
-    var Global = typeof window !== 'undefined' ? window : Function('return this;')();
+    var is = function (element, selector) {
+      var dom = element.dom;
+      if (dom.nodeType !== ELEMENT) {
+        return false;
+      } else {
+        var elem = dom;
+        if (elem.matches !== undefined) {
+          return elem.matches(selector);
+        } else if (elem.msMatchesSelector !== undefined) {
+          return elem.msMatchesSelector(selector);
+        } else if (elem.webkitMatchesSelector !== undefined) {
+          return elem.webkitMatchesSelector(selector);
+        } else if (elem.mozMatchesSelector !== undefined) {
+          return elem.mozMatchesSelector(selector);
+        } else {
+          throw new Error('Browser lacks native selectors');
+        }
+      }
+    };
 
-    var DOCUMENT = 9;
-    var DOCUMENT_FRAGMENT = 11;
-    var TEXT = 3;
+    typeof window !== 'undefined' ? window : Function('return this;')();
 
+    var name = function (element) {
+      var r = element.dom.nodeName;
+      return r.toLowerCase();
+    };
     var type = function (element) {
       return element.dom.nodeType;
     };
@@ -226,15 +253,42 @@
         return type(element) === t;
       };
     };
+    var isElement = isType(ELEMENT);
     var isText = isType(TEXT);
     var isDocument = isType(DOCUMENT);
     var isDocumentFragment = isType(DOCUMENT_FRAGMENT);
+    var isTag = function (tag) {
+      return function (e) {
+        return isElement(e) && name(e) === tag;
+      };
+    };
 
     var owner = function (element) {
       return SugarElement.fromDom(element.dom.ownerDocument);
     };
     var documentOrOwner = function (dos) {
       return isDocument(dos) ? dos : owner(dos);
+    };
+    var parent = function (element) {
+      return Optional.from(element.dom.parentNode).map(SugarElement.fromDom);
+    };
+    var children$2 = function (element) {
+      return map(element.dom.childNodes, SugarElement.fromDom);
+    };
+
+    var rawSet = function (dom, key, value) {
+      if (isString(value) || isBoolean(value) || isNumber(value)) {
+        dom.setAttribute(key, value + '');
+      } else {
+        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
+        throw new Error('Attribute value was not simple');
+      }
+    };
+    var set = function (element, key, value) {
+      rawSet(element.dom, key, value);
+    };
+    var remove = function (element, key) {
+      element.dom.removeAttribute(key);
     };
 
     var isShadowRoot = function (dos) {
@@ -263,6 +317,31 @@
       }, compose1(inBody, getShadowHost));
     };
 
+    var ancestor$1 = function (scope, predicate, isRoot) {
+      var element = scope.dom;
+      var stop = isFunction(isRoot) ? isRoot : never;
+      while (element.parentNode) {
+        element = element.parentNode;
+        var el = SugarElement.fromDom(element);
+        if (predicate(el)) {
+          return Optional.some(el);
+        } else if (stop(el)) {
+          break;
+        }
+      }
+      return Optional.none();
+    };
+
+    var ancestor = function (scope, selector, isRoot) {
+      return ancestor$1(scope, function (e) {
+        return is(e, selector);
+      }, isRoot);
+    };
+
+    var isSupported = function (dom) {
+      return dom.style !== undefined && isFunction(dom.style.getPropertyValue);
+    };
+
     var get = function (element, property) {
       var dom = element.dom;
       var styles = window.getComputedStyle(dom);
@@ -277,6 +356,60 @@
       return get(element, 'direction') === 'rtl' ? 'rtl' : 'ltr';
     };
 
+    var children$1 = function (scope, predicate) {
+      return filter(children$2(scope), predicate);
+    };
+
+    var children = function (scope, selector) {
+      return children$1(scope, function (e) {
+        return is(e, selector);
+      });
+    };
+
+    var getParentElement = function (element) {
+      return parent(element).filter(isElement);
+    };
+    var getNormalizedBlock = function (element, isListItem) {
+      var normalizedElement = isListItem ? ancestor(element, 'ol,ul') : Optional.some(element);
+      return normalizedElement.getOr(element);
+    };
+    var isListItem = isTag('li');
+    var setDir = function (editor, dir) {
+      var selectedBlocks = editor.selection.getSelectedBlocks();
+      if (selectedBlocks.length > 0) {
+        each(selectedBlocks, function (block) {
+          var blockElement = SugarElement.fromDom(block);
+          var isBlockElementListItem = isListItem(blockElement);
+          var normalizedBlock = getNormalizedBlock(blockElement, isBlockElementListItem);
+          var normalizedBlockParent = getParentElement(normalizedBlock);
+          normalizedBlockParent.each(function (parent) {
+            var parentDirection = getDirection(parent);
+            if (parentDirection !== dir) {
+              set(normalizedBlock, 'dir', dir);
+            } else if (getDirection(normalizedBlock) !== dir) {
+              remove(normalizedBlock, 'dir');
+            }
+            if (isBlockElementListItem) {
+              var listItems = children(normalizedBlock, 'li[dir]');
+              each(listItems, function (listItem) {
+                return remove(listItem, 'dir');
+              });
+            }
+          });
+        });
+        editor.nodeChanged();
+      }
+    };
+
+    var register$1 = function (editor) {
+      editor.addCommand('mceDirectionLTR', function () {
+        setDir(editor, 'ltr');
+      });
+      editor.addCommand('mceDirectionRTL', function () {
+        setDir(editor, 'rtl');
+      });
+    };
+
     var getNodeChangeHandler = function (editor, dir) {
       return function (api) {
         var nodeChangeHandler = function (e) {
@@ -289,7 +422,7 @@
         };
       };
     };
-    var register$1 = function (editor) {
+    var register = function (editor) {
       editor.ui.registry.addToggleButton('ltr', {
         tooltip: 'Left to right',
         icon: 'ltr',
@@ -310,8 +443,8 @@
 
     function Plugin () {
       global.add('directionality', function (editor) {
-        register(editor);
         register$1(editor);
+        register(editor);
       });
     }
 

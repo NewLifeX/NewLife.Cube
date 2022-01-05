@@ -4,12 +4,37 @@
  * For LGPL see License.txt in the project root for license information.
  * For commercial licenses see https://www.tiny.cloud/
  *
- * Version: 5.8.1 (2021-05-20)
+ * Version: 5.10.0 (2021-10-11)
  */
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var global$4 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
+    };
+    var isType = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
+    };
+    var isSimpleType = function (type) {
+      return function (value) {
+        return typeof value === type;
+      };
+    };
+    var isString = isType('string');
+    var isFunction = isSimpleType('function');
 
     var noop = function () {
     };
@@ -17,6 +42,9 @@
       return function () {
         return value;
       };
+    };
+    var identity = function (x) {
+      return x;
     };
     function curry(fn) {
       var initialArgs = [];
@@ -35,7 +63,7 @@
     var never = constant(false);
     var always = constant(true);
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Tools');
 
     var global$2 = tinymce.util.Tools.resolve('tinymce.util.XHR');
 
@@ -92,11 +120,13 @@
       return value;
     };
     var getDateTime = function (editor, fmt, date) {
+      if (date === void 0) {
+        date = new Date();
+      }
       var daysShort = 'Sun Mon Tue Wed Thu Fri Sat Sun'.split(' ');
       var daysLong = 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday'.split(' ');
       var monthsShort = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
       var monthsLong = 'January February March April May June July August September October November December'.split(' ');
-      date = date || new Date();
       fmt = fmt.replace('%D', '%m/%d/%Y');
       fmt = fmt.replace('%r', '%I:%M:%S %p');
       fmt = fmt.replace('%Y', '' + date.getFullYear());
@@ -119,11 +149,9 @@
     var createTemplateList = function (editor, callback) {
       return function () {
         var templateList = getTemplates(editor);
-        if (typeof templateList === 'function') {
+        if (isFunction(templateList)) {
           templateList(callback);
-          return;
-        }
-        if (typeof templateList === 'string') {
+        } else if (isString(templateList)) {
           global$2.send({
             url: templateList,
             success: function (text) {
@@ -136,21 +164,21 @@
       };
     };
     var replaceTemplateValues = function (html, templateValues) {
-      global$1.each(templateValues, function (v, k) {
-        if (typeof v === 'function') {
+      global$3.each(templateValues, function (v, k) {
+        if (isFunction(v)) {
           v = v(k);
         }
         html = html.replace(new RegExp('\\{\\$' + k + '\\}', 'g'), v);
       });
       return html;
     };
-    var replaceVals = function (editor, e) {
+    var replaceVals = function (editor, scope) {
       var dom = editor.dom, vl = getTemplateReplaceValues(editor);
-      global$1.each(dom.select('*', e), function (e) {
-        global$1.each(vl, function (v, k) {
+      global$3.each(dom.select('*', scope), function (e) {
+        global$3.each(vl, function (v, k) {
           if (dom.hasClass(e, k)) {
-            if (typeof vl[k] === 'function') {
-              vl[k](e);
+            if (isFunction(v)) {
+              v(e);
             }
           }
         });
@@ -160,17 +188,16 @@
       return new RegExp('\\b' + c + '\\b', 'g').test(n.className);
     };
     var insertTemplate = function (editor, _ui, html) {
-      var el;
       var dom = editor.dom;
       var sel = editor.selection.getContent();
       html = replaceTemplateValues(html, getTemplateReplaceValues(editor));
-      el = dom.create('div', null, html);
+      var el = dom.create('div', null, html);
       var n = dom.select('.mceTmpl', el);
       if (n && n.length > 0) {
         el = dom.create('div', null);
         el.appendChild(n[0].cloneNode(true));
       }
-      global$1.each(dom.select('*', el), function (n) {
+      global$3.each(dom.select('*', el), function (n) {
         if (hasClass(n, getCreationDateClasses(editor).replace(/\s+/g, '|'))) {
           n.innerHTML = getDateTime(editor, getCdateFormat(editor));
         }
@@ -186,44 +213,18 @@
       editor.addVisual();
     };
 
-    var register = function (editor) {
-      editor.addCommand('mceInsertTemplate', curry(insertTemplate, editor));
-    };
-
-    var setup = function (editor) {
-      editor.on('PreProcess', function (o) {
-        var dom = editor.dom, dateFormat = getMdateFormat(editor);
-        global$1.each(dom.select('div', o.node), function (e) {
-          if (dom.hasClass(e, 'mceTmpl')) {
-            global$1.each(dom.select('*', e), function (e) {
-              if (dom.hasClass(e, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
-                e.innerHTML = getDateTime(editor, dateFormat);
-              }
-            });
-            replaceVals(editor, e);
-          }
-        });
-      });
-    };
-
     var none = function () {
       return NONE;
     };
     var NONE = function () {
-      var eq = function (o) {
-        return o.isNone();
-      };
       var call = function (thunk) {
         return thunk();
       };
-      var id = function (n) {
-        return n;
-      };
+      var id = identity;
       var me = {
         fold: function (n, _s) {
           return n();
         },
-        is: never,
         isSome: never,
         isNone: always,
         getOr: id,
@@ -240,9 +241,9 @@
         bind: none,
         exists: never,
         forall: always,
-        filter: none,
-        equals: eq,
-        equals_: eq,
+        filter: function () {
+          return none();
+        },
         toArray: function () {
           return [];
         },
@@ -261,9 +262,6 @@
       var me = {
         fold: function (n, s) {
           return s(a);
-        },
-        is: function (v) {
-          return a === v;
         },
         isSome: always,
         isNone: never,
@@ -291,14 +289,6 @@
         },
         toString: function () {
           return 'some(' + a + ')';
-        },
-        equals: function (o) {
-          return o.is(a);
-        },
-        equals_: function (o, elementEq) {
-          return o.fold(never, function (b) {
-            return elementEq(a, b);
-          });
         }
       };
       return me;
@@ -336,9 +326,9 @@
       return findUntil(xs, pred, never);
     };
 
-    var global$3 = tinymce.util.Tools.resolve('tinymce.Env');
+    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
 
-    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Promise');
+    var global = tinymce.util.Tools.resolve('tinymce.util.Promise');
 
     var hasOwnProperty = Object.hasOwnProperty;
     var get = function (obj, key) {
@@ -366,7 +356,7 @@
         var contentCssEntries_1 = '';
         var contentStyle = getContentStyle(editor);
         var cors_1 = shouldUseContentCssCors(editor) ? ' crossorigin="anonymous"' : '';
-        global$1.each(editor.contentCSS, function (url) {
+        global$3.each(editor.contentCSS, function (url) {
           contentCssEntries_1 += '<link type="text/css" rel="stylesheet" href="' + editor.documentBaseURI.toAbsolute(url) + '"' + cors_1 + '>';
         });
         if (contentStyle) {
@@ -374,7 +364,7 @@
         }
         var bodyClass = getBodyClass(editor);
         var encode = editor.dom.encode;
-        var isMetaKeyPressed = global$3.mac ? 'e.metaKey' : 'e.ctrlKey && !e.altKey';
+        var isMetaKeyPressed = global$1.mac ? 'e.metaKey' : 'e.ctrlKey && !e.altKey';
         var preventClicksOnLinksScript = '<script>' + 'document.addEventListener && document.addEventListener("click", function(e) {' + 'for (var elm = e.target; elm; elm = elm.parentNode) {' + 'if (elm.nodeName === "A" && !(' + isMetaKeyPressed + ')) {' + 'e.preventDefault();' + '}' + '}' + '}, false);' + '</script> ';
         var directionality = editor.getBody().dir;
         var dirAttr = directionality ? ' dir="' + encode(directionality) + '"' : '';
@@ -392,7 +382,7 @@
           });
           return Optional.none();
         }
-        return Optional.from(global$1.map(templateList, function (template, index) {
+        return Optional.from(global$3.map(templateList, function (template, index) {
           var isUrlTemplate = function (t) {
             return t.url !== undefined;
           };
@@ -426,7 +416,7 @@
         });
       };
       var getTemplateContent = function (t) {
-        return new global$4(function (resolve, reject) {
+        return new global(function (resolve, reject) {
           t.value.url.fold(function () {
             return resolve(t.value.content.getOr(''));
           }, function (url) {
@@ -464,7 +454,7 @@
           var data = api.getData();
           findTemplate(templates, data.template).each(function (t) {
             getTemplateContent(t).then(function (previewHtml) {
-              insertTemplate(editor, false, previewHtml);
+              editor.execCommand('mceInsertTemplate', false, previewHtml);
               api.close();
             }).catch(function () {
               api.disable('save');
@@ -552,22 +542,46 @@
       };
     };
     var register$1 = function (editor) {
+      editor.addCommand('mceInsertTemplate', curry(insertTemplate, editor));
+      editor.addCommand('mceTemplate', createTemplateList(editor, showDialog(editor)));
+    };
+
+    var setup = function (editor) {
+      editor.on('PreProcess', function (o) {
+        var dom = editor.dom, dateFormat = getMdateFormat(editor);
+        global$3.each(dom.select('div', o.node), function (e) {
+          if (dom.hasClass(e, 'mceTmpl')) {
+            global$3.each(dom.select('*', e), function (e) {
+              if (dom.hasClass(e, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
+                e.innerHTML = getDateTime(editor, dateFormat);
+              }
+            });
+            replaceVals(editor, e);
+          }
+        });
+      });
+    };
+
+    var register = function (editor) {
+      var onAction = function () {
+        return editor.execCommand('mceTemplate');
+      };
       editor.ui.registry.addButton('template', {
         icon: 'template',
         tooltip: 'Insert template',
-        onAction: createTemplateList(editor, showDialog(editor))
+        onAction: onAction
       });
       editor.ui.registry.addMenuItem('template', {
         icon: 'template',
         text: 'Insert template...',
-        onAction: createTemplateList(editor, showDialog(editor))
+        onAction: onAction
       });
     };
 
     function Plugin () {
-      global.add('template', function (editor) {
-        register$1(editor);
+      global$4.add('template', function (editor) {
         register(editor);
+        register$1(editor);
         setup(editor);
       });
     }
