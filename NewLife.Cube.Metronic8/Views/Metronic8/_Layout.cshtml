@@ -21,7 +21,6 @@
     <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="~/assets/baguetteBox/baguetteBox.css" rel="stylesheet" type="text/css" />
     
     <style>
         .style-3::-webkit-scrollbar {
@@ -50,20 +49,24 @@
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
     <script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>
-    <script src="~/assets/baguetteBox/baguetteBox.js"></script>
-    
 </head>
 
 <!--begin::Body-->
-<body id="kt_body" class="bg-light-dark header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed toolbar-tablet-and-mobile-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:1px;--kt-toolbar-height-tablet-and-mobile:1px">
+<body id="kt_body" class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed toolbar-tablet-and-mobile-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:55px;--kt-toolbar-height-tablet-and-mobile:55px">
     <div class="d-flex flex-column flex-root">
         @await Html.PartialAsync("_Layout_Aside")
         <div class="page d-flex flex-row flex-column-fluid">
             @await Html.PartialAsync("_Layout_Header")
             <div class="wrapper d-flex flex-column flex-row-fluid pb-20" id="kt_wrapper">
                 <!-- 内容 -->
-                <div class="content d-flex flex-column flex-column-fluid bg-light-dark pe-1 ps-1" id="kt_content">
-                    @RenderBody()
+                <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+                    @await Html.PartialAsync("_Layout_Toolbar")
+
+                    <div class="post d-flex flex-column-fluid" id="dt_post">
+                        <div class="container-xxl" id="dt_content_container">
+                            @RenderBody()
+                        </div>
+                    </div>
                 </div>
                 <!-- 内容底部 -->
                 @await Html.PartialAsync("_Layout_Content_Footer")

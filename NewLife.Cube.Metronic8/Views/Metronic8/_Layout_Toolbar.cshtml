@@ -1,0 +1,67 @@
+﻿
+
+<!--begin::Toolbar-->
+<div class="toolbar" id="kt_toolbar">
+    <!--begin::Container-->
+    <div id="kt_toolbar_container" class="container-fluid d-flex flex-wrap flex-stack">
+        <!--begin::Wrapper-->
+        <div class="d-flex align-items-center flex-shrink-0 me-5 py-3">
+            <!--begin::Label-->
+            <span class="fs-7 fw-bolder text-gray-700 pe-4">Team:</span>
+            <!--end::Label-->
+        </div>
+        <!--end::Wrapper-->
+        <!--begin::Wrapper-->
+        <div class="d-flex align-items-center overflow-auto">
+            <!--begin::Search-->
+            <div class="position-relative my-1">
+                <!--begin::Svg Icon | path: icons/duotune/general/gen021.svg-->
+                <span class="svg-icon svg-icon-3 svg-icon-gray-500 position-absolute top-50 translate-middle ps-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="black" />
+                        <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="black" />
+                    </svg>
+                </span>
+                <!--end::Svg Icon-->
+                <input type="text" class="form-control form-control-sm form-control-solid w-150px ps-10" name="Search Team" value="" placeholder="Search Team" />
+            </div>
+            <!--end::Search-->
+            <!--begin::Separartor-->
+            <div class="bullet bg-secondary h-35px w-1px mx-6"></div>
+            <!--end::Separartor-->
+            <!--begin::Label-->
+            <span class="fs-7 fw-bolder text-gray-700 flex-shrink-0 pe-4">Sort By:</span>
+            <!--end::Label-->
+            <!--begin::Select-->
+            <select class="form-select form-select-sm w-125px form-select-solid me-6" data-control="select2" data-placeholder="Latest" data-hide-search="true">
+                <option value=""></option>
+                <option value="1" selected="selected">Latest</option>
+                <option value="2">In Progress</option>
+                <option value="3">Done</option>
+            </select>
+            <!--end::Select-->
+            <!--begin::Actions-->
+            <div class="d-flex align-items-center">
+                <button type="button" class="btn btn-sm btn-icon btn-light-primary me-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Enable grid view">
+                    <!--begin::Svg Icon | path: icons/duotune/general/gen025.svg-->
+                    <span class="svg-icon svg-icon-2 svg-icon-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <rect x="2" y="2" width="9" height="9" rx="2" fill="black" />
+                            <rect opacity="0.3" x="13" y="2" width="9" height="9" rx="2" fill="black" />
+                            <rect opacity="0.3" x="13" y="13" width="9" height="9" rx="2" fill="black" />
+                            <rect opacity="0.3" x="2" y="13" width="9" height="9" rx="2" fill="black" />
+                        </svg>
+                    </span>
+                    <!--end::Svg Icon-->
+                </button>
+                <button type="button" class="btn btn-sm btn-icon btn-light" data-bs-toggle="tooltip" data-bs-placement="top" title="Enable row view">
+                    <!--SVG file not found: icons/duotune/finance/fin006.svgGrid-Horizontal.svg-->
+                </button>
+            </div>
+            <!--end::Actions-->
+        </div>
+        <!--end::Wrapper-->
+    </div>
+    <!--end::Container-->
+</div>
+<!--end::Toolbar-->
