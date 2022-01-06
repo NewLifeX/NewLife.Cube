@@ -1,7 +1,25 @@
 ﻿@using NewLife.Common;
-@using NewLife.Cube
+@using NewLife.Cube.WebMiddleware;
+@using NewLife.Cube.Charts;
 @{
     var set = NewLife.Cube.Setting.Current;
+    var set2 = ViewBag.PageSetting as PageSetting;
+
+        var title = ViewBag.Title + "";
+    if (title != "" && !title.Contains(" - "))
+    {
+        title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
+    }
+
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var charts = ViewBag.Charts as ECharts[];
+    var charts2 = ViewBag.Charts2 as ECharts[];
+
+    var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
 }
 <!DOCTYPE html>
 
@@ -87,6 +105,197 @@
     <script src="~/assets/cube.js"></script>
     <!--自定义脚本-->
     @RenderSection("scripts", required: false)
+
+        <!-- 启用列表表头选择 -->
+    @if (set2.EnableSelect)
+    {
+        <script>
+            $(function () {
+                var $toolbarContext = $('.toolbar-batch'),
+                    $batchButtons = $('button[data-action="action"], input[data-action="action"]'), //button, input=button, a 3种类型都可以
+                    $table = $('.table'),
+                    $keys = $('input[name="keys"]', $table);
+
+                $table.on('click', '#chkAll', function () {
+                    // 全选
+                    $keys.prop('checked', this.checked);
+                    // 启用禁用批量操作区
+                    $batchButtons.prop('disabled', !this.checked);
+                });
+
+                $table.on('click.checked', 'tbody input[name="keys"]', function (e) {
+                    //页面中所有的checkbox
+                    var allbox = $table.find('tbody :checkbox[name="keys"]');
+                    //页面中所选中的checkbox
+                    var selecteds = $table.find('tbody :checkbox:checked[name="keys"]');
+                    if (selecteds.length > 0) {
+                        // 启用禁用批量操作区
+                        $batchButtons.prop('disabled', false);
+                        //需要判断当前页面所有行的checkbox是否都选中，以此来决定是否需要改变checkbox#chkAll 的状态
+                        if (allbox.length == selecteds.length) {
+                            $table.find('#chkAll').prop('checked', true);
+                        } else {
+                            $table.find('#chkAll').prop('checked', false);
+                        }
+                    }
+                    else {
+                        $batchButtons.prop('disabled', true);
+                        $table.find('#chkAll').prop('checked', false);
+                    }
+                });
+            })
+        </script>
+    }
+
+    <script>
+        // 日历控件
+        $(function () {
+            $('.form_datetime').each(function () {
+                var df = $(this).attr('dateformat');
+                if (!df) {
+                    $(this).attr('dateformat', 'yyyy-mm-dd hh:ii:ss');
+                    $(this).width(140);
+                }
+                else {
+                    // 把C#标准格式化替换为控件格式
+                    df = df.replace('mm', 'ii').replace('MM', 'mm').replace('HH', 'hh');
+                    $(this).attr('dateformat', df);
+
+                    // 根据时间日期格式，锁定日期输入框宽度
+                    if (df.indexOf('hh') >= 0)
+                        $(this).width(140);
+                    else
+                        $(this).width(80);
+                }
+
+                //根据日期格式自动推算日期选择view显示的范围
+                var sv = 2;
+                var mv = 2;
+                var autoView = $(this).attr('autoView');
+                if (autoView != 'false') {
+                    df = $(this).attr('dateformat');
+                    if (df.indexOf('ii') >= 0) {
+                        mv = 0;
+                        if (df.indexOf('dd') >= 0) {
+                            sv = 2;
+                        } else {
+                            sv = 1;
+                        }
+                    } else if (df.indexOf('hh') >= 0) {
+                        mv = 1;
+                        if (df.indexOf('dd') >= 0) {
+                            sv = 2;
+                        } else {
+                            sv = 1;
+                        }
+                    } else if (df.indexOf('dd') >= 0) {
+                        mv = 2;
+                        sv = 2;
+                    } else if (df.indexOf('mm') >= 0) {
+                        mv = 3;
+                        sv = 3;
+                    } else if (df.indexOf('yyyy') >= 0) {
+                        mv = 4;
+                        sv = 4;
+                    }
+                }
+
+                $(this).attr('startview', sv);
+                $(this).attr('minview', mv);
+            });
+            $("[dateformat]").each(function () {
+                $(this).datetimepicker({
+                    format: $(this).attr("dateformat"),
+                    autoclose: true,
+                    language: "zh-CN",
+                    forceParse: false,
+                    startView: parseInt($(this).attr('startview')),
+                    minView: parseInt($(this).attr('minview'))
+                });
+            });
+
+            @if (set != null && set.BootstrapSelect) {<text>
+            $('.multiselect').each(function () {
+                $(this).multiselect({
+                    // 下拉列表仅在列表项比较多时显示过滤框
+                    enableFiltering: $(this).children().length > 10,
+                    buttonClass: 'btn btn-white btn-primary',
+                    templates: {
+                        button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                        ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                        filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                        filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                        li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                        divider: '<li class="multiselect-item divider"></li>',
+                        liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                    },
+                    filterPlaceholder: '搜索',
+                    nonSelectedText: '无',
+                    allSelectedText: '全选'
+                });
+            });
+            </text>}
+            @*双击跳转到form
+            _List_Data_Action.cshtml变更
+            @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
+            $('tr').dblclick(function () {
+                var $this = $(this);
+                var row = $this.closest("tr");
+                var findcell = row.find('.editcell');
+                if (findcell.length > 0) window.location.href = findcell.attr("href");
+            });
+        });
+
+        // 区间时间插件
+        $("input[name='dtRange']").daterangepicker(
+            {
+                // autoApply: true,
+                // autoUpdateInput: false,
+                // alwaysShowCalendars: true,
+                buttonClasses: 'btn',
+                applyClass: 'btn-primary',
+                cancelClass: 'btn-secondary',
+                ranges: {
+                    '今天': [moment(), moment()],
+                    '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '近7天': [moment().subtract(7, 'days'), moment()],
+                    '近30天': [moment().subtract(29, 'days'), moment()],
+                    '这个月': [moment().startOf('month'), moment().endOf('month')],
+                    '上个月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                locale: {
+                    format: "YYYY/MM/DD HH:mm",
+                    separator: " - ",
+                    applyLabel: "确认",
+                    cancelLabel: "清空",
+                    fromLabel: "开始时间",
+                    toLabel: "结束时间",
+                    customRangeLabel: "自定义日期范围",
+                    daysOfWeek: ["日", "一", "二", "三", "四", "五", "六"],
+                    monthNames: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]
+                }
+            }
+        ).on('cancel.daterangepicker', function (ev, picker) {
+            $("#dtRange").val("请选择日期范围");
+            $("#dtStart").val("");
+            $("#dtEnd").val("");
+        }).on('apply.daterangepicker', function (ev, picker) {
+            $("#dtStart").val(picker.startDate.format('YYYY-MM-DD'));
+            $("#dtEnd").val(picker.endDate.format('YYYY-MM-DD'));
+            $("#dtRange").val(picker.startDate.format('YYYY-MM-DD') + " 至 " + picker.endDate.format('YYYY-MM-DD'));
+        });
+
+        // 处理表单标签长度
+        window.onresize = function () {
+            var ilabel = $("div.item-label:first");
+            $("div.bigitem-label").width(ilabel.width()); // 设置所有备注类大字段的标签宽度
+        }
+
+        $(function () {
+            var ilabel = $("div.item-label:first");
+            $("div.bigitem-label").width(ilabel.width()); // 设置所有备注类大字段的标签宽度
+        });
+    </script>
 </body>
 <!--end::Body-->
 </html>

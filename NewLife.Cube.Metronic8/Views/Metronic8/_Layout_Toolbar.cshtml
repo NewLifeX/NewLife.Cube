@@ -1,66 +1,91 @@
-﻿
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Extensions
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var remark = (String)ViewBag.HeaderContent;
+    remark = remark.Split(";", ",", "。", "|").LastOrDefault();
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty())
+    {
+        act = Url.Action("Index");
+    }
+
+    var set = ViewBag.PageSetting as PageSetting;
+    var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
+    // 判断当前是否为实体对象新删改及详情查看视图
+    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info");
+    <!--可以通过判断手机端隐藏-->
+    var mb = Context.Request.Headers["User-Agent"].ToString().ToLower();
+
+    String[] mobileAgents = { "iphone", "android", "phone", "mobile", "wap", "netfront", "java", "opera mobi", "opera mini", "ucweb", "windows ce", "symbian", 
+    "series", "webos", "sony", "blackberry", "dopod", "nokia", "samsung", "palmsource", "xda", "pieplus", "meizu", "midp", "cldc", "motorola", "foma", "docomo", 
+    "up.browser", "up.link", "blazer", "helio", "hosin", "huawei", "novarra", "coolpad", "webos", "techfaith", "palmsource", "alcatel", "amoi", "ktouch", 
+    "nexian", "ericsson", "philips", "sagem", "wellcom", "bunjalloo", "maui", "smartphone", "iemobile", "spice", "bird", "zte-", "longcos", "pantech", "gionee", 
+    "portalmmm", "jig browser", "hiptop", "benq", "haier", "^lct", "320x320", "240x320", "176x220", "w3c ", "acs-", "alav", "alca", "amoi", "audi", "avan", 
+    "benq", "bird", "blac", "blaz", "brew", "cell", "cldc", "cmd-", "dang", "doco", "eric", "hipt", "inno", "ipaq", "java", "jigs", "kddi", "keji", "leno", 
+    "lg-c", "lg-d", "lg-g", "lge-", "maui", "maxo", "midp", "mits", "mmef", "mobi", "mot-", "moto", "mwbp", "nec-", "newt", "noki", "oper", "palm", "pana", 
+    "pant", "phil", "play", "port", "prox", "qwap", "sage", "sams", "sany", "sch-", "sec-", "send", "seri", "sgh-", "shar", "sie-", "siem", "smal", "smar", 
+    "sony", "sph-", "symb", "t-mo", "teli", "tim-", "tosh", "tsm-", "upg1", "upsi", "vk-v", "voda", "wap-", "wapa", "wapi", "wapp", "wapr", "webc", "winw", 
+    "winw", "xda", "xda-", "Googlebot-Mobile" };
+    var isMoblie = false;
+    if (mb != null)
+    {
+        for (int i = 0; i < mobileAgents.Length; i++)
+        {
+            if (mb.IndexOf(mobileAgents[i]) >= 0)
+            {
+                isMoblie = true;
+                break;
+            }
+        }
+    }
+
+    var cls = isMoblie ? "" : "d-flex align-items-center flex-nowrap flex-shrink-auto";
+}
 
 <!--begin::Toolbar-->
 <div class="toolbar" id="kt_toolbar">
     <!--begin::Container-->
     <div id="kt_toolbar_container" class="container-fluid d-flex flex-wrap flex-stack">
-        <!--begin::Wrapper-->
-        <div class="d-flex align-items-center flex-shrink-0 me-5 py-3">
-            <!--begin::Label-->
-            <span class="fs-7 fw-bolder text-gray-700 pe-4">Team:</span>
-            <!--end::Label-->
+        <!-- 模块视图说明 -->
+        <div class="d-flex align-items-center flex-shrink-0 me-5 py-3 d-xs-none" style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
+            <span class="fs-12 text-gray-700 pe-4" title="@remark">@remark</span>
         </div>
-        <!--end::Wrapper-->
-        <!--begin::Wrapper-->
-        <div class="d-flex align-items-center overflow-auto">
-            <!--begin::Search-->
-            <div class="position-relative my-1">
-                <!--begin::Svg Icon | path: icons/duotune/general/gen021.svg-->
-                <span class="svg-icon svg-icon-3 svg-icon-gray-500 position-absolute top-50 translate-middle ps-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="black" />
-                        <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="black" />
-                    </svg>
-                </span>
-                <!--end::Svg Icon-->
-                <input type="text" class="form-control form-control-sm form-control-solid w-150px ps-10" name="Search Team" value="" placeholder="Search Team" />
+
+        @if(page != null && !isdis) 
+        {
+            <div class="@cls">
+                
+                <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+                    <div class="d-flex align-items-center flex-shrink-0">
+                        @await Html.PartialAsync("_Layout_Toolbar_DateRange")
+                        <!--begin::Separartor-->
+                        <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
+                        <!--end::Separartor-->
+                        @await Html.PartialAsync("_Layout_Toolbar_Search")
+
+                        <!--begin::Actions-->
+                        <div class="d-flex align-items-center pl-3">
+                            <button type="submit" class="btn btn-sm btn-icon btn-light-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="查询">
+                                <!--begin::Svg Icon | path: icons/duotune/general/gen025.svg-->
+                                <span class="svg-icon svg-icon-2 svg-icon-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M21.7 18.9L18.6 15.8C17.9 16.9 16.9 17.9 15.8 18.6L18.9 21.7C19.3 22.1 19.9 22.1 20.3 21.7L21.7 20.3C22.1 19.9 22.1 19.3 21.7 18.9Z" fill="black" />
+                                        <path opacity="0.3" d="M11 20C6 20 2 16 2 11C2 6 6 2 11 2C16 2 20 6 20 11C20 16 16 20 11 20ZM11 4C7.1 4 4 7.1 4 11C4 14.9 7.1 18 11 18C14.9 18 18 14.9 18 11C18 7.1 14.9 4 11 4ZM8 11C8 9.3 9.3 8 11 8C11.6 8 12 7.6 12 7C12 6.4 11.6 6 11 6C8.2 6 6 8.2 6 11C6 11.6 6.4 12 7 12C7.6 12 8 11.6 8 11Z" fill="black" />
+                                    </svg>
+                                </span>
+                                <!--end::Svg Icon-->
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </div>
+                </form>
             </div>
-            <!--end::Search-->
-            <!--begin::Separartor-->
-            <div class="bullet bg-secondary h-35px w-1px mx-6"></div>
-            <!--end::Separartor-->
-            <!--begin::Label-->
-            <span class="fs-7 fw-bolder text-gray-700 flex-shrink-0 pe-4">Sort By:</span>
-            <!--end::Label-->
-            <!--begin::Select-->
-            <select class="form-select form-select-sm w-125px form-select-solid me-6" data-control="select2" data-placeholder="Latest" data-hide-search="true">
-                <option value=""></option>
-                <option value="1" selected="selected">Latest</option>
-                <option value="2">In Progress</option>
-                <option value="3">Done</option>
-            </select>
-            <!--end::Select-->
-            <!--begin::Actions-->
-            <div class="d-flex align-items-center">
-                <button type="button" class="btn btn-sm btn-icon btn-light-primary me-3" data-bs-toggle="tooltip" data-bs-placement="top" title="Enable grid view">
-                    <!--begin::Svg Icon | path: icons/duotune/general/gen025.svg-->
-                    <span class="svg-icon svg-icon-2 svg-icon-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <rect x="2" y="2" width="9" height="9" rx="2" fill="black" />
-                            <rect opacity="0.3" x="13" y="2" width="9" height="9" rx="2" fill="black" />
-                            <rect opacity="0.3" x="13" y="13" width="9" height="9" rx="2" fill="black" />
-                            <rect opacity="0.3" x="2" y="13" width="9" height="9" rx="2" fill="black" />
-                        </svg>
-                    </span>
-                    <!--end::Svg Icon-->
-                </button>
-                <button type="button" class="btn btn-sm btn-icon btn-light" data-bs-toggle="tooltip" data-bs-placement="top" title="Enable row view">
-                    <!--SVG file not found: icons/duotune/finance/fin006.svgGrid-Horizontal.svg-->
-                </button>
-            </div>
-            <!--end::Actions-->
-        </div>
-        <!--end::Wrapper-->
+        }
     </div>
     <!--end::Container-->
 </div>
