@@ -1,22 +1,66 @@
 ﻿@*
     列表视图工具栏
 *@
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Extensions
+
 @{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty())
+    {
+        act = Url.Action("Index");
+    }
+
+    var set = ViewBag.PageSetting as PageSetting;
+    var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
+    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info");
+    <!--可以通过判断手机端隐藏-->
+    var mb = Context.Request.Headers["User-Agent"].ToString().ToLower();
+
+    String[] mobileAgents = { "iphone", "android", "phone", "mobile", "wap", "netfront", "java", "opera mobi", "opera mini", "ucweb", "windows ce", "symbian", "series", "webos", "sony", "blackberry", "dopod", "nokia", "samsung", "palmsource", "xda", "pieplus", "meizu", "midp", "cldc", "motorola", "foma", "docomo", "up.browser", "up.link", "blazer", "helio", "hosin", "huawei", "novarra", "coolpad", "webos", "techfaith", "palmsource", "alcatel", "amoi", "ktouch", "nexian", "ericsson", "philips", "sagem", "wellcom", "bunjalloo", "maui", "smartphone", "iemobile", "spice", "bird", "zte-", "longcos", "pantech", "gionee", "portalmmm", "jig browser", "hiptop", "benq", "haier", "^lct", "320x320", "240x320", "176x220", "w3c ", "acs-", "alav", "alca", "amoi", "audi", "avan", "benq", "bird", "blac", "blaz", "brew", "cell", "cldc", "cmd-", "dang", "doco", "eric", "hipt", "inno", "ipaq", "java", "jigs", "kddi", "keji", "leno", "lg-c", "lg-d", "lg-g", "lge-", "maui", "maxo", "midp", "mits", "mmef", "mobi", "mot-", "moto", "mwbp", "nec-", "newt", "noki", "oper", "palm", "pana", "pant", "phil", "play", "port", "prox", "qwap", "sage", "sams", "sany", "sch-", "sec-", "send", "seri", "sgh-", "shar", "sie-", "siem", "smal", "smar", "sony", "sph-", "symb", "t-mo", "teli", "tim-", "tosh", "tsm-", "upg1", "upsi", "vk-v", "voda", "wap-", "wapa", "wapi", "wapp", "wapr", "webc", "winw", "winw", "xda", "xda-", "Googlebot-Mobile" };
+    var isMoblie = false;
+    if (mb != null)
+    {
+        for (int i = 0; i < mobileAgents.Length; i++)
+        {
+            if (mb.IndexOf(mobileAgents[i]) >= 0)
+            {
+                isMoblie = true;
+                break;
+            }
+        }
+    }
+    var cls = isMoblie ? "" : "d-flex align-items-center flex-shrink-0";
 }
 
 <!--begin::Toolbar-->
 <div class="d-flex flex-wrap flex-stack pt-3 pb-3">
-    <!--begin::Heading-->
+    <!--begin::列表统计-->
     <h3 class="fw-bolder my-2">
-        Project Targets
-        <span class="fs-6 text-gray-400 fw-bold ms-1">by Recent Updates ↓</span>
+        &nbsp;
+        <span class="fs-6 text-gray-400 fw-bold ms-1">&nbsp;</span>
     </h3>
-    <!--end::Heading-->
+    <!--end::列表统计-->
 
     <!--begin::Controls-->
-    <div class="d-flex flex-wrap my-1">
+    <div class="d-flex">
+        <!-- 新增按钮 -->
+        @if (page != null)
+        {
+            var rv = page.GetRouteValue();
+            if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+            {
+                <a href="@Url.Action("Add", rv)" class="btn btn-sm btn-icon btn-light-success btn-active-success w-70px me-3" title="新增对象" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-plus me-3"></i>新增</a>
+            }
+        }
+
         <!--begin::列表模式-->
-        <ul class="nav nav-pills me-5">
+        <ul class="nav nav-pills me-3">
             <li class="nav-item m-0">
                 <a class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary me-3" data-bs-toggle="tab" href="#kt_card_pane">
                     <!--begin::Svg Icon | path: icons/duotune/general/gen024.svg-->
