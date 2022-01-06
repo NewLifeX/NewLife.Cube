@@ -17,29 +17,10 @@
     }
 
     var set = ViewBag.PageSetting as PageSetting;
-    var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
-    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info");
-    <!--可以通过判断手机端隐藏-->
-    var mb = Context.Request.Headers["User-Agent"].ToString().ToLower();
-
-    String[] mobileAgents = { "iphone", "android", "phone", "mobile", "wap", "netfront", "java", "opera mobi", "opera mini", "ucweb", "windows ce", "symbian", "series", "webos", "sony", "blackberry", "dopod", "nokia", "samsung", "palmsource", "xda", "pieplus", "meizu", "midp", "cldc", "motorola", "foma", "docomo", "up.browser", "up.link", "blazer", "helio", "hosin", "huawei", "novarra", "coolpad", "webos", "techfaith", "palmsource", "alcatel", "amoi", "ktouch", "nexian", "ericsson", "philips", "sagem", "wellcom", "bunjalloo", "maui", "smartphone", "iemobile", "spice", "bird", "zte-", "longcos", "pantech", "gionee", "portalmmm", "jig browser", "hiptop", "benq", "haier", "^lct", "320x320", "240x320", "176x220", "w3c ", "acs-", "alav", "alca", "amoi", "audi", "avan", "benq", "bird", "blac", "blaz", "brew", "cell", "cldc", "cmd-", "dang", "doco", "eric", "hipt", "inno", "ipaq", "java", "jigs", "kddi", "keji", "leno", "lg-c", "lg-d", "lg-g", "lge-", "maui", "maxo", "midp", "mits", "mmef", "mobi", "mot-", "moto", "mwbp", "nec-", "newt", "noki", "oper", "palm", "pana", "pant", "phil", "play", "port", "prox", "qwap", "sage", "sams", "sany", "sch-", "sec-", "send", "seri", "sgh-", "shar", "sie-", "siem", "smal", "smar", "sony", "sph-", "symb", "t-mo", "teli", "tim-", "tosh", "tsm-", "upg1", "upsi", "vk-v", "voda", "wap-", "wapa", "wapi", "wapp", "wapr", "webc", "winw", "winw", "xda", "xda-", "Googlebot-Mobile" };
-    var isMoblie = false;
-    if (mb != null)
-    {
-        for (int i = 0; i < mobileAgents.Length; i++)
-        {
-            if (mb.IndexOf(mobileAgents[i]) >= 0)
-            {
-                isMoblie = true;
-                break;
-            }
-        }
-    }
-    var cls = isMoblie ? "" : "d-flex align-items-center flex-shrink-0";
 }
 
-<!--begin::Toolbar-->
-<div class="d-flex flex-wrap flex-stack pt-3 pb-3">
+<!--begin::Toolbar 如果列表视图工具栏上方有仪表盘,设置pt-3 -->
+<div class="d-flex flex-wrap flex-stack pt-0 pb-3">
     <!--begin::列表统计-->
     <h3 class="fw-bolder my-2">
         &nbsp;
