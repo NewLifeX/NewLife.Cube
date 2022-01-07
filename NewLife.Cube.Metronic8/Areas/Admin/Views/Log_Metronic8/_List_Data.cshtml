@@ -14,20 +14,20 @@
 
 <div class="card card-fulsh">
     <div class="card-body">
-        <div class="table-responsive">
+        <div class="table-responsive dataTables_wrapper dt-bootstrap4">
             <table class="table table-hover table-row-bordered table-row-dashed gy-4">
                 <thead>
-                    <tr>
+                    <tr class="fs-4 text-muted">
                         @if (set.EnableSelect)
                         {
                             <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
                         }
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
                         <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">IP地址</a></th>
                         <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
                         <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
@@ -46,9 +46,9 @@
                             {
                                 <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                             }
-                            <td class="text-center" style="min-width:80px;">@entity.Category</td>
-                            <td class="text-center" style="min-width:80px;">@entity.Action</td>
-                            <td class="text-center" style="min-width:60px;">
+                            <td style="min-width:80px;">@entity.Category</td>
+                            <td style="min-width:80px;">@entity.Action</td>
+                            <td style="min-width:60px;">
                                 @await Html.PartialAsync("_Icon_Boolean", entity.Success)
                             </td>
                             <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Remark">@entity.Remark</td>

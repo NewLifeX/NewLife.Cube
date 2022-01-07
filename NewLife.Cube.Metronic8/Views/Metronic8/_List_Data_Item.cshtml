@@ -33,11 +33,11 @@ else
                 {
                     var key = entity[factory.Unique.Name];
                     <a href="@Url.Action("SetEnable",null,new { id=key, enable=!bval })" data-action="action">
-                        @await Html.PartialAsync("_Icon_Boolean", bval)
+                        @await Html.PartialAsync("_List_Data_Item_IconBoolean", bval)
                     </a> }
                 else
                 {
-                    @await Html.PartialAsync("_Icon_Boolean", bval)}
+                    @await Html.PartialAsync("_List_Data_Item_IconBoolean", bval)}
             </td> break;
         case TypeCode.DateTime:
             var dt = (DateTime)value;
