@@ -18,7 +18,7 @@
         <div class="table-responsive dataTables_wrapper dt-bootstrap4">
             <table class="table table-hover table-row-bordered table-row-dashed gy-4">
                 <thead>
-                    <tr>
+                    <tr class="fs-4 text-muted">
                         @if (set.EnableSelect && ukey != null)
                         {
                             <th class="text-center" style="width:10px;">
@@ -39,13 +39,18 @@
                                 var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
                                 <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                             }
+                            else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)
+                            || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
+                            {
+                                <th class="text-right" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                            }
                             else if (item.Type == null)
                             {
                                 <th class="text-center" title="@title">@name</th>
                             }
                             else
                             {
-                                <th class="text-center" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                                <th title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                             }
                         }
                         @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
@@ -77,13 +82,13 @@
                                 {
                                     var url = df.GetUrl(entity);
                                     var name = df.GetDisplayName(entity) ?? df.Header;
-                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                                    <td class="text-center align-middle" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
                                 }
                                 else if (df != null && !df.Url.IsNullOrEmpty())
                                 {
                                     var url = df.GetUrl(entity);
                                     var name = df.GetDisplayName(entity) ?? df.Header;
-                                    <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                                    <td class="text-center align-middle" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
                                 }
                                 else
                                 {
@@ -92,7 +97,7 @@
                             }
                             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                             {
-                                <td class="text-center w-80px" style="min-width:60px;">
+                                <td class="text-center align-middle w-80px" style="min-width:60px;">
                                     @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                                 </td>
                             }
