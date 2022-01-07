@@ -83,14 +83,16 @@
                     <div class="post d-flex flex-column-fluid" id="dt_post">
                         <div class="container-xxl" id="dt_content_container">
                             @RenderBody()
+
+                            <!-- 内容底部 -->
+                            @await Html.PartialAsync("_Layout_Footer")
                         </div>
                     </div>
                 </div>
-                <!-- 内容底部 -->
-                @await Html.PartialAsync("_Layout_Content_Footer")
             </div>
         </div>
     </div>
+
     <!-- 侧边栏 -->
     @await Html.PartialAsync("_Layout_Drawer_900")
     @await Html.PartialAsync("_Layout_Drawer_500")
