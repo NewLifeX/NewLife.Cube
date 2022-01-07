@@ -24,13 +24,12 @@
                         }
                         <th><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
-                        <th><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
+                        <th class="text-center align-middle"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
-                        <th><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
+                        <th class="text-right"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">IP地址</a></th>
                         <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
-                        <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
+                        <th class="" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
                         <th class="text-center">附近</th>
                         @if (this.Has(PermissionFlags.Detail))
                         {
@@ -46,23 +45,22 @@
                             {
                                 <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                             }
-                            <td style="min-width:80px;">@entity.Category</td>
-                            <td style="min-width:80px;">@entity.Action</td>
-                            <td style="min-width:60px;">
-                                @await Html.PartialAsync("_Icon_Boolean", entity.Success)
+                            <td class="align-middle" style="min-width:80px;">@entity.Category</td>
+                            <td class="align-middle" style="min-width:80px;">@entity.Action</td>
+                            <td class="align-middle" style="min-width:60px;">
+                                @await Html.PartialAsync("_List_Data_Item_IconBoolean", entity.Success)
                             </td>
-                            <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@entity.Remark">@entity.Remark</td>
-                            <td class="text-right" style="min-width:60px;">@entity.LinkID.ToString("n0")</td>
-                            <td style="min-width:80px;">@entity.UserName</td>
-                            <td style="min-width:80px;">@entity.CreateIP</td>
-                            <td style="min-width:80px;">@entity.CreateIP.IPToAddress()</td>
-                            <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("")</td>
-                            <td class="text-center" style="min-width:60px;">
+                            <td class="align-middle" style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@entity.Remark">@entity.Remark</td>
+                            <td class="text-right align-middle"style="min-width:60px;">@entity.LinkID.ToString("n0")</td>
+                            <td class="align-middle" style="min-width:80px;">@entity.UserName</td>
+                            <td class="align-middle" style="min-width:80px;">@entity.CreateIP.IPToAddress()</td>
+                            <td class="align-middle" style="max-width:150px">@entity.CreateTime.ToFullString("")</td>
+                            <td class="text-center align-middle" style="min-width:60px;">
                                 <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
                             </td>
                             @if (this.Has(PermissionFlags.Detail))
                             {
-                                <td class="text-center w-80px" style="min-width:60px;">
+                                <td class="text-center align-middle w-80px" style="min-width:60px;">
                                     @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                                 </td>
                             }
