@@ -14,7 +14,7 @@ namespace NewLife.Cube.Admin.Controllers
         {
             LogOnChange = true;
 
-            ListFields.RemoveField("ID", "Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
+            ListFields.RemoveField("ID", "Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "UpdateUserID", "UpdateIP");
             ListFields.RemoveCreateField();
         }
     }

@@ -15,6 +15,11 @@ namespace NewLife.Cube.Admin.Controllers
     [Menu(0, false)]
     public class UserStatController : ReadOnlyEntityController<UserStat>
     {
+        static UserStatController()
+        {
+            ListFields.RemoveField("ID", "CreateTime", "UpdateTime", "Remark");
+        }
+
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>
