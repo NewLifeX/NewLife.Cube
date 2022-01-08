@@ -1,36 +1,33 @@
-﻿@*
-*@
-
-@using System.Diagnostics;
+﻿@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime.Versioning;
 @using Microsoft.AspNetCore.Http
+@using NewLife
 @using NewLife.Common;
+@using NewLife.Reflection;
 @using HttpContext = NewLife.Web.HttpContext
 @inject IHttpContextAccessor HttpContextAccessor
-@using NewLife;
-@using NewLife.Reflection;
 
 @{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
     ViewBag.Title = "服务器变量列表";
     var httpContext = HttpContextAccessor.HttpContext;
     var req = httpContext.Request;
+    // ASP.NET Core中没有ServerVariables的对应实现，需要换一种方式，可以在HttpContext.Request.Headers中获取
 }
 
-<div class="card ">
-    <div class="card-body p-0 scroll-x style-3">
-
-        <table class="table table-bordered table-hover table-striped table-condensed">
-            <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-row-bordered table-row-dashed gy-4">
                 <tr>
-                    <th colspan="6">
+                    <th class="text-dark text-hover-primary text-uppercase fs-3" colspan="6">
                         服务器变量列表
                     </th>
                 </tr>
-            </thead>
-            <tbody class="border border-gray-200">
-                <tr>
+                <tr class="fs-4">
                     <th>名称</th>
                     <th>数值</th>
                 </tr>
@@ -41,57 +38,51 @@
                     var key = kv.Key;
                     if (key.EqualIgnoreCase("HTTP_COOKIE")) { v = v.Replace(";", "</br>"); }
                     <tr>
-                        <td>@key</td>
-                        <td>@Html.Raw(v)</td>
+                        <td style="max-width:200px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@key">@key</td>
+                        <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@Html.Raw(v)">@Html.Raw(v)</td>
                     </tr>
                 }
-            </tbody>
-        </table>
-
-
+            </table>
+        </div>
     </div>
 </div>
 
-
-
-
-<div class="card mt-3">
-    <div class="card-body p-0 scroll-x style-3 ">
-
-        <table class="table table-bordered table-hover table-striped table-condensed">
-            <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
-                <tr>
-                    <th colspan="6">
-                        Request变量列表&nbsp;&nbsp;&nbsp;&nbsp;@req.GetType().FullName
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="border border-gray-200">
-                <tr>
-                    <th>名称</th>
-                    <th>数值</th>
-                </tr>
-                @foreach (var pi in req.GetType().GetProperties())
-                {
-                    var type = pi.PropertyType;
-                    if (pi.GetIndexParameters().Length > 0 || (type != typeof(String)
-                                                               && type != typeof(Uri)
-                                                               && type != typeof(PathString)
-                                                               && type != typeof(HostString)
-                                                               && !typeof(Boolean).IsAssignableFrom(type)
-                                                               && !typeof(String).IsAssignableFrom(type)))
-                    {
-                        continue;
-                    }
-                    var v = req.GetValue(pi) + "";
-                    v = v.Replace("\r\n", "</br>");
+<div class="pt-5">
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-row-bordered table-row-dashed gy-4">
                     <tr>
-                        <td>@pi.Name</td>
-                        <td>@Html.Raw(v)</td>
+                        <th class="text-dark text-hover-primary fs-3" colspan="6">
+                            Request变量列表&nbsp;&nbsp;&nbsp;&nbsp;@req.GetType().FullName
+                        </th>
                     </tr>
-                }
-            </tbody>
-        </table>
-
+                    <tr class="fs-4">
+                        <th>名称</th>
+                        <th>数值</th>
+                    </tr>
+                    @foreach (var pi in req.GetType().GetProperties())
+                    {
+                        var type = pi.PropertyType;
+                        if (pi.GetIndexParameters().Length > 0 || (type != typeof(String)
+                        && type != typeof(Uri)
+                        && type != typeof(PathString)
+                        && type != typeof(HostString)
+                        && !typeof(Boolean).IsAssignableFrom(type)
+                        && !typeof(String).IsAssignableFrom(type)))
+                        {
+                            continue;
+                        }
+                        var v = req.GetValue(pi) + "";
+                        v = v.Replace("\r\n", "</br>");
+                        <tr>
+                            <td style="max-width:200px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@pi.Name">@pi.Name</td>
+                            <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@Html.Raw(v)">@Html.Raw(v)</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
     </div>
 </div>
+

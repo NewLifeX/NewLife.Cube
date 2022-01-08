@@ -1,15 +1,12 @@
-﻿@*
-    表单脚
-*@
-
-@using System.Diagnostics;
+﻿@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime.Versioning;
 @using NewLife.Common;
 @using NewLife.Cube.Extensions
-
 @{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
     ViewBag.Title = "进程模块";
 
     var isAll = String.Equals("All", Context.Request.GetRequestValue("Mode"), StringComparison.OrdinalIgnoreCase);
@@ -24,16 +21,14 @@
         }
         catch { }
     }
-
 }
 
-<div class="card scroll-x style-3">
-    <div class="card-body p-0">
-
-        <table class="table table-bordered table-hover table-striped table-condensed">
-            <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-row-bordered table-row-dashed gy-4">
                 <tr>
-                    <th class="ps-2" colspan="7">
+                    <th class="text-dark text-hover-primary text-uppercase fs-3" colspan="7">
                         进程模块(@process.ProcessName , PID=@process.Id )
                         @if (!isAll)
                         {
@@ -45,32 +40,56 @@
                         }
                     </th>
                 </tr>
-            </thead>
-            <tbody class="border border-gray-200">
-                <tr>
-                    <th>模块名称</th>
-                    <th>公司名称</th>
-                    <th>产品名称</th>
-                    <th>描述</th>
-                    <th>版本</th>
-                    <th>大小</th>
-                    <th>路径</th>
+                <tr class="fs-4">
+                    <th>
+                        模块名称
+                    </th>
+                    <th>
+                        公司名称
+                    </th>
+                    <th>
+                        产品名称
+                    </th>
+                    <th>
+                        描述
+                    </th>
+                    <th>
+                        版本
+                    </th>
+                    <th>
+                        大小
+                    </th>
+                    <th>
+                        路径
+                    </th>
                 </tr>
                 @foreach (ProcessModule item in list)
                 {
                     <tr>
-                        <td>@item.ModuleName </td>
-                        <td>@item.FileVersionInfo.CompanyName </td>
-                        <td>@item.FileVersionInfo.ProductName</td>
-                        <td>@item.FileVersionInfo.FileDescription</td>
-                        <td>@item.FileVersionInfo.FileVersion</td>
-                        <td>@item.ModuleMemorySize</td>
-                        <td>@item.FileName</td>
+                        <td>
+                            @item.ModuleName
+                        </td>
+                        <td>
+                            @item.FileVersionInfo.CompanyName
+                        </td>
+                        <td>
+                            @item.FileVersionInfo.ProductName
+                        </td>
+                        <td>
+                            @item.FileVersionInfo.FileDescription
+                        </td>
+                        <td>
+                            @item.FileVersionInfo.FileVersion
+                        </td>
+                        <td>
+                            @item.ModuleMemorySize
+                        </td>
+                        <td style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@item.FileName">
+                            @item.FileName
+                        </td>
                     </tr>
                 }
-            </tbody>
-        </table>
-
+            </table>
+        </div>
     </div>
 </div>
-
