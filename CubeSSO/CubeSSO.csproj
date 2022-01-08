@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.1225" />
+    <PackageReference Include="NewLife.Stardust" Version="2.0.2022.101" />
   </ItemGroup>
 
   <ItemGroup>
