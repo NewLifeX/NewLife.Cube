@@ -16,76 +16,74 @@
     var fk = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
 }
-<table class="table table-bordered table-hover table-striped table-condensed mb-0">
-    <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
-        <tr>
-           @* @if (set.EnableSelect)
-            {
-                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
-            }*@
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("TreeNodeName"))">节点名</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">显示名</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Url"))">链接</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Sort"))">排序</a></th>
-            @*<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Icon"))">图标</a></th>*@
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Visible"))">可见</a></th>
-            @*<th class="text-center" title="必要。必要的菜单，必须至少有角色拥有这些权限，如果没有则自动授权给系统角色"><a href="@Html.Raw(page.GetSortUrl("Necessary"))">必要</a></th>*@
-            <th class="text-center" title="权限子项。逗号分隔，每个权限子项名值竖线分隔"><a href="@Html.Raw(page.GetSortUrl("Permission"))">权限子项</a></th>
-            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-            {
-                <th class="text-center">升</th>
-                <th class="text-center">降</th>
-                <th class="text-center">操作</th>
-            }
-        </tr>
-    </thead>
 
-    <tbody class="border border-gray-300">
-        @foreach (var entity in Model)
-        {
-            var p = entity.Parent as IEntityTree;
-            if (p == null)
-            {
-                p = fact.EntityType.GetValue("Root") as IEntityTree;
-            }
-            var id = entity.ID;
-            <tr>
-               @* @if (set.EnableSelect)
-                {
-                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
-                }*@
-                <td class="text-center">@entity.ID</td>
-                <td>@entity.TreeNodeName</td>
-                <td>@entity.DisplayName</td>
-                <td>@entity.Url</td>
-                <td class="text-right">@entity.Sort.ToString("n0")</td>
-                <td class="text-center">
-                    @if (entity.Visible)
+<div class="card card-flush">
+    <div class="card-body">
+        <div class="table-responsive dataTables_wrapper dt-bootstrap4">
+            <table class="table table-hover table-row-bordered table-row-dashed gy-4">
+                <thead>
+                    <tr class="fs-4 text-muted">
+                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("TreeNodeName"))">节点名</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">显示名</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("Url"))">链接</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("Sort"))">排序</a></th>
+                        @*<th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Icon"))">图标</a></th>*@
+                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Visible"))">可见</a></th>
+                        @*<th class="text-center" title="必要。必要的菜单，必须至少有角色拥有这些权限，如果没有则自动授权给系统角色"><a href="@Html.Raw(page.GetSortUrl("Necessary"))">必要</a></th>*@
+                        <th title="权限子项。逗号分隔，每个权限子项名值竖线分隔"><a href="@Html.Raw(page.GetSortUrl("Permission"))">权限子项</a></th>
+                        @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                        {
+                            <th class="text-center">升</th>
+                            <th class="text-center">降</th>
+                            <th class="text-center">操作</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entity in Model)
                     {
-                        <i class="bi bi-check-lg text-success"></i>
+                        var p = entity.Parent as IEntityTree;
+                        if (p == null)
+                        {
+                            p = fact.EntityType.GetValue("Root") as IEntityTree;
+                        }
+                        var id = entity.ID;
+                        <tr>
+                            <td class="text-center">@entity.ID</td>
+                            <td>@entity.TreeNodeName</td>
+                            <td>@entity.DisplayName</td>
+                            <td>@entity.Url</td>
+                            <td class="text-right">@entity.Sort.ToString("n0")</td>
+                            <td class="text-center">
+                                @if (entity.Visible)
+                                {
+                                    <i class="bi bi-check-lg text-success"></i>
+                                }
+                            </td>
+                            <td>@entity.Permission</td>
+                            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                            {
+                                <td class="text-center">
+                                    @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
+                                    {
+                                        <a href="@Url.Action("Up", new { id })"><span class="bi bi-chevron-up text-success"></span></a>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (p != null && entity != p.Childs[p.Childs.Count - 1])
+                                    {
+                                        <a href="@Url.Action("Down", new { id })"><span class="bi bi-chevron-down text-danger"></span></a>
+                                    }
+                                </td>
+                                <td class="text-center" style="min-width:60px;">
+                                    @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                                </td>
+                            }
+                        </tr>
                     }
-                </td>
-                <td>@entity.Permission</td>
-                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-                {
-                    <td class="text-center">
-                        @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
-                        {
-                            <a href="@Url.Action("Up", new { id })"><span class="bi bi-chevron-up text-success"></span></a>
-                        }
-                    </td>
-                    <td class="text-center">
-                        @if (p != null && entity != p.Childs[p.Childs.Count - 1])
-                        {
-                            <a href="@Url.Action("Down", new { id })"><span class="bi bi-chevron-down text-danger"></span></a>
-                        }
-                    </td>
-                    <td class="text-center" style="min-width:60px;">
-                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
-                    </td>
-                }
-            </tr>
-        }
-    </tbody>
-</table>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
