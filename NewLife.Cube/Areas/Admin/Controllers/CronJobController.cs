@@ -18,6 +18,7 @@ namespace NewLife.Cube.Cube.Controllers
         {
             LogOnChange = true;
 
+            ListFields.RemoveField("ID");
             ListFields.RemoveCreateField();
 
             {
