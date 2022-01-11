@@ -27,6 +27,9 @@
     if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
 }
 
+<!-- 表单仪表盘，用于显示实体对象的统计信息 -->
+@await Html.PartialAsync("_Form_Dashboard")
+
 <!--模板表单-->
 @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv, FormMethod.Post, null, htmlAttributes))
 {
