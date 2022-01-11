@@ -53,6 +53,7 @@
                     }
                 }
             }
+
             var dic3 = dic.ToDictionary(e => e.Key + "", e => e.Value);
             <select class="form-select form-select-sm" data-control="select2" id="@fn" name="@fn">
                 @foreach (var item in dic3)
@@ -69,8 +70,6 @@
 
                 }
             </select>
-
-
         }
     }
 </div>
