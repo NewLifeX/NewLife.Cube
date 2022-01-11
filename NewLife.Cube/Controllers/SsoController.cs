@@ -794,9 +794,18 @@ namespace NewLife.Cube.Controllers
             var prv = Provider.Provider;
             var username = OAuth.Decode(access_token);
 
-            // 设置登录用户，
+            // 设置登录用户
             var user = prv.FindByName(username);
             prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
+
+            // 过期时间
+            var set = Setting.Current;
+            var expire = TimeSpan.FromMinutes(0);
+            if (set.SessionTimeout > 0)
+                expire = TimeSpan.FromSeconds(set.SessionTimeout);
+
+            // 设置Cookie
+            prv.SaveCookie(user, expire, HttpContext);
 
             if (redirect_uri.IsNullOrEmpty()) return Content("ok");
 
