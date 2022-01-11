@@ -32,7 +32,7 @@
 <!--模板表单-->
 @using (Html.BeginForm("Edit", null, rv, FormMethod.Post, null, htmlAttributes))
 {
-    <div class="bg-white">
+    <div class="card">
 
         @await Html.PartialAsync("_Form_Header", entity)
         @await Html.PartialAsync("_Form_Body", entity)

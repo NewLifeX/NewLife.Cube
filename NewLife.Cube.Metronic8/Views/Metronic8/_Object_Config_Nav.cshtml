@@ -6,15 +6,13 @@
 
     var cls_li = "nav-item me-0 pt-2 pm-3 text-start";
     var cls = "nav-link text-gray-700";
-    var cls_active = "nav-link active bg-light-info text-info";
+    var cls_active = "nav-link active bg-light-primary text-info";
 
     var cls_core = name.EqualIgnoreCase("Core") ? cls_active : cls;
     var cls_sys = name.EqualIgnoreCase("Sys") ? cls_active : cls;
     var cls_xcode = name.EqualIgnoreCase("XCode") ? cls_active : cls;
     var cls_cube = name.EqualIgnoreCase("Cube") ? cls_active : cls;
     var cls_oauthconfig = name.EqualIgnoreCase("OAuthConfig") ? cls_active : cls;
-
-
 }
 
 <ul class="nav nav-tabs nav-pills flex-row border-0 flex-md-column mt-2 mb-3 mb-md-0 fs-6">

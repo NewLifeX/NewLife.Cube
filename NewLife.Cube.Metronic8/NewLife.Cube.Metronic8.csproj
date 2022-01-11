@@ -172,6 +172,7 @@
     <Content Remove="wwwroot\assets\js\custom\widgets.js" />
     <Content Remove="wwwroot\assets\js\scripts.bundle.js" />
     <Content Remove="wwwroot\assets\media\bg-4.jpg" />
+    <Content Remove="wwwroot\assets\media\logos\Logo.png" />
     <Content Remove="wwwroot\assets\media\verification.png" />
     <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon-block.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon.bundle.js" />
@@ -502,6 +503,7 @@
     <EmbeddedResource Include="wwwroot\assets\js\custom\widgets.js" />
     <EmbeddedResource Include="wwwroot\assets\js\scripts.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\media\bg-4.jpg" />
+    <EmbeddedResource Include="wwwroot\assets\media\logos\Logo.png" />
     <EmbeddedResource Include="wwwroot\assets\media\verification.png" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon-block.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon.bundle.js" />
@@ -712,7 +714,6 @@
   <ItemGroup>
     <Folder Include="Areas\Admin\Views\Shared\" />
     <Folder Include="Views\Shared\" />
-    <Folder Include="wwwroot\assets\media\logos\" />
   </ItemGroup>
 
   <ItemGroup>
