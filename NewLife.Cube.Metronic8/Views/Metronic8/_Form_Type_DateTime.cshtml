@@ -17,11 +17,20 @@
     if (name.EndsWithIgnoreCase("Date"))
     {
         cls = "form_datetime";
-    }   
+    }
 
 }
 
 <div class="input-group">
     <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
-    <input id="@name" name="@name" type="text" class="form-control form-control-sm @cls" value="@dt" />
+    @if (name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+         "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
+    {
+        <input id="@name" name="@name" type="text" class="form-control form-control-sm @cls" disabled value="@dt" />
+    }
+    else
+    {
+        <input id="@name" name="@name" type="text" class="form-control form-control-sm @cls" value="@dt" />
+    }
+
 </div>

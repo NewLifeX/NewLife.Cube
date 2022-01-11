@@ -37,7 +37,16 @@ else
         }
         else
         {
-            <input id="@name" name="@name" type="text" class="form-control form-control-sm" autocomplete="off" value="@value" />
+            if (name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
+            {
+                <input id="@name" name="@name" type="text" class="form-control form-control-sm" autocomplete="off" disabled value="@value" />
+            }
+            else
+            {
+                <input id="@name" name="@name" type="text" class="form-control form-control-sm" autocomplete="off" value="@value" />
+            }
+
         }
     </div>
 }
