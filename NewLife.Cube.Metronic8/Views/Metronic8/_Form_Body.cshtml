@@ -7,6 +7,7 @@
 @using XCode.Configuration;
 @{
     var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
     var fields = ViewBag.Fields as FieldCollection;
 
     var set = NewLife.Cube.Setting.Current;
@@ -22,6 +23,10 @@
         <div class="row">
             @foreach (var item in fields)
             {
+                if (isNew && (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                    "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP")))
+                    continue;
+
                 var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
                 var dataField = fields.GetField(item.Name) as ListField;
                 var display = dataField?.DisplayName ?? item.DisplayName;

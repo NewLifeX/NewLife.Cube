@@ -33,7 +33,7 @@ else
 
         @if (length < 0 || length >= 300 || name.EqualIgnoreCase("Remark", "Description", "Comment"))
         {
-            <textarea id="@name" name="@name" class="form-control" rows="3">@value</textarea>
+            <textarea id="@name" name="@name" class="form-control" rows="3" data-kt-autosize="true">@value</textarea>
         }
         else
         {
