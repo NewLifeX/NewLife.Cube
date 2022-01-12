@@ -14,7 +14,7 @@
         .ToDictionary(e => e.Key, e => e.ToList());
 }
 
-<div class="row g-5 g-xl-5 pt-5">
+<div class="row g-5 g-xl-5">
     <div class="col-xl-3">
         <div class="card card-xxl-stretch mb-xl-8">
             <div class="card-header">
@@ -28,10 +28,9 @@
     </div>
 
     <div class="col-xl-9">
-        @using (Html.BeginForm("Update", null))
-        {
-            <div class="card card-xxl-stretch mb-xl-8">
-
+        <div class="card card-xxl-stretch mb-xl-8">
+            @using (Html.BeginForm("Update", null))
+            {
                 <div class="card-header">
                     <h4 class="card-title text-muted"></h4>
                     <div class="card-toolbar">
@@ -47,24 +46,34 @@
                     {
                         if (dic.Count > 1)
                         {
-                                <div class="row pt-5 pb-3">
-                                    <div class="col-auto me-auto">
-                                        <div class="text-muted fs-4">@item.Key</div>
-                                    </div>
-                                    <div class="separator"/>
+                            <div class="row pt-5 pb-3">
+                                <div class="col-auto me-auto">
+                                    <div class="text-muted fs-4">@item.Key</div>
                                 </div>
+                                <div class="separator" />
+                            </div>
                         }
+
                         foreach (var pi in item.Value)
                         {
                             var name = pi.Name;
                             var val = obj.GetValue(name);
-                            var dis = pi.DisplayName;
+                            var display = pi.DisplayName;
                             var des = pi.Description;
                             var dataSource = pi.DataSource;
 
-                            <div class="row mb-1 pt-1">
-                                <label class="col-lg-3 fw-bold text-muted">@dis</label>
-                                <div class="col-lg-4">
+                            <div class="row d-flex align-items-center mt-5 mb-1 pt-1">
+                                <div class="col-lg-3 d-flex align-items-center justify-content-lg-end">
+                                    <label class="fs-6 me-2" for="@name">@display</label>
+                                    @if (!des.IsNullOrEmpty())
+                                    {
+                                        <div class="d-none d-md-block d-lg-block">
+                                            <i class="fas la-question-circle" data-bs-toggle="tooltip" title="@des"></i>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="col-lg-6">
                                     @if (dataSource != null)
                                     {
                                         @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
@@ -75,7 +84,7 @@
                                     }
                                     <span class="fw-bolder fs-6 text-dark"></span>
                                 </div>
-                                <label class="col-lg-5 text-muted fs-10">@des</label>
+                                <label class="col-lg-9 text-muted fs-10 d-md-none">@des</label>
                             </div>
                         }
                     }
@@ -88,8 +97,8 @@
                         <button type="button" class="btn btn-sm btn-outline btn-outline-dashed btn-outline-default btn-active-light align-self-center" onclick="history.go(-1);"><i class="fas fa-reply"></i><strong>取消</strong></button>
                     </div>
                 }
-            </div>
-        }
+            }
+        </div>
     </div>
 </div>
 
