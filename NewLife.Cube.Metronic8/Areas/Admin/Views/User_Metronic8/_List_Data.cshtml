@@ -65,11 +65,11 @@
                                                 <div class="symbol-label">
                                                     @if (!user.Avatar.IsNullOrEmpty())
                                                     {
-                                                        <img class="h-75 align-self-center" src="@user.GetAvatarUrl()" alt="@user">
+                                                        <img class="align-self-center rounded w-50px h-50px" src="@user.GetAvatarUrl()" alt="@user">
                                                     }
                                                     else
                                                     {
-                                                        <span class="symbol-label font-size-h5 text-hover-primary">@user.Name.Substring(0, 1).ToUpper()</span>
+                                                        <span class="symbol-label fs-3 text-hover-light bg-hover-primary">@user.Name.Substring(0, 1).ToUpper()</span>
                                                     }
                                                 </div>
                                             </div>
