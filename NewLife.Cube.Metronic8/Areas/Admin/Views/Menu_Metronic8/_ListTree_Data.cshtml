@@ -49,7 +49,13 @@
                         }
                         var id = entity.ID;
                         <tr>
-                            <td>@entity.TreeNodeName</td>
+                            <td>
+                                @if (entity is Menu menu)
+                                {
+                                    <i class="fas @menu.Icon text-primary"></i>
+                                }
+                                @entity.TreeNodeName
+                            </td>
                             <td>@entity.DisplayName</td>
                             <td>@entity.Url</td>
                             <td class="text-right">@entity.Sort.ToString("n0")</td>

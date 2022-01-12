@@ -28,7 +28,7 @@
         {
             menus = fact.GetMySubMenus(item.ID, user, true);
         }
-        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID==menu.ParentID||rs?"show":"")">
+        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
             <span class="menu-link">
                 <span class="menu-bullet">
                     <span class="fas fa-@icon text-primary"></span>
