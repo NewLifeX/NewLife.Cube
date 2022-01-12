@@ -2,7 +2,7 @@
 @{
     var set = ViewBag.PageSetting as PageSetting;
 }
-<div class="d-inline-flex input-group">
+<div class="d-inline-flex input-group w-lg-150px">
     @if (set.EnableKey)
     {
         <input name="q" type="search" id="q" value="@Context.Request.GetRequestValue("q")" class="form-control form-control-sm" placeholder="搜索关键字" />
