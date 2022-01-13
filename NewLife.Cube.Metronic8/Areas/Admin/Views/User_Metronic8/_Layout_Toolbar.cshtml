@@ -65,6 +65,10 @@
                 
                 <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
                     <div class="d-flex align-items-center flex-shrink-0">
+                        @*<div class="d-inline-flex align-items-center mx-3">
+                            <label for="roleId" class="text-nowrap me-2">角色</label>
+                            @await Html.PartialAsync("_Form_Type_ListBox", new ListBoxModel("roleIds", Role.FindAllWithCache(), page["roleIds"]))
+                        </div>*@
                         @await Html.PartialAsync("_Layout_Toolbar_SearchDepartment", "departmentId")
 
                         @await Html.PartialAsync("_Layout_Toolbar_DateRange")

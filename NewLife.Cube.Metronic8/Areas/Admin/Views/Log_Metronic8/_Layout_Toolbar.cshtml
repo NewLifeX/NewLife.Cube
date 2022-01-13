@@ -65,14 +65,16 @@
 
                 <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
                     <div class="d-flex align-items-center flex-shrink-0">
-                        <div class="d-inline-flex align-items.center">
-                            <label for="category" class="control-label">类别：</label>
+                        <div class="d-inline-flex align-items-center">
+                            <span class="text-nowrap me-2">类别</span>
                             @Html.ForDropDownList("category", Log.FindAllCategoryName(), page["category"], "全部", true)
-                            <label for="act" class="control-label">操作：</label>
+                        </div>
+                        <div class="d-inline-flex align-items-center mx-3">
+                            <label for="act" class="text-nowrap me-2">操作</label>
                             @Html.ForDropDownList("act", Log.FindAllActionName(), page["act"], "全部", true)
                         </div>
                         <!-- 分隔条 -->
-                    <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
+                    <div class="bullet bg-secondary h-35px w-1px me-3"></div>
                      
                     @await Html.PartialAsync("_Layout_Toolbar_SearchUser", new SelectUserModel { Id = "userId", UserId = page["userId"].ToInt(-1) })
 
