@@ -36,9 +36,17 @@
             var rv = page.GetRouteValue();
             if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
             {
-                <a href="@Url.Action("Add", rv)" class="btn btn-sm btn-icon btn-light-success btn-active-success w-70px me-3" title="新增对象" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-plus me-3"></i>新增</a>
+                <a href="@Url.Action("Add", rv)" class="btn btn-sm btn-icon btn-light-success btn-active-success w-70px" title="新增对象" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-plus me-3"></i>新增</a>
+                <!-- 分隔条 -->
+                <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
             }
         }
+
+        <!-- 批量操作 -->
+        @await Html.PartialAsync("_List_Toolbar_Batch")
+
+        <!-- 自定义工具按钮 -->
+        @await Html.PartialAsync("_List_Toolbar_Custom")
 
         <!--begin::列表模式-->
         <ul class="nav nav-pills me-3">

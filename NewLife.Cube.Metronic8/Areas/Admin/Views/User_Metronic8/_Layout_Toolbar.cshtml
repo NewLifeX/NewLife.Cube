@@ -65,8 +65,6 @@
                 
                 <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
                     <div class="d-flex align-items-center flex-shrink-0">
-
-
                         @await Html.PartialAsync("_Layout_Toolbar_SearchDepartment", "departmentId")
 
                         @await Html.PartialAsync("_Layout_Toolbar_DateRange")

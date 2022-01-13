@@ -1,0 +1,12 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube
+@using XCode
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var fact = ViewBag.Factory as IEntityFactory;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+@*<button type="button" class="btn btn-purple btn-sm">
+    <span class="ace-icon fa fa-search icon-on-right bigger-110"></span>
+    自定义按钮
+</button>*@
