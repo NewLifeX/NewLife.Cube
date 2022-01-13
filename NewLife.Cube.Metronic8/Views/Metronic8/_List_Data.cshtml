@@ -37,20 +37,20 @@
                             if (item.Type == typeof(DateTime))
                             {
                                 var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
-                                <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                                <th class="text-center" style="min-width:@(width)px;" data-bs-toggle="tooltip" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                             }
                             else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)
                             || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
                             {
-                                <th class="text-right" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                                <th class="text-right" data-bs-toggle="tooltip" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                             }
                             else if (item.Type == null)
                             {
-                                <th class="text-center" title="@title">@name</th>
+                                <th class="text-center" data-bs-toggle="tooltip" title="@title">@name</th>
                             }
                             else
                             {
-                                <th title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                                <th data-bs-toggle="tooltip" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                             }
                         }
                         @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))

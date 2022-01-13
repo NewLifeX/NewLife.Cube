@@ -2,14 +2,16 @@
     列表视图工具栏
 *@
 @using NewLife;
+@using NewLife.Cube
+@using NewLife.Cube.Entity
 @using NewLife.Web;
 @using XCode;
 @using NewLife.Cube.Extensions
+@using XCode.Membership
 
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var title = ViewBag.Title;
 
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty())
@@ -18,18 +20,39 @@
     }
 
     var set = ViewBag.PageSetting as PageSetting;
+    var stat = UserStat.FindByDate(DateTime.Today);
 }
 
 <!--begin::Toolbar 如果列表视图工具栏上方有仪表盘,设置pt-3 -->
 <div class="d-flex flex-wrap flex-stack pt-0 pb-1">
     <!--begin::列表统计-->
-    <div>
-        <div class="d-flex align-items-center">
-            <span class="fs-2x fw-bolder text-gray-600 me-2">@(page != null ? page.TotalCount.ToString("n0") : 0)</span>
+    <div class="d-flex align-items-center justify-content-start">
+        <div>
+            <div class="d-flex align-items-center">
+                <span class="fs-2x fw-bolder text-gray-600 me-2">@(page != null ? page.TotalCount.ToString("n0") : 0)</span>
+            </div>
+            <span class="fs-7 fw-bold text-gray-400">当前用户总数</span>
         </div>
-        <span class="fs-7 fw-bold text-gray-400">当前@(title)总数</span>
-    </div>
+        <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
 
+        <div class="me-2">
+            <div class="d-flex align-items-center">
+                <span class="fs-2x fw-bolder text-gray-600 me-2">@(stat != null ? stat.Actives.ToString("n0") : 0)</span>
+            </div>
+            <span class="fs-7 fw-bold text-gray-400">当前在线数</span>
+        </div>
+        <a href="~/Admin/UserOnline" class="btn btn-sm btn-light-primary btn-active-primary me-3"><span class="fas fa-user-check me-1"></span>用户在线</a>
+        <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
+
+        <div class="me-2">
+            <div class="d-flex align-items-center">
+                <span class="fs-2x fw-bolder text-gray-600 me-2">@(stat != null ? stat.ActivesT30.ToString("n0") : 0)</span>
+            </div>
+            <span class="fs-7 fw-bold text-gray-400">最近30天活跃数</span>
+        </div>
+        <a href="~/Admin/UserStat" class="btn btn-sm btn-light-primary btn-active-primary">用户统计</a>
+        <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
+    </div>
     <!--end::列表统计-->
 
     <!--begin::Controls-->
