@@ -1,0 +1,106 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using NewLife.Cube.ViewModels
+@using NewLife.Web;
+@using XCode;
+@using XCode.Membership;
+@using NewLife.Cube.Extensions
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var p = ViewBag.Page as Pager;
+    var remark = (String)ViewBag.HeaderContent;
+    remark = remark.Split(";", ",", "。", "|").LastOrDefault();
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty())
+    {
+        act = Url.Action("Index");
+    }
+
+    var set = ViewBag.PageSetting as PageSetting;
+    var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
+    // 判断当前是否为实体对象新删改及详情查看视图
+    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info") || an.Contains("detail");
+    <!--可以通过判断手机端隐藏-->
+    var mb = Context.Request.Headers["User-Agent"].ToString().ToLower();
+
+    String[] mobileAgents = { "iphone", "android", "phone", "mobile", "wap", "netfront", "java", "opera mobi", "opera mini", "ucweb", "windows ce", "symbian", 
+    "series", "webos", "sony", "blackberry", "dopod", "nokia", "samsung", "palmsource", "xda", "pieplus", "meizu", "midp", "cldc", "motorola", "foma", "docomo", 
+    "up.browser", "up.link", "blazer", "helio", "hosin", "huawei", "novarra", "coolpad", "webos", "techfaith", "palmsource", "alcatel", "amoi", "ktouch", 
+    "nexian", "ericsson", "philips", "sagem", "wellcom", "bunjalloo", "maui", "smartphone", "iemobile", "spice", "bird", "zte-", "longcos", "pantech", "gionee", 
+    "portalmmm", "jig browser", "hiptop", "benq", "haier", "^lct", "320x320", "240x320", "176x220", "w3c ", "acs-", "alav", "alca", "amoi", "audi", "avan", 
+    "benq", "bird", "blac", "blaz", "brew", "cell", "cldc", "cmd-", "dang", "doco", "eric", "hipt", "inno", "ipaq", "java", "jigs", "kddi", "keji", "leno", 
+    "lg-c", "lg-d", "lg-g", "lge-", "maui", "maxo", "midp", "mits", "mmef", "mobi", "mot-", "moto", "mwbp", "nec-", "newt", "noki", "oper", "palm", "pana", 
+    "pant", "phil", "play", "port", "prox", "qwap", "sage", "sams", "sany", "sch-", "sec-", "send", "seri", "sgh-", "shar", "sie-", "siem", "smal", "smar", 
+    "sony", "sph-", "symb", "t-mo", "teli", "tim-", "tosh", "tsm-", "upg1", "upsi", "vk-v", "voda", "wap-", "wapa", "wapi", "wapp", "wapr", "webc", "winw", 
+    "winw", "xda", "xda-", "Googlebot-Mobile" };
+    var isMoblie = false;
+    if (mb != null)
+    {
+        for (int i = 0; i < mobileAgents.Length; i++)
+        {
+            if (mb.IndexOf(mobileAgents[i]) >= 0)
+            {
+                isMoblie = true;
+                break;
+            }
+        }
+    }
+
+    var cls = isMoblie ? "" : "d-flex align-items-center flex-nowrap flex-shrink-auto";
+}
+
+<!--begin::Toolbar-->
+<div class="toolbar" id="kt_toolbar">
+    <!--begin::Container-->
+    <div id="kt_toolbar_container" class="container-fluid d-flex flex-wrap flex-stack">
+        <!-- 模块视图说明 -->
+        <div class="d-flex align-items-center flex-shrink-0 me-5 py-3 d-none d-lg-block" style="max-width:200px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
+            <span class="fs-12 text-gray-700 pe-4" data-bs-toggle="tooltip" title="@remark">@remark</span>
+        </div>
+
+        @if(page != null && !isdis) 
+        {
+            <div class="@cls">
+
+                <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+                    <div class="d-flex align-items-center flex-shrink-0">
+                        <div class="d-flex align-items-center">
+                            <label for="idStart" class="control-label me-2">编码范围</label>
+                            <input name="idStart" id="idStart" type="text" value="@p["idStart"]" class="form-control form-control-sm w-lg-75px" />
+
+                            <span class="control-label">至</span>
+                            <input name="idEnd" id="idEnd" type="text" value="@p["idEnd"]" class="form-control form-control-sm w-lg-75px" />
+                        </div>
+
+                        @await Html.PartialAsync("_Layout_Toolbar_SearchEnable")
+
+                        @await Html.PartialAsync("_Layout_Toolbar_DateRange")
+                        <!--begin::Separartor-->
+                        <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
+                        <!--end::Separartor-->
+                        @await Html.PartialAsync("_Layout_Toolbar_Search")
+
+                        <!--begin::Actions-->
+                        <div class="d-flex align-items-center pl-3">
+                            <button type="submit" class="btn btn-sm btn-icon btn-light-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="查询">
+                                <!--begin::Svg Icon | path: icons/duotune/general/gen025.svg-->
+                                <span class="svg-icon svg-icon-2 svg-icon-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M21.7 18.9L18.6 15.8C17.9 16.9 16.9 17.9 15.8 18.6L18.9 21.7C19.3 22.1 19.9 22.1 20.3 21.7L21.7 20.3C22.1 19.9 22.1 19.3 21.7 18.9Z" fill="black" />
+                                        <path opacity="0.3" d="M11 20C6 20 2 16 2 11C2 6 6 2 11 2C16 2 20 6 20 11C20 16 16 20 11 20ZM11 4C7.1 4 4 7.1 4 11C4 14.9 7.1 18 11 18C14.9 18 18 14.9 18 11C18 7.1 14.9 4 11 4ZM8 11C8 9.3 9.3 8 11 8C11.6 8 12 7.6 12 7C12 6.4 11.6 6 11 6C8.2 6 6 8.2 6 11C6 11.6 6.4 12 7 12C7.6 12 8 11.6 8 11Z" fill="black" />
+                                    </svg>
+                                </span>
+                                <!--end::Svg Icon-->
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </div>
+                </form>
+            </div>
+        }
+    </div>
+    <!--end::Container-->
+</div>
+<!--end::Toolbar-->

@@ -10,6 +10,6 @@
     dic.Add(0, "禁用");
 }
 <div class="d-flex align-items-center mx-3">
-    <span class="text-nowrap">状态</span>
+    <span class="text-nowrap me-2">状态</span>
     @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel("enable", dic,  page["enable"], "全部", true, null))
 </div>
