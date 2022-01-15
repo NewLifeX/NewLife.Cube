@@ -1,0 +1,44 @@
+﻿@model LoginViewModel
+@using System.IO;
+@using System.Web;
+@using NewLife
+@using NewLife.Cube
+@using NewLife.Cube.Areas.Admin.Models
+@using NewLife.Cube.Web;
+@using NewLife.Cube.Entity;
+@{
+    var set = Model;
+}
+
+@if (set.OAuthItems.Count > 0)
+{
+    <div class="separator separator-content my-10">
+        <span class="fs-6 w-125px text-gray-600">第三方登录</span>
+    </div>
+
+    <div class="d-flex align-content-center justify-content-center">
+        @foreach (var mi in set.OAuthItems)
+        {
+            var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
+            var url = "Sso/Login?name=" + mi.Name;
+
+            if (!set.ResourceUrl.IsNullOrEmpty())
+            {
+                url += "&r=" + HttpUtility.UrlEncode(set.ResourceUrl);
+            }
+            url = "/" + url;
+            var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
+
+            <a href="@url" data-bs-toggle="tooltip" title="@nickName" class="mx-1">
+                @if (!logo.IsNullOrEmpty())
+                {
+                    <img class="symbol-label" src="@logo" style="width:40px; height:40px;" />
+                }
+                else
+                {
+                    <i class="fas fa-dice-d6"></i>
+                }
+            </a>
+        }
+    </div>
+}

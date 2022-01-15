@@ -36,7 +36,7 @@
             <span class="menu-link">
                 @* <span class="@(rs_p ? "menu-icon" : "menu-bullet")">*@
                 <span class="menu-icon">
-                    <span class="fas fa fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></span>
+                    <span class="fas fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></span>
                 </span>
                 <span class="menu-title fs-4">@item.DisplayName</span>
                 <span class="menu-arrow"></span>
@@ -45,7 +45,7 @@
             <div class="menu-sub menu-sub-accordion menu-active-bg">
                 @foreach (var child in menus)
                 {
-                    @await Html.PartialAsync("_Layout_Aside_MenuItem2", new ValueTuple<IMenu, IMenu>(menu, child))
+                    @await Html.PartialAsync("_Layout_Aside_MenuItem_Sub", new ValueTuple<IMenu, IMenu>(menu, child))
                 }
             </div>
         </div>

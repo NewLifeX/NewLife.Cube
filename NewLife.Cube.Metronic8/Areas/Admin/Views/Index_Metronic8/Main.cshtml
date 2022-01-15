@@ -28,13 +28,13 @@
     var conn = httpContext.Connection;
 
     var mi = MachineInfo.Current ?? new MachineInfo();
-    var cpuCls = "bg-success";
+    var cpuCls = "bg-danger";
     if ((mi.CpuRate * 100) < 80.00)
-        cpuCls = "bg-primary";
-    if ((mi.CpuRate * 100) < 60.00)
         cpuCls = "bg-warning";
+    if ((mi.CpuRate * 100) < 60.00)
+        cpuCls = "bg-primary";
     if ((mi.CpuRate * 100) < 20.00)
-        cpuCls = "bg-danger";
+        cpuCls = "bg-success";
 
     // GC设置
     var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
