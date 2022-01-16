@@ -3,16 +3,18 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyTitle>魔方用户中心（SSO服务端）</AssemblyTitle>
-    <Version>5.0.2022.0101</Version>
-    <FileVersion>5.0.2022.0101</FileVersion>
+    <Version>5.0.2022.0116</Version>
+    <FileVersion>5.0.2022.0116</FileVersion>
     <AssemblyVersion>5.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\BinSSO</OutputPath>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="NewLife.Stardust" Version="2.0.2022.101" />
   </ItemGroup>
 

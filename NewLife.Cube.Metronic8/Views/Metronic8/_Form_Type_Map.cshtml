@@ -13,7 +13,7 @@
     var set = NewLife.Cube.Setting.Current;
     var map = field.MapProvider;
 
-    var fact = map == null ? null : EntityFactory.CreateOperate(map.EntityType);
+    var fact = map == null ? null : EntityFactory.CreateFactory(map.EntityType);
 }
 @*
     如果没有外部关联，输出数字编辑框和标签
