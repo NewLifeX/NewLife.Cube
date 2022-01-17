@@ -12,13 +12,15 @@
     var item = Model as MenuTree;
     var childs = item.Children ?? new List<MenuTree>();
     var url = item.Url.IsNullOrEmpty() ? "" : Url.Content(item.Url);
+    var t = HttpContext.Current.Request.Path.ToString().ToLower();
 }
 
 @if (childs.Any())
 {
     if (_idx >= icons.Length) { _idx = 0; }
+    var isopen = childs.Where(a => a.Url.ToLower() == t && a.Visible == true).Count() > 0;
 
-    <li class="menu-item menu-item-submenu" aria-haspopup="true" data-menu-toggle="hover">
+    <li class="menu-item menu-item-submenu @(isopen?"menu-item-open":"")" aria-haspopup="true" data-menu-toggle="hover">
         <a href="javascript:;" class="menu-link menu-toggle">
             @if (!item.Icon.IsNullOrEmpty())
             {
