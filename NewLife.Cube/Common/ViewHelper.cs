@@ -611,7 +611,7 @@ namespace NewLife.Cube
 #else
             var p = tmp.IndexOf(@"@Html.Partial(""_Form_Footer""");
 #endif
-            sb.Append(tmp.Substring(p));
+            sb.Append(tmp[p..]);
 
             File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
 

@@ -1,6 +1,8 @@
 ﻿@model ItemModel
 @using NewLife;
 @using NewLife.Cube
+@using System.ComponentModel
+@using System.Reflection
 @using XCode;
 @using XCode.Configuration;
 @{
@@ -8,18 +10,50 @@
     var value = Model.Value;
     var type = Model.Type;
 }
-@if (Model.Type.IsEnum)
+@if (type.IsEnum && type.GetCustomAttribute<FlagsAttribute>() == null)
 {
-    var dic = EnumHelper.GetDescriptions(value.GetType());
-    var data = new SelectList(dic, "Key", "Value", value.ToInt());
+    @*var dic = EnumHelper.GetDescriptions(value.GetType());*@
+    var dic = new Dictionary<Object, String>();
+    foreach (var item in type.GetFields(BindingFlags.Public | BindingFlags.Static))
+    {
+        if (!item.IsStatic) continue;
+
+        // 这里的快速访问方法会报错
+        //FieldInfoX fix = FieldInfoX.Create(item);
+        //PermissionFlags value = (PermissionFlags)fix.GetValue(null);
+        var v = item.GetValue(null).ToLong();
+
+        var des = item.Name;
+
+        //var dna = AttributeX.GetCustomAttribute<DisplayNameAttribute>(item, false);
+        var dna = item.GetCustomAttribute<DisplayNameAttribute>(false);
+        if (dna != null && !String.IsNullOrEmpty(dna.DisplayName)) des = dna.DisplayName;
+
+        //var att = AttributeX.GetCustomAttribute<DescriptionAttribute>(item, false);
+        var att = item.GetCustomAttribute<DescriptionAttribute>(false);
+        if (att != null && !String.IsNullOrEmpty(att.Description)) des = att.Description;
+
+        //dic.Add(value, des);
+        // 有些枚举可能不同名称有相同的值
+        dic[v] = des;
+    }
     // 由于 Html.DropDownList 获取默认值，会从 ViewData，ViewData.Model，中获取name的值
     // 如果获取到了，则不会再看传入的selectlist的默认值，由于此处是枚举，所以通过 Html.ViewData.Eval(name) 会得到字符串值，所以导致绑定默认值失败
     // 通过 Html.ViewData[name]=(Int32)value，可以让  Html.DropDownList 优先拿到手动设置的值，就不会再从 ViewData.Model 里面找
     // 当然这里会有一个问题，如果外部同样设置ViewData[name]，则就会出现潜在的bug,所以把之前值保存到oldvalue
     var oldvalue = Html.ViewData[name];
-    Html.ViewData[name] = value.ToInt();
+    Html.ViewData[name] = value.ToLong();
 
-    @Html.DropDownList(name, data, null, new { @class = "multiselect" })
+    @*if (type.GetCustomAttribute<FlagsAttribute>() != null)
+    {
+        var data = new MultiSelectList(dic, "Key", "Value", value.ToLong());
+        @Html.ListBox(name, data, new { @class = "multiselect" })
+    }
+    else*@
+    {
+        var data = new SelectList(dic, "Key", "Value", value.ToLong());
+        @Html.DropDownList(name, data, null, new { @class = "multiselect" })
+    }
 
     //还原ViewData现场
     if (oldvalue != null)
@@ -34,5 +68,5 @@ else
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
     if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
     if (!atts.ContainsKey("role")) atts.Add("role", "number");
-    @Html.TextBox(name, value, Model.Format, atts)
+    @Html.TextBox(name, value.ToLong(), Model.Format, atts)
 }

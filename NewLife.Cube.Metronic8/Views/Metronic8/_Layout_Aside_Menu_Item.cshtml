@@ -9,9 +9,9 @@
     var rs_active = item.ID == menu.ID|| item.ID==menu.ParentID;
 
     var icons = new string[] {
-    "home", "bars", "book", "chess-queen", "certificate", "chrome", "cloud", "comment", "feather","fighter-jet",
-    "hammer","link","leaf","layer-group","paper-plane","cogs","seedling","shopping-bag","sitemap","trophy",
-    "tree","trophy","twitter","truck","tshirt","user","wine-glass-alt","windows","video","tint"};
+    "home", "bars", "book", "chess-queen", "certificate", "desktop", "cloud", "comment", "feather","star",
+    "hammer","link","leaf","layer-group","tags","cogs","seedling","shopping-bag","sitemap","trophy",
+    "heart","cubes","database","truck","tshirt","user","flag","car","video","tint"};
 
     var icon = item.Icon.IsNullOrEmpty() ? "cogs" : item.Icon;
     if (!item.Name.EqualIgnoreCase("admin") && item.Icon.IsNullOrEmpty())
@@ -20,7 +20,6 @@
         icon = icons[indx];
     }
 }
-
 
 @if (item.Visible)
 {
@@ -33,12 +32,11 @@
         {
             menus = fact.GetMySubMenus(item.ID, user, true);
         }
-
         <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
             <span class="menu-link">
                 @* <span class="@(rs_p ? "menu-icon" : "menu-bullet")">*@
                 <span class="menu-icon">
-                    <span class="fas fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></span>
+                    <span class="fas fa fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></span>
                 </span>
                 <span class="menu-title fs-4">@item.DisplayName</span>
                 <span class="menu-arrow"></span>
@@ -50,9 +48,6 @@
                     @await Html.PartialAsync("_Layout_Aside_Menu_Item2", new ValueTuple<IMenu, IMenu>(menu, child))
                 }
             </div>
-
-
-
         </div>
     }
     else
@@ -69,10 +64,6 @@
                     <span class="menu-title fs-4">@item.DisplayName</span>
                 </a>
             </span>
-
-
-
         </div>
-
     }
 }

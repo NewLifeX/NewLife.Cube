@@ -11,6 +11,8 @@ namespace NewLife.Cube.Cube.Controllers
     [Menu(0, true, Icon = "fa-user-secret")]
     public class PrincipalAgentController : EntityController<PrincipalAgent>
     {
+        static PrincipalAgentController() => LogOnChange = true;
+
         /// <summary>
         /// 添加页面初始化数据
         /// </summary>

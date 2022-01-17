@@ -46,7 +46,7 @@ namespace NewLife.Cube.Membership
                 list.Add(root);
 
                 var att = areaType.GetCustomAttribute<MenuAttribute>();
-                if (att != null)
+                if (att != null && (!root.Visible || !root.Necessary))
                 {
                     root.Sort = att.Order;
                     root.Visible = att.Visible;
@@ -167,8 +167,11 @@ namespace NewLife.Cube.Membership
                 {
                     if (att != null)
                     {
-                        controller.Sort = att.Order;
-                        controller.Visible = att.Visible;
+                        if (!root.Visible || !root.Necessary)
+                        {
+                            controller.Sort = att.Order;
+                            controller.Visible = att.Visible;
+                        }
                     }
                     else
                     {
@@ -242,11 +245,12 @@ namespace NewLife.Cube.Membership
                     if (m2 == null)
                     {
                         m2 = menu.Parent.Add(name, method.GetDisplayName(), $"{type.FullName}.{name}", $"{menu.Url}/{name}");
-                        m2.Sort = attMenu.Order;
-                        m2.Icon = attMenu.Icon;
-                        if (attAuth != null) m2.Permissions[(Int32)attAuth.Permission] = attAuth.Permission.GetDescription();
-                        if (m2 is IEntity entity) entity.Update();
                     }
+                    if (m2.Sort == 0) m2.Sort = attMenu.Order;
+                    if (m2.Icon.IsNullOrEmpty()) m2.Icon = attMenu.Icon;
+                    if (m2.FullName.IsNullOrEmpty()) m2.FullName = $"{type.FullName}.{name}";
+                    if (attAuth != null) m2.Permissions[(Int32)attAuth.Permission] = attAuth.Permission.GetDescription();
+                    if (m2 is IEntity entity) entity.Update();
                 }
                 else
                 {

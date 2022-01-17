@@ -19,13 +19,6 @@ namespace NewLife.Cube.Admin.Controllers
     [Menu(0, false)]
     public class UserTokenController : EntityController<UserToken>
     {
-        static UserTokenController()
-        {
-            MenuOrder = 40;
-
-            //FormFields.RemoveField("UserID");
-        }
-
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>

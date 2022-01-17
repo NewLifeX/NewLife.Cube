@@ -40,7 +40,7 @@ namespace NewLife.Cube.Common
             if (formatType != FormatType.CamelCase) return name;
             if (name.EqualIgnoreCase("id")) return "id";
             if (name.Length < 2) return name.ToLower();
-            return name.Substring(0, 1).ToLower() + name.Substring(1);
+            return name[..1].ToLower() + name[1..];
         }
     }
 }

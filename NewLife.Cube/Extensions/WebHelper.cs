@@ -293,7 +293,7 @@ namespace NewLife.Web
             // 虚拟路径
             if (url.StartsWith("~/")) url = HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + url.Substring(2);
 #else
-            if (url.StartsWith("~/")) url = "/" + url.Substring(2);
+            if (url.StartsWith("~/")) url = "/" + url[2..];
 #endif
 
             // 绝对路径

@@ -67,6 +67,7 @@ namespace NewLife.Cube
             var request = context.Request;
 
             var str = "";
+            if (str.IsNullOrEmpty()) str = request.Headers["X-Remote-Ip"];
             if (str.IsNullOrEmpty()) str = request.Headers["HTTP_X_FORWARDED_FOR"];
             if (str.IsNullOrEmpty()) str = request.Headers["X-Real-IP"];
             if (str.IsNullOrEmpty()) str = request.Headers["X-Forwarded-For"];

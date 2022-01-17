@@ -490,8 +490,8 @@ namespace NewLife.Web
             if (url[0] == '#')
             {
                 var p = url.IndexOf('?');
-                var data = p > 0 ? url.Substring(p + 1) : "";
-                url = url.Substring(1, p - 1);
+                var data = p > 0 ? url[(p + 1)..] : "";
+                url = url[1..p];
                 var rs = client.PostAsync(url, new StringContent(data, Encoding.UTF8, "application/x-www-form-urlencoded")).Result;
                 html = rs.Content.ReadAsStringAsync().Result;
             }

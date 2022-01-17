@@ -12,7 +12,7 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static ParameterController()
         {
-            MenuOrder = 65;
+            LogOnChange = true;
 
             ListFields.RemoveField("Ex1");
             ListFields.RemoveField("Ex2");

@@ -21,7 +21,8 @@
     <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
-
+    <link href="~/assets/baguetteBox/baguetteBox.css" rel="stylesheet" type="text/css" />
+    
     <style>
         .style-3::-webkit-scrollbar {
             height: 15px;
@@ -29,7 +30,19 @@
 
         .style-3::-webkit-scrollbar-thumb {
             border-radius: 10px;
-            -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.2);
+            -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.8);
+        }
+
+        .text-active-info {
+            color: #7239ea;
+        }
+
+        .btn-outline-info:hover i {
+            color: #fff;
+        }
+
+        .text-active-info:hover {
+            color: #fff;
         }
     </style>
 
@@ -37,7 +50,8 @@
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
     <script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>
-
+    <script src="~/assets/baguetteBox/baguetteBox.js"></script>
+    
 </head>
 
 <!--begin::Body-->
@@ -61,18 +75,15 @@
     @await Html.PartialAsync("_Layout_Drawer_500")
     @await Html.PartialAsync("_Layout_Explore")
     @await Html.PartialAsync("_Layout_Modals")
-
     <!-- 滚动条 -->
     @await Html.PartialAsync("_Layout_Scrolltop")
-
-
+    <div id="div_footer"></div>
     <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
+
     <!--魔方自定义脚本-->
     <script src="~/assets/cube.js"></script>
-
     <!--自定义脚本-->
     @RenderSection("scripts", required: false)
-
 </body>
 <!--end::Body-->
 </html>

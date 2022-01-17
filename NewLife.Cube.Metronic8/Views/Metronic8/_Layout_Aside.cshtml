@@ -1,15 +1,12 @@
 ﻿<!-- 菜单 -->
 <div id="kt_aside" class="aside aside-dark aside-hoverable" data-kt-drawer="true" data-kt-drawer-name="aside" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="{default:'200px', '300px': '250px'}" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_aside_mobile_toggle">
-    <!--begin::Brand-->
     <div class="aside-logo flex-column-auto" id="kt_aside_logo">
         <!--begin::Logo-->
         <a href="@NewLife.Cube.Setting.Current.StartPage">
             <img alt="Logo" src="~/assets/logo/logo.png" class="h-30px logo" />
         </a>
         <!--end::Logo-->
-        <!--begin::Aside toggler-->
         <div id="kt_aside_toggle" class="btn btn-icon w-auto px-0 btn-active-color-primary aside-toggle" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="aside-minimize">
-            <!--begin::Svg Icon | path: icons/duotone/Navigation/Angle-double-left.svg-->
             <span class="svg-icon svg-icon-1 rotate-180">
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
                     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -19,11 +16,8 @@
                     </g>
                 </svg>
             </span>
-            <!--end::Svg Icon-->
         </div>
-        <!--end::Aside toggler-->
     </div>
-    <!--end::Brand-->
 
     @await Html.PartialAsync("_Layout_Aside_Menu")
 

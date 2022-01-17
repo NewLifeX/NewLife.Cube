@@ -22,7 +22,7 @@
 }
 else if (this.Has(PermissionFlags.Update))
 {
-    <a href="@Url.Action("Edit", rv)" class="p-0 pe-2 bg-hover-light editcell" title="编辑">
+    <a href="@Url.Action("Edit", rv)" class="p-0 pe-2 bg-hover-light" title="编辑">
         <i class="fas fa-pen-alt text-info fs-4"></i>
     </a>
 }
@@ -39,7 +39,7 @@ else if (this.Has(PermissionFlags.Detail))
     if (fi != null && fi.Type == typeof(Boolean) && (Boolean)entity[fi.Name])
     {
         <a title="恢复" class="p-0 pe-1 bg-hover-light swal_tip" data-url="@Url.Action("Delete", rv)" data-type="warning" data-title="确认恢复？">
-            <i class="fas fa-rev text-warning fs-4"></i>
+            <i class="fas fa-reply-all text-muted fs-4"></i>
         </a>
     }
     else

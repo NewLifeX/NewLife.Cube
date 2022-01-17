@@ -41,6 +41,10 @@ namespace NewLife.Cube.Entity
             // 建议先调用基类方法，基类方法会做一些统一处理
             base.Valid(isNew);
         }
+
+        /// <summary>已重载。优先显示名</summary>
+        /// <returns></returns>
+        public override String ToString() => !DisplayName.IsNullOrEmpty() ? DisplayName : Name;
         #endregion
 
         #region 扩展属性

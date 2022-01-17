@@ -6,92 +6,101 @@
 @using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
-@{ var entity = Model as IEntity;
+@{
+    var entity = Model as IEntity;
 
-                var page = ViewBag.Page as Pager;
-                var fields = ViewBag.Fields as FieldCollection;
-                var set = ViewBag.PageSetting as PageSetting;
-                var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' }; }
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var set = ViewBag.PageSetting as PageSetting;
+    var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+}
 <tr>
     @if (set.EnableSelect)
     {
-<td></td>}
+        <td></td>
+    }
     @foreach (var item in fields)
     {
-        // 在该字段之前插入的字段
-        var dfs = fields.GetBeforeFields(item.Name);
-        foreach (var elm in dfs)
+        if (item.PrimaryKey)
         {
-<td></td> }
-                if (item.PrimaryKey)
-                {
-<td>总计</td> }
-                else
-                {
-                    // 第二名称，去掉后面的数字，便于模式匹配
-                    var name2 = item.Name.TrimEnd(digits);
+            <td>总计</td>
+        }
+        else
+        {
+            // 第二名称，去掉后面的数字，便于模式匹配
+            var name2 = item.Name.TrimEnd(digits);
 
-                    var value = entity[item.Name];
-                    switch (Type.GetTypeCode(item.Type))
+            var value = entity[item.Name];
+            switch (Type.GetTypeCode(item.Type))
+            {
+                case TypeCode.Boolean:
+                case TypeCode.DateTime:
+                    <td></td>
+                    break;
+                case TypeCode.Decimal:
+                    var dc = (Decimal)value;
+                    <td class="text-right">@dc.ToString("n2")</td>
+                    break;
+                case TypeCode.Single:
+                case TypeCode.Double:
+                    if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
                     {
-                        case TypeCode.Boolean:
-                        case TypeCode.DateTime:
-<td></td> break;
-                        case TypeCode.Decimal:
-                            var dc = (Decimal)value;
-<td class="text-right">@dc.ToString("n2")</td> break;
-                        case TypeCode.Single:
-                        case TypeCode.Double:
-                            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
-                            {
-                                var dd = (Double)value;
-                                var des = item.Description + "";
-                                if (des.Contains("十分之一")) { dd /= 10; }
-                                if (des.Contains("百分之一")) { dd /= 100; }
-                                if (des.Contains("千分之一")) { dd /= 1000; }
-                                if (des.Contains("万分之一")) { dd /= 10000; }
+                        var dd = (Double)value;
+                        var des = item.Description + "";
+                        if (des.Contains("十分之一")) { dd /= 10; }
+                        if (des.Contains("百分之一")) { dd /= 100; }
+                        if (des.Contains("千分之一")) { dd /= 1000; }
+                        if (des.Contains("万分之一")) { dd /= 10000; }
 
-<td class="text-center">@dd.ToString("p2")</td> }
-                            else
-                            {
-                                var dd = (Double)value;
-<td class="text-right">@dd.ToString("n2")</td> }
-                            break;
-                        case TypeCode.Byte:
-                        case TypeCode.Int16:
-                        case TypeCode.Int32:
-                        case TypeCode.Int64:
-                        case TypeCode.UInt16:
-                        case TypeCode.UInt32:
-                        case TypeCode.UInt64:
-                            //特殊处理枚举
-                            if (item.Type.IsEnum)
-                            {
-<td></td> }
-                            else if (name2.EqualIgnoreCase("CreateUserID", "UpdateUserID") || name2.EndsWith("ID") || name2.EndsWith("Id"))
-                            {
-<td></td> }
-                            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
-                            {
-                                var dd = Convert.ToDouble(value);
-                                var des = item.Description + "";
-                                if (des.Contains("十分之一")) { dd /= 10; }
-                                if (des.Contains("百分之一")) { dd /= 100; }
-                                if (des.Contains("千分之一")) { dd /= 1000; }
-                                if (des.Contains("万分之一")) { dd /= 10000; }
-
-<td class="text-center">@dd.ToString("p2")</td> }
-                            else
-                            {
-<td class="text-right">@Convert.ToInt64(value).ToString("n0")</td> }
-                            break;
-                        case TypeCode.String:
-                        default:
-<td></td>break;
+                        <td class="text-center">@dd.ToString("p2")</td>
                     }
-                }
+                    else
+                    {
+                        var dd = (Double)value;
+                        <td class="text-right">@dd.ToString("n2")</td>
+                    }
+                    break;
+                case TypeCode.Byte:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                    //特殊处理枚举
+                    if (item.Type.IsEnum)
+                    {
+                        <td></td>
+                    }
+                    else if (name2.EqualIgnoreCase("CreateUserID", "UpdateUserID") || name2.EndsWith("ID") || name2.EndsWith("Id"))
+                    {
+                        <td></td>
+                    }
+                    else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                    {
+                        var dd = Convert.ToDouble(value);
+                        var des = item.Description + "";
+                        if (des.Contains("十分之一")) { dd /= 10; }
+                        if (des.Contains("百分之一")) { dd /= 100; }
+                        if (des.Contains("千分之一")) { dd /= 1000; }
+                        if (des.Contains("万分之一")) { dd /= 10000; }
+
+                        <td class="text-center">@dd.ToString("p2")</td>
+                    }
+                    else
+                    {
+                        <td class="text-right">@Convert.ToInt64(value).ToString("n0")</td>
+                    }
+                    break;
+                case TypeCode.String:
+                default:
+                    <td></td>
+                    break;
             }
+        }
+    }
     @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
     {
-<td></td>}
+        <td></td>
+    }
 </tr>
