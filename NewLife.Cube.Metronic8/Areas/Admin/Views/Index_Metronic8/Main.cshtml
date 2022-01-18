@@ -118,20 +118,20 @@
                 <table class="table table-hover table-row-bordered table-row-dashed gy-4">
                     <thead>
                         <tr>
-                            <th colspan="4" class="text-dark text-hover-primary fs-4 fw-border">
+                            <th colspan="4" class="text-dark text-hover-primary fs-4">
                                 服务器信息
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 应用系统：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@req.GetRawUrl()">
                                 @req.GetRawUrl()
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 目录：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@Env.ContentRootPath">
@@ -139,13 +139,13 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 应用域：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@AppDomain.CurrentDomain.FriendlyName">
                                 @AppDomain.CurrentDomain.FriendlyName
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 .Net 版本：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@Environment.Version &nbsp;@ver">
@@ -153,13 +153,13 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 操作系统：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@mi.Guid">
                                 @mi.OSName @mi.OSVersion
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 机器用户：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@mi.UUID">
@@ -171,7 +171,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 处理器：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@mi.CpuID">
@@ -183,7 +183,7 @@
                                     <span>，@mi.Temperature ℃</span>
                                 }
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 时间：
                             </td>
                             @{
@@ -197,7 +197,7 @@
                             @{
                                 var process = Process.GetCurrentProcess();
                             }
-                            <td class="name">
+                            <td class="name fw-bold">
                                 内存：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
@@ -205,7 +205,7 @@
                                 工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
                                 GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 进程时间：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
@@ -213,7 +213,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 Session：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
@@ -221,7 +221,7 @@
                                 <a href="@Url.Action("Main", new{ id = "Session" })" target="_self" data-bs-toggle="tooltip" title="点击打开Session列表">Session列表</a>
                                 ，@gc
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 @{
                                     var app = ApplicationManager.Load();
                                 }
