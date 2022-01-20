@@ -107,7 +107,6 @@
                                 }
                                 else if (fi.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                                 {
-                                    //var provider = ViewData["Provider"] as IManageProvider;
                                     if (provider != null)
                                     {
                                         <td>@provider?.FindByID(value)</td>
@@ -153,7 +152,7 @@
                                     }
                                     else if (fi.Name.EqualIgnoreCase("CreateIP", "UpdateIP") || fi.Name.Contains("IP"))
                                     {
-                                        <td title="@((value+"").IPToAddress())">@value</td>
+                                        <td data-bs-toggle="tooltip" title="@((value+"").IPToAddress())">@((value + "").IPToAddress())</td>
                                     }
                                     else if (fi.IsBigText())
                                     {

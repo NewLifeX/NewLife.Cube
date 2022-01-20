@@ -1,0 +1,143 @@
+﻿@model IList<NewLife.Cube.Entity.UserToken>
+@using NewLife;
+@using NewLife.Cube
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting;
+    var ukey = fact.Unique;
+}
+
+<div class="card card-flush">
+    <div class="card-body">
+        <div class="table-responsive dataTables_wrapper dt-bootstrap4">
+            <table class="table table-hover table-row-bordered table-row-dashed align-middle gy-4">
+                <thead>
+                    <tr class="fs-4 text-muted">
+                        @if (set.EnableSelect && ukey != null)
+                        {
+                            <th class="text-center" style="width:10px;">
+                                <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" id="chkAll" data-bs-toggle="tooltip" title="全选" />
+                                </div>
+                            </th>
+                        }
+                        <th data-bs-toggle="tooltip" title="锁定该令牌只能访问该资源路径"><a href="@Html.Raw(page.GetSortUrl("Url"))">令牌及地址</a></th>
+                        <th>页面</th>
+                        <th>Json数据</th>
+                        <th>Xml数据</th>
+                        <th>Csv数据</th>
+                        <th>Excel数据</th>
+                        <th data-bs-toggle="tooltip" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserID"))">用户</a></th>
+                        <th style="min-width:134px;" data-bs-toggle="tooltip" title="已分享次数及令牌过期时间"><a href="@Html.Raw(page.GetSortUrl("Expire"))">次数/过期时间</a></th>
+                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
+                        <th style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("LastTime"))">最新访问</a></th>
+                        @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                        {
+                            <th class="text-center">操作</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entity in Model)
+                    {
+                        var url = entity.Url + "";
+                        var query = "";
+                        var p = url.IndexOf('?');
+                        if (p >= 0)
+                        {
+                            query = url.Substring(p);
+                            url = url.Substring(0, p);
+                        }
+                        if (!query.IsNullOrEmpty())
+                            query += "&token=" + entity.Token;
+                        else
+                            query += "?token=" + entity.Token;
+
+                        <tr>
+                            @if (set.EnableSelect && ukey != null)
+                            {
+                                <td class="text-center align-middle pt-0 pb-0">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" name="keys" value="@entity[ukey.Name]" />
+                                    </div>
+                                </td>
+                            }
+                            <td>
+                                <span style="width:270px">
+                                    <div class="d-flex align-items-center">
+                                        <div class="ml-4">
+                                            <div class="text-dark-75 fs-4 fw-bold mb-0">@entity.Token</div>
+                                            <a class="text-muted">@entity.Url</a>
+                                        </div>
+                                    </div>
+                                </span>
+                            </td>
+                            <td><a href="@(url+"/Html"+query)" target="_blank">页面</a></td>
+                            <td><a href="@(url+"/Json"+query)" target="_blank">Json数据</a></td>
+                            <td><a href="@(url+"/Xml"+query)" target="_blank">Xml数据</a></td>
+                            <td><a href="@(url+"/Csv"+query)" target="_blank">Csv数据</a></td>
+                            <td><a href="@(url+"/Excel"+query)" target="_blank">Excel数据</a></td>
+                            <td>@entity.UserName</td>
+                            <td>
+                                <span style="width:240px">
+                                    <div class="fs-4 fw-bold mb-0">@entity.Times</div>
+                                    <a class="text-muted">@entity.Expire.ToFullString()</a>
+                                </span>
+                            </td>
+
+                            <td class="text-center align-middle">
+                                @{
+                                    var bval = entity.Enable;
+                                    @if (fact.Unique != null)
+                                    {
+                                        var key = entity[fact.Unique.Name];
+                                        if (bval)
+                                        {
+                                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = false })" data-action="action">
+                                                <i class="la la-check" style="color: green;"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = true })" data-action="action">
+                                                <i class="la la-remove" style="color: red;"></i>
+                                            </a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (bval)
+                                        {
+                                            <i class="la la-check" style="color: green;"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="la la-remove" style="color: red;"></i>
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <span style="width:240px">
+                                    <div class="fs-4 mb-0">@entity.LastIP.IPToAddress()</div>
+                                    <a class="text-muted">@entity.LastTime.ToFullString()</a>
+                                </span>
+                            </td>
+                            @if (this.Has(PermissionFlags.Detail))
+                            {
+                                <td class="text-center align-middle" style="width: 90px;">
+                                    @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
