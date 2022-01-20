@@ -1,5 +1,175 @@
 ﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+    列表视图 - 卡片模式(卡片内容)
 *@
+@using NewLife;
+@using Microsoft.AspNetCore.Routing
+@using NewLife.Cube.Entity
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
 @{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var provider = ManageProvider.Provider;
 }
+
+<div class="card-body py-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th class="p-0 min-w-90px"></th>
+                    <th class="p-0 min-w-240px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var fi in fields)
+                {
+                    if (fi.Name.EqualIgnoreCase("Id", "Name", "DisplayName", "NickName", "Enable",
+                        "CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                        "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP",
+                        "Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6"))
+                        continue;
+
+                    if (fi is ListField lf && !lf.Url.IsNullOrEmpty()) continue;
+                    var value = entity[fi.Name];
+                    var digit = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+                    var name2 = fi.Name.TrimEnd(digit);
+
+                    <tr>
+                        <!-- 字段名称 -->
+                        <td data-bs-toggle="tooltip" title="@fi.Description">@fi.DisplayName</td>
+
+                        @switch(Type.GetTypeCode(fi.Type))
+                        {
+                            case TypeCode.Boolean:
+                                var flag = (Boolean)value;
+                                var icon = flag ? "fas fa-toggle-on" : "fas fa-toggle-off";
+                                <td>
+                                   <i class="@icon fs-2x @(flag ? "text-primary" : "text-gray-600")"></i> 
+                                </td>
+                                break;
+
+                            case TypeCode.DateTime:
+                                var dt = (DateTime)value;
+                                if (name2.EndsWith("Date"))
+                                {
+                                    <td>@dt.ToString("yyyy-MM-dd", "")</td>
+                                }
+                                else
+                                {
+                                    <td>@dt.ToFullString("")</td>
+                                }
+                                break;
+
+                            case TypeCode.Decimal:
+                                var dc = (Decimal)value;
+                                <td>@dc.ToString("n2")</td>
+                                break;
+
+                            case TypeCode.Single:
+                            case TypeCode.Double:
+                                if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                                {
+                                    var dd = (Double)value;
+                                    var des = fi.Description + "";
+                                    if (des.Contains("十分之一")) { dd /= 10; }
+                                    if (des.Contains("百分之一")) { dd /= 100; }
+                                    if (des.Contains("千分之一")) { dd /= 1000; }
+                                    if (des.Contains("万分之一")) { dd /= 10000; }
+
+                                    <td>@dd.ToString("p2")</td>
+                                }
+                                else
+                                {
+                                    var dd = (Double)value;
+                                    <td>@dd.ToString("n2")</td>
+                                }
+                                break;
+
+                            case TypeCode.Byte:
+                            case TypeCode.Int16:
+                            case TypeCode.Int32:
+                            case TypeCode.Int64:
+                            case TypeCode.UInt16:
+                            case TypeCode.UInt32:
+                            case TypeCode.UInt64:
+                                //特殊处理枚举
+                                if (fi.Type.IsEnum)
+                                {
+                                    var val = "";
+                                    try
+                                    {
+                                        val = EnumHelper.GetDescription((Enum)value) ?? value + "";
+                                    }
+                                    catch { }
+                                    <td>@val</td>
+                                }
+                                else if (fi.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
+                                {
+                                    //var provider = ViewData["Provider"] as IManageProvider;
+                                    if (provider != null)
+                                    {
+                                        <td>@provider?.FindByID(value)</td>
+                                    }
+                                    else
+                                    {
+                                        <td>@value</td>
+                                    }
+                                }
+                                else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                                {
+                                    var dd = Convert.ToDouble(value);
+                                    var des = fi.Description + "";
+                                    if (des.Contains("十分之一")) { dd /= 10; }
+                                    if (des.Contains("百分之一")) { dd /= 100; }
+                                    if (des.Contains("千分之一")) { dd /= 1000; }
+                                    if (des.Contains("万分之一")) { dd /= 10000; }
+
+                                    <td>@dd.ToString("p2")</td>
+                                }
+                                else
+                                {
+                                    <td>@Convert.ToInt64(value).ToString("n0")</td>
+                                }
+                                break;
+                            case TypeCode.String:
+                            default:
+                                {
+                                    var val = value;
+                                    if (!fi.MapField.IsNullOrEmpty() && val + "" != "")
+                                    {
+                                        if (fi.MapProvider != null)
+                                        {
+                                            var name = fi.MapProvider.EntityType.Name;
+                                            var key = fi.MapProvider.Key;
+                                            val = entity[fi.MapField];
+                                            <td><a href="@name?@key=@val">@value</a></td>
+                                        }
+                                        else
+                                        {
+                                            <td>@value</td>
+                                        }
+                                    }
+                                    else if (fi.Name.EqualIgnoreCase("CreateIP", "UpdateIP") || fi.Name.Contains("IP"))
+                                    {
+                                        <td title="@((value+"").IPToAddress())">@value</td>
+                                    }
+                                    else if (fi.IsBigText())
+                                    {
+                                    //防止内容过长
+                                        <td style="max-width:240px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@value">@value</td>
+                                    }
+                                    else
+                                    {
+                                        <td>@value</td>
+                                    }
+                                }
+                                break;
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

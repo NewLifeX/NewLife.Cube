@@ -41,7 +41,7 @@
             </div>
             <span class="fs-7 fw-bold text-gray-400">当前在线数</span>
         </div>
-        <a href="~/Admin/UserOnline" class="btn btn-sm btn-light-primary btn-active-primary me-3"><span class="fas fa-user-check me-1"></span>用户在线</a>
+        <a href="~/Admin/UserOnline" class="btn btn-sm btn-light-primary btn-active-primary me-3"><span class="fas fa-user-check fs-md-2 me-1"></span>用户在线</a>
         <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
 
         <div class="me-2">
@@ -63,7 +63,7 @@
             var rv = page.GetRouteValue();
             if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
             {
-                <a href="@Url.Action("Add", rv)" class="btn btn-sm btn-icon btn-light-success btn-active-success w-70px" title="新增对象" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-plus me-3"></i>新增</a>
+                <a href="@Url.Action("Add", rv)" class="btn btn-sm btn-icon btn-light-success btn-active-success w-70px" title="新增对象" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-plus fs-md-2 me-3"></i>新增</a>
                 <!-- 分隔条 -->
                 <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
             }
@@ -79,17 +79,17 @@
         <ul class="nav nav-pills me-2">
             <li class="nav-item m-0">
                 <a class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary me-3" data-bs-toggle="tab" href="#kt_card_pane">
-                    <i class="fas fa-th-large"></i>
+                    <i class="fas fa-th-large fs-md-2"></i>
                 </a>
             </li>
             <li class="nav-item me-2">
                 <a class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary active" data-bs-toggle="tab" href="#kt_table_pane">
-                    <i class="fas fa-list"></i>
+                    <i class="fas fa-list fs-md-2"></i>
                 </a>
             </li>
             <li class="nav-item m-0">
                 <a class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary" href="@Url.Action("Share")">
-                    <i class="fas fa-share-alt"></i>
+                    <i class="fas fa-share-alt fs-md-2"></i>
                 </a>
             </li>
         </ul>

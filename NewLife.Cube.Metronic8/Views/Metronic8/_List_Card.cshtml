@@ -32,10 +32,12 @@
                 <div class="card card-xl-stretch mb-xl-8">
                     @await Html.PartialAsync("_List_Card_Header", entity)
 
-                    <div class="card-body">
-                    </div>
-                    <div class="card-footer">
-                    </div>
+                    @await Html.PartialAsync("_List_Card_Body", entity)
+
+                    @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                    {
+                        @await Html.PartialAsync("_List_Card_Footer", entity)
+                    }
                 </div>
             </div>
         }

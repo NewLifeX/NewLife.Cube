@@ -1,5 +1,93 @@
 ﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+    列表视图 - 卡片模式(卡片页脚)
 *@
+@using NewLife;
+@using Microsoft.AspNetCore.Routing
+@using NewLife.Cube.Entity
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
 @{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var set = ViewBag.PageSetting as PageSetting;
+    var rv = entity.GetRouteKey();
+    var lfs = new List<ListField>();
+    foreach (var fi in fields)
+    {
+        var lf = fi as ListField;
+        if(lf != null && (!lf.Url.IsNullOrEmpty() || !lf.DataAction.IsNullOrEmpty())) 
+        {
+            lfs.Add(lf);    
+        }
+    }
 }
+
+<div class="card-footer d-flex justify-content-end py-5">
+    @if (set.IsReadOnly)
+    {
+        if (this.Has(PermissionFlags.Detail))
+        {
+            <a href="@Url.Action("Detail", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary" data-bs-toggle="tooltip" title="查看">
+                <i class="fas fa-file-alt fs-4"></i>
+            </a>
+        }
+    }
+    else if (this.Has(PermissionFlags.Update))
+    {
+        <a href="@Url.Action("Edit", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-2" data-bs-toggle="tooltip" title="编辑">
+            <i class="fas fa-edit fs-4"></i>
+        </a>
+    }
+    else if (this.Has(PermissionFlags.Detail))
+    {
+        <a href="@Url.Action("Detail", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-2" data-bs-toggle="tooltip" title="查看">
+            <i class="fas fa-file-alt fs-4"></i>
+        </a>
+    }
+
+    @if (this.Has(PermissionFlags.Delete))
+    {
+        var fact = ViewBag.Factory as IEntityFactory;
+        var fi = (fact == null || fact.Fields == null) ? null : fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted"));
+        if (fi != null && fi.Type == typeof(Boolean) && (Boolean)entity[fi.Name])
+        {
+            <a data-bs-toggle="tooltip" title="恢复" class="btn btn-sm btn-icon btn-light-success btn-active-success" data-url="@Url.Action("Delete", rv)" data-type="warning" data-title="确认恢复？">
+                <i class="fas fa-trash-alt fs-4"></i>
+            </a>
+        }
+        else
+        {
+            <a data-bs-toggle="tooltip" title="删除" class="btn btn-sm btn-icon btn-light-danger btn-active-danger" data-url="@Url.Action("Delete", rv)" data-type="error" data-title="确认删除？">
+                <i class="fas fa-trash-alt fs-4"></i>
+            </a>
+        }
+    }
+
+    @if(this.Has(PermissionFlags.Detail) && lfs.Count > 0)
+    {
+        <button type="button" class="btn btn-sm btn-icon btn-light-primary btn-active-primary ms-2" data-bs-toggle="tooltip" title="更多" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+            <i class="fas fa-ellipsis-h fs-4"></i>
+        </button>
+        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-bold w-200px py-3" data-kt-menu="true" style="">
+            @foreach (var df in lfs)
+            {
+                if (!df.DataAction.IsNullOrEmpty())
+                {
+                    var url = df.GetUrl(entity);
+                    var name = df.GetDisplayName(entity) ?? df.Header;
+                    <div class="menu-item px-3" data-bs-toggle="tooltip" title="@df.Title">
+                        <a href="@Html.Raw(url)" data-action="@df.DataAction" class="menu-link px-3">@name</a>
+                    </div>
+                } else if (!df.Url.IsNullOrEmpty())
+                {
+                    var url = df.GetUrl(entity);
+                    var name = df.GetDisplayName(entity) ?? df.Header;
+                    <div class="menu-item px-3" data-bs-toggle="tooltip" title="@df.Title">
+                        <a href="@Html.Raw(url)" class="menu-link px-3">@name</a>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>

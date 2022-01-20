@@ -10,8 +10,8 @@
 @{
     var entity = Model as IEntity;
     var fields = ViewBag.Fields as FieldCollection;
-    var headerFields = "";
-    var pkfield = fields.Where(f => f.PrimaryKey == true).FirstOrDefault();
+    var fiPK = fields.FirstOrDefault(f => f.PrimaryKey == true);
+    var fiEnable = fields.FirstOrDefault(f => f.Name == "Enable");
     String title = ViewBag.Title + "";
 
     /// 卡片标题
@@ -20,16 +20,16 @@
         String caption = "";
         foreach (var field in fields)
         {
+            var value = entity[field.Name];
+
             if (entity != null && field.Name == "Name")
             {
-                caption += entity[field.Name].ToString();
-                headerFields += (", " + field.Name);
+                caption += value;
                 break;
             }
             else if (field.Name == "Title")
             {
-                caption += entity[field.Name].ToString();
-                headerFields += (", " + field.Name);
+                caption += value;
                 break;
             }
         }
@@ -42,11 +42,11 @@
     {
         String display = "";
         if (fields.Any(f => f.Name == "DisplayName"))
-            display = entity["DisplayName"].ToString();
+            display = (String)entity["DisplayName"];
         else if (fields.Any(f => f.Name == "FullName"))
-            display = entity["FullName"].ToString();
+            display = (String)entity["FullName"];
         else if (fields.Any(f => f.Name == "NickName"))
-            display = entity["NickName"].ToString();
+            display = (String)entity["NickName"];
 
         return display;
     }
@@ -54,9 +54,16 @@
 
 <div class="card-header ribbon ribbon-top ribbon-clip">
     <!-- 实体编码 -->
-    @if (pkfield != null)
+    @if (fiPK != null)
     {
-        <div class="ribbon-label bg-primary" data-bs-toggle="tooltip" title="@pkfield.DisplayName">@entity[pkfield.Name].ToString()</div>
+        var enable = true;
+        if (fiEnable != null) 
+            enable = entity[fiEnable.Name].ToBoolean();
+        var tip = @fiPK.DisplayName + $"[{entity[fiPK.Name].ToString()}]" + (enable ? "" : "未") +fiEnable?.DisplayName;
+
+        <div class="ribbon-label" data-bs-toggle="tooltip" title="@tip">@entity[fiPK.Name].ToString()
+            <span class="ribbon-inner @(enable ? "bg-primary" : "bg-gray-400")"></span>
+        </div>
     }
 
     <div class="d-flex align-items-center">
@@ -97,15 +104,14 @@
     <!-- 卡片状态 -->
     <div class="card-toolbar">
         <ul class="nav nav-pills">
-            @foreach (var field in fields)
+            @if (fiEnable != null)
             {
-                if (Type.GetTypeCode(field.Type) != TypeCode.Boolean) { continue; }
-                var chk = entity[field.Name].ToBoolean();
-                var icon = chk == true ? "fas fa-check-square" : "fas fa-square";
+                var chk = entity[fiEnable.Name]?.ToBoolean();
+                var icon = chk == true ? "fas fa-toggle-on" : "fas fa-toggle-off";
 
                 <li class="nav-item m-1">
-                    <a data-bs-toggle="tooltip" title="@field.DisplayName">
-                        <i class="@icon fs-2 @(chk == true ? "text-success" : "text-gray-600")"></i>
+                    <a data-bs-toggle="tooltip" title="@fiEnable.DisplayName">
+                        <i class="@icon fs-2x @(chk == true ? "text-success" : "text-gray-600")"></i>
                     </a>
                 </li>
             }
