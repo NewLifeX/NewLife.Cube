@@ -47,7 +47,7 @@
                             }
                             <td class="align-middle" style="min-width:80px;">@entity.Category</td>
                             <td class="align-middle" style="min-width:80px;">@entity.Action</td>
-                            <td class="align-middle" style="min-width:60px;">
+                            <td class="text-center align-middle" style="min-width:60px;">
                                 @await Html.PartialAsync("_List_Data_Item_IconBoolean", entity.Success)
                             </td>
                             <td class="align-middle" style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@entity.Remark">@entity.Remark</td>

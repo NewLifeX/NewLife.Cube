@@ -26,7 +26,7 @@
                     <div class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative">
                         @if (user.Avatar.IsNullOrEmpty())
                         {
-                            <span class="symbol-label font-size-h5">@user.Name.Substring(0, 1).ToUpper()</span>
+                            <span class="symbol-label fs-2 fw-boldest">@user.Name.Substring(0, 1).ToUpper()</span>
                             <i class="symbol-badge bg-primary"></i>
                         }
                         else
@@ -86,9 +86,9 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="d-flex my-4">
+@*                        <div class="d-flex my-4">
                             <a href="@Url.Action("Edit","Role", new {ID=user.RoleID})" class="btn btn-sm btn-light-primary btn-active-primary me-3"><i class="fas fa-user-cog text-info pe-2"></i>角 色</a>
-                        </div>
+                        </div>*@
                     </div>
 
                     <div class="d-flex flex-wrap flex-stack">
@@ -135,7 +135,7 @@
                         <a class="nav-link text-gray-700" href="@Url.Action("ChangePassword", new {ID=user.ID})"><span class="fas fa-unlock text-gray-700 pe-5"></span>修改密码</a>
                     </li>
                     <li class="nav-item me-0 pt-2 pm-3 text-start">
-                        <a class="nav-link text-gray-700" href="@Url.Action("Binds", new {ID=user.ID})"><span class="fas fa-user-lock text-gray-700 pe-5"></span>第三方登录授权</a>
+                        <a class="nav-link text-gray-700" href="@Url.Action("Binds", new {ID=user.ID})"><span class="fas fa-user-lock text-gray-700 pe-5"></span>第3方登录授权</a>
                     </li>
 
                 </ul>
@@ -155,12 +155,12 @@
 
             <div class="card-body p-9">
 
-                <div class="row mb-5">
-                    <label class="col-3 col-form-label d-flex justify-content-end text-muted">账号</label>
+                <div class="row mb-3">
+                    <label class="col-4 col-form-label d-flex justify-content-end text-muted">账号</label>
                     <div class="col-lg-4">
                         <input value="@Model.Name" type="text" class="form-control form-control-sm" disabled="disabled" />
                     </div>
-                    <label class="col-lg-5 text-muted"></label>
+                    <label class="col-lg-4 text-muted"></label>
                 </div>
 
 
@@ -171,18 +171,18 @@
                         var uc = binds.FirstOrDefault(e => e.Enable && e.Provider.EqualIgnoreCase(mi.Name));
                         if (uc != null)
                         {
-                            <div class="row mb-5">
-                                <label class="col-3 col-form-label d-flex justify-content-end text-muted">@mi.Name（已绑定）</label>
+                            <div class="row mb-3">
+                                <label class="col-4 col-form-label d-flex justify-content-end text-muted">@mi.Name（已绑定）</label>
                                 <a class="col-4 col-form-label" href="~/Sso/UnBind/@mi.Name" title="取消绑定 @mi.Name">取消绑定</a>
-                                <label class="col-lg-5 text-muted"></label>
+                                <label class="col-lg-4 text-muted"></label>
                             </div>
                         }
                         else
                         {
-                            <div class="row mb-5">
-                                <label class="col-3 col-form-label d-flex justify-content-end text-muted">@mi.Name（未绑定）</label>
+                            <div class="row mb-3">
+                                <label class="col-4 col-form-label d-flex justify-content-end text-muted">@mi.Name（未绑定）</label>
                                 <a class="col-4 col-form-label" href="~/Sso/Bind/@mi.Name" target="_blank" title="绑定 @mi.Name">去绑定</a>
-                                <label class="col-lg-5 text-muted"></label>
+                                <label class="col-lg-4 text-muted"></label>
                             </div>
                         }
 

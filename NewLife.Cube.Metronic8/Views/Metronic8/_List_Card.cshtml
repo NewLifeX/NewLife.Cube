@@ -1,6 +1,44 @@
 ﻿@*
     列表视图 - 卡片模式
 *@
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
 @{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var list = Model as IEnumerable<IEntity>;
+    var entities = list.ToArray();
+    var i = 0;
+    var columns = 3;
+    var ukey = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting;
+}
+
+<!-- 每行4个卡片 -->
+@for(int row = 0; row <= list.Count() / columns; row++)
+{
+    if (list.Count() == 0 || i >= page.PageSize) { break; }
+
+    <div class="row g-5 g-xl-8">
+        @for(int col = 1; col <= columns; col++)
+        {
+            if (i >= list.Count()) { break; }
+            var entity = entities[i++];
+
+            <div class="col-xl-@(12/columns)">
+                <div class="card card-xl-stretch mb-xl-8">
+                    @await Html.PartialAsync("_List_Card_Header", entity)
+
+                    <div class="card-body">
+                    </div>
+                    <div class="card-footer">
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }
 

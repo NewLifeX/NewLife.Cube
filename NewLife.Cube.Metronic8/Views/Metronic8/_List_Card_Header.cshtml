@@ -1,0 +1,116 @@
+﻿@*
+    列表视图 - 卡片模式(卡片标题)
+*@
+@using NewLife;
+@using Microsoft.AspNetCore.Routing
+@using NewLife.Cube.Entity
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var headerFields = "";
+    var pkfield = fields.Where(f => f.PrimaryKey == true).FirstOrDefault();
+    String title = ViewBag.Title + "";
+
+    /// 卡片标题
+    String GetTitle(IEntity entity, FieldCollection fields)
+    {
+        String caption = "";
+        foreach (var field in fields)
+        {
+            if (entity != null && field.Name == "Name")
+            {
+                caption += entity[field.Name].ToString();
+                headerFields += (", " + field.Name);
+                break;
+            }
+            else if (field.Name == "Title")
+            {
+                caption += entity[field.Name].ToString();
+                headerFields += (", " + field.Name);
+                break;
+            }
+        }
+
+        return caption;
+    }
+
+    /// 卡片副标题
+    String GetDisplayName(IEntity entity, FieldCollection fields)
+    {
+        String display = "";
+        if (fields.Any(f => f.Name == "DisplayName"))
+            display = entity["DisplayName"].ToString();
+        else if (fields.Any(f => f.Name == "FullName"))
+            display = entity["FullName"].ToString();
+        else if (fields.Any(f => f.Name == "NickName"))
+            display = entity["NickName"].ToString();
+
+        return display;
+    }
+}
+
+<div class="card-header ribbon ribbon-top ribbon-clip">
+    <!-- 实体编码 -->
+    @if (pkfield != null)
+    {
+        <div class="ribbon-label bg-primary" data-bs-toggle="tooltip" title="@pkfield.DisplayName">@entity[pkfield.Name].ToString()</div>
+    }
+
+    <div class="d-flex align-items-center">
+        @if (title.EqualIgnoreCase("OAuth配置", "用户"))
+        {
+            <!-- 卡片图标 -->
+            <div class="symbol symbol-40px me-2">
+                <span class="symbol-label bg-light-primary">
+                    @if (title.EqualIgnoreCase("OAuth配置"))
+                    {
+                        var oauth = entity as OAuthConfig;
+                        <img src="@(!oauth.Logo.IsNullOrEmpty() ? oauth.Logo : ViewHelper.GetLogo(oauth.Name))" class="h-40px align-self-center" />
+                    }
+                    
+                    @if(title.EqualIgnoreCase("用户"))
+                    {
+                        var user = entity as User;
+                        @if (!user.Avatar.IsNullOrEmpty())
+                        {
+                            <img src="@user.GetAvatarUrl()" class="rounded align-self-center w-40px h-40px" alt="@user" />
+                        }
+                        else
+                        {
+                            <span class="symbol-label fs-3 text-hover-light bg-hover-primary">@user.Name.Substring(0, 1).ToUpper()</span>
+                        }
+                    }
+                </span>
+            </div>
+        }
+
+        <!-- 卡片标题 -->
+        <div class="card-title align-items-start flex-column">
+            <span class="card-label fs-4 fw-bolder text-gray-700">@GetTitle(entity, fields)</span>
+            <span class="text-gray-400 mt-1 fw-bold fs-7">@GetDisplayName(entity, fields)</span>
+        </div>
+    </div>
+
+    <!-- 卡片状态 -->
+    <div class="card-toolbar">
+        <ul class="nav nav-pills">
+            @foreach (var field in fields)
+            {
+                if (Type.GetTypeCode(field.Type) != TypeCode.Boolean) { continue; }
+                var chk = entity[field.Name].ToBoolean();
+                var icon = chk == true ? "fas fa-check-square" : "fas fa-square";
+
+                <li class="nav-item m-1">
+                    <a data-bs-toggle="tooltip" title="@field.DisplayName">
+                        <i class="@icon fs-2 @(chk == true ? "text-success" : "text-gray-600")"></i>
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+
