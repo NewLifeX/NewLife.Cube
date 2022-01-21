@@ -1,11 +1,9 @@
 ﻿@*
     表单 Permission
 *@
-
 @using XCode.Configuration;
 @using XCode.Membership;
 @using XCode;
-
 @{
     Role role = null;
     if (Model.GetType().GetProperties().Length > 0)
@@ -42,16 +40,16 @@
     });
 </script>
 
-<div class="accordion accordion-icon-toggle mb-10" id="kt_accordion_1">
-    <div class="accordion-item p-5 bg-light-info text-info">
-        <div class="accordion-header d-flex ms-20 ps-20 pt-5 mb-5 " data-bs-toggle="collapse" data-bs-target="#kt_accordion_1_body_1">
-            <span class="accordion-icon"><span class="fas fa-arrow-right text-info"></span></span>
-            <h3 class="fs-4 fw-bold mb-0 ms-4 text-info">菜单操作授权</h3>
+<div class="accordion accordion-icon-toggle mt-5" id="kt_accordion_1">
+    <div class="accordion-item">
+        <div class="accordion-header d-flex justify-content-end pt-5 mb-5 me-5" data-bs-toggle="collapse" data-bs-target="#kt_accordion_permission">
+            <h3 class="fs-4 fw-bolder mb-0 ms-4 text-primary">菜单操作授权</h3>
+            <span class="accordion-icon ms-2"><span class="fas fa-arrow-right text-info"></span></span>
         </div>
-        <div id="kt_accordion_1_body_1" class="fs-6 collapse show" data-bs-parent="#kt_accordion_1">
-            <div class="row m-0 mb-10 pb-5 bg-light-dark">
-                <table class="table table-bordered table-hover table-striped table-condensed">
-                    <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+        <div id="kt_accordion_permission" class="fs-6 collapse show" data-bs-parent="#kt_accordion_1">
+            <div class="row table-responsive dataTables_wrapper dt-bootstrap4 m-0">
+                <table class="table table-hover table-row-bordered table-row-dashed align-middle gy-4">
+                    <thead class="fs-4">
                         <tr>
                             <th class="ps-5">名称</th>
                             <th>显示名</th>
@@ -59,31 +57,52 @@
                             <th>操作权限</th>
                         </tr>
                     </thead>
-                    <tbody class="border border-gray-300">
+                    <tbody>
                         @foreach (var entity in menus)
                         {
                             <tr>
-                                <td class="ps-5">@entity.TreeNodeName</td>
-                                <td>@entity.DisplayName</td>
-                                <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID })</td>
+                                <td class="ps-5 w-lg-200px" style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@entity.TreeNodeName">
+                                    @if (entity is Menu menu)
+                                    {
+                                        <i class="fas @menu.Icon text-primary"></i>
+                                    }
+                                    @entity.TreeNodeName
+                                </td>
+                                <td class="w-lg-150px">@entity.DisplayName</td>
+                                <td class="text-center w-lg-75px">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                        @Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize form-check-input", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID })
+                                    </div>
+                                </td>
                                 <td>
                                     @if (entity.Childs.Count == 0)
                                     {
-                                        foreach (var item in entity.Permissions.OrderBy(e => e.Key))
-                                        {
-                                            var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                            @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID })
-                                            @Html.Label(id, item.Value)
-                                            <text>&nbsp;</text> }
+                                        <div class="d-flex align-items-center">
+                                            @foreach (var item in entity.Permissions.OrderBy(e => e.Key))
+                                            {
+                                                var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
+                                                <div class="form-check form-check-sm form-check-custom form-check-solid me-5">
+                                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @class = "form-check-input", @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID })
+                                                    @Html.Label(id, item.Value)
+                                                </div>
+                                            }
+                                        </div>
                                     }
                                     else
                                     {
+                                        <div class="d-flex align-items-center">
+                                            <div class="form-check form-check-sm form-check-custom form-check-solid me-5">
+                                                @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "form-check-input pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID })
+                                                @Html.Label("pc_readonly_" + entity.ID, "只读")
+                                            </div>
 
-                                        @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID })
-                                        @Html.Label("pc_readonly_" + entity.ID, "只读")
-                                        <text>&nbsp;</text>
-                                        @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ID })
-                                        @Html.Label("pc_all_" + entity.ID, "全部")}
+                                            <div class="form-check form-check-sm form-check-custom form-check-solid me-5">
+                                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "form-check-input pro_all", @prochildkey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ID })
+                                                @Html.Label("pc_all_" + entity.ID, "全部")
+                                            </div>
+                                        </div>
+
+                                    }
                                 </td>
                             </tr>
                         }
