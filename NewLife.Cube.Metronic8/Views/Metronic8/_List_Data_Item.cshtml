@@ -43,10 +43,10 @@ else
             var dt = (DateTime)value;
             if (name2.EndsWith("Date"))
             {
-                <td class="text-center align-middle">@dt.ToString("yyyy-MM-dd", "")</td> }
+                <td>@dt.ToString("yyyy-MM-dd", "")</td> }
             else
             {
-                <td class="text-center align-middle">@dt.ToFullString("")</td> }
+                <td>@dt.ToFullString("")</td> }
             break;
         case TypeCode.Decimal:
             var dc = (Decimal)value;
