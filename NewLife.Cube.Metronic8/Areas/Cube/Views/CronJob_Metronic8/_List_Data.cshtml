@@ -36,7 +36,7 @@
                         <th><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
                         @if (this.Has(PermissionFlags.Detail))
                         {
-                            <th class="text-center">操作</th>
+                            <th>操作</th>
                         }
                     </tr>
                 </thead>
@@ -107,7 +107,7 @@
                             <td class="align-middle">@entity.UpdateTime.ToFullString()</td>
                             @if (this.Has(PermissionFlags.Detail))
                             {
-                                <td class="text-center align-middle" style="width: 90px;">
+                                <td>
                                     @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                                 </td>
                             }

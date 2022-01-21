@@ -15,12 +15,16 @@
 <div class="card card-flush">
     <div class="card-body">
         <div class="table-responsive dataTables_wrapper dt-bootstrap4">
-            <table class="table table-hover table-row-bordered table-row-dashed gy-4">
+            <table class="table table-hover table-row-bordered table-row-dashed align-middle gy-4">
                 <thead>
                     <tr class="fs-4 text-muted">
                         @if (set.EnableSelect)
                         {
-                            <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+                            <th class="text-center" style="width:10px;">
+                                <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" id="chkAll" title="全选" />
+                                </div>
+                            </th>
                         }
                         <th title="编码。行政区划编码"><a href="@Html.Raw(page.GetSortUrl("ID"))">编码</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
@@ -37,7 +41,7 @@
                         <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
                         @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                         {
-                            <th class="text-center">操作</th>
+                            <th>操作</th>
                         }
                     </tr>
                 </thead>
@@ -48,7 +52,11 @@
                         <tr>
                             @if (set.EnableSelect)
                             {
-                                <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                                <td class="text-center">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" name="keys" value="@entity.ID" />
+                                    </div>
+                                </td>
                             }
                             <td>@entity.ID</td>
                             <td>@entity.Name</td>
@@ -67,7 +75,7 @@
                             </td>
                             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                             {
-                                <td class="text-center">
+                                <td>
                                     @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                                 </td>
                             }

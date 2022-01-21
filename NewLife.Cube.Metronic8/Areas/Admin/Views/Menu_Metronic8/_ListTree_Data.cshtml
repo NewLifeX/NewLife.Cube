@@ -35,7 +35,7 @@
                         {
                             <th class="text-center">升</th>
                             <th class="text-center">降</th>
-                            <th class="text-center">操作</th>
+                            <th>操作</th>
                         }
                     </tr>
                 </thead>
@@ -80,7 +80,7 @@
                                         <a href="@Url.Action("Down", new { id })"><span class="bi bi-chevron-down text-danger"></span></a>
                                     }
                                 </td>
-                                <td class="text-center" style="min-width:60px;">
+                                <td>
                                     @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                                 </td>
                             }

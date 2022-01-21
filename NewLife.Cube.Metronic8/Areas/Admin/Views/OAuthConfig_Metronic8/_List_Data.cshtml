@@ -35,7 +35,7 @@
                         <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("AutoRegister"))">自动注册</a></th>
                         @if (this.Has(PermissionFlags.Detail))
                         {
-                            <th class="text-center">操作</th>
+                            <th>操作</th>
                         }
                     </tr>
                 </thead>
@@ -128,7 +128,7 @@
                             </td>
                             @if (this.Has(PermissionFlags.Detail))
                             {
-                                <td class="text-center align-middle" style="width: 90px;">
+                                <td>
                                     @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                                 </td>
                             }

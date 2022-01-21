@@ -33,7 +33,7 @@
                         <th class="text-center">附近</th>
                         @if (this.Has(PermissionFlags.Detail))
                         {
-                            <th class="text-center">操作</th>
+                            <th>操作</th>
                         }
                     </tr>
                 </thead>
@@ -60,7 +60,7 @@
                             </td>
                             @if (this.Has(PermissionFlags.Detail))
                             {
-                                <td class="text-center align-middle w-80px" style="min-width:60px;">
+                                <td>
                                     @await Html.PartialAsync("_List_Data_Action", (Object)entity)
                                 </td>
                             }

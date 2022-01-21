@@ -11,41 +11,47 @@
 
     var rv = entity.GetRouteKey();
 }
-@if (set.IsReadOnly)
-{
-    if (this.Has(PermissionFlags.Detail))
+<div class="d-flex align-items-center">
+    @if (set.IsReadOnly)
     {
-        <a href="@Url.Action("Detail", rv)" class="p-0 pe-2  bg-hover-light" title="查看">
-            <i class="fas fa-file-alt text-primary fs-4"></i>
+        if (this.Has(PermissionFlags.Detail))
+        {
+            <a href="@Url.Action("Detail", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1" data-bs-toggle="tooltip" title="查看">
+                <i class="fas fa-file-alt fs-4"></i>
+            </a>
+        }
+    }
+    else if (this.Has(PermissionFlags.Update))
+    {
+        <a href="@Url.Action("Edit", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1" data-bs-toggle="tooltip" title="编辑">
+            <i class="fas fa-edit fs-4"></i>
         </a>
     }
-}
-else if (this.Has(PermissionFlags.Update))
-{
-    <a href="@Url.Action("Edit", rv)" class="p-0 pe-2 bg-hover-light" title="编辑">
-        <i class="fas fa-edit text-primary fs-4"></i>
-    </a>
-}
-else if (this.Has(PermissionFlags.Detail))
-{
-    <a href="@Url.Action("Detail", rv)" class="p-0 pe-2 bg-hover-light" title="查看">
-        <i class="fas fa-file-alt text-primary fs-4"></i>
-    </a>
-}
-@if (this.Has(PermissionFlags.Delete))
-{
-    var fact = ViewBag.Factory as IEntityFactory;
-    var fi = (fact == null || fact.Fields == null) ? null : fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted"));
-    if (fi != null && fi.Type == typeof(Boolean) && (Boolean)entity[fi.Name])
+    else if (this.Has(PermissionFlags.Detail))
     {
-        <a title="恢复" class="p-0 pe-1 bg-hover-light swal_tip" data-url="@Url.Action("Delete", rv)" data-type="warning" data-title="确认恢复？">
-            <i class="fas fa-trash-alt text-muted fs-4"></i>
+        <a href="@Url.Action("Detail", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1" data-bs-toggle="tooltip" title="查看">
+            <i class="fas fa-file-alt fs-4"></i>
         </a>
     }
-    else
+
+    @if (this.Has(PermissionFlags.Delete))
     {
-        <a title="删除" class="p-0 pe-1 bg-hover-light swal_tip" data-url="@Url.Action("Delete", rv)" data-type="error" data-title="确认删除？">
-            <i class="fas fa-trash-alt text-danger fs-4"></i>
-        </a>
+        var fact = ViewBag.Factory as IEntityFactory;
+        var fi = (fact == null || fact.Fields == null) ? null : fact.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted"));
+        if (fi != null && fi.Type == typeof(Boolean) && (Boolean)entity[fi.Name])
+        {
+            <a data-bs-toggle="tooltip" title="恢复" class="btn btn-sm btn-icon btn-light-info btn-active-info swal_tip me-1" data-url="@Url.Action("Delete", rv)" data-type="warning" data-title="确认恢复？">
+                <i class="fas fa-trash-alt fs-4"></i>
+            </a>
+        }
+        else
+        {
+            <a data-bs-toggle="tooltip" title="删除" class="btn btn-sm btn-icon btn-light-danger btn-active-danger swal_tip me-1" data-url="@Url.Action("Delete", rv)" data-type="error" data-title="确认删除？">
+                <i class="fas fa-trash-alt fs-4"></i>
+            </a>
+        }
     }
-}
+
+    @await Html.PartialAsync("_List_Data_Action_Adv", entity)
+</div>
+
