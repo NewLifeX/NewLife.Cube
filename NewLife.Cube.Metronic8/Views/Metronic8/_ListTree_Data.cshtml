@@ -57,13 +57,13 @@
                             <td class="text-center">
                                 @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
                                 {
-                                    <a href="@Url.Action("Up", new { id })"><span class="la la-angle-up" style="color: green;"></span></a>
+                                    <a href="@Url.Action("Up", new { id })"><span class="fas fa-angle-up fs-2 fw-bolder text-success"></span></a>
                                 }
                             </td>
                             <td class="text-center">
                                 @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[p.Childs.Count - 1])
                                 {
-                                    <a href="@Url.Action("Down", new { id })"><span class="la la-angle-down" style="color: red;"></span></a>
+                                    <a href="@Url.Action("Down", new { id })"><span class="fas fa-angle-down fs-2 fw-bolder text-danger"></span></a>
                                 }
                             </td>
                             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))

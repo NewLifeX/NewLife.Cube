@@ -62,7 +62,7 @@
                             <td class="text-center">
                                 @if (entity.Visible)
                                 {
-                                    <i class="bi bi-check-lg text-success"></i>
+                                    <i class="fas fa-check fw-bolder text-success"></i>
                                 }
                             </td>
                             <td>@entity.Permission</td>
@@ -71,13 +71,13 @@
                                 <td class="text-center">
                                     @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
                                     {
-                                        <a href="@Url.Action("Up", new { id })"><span class="bi bi-chevron-up text-success"></span></a>
+                                        <a href="@Url.Action("Up", new { id })"><span class="fas fa-angle-up fs-2 fw-bolder text-success"></span></a>
                                     }
                                 </td>
                                 <td class="text-center">
                                     @if (p != null && entity != p.Childs[p.Childs.Count - 1])
                                     {
-                                        <a href="@Url.Action("Down", new { id })"><span class="bi bi-chevron-down text-danger"></span></a>
+                                        <a href="@Url.Action("Down", new { id })"><span class="fas fa-angle-down fs-2 fw-bolder text-danger"></span></a>
                                     }
                                 </td>
                                 <td>
