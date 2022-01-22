@@ -147,13 +147,4 @@
             top: e.pageY + offset
         }); //设置div绝对定位 坐标就是距离鼠标当前的位置 
     });
-
-    //baguetteBox.run('.baguetteBoxThree', {
-    //    animation: 'fadeIn',
-    //    noScrollbars: true,
-    //    captions: function (element) {
-    //        return element.getElementsByTagName('img')[0].alt;
-    //    }
-    //});
-
 });

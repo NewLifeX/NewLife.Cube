@@ -59,7 +59,8 @@
         var enable = true;
         if (fiEnable != null) 
             enable = entity[fiEnable.Name].ToBoolean();
-        var tip = @fiPK.DisplayName + $"[{entity[fiPK.Name].ToString()}]" + (enable ? "" : "未") +fiEnable?.DisplayName;
+        var tip = @fiPK.DisplayName + $"[{entity[fiPK.Name].ToString()}]" + (enable ? "已" : "未") + fiEnable?.DisplayName;
+        tip = tip.IndexOf("已") == tip.Length - 1 ? tip.Substring(0, tip.IndexOf("已")) : tip;
 
         <div class="ribbon-label" data-bs-toggle="tooltip" title="@tip">@entity[fiPK.Name].ToString()
             <span class="ribbon-inner @(enable ? "bg-primary" : "bg-gray-400")"></span>
@@ -108,9 +109,10 @@
             {
                 var chk = entity[fiEnable.Name]?.ToBoolean();
                 var icon = chk == true ? "fas fa-toggle-on" : "fas fa-toggle-off";
+                var tip = (chk == true ? "已" : "未") + @fiEnable.DisplayName;
 
                 <li class="nav-item m-1">
-                    <a data-bs-toggle="tooltip" title="@fiEnable.DisplayName">
+                    <a data-bs-toggle="tooltip" title="@tip">
                         <i class="@icon fs-2x @(chk == true ? "text-success" : "text-gray-600")"></i>
                     </a>
                 </li>

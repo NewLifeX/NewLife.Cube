@@ -28,7 +28,7 @@ else
     {
         case TypeCode.Boolean:
             var bval = (Boolean)value;
-            <td class="text-center align-middle">
+            <td class="text-center">
                 @if (item.Name.EqualIgnoreCase("Enable") && factory.Unique != null)
                 {
                     var key = entity[factory.Unique.Name];
@@ -50,7 +50,7 @@ else
             break;
         case TypeCode.Decimal:
             var dc = (Decimal)value;
-            <td class="text-right align-middle">@dc.ToString("n2")</td> break;
+            <td class="text-right">@dc.ToString("n2")</td> break;
         case TypeCode.Single:
         case TypeCode.Double:
             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
@@ -62,11 +62,11 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td class="text-right align-middle">@dd.ToString("p2")</td> }
+                <td class="text-right">@dd.ToString("p2")</td> }
             else
             {
                 var dd = (Double)value;
-                <td class="text-right align-middle">@dd.ToString("n2")</td> }
+                <td class="text-right">@dd.ToString("n2")</td> }
             break;
         case TypeCode.Byte:
         case TypeCode.Int16:
@@ -84,16 +84,16 @@ else
                     val = EnumHelper.GetDescription((Enum)value) ?? value + "";
                 }
                 catch { }
-                <td class="text-center align-middle">@val</td> }
+                <td class="text-center">@val</td> }
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
                 //var provider = ViewData["Provider"] as IManageProvider;
                 if (provider != null)
                 {
-                    <td class="text-center align-middle">@provider?.FindByID(value)</td> }
+                    <td class="text-center">@provider?.FindByID(value)</td> }
                 else
                 {
-                    <td class="text-center align-middle">@value</td> }
+                    <td class="text-center">@value</td> }
             }
             else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
             {
@@ -104,10 +104,10 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td class="text-right align-middle">@dd.ToString("p2")</td> }
+                <td class="text-right">@dd.ToString("p2")</td> }
             else
             {
-                <td class="text-right align-middle">@Convert.ToInt64(value).ToString("n0")</td> }
+                <td class="text-right">@Convert.ToInt64(value).ToString("n0")</td> }
             break;
         case TypeCode.String:
         default:
@@ -120,21 +120,21 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        <td class="align-middle"><a href="@name?@key=@val">@value</a></td> }
+                        <td><a href="@name?@key=@val">@value</a></td> }
                     else
                     {
-                        <td class="align-middle">@value</td> }
+                        <td>@value</td> }
                 }
                 else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
                 {
-                    <td class="text-center align-middle" title="@((value+"").IPToAddress())">@value</td> }
+                    <td class="text-center" title="@((value+"").IPToAddress())">@value</td> }
                 else if (item.IsBigText())
                 {
                     //防止内容过长
-                    <td class="align-middle" style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@value">@value</td> }
+                    <td style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@value">@value</td> }
                 else
                 {
-                    <td class="align-middle">@value</td>}
+                    <td>@value</td>}
             }
             break;
     }
