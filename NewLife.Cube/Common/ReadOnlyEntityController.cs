@@ -28,16 +28,11 @@ using XCode.Model;
 using NewLife.Security;
 using System.Threading.Tasks;
 using NewLife.Threading;
-#if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Net.Http.Headers;
-#else
-using System.Web.Mvc;
-using ValueTask = System.Threading.Tasks.Task;
-#endif
 
 namespace NewLife.Cube
 {
@@ -75,11 +70,7 @@ namespace NewLife.Cube
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
-#if __CORE__
         public override void OnActionExecuting(ActionExecutingContext filterContext)
-#else
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
-#endif
         {
             var title = GetType().GetDisplayName() ?? typeof(TEntity).GetDisplayName() ?? Entity<TEntity>.Meta.Table.DataTable.DisplayName;
             ViewBag.Title = title;
@@ -91,13 +82,8 @@ namespace NewLife.Cube
                 ViewBag.Factory = Factory;
 
                 // 默认加上分页给前台
-#if __CORE__
                 var ps = filterContext.ActionArguments.ToNullable();
                 var p = ps["p"] as Pager ?? new Pager();
-#else
-                var ps = filterContext.ActionParameters.ToNullable();
-                var p = ps["p"] as Pager ?? new Pager { Params = WebHelper.Params };
-#endif
                 ViewBag.Page = p;
 
                 // 用于显示的列
@@ -113,12 +99,6 @@ namespace NewLife.Cube
                 //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)
                 //    txt = "这里是页头内容，来自于菜单备注，或者给控制器增加Description特性";
                 ViewBag.HeaderContent = txt;
-
-#if !__CORE__
-                //var actionName = filterContext.ActionDescriptor.ActionName;
-                //// 启用压缩
-                //if (Setting.Current.EnableCompress && actionName != nameof(ExportExcel)) SetCompress();
-#endif
             }
 
             base.OnActionExecuting(filterContext);
@@ -126,42 +106,13 @@ namespace NewLife.Cube
 
         /// <summary>执行后</summary>
         /// <param name="filterContext"></param>
-#if __CORE__
         public override void OnActionExecuted(ActionExecutedContext filterContext)
-#else
-        protected override void OnActionExecuted(ActionExecutedContext filterContext)
-#endif
         {
             base.OnActionExecuted(filterContext);
 
             var title = ViewBag.Title + "";
             HttpContext.Items["Title"] = title;
         }
-
-#if !__CORE__
-        /// <summary>触发异常时</summary>
-        /// <param name="filterContext"></param>
-        protected override void OnException(ExceptionContext filterContext)
-        {
-            if (!filterContext.ExceptionHandled)
-            {
-                var ex = filterContext.Exception;
-                // Json输出
-                if (IsJsonRequest)
-                {
-                    filterContext.Result = Json(0, null, ex);
-                    filterContext.ExceptionHandled = true;
-                }
-                //else if (ex is NoPermissionException nex)
-                //{
-                //    filterContext.Result = this.NoPermission(nex);
-                //    filterContext.ExceptionHandled = true;
-                //}
-            }
-
-            base.OnException(filterContext);
-        }
-#endif
         #endregion
 
         #region 数据获取
@@ -282,15 +233,9 @@ namespace NewLife.Cube
             {
                 Factory = Factory,
                 Expression = att.Expression,
-#if __CORE__
                 //Data = Session,
-#endif
             };
-#if __CORE__
             builder.SetData(Session);
-#else
-            builder.Data = new SessionExtend { Session = Session };
-#endif
             builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
 
             return builder;
@@ -361,11 +306,7 @@ namespace NewLife.Cube
             var rs = Response;
             while (max > 0)
             {
-#if __CORE__
                 if (HttpContext.RequestAborted.IsCancellationRequested) yield break;
-#else
-                if (!rs.IsClientConnected) yield break;
-#endif
                 if (p.PageSize > max) p.PageSize = max;
 
                 var list = SearchData(p);
@@ -415,11 +356,7 @@ namespace NewLife.Cube
             var dt = start;
             while (max > 0 && dt < end)
             {
-#if __CORE__
                 if (HttpContext.RequestAborted.IsCancellationRequested) yield break;
-#else
-                if (!rs.IsClientConnected) yield break;
-#endif
 
                 var dt2 = dt.AddSeconds(step);
                 if (dt2 > end) dt2 = end;
@@ -507,11 +444,7 @@ namespace NewLife.Cube
         [DisplayName("清空")]
         public virtual ActionResult Clear()
         {
-#if __CORE__
             var url = Request.Headers["Referer"].FirstOrDefault() + "";
-#else
-            var url = Request.UrlReferrer + "";
-#endif
 
             var p = Session[CacheKey] as Pager;
             p = new Pager(p);
@@ -737,27 +670,12 @@ namespace NewLife.Cube
             // 准备需要输出的列
             var fs = Factory.Fields.ToList();
 
-#if __CORE__
             var rs = Response;
             var headers = rs.Headers;
             headers[HeaderNames.ContentEncoding] = "UTF8";
             //headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
-            //// 允许同步IO，便于CsvFile刷数据Flush
-            //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            //if (ft != null) ft.AllowSynchronousIO = true;
-
             await OnExportCsv(fs, list, rs.Body);
-#else
-            var rs = Response;
-            rs.Charset = "UTF-8";
-            rs.ContentEncoding = Encoding.UTF8;
-            //rs.ContentType = "application/vnd.ms-excel";
-
-            await OnExportCsv(fs, list, rs.OutputStream);
-
-            rs.Flush();
-#endif
 
             return new EmptyResult();
         }
@@ -803,23 +721,12 @@ namespace NewLife.Cube
                 }
             }
 
-#if __CORE__
             var rs = Response;
             var headers = rs.Headers;
             headers[HeaderNames.ContentEncoding] = "UTF8";
             //headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
 
             await OnExportExcel(fs, list, rs.Body);
-#else
-            var rs = Response;
-            rs.Charset = "UTF-8";
-            rs.ContentEncoding = Encoding.UTF8;
-            //rs.ContentType = "application/vnd.ms-excel";
-
-            await OnExportExcel(fs, list, rs.OutputStream);
-
-            rs.Flush();
-#endif
 
             return new EmptyResult();
         }
@@ -840,9 +747,6 @@ namespace NewLife.Cube
                 xml = (obj as IList<TEntity>).ToXml();
             else if (obj is IEnumerable<TEntity> list)
                 xml = list.ToList().ToXml();
-#if !__CORE__
-            if (xml.Length > 4 * 1024) SetCompress();
-#endif
 
             SetAttachment(null, ".xml", true);
 
@@ -870,11 +774,7 @@ namespace NewLife.Cube
             name += ext;
             name = HttpUtility.UrlEncode(name, Encoding.UTF8);
 
-#if __CORE__
             Response.Headers.Add("Content-Disposition", "Attachment;filename=" + name);
-#else
-            Response.AddHeader("Content-Disposition", "Attachment;filename=" + name);
-#endif
         }
 
         /// <summary>导出Json</summary>
@@ -884,9 +784,6 @@ namespace NewLife.Cube
         public virtual ActionResult ExportJson()
         {
             var json = OnExportJson().ToJson(true);
-#if !__CORE__
-            if (json.Length > 4 * 1024) SetCompress();
-#endif
 
             SetAttachment(null, ".json", true);
 
@@ -933,9 +830,6 @@ namespace NewLife.Cube
             }
 
             // 要导出的数据超大时，启用流式输出
-#if !__CORE__
-            var buffer = true;
-#endif
             if (Factory.Session.Count > 100_000)
             {
                 var p = Session[CacheKey] as Pager;
@@ -945,16 +839,10 @@ namespace NewLife.Cube
                     RetrieveTotalCount = true
                 };
                 SearchData(p);
-
-#if !__CORE__
-                // 超过一万行
-                if (p.TotalCount > 10_000) buffer = false;
-#endif
             }
 
             SetAttachment(null, ".xls", true);
 
-#if __CORE__
             var rs = Response;
             var headers = rs.Headers;
             headers[HeaderNames.ContentEncoding] = "UTF8";
@@ -962,20 +850,6 @@ namespace NewLife.Cube
 
             var data = ExportData();
             await OnExportExcel(fs, data, rs.Body);
-#else
-            var rs = Response;
-            rs.Charset = "UTF-8";
-            rs.ContentEncoding = Encoding.UTF8;
-            rs.ContentType = "application/vnd.ms-excel";
-
-            if (buffer) SetCompress();
-            rs.Buffer = buffer;
-
-            var data = ExportData();
-            OnExportExcel(fs, data, rs.OutputStream);
-
-            rs.Flush();
-#endif
 
             return new EmptyResult();
         }
@@ -986,11 +860,7 @@ namespace NewLife.Cube
         /// <param name="output">输出流</param>
         protected virtual async ValueTask OnExportExcel(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
         {
-#if NET50 || NET60
             await using var csv = new CsvFile(output, true);
-#else
-            using var csv = new CsvFile(output, true);
-#endif
 
             // 列头
             var headers = new List<String>();
@@ -1022,10 +892,6 @@ namespace NewLife.Cube
             // 准备需要输出的列
             var fs = Factory.Fields.ToList();
 
-#if !__CORE__
-            // 要导出的数据超大时，启用流式输出
-            var buffer = true;
-#endif
             if (Factory.Session.Count > 100_000)
             {
                 var p = Session[CacheKey] as Pager;
@@ -1035,17 +901,11 @@ namespace NewLife.Cube
                     RetrieveTotalCount = true
                 };
                 SearchData(p);
-
-#if !__CORE__
-                // 超过一万行
-                if (p.TotalCount > 10_000) buffer = false;
-#endif
             }
 
             var name = GetType().Name.TrimEnd("Controller");
             SetAttachment(name, ".csv", true);
 
-#if __CORE__
             var rs = Response;
             var headers = rs.Headers;
             headers[HeaderNames.ContentEncoding] = "UTF8";
@@ -1057,20 +917,6 @@ namespace NewLife.Cube
 
             var data = ExportData();
             await OnExportCsv(fs, data, rs.Body);
-#else
-            var rs = Response;
-            rs.Charset = "UTF-8";
-            rs.ContentEncoding = Encoding.UTF8;
-            rs.ContentType = "application/vnd.ms-excel";
-
-            if (buffer) SetCompress();
-            rs.Buffer = buffer;
-
-            var data = ExportData();
-            await OnExportCsv(fs, data, rs.OutputStream);
-
-            rs.Flush();
-#endif
 
             return new EmptyResult();
         }
@@ -1081,11 +927,7 @@ namespace NewLife.Cube
         /// <param name="output">输出流</param>
         protected virtual async ValueTask OnExportCsv(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
         {
-#if NET50 || NET60
             await using var csv = new CsvFile(output, true);
-#else
-            using var csv = new CsvFile(output, true);
-#endif
 
             // 列头
             var headers = fs.Select(e => e.Name).ToArray();
@@ -1140,35 +982,23 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Detail)]
         [DisplayName("导出")]
-        public virtual ActionResult BackupAndExport()
+        public virtual async Task<ActionResult> BackupAndExport()
         {
             var fact = Factory;
             if (fact.Session.Count > 10_000_000) throw new XException($"数据量[{fact.Session.Count:n0}>10_000_000]，禁止备份！");
+
             var dal = fact.Session.Dal;
 
             var name = GetType().Name.TrimEnd("Controller");
             SetAttachment(name, ".gz", true);
 
-            var rs = Response;
-
-            // 后面调整为压缩后直接写入到输出流，需要等待压缩格式升级，压缩流不支持Position
-#if __CORE__
-            //// 允许同步IO，便于CsvFile刷数据Flush
-            //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            //if (ft != null) ft.AllowSynchronousIO = true;
-
-            var ms = rs.Body;
-#else
-            // 要导出的数据超大时，启用流式输出
-            var buffer = true;
-            if (Factory.Session.Count > 100_000) buffer = false;
-            rs.Buffer = buffer;
-            var ms = rs.OutputStream;
-#endif
+            await using var ms = new BufferedStream(Response.Body);
             try
             {
-                using var gs = new GZipStream(ms, CompressionLevel.Optimal, true);
+                await using var gs = new GZipStream(ms, CompressionLevel.Optimal, true);
                 var count = dal.Backup(fact.Table.DataTable, gs);
+                //await gs.DisposeAsync();
+                //await ms.FlushAsync();
 
                 WriteLog("备份导出", true, $"备份[{name}]（{count:n0}行）成功！");
 
@@ -1246,9 +1076,6 @@ namespace NewLife.Cube
             var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
 
             WriteLog("生成列表", true, vpath);
-#if !__CORE__
-            //Js.Alert("生成列表模版 {0} 成功！".F(vpath));
-#endif
 
             return RedirectToAction("Index");
         }
@@ -1272,9 +1099,6 @@ namespace NewLife.Cube
             var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, EditFormFields);
 
             WriteLog("生成表单", true, vpath);
-#if !__CORE__
-            //Js.Alert("生成表单模版 {0} 成功！".F(vpath));
-#endif
 
             return RedirectToAction("Index");
         }
@@ -1583,36 +1407,6 @@ namespace NewLife.Cube
 
             return entities;
         }
-
-        #endregion
-
-        #region 辅助
-#if !__CORE__
-        /// <summary>启用压缩</summary>
-        protected virtual void SetCompress()
-        {
-            var ctx = HttpContext;
-            if (ctx.Items["Compress"].ToBoolean()) return;
-            ctx.Items["Compress"] = true;
-
-            var accept = Request.Headers["Accept-Encoding"];
-            if (!String.IsNullOrEmpty(accept))
-            {
-                var ps = accept.ToLower().Split(",", ";").Select(e => (e + "").Trim()).Where(e => !e.IsNullOrEmpty()).ToArray();
-                var rs = Response;
-                if (ps.Contains("deflate"))
-                {
-                    rs.AppendHeader("Content-encoding", "deflate");
-                    rs.Filter = new DeflateStream(rs.Filter, CompressionMode.Compress, true);
-                }
-                else if (ps.Contains("gzip"))
-                {
-                    rs.AppendHeader("Content-encoding", "gzip");
-                    rs.Filter = new GZipStream(rs.Filter, CompressionMode.Compress, true);
-                }
-            }
-        }
-#endif
         #endregion
     }
 }
