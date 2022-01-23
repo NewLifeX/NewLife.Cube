@@ -992,13 +992,15 @@ namespace NewLife.Cube
             var name = GetType().Name.TrimEnd("Controller");
             SetAttachment(name, ".gz", true);
 
-            await using var ms = new BufferedStream(Response.Body);
+            // 允许同步IO，便于刷数据Flush
+            var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+            if (ft != null) ft.AllowSynchronousIO = true;
+
+            var ms = Response.Body;
             try
             {
                 await using var gs = new GZipStream(ms, CompressionLevel.Optimal, true);
                 var count = dal.Backup(fact.Table.DataTable, gs);
-                //await gs.DisposeAsync();
-                //await ms.FlushAsync();
 
                 WriteLog("备份导出", true, $"备份[{name}]（{count:n0}行）成功！");
 
