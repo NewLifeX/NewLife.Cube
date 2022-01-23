@@ -26,6 +26,7 @@ namespace NewLife.Cube.Admin.Controllers
             // 提供者列，增加查询
             {
                 var df = ListFields.GetField("Provider") as ListField;
+                df.DisplayName = "{Provider}";
                 df.Url = "?provider={Provider}";
             }
 
