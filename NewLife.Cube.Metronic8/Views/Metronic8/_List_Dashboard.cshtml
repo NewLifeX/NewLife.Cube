@@ -1,10 +1,86 @@
 ﻿@*
     列表视图顶部仪表盘或导航栏
 *@
+@using NewLife.Cube.Charts;
+@using NewLife.Web;
+@using XCode;
 @{
+    var topCharts = ViewBag.Charts as ECharts[];
+    var botCharts = ViewBag.Charts2 as ECharts[];
+    var i = 0;
+    var columns = 3;
 }
 
-<!--begin::Navbar-->
+@if (topCharts != null && topCharts.Length > 0)
+{
+    var len = topCharts.Length;
+    for (int row = 0; row <= len / columns; row++)
+    {
+        if (len == 0 || i >= len) break;
+        var count = (len > (row + 1) * columns) ? columns : len - row * columns; // 当前行图表卡片数量
+
+        <div class="row g-5 g-xl-8 mx-0">
+            @switch (count)
+            {
+                // 一个图表
+                case 1:
+                    <div class="card mb-3">
+                        <div class="card-body pb-0">
+                            @await Html.PartialAsync("_ECharts", topCharts[i++])
+                        </div>
+                    </div>
+                    break;
+
+                // 两个图表
+                case 2:
+                    <div class="col-lg-6">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_ECharts", topCharts[i++])
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_ECharts", topCharts[i++])
+                            </div>
+                        </div>
+                    </div>
+                    break;
+
+                // 三个图表
+                case 3:
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_ECharts", topCharts[i++])
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_ECharts", topCharts[i++])
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_ECharts", topCharts[i++])
+                            </div>
+                        </div>
+                    </div>
+                    break;
+            }
+        </div>
+    }
+}
+
 @*<div class="card mb-3">
     <div class="card-body pt-9 pb-0">
         <!--begin::Details-->
@@ -235,4 +311,4 @@
         <!--end::Nav wrapper-->
     </div>
 </div>*@
-<!--end::Navbar-->
+

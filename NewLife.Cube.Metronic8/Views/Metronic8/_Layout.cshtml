@@ -38,12 +38,25 @@
     <!-- 核心脚本 -->
     <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
+    <!--<link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />-->
     
     <!-- 全局脚本 -->
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
-    <script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+    <!--<script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>-->
+
+    @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
+    {
+        <script src="@res/echarts/echarts.min.js"></script>
+
+        // 图表主题
+        var name = set.EChartsTheme;
+        if (name.EqualIgnoreCase("Default")) name = "";
+        if (!name.IsNullOrEmpty())
+        {
+            <script src="@res/echarts/theme/@(name).js"></script>
+        }
+    }
 </head>
 
 <!--begin::Body-->
