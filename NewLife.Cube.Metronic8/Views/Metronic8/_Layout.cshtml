@@ -263,17 +263,6 @@
             $("#dtEnd").val(picker.endDate.format('YYYY-MM-DD'));
             $("#dtRange").val(picker.startDate.format('YYYY-MM-DD') + " 至 " + picker.endDate.format('YYYY-MM-DD'));
         });
-
-        // 处理表单标签长度
-        window.onresize = function () {
-            var ilabel = $("div.item-label:first");
-            $("div.bigitem-label").width(ilabel.width()); // 设置所有备注类大字段的标签宽度
-        }
-
-        $(function () {
-            var ilabel = $("div.item-label:first");
-            $("div.bigitem-label").width(ilabel.width()); // 设置所有备注类大字段的标签宽度
-        });
     </script>
 </body>
 <!--end::Body-->

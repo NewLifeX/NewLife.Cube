@@ -89,14 +89,14 @@
         }
     });
 
-    $('tr').click(function () {
-        if ($(this).css('background-color') === 'rgb(255, 228, 225)') {
-            $(this).css('background-color', 'white');
-        } else {
-            $(this).css('background-color', 'rgb(255, 228, 225)');
-        }
+    //$('tr').click(function () {
+    //    if ($(this).css('background-color') === 'rgb(255, 228, 225)') {
+    //        $(this).css('background-color', 'white');
+    //    } else {
+    //        $(this).css('background-color', 'rgb(255, 228, 225)');
+    //    }
 
-    });
+    //});
 
     //弹出提示对话框
     $('.swal_tip').click(function (e) {

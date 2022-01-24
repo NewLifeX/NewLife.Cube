@@ -47,7 +47,9 @@
         }
 
         <!-- 批量操作 -->
-        @await Html.PartialAsync("_List_Toolbar_Batch")
+        <div class="toolbar-batch">
+            @await Html.PartialAsync("_List_Toolbar_Batch")
+        </div>
 
         <!-- 自定义工具按钮 -->
         @await Html.PartialAsync("_List_Toolbar_Custom")
