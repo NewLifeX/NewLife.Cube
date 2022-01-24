@@ -16,7 +16,6 @@
     {
         menus = fact.GetMySubMenus(fact.Root.ID, user, true);
     }
-    //var menus = fact.Root;
 }
 
 <!-- 左侧菜单 -->
@@ -28,7 +27,7 @@
                     <span class="menu-icon">
                         <span class="fas fa-tv fs-3 text-gray-700"></span>
                     </span>
-                    <span class="menu-title fs-4">控制台</span>
+                    <span class="menu-title fs-4">系统首页</span>
                 </a>
             </div>
             <div class="menu-item">
@@ -36,13 +35,14 @@
                     <div class="separator mx-1"></div>
                 </div>
             </div>
+
             @if (menu != null)
             {
                 foreach (IMenu item in menus)
                 {
                     if (item.ParentID == 0)
                     {
-                        @await Html.PartialAsync("_Layout_Aside_Menu_Item", new ValueTuple<IMenu, IMenu>(menu, item))
+                        @await Html.PartialAsync("_Layout_Aside_MenuItem", new ValueTuple<IMenu, IMenu>(menu, item))
                     }
                 }
             }

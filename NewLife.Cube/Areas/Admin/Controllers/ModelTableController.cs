@@ -16,7 +16,9 @@ namespace NewLife.Cube.Cube.Controllers
     {
         static ModelTableController()
         {
-            ListFields.RemoveField("Controller", "TableName", "ConnName");
+            ListFields.RemoveField("ID", "Controller", "TableName", "ConnName");
+            ListFields.RemoveCreateField();
+            ListFields.RemoveUpdateField();
 
             {
                 var df = ListFields.AddListField("Columns", "Enable");

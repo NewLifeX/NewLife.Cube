@@ -28,16 +28,25 @@ else
 
         @if (name.EqualIgnoreCase("url"))
         {
-            <span class="input-group-text"><i class="bi bi-pin-map"></i></span>
+            <span class="input-group-text"><i class="fas fa-map-marked"></i></span>
         }
 
         @if (length < 0 || length >= 300 || name.EqualIgnoreCase("Remark", "Description", "Comment"))
         {
-            <textarea id="@name" name="@name" class="form-control" rows="3">@value</textarea>
+            <textarea id="@name" name="@name" class="form-control" rows="3" data-kt-autosize="true">@value</textarea>
         }
         else
         {
-            <input id="@name" name="@name" type="text" class="form-control form-control-sm" autocomplete="off" value="@value" />
+            if (name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
+            {
+                <input id="@name" name="@name" type="text" class="form-control form-control-sm" autocomplete="off" disabled value="@value" />
+            }
+            else
+            {
+                <input id="@name" name="@name" type="text" class="form-control form-control-sm" autocomplete="off" value="@value" />
+            }
+
         }
     </div>
 }

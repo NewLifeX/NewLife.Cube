@@ -1,10 +1,12 @@
-﻿@using NewLife.Common;
+﻿@using NewLife;
+@using NewLife.Common;
 @using NewLife.Cube.Areas.Admin.Models;
 @model LoginViewModel
 @{
     Layout = null;
     ViewBag.Title = "登录";
     var set = Model;
+    var loginTip = NewLife.Cube.Setting.Current.LoginTip;
 }
 <!DOCTYPE html>
 <html>
@@ -25,7 +27,7 @@
             <div class="d-flex flex-column flex-lg-row-auto w-xl-1000px positon-xl-relative" style="background-image: url(../../assets/media/bg-4.jpg) ">
                 <div class="d-flex flex-column position-xl-fixed top-0 bottom-0 w-xl-1000px scroll-y">
                     <div class="d-flex flex-row-fluid flex-column text-center p-10 pt-lg-20">
-                        <h1 class="fw-bolder fs-2qx pb-5 pb-md-10 text-white">@SysConfig.Current.DisplayName</h1>
+                        <h1 class="fw-bolder fs-3x pb-5 pb-md-10 text-white 1h-x">@SysConfig.Current.DisplayName</h1>
                         <p class="fw-bold fs-3 text-muted">
                             @SysConfig.Current.Company
                             <br />
@@ -36,8 +38,33 @@
                 </div>
             </div>
 
-            <div class="d-flex flex-column flex-lg-row-fluid py-10">
+            <div class="d-flex flex-column flex-lg-row-fluid">
+                <!-- 登录提示信息 -->
+                @if (!loginTip.IsNullOrEmpty())
+                {
+                    <div class="alert alert-dismissible bg-info d-flex flex-column flex-sm-row w-100 p-5 mb-10">
+                        <span class="svg-icon svg-icon-2hx svg-icon-light me-4 mb-5 mb-sm-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path opacity="0.3" d="M12 22C13.6569 22 15 20.6569 15 19C15 17.3431 13.6569 16 12 16C10.3431 16 9 17.3431 9 19C9 20.6569 10.3431 22 12 22Z" fill="black"></path>
+                                <path d="M19 15V18C19 18.6 18.6 19 18 19H6C5.4 19 5 18.6 5 18V15C6.1 15 7 14.1 7 13V10C7 7.6 8.7 5.6 11 5.1V3C11 2.4 11.4 2 12 2C12.6 2 13 2.4 13 3V5.1C15.3 5.6 17 7.6 17 10V13C17 14.1 17.9 15 19 15ZM11 10C11 9.4 11.4 9 12 9C12.6 9 13 8.6 13 8C13 7.4 12.6 7 12 7C10.3 7 9 8.3 9 10C9 10.6 9.4 11 10 11C10.6 11 11 10.6 11 10Z" fill="black"></path>
+                            </svg>
+                        </span>
+                        <div class="d-flex flex-column text-light pe-0 pe-sm-10">
+                            <h4 class="mb-2 text-light">登录提示</h4>
+                            <span>@loginTip</span>
+                        </div>
+                        <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
+                            <span class="svg-icon svg-icon-2x svg-icon-light">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black"></rect>
+                                    <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black"></rect>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                }
 
+                <!-- 登录校验信息 -->
                 @if (Html.ValidationSummary(true).ToDictionary().Count()>1)
                 {
                     <div class="alert alert-dismissible bg-light-danger border border-danger border-dashed d-flex flex-column flex-sm-row m-10">
@@ -59,7 +86,7 @@
                         <!--end::Content-->
                         <!--begin::Close-->
                     <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
-                            <i class="bi bi-x fs-1 text-danger"></i>
+                            <i class="fas fa-times fs-1 text-danger"></i>
                         </button>
                         <!--end::Close-->
                 </div>
@@ -68,64 +95,92 @@
                 <!--begin::Content-->
                 <div class="d-flex flex-center flex-column flex-column-fluid">
                     <!--begin::Wrapper-->
-                    <div class="w-lg-500px p-10 p-lg-15 mx-auto">
-                        <!--begin::Form-->
-                        <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" id="kt_sign_in_form">
+                    <div class="w-sm-500px p-10 p-lg-15 mx-auto">
+                        <div class="text-center mb-10">
+                            <h1 class="text-dark mb-3">
+                                <a href="#" class="py-9">
+                                    <img alt="Logo" src="~/assets/media/logos/Logo.png" class="h-90px" />
+                                </a>
+                            </h1>
+                        </div>
 
+                        <div class="tab-content">
+                            <!-- 登录界面 -->
+                            <div id="Pane_Login" class="tab-pane fade show active">
+                                <!--begin::Form-->
+                                <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" id="kt_sign_in_form">
+                                    <!--begin::Heading-->
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label fs-4 text-gray-700">用户名</label>
+                                        <input class="form-control form-control-lg" type="text" name="username" id="username" autocomplete="off" placeholder="用户名" />
+                                    </div>
+                                    <div class="fv-row mb-10">
+                                        <div class="d-flex flex-stack mb-2">
+                                            <label class="form-label fs-4 text-gray-700 mb-0">密码</label>
+                                            @*<a href="#Pane_Forgot" class="link-primary fs-4">忘记密码</a>*@
+                                        </div>
+                                        <input class="form-control form-control-lg" type="password" name="password" id="password" autocomplete="off" placeholder="密码" />
+                                    </div>
 
-                            <!--begin::Heading--><div class="text-center mb-10">
-                                <h1 class="text-dark mb-3">
-                                    <a href="#" class="py-9">
-                                        <img alt="Logo" src="~/assets/logo/logo.png" class="h-70px" />
-                                    </a>
-                                </h1>
+                                    <!--begin::Actions-->
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-lg btn-bg-info w-100 mb-5">
+                                            <span class="indicator-label text-white">登录</span>
+                                            <span class="indicator-progress">
+                                                Please wait...
+                                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                            </span>
+                                        </button>
+                                        
+                                        @if (set.AllowRegister)
+                                        {
+                                            <a id="btnRegister" href="#Pane_Register" class="btn btn-lg btn-bg-light btn-active-info w-100 mb-5 nav-link" onclick="register()">注册</a>    
+                                        }
+                                    </div>
+                                </form>
+                                <!--end::Form-->
+                            </div>
+                            <!-- 找回密码 -->
+                            <div id="Pane_Forgot" class="tab-pane fade">
 
                             </div>
+                            <!-- 注册用户 -->
+                            <div id="Pane_Register" class="tab-pane fade">
+                                <form action="@Url.Action("Register", "User", new {r = set.ReturnUrl })" method="post">
+                                    <div class="fv-row mb-5">
+                                        <input class="form-control form-control-lg" type="email" name="email" id="reg_email" placeholder="输入您的邮箱地址" autocomplete="off" />
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <input class="form-control form-control-lg" type="text" name="username" id="reg_username" placeholder="用户名" autocomplete="off" />
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <input class="form-control form-control-lg" type="password" name="password" id="reg_password" placeholder="密码" autocomplete="off" />
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <input class="form-control form-control-lg" type="password" name="password2" id="reg_password2" placeholder="确认密码" autocomplete="off" />
+                                    </div>
 
-                            <!--begin::Heading-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-10">
-                                <!--begin::Label-->
-                                <label class="form-label fs-6 fw-bolder text-dark">用户名</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input class="form-control form-control-lg" type="text" name="username" id="username" autocomplete="off" placeholder="用户名" />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-10">
-                                <!--begin::Wrapper-->
-                                <div class="d-flex flex-stack mb-2">
-                                    <!--begin::Label-->
-                                    <label class="form-label fw-bolder text-dark fs-6 mb-0">密码</label>
-                                    <!--end::Label-->
-                                </div>
-                                <!--end::Wrapper-->
-                                <!--begin::Input-->
-                                <input class="form-control form-control-lg" type="password" name="password" id="password" autocomplete="off" placeholder="密码" />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Actions-->
-                            <div class="text-center">
-                                <!--begin::Submit button-->
-                                <button type="submit" class="btn btn-lg btn-bg-info w-100 mb-5">
-                                    <span class="indicator-label text-white">登 录</span>
-                                    <span class="indicator-progress">
-                                        Please wait...
-                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                                    </span>
-                                </button>
-                                <!--end::Submit button-->
+                                    <!--begin::Actions-->
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-lg btn-bg-info w-100 mb-5">
+                                            <span class="indicator-label text-white">注册</span>
+                                            <span class="indicator-progress">
+                                                Please wait...
+                                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                            </span>
+                                        </button>
 
+                                        <a href="#Pane_Login" class="btn btn-lg btn-bg-light btn-active-info w-100 mb-5 nav-link" onclick="returnLogin()">返回登录</a>
+                                    </div>
+                                </form>
                             </div>
-                            <!--end::Actions-->
-                        </form>
-                        <!--end::Form-->
+                        </div>
+
+                        @await Html.PartialAsync("Login_OAuth")
                     </div>
-                    <!--end::Wrapper-->
+                    
                 </div>
+                <!--end::Wrapper-->
                 <!--end::Content-->
 
                 <div class="d-flex flex-center flex-wrap fs-6 p-5 pb-0">
@@ -136,11 +191,27 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
-    <script src="~/assets/js/custom/authentication/sign-in/general.js"></script>
+
+    <script>
+        function returnLogin(){
+            var paneLogin = document.querySelector('#Pane_Login');
+            paneLogin.setAttribute("class", "tab-pane fade show active");
+
+            var paneRegister = document.querySelector("#Pane_Register");
+            paneRegister.setAttribute("class", "tab-pane fade");
+        }
+
+        function register() {
+            var paneRegister = document.querySelector("#Pane_Register");
+            paneRegister.setAttribute("class", "tab-pane fade show active");
+
+            var paneLogin = document.querySelector("#Pane_Login");
+            paneLogin.setAttribute("class", "tab-pane fade");
+        }
+    </script>
 </body>
 </html>

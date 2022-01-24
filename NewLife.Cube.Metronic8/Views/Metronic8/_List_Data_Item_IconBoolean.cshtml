@@ -1,0 +1,12 @@
+﻿@model Boolean
+@{
+    var flag = Model;
+}
+@if (flag)
+{
+    <i class="fas fa-check fw-bolder text-success"></i>
+}
+else
+{
+    <i class="fas fa-times fw-bolder text-danger"></i>
+}

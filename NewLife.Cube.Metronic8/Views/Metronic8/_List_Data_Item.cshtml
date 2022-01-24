@@ -33,20 +33,20 @@ else
                 {
                     var key = entity[factory.Unique.Name];
                     <a href="@Url.Action("SetEnable",null,new { id=key, enable=!bval })" data-action="action">
-                        @await Html.PartialAsync("_Icon_Boolean", bval)
+                        @await Html.PartialAsync("_List_Data_Item_IconBoolean", bval)
                     </a> }
                 else
                 {
-                    @await Html.PartialAsync("_Icon_Boolean", bval)}
+                    @await Html.PartialAsync("_List_Data_Item_IconBoolean", bval)}
             </td> break;
         case TypeCode.DateTime:
             var dt = (DateTime)value;
             if (name2.EndsWith("Date"))
             {
-                <td class="text-center">@dt.ToString("yyyy-MM-dd", "")</td> }
+                <td>@dt.ToString("yyyy-MM-dd", "")</td> }
             else
             {
-                <td class="text-center">@dt.ToFullString("")</td> }
+                <td>@dt.ToFullString("")</td> }
             break;
         case TypeCode.Decimal:
             var dc = (Decimal)value;
@@ -62,7 +62,7 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td class="text-center">@dd.ToString("p2")</td> }
+                <td class="text-right">@dd.ToString("p2")</td> }
             else
             {
                 var dd = (Double)value;
@@ -104,7 +104,7 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td class="text-center">@dd.ToString("p2")</td> }
+                <td class="text-right">@dd.ToString("p2")</td> }
             else
             {
                 <td class="text-right">@Convert.ToInt64(value).ToString("n0")</td> }
@@ -120,10 +120,10 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        <td class="text-center"><a href="@name?@key=@val">@value</a></td> }
+                        <td><a href="@name?@key=@val">@value</a></td> }
                     else
                     {
-                        <td class="text-center">@value</td> }
+                        <td>@value</td> }
                 }
                 else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
                 {
@@ -131,7 +131,7 @@ else
                 else if (item.IsBigText())
                 {
                     //防止内容过长
-                    <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td> }
+                    <td style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@value">@value</td> }
                 else
                 {
                     <td>@value</td>}

@@ -18,7 +18,9 @@ namespace NewLife.Cube.Cube.Controllers
         {
             LogOnChange = true;
 
-            ListFields.RemoveField("Secret", "HomePage", "Logo", "White", "Black", "Urls", "Remark");
+            ListFields.RemoveField("ID", "Secret", "HomePage", "Logo", "White", "Black", "Urls", "Remark");
+            ListFields.RemoveCreateField();
+            ListFields.RemoveUpdateField();
 
             {
                 var df = ListFields.AddListField("AppLog", "Enable");

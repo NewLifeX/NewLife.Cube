@@ -9,72 +9,167 @@
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as FieldCollection;
     var set = ViewBag.PageSetting as PageSetting;
+    var ukey = fact.Unique;
 }
 
-<table class="table table-bordered table-hover table-striped table-condensed mb-0">
-    <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
-        <tr>
-            @if (set.EnableSelect)
-            {
-                <th class="text-center min-w-5px"><input type="checkbox" id="chkAll" title="全选" /></th>
-            }
-            <th class="text-center min-w-50px"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
-            <th class="min-w-50px" title="名称。登录用户名"><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
-            <th class="min-w-100px"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">昵称</a></th>
-            <th class="text-center min-w-50px" title="性别。未知、男、女"><a href="@Html.Raw(page.GetSortUrl("Sex"))">性别</a></th>
-            <th class="min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Mail"))">邮件</a></th>
-            <th class="min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Mobile"))">手机</a></th>
-            <th class="min-w-50px"><a href="@Html.Raw(page.GetSortUrl("DepartmentID"))">部门</a></th>
-            <th class="min-w-100px"><a href="@Html.Raw(page.GetSortUrl("RoleID"))">角色</a></th>
-            <th class="text-center min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Online"))">在线</a></th>
-            <th class="text-center min-w-50px"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
-            <th class="text-right min-w-100px"><a href="@Html.Raw(page.GetSortUrl("Logins"))">登录次数</a></th>
-            <th class="min-w-150px"><a href="@Html.Raw(page.GetSortUrl("LastLogin"))">最后登录</a></th>
-            <th class="min-w-100px"><a href="@Html.Raw(page.GetSortUrl("LastLoginIP"))">最后IP</a></th>
-            <th class="text-center min-w-50px">链接</th>
-            <th class="text-center min-w-50px">日志</th>
+<div class="card card-flush">
+    <div class="card-body">
+        <div class="table-responsive dataTables_wrapper dt-bootstrap4">
+            <table class="table table-hover table-row-bordered table-row-dashed gy-4">
+                <thead>
+                    <tr class="fs-4 text-muted">
+                        @if (set.EnableSelect && ukey != null)
+                        {
+                            <th class="text-center" style="width:10px;">
+                                <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" id="chkAll" title="全选" />
+                                </div>
+                            </th>
+                        }
+                        <th><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">昵称</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("Mobile"))">手机</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("RoleID"))">角色</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("DepartmentID"))">部门</a></th>
+                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
+                        <th>登录信息</th>
+                        @if (this.Has(PermissionFlags.Detail))
+                        {
+                            <th>操作</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entity in Model)
+                    {
+                        <tr>
+                            @if (set.EnableSelect && ukey != null)
+                            {
+                                <td class="text-center align-middle pt-0 pb-0">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" name="keys" value="@entity[ukey.Name]" />
+                                    </div>
+                                </td>
+                            }
+                            <td>
+                                <span style="width:270px">
+                                    <div class="d-flex align-items-center">
+                                        @{
+                                            var user = entity;
 
-            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-            {
-                <th class="text-center">操作</th>
-            }
-        </tr>
-    </thead>
-    <tbody class="border border-gray-300">
-        @foreach (var entity in Model)
-        {
-            <tr>
-                @if (set.EnableSelect)
-                {
-                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
-                }
-                <td class="text-center">@entity.ID</td>
-                <td>@entity.Name</td>
-                <td>@entity.DisplayName</td>
-                <td class="text-center">@entity.Sex</td>
-                <td>@entity.Mail</td>
-                <td>@entity.Mobile</td>
-                <td><a href="Department?ID=@entity.DepartmentID">@entity.DepartmentName</a></td>
-                <td><a href="Role?ID=@entity.RoleID">@entity.RoleName</a></td>
-                <td class="text-center">
-                    <i class="bi bi-@(entity.Online ? "check-lg" : "x-lg") text-@(entity.Online ? "success" : "danger")"></i>
-                </td>
-                <td class="text-center">
-                    <i class="bi bi-@(entity.Enable ? "check-lg" : "x-lg") text-@(entity.Enable ? "success" : "danger")"></i>
-                </td>
-                <td class="text-right">@entity.Logins.ToString("n0")</td>
-                <td>@entity.LastLogin.ToFullString("")</td>
-                <td title="@entity.LastLoginAddress">@entity.LastLoginIP</td>
-                <td>@Html.ActionLink("链接", "Index", "UserConnect", new { UserID = entity.ID }, null)</td>
-                <td>@Html.ActionLink("日志", "Index", "Log", new { UserID = entity.ID }, null)</td>
+                                            <div class="symbol symbol-40 symbol-sm flex-shrink-0">
+                                                <div class="symbol-label">
+                                                    @if (!user.Avatar.IsNullOrEmpty())
+                                                    {
+                                                        <img class="align-self-center rounded w-50px h-50px" src="@user.GetAvatarUrl()" alt="@user">
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="symbol-label fs-3 text-hover-light bg-hover-primary">@user.Name.Substring(0, 1).ToUpper()</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="ml-4">
+                                            <div class="text-dark-75 font-weight-bolder font-size-lg mb-0">@entity.Name</div>
+                                            <a class="text-muted font-weight-bold text-hover-primary">@entity.Mail</a>
+                                        </div>
+                                    </div>
+                                </span>
+                            </td>
+                            <td class="align-middle">@entity.DisplayName</td>
+                            <td class="align-middle">@entity.Mobile</td>
+                            @{
+                                var item = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase("RoleID"));
+                                if (!entity.RoleName.IsNullOrEmpty() && item != null && !item.MapField.IsNullOrEmpty())
+                                {
+                                    if (item.MapProvider != null)
+                                    {
+                                        var name = item.MapProvider.EntityType.Name;
+                                        var key = item.MapProvider.Key;
+                                        <td class="align-middle"><a href="@name?@key=@entity.RoleID">@entity.RoleName</a></td>
 
-                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-                {
-                    <td class="text-center w-80px" style="min-width:60px;">
-                        @Html.Partial("_List_Data_Action", (Object)entity)
-                    </td>
-                }
-            </tr>
-        }
-    </tbody>
-</table>
+                                    }
+                                    else
+                                    {
+                                        <td class="align-middle">@entity.RoleName</td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td class="align-middle">@entity.RoleName</td>
+                                }
+
+                                // 部门
+                                item = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase("DepartmentID"));
+                                if (!entity.RoleName.IsNullOrEmpty() && item != null && !item.MapField.IsNullOrEmpty())
+                                {
+                                    if (item.MapProvider != null)
+                                    {
+                                        var name = item.MapProvider.EntityType.Name;
+                                        var key = item.MapProvider.Key;
+                                        <td class="align-middle"><a href="@name?@key=@entity.DepartmentID">@entity.DepartmentName</a></td>
+
+                                    }
+                                    else
+                                    {
+                                        <td class="align-middle">@entity.DepartmentName</td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td class="align-middle">@entity.DepartmentName</td>
+                                }
+                            }
+                            <td class="text-center align-middle">
+                                @{
+                                    var bval = entity.Enable;
+                                    @if (fact.Unique != null)
+                                    {
+
+                                        var key = entity[fact.Unique.Name];
+                                        if (bval)
+                                        {
+                                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = false })" data-action="action">
+                                                <i class="fas fa-check fw-bolder" style="color: green;"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = true })" data-action="action">
+                                                <i class="fas fa-times fw-bolder" style="color: red;"></i>
+                                            </a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (bval)
+                                        {
+                                            <i class="fas fa-check fw-bolder" style="color: green;"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-times fw-bolder" style="color: red;"></i>
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <span style="width:137px">
+                                    <div class="text-right font-weight-bold font-size-lg mb-0" data-bs-toggle="tooltip" data-bs-placement="top" title="当前用户登录次数及最近登录时间">@entity.Logins</div>
+                                    <div class="text-right text-muted text-hover-primary">@entity.LastLogin.ToFullString("")</div>
+                                </span>
+                            </td>
+                            @if (this.Has(PermissionFlags.Detail))
+                            {
+                                <td>
+                                    @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

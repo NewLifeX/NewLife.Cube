@@ -78,7 +78,7 @@ namespace NewLife.Cube
 
             if (field.ReadOnly)
             {
-                var label = $"<label class=\"form-control\">{entity[field.Name]}</label>";
+                var label = $"<label class=\"form-control form-control-sm\">{entity[field.Name]}</label>";
                 return Html.Raw(label);
             }
 
@@ -225,7 +225,7 @@ namespace NewLife.Cube
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
             //if (!atts.ContainsKey("class")) atts.Add("class", "col-xs-10 col-sm-5");
             //if (!atts.ContainsKey("class")) atts.Add("class", "col-xs-12 col-sm-8 col-md-6 col-lg-4");
-            if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+            if (!atts.ContainsKey("class")) atts.Add("class", "form-control form-control-sm");
 
             // 首先输出图标
             var ico = "";
@@ -283,7 +283,7 @@ namespace NewLife.Cube
         public static IHtmlContent ForInt(this IHtmlHelper Html, String name, Int64 value, String format = null, Object htmlAttributes = null)
         {
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
-            if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+            if (!atts.ContainsKey("class")) atts.Add("class", "form-control form-control-sm");
             if (!atts.ContainsKey("role")) atts.Add("role", "number");
 
             return Html.TextBox(name, value, format, atts);
@@ -300,7 +300,7 @@ namespace NewLife.Cube
         {
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
             //if (!atts.ContainsKey("type")) atts.Add("type", "date");
-            if (!atts.ContainsKey("class")) atts.Add("class", "form-control date form_datetime");
+            if (!atts.ContainsKey("class")) atts.Add("class", "form-control form-control-sm date form_datetime");
             atts["autocomplete"] = "off";
 
             var obj = value == DateTime.MinValue ? "" : value.ToFullString();
@@ -337,7 +337,7 @@ namespace NewLife.Cube
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
             if (!atts.ContainsKey("class")) atts.Add("class", "chkSwitch");
             // 因为得不到很好的样式支撑，暂时去掉CheckBox的Boostrap样式
-            //if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+            //if (!atts.ContainsKey("class")) atts.Add("class", "form-control form-control-sm");
             //var html="<div><label><input name=\"{0}\" value=\"{1}\" type=\"checkbox\" class=\"ace\"><span class=\"lbl\"> Latest news and announcements</span></label></div>";
             return Html.CheckBox(name, value, atts);
         }
@@ -352,7 +352,7 @@ namespace NewLife.Cube
         public static IHtmlContent ForDecimal(this IHtmlHelper Html, String name, Decimal value, String format = null, Object htmlAttributes = null)
         {
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
-            if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+            if (!atts.ContainsKey("class")) atts.Add("class", "form-control form-control-sm");
 
             // 首先输出图标
             var ico = Html.Raw("<span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-yen\"></i></span>");
@@ -371,7 +371,7 @@ namespace NewLife.Cube
         public static IHtmlContent ForDouble(this IHtmlHelper Html, String name, Double value, String format = null, Object htmlAttributes = null)
         {
             var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
-            if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+            if (!atts.ContainsKey("class")) atts.Add("class", "form-control form-control-sm");
 
             var txt = Html.TextBox(name, value, format, atts);
 
@@ -487,7 +487,7 @@ namespace NewLife.Cube
             if (Setting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
-                atts.Add("class", "form-control");
+                atts.Add("class", "form-control form-control-sm");
 
             // 处理自动回发
             //if (autoPostback) atts.Add("onchange", "$(':submit').click();");
@@ -512,7 +512,7 @@ namespace NewLife.Cube
             if (Setting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
-                atts.Add("class", "form-control");
+                atts.Add("class", "form-control form-control-sm");
 
             // 处理自动回发
             //if (autoPostback) atts.Add("onchange", "$(':submit').click();");
@@ -542,7 +542,7 @@ namespace NewLife.Cube
             if (Setting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
-                atts.Add("class", "form-control");
+                atts.Add("class", "form-control form-control-sm");
 
             atts.Add("multiple", "");
 
@@ -561,7 +561,7 @@ namespace NewLife.Cube
             if (Setting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
-                atts.Add("class", "form-control");
+                atts.Add("class", "form-control form-control-sm");
             atts.Add("multiple", "");
 
             return Html.ListBox(name, new MultiSelectList(list.ToDictionary(), "Key", "Value", selectedValues?.Split(",")), atts);

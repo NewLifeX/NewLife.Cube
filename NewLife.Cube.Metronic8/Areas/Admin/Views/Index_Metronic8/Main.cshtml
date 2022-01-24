@@ -1,134 +1,180 @@
-﻿@*
-*@
-
-@using System.Diagnostics;
+﻿@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime;
 @using System.Runtime.Versioning;
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Http.Extensions
+@using NewLife
 @using NewLife.Caching
 @using NewLife.Common;
-@using NewLife.Messaging;
 @using NewLife.Cube;
-@using NewLife;
-@using XCode.Membership;
-@using NewLife.Reflection;
-@using NewLife.Web;
+@using NewLife.Web
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject IWebHostEnvironment Env
-
 @{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
     ViewBag.Title = "服务器信息";
 
+    //var os = Environment.OSVersion + "";
+    //if (Runtime.Linux) os = WebHelper2.GetLinuxName();
     var asm = Assembly.GetExecutingAssembly();
     var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
     var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
     var httpContext = HttpContextAccessor.HttpContext;
     var req = httpContext.Request;
-    //var req = NewLife.Web.HttpContext.Current.Request;
+    var set = SysConfig.Current;
     var conn = httpContext.Connection;
+
     var mi = MachineInfo.Current ?? new MachineInfo();
+    var cpuCls = "bg-danger";
+    if ((mi.CpuRate * 100) < 80.00)
+        cpuCls = "bg-warning";
+    if ((mi.CpuRate * 100) < 60.00)
+        cpuCls = "bg-primary";
+    if ((mi.CpuRate * 100) < 20.00)
+        cpuCls = "bg-success";
+
     // GC设置
     var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
 }
 
-<div class="d-flex flex-column-fluid">
-    <div class="container">
-        <!-- 内容 -->
-        <div class="card mb-3">
-            <div class="card-body p-0 m-0 scroll-x pb-10">
-                <table class="table table-bordered table-hover table-striped table-condensed m-0">
-                    <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+<!-- 服务器基本信息 -->
+<div class="card gutter-b">
+    <div class="card-body">
+        <div class="d-flex">
+            <!--begin: Pic-->
+            <div class="flex-shrink-0 mr-7 mt-lg-0 mt-3">
+                <div class="symbol symbol-50 symbol-lg-90">
+                    <img alt="Pic" src="~/metronic/media/logos/Logo.png">
+                </div>
+                <div class="symbol symbol-50 symbol-xl-90 symbol-primary d-none">
+                    <span class="font-size-h3 symbol-label font-weight-boldest">JM</span>
+                </div>
+            </div>
+            <!--end: Pic-->
+            <!--begin: Info-->
+            <div class="flex-grow-1">
+                <!--begin: Title-->
+                <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div class="mr-3">
+                        <!--begin::Name-->
+                        <a href="#" class="d-flex align-items-center text-dark text-hover-primary fs-3 fw-bolder mr-3">
+                            @set.DisplayName
+                            <i class="la la-correct text-success icon-md ml-2"></i>
+                        </a>
+                        <!--end::Name-->
+                        <div class="d-flex flex-wrap my-2">
+                            <a href="#" class="text-muted text-hover-primary text-uppercase fs-8 fw-bolder mr-lg-8 mr-5 mb-lg-0 mb-2">@set.Company&nbsp;&nbsp;<i class="la la-cube"></i>@set.Name (@set.Version)</a>
+                        </div>
+                    </div>
+                    <div class="my-lg-0 my-1">
+                        <a href="@Url.Action("Restart")" class="btn btn-sm btn-light-warning fw-bolder text-uppercase mr-3" data-bs-toggle="tooltip" title="重启ASP.NET应用程序域" 　onclick="return confirm('仅重启ASP.Net应用程序域，而不是操作系统！\n确认重启？')">重启</a>
+                        <a href="@Url.Action("MemoryFree")" class="btn btn-sm btn-light-success btn-success fw-bolder text-uppercase" data-bs-toggle="tooltip" title="释放进程所占用的内存">释放内存</a>
+                    </div>
+                </div>
+                <!--end: Title-->
+                <!--begin: Content-->
+                <div class="d-flex align-items-center flex-wrap justify-content-between">
+                    <div class="flex-grow-1 text-dark-50 py-5 py-lg-2 mr-5">
+                        @set.DisplayName 是一套基于ASP.NET Core MVC的后台应用管理平台，可作为各种信息管理系统的基础框架，具备如下特性：
+                        <br /><b>通用权限管理，</b>用户、角色、菜单、权限，支持控制器Action权限控制及单点登录；
+                        <br /><b>多数据库支持，</b>支持SQLite / SqlServer / Oracle / PostgreSQL / MySql / 达梦数据库等；
+                        <br /><b>免部署，</b>支持自动创建更新数据库表结构，自动初始化数据，无需人工干预；
+                        <br /><b>强大的视图引擎，</b>支持子项目视图覆盖父项目相同位置视图模板，任意修改配置默认界面。
+                    </div>
+                    <div class="d-flex flex-wrap flex-stack  py-2">
+                        <div class="d-flex flex-wrap">
+                            <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                <div class="fs-4 counted" data-kt-countup="true" data-kt-countup-value=@(mi.Memory / 1024 / 1024)>@((mi.Memory / 1024 / 1024).ToString("n0"))M</div>
+                                <div class="fs-8 fw-bold text-gray-400">物理内存</div>
+                            </div>
+                            <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                <div class="fs-4 counted" data-kt-countup="true" data-kt-countup-value=@(mi.AvailableMemory / 1024 / 1024)>@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M</div>
+                                <div class="fs-8 fw-bold text-gray-400">可用内存</div>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 flex-shrink-0 w-150px w-xl-300px mt-4 mt-sm-0">
+                            <span class="font-weight-bold">CPU占用率</span>
+                            <div class="progress progress-xs mt-2 mb-2">
+                                <div class="progress-bar @cpuCls" role="progressbar" style="width: @(Math.Round(mi.CpuRate * 100, 0))%;" aria-valuenow="@(Math.Round(mi.CpuRate * 100, 0))" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <span class="font-weight-bolder text-dark">@(Math.Round(mi.CpuRate * 100, 0))%</span>
+                        </div>
+                    </div>
+                </div>
+                <!--end: Content-->
+            </div>
+            <!--end: Info-->
+        </div>
+    </div>
+</div>
+
+<div class="pt-5">
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-row-bordered table-row-dashed gy-4">
+                    <thead>
                         <tr>
-                            <th class="ps-1" colspan="4">
+                            <th colspan="4" class="text-dark text-hover-primary fs-4">
                                 服务器信息
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="border border-gray-200">
+                    <tbody>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 应用系统：
                             </td>
-                            <td class="value">
-                                &nbsp;
-                                @if (this.Has((PermissionFlags)16))
-                                {
-                                    <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>}
-                                &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@req.GetRawUrl()">
+                                @req.GetRawUrl()
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 目录：
                             </td>
-                            <td class="value">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@Env.ContentRootPath">
                                 @Env.ContentRootPath
                             </td>
                         </tr>
                         <tr>
-                            <td class="name">
-                                域名地址：
-                            </td>
-                            <td class="value">
-                                @{ var addrLocal = conn.LocalIpAddress;
-                                    var addrRemote = conn.RemoteIpAddress;
-                                    if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
-                                    if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
-                                    var userHost = httpContext.GetUserHost(); }
-                                <span title="主机">@req.Headers["Host"]</span>，
-                                <span title="本地">@addrLocal:@conn.LocalPort</span>
-                                &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
-                                @if (addrRemote + "" != userHost)
-                                {
-                                    <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>}
-                            </td>
-                            <td class="name">
-                                应用程序：
-                            </td>
-                            <td class="value">
-                                <span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 应用域：
                             </td>
-                            <td class="value">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@AppDomain.CurrentDomain.FriendlyName">
                                 @AppDomain.CurrentDomain.FriendlyName
-                                <a class="ps-5" href="@Url.Action("Main", new{ id = "Assembly" })" title="点击打开进程程序集列表">程序集列表</a>
-                                <a class="ps-5" href="@Url.Action("Main", new{ id = "ProcessModules" })" title="点击打开进程模块列表">模块列表</a>
-                                <a class="ps-5" href="@Url.Action("Main", new{ id = "ServerVar" })" title="点击打开服务器变量列表">服务器变量列表</a>
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 .Net 版本：
                             </td>
-                            <td class="value">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@Environment.Version &nbsp;@ver">
                                 @Environment.Version &nbsp;@ver
                             </td>
                         </tr>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 操作系统：
                             </td>
-                            <td class="value" title="@mi.Guid">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@mi.Guid">
                                 @mi.OSName @mi.OSVersion
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 机器用户：
                             </td>
-                            <td class="value" title="@mi.UUID">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@mi.UUID">
                                 @if (!mi.Product.IsNullOrEmpty())
                                 {
-                                    <apan>@mi.Product，</apan>}
+                                    <apan>@mi.Product，</apan>
+                                }
                                 @Environment.UserName/@Environment.MachineName
                             </td>
                         </tr>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 处理器：
                             </td>
-                            <td class="value" title="@mi.CpuID">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@mi.CpuID">
                                 @mi.Processor，
                                 @Environment.ProcessorCount
                                 核心，@mi.CpuRate.ToString("p0")
@@ -137,87 +183,127 @@
                                     <span>，@mi.Temperature ℃</span>
                                 }
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 时间：
                             </td>
-                            <td class="value" title="这里使用了服务器默认的时间格式！后面是开机时间。">
-                                @DateTimeOffset.Now，开机@(TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"))
+                            @{
+                                var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
+                            }
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="这里使用了服务器默认的时间格式！后面是开机时间。">
+                                @DateTimeOffset.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))
                             </td>
                         </tr>
                         <tr>
-                            @{ var process = Process.GetCurrentProcess();}
-                            <td class="name">
+                            @{
+                                var process = Process.GetCurrentProcess();
+                            }
+                            <td class="name fw-bold">
                                 内存：
                             </td>
-                            <td class="value">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
                                 物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
                                 工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
                                 GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
-                                <a class="ps-5" href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 进程时间：
                             </td>
-                            <td class="value">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
                                 @process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()
                             </td>
                         </tr>
                         <tr>
-                            <td class="name">
+                            <td class="name fw-bold">
                                 Session：
                             </td>
-                            <td class="value">
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
                                 @httpContext.Session.Keys.Count() 个
-                                <a class="ps-1" href="@Url.Action("Main", new{ id = "Session" })" title="点击打开Session列表">Session列表</a>
+                                <a href="@Url.Action("Main", new{ id = "Session" })" target="_self" data-bs-toggle="tooltip" title="点击打开Session列表">Session列表</a>
                                 ，@gc
                             </td>
-                            <td class="name">
+                            <td class="name fw-bold">
+                                @{
+                                    var app = ApplicationManager.Load();
+                                }
                                 应用启动：
                             </td>
-                            <td class="value">
-                                启动于 @ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
+                            <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
+                                启动于 @app.StartTime.ToLocalTime().ToFullString()
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-
-        <div class="card scroll-x style-3">
-            <div class="card-body p-0 ">
-                <table class="table table-bordered table-hover table-striped table-condensed">
-                    <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
-                        <tr>
-                            <th class="ps-1">名称</th>
-                            <th>标题</th>
-                            <th>文件版本</th>
-                            <th>内部版本</th>
-                            <th style="min-width:140px;">编译时间</th>
-                            <th>描述</th>
-                        </tr>
-                    </thead>
-                    <tbody class="border border-gray-200">
-                        @foreach (AssemblyX item in ViewBag.MyAsms)
-                        {
-                            <tr>
-                                <td>@item.Name</td>
-                                <td>@item.Title</td>
-                                <td>@item.FileVersion</td>
-                                <td>@item.Version</td>
-                                <td title="@item.Version">@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
-                                <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@item.Description">@item.Description</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-
-
     </div>
 </div>
 
 
-@section scripts{
-}
+<div class="row pt-5">
+    <div class="col-lg-4">
+        <div class="card card-stretch gutter-b">
+            <div class="card-body py-0 mt-8 mb-5">
+                <div class="d-flex align-items-center flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between w-100">
+                        <div class="d-flex flex-column align-items-cente py-2 w-75">
+                            <a class="text-dark-75 font-weight-bold text-hover-primary fs-4 mb-1">域名地址</a>
+                            <span class="text-muted font-weight-bold">
+                                @{
+                                    var addrLocal = conn.LocalIpAddress;
+                                    var addrRemote = conn.RemoteIpAddress;
+                                    if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+                                    if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+                                    var userHost = httpContext.GetUserHost();
+                                }
+                                <span data-toggle="tooltip" data-placement="top" title="主机">@req.Headers["Host"]</span>，
+                                <span data-toggle="tooltip" data-placement="top" title="本地">@addrLocal:@conn.LocalPort</span>
+                                &nbsp;<span data-toggle="tooltip" data-placement="top" title="远程">[@addrRemote:@conn.RemotePort]</span>
+                                @if (addrRemote + "" != userHost)
+                                {
+                                    <span data-toggle="tooltip" data-placement="top" title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
+                                }
+                            </span>
+                        </div>
+                        <a href="@Url.Action("Main", new{ id = "ServerVar" })" class="btn btn-sm btn-light-primary btn-primary font-weight-bold py-4" target="_self">服务器变量</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card card-stretch gutter-b">
+            <div class="card-body py-0 mt-8 mb-5">
+                <div class="d-flex align-items-center flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between w-100">
+                        <div class="d-flex flex-column align-items-cente py-2 w-75">
+                            <a class="text-dark-75 font-weight-bold text-hover-primary fs-4 mb-1">应用程序域</a>
+                            <span class="text-muted font-weight-bold">@AppDomain.CurrentDomain.FriendlyName</span>
+                        </div>
+                        <a href="@Url.Action("Main", new{ id = "Assembly" })" class="btn btn-sm btn-light-primary btn-primary font-weight-bold py-4" target="_self">应用程序集</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card card-stretch gutter-b">
+            <div class="card-body py-0 mt-8 mb-5">
+                <div class="d-flex align-items-center flex-grow-1">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between w-100">
+                        <div class="d-flex flex-column align-items-cente py-2 w-75">
+                            <a class="text-dark-75 font-weight-bold text-hover-primary fs-4 mb-1">系统内存</a>
+                            <span class="text-muted font-weight-bold">
+                                工作集: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M，
+                                提交: @((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M，
+                                GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
+                            </span>
+                        </div>
+                        <a href="@Url.Action("Main", new{ id = "ProcessModules" })" class="btn btn-sm btn-light-primary btn-primary font-weight-bold py-4" target="_self">进程模块集</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

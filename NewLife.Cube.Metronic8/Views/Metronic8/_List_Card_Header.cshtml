@@ -1,0 +1,124 @@
+﻿@*
+    列表视图 - 卡片模式(卡片标题)
+*@
+@using NewLife;
+@using Microsoft.AspNetCore.Routing
+@using NewLife.Cube.Entity
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var fiPK = fields.FirstOrDefault(f => f.PrimaryKey == true);
+    var fiEnable = fields.FirstOrDefault(f => f.Name == "Enable");
+    String title = ViewBag.Title + "";
+
+    /// 卡片标题
+    String GetTitle(IEntity entity, FieldCollection fields)
+    {
+        String caption = "";
+        foreach (var field in fields)
+        {
+            var value = entity[field.Name];
+
+            if (entity != null && field.Name == "Name")
+            {
+                caption += value;
+                break;
+            }
+            else if (field.Name == "Title")
+            {
+                caption += value;
+                break;
+            }
+        }
+
+        return caption;
+    }
+
+    /// 卡片副标题
+    String GetDisplayName(IEntity entity, FieldCollection fields)
+    {
+        String display = "";
+        if (fields.Any(f => f.Name == "DisplayName"))
+            display = (String)entity["DisplayName"];
+        else if (fields.Any(f => f.Name == "FullName"))
+            display = (String)entity["FullName"];
+        else if (fields.Any(f => f.Name == "NickName"))
+            display = (String)entity["NickName"];
+
+        return display;
+    }
+}
+
+<div class="card-header ribbon ribbon-top ribbon-clip">
+    <!-- 实体编码 -->
+    @if (fiPK != null)
+    {
+        var enable = true;
+        if (fiEnable != null) 
+            enable = entity[fiEnable.Name].ToBoolean();
+        var tip = @fiPK.DisplayName + $"[{entity[fiPK.Name].ToString()}]" + (enable ? "已" : "未") + fiEnable?.DisplayName;
+        tip = tip.IndexOf("已") == tip.Length - 1 ? tip.Substring(0, tip.IndexOf("已")) : tip;
+
+        <div class="ribbon-label" data-bs-toggle="tooltip" title="@tip">@entity[fiPK.Name].ToString()
+            <span class="ribbon-inner @(enable ? "bg-primary" : "bg-gray-400")"></span>
+        </div>
+    }
+
+    <div class="d-flex align-items-center">
+        @if (title.EqualIgnoreCase("OAuth配置", "用户"))
+        {
+            <!-- 卡片图标 -->
+            <div class="symbol symbol-40px me-2">
+                <span class="symbol-label bg-light-primary">
+                    @if (title.EqualIgnoreCase("OAuth配置"))
+                    {
+                        var oauth = entity as OAuthConfig;
+                        <img src="@(!oauth.Logo.IsNullOrEmpty() ? oauth.Logo : ViewHelper.GetLogo(oauth.Name))" class="h-40px align-self-center" />
+                    }
+                    
+                    @if(title.EqualIgnoreCase("用户"))
+                    {
+                        var user = entity as User;
+                        @if (!user.Avatar.IsNullOrEmpty())
+                        {
+                            <img src="@user.GetAvatarUrl()" class="rounded align-self-center w-40px h-40px" alt="@user" />
+                        }
+                        else
+                        {
+                            <span class="symbol-label fs-3 text-hover-light bg-hover-primary">@user.Name.Substring(0, 1).ToUpper()</span>
+                        }
+                    }
+                </span>
+            </div>
+        }
+
+        <!-- 卡片标题 -->
+        <div class="card-title align-items-start flex-column">
+            <span class="card-label fs-4 fw-bolder text-gray-700">@GetTitle(entity, fields)</span>
+            <span class="text-gray-400 mt-1 fw-bold fs-7">@GetDisplayName(entity, fields)</span>
+        </div>
+    </div>
+
+    <!-- 卡片状态 -->
+    <div class="card-toolbar">
+        <ul class="nav nav-pills">
+            @if (fiEnable != null)
+            {
+                var chk = entity[fiEnable.Name]?.ToBoolean();
+                var icon = chk == true ? "fas fa-toggle-on" : "fas fa-toggle-off";
+                var tip = (chk == true ? "已" : "未") + @fiEnable.DisplayName;
+
+                <li class="nav-item m-1">
+                    <a data-bs-toggle="tooltip" title="@tip">
+                        <i class="@icon fs-2x @(chk == true ? "text-success" : "text-gray-600")"></i>
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+

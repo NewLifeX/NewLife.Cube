@@ -1,0 +1,17 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube
+@using NewLife.Web
+@using XCode
+@using XCode.Membership
+
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+}
+
+@Html.ActionLink("所有省份", "Index", new { ParentID = 0 }, new { @class = "btn btn-sm btn-primary btn-light-primary me-2" }.ToDictionary())
+<a href="/Cube/Area/Map" class="btn btn-sm btn-light-primary btn-primary me-2" target="_blank">
+    <span class="fas fa-map"></span>
+    地图
+</a>
+

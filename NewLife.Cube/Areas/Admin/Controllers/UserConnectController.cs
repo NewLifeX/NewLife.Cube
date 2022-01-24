@@ -19,9 +19,8 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static UserConnectController()
         {
-            ListFields.RemoveField("AccessToken");
-            ListFields.RemoveField("RefreshToken");
-            ListFields.RemoveField("Avatar");
+            ListFields.RemoveField("AccessToken", "RefreshToken", "Avatar", "UpdateUserID");
+            ListFields.RemoveCreateField();
 
             // 提供者列，增加查询
             {

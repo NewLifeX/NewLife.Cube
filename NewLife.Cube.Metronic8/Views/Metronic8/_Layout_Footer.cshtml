@@ -1,0 +1,17 @@
+﻿@*内容底部*@
+
+@using NewLife.Cube.WebMiddleware;
+
+@{
+    var set = NewLife.Cube.Setting.Current;
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
+}
+
+@if (set.ShowRunTime)
+{
+    <div class="card mt-3 pt-5 pb-5">
+        <div class="text-gray-500">
+            @Html.Raw(runInfo)
+        </div>
+    </div>
+}

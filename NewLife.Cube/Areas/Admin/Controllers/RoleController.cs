@@ -22,7 +22,7 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static RoleController()
         {
-            ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "Remark");
+            ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "UpdateUserID", "UpdateIP", "Remark");
             ListFields.RemoveCreateField();
 
             {

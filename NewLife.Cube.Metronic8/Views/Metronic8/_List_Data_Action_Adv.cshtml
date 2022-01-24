@@ -1,0 +1,52 @@
+﻿@*
+    列表高级动作，处理通过ListField添加的链接，以提高界面的整洁性
+*@
+@using NewLife;
+@using Microsoft.AspNetCore.Routing
+@using NewLife.Cube.Entity
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var set = ViewBag.PageSetting as PageSetting;
+    var rv = entity.GetRouteKey();
+    var lfs = new List<ListField>();
+    foreach (var fi in fields)
+    {
+        var lf = fi as ListField;
+        if(lf != null && (!lf.Url.IsNullOrEmpty() || !lf.DataAction.IsNullOrEmpty())) 
+        {
+            lfs.Add(lf);    
+        }
+    }
+}
+
+@if (this.Has(PermissionFlags.Detail) && lfs.Count > 0)
+{
+    <button type="button" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1" data-bs-toggle="tooltip" title="更多" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+        <i class="fas fa-ellipsis-h fs-4"></i>
+    </button>
+    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-bold w-200px py-3" data-kt-menu="true" style="">
+        @foreach (var df in lfs)
+        {
+            if (!df.DataAction.IsNullOrEmpty())
+            {
+                var url = df.GetUrl(entity);
+                var name = df.GetDisplayName(entity) ?? df.Header;
+                <div class="menu-item px-3" data-bs-toggle="tooltip" title="@df.Title">
+                    <a href="@Html.Raw(url)" data-action="@df.DataAction" class="menu-link px-3">@name</a>
+                </div>
+            }
+            else if (!df.Url.IsNullOrEmpty())
+            {
+                var url = df.GetUrl(entity);
+                var name = df.GetDisplayName(entity) ?? df.Header;
+                <div class="menu-item px-3" data-bs-toggle="tooltip" title="@df.Title">
+                    <a href="@Html.Raw(url)" class="menu-link px-3">@name</a>
+                </div>
+            }
+        }
+    </div>
+}

@@ -14,63 +14,66 @@
         .ToDictionary(e => e.Key, e => e.ToList());
 }
 
-<div class="row m-0">
-    <div class=" col-xl-3 col-lg-4">
-        <div class="card  pb-lg-20">
+<div class="row g-5 g-xl-5">
+    <div class="col-xl-3">
+        <div class="card card-xxl-stretch mb-xl-8">
             <div class="card-header">
                 <h4 class="card-title text-muted">系统选项</h4>
             </div>
 
-            <div class="text-center col-md-12 cube-flex-con cube-flex-items">
+            <div class="card-body">
                 @await Html.PartialAsync("_Object_Config_Nav", obj)
             </div>
-
         </div>
-
     </div>
-    <div class="col-xl-9 col-lg-8">
-        @using (Html.BeginForm("Update", null))
-        {
-            <div class="card mb-5 mb-xl-10">
 
+    <div class="col-xl-9">
+        <div class="card card-xxl-stretch mb-xl-8">
+            @using (Html.BeginForm("Update", null))
+            {
                 <div class="card-header">
                     <h4 class="card-title text-muted"></h4>
                     <div class="card-toolbar">
-                        <button type="submit" class="btn btn-sm btn-outline btn-outline-info align-self-center me-2"><i class="fas fa-save text-active-info"></i><strong>保存</strong></button>
+                        <button type="submit" class="btn btn-sm btn-outline btn-outline-primary align-self-center me-2"><i class="fas fa-save text-active-primary"></i><strong>保存</strong></button>
                         <button type="button" class="btn btn-sm btn-outline btn-outline-dashed btn-outline-default btn-active-light align-self-center" onclick="history.go(-1);"><i class="fas fa-reply"></i><strong>取消</strong></button>
-
                     </div>
                 </div>
 
-                <div class="card-body p-9 pt-2">
-
-
+                <div class="card-body">
                     @Html.AntiForgeryToken()
                     @Html.ValidationSummary(true)
                     @foreach (var item in dic)
                     {
                         if (dic.Count > 1)
                         {
-                            <div class="card-header cursor-pointer p-0 border-0 pt-8 pb-5">
-                                <div class="row">
-                                    <div class="col-auto me-auto">
-                                        <h5 class="card-title text-muted">@item.Key</h5>
-                                    </div>
+                            <div class="row pt-5 pb-3">
+                                <div class="col-auto me-auto">
+                                    <div class="text-muted fs-4">@item.Key</div>
                                 </div>
-
+                                <div class="separator" />
                             </div>
                         }
+
                         foreach (var pi in item.Value)
                         {
                             var name = pi.Name;
                             var val = obj.GetValue(name);
-                            var dis = pi.DisplayName;
+                            var display = pi.DisplayName;
                             var des = pi.Description;
                             var dataSource = pi.DataSource;
 
-                            <div class="row mb-1 pt-1">
-                                <label class="col-lg-3 fw-bold text-muted">@dis</label>
-                                <div class="col-lg-4">
+                            <div class="row d-flex align-items-center mt-5 mb-1 pt-1">
+                                <div class="col-lg-3 d-flex align-items-center justify-content-lg-end">
+                                    <label class="fs-6 me-2" for="@name">@display</label>
+                                    @if (!des.IsNullOrEmpty())
+                                    {
+                                        <div class="d-none d-md-block d-lg-block">
+                                            <i class="fas la-question-circle" data-bs-toggle="tooltip" title="@des"></i>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="col-lg-6">
                                     @if (dataSource != null)
                                     {
                                         @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
@@ -81,29 +84,21 @@
                                     }
                                     <span class="fw-bolder fs-6 text-dark"></span>
                                 </div>
-                                <label class="col-lg-5 text-muted fs-10">@des</label>
+                                <label class="col-lg-9 text-muted fs-10 d-md-none">@des</label>
                             </div>
                         }
-
-                        <div class="border-bottom pt-5"></div>
                     }
-                    @if (this.Has(PermissionFlags.Update))
-                    {
-                        <div class="clearfix form-actions col-sm-12 col-md-12 mt-10">
-                            <label class="control-label col-xs-3 col-sm-3 col-md-3"></label>
-                            <button type="submit" class="btn btn-sm btn-outline btn-outline-info align-self-center me-2"><i class="fas fa-save text-active-info"></i><strong>保存</strong></button>
-                            <button type="button" class="btn btn-sm btn-outline btn-outline-dashed btn-outline-default btn-active-light align-self-center" onclick="history.go(-1);"><i class="fas fa-reply"></i><strong>取消</strong></button>
-
-                        </div>
-                    }
-
-
-
                 </div>
 
-            </div>
-        }
-
+                @if (this.Has(PermissionFlags.Update))
+                {
+                    <div class="card-footer d-flex justify-content-end py-6">
+                        <button type="submit" class="btn btn-sm btn-outline btn-outline-primary align-self-center me-2"><i class="fas fa-save text-active-primary"></i><strong>保存</strong></button>
+                        <button type="button" class="btn btn-sm btn-outline btn-outline-dashed btn-outline-default btn-active-light align-self-center" onclick="history.go(-1);"><i class="fas fa-reply"></i><strong>取消</strong></button>
+                    </div>
+                }
+            }
+        </div>
     </div>
 </div>
 

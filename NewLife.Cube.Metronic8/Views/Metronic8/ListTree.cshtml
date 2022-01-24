@@ -4,12 +4,21 @@
     var page = ViewBag.Page as Pager;
     var set = ViewBag.PageSetting as PageSetting; }
 
+<!-- 列表顶部仪表盘或导航栏，根据实际应用选择是否放置 -->
+@await Html.PartialAsync("_List_Dashboard")
+
 <!--列表集合表头-->
 @await Html.PartialAsync("_List_Toolbar")
-<!--列表集合内容-->
-<div class="scroll-x style-3">
-    @await Html.PartialAsync("_ListTree_Data")
+
+<div class="tab-content">
+    <div id="kt_table_pane" class="tab-pane fade show active">
+        @await Html.PartialAsync("_ListTree_Data")
+    </div>
+    <div id="kt_card_pane" class="tab-pane fade">
+
+    </div>
 </div>
+
 <!--列表分页-->
 @await Html.PartialAsync("_List_Pager")
 <!--列表页脚-->

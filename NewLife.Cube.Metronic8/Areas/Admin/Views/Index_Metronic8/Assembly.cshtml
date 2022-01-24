@@ -1,60 +1,59 @@
-﻿@*
-
-*@
-@using System.Diagnostics;
+﻿@using System.Diagnostics;
 @using System.Collections;
 @using System.Reflection;
 @using System.Runtime.Versioning;
 @using NewLife.Common;
 @using NewLife.Reflection;
-
 @{
-    ViewBag.Title = "程序集列表";
+    //Layout = NewLife.Cube.Setting.Current.Layout;
 
+    ViewBag.Title = "程序集列表";
 }
 
-<div class="card scroll-x style-3">
-    <div class="card-body p-0">
-
-        <table class="table table-bordered table-hover table-striped table-condensed">
-            <thead class="bg-white fw-bold fs-6 border border-bottom-3 border-gray-200">
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-row-bordered table-row-dashed gy-4">
                 <tr>
-                    <th colspan="6">
-                        程序集列表( @AppDomain.CurrentDomain.FriendlyName)
+                    <th class="text-dark text-hover-primary text-uppercase fs-3" colspan="6">
+                        程序集列表(@AppDomain.CurrentDomain.FriendlyName )
                     </th>
                 </tr>
-            </thead>
-            <tbody class="border border-gray-200">
-                <tr>
+                <tr class="fs-4 text-muted">
                     <th>名称</th>
                     <th>标题</th>
                     <th>文件版本</th>
                     <th>内部版本</th>
-                    <th style="min-width:150px;">编译时间</th>
+                    <th>编译时间</th>
                     <th>路径</th>
                 </tr>
                 @foreach (AssemblyX item in ViewBag.Asms)
                 {
+                    var location = String.Empty;
+                    try
+                    {
+                        location = item.Asm.Location;
+                    }
+                    catch { }
+
                     <tr>
-                        <td> @item.Name</td>
-                        <td>@item.Title</td>
-                        <td>@item.FileVersion</td>
+                        <td style="max-width:160px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@item.Name">
+                            @item.Name
+                        </td>
+                        <td style="max-width:160px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@item.Title">
+                            @item.Title
+                        </td>
+                        <td>
+                            @item.FileVersion
+                        </td>
                         <td>@item.Version</td>
                         <td>@item.Compile.ToFullString()</td>
-                        <td>
-                            @{ var location = String.Empty;
-                                try
-                                {
-                                    location = item.Asm.Location;
-                                }
-                                catch { }
-                            }
+                        <td style="max-width:300px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@location">
                             @location
                         </td>
                     </tr>
                 }
-            </tbody>
-        </table>
-
+            </table>
+        </div>
     </div>
 </div>

@@ -1,5 +1,6 @@
 ﻿@using NewLife.Common;
 @using NewLife.Model;
+@using XCode;
 @using XCode.Membership;
 @{
     var menu = ViewBag.Menu as IMenu;
@@ -21,18 +22,26 @@
         }
     }
 }
+
 @if (menu != null && !isMoblie)
 {
     <!-- 面包屑导航 -->
-    <div class="d-flex align-items-stretch" id="kt_header_nav">
-
-        <ol class="breadcrumb text-muted fs-6 fw-bold p-3 m-lg-1">
-            <li class="breadcrumb-item pe-3">&nbsp;&nbsp;<a href="@(menu.Url!=null? Url.Content(menu.Url):"#")" class="pe-3 text-muted">@menu.DisplayName</a></li>
-            @if (menu.Parent != null && menu.ParentID > 0)
-            {
-                @await Html.PartialAsync("_Layout_Header_Breadcrumb_Item", (Object)menu.Parent)
-            }
-        </ol>
-
+    <div class="d-flex align-items-center" id="kt_header_nav">
+        <div data-kt-swapper="true" data-kt-swapper-mode="prepend" data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_header_nav'}" class="page-title d-flex flex-column align-items-start me-3 mb-5 mb-lg-0">
+            <h1 class="d-flex align-items-center text-hover-primary fs-3 mb-0">@(menu != null ? menu.DisplayName : ViewBag.Title)</h1>
+            <ul class="breadcrumb fw-bold fs-7 pt-1">
+                @if (menu != null)
+                {
+                    foreach (IMenu item in (menu as IEntityTree).AllParents)
+                    {
+                        if (item.ID != 0)
+                        {
+                            <li class="breadcrumb-item"><a href="@(item.Url!=null? Url.Content(item.Url):"#")">@item.DisplayName</a></li>
+                        }
+                    }
+                }
+                <li class="breadcrumb-item text-muted" aria-current="page"><a href="@Url.Action("Index")">@(menu != null ? menu.DisplayName : ViewBag.Title)</a></li>
+            </ul>
+        </div>
     </div>
 }

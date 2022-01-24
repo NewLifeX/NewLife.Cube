@@ -1,0 +1,111 @@
+﻿@model IList<UserConnect>
+@using NewLife.Cube.Entity
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
+@using NewLife.Cube;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var ukey = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting;
+    var provider = ManageProvider.Provider;
+}
+<table class="table table-bordered table-hover table-striped table-condensed">
+    <thead>
+        <tr>
+            @if (set.EnableSelect && ukey != null)
+            {
+                <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+            }
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Provider"))">提供商</a></th>
+            <th class="text-center" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserID"))">{UserName}</a></th>
+            <th class="text-center" title="身份标识。用户名、OpenID"><a href="@Html.Raw(page.GetSortUrl("OpenID"))">身份标识</a></th>
+            <th class="text-center" title="全局标识。跨应用统一"><a href="@Html.Raw(page.GetSortUrl("UnionID"))">全局标识</a></th>
+            <th class="text-center" title="用户编号。第三方用户编号"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">用户编号</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("NickName"))">昵称</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("Expire"))">过期时间</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("OAuthLog"))">OAuth日志</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateUserID"))">创建用户</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">创建地址</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">创建时间</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateUserID"))">更新用户</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateIP"))">更新地址</a></th>
+            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
+            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+            {
+                <th class="text-center">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var entity in Model)
+        {
+            <tr>
+                @if (set.EnableSelect && ukey != null)
+                {
+                    <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                }
+                <td class="text-center">@entity.ID</td>
+                <td>@entity.Provider</td>
+                <td class="text-center">@entity.UserName</td>
+                <td>@entity.OpenID</td>
+                <td>@entity.UnionID</td>
+                <td class="text-right">@entity.LinkID.ToString("n0")</td>
+                <td>@entity.NickName</td>
+                <td class="text-center">@entity.Expire.ToFullString("")</td>
+                <td>@entity.OAuthLog</td>
+                <td class="text-center">
+                    <i class="glyphicon glyphicon-@(entity.Enable ? "ok" : "remove")" style="color: @(entity.Enable ? "green" : "red");"></i>
+                </td>
+                <td class="text-center">@provider.FindByID(entity.CreateUserID)</td>
+                <td class="text-center" title="@entity.CreateIP.IPToAddress()">@entity.CreateIP</td>
+                <td class="text-center">@entity.CreateTime.ToFullString("")</td>
+                <td class="text-center">@provider.FindByID(entity.UpdateUserID)</td>
+                <td class="text-center" title="@entity.UpdateIP.IPToAddress()">@entity.UpdateIP</td>
+                <td class="text-center">@entity.UpdateTime.ToFullString("")</td>
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td class="text-center">
+                        @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                    </td>
+                }
+            </tr>
+        }
+        @if (page.State is UserConnect)
+        {
+            var entity = page.State as UserConnect;
+            <tr>
+                @if (set.EnableSelect)
+                {
+                    <td></td>
+                }
+                <td class="text-center">总计</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="text-right">@entity.LinkID.ToString("n0")</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+
+                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                {
+                    <td></td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

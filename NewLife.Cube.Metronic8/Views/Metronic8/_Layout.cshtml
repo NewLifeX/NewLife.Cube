@@ -1,7 +1,25 @@
 ﻿@using NewLife.Common;
-@using NewLife.Cube
+@using NewLife.Cube.WebMiddleware;
+@using NewLife.Cube.Charts;
 @{
     var set = NewLife.Cube.Setting.Current;
+    var set2 = ViewBag.PageSetting as PageSetting;
+
+        var title = ViewBag.Title + "";
+    if (title != "" && !title.Contains(" - "))
+    {
+        title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
+    }
+
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var charts = ViewBag.Charts as ECharts[];
+    var charts2 = ViewBag.Charts2 as ECharts[];
+
+    var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
 }
 <!DOCTYPE html>
 
@@ -20,56 +38,51 @@
     <!-- 核心脚本 -->
     <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
-    <link href="~/assets/baguetteBox/baguetteBox.css" rel="stylesheet" type="text/css" />
+    <!--<link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />-->
     
-    <style>
-        .style-3::-webkit-scrollbar {
-            height: 15px;
-        }
-
-        .style-3::-webkit-scrollbar-thumb {
-            border-radius: 10px;
-            -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.8);
-        }
-
-        .text-active-info {
-            color: #7239ea;
-        }
-
-        .btn-outline-info:hover i {
-            color: #fff;
-        }
-
-        .text-active-info:hover {
-            color: #fff;
-        }
-    </style>
-
     <!-- 全局脚本 -->
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
-    <script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>
-    <script src="~/assets/baguetteBox/baguetteBox.js"></script>
-    
+    <!--<script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>-->
+
+    @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
+    {
+        <script src="@res/echarts/echarts.min.js"></script>
+
+        // 图表主题
+        var name = set.EChartsTheme;
+        if (name.EqualIgnoreCase("Default")) name = "";
+        if (!name.IsNullOrEmpty())
+        {
+            <script src="@res/echarts/theme/@(name).js"></script>
+        }
+    }
 </head>
 
 <!--begin::Body-->
-<body id="kt_body" class="bg-light-dark header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed toolbar-tablet-and-mobile-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:1px;--kt-toolbar-height-tablet-and-mobile:1px">
+<body id="kt_body" class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed toolbar-tablet-and-mobile-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:55px;--kt-toolbar-height-tablet-and-mobile:55px">
     <div class="d-flex flex-column flex-root">
         @await Html.PartialAsync("_Layout_Aside")
         <div class="page d-flex flex-row flex-column-fluid">
             @await Html.PartialAsync("_Layout_Header")
             <div class="wrapper d-flex flex-column flex-row-fluid pb-20" id="kt_wrapper">
                 <!-- 内容 -->
-                <div class="content d-flex flex-column flex-column-fluid bg-light-dark pe-1 ps-1" id="kt_content">
-                    @RenderBody()
+                <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+                    @await Html.PartialAsync("_Layout_Toolbar")
+
+                    <div class="post d-flex flex-column-fluid" id="dt_post">
+                        <div class="container-fluid" id="dt_content_container">
+                            @RenderBody()
+
+                            <!-- 内容底部 -->
+                            @await Html.PartialAsync("_Layout_Footer")
+                        </div>
+                    </div>
                 </div>
-                <!-- 内容底部 -->
-                @await Html.PartialAsync("_Layout_Content_Footer")
             </div>
         </div>
     </div>
+
     <!-- 侧边栏 -->
     @await Html.PartialAsync("_Layout_Drawer_900")
     @await Html.PartialAsync("_Layout_Drawer_500")
@@ -84,6 +97,123 @@
     <script src="~/assets/cube.js"></script>
     <!--自定义脚本-->
     @RenderSection("scripts", required: false)
+
+        <!-- 启用列表表头选择 -->
+    @if (set2.EnableSelect)
+    {
+        <script>
+            $(function () {
+                var $toolbarContext = $('.toolbar-batch'),
+                    $batchButtons = $('button[data-action="action"], input[data-action="action"]'), //button, input=button, a 3种类型都可以
+                    $table = $('.table'),
+                    $keys = $('input[name="keys"]', $table);
+
+                $table.on('click', '#chkAll', function () {
+                    // 全选
+                    $keys.prop('checked', this.checked);
+                    // 启用禁用批量操作区
+                    $batchButtons.prop('disabled', !this.checked);
+                });
+
+                $table.on('click.checked', 'tbody input[name="keys"]', function (e) {
+                    //页面中所有的checkbox
+                    var allbox = $table.find('tbody :checkbox[name="keys"]');
+                    //页面中所选中的checkbox
+                    var selecteds = $table.find('tbody :checkbox:checked[name="keys"]');
+                    if (selecteds.length > 0) {
+                        // 启用禁用批量操作区
+                        $batchButtons.prop('disabled', false);
+                        //需要判断当前页面所有行的checkbox是否都选中，以此来决定是否需要改变checkbox#chkAll 的状态
+                        if (allbox.length == selecteds.length) {
+                            $table.find('#chkAll').prop('checked', true);
+                        } else {
+                            $table.find('#chkAll').prop('checked', false);
+                        }
+                    }
+                    else {
+                        $batchButtons.prop('disabled', true);
+                        $table.find('#chkAll').prop('checked', false);
+                    }
+                });
+            })
+        </script>
+    }
+
+    <script>
+        // 日历控件
+        $(function () {
+            @if (set != null && set.BootstrapSelect) {<text>
+            $('.multiselect').each(function () {
+                $(this).multiselect({
+                    // 下拉列表仅在列表项比较多时显示过滤框
+                    enableFiltering: $(this).children().length > 10,
+                    buttonClass: 'btn btn-white btn-primary',
+                    templates: {
+                        button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                        ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                        filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                        filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                        li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                        divider: '<li class="multiselect-item divider"></li>',
+                        liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                    },
+                    filterPlaceholder: '搜索',
+                    nonSelectedText: '无',
+                    allSelectedText: '全选'
+                });
+            });
+            </text>}
+
+            @*双击跳转到form
+            _List_Data_Action.cshtml变更
+            @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
+            $('tr').dblclick(function () {
+                var $this = $(this);
+                var row = $this.closest("tr");
+                var findcell = row.find('.editcell');
+                if (findcell.length > 0) window.location.href = findcell.attr("href");
+            });
+        });
+
+        // 区间时间插件
+        $("input[name='dtRange']").daterangepicker(
+            {
+                // autoApply: true,
+                // autoUpdateInput: false,
+                // alwaysShowCalendars: true,
+                buttonClasses: 'btn',
+                applyClass: 'btn-primary',
+                cancelClass: 'btn-secondary',
+                ranges: {
+                    '今天': [moment(), moment()],
+                    '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '近7天': [moment().subtract(7, 'days'), moment()],
+                    '近30天': [moment().subtract(29, 'days'), moment()],
+                    '这个月': [moment().startOf('month'), moment().endOf('month')],
+                    '上个月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                locale: {
+                    format: "YYYY/MM/DD HH:mm",
+                    separator: " - ",
+                    applyLabel: "确认",
+                    cancelLabel: "清空",
+                    fromLabel: "开始时间",
+                    toLabel: "结束时间",
+                    customRangeLabel: "自定义日期范围",
+                    daysOfWeek: ["日", "一", "二", "三", "四", "五", "六"],
+                    monthNames: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"]
+                }
+            }
+        ).on('cancel.daterangepicker', function (ev, picker) {
+            $("#dtRange").val("请选择日期范围");
+            $("#dtStart").val("");
+            $("#dtEnd").val("");
+        }).on('apply.daterangepicker', function (ev, picker) {
+            $("#dtStart").val(picker.startDate.format('YYYY-MM-DD'));
+            $("#dtEnd").val(picker.endDate.format('YYYY-MM-DD'));
+            $("#dtRange").val(picker.startDate.format('YYYY-MM-DD') + " 至 " + picker.endDate.format('YYYY-MM-DD'));
+        });
+    </script>
 </body>
 <!--end::Body-->
 </html>

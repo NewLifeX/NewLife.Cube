@@ -8,6 +8,7 @@
     var name = chart.Name;
     var chartName = "chart_" + name;
     var optionName = "option_" + name;
+    chart["grid"] = new { left = "3%", right = "3%" };
 
     var style = chart.Style;
     if (chart.Width > 0)
@@ -29,4 +30,9 @@
     var @chartName = echarts.init(document.getElementById('@name'), '@theme');
     var @optionName = @Html.Raw(chart.Build());
     @(chartName).setOption(@optionName);
+
+    @* 为echart图表添加自适应大小能力 *@
+    window.addEventListener("resize", ()=>{
+        @(chartName).resize();       
+    });
 </script>

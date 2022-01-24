@@ -23,7 +23,12 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>
         /// 实例化
         /// </summary>
-        public UserOnlineController() => PageSetting.EnableAdd = false;
+        public UserOnlineController()
+        { 
+            PageSetting.EnableAdd = false;
+
+            ListFields.RemoveField("ID", "UserID", "CreateIP", "CreateTime");
+        }
 
         /// <summary>不允许添加修改日志</summary>
         /// <param name="entity"></param>

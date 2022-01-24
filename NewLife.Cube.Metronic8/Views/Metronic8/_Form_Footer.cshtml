@@ -9,25 +9,15 @@
 @{
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
-
 }
 
-<div class="card-body pb-20 pt-10">
-
-    <div class="col-xl-6 mt-0">
-        <div class="row">
-            <div class="col-3"></div>
-            <div class="col-9">
-                <div class="btn-group">
-                    <button type="submit" class="btn btn-sm btn-outline btn-outline-info align-self-center">
-                        <i class="fas fa-@(isNew ? "plus" : "save") text-active-info" style="margin-top: -1px;"></i>
-                        <span class="kt-hidden-mobile">@(isNew ? "保 存" : "更 新")</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-6 mt-0"></div>
-
-
+<div class="card-footer d-flex justify-content-end py-6">
+    <button type="submit" class="btn btn-sm btn-outline btn-outline-primary align-self-center me-3">
+        <i class="fas fa-@(isNew ? "plus" : "save") fs-2" style="margin-top: -1px;"></i>
+        <span class="kt-hidden-mobile">@(isNew ? "保 存" : "更 新")</span>
+    </button>
+    <a href="@Url.Action("Index")" class="btn btn-sm btn-outline btn-outline-dashed btn-outline-default">
+        <i class="fas fa-reply fs-2"></i>
+        <span class="kt-hidden-mobile">返 回</span>
+    </a>
 </div>

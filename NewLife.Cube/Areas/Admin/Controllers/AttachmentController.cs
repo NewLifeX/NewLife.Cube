@@ -9,5 +9,10 @@ namespace NewLife.Cube.Cube.Controllers
     [Menu(38, true, Icon = "fa-file-text")]
     public class AttachmentController : EntityController<Attachment>
     {
+        static AttachmentController()
+        {
+            ListFields.RemoveField("ID", "UpdateUserID", "UpdateIP");
+            ListFields.RemoveCreateField();
+        }
     }
 }

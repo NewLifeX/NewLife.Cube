@@ -4,7 +4,7 @@
     var msg = ViewBag.StatusMessage as String;
 
     var list_colors = new[] { "primary", "secondary", "success", "danger", "warning", "info" };
-    var colors = "warning";//list_colors[new Random().Next(0, 6)];
+    var colors = "warning";
 
     if (msg != null && msg.Contains("成功")) { colors = "success"; }
     else if (msg != null && msg.Contains("失败")) { colors = "danger"; }
@@ -22,8 +22,8 @@
             </svg>
         </span>
         <div class="d-flex flex-stack flex-grow-1">
-            <div class="fw-bold">
-                <h4 class="text-gray-800 fw-bolder">@msg</h4>
+            <div>
+                <h6 class="text-gray-600">@msg</h6>
                 <div class="fs-6 text-gray-600">
                 </div>
             </div>
