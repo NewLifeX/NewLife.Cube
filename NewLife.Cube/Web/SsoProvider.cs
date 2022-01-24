@@ -558,7 +558,7 @@ namespace NewLife.Cube.Web
                 IManageUser user = null;
                 if (password.StartsWithIgnoreCase("md5#"))
                 {
-                    var pass = password.Substring("md5#".Length);
+                    var pass = password["md5#".Length..];
                     user = User.Login(username, u =>
                     {
                         if (!u.Password.IsNullOrEmpty() && !u.Password.EqualIgnoreCase(pass))
@@ -936,8 +936,8 @@ namespace NewLife.Cube.Web
             var p = key.IndexOf('$');
             if (p >= 0)
             {
-                name2 = key.Substring(0, p);
-                key = key.Substring(p + 1);
+                name2 = key[..p];
+                key = key[(p + 1)..];
             }
 
             if (!name.IsNullOrEmpty() && !name2.IsNullOrEmpty() && !name.EqualIgnoreCase(name2))

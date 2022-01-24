@@ -138,7 +138,7 @@ namespace NewLife.Cube.Entity
             if (url.StartsWithIgnoreCase("http://localhost/", "https://localhost/")) return true;
             if (url.StartsWithIgnoreCase("http://localhost:", "https://localhost:") && !url.Contains("@")) return true;
 
-            var sch = url.Substring(0, p + 3);
+            var sch = url[..(p + 3)];
 
             // 给没有头部的地址加上
             for (var i = 0; i < us.Length; i++)

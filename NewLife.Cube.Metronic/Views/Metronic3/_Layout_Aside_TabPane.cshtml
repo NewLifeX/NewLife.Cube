@@ -37,6 +37,9 @@
                         }).ToList();
         return menuList.Count > 0 ? menuList : null;
     }, menus);
+
+    var arrSet = new string[] { "/admin/core", "/admin/sys", "/admin/xcode", "/admin/cube", "/admin/oauthconfig" };
+    var t = HttpContext.Current.Request.Path.ToString().ToLower();
 }
 
 <!-- 开始副侧边栏-->
@@ -44,10 +47,10 @@
     <!--begin::Workspace-->
     <div class="aside-workspace scroll scroll-push my-2">
         <div class="tab-content">
-            <div class="tab-pane fade active show" id="cube_aside_menu_admin">
+            <div class="tab-pane fade @(arrSet.Contains(t)?"":"active show")" id="cube_aside_menu_admin">
                 @await Html.PartialAsync("_Layout_Aside_Menu", menuTree)
             </div>
-            <div class="tab-pane fade" id="cube_aside_menu_setting">
+            <div class="tab-pane fade @(arrSet.Contains(t)?"active show":"")" id="cube_aside_menu_setting">
                 @await Html.PartialAsync("_Layout_Aside_TabPane_Setting")
             </div>
         </div>

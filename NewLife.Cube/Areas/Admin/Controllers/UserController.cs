@@ -297,6 +297,10 @@ namespace NewLife.Cube.Admin.Controllers
                 //OAuthItems = ms,
             };
 
+            // 默认登录提示，没有新用户之前
+            if (model.LoginTip.IsNullOrEmpty() && XCode.Membership.User.Meta.Count <= 1)
+                model.LoginTip = "首个注册登录用户成为管理员，默认用户admin/admin，推荐第三方登录";
+
             if (model.ResourceUrl.IsNullOrEmpty()) model.ResourceUrl = "/Content";
             model.ResourceUrl = model.ResourceUrl.TrimEnd('/');
 

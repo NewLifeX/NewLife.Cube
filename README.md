@@ -2,8 +2,10 @@
 魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！  
 内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。  
 
+快速体验：  
+> docker run newlifex/cube
+
 演示站点：https://cube.newlifex.com `CentOS7 + CDN`  
-函数计算：http://cube.feifan.link `阿里云函数计算128M`  
 SSO中心：https://sso.newlifex.com `OAuth服务端`  
 
 魔方教程：https://www.yuque.com/smartstone/cube  

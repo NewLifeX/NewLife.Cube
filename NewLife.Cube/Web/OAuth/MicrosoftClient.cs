@@ -79,8 +79,8 @@ namespace NewLife.Web.OAuth
             if (action == nameof(GetAccessToken))
             {
                 var p = url.IndexOf('?');
-                var dic = url.Substring(p + 1).SplitAsDictionary("=", "&").ToDictionary(e => e.Key, e => HttpUtility.UrlDecode(e.Value));
-                url = url.Substring(0, p);
+                var dic = url[(p + 1)..].SplitAsDictionary("=", "&").ToDictionary(e => e.Key, e => HttpUtility.UrlDecode(e.Value));
+                url = url[..p];
                 //WriteLog(dic.ToJson(true));
 
                 var client = GetClient();

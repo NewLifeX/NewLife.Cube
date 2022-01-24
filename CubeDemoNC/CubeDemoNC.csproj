@@ -10,6 +10,7 @@
     <AssemblyVersion>5.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <UserSecretsId>1396351c-62fe-4836-9e51-9d77859955ad</UserSecretsId>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)'=='net5.0'">
@@ -39,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust" Version="1.5.2021.1225" />
+    <PackageReference Include="NewLife.Stardust" Version="2.0.2022.101" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.11" Condition="'$(TargetFramework)'=='net5.0'" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.14" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>

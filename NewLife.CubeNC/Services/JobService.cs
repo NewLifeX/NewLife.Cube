@@ -43,8 +43,8 @@ namespace NewLife.Cube.Services
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _timer.TryDispose();
-            _timers.TryDispose();
-            _timers.Clear();
+            _jobs.TryDispose();
+            _jobs.Clear();
 
             return Task.CompletedTask;
         }
@@ -52,11 +52,20 @@ namespace NewLife.Cube.Services
         /// <summary>唤醒作业调度，作业配置有变更</summary>
         public static void Wake() => _timer.SetNext(1_000);
 
-        private readonly IList<MyJob> _timers = new List<MyJob>();
+        /// <summary>唤醒具体作业</summary>
+        /// <param name="jobId"></param>
+        /// <param name="ms"></param>
+        public static void Wake(Int32 jobId, Int32 ms)
+        {
+            var job = _jobs.FirstOrDefault(e => e.Job.Id == jobId);
+            if (job != null) job.Wake(ms);
+        }
+
+        private static IList<MyJob> _jobs = new List<MyJob>();
 
         private void DoJob(Object state)
         {
-            if (_timers.Count == 0)
+            if (_jobs.Count == 0)
             {
                 // 添加默认作业
                 CronJob.Add(null, RunSql, "15 * * * * ? *", false);
@@ -66,11 +75,11 @@ namespace NewLife.Cube.Services
             var list = CronJob.FindAll();
             foreach (var item in list)
             {
-                var job = _timers.FirstOrDefault(e => e.Job.Id == item.Id);
+                var job = _jobs.FirstOrDefault(e => e.Job.Id == item.Id);
                 if (job == null)
                 {
                     job = new MyJob { Job = item, Tracer = _tracer };
-                    _timers.Add(job);
+                    _jobs.Add(job);
                 }
                 job.Job = item;
 
@@ -119,8 +128,8 @@ namespace NewLife.Cube.Services
             var p = argument.IndexOf('#');
             if (p <= 0) return;
 
-            var connName = argument.Substring(0, p).Trim();
-            var sql = argument.Substring(p + 1).Trim();
+            var connName = argument[..p].Trim();
+            var sql = argument[(p + 1)..].Trim();
 
             var message = $"执行 在[{connName}]上执行SQL。";
             var success = true;
@@ -207,8 +216,8 @@ namespace NewLife.Cube.Services
             var p = cmd.LastIndexOf('.');
             if (p <= 0) throw new InvalidOperationException($"无效作业方法 {cmd}");
 
-            var type = cmd.Substring(0, p).GetTypeEx();
-            var method = type?.GetMethodEx(cmd.Substring(p + 1));
+            var type = cmd[..p].GetTypeEx();
+            var method = type?.GetMethodEx(cmd[(p + 1)..]);
             if (method == null || !method.IsStatic) throw new InvalidOperationException($"无效作业方法 {cmd}");
 
             _action = method.As<Action<String>>();
@@ -218,7 +227,7 @@ namespace NewLife.Cube.Services
 
             // 实例化定时器，原定时器销毁
             _timer.TryDispose();
-            _timer = new TimerX(DoJobWork, job, expession) { Async = true };
+            _timer = new TimerX(DoJobWork, job, expession) { Async = true, Tracer = Tracer };
 
             job.NextTime = _timer.NextTime;
             job.Update();
@@ -239,11 +248,14 @@ namespace NewLife.Cube.Services
             _id = null;
         }
 
+        public void Wake(Int32 ms) => _timer?.SetNext(ms);
+
         private void DoJobWork(Object state)
         {
             var job = Job;
             job.LastTime = DateTime.Now;
 
+            using var span = Tracer?.NewSpan($"job:{job}", job);
             var sw = Stopwatch.StartNew();
             var message = "";
             var success = true;
@@ -253,6 +265,7 @@ namespace NewLife.Cube.Services
             }
             catch (Exception ex)
             {
+                span?.SetError(ex, null);
                 XTrace.WriteException(ex);
 
                 success = false;

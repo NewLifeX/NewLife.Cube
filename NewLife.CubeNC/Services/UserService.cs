@@ -113,7 +113,7 @@ namespace NewLife.Cube.Services
                 var addr = ip.IPToAddress();
                 if (!addr.IsNullOrEmpty())
                 {
-                    if (addr.StartsWith("广西")) addr = "广西自治区" + addr.Substring(2);
+                    if (addr.StartsWith("广西")) addr = "广西自治区" + addr[2..];
                     var addrs = addr.Split("省", "自治区", "市", "区", "县");
                     if (addrs != null && addrs.Length >= 2)
                     {

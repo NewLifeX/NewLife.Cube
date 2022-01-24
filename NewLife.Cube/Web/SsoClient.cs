@@ -60,8 +60,8 @@ namespace NewLife.Cube.Web
                 var p = key.IndexOf('$');
                 if (p >= 0)
                 {
-                    name = key.Substring(0, p);
-                    key = key.Substring(p + 1);
+                    name = key[..p];
+                    key = key[(p + 1)..];
                 }
 
                 // RSA公钥加密
@@ -157,8 +157,8 @@ namespace NewLife.Cube.Web
                 var p = key.IndexOf('$');
                 if (p >= 0)
                 {
-                    name = key.Substring(0, p);
-                    key = key.Substring(p + 1);
+                    name = key[..p];
+                    key = key[(p + 1)..];
                 }
 
                 // RSA公钥加密
