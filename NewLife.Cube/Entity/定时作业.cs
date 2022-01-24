@@ -55,7 +55,7 @@ namespace NewLife.Cube.Entity
         /// <summary>命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数</summary>
         [DisplayName("命令")]
         [Description("命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数")]
-        [DataObjectField(false, false, true, 50)]
+        [DataObjectField(false, false, true, 200)]
         [BindColumn("Method", "命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数", "")]
         public String Method { get => _Method; set { if (OnPropertyChanging("Method", value)) { _Method = value; OnPropertyChanged("Method"); } } }
 
