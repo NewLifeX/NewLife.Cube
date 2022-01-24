@@ -3956,7 +3956,7 @@ var __webpack_exports__ = {};
   \***********************************************************/
 // Tiny slider - for all purposes, inspired by Owl Carousel.
 
-window.tns = __webpack_require__(/*! tiny-slider/src/tiny-slider.js */ "./node_modules/tiny-slider/src/tiny-slider.js").tns;
+window.tns = (__webpack_require__(/*! tiny-slider/src/tiny-slider.js */ "./node_modules/tiny-slider/src/tiny-slider.js").tns);
 
 })();
 
