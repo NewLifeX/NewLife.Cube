@@ -31,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.ElementUI", "N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Metronic8", "NewLife.Cube.Metronic8\NewLife.Cube.Metronic8.csproj", "{3E49E9CA-6C90-4BDC-9DFD-50152DFA6524}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CubeSSO", "CubeSSO\CubeSSO.csproj", "{CBCBA758-456E-4852-85E1-D40E56A929D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CubeSSO", "CubeSSO\CubeSSO.csproj", "{CBCBA758-456E-4852-85E1-D40E56A929D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
