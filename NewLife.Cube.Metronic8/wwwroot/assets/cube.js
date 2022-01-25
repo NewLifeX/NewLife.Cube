@@ -45,9 +45,13 @@
     //时间
     $(".form_datetime_hms").flatpickr({
         dateFormat: "Y-m-d H:i:S",
+        weekNumbers: true,
+        locale: "zh"
     });
     $(".form_datetime").flatpickr({
-        dateFormat : "Y-m-d",
+        dateFormat: "Y-m-d",
+        weekNumbers: true,
+        locale: "zh"
     });
 
     //弹出提示对话框

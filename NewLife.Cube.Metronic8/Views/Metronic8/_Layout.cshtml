@@ -67,11 +67,11 @@
             @await Html.PartialAsync("_Layout_Header")
             <div class="wrapper d-flex flex-column flex-row-fluid pb-20" id="kt_wrapper">
                 <!-- 内容 -->
-                <div class="content d-flex flex-column flex-column-fluid" id="kt_content">
+                <div class="content d-flex flex-column flex-column-fluid pt-lg-5" id="kt_content">
                     @await Html.PartialAsync("_Layout_Toolbar")
 
                     <div class="post d-flex flex-column-fluid" id="dt_post">
-                        <div class="container-fluid" id="dt_content_container">
+                        <div class="container-fluid px-lg-5" id="dt_content_container">
                             @RenderBody()
 
                             <!-- 内容底部 -->
@@ -94,6 +94,7 @@
     <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
 
     <!--魔方自定义脚本-->
+    <script src="~/assets/plugins/custom/flatpickr/zh.js"></script>
     <script src="~/assets/cube.js"></script>
     <!--自定义脚本-->
     @RenderSection("scripts", required: false)
@@ -140,7 +141,6 @@
     }
 
     <script>
-        // 日历控件
         $(function () {
             @if (set != null && set.BootstrapSelect) {<text>
             $('.multiselect').each(function () {
