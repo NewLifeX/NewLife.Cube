@@ -23,9 +23,13 @@
     </div>
 </div>
 
-<!--列表分页-->
+<!-- 列表分页 -->
 @await Html.PartialAsync("_List_Pager")
-<!--列表页脚-->
+
+<!-- 底部图表 -->
+@await Html.PartialAsync("_List_FooterCharts")
+
+<!-- 列表页脚 -->
 @await Html.PartialAsync("_List_Footer")
 
 

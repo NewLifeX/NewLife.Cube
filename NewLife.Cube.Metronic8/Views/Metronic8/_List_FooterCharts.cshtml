@@ -1,11 +1,11 @@
 ﻿@*
-    列表视图顶部仪表盘或导航栏
+    列表视图底部图表
 *@
 @using NewLife.Cube.Charts;
 @using NewLife.Web;
 @using XCode;
 @{
-    var charts = ViewBag.Charts as ECharts[];
+    var charts = ViewBag.Charts2 as ECharts[];
     var i = 0;
     var columns = 3; // 每行3个图表卡片
 }
@@ -18,12 +18,12 @@
         if (len == 0 || i >= len) break;
         var count = (len > (row + 1) * columns) ? columns : len - row * columns; // 当前行图表卡片数量
 
-        <div class="row g-5 g-xl-8 mx-0">
+        <div class="row g-5 g-xl-8 mx-0 mt-0">
             @switch (count)
             {
                 // 一个图表
                 case 1:
-                    <div class="card mb-3">
+                    <div class="card mb-3 mt-3">
                         <div class="card-body pb-0">
                             @await Html.PartialAsync("_Cube_Widgets_ECharts", charts[i++])
                         </div>
