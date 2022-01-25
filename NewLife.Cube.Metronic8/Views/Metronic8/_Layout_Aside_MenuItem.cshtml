@@ -8,10 +8,9 @@
     var rs_p = item.ParentID == 0;
     var rs_active = item.ID == menu.ID|| item.ID==menu.ParentID;
 
-    var icons = new string[] {
-    "home", "bars", "book", "chess-queen", "certificate", "desktop", "cloud", "comment", "feather","star",
-    "hammer","link","leaf","layer-group","tags","cogs","seedling","shopping-bag","sitemap","trophy",
-    "heart","cubes","database","truck","tshirt","user","flag","car","video","tint"};
+    var icons = new string[] {"home", "bars", "books", "chess-queen", "certificate", "desktop", "cloud", "comment", "feather", "star",
+        "hammer", "link", "leaf", "layer-group", "clone", "tags", "seedling", "shopping-bag", "sitemap", "trophy", "heart", "database", 
+        "flag", "tint", "box", "brackets", "map", "eraser", "expand", "inbox", "list-alt", "location-arrow", "microsoft", "server"};
 
     var icon = item.Icon.IsNullOrEmpty() ? "cogs" : item.Icon;
     if (!item.Name.EqualIgnoreCase("admin") && item.Icon.IsNullOrEmpty())
@@ -19,6 +18,8 @@
         var indx = item.ID % 30;
         icon = icons[indx];
     }
+    icon = icon.Contains("fa-") ? icon : "fa-" + icon.TrimStart("fa-");
+    icon = item.Name.EqualIgnoreCase("cube") ? "fa-cube" : icon;
 }
 
 @if (item.Visible)
@@ -32,11 +33,11 @@
         {
             menus = fact.GetMySubMenus(item.ID, user, true);
         }
+
         <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
             <span class="menu-link">
-                @* <span class="@(rs_p ? "menu-icon" : "menu-bullet")">*@
                 <span class="menu-icon">
-                    <span class="fas fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></span>
+                    <span class="fas @icon @(rs_active ? "text-primary" : "text-gray-700") @(rs_p ? " fs-3" : "")"></span>
                 </span>
                 <span class="menu-title fs-4">@item.DisplayName</span>
                 <span class="menu-arrow"></span>
