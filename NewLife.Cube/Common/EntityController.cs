@@ -14,6 +14,7 @@ using System.IO;
 using NewLife.Cube.Entity;
 using NewLife.Reflection;
 using Microsoft.AspNetCore.Http;
+using System.Threading;
 #if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
@@ -356,6 +357,42 @@ namespace NewLife.Cube
 
             return fileName;
         }
+
+        /// <summary>批量启用</summary>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Update)]
+        public ActionResult EnableSelect(String keys) => EnableOrDisableSelect();
+
+        /// <summary>批量禁用</summary>
+        /// <param name="keys"></param>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Update)]
+        public ActionResult DisableSelect(String keys) => EnableOrDisableSelect(false);
+
+        private ActionResult EnableOrDisableSelect(Boolean isEnable = true)
+        {
+            var count = 0;
+            var ids = GetRequest("keys").SplitAsInt();
+            var fields = Factory.AllFields;
+            if (ids.Length > 0 && fields.Any(f => f.Name.EqualIgnoreCase("enable")))
+            {
+                foreach (var id in ids)
+                {
+                    var entity = Factory.Find("ID", id);
+                    if (entity != null && entity["Enable"].ToBoolean() != isEnable)
+                    {
+                        entity.SetItem("Enable", isEnable);
+                        entity.Update();
+
+                        Interlocked.Increment(ref count);
+                    }
+                }
+            }
+
+            return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个用户");
+        }
+
         #endregion
 
         #region 高级Action

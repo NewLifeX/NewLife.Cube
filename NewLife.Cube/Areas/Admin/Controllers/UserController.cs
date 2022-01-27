@@ -699,38 +699,38 @@ namespace NewLife.Cube.Admin.Controllers
             return RedirectToAction("Edit", new { id });
         }
 
-        /// <summary>批量启用</summary>
-        /// <param name="keys"></param>
-        /// <returns></returns>
-        [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult EnableSelect(String keys) => EnableOrDisableSelect();
+        ///// <summary>批量启用</summary>
+        ///// <param name="keys"></param>
+        ///// <returns></returns>
+        //[EntityAuthorize(PermissionFlags.Update)]
+        //public ActionResult EnableSelect(String keys) => EnableOrDisableSelect();
 
-        /// <summary>批量禁用</summary>
-        /// <param name="keys"></param>
-        /// <returns></returns>
-        [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult DisableSelect(String keys) => EnableOrDisableSelect(false);
+        ///// <summary>批量禁用</summary>
+        ///// <param name="keys"></param>
+        ///// <returns></returns>
+        //[EntityAuthorize(PermissionFlags.Update)]
+        //public ActionResult DisableSelect(String keys) => EnableOrDisableSelect(false);
 
-        private ActionResult EnableOrDisableSelect(Boolean isEnable = true)
-        {
-            var count = 0;
-            var ids = GetRequest("keys").SplitAsInt();
-            if (ids.Length > 0)
-            {
-                foreach (var id in ids)
-                {
-                    var user = FindByID(id);
-                    if (user != null && user.Enable != isEnable)
-                    {
-                        user.Enable = isEnable;
-                        user.Update();
+        //private ActionResult EnableOrDisableSelect(Boolean isEnable = true)
+        //{
+        //    var count = 0;
+        //    var ids = GetRequest("keys").SplitAsInt();
+        //    if (ids.Length > 0)
+        //    {
+        //        foreach (var id in ids)
+        //        {
+        //            var user = FindByID(id);
+        //            if (user != null && user.Enable != isEnable)
+        //            {
+        //                user.Enable = isEnable;
+        //                user.Update();
 
-                        Interlocked.Increment(ref count);
-                    }
-                }
-            }
+        //                Interlocked.Increment(ref count);
+        //            }
+        //        }
+        //    }
 
-            return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个用户");
-        }
+        //    return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个用户");
+        //}
     }
 }
