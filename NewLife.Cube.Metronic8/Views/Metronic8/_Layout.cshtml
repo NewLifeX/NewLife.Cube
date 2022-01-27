@@ -38,12 +38,10 @@
     <!-- 核心脚本 -->
     <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-    <!--<link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />-->
     
     <!-- 全局脚本 -->
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
-    <!--<script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>-->
 
     @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
     {
@@ -94,7 +92,6 @@
     <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
 
     <!--魔方自定义脚本-->
-    <script src="~/assets/plugins/custom/flatpickr/zh.js"></script>
     <script src="~/assets/cube.js"></script>
     <!--自定义脚本-->
     @RenderSection("scripts", required: false)
@@ -175,12 +172,46 @@
             });
         });
 
-        // 区间时间插件
+        // 时间控件
+        $(".form_datetime").daterangepicker({
+            singleDatePicker: true,
+            showDropdowns: true,
+            timePicker: true,
+            timePicker24Hour: true,
+            locale: {
+                format: 'MM-DD hh:mm:ss',
+                applyLabel: '确定',
+                cancelLabel: '取消',
+                daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+                monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            }
+        }).on('apply.daterangepicker', function(ev, picker){
+            $(this).val(picker.startDate.format("YYYY-MM-DD hh:mm:ss"));
+        }).on('cancel.daterangepicker', function(ev, picker){
+            $(this).val('');
+        });
+
+        $(".form_datet").daterangepicker({
+            singleDatePicker: true,
+            showDropdowns: true,
+            timePicker: true,
+            timePicker24Hour: true,
+            locale: {
+                format: 'MM-DD',
+                applyLabel: '确定',
+                cancelLabel: '取消',
+                daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+                monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            }
+        }).on('apply.daterangepicker', function(ev, picker){
+            $(this).val(picker.startDate.format("YYYY-MM-DD"));
+        }).on('cancel.daterangepicker', function(ev, picker){
+            $(this).val('');
+        });
+
+        // 时间区间插件
         $("input[name='dtRange']").daterangepicker(
             {
-                // autoApply: true,
-                // autoUpdateInput: false,
-                // alwaysShowCalendars: true,
                 buttonClasses: 'btn',
                 applyClass: 'btn-primary',
                 cancelClass: 'btn-secondary',

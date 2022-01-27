@@ -9,14 +9,14 @@
     var value = (DateTime)Model.Value;
     var type = Model.Type;
 
-    var cls = "form_datetime_hms";
+    var cls = "form_datetime";
     var dt = value == DateTime.MinValue ? DateTime.Now : value;
     // 最小时间不显示
     if (value <= DateTime.MinValue || value.Year <= 1900) dt = DateTime.Now;
     // 日期
     if (name.EndsWithIgnoreCase("Date"))
     {
-        cls = "form_datetime";
+        cls = "form_date";
     }
 
 }

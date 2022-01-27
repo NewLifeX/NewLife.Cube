@@ -15,7 +15,7 @@
 <div class="card card-flush">
     <div class="card-body">
         <div class="table-responsive dataTables_wrapper dt-bootstrap4">
-            <table class="table table-hover table-row-bordered table-row-dashed gy-4">
+            <table class="table table-hover table-row-bordered table-row-dashed align-middle gy-4">
                 <thead>
                     <tr class="fs-4 text-muted">
                         @if (set.EnableSelect && ukey != null)
@@ -71,8 +71,8 @@
                                             </div>
                                         }
                                         <div class="ml-4">
-                                            <div class="text-dark-75 font-weight-bolder font-size-lg mb-0">@entity.Name</div>
-                                            <a class="text-muted font-weight-bold text-hover-primary">@entity.Mail</a>
+                                            <div class="text-dark-75 fs-4 fw-bold mb-0">@entity.Name</div>
+                                            <a class="text-muted text-hover-primary">@entity.Mail</a>
                                         </div>
                                     </div>
                                 </span>
@@ -87,17 +87,17 @@
                                     {
                                         var name = item.MapProvider.EntityType.Name;
                                         var key = item.MapProvider.Key;
-                                        <td class="align-middle"><a href="@name?@key=@entity.RoleID">@entity.RoleName</a></td>
+                                        <td><a href="@name?@key=@entity.RoleID">@entity.RoleName</a></td>
 
                                     }
                                     else
                                     {
-                                        <td class="align-middle">@entity.RoleName</td>
+                                        <td>@entity.RoleName</td>
                                     }
                                 }
                                 else
                                 {
-                                    <td class="align-middle">@entity.RoleName</td>
+                                    <td>@entity.RoleName</td>
                                 }
 
                                 // 部门
@@ -108,20 +108,20 @@
                                     {
                                         var name = item.MapProvider.EntityType.Name;
                                         var key = item.MapProvider.Key;
-                                        <td class="align-middle"><a href="@name?@key=@entity.DepartmentID">@entity.DepartmentName</a></td>
+                                        <td><a href="@name?@key=@entity.DepartmentID">@entity.DepartmentName</a></td>
 
                                     }
                                     else
                                     {
-                                        <td class="align-middle">@entity.DepartmentName</td>
+                                        <td>@entity.DepartmentName</td>
                                     }
                                 }
                                 else
                                 {
-                                    <td class="align-middle">@entity.DepartmentName</td>
+                                    <td>@entity.DepartmentName</td>
                                 }
                             }
-                            <td class="text-center align-middle">
+                            <td class="text-center">
                                 @{
                                     var bval = entity.Enable;
                                     @if (fact.Unique != null)
@@ -156,8 +156,8 @@
                             </td>
                             <td>
                                 <span style="width:137px">
-                                    <div class="text-right font-weight-bold font-size-lg mb-0" data-bs-toggle="tooltip" data-bs-placement="top" title="当前用户登录次数及最近登录时间">@entity.Logins</div>
-                                    <div class="text-right text-muted text-hover-primary">@entity.LastLogin.ToFullString("")</div>
+                                    <div class="fs-4 fw-blod mb-0" data-bs-toggle="tooltip" data-bs-placement="top" title="当前用户登录次数及最近登录时间">@entity.Logins</div>
+                                    <div class="text-muted text-hover-primary">@entity.LastLogin.ToFullString("")</div>
                                 </span>
                             </td>
                             @if (this.Has(PermissionFlags.Detail))
