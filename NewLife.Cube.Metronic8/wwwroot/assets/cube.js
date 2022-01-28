@@ -124,32 +124,11 @@ function doClickAction($this) {
     doAction(method, curl, parameter);
 }
 
-function toastrShow(title, msg) {
-    toastr.options = {
-        "closeButton": false,
-        "debug": false,
-        "newestOnTop": true,
-        "progressBar": true,
-        "positionClass": "toastr-top-right",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "3000",
-        "hideDuration": "1000",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    };
-    toastr.info(msg, title);
-}
-
 //ajax请求 methodName 指定GET与POST
 function doAction(methodName, actionUrl, actionParamter) {
     if (!methodName || methodName.length <= 0 || !actionUrl || actionUrl.length <= 0) {
         //tips('请求参数异常，请保证请求的地址跟参数正确！', 0, 1000);
-        toastrShow("错误", "请求参数异常，请保证请求的地址跟参数正确！");
+        toastr.error("请求参数异常，请保证请求的地址跟参数正确！");
         return;
     }
 
@@ -161,7 +140,7 @@ function doAction(methodName, actionUrl, actionParamter) {
         data: actionParamter,
         error: function (ex) {
             //tips('请求异常！', 0, 1000);
-            toastrShow("错误", "请求异常！");
+            toastr.error("请求异常！");
             //console.log(ex);
         },
         beforeSend: function () {
@@ -175,7 +154,7 @@ function doAction(methodName, actionUrl, actionParamter) {
 
             if (rs.message || rs.data) {
                 //tips(rs.message || rs.data, 0, 1000);
-                toastrShow("提示", rs.message);
+                toastr.info(rs.message);
             }
 
             if (rs.url && rs.url.length > 0) {

@@ -5,6 +5,7 @@
 @using System.Linq;
 @using System.Reflection;
 @using NewLife.Cube
+@using NewLife.Cube.Areas.Admin.Models
 @using XCode;
 @using XCode.Configuration
 @using NewLife.Cube.Entity;
@@ -83,9 +84,9 @@
                                 </a>
                             </div>
                         </div>
-@*                        <div class="d-flex my-4">
+                        @*                        <div class="d-flex my-4">
                             <a href="@Url.Action("Edit","Role", new {ID=user.RoleID})" class="btn btn-sm btn-light-primary btn-active-primary me-3"><i class="fas fa-user-cog text-info pe-2"></i>角 色</a>
-                        </div>*@
+                            </div>*@
                     </div>
 
                     <div class="d-flex flex-wrap flex-stack">
@@ -110,41 +111,32 @@
                     </div>
                 </div>
             </div>
+
+            <div class="separator"></div>
+            <!--begin::Nav wrapper-->
+            <div class="d-flex overflow-auto h-55px">
+                <!--begin::Nav links-->
+                <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-4 fw-bold flex-nowrap">
+                    <li class="nav-item">
+                        <a class="nav-link text-active-primary me-6 active" href="@Url.Action("Info")">基本信息</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-active-primary me-6" href="@Url.Action("ChangePassword")">修改密码</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-active-primary me-6" href="@Url.Action("Binds")">第3方登录</a>
+                    </li>
+                </ul>
+                <!--end::Nav links-->
+            </div>
+            <!--end::Nav wrapper-->
         </div>
     </div>
 </div>
 
-<div class="row g-5 g-xl-5 pt-5">
-    <!--begin::Col-->
-    <div class="col-xl-3">
-        <!--begin::Mixed Widget 5-->
-        <div class="card card-xxl-stretch mb-xl-8">
-            <div class="card-header">
-                <h4 class="card-title text-muted">信息选项</h4>
-            </div>
 
-            <div class="text-center col-md-12 cube-flex-con cube-flex-items">
-                <ul class="nav nav-tabs nav-pills flex-row border-0 flex-md-column mt-2 mb-3 mb-md-0 fs-6">
-                    <li class="nav-item me-0 pt-2 pm-3 text-start">
-                        <a class="nav-link active bg-light-info text-info" href="@Url.Action("info")"><span class="fas fa-user text-info pe-5"></span>用户基本信息</a>
-                    </li>
-                    <li class="nav-item me-0 pt-2 pm-3 text-start">
-                        <a class="nav-link text-gray-700" href="@Url.Action("ChangePassword", new {ID=user.ID})"><span class="fas fa-unlock text-gray-700 pe-5"></span>修改密码</a>
-                    </li>
-                    <li class="nav-item me-0 pt-2 pm-3 text-start">
-                        <a class="nav-link text-gray-700" href="@Url.Action("Binds", new {ID=user.ID})"><span class="fas fa-user-lock text-gray-700 pe-5"></span>第3方登录授权</a>
-                    </li>
-
-                </ul>
-            </div>
-        </div>
-        <!--end::Mixed Widget 5-->
-    </div>
-    <!--end::Col-->
-
-    <!--begin::Col-->
-    <div class="col-xl-9">
-        <!--begin::Tables Widget 5-->
+<div class="tab-content pt-5">
+    <div id="pane_overview" class="tab-pane fade show active">
         <div class="card card-xxl-stretch mb-5 mb-xl-8">
             <div class="card-header cursor-pointer">
                 <div class="card-title m-0">
@@ -235,7 +227,5 @@
                 </div>
             </div>
         </div>
-        <!--end::Tables Widget 5-->
     </div>
-    <!--end::Col-->
 </div>

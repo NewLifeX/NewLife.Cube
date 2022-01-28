@@ -20,7 +20,8 @@
     var set = ViewBag.PageSetting as PageSetting;
     var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
     // 判断当前是否为实体对象新删改及详情查看视图
-    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info") || an.Contains("detail");
+    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info") || an.Contains("detail") 
+        || an.Contains("changepassword") || an.Contains("binds");
     <!--可以通过判断手机端隐藏-->
     var mb = Context.Request.Headers["User-Agent"].ToString().ToLower();
 
