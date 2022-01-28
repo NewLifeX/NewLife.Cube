@@ -124,7 +124,7 @@
       <Column Name="OAuthProvider" DataType="String" Description="OAuth提供商。从哪个渠道登录" />
       <Column Name="Times" DataType="Int32" Description="次数" />
       <Column Name="Page" DataType="String" Description="页面" />
-      <Column Name="Status" DataType="String" Description="状态" />
+      <Column Name="Status" DataType="String" Length="200" Description="状态" />
       <Column Name="OnlineTime" DataType="Int32" Description="在线时间。本次在线总时间，秒" />
       <Column Name="LastError" DataType="DateTime" Nullable="False" Description="最后错误" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" />

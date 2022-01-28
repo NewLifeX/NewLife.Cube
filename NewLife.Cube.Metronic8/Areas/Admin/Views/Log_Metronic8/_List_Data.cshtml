@@ -15,7 +15,7 @@
 <div class="card card-fulsh">
     <div class="card-body">
         <div class="table-responsive dataTables_wrapper dt-bootstrap4">
-            <table class="table table-hover table-row-bordered table-row-dashed gy-4">
+            <table class="table table-hover table-row-bordered table-row-dashed align-middle gy-4">
                 <thead>
                     <tr class="fs-4 text-muted">
                         @if (set.EnableSelect)
@@ -24,11 +24,11 @@
                         }
                         <th><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
-                        <th class="text-center align-middle"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
+                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
                         <th class="text-right"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
                         <th><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
-                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
                         <th class="" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
                         <th class="text-center">附近</th>
                         @if (this.Has(PermissionFlags.Detail))
