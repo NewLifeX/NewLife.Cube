@@ -89,24 +89,34 @@
                             </div>*@
                     </div>
 
-                    <div class="d-flex flex-wrap flex-stack">
+                    <div class="d-flex flex-wrap flex-stack justify-content-between">
                         <div class="d-flex flex-column flex-grow-1 pe-8">
                             <div class="d-flex flex-wrap">
                                 <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
-                                    <div class="fs-2 counted">@user.Logins</div>
-                                    <div class="fw-bold fs-8 text-gray-400">登录次数</div>
+                                    <div class="fs-4">@user.RegisterTime.ToFullString()</div>
+                                    <div class="fw-bold fs-8 text-gray-400">注册时间</div>
                                 </div>
                                 <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
-                                    <div class="fs-2 counted"><span class="fs-4">@user.LastLoginIP</span></div>
-                                    <div class="fw-bold fs-8 text-gray-400">最后登录IP</div>
-                                </div>
-                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
-                                    <div class="fs-2 counted"><span class="fs-4">@user.LastLogin.ToFullString()</span></div>
-                                    <div class="fw-bold fs-6 text-gray-400">最后登录时间</div>
+                                    <div class="fs-4"><span class="fs-4">@(!user.RegisterIP.IsNullOrEmpty() ? user.RegisterIP : ".")</span></div>
+                                    <div class="fs-8 fw-bold text-gray-400">注册IP</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center w-200px w-sm-300px flex-column mt-3">
+                        <div class="d-flex flex-column flex-grow-1 pe-8">
+                            <div class="d-flex flex-wrap">
+                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                    <div class="fs-4">@user.Logins</div>
+                                    <div class="fs-8 fw-bold text-gray-400">登录次数</div>
+                                </div>
+                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                    <div class="fs-4"><span class="fs-4">@user.LastLoginIP</span></div>
+                                    <div class="fs-8 fw-bold text-gray-400">最后登录IP</div>
+                                </div>
+                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                    <div class="fs-4 counted"><span class="fs-4">@user.LastLogin.ToFullString()</span></div>
+                                    <div class="fs-8 fw-bold text-gray-400">最后登录时间</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

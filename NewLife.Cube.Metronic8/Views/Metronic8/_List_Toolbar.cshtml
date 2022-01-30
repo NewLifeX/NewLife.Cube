@@ -10,6 +10,9 @@
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var title = ViewBag.Title;
+    var user = ViewBag.User as IUser ?? ManageProvider.User;
+    var layoutSet = Parameter.GetOrAdd(user.ID, "LayoutSetting", ViewBag.Title as String, "table");
+    var mode = layoutSet.Value;
 
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty())
@@ -57,12 +60,12 @@
         <!--begin::列表模式-->
         <ul class="nav nav-pills me-2">
             <li class="nav-item m-0">
-                <a class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary me-3" data-bs-toggle="tab" href="#kt_card_pane">
+                <a id="btn_mode_card" class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary me-3 @(mode.EqualIgnoreCase("card") ? "active" : "")" data-bs-toggle="tab" href="#kt_card_pane">
                     <i class="fas fa-th-large fs-md-2"></i>
                 </a>
             </li>
             <li class="nav-item me-2">
-                <a class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary active" data-bs-toggle="tab" href="#kt_table_pane">
+                <a id="btn_mode_table" class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary @(mode.EqualIgnoreCase("table") ? "active" : "")" data-bs-toggle="tab" href="#kt_table_pane">
                     <i class="fas fa-list fs-md-2"></i>
                 </a>
             </li>
@@ -81,3 +84,11 @@
     <!--end::Controls-->
 </div>
 <!--end::Toolbar-->
+
+<script>
+    $("#btn_mode_card").click(function(){
+        @layoutSet.SetItem("Value", "card");
+        @layoutSet.Save();
+        console.log(@ViewBag.Title + " mode now is: card.");
+    });
+</script>

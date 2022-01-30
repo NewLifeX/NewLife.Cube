@@ -6,6 +6,9 @@
 @using XCode;
 @{
     var set = ViewBag.PageSetting as PageSetting;
+    var user = ViewBag.User as IUser ?? ManageProvider.User;
+    var layoutSet = Parameter.GetOrAdd(user.ID, "LayoutSetting", ViewBag.Title as String, "table");
+    var mode = layoutSet.Value;
 }
 
 <!-- 列表顶部仪表盘或导航栏，根据实际应用选择是否放置 -->
@@ -15,10 +18,10 @@
 @await Html.PartialAsync("_List_Toolbar")
 
 <div class="tab-content">
-    <div id="kt_table_pane" class="tab-pane fade show active">
+    <div id="kt_table_pane" class="tab-pane fade @(mode.EqualIgnoreCase("table") ? "show active" : "")">
         @await Html.PartialAsync("_List_Data")
     </div>
-    <div id="kt_card_pane" class="tab-pane fade">
+    <div id="kt_card_pane" class="tab-pane fade @(mode.EqualIgnoreCase("card") ? "show active" : "")">
         @await Html.PartialAsync("_List_Card")
     </div>
 </div>

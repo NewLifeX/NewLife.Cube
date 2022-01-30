@@ -38,7 +38,7 @@ else
     {
         @await Html.PartialAsync("_Form_Type_Map", Model)
     }
-    //自读属性
+    //只读属性
     else if (item.Name.EqualIgnoreCase("ID"))
     {
         <label class="form-control form-control-sm">@entity[item.Name]</label>

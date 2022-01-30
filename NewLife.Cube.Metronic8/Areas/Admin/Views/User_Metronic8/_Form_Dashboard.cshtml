@@ -1,31 +1,18 @@
 ﻿@*
-    用户信息
+    表单视图顶部仪表盘或导航栏
 *@
-@model ChangePasswordModel
-@using Microsoft.AspNetCore.Http
+@model XCode.Membership.User;
 @using NewLife;
 @using NewLife.Cube
-@using NewLife.Cube.Areas.Admin.Models;
-@using NewLife.Cube.Entity;
 @using XCode;
 @using XCode.Configuration
 @using XCode.Membership;
+
 @{
-    var requireOldPass = Model.SsoName.IsNullOrEmpty();
-    var user = ManageProvider.User;
+    var user = Model as IUser;
 }
 
-@using System.Linq;
-@using System.Reflection;
-@using NewLife.Cube
-@using NewLife.Cube.Areas.Admin.Models
-@using XCode;
-@using XCode.Configuration
-@using NewLife.Cube.Entity;
-@using XCode.Membership;
-@using NewLife;
-
-<div class="">
+<div class="pb-5">
     <div class="card">
         <div class="card-body pt-9 pb-0">
             <div class="d-flex flex-wrap flex-sm-nowrap mb-3">
@@ -93,6 +80,9 @@
                                 </a>
                             </div>
                         </div>
+                        @*                        <div class="d-flex my-4">
+                            <a href="@Url.Action("Edit","Role", new {ID=user.RoleID})" class="btn btn-sm btn-light-primary btn-active-primary me-3"><i class="fas fa-user-cog text-info pe-2"></i>角 色</a>
+                            </div>*@
                     </div>
 
                     <div class="d-flex flex-wrap flex-stack justify-content-between">
@@ -127,88 +117,6 @@
                     </div>
                 </div>
             </div>
-
-        <div class="separator"></div>
-        <!--begin::Nav wrapper-->
-        <div class="d-flex overflow-auto h-55px">
-            <!--begin::Nav links-->
-            <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-4 fw-bold flex-nowrap">
-                <li class="nav-item">
-                    <a class="nav-link text-active-primary me-6" href="@Url.Action("Info")">基本信息</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-active-primary me-6 active" href="@Url.Action("ChangePassword")">修改密码</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-active-primary me-6" href="@Url.Action("Binds")">第3方登录</a>
-                </li>
-            </ul>
-            <!--end::Nav links-->
-        </div>
-        <!--end::Nav wrapper-->
         </div>
     </div>
 </div>
-
-<div class="tab-content pt-5">
-    <div id="pane_changepassword" class="tab-pane fade show active">
-        <div class="card card-xxl-stretch mb-5 mb-xl-8">
-            <div class="card-header cursor-pointer">
-                <div class="card-title m-0">
-                    <h3 class="card-title text-muted">修改密码</h3>
-                </div>
-            </div>
-
-            <div class="card-body p-9">
-                @using (Html.BeginForm("ChangePassword", "User"))
-                {
-                    <div class="row mb-5">
-                        <label class="col-4 col-form-label d-flex justify-content-end text-muted">账号</label>
-                        <div class="col-lg-4">
-                            <input value="@Model.Name" type="text" class="form-control form-control-sm" disabled="disabled" />
-                        </div>
-                        <label class="col-lg-4 text-muted">
-                            @if (!Model.SsoName.IsNullOrEmpty())
-                            {
-                                <label>登录自 @Model.SsoName</label>
-                            }
-                        </label>
-                    </div>
-                    @if (requireOldPass)
-                    {
-                        <div class="row mb-5">
-                            <label class="col-4 col-form-label d-flex justify-content-end text-muted">原密码</label>
-                            <div class="col-lg-4">
-                                <input id="OldPassword" name="OldPassword" type="password" class="form-control form-control-sm" />
-                            </div>
-                            <label class="col-lg-5 text-muted"></label>
-                        </div>
-                    }
-                    <div class="row mb-5">
-                        <label class="col-4 col-form-label d-flex justify-content-end text-muted">新密码</label>
-                        <div class="col-lg-4">
-                            <input id="NewPassword" name="NewPassword" type="password" class="form-control form-control-sm" />
-                        </div>
-                        <label class="col-lg-5 text-muted"></label>
-                    </div>
-                    <div class="row mb-10">
-                        <label class="col-4 col-form-label d-flex justify-content-end text-muted">新密码</label>
-                        <div class="col-lg-4">
-                            <input id="NewPassword2" name="NewPassword2" type="password" class="form-control form-control-sm" />
-                        </div>
-                        <label class="col-lg-5 text-muted"></label>
-                    </div>
-
-                    <div class="clearfix form-actions col-sm-12 col-md-12 mt-10">
-                        <label class="control-label col-4"></label>
-                        <button type="submit" class="btn btn-sm  btn-outline btn-outline-primary align-self-center me-2"><i class="fas fa-save fs-2"></i><strong>保存</strong></button>
-                        <button type="button" class="btn btn-sm btn-outline btn-outline-dashed btn-outline-default align-self-center" onclick="history.go(-1);"><i class="fas fa-reply fs-2"></i><strong>取消</strong></button>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
