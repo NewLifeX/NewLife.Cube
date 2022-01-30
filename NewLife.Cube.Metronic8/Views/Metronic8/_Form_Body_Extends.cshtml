@@ -1,0 +1,65 @@
+﻿@*
+    表单内容 - 扩展信息
+*@
+
+@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+    var fields = ViewBag.Fields as FieldCollection;
+
+    var set = NewLife.Cube.Setting.Current;
+    var cls = set.FormGroupClass;
+    if (cls.IsNullOrEmpty())
+    {
+        cls = "col-xs-12 col-sm-6 col-lg-6 pt-2";
+    }
+}
+
+<div class="card-header collapsible cursor-pointer rotate" data-bs-toggle="collapse" data-bs-target="#form_extend_collapsible">
+    <h3 class="card-title">扩展信息</h3>
+    <div class="card-toolbar rotate-90">
+        <i class="fas fa-arrow-right text-primary"></i>
+    </div>
+</div>
+<div id="form_extend_collapsible" class="collapse">
+    <div class="card-body">
+        <div class="row">
+            @foreach (var item in fields)
+            {
+                if (!item.Name.EqualIgnoreCase("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6"))
+                    continue;
+
+                var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+                var dataField = fields.GetField(item.Name) as ListField;
+                var display = dataField?.DisplayName ?? item.DisplayName;
+
+                <div class="@cls">
+                    <!-- 字段标签（含帮助说明信息） -->
+                <div class="d-inline-flex align-items-center">
+                        <label class="col-form-label me-2" for="@item.Name">@display</label>
+                        @if (!des.IsNullOrEmpty())
+                        {
+                            <div class="d-none d-md-block d-lg-block">
+                                <i class="fas la-question-circle" data-bs-toggle="tooltip" title="@des"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- 字段编辑框 -->
+                <div class="flex-grow-1">
+                        @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                    </div>
+                    <span class="form-text text-muted d-sm-none"><span class="form-text text-muted">@des</span></span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+

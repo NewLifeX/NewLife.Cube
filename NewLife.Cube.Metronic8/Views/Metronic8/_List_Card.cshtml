@@ -22,14 +22,14 @@
 {
     if (list.Count() == 0 || i >= page.PageSize) { break; }
 
-    <div class="row g-5 g-xl-8">
+    <div class="row g-5 g-sm-5">
         @for(int col = 1; col <= columns; col++)
         {
             if (i >= list.Count()) { break; }
             var entity = entities[i++];
 
             <div class="col-xl-@(12/columns)">
-                <div class="card card-xl-stretch mb-xl-8">
+                <div class="card card-xl-stretch mb-sm-5">
                     @await Html.PartialAsync("_List_Card_Header", entity)
 
                     @await Html.PartialAsync("_List_Card_Body", entity)

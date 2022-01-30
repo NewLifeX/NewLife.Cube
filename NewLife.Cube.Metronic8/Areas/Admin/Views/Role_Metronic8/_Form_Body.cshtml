@@ -27,9 +27,11 @@
     <div class="row">
         @foreach (var item in fields)
         {
-            if (isNew && (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP")))
+            if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
                 continue;
+            @*扩展信息单独显示*@
+            if (item.Name.EqualIgnoreCase("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6")) continue;
 
             var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
             var dataField = fields.GetField(item.Name) as ListField;
@@ -84,6 +86,13 @@
     </div>
 </div>
 
+@if (fields.Any(f => f.Name.Contains("Ex1")))
+{
+    @await Html.PartialAsync("_Form_Body_Extends", entity)
+}
 
-
+@if (!isNew)
+{
+    @await Html.PartialAsync("_Form_Body_Audits", entity)
+}
 
