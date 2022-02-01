@@ -121,10 +121,10 @@
                                 }
                             </td>
                             <td class="text-center align-middle">
-                                <i class="la la-@(entity.Visible ? "check" : "remove")" style="color: @(entity.Visible ? "green" : "red");"></i>
+                                <i class="fas fa-@(entity.Visible ? "check" : "times") fw-bolder" style="color: @(entity.Visible ? "green" : "red");"></i>
                             </td>
                             <td class="text-center align-middle">
-                                <i class="la la-@(entity.AutoRegister ? "check" : "remove")" style="color: @(entity.AutoRegister ? "green" : "red");"></i>
+                                <i class="fa fa-@(entity.AutoRegister ? "check" : "times") fw-bolder" style="color: @(entity.AutoRegister ? "green" : "red");"></i>
                             </td>
                             @if (this.Has(PermissionFlags.Detail))
                             {
