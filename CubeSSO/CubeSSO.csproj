@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyTitle>魔方用户中心（SSO服务端）</AssemblyTitle>
-    <Version>5.0.2022.0203</Version>
-    <FileVersion>5.0.2022.0203</FileVersion>
+    <Version>5.0.2022.0204</Version>
+    <FileVersion>5.0.2022.0204</FileVersion>
     <AssemblyVersion>5.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\BinSSO</OutputPath>
