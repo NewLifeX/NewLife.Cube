@@ -40,12 +40,10 @@ namespace NewLife.Cube.Entity
 
             // 截取长度
             var len = _.Status.Length;
-            if (len <= 0) len = 50;
-            if (!Status.IsNullOrEmpty() && Status.Length > len) Status = Status[..len];
+            if (len > 0 && !Status.IsNullOrEmpty() && Status.Length > len) Status = Status[..len];
 
             len = _.Page.Length;
-            if (len <= 0) len = 50;
-            if (!Page.IsNullOrEmpty() && Page.Length > len) Page = Page[..len];
+            if (len > 0 && !Page.IsNullOrEmpty() && Page.Length > len) Page = Page[..len];
         }
         #endregion
 

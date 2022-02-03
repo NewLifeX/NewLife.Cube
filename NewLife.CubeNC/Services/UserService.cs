@@ -110,20 +110,11 @@ namespace NewLife.Cube.Services
             // 根据IP修正用户城市
             if (user is User user2 && (user2.AreaId == 0 || user2.AreaId % 10000 == 0))
             {
-                var addr = ip.IPToAddress();
-                if (!addr.IsNullOrEmpty())
+                var rs = Area.SearchIP(ip, 2);
+                if(rs.Count > 0)
                 {
-                    if (addr.StartsWith("广西")) addr = "广西自治区" + addr[2..];
-                    var addrs = addr.Split("省", "自治区", "市", "区", "县");
-                    if (addrs != null && addrs.Length >= 2)
-                    {
-                        var r = Area.FindByNames(addrs);
-                        if (r != null)
-                        {
-                            user2.AreaId = r.ID;
-                            user2.SaveAsync();
-                        }
-                    }
+                    user2.AreaId = rs[rs.Count - 1].ID;
+                    user2.SaveAsync();
                 }
             }
 

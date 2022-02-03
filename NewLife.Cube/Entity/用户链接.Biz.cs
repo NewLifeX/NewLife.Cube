@@ -119,7 +119,7 @@ namespace NewLife.Cube.Entity
             if (!provider.IsNullOrEmpty()) exp &= _.Provider == provider;
             if (userid > 0) exp &= _.UserID == userid;
             exp &= _.UpdateTime.Between(start, end);
-            if (!key.IsNullOrEmpty()) exp &= _.NickName.Contains(key) | _.OpenID.Contains(key);
+            if (!key.IsNullOrEmpty()) exp &= _.NickName.Contains(key) | _.OpenID == key | _.UnionID == key | _.DeviceId == key;
 
             return FindAll(exp, p);
         }
@@ -140,6 +140,7 @@ namespace NewLife.Cube.Entity
             uc.AccessToken = client.AccessToken;
             uc.RefreshToken = client.RefreshToken;
             uc.Expire = client.Expire;
+            uc.DeviceId = client.DeviceId;
 
             if (client.Items != null) uc.Remark = client.Items.ToJson();
         }

@@ -9,6 +9,7 @@
       <Column Name="UnionID" DataType="String" Description="全局标识。跨应用统一" />
       <Column Name="LinkID" DataType="Int64" Description="用户编号。第三方用户编号" />
       <Column Name="NickName" DataType="String" Description="昵称" />
+      <Column Name="DeviceId" DataType="String" Description="设备标识。企业微信用于唯一标识设备，重装后改变" />
       <Column Name="Avatar" DataType="String" Length="200" Description="头像" />
       <Column Name="AccessToken" DataType="String" Length="500" Description="访问令牌" />
       <Column Name="RefreshToken" DataType="String" Length="500" Description="刷新令牌" />
@@ -25,6 +26,9 @@
     <Indexes>
       <Index Columns="Provider,OpenID" Unique="True" />
       <Index Columns="UserID" />
+      <Index Columns="OpenID" />
+      <Index Columns="UnionID" />
+      <Index Columns="DeviceId" />
     </Indexes>
   </Table>
   <Table Name="OAuthLog" Description="OAuth日志。用于记录OAuth客户端请求，同时Id作为state，避免向OAuthServer泄漏本机Url">
