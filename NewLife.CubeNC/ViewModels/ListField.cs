@@ -6,12 +6,6 @@ using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels
 {
-    /// <summary>数据可见委托</summary>
-    /// <param name="entity"></param>
-    /// <param name="field"></param>
-    /// <returns></returns>
-    public delegate Boolean DataVisibleDelegate(IEntity entity, DataField field);
-
     /// <summary>列表字段</summary>
     public class ListField : DataField
     {
@@ -37,8 +31,8 @@ namespace NewLife.Cube.ViewModels
         /// <summary>数据动作。设为action时走ajax请求</summary>
         public String DataAction { get; set; }
 
-        /// <summary>是否显示</summary>
-        public DataVisibleDelegate DataVisible { get; set; }
+        ///// <summary>是否显示</summary>
+        //public DataVisibleDelegate DataVisible { get; set; }
         #endregion
 
         #region 方法
