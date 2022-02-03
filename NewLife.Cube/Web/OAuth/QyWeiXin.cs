@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using NewLife.Caching;
 using NewLife.Cube.Web.Models;
 using NewLife.Remoting;
+using NewLife.Http;
+using NewLife.Serialization;
 using XCode.Membership;
 
 namespace NewLife.Web.OAuth
@@ -23,17 +25,7 @@ namespace NewLife.Web.OAuth
         /// <summary>应用Id</summary>
         public String AgentId { get; set; }
 
-        ///// <summary>访问令牌</summary>
-        //public String AccessToken { get; set; }
-
-        ///// <summary>过期时间</summary>
-        //public DateTime Expire { get; set; }
-
-        ///// <summary>性能跟踪</summary>
-        //public ITracer Tracer { get; set; } = DefaultTracer.Instance;
-
-        //private HttpClient _client;
-        private readonly String _uri = "https://qyapi.weixin.qq.com/";
+        private readonly String _qyapi = "https://qyapi.weixin.qq.com/cgi-bin/";
         private ICache _cache;
         #endregion
 
@@ -45,9 +37,8 @@ namespace NewLife.Web.OAuth
 
             AuthUrl = "authorize?response_type={response_type}&appid={key}&redirect_uri={redirect}&state={state}&scope={scope}#wechat_redirect";
 
-            var qyapi = "https://qyapi.weixin.qq.com/cgi-bin/";
-            AccessUrl = qyapi + "gettoken?corpid={key}&corpsecret={secret}";
-            UserUrl = qyapi + "user/getuserinfo?access_token={token}&code={code}";
+            AccessUrl = _qyapi + "gettoken?corpid={key}&corpsecret={secret}";
+            UserUrl = _qyapi + "user/getuserinfo?access_token={token}&code={code}";
 
             Scope = "snsapi_base";
 
@@ -57,17 +48,21 @@ namespace NewLife.Web.OAuth
         /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
         /// <param name="userAgent"></param>
         /// <returns></returns>
-        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty()  && userAgent.Contains(" wxwork/");
+        public override Boolean Support(String userAgent) => !userAgent.IsNullOrEmpty() && userAgent.Contains(" wxwork/");
 
         /// <summary>针对指定客户端进行初始化</summary>
         /// <param name="userAgent"></param>
         public override void Init(String userAgent)
         {
             var key = CorpId;
-            if (!key.IsNullOrEmpty() && key.Contains("#"))
+            if (!key.IsNullOrEmpty())
             {
-                CorpId = key.Substring(null, "#");
-                AgentId = key.Substring("#", null);
+                var p = key.IndexOf('#');
+                if (p > 0)
+                {
+                    CorpId = key[..p];
+                    AgentId = key[(p + 1)..];
+                }
             }
 
             // 钉钉内打开时，自动切换为应用内免登
@@ -93,10 +88,7 @@ namespace NewLife.Web.OAuth
 
             //var url = $"https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={CorpId}&corpsecret={CorpSecret}";
 
-            var client = GetClient();
-            //_client = Tracer.CreateHttpClient();
-            //_client.BaseAddress = new Uri("https://qyapi.weixin.qq.com");
-            var rs = await client.GetAsync<IDictionary<String, Object>>(_uri + "cgi-bin/gettoken", new { corpid = CorpId, corpsecret = CorpSecret });
+            var rs = await GetAsync<IDictionary<String, Object>>("gettoken", new { corpid = CorpId, corpsecret = CorpSecret });
 
             AccessToken = rs["access_token"] as String;
             var exp = rs["expires_in"].ToInt(-1);
@@ -122,8 +114,7 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var client = GetClient();
-            var rs = await client.InvokeAsync<DepartmentInfo[]>(HttpMethod.Get, _uri + "cgi-bin/department/list", new { access_token = token }, null, "department");
+            var rs = await GetAsync<DepartmentInfo[]>("department/list", new { access_token = token }, "department");
 
             return rs;
         }
@@ -135,12 +126,11 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var client = GetClient();
-            var rs = await client.InvokeAsync<UserInfo>(HttpMethod.Get, _uri + "cgi-bin/user/get", new
+            var rs = await GetAsync<UserInfo>("user/get", new
             {
                 userid = userId,
                 access_token = token
-            }, null, "");
+            }, "");
 
             return rs;
         }
@@ -153,13 +143,12 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var client = GetClient();
-            var rs = await client.InvokeAsync<UserInfo[]>(HttpMethod.Get, _uri + "cgi-bin/user/list", new
+            var rs = await GetAsync<UserInfo[]>("user/list", new
             {
                 department_id = departmentId,
                 fetch_child = fetchChild ? 1 : 0,
                 access_token = token
-            }, null, "userlist");
+            }, "userlist");
 
             return rs;
         }
@@ -175,14 +164,13 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var client = GetClient();
-            var rs = await client.InvokeAsync<CheckInData[]>(HttpMethod.Post, _uri + "cgi-bin/checkin/getcheckindata?access_token=" + token, new
+            var rs = await PostAsync<CheckInData[]>("checkin/getcheckindata?access_token=" + token, new
             {
                 opencheckindatatype = 3,
                 starttime = start.ToInt(),
                 endtime = end.ToInt(),
                 useridlist = userIds,
-            }, null, "checkindata");
+            }, "checkindata");
 
             return rs;
         }
@@ -200,8 +188,7 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var client = GetClient();
-            var rs = await client.InvokeAsync<String[]>(HttpMethod.Post, _uri + "cgi-bin/oa/getapprovalinfo?access_token=" + token, new
+            var rs = await PostAsync<String[]>("oa/getapprovalinfo?access_token=" + token, new
             {
                 starttime = start.ToInt(),
                 endtime = end.ToInt(),
@@ -211,7 +198,7 @@ namespace NewLife.Web.OAuth
                     new { key = "template_id", value = templateId },
                     new { key = "sp_status", value = "2" },
                 },
-            }, null, "sp_no_list");
+            }, "sp_no_list");
 
             return rs;
         }
@@ -223,11 +210,10 @@ namespace NewLife.Web.OAuth
         {
             var token = await GetAccessToken();
 
-            var client = GetClient();
-            var rs = await client.InvokeAsync<ApprovalInfo>(HttpMethod.Post, _uri + "cgi-bin/oa/getapprovaldetail?access_token=" + token, new
+            var rs = await PostAsync<ApprovalInfo>("oa/getapprovaldetail?access_token=" + token, new
             {
                 sp_no
-            }, null, "info");
+            }, "info");
 
             return rs;
         }
@@ -249,6 +235,85 @@ namespace NewLife.Web.OAuth
                 CorpId = QyWeiXin.GetConfig("CorpId"),
                 CorpSecret = QyWeiXin.GetConfig(name),
             };
+        }
+
+        private HttpClient _Client;
+        /// <summary>获取客户端</summary>
+        /// <returns></returns>
+        protected virtual HttpClient GetQyClient()
+        {
+            if (_Client != null) return _Client;
+
+            var client = CreateClient();
+            client.BaseAddress = new Uri(_qyapi);
+
+            return _Client = client;
+        }
+
+        /// <summary>异步请求接口</summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="args"></param>
+        /// <param name="dataName"></param>
+        /// <returns></returns>
+        protected virtual async Task<TResult> GetAsync<TResult>(String action, Object args, String dataName = "data")
+        {
+            var buf = await GetQyClient().GetAsync<Byte[]>(action, args);
+            if (buf == null || buf.Length == 0) return default;
+
+            var str = buf.ToStr()?.Trim();
+
+            if (Log != null && Log.Enable)
+            {
+                WriteLog("GET {0} {1}", action, str);
+
+                // 合并字典
+                var dic = GetNameValues(str);
+                if (Items == null)
+                    Items = dic;
+                else
+                {
+                    foreach (var item in dic)
+                    {
+                        Items[item.Key] = item.Value;
+                    }
+                }
+            }
+
+            return ApiHelper.ProcessResponse<TResult>(str, dataName);
+        }
+
+        /// <summary>异步请求接口</summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="args"></param>
+        /// <param name="dataName"></param>
+        /// <returns></returns>
+        protected virtual async Task<TResult> PostAsync<TResult>(String action, Object args, String dataName = "data")
+        {
+            var buf = await GetQyClient().PostAsync<Byte[]>(action, args);
+            if (buf == null || buf.Length == 0) return default;
+
+            var str = buf.ToStr()?.Trim();
+
+            if (Log != null && Log.Enable)
+            {
+                WriteLog("POST {0} {1}", action, str);
+
+                // 合并字典
+                var dic = GetNameValues(str);
+                if (Items == null)
+                    Items = dic;
+                else
+                {
+                    foreach (var item in dic)
+                    {
+                        Items[item.Key] = item.Value;
+                    }
+                }
+            }
+
+            return ApiHelper.ProcessResponse<TResult>(str, dataName);
         }
         #endregion
 
@@ -304,6 +369,7 @@ namespace NewLife.Web.OAuth
             if (dic.TryGetValue("UserId", out var str)) UserName = str.Trim();
             if (dic.TryGetValue("DeviceId", out str)) DeviceId = str.Trim();
             //if (dic.TryGetValue("OpenId", out str)) OpenID = str.Trim();
+            if (dic.TryGetValue("biz_mail", out str)) Mail = str.Trim();
 
             if (dic.TryGetValue("errmsg", out str) && str != "ok") throw new InvalidOperationException(str);
 
