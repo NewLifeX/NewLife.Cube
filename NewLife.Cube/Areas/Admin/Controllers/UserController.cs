@@ -83,6 +83,10 @@ namespace NewLife.Cube.Admin.Controllers
                 df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
                 AddFormFields.RemoveField("RoleNames");
             }
+            //{
+            //    var df = AddFormFields.GetField("RegisterTime");
+            //    df.DataVisible = (e, f) => f.Name != "RegisterTime";
+            //}
 
             {
                 var df = EditFormFields.AddDataField("RoleIds", "RoleNames");

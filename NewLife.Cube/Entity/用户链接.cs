@@ -16,6 +16,9 @@ namespace NewLife.Cube.Entity
     [Description("用户链接。第三方绑定")]
     [BindIndex("IU_UserConnect_Provider_OpenID", true, "Provider,OpenID")]
     [BindIndex("IX_UserConnect_UserID", false, "UserID")]
+    [BindIndex("IX_UserConnect_OpenID", false, "OpenID")]
+    [BindIndex("IX_UserConnect_UnionID", false, "UnionID")]
+    [BindIndex("IX_UserConnect_DeviceId", false, "DeviceId")]
     [BindTable("UserConnect", Description = "用户链接。第三方绑定", ConnName = "Membership", DbType = DatabaseType.None)]
     public partial class UserConnect
     {
@@ -75,6 +78,14 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, true, 50)]
         [BindColumn("NickName", "昵称", "")]
         public String NickName { get => _NickName; set { if (OnPropertyChanging("NickName", value)) { _NickName = value; OnPropertyChanged("NickName"); } } }
+
+        private String _DeviceId;
+        /// <summary>设备标识。企业微信用于唯一标识设备，重装后改变</summary>
+        [DisplayName("设备标识")]
+        [Description("设备标识。企业微信用于唯一标识设备，重装后改变")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("DeviceId", "设备标识。企业微信用于唯一标识设备，重装后改变", "")]
+        public String DeviceId { get => _DeviceId; set { if (OnPropertyChanging("DeviceId", value)) { _DeviceId = value; OnPropertyChanged("DeviceId"); } } }
 
         private String _Avatar;
         /// <summary>头像</summary>
@@ -190,6 +201,7 @@ namespace NewLife.Cube.Entity
                     case "UnionID": return _UnionID;
                     case "LinkID": return _LinkID;
                     case "NickName": return _NickName;
+                    case "DeviceId": return _DeviceId;
                     case "Avatar": return _Avatar;
                     case "AccessToken": return _AccessToken;
                     case "RefreshToken": return _RefreshToken;
@@ -216,6 +228,7 @@ namespace NewLife.Cube.Entity
                     case "UnionID": _UnionID = Convert.ToString(value); break;
                     case "LinkID": _LinkID = value.ToLong(); break;
                     case "NickName": _NickName = Convert.ToString(value); break;
+                    case "DeviceId": _DeviceId = Convert.ToString(value); break;
                     case "Avatar": _Avatar = Convert.ToString(value); break;
                     case "AccessToken": _AccessToken = Convert.ToString(value); break;
                     case "RefreshToken": _RefreshToken = Convert.ToString(value); break;
@@ -258,6 +271,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>昵称</summary>
             public static readonly Field NickName = FindByName("NickName");
+
+            /// <summary>设备标识。企业微信用于唯一标识设备，重装后改变</summary>
+            public static readonly Field DeviceId = FindByName("DeviceId");
 
             /// <summary>头像</summary>
             public static readonly Field Avatar = FindByName("Avatar");
@@ -321,6 +337,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>昵称</summary>
             public const String NickName = "NickName";
+
+            /// <summary>设备标识。企业微信用于唯一标识设备，重装后改变</summary>
+            public const String DeviceId = "DeviceId";
 
             /// <summary>头像</summary>
             public const String Avatar = "Avatar";

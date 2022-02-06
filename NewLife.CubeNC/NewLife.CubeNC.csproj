@@ -19,7 +19,7 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <DefineConstants>$(DefineConstants);__CORE__</DefineConstants>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-        <LangVersion>latest</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
@@ -62,8 +62,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="9.0.2022.116-beta1" />
-    <PackageReference Include="NewLife.XCode" Version="11.0.2022.116-beta1" />
+    <PackageReference Include="NewLife.Core" Version="9.0.2022.202" />
+    <PackageReference Include="NewLife.XCode" Version="11.0.2022.202" />
   </ItemGroup>
 
   <ItemGroup>
@@ -195,16 +195,7 @@
     <None Include="..\NewLife.Cube\Entity\Cube.xml">
       <Link>Entity\Cube.xml</Link>
     </None>
-    <None Include="..\NewLife.Cube\Entity\XCoder.log">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>XCoder.tt</DependentUpon>
-    </None>
-    <None Include="..\NewLife.Cube\Entity\XCoder.tt">
-      <Link>Entity\XCoder.tt</Link>
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>XCoder.log</LastGenOutput>
-    </None>
+    <None Include="..\NewLife.Cube\Entity\xcodetool.exe" Link="Entity\xcodetool.exe" />
     <None Include="appsettings.json" />
     <None Include="Areas\Cube\Views\PrincipalAgent\_Form_Body.cshtml" />
   </ItemGroup>

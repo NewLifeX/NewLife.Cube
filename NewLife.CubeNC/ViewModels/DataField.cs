@@ -19,6 +19,12 @@ namespace NewLife.Cube.ViewModels
     /// <returns></returns>
     public delegate IDictionary DataSourceDelegate(IEntity entity, DataField field);
 
+    /// <summary>数据可见委托</summary>
+    /// <param name="entity"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    public delegate Boolean DataVisibleDelegate(IEntity entity, DataField field);
+
     /// <summary>数据字段</summary>
     public class DataField
     {
@@ -75,6 +81,9 @@ namespace NewLife.Cube.ViewModels
 
         /// <summary>多选数据源</summary>
         public DataSourceDelegate DataSource { get; set; }
+      
+        /// <summary>是否显示</summary>
+        public DataVisibleDelegate DataVisible { get; set; }
 
         /// <summary>扩展属性</summary>
         [XmlIgnore, IgnoreDataMember]

@@ -1,29 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Script.Serialization;
-using System.Xml.Serialization;
-using NewLife;
 using NewLife.Data;
-using NewLife.Log;
-using NewLife.Model;
-using NewLife.Reflection;
-using NewLife.Threading;
-using NewLife.Web;
 using XCode;
 using XCode.Cache;
-using XCode.Configuration;
-using XCode.DataAccessLayer;
 using XCode.Membership;
-using XCode.Shards;
 
 namespace NewLife.Cube.Entity
 {
@@ -60,12 +40,10 @@ namespace NewLife.Cube.Entity
 
             // 截取长度
             var len = _.Status.Length;
-            if (len <= 0) len = 50;
-            if (!Status.IsNullOrEmpty() && Status.Length > len) Status = Status[..len];
+            if (len > 0 && !Status.IsNullOrEmpty() && Status.Length > len) Status = Status[..len];
 
             len = _.Page.Length;
-            if (len <= 0) len = 50;
-            if (!Page.IsNullOrEmpty() && Page.Length > len) Page = Page[..len];
+            if (len > 0 && !Page.IsNullOrEmpty() && Page.Length > len) Page = Page[..len];
         }
         #endregion
 
@@ -80,8 +58,8 @@ namespace NewLife.Cube.Entity
         {
             if (id <= 0) return null;
 
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
+            //// 实体缓存
+            //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
 
             // 单对象缓存
             return Meta.SingleCache[id];
@@ -94,8 +72,8 @@ namespace NewLife.Cube.Entity
         /// <returns>实体列表</returns>
         public static IList<UserOnline> FindAllByUserID(Int32 userId)
         {
-            // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UserID == userId);
+            //// 实体缓存
+            //if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UserID == userId);
 
             return FindAll(_.UserID == userId);
         }
@@ -110,8 +88,8 @@ namespace NewLife.Cube.Entity
 
             if (cache)
             {
-                // 实体缓存
-                if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.SessionID.EqualIgnoreCase(sessionId));
+                //// 实体缓存
+                //if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.SessionID.EqualIgnoreCase(sessionId));
 
                 return Meta.SingleCache.GetItemWithSlaveKey(sessionId) as UserOnline;
             }
@@ -142,7 +120,7 @@ namespace NewLife.Cube.Entity
         }
 
         // Select Count(ID) as ID,SessionID From UserOnline Where CreateTime>'2020-01-24 00:00:00' Group By SessionID Order By ID Desc limit 20
-        static readonly FieldCache<UserOnline> _SessionIDCache = new FieldCache<UserOnline>(nameof(SessionID))
+        private static readonly FieldCache<UserOnline> _SessionIDCache = new FieldCache<UserOnline>(nameof(SessionID))
         {
             //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty
         };
