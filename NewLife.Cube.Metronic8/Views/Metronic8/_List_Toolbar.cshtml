@@ -91,4 +91,10 @@
         @layoutSet.Save();
         console.log(@ViewBag.Title + " mode now is: card.");
     });
+
+    $("#btn_mode_table").click(function(){
+        @layoutSet.SetItem("Value", "table");
+        @layoutSet.Save();
+        console.log(@ViewBag.Title + " mode now is: card.");
+    });
 </script>
