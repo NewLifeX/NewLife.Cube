@@ -1,17 +1,17 @@
-﻿@model ValueTuple<IEntity, DataField>
-@using NewLife;
+﻿@using NewLife;
 @using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
 @{
-    var entity = Model.Item1;
-    var field = Model.Item2;
-    var fn = field.Name.ToLower();
+    var name = Model.Name.ToLower();
+    var value = Model.Value;
+    var type = Model.Type;
+    var length = Model.Length;
 }
 
 <div class="input-group">
 
-    @switch (fn)
+    @switch (name)
     {
         case "image":
             {
@@ -28,5 +28,5 @@
             break;
     }
 
-    <input id="@fn" name="@fn" type="file" class="form-control form-control-sm" autocomplete="off" placeholder="" value="@entity[field.Name]" />
+    <input id="@name" name="@name" type="file" class="form-control form-control-sm" autocomplete="off" placeholder="" value="@value" />
 </div>

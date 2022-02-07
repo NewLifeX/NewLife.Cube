@@ -81,7 +81,7 @@ namespace NewLife.Cube.Entity
         /// <summary>状态</summary>
         [DisplayName("状态")]
         [Description("状态")]
-        [DataObjectField(false, false, true, 200)]
+        [DataObjectField(false, false, true, 500)]
         [BindColumn("Status", "状态", "")]
         public String Status { get => _Status; set { if (OnPropertyChanging("Status", value)) { _Status = value; OnPropertyChanged("Status"); } } }
 
