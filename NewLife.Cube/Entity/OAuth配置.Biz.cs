@@ -107,7 +107,7 @@ namespace NewLife.Cube.Entity
             Add("Github", "Github", "/Content/images/logo/Github.png");
             Add("Baidu", "百度", "/Content/images/logo/Baidu.png");
             Add("Ding", "钉钉", "/Content/images/logo/Ding.png", "snsapi_qrlogin扫码登录，snsapi_auth钉钉内免登，snsapi_login密码登录");
-            Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeixin.png");
+            Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeiXin.png");
             //Add("Weixin", "微信公众号", "/Content/images/logo/Weixin.png", "snsapi_base静默登录，snsapi_userinfo需要用户关注后授权");
             var cfg = new OAuthConfig
             {
