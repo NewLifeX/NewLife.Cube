@@ -15,7 +15,7 @@ namespace NewLife.Cube.Cube.Controllers
     {
         static ModelColumnController() 
         { 
-            ListFields.RemoveField("TableId", "IsDataObjectField", "Description", "ShowInList", "ShowInAddForm", "ShowInEditForm", "ShowInDetailForm",
+            ListFields.RemoveField("Id", "TableId", "IsDataObjectField", "Description", "ShowInList", "ShowInAddForm", "ShowInEditForm", "ShowInDetailForm",
                 "ShowInSearch", "Sort", "Width", "CellText", "CellTitle", "CellUrl", "HeaderText", "HeaderTitle", "HeaderUrl", "DataAction", "DataSource");
             ListFields.RemoveCreateField();
             ListFields.RemoveUpdateField();
