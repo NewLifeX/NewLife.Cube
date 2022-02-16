@@ -65,6 +65,11 @@ namespace NewLife.Cube
         [Description("分享有效期。分享令牌的有效期，默认7200秒")]
         [Category("通用")]
         public Int32 ShareExpire { get; set; } = 7200;
+
+        /// <summary>机器人错误码。设置后拦截各种爬虫并返回相应错误，如404/500，默认0不拦截</summary>
+        [Description("机器人错误码。设置后拦截各种爬虫并返回相应错误，如404/500，默认0不拦截")]
+        [Category("通用")]
+        public Int32 RobotError { get; set; }
         #endregion
 
         #region 用户登录

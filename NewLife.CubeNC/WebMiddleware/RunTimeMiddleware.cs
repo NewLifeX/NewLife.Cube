@@ -43,6 +43,9 @@ namespace NewLife.Cube.WebMiddleware
         /// <returns></returns>
         public async Task Invoke(HttpContext ctx)
         {
+            // 识别拦截爬虫
+            if (!ValidRobot(ctx)) return;
+
             var ip = ctx.GetUserHost();
             ManageProvider.UserHost = ip;
 
@@ -171,6 +174,43 @@ namespace NewLife.Cube.WebMiddleware
             ".html", ".htm", ".js", ".css", ".map", ".png", ".jpg", ".gif", ".ico",  // 脚本样式图片
             ".woff", ".woff2", ".svg", ".ttf", ".otf", ".eot"   // 字体
         };
+
+        private static Boolean ValidRobot(HttpContext ctx)
+        {
+            var ua = ctx.Request.Headers["User-Agent"] + "";
+            if (ua.IsNullOrEmpty()) return true;
+
+            // 爬虫
+            var p1 = ua.IndexOf("compatible;");
+            if (p1 > 0)
+            {
+                p1 += "compatible;".Length;
+                var p2 = ua.IndexOf(';', p1);
+                if (p2 > 0)
+                {
+                    var name = ua[p1..p2];
+                    if (name.Length > 50) name = name[..50];
+
+                    // 判断爬虫
+                    var code = Setting.Current.RobotError;
+                    if (code > 0)
+                    {
+                        var p3 = name.IndexOf('/');
+                        var botName = p3 > 0 ? name[..p3] : name;
+                        if (botName.EndsWithIgnoreCase("bot", "spider"))
+                        {
+                            // 埋点
+                            using var span = DefaultTracer.Instance?.NewSpan($"bot:{botName}", ua);
+
+                            ctx.Response.StatusCode = code;
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
     }
 
     /// <summary>运行时间信息</summary>
