@@ -110,6 +110,8 @@ namespace NewLife.Cube.WebMiddleware
             {
                 if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
                     p = "/" + ss.Take(3).Join("/");
+                else
+                    p = "/" + ss.Take(2).Join("/");
             }
             else
             {
@@ -117,6 +119,8 @@ namespace NewLife.Cube.WebMiddleware
                     p = "/" + ss.Take(2).Join("/");
                 else if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
                     p = "/" + ss.Take(3).Join("/");
+                else
+                    p = "/" + ss.Take(2).Join("/");
             }
 
             return p;
