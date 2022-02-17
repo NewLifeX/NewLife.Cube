@@ -30,6 +30,9 @@ namespace NewLife.Cube
     /// <summary>魔方服务</summary>
     public static class CubeService
     {
+        /// <summary>区域名集合</summary>
+        public static String[] AreaNames { get; set; }
+
         #region 配置魔方
         /// <summary>添加魔方，放在AddControllersWithViews之后</summary>
         /// <param name="services"></param>

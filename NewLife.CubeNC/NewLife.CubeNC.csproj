@@ -185,7 +185,6 @@
   <ItemGroup>
     <Content Remove="Views\Shared\_List_Data_Item_First.cshtml" />
     <Content Remove="Views\Shared\_StatLevel.cshtml" />
-    <Content Remove="wwwroot\Content\bootstrap\fonts\fontawesome-webfont.woff2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -415,7 +415,7 @@ namespace NewLife.Cube
         /// <param name="enable"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult SetEnable(Int32 id = 0, Boolean enable = true)
+        public virtual ActionResult SetEnable(Int32 id = 0, Boolean enable = true)
         {
             var fi = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Enable"));
             if (fi == null) throw new InvalidOperationException($"启用/禁用仅支持Enable字段。");

@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -10,7 +9,6 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Membership;
 using NewLife.Log;
 using NewLife.Reflection;
-using NewLife.Threading;
 using XCode;
 using XCode.Membership;
 
@@ -41,6 +39,14 @@ namespace NewLife.Cube
             var ns = areaType.Namespace + ".Controllers";
             var areaName = areaType.Name.TrimEnd("Area");
             XTrace.WriteLine("开始注册权限管理区域[{0}]，控制器命名空间[{1}]", areaName, ns);
+
+            // 更新区域名集合
+            var rs = CubeService.AreaNames?.ToList() ?? new List<String>();
+            if (!rs.Contains(areaName))
+            {
+                rs.Add(areaName);
+                CubeService.AreaNames = rs.ToArray();
+            }
 
             // 自动检查并添加菜单
             var task = Task.Run(() =>

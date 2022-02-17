@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using NewLife.Log;
@@ -41,6 +40,7 @@ namespace NewLife.Cube.WebMiddleware
 
                     span = Tracer.NewSpan(action);
                     span.Tag = $"{ctx.GetUserHost()} {req.Method} {req.GetRawUrl()}";
+                    span.Detach(req.Headers);
                     if (span is DefaultSpan ds && ds.TraceFlag > 0)
                     {
                         if (req.ContentLength != null && req.ContentLength < 1024 * 8)
@@ -58,7 +58,6 @@ namespace NewLife.Cube.WebMiddleware
                             span.Tag += Environment.NewLine + vs.Join(Environment.NewLine, e => $"{e.Key}:{e.Value}");
                         }
                     }
-                    span.Detach(req.Headers);
                 }
             }
 
@@ -96,16 +95,29 @@ namespace NewLife.Cube.WebMiddleware
             ".woff", ".woff2", ".svg", ".ttf", ".otf", ".eot"   // 字体
         };
 
+        private static String[] CubeActions = new[] { "index", "detail", "add", "edit", "delete", "deleteSelect", "deleteAll", "ExportCsv", "Info", "SetEnable", "EnableSelect", "DisableSelect", "DeleteSelect" };
         private static String GetAction(HttpContext ctx)
         {
             var p = ctx.Request.Path + "";
             if (p.EndsWithIgnoreCase(ExcludeSuffixes)) return null;
 
-            var ss = p.Split('/');
+            var ss = p.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (ss.Length == 0) return p;
 
             // 如果是魔方格式，保留3段
-            if (ss.Length >= 4 && ss[3].EqualIgnoreCase("detail", "add", "edit")) p = "/" + ss.Take(4).Join("/");
+            var rs = CubeService.AreaNames;
+            if (rs != null && ss[0].EqualIgnoreCase(rs))
+            {
+                if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
+                    p = "/" + ss.Take(3).Join("/");
+            }
+            else
+            {
+                if (ss.Length >= 2 && ss[1].EqualIgnoreCase(CubeActions))
+                    p = "/" + ss.Take(2).Join("/");
+                else if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
+                    p = "/" + ss.Take(3).Join("/");
+            }
 
             return p;
         }
