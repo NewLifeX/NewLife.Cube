@@ -1,5 +1,68 @@
 ﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+    我的日志
 *@
+@using XCode;
+@using XCode.Model;
+@using XLog = XCode.Membership.Log;
 @{
+    var cfg = NewLife.Common.SysConfig.Current;
+    var user = ManageProvider.User;
+    var date = DateTime.Now.Date;
+    var snow = XLog.Meta.Factory.Snow;
+
+    var exp = new WhereExpression();
+    exp &= XLog._.CreateUserID == user.ID;
+    exp &= XLog._.ID.Between(date.AddDays(-3), date, snow);
+    var logs = XLog.FindAll(exp);
 }
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <a href="~/Admin/Log?userid=@user.ID">更多日志信息…</a>
+        </div>
+        <div class="card-toolbar">
+            <div class="btn btn-sm btn-icon btn-active-light-primary" id="cube_drawer_log_close">
+                <span class="svg-icon svg-icon-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black"></rect>
+                        <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black"></rect>
+                    </svg>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div id="cube_log_body" class="card-body position-relative">
+        <div class="position-relative scroll-y" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-wrappers="#cube_log_body">
+            <div class="timeline">
+                @foreach (var log in logs)
+                {
+                    var cls = log.Success ? "svg-icon-success" : "svg-icon-danger";
+
+                    <div class="timeline-item">
+                        <div class="timeline-line w-40px"></div>
+                        @*<div class="timeline-label text-gray-800 fs-6">@log.Action</div>*@
+                        <div class="timeline-icon symbol symbol-circle symbol-40px me-4">
+                            <div class="symbol-label bg-light">
+                                <span class="svg-icon svg-icon-2 @cls">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path opacity="0.3" d="M2 4V16C2 16.6 2.4 17 3 17H13L16.6 20.6C17.1 21.1 18 20.8 18 20V17H21C21.6 17 22 16.6 22 16V4C22 3.4 21.6 3 21 3H3C2.4 3 2 3.4 2 4Z" fill="black"></path>
+                                        <path d="M18 9H6C5.4 9 5 8.6 5 8C5 7.4 5.4 7 6 7H18C18.6 7 19 7.4 19 8C19 8.6 18.6 9 18 9ZM16 12C16 11.4 15.6 11 15 11H6C5.4 11 5 11.4 5 12C5 12.6 5.4 13 6 13H15C15.6 13 16 12.6 16 12Z" fill="black"></path>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="timeline-content ps-3 mb-10 mt-n2">
+                            <div class="overflow-auto pe-3">
+                                <div class="fs-4 fw-bold mb-2">动作:@log.Action</div>
+                                <div class="fs-4 fw-bold mb-2">类别:@log.Category</div>
+                                <div class="fs-6 mt-1" style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@log.Remark">@log.Remark</div>
+                                <div class="fs-6 text-muted">@log.CreateTime.ToFullString()</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
