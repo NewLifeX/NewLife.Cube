@@ -1,0 +1,11 @@
+﻿@*
+    系统抽屉—配置界面。在系统中可以使用以下代码激活并显示该抽屉界面，View为抽屉内容页。
+<button class="btn btn-primary me-3" data-kt-drawer-show="true" data-kt-drawer-target="#cube_drawer_configure">系统配置</button>
+*@
+@{
+}
+<div id="cube_drawer_configure" class="bg-white" data-kt-drawer="true" data-kt-drawer-name="cube_configure" data-kt-drawer-activate="true" data-kt-drawer-overlay="true" data-kt-drawer-width="{default:'300px', 'md': '500px'}" data-kt-drawer-direction="end" data-kt-drawer-close="#kt_drawer_chat_close">
+    @await Html.PartialAsync("_Layout_Drawer_Configure_View")
+</div>
+
+

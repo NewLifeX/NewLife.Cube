@@ -81,12 +81,14 @@
         </div>
     </div>
 
-    <!-- 侧边栏 -->
-    @await Html.PartialAsync("_Layout_Drawer_900")
-    @await Html.PartialAsync("_Layout_Drawer_500")
-    @await Html.PartialAsync("_Layout_Explore")
-    @await Html.PartialAsync("_Layout_Modals")
-    <!-- 滚动条 -->
+    <!-- 系统抽屉 -->
+    @await Html.PartialAsync("_Layout_Drawer_Configure")
+    @await Html.PartialAsync("_Layout_Drawer_Log")
+    @await Html.PartialAsync("_Layout_Drawer_Form")
+    @await Html.PartialAsync("_Layout_Drawer_Notifycation")
+    @await Html.PartialAsync("_Layout_Drawer_Search")
+
+    <!-- 滚动到顶部按钮 -->
     @await Html.PartialAsync("_Layout_Scrolltop")
     <div id="div_footer"></div>
     <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
