@@ -22,7 +22,6 @@
     var set2 = ViewBag.PageSetting as PageSetting;
 
     var menu = ViewBag.Menu as IMenu;
-    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
 
     var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 }

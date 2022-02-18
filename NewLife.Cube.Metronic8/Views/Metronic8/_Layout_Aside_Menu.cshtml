@@ -7,7 +7,6 @@
 
 @{
     var menu = ViewBag.Menu as IMenu;
-    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
 
     var user = ViewBag.User as IUser ?? ManageProvider.User;
     var fact = ManageProvider.Menu;

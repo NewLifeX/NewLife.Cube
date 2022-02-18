@@ -90,7 +90,6 @@ namespace NewLife.Cube
                 if (ViewBag.HeaderTitle == null) ViewBag.HeaderTitle = Entity<TEntity>.Meta.Table.Description + "管理";
 
                 var txt = (String)ViewBag.HeaderContent;
-                if (txt.IsNullOrEmpty()) txt = (ViewBag.Menu as IMenu)?.Remark;
                 if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
                 if (txt.IsNullOrEmpty()) txt = GetType().GetDescription();
                 if (txt.IsNullOrEmpty()) txt = Entity<TEntity>.Meta.Table.Description;

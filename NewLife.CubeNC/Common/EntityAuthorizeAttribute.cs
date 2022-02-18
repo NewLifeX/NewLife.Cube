@@ -190,8 +190,6 @@ namespace NewLife.Cube
             {
                 menu = mf.FindByFullName(fullName) ?? mf.FindByFullName(type.FullName) ?? mf.FindByUrl(url) ?? mf.FindByUrl("~" + url);
 
-                // 当前菜单
-                //filterContext.Controller.ViewBag.Menu = menu;
                 // 兼容旧版本视图权限
                 ctx.Items["CurrentMenu"] = menu;
             }

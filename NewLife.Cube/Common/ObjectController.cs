@@ -41,7 +41,6 @@ namespace NewLife.Cube
             ViewBag.HeaderTitle = name;
 
             var txt = "";
-            if (txt.IsNullOrEmpty()) txt = (ViewBag.Menu as IMenu)?.Remark;
             if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
             if (txt.IsNullOrEmpty()) txt = des;
             ViewBag.HeaderContent = txt;

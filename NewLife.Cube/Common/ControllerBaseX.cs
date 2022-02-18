@@ -43,6 +43,7 @@ namespace NewLife.Cube
             var ctx = context.HttpContext;
             Session = ctx.Items["Session"] as IDictionary<String, Object>;
             Menu = ctx.Items["CurrentMenu"] as IMenu;
+            ViewBag.Menu = Menu;
 
             // 没有用户时无权
             var user = ManageProvider.User;

@@ -4,7 +4,6 @@
 @using XCode.Membership;
 @{
     var menu = ViewBag.Menu as IMenu;
-    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
     <!--可以通过判断手机端隐藏-->
     var mb = Context.Request.Headers["User-Agent"].ToString().ToLower();
 
