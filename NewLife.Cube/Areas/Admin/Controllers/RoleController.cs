@@ -4,12 +4,7 @@ using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Web;
 using XCode.Membership;
-#if __CORE__
 using Microsoft.AspNetCore.Mvc.Filters;
-#else
-using System.Web;
-using System.Web.Mvc;
-#endif
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -32,11 +27,7 @@ namespace NewLife.Cube.Admin.Controllers
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
-#if __CORE__
         public override void OnActionExecuting(ActionExecutingContext filterContext)
-#else
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
-#endif
         {
             ViewBag.HeaderTitle = "角色管理";
             //ViewBag.HeaderContent = "系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。";
@@ -70,7 +61,7 @@ namespace NewLife.Cube.Admin.Controllers
         public override ActionResult Edit(Role entity)
         {
             // 保存权限项
-            var menus = Menu.Root.AllChilds;
+            var menus = XCode.Membership.Menu.Root.AllChilds;
             //var pfs = EnumHelper.GetDescriptions<PermissionFlags>().Where(e => e.Key > PermissionFlags.None);
             var dels = new List<Int32>();
             // 遍历所有权限资源

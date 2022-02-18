@@ -6,9 +6,14 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Serialization;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Net.Http.Headers;
 using NewLife.Common;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
@@ -18,6 +23,7 @@ using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Security;
 using NewLife.Serialization;
 using NewLife.Web;
 using NewLife.Xml;
@@ -25,14 +31,6 @@ using XCode;
 using XCode.Configuration;
 using XCode.Membership;
 using XCode.Model;
-using NewLife.Security;
-using System.Threading.Tasks;
-using NewLife.Threading;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Net.Http.Headers;
 
 namespace NewLife.Cube
 {
@@ -93,7 +91,7 @@ namespace NewLife.Cube
 
                 var txt = (String)ViewBag.HeaderContent;
                 if (txt.IsNullOrEmpty()) txt = (ViewBag.Menu as IMenu)?.Remark;
-                if (txt.IsNullOrEmpty()) txt = (HttpContext.Items["CurrentMenu"] as IMenu)?.Remark;
+                if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
                 if (txt.IsNullOrEmpty()) txt = GetType().GetDescription();
                 if (txt.IsNullOrEmpty()) txt = Entity<TEntity>.Meta.Table.Description;
                 //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)
@@ -1291,6 +1289,7 @@ namespace NewLife.Cube
 
         #region 权限菜单
         /// <summary>菜单顺序。扫描时会反射读取</summary>
+        [Obsolete("=>MenuAttribute")]
         protected static Int32 MenuOrder { get; set; }
 
         /// <summary>控制器对应菜单</summary>
@@ -1313,54 +1312,6 @@ namespace NewLife.Cube
                 //    ModelTableSetting(ModelTable.ScanModel(pmenu?.Name, menu?.Name, menu?.FullName, menu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
             }
         }
-
-        ///// <summary>自动从实体类拿到显示名</summary>
-        ///// <param name="menu"></param>
-        ///// <returns></returns>
-        //protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-        //{
-        //    // 设置显示名
-        //    if (menu.DisplayName.IsNullOrEmpty())
-        //    {
-        //        menu.DisplayName = Entity<TEntity>.Meta.Table.DataTable.DisplayName;
-        //        menu.Visible = true;
-        //        //menu.Save();
-        //    }
-
-        //    var dic = base.ScanActionMenu(menu);
-
-        //    // 只写实体类过滤掉添删改权限
-        //    if (Factory.Table.DataTable.InsertOnly)
-        //    {
-        //        var arr = new[] { PermissionFlags.Insert, PermissionFlags.Update, PermissionFlags.Delete }.Select(e => (Int32)e).ToArray();
-        //        dic = dic.Where(e => !arr.Contains(e.Value)).ToDictionary(e => e.Key, e => e.Value);
-        //    }
-
-        //    // 由于初始化内容太多了，这里注释掉，通过模型表搜索列表触发
-        //    //ThreadPoolX.QueueUserWorkItem(() =>
-        //    //{
-        //    //    // 等菜单缓存准备好
-        //    //    Thread.Sleep(1000);
-
-        //    //    // TODO 魔方自带控制器使用Area特性，外部使用AreaBase，还需要做进一步处理
-        //    //    // var list = GetType().GetCustomAttributes();
-        //    //    // var areaName = GetType().GetCustomAttributeValue<AreaAttribute, String>();
-        //    //    // 生成模型表模型列
-        //    //    var modelTable = ModelTable.ScanModel(menu.Parent?.Name, menu, Entity<TEntity>.Meta.Factory);
-
-        //    //    // 模型表已是异步执行模型表生成，这里使用同步保存模型列
-        //    //    //ThreadPoolX.QueueUserWorkItem(() =>
-        //    //    //{
-        //    //    // 等模型列缓存准备好
-        //    //    //Thread.Sleep(1000);
-        //    //    ModelTableSetting(modelTable);
-        //    //    //});
-        //    //});
-
-        //    ThisMenu = menu;
-
-        //    return dic;
-        //}
 
         /// <summary>
         /// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -26,9 +24,6 @@ namespace NewLife.Cube
         #region 属性
         /// <summary>授权项</summary>
         public PermissionFlags Permission { get; }
-
-        ///// <summary>是否全局特性</summary>
-        //internal Boolean IsGlobal;
         #endregion
 
         #region 构造
@@ -75,26 +70,24 @@ namespace NewLife.Cube
             if (!AreaBase.Contains(ctrl))
             {
                 if (!hasAtt) return;
+
                 // 不属于魔方而又加了权限特性，需要创建菜单
                 create = true;
             }
 
             // 根据控制器定位资源菜单
-            var menu = GetMenu(filterContext, create);
+            var menu = ResolveMenu(filterContext, create);
 
             // 如果已经处理过，就不处理了
             if (filterContext.Result != null) return;
 
-            if (!AuthorizeCore(filterContext.HttpContext))
+            if (!AuthorizeCore(filterContext.HttpContext, menu))
             {
-                HandleUnauthorizedRequest(filterContext);
+                HandleUnauthorizedRequest(filterContext, menu);
             }
         }
 
-        /// <summary>授权核心</summary>
-        /// <param name="httpContext"></param>
-        /// <returns></returns>
-        protected Boolean AuthorizeCore(Microsoft.AspNetCore.Http.HttpContext httpContext)
+        private Boolean AuthorizeCore(Microsoft.AspNetCore.Http.HttpContext httpContext, IMenu menu)
         {
             var prv = ManageProvider.Provider;
             var ctx = httpContext;
@@ -104,7 +97,7 @@ namespace NewLife.Cube
             if (user == null) return false;
 
             // 判断权限
-            if (ctx.Items["CurrentMenu"] is IMenu menu)
+            if (menu != null)
             {
                 if (user is IUser user2) return user2.Has(menu, Permission);
 
@@ -119,9 +112,7 @@ namespace NewLife.Cube
             return false;
         }
 
-        /// <summary>未认证请求</summary>
-        /// <param name="filterContext"></param>
-        protected void HandleUnauthorizedRequest(AuthorizationFilterContext filterContext)
+        private void HandleUnauthorizedRequest(AuthorizationFilterContext filterContext, IMenu menu)
         {
             // 来到这里，有可能没登录，有可能没权限
             var prv = ManageProvider.Provider;
@@ -130,7 +121,7 @@ namespace NewLife.Cube
                 if (filterContext.HttpContext.Request.IsAjaxRequest())
                 {
                     filterContext.HttpContext.Response.StatusCode = 401;
-                    filterContext.Result = new JsonResult(new { code = 401, message = "没有登陆或登录超时！" });
+                    filterContext.Result = new JsonResult(new { code = 401, message = "没有登录或登录超时！" });
                 }
                 else
                 {
@@ -143,15 +134,16 @@ namespace NewLife.Cube
             }
             else
             {
-                filterContext.Result = NoPermission(filterContext, Permission);
+                filterContext.Result = NoPermission(filterContext, menu, Permission);
             }
         }
 
         /// <summary>无权访问</summary>
         /// <param name="filterContext"></param>
-        /// <param name="pm"></param>
+        /// <param name="menu"></param>
+        /// <param name="permission"></param>
         /// <returns></returns>
-        public static ActionResult NoPermission(AuthorizationFilterContext filterContext, PermissionFlags pm)
+        public static ActionResult NoPermission(AuthorizationFilterContext filterContext, IMenu menu, PermissionFlags permission)
         {
             var act = (ControllerActionDescriptor)filterContext.ActionDescriptor;
             var ctrl = act;
@@ -159,7 +151,7 @@ namespace NewLife.Cube
             var ctx = filterContext.HttpContext;
 
             var res = $"[{ctrl.ControllerName}/{ act.ActionName}]";
-            var msg = $"访问资源 {res} 需要 {pm.GetDescription()} 权限";
+            var msg = $"访问资源 {res} 需要 {permission.GetDescription()} 权限";
             LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
 
             if (filterContext.HttpContext.Request.IsAjaxRequest())
@@ -168,26 +160,22 @@ namespace NewLife.Cube
                 return new JsonResult(new { code = 403, message = msg });
             }
 
-            var menu = ctx.Items["CurrentMenu"] as IMenu;
-
             var vr = new ViewResult()
             {
                 ViewName = "NoPermission"
             };
 
-            //vr.Context = filterContext;//不需要赋值Context，执行的时候会自己获取Context
             vr.ViewData =
-                new ViewDataDictionary(new EmptyModelMetadataProvider(),
-                    filterContext.ModelState)
+                new ViewDataDictionary(new EmptyModelMetadataProvider(), filterContext.ModelState)
                 {
                     ["Resource"] = res,
-                    ["Permission"] = pm,
+                    ["Permission"] = permission,
                     ["Menu"] = menu
                 };
             return vr;
         }
 
-        private IMenu GetMenu(AuthorizationFilterContext filterContext, Boolean create)
+        private IMenu ResolveMenu(AuthorizationFilterContext filterContext, Boolean create)
         {
             var act = (ControllerActionDescriptor)filterContext.ActionDescriptor;
             //var ctrl = act.ControllerDescriptor;

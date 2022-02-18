@@ -1,26 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
+using NewLife.Log;
+using NewLife.Remoting;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
-using NewLife.Log;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Net.Http;
-using NewLife.Remoting;
-using System.IO;
-using NewLife.Cube.Entity;
-using NewLife.Reflection;
-using Microsoft.AspNetCore.Http;
-using System.Threading;
-#if __CORE__
-using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Extensions;
-#else
-using System.Web.Mvc;
-#endif
 
 namespace NewLife.Cube
 {
@@ -35,10 +30,7 @@ namespace NewLife.Cube
 
         #region 构造
         /// <summary>实例化</summary>
-        public EntityController()
-        {
-            PageSetting.IsReadOnly = false;
-        }
+        public EntityController() => PageSetting.IsReadOnly = false;
         #endregion
 
         #region 默认Action
@@ -49,11 +41,7 @@ namespace NewLife.Cube
         [DisplayName("删除{type}")]
         public virtual ActionResult Delete(String id)
         {
-#if __CORE__
             var url = Request.Headers["Referer"].FirstOrDefault() + "";
-#else
-            var url = Request.UrlReferrer + "";
-#endif
 
             var entity = FindData(id);
             Valid(entity, DataObjectMethodType.Delete, true);
@@ -89,7 +77,6 @@ namespace NewLife.Cube
         {
             var entity = Factory.Create(true) as TEntity;
 
-#if __CORE__
             // 填充QueryString参数
             var qs = Request.Query;
             foreach (var item in Entity<TEntity>.Meta.Fields)
@@ -97,26 +84,13 @@ namespace NewLife.Cube
                 var v = qs[item.Name];
                 if (v.Count > 0) entity[item.Name] = v[0];
             }
-#else
-            // 填充QueryString参数
-            var qs = Request.QueryString;
-            foreach (var item in Entity<TEntity>.Meta.Fields)
-            {
-                var v = qs[item.Name];
-                if (!v.IsNullOrEmpty()) entity[item.Name] = v;
-            }
-#endif
 
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Insert, false);
 
             // 记下添加前的来源页，待会添加成功以后跳转
             //Session["Cube_Add_Referrer"] = Request.UrlReferrer.ToString();
-#if __CORE__
             var url = Request.Headers["Referer"].FirstOrDefault() + "";
-#else
-            var url = Request.UrlReferrer + "";
-#endif
             Session["Cube_Add_Referrer"] = url;
 
             // 用于显示的列
@@ -130,11 +104,6 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
         [HttpPost]
-#if __CORE__
-        //[ValidateAntiForgeryToken]
-#else
-        [ValidateInput(false)]
-#endif
         public virtual ActionResult Add(TEntity entity)
         {
             // 检测避免乱用Add/id
@@ -228,11 +197,6 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
         [HttpPost]
-#if __CORE__
-        //[ValidateAntiForgeryToken]
-#else
-        [ValidateInput(false)]
-#endif
         public virtual ActionResult Edit(TEntity entity)
         {
             if (!Valid(entity, DataObjectMethodType.Update, true))
@@ -262,11 +226,7 @@ namespace NewLife.Cube
             {
                 err = ex.Message;
                 //ModelState.AddModelError("", ex.Message);
-#if __CORE__
                 ModelState.AddModelError("", ex.Message);
-#else
-                ModelState.AddModelError("", ex);
-#endif
             }
 
             //ViewBag.RowsAffected = rs;
@@ -294,12 +254,8 @@ namespace NewLife.Cube
         {
             var list = new List<String>();
 
-#if __CORE__
             if (!Request.HasFormContentType) return list;
             var files = Request.Form.Files;
-#else
-            var files = Request.Files;
-#endif
             var fields = Factory.Fields;
             if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
             var datePath = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\";
@@ -487,11 +443,7 @@ namespace NewLife.Cube
         [DisplayName("删除全部")]
         public virtual ActionResult DeleteAll()
         {
-#if __CORE__
             var url = Request.Headers["Referer"].FirstOrDefault() + "";
-#else
-            var url = Request.UrlReferrer + "";
-#endif
 
             var count = 0;
             var p = Session[CacheKey] as Pager;

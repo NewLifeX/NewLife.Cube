@@ -28,7 +28,7 @@ namespace NewLife.Cube.Admin.Controllers
             var rs = base.Valid(entity, type, post);
 
             // 清空缓存
-            if (post) Menu.Meta.Session.ClearCache($"{type}-{entity}", true);
+            if (post) XCode.Membership.Menu.Meta.Session.ClearCache($"{type}-{entity}", true);
 
             return rs;
         }

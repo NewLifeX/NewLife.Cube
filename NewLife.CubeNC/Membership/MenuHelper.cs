@@ -204,14 +204,15 @@ namespace NewLife.Cube.Membership
         }
 
         /// <summary>获取可用于生成权限菜单的Action集合</summary>
+        /// <param name="controllerType">控制器类型</param>
         /// <param name="menu">该控制器所在菜单</param>
         /// <returns></returns>
-        private static IDictionary<MethodInfo, Int32> ScanActionMenu(Type type, IMenu menu)
+        private static IDictionary<MethodInfo, Int32> ScanActionMenu(Type controllerType, IMenu menu)
         {
             var dic = new Dictionary<MethodInfo, Int32>();
 
             //var factory = type.GetProperty("Factory", BindingFlags.Static | BindingFlags.Public | BindingFlags.GetProperty) as IEntityFactory;
-            var pi = type.GetPropertyEx("Factory");
+            var pi = controllerType.GetPropertyEx("Factory");
             var factory = pi?.GetValue(null, null) as IEntityFactory;
             //if (factory == null) return dic;
 
@@ -224,7 +225,7 @@ namespace NewLife.Cube.Membership
             }
 
             // 添加该类型下的所有Action
-            foreach (var method in type.GetMethods())
+            foreach (var method in controllerType.GetMethods())
             {
                 if (method.IsStatic || !method.IsPublic) continue;
 
@@ -244,11 +245,11 @@ namespace NewLife.Cube.Membership
                     var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == name);
                     if (m2 == null)
                     {
-                        m2 = menu.Parent.Add(name, method.GetDisplayName(), $"{type.FullName}.{name}", $"{menu.Url}/{name}");
+                        m2 = menu.Parent.Add(name, method.GetDisplayName(), $"{controllerType.FullName}.{name}", $"{menu.Url}/{name}");
                     }
                     if (m2.Sort == 0) m2.Sort = attMenu.Order;
                     if (m2.Icon.IsNullOrEmpty()) m2.Icon = attMenu.Icon;
-                    if (m2.FullName.IsNullOrEmpty()) m2.FullName = $"{type.FullName}.{name}";
+                    if (m2.FullName.IsNullOrEmpty()) m2.FullName = $"{controllerType.FullName}.{name}";
                     if (attAuth != null) m2.Permissions[(Int32)attAuth.Permission] = attAuth.Permission.GetDescription();
                     if (m2 is IEntity entity) entity.Update();
                 }

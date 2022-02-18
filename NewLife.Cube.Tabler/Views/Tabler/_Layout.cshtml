@@ -19,9 +19,6 @@
 
     var set2 = ViewBag.PageSetting as PageSetting;
 
-    var menu = ViewBag.Menu as IMenu;
-    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
-
     var charts = ViewBag.Charts as ECharts[];
     var charts2 = ViewBag.Charts2 as ECharts[];
 
