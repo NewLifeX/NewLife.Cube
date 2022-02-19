@@ -26,10 +26,10 @@ namespace NewLife.Cube.Admin.Controllers
         /// 实例化
         /// </summary>
         public UserOnlineController()
-        { 
+        {
             PageSetting.EnableAdd = false;
 
-            ListFields.RemoveField("ID", "UserID", "CreateIP", "CreateTime");
+            ListFields.RemoveField("ID", "SessionID", "Status", "LastError", "UserID", "CreateIP", "CreateTime");
 
             {
                 var df = ListFields.GetField("TraceId") as ListField;

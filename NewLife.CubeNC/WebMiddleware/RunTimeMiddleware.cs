@@ -9,9 +9,8 @@ using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
+using NewLife.Cube.Web;
 using NewLife.Log;
-using NewLife.Model;
-using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Web;
 using XCode.DataAccessLayer;
@@ -43,8 +42,12 @@ namespace NewLife.Cube.WebMiddleware
         /// <returns></returns>
         public async Task Invoke(HttpContext ctx)
         {
+            var userAgent = ctx.Request.Headers["User-Agent"] + "";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
             // 识别拦截爬虫
-            if (!ValidRobot(ctx)) return;
+            if (!ValidRobot(ctx, ua)) return;
 
             var ip = ctx.GetUserHost();
             ManageProvider.UserHost = ip;
@@ -79,7 +82,7 @@ namespace NewLife.Cube.WebMiddleware
             if (!p.EndsWithIgnoreCase(ExcludeSuffixes))
             {
                 var sessionId = token?.MD5_16() ?? ip;
-                olt = _userService.SetWebStatus(sessionId, p, null, user, ip);
+                olt = _userService.SetWebStatus(sessionId, p, userAgent, ua, user, ip);
                 ctx.Items["Cube_Online"] = olt;
             }
             try
@@ -175,37 +178,24 @@ namespace NewLife.Cube.WebMiddleware
             ".woff", ".woff2", ".svg", ".ttf", ".otf", ".eot"   // 字体
         };
 
-        private static Boolean ValidRobot(HttpContext ctx)
+        private static Boolean ValidRobot(HttpContext ctx, UserAgentParser ua)
         {
-            var ua = ctx.Request.Headers["User-Agent"] + "";
-            if (ua.IsNullOrEmpty()) return true;
+            if (ua.Compatible.IsNullOrEmpty()) return true;
 
-            // 爬虫
-            var p1 = ua.IndexOf("compatible;");
-            if (p1 > 0)
+            // 判断爬虫
+            var code = Setting.Current.RobotError;
+            if (code > 0)
             {
-                p1 += "compatible;".Length;
-                var p2 = ua.IndexOf(';', p1);
-                if (p2 > 0)
+                var name = ua.Compatible;
+                var p3 = name.IndexOf('/');
+                var botName = p3 > 0 ? name[..p3] : name;
+                if (botName.EndsWithIgnoreCase("bot", "spider"))
                 {
-                    var name = ua[p1..p2];
-                    if (name.Length > 50) name = name[..50];
+                    // 埋点
+                    using var span = DefaultTracer.Instance?.NewSpan($"bot:{botName}", ua);
 
-                    // 判断爬虫
-                    var code = Setting.Current.RobotError;
-                    if (code > 0)
-                    {
-                        var p3 = name.IndexOf('/');
-                        var botName = p3 > 0 ? name[..p3] : name;
-                        if (botName.EndsWithIgnoreCase("bot", "spider"))
-                        {
-                            // 埋点
-                            using var span = DefaultTracer.Instance?.NewSpan($"bot:{botName}", ua);
-
-                            ctx.Response.StatusCode = code;
-                            return false;
-                        }
-                    }
+                    ctx.Response.StatusCode = code;
+                    return false;
                 }
             }
 

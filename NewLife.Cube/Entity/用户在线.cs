@@ -54,11 +54,11 @@ namespace NewLife.Cube.Entity
         public String SessionID { get => _SessionID; set { if (OnPropertyChanging("SessionID", value)) { _SessionID = value; OnPropertyChanged("SessionID"); } } }
 
         private String _OAuthProvider;
-        /// <summary>OAuth提供商。从哪个渠道登录</summary>
-        [DisplayName("OAuth提供商")]
-        [Description("OAuth提供商。从哪个渠道登录")]
+        /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
+        [DisplayName("登录方")]
+        [Description("登录方。OAuth提供商，从哪个渠道登录")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("OAuthProvider", "OAuth提供商。从哪个渠道登录", "")]
+        [BindColumn("OAuthProvider", "登录方。OAuth提供商，从哪个渠道登录", "")]
         public String OAuthProvider { get => _OAuthProvider; set { if (OnPropertyChanging("OAuthProvider", value)) { _OAuthProvider = value; OnPropertyChanged("OAuthProvider"); } } }
 
         private Int32 _Times;
@@ -76,6 +76,46 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, true, 50)]
         [BindColumn("Page", "页面", "")]
         public String Page { get => _Page; set { if (OnPropertyChanging("Page", value)) { _Page = value; OnPropertyChanged("Page"); } } }
+
+        private String _Platform;
+        /// <summary>平台</summary>
+        [DisplayName("平台")]
+        [Description("平台")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("Platform", "平台", "")]
+        public String Platform { get => _Platform; set { if (OnPropertyChanging("Platform", value)) { _Platform = value; OnPropertyChanged("Platform"); } } }
+
+        private String _OS;
+        /// <summary>系统</summary>
+        [DisplayName("系统")]
+        [Description("系统")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("OS", "系统", "")]
+        public String OS { get => _OS; set { if (OnPropertyChanging("OS", value)) { _OS = value; OnPropertyChanged("OS"); } } }
+
+        private String _Device;
+        /// <summary>设备</summary>
+        [DisplayName("设备")]
+        [Description("设备")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("Device", "设备", "")]
+        public String Device { get => _Device; set { if (OnPropertyChanging("Device", value)) { _Device = value; OnPropertyChanged("Device"); } } }
+
+        private String _Brower;
+        /// <summary>浏览器</summary>
+        [DisplayName("浏览器")]
+        [Description("浏览器")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("Brower", "浏览器", "")]
+        public String Brower { get => _Brower; set { if (OnPropertyChanging("Brower", value)) { _Brower = value; OnPropertyChanged("Brower"); } } }
+
+        private String _NetType;
+        /// <summary>网络</summary>
+        [DisplayName("网络")]
+        [Description("网络")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("NetType", "网络", "")]
+        public String NetType { get => _NetType; set { if (OnPropertyChanging("NetType", value)) { _NetType = value; OnPropertyChanged("NetType"); } } }
 
         private String _Status;
         /// <summary>状态</summary>
@@ -159,6 +199,11 @@ namespace NewLife.Cube.Entity
                     case "OAuthProvider": return _OAuthProvider;
                     case "Times": return _Times;
                     case "Page": return _Page;
+                    case "Platform": return _Platform;
+                    case "OS": return _OS;
+                    case "Device": return _Device;
+                    case "Brower": return _Brower;
+                    case "NetType": return _NetType;
                     case "Status": return _Status;
                     case "OnlineTime": return _OnlineTime;
                     case "LastError": return _LastError;
@@ -181,6 +226,11 @@ namespace NewLife.Cube.Entity
                     case "OAuthProvider": _OAuthProvider = Convert.ToString(value); break;
                     case "Times": _Times = value.ToInt(); break;
                     case "Page": _Page = Convert.ToString(value); break;
+                    case "Platform": _Platform = Convert.ToString(value); break;
+                    case "OS": _OS = Convert.ToString(value); break;
+                    case "Device": _Device = Convert.ToString(value); break;
+                    case "Brower": _Brower = Convert.ToString(value); break;
+                    case "NetType": _NetType = Convert.ToString(value); break;
                     case "Status": _Status = Convert.ToString(value); break;
                     case "OnlineTime": _OnlineTime = value.ToInt(); break;
                     case "LastError": _LastError = value.ToDateTime(); break;
@@ -211,7 +261,7 @@ namespace NewLife.Cube.Entity
             /// <summary>会话。Web的SessionID或Server的会话编号</summary>
             public static readonly Field SessionID = FindByName("SessionID");
 
-            /// <summary>OAuth提供商。从哪个渠道登录</summary>
+            /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
             public static readonly Field OAuthProvider = FindByName("OAuthProvider");
 
             /// <summary>次数</summary>
@@ -219,6 +269,21 @@ namespace NewLife.Cube.Entity
 
             /// <summary>页面</summary>
             public static readonly Field Page = FindByName("Page");
+
+            /// <summary>平台</summary>
+            public static readonly Field Platform = FindByName("Platform");
+
+            /// <summary>系统</summary>
+            public static readonly Field OS = FindByName("OS");
+
+            /// <summary>设备</summary>
+            public static readonly Field Device = FindByName("Device");
+
+            /// <summary>浏览器</summary>
+            public static readonly Field Brower = FindByName("Brower");
+
+            /// <summary>网络</summary>
+            public static readonly Field NetType = FindByName("NetType");
 
             /// <summary>状态</summary>
             public static readonly Field Status = FindByName("Status");
@@ -262,7 +327,7 @@ namespace NewLife.Cube.Entity
             /// <summary>会话。Web的SessionID或Server的会话编号</summary>
             public const String SessionID = "SessionID";
 
-            /// <summary>OAuth提供商。从哪个渠道登录</summary>
+            /// <summary>登录方。OAuth提供商，从哪个渠道登录</summary>
             public const String OAuthProvider = "OAuthProvider";
 
             /// <summary>次数</summary>
@@ -270,6 +335,21 @@ namespace NewLife.Cube.Entity
 
             /// <summary>页面</summary>
             public const String Page = "Page";
+
+            /// <summary>平台</summary>
+            public const String Platform = "Platform";
+
+            /// <summary>系统</summary>
+            public const String OS = "OS";
+
+            /// <summary>设备</summary>
+            public const String Device = "Device";
+
+            /// <summary>浏览器</summary>
+            public const String Brower = "Brower";
+
+            /// <summary>网络</summary>
+            public const String NetType = "NetType";
 
             /// <summary>状态</summary>
             public const String Status = "Status";

@@ -126,9 +126,14 @@
       <Column Name="UserID" DataType="Int32" Description="用户" />
       <Column Name="Name" DataType="String" Master="True" Description="名称" />
       <Column Name="SessionID" DataType="String" Description="会话。Web的SessionID或Server的会话编号" />
-      <Column Name="OAuthProvider" DataType="String" Description="OAuth提供商。从哪个渠道登录" />
+      <Column Name="OAuthProvider" DataType="String" Description="登录方。OAuth提供商，从哪个渠道登录" />
       <Column Name="Times" DataType="Int32" Description="次数" />
       <Column Name="Page" DataType="String" Description="页面" />
+      <Column Name="Platform" DataType="String" Description="平台" />
+      <Column Name="OS" DataType="String" Description="系统" />
+      <Column Name="Device" DataType="String" Description="设备" />
+      <Column Name="Brower" DataType="String" Description="浏览器" />
+      <Column Name="NetType" DataType="String" Description="网络" />
       <Column Name="Status" DataType="String" Length="500" Description="状态" />
       <Column Name="OnlineTime" DataType="Int32" Description="在线时间。本次在线总时间，秒" />
       <Column Name="LastError" DataType="DateTime" Nullable="False" Description="最后错误" />
