@@ -81,7 +81,10 @@ namespace NewLife.Cube.Services
             {
                 entity.Platform = userAgent.Platform;
                 entity.OS = userAgent.OSorCPU;
-                entity.Device = userAgent.Device;
+                if (userAgent.Device.IsNullOrEmpty() || !userAgent.DeviceBuild.IsNullOrEmpty() && userAgent.DeviceBuild.Contains(userAgent.Device))
+                    entity.Device = userAgent.DeviceBuild;
+                else
+                    entity.Device = userAgent.Device;
                 entity.Brower = userAgent.Brower;
                 entity.NetType = userAgent.NetType;
             }

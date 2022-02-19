@@ -527,12 +527,18 @@ namespace NewLife.Web
         protected static HttpClient CreateClient()
         {
             var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
-            var agent = "";
-            if (asm != null) agent = $"{asm.GetName().Name} v{asm.GetName().Version}";
+            var userAgent = "";
+            //if (asm != null) agent = $"{asm.GetName().Name}/{asm.GetName().Version}";
+            if (asm != null)
+            {
+                var aname = asm.GetName();
+                var os = Environment.OSVersion?.ToString().TrimStart("Microsoft ");
+                userAgent = $"{aname.Name}/{aname.Version} ({os})";
+            }
 
             var client = Tracer.CreateHttpClient();
             var headers = client.DefaultRequestHeaders;
-            headers.UserAgent.ParseAdd(agent);
+            headers.UserAgent.ParseAdd(userAgent);
 
             return client;
         }

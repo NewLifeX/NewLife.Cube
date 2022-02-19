@@ -222,9 +222,37 @@ namespace XUnitTest
             Assert.Equal("Android 7.0", ua.OSorCPU);
             Assert.Equal("m2 note", ua.Device);
             Assert.Null(ua.Version);
-            Assert.Equal("Build/LMY47D", ua.DeviceBuild);
+            Assert.Equal("LMY47D", ua.DeviceBuild);
             Assert.Equal("MQQBrowser/6.7", ua.Brower);
             Assert.Equal("Mobile/15A372", ua.Mobile);
+        }
+
+        [Fact]
+        public void ParseCube()
+        {
+            var userAgent = "Mozilla/5.0 (Windows NT 10.0.19044.0) CubeSSO/5.0.8085.29079";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Windows", ua.Platform);
+            //Assert.Equal("U", ua.Encryption);
+            Assert.Equal("Windows NT 10.0.19044.0", ua.OSorCPU);
+            Assert.Equal("CubeSSO/5.0.8085.29079", ua.Brower);
+        }
+
+        [Fact]
+        public void ParseCube2()
+        {
+            var userAgent = "CubeSSO/5.0.8085.29669 (Windows NT 10.0.19044.0)";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("CubeSSO/5.0.8085.29669", ua.Compatible);
+            Assert.Equal("Windows", ua.Platform);
+            //Assert.Equal("U", ua.Encryption);
+            Assert.Equal("Windows NT 10.0.19044.0", ua.OSorCPU);
+            Assert.Equal("CubeSSO/5.0.8085.29079", ua.Brower);
         }
 
         [Fact]
@@ -239,7 +267,7 @@ namespace XUnitTest
             Assert.Equal("U", ua.Encryption);
             Assert.Equal("Android 8.1.0", ua.OSorCPU);
             Assert.Equal("EML-AL00", ua.Device);
-            Assert.Equal("Build/HUAWEIEML-AL00", ua.DeviceBuild);
+            Assert.Equal("HUAWEIEML-AL00", ua.DeviceBuild);
             Assert.Null(ua.Version);
             Assert.Equal("DingTalk/4.5.11", ua.Brower);
             Assert.Equal("Mobile", ua.Mobile);
@@ -257,7 +285,7 @@ namespace XUnitTest
             Assert.Null(ua.Encryption);
             Assert.Equal("Android 10", ua.OSorCPU);
             Assert.Equal("YAL-AL10", ua.Device);
-            Assert.Equal("Build/HUAWEIYAL-AL10", ua.DeviceBuild);
+            Assert.Equal("HUAWEIYAL-AL10", ua.DeviceBuild);
             Assert.Equal("wv", ua.Version);
             Assert.Equal("MicroMessenger/8.0.19.2080", ua.Brower);
             Assert.Equal("Mobile", ua.Mobile);
@@ -294,7 +322,7 @@ namespace XUnitTest
             Assert.Null(ua.Encryption);
             Assert.Equal("Android 10", ua.OSorCPU);
             Assert.Equal("YAL-AL10", ua.Device);
-            Assert.Equal("Build/HUAWEIYAL-AL10", ua.DeviceBuild);
+            Assert.Equal("HUAWEIYAL-AL10", ua.DeviceBuild);
             Assert.Equal("wv", ua.Version);
             Assert.Equal("wxwork/4.0.0", ua.Brower);
             Assert.Equal("Mobile", ua.Mobile);
@@ -313,7 +341,7 @@ namespace XUnitTest
             Assert.Null(ua.Encryption);
             Assert.Equal("Android 10", ua.OSorCPU);
             Assert.Equal("YAL-AL10", ua.Device);
-            Assert.Equal("Build/HUAWEIYAL-AL10", ua.DeviceBuild);
+            Assert.Equal("HUAWEIYAL-AL10", ua.DeviceBuild);
             Assert.Equal("wv", ua.Version);
             Assert.Equal("QQ/8.8.68.7265", ua.Brower);
             Assert.Equal("Mobile", ua.Mobile);

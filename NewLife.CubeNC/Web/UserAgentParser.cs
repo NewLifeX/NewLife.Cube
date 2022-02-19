@@ -130,6 +130,10 @@ public class UserAgentParser
                     Platform = ss[0]?.Trim();
                     OSorCPU = ss[1]?.Trim().TrimStart("CPU ");
                 }
+                else if (ss.Length >= 1)
+                {
+                    Platform = ss[0]?.Trim();
+                }
             }
 
             // 处理操作系统与平台
@@ -161,11 +165,14 @@ public class UserAgentParser
                 var p = Device.IndexOf("Build/");
                 if (p >= 0)
                 {
-                    DeviceBuild = Device[p..].Trim();
+                    DeviceBuild = Device[(p + "Build/".Length)..].Trim();
                     Device = Device[..p].Trim();
                 }
             }
         }
+
+        // 浏览器兜底
+        if (Brower.IsNullOrEmpty()) Brower = Compatible;
 
         return true;
     }
@@ -282,7 +289,7 @@ public class UserAgentParser
 
     private void ParseOtherBrowser(String[] infos)
     {
-        var list = infos.Where(e => !e.Contains("(") && !e.StartsWithIgnoreCase("AppleWebKit/", "Chrome/", "Safari/", "Gecko/", "Mobile/", "Version/") && !e.EqualIgnoreCase("Mobile")).ToList();
+        var list = infos.Where(e => !e.Contains("(") && !e.StartsWithIgnoreCase("Mozilla/", "AppleWebKit/", "Chrome/", "Safari/", "Gecko/", "Mobile/", "Version/") && !e.EqualIgnoreCase("Mobile")).ToList();
         if (list.Count == 0)
         {
             // 最后识别Safari，别人都仿它
