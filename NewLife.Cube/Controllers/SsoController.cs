@@ -11,14 +11,10 @@ using NewLife.Security;
 using NewLife.Cube.Web.Models;
 using NewLife.Remoting;
 using System.Collections.Generic;
-#if __CORE__
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-#else
-using System.Web;
-using System.Web.Mvc;
-#endif
+using NewLife.Collections;
 
 /*
  * 魔方OAuth在禁用本地登录，且只设置一个第三方登录时，形成单点登录。
@@ -58,12 +54,12 @@ namespace NewLife.Cube.Controllers
         /// <summary>单点登录服务端</summary>
         public static OAuthServer OAuth { get; set; }
 
-        ///// <summary>存储最近用过的code，避免用户刷新页面</summary>
-        //private static DictionaryCache<String, String> _codeCache = new DictionaryCache<string, string>()
-        //{
-        //    Expire = 600,
-        //    Period = 60
-        //};
+        /// <summary>存储最近用过的code，避免用户刷新页面</summary>
+        private static readonly DictionaryCache<String, String> _codeCache = new()
+        {
+            Expire = 600,
+            Period = 60
+        };
 
         static SsoController()
         {
@@ -80,14 +76,7 @@ namespace NewLife.Cube.Controllers
         public virtual ActionResult Index() => Redirect("~/");
 
         #region 单点登录客户端
-        private String GetUserAgent()
-        {
-#if __CORE__
-            return Request.Headers["User-Agent"] + "";
-#else
-            return Request.UserAgent;
-#endif
-        }
+        private String GetUserAgent() => Request.Headers["User-Agent"] + "";
 
         /// <summary>第三方登录</summary>
         /// <param name="name"></param>
@@ -101,10 +90,10 @@ namespace NewLife.Cube.Controllers
 
             var rurl = prov.GetReturnUrl(Request, true);
 
-            return base.Redirect(OnLogin(client, null, rurl));
+            return base.Redirect(OnLogin(client, null, rurl, null));
         }
 
-        private String OnLogin(OAuthClient client, String state, String returnUrl)
+        private String OnLogin(OAuthClient client, String state, String returnUrl, OAuthLog log)
         {
             var prov = Provider;
             var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
@@ -117,20 +106,23 @@ namespace NewLife.Cube.Controllers
             //}
             //state = HttpUtility.UrlEncode(state);
 
-            var log = new OAuthLog
+            if (log == null)
             {
-                Provider = client.Name,
-                Action = "Login",
-                Success = false,
-                ResponseType = client.ResponseType,
-                Scope = client.Scope,
-                State = state,
-                RedirectUri = returnUrl,
-                Source = source,
-                TraceId = DefaultSpan.Current?.TraceId,
-                Remark = GetUserAgent(),
-            };
-            log.Insert();
+                log = new OAuthLog
+                {
+                    Provider = client.Name,
+                    Action = "Login",
+                    Success = false,
+                    ResponseType = client.ResponseType,
+                    Scope = client.Scope,
+                    State = state,
+                    RedirectUri = returnUrl,
+                    Source = source,
+                    TraceId = DefaultSpan.Current?.TraceId,
+                    Remark = GetUserAgent(),
+                };
+                log.Insert();
+            }
 
             return client.Authorize(redirect, log.Id + "");
         }
@@ -156,18 +148,18 @@ namespace NewLife.Cube.Controllers
             var log = OAuthLog.FindById(state.ToLong());
             if (log == null) throw new InvalidOperationException("无效state=" + state);
 
-            //// 无法拿到code时，跳回去再来
-            //if (code.IsNullOrEmpty())
-            //{
-            //    if (state == "refresh") throw new Exception("非法请求，无法取得code");
+            // 无法拿到code时，跳回去再来
+            if (code.IsNullOrEmpty())
+            {
+                //if (state == "refresh") throw new Exception("非法请求，无法取得code");
 
-            //    return Redirect(OnLogin(client, $"{name}_refresh", null));
-            //}
-            //// 短期内用过的code也跳回
-            //if (!_codeCache.TryAdd(code, code, false, out _))
-            //{
-            //    return Redirect(OnLogin(client, $"{name}_refresh", null));
-            //}
+                return Redirect(OnLogin(client, null, null, log));
+            }
+            // 短期内用过的code也跳回
+            if (!_codeCache.TryAdd(code, code, false, out _))
+            {
+                return Redirect(OnLogin(client, null, null, log));
+            }
 
             // 构造redirect_uri，部分提供商（百度）要求获取AccessToken的时候也要传递
             var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
@@ -221,11 +213,7 @@ namespace NewLife.Cube.Controllers
                 if (uc.ID == 0) uc = prov.GetConnect(client);
                 uc.Fill(client);
 
-#if __CORE__
                 var url = prov.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind");
-#else
-                var url = prov.OnLogin(client, HttpContext, uc, log.Action == "Bind");
-#endif
 
                 log.ConnectId = uc.ID;
                 log.UserId = uc.UserID;
@@ -350,11 +338,7 @@ namespace NewLife.Cube.Controllers
             var user = prov.Current;
             if (user == null)
             {
-#if __CORE__
                 var returnUrl = Request.GetEncodedPathAndQuery();
-#else
-                var returnUrl = Request.Url?.PathAndQuery;
-#endif
                 var rurl = "~/Admin/User/Login".AppendReturn(returnUrl);
                 return Redirect(rurl);
             }
@@ -444,11 +428,7 @@ namespace NewLife.Cube.Controllers
             var user = prov?.Current;
             if (user == null)
             {
-#if __CORE__
                 user = prov?.Provider.TryLogin(HttpContext);
-#else
-                user = prov?.Provider.TryLogin(HttpContext.ApplicationInstance.Context);
-#endif
             }
             if (user != null)
                 url = OAuth.GetResult(key, user);
@@ -889,32 +869,17 @@ namespace NewLife.Cube.Controllers
 
             if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
 
-#if __CORE__
             var vs = System.IO.File.ReadAllBytes(av);
             return File(vs, "image/png");
-#else
-            return File(av, "image/png");
-#endif
         }
 
-        private ActionResult SsoJsonOK(Object data)
-        {
-#if __CORE__
-            return Json(data);
-#else
-            return Json(data, JsonRequestBehavior.AllowGet);
-#endif
-        }
+        private ActionResult SsoJsonOK(Object data) => Json(data);
 
         private ActionResult SsoJsonError(Exception ex)
         {
             var code = 500;
             if (ex is ApiException aex && code > 0) code = aex.Code;
-#if __CORE__
             return Json(new { errcode = code, error = ex.GetTrue().Message });
-#else
-            return Json(new { errcode = code, error = ex.GetTrue().Message }, JsonRequestBehavior.AllowGet);
-#endif
         }
         #endregion
     }
