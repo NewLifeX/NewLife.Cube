@@ -125,6 +125,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("RefreshToken", "刷新令牌", "")]
         public String RefreshToken { get => _RefreshToken; set { if (OnPropertyChanging("RefreshToken", value)) { _RefreshToken = value; OnPropertyChanged("RefreshToken"); } } }
 
+        private String _TraceId;
+        /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+        [DisplayName("性能追踪")]
+        [Description("性能追踪。用于APM性能追踪定位，还原该事件的调用链")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("TraceId", "性能追踪。用于APM性能追踪定位，还原该事件的调用链", "")]
+        public String TraceId { get => _TraceId; set { if (OnPropertyChanging("TraceId", value)) { _TraceId = value; OnPropertyChanged("TraceId"); } } }
+
         private String _Remark;
         /// <summary>详细信息</summary>
         [DisplayName("详细信息")]
@@ -181,6 +189,7 @@ namespace NewLife.Cube.Entity
                     case "Source": return _Source;
                     case "AccessToken": return _AccessToken;
                     case "RefreshToken": return _RefreshToken;
+                    case "TraceId": return _TraceId;
                     case "Remark": return _Remark;
                     case "CreateIP": return _CreateIP;
                     case "CreateTime": return _CreateTime;
@@ -205,6 +214,7 @@ namespace NewLife.Cube.Entity
                     case "Source": _Source = Convert.ToString(value); break;
                     case "AccessToken": _AccessToken = Convert.ToString(value); break;
                     case "RefreshToken": _RefreshToken = Convert.ToString(value); break;
+                    case "TraceId": _TraceId = Convert.ToString(value); break;
                     case "Remark": _Remark = Convert.ToString(value); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
@@ -257,6 +267,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>刷新令牌</summary>
             public static readonly Field RefreshToken = FindByName("RefreshToken");
+
+            /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+            public static readonly Field TraceId = FindByName("TraceId");
 
             /// <summary>详细信息</summary>
             public static readonly Field Remark = FindByName("Remark");
@@ -314,6 +327,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>刷新令牌</summary>
             public const String RefreshToken = "RefreshToken";
+
+            /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+            public const String TraceId = "TraceId";
 
             /// <summary>详细信息</summary>
             public const String Remark = "Remark";

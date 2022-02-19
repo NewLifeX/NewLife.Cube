@@ -87,6 +87,7 @@ namespace NewLife.Web
                 Scope = scope,
                 State = state,
 
+                TraceId = DefaultSpan.Current?.TraceId,
                 CreateIP = ip,
                 CreateTime = DateTime.Now,
             };

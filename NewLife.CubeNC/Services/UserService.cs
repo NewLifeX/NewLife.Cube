@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using NewLife.Cube.Entity;
+using NewLife.Log;
 using NewLife.Threading;
 using XCode;
 using XCode.Membership;
@@ -86,6 +87,7 @@ namespace NewLife.Cube.Services
             entity.UpdateTime = DateTime.Now;
             entity.UpdateIP = ip;
             entity.OnlineTime = (Int32)(entity.UpdateTime - entity.CreateTime).TotalSeconds;
+            entity.TraceId = DefaultSpan.Current?.TraceId;
             entity.SaveAsync(5_000);
 
             Interlocked.Increment(ref _onlines);
@@ -111,7 +113,7 @@ namespace NewLife.Cube.Services
             if (user is User user2 && (user2.AreaId == 0 || user2.AreaId % 10000 == 0))
             {
                 var rs = Area.SearchIP(ip, 2);
-                if(rs.Count > 0)
+                if (rs.Count > 0)
                 {
                     user2.AreaId = rs[rs.Count - 1].ID;
                     user2.SaveAsync();

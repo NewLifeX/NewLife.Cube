@@ -127,6 +127,7 @@ namespace NewLife.Cube.Controllers
                 State = state,
                 RedirectUri = returnUrl,
                 Source = source,
+                TraceId = DefaultSpan.Current?.TraceId,
                 Remark = GetUserAgent(),
             };
             log.Insert();
@@ -373,6 +374,7 @@ namespace NewLife.Cube.Controllers
                 Scope = client.Scope,
                 State = null,
                 RedirectUri = url,
+                TraceId = DefaultSpan.Current?.TraceId,
             };
             log.Insert();
 

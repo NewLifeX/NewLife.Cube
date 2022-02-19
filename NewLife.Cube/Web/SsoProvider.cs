@@ -541,6 +541,7 @@ namespace NewLife.Cube.Web
                 ClientId = client_id,
                 ResponseType = "password",
 
+                TraceId = DefaultSpan.Current?.TraceId,
                 CreateIP = ip,
                 CreateTime = DateTime.Now,
             };
@@ -630,6 +631,7 @@ namespace NewLife.Cube.Web
                 ClientId = client_id,
                 ResponseType = "client_credentials",
 
+                TraceId = DefaultSpan.Current?.TraceId,
                 CreateIP = ip,
                 CreateTime = DateTime.Now,
             };
@@ -690,6 +692,7 @@ namespace NewLife.Cube.Web
                 ClientId = client_id,
                 ResponseType = "refresh_token",
 
+                TraceId = DefaultSpan.Current?.TraceId,
                 CreateIP = ip,
                 CreateTime = DateTime.Now,
             };

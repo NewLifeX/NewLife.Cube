@@ -101,6 +101,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("LastError", "最后错误", "")]
         public DateTime LastError { get => _LastError; set { if (OnPropertyChanging("LastError", value)) { _LastError = value; OnPropertyChanged("LastError"); } } }
 
+        private String _TraceId;
+        /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+        [DisplayName("性能追踪")]
+        [Description("性能追踪。用于APM性能追踪定位，还原该事件的调用链")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("TraceId", "性能追踪。用于APM性能追踪定位，还原该事件的调用链", "")]
+        public String TraceId { get => _TraceId; set { if (OnPropertyChanging("TraceId", value)) { _TraceId = value; OnPropertyChanged("TraceId"); } } }
+
         private String _CreateIP;
         /// <summary>创建地址</summary>
         [DisplayName("创建地址")]
@@ -154,6 +162,7 @@ namespace NewLife.Cube.Entity
                     case "Status": return _Status;
                     case "OnlineTime": return _OnlineTime;
                     case "LastError": return _LastError;
+                    case "TraceId": return _TraceId;
                     case "CreateIP": return _CreateIP;
                     case "CreateTime": return _CreateTime;
                     case "UpdateIP": return _UpdateIP;
@@ -175,6 +184,7 @@ namespace NewLife.Cube.Entity
                     case "Status": _Status = Convert.ToString(value); break;
                     case "OnlineTime": _OnlineTime = value.ToInt(); break;
                     case "LastError": _LastError = value.ToDateTime(); break;
+                    case "TraceId": _TraceId = Convert.ToString(value); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
@@ -218,6 +228,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>最后错误</summary>
             public static readonly Field LastError = FindByName("LastError");
+
+            /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+            public static readonly Field TraceId = FindByName("TraceId");
 
             /// <summary>创建地址</summary>
             public static readonly Field CreateIP = FindByName("CreateIP");
@@ -266,6 +279,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>最后错误</summary>
             public const String LastError = "LastError";
+
+            /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+            public const String TraceId = "TraceId";
 
             /// <summary>创建地址</summary>
             public const String CreateIP = "CreateIP";
