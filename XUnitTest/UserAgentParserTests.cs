@@ -264,5 +264,24 @@ namespace XUnitTest
             Assert.Equal("MicroMessenger/7.0.20.1781", ua.Brower);
             Assert.Null(ua.Mobile);
         }
+
+        [Fact]
+        public void ParseQyWeixin()
+        {
+            var userAgent = "Mozilla/5.0 (Linux; Android 10; YAL-AL10 Build/HUAWEIYAL-AL10; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045737 Mobile Safari/537.36 wxwork/4.0.0 ColorScheme/Light MicroMessenger/7.0.1 NetType/WIFI Language/zh Lang/zh";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Android", ua.Platform);
+            Assert.Null(ua.Encryption);
+            Assert.Equal("Android 10", ua.OSorCPU);
+            Assert.Equal("YAL-AL10", ua.Device);
+            Assert.Equal("Build/HUAWEIYAL-AL10", ua.DeviceBuild);
+            Assert.Equal("wv", ua.Version);
+            Assert.Equal("wxwork/4.0.0", ua.Brower);
+            Assert.Equal("Mobile", ua.Mobile);
+            Assert.Equal("WIFI", ua.NetType);
+        }
     }
 }
