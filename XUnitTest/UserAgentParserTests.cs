@@ -40,6 +40,23 @@ namespace XUnitTest
         }
 
         [Fact]
+        public void ParseEdge()
+        {
+            var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36 Edge/18.18362";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Windows", ua.Platform);
+            Assert.Null(ua.Encryption);
+            Assert.Equal("Windows NT 10.0", ua.OSorCPU);
+            Assert.Null(ua.Device);
+            Assert.Null(ua.Version);
+            Assert.Equal("Edge/18.18362", ua.Brower);
+            Assert.Null(ua.Mobile);
+        }
+
+        [Fact]
         public void ParseFirefox()
         {
             var userAgent = "Mozilla/5.0 (Windows NT 6.4; WOW64; rv:35.0) Gecko/20100101 Firefox/35.0";
@@ -252,7 +269,7 @@ namespace XUnitTest
             Assert.Equal("Windows", ua.Platform);
             //Assert.Equal("U", ua.Encryption);
             Assert.Equal("Windows NT 10.0.19044.0", ua.OSorCPU);
-            Assert.Equal("CubeSSO/5.0.8085.29079", ua.Brower);
+            Assert.Equal("CubeSSO/5.0.8085.29669", ua.Brower);
         }
 
         [Fact]

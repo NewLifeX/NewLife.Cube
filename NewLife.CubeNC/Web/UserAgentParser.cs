@@ -73,10 +73,11 @@ public class UserAgentParser
         ParseHuawei(infos, exts);
         ParseTencent(infos, exts);
         ParseAliApp(infos, exts);
-        if (Brower.IsNullOrEmpty()) ParseChrome(infos);
 
         // 其它浏览器
         if (Brower.IsNullOrEmpty()) ParseOtherBrowser(infos);
+        if (Brower.IsNullOrEmpty()) ParseChrome(infos);
+        if (Brower.IsNullOrEmpty()) ParseSafari(infos, exts);
 
         // 移动
         var inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("Mobile/") || e.EqualIgnoreCase("Mobile"));
@@ -287,35 +288,33 @@ public class UserAgentParser
         Brower = inf.Substring(p1 + 1, p2 - p1 - 1);
     }
 
+    private void ParseSafari(String[] infos, String[] exts)
+    {
+        var inf = infos.FirstOrDefault(e => e.StartsWith("Safari/"));
+        if (inf == null) return;
+
+        var p1 = inf.IndexOf('(');
+        if (p1 > 0)
+        {
+            var str = inf[p1..];
+            inf = inf[..p1];
+
+            // 识别扩展
+            var ss = str.Trim('(', ')').Split(';');
+            if (ss.Length >= 2) Device = ss[1].Trim();
+        }
+        Brower = inf.Trim();
+
+        // 合并版本
+        inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("Version/"));
+        if (inf != null)
+            Brower = Brower.Split('/')[0] + "/" + inf.Split('/')[^1];
+    }
+
     private void ParseOtherBrowser(String[] infos)
     {
         var list = infos.Where(e => !e.Contains("(") && !e.StartsWithIgnoreCase("Mozilla/", "AppleWebKit/", "Chrome/", "Safari/", "Gecko/", "Mobile/", "Version/") && !e.EqualIgnoreCase("Mobile")).ToList();
-        if (list.Count == 0)
-        {
-            // 最后识别Safari，别人都仿它
-            var inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("Safari/"));
-            if (inf != null)
-            {
-                var p1 = inf.IndexOf('(');
-                if (p1 > 0)
-                {
-                    var str = inf[p1..];
-                    inf = inf[..p1];
-
-                    // 识别扩展
-                    var ss = str.Trim('(', ')').Split(';');
-                    if (ss.Length >= 2) Device = ss[1].Trim();
-                }
-                if (Brower.IsNullOrEmpty()) Brower = inf.Trim();
-
-                // 合并版本
-                inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("Version/"));
-                if (inf != null)
-                    Brower = Brower.Split('/')[0] + "/" + inf.Split('/')[^1];
-            }
-
-            return;
-        }
+        if (list.Count == 0) return;
 
         Brower = list[0];
     }
