@@ -56,6 +56,8 @@ public class UserAgentParser
         // 首先识别主流浏览器，不同浏览器格式不同
         var infos = ms.Select(e => e.Value?.Trim()).ToArray();
         ParseChrome(infos);
+        ParseFirefox(infos);
+        ParseOpera(infos);
 
         // 其它浏览器
         if (Brower.IsNullOrEmpty()) ParseOtherBrowser(infos);
@@ -71,35 +73,65 @@ public class UserAgentParser
 
             // Mozilla/MozillaVersion (Platform; Encryption; OS-or-CPU; Language; PrereleaseVersi
             var ss = match.Groups[2].Value?.Trim('(', ')').Split(';');
-            if (ss != null && ss.Length > 0)
+            if (ss != null && ss.Length > 0 && Platform.IsNullOrEmpty())
             {
-                if (ss.Length >= 4)
+                if (ss.Length >= 5)
                 {
                     Platform = ss[0]?.Trim();
                     Encryption = ss[1]?.Trim();
                     OSorCPU = ss[2]?.Trim().TrimStart("CPU ");
+                    //Device = ss[3]?.Trim();
+                }
+                else if (ss.Length >= 4)
+                {
+                    Platform = ss[0]?.Trim();
+                    Encryption = ss[1]?.Trim();
+                    OSorCPU = ss[2]?.Trim().TrimStart("CPU ");
+
+                    //// WebKit 特殊
+                    //if (!infos.Any(e => e.Contains("WebKit"))) Device = ss[3]?.Trim();
                     Device = ss[3]?.Trim();
+                    if (Device == "en" || Device.StartsWithIgnoreCase("en")) Device = null;
+                }
+                else if (ss.Length >= 3 && ss[0].EqualIgnoreCase("compatible"))
+                {
+                    Platform = ss[0]?.Trim();
+                    Brower = ss[1]?.Trim();
+                    OSorCPU = ss[2]?.Trim();
                 }
                 else if (ss.Length >= 2)
                 {
                     Platform = ss[0]?.Trim();
                     OSorCPU = ss[1]?.Trim().TrimStart("CPU ");
                 }
+            }
 
-                if (!OSorCPU.IsNullOrEmpty())
-                {
-                    var p = OSorCPU.IndexOf("like");
-                    if (p >= 0) OSorCPU = OSorCPU[..p].Trim();
-                }
+            // 处理操作系统与平台
+            if (Platform.StartsWithIgnoreCase("Windows "))
+            {
+                OSorCPU = Platform;
+                Platform = "Windows";
+            }
+            else if (Platform.EqualIgnoreCase("Linux") && OSorCPU.StartsWithIgnoreCase("Android "))
+            {
+                Platform = "Android";
+            }
 
-                if (!Device.IsNullOrEmpty())
+            // 处理系统和处理器
+            if (!OSorCPU.IsNullOrEmpty())
+            {
+                var p = OSorCPU.IndexOf("like");
+                if (p >= 0) OSorCPU = OSorCPU[..p].Trim();
+            }
+
+            // 处理设备
+            if (!Device.IsNullOrEmpty())
+            {
+                var p = Device.IndexOf("Build/");
+                if (p >= 0)
                 {
-                    var p = Device.IndexOf("Build/");
-                    if (p >= 0)
-                    {
-                        DeviceBuild = Device[p..].Trim();
-                        Device = Device[..p].Trim();
-                    }
+                    DeviceBuild = Device[p..].Trim();
+                    Device = Device[..p].Trim();
                 }
             }
         }
@@ -115,9 +147,39 @@ public class UserAgentParser
         Brower = inf;
     }
 
+    private void ParseFirefox(String[] infos)
+    {
+        var inf = infos.FirstOrDefault(e => e.StartsWith("Firefox/"));
+        if (inf == null) return;
+
+        Brower = inf;
+    }
+
+    private void ParseOpera(String[] infos)
+    {
+        var inf = infos.FirstOrDefault(e => e.StartsWith("Opera/"));
+        if (inf == null) return;
+
+        Brower = inf;
+
+        var p = inf.IndexOf(' ');
+        if (p > 0)
+        {
+            Brower = inf[..p];
+
+            var ss = inf[(p + 1)..].Trim('(', ')').Split(';');
+            if (ss.Length >= 3)
+            {
+                Platform = ss[0]?.Trim();
+                Encryption = ss[1]?.Trim();
+                OSorCPU = ss[2]?.Trim();
+            }
+        }
+    }
+
     private void ParseOtherBrowser(String[] infos)
     {
-        var list = infos.Where(e => !e.Contains("(") && !e.StartsWithIgnoreCase("AppleWebKit/", "Chrome/", "Safari/", "Mobile/", "Version/")).ToList();
+        var list = infos.Where(e => !e.Contains("(") && !e.StartsWithIgnoreCase("AppleWebKit/", "Chrome/", "Safari/", "Gecko/", "Mobile/", "Version/")).ToList();
         if (list.Count == 0)
         {
             // 最后识别Safari，别人都仿它
