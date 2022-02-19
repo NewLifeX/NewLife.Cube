@@ -142,6 +142,11 @@ public class UserAgentParser
             {
                 Platform = "Android";
             }
+            else if (Platform.EqualIgnoreCase("X11") && Encryption.StartsWithIgnoreCase("Ubuntu"))
+            {
+                Platform = Encryption;
+                Encryption = null;
+            }
 
             // 处理系统和处理器
             if (!OSorCPU.IsNullOrEmpty())
@@ -180,7 +185,21 @@ public class UserAgentParser
 
         Brower = inf;
 
-        if (exts.Length >= 3)
+        if (exts.Length >= 5)
+        {
+            Platform = exts[0]?.Trim();
+            Encryption = exts[1]?.Trim();
+            OSorCPU = exts[2]?.Trim();
+            Version = exts[4]?.Trim();
+        }
+        else if (exts.Length >= 4)
+        {
+            Platform = exts[0]?.Trim();
+            Encryption = exts[1]?.Trim();
+            OSorCPU = exts[2]?.Trim();
+            Version = exts[3]?.Trim();
+        }
+        else if (exts.Length >= 3)
         {
             Platform = exts[0]?.Trim();
             //Encryption = exts[1]?.Trim();

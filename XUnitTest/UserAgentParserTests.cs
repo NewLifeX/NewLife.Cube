@@ -57,6 +57,23 @@ namespace XUnitTest
         }
 
         [Fact]
+        public void ParseFirefox2()
+        {
+            var userAgent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Ubuntu", ua.Platform);
+            Assert.Null(ua.Encryption);
+            Assert.Equal("Linux x86_64", ua.OSorCPU);
+            Assert.Null(ua.Device);
+            Assert.Equal("rv:52.0", ua.Version);
+            Assert.Equal("Firefox/52.0", ua.Brower);
+            Assert.Null(ua.Mobile);
+        }
+
+        [Fact]
         public void ParseSafari()
         {
             var userAgent = "Mozilla/5.0 (Macintosh; U; PPC Mac OS X; en) AppleWebKit/522.15.5 (KHTML, like Gecko) Version/3.0.3 Safari/522.15.5";
