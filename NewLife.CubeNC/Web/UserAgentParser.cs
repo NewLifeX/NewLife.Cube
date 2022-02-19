@@ -65,8 +65,8 @@ public class UserAgentParser
         // 首先识别主流浏览器，不同浏览器格式不同
         ParseFirefox(infos, exts);
         ParseOpera(infos, exts);
-        ParseHuaweiBrowser(infos, exts);
-        ParseWechat(infos, exts);
+        ParseHuawei(infos, exts);
+        ParseTencent(infos, exts);
         ParseAliApp(infos, exts);
         if (Brower.IsNullOrEmpty()) ParseChrome(infos);
 
@@ -204,7 +204,7 @@ public class UserAgentParser
         }
     }
 
-    private void ParseHuaweiBrowser(String[] infos, String[] exts)
+    private void ParseHuawei(String[] infos, String[] exts)
     {
         var inf = infos.FirstOrDefault(e => e.StartsWith("HuaweiBrowser/"));
         if (inf == null) return;
@@ -221,9 +221,10 @@ public class UserAgentParser
         }
     }
 
-    private void ParseWechat(String[] infos, String[] exts)
+    private void ParseTencent(String[] infos, String[] exts)
     {
         var inf = infos.FirstOrDefault(e => e.StartsWith("wxwork/"));
+        if (inf == null) inf = infos.FirstOrDefault(e => e.StartsWith("QQ/"));
         if (inf == null) inf = infos.FirstOrDefault(e => e.StartsWith("MicroMessenger/"));
         if (inf == null) return;
 

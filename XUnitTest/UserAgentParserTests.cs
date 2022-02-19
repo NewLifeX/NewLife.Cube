@@ -283,5 +283,24 @@ namespace XUnitTest
             Assert.Equal("Mobile", ua.Mobile);
             Assert.Equal("WIFI", ua.NetType);
         }
+
+        [Fact]
+        public void ParseQQ()
+        {
+            var userAgent = "Mozilla/5.0 (Linux; Android 10; YAL-AL10 Build/HUAWEIYAL-AL10; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/89.0.4389.72 MQQBrowser/6.2 TBS/045913 Mobile Safari/537.36 V1_AND_SQ_8.8.68_2538_YYB_D A_8086800 QQ/8.8.68.7265 NetType/WIFI WebP/0.3.0 Pixel/1080 StatusBarHeight/108 SimpleUISwitch/1 QQTheme/3065 InMagicWin/0 StudyMode/0 CurrentMode/1 CurrentFontScale/1.0 GlobalDensityScale/0.90000004 AppId/537112550";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Android", ua.Platform);
+            Assert.Null(ua.Encryption);
+            Assert.Equal("Android 10", ua.OSorCPU);
+            Assert.Equal("YAL-AL10", ua.Device);
+            Assert.Equal("Build/HUAWEIYAL-AL10", ua.DeviceBuild);
+            Assert.Equal("wv", ua.Version);
+            Assert.Equal("QQ/8.8.68.7265", ua.Brower);
+            Assert.Equal("Mobile", ua.Mobile);
+            Assert.Equal("WIFI", ua.NetType);
+        }
     }
 }
