@@ -38,6 +38,9 @@ public class UserAgentParser
 
     /// <summary>移动版本</summary>
     public String Mobile { get; set; }
+
+    /// <summary>网络类型</summary>
+    public String NetType { get; set; }
     #endregion
 
     #region 方法
@@ -63,6 +66,7 @@ public class UserAgentParser
         ParseFirefox(infos, exts);
         ParseOpera(infos, exts);
         ParseHuaweiBrowser(infos, exts);
+        ParseWechat(infos, exts);
         ParseAliApp(infos, exts);
         if (Brower.IsNullOrEmpty()) ParseChrome(infos);
 
@@ -70,8 +74,12 @@ public class UserAgentParser
         if (Brower.IsNullOrEmpty()) ParseOtherBrowser(infos);
 
         // 移动
-        var inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("Mobile/"));
+        var inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("Mobile/") || e.EqualIgnoreCase("Mobile"));
         if (inf != null) Mobile = inf.Trim();
+
+        // 网络类型
+        inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("NetType/"));
+        if (inf != null) NetType = inf.Trim()["NetType/".Length..];
 
         {
             // 识别操作系统平台
@@ -210,6 +218,25 @@ public class UserAgentParser
             OSorCPU = exts[2]?.Trim();
             Device = exts[3]?.Trim();
             Version = exts[4]?.Trim();
+        }
+    }
+
+    private void ParseWechat(String[] infos, String[] exts)
+    {
+        var inf = infos.FirstOrDefault(e => e.StartsWith("MicroMessenger/"));
+        if (inf == null) return;
+
+        var p1 = inf.IndexOf('(');
+        if (p1 > 0) inf = inf[..p1];
+
+        Brower = inf;
+
+        if (exts.Length >= 4)
+        {
+            Platform = exts[0]?.Trim();
+            OSorCPU = exts[1]?.Trim();
+            Device = exts[2]?.Trim();
+            Version = exts[3]?.Trim();
         }
     }
 

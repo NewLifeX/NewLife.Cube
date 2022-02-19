@@ -225,6 +225,43 @@ namespace XUnitTest
             Assert.Equal("Build/HUAWEIEML-AL00", ua.DeviceBuild);
             Assert.Null(ua.Version);
             Assert.Equal("DingTalk/4.5.11", ua.Brower);
+            Assert.Equal("Mobile", ua.Mobile);
+        }
+
+        [Fact]
+        public void ParseWechat()
+        {
+            var userAgent = "Mozilla/5.0 (Linux; Android 10; YAL-AL10 Build/HUAWEIYAL-AL10; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/86.0.4240.99 XWEB/3185 MMWEBSDK/20220105 Mobile Safari/537.36 MMWEBID/6851 MicroMessenger/8.0.19.2080(0x2800133B) Process/toolsmp WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Android", ua.Platform);
+            Assert.Null(ua.Encryption);
+            Assert.Equal("Android 10", ua.OSorCPU);
+            Assert.Equal("YAL-AL10", ua.Device);
+            Assert.Equal("Build/HUAWEIYAL-AL10", ua.DeviceBuild);
+            Assert.Equal("wv", ua.Version);
+            Assert.Equal("MicroMessenger/8.0.19.2080", ua.Brower);
+            Assert.Equal("Mobile", ua.Mobile);
+            Assert.Equal("WIFI", ua.NetType);
+        }
+
+        [Fact]
+        public void ParseWechat2()
+        {
+            var userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) WindowsWechat(0x6305002e)";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Windows", ua.Platform);
+            Assert.Null(ua.Encryption);
+            Assert.Equal("Windows NT 6.1", ua.OSorCPU);
+            Assert.Null(ua.Device);
+            Assert.Null(ua.DeviceBuild);
+            Assert.Null(ua.Version);
+            Assert.Equal("MicroMessenger/7.0.20.1781", ua.Brower);
             Assert.Null(ua.Mobile);
         }
     }
