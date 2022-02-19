@@ -6,6 +6,7 @@ using System.Text;
 using System.Web;
 using NewLife.Cube.Entity;
 using NewLife.Http;
+using NewLife.Serialization;
 
 namespace NewLife.Web.OAuth
 {
@@ -112,14 +113,35 @@ namespace NewLife.Web.OAuth
         /// <param name="dic"></param>
         protected override void OnGetInfo(IDictionary<String, String> dic)
         {
+            // 可以从token请求返回的id_token里面jwt解析得到email和name
+            if (dic.TryGetValue("id_token", out var id_token) && !id_token.IsNullOrEmpty())
+            {
+                //WriteLog("id_token={0}", id_token);
+
+                var jwt = new JwtBuilder();
+                jwt.Parse(id_token);
+                WriteLog("id_token={0}", jwt.Items.ToJson(true));
+                foreach (var item in jwt.Items)
+                {
+                    dic[item.Key] = item.Value as String;
+                }
+            }
+
             base.OnGetInfo(dic);
+
+            // 不能取name作为唯一用户名
+            UserName = null;
+
+            if (dic.TryGetValue("picture", out var str)) Avatar = str.Trim();
+            if (dic.TryGetValue("name", out str)) NickName = str;
+            if (dic.TryGetValue("preferred_username", out str)) UserName = str;
+            if (dic.TryGetValue("email", out str)) Mail = str;
+
+            if (UserName.IsNullOrEmpty() && Items.TryGetValue("preferred_username", out str)) UserName = str;
 
             // 去掉简体中文名字中的空格
             if (!UserName.IsNullOrEmpty() && UserName.Contains(" ") && Encoding.UTF8.GetByteCount(UserName) != UserName.Length) UserName = UserName.Replace(" ", null);
-
-            //todo 其实可以从token请求返回的id_token里面jwt解析得到email和name
-
-            if (dic.TryGetValue("picture", out var str)) Avatar = str.Trim();
+            if (!NickName.IsNullOrEmpty() && NickName.Contains(" ") && Encoding.UTF8.GetByteCount(NickName) != NickName.Length) NickName = NickName.Replace(" ", null);
         }
 
         /// <summary>获取Url，替换变量</summary>

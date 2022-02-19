@@ -133,6 +133,11 @@ namespace NewLife.Cube
         [Category("用户登录")]
         public Boolean ForceBindUserMail { get; set; }
 
+        /// <summary>绑定用户昵称。根据SSO用户昵称强制绑定本地用户，内部SSO可用，不建议用于社交网络，重名太多</summary>
+        [Description("绑定用户昵称。根据SSO用户昵称强制绑定本地用户，内部SSO可用，不建议用于社交网络，重名太多")]
+        [Category("用户登录")]
+        public Boolean ForceBindNickName { get; set; }
+
         /// <summary>使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole</summary>
         [Description("使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole")]
         [Category("用户登录")]
