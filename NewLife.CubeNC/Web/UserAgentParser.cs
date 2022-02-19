@@ -63,6 +63,7 @@ public class UserAgentParser
         ParseFirefox(infos, exts);
         ParseOpera(infos, exts);
         ParseHuaweiBrowser(infos, exts);
+        ParseAliApp(infos, exts);
         if (Brower.IsNullOrEmpty()) ParseChrome(infos);
 
         // 其它浏览器
@@ -86,7 +87,13 @@ public class UserAgentParser
                     Encryption = ss[1]?.Trim();
                     OSorCPU = ss[2]?.Trim().TrimStart("CPU ");
                     //Device = ss[3]?.Trim();
-                    Version = ss[4]?.Trim();
+
+                    // 有可能是设备和版本
+                    var str = ss[4]?.Trim();
+                    if (!str.IsNullOrEmpty() && str.Contains("Build/"))
+                        Device = str;
+                    else
+                        Version = str;
                 }
                 else if (ss.Length >= 4)
                 {
@@ -204,6 +211,20 @@ public class UserAgentParser
             Device = exts[3]?.Trim();
             Version = exts[4]?.Trim();
         }
+    }
+
+    private void ParseAliApp(String[] infos, String[] exts)
+    {
+        var inf = infos.FirstOrDefault(e => e.StartsWith("AliApp("));
+        if (inf == null) return;
+
+        var p1 = inf.IndexOf('(');
+        if (p1 < 0) return;
+
+        var p2 = inf.IndexOf(')', p1 + 1);
+        if (p2 < 0) return;
+
+        Brower = inf.Substring(p1 + 1, p2 - p1 - 1);
     }
 
     private void ParseOtherBrowser(String[] infos)

@@ -193,7 +193,7 @@ namespace XUnitTest
         }
 
         [Fact]
-        public void Parse4()
+        public void ParseMQQBrowser()
         {
             var userAgent = "Mozilla/5.0 (Linux; U; Android 7.0;m2 note Build/LMY47D) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/5.0.2 MQQBrowser/6.7 Mobile/15A372 Safari/537.36";
             var ua = new UserAgentParser();
@@ -208,6 +208,24 @@ namespace XUnitTest
             Assert.Equal("Build/LMY47D", ua.DeviceBuild);
             Assert.Equal("MQQBrowser/6.7", ua.Brower);
             Assert.Equal("Mobile/15A372", ua.Mobile);
+        }
+
+        [Fact]
+        public void ParseDingTalk()
+        {
+            var userAgent = "Mozilla/5.0 (Linux; U; Android 8.1.0; zh-CN; EML-AL00 Build/HUAWEIEML-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/57.0.2987.108 baidu.sogo.uc.UCBrowser/11.9.4.974 UWS/2.13.1.48 Mobile Safari/537.36 AliApp(DingTalk/4.5.11) com.alibaba.android.rimet/10487439 Channel/227200 language/zh-CN";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Android", ua.Platform);
+            Assert.Equal("U", ua.Encryption);
+            Assert.Equal("Android 8.1.0", ua.OSorCPU);
+            Assert.Equal("EML-AL00", ua.Device);
+            Assert.Equal("Build/HUAWEIEML-AL00", ua.DeviceBuild);
+            Assert.Null(ua.Version);
+            Assert.Equal("DingTalk/4.5.11", ua.Brower);
+            Assert.Null(ua.Mobile);
         }
     }
 }
