@@ -30,6 +30,9 @@ public class UserAgentParser
     /// <summary>设备编译版本</summary>
     public String DeviceBuild { get; set; }
 
+    /// <summary>发行版本</summary>
+    public String Version { get; set; }
+
     /// <summary>用户浏览器</summary>
     public String Brower { get; set; }
 
@@ -53,11 +56,14 @@ public class UserAgentParser
         var count = ms.Count;
         if (count == 0) return false;
 
-        // 首先识别主流浏览器，不同浏览器格式不同
         var infos = ms.Select(e => e.Value?.Trim()).ToArray();
-        ParseChrome(infos);
-        ParseFirefox(infos);
-        ParseOpera(infos);
+        var exts = ms[0].Groups[2].Value?.Trim('(', ')').Split(';');
+
+        // 首先识别主流浏览器，不同浏览器格式不同
+        ParseFirefox(infos, exts);
+        ParseOpera(infos, exts);
+        ParseHuaweiBrowser(infos, exts);
+        if (Brower.IsNullOrEmpty()) ParseChrome(infos);
 
         // 其它浏览器
         if (Brower.IsNullOrEmpty()) ParseOtherBrowser(infos);
@@ -68,11 +74,10 @@ public class UserAgentParser
 
         {
             // 识别操作系统平台
-            var match = ms[0];
-            Compatible = match.Groups[1].Value;
+            Compatible = ms[0].Groups[1].Value;
 
             // Mozilla/MozillaVersion (Platform; Encryption; OS-or-CPU; Language; PrereleaseVersi
-            var ss = match.Groups[2].Value?.Trim('(', ')').Split(';');
+            var ss = exts;
             if (ss != null && ss.Length > 0 && Platform.IsNullOrEmpty())
             {
                 if (ss.Length >= 5)
@@ -81,6 +86,7 @@ public class UserAgentParser
                     Encryption = ss[1]?.Trim();
                     OSorCPU = ss[2]?.Trim().TrimStart("CPU ");
                     //Device = ss[3]?.Trim();
+                    Version = ss[4]?.Trim();
                 }
                 else if (ss.Length >= 4)
                 {
@@ -112,7 +118,7 @@ public class UserAgentParser
                 OSorCPU = Platform;
                 Platform = "Windows";
             }
-            else if (Platform.EqualIgnoreCase("Linux") && OSorCPU.StartsWithIgnoreCase("Android "))
+            else if (Platform.EqualIgnoreCase("Linux") && OSorCPU.StartsWithIgnoreCase("Android ", "HarmonyOS"))
             {
                 Platform = "Android";
             }
@@ -147,15 +153,22 @@ public class UserAgentParser
         Brower = inf;
     }
 
-    private void ParseFirefox(String[] infos)
+    private void ParseFirefox(String[] infos, String[] exts)
     {
         var inf = infos.FirstOrDefault(e => e.StartsWith("Firefox/"));
         if (inf == null) return;
 
         Brower = inf;
+
+        if (exts.Length >= 3)
+        {
+            Platform = exts[0]?.Trim();
+            //Encryption = exts[1]?.Trim();
+            Version = exts[2]?.Trim();
+        }
     }
 
-    private void ParseOpera(String[] infos)
+    private void ParseOpera(String[] infos, String[] exts)
     {
         var inf = infos.FirstOrDefault(e => e.StartsWith("Opera/"));
         if (inf == null) return;
@@ -167,13 +180,29 @@ public class UserAgentParser
         {
             Brower = inf[..p];
 
-            var ss = inf[(p + 1)..].Trim('(', ')').Split(';');
-            if (ss.Length >= 3)
+            if (exts.Length >= 3)
             {
-                Platform = ss[0]?.Trim();
-                Encryption = ss[1]?.Trim();
-                OSorCPU = ss[2]?.Trim();
+                Platform = exts[0]?.Trim();
+                Encryption = exts[1]?.Trim();
+                OSorCPU = exts[2]?.Trim();
             }
+        }
+    }
+
+    private void ParseHuaweiBrowser(String[] infos, String[] exts)
+    {
+        var inf = infos.FirstOrDefault(e => e.StartsWith("HuaweiBrowser/"));
+        if (inf == null) return;
+
+        Brower = inf;
+
+        if (exts.Length >= 5)
+        {
+            Platform = exts[0]?.Trim();
+            //Encryption = exts[1]?.Trim();
+            OSorCPU = exts[2]?.Trim();
+            Device = exts[3]?.Trim();
+            Version = exts[4]?.Trim();
         }
     }
 

@@ -34,6 +34,7 @@ namespace XUnitTest
             Assert.Null(ua.Encryption);
             Assert.Equal("Windows NT 10.0", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Null(ua.Version);
             Assert.Equal("Chrome/86.0.4240.198", ua.Brower);
             Assert.Null(ua.Mobile);
         }
@@ -50,6 +51,7 @@ namespace XUnitTest
             Assert.Null(ua.Encryption);
             Assert.Equal("Windows NT 6.4", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Equal("rv:35.0", ua.Version);
             Assert.Equal("Firefox/35.0", ua.Brower);
             Assert.Null(ua.Mobile);
         }
@@ -66,6 +68,7 @@ namespace XUnitTest
             Assert.Equal("U", ua.Encryption);
             Assert.Equal("PPC Mac OS X", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Null(ua.Version);
             Assert.Equal("Safari/3.0.3", ua.Brower);
             Assert.Null(ua.Mobile);
         }
@@ -82,6 +85,7 @@ namespace XUnitTest
             Assert.Null(ua.Encryption);
             Assert.Equal("Windows 98", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Null(ua.Version);
             Assert.Equal("MSIE 4.0", ua.Brower);
             Assert.Null(ua.Mobile);
         }
@@ -98,6 +102,7 @@ namespace XUnitTest
             Assert.Equal("U", ua.Encryption);
             Assert.Equal("Windows NT 5.1", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Equal("rv:0.9.4", ua.Version);
             Assert.Equal("Netscape6/6.2.1", ua.Brower);
             Assert.Null(ua.Mobile);
         }
@@ -114,6 +119,7 @@ namespace XUnitTest
             Assert.Equal("U", ua.Encryption);
             Assert.Equal("Windows NT 5.1", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Null(ua.Version);
             Assert.Equal("Opera/8.0", ua.Brower);
             Assert.Null(ua.Mobile);
         }
@@ -130,6 +136,7 @@ namespace XUnitTest
             Assert.Equal("U", ua.Encryption);
             Assert.Equal("Linux i686", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Equal("rv:1.8.1b2", ua.Version);
             Assert.Equal("SeaMonkey/1.1a", ua.Brower);
             Assert.Null(ua.Mobile);
         }
@@ -146,7 +153,25 @@ namespace XUnitTest
             Assert.Equal("U", ua.Encryption);
             Assert.Equal("Intel Mac OS X", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Equal("rv:1.8.1.6", ua.Version);
             Assert.Equal("Camino/1.5.1", ua.Brower);
+            Assert.Null(ua.Mobile);
+        }
+
+        [Fact]
+        public void ParseHuaweiBrowser()
+        {
+            var userAgent = "Mozilla/5.0 (Linux; Android 10; HarmonyOS; SCMR-W09; HMSCore 6.3.0.327) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.105 HuaweiBrowser/12.0.3.310 Safari/537.36";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Android", ua.Platform);
+            Assert.Null(ua.Encryption);
+            Assert.Equal("HarmonyOS", ua.OSorCPU);
+            Assert.Equal("SCMR-W09", ua.Device);
+            Assert.Equal("HMSCore 6.3.0.327", ua.Version);
+            Assert.Equal("HuaweiBrowser/12.0.3.310", ua.Brower);
             Assert.Null(ua.Mobile);
         }
 
@@ -162,6 +187,7 @@ namespace XUnitTest
             Assert.Null(ua.Encryption);
             Assert.Equal("iPhone OS 5_1_1", ua.OSorCPU);
             Assert.Null(ua.Device);
+            Assert.Null(ua.Version);
             Assert.Equal("Safari/5.1", ua.Brower);
             Assert.Equal("Mobile/9B206", ua.Mobile);
         }
@@ -178,6 +204,7 @@ namespace XUnitTest
             Assert.Equal("U", ua.Encryption);
             Assert.Equal("Android 7.0", ua.OSorCPU);
             Assert.Equal("m2 note", ua.Device);
+            Assert.Null(ua.Version);
             Assert.Equal("Build/LMY47D", ua.DeviceBuild);
             Assert.Equal("MQQBrowser/6.7", ua.Brower);
             Assert.Equal("Mobile/15A372", ua.Mobile);
