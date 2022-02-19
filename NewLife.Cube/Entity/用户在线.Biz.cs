@@ -119,15 +119,15 @@ namespace NewLife.Cube.Entity
             return FindAll(exp, page);
         }
 
-        // Select Count(ID) as ID,SessionID From UserOnline Where CreateTime>'2020-01-24 00:00:00' Group By SessionID Order By ID Desc limit 20
-        private static readonly FieldCache<UserOnline> _SessionIDCache = new FieldCache<UserOnline>(nameof(SessionID))
-        {
-            //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty
-        };
+        //// Select Count(ID) as ID,SessionID From UserOnline Where CreateTime>'2020-01-24 00:00:00' Group By SessionID Order By ID Desc limit 20
+        //private static readonly FieldCache<UserOnline> _SessionIDCache = new FieldCache<UserOnline>(nameof(SessionID))
+        //{
+        //    //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty
+        //};
 
-        /// <summary>获取会话列表，字段缓存10分钟，分组统计数据最多的前20种，用于魔方前台下拉选择</summary>
-        /// <returns></returns>
-        public static IDictionary<String, String> GetSessionIDList() => _SessionIDCache.FindAllName();
+        ///// <summary>获取会话列表，字段缓存10分钟，分组统计数据最多的前20种，用于魔方前台下拉选择</summary>
+        ///// <returns></returns>
+        //public static IDictionary<String, String> GetSessionIDList() => _SessionIDCache.FindAllName();
         #endregion
 
         #region 业务操作
@@ -139,6 +139,8 @@ namespace NewLife.Cube.Entity
         {
             Status = error;
             LastError = DateTime.Now;
+
+            SaveAsync(3_000);
         }
         #endregion
     }

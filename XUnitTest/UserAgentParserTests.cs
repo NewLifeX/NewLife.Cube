@@ -302,5 +302,69 @@ namespace XUnitTest
             Assert.Equal("Mobile", ua.Mobile);
             Assert.Equal("WIFI", ua.NetType);
         }
+
+        [Fact]
+        public void Parseokhttp()
+        {
+            var userAgent = "okhttp/3.12.13";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.True(ua.IsRobot);
+        }
+
+        [Fact]
+        public void ParseRobot()
+        {
+            var userAgent = "Mozilla/5.0 (compatible; Barkrowler/0.9; +https://babbar.tech/crawler)";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.True(ua.IsRobot);
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("compatible", ua.Platform);
+            Assert.Equal("Barkrowler/0.9", ua.Brower);
+        }
+
+        [Fact]
+        public void ParseRobot2()
+        {
+            var userAgent = "Mozilla/5.0 (compatible; SemrushBot/7~bl; +http://www.semrush.com/bot.html)";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.True(ua.IsRobot);
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("compatible", ua.Platform);
+            Assert.Equal("SemrushBot/7~bl", ua.Brower);
+        }
+
+        [Fact]
+        public void ParseBytespider()
+        {
+            var userAgent = "Mozilla/5.0 (Linux; Android 5.0) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Safari/537.36 (compatible; Bytespider; https://zhanzhang.toutiao.com/)";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("Android", ua.Platform);
+            Assert.Equal("Android 5.0", ua.OSorCPU);
+            Assert.Equal("Bytespider", ua.Device);
+            Assert.Equal("Safari/537.36", ua.Brower);
+            Assert.True(ua.IsRobot);
+        }
+
+        [Fact]
+        public void Parsebingbot()
+        {
+            var userAgent = "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("compatible", ua.Platform);
+            Assert.Equal("bingbot/2.0", ua.Brower);
+            Assert.True(ua.IsRobot);
+        }
     }
 }

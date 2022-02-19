@@ -10,6 +10,9 @@ namespace NewLife.Cube.Web;
 public class UserAgentParser
 {
     #region 属性
+    /// <summary>原始字符串</summary>
+    public String UserAgent { get; set; }
+
     /// <summary>
     /// 兼容性，一般是 Mozilla/5.0
     /// </summary>
@@ -53,6 +56,8 @@ public class UserAgentParser
     public Boolean Parse(String userAgent)
     {
         if (userAgent.IsNullOrEmpty()) return false;
+
+        UserAgent = userAgent;
 
         var ms = _regex.Matches(userAgent);
 
@@ -258,14 +263,24 @@ public class UserAgentParser
 
     private void ParseOtherBrowser(String[] infos)
     {
-        var list = infos.Where(e => !e.Contains("(") && !e.StartsWithIgnoreCase("AppleWebKit/", "Chrome/", "Safari/", "Gecko/", "Mobile/", "Version/")).ToList();
+        var list = infos.Where(e => !e.Contains("(") && !e.StartsWithIgnoreCase("AppleWebKit/", "Chrome/", "Safari/", "Gecko/", "Mobile/", "Version/") && !e.EqualIgnoreCase("Mobile")).ToList();
         if (list.Count == 0)
         {
             // 最后识别Safari，别人都仿它
             var inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("Safari/"));
             if (inf != null)
             {
-                Brower = inf.Trim();
+                var p1 = inf.IndexOf('(');
+                if (p1 > 0)
+                {
+                    var str = inf[p1..];
+                    inf = inf[..p1];
+
+                    // 识别扩展
+                    var ss = str.Trim('(', ')').Split(';');
+                    if (ss.Length >= 2) Device = ss[1].Trim();
+                }
+                if (Brower.IsNullOrEmpty()) Brower = inf.Trim();
 
                 // 合并版本
                 inf = infos.FirstOrDefault(e => e.StartsWithIgnoreCase("Version/"));
@@ -278,5 +293,49 @@ public class UserAgentParser
 
         Brower = list[0];
     }
+    #endregion
+
+    #region 扩展判断
+    private static String[] _robots = new[] { "bot", "crawler", "spider", "okhttp" };
+    /// <summary>是否蜘蛛机器人</summary>
+    public Boolean IsRobot
+    {
+        get
+        {
+            //if (UserAgent.StartsWithIgnoreCase("okhttp")) return true;
+
+            var str = Brower;
+            if (!str.IsNullOrEmpty())
+            {
+                var p = str.IndexOf('/');
+                if (p > 0) str = str[..p];
+
+                if (str.EndsWithIgnoreCase(_robots)) return true;
+            }
+
+            str = OSorCPU;
+            if (!str.IsNullOrEmpty())
+            {
+                var p = str.LastIndexOf('/');
+                if (p > 0) str = str[(p + 1)..];
+
+                if (str.EndsWithIgnoreCase(_robots)) return true;
+            }
+
+            str = Device;
+            if (!str.IsNullOrEmpty())
+            {
+                var p = str.LastIndexOf('/');
+                if (p > 0) str = str[(p + 1)..];
+
+                if (str.EndsWithIgnoreCase(_robots)) return true;
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>是否移动端</summary>
+    public Boolean IsMobile => !Mobile.IsNullOrEmpty();
     #endregion
 }
