@@ -1,31 +1,27 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using NewLife.Data;
-using NewLife.Log;
-using NewLife.Reflection;
-using XCode;
-using XCode.Membership;
-using static XCode.Membership.User;
-using AreaX = XCode.Membership.Area;
-using System.IO;
-
-#if __CORE__
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
-#else
-using System.Web;
-using System.Web.Mvc;
-#endif
+using NewLife.Data;
+using NewLife.Log;
+using NewLife.Reflection;
+using NewLife.Serialization;
+using XCode;
+using XCode.Membership;
+using static XCode.Membership.User;
+using AreaX = XCode.Membership.Area;
 
 namespace NewLife.Cube.Controllers
 {
@@ -33,7 +29,6 @@ namespace NewLife.Cube.Controllers
     [DisplayName("数据接口")]
     public class CubeController : ControllerBaseX
     {
-#if __CORE__
         private readonly IList<EndpointDataSource> _sources;
 
         /// <summary>构造函数</summary>
@@ -42,10 +37,8 @@ namespace NewLife.Cube.Controllers
         {
             _sources = sources.ToList();
         }
-#endif
 
         #region 拦截
-#if __CORE__
         /// <summary>执行后</summary>
         /// <param name="context"></param>
         public override void OnActionExecuted(ActionExecutedContext context)
@@ -63,25 +56,6 @@ namespace NewLife.Cube.Controllers
 
             base.OnActionExecuted(context);
         }
-#else
-        /// <summary>异常</summary>
-        /// <param name="filterContext"></param>
-        protected override void OnException(ExceptionContext filterContext)
-        {
-            if (filterContext.Exception != null && !filterContext.ExceptionHandled)
-            {
-                var ex = filterContext.Exception.GetTrue();
-                filterContext.Result = Json(0, null, ex);
-                filterContext.ExceptionHandled = true;
-
-                if (XTrace.Debug) XTrace.WriteException(ex);
-
-                return;
-            }
-
-            base.OnException(filterContext);
-        }
-#endif
         #endregion
 
         #region 服务器信息
@@ -93,12 +67,24 @@ namespace NewLife.Cube.Controllers
         /// <summary>服务器信息，用户健康检测</summary>
         /// <param name="state">状态信息</param>
         /// <returns></returns>
-        public ActionResult Info(String state)
+        public async Task<ActionResult> Info(String state)
         {
             var asmx = AssemblyX.Entry;
             var asmx2 = AssemblyX.Create(Assembly.GetExecutingAssembly());
 
+            // 从Body获取state
             var ip = HttpContext.GetUserHost();
+            if (state.IsNullOrEmpty()) state = Request.Headers["state"];
+            if (state.IsNullOrEmpty() && Request.ContentLength > 0)
+            {
+                var body = await Request.BodyReader.ReadAsync();
+                if (!body.Buffer.IsEmpty)
+                {
+                    var str = body.Buffer.ToArray().ToStr();
+                    var ps = str.StartsWith("<") && str.EndsWith(">") ? XmlParser.Decode(str) : JsonParser.Decode(str);
+                    state = ps["state"]?.ToString();
+                }
+            }
 
             var rs = new
             {
@@ -120,7 +106,6 @@ namespace NewLife.Cube.Controllers
             // 转字典
             var dic = rs.ToDictionary();
 
-#if __CORE__
             // 完整显示地址和端口
             var conn = HttpContext.Connection;
             if (conn != null)
@@ -133,7 +118,6 @@ namespace NewLife.Cube.Controllers
                 if (addr != null && addr.IsIPv4MappedToIPv6) addr = addr.MapToIPv4();
                 dic["Remote"] = $"{addr}:{conn.RemotePort}";
             }
-#endif
 
             // 登录后，系统角色可以看看到进程
             var user = ManageProvider.User;
@@ -163,7 +147,6 @@ namespace NewLife.Cube.Controllers
         #endregion
 
         #region 接口信息
-#if __CORE__
         /// <summary>获取所有接口信息</summary>
         /// <returns></returns>
         public ActionResult Apis()
@@ -207,7 +190,6 @@ namespace NewLife.Cube.Controllers
 
             return Json(eps);
         }
-#endif
         #endregion
 
         #region 用户
@@ -395,12 +377,8 @@ namespace NewLife.Cube.Controllers
 
             if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
 
-#if __CORE__
             var vs = System.IO.File.ReadAllBytes(av);
             return File(vs, "image/png");
-#else
-            return File(av, "image/png");
-#endif
         }
         #endregion
     }

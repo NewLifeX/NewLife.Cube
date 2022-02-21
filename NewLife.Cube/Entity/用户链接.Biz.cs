@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
@@ -142,7 +143,13 @@ namespace NewLife.Cube.Entity
             uc.Expire = client.Expire;
             uc.DeviceId = client.DeviceId;
 
-            if (client.Items != null) uc.Remark = client.Items.ToJson();
+            if (client.Items != null)
+            {
+                uc.Remark = client.Items
+                    .Where(e => e.Value == null || e.Value.Length < 200)
+                    .ToDictionary(e => e.Key, e => e.Value)
+                    .ToJson();
+            }
         }
 
         static FieldCache<UserConnect> ProviderCache = new FieldCache<UserConnect>(__.Provider);

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -15,7 +17,17 @@ namespace NewLife.Cube.Cube.Controllers
     [Menu(0, false)]
     public class AppLogController : ReadOnlyEntityController<AppLog>
     {
-        static AppLogController() => ListFields.RemoveField("ID");
+        static AppLogController()
+        {
+            ListFields.RemoveField("ID");
+        
+            {
+                var df = ListFields.GetField("TraceId") as ListField;
+                df.DisplayName = "跟踪";
+                df.Url = StarHelper.BuildUrl("{TraceId}");
+                df.DataVisible = (e, f) => !(e as AppLog).TraceId.IsNullOrEmpty();
+            }
+        }
 
         /// <summary>搜索</summary>
         /// <param name="p"></param>

@@ -3,7 +3,6 @@
 @using XCode.Membership
 @{
     var menu = ViewBag.Menu as IMenu;
-    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
 
     var url = Context.Request.Headers["Referer"].FirstOrDefault() + "";
     var us = url.TrimStart("http://", "https://").Split('/', StringSplitOptions.RemoveEmptyEntries);

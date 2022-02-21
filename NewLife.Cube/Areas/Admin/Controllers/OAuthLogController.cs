@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -16,6 +18,16 @@ namespace NewLife.Cube.Admin.Controllers
     [Menu(0, false)]
     public class OAuthLogController : ReadOnlyEntityController<OAuthLog>
     {
+        static OAuthLogController()
+        {
+            {
+                var df = ListFields.GetField("TraceId") as ListField;
+                df.DisplayName = "跟踪";
+                df.Url = StarHelper.BuildUrl("{TraceId}");
+                df.DataVisible = (e, f) => !(e as OAuthLog).TraceId.IsNullOrEmpty();
+            }
+        }
+
         /// <summary>搜索</summary>
         /// <param name="p"></param>
         /// <returns></returns>

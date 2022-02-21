@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Web;
+using NewLife.Log;
 using NewLife.Threading;
 using XCode;
 using XCode.Membership;
@@ -65,16 +65,29 @@ namespace NewLife.Cube.Services
         /// <param name="sessionid"></param>
         /// <param name="page"></param>
         /// <param name="status"></param>
+        /// <param name="userAgent"></param>
         /// <param name="userid"></param>
         /// <param name="name"></param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public UserOnline SetStatus(String sessionid, String page, String status, Int32 userid = 0, String name = null, String ip = null)
+        public UserOnline SetStatus(String sessionid, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null)
         {
             var entity = UserOnline.GetOrAdd(sessionid, UserOnline.FindBySessionID, k => new UserOnline { SessionID = k, CreateIP = ip, CreateTime = DateTime.Now });
             //var entity = FindBySessionID(sessionid) ?? new UserOnline();
             //entity.SessionID = sessionid;
             entity.Page = page;
+
+            if (userAgent != null)
+            {
+                entity.Platform = userAgent.Platform;
+                entity.OS = userAgent.OSorCPU;
+                if (userAgent.Device.IsNullOrEmpty() || !userAgent.DeviceBuild.IsNullOrEmpty() && userAgent.DeviceBuild.Contains(userAgent.Device))
+                    entity.Device = userAgent.DeviceBuild;
+                else
+                    entity.Device = userAgent.Device;
+                entity.Brower = userAgent.Brower;
+                entity.NetType = userAgent.NetType;
+            }
 
             if (!status.IsNullOrEmpty() || entity.LastError.AddMinutes(3) < DateTime.Now) entity.Status = status;
 
@@ -86,6 +99,7 @@ namespace NewLife.Cube.Services
             entity.UpdateTime = DateTime.Now;
             entity.UpdateIP = ip;
             entity.OnlineTime = (Int32)(entity.UpdateTime - entity.CreateTime).TotalSeconds;
+            entity.TraceId = DefaultSpan.Current?.TraceId;
             entity.SaveAsync(5_000);
 
             Interlocked.Increment(ref _onlines);
@@ -97,28 +111,29 @@ namespace NewLife.Cube.Services
         /// <param name="sessionid"></param>
         /// <param name="page"></param>
         /// <param name="status"></param>
+        /// <param name="userAgent"></param>
         /// <param name="user"></param>
         /// <param name="ip"></param>
         /// <returns></returns>
-        public UserOnline SetWebStatus(String sessionid, String page, String status, IUser user, String ip)
+        public UserOnline SetWebStatus(String sessionid, String page, String status, UserAgentParser userAgent, IUser user, String ip)
         {
             // 网页使用一个定时器来清理过期
             StartTimer();
 
-            if (user == null) return SetStatus(sessionid, page, status, 0, null, ip);
+            if (user == null) return SetStatus(sessionid, page, status, userAgent, 0, null, ip);
 
             // 根据IP修正用户城市
             if (user is User user2 && (user2.AreaId == 0 || user2.AreaId % 10000 == 0))
             {
                 var rs = Area.SearchIP(ip, 2);
-                if(rs.Count > 0)
+                if (rs.Count > 0)
                 {
                     user2.AreaId = rs[rs.Count - 1].ID;
                     user2.SaveAsync();
                 }
             }
 
-            return SetStatus(sessionid, page, status, user.ID, user + "", ip);
+            return SetStatus(sessionid, page, status, userAgent, user.ID, user + "", ip);
         }
 
         ///// <summary>

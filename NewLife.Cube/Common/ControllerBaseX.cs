@@ -1,21 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
-using NewLife.Reflection;
-using NewLife.Serialization;
-using XCode.Membership;
-using NewLife.Remoting;
-using System.Linq;
-using NewLife.Security;
-#if __CORE__
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
-#else
-using System.Web.Mvc;
-#endif
+using NewLife.Remoting;
+using NewLife.Serialization;
+using XCode.Membership;
 
 namespace NewLife.Cube
 {
@@ -23,13 +16,11 @@ namespace NewLife.Cube
     public class ControllerBaseX : Controller
     {
         #region 属性
-#if __CORE__
-        ///// <summary></summary>
-        //static readonly SessionProvider _sessionProvider = new SessionProvider();
-
-        /// <summary>临时会话扩展信息</summary>
+        /// <summary>临时会话扩展信息。仅限本地内存，不支持分布式共享</summary>
         public IDictionary<String, Object> Session { get; private set; }
-#endif
+
+        /// <summary>当前页面菜单。用于权限控制</summary>
+        public IMenu Menu { get; set; }
 
         /// <summary>用户主机</summary>
         public String UserHost => HttpContext.GetUserHost();
@@ -40,44 +31,19 @@ namespace NewLife.Cube
 
         #region 构造
         /// <summary>实例化控制器</summary>
-        public ControllerBaseX()
-        {
-            // 页面设置
-            PageSetting = PageSetting.Global.Clone();
-        }
+        public ControllerBaseX() => PageSetting = PageSetting.Global.Clone();
 
         /// <summary>动作执行前</summary>
         /// <param name="context"></param>
-#if __CORE__
         public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
-#else
-        protected override void OnActionExecuting(ActionExecutingContext context)
-#endif
         {
             // 页面设置
             ViewBag.PageSetting = PageSetting;
 
-#if __CORE__
-            //// 准备Session
-            //var ss = context.HttpContext.Session;
-            //if (ss != null)
-            //{
-            //    //var token = Request.Cookies["Token"];
-            //    var token = ss.GetString("Cube_Token");
-            //    if (token.IsNullOrEmpty())
-            //    {
-            //        token = Rand.NextString(16);
-            //        //Response.Cookies.Append("Token", token, new CookieOptions { });
-            //        ss.SetString("Cube_Token", token);
-            //    }
-
-            //    //Session = _sessionProvider.GetSession(ss.Id);
-            //    Session = _sessionProvider.GetSession(token);
-            //    context.HttpContext.Items["Session"] = Session;
-            //}
-
-            Session = context.HttpContext.Items["Session"] as IDictionary<String, Object>;
-#endif
+            var ctx = context.HttpContext;
+            Session = ctx.Items["Session"] as IDictionary<String, Object>;
+            Menu = ctx.Items["CurrentMenu"] as IMenu;
+            ViewBag.Menu = Menu;
 
             // 没有用户时无权
             var user = ManageProvider.User;
@@ -87,10 +53,9 @@ namespace NewLife.Cube
                 HttpContext.Items["userId"] = user.ID;
 
                 // 没有菜单时不做权限控制
-                var ctx = context.HttpContext;
-                if (ctx.Items["CurrentMenu"] is IMenu menu)
+                if (Menu != null)
                 {
-                    PageSetting.EnableSelect = user.Has(menu, PermissionFlags.Update, PermissionFlags.Delete);
+                    PageSetting.EnableSelect = user.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
                 }
             }
 
@@ -99,11 +64,7 @@ namespace NewLife.Cube
 
         /// <summary>动作执行后</summary>
         /// <param name="context"></param>
-#if __CORE__
         public override void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context)
-#else
-        protected override void OnActionExecuted(ActionExecutedContext context)
-#endif
         {
             if (IsJsonRequest)
             {
@@ -128,43 +89,10 @@ namespace NewLife.Cube
         #endregion
 
         #region 兼容处理
-#if __CORE__
         /// <summary>获取请求值</summary>
         /// <param name="key"></param>
         /// <returns></returns>
         protected virtual String GetRequest(String key) => Request.GetRequestValue(key);
-
-        /// <summary>获取Session值</summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        [Obsolete]
-        protected virtual T GetSession<T>(String key) where T : class => HttpContext.Session.Get<T>(key);
-
-        /// <summary>设置Session值</summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        [Obsolete]
-        protected virtual void SetSession(String key, Object value) => HttpContext.Session.Set(key, value);
-#else
-        /// <summary>获取请求值</summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        protected virtual String GetRequest(String key) => Request[key];
-
-        /// <summary>获取Session值</summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        [Obsolete]
-        protected virtual T GetSession<T>(String key) => (T)Session[key];
-
-        /// <summary>设置Session值</summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        [Obsolete]
-        protected virtual void SetSession(String key, Object value) => Session[key] = value;
-#endif
         #endregion
 
         #region 权限菜单
@@ -202,11 +130,7 @@ namespace NewLife.Cube
             {
                 if (Request.ContentType.EqualIgnoreCase("application/json")) return true;
 
-#if __CORE__
                 if (Request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
-#else
-                if (Request.AcceptTypes != null && Request.AcceptTypes.Any(e => e == "application/json")) return true;
-#endif
 
                 if (GetRequest("output").EqualIgnoreCase("json")) return true;
                 if ((RouteData.Values["output"] + "").EqualIgnoreCase("json")) return true;
@@ -217,16 +141,12 @@ namespace NewLife.Cube
         #endregion
 
         #region Json结果
-
         /// <summary>成功响应Json结果</summary>
         /// <param name="message">消息，成功或失败时的文本消息</param>
         /// <param name="data">数据对象</param>
         /// <returns></returns>
         [NonAction]
-        public virtual ActionResult Ok(String message = "ok", Object data = null)
-        {
-            return Json(0, message, data);
-        }
+        public virtual ActionResult Ok(String message = "ok", Object data = null) => Json(0, message, data);
 
         /// <summary>响应Json结果</summary>
         /// <param name="code">代码。0成功，其它为错误代码</param>
@@ -256,57 +176,10 @@ namespace NewLife.Cube
             return Content(OnJsonSerialize(rs), "application/json", Encoding.UTF8);
         }
 
-        /// <summary>返回Json数据</summary>
-        /// <param name="data">数据对象，作为data成员返回</param>
-        /// <param name="extend">与data并行的其它顶级成员</param>
-        /// <returns></returns>
-        [Obsolete("=>Json(code,message,data)")]
-        protected virtual ActionResult JsonOK(Object data, Object extend = null)
-        {
-            var rs = new { result = true, data };
-            var json = "";
-
-            if (extend == null)
-                json = OnJsonSerialize(rs);
-            else
-            {
-                var dic = rs.ToDictionary();
-                dic.Merge(extend);
-                json = OnJsonSerialize(dic);
-            }
-
-            return Content(json, "application/json", Encoding.UTF8);
-        }
-
-        /// <summary>返回Json错误</summary>
-        /// <param name="data">数据对象或异常对象，作为data成员返回</param>
-        /// <param name="extend">与data并行的其它顶级成员</param>
-        /// <returns></returns>
-        [Obsolete("=>Json(code,message,data)")]
-        protected virtual ActionResult JsonError(Object data, Object extend = null)
-        {
-            if (data is Exception ex) data = ex.GetTrue().Message;
-
-            var rs = new { result = false, data };
-            var json = "";
-
-            if (extend == null)
-                json = OnJsonSerialize(rs);
-            else
-            {
-                var dic = rs.ToDictionary();
-                dic.Merge(extend);
-                json = OnJsonSerialize(dic);
-            }
-
-            return Content(json, "application/json", Encoding.UTF8);
-        }
-
         /// <summary>Json序列化。默认使用FastJson</summary>
         /// <param name="data"></param>
         /// <returns></returns>
         protected virtual String OnJsonSerialize(Object data) => data.ToJson(false, true, true);
-
         #endregion
 
         #region 辅助
@@ -326,21 +199,10 @@ namespace NewLife.Cube
         /// <returns></returns>
         protected virtual String[] GetControllerAction()
         {
-#if __CORE__
             var act = ControllerContext.ActionDescriptor;
             var controller = act.ControllerName;
             var action = act.ActionName;
             act.RouteValues.TryGetValue("Area", out var area);
-#else
-            var area = (String)RouteData.Values["area"];
-            if (area.IsNullOrEmpty()) area = (String)RouteData.DataTokens["area"];
-
-            var controller = (String)RouteData.Values["controller"];
-            if (controller.IsNullOrEmpty()) controller = (String)RouteData.DataTokens["controller"];
-
-            var action = (String)RouteData.Values["action"];
-            if (action.IsNullOrEmpty()) controller = (String)RouteData.DataTokens["action"];
-#endif
 
             return new[] { area, controller, action };
         }

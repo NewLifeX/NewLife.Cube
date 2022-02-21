@@ -13,14 +13,8 @@ using NewLife.Reflection;
 using NewLife.Security;
 using XCode;
 using NewLife.Cube.Web.Models;
-
-#if __CORE__
 using Microsoft.AspNetCore.Http;
 using IHttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
-#else
-using IHttpRequest = System.Web.HttpRequestBase;
-using HttpRequest = System.Web.HttpRequest;
-#endif
 
 namespace NewLife.Cube.Web
 {
@@ -137,6 +131,8 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual UserConnect GetConnect(OAuthClient client)
         {
+            using var span = Tracer?.NewSpan("SsoProviderConnect", $"openid={client.OpenID} username={client.UserName}");
+
             var openid = client.OpenID;
             if (openid.IsNullOrEmpty()) openid = client.UserName;
 
@@ -155,17 +151,13 @@ namespace NewLife.Cube.Web
         /// <returns></returns>
         public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc, Boolean forceBind)
         {
+            using var span = Tracer?.NewSpan("SsoProviderLogin", $"connectid={uc.ID} openid={uc.OpenID} username={uc.UserName}");
+
             //// 强行绑定，把第三方账号强行绑定到当前已登录账号
             //var forceBind = false;
-#if __CORE__
             var httpContext = ModelExtension.GetService<IHttpContextAccessor>(context).HttpContext;
             var req = httpContext.Request;
             var ip = httpContext.GetUserHost();
-#else
-            var req = context.GetService<HttpRequest>();
-            var httpContext = req.RequestContext.HttpContext;
-            var ip = httpContext.GetUserHost();
-#endif
 
             // 可能因为初始化顺序的问题，导致前面没能给Provider赋值
             var prv = Provider;
@@ -182,6 +174,8 @@ namespace NewLife.Cube.Web
             }
             catch (Exception ex)
             {
+                span?.SetError(ex, null);
+
                 //为了防止某些特殊数据导致的无法正常登录，把所有异常记录到日志当中。忽略错误
                 XTrace.WriteException(ex);
             }
@@ -222,11 +216,7 @@ namespace NewLife.Cube.Web
             if (set.SessionTimeout > 0)
             {
                 var expire = TimeSpan.FromSeconds(set.SessionTimeout);
-#if __CORE__
                 prv.SaveCookie(user, expire, httpContext);
-#else
-                prv.SaveCookie(user, expire, httpContext.ApplicationInstance.Context);
-#endif
             }
 
             return SuccessUrl;
@@ -348,6 +338,8 @@ namespace NewLife.Cube.Web
         /// <param name="client"></param>
         public virtual IManageUser OnBind(UserConnect uc, OAuthClient client)
         {
+            using var span = Tracer?.NewSpan("SsoProviderBind", $"connectid={uc.ID} openid={uc.OpenID} username={uc.UserName}");
+
             var log = LogProvider.Provider;
             var prv = Provider;
             var mode = "";
@@ -385,7 +377,7 @@ namespace NewLife.Cube.Web
 
                 // 先找用户名，如果存在，就加上提供者前缀，直接覆盖
                 var name = client.UserName;
-                if (name.IsNullOrEmpty()) name = client.NickName;
+                //if (name.IsNullOrEmpty()) name = client.NickName;
                 if (user == null && !name.IsNullOrEmpty())
                 {
                     // 强制绑定本地用户时，没有前缀
@@ -421,6 +413,13 @@ namespace NewLife.Cube.Web
                 {
                     mode = "UserMail";
                     if (!client.Mail.IsNullOrEmpty()) user = User.FindByMail(client.Mail);
+                }
+
+                // 匹配NickName
+                if (user == null && set.ForceBindNickName)
+                {
+                    mode = "NickName";
+                    if (!client.NickName.IsNullOrEmpty()) user = User.FindByName(client.NickName);
                 }
 
                 // QQ、微信 等不返回用户名
@@ -541,6 +540,7 @@ namespace NewLife.Cube.Web
                 ClientId = client_id,
                 ResponseType = "password",
 
+                TraceId = DefaultSpan.Current?.TraceId,
                 CreateIP = ip,
                 CreateTime = DateTime.Now,
             };
@@ -630,6 +630,7 @@ namespace NewLife.Cube.Web
                 ClientId = client_id,
                 ResponseType = "client_credentials",
 
+                TraceId = DefaultSpan.Current?.TraceId,
                 CreateIP = ip,
                 CreateTime = DateTime.Now,
             };
@@ -690,6 +691,7 @@ namespace NewLife.Cube.Web
                 ClientId = client_id,
                 ResponseType = "refresh_token",
 
+                TraceId = DefaultSpan.Current?.TraceId,
                 CreateIP = ip,
                 CreateTime = DateTime.Now,
             };

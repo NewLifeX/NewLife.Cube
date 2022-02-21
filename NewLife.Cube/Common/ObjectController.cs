@@ -1,21 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using NewLife.Reflection;
-using XCode.Membership;
-using System.Collections.Generic;
-using NewLife.Cube.Common;
-using NewLife.Cube.ViewModels;
-using NewLife.Web;
-#if __CORE__
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
-#else
-using System.Web.Mvc;
-#endif
+using NewLife.Cube.ViewModels;
+using NewLife.Reflection;
+using NewLife.Web;
+using XCode.Membership;
 
 namespace NewLife.Cube
 {
@@ -29,18 +25,11 @@ namespace NewLife.Cube
         protected static Int32 MenuOrder { get; set; }
 
         /// <summary>实例化</summary>
-        public ObjectController()
-        {
-            PageSetting.EnableNavbar = false;
-        }
+        public ObjectController() => PageSetting.EnableNavbar = false;
 
         /// <summary>动作执行前</summary>
         /// <param name="filterContext"></param>
-#if __CORE__
         public override void OnActionExecuting(ActionExecutingContext filterContext)
-#else
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
-#endif
         {
             base.OnActionExecuting(filterContext);
 
@@ -52,19 +41,14 @@ namespace NewLife.Cube
             ViewBag.HeaderTitle = name;
 
             var txt = "";
-            if (txt.IsNullOrEmpty()) txt = (ViewBag.Menu as IMenu)?.Remark;
-            if (txt.IsNullOrEmpty()) txt = (HttpContext.Items["CurrentMenu"] as IMenu)?.Remark;
+            if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
             if (txt.IsNullOrEmpty()) txt = des;
             ViewBag.HeaderContent = txt;
         }
 
         /// <summary>执行后</summary>
         /// <param name="filterContext"></param>
-#if __CORE__
         public override void OnActionExecuted(ActionExecutedContext filterContext)
-#else
-        protected override void OnActionExecuted(ActionExecutedContext filterContext)
-#endif
         {
             base.OnActionExecuted(filterContext);
 
@@ -146,7 +130,7 @@ namespace NewLife.Cube
                 return Redirect("Index");
         }
 
-        Boolean GetBool(String name)
+        private Boolean GetBool(String name)
         {
 #if __CORE__
             var v = Request.GetRequestValue(name);
@@ -188,7 +172,7 @@ namespace NewLife.Cube
             WriteLog("修改", true, sb.ToString());
         }
 
-        private static Dictionary<Type, IList<DataField>> _cache = new();
+        private static readonly Dictionary<Type, IList<DataField>> _cache = new();
         /// <summary>获取指定类型的成员集合（带缓存）</summary>
         /// <param name="type"></param>
         /// <returns></returns>

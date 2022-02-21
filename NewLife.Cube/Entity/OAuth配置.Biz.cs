@@ -70,8 +70,12 @@ namespace NewLife.Cube.Entity
             // 建议先调用基类方法，基类方法会做一些统一处理
             base.Valid(isNew);
 
-            if (AuthUrl.IsNullOrEmpty()) AuthUrl = "authorize?response_type={response_type}&client_id={key}&redirect_uri={redirect}&state={state}&scope={scope}";
-            if (AccessUrl.IsNullOrEmpty()) AccessUrl = "access_token?grant_type=authorization_code&client_id={key}&client_secret={secret}&code={code}&state={state}&redirect_uri={redirect}";
+            // 不要写AuthUrl默认地址，否则会影响微信登录
+            if (Name.EqualIgnoreCase("NewLife"))
+            {
+                if (AuthUrl.IsNullOrEmpty()) AuthUrl = "authorize?response_type={response_type}&client_id={key}&redirect_uri={redirect}&state={state}&scope={scope}";
+                if (AccessUrl.IsNullOrEmpty()) AccessUrl = "access_token?grant_type=authorization_code&client_id={key}&client_secret={secret}&code={code}&state={state}&redirect_uri={redirect}";
+            }
 
             if (FieldMap.IsNullOrEmpty()) FieldMap = new OAuthFieldMap().ToJson(true);
         }

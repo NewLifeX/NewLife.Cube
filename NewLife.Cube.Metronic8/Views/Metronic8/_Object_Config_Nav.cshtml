@@ -1,7 +1,6 @@
 ﻿@{
     var Obj = Model as Object;
     var menu = ViewBag.Menu as IMenu;
-    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
     var name = menu.Name.ToLower();
 
     var cls_li = "nav-item me-0 pt-2 pm-3 text-start";

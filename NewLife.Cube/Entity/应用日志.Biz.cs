@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Data;
+using NewLife.Log;
 using XCode;
 using XCode.Membership;
 
@@ -88,6 +89,7 @@ namespace NewLife.Cube.Entity
                 AppId = appid,
                 Action = action,
                 Success = success,
+                TraceId = DefaultSpan.Current?.TraceId,
                 Remark = remark,
                 CreateTime = DateTime.Now,
             };

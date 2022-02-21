@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode.Membership;
 #if __CORE__
@@ -24,10 +26,17 @@ namespace NewLife.Cube.Admin.Controllers
         /// 实例化
         /// </summary>
         public UserOnlineController()
-        { 
+        {
             PageSetting.EnableAdd = false;
 
-            ListFields.RemoveField("ID", "UserID", "CreateIP", "CreateTime");
+            ListFields.RemoveField("ID", "SessionID", "Status", "LastError", "UserID", "CreateIP", "CreateTime");
+
+            {
+                var df = ListFields.GetField("TraceId") as ListField;
+                df.DisplayName = "跟踪";
+                df.Url = StarHelper.BuildUrl("{TraceId}");
+                df.DataVisible = (e, f) => !(e as UserOnline).TraceId.IsNullOrEmpty();
+            }
         }
 
         /// <summary>不允许添加修改日志</summary>

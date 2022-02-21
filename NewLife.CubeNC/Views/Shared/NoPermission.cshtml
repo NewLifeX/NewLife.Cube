@@ -4,19 +4,17 @@
     Layout = "_Layout.cshtml";
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-    //var context = ViewBag.Context as AuthorizationContext;
-    var Resource = ViewBag.Resource;
-    var Permission = (PermissionFlags)ViewBag.Permission;
-    var pm = Permission.GetDescription();
+    var res = ViewBag.Resource;
+    var permission = (PermissionFlags)ViewBag.Permission;
+    var pm = permission.GetDescription();
     var menu = ViewBag.Menu as IMenu;
-    if (menu == null) menu = Context.Items["CurrentMenu"] as IMenu;
 
-    ViewBag.Title = String.Format("没有访问资源[{0}]的权限[{1}]", Resource, pm);
+    ViewBag.Title = String.Format("没有访问资源[{0}]的权限[{1}]", res, pm);
 }
 <div class="panel panel-default">
-    <div class="panel-body" title="@(menu == null ? "" : menu.FullName)">
+    <div class="panel-body" title="@(menu?.FullName)">
         <strong>
-            <pre class="alert alert-danger" role="alert">访问资源 @Resource 需要 @pm 权限</pre>
+            <pre class="alert alert-danger" role="alert">访问资源 @res 需要 @pm 权限</pre>
         </strong>
     </div>
     <div class="panel-footer">
