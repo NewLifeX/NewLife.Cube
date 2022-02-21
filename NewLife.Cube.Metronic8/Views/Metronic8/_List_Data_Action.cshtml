@@ -16,20 +16,20 @@
     {
         if (this.Has(PermissionFlags.Detail))
         {
-            <a href="@Url.Action("Detail", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1" data-bs-toggle="tooltip" title="查看">
+            <a href="@Url.Action("Detail", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1 editcell" data-bs-toggle="tooltip" title="查看">
                 <i class="fas fa-file-alt fs-4"></i>
             </a>
         }
     }
     else if (this.Has(PermissionFlags.Update))
     {
-        <a href="@Url.Action("Edit", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1" data-bs-toggle="tooltip" title="编辑">
+        <a href="@Url.Action("Edit", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1 editcell" data-bs-toggle="tooltip" title="编辑">
             <i class="fas fa-edit fs-4"></i>
         </a>
     }
     else if (this.Has(PermissionFlags.Detail))
     {
-        <a href="@Url.Action("Detail", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1" data-bs-toggle="tooltip" title="查看">
+        <a href="@Url.Action("Detail", rv)" class="btn btn-sm btn-icon btn-light-primary btn-active-primary me-1 editcell" data-bs-toggle="tooltip" title="查看">
             <i class="fas fa-file-alt fs-4"></i>
         </a>
     }
