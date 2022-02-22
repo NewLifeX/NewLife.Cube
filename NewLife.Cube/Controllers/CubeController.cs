@@ -381,5 +381,40 @@ namespace NewLife.Cube.Controllers
             return File(vs, "image/png");
         }
         #endregion
+
+        #region 字典参数        
+        /// <summary>
+        /// 保存字典参数到后台
+        /// </summary>
+        /// <param name="para">The para.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">para</exception>
+        [AllowAnonymous]
+        public ActionResult SaveParameter(Parameter para)
+        {
+            if(para == null) throw new ArgumentNullException(nameof(para));
+            para.SaveAsync();
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// 根据用户、类别及具体的名字保存字典参数到后台
+        /// </summary>
+        /// <param name="userId">The user identifier.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public ActionResult SaveParameter(Int32 userId, String category, String name, String value) 
+        {
+            var para = Parameter.GetOrAdd(userId, category, name);
+            para.Value = value;
+            para.Save();
+
+            return Ok();
+        }
+        #endregion
     }
 }
