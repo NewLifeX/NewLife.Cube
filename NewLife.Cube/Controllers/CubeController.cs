@@ -390,6 +390,7 @@ namespace NewLife.Cube.Controllers
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">para</exception>
         [AllowAnonymous]
+        [HttpPost]
         public ActionResult SaveParameter(Parameter para)
         {
             if(para == null) throw new ArgumentNullException(nameof(para));
@@ -401,16 +402,17 @@ namespace NewLife.Cube.Controllers
         /// <summary>
         /// 根据用户、类别及具体的名字保存字典参数到后台
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
+        /// <param name="userid">The user identifier.</param>
         /// <param name="category">The category.</param>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
         [AllowAnonymous]
-        public ActionResult SaveParameter(Int32 userId, String category, String name, String value) 
+        [HttpPost]
+        public ActionResult SaveLayout(Int32 userid, String category, String name, String value) 
         {
-            var para = Parameter.GetOrAdd(userId, category, name);
-            para.Value = value;
+            var para = Parameter.GetOrAdd(userid, category, name);
+            para.SetItem("Value", value);
             para.Save();
 
             return Ok();

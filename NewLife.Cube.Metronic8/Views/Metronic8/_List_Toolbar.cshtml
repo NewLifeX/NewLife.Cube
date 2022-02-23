@@ -60,12 +60,12 @@
         <!--begin::列表模式-->
         <ul class="nav nav-pills me-2">
             <li class="nav-item m-0">
-                <a id="btn_mode_card" class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary me-3 @(mode.EqualIgnoreCase("card") ? "active" : "")" data-bs-toggle="tab" href="#kt_card_pane">
+                <a id="btn_mode_card" class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary me-3 mode @(mode.EqualIgnoreCase("card") ? "active" : "")" data-mode="card" data-bs-toggle="tab" href="#kt_card_pane">
                     <i class="fas fa-th-large fs-md-2"></i>
                 </a>
             </li>
             <li class="nav-item me-2">
-                <a id="btn_mode_table" class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary @(mode.EqualIgnoreCase("table") ? "active" : "")" data-bs-toggle="tab" href="#kt_table_pane">
+                <a id="btn_mode_table" class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary mode @(mode.EqualIgnoreCase("table") ? "active" : "")" data-mode="table" data-bs-toggle="tab" href="#kt_table_pane">
                     <i class="fas fa-list fs-md-2"></i>
                 </a>
             </li>
@@ -86,13 +86,19 @@
 <!--end::Toolbar-->
 
 <script>
-    $("#btn_mode_card").click(function(){
-        @layoutSet.SetItem("Value", "card");
-        @layoutSet.Save();
-    });
+    $(function(){
+        var btn = $('ul.nav>li.nav-item>a.mode').click(function(){
+            var mode = $(this).data("mode");
+            var userid = @user.ID;
+            var title = "@title";
 
-    $("#btn_mode_table").click(function(){
-        @layoutSet.SetItem("Value", "table");
-        @layoutSet.Save();
+            $.ajax({
+                type: "POST",
+                url: "/Cube/SaveLayout",
+                data: {userid: userid, category: "LayoutSetting", name: title, value: mode},
+                success: function(data){
+                }
+            });
+        });
     });
 </script>
