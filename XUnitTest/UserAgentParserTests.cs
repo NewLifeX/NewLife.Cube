@@ -402,6 +402,19 @@ namespace XUnitTest
         }
 
         [Fact]
+        public void ParseRobot3()
+        {
+            var userAgent = "Mozilla/5.0 (compatible; DotBot/1.2; +https://opensiteexplorer.org/dotbot; help@moz.com)";
+            var ua = new UserAgentParser();
+            ua.Parse(userAgent);
+
+            Assert.True(ua.IsRobot);
+            Assert.Equal("Mozilla/5.0", ua.Compatible);
+            Assert.Equal("compatible", ua.Platform);
+            Assert.Equal("DotBot/1.2", ua.Brower);
+        }
+
+        [Fact]
         public void ParseBytespider()
         {
             var userAgent = "Mozilla/5.0 (Linux; Android 5.0) AppleWebKit/537.36 (KHTML, like Gecko) Mobile Safari/537.36 (compatible; Bytespider; https://zhanzhang.toutiao.com/)";

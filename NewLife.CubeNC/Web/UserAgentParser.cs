@@ -112,13 +112,21 @@ public class UserAgentParser
                 else if (ss.Length >= 4)
                 {
                     Platform = ss[0]?.Trim();
-                    Encryption = ss[1]?.Trim();
-                    OSorCPU = ss[2]?.Trim().TrimStart("CPU ");
+                    if (Platform.EqualIgnoreCase("compatible"))
+                    {
+                        Brower = ss[1]?.Trim();
+                        OSorCPU = ss[2]?.Trim();
+                    }
+                    else
+                    {
+                        Encryption = ss[1]?.Trim();
+                        OSorCPU = ss[2]?.Trim().TrimStart("CPU ");
 
-                    //// WebKit 特殊
-                    //if (!infos.Any(e => e.Contains("WebKit"))) Device = ss[3]?.Trim();
-                    Device = ss[3]?.Trim();
-                    if (Device == "en" || Device.StartsWithIgnoreCase("en")) Device = null;
+                        //// WebKit 特殊
+                        //if (!infos.Any(e => e.Contains("WebKit"))) Device = ss[3]?.Trim();
+                        Device = ss[3]?.Trim();
+                        if (Device == "en" || Device.StartsWithIgnoreCase("en")) Device = null;
+                    }
                 }
                 else if (ss.Length >= 3 && ss[0].EqualIgnoreCase("compatible"))
                 {
