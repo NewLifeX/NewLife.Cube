@@ -385,12 +385,15 @@ namespace NewLife.Cube.Web
                     {
                         mode = "UserName";
                         user = prv.FindByName(name);
+
+                        // 用户名要求完全相同，包括大小写
+                        if (user != null && user.Name != name) user = null;
                     }
-                    else
+                    if (user == null)
                     {
                         mode = "Provider-UserName";
-                        name = client.Name + "_" + name;
-                        user = prv.FindByName(name);
+                        //name = client.Name + "_" + name;
+                        user = prv.FindByName(client.Name + "_" + name);
                     }
                 }
 
@@ -420,6 +423,21 @@ namespace NewLife.Cube.Web
                 {
                     mode = "NickName";
                     if (!client.NickName.IsNullOrEmpty()) user = User.FindByName(client.NickName);
+                }
+
+                // 准备注册用的用户名。不允许使用已经存在的用户名
+                if (user == null)
+                {
+                    // 判断用户名是否已存在，如果已存在则使用昵称
+                    name = client.UserName;
+                    if (!name.IsNullOrEmpty() && !set.ForceBindUser && User.FindByName(name) != null) name = null;
+
+                    if (name.IsNullOrEmpty())
+                    {
+                        // 如果昵称也存在，那就清空，下面会使用OpenID-Crc
+                        name = client.NickName;
+                        if (!name.IsNullOrEmpty() && User.FindByName(name) != null) name = null;
+                    }
                 }
 
                 // QQ、微信 等不返回用户名
