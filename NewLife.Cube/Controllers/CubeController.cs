@@ -389,9 +389,8 @@ namespace NewLife.Cube.Controllers
         /// <param name="para">The para.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">para</exception>
-        [AllowAnonymous]
         [HttpPost]
-        public ActionResult SaveParameter(Parameter para)
+        public ActionResult SaveParameter(Int32 userid, Parameter para)
         {
             if(para == null) throw new ArgumentNullException(nameof(para));
             para.SaveAsync();
@@ -407,8 +406,6 @@ namespace NewLife.Cube.Controllers
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        [AllowAnonymous]
-        [HttpPost]
         public ActionResult SaveLayout(Int32 userid, String category, String name, String value) 
         {
             var para = Parameter.GetOrAdd(userid, category, name);
