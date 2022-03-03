@@ -95,6 +95,8 @@ namespace NewLife.Cube.Services
             if (userid > 0) entity.UserID = userid;
             if (!name.IsNullOrEmpty()) entity.Name = name;
 
+            entity.Address = ip.IPToAddress();
+
             // 累加在线时间
             entity.UpdateTime = DateTime.Now;
             entity.UpdateIP = ip;
