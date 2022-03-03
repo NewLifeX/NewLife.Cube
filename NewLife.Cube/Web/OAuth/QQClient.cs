@@ -68,7 +68,7 @@ namespace NewLife.Web.OAuth
                 }
             }
 
-            City = null;
+            AreaName = null;
 
             //// 生日
             //if (dic.TryGetValue("year", out str) && str.ToInt() > 0) Birthday = new DateTime(str.ToInt(), 1, 1);

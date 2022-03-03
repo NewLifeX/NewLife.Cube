@@ -307,12 +307,11 @@ namespace NewLife.Cube.Web
                 }
 
                 // 地区
-                if (dic.TryGetValue("areaid", out var str) && !str.IsNullOrEmpty())
-                    user2.AreaId = str.ToInt();
-
-                if (!client.City.IsNullOrEmpty())
+                if (client.AreaId > 10_00_00)
+                    user2.AreaId = client.AreaId;
+                else if (!client.AreaName.IsNullOrEmpty())
                 {
-                    var ps = client.City.Split('/');
+                    var ps = client.AreaName.Split('/');
                     var r = Area.FindByNames(ps);
                     if (r != null) user2.AreaId = r.ID;
                 }

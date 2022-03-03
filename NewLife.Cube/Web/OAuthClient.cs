@@ -334,8 +334,11 @@ namespace NewLife.Web
         /// <summary>设备标识。</summary>
         public String DeviceId { get; set; }
 
-        /// <summary>城市</summary>
-        public String City { get; set; }
+        /// <summary>地区编码</summary>
+        public Int32 AreaId { get; set; }
+
+        /// <summary>地区名</summary>
+        public String AreaName { get; set; }
 
         /// <summary>生日</summary>
         public DateTime Birthday { get; set; }
@@ -596,7 +599,7 @@ namespace NewLife.Web
             var city = "";
             if (dic.TryGetValue("province", out str)) city += str.Trim();
             if (dic.TryGetValue("city", out str)) city += "/" + str.Trim();
-            if (!city.IsNullOrEmpty() && city != "/") City = city.Trim('/');
+            if (!city.IsNullOrEmpty() && city != "/") AreaName = city.Trim('/');
 
             // 字段映射
             var maps = FieldMap;
