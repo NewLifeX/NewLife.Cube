@@ -68,13 +68,10 @@ namespace NewLife.Web.OAuth
                 }
             }
 
-            var city = "";
-            if (dic.TryGetValue("province", out str)) city += str.Trim();
-            if (dic.TryGetValue("city", out str)) city += "/" + str.Trim();
-            if (!city.IsNullOrEmpty() && city != "/") City = city.Trim('/');
+            City = null;
 
-            // 生日
-            if (dic.TryGetValue("year", out str) && str.ToInt() > 0) Birthday = new DateTime(str.ToInt(), 1, 1);
+            //// 生日
+            //if (dic.TryGetValue("year", out str) && str.ToInt() > 0) Birthday = new DateTime(str.ToInt(), 1, 1);
         }
     }
 }

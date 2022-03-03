@@ -593,6 +593,11 @@ namespace NewLife.Web
 
             if (dic.TryGetValue("Avatar", out str)) Avatar = str.Trim();
 
+            var city = "";
+            if (dic.TryGetValue("province", out str)) city += str.Trim();
+            if (dic.TryGetValue("city", out str)) city += "/" + str.Trim();
+            if (!city.IsNullOrEmpty() && city != "/") City = city.Trim('/');
+
             // 字段映射
             var maps = FieldMap;
             if (maps != null && maps.Count > 0)

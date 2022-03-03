@@ -43,6 +43,13 @@ namespace NewLife.Web.OAuth
                 if (NickName.IsNullOrEmpty()) NickName = UserName;
                 UserName = null;
             }
+
+            // 生日
+            if (dic.TryGetValue("birthday", out str))
+            {
+                var dt = str.ToDateTime();
+                if (dt.Year > 1000) Birthday = dt;
+            }
         }
 
         ///// <summary>根据授权码获取访问令牌</summary>
