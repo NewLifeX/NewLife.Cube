@@ -240,9 +240,6 @@ namespace NewLife.Cube.Web
                 if (user2.Sex == SexKinds.未知 && client.Sex != 0) user2.Sex = (SexKinds)client.Sex;
                 if (user2.Remark.IsNullOrEmpty()) user2.Remark = client.Detail;
 
-                if (user2.AreaId % 10000 == 0 && dic.TryGetValue("areaid", out var str) && !str.IsNullOrEmpty())
-                    user2.AreaId = str.ToInt();
-
                 var set = Setting.Current;
                 var roleId = 0;
                 List<Int32> roleIds = null;
@@ -308,6 +305,20 @@ namespace NewLife.Cube.Web
 
                     user2.DepartmentID = dep.ID;
                 }
+
+                // 地区
+                if (dic.TryGetValue("areaid", out var str) && !str.IsNullOrEmpty())
+                    user2.AreaId = str.ToInt();
+
+                if (!client.City.IsNullOrEmpty())
+                {
+                    var ps = client.City.Split('/');
+                    var r = Area.FindByNames(ps);
+                    if (r != null) user2.AreaId = r.ID;
+                }
+
+                // 生日
+                if (client.Birthday.Year > 1000) user2.Birthday = client.Birthday;
 
                 // 头像。有可能是相对路径，需要转为绝对路径
                 var av = client.Avatar;

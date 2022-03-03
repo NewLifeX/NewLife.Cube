@@ -6,8 +6,6 @@ using System.Reflection;
 using System.Text;
 using System.Web;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Web.Models;
-using NewLife.Http;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
@@ -335,6 +333,12 @@ namespace NewLife.Web
 
         /// <summary>设备标识。</summary>
         public String DeviceId { get; set; }
+
+        /// <summary>城市</summary>
+        public String City { get; set; }
+
+        /// <summary>生日</summary>
+        public DateTime Birthday { get; set; }
 
         /// <summary>获取用户信息</summary>
         /// <returns></returns>

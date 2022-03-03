@@ -42,7 +42,7 @@ namespace NewLife.Cube.Admin.Controllers
 
         static UserController()
         {
-            ListFields.RemoveField("Avatar", "RoleIds", "Online", "LastLoginIP", "RegisterIP", "RegisterTime");
+            ListFields.RemoveField("Avatar", "RoleIds", "Online", "Age", "Birthday", "LastLoginIP", "RegisterIP", "RegisterTime");
             ListFields.RemoveField("Phone", "Code", "Question", "Answer");
             ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
             ListFields.RemoveUpdateField();
