@@ -121,22 +121,22 @@ namespace NewLife.Cube
         /// <summary>绑定用户代码。根据SSO用户代码强制绑定本地用户</summary>
         [Description("绑定用户代码。根据SSO用户代码强制绑定本地用户")]
         [Category("用户登录")]
-        public Boolean ForceBindUserCode { get; set; }
+        public Boolean ForceBindUserCode { get; set; } = true;
 
         /// <summary>绑定用户手机。根据SSO用户手机强制绑定本地用户</summary>
         [Description("绑定用户手机。根据SSO用户手机强制绑定本地用户")]
         [Category("用户登录")]
-        public Boolean ForceBindUserMobile { get; set; }
+        public Boolean ForceBindUserMobile { get; set; } = true;
 
         /// <summary>绑定用户邮箱。根据SSO用户邮箱强制绑定本地用户</summary>
         [Description("绑定用户邮箱。根据SSO用户邮箱强制绑定本地用户")]
         [Category("用户登录")]
-        public Boolean ForceBindUserMail { get; set; }
+        public Boolean ForceBindUserMail { get; set; } = true;
 
         /// <summary>绑定用户昵称。根据SSO用户昵称强制绑定本地用户，内部SSO可用，不建议用于社交网络，重名太多</summary>
         [Description("绑定用户昵称。根据SSO用户昵称强制绑定本地用户，内部SSO可用，不建议用于社交网络，重名太多")]
         [Category("用户登录")]
-        public Boolean ForceBindNickName { get; set; }
+        public Boolean ForceBindNickName { get; set; } = true;
 
         /// <summary>使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole</summary>
         [Description("使用Sso角色。SSO登录后继续使用SSO角色，默认true；否则使用DefaultRole")]
