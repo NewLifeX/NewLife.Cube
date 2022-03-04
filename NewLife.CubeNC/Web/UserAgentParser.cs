@@ -329,7 +329,7 @@ public class UserAgentParser
     #endregion
 
     #region 扩展判断
-    private static String[] _robots = new[] { "bot", "crawler", "spider", "okhttp" };
+    private static String[] _robots = new[] { "bot", "crawler", "spider", "okhttp", "python" };
     /// <summary>是否蜘蛛机器人</summary>
     public Boolean IsRobot
     {

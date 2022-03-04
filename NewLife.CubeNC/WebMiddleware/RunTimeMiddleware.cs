@@ -184,10 +184,14 @@ namespace NewLife.Cube.WebMiddleware
 
             // 判断爬虫
             var code = Setting.Current.RobotError;
-            if (code > 0 && ua.IsRobot)
+            if (code > 0 && ua.IsRobot&&!ua.Brower.IsNullOrEmpty())
             {
+                var name = ua.Brower;
+                var p = name.IndexOf('/');
+                if (p > 0) name = name[..p];
+
                 // 埋点
-                using var span = DefaultTracer.Instance?.NewSpan($"bot:{ua.Brower}", ua.UserAgent);
+                using var span = DefaultTracer.Instance?.NewSpan($"bot:{name}", ua.UserAgent);
 
                 ctx.Response.StatusCode = code;
                 return false;
