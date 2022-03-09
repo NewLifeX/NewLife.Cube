@@ -68,6 +68,16 @@ namespace NewLife.Cube.ViewModels
 
             return _reg.Replace(Url, m => data[m.Groups[1].Value + ""] + "");
         }
+
+        /// <summary>针对指定实体对象计算title，替换其中变量</summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public virtual String GetTitle(IExtend data)
+        {
+            if (Title.IsNullOrEmpty()) return null;
+
+            return _reg.Replace(Title, m => data[m.Groups[1].Value + ""] + "");
+        }
         #endregion
     }
 }

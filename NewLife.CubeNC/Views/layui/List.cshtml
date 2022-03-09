@@ -38,43 +38,44 @@
                                     if (item.Type == typeof(DateTime))
                                     {
                                         var width = item.Name.EndsWithIgnoreCase("Date") ? 96 : 150;
-                                        <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
+                                                <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
                                     }
                                     else
                                     {
-                                        <th lay-data="{field:'@item.Name',title:'@item.Description'}">@item.DisplayName</th>
+                                                <th lay-data="{field:'@item.Name',title:'@item.Description'}">@item.DisplayName</th>
                                     }
                                 }
 
                                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                                 {
-                                    <th lay-data="{toolbar:'#barOpt',minWidth:120,fixed:'right',align:'center'}">操作</th>
+                                        <th lay-data="{toolbar:'#barOpt',minWidth:120,fixed:'right',align:'center'}">操作</th>
                                 }
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var entity in Model)
                             {
-                                <tr>
+                                    <tr>
                                     @foreach (var item in fields)
                                     {
                                         var df = item as ListField;
                                         if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
                                         {
-                                            <td></td>
+                                                        <td></td>
                                         }
                                         else if (df != null && !df.DataAction.IsNullOrEmpty())
                                         {
                                             var url = df.GetUrl(entity);
                                             var name = df.GetDisplayName(entity) ?? df.Header;
-                                            <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                                                                var title = df.GetTitle(entity);
+                                                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
                                         }
                                         else
                                         {
                                             @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
                                         }
                                     }
-                                </tr>
+                                    </tr>
                             }
                         </tbody>
                     </table>

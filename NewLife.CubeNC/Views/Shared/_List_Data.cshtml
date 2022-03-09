@@ -62,13 +62,15 @@
                     {
                         var url = df.GetUrl(entity);
                         var name = df.GetDisplayName(entity) ?? df.Header;
-                        <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                        var title = df.GetTitle(entity);
+                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
                     }
                     else if (df != null && !df.Url.IsNullOrEmpty())
                     {
                         var url = df.GetUrl(entity);
                         var name = df.GetDisplayName(entity) ?? df.Header;
-                        <td class="text-center" title="@df.Title"><a href="@Html.Raw(url)">@name</a></td>
+                        var title = df.GetTitle(entity);
+                        <td class="text-center" title="@title"><a href="@Html.Raw(url)">@name</a></td>
                     }
                     else
                     {
