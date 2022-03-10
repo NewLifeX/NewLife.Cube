@@ -440,7 +440,7 @@ namespace NewLife.Cube.Web
                 {
                     // 判断用户名是否已存在，如果已存在则使用昵称
                     name = client.UserName;
-                    if (!name.IsNullOrEmpty() && !set.ForceBindUser && User.FindByName(name) != null) name = null;
+                    if (!name.IsNullOrEmpty() && User.FindByName(name) != null) name = null;
 
                     if (name.IsNullOrEmpty())
                     {
