@@ -1,0 +1,38 @@
+name: publish
+
+on:
+  push:
+    tags: [ v* ]
+
+jobs:
+  build-publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+        include-prerelease: true
+    - name: Restore
+      run: |
+        dotnet restore NewLife.CubeNC/NewLife.CubeNC.csproj
+        dotnet restore NewLife.Cube.AdminLTE/NewLife.Cube.AdminLTE.csproj
+        dotnet restore NewLife.Cube.ElementUI/NewLife.Cube.ElementUI.csproj
+        dotnet restore NewLife.Cube.Metronic/NewLife.Cube.Metronic.csproj
+        dotnet restore NewLife.Cube.Metronic8/NewLife.Cube.Metronic8.csproj
+        dotnet restore NewLife.Cube.Tabler/NewLife.Cube.Tabler.csproj
+    - name: Build
+      run: |
+        dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d") -o out NewLife.CubeNC/NewLife.CubeNC.csproj
+        dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d") -o out NewLife.Cube.AdminLTE/NewLife.Cube.AdminLTE.csproj
+        dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d") -o out NewLife.Cube.ElementUI/NewLife.Cube.ElementUI.csproj
+        dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d") -o out NewLife.Cube.Metronic/NewLife.Cube.Metronic.csproj
+        dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d") -o out NewLife.Cube.Metronic8/NewLife.Cube.Metronic8.csproj
+        dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d") -o out NewLife.Cube.Tabler/NewLife.Cube.Tabler.csproj
+    - name: Publish
+      run: |
+        dotnet nuget push ./out/*.nupkg --skip-duplicate --source https://nuget.pkg.github.com/NewLifeX/index.json --api-key ${{ github.token }}
+        dotnet nuget push ./out/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.nugetKey }}
