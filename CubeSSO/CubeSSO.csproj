@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
-    <PackageReference Include="NewLife.Stardust" Version="2.0.2022.216-beta2" />
+    <PackageReference Include="NewLife.Stardust" Version="2.0.2022.312-beta1059" />
   </ItemGroup>
 
   <ItemGroup>
