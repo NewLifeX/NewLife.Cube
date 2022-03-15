@@ -11,7 +11,7 @@
     var length = Model.Length;
 }
 
-@if (name.EqualIgnoreCase("file", "image"))
+@if (name.EqualIgnoreCase("file", "image", "files", "images"))
 {
     @await Html.PartialAsync("_Form_Type_File", Model)
 }
