@@ -1,4 +1,10 @@
-﻿@model NewLife.Cube.Charts.ECharts
+﻿@*
+    图表小组件，支持加载多个图表。
+    使用方法：
+    1.将该小组件嵌入到需要显示滑动图片的页面，通过@Html.PartialAsync("_Cube_Widgets_ECharts", chart)调用。
+    2.传入ECharts对象。
+*@
+@model NewLife.Cube.Charts.ECharts
 @using NewLife;
 @using NewLife.Web;
 @using NewLife.Cube;

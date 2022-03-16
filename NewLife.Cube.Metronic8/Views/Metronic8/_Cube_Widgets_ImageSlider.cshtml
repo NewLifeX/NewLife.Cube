@@ -1,0 +1,58 @@
+﻿@*
+    图片小组件，支持加载多个图片和左右滑动。
+    使用方法：
+    1.将该小组件嵌入到需要显示滑动图片的页面，通过@Html.PartialAsync("_Cube_Widgets_ImageSlider","imagepath")调用。
+    2.多个图片使用;,|进行分隔，程序会自动获取该图片在服务端的地址。
+*@
+@model String;
+@{
+    var files = Model;
+    var urls = files.Split(";", ",", "|");
+}
+
+<div class="tns tns-default">
+    <!--begin::Slider-->
+    <div
+        data-tns="true"
+        data-tns-loop="true"
+        data-tns-swipe-angle="false"
+        data-tns-speed="2000"
+        data-tns-autoplay="true"
+        data-tns-autoplay-timeout="18000"
+        data-tns-controls="true"
+        data-tns-nav="false"
+        data-tns-items="2"
+        data-tns-center="false"
+        data-tns-dots="false"
+        data-tns-prev-button="#cube_slider_prev"
+        data-tns-next-button="#cube_slider_next">
+
+        @foreach(var url in urls)
+        {
+            <div class="text-center px-2 py-2">
+            <img src="@url.GetFileUrl()" class="mw-100" alt=""/>
+            </div>
+        }
+    </div>
+    <!--end::Slider-->
+
+    <!--begin::Slider button-->
+    <button class="btn btn-icon btn-active-color-primary" id="cube_slider_prev">
+        <span class="svg-icon svg-icon-3x">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M11.2657 11.4343L15.45 7.25C15.8642 6.83579 15.8642 6.16421 15.45 5.75C15.0358 5.33579 14.3642 5.33579 13.95 5.75L8.40712 11.2929C8.01659 11.6834 8.01659 12.3166 8.40712 12.7071L13.95 18.25C14.3642 18.6642 15.0358 18.6642 15.45 18.25C15.8642 17.8358 15.8642 17.1642 15.45 16.75L11.2657 12.5657C10.9533 12.2533 10.9533 11.7467 11.2657 11.4343Z" fill="black"></path>
+            </svg>
+        </span>
+    </button>
+    <!--end::Slider button-->
+
+    <!--begin::Slider button-->
+    <button class="btn btn-icon btn-active-color-primary" id="cube_slider_next">
+        <span class="svg-icon svg-icon-3x">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12.6343 12.5657L8.45001 16.75C8.0358 17.1642 8.0358 17.8358 8.45001 18.25C8.86423 18.6642 9.5358 18.6642 9.95001 18.25L15.4929 12.7071C15.8834 12.3166 15.8834 11.6834 15.4929 11.2929L9.95001 5.75C9.5358 5.33579 8.86423 5.33579 8.45001 5.75C8.0358 6.16421 8.0358 6.83579 8.45001 7.25L12.6343 11.4343C12.9467 11.7467 12.9467 12.2533 12.6343 12.5657Z" fill="black"></path>
+            </svg>
+        </span>
+    </button>
+    <!--end::Slider button-->
+</div>
