@@ -851,9 +851,11 @@ namespace NewLife.Cube
             if(filename.IsNullOrEmpty()) return null;
 
             var set = Setting.Current;
-            if (!filename.IsNullOrEmpty()) { 
-                var file = set.UploadPath.CombinePath(filename).GetBasePath();
-                if(File.Exists(file)) return file;
+            if (!filename.IsNullOrEmpty()) {
+                // 修正资源访问起始路径
+                var uploadPath = set.UploadPath.First() == '/' ? set.UploadPath : "/" + set.UploadPath;
+                var file = uploadPath.CombinePath(filename).GetBasePath();
+                if(File.Exists(file)) return set.UploadPath.CombinePath(filename);
             }
 
             return null;
