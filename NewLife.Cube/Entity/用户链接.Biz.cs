@@ -38,6 +38,8 @@ namespace NewLife.Cube.Entity
             // 备注字段超长截取
             var len = _.Remark.Length;
             if (!Remark.IsNullOrEmpty() && len > 0 && Remark.Length > len) Remark = Remark[..len];
+
+            base.Valid(isNew);
         }
         #endregion
 
