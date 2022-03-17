@@ -9,18 +9,9 @@
 @using XCode.Membership;
 @{
     var entity = Model as IEntity;
-    var fields = ViewBag.Fields as FieldCollection;
+
     var set = ViewBag.PageSetting as PageSetting;
     var rv = entity.GetRouteKey();
-    var lfs = new List<ListField>();
-    foreach (var fi in fields)
-    {
-        var lf = fi as ListField;
-        if(lf != null && (!lf.Url.IsNullOrEmpty() || !lf.DataAction.IsNullOrEmpty())) 
-        {
-            lfs.Add(lf);    
-        }
-    }
 }
 
 <div class="card-footer d-flex justify-content-end py-5">
@@ -58,7 +49,7 @@
         }
         else
         {
-            <a data-bs-toggle="tooltip" title="删除" class="btn btn-sm btn-icon btn-light-danger btn-active-danger me-2" data-url="@Url.Action("Delete", rv)" data-type="error" data-title="确认删除？">
+            <a data-bs-toggle="tooltip" title="删除" class="btn btn-sm btn-icon btn-light-danger btn-active-danger swal_tip me-2" data-url="@Url.Action("Delete", rv)" data-type="error" data-title="确认删除？">
                 <i class="fas fa-trash-alt fs-4"></i>
             </a>
         }

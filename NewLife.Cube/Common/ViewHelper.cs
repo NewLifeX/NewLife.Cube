@@ -853,8 +853,7 @@ namespace NewLife.Cube
             var set = Setting.Current;
             if (!filename.IsNullOrEmpty()) {
                 // 修正资源访问起始路径
-                var uploadPath = set.UploadPath.First() == '/' ? set.UploadPath : "/" + set.UploadPath;
-                var file = uploadPath.CombinePath(filename).GetBasePath();
+                var file = set.UploadPath.CombinePath(filename).GetBasePath();
                 if(File.Exists(file)) return set.UploadPath.CombinePath(filename);
             }
 
