@@ -127,11 +127,18 @@ namespace NewLife.Cube.Services
             // 根据IP修正用户城市
             if (user is User user2 && (user2.AreaId == 0 || user2.AreaId % 10000 == 0))
             {
-                var rs = Area.SearchIP(ip, 2);
-                if (rs.Count > 0)
+                try
                 {
-                    user2.AreaId = rs[rs.Count - 1].ID;
-                    user2.SaveAsync();
+                    var rs = Area.SearchIP(ip, 2);
+                    if (rs.Count > 0)
+                    {
+                        user2.AreaId = rs[rs.Count - 1].ID;
+                        user2.SaveAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    XTrace.WriteException(ex);
                 }
             }
 
