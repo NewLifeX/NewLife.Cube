@@ -35,15 +35,15 @@ namespace NewLife.Cube.Entity
             // 如果没有脏数据，则不需要进行任何处理
             if (!HasDirty) return;
 
-            // 建议先调用基类方法，基类方法会做一些统一处理
-            base.Valid(isNew);
-
             // 截取长度
             var len = _.Status.Length;
             if (len > 0 && !Status.IsNullOrEmpty() && Status.Length > len) Status = Status[..len];
 
             len = _.Page.Length;
             if (len > 0 && !Page.IsNullOrEmpty() && Page.Length > len) Page = Page[..len];
+
+            // 建议先调用基类方法，基类方法会做一些统一处理
+            base.Valid(isNew);
         }
         #endregion
 

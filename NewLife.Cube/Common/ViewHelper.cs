@@ -841,6 +841,25 @@ namespace NewLife.Cube
             return null;
         }
 
+        /// <summary>
+        /// 根据文件名称获取文件地址
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
+        public static String GetFileUrl(this String filename)
+        {
+            if(filename.IsNullOrEmpty()) return null;
+
+            var set = Setting.Current;
+            if (!filename.IsNullOrEmpty()) {
+                // 修正资源访问起始路径
+                var file = set.UploadPath.CombinePath(filename).GetBasePath();
+                if(File.Exists(file)) return set.UploadPath.CombinePath(filename);
+            }
+
+            return null;
+        }
+
         private static Boolean? _IsDevelop;
         /// <summary>当前是否开发环境。判断csproj文件</summary>
         /// <returns></returns>

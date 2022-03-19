@@ -43,7 +43,7 @@
             var rv = page.GetRouteValue();
             if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
             {
-                <a href="@Url.Action("Add", rv)" class="btn btn-sm btn-icon btn-light-success btn-active-success w-70px" title="新增对象" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-plus me-3 fs-md-2"></i>新增</a>
+                <a href="@Url.Action("Add", rv)" class="btn btn-sm btn-icon btn-light-success btn-active-success w-70px" title="新增@(title)" data-bs-toggle="tooltip" data-bs-placement="top"><i class="fas fa-plus me-3 fs-md-2"></i>新增</a>
                 <!-- 分隔条 -->
                 <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
             }

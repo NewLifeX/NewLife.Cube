@@ -7,6 +7,7 @@
     var value = Model.Value;
     var type = Model.Type;
     var length = Model.Length;
+    var m = (name as String).EqualIgnoreCase("files", "images") ? "multiple" : "";
 }
 
 <div class="input-group">
@@ -28,5 +29,5 @@
             break;
     }
 
-    <input id="@name" name="@name" type="file" class="form-control form-control-sm" autocomplete="off" placeholder="" value="@value" />
+    <input id="@name" name="@name" type="file" class="form-control form-control-sm" autocomplete="off" placeholder="" value="@value" @m/>
 </div>

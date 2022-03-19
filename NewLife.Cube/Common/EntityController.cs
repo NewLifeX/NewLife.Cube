@@ -264,14 +264,24 @@ namespace NewLife.Cube
                 var dc = fi.Field;
                 if (dc.ItemType.EqualIgnoreCase("file", "image"))
                 {
-                    var file = files[dc.Name];
-                    if (file != null)
-                    {
-                        var fileName = SaveFile(entity, file, uploadPath, datePath, null);
+                    //var file = files[dc.Name];
+                    //if (file != null)
+                    //{
+                    //    var fileName = SaveFile(entity, file, uploadPath, datePath, null);
 
-                        entity.SetItem(fi.Name, fileName);
-                        list.Add(file.FileName);
+                    //    entity.SetItem(fi.Name, fileName);
+                    //    list.Add(file.FileName);
+                    //}
+                    // 允许一次性上传多个文件到服务端
+                    foreach (var file in files) {
+                        var fileName = "";
+                        if (file.Name.EqualIgnoreCase(fi.Name)) {
+                            fileName = SaveFile(entity, file, uploadPath, datePath, null);
+                        }
+                        list.Add(fileName);
                     }
+
+                    entity.SetItem(fi.Name, list.Join(";"));
                 }
             }
 
