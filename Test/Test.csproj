@@ -19,8 +19,8 @@
     <Compile Include="..\CubeDemo\Entity\班级.cs" Link="Entity\班级.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="9.0.2022.312-beta1344" />
-    <PackageReference Include="NewLife.XCode" Version="11.0.2022.312-beta1344" />
+    <PackageReference Include="NewLife.Core" Version="9.0.2022.320-beta0140" />
+    <PackageReference Include="NewLife.XCode" Version="11.0.2022.320-beta0630" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entity\" />
