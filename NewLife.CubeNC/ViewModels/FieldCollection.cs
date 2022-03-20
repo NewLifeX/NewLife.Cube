@@ -225,8 +225,9 @@ namespace NewLife.Cube
         public DataField AddDataField(String name, String beforeName = null, String afterName = null)
         {
             var fi = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+            // 有可能fi为空，创建一个所有字段都为空的field
             var field = Create(fi);
-            field.Name = name;
+            if (field.Name.IsNullOrEmpty()) field.Name = name;
 
             if (!beforeName.IsNullOrEmpty())
             {
