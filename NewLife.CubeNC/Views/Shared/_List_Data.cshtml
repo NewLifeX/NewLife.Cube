@@ -60,15 +60,21 @@
                     }
                     else if (df != null && !df.DataAction.IsNullOrEmpty())
                     {
+                        // 有可能该列来自于数据字段（设置了类型），此时需要从实体对象取属性值
+                        var name = (df.Type == null && df.DataType == null) ? 
+                            (df.GetDisplayName(entity) ?? df.Header) :
+                            entity[df.Name];
                         var url = df.GetUrl(entity);
-                        var name = df.GetDisplayName(entity) ?? df.Header;
                         var title = df.GetTitle(entity);
                         <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
                     }
                     else if (df != null && !df.Url.IsNullOrEmpty())
                     {
+                        // 有可能该列来自于数据字段（设置了类型），此时需要从实体对象取属性值
+                        var name = (df.Type == null && df.DataType == null) ? 
+                            (df.GetDisplayName(entity) ?? df.Header) :
+                            entity[df.Name];
                         var url = df.GetUrl(entity);
-                        var name = df.GetDisplayName(entity) ?? df.Header;
                         var title = df.GetTitle(entity);
                         <td class="text-center" title="@title"><a href="@Html.Raw(url)">@name</a></td>
                     }
