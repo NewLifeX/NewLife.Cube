@@ -72,7 +72,14 @@ namespace NewLife.Cube.Services
         /// <returns></returns>
         public UserOnline SetStatus(String sessionid, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null)
         {
-            var entity = UserOnline.GetOrAdd(sessionid, UserOnline.FindBySessionID, k => new UserOnline { SessionID = k, CreateIP = ip, CreateTime = DateTime.Now });
+            // LastError 设计缺陷，非空设计导致无法在插入中忽略
+            var entity = UserOnline.GetOrAdd(sessionid, UserOnline.FindBySessionID, k => new UserOnline
+            {
+                SessionID = k,
+                LastError = new DateTime(1, 1, 2),
+                CreateIP = ip,
+                CreateTime = DateTime.Now
+            });
             //var entity = FindBySessionID(sessionid) ?? new UserOnline();
             //entity.SessionID = sessionid;
             entity.Page = page;

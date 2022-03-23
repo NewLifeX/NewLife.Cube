@@ -137,7 +137,7 @@ namespace NewLife.Cube.Entity
         /// <summary>最后错误</summary>
         [DisplayName("最后错误")]
         [Description("最后错误")]
-        [DataObjectField(false, false, false, 0)]
+        [DataObjectField(false, false, true, 0)]
         [BindColumn("LastError", "最后错误", "")]
         public DateTime LastError { get => _LastError; set { if (OnPropertyChanging("LastError", value)) { _LastError = value; OnPropertyChanged("LastError"); } } }
 
