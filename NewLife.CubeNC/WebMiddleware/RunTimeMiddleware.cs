@@ -78,15 +78,15 @@ namespace NewLife.Cube.WebMiddleware
 
             UserOnline olt = null;
             var user = ManageProvider.User;
-            var p = ctx.Request.Path + "";
-            if (!p.EndsWithIgnoreCase(ExcludeSuffixes))
-            {
-                var sessionId = token?.MD5_16() ?? ip;
-                olt = _userService.SetWebStatus(sessionId, p, userAgent, ua, user, ip);
-                ctx.Items["Cube_Online"] = olt;
-            }
             try
             {
+                var p = ctx.Request.Path + "";
+                if (!p.EndsWithIgnoreCase(ExcludeSuffixes))
+                {
+                    var sessionId = token?.MD5_16() ?? ip;
+                    olt = _userService.SetWebStatus(sessionId, p, userAgent, ua, user, ip);
+                    ctx.Items["Cube_Online"] = olt;
+                }
                 await _next.Invoke(ctx);
             }
             catch (Exception ex)
@@ -184,7 +184,7 @@ namespace NewLife.Cube.WebMiddleware
 
             // 判断爬虫
             var code = Setting.Current.RobotError;
-            if (code > 0 && ua.IsRobot&&!ua.Brower.IsNullOrEmpty())
+            if (code > 0 && ua.IsRobot && !ua.Brower.IsNullOrEmpty())
             {
                 var name = ua.Brower;
                 var p = name.IndexOf('/');
