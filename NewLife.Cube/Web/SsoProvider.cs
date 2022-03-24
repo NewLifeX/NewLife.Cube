@@ -233,14 +233,18 @@ namespace NewLife.Cube.Web
             // 用户信息
             if (dic != null && user is User user2)
             {
-                if (user2.Code.IsNullOrEmpty()) user2.Code = client.UserCode;
-                if (user2.Mobile.IsNullOrEmpty()) user2.Mobile = client.Mobile;
-                if (user2.Mail.IsNullOrEmpty()) user2.Mail = client.Mail;
-
-                if (user2.Sex == SexKinds.未知 && client.Sex != 0) user2.Sex = (SexKinds)client.Sex;
-                if (user2.Remark.IsNullOrEmpty()) user2.Remark = client.Detail;
-
                 var set = Setting.Current;
+
+                // SSO信息优先于本地，根据配置覆盖本地
+                if (user2.Code.IsNullOrEmpty() || set.ForceBindUserCode && !client.UserCode.IsNullOrEmpty()) user2.Code = client.UserCode;
+
+                if (user2.Mobile.IsNullOrEmpty() || set.ForceBindUserMobile && !client.Mobile.IsNullOrEmpty()) user2.Mobile = client.Mobile;
+
+                if (user2.Mail.IsNullOrEmpty() || set.ForceBindUserMail && !client.Mail.IsNullOrEmpty()) user2.Mail = client.Mail;
+
+                if (client.Sex > 0) user2.Sex = (SexKinds)client.Sex;
+                if (!client.Detail.IsNullOrEmpty()) user2.Remark = client.Detail;
+
                 var roleId = 0;
                 List<Int32> roleIds = null;
 
