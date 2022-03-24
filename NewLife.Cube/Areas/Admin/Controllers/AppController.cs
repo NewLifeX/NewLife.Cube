@@ -24,7 +24,7 @@ namespace NewLife.Cube.Cube.Controllers
 
             {
                 var df = ListFields.AddListField("AppLog", "Enable");
-                df.Header = "日志";
+                //df.Header = "日志";
                 df.DisplayName = "日志";
                 df.Url = "AppLog?appId={Id}";
             }
@@ -41,8 +41,8 @@ namespace NewLife.Cube.Cube.Controllers
 
             {
                 var df = ListFields.AddListField("Log", "UpdateUserId");
+                //df.Header = "修改日志";
                 df.DisplayName = "修改日志";
-                df.Header = "修改日志";
                 df.Url = "/Admin/Log?category=应用系统&linkId={ID}";
             }
         }

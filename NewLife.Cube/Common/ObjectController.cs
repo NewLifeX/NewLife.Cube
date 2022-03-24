@@ -201,7 +201,7 @@ namespace NewLife.Cube
                     DisplayName = dis ?? pi.Name,
                     Description = des,
                     Type = pi.PropertyType,
-                    DataType = pi.PropertyType.FullName,
+                    //DataType = pi.PropertyType.FullName,
                     Category = category,
                 };
 

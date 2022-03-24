@@ -45,8 +45,8 @@ namespace NewLife.Cube.ViewModels
         [IgnoreDataMember]
         public Type Type { get; set; }
 
-        /// <summary>数据类型</summary>
-        public String DataType { get; set; }
+        ///// <summary>数据类型</summary>
+        //public String DataType { get; set; }
 
         /// <summary>元素类型。image,file,html,singleSelect,multipleSelect</summary>
         public String ItemType { get; set; }
@@ -72,6 +72,9 @@ namespace NewLife.Cube.ViewModels
         ///// <summary>排序</summary>
         //public Int32 Sort { get; set; }
 
+        /// <summary>原始字段</summary>
+        public FieldItem Field { get; set; }
+
         /// <summary>映射字段</summary>
         public String MapField { get; set; }
 
@@ -81,7 +84,7 @@ namespace NewLife.Cube.ViewModels
 
         /// <summary>多选数据源</summary>
         public DataSourceDelegate DataSource { get; set; }
-      
+
         /// <summary>是否显示</summary>
         public DataVisibleDelegate DataVisible { get; set; }
 
@@ -104,6 +107,8 @@ namespace NewLife.Cube.ViewModels
         /// <param name="field"></param>
         public virtual void Fill(FieldItem field)
         {
+            Field = field;
+
             var dc = field.Field;
             var pi = field.GetValue("_Property", false) as PropertyInfo;
 
@@ -114,7 +119,7 @@ namespace NewLife.Cube.ViewModels
             Category = pi?.GetCustomAttribute<CategoryAttribute>()?.Category + "";
 
             Type = field.Type;
-            DataType = field.Type.Name;
+            //DataType = field.Type.Name;
 
             Length = field.Length;
             Nullable = field.IsNullable;

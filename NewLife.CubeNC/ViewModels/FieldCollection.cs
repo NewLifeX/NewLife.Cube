@@ -224,6 +224,8 @@ namespace NewLife.Cube
         /// <returns></returns>
         public DataField AddDataField(String name, String beforeName = null, String afterName = null)
         {
+            if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name));
+
             var fi = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
             // 有可能fi为空，创建一个所有字段都为空的field
             var field = Create(fi);
@@ -232,12 +234,18 @@ namespace NewLife.Cube
             if (!beforeName.IsNullOrEmpty())
             {
                 var idx = FindIndex(beforeName);
-                if (idx >= 0) Insert(idx, field);
+                if (idx >= 0)
+                    Insert(idx, field);
+                else
+                    Add(field);
             }
             else if (!afterName.IsNullOrEmpty())
             {
                 var idx = FindIndex(afterName);
-                if (idx >= 0) Insert(idx + 1, field);
+                if (idx >= 0)
+                    Insert(idx + 1, field);
+                else
+                    Add(field);
             }
             else
                 Add(field);

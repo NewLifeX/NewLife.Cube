@@ -17,21 +17,21 @@
             {
                 var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
                 var df = item as ListField;
-                var name = df?.Header ?? item.DisplayName;
+                var header = df?.Header ?? item.DisplayName;
                 var title = df?.HeaderTitle ?? item.Description;
 
                 if (item.Type == typeof(DateTime))
                 {
                     var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
-                    <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                    <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@header</a></th>
                 }
                 else if (item.Type == null)
                 {
-                    <th class="text-center" title="@title">@name</th>
+                    <th class="text-center" title="@title">@header</th>
                 }
                 else
                 {
-                    <th class="text-center" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                    <th class="text-center" title="@title"><a href="@Html.Raw(sortUrl)">@header</a></th>
                 }
             }
         </tr>
