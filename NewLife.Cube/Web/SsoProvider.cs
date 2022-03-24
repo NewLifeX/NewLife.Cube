@@ -809,6 +809,7 @@ namespace NewLife.Cube.Web
                     departmentName = user2.Department?.Name,
                     areaid = user2.AreaId,
                     avatar = "/Cube/Avatar?id=" + user2.ID,
+                    birthday = user2.Birthday.ToString("yyyy-MM-dd", ""),
                     detail = user2.Remark,
                     resources = dic,
                 };

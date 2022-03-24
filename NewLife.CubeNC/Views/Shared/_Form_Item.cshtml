@@ -63,7 +63,11 @@
     }
     else
     {
-        var itemModel = new ItemModel(item.Name, entity[item.Name], item.Type) { Length = item.Length };
+        var itemModel = new ItemModel(item.Name, entity[item.Name], item.Type)
+        {
+            ItemType = item.ItemType,
+            Length = item.Length
+        };
         @*@Html.ForEditor(item, entity)*@
         if (!item.MapField.IsNullOrEmpty())
         {
