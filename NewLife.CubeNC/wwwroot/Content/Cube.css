@@ -46,7 +46,7 @@
 /*.form-group {
     height: 60px;
 }*/
-/*.input-group[class*=col-] { float: left; }*/
+.input-group[class*=col-] { float: left; }
 
 .input-group > .btn-group > .btn { line-height: 20px; }
 
