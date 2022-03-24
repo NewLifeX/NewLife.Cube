@@ -20,13 +20,14 @@ namespace NewLife.Cube.Cube.Controllers
         static AppLogController()
         {
             ListFields.RemoveField("ID");
-        
-            {
-                var df = ListFields.GetField("TraceId") as ListField;
-                df.DisplayName = "跟踪";
-                df.Url = StarHelper.BuildUrl("{TraceId}");
-                df.DataVisible = (e, f) => !(e as AppLog).TraceId.IsNullOrEmpty();
-            }
+
+            ListFields.TraceUrl("TraceId");
+            //{
+            //    var df = ListFields.GetField("TraceId") as ListField;
+            //    df.DisplayName = "跟踪";
+            //    df.Url = StarHelper.BuildUrl("{TraceId}");
+            //    df.DataVisible = (e, f) => !(e as AppLog).TraceId.IsNullOrEmpty();
+            //}
         }
 
         /// <summary>搜索</summary>

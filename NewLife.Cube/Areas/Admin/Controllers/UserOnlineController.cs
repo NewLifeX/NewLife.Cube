@@ -31,12 +31,13 @@ namespace NewLife.Cube.Admin.Controllers
 
             ListFields.RemoveField("ID", "SessionID", "Status", "LastError", "UserID", "CreateIP", "CreateTime");
 
-            {
-                var df = ListFields.GetField("TraceId") as ListField;
-                df.DisplayName = "跟踪";
-                df.Url = StarHelper.BuildUrl("{TraceId}");
-                df.DataVisible = (e, f) => !(e as UserOnline).TraceId.IsNullOrEmpty();
-            }
+            ListFields.TraceUrl("TraceId");
+            //{
+            //    var df = ListFields.GetField("TraceId") as ListField;
+            //    df.DisplayName = "跟踪";
+            //    df.Url = StarHelper.BuildUrl("{TraceId}");
+            //    df.DataVisible = (e, f) => !(e as UserOnline).TraceId.IsNullOrEmpty();
+            //}
         }
 
         /// <summary>不允许添加修改日志</summary>

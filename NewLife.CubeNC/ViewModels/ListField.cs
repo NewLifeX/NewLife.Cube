@@ -66,6 +66,9 @@ namespace NewLife.Cube.ViewModels
         {
             if (Url.IsNullOrEmpty()) return null;
 
+            var svc = GetService<IUrlExtend>();
+            if (svc != null) return svc.Resolve(this, data);
+
             return _reg.Replace(Url, m => data[m.Groups[1].Value + ""] + "");
         }
 
