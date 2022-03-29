@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Others", "Others", "{32891F
 		.github\workflows\publish-beta.yml = .github\workflows\publish-beta.yml
 		.github\workflows\publish.yml = .github\workflows\publish.yml
 		Readme.MD = Readme.MD
+		.github\workflows\test.yml = .github\workflows\test.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.CubeNC", "NewLife.CubeNC\NewLife.CubeNC.csproj", "{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}"
