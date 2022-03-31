@@ -22,7 +22,7 @@ namespace NewLife.Cube.Cube.Controllers
 
             {
                 var df = ListFields.AddListField("Columns", "Enable");
-                df.Header = "列集合";
+                //df.Header = "列集合";
                 df.DisplayName = "列集合";
                 df.Url = "ModelColumn?tableId={Id}";
             }

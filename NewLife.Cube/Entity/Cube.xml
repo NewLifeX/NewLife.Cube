@@ -136,7 +136,7 @@
       <Column Name="NetType" DataType="String" Description="网络" />
       <Column Name="Status" DataType="String" Length="500" Description="状态" />
       <Column Name="OnlineTime" DataType="Int32" Description="在线时间。本次在线总时间，秒" />
-      <Column Name="LastError" DataType="DateTime" Nullable="False" Description="最后错误" />
+      <Column Name="LastError" DataType="DateTime" Description="最后错误" />
       <Column Name="TraceId" DataType="String" Description="性能追踪。用于APM性能追踪定位，还原该事件的调用链" />
       <Column Name="Address" DataType="String" Length="200" Description="地址。根据IP计算" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" />

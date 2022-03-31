@@ -17,10 +17,69 @@
     $(function () {
         $('input.authorize').on('change', function () {
             var $this = $(this);
-            var status = $this.prop('checked');
-            var childkey = $this.attr('child');
-            // 规避change 需要在失去焦点时触发的问题，设置值完成后手工再次触发该事件
-            $('input[parentkey="' + childkey + '"]').prop('checked', status).change();
+
+            if ($this.attr("childchange") == 0) {
+                var status = $this.prop('checked');
+                var childkey = $this.attr('child');
+                // 规避change 需要在失去焦点时触发的问题，设置值完成后手工再次触发该事件
+                $('input[parentkey="' + childkey + '"]').prop('checked', status).change();
+
+                var parentkey = $this.attr('parentkey');
+
+                var obj = $("input[child$='" + parentkey + "']");
+                var obj1 = $("input[parentkey$='" + parentkey + "']");;
+                var bol = false;
+                for(i = 0; i < obj1.length; i++){
+                    if ($('#' + obj1[i].id).prop("checked")) {
+                        bol = true;
+                        continue;
+                    }
+                }
+                if (!bol) {
+                    $("#" + obj.attr("id")).prop("checked","");
+                }
+            }
+            else if ($this.attr("childchange") == 1){
+                var parentkey = $this.attr('parentkey');
+                var obj = $("input[child$='" + parentkey + "']");
+                var parentkey1 = $("#" + obj.attr("id")).attr('parentkey');
+                var obj1 = $("input[child$='" + parentkey1 + "']");
+
+                $("#" + obj.attr("id")).prop('checked', true);
+                $("#" + obj1.attr("id")).prop('checked', true);
+
+                $this.attr("childchange", 0);
+            }
+            else if ($this.attr("childchange") == 2) {
+                var parentkey = $this.attr('parentkey');
+                var obj = $("input[child$='" + parentkey + "']");
+
+                var parentkey1 = $("#" + obj.attr("id")).attr('parentkey');
+                var obj1 = $("input[child$='" + parentkey1 + "']");
+
+                var obj1 = $("input[parentkey$='" + parentkey + "']");;
+                var bol = false;
+                for(i = 0; i < obj1.length; i++){
+                    if ($('#' + obj1[i].id).prop("checked")) {
+                        bol = true;
+                        continue;
+                    }
+                }
+                if (!bol) {
+                    $("#" + obj.attr("id")).attr("childchange", 3);
+                    $("#" + obj.attr("id")).prop("checked", "").change();
+                }
+
+                $this.attr("childchange", 0);
+            }
+            else if ($this.attr("childchange") == 3) {
+                var parentkey = $this.attr('parentkey');
+                var obj = $("input[child$='" + parentkey + "']");
+
+                $("#" + obj.attr("id")).prop('checked', "");
+
+                $this.attr("childchange", 0);
+            }
         });
         // 只读/查看
         $('input.pro_detail').on('change', function () {
@@ -35,6 +94,30 @@
             var status = $this.prop('checked');
             var key = $this.attr('prochildkey');
             $('input[prokey=' + key + ']').prop('checked', status);
+        });
+
+        $('td.childpf input').on('change', function() {
+            var dataid = $('#' + this.id).attr("dataid");
+
+            if ($('#' + this.id).prop("checked")){
+                $("#p" + dataid).attr("childchange", 1);
+                $("#p" + dataid).prop("checked","checked").change();
+            }
+            else {
+                var obj = $('#' + this.id).parent().find("input");
+                var bol = false;
+                for(i = 0; i < obj.length; i++){
+                    if ($('#' + obj[i].id).prop("checked")) {
+                        bol = true;
+                        continue;
+                    }
+                }
+
+                if (!bol) {
+                    $("#p" + dataid).attr("childchange", 2);
+                    $("#p" + dataid).prop("checked", "").change();
+                }
+            }
         });
     });
 </script>
@@ -56,14 +139,14 @@
                     <tr>
                         <td>@entity.TreeNodeName</td>
                         <td>@entity.DisplayName</td>
-                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID })</td>
-                        <td>
+                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID, @childchange = 0 })</td>
+                        <td class="childpf">
                             @if (entity.Childs.Count == 0)
                             {
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
                                 {
                                     var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID })
+                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID, @dataid = entity.ID })
                                     @Html.Label(id, item.Value)
                                     <text>&nbsp;</text>
                                 }

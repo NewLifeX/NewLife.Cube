@@ -601,6 +601,13 @@ namespace NewLife.Web
             if (dic.TryGetValue("city", out str)) city += "/" + str.Trim();
             if (!city.IsNullOrEmpty() && city != "/") AreaName = city.Trim('/');
 
+            // 生日
+            if (dic.TryGetValue("birthday", out str))
+            {
+                var dt = str.ToDateTime();
+                if (dt.Year > 1000) Birthday = dt;
+            }
+
             // 字段映射
             var maps = FieldMap;
             if (maps != null && maps.Count > 0)

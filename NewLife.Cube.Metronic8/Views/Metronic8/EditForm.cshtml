@@ -2,7 +2,6 @@
     编辑模板
 *@
 
-
 @using NewLife;
 @using System.Reflection
 @using XCode
@@ -30,7 +29,7 @@
 }
 
 <!-- 表单仪表盘，用于显示实体对象的统计信息 -->
-@await Html.PartialAsync("_Form_Dashboard")
+@await Html.PartialAsync("_Form_Dashboard", entity)
 
 <!--模板表单-->
 @using (Html.BeginForm("Edit", null, rv, FormMethod.Post, null, htmlAttributes))

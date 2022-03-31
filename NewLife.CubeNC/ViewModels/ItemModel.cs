@@ -21,6 +21,9 @@ namespace NewLife.Cube.ViewModels
         /// <summary>格式化字符串</summary>
         public String Format { get; set; }
 
+        /// <summary>元素类型</summary>
+        public String ItemType { get; set; }
+
         /// <summary>Html特性</summary>
         public Object HtmlAttributes { get; set; }
         #endregion

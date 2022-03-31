@@ -20,7 +20,7 @@
             {
                 var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
                 var df = item as ListField;
-                var name = df?.Header ?? item.DisplayName;
+                var name = df?.Header ?? item.DisplayName ?? item.Name;
                 var title = df?.HeaderTitle ?? item.Description;
 
                 if (item.Type == typeof(DateTime))
@@ -60,15 +60,17 @@
                     }
                     else if (df != null && !df.DataAction.IsNullOrEmpty())
                     {
+                        // 在数据列中，实体对象取属性值优先于显示名
+                        var name = (df.Field != null && df.DisplayName == df.Field.DisplayName) ? entity[df.Name] : df.GetDisplayName(entity);
                         var url = df.GetUrl(entity);
-                        var name = df.GetDisplayName(entity) ?? df.Header;
                         var title = df.GetTitle(entity);
                         <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
                     }
                     else if (df != null && !df.Url.IsNullOrEmpty())
                     {
+                        // 在数据列中，实体对象取属性值优先于显示名
+                        var name = (df.Field != null && df.DisplayName == df.Field.DisplayName) ? entity[df.Name] : df.GetDisplayName(entity);
                         var url = df.GetUrl(entity);
-                        var name = df.GetDisplayName(entity) ?? df.Header;
                         var title = df.GetTitle(entity);
                         <td class="text-center" title="@title"><a href="@Html.Raw(url)">@name</a></td>
                     }

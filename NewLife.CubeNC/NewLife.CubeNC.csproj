@@ -16,7 +16,7 @@
     <AssemblyVersion>5.0.*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\Bin</OutputPath>
-    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <DefineConstants>$(DefineConstants);__CORE__</DefineConstants>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <LangVersion>latest</LangVersion>
@@ -25,7 +25,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>NewLife.Cube.Core</PackageId>
     <Authors>$(Company)</Authors>
-    <ProjectUrl>https://github.com/NewLifeX</ProjectUrl>
+    <PackageProjectUrl>https://www.yuque.com/smartstone/cube</PackageProjectUrl>
     <PackageIcon>leaf.png</PackageIcon>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -37,7 +37,6 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageProjectUrl>https://www.yuque.com/smartstone/nx/rocketmq</PackageProjectUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
@@ -63,8 +62,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="9.0.2022.304" />
-    <PackageReference Include="NewLife.XCode" Version="11.0.2022.304" />
+    <PackageReference Include="NewLife.Core" Version="9.0.2022.322-beta0315" />
+    <PackageReference Include="NewLife.XCode" Version="11.0.2022.320-beta0630" />
   </ItemGroup>
 
   <ItemGroup>

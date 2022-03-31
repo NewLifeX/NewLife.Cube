@@ -3,18 +3,18 @@
 
     .page-content { padding: 0px; }
 
-    .form-horizontal .control-label { 
+    /*.form-horizontal .control-label {*/ 
         /*float: left;*/
-        font-size:12px;
+        /*font-size:12px;
         padding-left:8px;
         display:block;
-    }
+    }*/
 
-    .form-group {
+    /*.form-group {
         display: inline-block;
         margin-bottom: 10px;
         padding-left: 20px;
-    }
+    }*/
 
     .form-inline .form-group { display: inline-block;  vertical-align: middle; }
 

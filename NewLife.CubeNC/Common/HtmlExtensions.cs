@@ -310,7 +310,7 @@ namespace NewLife.Cube
             //if (format.IsNullOrWhiteSpace()) format = "yyyy-MM-dd HH:mm:ss";
 
             // 日期
-            if (name.EndsWithIgnoreCase("Date"))
+            if (name.EndsWithIgnoreCase("Date", "Day"))
             {
                 if (value > DateTime.MinValue) obj = value.ToString("yyyy-MM-dd");
                 //format = "yyyy-mm-dd";

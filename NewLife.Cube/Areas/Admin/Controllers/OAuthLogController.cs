@@ -20,12 +20,13 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static OAuthLogController()
         {
-            {
-                var df = ListFields.GetField("TraceId") as ListField;
-                df.DisplayName = "跟踪";
-                df.Url = StarHelper.BuildUrl("{TraceId}");
-                df.DataVisible = (e, f) => !(e as OAuthLog).TraceId.IsNullOrEmpty();
-            }
+            ListFields.TraceUrl("TraceId");
+            //{
+            //    var df = ListFields.GetField("TraceId") as ListField;
+            //    df.DisplayName = "跟踪";
+            //    df.Url = StarHelper.BuildUrl("{TraceId}");
+            //    df.DataVisible = (e, f) => !(e as OAuthLog).TraceId.IsNullOrEmpty();
+            //}
         }
 
         /// <summary>搜索</summary>
