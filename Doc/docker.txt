@@ -8,3 +8,8 @@ docker run -h A3 -p 8080:80 -w /app -v /cube:/cube -e BasePath=/cube newlifex/cu
 -w 工作目录，本身就是 /app，这个只适用于操作系统镜像裸奔执行某些命令
 -v 存储卷映射，外部 /cube 目录 映射到内部 /cube 目录
 -e 环境变量，BasePath 是 NewLife.Core 的基准目录，设定为内部 /cube，配合上面的存储，其实就是把 Data Config Log Plugins 等目录映射到外部，即使容器重启也能继续使用原来的数据。
+
+
+mkdir cube && cd cube
+docker run -itd --network=host -v $PWD/data/:/app/Data/ -v $PWD/config/:/app/Config/ --name cube --restart=unless-stopped newlifex/cube:latest
+
