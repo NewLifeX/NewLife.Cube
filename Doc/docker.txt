@@ -16,3 +16,7 @@ docker run -itd --network=host -v $PWD/data/:/app/Data/ -v $PWD/config/:/app/Con
 
 WSL2报错导致docker desktop无法启动，提示 “参考的对象类型不支持尝试的操作”
 临时解决办法，管理员运行 “netsh winsock reset”
+
+
+魔方使用MySql
+docker run -d -p 80:80 -e TZ=Asia/Shanghai -e XCode_Membership="Server=.;Port=3306;Database=Membership;Uid=root;Pwd=root;provider=mysql" newlifex/cube
