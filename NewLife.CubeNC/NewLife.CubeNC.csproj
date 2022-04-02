@@ -183,11 +183,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Shared\_List_Data_Item_First.cshtml" />
-    <Content Remove="Views\Shared\_StatLevel.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
@@ -195,11 +190,6 @@
       <Link>Entity\Cube.xml</Link>
     </None>
     <None Include="..\NewLife.Cube\Entity\xcodetool.exe" Link="Entity\xcodetool.exe" />
-    <None Include="appsettings.json" />
-    <None Include="Areas\Cube\Views\PrincipalAgent\_Form_Body.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\Cube\Controllers\" />

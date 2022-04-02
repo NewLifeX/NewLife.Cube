@@ -13,3 +13,6 @@ docker run -h A3 -p 8080:80 -w /app -v /cube:/cube -e BasePath=/cube newlifex/cu
 mkdir cube && cd cube
 docker run -itd --network=host -v $PWD/data/:/app/Data/ -v $PWD/config/:/app/Config/ --name cube --restart=unless-stopped newlifex/cube:latest
 
+
+WSL2报错导致docker desktop无法启动，提示 “参考的对象类型不支持尝试的操作”
+临时解决办法，管理员运行 “netsh winsock reset”
