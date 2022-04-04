@@ -19,6 +19,8 @@ namespace NewLife.Cube.Extensions
             var web = Setting.Current.StarWeb;
             if (web.IsNullOrEmpty()) return null;
 
+            if (web.Contains("{traceId}")) return web.Replace("{traceId}", traceId);
+
             return $"{web}/trace?id={traceId}";
         }
 
