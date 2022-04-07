@@ -1,0 +1,50 @@
+﻿@using NewLife;
+@using NewLife.Common;
+@using NewLife.Web
+@{
+    Layout = null;
+    var page = "/";
+    page = page.EnsureEnd("/") + "Admin";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@SysConfig.Current.DisplayName</title>
+    <meta http-equiv="refresh" content="0;url=@(page)">
+    <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="bg-body">
+    <div class="d-flex flex-column flex-root">
+        <div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed" style="background-image: url(../../assets/media/sketchy/14.png)">
+            <!--begin::Content-->
+            <div class="d-flex flex-center flex-column flex-column-fluid p-10 pb-lg-20">
+                <h1>@SysConfig.Current.DisplayName</h1>
+                <!--begin::Logo-->
+                <a href="#" class="mb-12">
+                    <img alt="Logo" src="~/assets/media/logos/Logo.png" class="h-40px" />
+                </a>
+                <!--end::Logo-->
+            </div>
+            <!--end::Content-->
+            <!--begin::Footer-->
+            <div class="d-flex flex-center flex-column flex-wrap p-5 pb-3">
+                <div class="d-flex flex-center fs-10 text-muted">
+                    <a>@NewLife.Cube.Setting.Current.Copyright</a>
+                    <a>&nbsp;&nbsp;VER: @SysConfig.Current.Version</a>
+                </div>
+                <div class="d-flex flex-center fw-bold fs-10">
+                    <a href="https://www.beianx.cn/" class="text-muted text-hover-primary">
+                        @NewLife.Cube.Setting.Current.Registration
+                    </a>
+                </div>
+            </div>
+            <!--end::Footer-->
+        </div>
+    </div>
+
+    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/js/scripts.bundle.js"></script>
+</body>
+</html>

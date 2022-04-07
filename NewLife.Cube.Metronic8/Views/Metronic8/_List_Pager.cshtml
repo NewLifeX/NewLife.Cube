@@ -35,8 +35,8 @@
 @if (pager.TotalCount > 0)
 {
     <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form">
-        <div class="d-flex justify-content-between align-items-center flex-wrap pt-lg-3">
-            <div class="d-inline-flex flex-shrink-0 text-gray-600">
+        <div class="d-flex justify-content-between align-items-center flex-wrap pt-3">
+            <div class="d-none d-md-block d-inline-flex flex-shrink-0 text-gray-600">
                 共<span>@pager.TotalCount.ToString("n0")</span>条&nbsp;
                 每页<span>@pager.PageSize</span>条&nbsp;
                 当前第<span>@pager.PageIndex.ToString("n0")</span>页/共<span>@pager.PageCount.ToString("n0")</span>页&nbsp;
