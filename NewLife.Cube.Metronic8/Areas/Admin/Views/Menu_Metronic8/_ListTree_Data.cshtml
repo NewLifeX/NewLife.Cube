@@ -52,7 +52,7 @@
                             <td>
                                 @if (entity is Menu menu)
                                 {
-                                    if (!@menu.Icon.IsNullOrEmpty())
+                                    if (!menu.Icon.IsNullOrEmpty())
                                     {
                                         <i class="fas @menu.Icon text-primary"></i>
                                     }

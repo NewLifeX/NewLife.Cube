@@ -64,7 +64,14 @@
                                 <td class="ps-5 w-lg-200px" style="max-width:360px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-bs-toggle="tooltip" title="@entity.TreeNodeName">
                                     @if (entity is Menu menu)
                                     {
-                                        <i class="fas @menu.Icon text-primary"></i>
+                                        if (!menu.Icon.IsNullOrEmpty())
+                                        {
+                                            <i class="fas @menu.Icon text-primary"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-bookmark text-white"></i>
+                                        }
                                     }
                                     @entity.TreeNodeName
                                 </td>
