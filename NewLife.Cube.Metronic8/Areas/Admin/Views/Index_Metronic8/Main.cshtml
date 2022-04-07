@@ -26,6 +26,7 @@
     var req = httpContext.Request;
     var set = SysConfig.Current;
     var conn = httpContext.Connection;
+    var user = ManageProvider.User;
 
     var mi = MachineInfo.Current ?? new MachineInfo();
     var cpuCls = "bg-danger";
@@ -69,10 +70,13 @@
                             <a href="#" class="text-muted text-hover-primary text-uppercase fs-8 fw-bolder mr-lg-8 mr-5 mb-lg-0 mb-2">@set.Company&nbsp;&nbsp;<i class="la la-cube"></i>@set.Name (@set.Version)</a>
                         </div>
                     </div>
-                    <div class="my-lg-0 my-1">
-                        <a href="@Url.Action("Restart")" class="btn btn-sm btn-light-warning fw-bolder text-uppercase mr-3" data-bs-toggle="tooltip" title="重启ASP.NET应用程序域" 　onclick="return confirm('仅重启ASP.Net应用程序域，而不是操作系统！\n确认重启？')">重启</a>
-                        <a href="@Url.Action("MemoryFree")" class="btn btn-sm btn-light-success btn-success fw-bolder text-uppercase" data-bs-toggle="tooltip" title="释放进程所占用的内存">释放内存</a>
-                    </div>
+                    @if (user.RoleName == "Admin" || user.RoleID == 1)
+                    {
+                        <div class="my-lg-0 my-1">
+                            <a href="@Url.Action("Restart")" class="btn btn-sm btn-light-warning fw-bolder text-uppercase mr-3" data-bs-toggle="tooltip" title="重启ASP.NET应用程序域" 　onclick="return confirm('仅重启ASP.Net应用程序域，而不是操作系统！\n确认重启？')">重启</a>
+                            <a href="@Url.Action("MemoryFree")" class="btn btn-sm btn-light-success btn-success fw-bolder text-uppercase" data-bs-toggle="tooltip" title="释放进程所占用的内存">释放内存</a>
+                        </div>                        
+                    }
                 </div>
                 <!--end: Title-->
                 <!--begin: Content-->
