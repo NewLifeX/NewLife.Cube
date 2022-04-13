@@ -25,6 +25,7 @@ namespace NewLife.Cube.Cube.Controllers
                 var df = ListFields.AddListField("down", null, "Title");
                 df.DisplayName = "下载";
                 df.Url = "/cube/file/{Id}{Extension}";
+                df.Target = "blank";
             }
         }
     }

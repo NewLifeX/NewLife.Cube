@@ -19,6 +19,9 @@ namespace NewLife.Cube.ViewModels
         /// <summary>单元格链接。数据单元格的链接</summary>
         public String Url { get; set; }
 
+        /// <summary>链接目标。_blank/_self/_parent/_top</summary>
+        public String Target { get; set; }
+
         /// <summary>头部文字</summary>
         public String Header { get; set; }
 
