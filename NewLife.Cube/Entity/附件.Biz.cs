@@ -34,8 +34,14 @@ namespace NewLife.Cube.Entity
             // 如果没有脏数据，则不需要进行任何处理
             if (!HasDirty) return;
 
-            // 这里验证参数范围，建议抛出参数异常，指定参数名，前端用户界面可以捕获参数异常并聚焦到对应的参数输入框
-            if (FileName.IsNullOrEmpty()) throw new ArgumentNullException(nameof(FileName), "文件名不能为空！");
+            //// 这里验证参数范围，建议抛出参数异常，指定参数名，前端用户界面可以捕获参数异常并聚焦到对应的参数输入框
+            //if (FileName.IsNullOrEmpty()) throw new ArgumentNullException(nameof(FileName), "文件名不能为空！");
+
+            var len = _.FileName.Length;
+            if (len > 0 && !FileName.IsNullOrEmpty() && FileName.Length > len) FileName = FileName[^len..];
+
+            len = _.Title.Length;
+            if (len > 0 && !Title.IsNullOrEmpty() && Title.Length > len) Title = Title[..len];
 
             base.Valid(isNew);
         }
@@ -48,7 +54,7 @@ namespace NewLife.Cube.Entity
         /// <summary>根据编号查找</summary>
         /// <param name="id">编号</param>
         /// <returns>实体对象</returns>
-        public static Attachment FindByID(Int32 id)
+        public static Attachment FindById(Int32 id)
         {
             if (id <= 0) return null;
 
@@ -87,7 +93,7 @@ namespace NewLife.Cube.Entity
 
             if (!category.IsNullOrEmpty()) exp &= _.Category == category;
             exp &= _.Id.Between(start, end, Meta.Factory.Snow);
-            if (!key.IsNullOrEmpty()) exp &= _.FileName == key | _.ContentType.Contains(key) | _.FilePath.StartsWith(key) | _.Title.Contains(key);
+            if (!key.IsNullOrEmpty()) exp &= _.FileName == key | _.Extension == key | _.ContentType.Contains(key) | _.FilePath.StartsWith(key) | _.Title.Contains(key);
 
             return FindAll(exp, page);
         }
@@ -129,7 +135,10 @@ namespace NewLife.Cube.Entity
             {
                 if (Id == 0 || Category.IsNullOrEmpty()) return null;
 
-                FilePath = file = $"{Category}\\{DateTime.Today:yyyyMMdd}\\{Id}{ext}";
+                var time = UploadTime;
+                if (time.Year < 2000) time = DateTime.Today;
+
+                FilePath = file = $"{Category}\\{time:yyyyMMdd}\\{Id}{ext}";
             }
 
             return file;

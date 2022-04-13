@@ -11,8 +11,15 @@ namespace NewLife.Cube.Cube.Controllers
     {
         static AttachmentController()
         {
-            ListFields.RemoveField("ID", "UpdateUserID", "UpdateIP");
+            ListFields.RemoveField("ID", "Hash", "Url", "Source", "UpdateUserID", "UpdateIP", "Remark");
             ListFields.RemoveCreateField();
+
+            {
+                var df = ListFields.AddListField("Info", null, "Title");
+                df.DisplayName = "信息页";
+                df.Url = "{Url}";
+                df.DataVisible = (e, f) => !(e as Attachment).Url.IsNullOrEmpty();
+            }
         }
     }
 }

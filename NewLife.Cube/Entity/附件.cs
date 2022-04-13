@@ -16,7 +16,7 @@ namespace NewLife.Cube.Entity
     [Description("附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等")]
     [BindIndex("IX_Attachment_Category_Key", false, "Category,Key")]
     [BindIndex("IX_Attachment_FilePath", false, "FilePath")]
-    [BindIndex("IX_Attachment_ContentType", false, "ContentType")]
+    [BindIndex("IX_Attachment_Extension", false, "Extension")]
     [BindTable("Attachment", Description = "附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等", ConnName = "Cube", DbType = DatabaseType.None)]
     public partial class Attachment
     {
@@ -49,7 +49,7 @@ namespace NewLife.Cube.Entity
         /// <summary>标题。业务内容作为附件标题，便于查看管理</summary>
         [DisplayName("标题")]
         [Description("标题。业务内容作为附件标题，便于查看管理")]
-        [DataObjectField(false, false, true, 50)]
+        [DataObjectField(false, false, true, 200)]
         [BindColumn("Title", "标题。业务内容作为附件标题，便于查看管理", "")]
         public String Title { get => _Title; set { if (OnPropertyChanging("Title", value)) { _Title = value; OnPropertyChanged("Title"); } } }
 
@@ -57,7 +57,7 @@ namespace NewLife.Cube.Entity
         /// <summary>文件名。原始文件名</summary>
         [DisplayName("文件名")]
         [Description("文件名。原始文件名")]
-        [DataObjectField(false, false, false, 50)]
+        [DataObjectField(false, false, false, 200)]
         [BindColumn("FileName", "文件名。原始文件名", "", Master = true)]
         public String FileName { get => _FileName; set { if (OnPropertyChanging("FileName", value)) { _FileName = value; OnPropertyChanged("FileName"); } } }
 
@@ -108,6 +108,22 @@ namespace NewLife.Cube.Entity
         [DataObjectField(false, false, false, 0)]
         [BindColumn("Enable", "启用", "")]
         public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
+
+        private DateTime _UploadTime;
+        /// <summary>上传时间。附件上传时间，可用于构造文件存储路径</summary>
+        [DisplayName("上传时间")]
+        [Description("上传时间。附件上传时间，可用于构造文件存储路径")]
+        [DataObjectField(false, false, true, 0)]
+        [BindColumn("UploadTime", "上传时间。附件上传时间，可用于构造文件存储路径", "")]
+        public DateTime UploadTime { get => _UploadTime; set { if (OnPropertyChanging("UploadTime", value)) { _UploadTime = value; OnPropertyChanged("UploadTime"); } } }
+
+        private String _Url;
+        /// <summary>网址。链接到附件所在信息页的地址</summary>
+        [DisplayName("网址")]
+        [Description("网址。链接到附件所在信息页的地址")]
+        [DataObjectField(false, false, true, 500)]
+        [BindColumn("Url", "网址。链接到附件所在信息页的地址", "")]
+        public String Url { get => _Url; set { if (OnPropertyChanging("Url", value)) { _Url = value; OnPropertyChanged("Url"); } } }
 
         private String _Source;
         /// <summary>来源。用于远程抓取的附件来源地址</summary>
@@ -211,6 +227,8 @@ namespace NewLife.Cube.Entity
                     case "FilePath": return _FilePath;
                     case "Hash": return _Hash;
                     case "Enable": return _Enable;
+                    case "UploadTime": return _UploadTime;
+                    case "Url": return _Url;
                     case "Source": return _Source;
                     case "CreateUser": return _CreateUser;
                     case "CreateUserID": return _CreateUserID;
@@ -239,6 +257,8 @@ namespace NewLife.Cube.Entity
                     case "FilePath": _FilePath = Convert.ToString(value); break;
                     case "Hash": _Hash = Convert.ToString(value); break;
                     case "Enable": _Enable = value.ToBoolean(); break;
+                    case "UploadTime": _UploadTime = value.ToDateTime(); break;
+                    case "Url": _Url = Convert.ToString(value); break;
                     case "Source": _Source = Convert.ToString(value); break;
                     case "CreateUser": _CreateUser = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
@@ -291,6 +311,12 @@ namespace NewLife.Cube.Entity
 
             /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
+
+            /// <summary>上传时间。附件上传时间，可用于构造文件存储路径</summary>
+            public static readonly Field UploadTime = FindByName("UploadTime");
+
+            /// <summary>网址。链接到附件所在信息页的地址</summary>
+            public static readonly Field Url = FindByName("Url");
 
             /// <summary>来源。用于远程抓取的附件来源地址</summary>
             public static readonly Field Source = FindByName("Source");
@@ -360,6 +386,12 @@ namespace NewLife.Cube.Entity
 
             /// <summary>启用</summary>
             public const String Enable = "Enable";
+
+            /// <summary>上传时间。附件上传时间，可用于构造文件存储路径</summary>
+            public const String UploadTime = "UploadTime";
+
+            /// <summary>网址。链接到附件所在信息页的地址</summary>
+            public const String Url = "Url";
 
             /// <summary>来源。用于远程抓取的附件来源地址</summary>
             public const String Source = "Source";
