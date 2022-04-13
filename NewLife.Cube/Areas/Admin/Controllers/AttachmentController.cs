@@ -20,6 +20,12 @@ namespace NewLife.Cube.Cube.Controllers
                 df.Url = "{Url}";
                 df.DataVisible = (e, f) => !(e as Attachment).Url.IsNullOrEmpty();
             }
+
+            {
+                var df = ListFields.AddListField("down", null, "Title");
+                df.DisplayName = "下载";
+                df.Url = "/cube/file/{Id}{Extension}";
+            }
         }
     }
 }

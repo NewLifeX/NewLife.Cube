@@ -126,11 +126,11 @@ namespace NewLife.Cube.Entity
         public String Url { get => _Url; set { if (OnPropertyChanging("Url", value)) { _Url = value; OnPropertyChanged("Url"); } } }
 
         private String _Source;
-        /// <summary>来源。用于远程抓取的附件来源地址</summary>
+        /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
         [DisplayName("来源")]
-        [Description("来源。用于远程抓取的附件来源地址")]
+        [Description("来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取")]
         [DataObjectField(false, false, true, 500)]
-        [BindColumn("Source", "来源。用于远程抓取的附件来源地址", "")]
+        [BindColumn("Source", "来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取", "")]
         public String Source { get => _Source; set { if (OnPropertyChanging("Source", value)) { _Source = value; OnPropertyChanged("Source"); } } }
 
         private String _CreateUser;
@@ -318,7 +318,7 @@ namespace NewLife.Cube.Entity
             /// <summary>网址。链接到附件所在信息页的地址</summary>
             public static readonly Field Url = FindByName("Url");
 
-            /// <summary>来源。用于远程抓取的附件来源地址</summary>
+            /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
             public static readonly Field Source = FindByName("Source");
 
             /// <summary>创建者</summary>
@@ -393,7 +393,7 @@ namespace NewLife.Cube.Entity
             /// <summary>网址。链接到附件所在信息页的地址</summary>
             public const String Url = "Url";
 
-            /// <summary>来源。用于远程抓取的附件来源地址</summary>
+            /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
             public const String Source = "Source";
 
             /// <summary>创建者</summary>

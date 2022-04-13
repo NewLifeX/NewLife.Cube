@@ -202,7 +202,7 @@ namespace NewLife.Cube
             LogProvider.Provider?.WriteLog(type, action, success, remark, 0, null, UserHost);
         }
 
-        /// <summary>获取控制器名称</summary>
+        /// <summary>获取控制器名称，返回 area, controller, action</summary>
         /// <returns></returns>
         protected virtual String[] GetControllerAction()
         {

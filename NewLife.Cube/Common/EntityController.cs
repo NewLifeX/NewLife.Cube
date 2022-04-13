@@ -298,7 +298,14 @@ namespace NewLife.Cube
                 Title = entity + "",
                 ContentType = file.ContentType,
                 Enable = true,
+                UploadTime = DateTime.Now,
             };
+
+            if (id != null)
+            {
+                var ss = GetControllerAction();
+                att.Url = $"/{ss[0]}/{ss[1]}/Detail/{id}";
+            }
 
             var rs = false;
             var msg = "";

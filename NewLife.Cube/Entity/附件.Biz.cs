@@ -54,7 +54,7 @@ namespace NewLife.Cube.Entity
         /// <summary>根据编号查找</summary>
         /// <param name="id">编号</param>
         /// <returns>实体对象</returns>
-        public static Attachment FindById(Int32 id)
+        public static Attachment FindById(Int64 id)
         {
             if (id <= 0) return null;
 
@@ -225,6 +225,19 @@ namespace NewLife.Cube.Entity
             Save();
 
             return true;
+        }
+
+        /// <summary>获取文件路径，用于读取附件</summary>
+        /// <param name="uploadPath"></param>
+        /// <returns></returns>
+        public String GetFilePath(String uploadPath = null)
+        {
+            var file = FilePath;
+            if (file.IsNullOrEmpty()) return null;
+
+            if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
+
+            return uploadPath.CombinePath(file).GetBasePath();
         }
         #endregion
     }
