@@ -13,7 +13,7 @@
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
-    <AssemblyVersion>5.0.*</AssemblyVersion>
+    <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\..\Bin</OutputPath>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
@@ -62,8 +62,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="9.0.2022.401" />
-    <PackageReference Include="NewLife.XCode" Version="11.0.2022.401" />
+    <PackageReference Include="NewLife.XCode" Version="11.0.2022.408-beta0119" />
   </ItemGroup>
 
   <ItemGroup>
@@ -183,11 +182,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Shared\_List_Data_Item_First.cshtml" />
-    <Content Remove="Views\Shared\_StatLevel.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
@@ -195,11 +189,6 @@
       <Link>Entity\Cube.xml</Link>
     </None>
     <None Include="..\NewLife.Cube\Entity\xcodetool.exe" Link="Entity\xcodetool.exe" />
-    <None Include="appsettings.json" />
-    <None Include="Areas\Cube\Views\PrincipalAgent\_Form_Body.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\Cube\Controllers\" />

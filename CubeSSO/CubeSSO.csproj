@@ -10,7 +10,7 @@
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
-    <AssemblyVersion>5.0.*</AssemblyVersion>
+    <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\BinSSO</OutputPath>
     <Nullable>enable</Nullable>
@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.0" />
-    <PackageReference Include="NewLife.Stardust" Version="2.0.2022.321-beta0910" />
+    <PackageReference Include="NewLife.Stardust" Version="2.0.2022.404" />
   </ItemGroup>
 
   <ItemGroup>

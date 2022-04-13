@@ -258,7 +258,14 @@ namespace NewLife.Cube
             app.UseCookiePolicy();
             app.UseSession();
 
-            if (TracerMiddleware.Tracer != null) app.UseMiddleware<TracerMiddleware>();
+            // 如果已引入追踪中间件，则这里不再引入
+            if (TracerMiddleware.Tracer != null && !app.Properties.ContainsKey(nameof(TracerMiddleware)))
+            {
+                app.UseMiddleware<TracerMiddleware>();
+
+                app.Properties[nameof(TracerMiddleware)] = typeof(TracerMiddleware);
+            }
+
             app.UseMiddleware<RunTimeMiddleware>();
 
             if (env != null) app.UseCubeDefaultUI(env);

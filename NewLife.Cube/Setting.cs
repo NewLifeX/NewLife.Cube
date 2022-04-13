@@ -240,10 +240,10 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public String EChartsTheme { get; set; }
 
-        /// <summary>星尘Web。星尘控制台地址</summary>
-        [Description("星尘Web。星尘控制台地址")]
+        /// <summary>星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}</summary>
+        [Description("星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}")]
         [Category("界面配置")]
-        public String StarWeb { get; set; } = "http://star.newlifex.com";
+        public String StarWeb { get; set; } = "http://star.newlifex.com/trace?id={traceId}";
         #endregion
 
         #region 方法

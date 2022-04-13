@@ -15,18 +15,19 @@ namespace NewLife.Cube.Entity
     [DataObject]
     [Description("附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等")]
     [BindIndex("IX_Attachment_Category_Key", false, "Category,Key")]
-    [BindIndex("IX_Attachment_CreateTime", false, "CreateTime")]
+    [BindIndex("IX_Attachment_FilePath", false, "FilePath")]
+    [BindIndex("IX_Attachment_ContentType", false, "ContentType")]
     [BindTable("Attachment", Description = "附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等", ConnName = "Cube", DbType = DatabaseType.None)]
     public partial class Attachment
     {
         #region 属性
-        private Int32 _ID;
+        private Int64 _Id;
         /// <summary>编号</summary>
         [DisplayName("编号")]
         [Description("编号")]
-        [DataObjectField(true, true, false, 0)]
-        [BindColumn("ID", "编号", "")]
-        public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+        [DataObjectField(true, false, false, 0)]
+        [BindColumn("Id", "编号", "")]
+        public Int64 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
         private String _Category;
         /// <summary>业务分类</summary>
@@ -45,11 +46,11 @@ namespace NewLife.Cube.Entity
         public String Key { get => _Key; set { if (OnPropertyChanging("Key", value)) { _Key = value; OnPropertyChanged("Key"); } } }
 
         private String _Title;
-        /// <summary>标题。业务内容作为附件标题</summary>
+        /// <summary>标题。业务内容作为附件标题，便于查看管理</summary>
         [DisplayName("标题")]
-        [Description("标题。业务内容作为附件标题")]
+        [Description("标题。业务内容作为附件标题，便于查看管理")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Title", "标题。业务内容作为附件标题", "")]
+        [BindColumn("Title", "标题。业务内容作为附件标题，便于查看管理", "")]
         public String Title { get => _Title; set { if (OnPropertyChanging("Title", value)) { _Title = value; OnPropertyChanged("Title"); } } }
 
         private String _FileName;
@@ -60,6 +61,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("FileName", "文件名。原始文件名", "", Master = true)]
         public String FileName { get => _FileName; set { if (OnPropertyChanging("FileName", value)) { _FileName = value; OnPropertyChanged("FileName"); } } }
 
+        private String _Extension;
+        /// <summary>扩展名</summary>
+        [DisplayName("扩展名")]
+        [Description("扩展名")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("Extension", "扩展名", "")]
+        public String Extension { get => _Extension; set { if (OnPropertyChanging("Extension", value)) { _Extension = value; OnPropertyChanged("Extension"); } } }
+
         private Int64 _Size;
         /// <summary>文件大小</summary>
         [DisplayName("文件大小")]
@@ -69,20 +78,20 @@ namespace NewLife.Cube.Entity
         public Int64 Size { get => _Size; set { if (OnPropertyChanging("Size", value)) { _Size = value; OnPropertyChanged("Size"); } } }
 
         private String _ContentType;
-        /// <summary>内容类型</summary>
+        /// <summary>内容类型。用于Http响应</summary>
         [DisplayName("内容类型")]
-        [Description("内容类型")]
+        [Description("内容类型。用于Http响应")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("ContentType", "内容类型", "")]
+        [BindColumn("ContentType", "内容类型。用于Http响应", "")]
         public String ContentType { get => _ContentType; set { if (OnPropertyChanging("ContentType", value)) { _ContentType = value; OnPropertyChanged("ContentType"); } } }
 
-        private String _Path;
-        /// <summary>路径。本地路径或OSS路径</summary>
+        private String _FilePath;
+        /// <summary>路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件</summary>
         [DisplayName("路径")]
-        [Description("路径。本地路径或OSS路径")]
+        [Description("路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件")]
         [DataObjectField(false, false, true, 200)]
-        [BindColumn("Path", "路径。本地路径或OSS路径", "")]
-        public String Path { get => _Path; set { if (OnPropertyChanging("Path", value)) { _Path = value; OnPropertyChanged("Path"); } } }
+        [BindColumn("FilePath", "路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件", "")]
+        public String FilePath { get => _FilePath; set { if (OnPropertyChanging("FilePath", value)) { _FilePath = value; OnPropertyChanged("FilePath"); } } }
 
         private String _Hash;
         /// <summary>哈希。MD5</summary>
@@ -92,13 +101,21 @@ namespace NewLife.Cube.Entity
         [BindColumn("Hash", "哈希。MD5", "")]
         public String Hash { get => _Hash; set { if (OnPropertyChanging("Hash", value)) { _Hash = value; OnPropertyChanged("Hash"); } } }
 
-        private String _Enable;
-        /// <summary>启用。软删除标记</summary>
+        private Boolean _Enable;
+        /// <summary>启用</summary>
         [DisplayName("启用")]
-        [Description("启用。软删除标记")]
-        [DataObjectField(false, false, true, 50)]
-        [BindColumn("Enable", "启用。软删除标记", "")]
-        public String Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
+        [Description("启用")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("Enable", "启用", "")]
+        public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
+
+        private String _Source;
+        /// <summary>来源。用于远程抓取的附件来源地址</summary>
+        [DisplayName("来源")]
+        [Description("来源。用于远程抓取的附件来源地址")]
+        [DataObjectField(false, false, true, 500)]
+        [BindColumn("Source", "来源。用于远程抓取的附件来源地址", "")]
+        public String Source { get => _Source; set { if (OnPropertyChanging("Source", value)) { _Source = value; OnPropertyChanged("Source"); } } }
 
         private String _CreateUser;
         /// <summary>创建者</summary>
@@ -165,11 +182,11 @@ namespace NewLife.Cube.Entity
         public DateTime UpdateTime { get => _UpdateTime; set { if (OnPropertyChanging("UpdateTime", value)) { _UpdateTime = value; OnPropertyChanged("UpdateTime"); } } }
 
         private String _Remark;
-        /// <summary>内容</summary>
-        [DisplayName("内容")]
-        [Description("内容")]
+        /// <summary>备注</summary>
+        [DisplayName("备注")]
+        [Description("备注")]
         [DataObjectField(false, false, true, 500)]
-        [BindColumn("Remark", "内容", "")]
+        [BindColumn("Remark", "备注", "")]
         public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
         #endregion
 
@@ -183,16 +200,18 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case "ID": return _ID;
+                    case "Id": return _Id;
                     case "Category": return _Category;
                     case "Key": return _Key;
                     case "Title": return _Title;
                     case "FileName": return _FileName;
+                    case "Extension": return _Extension;
                     case "Size": return _Size;
                     case "ContentType": return _ContentType;
-                    case "Path": return _Path;
+                    case "FilePath": return _FilePath;
                     case "Hash": return _Hash;
                     case "Enable": return _Enable;
+                    case "Source": return _Source;
                     case "CreateUser": return _CreateUser;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateIP": return _CreateIP;
@@ -209,16 +228,18 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case "ID": _ID = value.ToInt(); break;
+                    case "Id": _Id = value.ToLong(); break;
                     case "Category": _Category = Convert.ToString(value); break;
                     case "Key": _Key = Convert.ToString(value); break;
                     case "Title": _Title = Convert.ToString(value); break;
                     case "FileName": _FileName = Convert.ToString(value); break;
+                    case "Extension": _Extension = Convert.ToString(value); break;
                     case "Size": _Size = value.ToLong(); break;
                     case "ContentType": _ContentType = Convert.ToString(value); break;
-                    case "Path": _Path = Convert.ToString(value); break;
+                    case "FilePath": _FilePath = Convert.ToString(value); break;
                     case "Hash": _Hash = Convert.ToString(value); break;
-                    case "Enable": _Enable = Convert.ToString(value); break;
+                    case "Enable": _Enable = value.ToBoolean(); break;
+                    case "Source": _Source = Convert.ToString(value); break;
                     case "CreateUser": _CreateUser = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -239,7 +260,7 @@ namespace NewLife.Cube.Entity
         public partial class _
         {
             /// <summary>编号</summary>
-            public static readonly Field ID = FindByName("ID");
+            public static readonly Field Id = FindByName("Id");
 
             /// <summary>业务分类</summary>
             public static readonly Field Category = FindByName("Category");
@@ -247,26 +268,32 @@ namespace NewLife.Cube.Entity
             /// <summary>业务主键</summary>
             public static readonly Field Key = FindByName("Key");
 
-            /// <summary>标题。业务内容作为附件标题</summary>
+            /// <summary>标题。业务内容作为附件标题，便于查看管理</summary>
             public static readonly Field Title = FindByName("Title");
 
             /// <summary>文件名。原始文件名</summary>
             public static readonly Field FileName = FindByName("FileName");
 
+            /// <summary>扩展名</summary>
+            public static readonly Field Extension = FindByName("Extension");
+
             /// <summary>文件大小</summary>
             public static readonly Field Size = FindByName("Size");
 
-            /// <summary>内容类型</summary>
+            /// <summary>内容类型。用于Http响应</summary>
             public static readonly Field ContentType = FindByName("ContentType");
 
-            /// <summary>路径。本地路径或OSS路径</summary>
-            public static readonly Field Path = FindByName("Path");
+            /// <summary>路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件</summary>
+            public static readonly Field FilePath = FindByName("FilePath");
 
             /// <summary>哈希。MD5</summary>
             public static readonly Field Hash = FindByName("Hash");
 
-            /// <summary>启用。软删除标记</summary>
+            /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
+
+            /// <summary>来源。用于远程抓取的附件来源地址</summary>
+            public static readonly Field Source = FindByName("Source");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUser = FindByName("CreateUser");
@@ -292,7 +319,7 @@ namespace NewLife.Cube.Entity
             /// <summary>更新时间</summary>
             public static readonly Field UpdateTime = FindByName("UpdateTime");
 
-            /// <summary>内容</summary>
+            /// <summary>备注</summary>
             public static readonly Field Remark = FindByName("Remark");
 
             static Field FindByName(String name) => Meta.Table.FindByName(name);
@@ -302,7 +329,7 @@ namespace NewLife.Cube.Entity
         public partial class __
         {
             /// <summary>编号</summary>
-            public const String ID = "ID";
+            public const String Id = "Id";
 
             /// <summary>业务分类</summary>
             public const String Category = "Category";
@@ -310,26 +337,32 @@ namespace NewLife.Cube.Entity
             /// <summary>业务主键</summary>
             public const String Key = "Key";
 
-            /// <summary>标题。业务内容作为附件标题</summary>
+            /// <summary>标题。业务内容作为附件标题，便于查看管理</summary>
             public const String Title = "Title";
 
             /// <summary>文件名。原始文件名</summary>
             public const String FileName = "FileName";
 
+            /// <summary>扩展名</summary>
+            public const String Extension = "Extension";
+
             /// <summary>文件大小</summary>
             public const String Size = "Size";
 
-            /// <summary>内容类型</summary>
+            /// <summary>内容类型。用于Http响应</summary>
             public const String ContentType = "ContentType";
 
-            /// <summary>路径。本地路径或OSS路径</summary>
-            public const String Path = "Path";
+            /// <summary>路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件</summary>
+            public const String FilePath = "FilePath";
 
             /// <summary>哈希。MD5</summary>
             public const String Hash = "Hash";
 
-            /// <summary>启用。软删除标记</summary>
+            /// <summary>启用</summary>
             public const String Enable = "Enable";
+
+            /// <summary>来源。用于远程抓取的附件来源地址</summary>
+            public const String Source = "Source";
 
             /// <summary>创建者</summary>
             public const String CreateUser = "CreateUser";
@@ -355,7 +388,7 @@ namespace NewLife.Cube.Entity
             /// <summary>更新时间</summary>
             public const String UpdateTime = "UpdateTime";
 
-            /// <summary>内容</summary>
+            /// <summary>备注</summary>
             public const String Remark = "Remark";
         }
         #endregion

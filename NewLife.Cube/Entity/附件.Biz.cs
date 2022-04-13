@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using NewLife.Data;
+using NewLife.Log;
 using XCode;
 using XCode.Cache;
 using XCode.Membership;
@@ -33,18 +37,7 @@ namespace NewLife.Cube.Entity
             // 这里验证参数范围，建议抛出参数异常，指定参数名，前端用户界面可以捕获参数异常并聚焦到对应的参数输入框
             if (FileName.IsNullOrEmpty()) throw new ArgumentNullException(nameof(FileName), "文件名不能为空！");
 
-            // 在新插入数据或者修改了指定字段时进行修正
-            // 处理当前已登录用户信息，可以由UserModule过滤器代劳
-            /*var user = ManageProvider.User;
-            if (user != null)
-            {
-                if (isNew && !Dirtys[nameof(CreateUserID)]) CreateUserID = user.ID;
-                if (!Dirtys[nameof(UpdateUserID)]) UpdateUserID = user.ID;
-            }*/
-            //if (isNew && !Dirtys[nameof(CreateTime)]) CreateTime = DateTime.Now;
-            //if (!Dirtys[nameof(UpdateTime)]) UpdateTime = DateTime.Now;
-            //if (isNew && !Dirtys[nameof(CreateIP)]) CreateIP = ManageProvider.UserHost;
-            //if (!Dirtys[nameof(UpdateIP)]) UpdateIP = ManageProvider.UserHost;
+            base.Valid(isNew);
         }
         #endregion
 
@@ -72,20 +65,29 @@ namespace NewLife.Cube.Entity
         /// <param name="category">分类</param>
         /// <returns>实体列表</returns>
         public static IList<Attachment> FindAllByCategory(String category) => FindAll(_.Category == category);
+
+        /// <summary>根据分类和业务主键查找附件</summary>
+        /// <param name="category">分类</param>
+        /// <param name="key">业务主键</param>
+        /// <returns>实体列表</returns>
+        public static IList<Attachment> FindAllByCategoryAndKey(String category, String key) => FindAll(_.Category == category & _.Key == key);
         #endregion
 
         #region 高级查询
         /// <summary>高级查询</summary>
         /// <param name="category">分类</param>
+        /// <param name="start">关键字</param>
+        /// <param name="end">关键字</param>
         /// <param name="key">关键字</param>
         /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
         /// <returns>实体列表</returns>
-        public static IList<Attachment> Search(String category, String key, PageParameter page)
+        public static IList<Attachment> Search(String category, DateTime start, DateTime end, String key, PageParameter page)
         {
             var exp = new WhereExpression();
 
             if (!category.IsNullOrEmpty()) exp &= _.Category == category;
-            if (!key.IsNullOrEmpty()) exp &= _.FileName == key | _.ContentType.Contains(key) | _.Path.StartsWith(key) | _.Title.Contains(key);
+            exp &= _.Id.Between(start, end, Meta.Factory.Snow);
+            if (!key.IsNullOrEmpty()) exp &= _.FileName == key | _.ContentType.Contains(key) | _.FilePath.StartsWith(key) | _.Title.Contains(key);
 
             return FindAll(exp, page);
         }
@@ -102,6 +104,119 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 业务操作
+        /// <summary>
+        /// 生成文件路径
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public String BuildFilePath(String path = null)
+        {
+            var file = FilePath;
+
+            // 文件名
+            if (FileName.IsNullOrEmpty() && !file.IsNullOrEmpty()) FileName = Path.GetFileName(file);
+            if (FileName.IsNullOrEmpty() && !path.IsNullOrEmpty()) FileName = Path.GetFileName(path);
+
+            // 后缀
+            var ext = Extension;
+            if (ext.IsNullOrEmpty() && !FileName.IsNullOrEmpty()) ext = Path.GetExtension(FileName);
+            if (ext.IsNullOrEmpty() && !FilePath.IsNullOrEmpty()) ext = Path.GetExtension(FilePath);
+            if (ext.IsNullOrEmpty() && !path.IsNullOrEmpty()) ext = Path.GetExtension(path);
+            Extension = ext;
+
+            // 构造文件路径
+            if (file.IsNullOrEmpty())
+            {
+                if (Id == 0 || Category.IsNullOrEmpty()) return null;
+
+                FilePath = file = $"{Category}\\{DateTime.Today:yyyyMMdd}\\{Id}{ext}";
+            }
+
+            return file;
+        }
+
+        static HttpClient _client;
+        /// <summary>抓取附件</summary>
+        /// <param name="url">远程地址</param>
+        /// <param name="uploadPath">上传目录</param>
+        /// <param name="filePath">文件名，如未指定则自动生成</param>
+        /// <returns></returns>
+        public async Task<Boolean> Fetch(String url, String uploadPath = null, String filePath = null)
+        {
+            if (url.IsNullOrEmpty()) return false;
+
+            // 构造文件路径
+            if (!filePath.IsNullOrEmpty()) FilePath = filePath;
+            var file = BuildFilePath(url);
+            if (file.IsNullOrEmpty()) return false;
+
+            Source = url;
+
+            if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
+
+            var fullFile = uploadPath.CombinePath(file).GetBasePath();
+            XTrace.WriteLine("抓取附件 {0}，保存到 {1}", url, file);
+
+            fullFile.EnsureDirectory(true);
+            //if (File.Exists(fullFile)) File.Delete(fullFile);
+
+            // 抓取并保存
+            if (_client == null) _client = new HttpClient();
+            var rs = await _client.GetAsync(url);
+            var contentType = rs.Content.Headers.ContentType + "";
+            if (!contentType.IsNullOrEmpty()) ContentType = contentType;
+
+            {
+                using var fs = new FileStream(fullFile, FileMode.OpenOrCreate);
+                await rs.Content.CopyToAsync(fs);
+                fs.SetLength(fs.Position);
+            }
+
+            // 记录文件信息
+            var fi = fullFile.AsFile();
+            Size = fi.Length;
+            Hash = fi.MD5().ToHex();
+
+            Save();
+
+            return true;
+        }
+
+        /// <summary>保存单个文件</summary>
+        /// <param name="stream">文件</param>
+        /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
+        /// <param name="filePath">文件名，如未指定则自动生成</param>
+        /// <returns></returns>
+        public async Task<Boolean> SaveFile(Stream stream, String uploadPath = null, String filePath = null)
+        {
+            if (stream == null) return false;
+
+            // 构造文件路径
+            if (!filePath.IsNullOrEmpty()) FilePath = filePath;
+            var file = BuildFilePath(filePath);
+            if (file.IsNullOrEmpty()) return false;
+
+            if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
+
+            // 保存文件，优先原名字
+            var fullFile = uploadPath.CombinePath(file).GetBasePath();
+            fullFile.EnsureDirectory(true);
+
+            {
+                using var fs = new FileStream(fullFile, FileMode.OpenOrCreate);
+                await stream.CopyToAsync(fs);
+                fs.SetLength(fs.Position);
+            }
+
+            // 记录文件信息
+            var fi = fullFile.AsFile();
+            Size = fi.Length;
+            Hash = fi.MD5().ToHex();
+
+            Save();
+
+            return true;
+        }
         #endregion
     }
 }
