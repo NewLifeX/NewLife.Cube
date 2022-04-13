@@ -227,7 +227,7 @@
   </Table>
   <Table Name="Attachment" Description="附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等">
     <Columns>
-      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Id" DataType="Int64" PrimaryKey="True" Description="编号" />
       <Column Name="Category" DataType="String" Description="业务分类" />
       <Column Name="Key" DataType="String" Description="业务主键" />
       <Column Name="Title" DataType="String" Description="标题。业务内容作为附件标题" />
@@ -236,7 +236,8 @@
       <Column Name="ContentType" DataType="String" Description="内容类型" />
       <Column Name="Path" DataType="String" Length="200" Description="路径。本地路径或OSS路径" />
       <Column Name="Hash" DataType="String" Description="哈希。MD5" />
-      <Column Name="Enable" DataType="String" Description="启用。软删除标记" />
+      <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="Source" DataType="String" Length="500" Description="来源。用于远程抓取的附件来源" />
       <Column Name="CreateUser" DataType="String" Description="创建者" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建用户" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" />

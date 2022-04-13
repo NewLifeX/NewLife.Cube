@@ -72,6 +72,12 @@ namespace NewLife.Cube.Entity
         /// <param name="category">分类</param>
         /// <returns>实体列表</returns>
         public static IList<Attachment> FindAllByCategory(String category) => FindAll(_.Category == category);
+
+        /// <summary>根据分类和业务主键查找附件</summary>
+        /// <param name="category">分类</param>
+        /// <param name="key">业务主键</param>
+        /// <returns>实体列表</returns>
+        public static IList<Attachment> FindAllByCategoryAndKey(String category, String key) => FindAll(_.Category == category & _.Key == key);
         #endregion
 
         #region 高级查询

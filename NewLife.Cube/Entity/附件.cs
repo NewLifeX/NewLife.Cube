@@ -20,13 +20,13 @@ namespace NewLife.Cube.Entity
     public partial class Attachment
     {
         #region 属性
-        private Int32 _ID;
+        private Int64 _Id;
         /// <summary>编号</summary>
         [DisplayName("编号")]
         [Description("编号")]
-        [DataObjectField(true, true, false, 0)]
-        [BindColumn("ID", "编号", "")]
-        public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+        [DataObjectField(true, false, false, 0)]
+        [BindColumn("Id", "编号", "")]
+        public Int64 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
         private String _Category;
         /// <summary>业务分类</summary>
@@ -92,13 +92,21 @@ namespace NewLife.Cube.Entity
         [BindColumn("Hash", "哈希。MD5", "")]
         public String Hash { get => _Hash; set { if (OnPropertyChanging("Hash", value)) { _Hash = value; OnPropertyChanged("Hash"); } } }
 
-        private String _Enable;
-        /// <summary>启用。软删除标记</summary>
+        private Boolean _Enable;
+        /// <summary>启用</summary>
         [DisplayName("启用")]
-        [Description("启用。软删除标记")]
-        [DataObjectField(false, false, true, 50)]
-        [BindColumn("Enable", "启用。软删除标记", "")]
-        public String Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
+        [Description("启用")]
+        [DataObjectField(false, false, false, 0)]
+        [BindColumn("Enable", "启用", "")]
+        public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
+
+        private String _Source;
+        /// <summary>来源。用于远程抓取的附件来源</summary>
+        [DisplayName("来源")]
+        [Description("来源。用于远程抓取的附件来源")]
+        [DataObjectField(false, false, true, 500)]
+        [BindColumn("Source", "来源。用于远程抓取的附件来源", "")]
+        public String Source { get => _Source; set { if (OnPropertyChanging("Source", value)) { _Source = value; OnPropertyChanged("Source"); } } }
 
         private String _CreateUser;
         /// <summary>创建者</summary>
@@ -183,7 +191,7 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case "ID": return _ID;
+                    case "Id": return _Id;
                     case "Category": return _Category;
                     case "Key": return _Key;
                     case "Title": return _Title;
@@ -193,6 +201,7 @@ namespace NewLife.Cube.Entity
                     case "Path": return _Path;
                     case "Hash": return _Hash;
                     case "Enable": return _Enable;
+                    case "Source": return _Source;
                     case "CreateUser": return _CreateUser;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateIP": return _CreateIP;
@@ -209,7 +218,7 @@ namespace NewLife.Cube.Entity
             {
                 switch (name)
                 {
-                    case "ID": _ID = value.ToInt(); break;
+                    case "Id": _Id = value.ToLong(); break;
                     case "Category": _Category = Convert.ToString(value); break;
                     case "Key": _Key = Convert.ToString(value); break;
                     case "Title": _Title = Convert.ToString(value); break;
@@ -218,7 +227,8 @@ namespace NewLife.Cube.Entity
                     case "ContentType": _ContentType = Convert.ToString(value); break;
                     case "Path": _Path = Convert.ToString(value); break;
                     case "Hash": _Hash = Convert.ToString(value); break;
-                    case "Enable": _Enable = Convert.ToString(value); break;
+                    case "Enable": _Enable = value.ToBoolean(); break;
+                    case "Source": _Source = Convert.ToString(value); break;
                     case "CreateUser": _CreateUser = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -239,7 +249,7 @@ namespace NewLife.Cube.Entity
         public partial class _
         {
             /// <summary>编号</summary>
-            public static readonly Field ID = FindByName("ID");
+            public static readonly Field Id = FindByName("Id");
 
             /// <summary>业务分类</summary>
             public static readonly Field Category = FindByName("Category");
@@ -265,8 +275,11 @@ namespace NewLife.Cube.Entity
             /// <summary>哈希。MD5</summary>
             public static readonly Field Hash = FindByName("Hash");
 
-            /// <summary>启用。软删除标记</summary>
+            /// <summary>启用</summary>
             public static readonly Field Enable = FindByName("Enable");
+
+            /// <summary>来源。用于远程抓取的附件来源</summary>
+            public static readonly Field Source = FindByName("Source");
 
             /// <summary>创建者</summary>
             public static readonly Field CreateUser = FindByName("CreateUser");
@@ -302,7 +315,7 @@ namespace NewLife.Cube.Entity
         public partial class __
         {
             /// <summary>编号</summary>
-            public const String ID = "ID";
+            public const String Id = "Id";
 
             /// <summary>业务分类</summary>
             public const String Category = "Category";
@@ -328,8 +341,11 @@ namespace NewLife.Cube.Entity
             /// <summary>哈希。MD5</summary>
             public const String Hash = "Hash";
 
-            /// <summary>启用。软删除标记</summary>
+            /// <summary>启用</summary>
             public const String Enable = "Enable";
+
+            /// <summary>来源。用于远程抓取的附件来源</summary>
+            public const String Source = "Source";
 
             /// <summary>创建者</summary>
             public const String CreateUser = "CreateUser";
