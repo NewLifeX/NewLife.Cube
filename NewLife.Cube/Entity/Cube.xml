@@ -230,14 +230,15 @@
       <Column Name="Id" DataType="Int64" PrimaryKey="True" Description="编号" />
       <Column Name="Category" DataType="String" Description="业务分类" />
       <Column Name="Key" DataType="String" Description="业务主键" />
-      <Column Name="Title" DataType="String" Description="标题。业务内容作为附件标题" />
+      <Column Name="Title" DataType="String" Description="标题。业务内容作为附件标题，便于查看管理" />
       <Column Name="FileName" DataType="String" Master="True" Nullable="False" Description="文件名。原始文件名" />
+      <Column Name="Extension" DataType="String" Description="扩展名" />
       <Column Name="Size" DataType="Int64" Description="文件大小" />
-      <Column Name="ContentType" DataType="String" Description="内容类型" />
-      <Column Name="Path" DataType="String" Length="200" Description="路径。本地路径或OSS路径" />
+      <Column Name="ContentType" DataType="String" Description="内容类型。用于Http响应" />
+      <Column Name="FilePath" DataType="String" Length="200" Description="路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件" />
       <Column Name="Hash" DataType="String" Description="哈希。MD5" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
-      <Column Name="Source" DataType="String" Length="500" Description="来源。用于远程抓取的附件来源" />
+      <Column Name="Source" DataType="String" Length="500" Description="来源。用于远程抓取的附件来源地址" />
       <Column Name="CreateUser" DataType="String" Description="创建者" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建用户" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" />
@@ -246,11 +247,12 @@
       <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" />
       <Column Name="UpdateIP" DataType="String" Description="更新地址" />
       <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
-      <Column Name="Remark" DataType="String" Length="500" Description="内容" />
+      <Column Name="Remark" DataType="String" Length="500" Description="备注" />
     </Columns>
     <Indexes>
       <Index Columns="Category,Key" />
-      <Index Columns="CreateTime" />
+      <Index Columns="FilePath" />
+      <Index Columns="ContentType" />
     </Indexes>
   </Table>
   <Table Name="ModelTable" Description="模型表。实体表模型">
