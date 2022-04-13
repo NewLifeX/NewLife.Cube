@@ -34,8 +34,10 @@ namespace NewLife.Cube
         public static ApplicationManager Load()
         {
             if (_appManager == null)
+            {
                 _appManager = new ApplicationManager();
-
+                _appManager.StartTime = DateTime.Now;
+            }
             return _appManager;
         }
 
