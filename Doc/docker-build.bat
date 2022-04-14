@@ -1,0 +1,1 @@
+docker build -f ..\CubeSSO\Dockerfile -t newlifex/cube ..\BinSSO\publish

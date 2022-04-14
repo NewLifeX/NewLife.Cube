@@ -104,7 +104,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Insert)]
         [HttpPost]
-        public virtual ActionResult Add(TEntity entity)
+        public virtual async Task<ActionResult> Add(TEntity entity)
         {
             // 检测避免乱用Add/id
             if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
@@ -125,7 +125,7 @@ namespace NewLife.Cube
 
                 OnInsert(entity);
 
-                var fs = SaveFiles(entity);
+                var fs = await SaveFiles(entity);
                 if (fs.Count > 0) OnUpdate(entity);
 
                 if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
@@ -250,33 +250,25 @@ namespace NewLife.Cube
         /// <param name="entity">实体对象</param>
         /// <param name="uploadPath">上传目录。为空时默认UploadPath配置</param>
         /// <returns></returns>
-        protected virtual IList<String> SaveFiles(TEntity entity, String uploadPath = null)
+        protected virtual async Task<IList<String>> SaveFiles(TEntity entity, String uploadPath = null)
         {
             var list = new List<String>();
 
             if (!Request.HasFormContentType) return list;
             var files = Request.Form.Files;
             var fields = Factory.Fields;
-            if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
-            var datePath = $"{Factory.EntityType.Name}\\{DateTime.Today:yyyyMMdd}\\";
             foreach (var fi in fields)
             {
                 var dc = fi.Field;
                 if (dc.ItemType.EqualIgnoreCase("file", "image"))
                 {
-                    //var file = files[dc.Name];
-                    //if (file != null)
-                    //{
-                    //    var fileName = SaveFile(entity, file, uploadPath, datePath, null);
-
-                    //    entity.SetItem(fi.Name, fileName);
-                    //    list.Add(file.FileName);
-                    //}
                     // 允许一次性上传多个文件到服务端
-                    foreach (var file in files) {
+                    foreach (var file in files)
+                    {
                         var fileName = "";
-                        if (file.Name.EqualIgnoreCase(fi.Name)) {
-                            fileName = SaveFile(entity, file, uploadPath, datePath, null);
+                        if (file.Name.EqualIgnoreCase(fi.Name))
+                        {
+                            fileName = await SaveFile(entity, file, uploadPath, null);
                         }
                         list.Add(fileName);
                     }
@@ -292,36 +284,51 @@ namespace NewLife.Cube
         /// <param name="entity">实体对象</param>
         /// <param name="file">文件</param>
         /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
-        /// <param name="datePath">日期目录，可以在中间增加应用和日期的子目录</param>
         /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
         /// <returns></returns>
-        protected virtual String SaveFile(TEntity entity, IFormFile file, String uploadPath, String datePath, String fileName)
+        protected virtual async Task<String> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName)
         {
-            // 保存文件，优先原名字
-            var fullFile = "";
-            if (fileName.IsNullOrEmpty())
+            if (fileName.IsNullOrEmpty()) fileName = file.FileName;
+
+            var id = Factory.Unique != null ? entity[Factory.Unique] : null;
+            var att = new Attachment
             {
-                fileName = file.FileName;
-                if (!datePath.IsNullOrEmpty()) fileName = datePath.CombinePath(fileName);
-                fullFile = uploadPath.CombinePath(fileName).GetBasePath();
-                if (System.IO.File.Exists(fullFile))
-                {
-                    fileName = entity[Factory.Unique] + Path.GetExtension(file.FileName);
-                    if (!datePath.IsNullOrEmpty()) fileName = datePath.CombinePath(fileName);
-                }
+                Category = typeof(TEntity).Name,
+                Key = id + "",
+                Title = entity + "",
+                ContentType = file.ContentType,
+                Enable = true,
+                UploadTime = DateTime.Now,
+            };
+
+            if (id != null)
+            {
+                var ss = GetControllerAction();
+                att.Url = $"/{ss[0]}/{ss[1]}/Detail/{id}";
             }
-            fullFile = uploadPath.CombinePath(fileName).GetBasePath();
-            fullFile.EnsureDirectory(true);
 
-            file.SaveAs(fullFile);
+            var rs = false;
+            var msg = "";
+            try
+            {
+                rs = await att.SaveFile(file.OpenReadStream(), uploadPath, fileName);
+            }
+            catch (Exception ex)
+            {
+                rs = false;
+                msg = ex.Message;
+                throw;
+            }
+            finally
+            {
+                // 写日志
+                var type = entity.GetType();
+                var log = LogProvider.Provider.CreateLog(type, "上传", rs, $"上传{file.FileName}，保存为{att.FilePath}，目录{uploadPath} " + msg, 0, null, UserHost);
+                log.LinkID = id.ToInt();
+                log.SaveAsync();
+            }
 
-            // 写日志
-            var type = entity.GetType();
-            var log = LogProvider.Provider.CreateLog(type, "上传", true, $"上传{file.FileName}，保存为{fileName}", 0, null, UserHost);
-            if (Factory.Unique != null) log.LinkID = entity[Factory.Unique].ToInt();
-            log.SaveAsync();
-
-            return fileName;
+            return att.FilePath;
         }
 
         /// <summary>批量启用</summary>

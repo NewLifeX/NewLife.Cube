@@ -72,7 +72,7 @@
                         var name = (df.Field != null && df.DisplayName == df.Field.DisplayName) ? entity[df.Name] : df.GetDisplayName(entity);
                         var url = df.GetUrl(entity);
                         var title = df.GetTitle(entity);
-                        <td class="text-center" title="@title"><a href="@Html.Raw(url)">@name</a></td>
+                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@name</a></td>
                     }
                     else
                     {

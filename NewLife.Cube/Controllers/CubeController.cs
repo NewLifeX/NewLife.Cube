@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
+using NewLife.Cube.Entity;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -406,7 +407,7 @@ namespace NewLife.Cube.Controllers
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public ActionResult SaveLayout(Int32 userid, String category, String name, String value) 
+        public ActionResult SaveLayout(Int32 userid, String category, String name, String value)
         {
             if (!category.EqualIgnoreCase("LayoutSetting")) 
                 return Json(203, "非授权操作，不允许保存系统布局以外的信息");
@@ -416,6 +417,82 @@ namespace NewLife.Cube.Controllers
             para.Save();
 
             return Ok();
+        }
+        #endregion
+
+        #region 附件
+        /// <summary>
+        /// 访问图片附件
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public async Task<ActionResult> Image(String id)
+        {
+            if (id.IsNullOrEmpty()) return NotFound();
+
+            // 去掉仅用于装饰的后缀名
+            var p = id.IndexOf('.');
+            if (p > 0) id = id[..p];
+
+            var att = Attachment.FindById(id.ToLong());
+            if (att == null) return NotFound();
+
+            // 如果附件不存在，则抓取
+            var filePath = att.GetFilePath();
+            if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
+            {
+                var url = att.Source;
+                if (url.IsNullOrEmpty()) return NotFound();
+
+                var rs = await att.Fetch(url);
+                if (!rs) return NotFound();
+
+                filePath = att.GetFilePath();
+            }
+            if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath)) return NotFound();
+
+            if (!att.ContentType.IsNullOrEmpty())
+                return PhysicalFile(filePath, att.ContentType);
+            else
+                return PhysicalFile(filePath, "image/png");
+        }
+
+        /// <summary>
+        /// 访问附件
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public async Task<ActionResult> File(String id)
+        {
+            if (id.IsNullOrEmpty()) return NotFound();
+
+            // 去掉仅用于装饰的后缀名
+            var p = id.IndexOf('.');
+            if (p > 0) id = id[..p];
+
+            var att = Attachment.FindById(id.ToLong());
+            if (att == null) return NotFound();
+
+            // 如果附件不存在，则抓取
+            var filePath = att.GetFilePath();
+            if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
+            {
+                var url = att.Source;
+                if (url.IsNullOrEmpty()) return NotFound();
+
+                var rs = await att.Fetch(url);
+                if (!rs) return NotFound();
+
+                filePath = att.GetFilePath();
+            }
+            if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath)) return NotFound();
+
+            if (!att.ContentType.IsNullOrEmpty() && !att.ContentType.EqualIgnoreCase("application/octet-stream"))
+                return PhysicalFile(filePath, att.ContentType);
+            else
+                return PhysicalFile(filePath, "application/octet-stream", att.FileName, true);
         }
         #endregion
     }

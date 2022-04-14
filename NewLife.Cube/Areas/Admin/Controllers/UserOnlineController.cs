@@ -8,11 +8,6 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode.Membership;
-#if __CORE__
-#else
-using System.Web;
-using System.Web.Mvc;
-#endif
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -40,14 +35,6 @@ namespace NewLife.Cube.Admin.Controllers
             //}
         }
 
-        /// <summary>不允许添加修改日志</summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        [DisplayName()]
-        public override ActionResult Add(UserOnline entity) =>
-            //return base.Save(entity);
-            throw new Exception("不允许添加/修改记录");
-
         /// <summary>搜索数据集</summary>
         /// <param name="p"></param>
         /// <returns></returns>
@@ -65,6 +52,21 @@ namespace NewLife.Cube.Admin.Controllers
             }
 
             return UserOnline.Search(userid, null, start, end, p["Q"], p);
+        }
+
+        /// <summary>验证数据</summary>
+        /// <param name="entity"></param>
+        /// <param name="type"></param>
+        /// <param name="post"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        protected override Boolean Valid(UserOnline entity, DataObjectMethodType type, Boolean post)
+        {
+            return type switch
+            {
+                DataObjectMethodType.Update or DataObjectMethodType.Insert => throw new Exception("不允许添加/修改记录"),
+                _ => base.Valid(entity, type, post),
+            };
         }
     }
 }

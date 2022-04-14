@@ -66,9 +66,16 @@ namespace NewLife.Cube
         /// <param name="context"></param>
         public override void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context)
         {
+            var ex = context.Exception?.GetTrue();
+            if (ex != null && !context.ExceptionHandled)
+            {
+                // 控制器发生异常时，写审计日志
+                var act = GetControllerAction().LastOrDefault();
+                WriteLog(act, false, ex.ToString());
+            }
+
             if (IsJsonRequest)
             {
-                var ex = context.Exception?.GetTrue();
                 if (ex != null && !context.ExceptionHandled)
                 {
                     var code = 500;
@@ -195,7 +202,7 @@ namespace NewLife.Cube
             LogProvider.Provider?.WriteLog(type, action, success, remark, 0, null, UserHost);
         }
 
-        /// <summary>获取控制器名称</summary>
+        /// <summary>获取控制器名称，返回 area, controller, action</summary>
         /// <returns></returns>
         protected virtual String[] GetControllerAction()
         {
