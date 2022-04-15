@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using NewLife.Data;
 using XCode;
-using XCode.Cache;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity
@@ -41,6 +40,18 @@ namespace NewLife.Cube.Entity
 
             len = _.Page.Length;
             if (len > 0 && !Page.IsNullOrEmpty() && Page.Length > len) Page = Page[..len];
+
+            len = _.Platform.Length;
+            if (len > 0 && !Platform.IsNullOrEmpty() && Platform.Length > len) Platform = Platform[..len];
+
+            len = _.OS.Length;
+            if (len > 0 && !OS.IsNullOrEmpty() && OS.Length > len) OS = OS[..len];
+
+            len = _.Device.Length;
+            if (len > 0 && !Device.IsNullOrEmpty() && Device.Length > len) Device = Device[..len];
+
+            len = _.Brower.Length;
+            if (len > 0 && !Brower.IsNullOrEmpty() && Brower.Length > len) Brower = Brower[..len];
 
             // 建议先调用基类方法，基类方法会做一些统一处理
             base.Valid(isNew);
