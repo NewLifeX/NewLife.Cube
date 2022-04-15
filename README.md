@@ -8,9 +8,9 @@
 演示站点：https://cube.newlifex.com `CentOS7 + CDN`  
 SSO中心：https://sso.newlifex.com `OAuth服务端`  
 
-魔方教程：https://www.yuque.com/smartstone/cube  
-XCode教程：https://www.yuque.com/smartstone/xcode  
-核心库教程：https://www.yuque.com/smartstone/nx  
+魔方教程：https://newlifex.com/cube  
+XCode教程：https://newlifex.com/xcode  
+核心库教程：https://newlifex.com/core  
 
 ---
 ### 特性
@@ -51,7 +51,7 @@ XCode教程：https://www.yuque.com/smartstone/xcode
 | :--------------------------------------------------------------: | :---: | :----: | :-----: | ------------------------------------------------------------------------------------ |
 |                             基础组件                             |       |        |         | 支撑其它中间件以及产品项目                                                           |
 |          [NewLife.Core](https://github.com/NewLifeX/X)           | 2002  | 维护中 |    √    | 日志、配置、缓存、网络、RPC、序列化、APM性能追踪                                     |
-|              [XCode](https://github.com/NewLifeX/X)              | 2005  | 维护中 |    √    | 大数据中间件，MySQL/SQLite/SqlServer/Oracle/TDengine/达梦，自动建表分表              |
+|    [NewLife.XCode](https://github.com/NewLifeX/NewLife.XCode)    | 2005  | 维护中 |    √    | 大数据中间件，MySQL/SQLite/SqlServer/Oracle/TDengine/达梦，自动建表分表              |
 |      [NewLife.Net](https://github.com/NewLifeX/NewLife.Net)      | 2005  | 维护中 |    √    | 网络库，单机千万级吞吐率（2266万tps），单机百万级连接（400万Tcp）                    |
 |     [NewLife.Cube](https://github.com/NewLifeX/NewLife.Cube)     | 2010  | 维护中 |    √    | 魔方快速开发平台，集成了用户权限、SSO登录、OAuth服务端等，单表100亿级项目验证        |
 |    [NewLife.Agent](https://github.com/NewLifeX/NewLife.Agent)    | 2008  | 维护中 |    √    | 服务管理框架，把应用安装成为操作系统守护进程，Windows服务、Linux的Systemd            |
@@ -60,6 +60,7 @@ XCode教程：https://www.yuque.com/smartstone/xcode
 |    [NewLife.Redis](https://github.com/NewLifeX/NewLife.Redis)    | 2017  | 维护中 |    √    | Redis客户端，微秒级延迟，百万级吞吐，丰富的消息队列，百亿级数据量项目验证            |
 | [NewLife.RocketMQ](https://github.com/NewLifeX/NewLife.RocketMQ) | 2018  | 维护中 |    √    | 支持Apache RocketMQ和阿里云消息队列，十亿级项目验证                                  |
 |     [NewLife.MQTT](https://github.com/NewLifeX/NewLife.MQTT)     | 2019  | 维护中 |    √    | 物联网消息协议，客户端支持阿里云物联网                                               |
+|      [NewLife.IoT](https://github.com/NewLifeX/NewLife.IoT)      | 2022  | 维护中 |    √    | IoT标准库，定义物联网领域的各种通信协议标准规范                                               |
 |     [NewLife.LoRa](https://github.com/NewLifeX/NewLife.LoRa)     | 2016  | 维护中 |    √    | 超低功耗的物联网远程通信协议LoRaWAN                                                  |
 |                             产品平台                             |       |        |         | 产品平台级，编译部署即用，个性化自定义                                               |
 |           [AntJob](https://github.com/NewLifeX/AntJob)           | 2019  | 维护中 |    √    | 蚂蚁调度，分布式大数据计算平台（实时/离线），蚂蚁搬家分片思想，万亿级数据量项目验证  |
@@ -73,6 +74,8 @@ XCode教程：https://www.yuque.com/smartstone/xcode
 |                          NewLife.UWB                          | 2020  |  商用  |    √    | 厘米级高精度室内定位，软硬件一体化，与其它系统联动，大型展厅项目验证                 |
 
 ## 新生命开发团队
+![XCode](https://newlifex.com/logo.png)  
+
 新生命团队（NewLife）成立于2002年，是新时代物联网行业解决方案提供者，致力于提供软硬件应用方案咨询、系统架构规划与开发服务。  
 团队主导的开源NewLife系列组件已被广泛应用于各行业，Nuget累计下载量高达60余万次。  
 团队开发的大数据核心组件NewLife.XCode、蚂蚁调度计算平台AntJob、星尘分布式平台Stardust、缓存队列组件NewLife.Redis以及物联网平台NewLife.IoT，均成功应用于电力、高校、互联网、电信、交通、物流、工控、医疗、文博等行业，为客户提供了大量先进、可靠、安全、高质量、易扩展的产品和系统集成服务。  
@@ -80,10 +83,8 @@ XCode教程：https://www.yuque.com/smartstone/xcode
 我们将不断通过服务的持续改进，成为客户长期信赖的合作伙伴，通过不断的创新和发展，成为国内优秀的IT服务供应商。  
 
 `新生命团队始于2002年，部分开源项目具有20年以上漫长历史，源码库保留有2010年以来所有修改记录`  
-网站：https://www.NewLifeX.com  
-开源：https://github.com/NewLifeX  
-教程：https://www.yuque.com/smartstone  
-博客：https://nnhy.cnblogs.com  
+网站：https://newlifex.com  
+开源：https://github.com/newlifex  
 QQ群：1600800/1600838  
 微信公众号：  
-![智能大石头](https://www.newlifex.com/stone.jpg)  
+![智能大石头](https://newlifex.com/stone.jpg)  

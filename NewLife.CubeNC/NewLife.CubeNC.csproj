@@ -25,7 +25,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>NewLife.Cube.Core</PackageId>
     <Authors>$(Company)</Authors>
-    <PackageProjectUrl>https://www.yuque.com/smartstone/cube</PackageProjectUrl>
+    <PackageProjectUrl>https://newlifex.com/cube</PackageProjectUrl>
     <PackageIcon>leaf.png</PackageIcon>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -62,7 +62,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.XCode" Version="11.0.2022.408-beta0119" />
+    <PackageReference Include="NewLife.XCode" Version="11.0.2022.415-beta0458" />
   </ItemGroup>
 
   <ItemGroup>
