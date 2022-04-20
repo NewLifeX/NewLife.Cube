@@ -158,8 +158,12 @@ namespace NewLife.Cube.Entity
         {
             if (url.IsNullOrEmpty()) return false;
 
+            // 提前生成雪花Id，用于保存文件
+            var isNew = Id == 0;
+            if (Id == 0) Id = Meta.Factory.Snow.NewId();
+
             // 构造文件路径
-            if (!filePath.IsNullOrEmpty()) FilePath = filePath;
+            //if (!filePath.IsNullOrEmpty()) FilePath = filePath;
             var file = BuildFilePath(url);
             if (file.IsNullOrEmpty()) return false;
 
@@ -190,7 +194,11 @@ namespace NewLife.Cube.Entity
             Size = fi.Length;
             Hash = fi.MD5().ToHex();
 
-            Save();
+            //Save();
+            if (isNew)
+                Insert();
+            else
+                Update();
 
             return true;
         }
@@ -204,8 +212,12 @@ namespace NewLife.Cube.Entity
         {
             if (stream == null) return false;
 
+            // 提前生成雪花Id，用于保存文件
+            var isNew = Id == 0;
+            if (Id == 0) Id = Meta.Factory.Snow.NewId();
+
             // 构造文件路径
-            if (!filePath.IsNullOrEmpty()) FilePath = filePath;
+            //if (!filePath.IsNullOrEmpty()) FilePath = filePath;
             var file = BuildFilePath(filePath);
             if (file.IsNullOrEmpty()) return false;
 
@@ -226,7 +238,11 @@ namespace NewLife.Cube.Entity
             Size = fi.Length;
             Hash = fi.MD5().ToHex();
 
-            Save();
+            //Save();
+            if (isNew)
+                Insert();
+            else
+                Update();
 
             return true;
         }

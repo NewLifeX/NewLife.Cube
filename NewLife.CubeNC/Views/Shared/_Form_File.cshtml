@@ -7,8 +7,11 @@
     var entity = Model.Item1;
     var field = Model.Item2;
 
+    //var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+    //if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+
     var accept = "";
     if (field.ItemType.EqualIgnoreCase("image")) accept = "image/*";
 }
-<label class="">@entity[field.Name]</label> &nbsp; 
-@Html.TextBox(field.Name, entity[field.Name], new { type = "file", accept })
+@Html.TextBox(field.Name, entity[field.Name], new{@class="form-control"})
+@Html.TextBox(field.Name+"_attachment", entity[field.Name], new { type = "file", accept })

@@ -521,7 +521,8 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 var set = Setting.Current;
                 var fileName = user.ID + Path.GetExtension(file.FileName);
-                user.Avatar = await SaveFile(user, file, set.AvatarPath, fileName);
+                var att = await SaveFile(user, file, set.AvatarPath, fileName);
+                if (att != null) user.Avatar = att.FilePath;
             }
 
             user.Update();
@@ -535,7 +536,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
         /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
         /// <returns></returns>
-        protected override Task<String> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
+        protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
         {
             // 修改保存目录和文件名
             var set = Setting.Current;

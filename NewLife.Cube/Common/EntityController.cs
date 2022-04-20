@@ -197,7 +197,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
         [HttpPost]
-        public virtual ActionResult Edit(TEntity entity)
+        public virtual async Task<ActionResult> Edit(TEntity entity)
         {
             if (!Valid(entity, DataObjectMethodType.Update, true))
             {
@@ -211,7 +211,7 @@ namespace NewLife.Cube
             var err = "";
             try
             {
-                SaveFiles(entity);
+                await SaveFiles(entity);
 
                 OnUpdate(entity);
 
@@ -265,15 +265,14 @@ namespace NewLife.Cube
                     // 允许一次性上传多个文件到服务端
                     foreach (var file in files)
                     {
-                        var fileName = "";
-                        if (file.Name.EqualIgnoreCase(fi.Name))
+                        if (file.Name.EqualIgnoreCase(fi.Name, fi.Name + "_attachment"))
                         {
-                            fileName = await SaveFile(entity, file, uploadPath, null);
+                            var att = await SaveFile(entity, file, uploadPath, null);
+                            if (att != null) list.Add(att.FilePath);
                         }
-                        list.Add(fileName);
                     }
 
-                    entity.SetItem(fi.Name, list.Join(";"));
+                    if (list.Count > 0) entity.SetItem(fi.Name, list.Join(";"));
                 }
             }
 
@@ -286,9 +285,11 @@ namespace NewLife.Cube
         /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
         /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
         /// <returns></returns>
-        protected virtual async Task<String> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName)
+        protected virtual async Task<Attachment> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName)
         {
             if (fileName.IsNullOrEmpty()) fileName = file.FileName;
+
+            using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveFile), fileName ?? file.FileName);
 
             var id = Factory.Unique != null ? entity[Factory.Unique] : null;
             var att = new Attachment
@@ -296,7 +297,9 @@ namespace NewLife.Cube
                 Category = typeof(TEntity).Name,
                 Key = id + "",
                 Title = entity + "",
+                //FileName = fileName ?? file.FileName,
                 ContentType = file.ContentType,
+                Size = file.Length,
                 Enable = true,
                 UploadTime = DateTime.Now,
             };
@@ -317,25 +320,27 @@ namespace NewLife.Cube
             {
                 rs = false;
                 msg = ex.Message;
+                span?.SetError(ex, att);
+
                 throw;
             }
             finally
             {
                 // 写日志
                 var type = entity.GetType();
-                var log = LogProvider.Provider.CreateLog(type, "上传", rs, $"上传{file.FileName}，保存为{att.FilePath}，目录{uploadPath} " + msg, 0, null, UserHost);
+                var log = LogProvider.Provider.CreateLog(type, "上传", rs, $"上传 {file.FileName} ，目录 {uploadPath} ，保存为 {att.FilePath} " + msg, 0, null, UserHost);
                 log.LinkID = id.ToInt();
                 log.SaveAsync();
             }
 
-            return att.FilePath;
+            return att;
         }
 
         /// <summary>批量启用</summary>
         /// <param name="keys"></param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult EnableSelect(String keys) => EnableOrDisableSelect();
+        public ActionResult EnableSelect(String keys) => EnableOrDisableSelect(true);
 
         /// <summary>批量禁用</summary>
         /// <param name="keys"></param>
@@ -343,7 +348,12 @@ namespace NewLife.Cube
         [EntityAuthorize(PermissionFlags.Update)]
         public ActionResult DisableSelect(String keys) => EnableOrDisableSelect(false);
 
-        private ActionResult EnableOrDisableSelect(Boolean isEnable = true)
+        /// <summary>
+        /// 批量启用或禁用
+        /// </summary>
+        /// <param name="isEnable"></param>
+        /// <returns></returns>
+        protected virtual ActionResult EnableOrDisableSelect(Boolean isEnable)
         {
             var count = 0;
             var ids = GetRequest("keys").SplitAsInt();
@@ -365,7 +375,6 @@ namespace NewLife.Cube
 
             return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个用户");
         }
-
         #endregion
 
         #region 高级Action

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Web;
 using XCode.Membership;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Threading.Tasks;
 
 namespace NewLife.Cube.Admin.Controllers
 {
@@ -58,7 +59,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// <summary>保存</summary>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public override ActionResult Edit(Role entity)
+        public override async Task<ActionResult> Edit(Role entity)
         {
             // 保存权限项
             var menus = XCode.Membership.Menu.Root.AllChilds;
@@ -95,7 +96,7 @@ namespace NewLife.Cube.Admin.Controllers
                 if (entity.Has(item)) entity.Permissions.Remove(item);
             }
 
-            return base.Edit(entity);
+            return await base.Edit(entity);
         }
 
         /// <summary>验证实体对象</summary>
