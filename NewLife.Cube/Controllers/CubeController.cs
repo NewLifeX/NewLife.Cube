@@ -384,21 +384,20 @@ namespace NewLife.Cube.Controllers
         #endregion
 
         #region 字典参数        
-        /// <summary>
-        /// 保存字典参数到后台
-        /// </summary>
-        /// <param name="userid">用户编号</param>
-        /// <param name="para">The para.</param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException">para</exception>
-        [HttpPost]
-        public ActionResult SaveParameter(Int32 userid, Parameter para)
-        {
-            if (para == null) throw new ArgumentNullException(nameof(para));
-            para.SaveAsync();
+        ///// <summary>
+        ///// 保存字典参数到后台
+        ///// </summary>
+        ///// <param name="para">The para.</param>
+        ///// <returns></returns>
+        ///// <exception cref="System.ArgumentNullException">para</exception>
+        //[HttpPost]
+        //public ActionResult SaveParameter(Int32 userid, Parameter para)
+        //{
+        //    if(para == null) throw new ArgumentNullException(nameof(para));
+        //    para.SaveAsync();
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
         /// <summary>
         /// 根据用户、类别及具体的名字保存字典参数到后台
@@ -410,6 +409,9 @@ namespace NewLife.Cube.Controllers
         /// <returns></returns>
         public ActionResult SaveLayout(Int32 userid, String category, String name, String value)
         {
+            if (!category.EqualIgnoreCase("LayoutSetting")) 
+                return Json(203, "非授权操作，不允许保存系统布局以外的信息");
+
             var para = Parameter.GetOrAdd(userid, category, name);
             para.SetItem("Value", value);
             para.Save();
