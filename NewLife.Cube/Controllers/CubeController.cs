@@ -409,7 +409,7 @@ namespace NewLife.Cube.Controllers
         /// <returns></returns>
         public ActionResult SaveLayout(Int32 userid, String category, String name, String value)
         {
-            if (!category.EqualIgnoreCase("LayoutSetting")) 
+            if (!category.EqualIgnoreCase("LayoutSetting"))
                 return Json(203, "非授权操作，不允许保存系统布局以外的信息");
 
             var para = Parameter.GetOrAdd(userid, category, name);
@@ -453,9 +453,9 @@ namespace NewLife.Cube.Controllers
             if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath)) return NotFound("附件文件不存在");
 
             if (!att.ContentType.IsNullOrEmpty())
-                return PhysicalFile(filePath, att.ContentType);
+                return PhysicalFile(filePath, att.ContentType, att.FileName);
             else
-                return PhysicalFile(filePath, "image/png");
+                return PhysicalFile(filePath, "image/png", att.FileName);
         }
 
         /// <summary>
@@ -490,7 +490,7 @@ namespace NewLife.Cube.Controllers
             if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath)) return NotFound("附件文件不存在");
 
             if (!att.ContentType.IsNullOrEmpty() && !att.ContentType.EqualIgnoreCase("application/octet-stream"))
-                return PhysicalFile(filePath, att.ContentType);
+                return PhysicalFile(filePath, att.ContentType, att.FileName);
             else
                 return PhysicalFile(filePath, "application/octet-stream", att.FileName, true);
         }
