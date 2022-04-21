@@ -62,6 +62,8 @@ namespace NewLife.Cube.Admin.Controllers
         /// <exception cref="Exception"></exception>
         protected override Boolean Valid(UserOnline entity, DataObjectMethodType type, Boolean post)
         {
+            if (!post) return base.Valid(entity, type, post);
+
             return type switch
             {
                 DataObjectMethodType.Update or DataObjectMethodType.Insert => throw new Exception("不允许添加/修改记录"),
