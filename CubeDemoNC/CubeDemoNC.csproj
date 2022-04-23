@@ -11,7 +11,7 @@
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <UserSecretsId>1396351c-62fe-4836-9e51-9d77859955ad</UserSecretsId>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)'=='net5.0'">
     <DefineConstants>$(DefineConstants);__CORE__;NET50</DefineConstants>

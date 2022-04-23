@@ -125,9 +125,14 @@ namespace NewLife.Cube
             // 插件
             var moduleManager = new ModuleManager();
             services.AddSingleton(moduleManager);
-            foreach (var item in moduleManager.LoadAll())
+            var modules = moduleManager.LoadAll();
+            if (modules.Count > 0)
             {
-                item.Value.Add(services);
+                XTrace.WriteLine("加载功能插件 [{0}] 个", modules.Count);
+                foreach (var item in modules)
+                {
+                    item.Value.Add(services);
+                }
             }
 
             XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
@@ -297,9 +302,14 @@ namespace NewLife.Cube
 
             // 插件
             var moduleManager = app.ApplicationServices.GetRequiredService<ModuleManager>();
-            foreach (var item in moduleManager.LoadAll())
+            var modules = moduleManager.LoadAll();
+            if (modules.Count > 0)
             {
-                item.Value.Use(app, env);
+                XTrace.WriteLine("启用功能插件 [{0}] 个", modules.Count);
+                foreach (var item in modules)
+                {
+                    item.Value.Use(app, env);
+                }
             }
 
             XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));

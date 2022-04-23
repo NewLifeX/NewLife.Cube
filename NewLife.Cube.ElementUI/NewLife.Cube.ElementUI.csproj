@@ -16,6 +16,7 @@
     <OutputPath>..\..\Bin</OutputPath>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>

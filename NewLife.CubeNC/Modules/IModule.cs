@@ -16,5 +16,5 @@ public interface IModule
     /// </summary>
     /// <param name="app"></param>
     /// <param name="env"></param>
-    void Use(IApplicationBuilder app, IHostEnvironment env);
+    void Use(IApplicationBuilder app, IWebHostEnvironment env);
 }

@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using NewLife.Cube;
+﻿using NewLife.Cube;
+using NewLife.Cube.AdminLTE;
+using NewLife.Cube.ElementUI;
+using NewLife.Cube.Metronic;
+using NewLife.Cube.Metronic8;
+using NewLife.Cube.Tabler;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 using NewLife.Threading;
 using Stardust;
-using Stardust.Monitors;
 using Setting = NewLife.Cube.Setting;
 
 namespace CubeDemoNC
@@ -21,15 +20,10 @@ namespace CubeDemoNC
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // APM跟踪器
-            var tracer = new StarTracer("http://star.newlifex.com:6600") { Log = XTrace.Log };
-            DefaultTracer.Instance = tracer;
-            //ApiHelper.Tracer = tracer;
-            //DAL.GlobalTracer = tracer;
-            //OAuthClient.Tracer = tracer;
-            TracerMiddleware.Tracer = tracer;
+            var star = new StarFactory(null, null, null);
+            TracerMiddleware.Tracer = star.Tracer;
 
-            services.AddSingleton<ITracer>(tracer);
+            services.AddSingleton<ITracer>(star.Tracer);
 
             services.AddControllersWithViews();
             services.AddCube();
@@ -96,11 +90,11 @@ namespace CubeDemoNC
             //app.UseMiddleware<TracerMiddleware>();
 
             app.UseCube(env);
-            app.UseAdminLTE(env);
-            app.UseTabler(env);
-            app.UseMetronic(env);
-            app.UseElementUI(env);
-            app.UseMetronic8(env);
+            //app.UseAdminLTE(env);
+            //app.UseTabler(env);
+            //app.UseMetronic(env);
+            //app.UseElementUI(env);
+            //app.UseMetronic8(env);
 #if NET50
             app.UseBlazor(env);
 #endif

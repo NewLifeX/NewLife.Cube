@@ -8,7 +8,7 @@ namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>应用插件管理</summary>
     [Area("Cube")]
-    [Menu(20)]
+    [Menu(36)]
     public class AppModuleController : EntityController<AppModule>
     {
         static AppModuleController()
@@ -63,15 +63,16 @@ namespace NewLife.Cube.Cube.Controllers
                     }
 
                     if (drv.Type.IsNullOrEmpty()) drv.Type = ".NET";
-                    if (drv.ClassName.IsNullOrEmpty()) drv.ClassName = item.Value.FullName;
+                    drv.ClassName = item.Value.FullName;
 
-                    if (drv.FilePath.IsNullOrEmpty()) drv.FilePath = item.Value.Assembly?.Location;
-                    if (!drv.FilePath.IsNullOrEmpty())
+                    var file = item.Value.Assembly?.Location;
+                    if (!file.IsNullOrEmpty())
                     {
                         var root = ".".GetFullPath();
-                        if (drv.FilePath.StartsWithIgnoreCase(root))
-                            drv.FilePath = drv.FilePath[root.Length..].TrimStart('/', '\\');
+                        if (file.StartsWithIgnoreCase(root))
+                            file = file[root.Length..].TrimStart('/', '\\');
                     }
+                    if (!file.IsNullOrEmpty()) drv.FilePath = file;
 
                     drv.Save();
 
