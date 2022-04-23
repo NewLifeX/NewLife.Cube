@@ -257,6 +257,26 @@
       <Index Columns="Extension" />
     </Indexes>
   </Table>
+  <Table Name="AppModule" Description="应用插件。基于魔方实现的应用功能插件">
+    <Columns>
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Name" DataType="String" Master="True" Description="名称" />
+      <Column Name="DisplayName" DataType="String" Description="显示名" />
+      <Column Name="Type" DataType="String" Description="类型。.NET/Javascript/Lua" />
+      <Column Name="ClassName" DataType="String" Description="类名。完整类名" />
+      <Column Name="FilePath" DataType="String" ItemType="file" Length="200" Description="文件。插件文件包，zip压缩" />
+      <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="CreateUser" DataType="String" Description="创建人" Model="False" />
+      <Column Name="CreateUserId" DataType="Int32" Description="创建者" Model="False" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Model="False" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" Model="False" />
+      <Column Name="UpdateUser" DataType="String" Description="更新人" Model="False" />
+      <Column Name="UpdateUserId" DataType="Int32" Description="更新者" Model="False" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Model="False" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" Model="False" />
+      <Column Name="Remark" DataType="String" Length="500" Description="描述" />
+    </Columns>
+  </Table>
   <Table Name="ModelTable" Description="模型表。实体表模型">
     <Columns>
       <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
