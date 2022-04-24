@@ -21,7 +21,7 @@ namespace NewLife.Cube
             // 独立静态文件设置，魔方自己的静态资源内嵌在程序集里面
             var options = new StaticFileOptions();
             {
-                var embeddedProvider = new CubeEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "Beraising.Cube.LayuiAdmin.wwwroot");
+                var embeddedProvider = new CubeEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.LayuiAdmin.wwwroot");
                 if (!env.WebRootPath.IsNullOrEmpty() && Directory.Exists(env.WebRootPath))
                     options.FileProvider = new CompositeFileProvider(new PhysicalFileProvider(env.WebRootPath), embeddedProvider);
                 else
