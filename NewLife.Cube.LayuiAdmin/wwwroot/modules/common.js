@@ -1,0 +1,2 @@
+/** layuiAdmin.std-v1.2.0 LPPL License By http://www.layui.com/admin/ */
+; layui.define(function (e) { layui.$, layui.layer, layui.laytpl, layui.setter, layui.view; var i = layui.admin; i.events.logout = function () { i.req({ url: layui.setter.base +"Admin/User/Logout",type:"get",data:{},done:function(e){i.exit(function(){location.href="/"})}})},e("common",{})});

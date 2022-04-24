@@ -1,0 +1,39 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = Model.Type;
+    var format = Model.Format;
+    var htmlAttributes = Model.HtmlAttributes;
+    if (type == null) type = value.GetType();
+}
+@switch (Type.GetTypeCode(type))
+{
+    case TypeCode.Boolean:
+        @await Html.PartialAsync("_Form_Type_Boolean", Model) break;
+    case TypeCode.DateTime:
+        @await Html.PartialAsync("_Form_Type_DateTime", Model) break;
+    case TypeCode.Decimal:
+        @await Html.PartialAsync("_Form_Type_Decimal", Model) break;
+    case TypeCode.Single:
+    case TypeCode.Double:
+        @await Html.PartialAsync("_Form_Type_Double", Model) break;
+    case TypeCode.Byte:
+    case TypeCode.SByte:
+    case TypeCode.Int16:
+    case TypeCode.Int32:
+    case TypeCode.Int64:
+    case TypeCode.UInt16:
+    case TypeCode.UInt32:
+    case TypeCode.UInt64:
+        if (type.IsEnum) @await Html.PartialAsync("_Form_Type_Enum", Model)
+        else @await Html.PartialAsync("_Form_Type_Int", Model)
+        break;
+    default:
+        @await Html.PartialAsync("_Form_Type_String", Model)break;
+}

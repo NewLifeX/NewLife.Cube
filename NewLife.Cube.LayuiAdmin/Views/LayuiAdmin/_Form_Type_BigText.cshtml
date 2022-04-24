@@ -1,0 +1,39 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var pair = (ValueTuple<IEntity, DataField>)Model;
+    var entity = pair.Item1;
+    var field = pair.Item2;
+
+    var fields = ViewBag.Fields as FieldCollection;
+    var dataField = fields.GetField(field.Name);
+
+    var err = 0;
+    if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
+
+    var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
+    var display = dataField?.DisplayName ?? field.DisplayName;
+    var className = !field.Nullable ? "layui-form-required" : "";
+}
+
+<!-- 字段标签（含帮助说明信息） -->
+    <label class="layui-form-label @className">@display</label>
+    @if (!des.IsNullOrEmpty())
+    {
+        <div class="layui-inline">
+            <div class="layui-form-mid layui-word-aux">@des</div>
+        </div>
+    }
+
+    <div class="layui-input-block">
+        @*@Html.ForString(field.Name, (String)entity[field.Name], field.Length, new { @class = "form-control form-control-textarea" }.ToDictionary())*@
+        @await Html.PartialAsync("_Form_String", new ItemModel(field.Name, entity[field.Name], field.Type, null, new { @class = "layui-textarea" }) { Length = field.Length })
+    </div>
+    @if (err > 0)
+    {
+        <div class="layui-form-mid layui-word-aux">
+			@Html.ValidationMessage(field.Name)
+		</div>
+    }

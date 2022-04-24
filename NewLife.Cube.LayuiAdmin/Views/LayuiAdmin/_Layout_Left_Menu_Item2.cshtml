@@ -1,0 +1,49 @@
+﻿@model ValueTuple<IList<MenuTree>, IMenu>
+
+@{
+    var menu = Model.Item1;
+    var item = Model.Item2;
+
+    var rs_active = false;
+
+    var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : item.Icon;
+
+    //特殊处理
+    var list_cube = new List<string>() { "/Admin/Cube", "/Admin/Sys", "/Admin/XCode", "/Admin/Core", "/Admin/OAuthConfig" };
+    if (list_cube.Contains(item.Url.Replace("~", ""))&&list_cube.Contains(item.Url.Replace("~", "")))
+    {
+        rs_active=true;
+    }
+
+}
+
+@if (item.Visible)
+{
+    if (item.Childs.Any())
+    {
+        var user = ViewBag.User as IUser ?? ManageProvider.User;
+        var fact = ManageProvider.Menu;
+        var menus = fact.Root.Childs;
+        if (user?.Role != null)
+        {
+            menus = fact.GetMySubMenus(item.ID, user, true);
+        }
+                <dd data-name="@item.ID">
+                  <a href="javascript:;">@item.DisplayName </a>
+                  <dl class="layui-nav-child">
+                @foreach (var sub in menus)
+                {
+                    <dd data-name="tags"><a lay-href="@(sub.Url != null ? Url.Content(sub.Url) : "#")">@sub.DisplayName</a></dd>
+                }
+                </dd>
+    }
+    else
+    {
+        <dd data-name="@item.ID">
+          <a href="javascript:;" lay-tips="@item.DisplayName" lay-direction="2" lay-href="@(item.Url != null ? Url.Content(item.Url) : "#")">
+                <i class="layui-icon layui-icon-@icon fa-@icon"></i>
+                <cite>@item.DisplayName</cite>
+              </a>
+        </dd>
+    }
+}

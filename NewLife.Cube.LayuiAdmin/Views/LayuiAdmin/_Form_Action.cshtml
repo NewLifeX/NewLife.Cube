@@ -1,0 +1,13 @@
+﻿@using XCode
+@using XCode.Membership;
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+}
+@if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
+{
+    <div class="form-actions">
+        <button type="submit" class="btn btn-success btn-sm"><i class="la la-@(isNew ? "plus" : "save")"></i><strong>@(isNew ? "新增" : "保存")</strong></button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="history.go(-1);"><i class="la la-remove"></i><strong>取消</strong></button>
+    </div>
+}

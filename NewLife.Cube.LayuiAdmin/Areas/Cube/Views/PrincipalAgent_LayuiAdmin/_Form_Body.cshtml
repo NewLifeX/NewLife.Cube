@@ -1,0 +1,61 @@
+﻿@model PrincipalAgent
+@using NewLife.Cube.Entity;
+@using NewLife;
+@using NewLife.Cube.ViewModels
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership;
+@using NewLife.Cube;
+@{
+    var entity = Model;
+    var fields = ViewBag.Fields as FieldCollection;
+    var isNew = (entity as IEntity).IsNullKey;
+    
+    var set = NewLife.Cube.Setting.Current;
+    var cls = set.FormGroupClass;
+    if (cls.IsNullOrEmpty()) { cls = "form-group col-xs-12 col-sm-6"; }
+}
+@foreach (var item in fields)
+{
+    var className = !item.Nullable ? "layui-form-required" : "";
+    if (!item.PrimaryKey)
+    {
+        if (item.Name == "PrincipalName")
+        {
+            <div class="layui-form-item">
+                <div class="form-group col-xs-12 col-sm-9">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label @className">委托人</label>
+                        <div class="layui-input-block">
+                            @await Html.PartialAsync("_SelectUser", new SelectUserModel { Id = "PrincipalId", UserId = entity.PrincipalId })
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-xs-12 col-sm-3">
+                    <div class="layui-form-mid layui-word-aux">把自己的身份权限委托给别人</div> 
+                </div>
+            </div>
+        }
+        else if (item.Name == "AgentName")
+        {
+            <div class="layui-form-item">
+                <div class="form-group col-xs-12 col-sm-9">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label @className">代理人</label>
+                        <div class="layui-input-block">
+                    @await Html.PartialAsync("_SelectUser", new SelectUserModel { Id = "AgentId", UserId = entity.AgentId })
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-xs-12 col-sm-3">
+                    <div class="layui-form-mid layui-word-aux">代理获得别人身份权限</div> 
+                </div>
+            </div>
+        }
+        else
+        {
+            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+        }
+    }
+}

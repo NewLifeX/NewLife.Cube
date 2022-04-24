@@ -1,0 +1,92 @@
+﻿@*
+    数据库
+*@
+
+@using NewLife.Common;
+@using NewLife.Cube
+@using NewLife.Cube.Admin;
+@using XCode.DataAccessLayer;
+@using NewLife;
+
+@{
+    var dbs = Model as IList<DbItem>;
+}
+<div class="layui-fluid" id="mainpage">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <table lay-filter="parse-table" id="parse-table">
+                        <thead>
+        <tr>
+                                <th class="text-center" lay-data="{field:'name',title:'名称',sort:true}">名称</th>
+                                <th class="text-center" lay-data="{field:'type',title:'类型',sort:true}">类型</th>
+                                <th class="text-center" lay-data="{field:'connstring',title:'连接字符串'}">连接字符串</th>
+                                <th class="text-center" lay-data="{field:'ver',title:'版本',sort:true}">版本</th>
+                                <th class="text-center" lay-data="{field:'back',title:'备份',sort:true}">备份</th>
+                                <th class="text-center" lay-data="{field:'backzip',title:'备份并压缩',sort:true}">备份并压缩</th>
+                                <th class="text-center" lay-data="{field:'down',title:'下载表结构',sort:true}">下载表结构</th>
+        </tr>
+    </thead>
+                        <tbody>
+        @foreach (var item in dbs)
+        {
+            var dal = DAL.Create(item.Name);
+            // 密码需要保密
+            var str = item.ConnStr;
+            if (!str.IsNullOrEmpty())
+            {
+                var ss = str.Split(";");
+                for (var i = 0; i < ss.Length; i++)
+                {
+                    if (ss[i].StartsWithIgnoreCase("password=", "pass=", "pwd="))
+                    {
+                        ss[i] = ss[i].Substring(null, "=") + "={保密}";
+                        str = ss.Join(";");
+                        break;
+                    }
+                }
+            }
+            var str2 = dal.Db.ConnectionString;
+            if (!str2.IsNullOrEmpty())
+            {
+                var ss = str2.Split(";");
+                for (var i = 0; i < ss.Length; i++)
+                {
+                    if (ss[i].StartsWithIgnoreCase("password=", "pass=", "pwd="))
+                    {
+                        ss[i] = ss[i].Substring(null, "=") + "={保密}";
+                        str2 = ss.Join(";");
+                        break;
+                    }
+                }
+            }
+
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Type</td>
+                                    <td title="@str2">@str</td>
+                <td>@item.Version</td>
+                <td>@Html.ActionLink("备份", "Backup", new { Name = item.Name })，共 @item.Backups.ToString("n0")个</td>
+                <td>@Html.ActionLink("备份并压缩", "BackupAndCompress", new { Name = item.Name })</td>
+                <td class="text-center">@Html.ActionLink("下载", "Download", new { Name = item.Name })</td>
+            </tr>
+        }
+    </tbody>
+</table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section layuiscripts{
+            table.init('parse-table', { //转化静态表格
+            page: true,
+            limit: 20,
+            limits: [20, 50, 100],
+            even: true,
+            defaultToolbar: ['filter','print',"exports"]
+        });
+
+}

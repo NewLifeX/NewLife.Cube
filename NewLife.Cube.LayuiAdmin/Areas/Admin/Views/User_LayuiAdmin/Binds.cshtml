@@ -1,0 +1,76 @@
+﻿@*
+    第三方授权
+*@
+@model BindsModel
+@using System.Linq
+@using System.Reflection
+@using NewLife
+@using XCode
+@using XCode.Configuration
+@using NewLife.Cube.Entity;
+@using NewLife.Cube.Areas.Admin.Models;
+@{
+    var ms = Model.OAuthItems;
+    var binds = Model.Connects;
+}
+<style>
+    .user-bd-list-item {
+        padding: 14px 60px 14px 10px;
+        border-bottom: 1px solid #e8e8e8;
+        position: relative;
+    }    
+    .user-bd-list-item .user-bd-list-lable {
+        color: #333;
+        margin-bottom: 4px;
+    }
+    .user-bd-list-item .user-bd-list-oper {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        margin-top: -8px;
+        cursor: pointer;
+    }
+</style>
+<div class="layui-fluid" id="LAY-app-message">
+    <div class="layui-card">
+        <div class="layui-card-header"  style="padding: 15px;">
+            @await Html.PartialAsync("_User_Nav")
+        </div>
+        <div class="layui-card-body" style="padding: 15px;">
+            
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">账号</label>
+                    <div class="layui-input-inline">
+                        <input type="text" lay-verify="title" autocomplete="off" placeholder="请输入账号" class="layui-input layui-disabled" value="@Model.Name" disabled="disabled">
+                    </div>
+                </div>
+                @if (ms.Count > 0)
+                {
+                    <div class="layui-form-item">
+                    <div class="user-bd-list layui-text">
+                             @foreach (var mi in ms)
+                            {
+                                var uc = binds.FirstOrDefault(e => e.Enable && e.Provider.EqualIgnoreCase(mi.Name));
+                                if (uc != null)
+                                {
+                                    <div class="user-bd-list-item">
+                                        <div class="user-bd-list-text">@mi.Name（已绑定）</div>
+                                        <a class="user-bd-list-oper" href="~/Sso/UnBind/@mi.Name" title="取消绑定 @mi.Name">取消绑定</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    
+                                    <div class="user-bd-list-item">
+                                        <div class="user-bd-list-text">@mi.Name（未绑定）</div>
+                                        <a class="user-bd-list-oper" href="~/Sso/Bind/@mi.Name" target="_blank" title="绑定 @mi.Name">去绑定</a>
+                                    </div>
+                                }
+                            }
+                    </div>
+                </div>
+                }
+            
+        </div>
+        </div>
+</div>

@@ -1,0 +1,75 @@
+﻿@{
+    Layout = null;
+
+    var User = ViewBag.User;
+    var cfg = ViewBag.Config;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
+
+    var set = NewLife.Cube.Setting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <!-- 核心脚本 -->
+    <link rel="stylesheet" href="~/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="~/style/admin.css" media="all">
+    
+</head>
+<!--begin::Body-->
+<body class="layui-layout-body">
+  
+  <div id="LAY_app">
+    <div class="layui-layout layui-layout-admin">
+      <div class="layui-header">
+        @await Html.PartialAsync("_Layout_Header")
+        @await Html.PartialAsync("_Layout_Header_Menu")
+      </div>
+      
+      <!-- 侧边菜单 -->
+      @await Html.PartialAsync("_Layout_Left_Menu")
+
+      <!-- 页面标签 -->
+      @await Html.PartialAsync("_Layout_Tabs")
+      
+      
+      <!-- 主体内容 -->
+      <div class="layui-body" id="LAY_app_body">
+        <div class="layadmin-tabsbody-item layui-show">
+          <iframe src="@ViewBag.Main" frameborder="0" class="cube-iframe layadmin-iframe"></iframe>
+        </div>
+      </div>
+      
+      <!-- 辅助元素，一般用于移动设备下遮罩 -->
+      <div class="layadmin-body-shade" layadmin-event="shade"></div>
+    </div>
+  </div>
+    <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
+        <!-- JQuery作为一等公民，页面内部随时可能使用 -->
+    <script src="@res/js/jquery-2.1.3.min.js"></script>
+        <!-- 全局脚本 -->
+    <script src="~/layui/layui.js"></script>
+    <script>
+      layui.config({
+        base: '../../../' //静态资源所在路径
+      }).extend({
+        index: '../../../lib/index' //主入口模块
+      }).use('index');
+    </script>
+    <!--自定义脚本-->
+    @RenderSection("scripts", required: false)
+</body>
+<!--end::Body-->
+</html>

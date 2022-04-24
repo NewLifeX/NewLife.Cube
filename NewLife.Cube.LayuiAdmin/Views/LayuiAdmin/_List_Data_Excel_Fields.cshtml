@@ -1,0 +1,11 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using NewLife.Cube.Common
+@using XCode
+@{
+    var entity = (ValueTuple<DataField, int>)Model;
+    var item = entity.Item1;
+    int index = entity.Item2;
+}
+
+excel_fields["@item.Name"]="@ExcelExtension.IndexToName(index)"

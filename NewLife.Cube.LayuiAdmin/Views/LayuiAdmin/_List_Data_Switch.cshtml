@@ -1,0 +1,18 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode
+@{
+    var entity = Model as IEntity;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    var rv = entity.GetRouteKey();
+}
+
+<script type="text/html" id="boolTbState">
+    @if (this.Has(PermissionFlags.Update))
+    {
+        <input type="checkbox" lay-filter="boolTbStateCk" value="{{d.userId}}" lay-skin="switch"
+           lay-text="正常|锁定" {{d.state==0?'checked':''}} style="display: none;"/>
+        <p style="display: none;">{{d.state==0?'正常':'锁定'}}</p>
+    }
+</script>
