@@ -1,0 +1,18 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode
+@{
+    var entity = (ValueTuple<DataField, string>)Model;
+    var item = entity.Item1;
+    var type = entity.Item2;
+    var set = ViewBag.PageSetting as PageSetting;
+    var df = item as ListField;
+    var name = df?.Header ?? item.DisplayName;
+    var title = df?.HeaderTitle ?? item.Description;
+
+    var width = type.EndsWithIgnoreCase("txt") ? 150 : 96;
+
+    var isIcon = item.Name.Equals("Icon");
+}
+
+datacols.push({field:'@item.Name',title:'@item.Description',sort:true,minWidth:@width@(isIcon?@Html.Raw(",templet: '<p><i class=\"{{d."+@item.Name+"}}\"></i></p>'"):@Html.Raw(""))});

@@ -1,0 +1,76 @@
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model.Item1;
+    var field = Model.Item2;
+    var b = entity[field.MapField].ToInt();
+    var fn = field.MapField.ToLower();
+
+    var fs = ViewBag.Fields as FieldCollection;
+    var set = NewLife.Cube.Setting.Current;
+    var map = field.MapProvider;
+
+    var fact = map == null ? null : EntityFactory.CreateFactory(map.EntityType);
+}
+@*
+    如果没有外部关联，输出数字编辑框和标签
+    如果映射目标列表项过多，不能使用下拉
+*@
+<div class="input-group">
+    @if (map == null || fact != null && fact.Session.Count > set.MaxDropDownList)
+    {
+        var label = entity[field.Name];
+        if (!field.MapField.IsNullOrEmpty())
+        {
+            var fi = entity.GetType().AsFactory().Table.FindByName(field.MapField) as FieldItem;
+            if (fi != null) field = fs.Create(fi);
+        }
+        <label class="">@label</label>
+    }
+    else
+    {
+        // 为该字段创建下拉菜单
+        var dic = map?.GetDataSource();
+        if (dic != null)
+        {
+            // 表单页的映射下拉，开头增加无效值选项
+            if (fact != null && !map.Key.IsNullOrEmpty())
+            {
+                if (fact.Table.FindByName(map.Key) is FieldItem fi && fi.Type.IsInt())
+                {
+                    var dic2 = new Dictionary<Object, String>();
+                    if (!dic.ContainsKey(-1))
+                    {
+                        //dic2[0] = "<null>";
+                        foreach (var item in dic)
+                        {
+                            dic2[item.Key] = item.Value;
+                        }
+                        dic = dic2;
+                    }
+                }
+            }
+            var dic3 = dic.ToDictionary(e => e.Key + "", e => e.Value);
+            <select class="form-select form-select-sm" data-control="select2" id="@fn" name="@fn">
+                @foreach (var item in dic3)
+                {
+                    var sel = item.Key.ToInt() == b;
+                    if (sel)
+                    {
+                        <option value="@item.Key" selected>@item.Value  </option>
+                    }
+                    else
+                    {
+                        <option value="@item.Key">@item.Value</option>
+                    }
+
+                }
+            </select>
+
+
+        }
+    }
+</div>

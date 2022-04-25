@@ -1,0 +1,49 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+	var name = Model.Name;
+	var value = (DateTime)Model.Value;
+	var type = Model.Type;
+
+	var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+	//if (!atts.ContainsKey("type")) atts.Add("type", "date");
+	if (!atts.ContainsKey("class")) atts.Add("class", "layui-input");
+	atts["autocomplete"] = "off";
+
+	var obj = value == DateTime.MinValue ? "" : value.ToFullString();
+
+	// 最小时间不显示
+	if (value <= DateTime.MinValue || value.Year <= 1900) obj = "";
+	//if (format.IsNullOrWhiteSpace()) format = "yyyy-MM-dd HH:mm:ss";
+
+	// 升级日期控件到Bootstrap4样式及表示法
+	if (name.EndsWithIgnoreCase("Date"))
+	{
+		if (value > DateTime.MinValue) obj = value.ToString("yyyy-MM-dd HH:mm:ss");
+		//format = "yyyy-mm-dd";
+		atts["dateformat"] = "yyyy-MM-dd HH:mm:ss";
+		if(!atts.ContainsKey("lay-verify"))atts.Add("lay-verify", "datetime");
+	}
+	else
+	{
+		if(!atts.ContainsKey("lay-verify"))atts.Add("lay-verify", "datetime");
+	}
+}
+
+	@Html.TextBox(name, obj, Model.Format, atts)
+
+@section layuiscripts
+{
+    //laydate.render({
+    //  elem: '@name'
+    //  ,type: 'datetime'
+    //});
+    laydate.render({
+      elem: '@name'
+      ,type: 'datetime'
+    });
+
+}

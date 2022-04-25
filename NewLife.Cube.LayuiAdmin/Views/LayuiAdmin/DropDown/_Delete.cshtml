@@ -1,0 +1,20 @@
+﻿@using NewLife.Cube.ViewModels;
+@using Microsoft.AspNetCore.Mvc.Filters
+@{
+}
+dropdown.render({
+    elem: '#mainpage' //也可绑定到 document，从而重置整个右键
+    ,trigger: 'contextmenu' //contextmenu
+    ,isAllowSpread: false //禁止菜单组展开收缩
+    ,style: 'width: 200px' //定义宽度，默认自适应
+    ,id: 'listIndex' //定义唯一索引
+    ,data: [{
+      title: '清空数据表'
+      ,id: '#cleardata'
+    }]
+    ,click: function(obj, othis){
+        if(obj.id === 'cleardata'){
+        location.href='@Url.Action("Clear")';
+        }
+      }
+  });

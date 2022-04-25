@@ -75,27 +75,34 @@ namespace NewLife.Cube.Extensions
         /// <returns></returns>
         public static Object GetRequestBody(this HttpRequest request, Type type)
         {
-            if (!request.IsAjaxRequest()) return null;
+            try
+            {
+                if (!request.IsAjaxRequest()) return null;
 
-            var requestBody = request.HttpContext.Items["RequestBody"];
-            if (requestBody != null) return requestBody;
+                var requestBody = request.HttpContext.Items["RequestBody"];
+                if (requestBody != null) return requestBody;
 
-            //// 允许同步IO
-            //var ft = request.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
-            //if (ft != null) ft.AllowSynchronousIO = true;
+                //// 允许同步IO
+                //var ft = request.HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+                //if (ft != null) ft.AllowSynchronousIO = true;
 
-            //var body = request.Body.ToStr();
+                //var body = request.Body.ToStr();
 
-            request.EnableBuffering();
-            request.Body.Seek(0, SeekOrigin.Begin);
-            var reader = new StreamReader(request.Body);
-            var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
-            request.Body.Seek(0, SeekOrigin.Begin);
+                request.EnableBuffering();
+                request.Body.Seek(0, SeekOrigin.Begin);
+                var reader = new StreamReader(request.Body);
+                var body = reader.ReadToEndAsync().GetAwaiter().GetResult();
+                request.Body.Seek(0, SeekOrigin.Begin);
 
-            var entityBody = body.ToJsonEntity(type);
-            request.HttpContext.Items["RequestBody"] = entityBody;
+                var entityBody = body.ToJsonEntity(type);
+                request.HttpContext.Items["RequestBody"] = entityBody;
 
-            return entityBody;
+                return entityBody;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
     }

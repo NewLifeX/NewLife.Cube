@@ -1,0 +1,160 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode
+@{
+    //var entity = Model as IEntity;
+    var set = ViewBag.PageSetting as PageSetting;
+    var fields = ViewBag.Fields as FieldCollection;
+
+
+    foreach (var item in fields)
+    {
+        var sssss = item.Name;
+        //new
+        //{
+        //    item.Name.GetType().Name=
+        //};
+    }
+
+    //var rv = entity.GetRouteKey();
+}
+
+<script type="text/html" id="list-imp-excel">
+    <div class="layui-btn-container">
+        <a class="layui-btn" href='@Url.Action("ExportExcelTemplate")'>下载模板</a>
+    </div>
+   @*<blockquote class="layui-elem-quote" id="list-imp-excel-tips"></blockquote>*@
+   <div class="layui-upload-drag" id="importExcel">
+    <i class="layui-icon"></i>
+    <p>点击上传，或将文件拖拽到此处</p>
+    </div>
+</script>
+<script>
+//定义excel字段
+    var excel_fields={};
+    @for (var i = 0; i < fields.Count(); i++)
+    {
+        @await Html.PartialAsync("_List_Data_Excel_Fields", new ValueTuple<DataField, int>(fields[i], i+1))
+    }
+
+
+//导入方法
+function ImportExcel(){
+	var $ = layui.jquery
+	  ,upload = layui.upload;
+	  var uploadInst = upload.render({
+		  elem: '#importExcel',
+		  /*method: 'POST',*/
+		  url:'@Url.Action("ImportExcel")',
+		  accept: 'file', //普通文件
+		  exts: 'xls|excel|xlsx', //导入表格
+		  auto: false,  //选择文件后不自动上传
+		  before: function (obj) {
+			  layer.load(); //上传loading
+		  },
+		  choose: function (obj) {// 选择文件回调
+			  var files = obj.pushFile();
+			  var fileArr = Object.values(files);// 注意这里的数据需要是数组，所以需要转换一下
+			  //console.debug(fileArr)
+			  // 用完就清理掉，避免多次选中相同文件时出现问题
+			  for (var index in files) {
+				  if (files.hasOwnProperty(index)) {
+					  delete files[index];
+				  }
+			  }
+			  uploadExcel(fileArr); // 如果只需要最新选择的文件，可以这样写： uploadExcel([files.pop()])
+		  },
+		  error : function(){
+			  setTimeout(function () {
+				  layer.msg("上传失败！", {
+						icon : 1
+				});
+				//关闭所有弹出层
+				layer.closeAll(); //疯狂模式，关闭所有层
+			  },1000);
+		  }
+	  });
+}   
+
+function uploadExcel(files) {
+    try {
+    	var excel = layui.excel;
+        var laytpl = layui.laytpl;
+        excel.importExcel(files, {
+            // 读取数据的同时梳理数据
+            fields: excel_fields
+        }, function (data) {
+            var this_fileds;
+            if(data[0].Sheet1){
+                //data[0].Sheet1.shift();
+                this_fileds=data[0].Sheet1;
+            }
+            $.ajax({
+                async: false,
+                url: '@Url.Action("ImportExcel")',
+                type: 'post',
+                dataType: "json",
+                data: {
+                	data : JSON.stringify(this_fileds)
+                },
+                success: function (data) {
+                    debugger;
+                	if(data.code==0){
+                		//layer.msg(data.message);
+                		//setTimeout(function () {
+                		//	layer.closeAll(); //疯狂模式，关闭所有层
+                		//},1000);
+                		////表格导入成功后，重载表格
+                		//location.reload();
+                        //$('#list-imp-excel-tips').html(data.message);
+                        layer.msg(data.message,{
+                               time:3000,
+                                 end:function () {
+                                 location.href = '@Url.Action("Index")'
+                                }
+                             })
+                	}else{
+                		//表格导入失败后，重载文件上传
+                		layer.alert(data.error+"请重新上传",{icon : 2});
+                	}
+                },
+                error: function (msg) {
+                    layer.msg(msg);
+                }
+            });
+        });
+    } catch (e) {
+        layer.alert(e.message);
+    }
+}
+
+</script>
+
+<script type="text/html" id="LAY-excel-export-ans">
+	{{# layui.each(d.data, function(index, item){ }}
+		<blockquote class="layui-elem-quote">{{d.files[index].name}}</blockquote>
+		<div class="layui-tab">
+		  <ul class="layui-tab-title">
+		  	{{# layui.each(item, function(sheetname, content) { }}
+			    <li>{{sheetname}}</li>
+		  	{{# }); }}
+		  </ul>
+		  <div class="layui-tab-content">
+		  	{{# layui.each(item, function(sheetname, content) { }}
+			    <div class="layui-tab-item">
+						<table class="layui-table">
+							{{# layui.each(content, function(index, value) { }}
+								<tr>
+									{{# layui.each(value, function(key, val) { }}
+									<td>{{val}}</td>
+									{{# });}}
+								</tr>
+							{{# });}}
+						</table>
+						<pre class="layui-code">{{JSON.stringify(content, null, 2)}}</pre>
+					</div>
+		  	{{# }); }}
+		  </div>
+		</div>
+	{{# }) }}
+</script>

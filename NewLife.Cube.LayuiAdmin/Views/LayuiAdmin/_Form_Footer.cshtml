@@ -1,0 +1,21 @@
+﻿@*
+    表单脚
+*@
+
+@using XCode.Configuration;
+@using XCode.Membership;
+@using XCode;
+
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+
+}
+<div class="layui-form-item layui-layout-admin">
+<div class="layui-input-block">
+<div class="layui-footer" style="left: 0;">
+<button class="layui-btn" lay-submit="" type="submit" data-type="@(isNew?"addok":"editok")" lay-filter="@(isNew?"add-form-group":"edit-form-group")">@(isNew ? "保 存" : "更 新")</button>
+<a href="@Url.Action("Index")" class="layui-btn layui-btn-primary">取消</a>
+</div>
+</div>
+</div>

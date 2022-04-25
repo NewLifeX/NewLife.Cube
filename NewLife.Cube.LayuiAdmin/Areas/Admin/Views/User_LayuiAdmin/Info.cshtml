@@ -1,0 +1,202 @@
+﻿@*
+    用户信息
+*@
+@model XCode.Membership.User
+@using System.Linq
+@using System.Reflection
+@using NewLife
+@using NewLife.Cube
+@using XCode
+@using XCode.Configuration
+@using NewLife.Cube.Entity;
+@using XCode.Membership
+@{
+    var fact = EntityFactory.CreateFactory(ViewData.ModelMetadata.ModelType);
+    var user = Model as User;
+    
+    var isNew = (Model as IEntity).IsNullKey;
+    var url = "";
+    var rv = (Model as IEntity).GetRouteKey();
+
+    if (rv != null && rv.Count > 0)
+    {
+        url = Url.Action(isNew ? "Add" : "Edit", rv);
+    }
+
+    else
+    {
+        url = Url.Action(isNew ? "Add" : "Edit");
+    }
+}
+
+<div class="layui-fluid" id="LAY-app-message">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-sm12 layui-col-md3">
+            <div class="layui-card">
+                <div class="layui-card-body" style="padding: 25px;">
+                    <div class="text-center layui-text" style="text-align:center;">
+                        <div class="user-info-head" id="userInfoHead">
+                            @if (!user.Avatar.IsNullOrEmpty())
+                            {
+                                <img src="@user.GetAvatarUrl()" class="layui-upload-img" style="max-width: 110px; max-height: 110px;" />
+                            }
+                        </div>
+                        <h2 style="padding-top: 20px;">@user.DisplayName</h2>
+                        <p style="padding-top: 8px;overflow-wrap:anywhere;">@user.Remark</p>
+                    </div>
+                    <div class="layui-text" style="padding-top: 30px;">
+                        <div class="user-info-list-item">
+                            <i class="layui-icon layui-icon-username" style="position: absolute;"></i>
+                            <p style="padding-left: 30px;">@(user.Roles.Join(",", r => r + ""))</p>
+                        </div>
+                        <div class="user-info-list-item">
+                            <i class="layui-icon layui-icon-release" style="position: absolute;"></i>
+                            <p style="padding-left: 30px;"> @user.DepartmentName</p>
+                        </div>
+                        <div class="user-info-list-item">
+                            <i class="layui-icon layui-icon-location" style="position: absolute;"></i>
+                            <p style="padding-left: 30px;">@user.AreaName</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-sm12 layui-col-md9">
+            <div class="layui-card">
+                <div class="layui-card-header"  style="padding: 15px;">
+                    @await Html.PartialAsync("_User_Nav")
+                </div>
+                <div class="layui-card-body" style="padding: 15px;">
+                    @using (Html.BeginForm("Info", null, new { id = Model[fact.Unique.Name] }, FormMethod.Post, null, new { enctype = "multipart/form-data", @class="layui-form",lay_filter="component-form"}))
+                    {
+                        @Html.ValidationSummary()
+                        <div class="layui-form-item">
+                            <label class="layui-form-label layui-form-required">账号</label>
+                            <div class="layui-input-block">
+                                <input type="text" lay-verify="required" autocomplete="off" placeholder="请输入账号" class="layui-input layui-disabled" value="@user.Name" disabled="disabled">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label layui-form-required">显示名</label>
+                            <div class="layui-input-block">
+                                @Html.ForEditor("DisplayName", user.DisplayName,null,null,new {@class="layui-input",autocomplete="off",lay_verify="required"})
+                                @Html.ForDescription("DisplayName")
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label layui-form-required">性别</label>
+                            <div class="layui-input-block">
+                                @Html.ForEditor("Sex", user.Sex, null,null,new {@class="layui-input",autocomplete="off"})
+                                @Html.ForDescription("Sex")
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label layui-form-required">手机</label>
+                            <div class="layui-input-block">
+                                @Html.ForEditor("Mobile", user.Mobile.IsNullOrEmpty()?"":user.Mobile,null,null,new {@class="layui-input",autocomplete="off",lay_verify="required|phone"})
+                            </div>
+                       </div>     
+                        <div class="layui-form-item">
+                            <label class="layui-form-label layui-form-required">邮件</label>
+                            <div class="layui-input-block">
+                                @Html.ForEditor("Mail", user.Mail.IsNullOrEmpty()?"":user.Mail,null,null,new {@class="layui-input",autocomplete="off",lay_verify="email"})
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label layui-form-required">代码</label>
+                            <div class="layui-input-inline">
+                                @Html.ForEditor("Code", user.Code.IsNullOrEmpty()?"":user.Code,null,null,new {@class="layui-input",lay_verify="required"})
+                            </div>
+                            <div class="layui-form-mid layui-word-aux">
+                                @Html.ForDescription("Code")
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">角色</label>
+                            <div class="layui-input-block">
+                                <label class="layui-form-mid">@(user.Roles.Join(",", r => r + ""))</label>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">头像</label>
+                            <div class="layui-input-inline">
+                                <input type="file" accept="image/*" name="Avatar" id="Avatar" class="layui-upload-drag" autocomplete="off" placeholder="" />
+                                <span class="layui-inline layui-upload-choose">@user.Avatar</span>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">登录次数</label>
+                            <div class="layui-input-block">
+                                   <label class="layui-form-mid">@user.Logins</label>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">最后登录</label>
+                            <div class="layui-input-block">
+                                    <label class="layui-form-mid">@user.LastLogin.ToFullString("")</label>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">最后登录</label>
+                            <div class="layui-input-block">
+                                    <label class="layui-form-mid">@user.LastLoginIP</label>
+                            </div>
+                        </div>
+                        <div class="layui-form-item layui-layout-admin">
+                            <div class="layui-input-block">
+                                <div class="layui-footer" style="left: 0;">
+                                    <button type="submit" class="layui-btn" lay-submit="" lay-filter="component-form-element">保存</button>
+                                    <button type="button" class="layui-btn layui-btn-primary" onclick="history.go(-1);">取消</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+@section layuiscripts
+{
+        /* 监听提交 */
+        form.on('submit(component-form)', function(data){
+          // do 
+
+           $.ajax({
+                    url:'@url',
+                    data:$("#data_from").serialize(),
+                    type:"@FormMethod.Post",
+                    dataType:"json",
+                    success:function(data)
+                    {
+                        if(data.code==500)
+                        {
+                            layer.msg(data.message,{
+                               time:3000,
+                               icon: 5,
+                                 end:function () {
+                                }
+                             })
+                        }
+                        else
+                        {
+                            layer.msg("成功",{
+                               time:1000,
+                                 end:function () {
+                                 location.href = location.href;
+                                }
+                             })
+                        }
+                    },
+                    error : function(e){
+                        console.log(e.status);
+                        console.log(e.responseText);
+                    }
+
+                })
+
+                return false; 
+        });
+}

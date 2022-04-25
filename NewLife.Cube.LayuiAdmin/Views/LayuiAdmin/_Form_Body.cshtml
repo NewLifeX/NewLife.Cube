@@ -1,0 +1,23 @@
+﻿@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var set = NewLife.Cube.Setting.Current;
+    var isNew = entity.IsNullKey;
+}
+
+
+    @foreach (var item in fields)
+    {
+@*        // 默认隐藏审计属性
+        if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "UpdateUserID", "UpdateUser", "UpdateTime",
+            "CreateIP", "UpdateIP") && set.HidenAuditProperty)
+            continue;
+*@
+        if (!item.PrimaryKey)
+        {
+            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+        }
+    }

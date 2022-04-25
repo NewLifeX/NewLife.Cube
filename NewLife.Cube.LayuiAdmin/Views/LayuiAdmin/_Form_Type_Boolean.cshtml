@@ -1,0 +1,22 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+	var name = Model.Name;
+	var value = (Boolean)Model.Value;
+	var type = Model.Type;
+
+	var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+	if (!atts.ContainsKey("lay-skin")) atts.Add("lay-skin", "switch");
+    if (!atts.ContainsKey("lay-text")) atts.Add("lay-text", "ON|OFF");
+	//atts.Add("data-switch", "true");
+}
+@Html.CheckBox(name, value, atts)
+@*<span class="switch">
+	<label>
+		@Html.CheckBox(name, value, atts)
+		<span></span>
+	</label>
+</span>*@

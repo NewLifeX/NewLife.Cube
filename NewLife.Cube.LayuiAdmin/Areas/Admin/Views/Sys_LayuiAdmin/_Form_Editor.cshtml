@@ -1,0 +1,52 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using NewLife.Cube.ViewModels
+@using XCode;
+@using XCode.Configuration;
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = Model.Type;
+    var format = Model.Format;
+    var htmlAttributes = Model.HtmlAttributes;
+    if (type == null) type = value.GetType();
+}
+@switch (Type.GetTypeCode(type))
+{
+    case TypeCode.Boolean:
+        //@Html.ForBoolean(name, value.ToBoolean(), htmlAttributes)
+        @await Html.PartialAsync("_Form_Boolean", Model)
+        break;
+    case TypeCode.DateTime:
+        //@Html.ForDateTime(name, value.ToDateTime(), format, htmlAttributes)
+        @await Html.PartialAsync("_Form_DateTime", Model)
+        break;
+    case TypeCode.Decimal:
+        //@Html.ForDecimal(name, Convert.ToDecimal(value), format, htmlAttributes)
+        @await Html.PartialAsync("_Form_Decimal", Model)
+        break;
+    case TypeCode.Single:
+    case TypeCode.Double:
+        //@Html.ForDouble(name, value.ToDouble(), format, htmlAttributes)
+        @await Html.PartialAsync("_Form_Double", Model)
+        break;
+    case TypeCode.Byte:
+    case TypeCode.SByte:
+    case TypeCode.Int16:
+    case TypeCode.Int32:
+    case TypeCode.Int64:
+    case TypeCode.UInt16:
+    case TypeCode.UInt32:
+    case TypeCode.UInt64:
+        //if (type.IsEnum)
+        //    @Html.ForEnum(name, value ?? 0.ChangeType(type))
+        //else
+        //    @Html.ForInt(name, Convert.ToInt64(value), format, htmlAttributes)
+        @await Html.PartialAsync("_Form_Int", Model)
+        break;
+    case TypeCode.String:
+        //@Html.ForString(name, value + "", 0, htmlAttributes)
+        @await Html.PartialAsync("_Form_String", Model)
+        break;
+}

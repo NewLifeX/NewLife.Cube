@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
@@ -52,6 +52,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj" />
     <ProjectReference Include="..\NewLife.Cube.ElementUI\NewLife.Cube.ElementUI.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.LayuiAdmin\NewLife.Cube.LayuiAdmin.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Metronic8\NewLife.Cube.Metronic8.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Metronic\NewLife.Cube.Metronic.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Tabler\NewLife.Cube.Tabler.csproj" />

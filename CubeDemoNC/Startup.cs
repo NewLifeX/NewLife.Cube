@@ -90,11 +90,12 @@ namespace CubeDemoNC
             //app.UseMiddleware<TracerMiddleware>();
 
             app.UseCube(env);
-            //app.UseAdminLTE(env);
-            //app.UseTabler(env);
-            //app.UseMetronic(env);
-            //app.UseElementUI(env);
-            //app.UseMetronic8(env);
+            app.UseAdminLTE(env);
+            app.UseTabler(env);
+            app.UseMetronic(env);
+            app.UseElementUI(env);
+            app.UseMetronic8(env);
+            app.UseLayuiAdmin(env);
 #if NET50
             app.UseBlazor(env);
 #endif
