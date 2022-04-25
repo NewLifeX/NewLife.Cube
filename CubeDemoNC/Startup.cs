@@ -1,6 +1,11 @@
-﻿using NewLife.Cube;
+﻿using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
+using NewLife;
+using NewLife.Cube;
 using NewLife.Cube.AdminLTE;
 using NewLife.Cube.ElementUI;
+using NewLife.Cube.Extensions;
+using NewLife.Cube.LayuiAdmin;
 using NewLife.Cube.Metronic;
 using NewLife.Cube.Metronic8;
 using NewLife.Cube.Tabler;
@@ -27,9 +32,7 @@ namespace CubeDemoNC
 
             services.AddControllersWithViews();
             services.AddCube();
-#if NET50
-            services.AddBlazor();
-#endif
+            //services.AddBlazor();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -49,7 +52,6 @@ namespace CubeDemoNC
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-#if !NET60
             /* 新ui通道，以下需同时满足条件
              * 1、配置启用新ui
              * 2、GET请求
@@ -83,7 +85,6 @@ namespace CubeDemoNC
                         options.Options.DefaultPageStaticFileOptions = staticFileOptions;
                     });
                 });
-#endif
 
             //app.UseRouting();
 
@@ -96,9 +97,7 @@ namespace CubeDemoNC
             app.UseElementUI(env);
             app.UseMetronic8(env);
             app.UseLayuiAdmin(env);
-#if NET50
-            app.UseBlazor(env);
-#endif
+            //app.UseBlazor(env);
 
             app.UseAuthorization();
 
@@ -116,7 +115,6 @@ namespace CubeDemoNC
                 client.ProbeAndInstall(null, "1.1");
             });
 
-#if !NET60
             // 所有请求没有命中的，统一在这里处理
             if (set.EnableNewUI)
                 app.UseWhen(context => set.EnableNewUI,
@@ -142,7 +140,6 @@ namespace CubeDemoNC
                         options.Options.DefaultPageStaticFileOptions = staticFileOptions;
                     });
                 });
-#endif
         }
     }
 }
