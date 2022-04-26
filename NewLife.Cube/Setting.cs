@@ -240,6 +240,11 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public String EChartsTheme { get; set; }
 
+        /// <summary>标题后缀。在页面标题后面加上系统名称，默认true</summary>
+        [Description("标题后缀。在页面标题后面加上系统名称，默认true")]
+        [Category("界面配置")]
+        public Boolean TitlePrefix { get; set; } = true;
+
         /// <summary>星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}</summary>
         [Description("星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}")]
         [Category("界面配置")]

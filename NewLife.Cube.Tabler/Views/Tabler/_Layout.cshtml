@@ -2,17 +2,17 @@
 @using NewLife.Cube.WebMiddleware;
 @using NewLife.Cube.Charts;
 @{
+    var set = NewLife.Cube.Setting.Current;
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var roleNames = "";
     if (user != null) roleNames = user.Roles == null ? "" : user.Roles.Join();
 
     var title = ViewBag.Title + "";
-    if (title != "" && !title.Contains(" - "))
+    if (set.TitlePrefix && title != "" && !title.Contains(" - "))
     {
         title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
     }
 
-    var set = NewLife.Cube.Setting.Current;
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
