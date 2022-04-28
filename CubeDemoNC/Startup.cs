@@ -1,22 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
 using NewLife;
 using NewLife.Cube;
+using NewLife.Cube.AdminLTE;
+using NewLife.Cube.ElementUI;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.LayuiAdmin;
+using NewLife.Cube.Metronic;
+using NewLife.Cube.Metronic8;
+using NewLife.Cube.Tabler;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 using NewLife.Threading;
 using Stardust;
-using Stardust.Monitors;
 using Setting = NewLife.Cube.Setting;
 
 namespace CubeDemoNC
@@ -29,21 +25,14 @@ namespace CubeDemoNC
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // APM跟踪器
-            var tracer = new StarTracer("http://star.newlifex.com:6600") { Log = XTrace.Log };
-            DefaultTracer.Instance = tracer;
-            //ApiHelper.Tracer = tracer;
-            //DAL.GlobalTracer = tracer;
-            //OAuthClient.Tracer = tracer;
-            TracerMiddleware.Tracer = tracer;
+            var star = new StarFactory(null, null, null);
+            TracerMiddleware.Tracer = star.Tracer;
 
-            services.AddSingleton<ITracer>(tracer);
+            services.AddSingleton<ITracer>(star.Tracer);
 
             services.AddControllersWithViews();
             services.AddCube();
-#if NET50
-            services.AddBlazor();
-#endif
+            //services.AddBlazor();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -63,7 +52,6 @@ namespace CubeDemoNC
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-#if !NET60
             /* 新ui通道，以下需同时满足条件
              * 1、配置启用新ui
              * 2、GET请求
@@ -97,7 +85,6 @@ namespace CubeDemoNC
                         options.Options.DefaultPageStaticFileOptions = staticFileOptions;
                     });
                 });
-#endif
 
             //app.UseRouting();
 
@@ -110,9 +97,7 @@ namespace CubeDemoNC
             app.UseElementUI(env);
             app.UseMetronic8(env);
             app.UseLayuiAdmin(env);
-#if NET50
-            app.UseBlazor(env);
-#endif
+            //app.UseBlazor(env);
 
             app.UseAuthorization();
 
@@ -130,7 +115,6 @@ namespace CubeDemoNC
                 client.ProbeAndInstall(null, "1.1");
             });
 
-#if !NET60
             // 所有请求没有命中的，统一在这里处理
             if (set.EnableNewUI)
                 app.UseWhen(context => set.EnableNewUI,
@@ -156,7 +140,6 @@ namespace CubeDemoNC
                         options.Options.DefaultPageStaticFileOptions = staticFileOptions;
                     });
                 });
-#endif
         }
     }
 }

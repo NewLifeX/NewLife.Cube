@@ -19,6 +19,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <DefineConstants>$(DefineConstants);__CORE__</DefineConstants>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -62,7 +63,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.XCode" Version="11.0.2022.415-beta0458" />
+    <PackageReference Include="NewLife.XCode" Version="11.0.2022.422-beta1322" />
   </ItemGroup>
 
   <ItemGroup>
@@ -122,6 +123,8 @@
     <Compile Include="..\NewLife.Cube\Entity\委托代理.cs" Link="Entity\委托代理.cs" />
     <Compile Include="..\NewLife.Cube\Entity\定时作业.Biz.cs" Link="Entity\定时作业.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\定时作业.cs" Link="Entity\定时作业.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用插件.Biz.cs" Link="Entity\应用插件.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\应用插件.cs" Link="Entity\应用插件.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.Biz.cs" Link="Entity\应用日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
@@ -189,8 +192,5 @@
       <Link>Entity\Cube.xml</Link>
     </None>
     <None Include="..\NewLife.Cube\Entity\xcodetool.exe" Link="Entity\xcodetool.exe" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Areas\Cube\Controllers\" />
   </ItemGroup>
 </Project>
