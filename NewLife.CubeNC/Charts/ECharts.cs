@@ -45,6 +45,10 @@ namespace NewLife.Cube.Charts
         /// <summary>系列数据</summary>
         public IList<Series> Series { get; set; }
 
+        /// <summary>标记的图形。设置后添加的图形都使用该值</summary>
+        [ScriptIgnore]
+        public String Symbol { get; set; }
+
         /// <summary>扩展字典</summary>
         [ScriptIgnore]
         public IDictionary<String, Object> Items { get; set; } = new NullableDictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
@@ -78,8 +82,8 @@ namespace NewLife.Cube.Charts
         {
             if (type.IsNullOrEmpty()) type = "line";
 
-            var data = _timeX != null && selector == null ?
-                list.Select(e => new Object[] { e[_timeX.Name], e[field.Name] }).ToArray() :
+            var data = _timeX != null ?
+                list.Select(e => new Object[] { e[_timeX.Name], selector == null ? e[field.Name] : selector(e) }).ToArray() :
                 list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
             var sr = new Series
@@ -88,6 +92,7 @@ namespace NewLife.Cube.Charts
                 Type = type,
                 Data = data,
             };
+            if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
             Add(sr);
             return sr;
@@ -102,8 +107,8 @@ namespace NewLife.Cube.Charts
         /// <returns></returns>
         public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IEntity
         {
-            var data = _timeX != null && selector == null ?
-                list.Select(e => new Object[] { e[_timeX.Name], e[field.Name] }).ToArray() :
+            var data = _timeX != null ?
+                list.Select(e => new Object[] { e[_timeX.Name], selector == null ? e[field.Name] : selector(e) }).ToArray() :
                 list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
             var sr = new Series
@@ -113,6 +118,7 @@ namespace NewLife.Cube.Charts
                 Data = data,
                 Smooth = smooth,
             };
+            if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
             Add(sr);
             return sr;
@@ -171,6 +177,8 @@ namespace NewLife.Cube.Charts
                     type = "time",
                 };
                 _timeX = field;
+
+                if (Symbol.IsNullOrEmpty() && list.Count > 100) Symbol = "none";
             }
             else
             {
