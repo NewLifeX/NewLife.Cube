@@ -57,7 +57,7 @@
                 var loadIndex = layer.msg('请求中...', {icon: 16, shade: 0.01, time: false});
                 $.ajax({
                     url:'@url',
-                    data:stringJson("#data_from"),
+                    data:data.field,
                     type:"@FormMethod.Post",
                     dataType:"json",
                     success:function(data)
