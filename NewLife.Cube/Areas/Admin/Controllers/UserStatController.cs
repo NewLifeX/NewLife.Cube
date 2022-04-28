@@ -39,7 +39,7 @@ namespace NewLife.Cube.Admin.Controllers
                 {
                     Height = 400,
                 };
-                chart.SetX(list2, _.Date, e => e.Date.ToString("MMdd"));
+                chart.SetX(list2, _.Date);
                 //chart.SetY("数值");
                 chart.YAxis = new[] {
                     new { name = "数值", type = "value" },
