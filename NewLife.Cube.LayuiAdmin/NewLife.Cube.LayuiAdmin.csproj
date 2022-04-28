@@ -401,8 +401,6 @@
     <Content Remove="wwwroot\modules\tagsInput\tagsInput.css" />
     <Content Remove="wwwroot\modules\treeTable.js" />
     <Content Remove="wwwroot\modules\xmSelect.js" />
-    <Content Remove="wwwroot\style\res\logo (2).png" />
-    <Content Remove="wwwroot\style\res\logo.png" />
   </ItemGroup>
 
   <ItemGroup>
