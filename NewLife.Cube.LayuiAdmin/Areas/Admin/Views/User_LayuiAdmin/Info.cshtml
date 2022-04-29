@@ -79,7 +79,7 @@
                         <div class="layui-form-item">
                             <label class="layui-form-label layui-form-required">显示名</label>
                             <div class="layui-input-block">
-                                @Html.ForEditor("DisplayName", user.DisplayName,null,null,new {@class="layui-input",autocomplete="off",lay_verify="required"})
+                                @Html.ForEditor("DisplayName", (user.DisplayName!=null?user.DisplayName:""),null,null,new {@class="layui-input",autocomplete="off",lay_verify="required"})
                                 @Html.ForDescription("DisplayName")
                             </div>
                         </div>
