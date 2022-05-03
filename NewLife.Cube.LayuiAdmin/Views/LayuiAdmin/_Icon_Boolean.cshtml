@@ -1,0 +1,5 @@
+﻿@model Boolean
+@{
+    var flag = Model;
+}
+<i class="layui-icon @(flag ? "layui-icon-ok" : "layui-icon-close")" style="color: @(flag ? "green" : "red");font-size:20px"></i>

@@ -1,12 +1,12 @@
 ﻿@using NewLife.Common;
 @{
+    var set = NewLife.Cube.Setting.Current;
     var title = ViewBag.Title + "";
-    if (title != "" && !title.Contains(" - "))
+    if (set.TitlePrefix && title != "" && !title.Contains(" - "))
     {
         title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
     }
 
-    var set = NewLife.Cube.Setting.Current;
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');

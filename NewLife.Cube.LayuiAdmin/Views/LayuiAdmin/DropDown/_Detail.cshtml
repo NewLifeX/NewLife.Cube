@@ -1,0 +1,43 @@
+﻿@using NewLife.Cube.ViewModels;
+@using Microsoft.AspNetCore.Mvc.Filters
+@{
+}
+dropdown.render({
+    elem: '#mainpage' //也可绑定到 document，从而重置整个右键
+    ,trigger: 'contextmenu' //contextmenu
+    ,isAllowSpread: false //禁止菜单组展开收缩
+    ,style: 'width: 200px' //定义宽度，默认自适应
+    ,id: 'listIndex' //定义唯一索引
+    ,data: [{
+      title: '导出Excel'
+      ,id: 'excel'
+    }, {
+      title: '导出Csv'
+      ,id: 'csv'
+    },{
+      title: '导出Xml'
+      ,id: 'xml'
+    },{
+      title: '导出Json'
+      ,id: 'json'
+    },{type:'-'},{
+      title: '分享'
+      ,id: '#share'
+    },{
+      title: '同步'
+      ,id: '#sync'
+    }]
+    ,click: function(obj, othis){
+      if(obj.id === 'excel'){
+        location.href='@Url.Action("ExportExcel")';
+      } else if(obj.id === 'csv'){
+        location.href='@Url.Action("ExportCsv")';
+      } else if(obj.id === 'xml'){
+        location.href='@Url.Action("ExportXml")';
+      }else if(obj.id === 'json'){
+        location.href='@Url.Action("ExportJson")';
+      }else if(obj.id === 'share'){
+        location.href='@Url.Action("Share")';
+      }
+    }
+  });

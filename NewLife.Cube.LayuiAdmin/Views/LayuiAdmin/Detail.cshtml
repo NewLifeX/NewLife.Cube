@@ -1,0 +1,59 @@
+﻿@using NewLife;
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using Microsoft.AspNetCore.Mvc.Rendering;
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+    var fields = ViewBag.Fields as FieldCollection;
+
+    var url = "";
+    var rv = entity.GetRouteKey();
+    if (rv != null && rv.Count > 0)
+    {
+        url = Url.Action(isNew ? "Add" : "Edit", rv);
+    }
+
+    else
+    {
+        url = Url.Action(isNew ? "Add" : "Edit");
+    }
+
+    Object htmlAttributes = new {Class="layui-form",lay_filter="detal-form-group",id="data_from" };
+    if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { Class="layui-form",lay_filter="component-form-group",enctype = "multipart/form-data",id="data_from" };
+}
+
+@*<div class="form-horizontal">
+    <ul>
+        @foreach (var item in ViewData.ModelState.Values)
+        {
+            foreach (var error in item.Errors)
+            {
+                <li>@error.Exception</li>
+            }
+        }
+    </ul>
+    @await Html.PartialAsync("_Form_Body", entity)
+</div>*@
+@using (Html.BeginForm("Detal", null, rv, FormMethod.Post, null, htmlAttributes))
+{
+    <div class="layui-fluid">
+    <div class="layui-card">
+    <div class="layui-card-header">查看</div>
+    <div class="layui-card-body" style="padding: 15px;">
+
+        @await Html.PartialAsync("_Form_Header", entity)
+        @await Html.PartialAsync("_Form_Body", entity)
+        @*@await Html.PartialAsync("_Form_Footer", entity)*@
+
+    </div>
+    </div>
+    </div>
+}
+@section layuiscripts
+{
+    //表单初始化，否则开关不出现
+    form.render(null, 'add-form-group');
+
+}

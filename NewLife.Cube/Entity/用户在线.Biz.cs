@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NewLife.Data;
 using XCode;
+using XCode.Configuration;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity
@@ -35,26 +36,27 @@ namespace NewLife.Cube.Entity
             if (!HasDirty) return;
 
             // 截取长度
-            var len = _.Status.Length;
-            if (len > 0 && !Status.IsNullOrEmpty() && Status.Length > len) Status = Status[..len];
-
-            len = _.Page.Length;
-            if (len > 0 && !Page.IsNullOrEmpty() && Page.Length > len) Page = Page[..len];
-
-            len = _.Platform.Length;
-            if (len > 0 && !Platform.IsNullOrEmpty() && Platform.Length > len) Platform = Platform[..len];
-
-            len = _.OS.Length;
-            if (len > 0 && !OS.IsNullOrEmpty() && OS.Length > len) OS = OS[..len];
-
-            len = _.Device.Length;
-            if (len > 0 && !Device.IsNullOrEmpty() && Device.Length > len) Device = Device[..len];
-
-            len = _.Brower.Length;
-            if (len > 0 && !Brower.IsNullOrEmpty() && Brower.Length > len) Brower = Brower[..len];
+            CutField(_.Status, _.Page, _.Platform, _.OS, _.Device, _.Brower, _.NetType);
 
             // 建议先调用基类方法，基类方法会做一些统一处理
             base.Valid(isNew);
+        }
+
+        void CutField(params FieldItem[] fields)
+        {
+            foreach (var field in fields)
+            {
+                var len = field.Length;
+                if (len > 0 && field.Type == typeof(String))
+                {
+                    var str = this[field.Name] as String;
+                    if (!str.IsNullOrEmpty() && str.Length > len)
+                    {
+                        str = str[..len];
+                        SetItem(field.Name, str);
+                    }
+                }
+            }
         }
         #endregion
 

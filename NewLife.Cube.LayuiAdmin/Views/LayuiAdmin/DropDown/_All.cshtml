@@ -1,0 +1,80 @@
+﻿@using NewLife.Cube.ViewModels;
+@using Microsoft.AspNetCore.Mvc.Filters
+@{
+}
+dropdown.render({
+    elem: '#mainpage' //也可绑定到 document，从而重置整个右键
+    ,trigger: 'contextmenu' //contextmenu
+    ,isAllowSpread: false //禁止菜单组展开收缩
+    ,style: 'width: 200px' //定义宽度，默认自适应
+    ,id: 'listIndex' //定义唯一索引
+    ,data: [{
+      title: '导出Excel'
+      ,id: 'excel'
+    }, {
+      title: '导出Csv'
+      ,id: 'csv'
+    },{
+      title: '导出Xml'
+      ,id: 'xml'
+    },{
+      title: '导出Json'
+      ,id: 'json'
+    },{type:'-'},{
+      title: '分享'
+      ,id: '#share'
+    },{
+      title: '同步'
+      ,id: '#sync'
+    },{type:'-'},{
+      title: '备份'
+      ,id: 'back'
+    },{
+      title: '还原'
+      ,id: '#reduction'
+    },{
+      title: '备份导出'
+      ,id: '#backexport'
+    },{type:'-'},{
+      title: '清空数据表'
+      ,id: '#cleardata'
+    },{
+      title: '生成列表'
+      ,id: '#createlist'
+    },{
+      title: '生成表单'
+      ,id: '#createfrom'
+    },{
+      title: '生成搜索'
+      ,id: '#createsearch'
+    }]
+    ,click: function(obj, othis){
+      if(obj.id === 'excel'){
+        location.href='@Url.Action("ExportExcel")';
+      } else if(obj.id === 'csv'){
+        location.href='@Url.Action("ExportCsv")';
+      } else if(obj.id === 'xml'){
+        location.href='@Url.Action("ExportXml")';
+      }else if(obj.id === 'json'){
+        location.href='@Url.Action("ExportJson")';
+      }else if(obj.id === 'share'){
+        location.href='@Url.Action("Share")';
+      }else if(obj.id === 'sync'){
+        location.href='@Url.Action("Sync")';
+      }else if(obj.id === 'back'){
+        location.href='@Url.Action("Backup")';
+      }else if(obj.id === 'reduction'){
+        location.href='@Url.Action("Restore")';
+      }else if(obj.id === 'backexport'){
+        location.href='@Url.Action("BackupAndExport")';
+      }else if(obj.id === 'cleardata'){
+        location.href='@Url.Action("Clear")';
+      }else if(obj.id === 'createlist'){
+        location.href='@Url.Action("MakeList")';
+      }else if(obj.id === 'createfrom'){
+        location.href='@Url.Action("MakeForm")';
+      }else if(obj.id === 'createsearch'){
+        location.href='@Url.Action("MakeSearch")';
+      }
+    }
+  });

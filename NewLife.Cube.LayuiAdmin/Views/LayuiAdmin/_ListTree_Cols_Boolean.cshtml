@@ -1,0 +1,14 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode
+@{
+    var entity = (ValueTuple<DataField, string>)Model;
+    var item = entity.Item1;
+    var type = entity.Item2;
+    var set = ViewBag.PageSetting as PageSetting;
+    var df = item as ListField;
+    var name = df?.Header ?? item.DisplayName;
+    var title = df?.HeaderTitle ?? item.Description;
+}
+
+datacols.push({field:'@item.Name',title:'@item.Description',sort:true,templet: function (d) {return d.@item.Name?'<span class="layui-icon layui-icon-ok" style="color: green;font-size:20px"></span>':'<span class="layui-icon layui-icon-close" style="color: red;font-size:20px"></span>';}});

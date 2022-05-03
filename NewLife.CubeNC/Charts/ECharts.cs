@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Script.Serialization;
+﻿using System.Web.Script.Serialization;
 using NewLife.Collections;
 using NewLife.Data;
 using NewLife.Security;
@@ -48,6 +45,10 @@ namespace NewLife.Cube.Charts
         /// <summary>系列数据</summary>
         public IList<Series> Series { get; set; }
 
+        /// <summary>标记的图形。设置后添加的图形都使用该值</summary>
+        [ScriptIgnore]
+        public String Symbol { get; set; }
+
         /// <summary>扩展字典</summary>
         [ScriptIgnore]
         public IDictionary<String, Object> Items { get; set; } = new NullableDictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
@@ -56,6 +57,8 @@ namespace NewLife.Cube.Charts
         /// <param name="key"></param>
         /// <returns></returns>
         public Object this[String key] { get => Items[key]; set => Items[key] = value; }
+
+        FieldItem _timeX;
         #endregion
 
         #region 方法
@@ -79,12 +82,17 @@ namespace NewLife.Cube.Charts
         {
             if (type.IsNullOrEmpty()) type = "line";
 
+            var data = _timeX != null ?
+                list.Select(e => new Object[] { e[_timeX.Name], selector == null ? e[field.Name] : selector(e) }).ToArray() :
+                list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
+
             var sr = new Series
             {
                 Name = field?.DisplayName ?? field.Name,
                 Type = type,
-                Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
+                Data = data,
             };
+            if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
             Add(sr);
             return sr;
@@ -99,13 +107,18 @@ namespace NewLife.Cube.Charts
         /// <returns></returns>
         public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IEntity
         {
+            var data = _timeX != null ?
+                list.Select(e => new Object[] { e[_timeX.Name], selector == null ? e[field.Name] : selector(e) }).ToArray() :
+                list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
+
             var sr = new Series
             {
                 Name = field?.DisplayName ?? field.Name,
                 Type = "line",
-                Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
+                Data = data,
                 Smooth = smooth,
             };
+            if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
             Add(sr);
             return sr;
@@ -152,15 +165,28 @@ namespace NewLife.Cube.Charts
 
         /// <summary>设置X轴</summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="list"></param>
-        /// <param name="field"></param>
-        /// <param name="selector"></param>
+        /// <param name="list">数据列表，从中选择数据构建X轴</param>
+        /// <param name="field">作为X轴的字段，支持time时间轴</param>
+        /// <param name="selector">构建X轴的委托，使用时间轴时该参数无效</param>
         public void SetX<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IEntity
         {
-            XAxis = new
+            if (field != null && field.Type == typeof(DateTime))
             {
-                data = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray()
-            };
+                XAxis = new
+                {
+                    type = "time",
+                };
+                _timeX = field;
+
+                if (Symbol.IsNullOrEmpty() && list.Count > 100) Symbol = "none";
+            }
+            else
+            {
+                XAxis = new
+                {
+                    data = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray()
+                };
+            }
         }
 
         /// <summary>设置Y轴</summary>
@@ -172,10 +198,7 @@ namespace NewLife.Cube.Charts
         /// time 时间轴，适用于连续的时序数据，与数值轴相比时间轴带有时间的格式化，在刻度计算上也有所不同，例如会根据跨度的范围来决定使用月，星期，日还是小时范围的刻度。
         /// log 对数轴。适用于对数数据。
         /// </param>
-        public void SetY(String name, String type = "value")
-        {
-            YAxis = new { name = name, type = type };
-        }
+        public void SetY(String name, String type = "value") => YAxis = new { name, type };
 
         /// <summary>设置工具栏</summary>
         /// <param name="trigger">
@@ -207,10 +230,7 @@ namespace NewLife.Cube.Charts
         /// <param name="list"></param>
         /// <param name="field"></param>
         /// <param name="selector"></param>
-        public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IEntity
-        {
-            Legend = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();
-        }
+        public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IEntity => Legend = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();
 
         /// <summary>构建选项Json</summary>
         /// <returns></returns>
@@ -265,7 +285,7 @@ namespace NewLife.Cube.Charts
                 dic[item.Key] = item.Value;
             }
 
-            return dic.ToJson(false, false, true);
+            return dic.ToJson(true, false, true);
         }
         #endregion
     }

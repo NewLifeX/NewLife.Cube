@@ -1,0 +1,46 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@{
+    var pager = ViewBag.Page as Pager;
+    //page.PageUrlTemplate = page.PageUrlTemplate.Replace("{链接}", Url.Action("Index") + "{链接}");
+    // 没有总记录数的时候不显示分页，可以认为不启用分页
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+}
+@if (pager.TotalCount > 0)
+{
+    <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form" >
+
+        <div class="layui-box layui-laypage layui-laypage-default layui-hide" id="listPager" style="margin-bottom:0px;">
+            <span class="layui-laypage-count">共 @pager.TotalCount.ToString("n0") 条</span>
+            @Html.Raw(pager.GetPage("首页"))
+            @Html.Raw(pager.GetPage("上一页"))
+            <span class="layui-laypage-curr"><em class="layui-laypage-em"></em><em>@pager.PageIndex.ToString("n0")</em></span>
+            @Html.Raw(pager.GetPage("下一页"))
+            @Html.Raw(pager.GetPage("尾页"))
+            <span class="layui-laypage-limits">
+                <select lay-ignore="" id="PageSize" name="PageSize" onchange="$(this).parents('form').submit();">
+                    <option value="5">5 条/页</option>
+                    <option value="10">10 条/页</option>
+                    <option value="20">20 条/页</option>
+                    <option value="30">30 条/页</option>
+                    <option value="50">50 条/页</option>
+                    <option value="100">100 条/页</option>
+                    <option value="500">500 条/页</option>
+                    <option value="1000">1000 条/页</option>
+                </select>
+                <script type="text/javascript">
+                    $(function () {
+                        $('#PageSize').val(@pager.PageSize);
+                    });
+            </script>
+                </span>
+                <span class="layui-laypage-skip">
+                    到第
+                    <input type="text" min="1" value="@pager.PageIndex" name="PageIndex" class="layui-input">页
+                    <button type="submit" class="layui-laypage-btn">确定</button>
+                </span>
+            </div>
+        </form>
+}

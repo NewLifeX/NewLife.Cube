@@ -1,0 +1,28 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+	var name = Model.Name;
+    var value = Model.Value.ToInt();
+    var type = Model.Type;
+
+    var dic = EnumHelper.GetDescriptions(type);
+}
+
+<div class="layui-col-md12">
+   @foreach (var item in dic)
+    {
+        var sel = item.Key == value;
+        if (sel)
+        {
+            <input type="radio" name="@name" value="@item.Key" title="@item.Key"><div class="layui-unselect layui-form-radio layui-form-radioed"><i class="layui-anim layui-icon"></i><div>@item.Value</div></div>
+        }
+        else
+        {
+            <input type="radio" name="@name" value="@item.Key" title="@item.Key"><div class="layui-unselect layui-form-radio"><i class="layui-anim layui-icon"></i><div>@item.Value</div></div>
+        }
+
+    }
+</div>

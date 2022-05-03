@@ -1,0 +1,17 @@
+﻿@*
+    表单头
+*@
+
+@using XCode.Configuration;
+@using XCode.Membership;
+@using XCode;
+
+@{
+    var dataField = Model as DataField;
+
+}
+
+laydate.render({
+      elem: '#@dataField.Name'
+      ,type: 'datetime'
+});

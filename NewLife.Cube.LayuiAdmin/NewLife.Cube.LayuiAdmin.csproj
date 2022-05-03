@@ -1,0 +1,653 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <AssemblyTitle>魔方快速开发平台LayuiAdmin版</AssemblyTitle>
+    <Description>魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。</Description>
+    <Company>新生命开发团队</Company>
+    <Copyright>©2002-2022 NewLife</Copyright>
+    <VersionPrefix>5.0</VersionPrefix>
+    <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
+    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
+    <Deterministic>false</Deterministic>
+    <OutputPath>..\..\Bin</OutputPath>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>NewLife.Cube.LayuiAdmin</PackageId>
+    <Authors>$(Company)</Authors>
+    <ProjectUrl>https://github.com/NewLifeX</ProjectUrl>
+    <PackageIcon>leaf.png</PackageIcon>
+    <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Areas\Cube\Views\_Form_Body.cshtml" />
+    <Content Remove="wwwroot\assets\avatars\150-0.jpg" />
+    <Content Remove="wwwroot\assets\avatars\150-1.jpg" />
+    <Content Remove="wwwroot\assets\avatars\150-2.jpg" />
+    <Content Remove="wwwroot\assets\baguetteBox\baguetteBox.css" />
+    <Content Remove="wwwroot\assets\baguetteBox\baguetteBox.js" />
+    <Content Remove="wwwroot\assets\css\style.bundle.css" />
+    <Content Remove="wwwroot\assets\css\style.bundle.js" />
+    <Content Remove="wwwroot\assets\cube.js" />
+    <Content Remove="wwwroot\assets\favicon.ico" />
+    <Content Remove="wwwroot\assets\js\custom\account\api-keys\api-keys.js" />
+    <Content Remove="wwwroot\assets\js\custom\account\orders\classic.js" />
+    <Content Remove="wwwroot\assets\js\custom\account\referrals\referral-program.js" />
+    <Content Remove="wwwroot\assets\js\custom\account\security\license-usage.js" />
+    <Content Remove="wwwroot\assets\js\custom\account\security\security-summary.js" />
+    <Content Remove="wwwroot\assets\js\custom\account\settings\deactivate-account.js" />
+    <Content Remove="wwwroot\assets\js\custom\account\settings\overview.js" />
+    <Content Remove="wwwroot\assets\js\custom\account\settings\profile-details.js" />
+    <Content Remove="wwwroot\assets\js\custom\account\settings\signin-methods.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\chat\chat.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\add.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\list\export.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\list\list.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\update.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\view\add-payment.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\view\adjust-balance.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\view\invoices.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\view\payment-method.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\view\payment-table.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\customers\view\statement.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\invoices\create.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\subscriptions\add\advanced.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\subscriptions\add\customer-select.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\subscriptions\add\products.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\subscriptions\list\export.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\subscriptions\list\list.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\support-center\tickets\create.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\permissions\add-permission.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\permissions\list.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\permissions\update-permission.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\roles\list\add.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\roles\list\update-role.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\roles\view\update-role.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\roles\view\view.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\list\add.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\list\export-users.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\list\table.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\add-auth-app.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\add-one-time-password.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\add-schedule.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\add-task.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\update-details.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\update-email.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\update-password.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\update-role.js" />
+    <Content Remove="wwwroot\assets\js\custom\apps\user-management\users\view\view.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\password-reset\new-password.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\password-reset\password-reset.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\general.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\two-steps.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-up\coming-soon.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-up\free-trial.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-up\general.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\base\indicator.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\base\rotate.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\charts\amcharts\charts.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\charts\amcharts\maps.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\charts\amcharts\stock-charts.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\charts\apexcharts.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\charts\chartjs.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\documentation.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\clipboard.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\daterangepicker.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\dialer.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\dropzonejs.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\flatpickr.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\image-input.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\inputmask.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\multiselectsplitter.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\nouislider.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\password-meter.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\recaptcha.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\forms\tagify.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\datatables\advanced.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\datatables\api.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\datatables\basic.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\draggable\cards.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\draggable\multiple-containers.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\draggable\restricted.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\draggable\swappable.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\drawer.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\background-events.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\basic.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\drag-n-drop.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\locales.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\selectable-dates.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\timezone.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\scroll.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\search\basic.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\search\menu.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\search\responsive.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\stepper.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\toastr.js" />
+    <Content Remove="wwwroot\assets\js\custom\documentation\general\typed.js" />
+    <Content Remove="wwwroot\assets\js\custom\intro.js" />
+    <Content Remove="wwwroot\assets\js\custom\landing.js" />
+    <Content Remove="wwwroot\assets\js\custom\layout-builder\layout-builder.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\create-account.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\create-api-key.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\create-app.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\create-project.bundle.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\new-address.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\new-card.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\new-target.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\offer-a-deal.bundle.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\select-location.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\share-earn.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\two-factor-authentication.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\upgrade-plan.js" />
+    <Content Remove="wwwroot\assets\js\custom\modals\users-search.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\careers\apply.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\company\contact.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\company\pricing.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\profile\connections.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\projects\list\list.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\projects\project\project.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\projects\settings\settings.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\projects\targets\targets.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\projects\users\users.js" />
+    <Content Remove="wwwroot\assets\js\custom\pages\search\horizontal.js" />
+    <Content Remove="wwwroot\assets\js\custom\widgets.js" />
+    <Content Remove="wwwroot\assets\js\scripts.bundle.js" />
+    <Content Remove="wwwroot\assets\logo\logo.png" />
+    <Content Remove="wwwroot\assets\media\bg-4.jpg" />
+    <Content Remove="wwwroot\assets\media\verification.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon-block.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-classic.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-document.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-inline.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\datatables\datatables.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\datatables\datatables.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\datatables\pdfmake.min.js.map" />
+    <Content Remove="wwwroot\assets\plugins\custom\draggable\draggable.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading.gif" />
+    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading@2x.gif" />
+    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search-disabled.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search@2x-disabled.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search@2x.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\fslightbox\fslightbox.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\leaflet\layers-2x.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\leaflet\layers.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\leaflet\marker-icon.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\advlist\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\advlist\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\anchor\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\anchor\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autolink\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autolink\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autoresize\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autoresize\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autosave\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autosave\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\bbcode\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\bbcode\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\charmap\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\charmap\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\codesample\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\codesample\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\code\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\code\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\colorpicker\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\colorpicker\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\contextmenu\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\contextmenu\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\directionality\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\directionality\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\emoticons\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\emoticons\js\emojiimages.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\emoticons\js\emojis.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\emoticons\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\fullpage\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\fullpage\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\fullscreen\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\fullscreen\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\help\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\help\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\hr\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\hr\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\imagetools\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\imagetools\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\image\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\image\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\importcss\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\importcss\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\insertdatetime\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\insertdatetime\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\legacyoutput\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\legacyoutput\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\link\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\link\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\lists\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\lists\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\media\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\media\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\nonbreaking\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\nonbreaking\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\noneditable\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\noneditable\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\pagebreak\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\pagebreak\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\paste\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\paste\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\preview\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\preview\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\print\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\print\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\quickbars\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\quickbars\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\save\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\save\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\searchreplace\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\searchreplace\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\spellchecker\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\spellchecker\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\tabfocus\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\tabfocus\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\table\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\table\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\template\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\template\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\textcolor\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\textcolor\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\textpattern\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\textpattern\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\toc\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\toc\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\visualblocks\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\visualblocks\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\visualchars\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\visualchars\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\wordcount\index.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\plugins\wordcount\plugin.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\content\dark\content.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\content\default\content.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\content\document\content.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\content\writer\content.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\content.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\fonts\tinymce-mobile.woff" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\skin.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\content.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\fonts\tinymce-mobile.woff" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\skin.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\tinymce\tinymce.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\xfullcalendar\fullcalendar.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-brands-400.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-brands-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-brands-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-brands-400.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-brands-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-regular-400.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-regular-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-regular-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-regular-400.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-regular-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-solid-900.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-solid-900.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-solid-900.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-solid-900.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\fa-solid-900.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-brands-400.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-brands-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-brands-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-brands-400.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-brands-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-regular-400.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-regular-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-regular-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-regular-400.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-regular-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-solid-900.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-solid-900.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-solid-900.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-solid-900.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\la-solid-900.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.js" />
+    <Content Remove="wwwroot\layui\css\layui.css" />
+    <Content Remove="wwwroot\layui\font\iconfont.woff2" />
+    <Content Remove="wwwroot\layui\layui.js" />
+    <Content Remove="wwwroot\modules\dataGrid.js" />
+    <Content Remove="wwwroot\modules\excel.js" />
+    <Content Remove="wwwroot\modules\excel.min.js" />
+    <Content Remove="wwwroot\modules\jquery.js" />
+    <Content Remove="wwwroot\modules\notice.js" />
+    <Content Remove="wwwroot\modules\notice\notice.css" />
+    <Content Remove="wwwroot\modules\soulTable.js" />
+    <Content Remove="wwwroot\modules\soulTable.slim.js" />
+    <Content Remove="wwwroot\modules\soulTable\soulTable.css" />
+    <Content Remove="wwwroot\modules\tableChild.js" />
+    <Content Remove="wwwroot\modules\tableFilter.js" />
+    <Content Remove="wwwroot\modules\tableMerge.js" />
+    <Content Remove="wwwroot\modules\tagsInput.js" />
+    <Content Remove="wwwroot\modules\tagsInput\tagsInput.css" />
+    <Content Remove="wwwroot\modules\treeTable.js" />
+    <Content Remove="wwwroot\modules\xmSelect.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="wwwroot\assets\baguetteBox\baguetteBox.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\baguetteBox\baguetteBox.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\css\style.bundle.css.map" />
+    <EmbeddedResource Remove="wwwroot\assets\css\style.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\css\style.bundle.rtl.css" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\api-keys\api-keys.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\orders\classic.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\referrals\referral-program.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\security\license-usage.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\security\security-summary.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\settings\deactivate-account.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\settings\overview.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\settings\profile-details.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\account\settings\signin-methods.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\chat\chat.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\add.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\list\export.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\list\list.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\update.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\view\add-payment.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\view\adjust-balance.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\view\invoices.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\view\payment-method.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\view\payment-table.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\customers\view\statement.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\invoices\create.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\subscriptions\add\advanced.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\subscriptions\add\customer-select.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\subscriptions\add\products.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\subscriptions\list\export.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\subscriptions\list\list.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\support-center\tickets\create.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\permissions\add-permission.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\permissions\list.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\permissions\update-permission.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\roles\list\add.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\roles\list\update-role.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\roles\view\update-role.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\roles\view\view.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\list\add.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\list\export-users.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\list\table.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\add-auth-app.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\add-one-time-password.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\add-schedule.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\add-task.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\update-details.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\update-email.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\update-password.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\update-role.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\apps\user-management\users\view\view.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\password-reset\new-password.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\password-reset\password-reset.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\sign-in\general.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\sign-in\two-steps.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\sign-up\coming-soon.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\sign-up\free-trial.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\sign-up\general.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\base\indicator.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\base\rotate.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\charts\amcharts\charts.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\charts\amcharts\maps.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\charts\amcharts\stock-charts.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\charts\apexcharts.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\charts\chartjs.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\documentation.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\clipboard.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\daterangepicker.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\dialer.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\dropzonejs.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\flatpickr.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\image-input.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\inputmask.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\multiselectsplitter.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\nouislider.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\password-meter.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\recaptcha.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\forms\tagify.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\datatables\advanced.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\datatables\api.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\datatables\basic.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\draggable\cards.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\draggable\multiple-containers.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\draggable\restricted.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\draggable\swappable.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\drawer.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\background-events.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\basic.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\drag-n-drop.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\locales.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\selectable-dates.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\fullcalendar\timezone.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\scroll.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\search\basic.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\search\menu.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\search\responsive.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\stepper.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\toastr.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\documentation\general\typed.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\intro.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\landing.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\layout-builder\layout-builder.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\create-account.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\create-api-key.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\create-app.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\create-project.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\new-address.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\new-card.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\new-target.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\offer-a-deal.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\select-location.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\share-earn.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\two-factor-authentication.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\upgrade-plan.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\modals\users-search.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\careers\apply.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\company\contact.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\company\pricing.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\profile\connections.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\projects\list\list.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\projects\project\project.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\projects\settings\settings.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\projects\targets\targets.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\projects\users\users.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\pages\search\horizontal.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\widgets.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\js\scripts.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon-block.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-classic.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-document.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-inline.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\draggable\draggable.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\fslightbox\fslightbox.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.css.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.css.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.rtl.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.css.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.rtl.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.rtl.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\advlist\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\anchor\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autolink\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autoresize\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\autosave\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\bbcode\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\charmap\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\codesample\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\code\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\colorpicker\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\contextmenu\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\directionality\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\emoticons\js\emojiimages.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\emoticons\js\emojis.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\emoticons\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\fullpage\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\fullscreen\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\help\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\hr\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\imagetools\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\image\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\importcss\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\insertdatetime\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\legacyoutput\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\link\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\lists\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\media\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\nonbreaking\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\noneditable\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\pagebreak\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\paste\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\preview\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\print\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\quickbars\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\save\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\searchreplace\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\spellchecker\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\tabfocus\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\table\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\template\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\textcolor\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\textpattern\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\toc\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\visualblocks\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\visualchars\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\plugins\wordcount\plugin.min.js" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\content\dark\content.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\content\default\content.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\content\document\content.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\content\writer\content.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\content.inline.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\content.inline.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\content.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\content.mobile.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\content.mobile.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\skin.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\skin.mobile.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\skin.mobile.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\skin.shadowdom.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide-dark\skin.shadowdom.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\content.inline.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\content.inline.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\content.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\content.mobile.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\content.mobile.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\skin.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\skin.mobile.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\skin.mobile.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\skin.shadowdom.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\skins\ui\oxide\skin.shadowdom.min.css" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\tinymce\tinymce.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\xfullcalendar\fullcalendar.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\global\plugins.bundle.css.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\global\plugins.bundle.js.map" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\global\plugins.bundle.rtl.css" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Views\Shared\_Form_Item.cshtml.old" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Doc\leaf.png" Link="leaf.png">
+      <PackagePath>\</PackagePath>
+    </Content>
+    <Content Include="Views\Shared\_Form_Item.cshtml.old" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Areas\Admin\Views\Shared\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Areas\Cube\Views\PrincipalAgent_LayuiAdmin\_Form_Body.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Views\_ViewStart.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

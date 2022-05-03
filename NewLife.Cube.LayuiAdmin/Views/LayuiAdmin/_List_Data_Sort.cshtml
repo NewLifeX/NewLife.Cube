@@ -1,0 +1,20 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using XCode
+@{
+    var entity = Model as IEntity;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    var rv = entity.GetRouteKey();
+    var id = entity["ID"];
+}
+
+<script type="text/html" id="barSort">
+    @if (this.Has(PermissionFlags.Update))
+    {
+        @*<i class="glyphicon glyphicon-edit" style="color: blue;"></i>
+            <a href="@Url.Action("Edit", rv)" class="editcell">编辑</a>*@
+        <a href="@Url.Action("Up", new { id })" class="layui-icon layui-icon-up" style="color: green;font-size:20px"></a>
+        <a href="@Url.Action("Down", new { id })" class="layui-icon layui-icon-down" style="color: red;font-size:20px"></a>
+    }
+</script>

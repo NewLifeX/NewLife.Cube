@@ -1,0 +1,45 @@
+﻿@*
+    表单内容
+*@
+
+@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@using NewLife.Cube;
+@using NewLife.Cube.ViewModels;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+}
+
+
+    @await Html.PartialAsync("_Form_Body_Message")
+
+            @foreach (var item in fields)
+            {
+                if (item.Name.EqualIgnoreCase("permission"))
+                {
+                    <div class="layui-form-item">
+                        @await Html.PartialAsync("_Form_SetPermission", new { Role = entity })
+        </div>
+    }
+    else
+    {
+        if (!item.PrimaryKey)
+        {
+            <div class="layui-form-item">
+                <label class="layui-form-label">
+                                        @item.DisplayName
+                                    </label>
+                                    <div class="layui-input-block">
+                                        @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                    </div>
+                                    <div class="layui-form-mid layui-word-aux">
+                                        @item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。")
+                                    </div>
+                    </div>
+                    }
+                }
+            }
+
+

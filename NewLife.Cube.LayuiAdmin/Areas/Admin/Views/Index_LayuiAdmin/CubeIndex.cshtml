@@ -1,0 +1,41 @@
+﻿@using NewLife.Common;
+@using XCode.Membership;
+@using NewLife;
+
+@{
+    var user = ManageProvider.User as IUser ?? User.Identity as IUser;
+    var startpage = user.Role.Ex4.IsNullOrEmpty() ? NewLife.Cube.Setting.Current.StartPage : user.Role.Ex4;
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    @*<meta http-equiv="refresh" content="0;url=@startpage">*@
+</head>
+<body>
+
+  <div id="LAY_app">
+    <div class="layui-layout layui-layout-admin">
+      @await Html.PartialAsync("_Layout_Header")
+      
+      <!-- 侧边菜单 -->
+      @await Html.PartialAsync("_Layout_Left_Menu")
+
+      <!-- 页面标签 -->
+      @await Html.PartialAsync("_Layout_Tabs")
+      
+      
+      <!-- 主体内容 -->
+      <div class="layui-body" id="LAY_app_body">
+        <div class="layadmin-tabsbody-item layui-show">
+          <iframe src="@ViewBag.Main" frameborder="0" class="cube-iframe layadmin-iframe" width="100%"  height="100%"></iframe>
+        </div>
+      </div>
+      
+      <!-- 辅助元素，一般用于移动设备下遮罩 -->
+      <div class="layadmin-body-shade" layadmin-event="shade"></div>
+    </div>
+  </div>
+</body>
+</html>

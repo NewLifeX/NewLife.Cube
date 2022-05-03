@@ -1,0 +1,108 @@
+﻿@*
+    编辑模板
+*@
+
+
+@using NewLife;
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using Microsoft.AspNetCore.Mvc.Rendering;
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+    var fields = ViewBag.Fields as FieldCollection;
+
+    var url = "";
+    var rv = entity.GetRouteKey();
+    if (rv != null && rv.Count > 0)
+    {
+        url = Url.Action(isNew ? "Add" : "Edit", rv);
+    }
+
+    else
+    {
+        url = Url.Action(isNew ? "Add" : "Edit");
+    }
+
+    Object htmlAttributes = new {Class="layui-form",lay_filter="add-form-group",id="data_from" };
+    if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { Class="layui-form",lay_filter="component-form-group",enctype = "multipart/form-data",id="data_from" };
+}
+
+<!--模板表单-->
+@using (Html.BeginForm("Edit", null, rv, FormMethod.Post, null, htmlAttributes))
+{
+    <div class="layui-fluid">
+    <div class="layui-card">
+    <div class="layui-card-header">@(isNew ? "新增" : "修改")</div>
+    <div class="layui-card-body" style="padding: 15px;">
+
+        @await Html.PartialAsync("_Form_Header", entity)
+        @await Html.PartialAsync("_Form_Body", entity)
+        @await Html.PartialAsync("_Form_Footer", entity)
+
+    </div>
+    </div>
+    </div>
+}
+
+@section layuiscripts
+{
+    //表单初始化，否则开关不出现
+    form.render(null, 'add-form-group');
+
+    //日期控件
+    @foreach (var item in fields)
+    {
+        if (Type.GetTypeCode(item.Type)==TypeCode.DateTime)
+        {
+            @await Html.PartialAsync("_Form_Item_Layui_Date", item);
+        }
+    }
+
+            //点击提交按钮
+            form.on('submit(edit-form-group)',function(data){
+                var iii = layer.load(1, {
+                  shade: [0.1,'#fff']
+                });
+                $.ajax({
+                    url:'@url',
+                    data:data.field,
+                    type:"@FormMethod.Post",
+                    dataType:"json",
+                    success:function(data)
+                    {
+                        if(data.code==500)
+                        {
+                            notice.msg(data.message, {icon: 2});
+                            layer.close(iii);
+                        }
+                        else
+                        {
+                            layer.msg("成功",{
+                               time:1000,
+                                 end:function () {
+                                 location.href = '@Url.Action("Index")'
+                                }
+                             })
+                        }
+                    },
+                    error : function(e){
+                        layer.close(iii);
+                        console.log(e.status);
+                        console.log(e.responseText);
+                    }
+
+                })
+
+                return false; 
+            })
+
+    table.init('parse-authorize', { //转化静态表格
+            limit: 100,
+            even: true,
+            defaultToolbar: [''],
+            height: 'full-200',
+            cellMinWidth: 100
+    });
+}

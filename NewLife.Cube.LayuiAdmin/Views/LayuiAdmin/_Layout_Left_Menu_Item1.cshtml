@@ -1,0 +1,57 @@
+﻿@model ValueTuple<IList<MenuTree>, MenuTree>
+
+@{
+    var menu = Model.Item1;
+    var item = Model.Item2;
+
+    var rs = item.Children == null ? false : item.Children.Where(w => w.Visible).Count() > 0;
+    var rs_active = false;
+
+    var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : item.Icon;
+
+    //特殊处理
+    var list_cube = new List<string>() { "/Admin/Cube", "/Admin/Sys", "/Admin/XCode", "/Admin/Core", "/Admin/OAuthConfig" };
+    if (list_cube.Contains(item.Url.Replace("~", ""))&&list_cube.Contains(item.Url.Replace("~", "")))
+    {
+        rs_active=true;
+    }
+
+}
+
+@if (item.Visible)
+{
+    if (item .Children != null && item.Children.Any())
+    {
+        var user = ViewBag.User as IUser ?? ManageProvider.User;
+        var fact = ManageProvider.Menu;
+        var menus = fact.Root.Childs;
+        if (user?.Role != null)
+        {
+            menus = fact.GetMySubMenus(item.ID, user, true);
+        }
+            <li data-name="@item.ID" class="layui-nav-item @(rs_active?"layui-nav-itemed":"")">
+              <a href="javascript:;" lay-tips="@item.DisplayName" lay-direction="2">
+                <i class="layui-icon layui-icon-@icon fa-@icon"></i>
+                <cite>@item.DisplayName</cite>
+              </a>
+              <dl class="layui-nav-child">
+                @foreach (var sub in menus)
+                {
+                    @await Html.PartialAsync("_Layout_Left_Menu_Item2", new ValueTuple<IList<MenuTree>, IMenu>(menu, sub))
+                }
+              </dl>
+            </li>
+
+    }
+    else
+    {
+            <li data-name="@item.ID" class="layui-nav-item @(rs_active?"layui-nav-itemed":"")">
+              <a href="javascript:;" lay-tips="@item.DisplayName" lay-direction="2" lay-href="@(item.Url != null ? Url.Content(item.Url) : "#")">
+                <i class="layui-icon layui-icon-@icon fa-@icon"></i>
+                <cite>@item.DisplayName</cite>
+              </a>
+            </li>
+
+
+    }
+}

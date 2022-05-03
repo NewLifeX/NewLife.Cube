@@ -1,0 +1,33 @@
+﻿@using NewLife.Common;
+@using NewLife.Model;
+@using XCode.Membership;
+@using NewLife.Cube;
+@using XCode;
+@using NewLife.Cube.ViewModels;
+
+@{
+    var title = NewLife.Common.SysConfig.Current.DisplayName;
+    var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
+    var flag = false;
+    var imgsrc = "assets/logo/logo.png";
+}
+
+      <!-- 侧边菜单 -->
+      <div class="layui-side layui-side-menu">
+        <div class="layui-side-scroll">
+          <div class="layui-logo" lay-href="@ViewBag.Main">
+            <img src="@imgsrc" />
+            <span>@title</span>
+        </div>
+          
+          <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+           @if (menus != null)
+            {
+                foreach (var item in menus.Where(e => e.Visible))
+                {
+                    @await Html.PartialAsync("_Layout_Left_Menu_Item1", new ValueTuple<IList<MenuTree>, MenuTree>(menus, item))
+                }
+            }
+          </ul>
+        </div>
+      </div>

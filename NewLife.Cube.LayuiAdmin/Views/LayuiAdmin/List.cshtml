@@ -1,0 +1,404 @@
+﻿@using NewLife.Cube.Entity
+@using NewLife.Cube.Extensions
+@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Charts;
+@using NewLife;
+@using XCode.Configuration;
+@{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    var charts = ViewBag.Charts as ECharts[];
+    var charts2 = ViewBag.Charts2 as ECharts[];
+
+    var fields = ViewBag.Fields as FieldCollection;
+    var ukey = fact.Unique;
+
+    var modelTable = ViewBag.ModelTable as ModelTable;
+    var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
+
+    
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty())
+    {
+        act = Url.Action("Index");
+    }
+
+    var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
+
+    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info")
+    || an.Contains("changepassword") || an.Contains("binds");
+
+    var rv = page.GetRouteValue();
+}
+
+@section css{
+}
+
+<div class="layui-fluid" id="mainpage">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <table lay-filter="parse-table" id="parse-table" class="layui-hide">
+                        <thead>
+                            <tr>
+                                @if (set.EnableSelect && ukey != null)
+                                {
+                                    <th lay-data="{checkbox:true}"></th>
+                                }
+                                @foreach (var item in fields)
+                                {
+                                    var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                                    var df = item as ListField;
+                                    var name = df?.Header ?? item.DisplayName;
+                                    var title = df?.HeaderTitle ?? item.Description;
+                                    //高级筛选使用
+                                    var isfilter = modelCols.Exists(a=>a.Name==item.Name);
+
+                                    if (item.Type == typeof(DateTime))
+                                    {
+                                        var width = item.Name.EndsWithIgnoreCase("Date") ? 96 : 150;
+                                        var filterDatetime = isfilter ? ",filter: {type: 'date[yyyy-MM-dd HH:mm:ss]'}" : "";
+                                        <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description',sort:true @filterDatetime }">@item.DisplayName</th>
+                                    }
+                                    else if (item.Type == null)
+                                    {
+                                        <th lay-data="{field:'@df.Name',title:'@name',sort:true,align:'center',filter: @isfilter.ToString().ToLower()}">@name</th>
+                                    }
+@*                                    else if (item.Type == typeof(Boolean))
+                                    {
+                                        <th lay-data="{field:'@df.Name',title:'@name',sort:true,align:'center',templet: '#boolTbState'}">@name</th>
+                                    }*@
+                                    else
+                                    {
+                                        <th lay-data="{field:'@item.Name',title:'@item.Description',sort:true,filter: @isfilter.ToString().ToLower()}">@item.DisplayName</th>
+                                    }
+                                }
+
+                                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                                {
+                                    <th lay-data="{toolbar:'#barOpt',minWidth:120,fixed:'right',align:'center'}">操作</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var entity in Model)
+                            {
+                                <tr>
+                                    @foreach (var item in fields)
+                                    {
+                                        var df = item as ListField;
+                                        if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
+                                        {
+                                            <td></td>
+                                        }
+                                        else if (df != null && !df.DataAction.IsNullOrEmpty())
+                                        {
+                                            var url = df.GetUrl(entity);
+                                            var name = df.GetDisplayName(entity) ?? df.Header;
+                                            <td title="@df.Title"><a lay-data="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs" lay-event="action" data-action="@df.DataAction">@name</a></td>
+                                        }
+                                       else if (df != null && !df.Url.IsNullOrEmpty())
+                                        {
+                                            var url = df.GetUrl(entity);
+                                            var name = df.GetDisplayName(entity) ?? df.Header;
+                                            <td title="@df.Title"><a href="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs">@name</a></td>
+                                        }
+                                        else
+                                        {
+                                            @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                                        }
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @await Html.PartialAsync("_List_Pager")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section layuiscripts{
+@*        table.init('parse-table', { //转化静态表格
+            page: true,
+            limit: 20,
+            limits: [20, 50, 100],
+            even: true,
+            defaultToolbar: ['filter','print',"exports",{title:'高级',layEvent: 'moreTool',icon: 'layui-icon-spread-left',id:"demo"}],
+            toolbar: "#table-toolbar"
+        });*@
+        var ii = layer.load(0, {shade: false});
+
+        table.init('parse-table', { //转化静态表格
+            page: false,
+            limit: 20,
+            limits: [20, 50, 100],
+            even: true,
+            defaultToolbar: ['filter','print',"exports"],
+            toolbar: "#table-toolbar",
+            height: 'full-100',
+            cellMinWidth: 100,
+            filterUrl:"@Url.Action("Index")",
+            filterMethod:"from",
+            drag: {toolbar: true},
+@*            where:JSON.parse('@Html.Raw(Context.Request.GetRequestValue("filterSos"))'),*@
+            @*where:{filterSos:'@Html.Raw(Context.Request.GetRequestValue("filterSos"))'},*@
+            filter: {
+                @*items:['column','data','condition','editCondition','clearCache'],*@
+                items:['column','data','condition','clearCache'],
+                cache: false,
+                bottom: false
+            },
+            done: function () {
+                soulTable.render(this)
+            }
+        });
+
+    layer.close(ii);
+    $("#parse-table,#listPager").removeClass("layui-hide");
+
+    //头工具栏事件
+    table.on('toolbar(parse-table)', function(obj){
+      var checkStatus = table.checkStatus(obj.config.id);
+      switch(obj.event){
+        case 'B_Detele_Data':
+        debugger;
+          var checkdata = checkStatus.data;
+          layer.confirm('该操作将删除选中数据并不可恢复！确认删除？', function(index){
+          $.get('@Url.Action("DeleteSelect")',{Keys:stringArray(checkdata)},function(res){
+              layer.msg(res.message,{
+                       time:500,
+                       end:function () {
+                           if(res.code==0)
+                           location.href = '@Url.Action("Index")'
+                      }
+              })
+          });
+          layer.close(index);
+        });
+        break;
+        case 'Add_Data':
+          location.href='@Url.Action("Add", rv)'
+        break;
+        case 'ImpExcel':
+            layer.open({
+              type: 1,
+              title: '导入excel',
+              skin: 'layui-layer-admin',
+              closeBtn: false,
+              area: ['300px', '300px'],
+              anim: 5,
+              shadeClose: true,
+              content: laytpl($('#list-imp-excel').html()).render({}),
+              cancel : function() {
+					layer.close();
+			  },
+			  success : function(layero, index) {
+					ImportExcel();
+			  }
+            });
+        break;
+        case 'moreTool':
+        break;
+      };
+    });
+
+    @if (this.Has(PermissionFlags.Detail))
+    {
+        @await Html.PartialAsync("DropDown/_Detail")
+    }
+
+    @if (this.Has(PermissionFlags.Delete)) 
+    {
+        @await Html.PartialAsync("DropDown/_Delete")
+    }
+    @if (this.Has(PermissionFlags.Update))
+    {
+        @await Html.PartialAsync("DropDown/_Update")
+    }
+    @if (this.Has(PermissionFlags.All))
+    {
+        @await Html.PartialAsync("DropDown/_All")
+    }
+    
+
+
+    //监听行工具事件
+    table.on('tool(parse-table)', function(obj){
+      var data = obj.data;
+      if(obj.event === 'del'){
+        layer.confirm('真的删除行么', function(index){
+           $.get('@Url.Action("Delete")/'+data["@fact.Unique.Name"],function(res){
+                obj.del();
+                layer.close(index);
+           });
+        });
+      } 
+      else if(obj.event === 'edit'){
+          location.href = '@Url.Action("Edit")/'+data["@fact.Unique.Name"];
+      }
+      else if(obj.event === 'select'){
+          location.href = '@Url.Action("Detail")/'+data["@fact.Unique.Name"];
+      }
+      else if(obj.event === 'action'){
+            var url=$(this).attr("lay-data");
+            var dataaction=$(this).attr("data-action");
+            if(dataaction)
+            {
+                $.get(url,function(res){
+                      layer.msg(res.message,{
+                                   time:500,
+                                     end:function () {
+                                         if(res.code==0)
+                                            location.href = '@Url.Action("Index")'
+                                            //同步更新缓存对应的值
+                                            @*var newEnable="";
+                                            if(data.Enable.lastIndexOf('=True')){
+                                                newEnable=data.Enable.replace("=True","=False");
+                                            }
+                                            if(data.Enable.lastIndexOf('=False')){
+                                                newEnable=data.Enable.replace("=False","=True");
+                                            }*@
+
+
+                                            @*data.Enable=newEnable;*@
+                                           @* obj.update(data);
+                                            table.reload("parse-table");*@
+                                    }
+                                 })
+                   });
+           }
+
+      }
+    });
+
+    //单击事件
+    table.on('row(parse-table)', function(obj){
+      var data = obj.data;
+      @*console.info("单击");*@
+    });
+
+    //双击事件
+    table.on('rowDouble(parse-table)', function(obj){
+      var data = obj.data;
+      var jumpUrl='@Url.Action("Edit", rv)';
+      if(jumpUrl.indexOf('?')>-1){
+        jumpUrl=jumpUrl.slice(0,jumpUrl.indexOf('?'));
+      }
+      debugger;
+        location.href = jumpUrl+'/'+data["@fact.Unique.Name"];
+    });
+
+        //开始日期
+    var insStart = laydate.render({
+      elem: '#test-laydate-start'
+      ,min: 0
+      ,done: function(value, date){
+        //更新结束日期的最小日期
+        insEnd.config.min = lay.extend({}, date, {
+          month: date.month - 1
+        });
+        
+        //自动弹出结束日期的选择器
+       insEnd.config.elem[0].focus();
+      }
+    });
+    
+    //结束日期
+    var insEnd = laydate.render({
+      elem: '#test-laydate-end'
+      ,min: 0
+      ,done: function(value, date){
+        //更新开始日期的最大日期
+        insStart.config.max = lay.extend({}, date, {
+          month: date.month - 1
+        });
+      }
+    });
+
+
+}
+@section scripts{
+<script type="text/html" id="table-toolbar">
+      <div class="layui-row layui-col-space5">
+        <div class="layui-col-md3" style="text-align:left;">
+              <div class="layui-btn-container">
+                  @if (this.Has(PermissionFlags.Delete))
+                  {
+                    <button class="layui-btn layui-btn-sm layui-btn-danger icon-btn" lay-event="B_Detele_Data"><i class="layui-icon">&#xe640;</i>批量删除</button>
+                  }
+                  @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+                  {
+                    <button class="layui-btn layui-btn-sm icon-btn" lay-event="Add_Data"><i class="layui-icon">&#xe654;</i>新增</button>
+                    <button class="layui-btn layui-btn-sm icon-btn" lay-event="ImpExcel"><i class="layui-icon">&#xe654;</i>导入</button>
+                  }
+            </div>
+        </div>
+        @if (page != null)
+        {
+            if (!isdis)
+            {
+                <div class="layui-col-md9" style="text-align:right;">
+                    <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+                    <div class="layui-row layui-col-space5">
+                    <div class="layui-inline"><input type="text" class="layui-input" id="test-laydate-start" autocomplete="off" name="dtStart" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")"></div>
+                    <div class="layui-inline"><label class="layui-form-label" style="width:20px">~</label></div>
+                    <div class="layui-inline">
+                        <input type="text" class="layui-input" id="test-laydate-end" name="dtEnd" autocomplete="off" placeholder="结束日期" value="@Context.Request.GetRequestValue("dtEnd")"></div>
+                    <div class="layui-inline">
+                    <label class="layui-form-label">关键字:</label>
+                    <div class="layui-inline">
+                    <input class="layui-input" name="q" id="test-table-demoReload" autocomplete="off" placeholder="多关键词空格隔开" value="@Context.Request.GetRequestValue("q")">
+                    </div>
+                    <button class="layui-btn" data-type="reload" type="submit"><i class="layui-icon">&#xe615;</i>搜索</button>
+                    </div>
+                    </div>
+                    </form>
+                </div>
+            }
+        }
+      </div>
+</script>
+
+    @* 设置行操作按钮*@
+    @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+    {
+        @foreach (var entity in Model)
+        {
+            @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+            break;
+        }
+    }
+
+    @* 设置行状态按钮*@
+    @if (this.Has(PermissionFlags.Update))
+    {
+        @foreach (var entity in Model)
+        {
+            @await Html.PartialAsync("_List_Data_Switch", (Object)entity)
+            break;
+        }
+    }
+
+    @await Html.PartialAsync("_List_Data_Imp_Excel")
+}
+
+<script>
+    function stringArray(checkdata){
+        var get_data=new Array();
+          //拼接字符串
+          for(var i=0;i<checkdata.length;i++){
+            if(checkdata[i].@fact.Unique){
+                get_data.push(checkdata[i].@fact.Unique);
+            }
+          }
+
+          return get_data.join(',');
+    }
+</script>

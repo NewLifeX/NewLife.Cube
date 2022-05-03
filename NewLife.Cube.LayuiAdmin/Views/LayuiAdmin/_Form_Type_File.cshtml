@@ -1,0 +1,30 @@
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model.Item1;
+    var field = Model.Item2;
+    var fn = field.Name.ToLower();
+}
+
+
+    @switch (fn)
+    {
+        case "image":
+            {
+                <span class="input-group-text"><i class="bi bi-images"></i></span>
+                break;
+            }
+        case "file":
+            {
+                <span class="input-group-text"><i class="bi bi-folder"></i></span>
+                break;
+            }
+        default:
+            <span class="input-group-text"><i class="fas fa-file-upload"></i></span>
+            break;
+    }
+
+    <input id="@fn" name="@fn" type="file" class="layui-upload-drag" autocomplete="off" placeholder="" value="@entity[field.Name]" />

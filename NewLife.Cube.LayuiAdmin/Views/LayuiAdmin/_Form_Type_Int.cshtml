@@ -1,0 +1,12 @@
+﻿@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+
+@{
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = Model.Type;
+}
+<input id="@name" name="@name" type="number" class="layui-input" autocomplete="off" value="@value" />

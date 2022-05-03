@@ -1,0 +1,32 @@
+﻿@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var pair = (ValueTuple<IEntity, DataField>)Model;
+    var entity = pair.Item1;
+    var field = pair.Item2;
+
+    var set = NewLife.Cube.Setting.Current;
+    var cls = set.FormGroupClass;
+    if (cls.IsNullOrEmpty()) { cls = "layui-form-item"; }
+
+    var isHide="";
+    if (field.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs"))
+    {
+        isHide="layui-hide";
+    }
+}
+@if (field.IsBigText())
+{
+    var isRow = cls.Contains("row") ? "row" : "";
+    <div class="layui-form-item @(isRow) @isHide">
+        @await Html.PartialAsync("_Form_Type_BigText", (Object)Model)
+    </div>
+}
+else
+{
+    <div class="layui-form-item @isHide">
+        @await Html.PartialAsync("_Form_Type_Item", (Object)Model)
+    </div>
+}

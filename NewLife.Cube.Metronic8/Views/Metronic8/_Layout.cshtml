@@ -5,8 +5,8 @@
     var set = NewLife.Cube.Setting.Current;
     var set2 = ViewBag.PageSetting as PageSetting;
 
-        var title = ViewBag.Title + "";
-    if (title != "" && !title.Contains(" - "))
+    var title = ViewBag.Title + "";
+    if (set.TitlePrefix && title != "" && !title.Contains(" - "))
     {
         title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
     }
@@ -38,7 +38,7 @@
     <!-- 核心脚本 -->
     <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-    
+
     <!-- 全局脚本 -->
     <script src="~/assets/plugins/global/plugins.bundle.js"></script>
     <script src="~/assets/js/scripts.bundle.js"></script>
@@ -93,13 +93,12 @@
     @await Html.PartialAsync("_Layout_Scrolltop")
     <div id="div_footer"></div>
     <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
-
     <!--魔方自定义脚本-->
     <script src="~/assets/cube.js"></script>
     <!--自定义脚本-->
     @RenderSection("scripts", required: false)
 
-        <!-- 启用列表表头选择 -->
+    <!-- 启用列表表头选择 -->
     @if (set2.EnableSelect)
     {
         <script>
@@ -142,29 +141,32 @@
 
     <script>
         $(function () {
-            @if (set != null && set.BootstrapSelect) {<text>
-            $('.multiselect').each(function () {
-                $(this).multiselect({
-                    // 下拉列表仅在列表项比较多时显示过滤框
-                    enableFiltering: $(this).children().length > 10,
-                    buttonClass: 'btn btn-white btn-primary',
-                    templates: {
-                        button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
-                        ul: '<ul class="multiselect-container dropdown-menu"></ul>',
-                        filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
-                        filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
-                        li: '<li><a href="javascript:void(0);"><label></label></a></li>',
-                        divider: '<li class="multiselect-item divider"></li>',
-                        liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
-                    },
-                    filterPlaceholder: '搜索',
-                    nonSelectedText: '无',
-                    allSelectedText: '全选'
+        @if (set != null && set.BootstrapSelect)
+        {
+            <text>
+                $('.multiselect').each(function () {
+                    $(this).multiselect({
+                        // 下拉列表仅在列表项比较多时显示过滤框
+                        enableFiltering: $(this).children().length > 10,
+                        buttonClass: 'btn btn-white btn-primary',
+                        templates: {
+                            button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                            ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                            filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                            filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                            li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                            divider: '<li class="multiselect-item divider"></li>',
+                            liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                        },
+                        filterPlaceholder: '搜索',
+                        nonSelectedText: '无',
+                        allSelectedText: '全选'
+                    });
                 });
-            });
-            </text>}
+            </text>
+        }
 
-            @*双击跳转到form
+        @*双击跳转到form
             _List_Data_Action.cshtml变更
             @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
             $('tr').dblclick(function () {
