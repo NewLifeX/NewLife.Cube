@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust" Version="2.1.2022.501" />
+    <PackageReference Include="NewLife.Stardust" Version="2.1.2022.509-beta0359" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.11" />
   </ItemGroup>
 
