@@ -67,10 +67,10 @@ namespace NewLife.Cube.ViewModels
         /// <returns></returns>
         public virtual String GetUrl(IExtend data)
         {
-            if (Url.IsNullOrEmpty()) return null;
-
             var svc = GetService<IUrlExtend>();
             if (svc != null) return svc.Resolve(this, data);
+
+            if (Url.IsNullOrEmpty()) return null;
 
             return _reg.Replace(Url, m => data[m.Groups[1].Value + ""] + "");
         }

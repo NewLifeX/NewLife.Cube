@@ -28,15 +28,17 @@ namespace NewLife.Cube.Extensions
         /// <param name="fields"></param>
         /// <param name="fieldName"></param>
         /// <param name="display"></param>
-        public static void TraceUrl(this FieldCollection fields, String fieldName = "TraceId", String display = "跟踪")
+        public static ListField TraceUrl(this FieldCollection fields, String fieldName = "TraceId", String display = "跟踪")
         {
-            if (fields.GetField(fieldName) is ListField df)
-            {
-                df.DisplayName = display;
-                //df.Url = BuildUrl("{" + fieldName + "}");
-                df.DataVisible = (e, f) => !(e[f.Name] as String).IsNullOrEmpty();
-                df.AddService(new StarUrlExtend());
-            }
+            if (fields.GetField(fieldName) is not ListField df) return null;
+
+            df.DisplayName = display;
+            //df.Url = BuildUrl("{" + fieldName + "}");
+            df.Title = "链路追踪，用于APM性能追踪定位，还原该事件的调用链";
+            df.DataVisible = (e, f) => !(e[f.Name] as String).IsNullOrEmpty();
+            df.AddService(new StarUrlExtend());
+
+            return df;
         }
 
         private class StarUrlExtend : IUrlExtend
