@@ -128,9 +128,10 @@ namespace NewLife.Cube
             var modules = moduleManager.LoadAll();
             if (modules.Count > 0)
             {
-                XTrace.WriteLine("加载功能插件 [{0}] 个", modules.Count);
+                XTrace.WriteLine("加载功能插件[{0}]个", modules.Count);
                 foreach (var item in modules)
                 {
+                    XTrace.WriteLine("加载插件：{0}", item.Key);
                     item.Value.Add(services);
                 }
             }
@@ -305,9 +306,10 @@ namespace NewLife.Cube
             var modules = moduleManager.LoadAll();
             if (modules.Count > 0)
             {
-                XTrace.WriteLine("启用功能插件 [{0}] 个", modules.Count);
+                XTrace.WriteLine("启用功能插件[{0}]个", modules.Count);
                 foreach (var item in modules)
                 {
+                    XTrace.WriteLine("启用插件：{0}", item.Key);
                     item.Value.Use(app, env);
                 }
             }

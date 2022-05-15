@@ -31,9 +31,16 @@ public class ModuleManager
             {
                 try
                 {
-                    var type = !item.FilePath.IsNullOrEmpty() && item.FilePath.EndsWithIgnoreCase(".dll") ?
-                        Assembly.LoadFrom(item.FilePath).GetType(item.ClassName) :
-                        Type.GetType(item.ClassName);
+                    var type = Type.GetType(item.ClassName);
+                    if (type == null)
+                    {
+                        if (item.FilePath.IsNullOrEmpty() || !item.FilePath.EndsWithIgnoreCase(".dll")) continue;
+
+                        var filePath = item.FilePath.GetFullPath();
+                        if (!File.Exists(filePath)) continue;
+
+                        type = Assembly.LoadFrom(item.FilePath).GetType(item.ClassName);
+                    }
 
                     if (type != null)
                     {
