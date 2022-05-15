@@ -1,7 +1,5 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using NewLife.Data;
-using XCode;
 using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels
@@ -10,8 +8,8 @@ namespace NewLife.Cube.ViewModels
     public class ListField : DataField
     {
         #region 属性
-        ///// <summary>单元格文字</summary>
-        //public String Text { get; set; }
+        /// <summary>单元格文字</summary>
+        public String Text { get; set; }
 
         /// <summary>单元格标题。数据单元格上的提示文字</summary>
         public String Title { get; set; }
@@ -60,6 +58,26 @@ namespace NewLife.Cube.ViewModels
             if (DisplayName.IsNullOrEmpty()) return null;
 
             return _reg.Replace(DisplayName, m => data[m.Groups[1].Value + ""] + "");
+        }
+
+        /// <summary>针对指定实体对象计算链接名，替换其中变量</summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public virtual String GetLinkName(IExtend data)
+        {
+            // 如果设置了单元格文字，则优先使用。Text>Entity[name]>DisplayName
+            var txt = Text;
+            if (txt.IsNullOrEmpty())
+            {
+                // 在数据列中，实体对象取属性值优先于显示名
+                if (Field != null && DisplayName == Field.DisplayName) return data[Name] as String;
+
+                txt = DisplayName;
+            }
+
+            if (txt.IsNullOrEmpty()) return null;
+
+            return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
         }
 
         /// <summary>针对指定实体对象计算url，替换其中变量</summary>

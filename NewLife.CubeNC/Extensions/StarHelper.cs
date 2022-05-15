@@ -32,8 +32,9 @@ namespace NewLife.Cube.Extensions
         {
             if (fields.GetField(fieldName) is not ListField df) return null;
 
-            df.DisplayName = display;
+            df.Text = display;
             //df.Url = BuildUrl("{" + fieldName + "}");
+            df.Target = "_blank";
             df.Title = "链路追踪，用于APM性能追踪定位，还原该事件的调用链";
             df.DataVisible = (e, f) => !(e[f.Name] as String).IsNullOrEmpty();
             df.AddService(new StarUrlExtend());
