@@ -28,7 +28,7 @@ namespace NewLife.Cube.Extensions
         /// <param name="fields"></param>
         /// <param name="fieldName"></param>
         /// <param name="display"></param>
-        public static ListField TraceUrl(this FieldCollection fields, String fieldName = "TraceId", String display = "跟踪")
+        public static ListField TraceUrl(this FieldCollection fields, String fieldName = "TraceId", String display = "追踪")
         {
             if (fields.GetField(fieldName) is not ListField df) return null;
 
