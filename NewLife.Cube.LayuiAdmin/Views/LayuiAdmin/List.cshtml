@@ -9,7 +9,7 @@
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
     var fact = ViewBag.Factory as IEntityFactory;
-    var page = ViewBag.Page as Pager;
+    var pager = ViewBag.Page as Pager;
     var set = ViewBag.PageSetting as PageSetting;
 
     var charts = ViewBag.Charts as ECharts[];
@@ -33,7 +33,7 @@
     var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info")
     || an.Contains("changepassword") || an.Contains("binds");
 
-    var rv = page.GetRouteValue();
+    var rv = pager.GetRouteValue();
 }
 
 @section css{
@@ -53,7 +53,7 @@
                                 }
                                 @foreach (var item in fields)
                                 {
-                                    var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
+                                    var sortUrl = !item.MapField.IsNullOrEmpty() ? pager.GetSortUrl(item.MapField) : pager.GetSortUrl(item.Name);
                                     var df = item as ListField;
                                     var name = df?.Header ?? item.DisplayName;
                                     var title = df?.HeaderTitle ?? item.Description;
@@ -137,7 +137,7 @@
 
         table.init('parse-table', { //转化静态表格
             page: false,
-            limit: 20,
+            limit: @pager.PageSize,
             limits: [20, 50, 100],
             even: true,
             defaultToolbar: ['filter','print',"exports"],
@@ -340,12 +340,12 @@
                   }
             </div>
         </div>
-        @if (page != null)
+        @if (pager != null)
         {
             if (!isdis)
             {
                 <div class="layui-col-md9" style="text-align:right;">
-                    <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
+                    <form action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
                     <div class="layui-row layui-col-space5">
                     <div class="layui-inline"><input type="text" class="layui-input" id="test-laydate-start" autocomplete="off" name="dtStart" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")"></div>
                     <div class="layui-inline"><label class="layui-form-label" style="width:20px">~</label></div>
