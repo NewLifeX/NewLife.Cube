@@ -10,9 +10,6 @@ using NewLife.Cube.Metronic;
 using NewLife.Cube.Metronic8;
 using NewLife.Cube.Tabler;
 using NewLife.Cube.WebMiddleware;
-using NewLife.Log;
-using NewLife.Threading;
-using Stardust;
 using Setting = NewLife.Cube.Setting;
 
 namespace CubeDemoNC
@@ -25,10 +22,9 @@ namespace CubeDemoNC
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var star = new StarFactory(null, null, null);
-            TracerMiddleware.Tracer = star.Tracer;
-
-            services.AddSingleton<ITracer>(star.Tracer);
+            // 引入星尘，设置监控中间件
+            var star = services.AddStardust(null);
+            TracerMiddleware.Tracer = star?.Tracer;
 
             services.AddControllersWithViews();
             services.AddCube();
@@ -108,12 +104,12 @@ namespace CubeDemoNC
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            // 探测星尘
-            ThreadPoolX.QueueUserWorkItem(() =>
-            {
-                var client = new LocalStarClient();
-                client.ProbeAndInstall(null, "1.1");
-            });
+            //// 探测星尘
+            //ThreadPoolX.QueueUserWorkItem(() =>
+            //{
+            //    var client = new LocalStarClient();
+            //    client.ProbeAndInstall(null, "1.1");
+            //});
 
             // 所有请求没有命中的，统一在这里处理
             if (set.EnableNewUI)
