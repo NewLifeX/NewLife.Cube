@@ -189,7 +189,7 @@ namespace NewLife.Cube.Admin.Controllers
         /// </summary>
         /// <returns></returns>
         [DisplayName("释放内存")]
-        [EntityAuthorize((PermissionFlags)16)]
+        [EntityAuthorize((PermissionFlags)32)]
         public ActionResult MemoryFree()
         {
             try

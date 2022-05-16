@@ -24,6 +24,9 @@
     //var req = NewLife.Web.HttpContext.Current.Request;
     var conn = httpContext.Connection;
 
+    // 重启权限在Index，而不是Main
+    var menu = ViewBag.Menu as IMenu;
+    menu = menu?.Parent.Childs.FirstOrDefault(e => e.Name == "Index");
     var mi = MachineInfo.Current ?? new MachineInfo();
 
     // GC设置
@@ -47,7 +50,7 @@
                     @*据说此功能已被干掉*@
                     @*@HttpRuntime.AppDomainAppVirtualPath*@
                     &nbsp;
-                    @if (this.Has((PermissionFlags)16))
+                    @if (this.Has(menu, (PermissionFlags)16))
                     {
                         <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>
                     }
@@ -148,7 +151,9 @@
                 </td>
             </tr>
             <tr>
-                @{ var process = Process.GetCurrentProcess();}
+                @{
+                    var process = Process.GetCurrentProcess();
+                }
                 <td class="name">
                     内存：
                 </td>
@@ -156,7 +161,10 @@
                     物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
                     工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
                     GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
-                    <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+                    @if (this.Has(menu, (PermissionFlags)32))
+                    {
+                        <a href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
+                    }
                 </td>
                 <td class="name">
                     进程时间：
@@ -175,7 +183,9 @@
                     ，@gc
                 </td>
                 <td class="name">
-                    @{ var app = ApplicationManager.Load();}
+                    @{
+                        var app = ApplicationManager.Load();
+                    }
                     应用启动：
                 </td>
                 <td class="value">
