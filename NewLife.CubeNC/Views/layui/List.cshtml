@@ -18,64 +18,72 @@
 }
 
 @section css{
-<style>
-    .layui-fluid {
-        padding: 10px;
-    }
-</style>
+    <style>
+        .layui-fluid {
+            padding: 10px;
+        }
+    </style>
 }
 
-<div class="layui-fluid" id="mainpage">
-    <div class="layui-row layui-col-space15">
-        <div class="layui-col-md12">
-            <div class="layui-panel">
-                <div class="layui-card-body">
-                    <table lay-filter="parse-table-demo">
-                        <thead>
-                            <tr>
-                                @foreach (var item in fields)
+    <div class="layui-fluid" id="mainpage">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md12">
+                <div class="layui-panel">
+                    <div class="layui-card-body">
+                        <table lay-filter="parse-table-demo">
+                            <thead>
+                                <tr>
+                                    @foreach (var item in fields)
                                 {
                                     if (item.Type == typeof(DateTime))
                                     {
                                         var width = item.Name.EndsWithIgnoreCase("Date") ? 96 : 150;
-                                                <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
+                                        <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
                                     }
                                     else
                                     {
-                                                <th lay-data="{field:'@item.Name',title:'@item.Description'}">@item.DisplayName</th>
+                                        <th lay-data="{field:'@item.Name',title:'@item.Description'}">@item.DisplayName</th>
                                     }
                                 }
 
                                 @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                                 {
-                                        <th lay-data="{toolbar:'#barOpt',minWidth:120,fixed:'right',align:'center'}">操作</th>
+                                    <th lay-data="{toolbar:'#barOpt',minWidth:120,fixed:'right',align:'center'}">操作</th>
                                 }
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var entity in Model)
                             {
-                                    <tr>
+                                <tr>
                                     @foreach (var item in fields)
                                     {
                                         var df = item as ListField;
+                                        var url = (String)df?.GetUrl(entity);
                                         if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
                                         {
-                                                        <td></td>
+                                            <td></td>
                                         }
                                         else if (df != null && !df.DataAction.IsNullOrEmpty())
                                         {
-                                            var url = df.GetUrl(entity);
-                                            var name = df.GetDisplayName(entity) ?? df.Header;
-                                                                var title = df.GetTitle(entity);
-                                                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                                            // 在数据列中，实体对象取属性值优先于显示名
+                                            var name = (df.Field != null && df.DisplayName == df.Field.DisplayName) ? entity[df.Name] : df.GetDisplayName(entity);
+                                            var title = df.GetTitle(entity);
+                                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                                        }
+                                        else if (df != null && !url.IsNullOrEmpty())
+                                        {
+                                            // 在数据列中，实体对象取属性值优先于显示名
+                                            var name = (df.Field != null && df.DisplayName == df.Field.DisplayName) ? entity[df.Name] : df.GetDisplayName(entity);
+                                            var title = df.GetTitle(entity);
+                                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@name</a></td>
                                         }
                                         else
                                         {
                                             @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
                                         }
                                     }
-                                    </tr>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -86,29 +94,29 @@
 </div>
 
 @section scripts{
-<script>
-    layui.use('table', function () {
-        var table = layui.table
-        $ = layui.$;
+    <script>
+        layui.use('table', function() {
+            var table = layui.table
+            $ = layui.$;
 
-        table.init('parse-table-demo', { //转化静态表格
-            page: true,
-            limit: 20,
-            limits: [20, 50, 100],
-            size: "sm",
-            even: true,
-            toolbar: "#toolbarDemo"
+            table.init('parse-table-demo', { //转化静态表格
+                page: true,
+                limit: 20,
+                limits: [20, 50, 100],
+                size: "sm",
+                even: true,
+                toolbar: "#toolbarDemo"
+            });
         });
-    });
-</script>
+    </script>
 
-<script type="text/html" id="toolbarDemo">
-    <div class="layui-btn-container">
-        <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
-        <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
-        <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
-    </div>
-</script>
+    <script type="text/html" id="toolbarDemo">
+        <div class="layui-btn-container">
+            <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+            <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+            <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+        </div>
+    </script>
 
     @* 设置行操作按钮*@
     @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))

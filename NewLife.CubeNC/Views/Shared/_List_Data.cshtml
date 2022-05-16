@@ -54,23 +54,20 @@
                 @foreach (var item in fields)
                 {
                     var df = item as ListField;
+                    var url = (String)df?.GetUrl(entity);
                     if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
                     {
                         <td></td>
                     }
                     else if (df != null && !df.DataAction.IsNullOrEmpty())
                     {
-                        // 在数据列中，实体对象取属性值优先于显示名
-                        var name = (df.Field != null && df.DisplayName == df.Field.DisplayName) ? entity[df.Name] : df.GetDisplayName(entity);
-                        var url = df.GetUrl(entity);
+                        var name = df.GetDisplayName(entity);
                         var title = df.GetTitle(entity);
                         <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
                     }
-                    else if (df != null && !df.Url.IsNullOrEmpty())
+                    else if (df != null && !url.IsNullOrEmpty())
                     {
-                        // 在数据列中，实体对象取属性值优先于显示名
-                        var name = (df.Field != null && df.DisplayName == df.Field.DisplayName) ? entity[df.Name] : df.GetDisplayName(entity);
-                        var url = df.GetUrl(entity);
+                        var name = df.GetLinkName(entity);
                         var title = df.GetTitle(entity);
                         <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@name</a></td>
                     }
