@@ -71,6 +71,10 @@
                                 {
                                     <i class="fas fa-check fw-bolder text-success"></i>
                                 }
+                                else
+                                {
+                                    <i class="fas fa-times fw-bolder text-danger"></i>
+                                }
                             </td>
                             <td>@entity.Permission</td>
                             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
