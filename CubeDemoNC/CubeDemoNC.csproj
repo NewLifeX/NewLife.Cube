@@ -5,11 +5,10 @@
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
-    <VersionPrefix>5.0</VersionPrefix>
-    <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
-    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
-    <FileVersion>$(Version)</FileVersion>
-    <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
+    <Version>5.0.2022.0101</Version>
+    <FileVersion>5.0.2022.0101</FileVersion>
+    <AssemblyVersion>5.0.*</AssemblyVersion>
+    <LangVersion>latest</LangVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
     <ImplicitUsings>enable</ImplicitUsings>
