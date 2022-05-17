@@ -10,13 +10,12 @@
 @{
     Layout = null;
 
+    var set = NewLife.Cube.Setting.Current;
     var cfg = NewLife.Common.SysConfig.Current;
 
     var title = ViewBag.Title + "";
-    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
-    title += cfg.DisplayName;
+    if (set.TitlePrefix && title != "" && !title.Contains(" - ")) title += " - " + cfg.DisplayName;
 
-    var set = NewLife.Cube.Setting.Current;
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
@@ -97,7 +96,7 @@
                 sublink: 'http://cube.newlifex.com',
                 left: 'center'
             },
-            tooltip : {
+            tooltip: {
                 trigger: 'item'
             },
             bmap: {
@@ -204,13 +203,13 @@
                     }]
                 }
             },
-            series : [
+            series: [
                 {
                     name: 'pm2.5',
                     type: 'scatter',
                     coordinateSystem: 'bmap',
                     data: data,
-                    symbolSize: function (val) {
+                    symbolSize: function(val) {
                         return val[2] / 10;
                     },
                     encode: {
@@ -232,7 +231,7 @@
                     type: 'effectScatter',
                     coordinateSystem: 'bmap',
                     data: data2,
-                    symbolSize: function (val) {
+                    symbolSize: function(val) {
                         return val[2] / 10;
                     },
                     encode: {
