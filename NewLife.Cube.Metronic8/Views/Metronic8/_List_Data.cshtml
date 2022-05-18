@@ -50,7 +50,7 @@
                             else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)
                             || item.Type == typeof(Single) || item.Type == typeof(UInt32) || item.Type == typeof(UInt64))
                             {
-                                <th class="text-right" data-bs-toggle="tooltip" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                                <th class="text-end" data-bs-toggle="tooltip" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                             }
                             else if (item.Type == null)
                             {
