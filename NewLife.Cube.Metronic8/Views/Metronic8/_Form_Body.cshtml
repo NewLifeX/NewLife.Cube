@@ -57,7 +57,8 @@
                 }
                 else
                 {
-                    <div class="@cls">
+                    var hide = item.Name.EqualIgnoreCase("ID") ? "d-none" : "";
+                    <div class="@cls @hide">
                         <!-- 字段标签（含帮助说明信息） -->
                         <div class="d-inline-flex align-items-center">
                             <label class="col-form-label me-2" for="@item.Name">@display</label>

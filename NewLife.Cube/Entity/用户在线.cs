@@ -142,11 +142,11 @@ namespace NewLife.Cube.Entity
         public DateTime LastError { get => _LastError; set { if (OnPropertyChanging("LastError", value)) { _LastError = value; OnPropertyChanged("LastError"); } } }
 
         private String _TraceId;
-        /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
-        [DisplayName("性能追踪")]
-        [Description("性能追踪。用于APM性能追踪定位，还原该事件的调用链")]
+        /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
+        [DisplayName("追踪")]
+        [Description("追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("TraceId", "性能追踪。用于APM性能追踪定位，还原该事件的调用链", "")]
+        [BindColumn("TraceId", "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链", "")]
         public String TraceId { get => _TraceId; set { if (OnPropertyChanging("TraceId", value)) { _TraceId = value; OnPropertyChanged("TraceId"); } } }
 
         private String _Address;
@@ -304,7 +304,7 @@ namespace NewLife.Cube.Entity
             /// <summary>最后错误</summary>
             public static readonly Field LastError = FindByName("LastError");
 
-            /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+            /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
             public static readonly Field TraceId = FindByName("TraceId");
 
             /// <summary>地址。根据IP计算</summary>
@@ -373,7 +373,7 @@ namespace NewLife.Cube.Entity
             /// <summary>最后错误</summary>
             public const String LastError = "LastError";
 
-            /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+            /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
             public const String TraceId = "TraceId";
 
             /// <summary>地址。根据IP计算</summary>

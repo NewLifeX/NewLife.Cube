@@ -1,5 +1,4 @@
-﻿using System;
-using NewLife.Cube.ViewModels;
+﻿using NewLife.Cube.ViewModels;
 using NewLife.Data;
 
 namespace NewLife.Cube.Extensions
@@ -28,15 +27,29 @@ namespace NewLife.Cube.Extensions
         /// <param name="fields"></param>
         /// <param name="fieldName"></param>
         /// <param name="display"></param>
-        public static void TraceUrl(this FieldCollection fields, String fieldName = "TraceId", String display = "跟踪")
+        public static ListField TraceUrl(this FieldCollection fields, String fieldName, String display) => TraceUrl(fields, fieldName, display, false);
+
+        /// <summary>设置星尘监控链接</summary>
+        /// <param name="fields"></param>
+        /// <param name="fieldName"></param>
+        /// <param name="display"></param>
+        /// <param name="newWindow"></param>
+        public static ListField TraceUrl(this FieldCollection fields, String fieldName = "TraceId", String display = "追踪", Boolean newWindow = false)
         {
-            if (fields.GetField(fieldName) is ListField df)
-            {
-                df.DisplayName = display;
-                //df.Url = BuildUrl("{" + fieldName + "}");
-                df.DataVisible = (e, f) => !(e[f.Name] as String).IsNullOrEmpty();
-                df.AddService(new StarUrlExtend());
-            }
+            if (fieldName.IsNullOrEmpty()) fieldName = "TraceId";
+            if (fields.GetField(fieldName) is not ListField df) return null;
+
+            if (display.IsNullOrEmpty()) display = "追踪";
+            df.Text = display;
+
+            //df.Url = BuildUrl("{" + fieldName + "}");
+            if (newWindow) df.Target = "_blank";
+
+            df.Title = "链路追踪，用于APM性能追踪定位，还原该事件的调用链";
+            df.DataVisible = (e, f) => !(e[f.Name] as String).IsNullOrEmpty();
+            df.AddService(new StarUrlExtend());
+
+            return df;
         }
 
         private class StarUrlExtend : IUrlExtend

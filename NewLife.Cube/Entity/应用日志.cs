@@ -107,11 +107,11 @@ namespace NewLife.Cube.Entity
         public String RefreshToken { get => _RefreshToken; set { if (OnPropertyChanging("RefreshToken", value)) { _RefreshToken = value; OnPropertyChanged("RefreshToken"); } } }
 
         private String _TraceId;
-        /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
-        [DisplayName("性能追踪")]
-        [Description("性能追踪。用于APM性能追踪定位，还原该事件的调用链")]
+        /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
+        [DisplayName("追踪")]
+        [Description("追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("TraceId", "性能追踪。用于APM性能追踪定位，还原该事件的调用链", "")]
+        [BindColumn("TraceId", "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链", "")]
         public String TraceId { get => _TraceId; set { if (OnPropertyChanging("TraceId", value)) { _TraceId = value; OnPropertyChanged("TraceId"); } } }
 
         private String _Remark;
@@ -259,7 +259,7 @@ namespace NewLife.Cube.Entity
             /// <summary>刷新令牌</summary>
             public static readonly Field RefreshToken = FindByName("RefreshToken");
 
-            /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+            /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
             public static readonly Field TraceId = FindByName("TraceId");
 
             /// <summary>详细信息</summary>
@@ -319,7 +319,7 @@ namespace NewLife.Cube.Entity
             /// <summary>刷新令牌</summary>
             public const String RefreshToken = "RefreshToken";
 
-            /// <summary>性能追踪。用于APM性能追踪定位，还原该事件的调用链</summary>
+            /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
             public const String TraceId = "TraceId";
 
             /// <summary>详细信息</summary>
