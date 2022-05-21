@@ -94,10 +94,10 @@ namespace NewLife.Cube.Admin.Controllers
             var dal = DAL.Create(name);
             //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, true);
             //var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, true);
-            var bak = $"{dal.ConnName}_{DateTime.Now:yyyyMMddHHmmss}.zip";
+            var bak = $"{name}_{DateTime.Now:yyyyMMddHHmmss}.zip";
             bak = NewLife.Setting.Current.BackupPath.CombinePath(bak);
             //var tables = dal.Tables;
-            var tables = EntityFactory.GetTables(dal.ConnName, false);
+            var tables = EntityFactory.GetTables(name, false);
             dal.BackupAll(tables, bak);
 
             sw.Stop();
