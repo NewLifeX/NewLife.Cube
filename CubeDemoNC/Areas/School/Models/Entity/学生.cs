@@ -29,6 +29,7 @@ namespace NewLife.School.Entity
 
         private Int32 _ClassID;
         /// <summary>班级</summary>
+        [Category("基本信息")]
         [DisplayName("班级")]
         [Description("班级")]
         [DataObjectField(false, false, false, 0)]
@@ -37,6 +38,7 @@ namespace NewLife.School.Entity
 
         private String _Name;
         /// <summary>名称</summary>
+        [Category("基本信息")]
         [DisplayName("名称")]
         [Description("名称")]
         [DataObjectField(false, false, true, 50)]
@@ -45,6 +47,7 @@ namespace NewLife.School.Entity
 
         private SexKind _Sex;
         /// <summary>性别</summary>
+        [Category("基本信息")]
         [DisplayName("性别")]
         [Description("性别")]
         [DataObjectField(false, false, false, 0)]
@@ -53,6 +56,7 @@ namespace NewLife.School.Entity
 
         private Int32 _Age;
         /// <summary>年龄</summary>
+        [Category("基本信息")]
         [DisplayName("年龄")]
         [Description("年龄")]
         [DataObjectField(false, false, false, 0)]
@@ -61,6 +65,7 @@ namespace NewLife.School.Entity
 
         private String _Mobile;
         /// <summary>手机</summary>
+        [Category("基本信息")]
         [DisplayName("手机")]
         [Description("手机")]
         [DataObjectField(false, false, true, 50)]
@@ -69,6 +74,7 @@ namespace NewLife.School.Entity
 
         private String _Address;
         /// <summary>地址</summary>
+        [Category("基本信息")]
         [DisplayName("地址")]
         [Description("地址")]
         [DataObjectField(false, false, true, 50)]
@@ -77,6 +83,7 @@ namespace NewLife.School.Entity
 
         private Boolean _Enable;
         /// <summary>启用</summary>
+        [Category("基本信息")]
         [DisplayName("启用")]
         [Description("启用")]
         [DataObjectField(false, false, false, 0)]
@@ -85,6 +92,7 @@ namespace NewLife.School.Entity
 
         private Int32 _CreateUserID;
         /// <summary>创建者</summary>
+        [Category("扩展信息")]
         [DisplayName("创建者")]
         [Description("创建者")]
         [DataObjectField(false, false, false, 0)]
@@ -93,6 +101,7 @@ namespace NewLife.School.Entity
 
         private DateTime _CreateTime;
         /// <summary>创建时间</summary>
+        [Category("扩展信息")]
         [DisplayName("创建时间")]
         [Description("创建时间")]
         [DataObjectField(false, false, true, 0)]
@@ -101,6 +110,7 @@ namespace NewLife.School.Entity
 
         private String _CreateIP;
         /// <summary>创建地址</summary>
+        [Category("扩展信息")]
         [DisplayName("创建地址")]
         [Description("创建地址")]
         [DataObjectField(false, false, true, 50)]
@@ -109,6 +119,7 @@ namespace NewLife.School.Entity
 
         private Int32 _UpdateUserID;
         /// <summary>更新者</summary>
+        [Category("扩展信息")]
         [DisplayName("更新者")]
         [Description("更新者")]
         [DataObjectField(false, false, false, 0)]
@@ -117,6 +128,7 @@ namespace NewLife.School.Entity
 
         private DateTime _UpdateTime;
         /// <summary>更新时间</summary>
+        [Category("扩展信息")]
         [DisplayName("更新时间")]
         [Description("更新时间")]
         [DataObjectField(false, false, true, 0)]
@@ -125,6 +137,7 @@ namespace NewLife.School.Entity
 
         private String _UpdateIP;
         /// <summary>更新地址</summary>
+        [Category("扩展信息")]
         [DisplayName("更新地址")]
         [Description("更新地址")]
         [DataObjectField(false, false, true, 50)]
@@ -133,6 +146,7 @@ namespace NewLife.School.Entity
 
         private String _Remark;
         /// <summary>备注</summary>
+        [Category("扩展信息")]
         [DisplayName("备注")]
         [Description("备注")]
         [DataObjectField(false, false, true, 200)]

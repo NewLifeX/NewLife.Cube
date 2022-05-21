@@ -52,11 +52,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Areas\School\Models\Build.log">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Build.tt</DependentUpon>
-    </None>
     <None Update="Areas\School\Models\Build.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Build.log</LastGenOutput>
