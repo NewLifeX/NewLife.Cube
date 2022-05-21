@@ -96,7 +96,8 @@ namespace NewLife.Cube.Admin.Controllers
             //var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, true);
             var bak = $"{dal.ConnName}_{DateTime.Now:yyyyMMddHHmmss}.zip";
             bak = NewLife.Setting.Current.BackupPath.CombinePath(bak);
-            var tables = dal.Tables;
+            //var tables = dal.Tables;
+            var tables = EntityFactory.GetTables(dal.ConnName, false);
             dal.BackupAll(tables, bak);
 
             sw.Stop();
