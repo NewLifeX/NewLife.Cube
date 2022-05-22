@@ -4,13 +4,47 @@
 @{
     var entity = Model as IEntity;
     var fields = ViewBag.Fields as FieldCollection;
+    var groupFields = fields.GroupBy(e => e.Category).Where(e => !e.Key.IsNullOrEmpty()).ToList();
+    var isCategory = groupFields.Count() > 1;
 }
-@foreach (var item in fields)
+
+@if (isCategory)
 {
-    if (!item.PrimaryKey && (item.DataVisible == null || item.DataVisible(entity, item)))
+    <ul class="nav nav-tabs" role="tablist">
+        @for (int i = 0; i < groupFields.Count(); i++)
+        {
+            <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@groupFields[i].Key</a></li>
+        }
+    </ul>
+    <div class="tab-content">
+        @for (int i = 0; i < groupFields.Count(); i++)
+        {
+
+            <div class="tab-pane fade in @(i==0?"active":"")" id="@("item"+i)">
+                <div class="row">
+                    @foreach (var item in groupFields[i])
+                    {
+                        if (!item.PrimaryKey && (item.DataVisible == null || item.DataVisible(entity, item)))
+                        {
+                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    foreach (var item in fields)
     {
-        @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+        if (!item.PrimaryKey && (item.DataVisible == null || item.DataVisible(entity, item)))
+        {
+            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+        }
     }
 }
+
 @await Html.PartialAsync("_Form_Footer", entity)
+
 @await Html.PartialAsync("_Form_Action", entity)

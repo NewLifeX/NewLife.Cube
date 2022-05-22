@@ -23,7 +23,7 @@ using XCode.Membership;
 
 namespace NewLife.School.Entity
 {
-   public enum SexKind
+    public enum SexKind
     {
         女 = 0,
         男 = 1,
@@ -107,6 +107,7 @@ namespace NewLife.School.Entity
         [XmlIgnore]
         //[ScriptIgnore]
         [DisplayName("班级")]
+        [Category("基本信息")]
         [Map(__.ClassID, typeof(Class), "ID")]
         public String ClassName { get { return Class?.Name; } }
         #endregion
