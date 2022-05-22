@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using NewLife.Cube.Entity;
+﻿using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Threading;
@@ -14,8 +10,16 @@ namespace NewLife.Cube.Services
     /// <summary>
     /// 用户服务
     /// </summary>
-    public class UserService //: IHostedService
+    public class UserService
     {
+        private readonly ITracer _tracer;
+
+        /// <summary>
+        /// 实例化用户服务
+        /// </summary>
+        /// <param name="tracer"></param>
+        public UserService(ITracer tracer) => _tracer = tracer;
+
         #region 核心控制
         private TimerX _timer;
         private TimerX _timer2;
@@ -36,28 +40,6 @@ namespace NewLife.Cube.Services
                 _timer2 = new TimerX(DoStat, null, 1000, 60 * 1000) { Async = true };
             }
         }
-
-        ///// <summary>启动</summary>
-        ///// <param name="cancellationToken"></param>
-        ///// <returns></returns>
-        //public Task StartAsync(CancellationToken cancellationToken)
-        //{
-        //    _timer = new TimerX(s => ClearExpire(), null, 1000, 60 * 1000) { Async = true };
-        //    _timer2 = new TimerX(DoStat, null, 1000, 60 * 1000) { Async = true };
-
-        //    return Task.CompletedTask;
-        //}
-
-        ///// <summary>停止</summary>
-        ///// <param name="cancellationToken"></param>
-        ///// <returns></returns>
-        //public Task StopAsync(CancellationToken cancellationToken)
-        //{
-        //    _timer.TryDispose();
-        //    _timer2.TryDispose();
-
-        //    return Task.CompletedTask;
-        //}
         #endregion
 
         #region 用户在线
@@ -152,30 +134,6 @@ namespace NewLife.Cube.Services
             return SetStatus(sessionid, page, status, userAgent, user.ID, user + "", ip);
         }
 
-        ///// <summary>
-        ///// 启动定时器，定时清理离线用户
-        ///// </summary>
-        ///// <param name="period"></param>
-        //public static void StartTimer(Int32 period = 60)
-        //{
-        //    if (_timer == null)
-        //    {
-        //        lock (typeof(UserOnline))
-        //        {
-        //            if (_timer == null) _timer = new TimerX(s => ClearExpire(), null, 1000, period * 1000) { Async = true };
-        //        }
-        //    }
-        //}
-
-        ///// <summary>
-        ///// 关闭定时器
-        ///// </summary>
-        //public static void StopTimer()
-        //{
-        //    _timer.TryDispose();
-        //    _timer = null;
-        //}
-
         /// <summary>删除过期，指定过期时间</summary>
         /// <param name="secTimeout">超时时间，20 * 60秒</param>
         /// <returns></returns>
@@ -183,6 +141,8 @@ namespace NewLife.Cube.Services
         {
             // 无在线则不执行
             if (_onlines == 0) return new List<UserOnline>();
+
+            using var span = _tracer?.NewSpan("ClearExpireOnline");
 
             // 减少Sql日志
             var dal = UserOnline.Meta.Session.Dal;
@@ -223,6 +183,11 @@ namespace NewLife.Cube.Services
 
                 return list;
             }
+            catch (Exception ex)
+            {
+                span?.SetError(ex, null);
+                throw;
+            }
             finally
             {
                 dal.Session.ShowSQL = oldSql;
@@ -260,6 +225,8 @@ namespace NewLife.Cube.Services
         {
             // 无在线则不执行
             if (_onlines == 0) return;
+
+            using var span = _tracer?.NewSpan("UserStat");
 
             var t1 = DateTime.Today.AddDays(-0);
             var t7 = DateTime.Today.AddDays(-7);
@@ -302,6 +269,11 @@ namespace NewLife.Cube.Services
 
                     st.Update();
                 }
+            }
+            catch (Exception ex)
+            {
+                span?.SetError(ex, null);
+                throw;
             }
             finally
             {
