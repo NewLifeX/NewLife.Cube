@@ -4,22 +4,21 @@
 @{
     var entity = Model as IEntity;
     var fields = ViewBag.Fields as FieldCollection;
-    var groupFields = fields.GroupBy(e => e.Category).Where(e => !e.Key.IsNullOrEmpty()).ToList();
-    var isCategory = groupFields.Count() > 1;
+    var groupFields = fields.GroupBy(e => e.Category + "").ToList();
 }
 
-@if (isCategory)
+@if (groupFields.Count > 1)
 {
     <ul class="nav nav-tabs" role="tablist">
-        @for (int i = 0; i < groupFields.Count(); i++)
+        @for (int i = 0; i < groupFields.Count; i++)
         {
-            <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@groupFields[i].Key</a></li>
+            var key = groupFields[i].Key.IsNullOrEmpty() ? "默认" : groupFields[i].Key;
+            <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@key</a></li>
         }
     </ul>
     <div class="tab-content">
-        @for (int i = 0; i < groupFields.Count(); i++)
+        @for (int i = 0; i < groupFields.Count; i++)
         {
-
             <div class="tab-pane fade in @(i==0?"active":"")" id="@("item"+i)">
                 <div class="row">
                     @foreach (var item in groupFields[i])
