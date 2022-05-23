@@ -1,0 +1,21 @@
+﻿@model ValueTuple<IEntity, DataField>
+@using NewLife;
+@using NewLife.Cube.Entity
+@using XCode;
+@using XCode.Configuration;
+@{
+    var pair = Model;
+    var entity = pair.Item1 as PrincipalAgent;
+    var field = pair.Item2;
+
+    var set = NewLife.Cube.Setting.Current;
+    var cls = set.FormGroupClass;
+    if (cls.IsNullOrEmpty()) { cls = "form-group col-xs-12 col-sm-6 col-lg-4"; }
+}
+<div class="@cls">
+    <label class="control-label col-xs-3 col-sm-3">代理人</label>
+    <div class="input-group col-xs-9 col-sm-5">
+        @await Html.PartialAsync("_SelectUser", new SelectUserModel { Id = "AgentId", UserId = entity.AgentId })
+    </div>
+    <span class="hidden-xs col-sm-4">代理获得别人身份权限</span>
+</div>

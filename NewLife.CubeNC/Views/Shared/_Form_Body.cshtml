@@ -25,7 +25,10 @@
                     {
                         if (!item.PrimaryKey && (item.DataVisible == null || item.DataVisible(entity, item)))
                         {
-                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+                            if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                                @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+                            else
+                                @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
                         }
                     }
                 </div>
@@ -39,7 +42,10 @@ else
     {
         if (!item.PrimaryKey && (item.DataVisible == null || item.DataVisible(entity, item)))
         {
-            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+            if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+            else
+                @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
         }
     }
 }
