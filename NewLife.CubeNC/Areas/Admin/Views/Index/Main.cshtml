@@ -52,7 +52,7 @@
                     &nbsp;
                     @if (this.Has(menu, (PermissionFlags)16))
                     {
-                        <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启ASP.Net Core应用程序域，而不是操作系统！<br/>确认重启？">重启应用系统</a>
+                        <a style="cursor: pointer;" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启本应用进程，而不是操作系统！<br/>确认重启？">重启应用系统</a>
                     }
                     &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
                 </td>
