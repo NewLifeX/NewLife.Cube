@@ -259,7 +259,8 @@
                                                time:500,
                                                  end:function () {
                                                      if(res.code==0)
-                                                        location.href = '@Url.Action("Index")'
+                                                        @*location.href = '@Url.Action("Index")'*@
+                                                        location.reload();
                                                         //同步更新缓存对应的值
     @*var newEnable="";
                                             if(data.Enable.lastIndexOf('=True')){
