@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Cube.ViewModels;
 using XCode.Membership;
 
 namespace NewLife.Cube.Cube.Controllers
@@ -16,7 +17,24 @@ namespace NewLife.Cube.Cube.Controllers
             ListFields.RemoveField("ID");
             ListFields.RemoveCreateField();
 
-            LogOnChange = true; 
+            LogOnChange = true;
+
+            {
+                var ff = AddFormFields.GetField("PrincipalName") as FormField;
+                ff.GroupView = "_Form_PrincipalName";
+            }
+            {
+                var ff = EditFormFields.GetField("PrincipalName") as FormField;
+                ff.GroupView = "_Form_PrincipalName";
+            }
+            {
+                var ff = AddFormFields.GetField("AgentName") as FormField;
+                ff.GroupView = "_Form_AgentName";
+            }
+            {
+                var ff = EditFormFields.GetField("AgentName") as FormField;
+                ff.GroupView = "_Form_AgentName";
+            }
         }
 
         /// <summary>

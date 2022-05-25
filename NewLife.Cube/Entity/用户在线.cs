@@ -17,7 +17,7 @@ namespace NewLife.Cube.Entity
     [BindIndex("IX_UserOnline_UserID", false, "UserID")]
     [BindIndex("IX_UserOnline_SessionID", false, "SessionID")]
     [BindIndex("IX_UserOnline_CreateTime", false, "CreateTime")]
-    [BindTable("UserOnline", Description = "用户在线", ConnName = "Membership", DbType = DatabaseType.None)]
+    [BindTable("UserOnline", Description = "用户在线", ConnName = "Log", DbType = DatabaseType.None)]
     public partial class UserOnline
     {
         #region 属性
@@ -159,6 +159,7 @@ namespace NewLife.Cube.Entity
 
         private String _CreateIP;
         /// <summary>创建地址</summary>
+        [Category("扩展")]
         [DisplayName("创建地址")]
         [Description("创建地址")]
         [DataObjectField(false, false, true, 50)]
@@ -167,6 +168,7 @@ namespace NewLife.Cube.Entity
 
         private DateTime _CreateTime;
         /// <summary>创建时间</summary>
+        [Category("扩展")]
         [DisplayName("创建时间")]
         [Description("创建时间")]
         [DataObjectField(false, false, false, 0)]
@@ -175,6 +177,7 @@ namespace NewLife.Cube.Entity
 
         private String _UpdateIP;
         /// <summary>更新地址</summary>
+        [Category("扩展")]
         [DisplayName("更新地址")]
         [Description("更新地址")]
         [DataObjectField(false, false, true, 50)]
@@ -183,6 +186,7 @@ namespace NewLife.Cube.Entity
 
         private DateTime _UpdateTime;
         /// <summary>修改时间</summary>
+        [Category("扩展")]
         [DisplayName("修改时间")]
         [Description("修改时间")]
         [DataObjectField(false, false, false, 0)]

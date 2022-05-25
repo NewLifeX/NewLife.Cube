@@ -18,13 +18,13 @@
             <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="select">查看</a>
         }
     }
-    else if (this.Has(PermissionFlags.Update))
+    @if (this.Has(PermissionFlags.Update))
     {
         @*<i class="glyphicon glyphicon-edit" style="color: blue;"></i>
             <a href="@Url.Action("Edit", rv)" class="editcell">编辑</a>*@
         <a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="edit">编辑</a>
     }
-    else if (this.Has(PermissionFlags.Detail))
+    @if (this.Has(PermissionFlags.Detail))
     {
         @*<i class="glyphicon glyphicon-edit" style="color: blue;"></i>
             <a href="@Url.Action("Detail", rv)" class="editcell">查看</a>*@

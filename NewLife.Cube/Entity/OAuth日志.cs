@@ -142,15 +142,17 @@ namespace NewLife.Cube.Entity
         public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
 
         private String _CreateIP;
-        /// <summary>创建IP</summary>
-        [DisplayName("创建IP")]
-        [Description("创建IP")]
+        /// <summary>创建地址</summary>
+        [Category("扩展")]
+        [DisplayName("创建地址")]
+        [Description("创建地址")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("CreateIP", "创建IP", "")]
+        [BindColumn("CreateIP", "创建地址", "")]
         public String CreateIP { get => _CreateIP; set { if (OnPropertyChanging("CreateIP", value)) { _CreateIP = value; OnPropertyChanged("CreateIP"); } } }
 
         private DateTime _CreateTime;
         /// <summary>创建时间</summary>
+        [Category("扩展")]
         [DisplayName("创建时间")]
         [Description("创建时间")]
         [DataObjectField(false, false, true, 0)]
@@ -159,6 +161,7 @@ namespace NewLife.Cube.Entity
 
         private DateTime _UpdateTime;
         /// <summary>更新时间</summary>
+        [Category("扩展")]
         [DisplayName("更新时间")]
         [Description("更新时间")]
         [DataObjectField(false, false, true, 0)]
@@ -274,7 +277,7 @@ namespace NewLife.Cube.Entity
             /// <summary>详细信息</summary>
             public static readonly Field Remark = FindByName("Remark");
 
-            /// <summary>创建IP</summary>
+            /// <summary>创建地址</summary>
             public static readonly Field CreateIP = FindByName("CreateIP");
 
             /// <summary>创建时间</summary>
@@ -334,7 +337,7 @@ namespace NewLife.Cube.Entity
             /// <summary>详细信息</summary>
             public const String Remark = "Remark";
 
-            /// <summary>创建IP</summary>
+            /// <summary>创建地址</summary>
             public const String CreateIP = "CreateIP";
 
             /// <summary>创建时间</summary>

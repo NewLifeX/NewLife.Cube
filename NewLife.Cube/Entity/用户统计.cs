@@ -125,6 +125,7 @@ namespace NewLife.Cube.Entity
 
         private DateTime _CreateTime;
         /// <summary>创建时间</summary>
+        [Category("扩展")]
         [DisplayName("创建时间")]
         [Description("创建时间")]
         [DataObjectField(false, false, false, 0)]
@@ -133,6 +134,7 @@ namespace NewLife.Cube.Entity
 
         private DateTime _UpdateTime;
         /// <summary>更新时间</summary>
+        [Category("扩展")]
         [DisplayName("更新时间")]
         [Description("更新时间")]
         [DataObjectField(false, false, false, 0)]
@@ -141,6 +143,7 @@ namespace NewLife.Cube.Entity
 
         private String _Remark;
         /// <summary>详细信息</summary>
+        [Category("扩展")]
         [DisplayName("详细信息")]
         [Description("详细信息")]
         [DataObjectField(false, false, true, 1000)]

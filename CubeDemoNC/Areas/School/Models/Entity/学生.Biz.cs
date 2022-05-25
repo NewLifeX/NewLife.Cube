@@ -4,9 +4,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife;
 using NewLife.Data;
@@ -20,24 +22,25 @@ using XCode.Cache;
 using XCode.Configuration;
 using XCode.DataAccessLayer;
 using XCode.Membership;
+using XCode.Shards;
 
 namespace NewLife.School.Entity
 {
-   public enum SexKind
+    public enum SexKind
     {
         女 = 0,
         男 = 1,
         未知 = 2
     }
-    /// <summary>学生</summary>
+
     public partial class Student : Entity<Student>
     {
         #region 对象操作
         static Student()
         {
-            // 累加字段
+            // 累加字段，生成 Update xx Set Count=Count+1234 Where xxx
             //var df = Meta.Factory.AdditionalFields;
-            //df.Add(__.ClassID);
+            //df.Add(nameof(ClassID));
 
             // 过滤器 UserModule、TimeModule、IPModule
             Meta.Modules.Add<UserModule>();
@@ -45,12 +48,28 @@ namespace NewLife.School.Entity
             Meta.Modules.Add<IPModule>();
         }
 
-        /// <summary>验证数据，通过抛出异常的方式提示验证失败。</summary>
+        /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>
         /// <param name="isNew">是否插入</param>
         public override void Valid(Boolean isNew)
         {
             // 如果没有脏数据，则不需要进行任何处理
             if (!HasDirty) return;
+
+            // 建议先调用基类方法，基类方法会做一些统一处理
+            base.Valid(isNew);
+
+            // 在新插入数据或者修改了指定字段时进行修正
+            // 处理当前已登录用户信息，可以由UserModule过滤器代劳
+            /*var user = ManageProvider.User;
+            if (user != null)
+            {
+                if (isNew && !Dirtys[nameof(CreateUserID)]) CreateUserID = user.ID;
+                if (!Dirtys[nameof(UpdateUserID)]) UpdateUserID = user.ID;
+            }*/
+            //if (isNew && !Dirtys[nameof(CreateTime)]) CreateTime = DateTime.Now;
+            //if (!Dirtys[nameof(UpdateTime)]) UpdateTime = DateTime.Now;
+            //if (isNew && !Dirtys[nameof(CreateIP)]) CreateIP = ManageProvider.UserHost;
+            //if (!Dirtys[nameof(UpdateIP)]) UpdateIP = ManageProvider.UserHost;
         }
 
         ///// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
@@ -63,13 +82,13 @@ namespace NewLife.School.Entity
         //    if (XTrace.Debug) XTrace.WriteLine("开始初始化Student[学生]数据……");
 
         //    var entity = new Student();
-        //    entity.ID = 0;
         //    entity.ClassID = 0;
         //    entity.Name = "abc";
         //    entity.Sex = 0;
         //    entity.Age = 0;
         //    entity.Mobile = "abc";
         //    entity.Address = "abc";
+        //    entity.Enable = true;
         //    entity.CreateUserID = 0;
         //    entity.CreateTime = DateTime.Now;
         //    entity.CreateIP = "abc";
@@ -99,16 +118,15 @@ namespace NewLife.School.Entity
 
         #region 扩展属性
         /// <summary>班级</summary>
-        [XmlIgnore]
+        [XmlIgnore, IgnoreDataMember]
         //[ScriptIgnore]
-        public Class Class { get { return Extends.Get(nameof(Class), k => Class.FindByID(ClassID)); } }
+        public Class Class => Extends.Get(nameof(Class), k => Class.FindByID(ClassID));
 
         /// <summary>班级</summary>
-        [XmlIgnore]
-        //[ScriptIgnore]
-        [DisplayName("班级")]
-        [Map(__.ClassID, typeof(Class), "ID")]
-        public String ClassName { get { return Class?.Name; } }
+        [Map(nameof(ClassID), typeof(Class), "ID")]
+        [Category("基本信息")]
+        public String ClassName => Class?.Name;
+
         #endregion
 
         #region 扩展查询
@@ -123,24 +141,51 @@ namespace NewLife.School.Entity
             if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.ID == id);
 
             // 单对象缓存
-            //return Meta.SingleCache[id];
+            return Meta.SingleCache[id];
 
-            return Find(_.ID == id);
+            //return Find(_.ID == id);
         }
 
         /// <summary>根据班级查找</summary>
-        /// <param name="classid">班级</param>
+        /// <param name="classId">班级</param>
         /// <returns>实体列表</returns>
-        public static IList<Student> FindAllByClassID(Int32 classid)
+        public static IList<Student> FindAllByClassID(Int32 classId)
         {
             // 实体缓存
-            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.ClassID == classid);
+            if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.ClassID == classId);
 
-            return FindAll(_.ClassID == classid);
+            return FindAll(_.ClassID == classId);
         }
         #endregion
 
         #region 高级查询
+        /// <summary>高级查询</summary>
+        /// <param name="classId">班级</param>
+        /// <param name="start">更新时间开始</param>
+        /// <param name="end">更新时间结束</param>
+        /// <param name="key">关键字</param>
+        /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+        /// <returns>实体列表</returns>
+        public static IList<Student> Search(Int32 classId, DateTime start, DateTime end, String key, PageParameter page)
+        {
+            var exp = new WhereExpression();
+
+            if (classId >= 0) exp &= _.ClassID == classId;
+            exp &= _.UpdateTime.Between(start, end);
+            if (!key.IsNullOrEmpty()) exp &= _.Name.Contains(key) | _.Mobile.Contains(key) | _.Address.Contains(key) | _.CreateIP.Contains(key) | _.UpdateIP.Contains(key) | _.Remark.Contains(key);
+
+            return FindAll(exp, page);
+        }
+
+        // Select Count(ID) as ID,Category From Student Where CreateTime>'2020-01-24 00:00:00' Group By Category Order By ID Desc limit 20
+        //static readonly FieldCache<Student> _CategoryCache = new FieldCache<Student>(nameof(Category))
+        //{
+        //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty
+        //};
+
+        ///// <summary>获取类别列表，字段缓存10分钟，分组统计数据最多的前20种，用于魔方前台下拉选择</summary>
+        ///// <returns></returns>
+        //public static IDictionary<String, String> GetCategoryList() => _CategoryCache.FindAllName();
         #endregion
 
         #region 业务操作

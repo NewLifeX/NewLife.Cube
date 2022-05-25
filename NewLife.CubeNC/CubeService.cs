@@ -40,6 +40,10 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IServiceCollection AddCube(this IServiceCollection services)
         {
+            // 检查是否延迟启动，可能是重启或更新
+            var args = Environment.GetCommandLineArgs();
+            if ("-delay".EqualIgnoreCase(args)) Thread.Sleep(3000);
+
             using var span = DefaultTracer.Instance?.NewSpan(nameof(AddCube));
 
             XTrace.WriteLine("{0} Start 配置魔方 {0}", new String('=', 32));
