@@ -302,22 +302,24 @@
         //开始日期
     var insStart = laydate.render({
       elem: '#test-laydate-start'
-      ,min: 0
+      ,min: '1999-1-1' //最小范围内的日期时间值
+      ,max:0
       ,done: function(value, date){
         //更新结束日期的最小日期
         insEnd.config.min = lay.extend({}, date, {
           month: date.month - 1
         });
-
+        
         //自动弹出结束日期的选择器
        insEnd.config.elem[0].focus();
       }
     });
-
+    
     //结束日期
     var insEnd = laydate.render({
       elem: '#test-laydate-end'
-      ,min: 0
+      ,min: '1999-1-1' //最小范围内的日期时间值
+      ,max:0
       ,done: function(value, date){
         //更新开始日期的最大日期
         insStart.config.max = lay.extend({}, date, {
@@ -342,6 +344,7 @@
                     <button class="layui-btn layui-btn-sm icon-btn" lay-event="Add_Data"><i class="layui-icon">&#xe654;</i>新增</button>
                     <button class="layui-btn layui-btn-sm icon-btn" lay-event="ImpExcel"><i class="layui-icon">&#xe654;</i>导入</button>
                   }
+                  <button class="layui-btn layui-btn-sm icon-btn" id="toolMore">更多<i class="layui-icon layui-icon-down layui-font-12"></i></button>
             </div>
         </div>
         @if (pager != null)
