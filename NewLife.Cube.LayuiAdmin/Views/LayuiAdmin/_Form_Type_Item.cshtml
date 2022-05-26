@@ -21,18 +21,18 @@
                 "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "StateCode", "StatusCode","Auditor","AuditTime","EffectiveTime","DeactivateTime","BomDetailedIDs") ? "layui-form-required" : "";
 
 
-    var total = 12;
-    var label = 3;
-    var span = 4;
-    if (err == 0 && des.IsNullOrEmpty())
-    {
-        span = 0;
-    }
-    else if (item.Type == typeof(Boolean) || item.Type.IsEnum)
-    {
-        span += 1;
-    }
-    var input = total - label - span;
+    //var total = 12;
+    //var label = 3;
+    //var span = 4;
+    //if (err == 0 && des.IsNullOrEmpty())
+    //{
+    //    span = 0;
+    //}
+    //else if (item.Type == typeof(Boolean) || item.Type.IsEnum)
+    //{
+    //    span += 1;
+    //}
+    //var input = total - label - span;
 }
 <!-- 字段标签（含帮助说明信息） -->
         <label class="layui-form-label @className">@display</label>

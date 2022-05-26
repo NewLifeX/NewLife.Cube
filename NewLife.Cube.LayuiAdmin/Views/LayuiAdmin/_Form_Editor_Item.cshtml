@@ -10,7 +10,7 @@
     var type = Model.Type;
     var format = Model.Format;
     var htmlAttributes = Model.HtmlAttributes;
-    if (type == null) type = value.GetType();
+    if (type == null&&value!=null) type = value.GetType();
 }
 @switch (Type.GetTypeCode(type))
 {
