@@ -109,19 +109,15 @@ namespace NewLife.Cube.WebMiddleware
             var rs = CubeService.AreaNames;
             if (rs != null && ss[0].EqualIgnoreCase(rs))
             {
-                if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
+                if (ss.Length >= 3)
                     p = "/" + ss.Take(3).Join("/");
-                else if (ss.Length >= 3 && ss[2].ToInt() == 0 && ss[2].Length < 16)
-                    p = "/" + ss.Take(3).Join("/");
-                else
-                    p = "/" + ss.Take(2).Join("/");
             }
             else
             {
-                if (ss.Length >= 2 && ss[1].EqualIgnoreCase(CubeActions))
-                    p = "/" + ss.Take(2).Join("/");
-                else if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
+                if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
                     p = "/" + ss.Take(3).Join("/");
+                else if (ss.Length >= 2 && ss[1].EqualIgnoreCase(CubeActions))
+                    p = "/" + ss.Take(2).Join("/");
                 else
                     p = "/" + ss.Take(2).Join("/");
             }
