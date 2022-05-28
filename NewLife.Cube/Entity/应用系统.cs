@@ -147,16 +147,9 @@ namespace NewLife.Cube.Entity
         [BindColumn("LastAuth", "最后请求", "")]
         public DateTime LastAuth { get => _LastAuth; set { if (OnPropertyChanging("LastAuth", value)) { _LastAuth = value; OnPropertyChanged("LastAuth"); } } }
 
-        private String _Remark;
-        /// <summary>内容</summary>
-        [DisplayName("内容")]
-        [Description("内容")]
-        [DataObjectField(false, false, true, 500)]
-        [BindColumn("Remark", "内容", "")]
-        public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
-
         private Int32 _CreateUserID;
         /// <summary>创建者</summary>
+        [Category("扩展")]
         [DisplayName("创建者")]
         [Description("创建者")]
         [DataObjectField(false, false, false, 0)]
@@ -165,6 +158,7 @@ namespace NewLife.Cube.Entity
 
         private DateTime _CreateTime;
         /// <summary>创建时间</summary>
+        [Category("扩展")]
         [DisplayName("创建时间")]
         [Description("创建时间")]
         [DataObjectField(false, false, true, 0)]
@@ -173,6 +167,7 @@ namespace NewLife.Cube.Entity
 
         private String _CreateIP;
         /// <summary>创建地址</summary>
+        [Category("扩展")]
         [DisplayName("创建地址")]
         [Description("创建地址")]
         [DataObjectField(false, false, true, 50)]
@@ -181,6 +176,7 @@ namespace NewLife.Cube.Entity
 
         private Int32 _UpdateUserID;
         /// <summary>更新者</summary>
+        [Category("扩展")]
         [DisplayName("更新者")]
         [Description("更新者")]
         [DataObjectField(false, false, false, 0)]
@@ -189,6 +185,7 @@ namespace NewLife.Cube.Entity
 
         private DateTime _UpdateTime;
         /// <summary>更新时间</summary>
+        [Category("扩展")]
         [DisplayName("更新时间")]
         [Description("更新时间")]
         [DataObjectField(false, false, true, 0)]
@@ -197,11 +194,21 @@ namespace NewLife.Cube.Entity
 
         private String _UpdateIP;
         /// <summary>更新地址</summary>
+        [Category("扩展")]
         [DisplayName("更新地址")]
         [Description("更新地址")]
         [DataObjectField(false, false, true, 50)]
         [BindColumn("UpdateIP", "更新地址", "")]
         public String UpdateIP { get => _UpdateIP; set { if (OnPropertyChanging("UpdateIP", value)) { _UpdateIP = value; OnPropertyChanged("UpdateIP"); } } }
+
+        private String _Remark;
+        /// <summary>内容</summary>
+        [Category("扩展")]
+        [DisplayName("内容")]
+        [Description("内容")]
+        [DataObjectField(false, false, true, 500)]
+        [BindColumn("Remark", "内容", "")]
+        public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
         #endregion
 
         #region 获取/设置 字段值
@@ -230,13 +237,13 @@ namespace NewLife.Cube.Entity
                     case "Expired": return _Expired;
                     case "Auths": return _Auths;
                     case "LastAuth": return _LastAuth;
-                    case "Remark": return _Remark;
                     case "CreateUserID": return _CreateUserID;
                     case "CreateTime": return _CreateTime;
                     case "CreateIP": return _CreateIP;
                     case "UpdateUserID": return _UpdateUserID;
                     case "UpdateTime": return _UpdateTime;
                     case "UpdateIP": return _UpdateIP;
+                    case "Remark": return _Remark;
                     default: return base[name];
                 }
             }
@@ -260,13 +267,13 @@ namespace NewLife.Cube.Entity
                     case "Expired": _Expired = value.ToDateTime(); break;
                     case "Auths": _Auths = value.ToInt(); break;
                     case "LastAuth": _LastAuth = value.ToDateTime(); break;
-                    case "Remark": _Remark = Convert.ToString(value); break;
                     case "CreateUserID": _CreateUserID = value.ToInt(); break;
                     case "CreateTime": _CreateTime = value.ToDateTime(); break;
                     case "CreateIP": _CreateIP = Convert.ToString(value); break;
                     case "UpdateUserID": _UpdateUserID = value.ToInt(); break;
                     case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
                     case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
+                    case "Remark": _Remark = Convert.ToString(value); break;
                     default: base[name] = value; break;
                 }
             }
@@ -325,9 +332,6 @@ namespace NewLife.Cube.Entity
             /// <summary>最后请求</summary>
             public static readonly Field LastAuth = FindByName("LastAuth");
 
-            /// <summary>内容</summary>
-            public static readonly Field Remark = FindByName("Remark");
-
             /// <summary>创建者</summary>
             public static readonly Field CreateUserID = FindByName("CreateUserID");
 
@@ -345,6 +349,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>更新地址</summary>
             public static readonly Field UpdateIP = FindByName("UpdateIP");
+
+            /// <summary>内容</summary>
+            public static readonly Field Remark = FindByName("Remark");
 
             static Field FindByName(String name) => Meta.Table.FindByName(name);
         }
@@ -400,9 +407,6 @@ namespace NewLife.Cube.Entity
             /// <summary>最后请求</summary>
             public const String LastAuth = "LastAuth";
 
-            /// <summary>内容</summary>
-            public const String Remark = "Remark";
-
             /// <summary>创建者</summary>
             public const String CreateUserID = "CreateUserID";
 
@@ -420,6 +424,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>更新地址</summary>
             public const String UpdateIP = "UpdateIP";
+
+            /// <summary>内容</summary>
+            public const String Remark = "Remark";
         }
         #endregion
     }

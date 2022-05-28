@@ -14,6 +14,7 @@ namespace NewLife.Cube.Entity
     [Serializable]
     [DataObject]
     [Description("应用日志。用于OAuthServer的子系统")]
+    [BindIndex("IX_AppLog_AppId", false, "AppId")]
     [BindTable("AppLog", Description = "应用日志。用于OAuthServer的子系统", ConnName = "Cube", DbType = DatabaseType.None)]
     public partial class AppLog
     {
@@ -124,6 +125,7 @@ namespace NewLife.Cube.Entity
 
         private String _CreateUser;
         /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
+        [Category("扩展")]
         [DisplayName("创建者")]
         [Description("创建者。可以是设备编码等唯一使用者标识")]
         [DataObjectField(false, false, true, 50)]
@@ -131,15 +133,17 @@ namespace NewLife.Cube.Entity
         public String CreateUser { get => _CreateUser; set { if (OnPropertyChanging("CreateUser", value)) { _CreateUser = value; OnPropertyChanged("CreateUser"); } } }
 
         private String _CreateIP;
-        /// <summary>创建IP</summary>
-        [DisplayName("创建IP")]
-        [Description("创建IP")]
+        /// <summary>创建地址</summary>
+        [Category("扩展")]
+        [DisplayName("创建地址")]
+        [Description("创建地址")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("CreateIP", "创建IP", "")]
+        [BindColumn("CreateIP", "创建地址", "")]
         public String CreateIP { get => _CreateIP; set { if (OnPropertyChanging("CreateIP", value)) { _CreateIP = value; OnPropertyChanged("CreateIP"); } } }
 
         private DateTime _CreateTime;
         /// <summary>创建时间</summary>
+        [Category("扩展")]
         [DisplayName("创建时间")]
         [Description("创建时间")]
         [DataObjectField(false, false, true, 0)]
@@ -147,15 +151,17 @@ namespace NewLife.Cube.Entity
         public DateTime CreateTime { get => _CreateTime; set { if (OnPropertyChanging("CreateTime", value)) { _CreateTime = value; OnPropertyChanged("CreateTime"); } } }
 
         private String _UpdateIP;
-        /// <summary>更新IP</summary>
-        [DisplayName("更新IP")]
-        [Description("更新IP")]
+        /// <summary>更新地址</summary>
+        [Category("扩展")]
+        [DisplayName("更新地址")]
+        [Description("更新地址")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("UpdateIP", "更新IP", "")]
+        [BindColumn("UpdateIP", "更新地址", "")]
         public String UpdateIP { get => _UpdateIP; set { if (OnPropertyChanging("UpdateIP", value)) { _UpdateIP = value; OnPropertyChanged("UpdateIP"); } } }
 
         private DateTime _UpdateTime;
         /// <summary>更新时间</summary>
+        [Category("扩展")]
         [DisplayName("更新时间")]
         [Description("更新时间")]
         [DataObjectField(false, false, true, 0)]
@@ -268,13 +274,13 @@ namespace NewLife.Cube.Entity
             /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
             public static readonly Field CreateUser = FindByName("CreateUser");
 
-            /// <summary>创建IP</summary>
+            /// <summary>创建地址</summary>
             public static readonly Field CreateIP = FindByName("CreateIP");
 
             /// <summary>创建时间</summary>
             public static readonly Field CreateTime = FindByName("CreateTime");
 
-            /// <summary>更新IP</summary>
+            /// <summary>更新地址</summary>
             public static readonly Field UpdateIP = FindByName("UpdateIP");
 
             /// <summary>更新时间</summary>
@@ -328,13 +334,13 @@ namespace NewLife.Cube.Entity
             /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
             public const String CreateUser = "CreateUser";
 
-            /// <summary>创建IP</summary>
+            /// <summary>创建地址</summary>
             public const String CreateIP = "CreateIP";
 
             /// <summary>创建时间</summary>
             public const String CreateTime = "CreateTime";
 
-            /// <summary>更新IP</summary>
+            /// <summary>更新地址</summary>
             public const String UpdateIP = "UpdateIP";
 
             /// <summary>更新时间</summary>

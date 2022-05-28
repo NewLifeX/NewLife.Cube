@@ -138,40 +138,27 @@ namespace NewLife.Cube.Admin.Controllers
         public ActionResult Restart()
         {
             var manager = ApplicationManager.Load();
-            //_applicationLifetime.StopApplication();
 
-            // 借助StarAgent重启自己
             try
             {
-                var client = new ApiClient("udp://127.0.0.1:5500")
-                {
-                    Log = XTrace.Log,
-                    EncoderLog = XTrace.Log,
-                };
-
                 var p = Process.GetCurrentProcess();
                 var fileName = p.MainModule.FileName;
+                var args = Environment.CommandLine.TrimStart(Path.ChangeExtension(fileName, ".dll")).Trim();
+                args += " -delay";
+
+                WriteLog("Restart", true, $"fileName={fileName} args={args}");
+
+                Process.Start(fileName, args);
 
                 ThreadPoolX.QueueUserWorkItem(() =>
                 {
-                    var p = Process.GetCurrentProcess();
-                    var fileName = p.MainModule.FileName;
-                    var args = Environment.CommandLine.TrimStart(Path.ChangeExtension(fileName, ".dll")).Trim();
-
-                    // 发起命令
-                    var rs = client.Invoke<String>("KillAndStart", new
-                    {
-                        processId = p.Id,
-                        delay = 3,
-                        fileName = fileName,
-                        arguments = args,
-                        workingDirectory = Environment.CurrentDirectory,
-                    });
-                    XTrace.WriteLine("rs={0}", rs);
+                    Thread.Sleep(100);
 
                     // 本进程退出
                     manager.Stop();
+                    Thread.Sleep(200);
                     //p.Kill();
+                    Environment.Exit(0);
                 });
             }
             catch (Exception ex)
