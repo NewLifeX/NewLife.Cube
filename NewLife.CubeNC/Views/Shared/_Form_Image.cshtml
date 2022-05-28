@@ -19,5 +19,7 @@
 @Html.TextBox(field.Name+"_attachment", entity[field.Name], new { type = "file", accept })
 @if (!value.IsNullOrEmpty())
 {
-    <a href="@value">下载</a>
+    <a href="@value">
+        <img src="@value" style="max-width: 200px; max-height: 200px" />
+    </a>
 }
