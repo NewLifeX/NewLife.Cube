@@ -3,23 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-#if __CORE__
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Routing;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
-#else
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Routing;
-#endif
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
 using NewLife.Cube.ViewModels;
+using NewLife.Cube.Entity;
 
 namespace NewLife.Cube
 {
@@ -32,11 +27,7 @@ namespace NewLife.Cube
         /// <summary>获取页面设置</summary>
         /// <param name="context"></param>
         /// <returns></returns>
-#if __CORE__
         public static Bootstrap Bootstrap(this HttpContext context)
-#else
-        public static Bootstrap Bootstrap(this HttpContextBase context)
-#endif
         {
             var bs = context.Items["Bootstrap"] as Bootstrap;
             if (bs == null)
@@ -48,13 +39,6 @@ namespace NewLife.Cube
             return bs;
         }
 
-#if __CORE__
-#else
-        /// <summary>获取页面设置</summary>
-        /// <param name="page"></param>
-        /// <returns></returns>
-        public static Bootstrap Bootstrap(this WebViewPage page) => Bootstrap(page.Context);
-#endif
         /// <summary>获取页面设置</summary>
         /// <param name="controller"></param>
         /// <returns></returns>
@@ -99,7 +83,6 @@ namespace NewLife.Cube
 
         internal static Boolean MakeListView(Type entityType, String vpath, List<DataField> fields)
         {
-#if __CORE__
             var tmp = @"@model IList<{EntityType}>
 @using {Namespace}
 @using NewLife;
@@ -170,82 +153,6 @@ namespace NewLife.Cube
         }
     </tbody>
 </table>";
-#else
-            var tmp = @"@model IList<{EntityType}>
-@using {Namespace}
-@using NewLife;
-@using NewLife.Web;
-@using XCode;
-@using XCode.Configuration;
-@using XCode.Membership;
-@using NewLife.Cube;
-@using System.Web.Mvc;
-@using System.Web.Mvc.Ajax;
-@using System.Web.Mvc.Html;
-@using System.Web.Routing;
-@{
-    var fact = ViewBag.Factory as IEntityFactory;
-    var page = ViewBag.Page as Pager;
-    var ukey = fact.Unique;
-    var set = ViewBag.PageSetting as PageSetting;
-    //var provider = ManageProvider.Provider;
-}
-<table class=""table table-bordered table-hover table-striped table-condensed"">
-    <thead>
-        <tr>
-            @if (set.EnableSelect && ukey != null)
-            {
-                <th class=""text-center"" style=""width:10px;""><input type=""checkbox"" id=""chkAll"" title=""全选"" /></th>
-            }
-            @foreach(var item in fields)
-            {
-                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
-                <th class=""text-center""><a href=""@Html.Raw(sortUrl)"">@item.DisplayName</a></th>
-            }
-            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-            {
-                <th class=""text-center"">操作</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var entity in Model)
-        {
-            <tr>
-                @if (set.EnableSelect && ukey != null)
-                {
-                    <td class=""text-center""><input type=""checkbox"" name=""keys"" value=""@entity.ID"" /></td>
-                }
-                @foreach (var item in fields)
-                {
-                    @Html.Partial(""_List_Data_Item"", new Pair(entity, item))
-                }
-                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-                {
-                    <td class=""text-center"">
-                        @Html.Partial(""_List_Data_Action"", (Object)entity)
-                    </td>
-                }
-            </tr>
-        }
-        @if (page.State is {EntityType})
-        {
-            var entity = page.State as {EntityType};
-            <tr>
-                @if (set.EnableSelect)
-                {
-                    <td></td>
-                }
-                @Html.Partial(""_List_Data_Stat"", entity)
-                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-                {
-                    <td></td>
-                }
-            </tr>
-        }
-    </tbody>
-</table>";
-#endif
             var sb = new StringBuilder();
             var fact = EntityFactory.CreateFactory(entityType);
 
@@ -411,11 +318,7 @@ namespace NewLife.Cube
 
             sb.Append("                @if");
             var str2 = tmp.Substring("                @if", null, ps[1]);
-#if __CORE__
             str = str2.Replace("                @await Html.PartialAsync(\"_List_Data_Stat\", entity)", str);
-#else
-            str = str2.Replace("                @Html.Partial(\"_List_Data_Stat\", entity)", str);
-#endif
             sb.Append(str);
 
             File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
@@ -517,7 +420,6 @@ namespace NewLife.Cube
 
         internal static Boolean MakeFormView(Type entityType, String vpath, List<DataField> fields)
         {
-#if __CORE__
             var tmp = @"@model {EntityType}
 @using {Namespace}
 @using NewLife;
@@ -548,38 +450,6 @@ namespace NewLife.Cube
         <button type=""button"" class=""btn btn-danger btn-sm"" onclick=""history.go(-1);""><i class=""glyphicon glyphicon-remove""></i><strong>取消</strong></button>
     </div>
 }";
-#else
-            var tmp = @"@model {EntityType}
-@using {Namespace}
-@using NewLife;
-@using NewLife.Web;
-@using XCode;
-@using XCode.Configuration;
-@using XCode.Membership;
-@using NewLife.Cube;
-@{
-    var entity = Model;
-    var isNew = (entity as IEntity).IsNullKey;
-}
-@foreach (var item in fields)
-{
-    if (!item.PrimaryKey)
-    {
-        <div class=""@cls"">
-            @Html.Partial(""_Form_Item"", new Pair(entity, item))
-        </div>
-    }
-}
-@Html.Partial(""_Form_Footer"", entity)
-@if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
-{
-    <div class=""clearfix form-actions col-sm-12 col-md-12"">
-        <label class=""control-label col-xs-4 col-sm-5 col-md-5""></label>
-        <button type=""submit"" class=""btn btn-success btn-sm""><i class=""glyphicon glyphicon-@(isNew ? ""plus"" : ""save"")""></i><strong>@(isNew ? ""新增"" : ""保存"")</strong></button>
-        <button type=""button"" class=""btn btn-danger btn-sm"" onclick=""history.go(-1);""><i class=""glyphicon glyphicon-remove""></i><strong>取消</strong></button>
-    </div>
-}";
-#endif
 
             var sb = new StringBuilder();
             var fact = EntityFactory.CreateFactory(entityType);
@@ -606,11 +476,7 @@ namespace NewLife.Cube
                 sb.AppendLine("</div>");
             }
 
-#if __CORE__
             var p = tmp.IndexOf(@"@await Html.PartialAsync(""_Form_Footer""");
-#else
-            var p = tmp.IndexOf(@"@Html.Partial(""_Form_Footer""");
-#endif
             sb.Append(tmp[p..]);
 
             File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
@@ -748,7 +614,6 @@ namespace NewLife.Cube
 
         internal static Boolean MakeSearchView(Type entityType, String vpath, List<DataField> fields)
         {
-#if __CORE__
             var tmp = @"@using {Namespace}
 @using NewLife;
 @using NewLife.Web;
@@ -767,26 +632,6 @@ namespace NewLife.Cube
 </ div>*@
 @*@await Html.PartialAsync(""_SelectDepartment"", ""departmentId"")*@
 @*@await Html.PartialAsync(""_DateRange"")*@";
-#else
-            var tmp = @"@using {Namespace}
-@using NewLife;
-@using NewLife.Web;
-@using XCode;
-@{
-    var fact = ViewBag.Factory as IEntityFactory;
-    var page = ViewBag.Page as Pager;
-}
-@*<div class=""form-group"">
-    @Html.ActionLink(""用户链接"", ""Index"", ""UserConnect"", null, new { @class = ""btn btn-success btn-sm"" })
-    @Html.ActionLink(""用户在线"", ""Index"", ""UserOnline"", null, new { @class = ""btn btn-success btn-sm"" })
-    <label for=""RoleID"" class=""control-label"">角色：</label>
-    @Html.ForDropDownList(""RoleID"", Role.FindAllWithCache().Cast<IEntity>().ToList(), page[""roldId""], ""全部"", true)
-    @Html.ForDropDownList(""p"", VisitStat.FindAllPageName(), page[""p""], ""全部页面"", true)
-    @Html.ForListBox(""roleIds"", Role.FindAllWithCache(), page[""roleIds""])
-</div>*@
-@*@await Html.PartialAsync(""_SelectDepartment"", ""departmentId"")*@
-@*@Html.Partial(""_DateRange"")*@";
-#endif
 
             //var sb = new StringBuilder();
             //var fact = EntityFactory.CreateFactory(entityType);
@@ -805,11 +650,7 @@ namespace NewLife.Cube
         /// <summary>是否启用多选</summary>
         /// <param name="page"></param>
         /// <returns></returns>
-#if __CORE__
         public static Boolean EnableSelect(this IRazorPage page)
-#else
-        public static Boolean EnableSelect(this WebViewPage page)
-#endif
         {
             if (page.ViewContext.ViewData.TryGetValue("EnableSelect", out var rs)) return (Boolean)rs;
 
@@ -848,13 +689,14 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static String GetFileUrl(this String filename)
         {
-            if(filename.IsNullOrEmpty()) return null;
+            if (filename.IsNullOrEmpty()) return null;
 
             var set = Setting.Current;
-            if (!filename.IsNullOrEmpty()) {
+            if (!filename.IsNullOrEmpty())
+            {
                 // 修正资源访问起始路径
                 var file = set.UploadPath.CombinePath(filename).GetBasePath();
-                if(File.Exists(file)) return set.UploadPath.CombinePath(filename);
+                if (File.Exists(file)) return set.UploadPath.CombinePath(filename);
             }
 
             return null;
@@ -892,9 +734,8 @@ namespace NewLife.Cube
             foreach (var item in paths)
             {
                 var p = item.TrimStart("/");
-#if __CORE__
                 p = Setting.Current.WebRootPath.CombinePath(p);
-#endif
+
                 var di = p.AsDirectory();
                 if (di.Exists)
                 {
@@ -956,6 +797,17 @@ namespace NewLife.Cube
             }, menus);
 
             return menuTree;
+        }
+
+        /// <summary>获取附件Url</summary>
+        /// <param name="attachment"></param>
+        /// <returns></returns>
+        public static String GetAttachmentUrl(Attachment attachment)
+        {
+            if (!attachment.ContentType.IsNullOrEmpty() && attachment.ContentType.StartsWithIgnoreCase("image/"))
+                return $"/cube/image/{attachment.Id}{attachment.Extension}";
+
+            return $"/cube/file/{attachment.Id}{attachment.Extension}";
         }
     }
 
