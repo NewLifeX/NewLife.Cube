@@ -31,5 +31,7 @@ layui.use(['form'], function(){
             });
 
         layui.form.render(); // 重新渲染。。。
+        //修复编辑页面首次加载单选固定为false
+    $("input[name='@name']").val(@value.ToString().ToLower());
 });
 </script>

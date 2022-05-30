@@ -57,14 +57,22 @@
             <select class="form-select form-select-sm" data-control="select2" id="@fn" name="@fn">
                 @foreach (var item in dic3)
                 {
+                    var factory = map?.EntityType.AsFactory();
+                    var finde = factory?.FindByKey(item.Key);
+                    var nameStr = item.Value;
+                    if (finde?["Name"] != null)
+                    {
+                        if (item.Value != finde?["Name"].ToString())
+                            nameStr = item.Value + "【" + finde?["Name"] + "】";
+                    }
                     var sel = item.Key.ToInt() == b;
                     if (sel)
                     {
-                        <option value="@item.Key" selected>@item.Value  </option>
+                        <option value="@item.Key" selected>@nameStr</option>
                     }
                     else
                     {
-                        <option value="@item.Key">@item.Value</option>
+                        <option value="@item.Key">@nameStr</option>
                     }
 
                 }

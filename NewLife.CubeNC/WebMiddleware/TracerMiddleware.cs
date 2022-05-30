@@ -49,10 +49,11 @@ namespace NewLife.Cube.WebMiddleware
 
                             var buf = new Byte[1024];
                             var count = await req.Body.ReadAsync(buf, 0, buf.Length);
-                            span.Tag = buf.ToStr(null, 0, count);
+                            span.Tag = Environment.NewLine + buf.ToStr(null, 0, count);
                             req.Body.Position = 0;
                         }
-                        else
+
+                        if (span.Tag.Length < 500)
                         {
                             var vs = req.Headers.Where(e => !e.Key.EqualIgnoreCase(ExcludeHeaders)).ToDictionary(e => e.Key, e => e.Value + "");
                             span.Tag += Environment.NewLine + vs.Join(Environment.NewLine, e => $"{e.Key}:{e.Value}");
@@ -108,19 +109,15 @@ namespace NewLife.Cube.WebMiddleware
             var rs = CubeService.AreaNames;
             if (rs != null && ss[0].EqualIgnoreCase(rs))
             {
-                if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
+                if (ss.Length >= 3)
                     p = "/" + ss.Take(3).Join("/");
-                else if (ss.Length >= 3 && ss[2].ToInt() == 0 && ss[2].Length < 16)
-                    p = "/" + ss.Take(3).Join("/");
-                else
-                    p = "/" + ss.Take(2).Join("/");
             }
             else
             {
-                if (ss.Length >= 2 && ss[1].EqualIgnoreCase(CubeActions))
-                    p = "/" + ss.Take(2).Join("/");
-                else if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
+                if (ss.Length >= 3 && ss[2].EqualIgnoreCase(CubeActions))
                     p = "/" + ss.Take(3).Join("/");
+                else if (ss.Length >= 2 && ss[1].EqualIgnoreCase(CubeActions))
+                    p = "/" + ss.Take(2).Join("/");
                 else
                     p = "/" + ss.Take(2).Join("/");
             }

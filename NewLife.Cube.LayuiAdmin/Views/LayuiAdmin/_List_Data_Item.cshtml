@@ -129,7 +129,8 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        <td><a href="@name?@key=@val">@value</a></td> }
+                        <td><a href="@name/Detail/@key=@val" class="layui-btn layui-btn-primary layui-btn-xs">@value</a></td> 
+                    }
                     else
                     {
                         <td>@value</td> }

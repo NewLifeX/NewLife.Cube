@@ -263,7 +263,7 @@ namespace NewLife.Cube
         /// <summary>获取指定名称的定制字段</summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public DataField GetField(String name) => this.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+        public DataField GetField(String name) => this.FirstOrDefault(e => name.EqualIgnoreCase(e.Name, e.MapField));
         #endregion
     }
 }

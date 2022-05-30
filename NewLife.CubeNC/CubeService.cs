@@ -278,6 +278,7 @@ namespace NewLife.Cube
             app.UseSession();
 
             // 如果已引入追踪中间件，则这里不再引入
+            if (TracerMiddleware.Tracer == null) TracerMiddleware.Tracer = DefaultTracer.Instance;
             if (TracerMiddleware.Tracer != null && !app.Properties.ContainsKey(nameof(TracerMiddleware)))
             {
                 app.UseMiddleware<TracerMiddleware>();

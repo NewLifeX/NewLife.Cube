@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
-using NewLife.Data;
+﻿using NewLife.Data;
 using NewLife.Log;
 using XCode;
 using XCode.Cache;
@@ -103,7 +98,7 @@ namespace NewLife.Cube.Entity
         }
 
         // Select Count(ID) as ID,Category From Attachment Where CreateTime>'2020-01-24 00:00:00' Group By Category Order By ID Desc limit 20
-        static readonly FieldCache<Attachment> _CategoryCache = new FieldCache<Attachment>(nameof(Category))
+        private static readonly FieldCache<Attachment> _CategoryCache = new FieldCache<Attachment>(nameof(Category))
         {
             //Where = _.CreateTime > DateTime.Today.AddDays(-30) & Expression.Empty
         };
@@ -148,7 +143,7 @@ namespace NewLife.Cube.Entity
             return file;
         }
 
-        static HttpClient _client;
+        private static HttpClient _client;
         /// <summary>抓取附件</summary>
         /// <param name="url">远程地址</param>
         /// <param name="uploadPath">上传目录</param>

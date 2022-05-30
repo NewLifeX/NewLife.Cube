@@ -268,7 +268,7 @@ namespace NewLife.Cube
                         if (file.Name.EqualIgnoreCase(fi.Name, fi.Name + "_attachment"))
                         {
                             var att = await SaveFile(entity, file, uploadPath, null);
-                            if (att != null) list.Add(att.FilePath);
+                            if (att != null) list.Add(ViewHelper.GetAttachmentUrl(att));
                         }
                     }
 
