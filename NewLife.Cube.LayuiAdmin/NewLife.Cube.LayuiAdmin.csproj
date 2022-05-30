@@ -58,6 +58,8 @@
     <Content Remove="wwwroot\assets\favicon.ico" />
     <Content Remove="wwwroot\assets\js\scripts.bundle.js" />
     <Content Remove="wwwroot\assets\logo\logo.png" />
+    <Content Remove="wwwroot\assets\media\bg-4.jpg" />
+    <Content Remove="wwwroot\assets\media\verification.png" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.js" />
     <Content Remove="wwwroot\layui\css\layui.css" />
