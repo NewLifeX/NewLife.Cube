@@ -29,7 +29,7 @@ else if (!des.IsNullOrEmpty())
         var row = (Int32)Math.Round(field.Length / 100d);
         if (row < 3) row = 3;
         @*<label class="form-control">@entity[field.Name]</label>*@
-        @Html.TextArea(field.Name, entity[field.Name] as String, row, 20, new{ @class = "form-control" })
+        <textarea class="form-control" id="@field.Name" rows="@row" readonly>@entity[field.Name]</textarea>
     }
     else
     {

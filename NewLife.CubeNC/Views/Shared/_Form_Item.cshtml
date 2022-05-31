@@ -75,7 +75,8 @@
         }
         else if (item.Readonly)
         {
-            <label class="form-control">@entity[item.Name]</label>
+            @*<label class="form-control">@entity[item.Name]</label>*@
+            <input class="form-control" id="@item.Name" type="text" value="@entity[item.Name]" readonly>
         }
         else if (item.Type == typeof(String))
         {
