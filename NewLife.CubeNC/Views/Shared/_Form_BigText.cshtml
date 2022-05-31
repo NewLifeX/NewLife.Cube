@@ -26,7 +26,10 @@ else if (!des.IsNullOrEmpty())
 <div class="input-group col-sm-11 col-md-offset-1">
     @if (field.Readonly)
     {
-        <label class="form-control">@entity[field.Name]</label>
+        var row = (Int32)Math.Round(field.Length / 100d);
+        if (row < 3) row = 3;
+        @*<label class="form-control">@entity[field.Name]</label>*@
+        @Html.TextArea(field.Name, entity[field.Name] as String, row, 20, new{ @class = "form-control" })
     }
     else
     {
