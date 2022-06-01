@@ -15,7 +15,7 @@
     var accept = "";
     if (field.ItemType.EqualIgnoreCase("image")) accept = "image/*";
 }
-@Html.TextBox(field.Name, entity[field.Name], new{@class="form-control"})
+@Html.TextBox(field.Name, entity[field.Name], new { @class = "form-control" })
 @Html.TextBox(field.Name+"_attachment", entity[field.Name], new { type = "file", accept })
 @if (!value.IsNullOrEmpty())
 {

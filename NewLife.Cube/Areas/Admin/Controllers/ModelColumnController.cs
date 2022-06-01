@@ -13,13 +13,14 @@ namespace NewLife.Cube.Cube.Controllers
     [Menu(56, true, Icon = "fa-table")]
     public class ModelColumnController : EntityController<ModelColumn>
     {
-        static ModelColumnController() 
-        { 
-            ListFields.RemoveField("Id", "TableId", "IsDataObjectField", "Description", "ShowInList", "ShowInAddForm", "ShowInEditForm", "ShowInDetailForm",
-                "ShowInSearch", "Sort", "Width", "CellText", "CellTitle", "CellUrl", "HeaderText", "HeaderTitle", "HeaderUrl", "DataAction", "DataSource");
-            ListFields.RemoveCreateField();
-            ListFields.RemoveUpdateField();
-        }
+        //static ModelColumnController() 
+        //{ 
+        //    ListFields.RemoveField("Id", "TableId", "IsDataObjectField", "Description", "ShowInList", "ShowInAddForm", "ShowInEditForm", "ShowInDetailForm",
+        //        "ShowInSearch", "Sort", "Width", "CellText", "CellTitle", "CellUrl", "HeaderText", "HeaderTitle", "HeaderUrl", "DataAction", "DataSource");
+        //    ListFields.RemoveCreateField();
+        //    ListFields.RemoveUpdateField();
+        //}
+        static ModelColumnController() => ListFields.RemoveField("TableId");
 
         /// <summary>
         /// 高级搜索

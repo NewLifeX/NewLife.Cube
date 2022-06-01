@@ -277,7 +277,7 @@
       <Column Name="UpdateUserId" DataType="Int32" Description="更新者" Model="False" Category="扩展" />
       <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Model="False" Category="扩展" />
       <Column Name="UpdateIP" DataType="String" Description="更新地址" Model="False" Category="扩展" />
-      <Column Name="Remark" DataType="String" Length="500" Description="描述" />
+      <Column Name="Remark" DataType="String" Length="500" Description="描述" Category="扩展" />
     </Columns>
   </Table>
   <Table Name="ModelTable" Description="模型表。实体表模型">
