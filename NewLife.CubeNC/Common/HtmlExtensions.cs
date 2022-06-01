@@ -262,7 +262,9 @@ namespace NewLife.Cube
             }
             else if (length < 0 || length >= 300 || (length >= 200 && name.EqualIgnoreCase("Remark", "Description", "Comment")))
             {
-                txt = Html.TextArea(name, value, 3, 20, atts);
+                var row = (Int32)Math.Round(length / 100d);
+                if (row < 3) row = 3;
+                txt = Html.TextArea(name, value, row, 20, atts);
             }
             else
             {

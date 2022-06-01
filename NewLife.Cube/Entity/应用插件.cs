@@ -148,6 +148,7 @@ namespace NewLife.Cube.Entity
 
         private String _Remark;
         /// <summary>描述</summary>
+        [Category("扩展")]
         [DisplayName("描述")]
         [Description("描述")]
         [DataObjectField(false, false, true, 500)]
