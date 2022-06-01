@@ -26,7 +26,13 @@ public static class FormatEntity
             var fieldsValueTime = DateTime.Now;
             if (!fieldsValue.IsNullOrWhiteSpace())
             {
-                fieldsValueTime = fieldsValue.Contains("/") ? DateTime.Parse(item[fieldsItem.Name].ToString()) : DateTime.FromOADate(double.Parse(item[fieldsItem.Name].ToString()));
+                try
+                {
+                    fieldsValueTime = fieldsValue.Contains("/") ? DateTime.Parse(fieldsValue) : DateTime.FromOADate(double.Parse(fieldsValue));
+                }
+                catch (Exception ex)
+                {
+                }
             }
 
             entity.SetValue(fieldsItem.Name, fieldsValueTime);
