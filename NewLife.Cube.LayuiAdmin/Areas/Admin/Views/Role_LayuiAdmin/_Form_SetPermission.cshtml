@@ -21,14 +21,34 @@ layui.use(['form'], function() {
         form.on('checkbox(authorize)', function(data){
               $this = $(data.elem);
               var childkey = $this.attr('child');
-              $('input[parentkey=' + childkey + ']').prop('checked', data.elem.checked).change();
+              $('input[parentkey=' + childkey + ']').each(function(){
+                  var name=$(this).attr("name");
+                      $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
+                    $('input[name=' + name + ']').val(data.elem.checked);
+                });
+              var name=$(this).attr("name");
+              $('input[name=' + name + ']').val(data.elem.checked);
+              //设置单个按钮值
+
               layui.form.render();
         })
         //只读/查看
         form.on('checkbox(pro_detail)', function(data){
               $this = $(data.elem);
               var key = $this.attr('prochildkey');
-              $('input[proparentkey=' + key + ']').prop('checked', data.elem.checked);
+              $('input[proparentkey=' + key + ']').prop('checked', data.elem.checked).change();
+              debugger;
+              var name=$(this).attr("name");
+              $('input[name=' + name + ']').val(data.elem.checked);
+              //设置授权按钮
+              $('input[proparentkey=' + key + ']').each(function(){
+                  var parentkey=$(this).attr("parentkey");
+                $('input[child=' + parentkey + ']').prop('checked', data.elem.checked).change();
+                $('input[child=' + parentkey + ']').each(function(){
+                      var parentkeyname=$(this).attr("name");
+                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                });
+              });
               layui.form.render();
         })
         //全部权限
@@ -40,7 +60,38 @@ layui.use(['form'], function() {
 
               $this = $(data.elem);
               var key = $this.attr('prochildkey');
-              $('input[prokey=' + key + ']').prop('checked', data.elem.checked);
+              $('input[prokey=' + key + ']').prop('checked', data.elem.checked).change();
+              var name=$(this).attr("name");
+              $('input[name=' + name + ']').val(data.elem.checked);
+              //设置授权按钮
+              $('input[prokey=' + key + ']').each(function(){
+                  var parentkey=$(this).attr("parentkey");
+                $('input[child=' + parentkey + ']').prop('checked', data.elem.checked).change();
+                $('input[child=' + parentkey + ']').each(function(){
+                      var parentkeyname=$(this).attr("name");
+                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                });
+              });
+              layui.form.render();
+        })
+
+        //单个点击
+        form.on('checkbox(pro_child)', function(data){
+              //console.log(data.elem); //得到checkbox原始DOM对象
+              //console.log(data.elem.checked); //是否被选中，true或者false
+              //console.log(data.value); //复选框value值，也可以通过data.elem.value得到
+              //console.log(data.othis); //得到美化后的DOM对象
+
+              $this = $(data.elem);
+              var name=$(this).attr("name");
+              $('input[name=' + name + ']').val(data.elem.checked);
+              //赋值授权按钮
+              var parentkey=$(this).attr("parentkey");
+              $('input[child=' + parentkey + ']').prop('checked', data.elem.checked).change();
+              $('input[child=' + parentkey + ']').each(function(){
+                      var parentkeyname=$(this).attr("name");
+                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                });
               layui.form.render();
         })
 })
@@ -53,8 +104,8 @@ layui.use(['form'], function() {
                 <tr>
                     <th lay-data="{field:'TreeNodeName',title:'名称'}">名称</th>
                     <th lay-data="{field:'DisplayName',title:'显示名'}">显示名</th>
-                    <th lay-data="{field:'TreeNodeName2',title:'授权'}">授权</th>
-                    <th lay-data="{field:'TreeNodeName3',title:'操作权限'}">操作权限</th>
+                    <th lay-data="{field:'TreeNodeName2',title:'授权',minWidth:100}">授权</th>
+                    <th lay-data="{field:'TreeNodeName3',title:'操作权限',minWidth:250}">操作权限</th>
                 </tr>
             </thead>
             <tbody>
@@ -63,25 +114,33 @@ layui.use(['form'], function() {
                     <tr>
                         <td>@entity.TreeNodeName</td>
                         <td>@entity.DisplayName</td>
-                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID,lay_skin="primary",lay_filter="authorize"})</td>
+                        <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID,lay_skin="primary",lay_filter="authorize"})
+                        <script type="text/javascript">
+                                    $('input[name=p@(entity.ID)]').val("@(role.Has(entity.ID).ToString().ToLower())");
+                        </script>
+                        </td>
                         <td>
                             @if (entity.Childs.Count == 0)
                             {
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
                                 {
                                     var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID,lay_skin="primary",title=item.Value })
-                                    @*@Html.Label(id, item.Value)*@
+                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID,title=item.Value,lay_filter="pro_child"})
+                                @*@Html.Label(id, item.Value)*@
+                                @*var chec = role.Has(entity.ID, (PermissionFlags)item.Key)?"checked":"";*@
+                                <script type="text/javascript">
+                                    $('input[name=@id]').val("@(role.Has(entity.ID, (PermissionFlags)item.Key).ToString().ToLower())");
+                                </script>
                                     <text>&nbsp;</text>
                                 }
                             }
                             else
                             {
 
-                                @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID,lay_skin="primary",title="只读",lay_filter="pro_detail"})
+                                @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID,title="只读",lay_skin="primary",lay_filter="pro_detail"})
                                 @*@Html.Label("pc_readonly_" + entity.ID, "只读")*@
                                 <text>&nbsp;</text>
-                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ID,lay_skin="primary",title="全部",lay_filter="pro_all" })
+                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ID,title="全部",lay_skin="primary",lay_filter="pro_all" })
                                 @*@Html.Label("pc_all_" + entity.ID, "全部")*@
                             }
                         </td>
