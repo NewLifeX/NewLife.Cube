@@ -186,7 +186,21 @@ namespace NewLife.Cube
         /// <summary>Json序列化。默认使用FastJson</summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        protected virtual String OnJsonSerialize(Object data) => data.ToJson(false, true, true);
+        protected virtual String OnJsonSerialize(Object data)
+        {
+            //data.ToJson(false, true, true);
+            var writer = new JsonWriter
+            {
+                Indented = false,
+                IgnoreNullValues = false,
+                CamelCase = true,
+                Int64AsString = true
+            };
+
+            writer.Write(data);
+
+            return writer.GetString();
+        }
         #endregion
 
         #region 辅助
