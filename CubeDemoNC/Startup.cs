@@ -26,6 +26,9 @@ namespace CubeDemoNC
             var star = services.AddStardust(null);
             TracerMiddleware.Tracer = star?.Tracer;
 
+            // 启用接口响应压缩
+            services.AddResponseCompression();
+
             services.AddControllersWithViews();
             services.AddCube();
             //services.AddBlazor();
@@ -96,6 +99,8 @@ namespace CubeDemoNC
             //app.UseBlazor(env);
 
             app.UseAuthorization();
+
+            app.UseResponseCompression();
 
             app.UseEndpoints(endpoints =>
             {
