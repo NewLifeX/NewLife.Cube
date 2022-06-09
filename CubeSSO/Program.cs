@@ -12,12 +12,16 @@ var services = builder.Services;
 var star = services.AddStardust(null);
 TracerMiddleware.Tracer = star?.Tracer;
 
+// 启用接口响应压缩
+services.AddResponseCompression();
+
 services.AddControllersWithViews();
 services.AddCube();
 
 var app = builder.Build();
-app.UseCube(builder.Environment);
+    app.UseCube(builder.Environment);
 app.UseAuthorization();
+app.UseResponseCompression();
 app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Index}/{id?}");
 app.MapControllerRoute(name: "default2", pattern: "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
 

@@ -17,8 +17,8 @@ namespace NewLife.Cube.Services
         /// <summary>
         /// 实例化用户服务
         /// </summary>
-        /// <param name="tracer"></param>
-        public UserService(ITracer tracer) => _tracer = tracer;
+        /// <param name="provider"></param>
+        public UserService(IServiceProvider provider) => _tracer = provider?.GetService<ITracer>();
 
         #region 核心控制
         private TimerX _timer;
