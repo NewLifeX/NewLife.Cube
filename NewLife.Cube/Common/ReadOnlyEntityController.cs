@@ -851,6 +851,96 @@ namespace NewLife.Cube
             return new EmptyResult();
         }
 
+        /// <summary>导出Excel模板</summary>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Detail)]
+        [DisplayName("导出模板")]
+        public virtual async Task<ActionResult> ExportExcelTemplate()
+        {
+            // 准备需要输出的列
+            var fs = new List<FieldItem>();
+            foreach (var fi in Factory.AllFields)
+            {
+                if (Type.GetTypeCode(fi.Type) == TypeCode.Object) continue;
+                if (!fi.IsDataObjectField)
+                {
+                    var pi = Factory.EntityType.GetProperty(fi.Name);
+                    if (pi != null && pi.GetCustomAttribute<XmlIgnoreAttribute>() != null) continue;
+                }
+
+                //模板隐藏这几个字段
+                if (fi.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
+                            "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP","Enable") || fi.Description.IsNullOrEmpty())
+                {
+                    continue;
+                }
+
+                fs.Add(fi);
+            }
+
+            // 基本属性与扩展属性对调顺序
+            for (var i = 0; i < fs.Count; i++)
+            {
+                var fi = fs[i];
+                if (fi.OriField != null)
+                {
+                    var k = fs.IndexOf(fi.OriField);
+                    if (k >= 0)
+                    {
+                        fs[i] = fs[k];
+                        fs[k] = fi;
+                    }
+                }
+            }
+
+            // 要导出的数据超大时，启用流式输出
+#if !__CORE__
+            var buffer = true;
+#endif
+            if (Factory.Session.Count > 100_000)
+            {
+                var p = Session[CacheKey] as Pager;
+                p = new Pager(p)
+                {
+                    PageSize = 1,
+                    RetrieveTotalCount = true
+                };
+                SearchData(p);
+
+#if !__CORE__
+                // 超过一万行
+                if (p.TotalCount > 10_000) buffer = false;
+#endif
+            }
+
+            SetAttachment(null, ".xls", true);
+
+#if __CORE__
+            var rs = Response;
+            var headers = rs.Headers;
+            headers[HeaderNames.ContentEncoding] = "UTF8";
+            headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+
+            var data = ExportData(1);
+            await OnExportExcel(fs, data, rs.Body);
+#else
+            var rs = Response;
+            rs.Charset = "UTF-8";
+            rs.ContentEncoding = Encoding.UTF8;
+            rs.ContentType = "application/vnd.ms-excel";
+
+            if (buffer) SetCompress();
+            rs.Buffer = buffer;
+
+            var data = ExportData();
+            OnExportExcel(fs, data, rs.OutputStream);
+
+            rs.Flush();
+#endif
+
+            return new EmptyResult();
+        }
+
         /// <summary>导出Excel，可重载修改要输出的列</summary>
         /// <param name="fs">字段列表</param>
         /// <param name="list">数据集</param>

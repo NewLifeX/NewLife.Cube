@@ -7,6 +7,7 @@ on:
         - 'NewLife.Cube/**'
         - 'NewLife.CubeNC/**'
         - 'NewLife.CubeNC.Metronic/**'
+        - 'NewLife.CubeNC.Metronic8/**'
         - 'NewLife.CubeNC.LayuiAdmin/**'
   pull_request:
     branches: [ master ]
@@ -14,6 +15,7 @@ on:
         - 'NewLife.Cube/**'
         - 'NewLife.CubeNC/**'
         - 'NewLife.CubeNC.Metronic/**'
+        - 'NewLife.CubeNC.Metronic8/**'
         - 'NewLife.CubeNC.LayuiAdmin/**'
 
 jobs:
@@ -31,11 +33,13 @@ jobs:
       run: |
         dotnet restore NewLife.CubeNC/NewLife.CubeNC.csproj
         dotnet restore NewLife.Cube.Metronic/NewLife.Cube.Metronic.csproj
+        dotnet restore NewLife.Cube.Metronic8/NewLife.Cube.Metronic8.csproj
         dotnet restore NewLife.Cube.LayuiAdmin/NewLife.Cube.LayuiAdmin.csproj
     - name: Build
       run: |
         dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d-beta%H%M") -c Release -o out NewLife.CubeNC/NewLife.CubeNC.csproj
         dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d-beta%H%M") -c Release -o out NewLife.Cube.Metronic/NewLife.Cube.Metronic.csproj
+        dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d-beta%H%M") -c Release -o out NewLife.Cube.Metronic8/NewLife.Cube.Metronic8.csproj
         dotnet pack --no-restore --version-suffix $(date "+%Y.%m%d-beta%H%M") -c Release -o out NewLife.Cube.LayuiAdmin/NewLife.Cube.LayuiAdmin.csproj
     - name: Publish
       run: |

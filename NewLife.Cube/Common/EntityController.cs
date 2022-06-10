@@ -9,10 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Remoting;
+using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -391,6 +393,130 @@ namespace NewLife.Cube
         [DisplayName("导入")]
         [HttpPost]
         public virtual ActionResult ImportJson() => throw new NotImplementedException();
+
+        /// <summary>导入Excel</summary>
+        /// 当前采用前端解析的excel，表头第一行数据无效，从第二行开始处理
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Insert)]
+        [DisplayName("导入Excel")]
+        public virtual ActionResult ImportExcel(String data)
+        {
+            if (String.IsNullOrWhiteSpace(data)) return Json(500, null, $"“{nameof(data)}”不能为 null 或空白。");
+            try
+            {
+                var fact = Factory;
+                var dal = fact.Session.Dal;
+                var type = Activator.CreateInstance(fact.EntityType);
+                var json = new JsonParser(data);
+                var dataList = json.Decode() as IList<Object>;
+
+
+                //解析json
+                //var dataList = JArray.Parse(data);
+                var errorString = string.Empty;
+                int okSum = 0, fiSum = 0;
+
+                //using var tran = Entity<TEntity>.Meta.CreateTrans();
+                foreach (var itemD in dataList)
+                {
+                    var item = itemD.ToDictionary();
+                    if (item[fact.Fields[1].Name].ToString() == fact.Fields[1].DisplayName) //判断首行是否为标体列
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        //检查主字段是否重复
+                        if (Entity<TEntity>.Find(fact.Master.Name, item[fact.Master.Name].ToString()) == null)
+                        {
+                            //var entity = item.ToJson().ToJsonEntity(fact.EntityType);
+                            var entity = fact.Create();
+
+                            foreach (var fieldsItem in fact.Fields)
+                            {
+                                if (!item.ContainsKey(fieldsItem.Name))
+                                {
+                                    if (!fieldsItem.IsNullable)
+                                        fieldsItem.FromExcelToEntity(item, entity);
+
+                                    continue;
+                                }
+
+                                fieldsItem.FromExcelToEntity(item, entity);
+                            }
+
+                            if (fact.FieldNames.Contains("CreateTime"))
+                                entity["CreateTime"] = DateTime.Now;
+
+                            if (fact.FieldNames.Contains("CreateIP"))
+                                entity["CreateIP"] = "--";
+
+                            okSum += fact.Session.Insert(entity);
+                        }
+                        else
+                        {
+                            errorString += $"<br>{item[fact.Master.Name]}重复";
+                            fiSum++;
+                        }
+                    }
+                }
+
+                //tran.Commit();
+
+                WriteLog("导入Excel", true, $"导入Excel[{data}]（{dataList.Count()}行）成功！");
+
+                return Json(0, $"导入成功:({okSum}行)，失败({fiSum}行)！{errorString}");
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+
+                WriteLog("导入Excel", false, ex.GetMessage());
+
+                return Json(500, ex.GetMessage(), ex);
+            }
+        }
+
+
+        /// <summary>修改bool值</summary>
+        /// <param name="id"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        [EntityAuthorize(PermissionFlags.Update)]
+        public ActionResult SetBool(Int32 id = 0, string valName = "", Boolean val = true)
+        {
+            var fi = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase(valName));
+            if (fi == null) throw new InvalidOperationException($"未找到{valName}字段。");
+
+            var rs = 0;
+            if (id > 0)
+            {
+                var entity = FindData(id);
+                if (entity == null) throw new ArgumentNullException(nameof(id), "找不到任务 " + id);
+
+                //entity.Enable = enable;
+                entity.SetItem(fi.Name, val);
+                if (Valid(entity, DataObjectMethodType.Update, true))
+                    rs += OnUpdate(entity);
+            }
+            else
+            {
+                var ids = GetRequest("keys").SplitAsInt();
+
+                foreach (var item in ids)
+                {
+                    var entity = FindData(item);
+                    if (entity != null)
+                    {
+                        //entity.Enable = enable;
+                        entity.SetItem(fi.Name, val);
+                        if (Valid(entity, DataObjectMethodType.Update, true))
+                            rs += OnUpdate(entity);
+                    }
+                }
+            }
+            return JsonRefresh($"操作成功！共更新[{rs}]行！");
+        }
 
         /// <summary>启用 或 禁用</summary>
         /// <param name="id"></param>
