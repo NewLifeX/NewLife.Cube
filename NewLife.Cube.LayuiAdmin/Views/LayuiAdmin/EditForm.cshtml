@@ -25,7 +25,7 @@
         url = Url.Action(isNew ? "Add" : "Edit");
     }
 
-    Object htmlAttributes = new {Class="layui-form",lay_filter="add-form-group",id="data_from" };
+    Object htmlAttributes = new {Class="layui-form",lay_filter="edit-form-group",id="data_from" };
     if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { Class="layui-form",lay_filter="component-form-group",enctype = "multipart/form-data",id="data_from" };
 }
 
@@ -49,7 +49,7 @@
 @section layuiscripts
 {
     //表单初始化，否则开关不出现
-    form.render(null, 'add-form-group');
+    form.render(null, 'edit-form-group');
 
     //日期控件
     @foreach (var item in fields)
@@ -99,10 +99,9 @@
             })
 
     table.init('parse-authorize', { //转化静态表格
-            limit: 100,
+            limit: 300,
             even: true,
             defaultToolbar: [''],
-            height: 'full-200',
-            cellMinWidth: 100
+            height: 'full-200'
     });
 }

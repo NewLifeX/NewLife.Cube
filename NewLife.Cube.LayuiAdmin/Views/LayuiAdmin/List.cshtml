@@ -90,6 +90,10 @@
                             @foreach (var entity in Model)
                             {
                                 <tr>
+                                    @if (set.EnableSelect && ukey != null)
+                                    {
+                                        <td lay-data="{checkbox:true}"></td>
+                                    }
                                     @foreach (var item in fields)
                                     {
                                         var df = item as ListField;
