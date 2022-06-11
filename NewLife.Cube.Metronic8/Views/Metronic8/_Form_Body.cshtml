@@ -88,12 +88,6 @@
         <div class="row">
             @foreach (var item in fields)
             {
-                if (item.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                    "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
-                    continue;
-                @*扩展信息单独显示*@
-                if (item.Name.EqualIgnoreCase("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6")) continue;
-
                 var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
                 var dataField = fields.GetField(item.Name) as ListField;
                 var display = dataField?.DisplayName ?? item.DisplayName;
