@@ -9,11 +9,29 @@
 @{
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
+    var fields = ViewBag.Fields as FieldCollection;
+    var groupFields = fields.GroupBy(e => e.Category + "").ToList();
 }
 
 <div class="card-header">
     <div class="card-title">
-        <h4>&nbsp;</h4>
+        @if (groupFields.Count > 1)
+        {
+            <ul class="nav">
+                @for(int i=0; i < groupFields.Count; i++)
+                {
+                    var key = groupFields[i].Key.IsNullOrEmpty() ? "默认信息" : groupFields[i].Key.TrimEnd("信息") + "信息";
+                    var cls = "nav-link btn btn-sm btn-color-muted btn-active-secondary fw-floder px-4 me-1 ";
+                    <li class="nav-item">
+                        <a class="@(i == 0 ? cls + "active" : cls)" data-bs-toggle="tab" href="@("#form_tab"+i)">@key</a>
+                    </li> 
+                }
+            </ul>
+        }
+        else
+        {
+            <h4>&nbsp;</h4>
+        }
     </div>
 
     <div class="card-toolbar">

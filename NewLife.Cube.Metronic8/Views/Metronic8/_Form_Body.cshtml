@@ -9,6 +9,7 @@
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
     var fields = ViewBag.Fields as FieldCollection;
+    var groupFields = fields.GroupBy(e => e.Category + "").ToList();
 
     var set = NewLife.Cube.Setting.Current;
     var cls = set.FormGroupClass;
@@ -16,11 +17,74 @@
     {
         cls = "col-xs-12 col-sm-6 col-lg-6 pt-2";
     }
-    var extclass = fields.Any(f => f.Name.Contains("Ex1")) ? "pb-0" : "";
 }
 
-<div class="card-body @extclass">
+<div class="card-body pt-0">
     @await Html.PartialAsync("_Form_Body_Message")
+    @if (groupFields.Count > 1)
+    {
+        <div class="tab-content">
+            @for (int i = 0; i < groupFields.Count; i++)
+            {
+                <div class="tab-pane fade @(i == 0 ? "active show" : "")" id="@("form_tab"+i)">
+                    <div class="row">
+                        @foreach (var item in groupFields[i])
+                        {
+                            var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
+                            var dataField = fields.GetField(item.Name) as ListField;
+                            var display = dataField?.DisplayName ?? item.DisplayName;
+
+                            if (item.IsBigText())
+                            {
+                                <div class="">
+                                    <!-- 字段标签（含帮助说明信息） -->
+                                    <div class="d-inline-flex align-items-center">
+                                        <label class="col-form-label me-2" for="@item.Name">@display</label>
+                                        @if (!des.IsNullOrEmpty())
+                                        {
+                                            <div class="d-none d-md-block d-lg-block">
+                                                <i class="fas la-question-circle" data-bs-toggle="tooltip" title="@des"></i>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- 字段编辑框 -->
+                                    <div class="flex-grow-1">
+                                        @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                    </div>
+                                    <span class="form-text text-muted d-sm-none"><span class="form-text text-muted">@des</span></span>
+                                </div>
+                            }
+                            else
+                            {
+                                var hide = item.Name.EqualIgnoreCase("ID") ? "d-none" : "";
+                                <div class="@cls @hide">
+                                    <!-- 字段标签（含帮助说明信息） -->
+                                    <div class="d-inline-flex align-items-center">
+                                        <label class="col-form-label me-2" for="@item.Name">@display</label>
+                                        @if (!des.IsNullOrEmpty())
+                                        {
+                                            <div class="d-none d-md-block d-lg-block">
+                                                <i class="fas la-question-circle" data-bs-toggle="tooltip" title="@des"></i>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- 字段编辑框 -->
+                                    <div class="flex-grow-1">
+                                        @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                    </div>
+                                    <span class="form-text text-muted d-sm-none"><span class="form-text text-muted">@des</span></span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
         <div class="row">
             @foreach (var item in fields)
             {
@@ -79,9 +143,11 @@
                 }
             }
         </div>
+    }
+
 </div>
 
-@if (fields.Any(f => f.Name.Contains("Ex1")))
+@*@if (fields.Any(f => f.Name.Contains("Ex1")))
 {
     @await Html.PartialAsync("_Form_Body_Extends", entity)
 }
@@ -89,6 +155,6 @@
 @if (!isNew)
 {
     @await Html.PartialAsync("_Form_Body_Audits", entity)
-}
+}*@
 
 
