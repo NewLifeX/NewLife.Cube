@@ -13,18 +13,6 @@
 }
 
 <div class="row g-5 g-xl-5">
-@*    <div class="col-xl-3">
-        <div class="card card-xxl-stretch mb-xl-8">
-            <div class="card-header">
-                <h4 class="card-title text-muted">系统选项</h4>
-            </div>
-
-            <div class="card-body">
-                @await Html.PartialAsync("_Object_Nav", obj)
-            </div>
-        </div>
-    </div>*@
-
     <div class="col-sm-12">
         <div class="card card-xxl-stretch mb-xl-8">
             @using (Html.BeginForm("Update", null))
@@ -78,12 +66,6 @@
                                             <div class="row d-flex align-items-center mt-5 mb-1 pt-1">
                                                 <div class="col-lg-3 d-flex align-items-center justify-content-lg-end">
                                                     <label class="fs-6 me-2" for="@name">@display</label>
-                                                    @if (!des.IsNullOrEmpty())
-                                                    {
-                                                        <div class="d-none d-md-block d-lg-block">
-                                                            <i class="fas la-question-circle" data-bs-toggle="tooltip" title="@des"></i>
-                                                        </div>
-                                                    }
                                                 </div>
 
                                                 <div class="col-lg-6">
@@ -96,8 +78,11 @@
                                                         @await Html.PartialAsync("_Form_Editor_Item", new ItemModel(name, val, pi.Type))
                                                     }
                                                     <span class="fw-bolder fs-6 text-dark"></span>
+                                                    @if (!des.IsNullOrEmpty())
+                                                    {
+                                                        <label class="text-muted fs-10">@des</label>
+                                                    }
                                                 </div>
-                                                <label class="col-lg-9 text-muted fs-10 d-md-none">@des</label>
                                             </div>
                                         }
                                     </div>
@@ -119,12 +104,6 @@
                                 <div class="row d-flex align-items-center mt-5 mb-1 pt-1">
                                     <div class="col-lg-3 d-flex align-items-center justify-content-lg-end">
                                         <label class="fs-6 me-2" for="@name">@display</label>
-                                        @if (!des.IsNullOrEmpty())
-                                        {
-                                            <div class="d-none d-md-block d-lg-block">
-                                                <i class="fas la-question-circle" data-bs-toggle="tooltip" title="@des"></i>
-                                            </div>
-                                        }
                                     </div>
 
                                     <div class="col-lg-6">
@@ -137,8 +116,11 @@
                                             @await Html.PartialAsync("_Form_Editor_Item", new ItemModel(name, val, pi.Type))
                                         }
                                         <span class="fw-bolder fs-6 text-dark"></span>
+                                        @if (!des.IsNullOrEmpty())
+                                        {
+                                            <label class="text-muted fs-10">@des</label>        
+                                        }
                                     </div>
-                                    <label class="col-lg-9 text-muted fs-10 d-md-none">@des</label>
                                 </div>
                             }
                         </div>
