@@ -54,7 +54,7 @@
                             @for(int i=0; i<groupFields.Count; i++)
                             {
                                 <div class="tab-pane fade @(i==0 ? "active show" : "")" id="@("object_tab"+i)">
-                                    <div class="row">
+                                    @*<div class="row">*@
                                         @foreach(var pi in groupFields[i])
                                         {
                                             var name = pi.Name;
@@ -85,14 +85,14 @@
                                                 </div>
                                             </div>
                                         }
-                                    </div>
+                                    @*</div>*@
                                 </div>
                             }
                         </div>
                     }
                     else
                     {
-                        <div class="row">
+                        @*<div class="row">*@
                             @foreach (var pi in fields)
                             {
                                 var name = pi.Name;
@@ -123,7 +123,7 @@
                                     </div>
                                 </div>
                             }
-                        </div>
+                        @*</div>*@
                     }
                 </div>
 
