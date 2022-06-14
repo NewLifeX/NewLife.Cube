@@ -11,8 +11,12 @@
 
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(new object { });
     if (!atts.ContainsKey("class")) atts.Add("class", "form-check-input");
+
+    // 根据控制器传过来的实体工厂辅助设定Boolean类型的样式
+    var factory = ViewBag.Factory;
+    var cls = factory == null ? "mt-sm-3 mt-md-0" : "mt-sm-3";
 }
 
-<div class="input-group d-flex align-items-center form-switch form-check-custom mt-sm-3 mt-md-0">
+<div class="input-group d-flex align-items-center form-switch form-check-custom @cls">
     @Html.CheckBox(name, value, atts)
 </div>
