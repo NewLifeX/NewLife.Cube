@@ -9,6 +9,7 @@
 @using XCode.Membership;
 @{
     var entity = Model as IEntity;
+    var factory = entity.GetType().AsFactory();
     var fields = ViewBag.Fields as FieldCollection;
     var fiPK = fields.FirstOrDefault(f => f.PrimaryKey == true);
     var fiEnable = fields.FirstOrDefault(f => f.Name == "Enable");
@@ -110,9 +111,10 @@
                 var chk = entity[fiEnable.Name]?.ToBoolean();
                 var icon = chk == true ? "fas fa-toggle-on" : "fas fa-toggle-off";
                 var tip = (chk == true ? "已" : "未") + @fiEnable.DisplayName;
+                var key = entity[factory.Unique.Name];
 
                 <li class="nav-item m-1">
-                    <a data-bs-toggle="tooltip" title="@tip">
+                    <a href="@Url.Action("SetEnable",null,new { id=key, enable=!chk })" data-action="action" data-bs-toggle="tooltip" title="@tip">
                         <i class="@icon fs-2x @(chk == true ? "text-success" : "text-gray-600")"></i>
                     </a>
                 </li>
