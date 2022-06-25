@@ -13,7 +13,19 @@
 }
 
 <div class="row g-5 g-xl-5">
-    <div class="col-sm-12">
+    <div class="col-xl-3">
+        <div class="card card-xxl-stretch mb-xl-8">
+            <div class="card-header">
+                <h4 class="card-title text-muted">系统选项</h4>
+            </div>
+
+            <div class="card-body">
+                @await Html.PartialAsync("_Object_Config_Nav", obj)
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-9">
         <div class="card card-xxl-stretch mb-xl-8">
             @using (Html.BeginForm("Update", null))
             {
@@ -54,76 +66,74 @@
                             @for(int i=0; i<groupFields.Count; i++)
                             {
                                 <div class="tab-pane fade @(i==0 ? "active show" : "")" id="@("object_tab"+i)">
-                                    @*<div class="row">*@
-                                        @foreach(var pi in groupFields[i])
-                                        {
-                                            var name = pi.Name;
-                                            var val = obj.GetValue(name);
-                                            var display = pi.DisplayName;
-                                            var des = pi.Description;
-                                            var dataSource = pi.DataSource;
+                                    @foreach (var pi in groupFields[i])
+                                    {
+                                        var name = pi.Name;
+                                        var val = obj.GetValue(name);
+                                        var display = pi.DisplayName;
+                                        var des = pi.Description;
+                                        var dataSource = pi.DataSource;
 
-                                            <div class="row d-flex align-items-center mt-5 mb-1 pt-1">
-                                                <div class="col-lg-3 d-flex align-items-center justify-content-lg-end">
-                                                    <label class="fs-6 me-2" for="@name">@display</label>
-                                                </div>
-
-                                                <div class="col-lg-6">
-                                                    @if (dataSource != null)
-                                                    {
-                                                        @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
-                                                    }
-                                                    else
-                                                    {
-                                                        @await Html.PartialAsync("_Form_Editor_Item", new ItemModel(name, val, pi.Type))
-                                                    }
-                                                    <span class="fw-bolder fs-6 text-dark"></span>
-                                                    @if (!des.IsNullOrEmpty())
-                                                    {
-                                                        <label class="text-muted fs-10">@des</label>
-                                                    }
-                                                </div>
+                                        <div class="row d-flex align-items-center mt-5 mb-1 pt-1">
+                                            <div class="col-lg-3 d-flex align-items-center justify-content-lg-end">
+                                                <label class="fs-6 me-2" for="@name">@display</label>
                                             </div>
-                                        }
-                                    @*</div>*@
+
+                                            <div class="col-lg-6">
+                                                @if (dataSource != null)
+                                                {
+                                                    @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
+                                                }
+                                                else
+                                                {
+                                                    @await Html.PartialAsync("_Form_Editor_Item", new ItemModel(name, val, pi.Type))
+                                                }
+                                                <span class="fw-bolder fs-6 text-dark"></span>
+                                                @if (!des.IsNullOrEmpty())
+                                                {
+                                                    <label class="text-muted fs-10">@des</label>
+                                                }
+                                            </div>
+
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
                     }
                     else
                     {
-                        @*<div class="row">*@
-                            @foreach (var pi in fields)
-                            {
-                                var name = pi.Name;
-                                var val = obj.GetValue(name);
-                                var display = pi.DisplayName;
-                                var des = pi.Description;
-                                var dataSource = pi.DataSource;
+                        @foreach (var pi in fields)
+                        {
+                            var name = pi.Name;
+                            var val = obj.GetValue(name);
+                            var display = pi.DisplayName;
+                            var des = pi.Description;
+                            var dataSource = pi.DataSource;
 
-                                <div class="row d-flex align-items-center mt-5 mb-1 pt-1">
-                                    <div class="col-lg-3 d-flex align-items-center justify-content-lg-end">
-                                        <label class="fs-6 me-2" for="@name">@display</label>
-                                    </div>
-
-                                    <div class="col-lg-6">
-                                        @if (dataSource != null)
-                                        {
-                                            @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
-                                        }
-                                        else
-                                        {
-                                            @await Html.PartialAsync("_Form_Editor_Item", new ItemModel(name, val, pi.Type))
-                                        }
-                                        <span class="fw-bolder fs-6 text-dark"></span>
-                                        @if (!des.IsNullOrEmpty())
-                                        {
-                                            <label class="text-muted fs-10">@des</label>        
-                                        }
-                                    </div>
+                            <div class="row d-flex align-items-center mt-5 mb-1 pt-1">
+                                <div class="col-lg-3 d-flex align-items-center justify-content-lg-end">
+                                    <label class="fs-6 me-2" for="@name">@display</label>
                                 </div>
-                            }
-                        @*</div>*@
+
+                                <div class="col-lg-6">
+                                    @if (dataSource != null)
+                                    {
+                                        @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
+                                    }
+                                    else
+                                    {
+                                        @await Html.PartialAsync("_Form_Editor_Item", new ItemModel(name, val, pi.Type))
+                                    }
+                                    <span class="fw-bolder fs-6 text-dark"></span>
+                                    @if (!des.IsNullOrEmpty())
+                                    {
+                                        <label class="text-muted fs-10">@des</label>
+                                    }
+                                </div>
+
+                            </div>
+                        }
                     }
                 </div>
 
