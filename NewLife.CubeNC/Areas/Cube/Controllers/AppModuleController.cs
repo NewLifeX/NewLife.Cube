@@ -15,6 +15,9 @@ namespace NewLife.Cube.Cube.Controllers
         {
             LogOnChange = true;
 
+            ListFields.RemoveField("Id", "UpdateUserId", "UpdateIP", "Remark")
+                .RemoveCreateField();
+
             {
                 var df = ListFields.AddListField("Log");
                 df.DisplayName = "日志";

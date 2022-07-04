@@ -231,21 +231,24 @@ namespace NewLife.Cube
                 ModelState.AddModelError("", ex.Message);
             }
 
+            if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
+
             //ViewBag.RowsAffected = rs;
             if (!rs)
             {
                 WriteLog("Edit", false, err);
 
                 ViewBag.StatusMessage = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
+                ViewBag.Fields = EditFormFields;
+
+                return View("EditForm", entity);
             }
             else
+            {
+                // 实体对象保存成功后直接重定向到列表页，减少用户操作提高操作体验
                 ViewBag.StatusMessage = "保存成功！";
-
-            if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
-
-            ViewBag.Fields = EditFormFields;
-
-            return View("EditForm", entity);
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>保存所有上传文件</summary>

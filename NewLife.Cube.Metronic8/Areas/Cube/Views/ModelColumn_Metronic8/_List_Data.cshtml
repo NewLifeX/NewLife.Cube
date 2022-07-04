@@ -11,6 +11,7 @@
     var fields = ViewBag.Fields as FieldCollection;
     var ukey = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting;
+    var cols = "";
 }
 
 <div class="card card-flush">
@@ -36,6 +37,11 @@
 
                             <!-- 跳过外部指向外部链接的列表字段 -->
                             if (df != null && (!df.DataAction.IsNullOrEmpty() || !df.Url.IsNullOrEmpty()))
+                                continue;
+
+                            if (df.Name.EqualIgnoreCase("Id", "TableId", "IsDataObjectField", "Description", "ShowInList", "ShowInAddForm", "ShowInEditForm", "ShowInDetailForm",
+                                "ShowInSearch", "Sort", "Width", "CellText", "CellTitle", "CellUrl", "HeaderText", "HeaderTitle", "HeaderUrl", "DataAction", "DataSource",
+                                "CreateUserId", "CreateTime", "CreateIP", "UpdateUserId", "UpdateTime", "UpdateIP"))
                                 continue;
 
                             if (item.Type == typeof(Boolean))
@@ -85,6 +91,11 @@
                                 <!-- 跳过外部指向外部链接的列表字段 -->
                                 if (df != null && (!df.DataAction.IsNullOrEmpty() || !df.Url.IsNullOrEmpty()))
                                     continue;
+
+                            if (df.Name.EqualIgnoreCase("Id", "TableId", "IsDataObjectField", "Description", "ShowInList", "ShowInAddForm", "ShowInEditForm", "ShowInDetailForm",
+                                "ShowInSearch", "Sort", "Width", "CellText", "CellTitle", "CellUrl", "HeaderText", "HeaderTitle", "HeaderUrl", "DataAction", "DataSource",
+                                "CreateUserId", "CreateTime", "CreateIP", "UpdateUserId", "UpdateTime", "UpdateIP"))
+                                continue;
 
                                 if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
                                 {

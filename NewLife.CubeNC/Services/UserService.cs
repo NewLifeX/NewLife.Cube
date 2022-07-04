@@ -58,7 +58,7 @@ namespace NewLife.Cube.Services
             var entity = UserOnline.GetOrAdd(sessionid, UserOnline.FindBySessionID, k => new UserOnline
             {
                 SessionID = k,
-                LastError = new DateTime(1, 1, 2),
+                LastError = new DateTime(1970, 1, 2),//MSSql不能使用1973年之前的日期
                 CreateIP = ip,
                 CreateTime = DateTime.Now
             });

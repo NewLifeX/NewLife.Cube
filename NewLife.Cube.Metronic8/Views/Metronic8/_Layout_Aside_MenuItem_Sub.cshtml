@@ -6,6 +6,7 @@
 
     var rs = item.AllChilds.Where(m => m.ID == menu.ParentID).Count() > 0;
     var rs_active = item.ID == menu.ID;
+    var rs_new = (DateTime.Now - item.CreateTime).Days <= 7 ? true : false;
 
     var icon = item.Icon.IsNullOrEmpty() ? "sitemap" : "fa-" + item.Icon.TrimStart("fa-");
 
@@ -62,6 +63,10 @@
                    </span> 
                 }
                 <span class="menu-title">@item.DisplayName</span>
+                @if (rs_new && !item.Parent.Name.EqualIgnoreCase("Admin", "Cube"))
+                {
+                    <span class="bullet bullet-dot bg-danger"></span>
+                }
             </a>
         </div>
     }
