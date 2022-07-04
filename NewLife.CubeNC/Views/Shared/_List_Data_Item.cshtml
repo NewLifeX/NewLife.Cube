@@ -56,23 +56,6 @@ else
             <td class="text-right">@dc.ToString("n2")</td>
             break;
         case TypeCode.Single:
-            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
-            {
-                var dd = (float)value;
-                var des = item.Description + "";
-                if (des.Contains("十分之一")) { dd /= 10; }
-                if (des.Contains("百分之一")) { dd /= 100; }
-                if (des.Contains("千分之一")) { dd /= 1000; }
-                if (des.Contains("万分之一")) { dd /= 10000; }
-
-                <td class="text-center">@dd.ToString("p2")</td>
-            }
-            else
-            {
-                var dd = (float)value;
-                <td class="text-right">@dd.ToString("n2")</td>
-            }
-            break;
         case TypeCode.Double:
             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
             {
@@ -83,6 +66,11 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
+                <td class="text-center">@dd.ToString("p2")</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            {
+                var dd = (Double)value;
                 <td class="text-center">@dd.ToString("p2")</td>
             }
             else
