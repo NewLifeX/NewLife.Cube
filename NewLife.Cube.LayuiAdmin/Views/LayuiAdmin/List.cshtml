@@ -241,17 +241,20 @@
                   var data = obj.data;
                   if(obj.event === 'del'){
                     layer.confirm('真的删除行么', function(index){
-                       $.get('@Url.Action("Delete")/'+data["@fact.Unique.Name"],function(res){
+                        var dataid=$(this).attr("data-id");
+                       $.get('@Url.Action("Delete")/'+dataid,function(res){
                             obj.del();
                             layer.close(index);
                        });
                     });
                   }
                   else if(obj.event === 'edit'){
-                      location.href = '@Url.Action("Edit")/'+data["@fact.Unique.Name"];
+                      var dataid=$(this).attr("data-id");
+                      location.href = '@Url.Action("Edit")/'+dataid;
                   }
                   else if(obj.event === 'select'){
-                      location.href = '@Url.Action("Detail")/'+data["@fact.Unique.Name"];
+                      var dataid=$(this).attr("data-id");
+                      location.href = '@Url.Action("Detail")/'+dataid;
                   }
                   else if(obj.event === 'action'){
                         var url=$(this).attr("lay-data");
