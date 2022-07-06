@@ -186,6 +186,9 @@ namespace NewLife.Cube
             // 验证数据权限
             Valid(entity, DataObjectMethodType.Update, false);
 
+            var url = Request.Headers["Referer"].FirstOrDefault() + "";
+            Session["Cube_Edit_Referrer"] = url;
+
             // Json输出
             if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
 
@@ -247,7 +250,11 @@ namespace NewLife.Cube
             {
                 // 实体对象保存成功后直接重定向到列表页，减少用户操作提高操作体验
                 ViewBag.StatusMessage = "保存成功！";
-                return RedirectToAction("Index");
+                var url = Session["Cube_Edit_Referrer"] as String;
+                if (!url.IsNullOrEmpty())
+                    return Redirect(url);
+                else
+                    return RedirectToAction("Index");
             }
         }
 
