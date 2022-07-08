@@ -64,13 +64,13 @@
         @await Html.PartialAsync("_Layout_Aside")
         <div class="app-page d-flex flex-row flex-column-fluid" id="kt_app_page">
             @await Html.PartialAsync("_Layout_Header")
-            <div class="wrapper d-flex flex-column flex-row-fluid pb-20" id="kt_wrapper">
+            <div class="app-wrapper flex-column flex-row-fluid pb-20" id="kt_app_wrapper">
                 <!-- 内容 -->
-                <div class="content d-flex flex-column flex-column-fluid pt-lg-5" id="kt_content">
+                <div class="app-content flex-column-fluid pt-lg-5" id="kt_app_content">
                     @await Html.PartialAsync("_Layout_Toolbar")
 
                     <div class="post d-flex flex-column-fluid" id="dt_post">
-                        <div class="container-fluid px-lg-5" id="dt_content_container">
+                        <div class="app-container container-fluid px-lg-5" id="kt_app_content_container">
                             @RenderBody()
 
                             <!-- 内容底部 -->
