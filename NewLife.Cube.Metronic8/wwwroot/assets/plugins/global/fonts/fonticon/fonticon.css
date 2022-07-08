@@ -1,0 +1,235 @@
+@font-face {
+    font-family: "fonticon";
+    src: url("./fonticon.ttf?8c99757ffa673e941699f68d7b9547b2") format("truetype"),
+url("./fonticon.woff?8c99757ffa673e941699f68d7b9547b2") format("woff"),
+url("./fonticon.woff2?8c99757ffa673e941699f68d7b9547b2") format("woff2"),
+url("./fonticon.eot?8c99757ffa673e941699f68d7b9547b2#iefix") format("embedded-opentype"),
+url("./fonticon.svg?8c99757ffa673e941699f68d7b9547b2#fonticon") format("svg");
+}
+
+i[class^="fonticon-"]:before, i[class*=" fonticon-"]:before {
+    font-family: fonticon !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.fonticon-delivery:before {
+    content: "\f101";
+}
+.fonticon-bicycle:before {
+    content: "\f102";
+}
+.fonticon-bookmark:before {
+    content: "\f103";
+}
+.fonticon-like:before {
+    content: "\f104";
+}
+.fonticon-microphone:before {
+    content: "\f105";
+}
+.fonticon-location:before {
+    content: "\f106";
+}
+.fonticon-gallery:before {
+    content: "\f107";
+}
+.fonticon-share:before {
+    content: "\f108";
+}
+.fonticon-star:before {
+    content: "\f109";
+}
+.fonticon-trash-bin:before {
+    content: "\f10a";
+}
+.fonticon-user-2:before {
+    content: "\f10b";
+}
+.fonticon-view:before {
+    content: "\f10c";
+}
+.fonticon-user:before {
+    content: "\f10d";
+}
+.fonticon-pin:before {
+    content: "\f10e";
+}
+.fonticon-chat:before {
+    content: "\f10f";
+}
+.fonticon-home:before {
+    content: "\f110";
+}
+.fonticon-mail:before {
+    content: "\f111";
+}
+.fonticon-settings:before {
+    content: "\f112";
+}
+.fonticon-alignment-right:before {
+    content: "\f113";
+}
+.fonticon-link:before {
+    content: "\f114";
+}
+.fonticon-attach:before {
+    content: "\f115";
+}
+.fonticon-smile:before {
+    content: "\f116";
+}
+.fonticon-moon:before {
+    content: "\f117";
+}
+.fonticon-sun:before {
+    content: "\f118";
+}
+.fonticon-train:before {
+    content: "\f119";
+}
+.fonticon-eclipse:before {
+    content: "\f11a";
+}
+.fonticon-drone:before {
+    content: "\f11b";
+}
+.fonticon-truck:before {
+    content: "\f11c";
+}
+.fonticon-ship:before {
+    content: "\f11d";
+}
+.fonticon-offline:before {
+    content: "\f11e";
+}
+.fonticon-printer:before {
+    content: "\f11f";
+}
+.fonticon-paperclip:before {
+    content: "\f120";
+}
+.fonticon-attachments:before {
+    content: "\f121";
+}
+.fonticon-attachment:before {
+    content: "\f122";
+}
+.fonticon-dogecoin:before {
+    content: "\f123";
+}
+.fonticon-bitcoin:before {
+    content: "\f124";
+}
+.fonticon-setting:before {
+    content: "\f125";
+}
+.fonticon-headset:before {
+    content: "\f126";
+}
+.fonticon-play:before {
+    content: "\f127";
+}
+.fonticon-pause:before {
+    content: "\f128";
+}
+.fonticon-next:before {
+    content: "\f129";
+}
+.fonticon-back:before {
+    content: "\f12a";
+}
+.fonticon-shuffle:before {
+    content: "\f12b";
+}
+.fonticon-repeat:before {
+    content: "\f12c";
+}
+.fonticon-outgoing-call:before {
+    content: "\f12d";
+}
+.fonticon-incoming-call:before {
+    content: "\f12e";
+}
+.fonticon-cash-payment:before {
+    content: "\f12f";
+}
+.fonticon-mobile-payment:before {
+    content: "\f130";
+}
+.fonticon-card:before {
+    content: "\f131";
+}
+.fonticon-like-1:before {
+    content: "\f132";
+}
+.fonticon-bank:before {
+    content: "\f133";
+}
+.fonticon-telegram:before {
+    content: "\f134";
+}
+.fonticon-drive:before {
+    content: "\f135";
+}
+.fonticon-remote-control:before {
+    content: "\f136";
+}
+.fonticon-house:before {
+    content: "\f137";
+}
+.fonticon-image:before {
+    content: "\f138";
+}
+.fonticon-app-store:before {
+    content: "\f139";
+}
+.fonticon-email:before {
+    content: "\f13a";
+}
+.fonticon-stats:before {
+    content: "\f13b";
+}
+.fonticon-notification:before {
+    content: "\f13c";
+}
+.fonticon-send:before {
+    content: "\f13d";
+}
+.fonticon-insurance:before {
+    content: "\f13e";
+}
+.fonticon-hourglass:before {
+    content: "\f13f";
+}
+.fonticon-calendar:before {
+    content: "\f140";
+}
+.fonticon-alarm:before {
+    content: "\f141";
+}
+.fonticon-layers:before {
+    content: "\f142";
+}
+.fonticon-facebook:before {
+    content: "\f143";
+}
+.fonticon-instagram:before {
+    content: "\f144";
+}
+.fonticon-linkedin:before {
+    content: "\f145";
+}
+.fonticon-globe:before {
+    content: "\f146";
+}
+.fonticon-equalizer:before {
+    content: "\f147";
+}
