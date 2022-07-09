@@ -141,6 +141,16 @@ namespace NewLife.Cube
                 whereExpression &= col.Field == val;
             }
 
+            //添加映射字段查询
+            foreach (var item in Entity<TEntity>.Meta.Factory.Fields)
+            {
+                var val = p[item.Name];
+                if (!val.IsNullOrWhiteSpace())
+                {
+                    whereExpression &= item.Equal(val);
+                }
+            }
+
             return Entity<TEntity>.FindAll(whereExpression, p);
         }
 

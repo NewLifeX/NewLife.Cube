@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
+using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Services;
@@ -334,7 +336,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IManageUser LoadCookie(this IManageProvider provider, Boolean autologin, HttpContext context)
         {
-            var key = "token";
+            var key = $"token-{SysConfig.Current.Name}";
             var req = context?.Request;
             var token = req?.Cookies[key];
 
@@ -411,7 +413,9 @@ namespace NewLife.Cube
             {
                 option.Expires = DateTimeOffset.MinValue;
             }
-            res.Cookies.Append("token", token, option);
+
+            var key = $"token-{SysConfig.Current.Name}";
+            res.Cookies.Append(key, token, option);
 
             context.Items["jwtToken"] = token;
         }

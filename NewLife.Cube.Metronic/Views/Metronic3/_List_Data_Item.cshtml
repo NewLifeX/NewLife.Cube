@@ -84,6 +84,11 @@ else
 
                 <td class="text-right align-middle">@dd.ToString("p2")</td>
             }
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            {
+                var dd = (Double)value;
+                <td class="text-right align-middle">@dd.ToString("p2")</td>
+            }
             else
             {
                 var dd = (Double)value;
@@ -160,7 +165,7 @@ else
                 }
                 else if (item.IsBigText())
                 {
-                    //防止内容过长
+                //防止内容过长
                     <td class="align-middle" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" data-toggle="tooltip" data-placement="top" title="@value">@value</td>
                 }
                 else

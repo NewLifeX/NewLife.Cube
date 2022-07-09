@@ -17,14 +17,25 @@
 <script type="text/javascript">
 layui.use(['form'], function() {
         var form = layui.form;
+
+        function setCheckbox(id, data){
+             $('input[parentkey=' + id + ']').each(function(){
+                var name=$(this).attr("name");
+                $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
+                $('input[name=' + name + ']').val(data.elem.checked);
+            });
+        }
         //只读/查看
         form.on('checkbox(authorize)', function(data){
               $this = $(data.elem);
               var childkey = $this.attr('child');
               $('input[parentkey=' + childkey + ']').each(function(){
                   var name=$(this).attr("name");
-                      $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
+                    $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
                     $('input[name=' + name + ']').val(data.elem.checked);
+
+                    var id = 'auth_child' + $(this).attr("id").replace('p','');
+                    setCheckbox(id, data);
                 });
               var name=$(this).attr("name");
               $('input[name=' + name + ']').val(data.elem.checked);
@@ -104,8 +115,8 @@ layui.use(['form'], function() {
                 <tr>
                     <th lay-data="{field:'TreeNodeName',title:'名称'}">名称</th>
                     <th lay-data="{field:'DisplayName',title:'显示名'}">显示名</th>
-                    <th lay-data="{field:'TreeNodeName2',title:'授权',minWidth:100}">授权</th>
-                    <th lay-data="{field:'TreeNodeName3',title:'操作权限',minWidth:250}">操作权限</th>
+                    <th lay-data="{field:'TreeNodeName2',title:'授权',minWidth:50}">授权</th>
+                    <th lay-data="{field:'TreeNodeName3',title:'操作权限',minWidth:650}">操作权限</th>
                 </tr>
             </thead>
             <tbody>

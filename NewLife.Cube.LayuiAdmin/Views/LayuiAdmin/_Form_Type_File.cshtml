@@ -7,14 +7,27 @@
     var entity = Model.Item1;
     var field = Model.Item2;
     var fn = field.Name.ToLower();
+    var value = entity[field.Name] as String;
 }
 
+<input id="@fn" name="@fn" type="file" class="layui-upload-drag" autocomplete="off" placeholder="" value="@entity[field.Name]" />
 
-    @switch (fn)
+    @switch (field.ItemType)
     {
         case "image":
             {
-                <span class="input-group-text"><i class="bi bi-images"></i></span>
+                @*<span class="input-group-text"><i class="bi bi-images"></i></span>*@
+                if (!value.IsNullOrEmpty())
+                {
+                    <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top: 10px;">
+                        预览图：
+                        <div class="layui-upload-list">
+                            <a href="/Cube/Image/@value" target="_blank">
+                                <img src="/Cube/Image/@value" class="layui-upload-img" style="width: 92px;height: 92px;margin: 0 10px 10px 0;"/>
+                            </a>
+                        </div>
+                    </blockquote>
+                }
                 break;
             }
         case "file":
@@ -26,5 +39,3 @@
             <span class="input-group-text"><i class="fas fa-file-upload"></i></span>
             break;
     }
-
-    <input id="@fn" name="@fn" type="file" class="layui-upload-drag" autocomplete="off" placeholder="" value="@entity[field.Name]" />

@@ -358,6 +358,33 @@
                 <div class="layui-col-md9" style="text-align:right;">
                     <form action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
                     <div class="layui-row layui-col-space5">
+                        @foreach (var item in fields)
+                        {
+                            if (!item.MapField.IsNullOrEmpty())
+                            {
+                                if (item.MapProvider != null)
+                                {
+                                    var factory=item.MapProvider.EntityType.AsFactory();
+                                    var list=factory.FindAll();
+                                    var result = new Dictionary<string,string>();
+                                    foreach (var item1 in list)
+                                    {
+                                        var displayName=$"{item1["Name"]}[{item1[factory.Master.Name].ToString()}]";
+                                        if(item1[factory.Master.Name]!=null&&item1[factory.Master.Name].ToString()==item1["Name"])
+                                            displayName=item1[factory.Master.Name].ToString();
+
+                                        result.Add(item1[factory.Unique.Name].ToString(), displayName);
+                                    }
+
+                                    <div class="layui-inline">
+                                      <label class="layui-form-label" style="width:auto;">@item.DisplayName:</label>
+                                      <div class="layui-input-inline">
+                                        @Html.ForDropDownList(item.MapField, result, pager[item.MapField], "全部", true)
+                                      </div>
+                                    </div>
+                                }
+                            }
+                        }
                     <div class="layui-inline"><input type="text" class="layui-input" id="test-laydate-start" autocomplete="off" name="dtStart" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")"></div>
                     <div class="layui-inline"><label class="layui-form-label" style="width:20px">~</label></div>
                     <div class="layui-inline">
