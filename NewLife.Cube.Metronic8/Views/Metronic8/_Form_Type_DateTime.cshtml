@@ -23,13 +23,12 @@
 
 <div class="input-group">
     <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-    @if (name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-         "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"))
+    @if (name.EqualIgnoreCase("CreateTime", "UpdateTime"))
     {
-        <input id="@name" name="@name" type="text" class="form-control form-control-sm @cls" disabled value="@dt" />
+        <input id="@name" name="@name" type="text" class="form-control form-control-sm @cls" disabled value="@dt.ToFullString()" />
     }
     else
     {
-        <input id="@name" name="@name" type="text" class="form-control form-control-sm @cls" value="@dt" />
+        <input id="@name" name="@name" type="text" class="form-control form-control-sm @cls" value="@dt.ToFullString()" />
     }
 </div>

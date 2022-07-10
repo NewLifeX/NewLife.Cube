@@ -35,6 +35,11 @@
                             var dataField = fields.GetField(item.Name) as ListField;
                             var display = dataField?.DisplayName ?? item.DisplayName;
 
+                            if (group.Value.Any(e => e.Name.EqualIgnoreCase("CreateUser")) && item.Name.EqualIgnoreCase("CreateUserId"))
+                                continue;
+                            if (group.Value.Any(e => e.Name.EqualIgnoreCase("UpdateUser")) && item.Name.EqualIgnoreCase("UpdateUserId"))
+                                continue;
+
                             if (item.IsBigText())
                             {
                                 <div class="">
@@ -93,6 +98,11 @@
                 var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
                 var dataField = fields.GetField(item.Name) as ListField;
                 var display = dataField?.DisplayName ?? item.DisplayName;
+
+                if (fields.Any(e => e.Name.EqualIgnoreCase("CreateUser")) && item.Name.EqualIgnoreCase("CreateUserId"))
+                    continue;
+                if (fields.Any(e => e.Name.EqualIgnoreCase("UpdateUser")) && item.Name.EqualIgnoreCase("UpdateUserId"))
+                    continue;
 
                 if (item.IsBigText())
                 {

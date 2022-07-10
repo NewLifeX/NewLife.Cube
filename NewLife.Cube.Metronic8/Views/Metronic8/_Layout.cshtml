@@ -191,14 +191,14 @@
             timePicker: true,
             timePicker24Hour: true,
             locale: {
-                format: 'MM-DD hh:mm:ss',
+                format: 'YYYY-MM-DD HH:mm:ss',
                 applyLabel: '确定',
                 cancelLabel: '取消',
                 daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
                 monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
             }
         }).on('apply.daterangepicker', function(ev, picker){
-            $(this).val(picker.startDate.format("YYYY-MM-DD hh:mm:ss"));
+            $(this).val(picker.startDate.format("YYYY-MM-DD HH:mm:ss"));
         }).on('cancel.daterangepicker', function(ev, picker){
             $(this).val('');
         });
@@ -209,7 +209,7 @@
             timePicker: true,
             timePicker24Hour: true,
             locale: {
-                format: 'MM-DD',
+                format: 'YYYY-MM-DD',
                 applyLabel: '确定',
                 cancelLabel: '取消',
                 daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
@@ -252,9 +252,9 @@
             $("#dtStart").val("");
             $("#dtEnd").val("");
         }).on('apply.daterangepicker', function (ev, picker) {
-            $("#dtStart").val(picker.startDate.format('YYYY-MM-DD'));
-            $("#dtEnd").val(picker.endDate.format('YYYY-MM-DD'));
-            $("#dtRange").val(picker.startDate.format('YYYY-MM-DD') + " 至 " + picker.endDate.format('YYYY-MM-DD'));
+            $("#dtStart").val(picker.startDate.format('YYYY/MM/DD'));
+            $("#dtEnd").val(picker.endDate.format('YYYY/MM/DD'));
+            $("#dtRange").val(picker.startDate.format('YYYY/MM/DD') + " 至 " + picker.endDate.format('YYYY/MM/DD'));
         });
     </script>
 </body>
