@@ -42,6 +42,9 @@ namespace NewLife.Cube.Charts
         /// <summary>Y轴</summary>
         public Object YAxis { get; set; }
 
+        /// <summary>数据缩放</summary>
+        public DataZoom[] DataZoom { get; set; }
+
         /// <summary>系列数据</summary>
         public IList<Series> Series { get; set; }
 
@@ -232,6 +235,27 @@ namespace NewLife.Cube.Charts
         /// <param name="selector"></param>
         public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IEntity => Legend = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();
 
+        /// <summary>添加缩放。默认X0轴，其它设置可直接修改返回对象</summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public DataZoom AddDataZoom(Int32 start = 0, Int32 end = 100)
+        {
+            var dz = new DataZoom
+            {
+                XAxiaIndex = new[] { 0 },
+                Start = start,
+                End = end,
+            };
+
+            var list = DataZoom?.ToList() ?? new List<DataZoom>();
+            list.Add(dz);
+
+            DataZoom = list.ToArray();
+
+            return dz;
+        }
+
         /// <summary>构建选项Json</summary>
         /// <returns></returns>
         public String Build()
@@ -274,6 +298,9 @@ namespace NewLife.Cube.Charts
             // Y轴
             var yAxis = YAxis;
             if (yAxis != null) dic[nameof(yAxis)] = yAxis;
+
+            var dataZoom = DataZoom;
+            if (dataZoom != null) dic[nameof(dataZoom)] = dataZoom;
 
             // 系列数据
             var series = Series;

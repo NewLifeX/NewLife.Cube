@@ -45,6 +45,7 @@ namespace NewLife.Cube.Admin.Controllers
                     new { name = "数值", type = "value" },
                     new { name = "总数", type = "value" }
                 };
+                chart.AddDataZoom();
 
                 var line = chart.AddLine(list2, _.Total, null, true);
                 line["yAxisIndex"] = 1;
@@ -60,6 +61,16 @@ namespace NewLife.Cube.Admin.Controllers
                 chart.Add(list2, _.NewsT30);
                 //chart.Add(list2, _.OnlineTime);
                 chart.SetTooltip();
+
+                //chart["dataZoom"] = new[] {
+                //    new {
+                //        show = true,
+                //        realtime = true,
+                //        start = 0,
+                //        end = 100,
+                //        xAxiaIndex = new[] { 0, 1 }
+                //    }
+                //};
 
                 //var chart2 = new ECharts();
                 //chart2.AddPie(list, _.Total, e => new NameValue(e.Date.ToString("yyyy-MM-dd"), e.Total));
