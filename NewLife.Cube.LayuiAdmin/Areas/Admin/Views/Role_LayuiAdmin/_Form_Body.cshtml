@@ -27,12 +27,21 @@
     {
         if (!item.PrimaryKey)
         {
+            if (item.Name.EqualIgnoreCase("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "CreateUser", "CreateUserID", "CreateIP", "CreateTime", "UpdateUser", "UpdateUserID", "UpdateIP", "UpdateTime")) 
+                continue;
             <div class="layui-form-item">
                 <label class="layui-form-label">
                                         @item.DisplayName
                                     </label>
                                     <div class="layui-input-block">
-                                        @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                        @if(entity[item.Name] != null && entity[item.Name].ToString() == "超级管理员")
+                                        {
+                                            <input type="text" lay-verify="required" autocomplete="off" placeholder="请输入名称" class="layui-input layui-disabled" value="@entity[item.Name]" disabled="disabled">
+                                        }
+                                        else
+                                        {
+                                            @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                        }
                                     </div>
                                     <div class="layui-form-mid layui-word-aux">
                                         @item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。")
