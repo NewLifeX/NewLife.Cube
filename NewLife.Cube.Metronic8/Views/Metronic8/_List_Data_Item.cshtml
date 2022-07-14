@@ -50,7 +50,7 @@ else
             break;
         case TypeCode.Decimal:
             var dc = (Decimal)value;
-            <td class="text-right">@dc.ToString("n2")</td> break;
+            <td class="text-end">@dc.ToString("n2")</td> break;
         case TypeCode.Single:
         case TypeCode.Double:
             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
@@ -62,11 +62,11 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td class="text-right">@dd.ToString("p2")</td> }
+                <td class="text-end">@dd.ToString("p2")</td> }
             else
             {
                 var dd = (Double)value;
-                <td class="text-right">@dd.ToString("n2")</td> }
+                <td class="text-end">@dd.ToString("n2")</td> }
             break;
         case TypeCode.Byte:
         case TypeCode.Int16:
@@ -104,10 +104,10 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td class="text-right">@dd.ToString("p2")</td> }
+                <td class="text-end">@dd.ToString("p2")</td> }
             else
             {
-                <td class="text-right">@Convert.ToInt64(value).ToString("n0")</td> }
+                <td class="text-end">@Convert.ToInt64(value).ToString("n0")</td> }
             break;
         case TypeCode.String:
         default:

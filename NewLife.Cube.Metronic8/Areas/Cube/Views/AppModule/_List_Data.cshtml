@@ -1,0 +1,116 @@
+﻿@model IList<NewLife.Cube.Entity.AppModule>
+@using NewLife;
+@using NewLife.Cube
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@using XCode.Membership
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting;
+    var ukey = fact.Unique;
+}
+
+<div class="card card-flush">
+    <div class="card-body">
+        <div class="table-responsive dataTables_wrapper dt-bootstrap4">
+            <table class="table table-hover table-row-bordered table-row-dashed align-middle gy-4">
+                <thead>
+                    <tr class="fs-4 text-muted">
+                        @if (set.EnableSelect && ukey != null)
+                        {
+                            <th class="text-center" style="width:10px;">
+                                <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" id="chkAll" data-bs-toggle="tooltip" title="全选" />
+                                </div>
+                            </th>
+                        }
+                        <th><a href="@Html.Raw(page.GetSortUrl("Name"))">名称</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("Type"))">类型</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("FilePath"))">文件</a></th>
+                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
+                        <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UpdateUserID"))">更新者</a></th>
+                        <th><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
+                        @if (this.Has(PermissionFlags.Detail))
+                        {
+                            <th>操作</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entity in Model)
+                    {
+                        <tr>
+                            @if (set.EnableSelect && ukey != null)
+                            {
+                                <td class="text-center align-middle pt-0 pb-0">
+                                    <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" name="keys" value="@entity[ukey.Name]" />
+                                    </div>
+                                </td>
+                            }
+                            <td>
+                                <span style="width:270px">
+                                    <div class="d-flex align-items-center">
+                                        <div class="ml-4">
+                                            <div class="text-dark-75 fs-4 fw-bold mb-0">@entity.Name</div>
+                                            <a class="text-muted text-hover-primary">@entity.DisplayName</a>
+                                        </div>
+                                    </div>
+                                </span>
+                            </td>
+                            <td>
+                                <span style="width:237px">
+                                    <div class="fs-4 mb-0">@entity.Type</div>
+                                    <a class="text-muted text-hover-primary">@entity.ClassName</a>
+                                </span>
+                            </td>
+                            <td>@entity.FilePath</td>
+                            <td class="text-center align-middle">
+                                @{
+                                    var bval = entity.Enable;
+                                    @if (fact.Unique != null)
+                                    {
+                                        var key = entity[fact.Unique.Name];
+                                        if (bval)
+                                        {
+                                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = false })" data-action="action">
+                                                <i class="fas fa-check fw-bolder text-success"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a href="@Url.Action("SetEnable", null, new { id = key, enable = true })" data-action="action">
+                                                <i class="fas fa-times fw-bolder text-danger"></i>
+                                            </a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (bval)
+                                        {
+                                            <i class="fas fa-check fw-bolder text-succes"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-times fw-bolder text-danger"></i>
+                                        }
+                                    }
+                                }
+                            </td>
+                            <td class="text-center align-middle">@entity.UpdateUser</td>
+                            <td class="align-middle">@entity.UpdateTime.ToFullString()</td>
+                            @if (this.Has(PermissionFlags.Detail))
+                            {
+                                <td>
+                                    @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
