@@ -118,12 +118,6 @@
                                                     <a href="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs">@name</a>
                                             </td>
                                         }
-                                        else if (df != null && df.DataType.EqualIgnoreCase("QrCode"))
-                                        {
-                                            <td title="@df.Title">
-                                                    <img src="@Html.Raw(string.Format(df.Description,entity[df.DisplayName]))" width="32px" height="32px">
-                                            </td>
-                                        }
                                         else
                                         {
                                             @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
