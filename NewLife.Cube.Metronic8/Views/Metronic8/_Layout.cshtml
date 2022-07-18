@@ -58,22 +58,29 @@
 </head>
 
 <!--begin::Body-->
-<body id="kt_body" class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed toolbar-tablet-and-mobile-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:55px;--kt-toolbar-height-tablet-and-mobile:55px">
-    <div class="d-flex flex-column flex-root">
-        @await Html.PartialAsync("_Layout_Aside")
-        <div class="page d-flex flex-row flex-column-fluid">
+<body data-kt-name="metronic" id="kt_app_body" data-kt-app-layout="dark-sidebar" data-kt-app-header-fixed="true" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true" data-kt-app-sidebar-hoverable="true" data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true" data-kt-app-sidebar-push-footer="true" data-kt-app-toolbar-enabled="true" data-kt-app-toolbar-fixed="true" class="app-default">
+    <script>if ( document.documentElement ) { const defaultThemeMode = "system"; const name = document.body.getAttribute("data-kt-name"); let themeMode = localStorage.getItem("kt_" + ( name !== null ? name + "_" : "" ) + "theme_mode_value"); if ( themeMode === null ) { if ( defaultThemeMode === "system" ) { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } else { themeMode = defaultThemeMode; } } document.documentElement.setAttribute("data-theme", themeMode); }</script>
+    <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
+        <div class="app-page flex-column flex-column-fluid" id="kt_app_page">
+            <!-- 顶部工具栏 -->
             @await Html.PartialAsync("_Layout_Header")
-            <div class="wrapper d-flex flex-column flex-row-fluid pb-20" id="kt_wrapper">
-                <!-- 内容 -->
-                <div class="content d-flex flex-column flex-column-fluid pt-lg-5" id="kt_content">
-                    @await Html.PartialAsync("_Layout_Toolbar")
 
-                    <div class="post d-flex flex-column-fluid" id="dt_post">
-                        <div class="container-fluid px-lg-5" id="dt_content_container">
-                            @RenderBody()
+            <div class="app-wrapper flex-column flex-row-fluid pb-20" id="kt_app_wrapper">
+                <!-- 侧边栏 -->
+                @await Html.PartialAsync("_Layout_Aside")
 
-                            <!-- 内容底部 -->
-                            @await Html.PartialAsync("_Layout_Footer")
+                <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+                    <div class="d-flex flex-column flex-column-fluid">
+                        @await Html.PartialAsync("_Layout_Toolbar")
+
+                        <!-- 内容 -->
+                        <div class="app-content flex-column-fluid pt-lg-5" id="kt_app_content">
+                            <div class="app-container container-fluid" id="kt_app_content_container">
+                                @RenderBody()
+
+                                <!-- 内容底部 -->
+                                @await Html.PartialAsync("_Layout_Footer")
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -184,14 +191,14 @@
             timePicker: true,
             timePicker24Hour: true,
             locale: {
-                format: 'MM-DD hh:mm:ss',
+                format: 'YYYY-MM-DD HH:mm:ss',
                 applyLabel: '确定',
                 cancelLabel: '取消',
                 daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
                 monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
             }
         }).on('apply.daterangepicker', function(ev, picker){
-            $(this).val(picker.startDate.format("YYYY-MM-DD hh:mm:ss"));
+            $(this).val(picker.startDate.format("YYYY-MM-DD HH:mm:ss"));
         }).on('cancel.daterangepicker', function(ev, picker){
             $(this).val('');
         });
@@ -202,7 +209,7 @@
             timePicker: true,
             timePicker24Hour: true,
             locale: {
-                format: 'MM-DD',
+                format: 'YYYY-MM-DD',
                 applyLabel: '确定',
                 cancelLabel: '取消',
                 daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
@@ -245,9 +252,9 @@
             $("#dtStart").val("");
             $("#dtEnd").val("");
         }).on('apply.daterangepicker', function (ev, picker) {
-            $("#dtStart").val(picker.startDate.format('YYYY-MM-DD'));
-            $("#dtEnd").val(picker.endDate.format('YYYY-MM-DD'));
-            $("#dtRange").val(picker.startDate.format('YYYY-MM-DD') + " 至 " + picker.endDate.format('YYYY-MM-DD'));
+            $("#dtStart").val(picker.startDate.format('YYYY/MM/DD'));
+            $("#dtEnd").val(picker.endDate.format('YYYY/MM/DD'));
+            $("#dtRange").val(picker.startDate.format('YYYY/MM/DD') + " 至 " + picker.endDate.format('YYYY/MM/DD'));
         });
     </script>
 </body>

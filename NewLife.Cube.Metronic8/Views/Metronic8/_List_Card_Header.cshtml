@@ -109,7 +109,7 @@
             @if (fiEnable != null)
             {
                 var chk = entity[fiEnable.Name]?.ToBoolean();
-                var icon = chk == true ? "fas fa-toggle-on" : "fas fa-toggle-off";
+                var icon = chk == true ? "fas fa-brands fa-toggle-on" : "fas fa-brands fa-toggle-off";
                 var tip = (chk == true ? "已" : "未") + @fiEnable.DisplayName;
                 var key = entity[factory.Unique.Name];
 
