@@ -18,17 +18,155 @@
 layui.use(['form'], function() {
         var form = layui.form;
 
-        function setCheckbox(id, data){
-             $('input[parentkey=' + id + ']').each(function(){
+        function setCheckbox(parentkey, data){
+             $('input[parentkey=' + parentkey + ']').each(function(){
                 var name=$(this).attr("name");
                 $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
                 $('input[name=' + name + ']').val(data.elem.checked);
+                
+                  var childid=$(this).attr("child");
+                  setCheckbox(childid, data);
             });
         }
-        //只读/查看
+
+        function setChildCheckbox(parentkey,data){
+            $('input[parentkey=' + parentkey + ']').prop('checked', data.elem.checked).change();
+            $('input[parentkey=' + parentkey + ']').each(function(){
+                var parentkeyname=$(this).attr("name");
+                $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+            });
+        }
+
+        function setChildCheckboxByUp(parentkey,data){
+            $('input[parentkey=' + parentkey + ']').prop('checked', data.elem.checked).change();
+            $('input[parentkey=' + parentkey + ']').each(function(){
+                var parentkeyname=$(this).attr("name");
+                $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                
+                  var childid=$(this).attr("child");
+                  setChildCheckboxByUp(childid, data);
+            });
+        }
+        function setParentCheckbox(parentkey,data){
+            $('input[child=' + parentkey + ']').prop('checked', data.elem.checked).change();
+            $('input[child=' + parentkey + ']').each(function(){
+                var parentkeyname=$(this).attr("name");
+                $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+            });
+        }
+
+        function setParentCheckboxByUp(parentkey,data){
+            $('input[child=' + parentkey + ']').prop('checked', data.elem.checked).change();
+            $('input[child=' + parentkey + ']').each(function(){
+                var parentkeyname=$(this).attr("name");
+                $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                    var parentkeyid=$(this).attr("parentkey");
+                    if(!data.elem.checked){
+                        
+                        var chkArr =  $('input[parentkey=' + parentkeyid + ']');
+                        if(chkArr.filter(':checked').length  > 0){
+                            return;
+                        }
+                    }
+                     setParentCheckboxByUp(parentkeyid, data);
+                    
+            });
+        }        
+        function setViewCheckboxByReadOnly(parentkey,data){
+             $('input[parentkey=' + parentkey + ']').each(function(){
+            var parentkeyname=$(this).attr("name");
+            if($(this).attr("lay-filter") === "authorize"){
+                $(this).prop('checked', data.elem.checked).change();
+                $(this).each(function(){
+                    var parentkeyname=$(this).attr("name");
+                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                });
+            }
+            var viewname = parentkeyname.replace('p','pf') + "_1";
+            $('input[name='+viewname+']').prop('checked', data.elem.checked).change();
+                $('input[name='+viewname+']').each(function(){
+                    var parentkeyname=$(this).attr("name");
+                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                });
+            });
+        }
+        function setCheckboxByReadOnly(childkey,data){
+            $('input[child='+childkey+']').prop('checked', data.elem.checked).change();
+              $('input[child='+childkey+']').each(function(){
+                    var parentkeyname=$(this).attr("name");
+                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                    var parentkeyid=$(this).attr("child");
+                    if(!data.elem.checked){
+                        setChildCheckboxByUp(parentkeyid,data);
+                    }else{
+                        setViewCheckboxByReadOnly(parentkeyid,data);
+                    }
+                     
+                    $('input[parentkey=' + parentkeyid + ']').each(function(){
+                         var parentkeyid=$(this).attr("child");
+                          setViewCheckboxByReadOnly(parentkeyid,data);
+                    });
+
+                    var childid=$(this).attr("parentkey");
+                     if(!data.elem.checked){
+                        var chkArr =  $('input[parentkey=' + childid + ']');
+                        if(chkArr.filter(':checked').length  == 0){
+                            setParentCheckbox(childid, data);
+                        }
+                      }else{
+                        setParentCheckbox(childid, data);
+                      }
+
+              });
+        }
+        function setCheckboxByAll(childkey,data){
+            $('input[child='+childkey+']').prop('checked', data.elem.checked).change();
+              $('input[child='+childkey+']').each(function(){
+                    var parentkeyname=$(this).attr("name");
+                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                    var parentkeyid=$(this).attr("child");
+                     setChildCheckboxByUp(parentkeyid,data);
+                     
+                    var childid=$(this).attr("parentkey");
+                     if(!data.elem.checked){
+                        var chkArr =  $('input[parentkey=' + childid + ']');
+                        if(chkArr.filter(':checked').length  == 0){
+                            setParentCheckbox(childid, data);
+                        }
+                      }else{
+                        setParentCheckbox(childid, data);
+                      }
+
+                    $('input[parentkey=' + parentkeyid + ']').each(function(){
+                         var parentkeyid=$(this).attr("child");
+                          setChildCheckboxByUp(parentkeyid,data);
+                    });
+              });
+        }
+        // function setReadOnlyOrAllCheckbox(name,data){
+        //        $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
+        //        $('input[name=' + name + ']').each(function(){
+        //            var parentkeyname=$(this).attr("name");
+        //            $('input[name=' + parentkeyname + ']').val(data.elem.checked);
+                
+        //            var id=parentkeyname.split('_')[2];
+        //            $('input[child=auth_child' + id + ']').each(function(){
+        //                var nameid=$(this).attr("parentkey");
+        //                var allname = 'pc_all_' + nameid.replace('auth_child','');
+        //                setReadOnlyOrAllCheckbox(allname, data);
+        //                var readonlyname = 'pc_readonly_' + nameid.replace('auth_child','');
+        //                setReadOnlyOrAllCheckbox(readonlyname, data);
+                
+        //            });
+        //        });
+            
+        //}
+
+        //授权
         form.on('checkbox(authorize)', function(data){
               $this = $(data.elem);
               var childkey = $this.attr('child');
+              var key = $this.attr('name');
               $('input[parentkey=' + childkey + ']').each(function(){
                   var name=$(this).attr("name");
                     $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
@@ -38,28 +176,37 @@ layui.use(['form'], function() {
                     setCheckbox(id, data);
                 });
               var name=$(this).attr("name");
+              $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
               $('input[name=' + name + ']').val(data.elem.checked);
               //设置单个按钮值
-
+              //上级
+              var parentkey = $this.attr('parentkey');
+              if(!data.elem.checked){
+                var chkArr =  $('input[parentkey=' + parentkey + ']');
+                if(chkArr.filter(':checked').length  == 0){
+                    setParentCheckbox(parentkey, data);
+                }
+              }else{
+                setParentCheckbox(parentkey, data);
+              }
               layui.form.render();
         })
         //只读/查看
         form.on('checkbox(pro_detail)', function(data){
+              debugger;
               $this = $(data.elem);
               var key = $this.attr('prochildkey');
-              $('input[proparentkey=' + key + ']').prop('checked', data.elem.checked).change();
-              debugger;
+              var authchild = 'auth_child' + key.split('_')[2];
+              //$('input[proparentkey=' + key + ']').prop('checked', data.elem.checked).change();
               var name=$(this).attr("name");
+              $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
               $('input[name=' + name + ']').val(data.elem.checked);
               //设置授权按钮
-              $('input[proparentkey=' + key + ']').each(function(){
-                  var parentkey=$(this).attr("parentkey");
-                $('input[child=' + parentkey + ']').prop('checked', data.elem.checked).change();
-                $('input[child=' + parentkey + ']').each(function(){
-                      var parentkeyname=$(this).attr("name");
-                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
-                });
-              });
+              setCheckboxByReadOnly(authchild,data);
+              //$('input[proparentkey=' + key + ']').each(function(){
+              //    var parentkey=$(this).attr("parentkey");
+              //    setParentCheckbox(parentkey,data);
+              //});
               layui.form.render();
         })
         //全部权限
@@ -71,18 +218,19 @@ layui.use(['form'], function() {
 
               $this = $(data.elem);
               var key = $this.attr('prochildkey');
-              $('input[prokey=' + key + ']').prop('checked', data.elem.checked).change();
+              
+              var authchild = 'auth_child' + key.split('_')[2];
+              //$('input[prokey=' + key + ']').prop('checked', data.elem.checked).change();
               var name=$(this).attr("name");
+              $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
               $('input[name=' + name + ']').val(data.elem.checked);
-              //设置授权按钮
-              $('input[prokey=' + key + ']').each(function(){
-                  var parentkey=$(this).attr("parentkey");
-                $('input[child=' + parentkey + ']').prop('checked', data.elem.checked).change();
-                $('input[child=' + parentkey + ']').each(function(){
-                      var parentkeyname=$(this).attr("name");
-                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
-                });
-              });
+
+             //设置授权按钮
+              setCheckboxByAll(authchild,data);
+              //$('input[prokey=' + key + ']').each(function(){
+              //    var parentkey=$(this).attr("parentkey");
+              //    setParentCheckbox(parentkey,data);
+              //});
               layui.form.render();
         })
 
@@ -95,14 +243,43 @@ layui.use(['form'], function() {
 
               $this = $(data.elem);
               var name=$(this).attr("name");
-              $('input[name=' + name + ']').val(data.elem.checked);
+              
+              $('input[name=' + name + ']').prop('checked', data.elem.checked).change();
+               $('input[name=' + name + ']').each(function(){
+                    $(this).val(data.elem.checked);
+                });
               //赋值授权按钮
               var parentkey=$(this).attr("parentkey");
-              $('input[child=' + parentkey + ']').prop('checked', data.elem.checked).change();
-              $('input[child=' + parentkey + ']').each(function(){
-                      var parentkeyname=$(this).attr("name");
-                    $('input[name=' + parentkeyname + ']').val(data.elem.checked);
-                });
+                if(name.split('_')[1] === '1' && !data.elem.checked){
+                    setParentCheckbox(parentkey,data);
+                    setChildCheckbox(parentkey,data);
+                    var parentkey=$('input[child=' + parentkey + ']').attr("parentkey");
+                     var chkArr =  $('input[parentkey=' + parentkey + ']');
+                    if(chkArr.filter(':checked').length  == 0){
+                        setParentCheckboxByUp(parentkey,data);
+                    }
+                }else{
+                    
+                    if(data.elem.checked){
+                        var firstName = name.split('_')[0] + '_1' ;
+                       $('input[name=' + firstName + ']').prop('checked', data.elem.checked).change();
+                       $('input[name=' + firstName + ']').each(function(){
+                            $(this).val(data.elem.checked);
+                        });
+                        
+                        setParentCheckbox(parentkey,data);
+                        
+                        var parentkey=$('input[child=' + parentkey + ']').attr("parentkey");
+                        
+                        setParentCheckboxByUp(parentkey,data);
+
+                    }else{
+                        var chkArr =  $('input[parentkey=' + parentkey + ']');
+                        if(chkArr.filter(':checked').length  == 0){
+                            setParentCheckboxByUp(parentkey,data);
+                        }
+                    }
+                }
               layui.form.render();
         })
 })
@@ -114,15 +291,32 @@ layui.use(['form'], function() {
             <thead>
                 <tr>
                     <th lay-data="{field:'TreeNodeName',title:'名称'}">名称</th>
-                    <th lay-data="{field:'DisplayName',title:'显示名'}">显示名</th>
-                    <th lay-data="{field:'TreeNodeName2',title:'授权',minWidth:50}">授权</th>
-                    <th lay-data="{field:'TreeNodeName3',title:'操作权限',minWidth:650}">操作权限</th>
+                    <th lay-data="{field:'DisplayName',title:'显示名',width:150}">显示名</th>
+                    <th lay-data="{field:'TreeNodeName2',title:'授权',width:80}">授权</th>
+                    <th lay-data="{field:'TreeNodeName3',title:'操作权限',width:750}">操作权限</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var entity in menus)
                 {
-                    <tr>
+                    var isShow = true;
+                    if (entity.TreeNodeName.Equals("Admin") || entity.TreeNodeName.Equals("Cube"))
+                    {
+                         isShow = false;
+                    }
+                    else
+                    {
+                        foreach (var parent in entity.AllParents)
+                        {
+                            if (parent.TreeNodeName.Equals("Admin") || parent.TreeNodeName.Equals("Cube"))
+                            {
+                                isShow = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (role.Name != "超级管理员" && !isShow) continue;
+                <tr>
                         <td>@entity.TreeNodeName</td>
                         <td>@entity.DisplayName</td>
                         <td>@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID,lay_skin="primary",lay_filter="authorize"})
