@@ -102,7 +102,7 @@ namespace NewLife.Cube.Cube.Controllers
                     };
                     //chart.SetX(list2, _.Kind);
                     //chart.SetY(null, "value");
-                    chart.Legend = new { top = "5%", left = "center" };
+                    chart.Legend = new { show = "false", top = "5%", left = "center" };
 
                     var pie = chart.AddPie(list2, _.Kind, e => new NameValue(e.Kind ?? "未知", e.ID));
                     pie["radius"] = new[] { "40%", "70%" };
