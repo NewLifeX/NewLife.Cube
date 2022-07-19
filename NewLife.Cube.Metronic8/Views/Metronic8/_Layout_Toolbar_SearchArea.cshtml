@@ -14,11 +14,11 @@
     res = res.TrimEnd('/');
 }
 <link href="@res/city_picker/city-picker.css" rel="stylesheet">
-<div class="form-group" style="position:relative">
+<div class="form-group mx-3">
     @*@Html.ForDropDownList(pkey, provs, provid, "全国", true)
         @Html.ForDropDownList(ckey, cities, cityid, "全省", true)*@
     <div>
-        <input readonly type="text" id="@(prefix)AreaID" value="@areaId" data-toggle="city-picker" placeholder="请选择省/市" data-level="city">
+        <input readonly class="form-control form-control-sm" type="text" id="@(prefix)AreaID" value="@areaId" data-toggle="city-picker" placeholder="请选择省/市" data-level="city">
     </div>
 </div>
 <script src="@res/city_picker/city-picker.js"></script>

@@ -62,19 +62,21 @@
 
         @if(page != null && !isdis) 
         {
+            var attr = new Dictionary<String, String>() { };
             <div class="@cls">
 
                 <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">
                     <div class="d-flex align-items-center flex-shrink-0">
-                        <div class="d-flex align-items-center">
+                        
+                        @await Html.PartialAsync("_Layout_Toolbar_SearchArea")
+
+                        <div class="d-flex align-items-center me-3">
                             <label for="idStart" class="control-label me-2">编码范围</label>
                             <input name="idStart" id="idStart" type="text" value="@p["idStart"]" class="form-control form-control-sm w-lg-75px" />
 
                             <span class="control-label">至</span>
                             <input name="idEnd" id="idEnd" type="text" value="@p["idEnd"]" class="form-control form-control-sm w-lg-75px" />
                         </div>
-
-                        @await Html.PartialAsync("_Layout_Toolbar_SearchEnable")
 
                         @await Html.PartialAsync("_Layout_Toolbar_DateRange")
                         <!--begin::Separartor-->
