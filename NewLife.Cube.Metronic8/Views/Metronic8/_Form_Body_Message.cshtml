@@ -24,8 +24,13 @@
         <div class="d-flex flex-stack flex-grow-1">
             <div>
                 <h6 class="text-gray-600">@msg</h6>
-                <div class="fs-6 text-gray-600">
-                </div>
+                @foreach (var item in ViewData.ModelState.Values)
+                {
+                    foreach (var error in item.Errors)
+                    {
+                        <span>@error.Exception</span>
+                    }
+                }
             </div>
         </div>
 
