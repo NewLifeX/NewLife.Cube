@@ -126,7 +126,7 @@ namespace NewLife.Cube.Blazor.Views.Blazor
                         var index = 0;
                         builder.OpenElement(index++, "div");
                         builder.OpenElement(index++, "iframe");
-                        builder.AddAttribute(index++, "src", "Blazor/" + item.Url);
+                        builder.AddAttribute(index++, "src", "Blazor" + item.Url);
                         builder.AddAttribute(index++, "width", "100%");
                         builder.AddAttribute(index++, "height", "100%");
                         builder.CloseElement();
