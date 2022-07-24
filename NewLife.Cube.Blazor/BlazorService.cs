@@ -1,6 +1,9 @@
 ﻿using System.IO;
 using System.Net.Http;
 using System.Reflection;
+
+using BigCookieKit.AspCore.RouteSelector;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -30,6 +33,8 @@ namespace NewLife.Cube
 
             services.AddHttpClient();
             services.AddScoped<HttpClient>();
+
+            services.AddRouteSelector();
 
             return services;
         }

@@ -349,35 +349,43 @@ namespace NewLife.Cube
         }
 
         /// <summary>批量启用</summary>
-        /// <param name="keys"></param>
+        /// <param name="keys">主键集合</param>
+        /// <param name="reason">操作原因</param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult EnableSelect(String keys) => EnableOrDisableSelect(true);
+        public virtual ActionResult EnableSelect(String keys, String reason) => EnableOrDisableSelect(true, reason);
 
         /// <summary>批量禁用</summary>
-        /// <param name="keys"></param>
+        /// <param name="keys">主键集合</param>
+        /// <param name="reason">操作原因</param>
         /// <returns></returns>
         [EntityAuthorize(PermissionFlags.Update)]
-        public ActionResult DisableSelect(String keys) => EnableOrDisableSelect(false);
+        public virtual ActionResult DisableSelect(String keys, String reason) => EnableOrDisableSelect(false, reason);
 
         /// <summary>
         /// 批量启用或禁用
         /// </summary>
-        /// <param name="isEnable"></param>
+        /// <param name="isEnable">启用/禁用</param>
+        /// <param name="reason">操作原因</param>
         /// <returns></returns>
-        protected virtual ActionResult EnableOrDisableSelect(Boolean isEnable)
+        protected virtual ActionResult EnableOrDisableSelect(Boolean isEnable, String reason)
         {
             var count = 0;
             var ids = GetRequest("keys").SplitAsInt();
             var fields = Factory.AllFields;
             if (ids.Length > 0 && fields.Any(f => f.Name.EqualIgnoreCase("enable")))
             {
+                var log = LogProvider.Provider;
                 foreach (var id in ids)
                 {
                     var entity = Factory.Find("ID", id);
                     if (entity != null && entity["Enable"].ToBoolean() != isEnable)
                     {
                         entity.SetItem("Enable", isEnable);
+
+                        log.WriteLog("Update", entity);
+                        log.WriteLog(entity.GetType(), isEnable ? "Enable" : "Disable", true, reason);
+
                         entity.Update();
 
                         Interlocked.Increment(ref count);
@@ -385,7 +393,7 @@ namespace NewLife.Cube
                 }
             }
 
-            return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个用户");
+            return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个");
         }
         #endregion
 
