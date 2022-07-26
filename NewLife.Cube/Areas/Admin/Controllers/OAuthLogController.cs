@@ -20,6 +20,9 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static OAuthLogController()
         {
+            ListFields.RemoveField("Id")
+                .RemoveUpdateField();
+
             ListFields.TraceUrl("TraceId");
             //{
             //    var df = ListFields.GetField("TraceId") as ListField;

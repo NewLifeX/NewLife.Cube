@@ -24,11 +24,11 @@
 }
 @if (item.PrimaryKey)
 {
-@*    @if (set.EnableSelect && ukey != null)
+    @*    @if (set.EnableSelect && ukey != null)
     {
         <td lay-data="{checkbox:true}"></td>
     }*@
-    <td>@value</td> 
+    <td>@value</td>
 }
 else
 {
@@ -43,23 +43,29 @@ else
                     var df = item as ListField;
                     <a lay-event="action" data-action="action" lay-data="@Url.Action("SetEnable",null,new { id=key, enable=!bval })">
                         @await Html.PartialAsync("_Icon_Boolean", bval)
-                    </a> }
+                    </a>
+                }
                 else
                 {
-                    @await Html.PartialAsync("_Icon_Boolean", bval)}
-            </td> break;
+                    @await Html.PartialAsync("_Icon_Boolean", bval)
+                }
+            </td>
+            break;
         case TypeCode.DateTime:
             var dt = (DateTime)value;
             if (name2.EndsWith("Date"))
             {
-                <td>@dt.ToString("yyyy-MM-dd", "")</td> }
+                <td>@dt.ToString("yyyy-MM-dd", "")</td>
+            }
             else
             {
-                <td>@dt.ToFullString("")</td> }
+                <td>@dt.ToFullString("")</td>
+            }
             break;
         case TypeCode.Decimal:
             var dc = (Decimal)value;
-            <td>@dc.ToString("n2")</td> break;
+            <td>@dc.ToString("n2")</td>
+            break;
         case TypeCode.Single:
         case TypeCode.Double:
             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
@@ -71,11 +77,18 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td>@dd.ToString("p2")</td> }
+                <td>@dd.ToString("p2")</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            {
+                var dd = (Double)value;
+                <td class="text-center">@dd.ToString("p2")</td>
+            }
             else
             {
                 var dd = (Double)value;
-                <td>@dd.ToString("n2")</td> }
+                <td>@dd.ToString("n2")</td>
+            }
             break;
         case TypeCode.Byte:
         case TypeCode.Int16:
@@ -93,16 +106,19 @@ else
                     val = EnumHelper.GetDescription((Enum)value) ?? value + "";
                 }
                 catch { }
-                <td>@val</td> }
+                <td>@val</td>
+            }
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
                 //var provider = ViewData["Provider"] as IManageProvider;
                 if (provider != null)
                 {
-                    <td>@provider?.FindByID(value)</td> }
+                    <td>@provider?.FindByID(value)</td>
+                }
                 else
                 {
-                    <td>@value</td> }
+                    <td>@value</td>
+                }
             }
             else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
             {
@@ -113,10 +129,12 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td>@dd.ToString("p2")</td> }
+                <td>@dd.ToString("p2")</td>
+            }
             else
             {
-                <td>@Convert.ToInt64(value).ToString("n0")</td> }
+                <td>@Convert.ToInt64(value).ToString("n0")</td>
+            }
             break;
         case TypeCode.String:
         default:
@@ -129,19 +147,22 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        <td><a href="@name/Detail/@key=@val" class="layui-btn layui-btn-primary layui-btn-xs">@value</a></td> 
+                        <td><a href="@name/Detail/@key=@val" class="layui-btn layui-btn-primary layui-btn-xs">@value</a></td>
                     }
                     else
                     {
-                        <td>@value</td> }
+                        <td>@value</td>
+                    }
                 }
                 else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
                 {
-                    <td title="@((value+"").IPToAddress())">@value</td> }
+                    <td title="@((value+"").IPToAddress())">@value</td>
+                }
                 else if (item.IsBigText())
                 {
                     //防止内容过长
-                    <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td> }
+                    <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td>
+                }
                 else
                 {
                     <td>@value</td>

@@ -4,24 +4,26 @@
 @{
     var entity = Model as IEntity;
     var fields = ViewBag.Fields as FieldCollection;
-    var groupFields = fields.GroupBy(e => e.Category + "").ToList();
+    var groupFields = fields.GroupByCategory(entity);
 }
 
 @if (groupFields.Count > 1)
 {
+    var i = 0;
+    var j = 0;
     <ul class="nav nav-tabs" role="tablist">
-        @for (int i = 0; i < groupFields.Count; i++)
+        @foreach (var item in groupFields)
         {
-            var key = groupFields[i].Key.IsNullOrEmpty() ? "默认" : groupFields[i].Key;
-            <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@key</a></li>
+            <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@item.Key</a></li>
+            i++;
         }
     </ul>
     <div class="tab-content">
-        @for (int i = 0; i < groupFields.Count; i++)
+        @foreach (var group in groupFields)
         {
-            <div class="tab-pane fade in @(i==0?"active":"")" id="@("item"+i)">
+            <div class="tab-pane fade in @(j==0?"active":"")" id="@("item"+j)">
                 <div class="row">
-                    @foreach (var item in groupFields[i])
+                    @foreach (var item in group.Value)
                     {
                         if (!item.PrimaryKey && (item.DataVisible == null || item.DataVisible(entity, item)))
                         {
@@ -33,6 +35,7 @@
                     }
                 </div>
             </div>
+            j++;
         }
     </div>
 }

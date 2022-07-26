@@ -10,22 +10,24 @@
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
     var fields = ViewBag.Fields as FieldCollection;
-    var groupFields = fields.GroupBy(e => e.Category + "").ToList();
+    var groupFields = fields.GroupByCategory(entity);
 }
 
 <div class="card-header">
     <div class="card-title">
         @if (groupFields.Count > 1)
         {
+            var i = 0;
             <ul class="nav">
-                @for(int i=0; i < groupFields.Count; i++)
+                @foreach (var group in groupFields)
                 {
-                    var key = groupFields[i].Key;
+                    var key = group.Key;
                     key = key.IsNullOrEmpty() ? "默认信息" : (key.TrimEnd("信息").Length < 4 ? key.TrimEnd("信息") + "信息" : key.TrimEnd("信息"));
-                    var cls = "nav-link btn btn-sm btn-color-muted btn-active-secondary fw-floder px-4 me-1 ";
+                    var cls = "nav-link btn btn-sm btn-color-muted btn-active-secondary fs-6 px-4 me-1 ";
                     <li class="nav-item">
                         <a class="@(i == 0 ? cls + "active" : cls)" data-bs-toggle="tab" href="@("#form_tab"+i)">@key</a>
-                    </li> 
+                    </li>
+                    i++;
                 }
             </ul>
         }

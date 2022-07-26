@@ -9,7 +9,7 @@
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
     var fields = ViewBag.Fields as FieldCollection;
-    var groupFields = fields.GroupBy(e => e.Category + "").ToList();
+    var groupFields = fields.GroupByCategory(entity);
 
     var set = NewLife.Cube.Setting.Current;
     var cls = set.FormGroupClass;
@@ -23,16 +23,22 @@
     @await Html.PartialAsync("_Form_Body_Message")
     @if (groupFields.Count > 1)
     {
+        var i = 0;
         <div class="tab-content">
-            @for (int i = 0; i < groupFields.Count; i++)
+            @foreach (var group in groupFields)
             {
                 <div class="tab-pane fade @(i == 0 ? "active show" : "")" id="@("form_tab"+i)">
                     <div class="row">
-                        @foreach (var item in groupFields[i])
+                        @foreach (var item in group.Value)
                         {
                             var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
                             var dataField = fields.GetField(item.Name) as ListField;
                             var display = dataField?.DisplayName ?? item.DisplayName;
+
+                            if (group.Value.Any(e => e.Name.EqualIgnoreCase("CreateUser")) && item.Name.EqualIgnoreCase("CreateUserId"))
+                                continue;
+                            if (group.Value.Any(e => e.Name.EqualIgnoreCase("UpdateUser")) && item.Name.EqualIgnoreCase("UpdateUserId"))
+                                continue;
 
                             if (item.IsBigText())
                             {
@@ -80,6 +86,7 @@
                         }
                     </div>
                 </div>
+                i++;
             }
         </div>
     }
@@ -91,6 +98,11 @@
                 var des = item.Description.TrimStart(item.DisplayName).TrimStart(",", ".", "，", "。");
                 var dataField = fields.GetField(item.Name) as ListField;
                 var display = dataField?.DisplayName ?? item.DisplayName;
+
+                if (fields.Any(e => e.Name.EqualIgnoreCase("CreateUser")) && item.Name.EqualIgnoreCase("CreateUserId"))
+                    continue;
+                if (fields.Any(e => e.Name.EqualIgnoreCase("UpdateUser")) && item.Name.EqualIgnoreCase("UpdateUserId"))
+                    continue;
 
                 if (item.IsBigText())
                 {

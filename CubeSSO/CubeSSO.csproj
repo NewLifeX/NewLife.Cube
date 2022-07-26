@@ -19,12 +19,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="9.2.2022.608-beta0535" />
+    <PackageReference Include="NewLife.Core" Version="9.2.2022.701" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="2.1.2022.606-beta0640" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

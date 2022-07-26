@@ -25,10 +25,10 @@
 @if (menu != null && !isMoblie)
 {
     <!-- 面包屑导航 -->
-    <div class="d-flex align-items-center" id="kt_header_nav">
-        <div data-kt-swapper="true" data-kt-swapper-mode="prepend" data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_header_nav'}" class="page-title d-flex flex-column align-items-start me-3 mb-5 mb-lg-0">
+    <div class="d-flex align-items-center d-none d-md-block" id="kt_header_nav">
+        <div data-kt-swapper="true" data-kt-swapper-mode="prepend" data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_header_nav'}" class="page-title d-flex flex-column align-items-start me-3 mt-4 mb-lg-0">
             <h1 class="d-flex align-items-center text-hover-primary fs-3 mb-0">@(menu != null ? menu.DisplayName : ViewBag.Title)</h1>
-            <ul class="breadcrumb fw-bold fs-7 pt-1">
+            <ul class="breadcrumb fs-6 pt-1">
                 @if (menu != null)
                 {
                     foreach (IMenu item in (menu as IEntityTree).AllParents)

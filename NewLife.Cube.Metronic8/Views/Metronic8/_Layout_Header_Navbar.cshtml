@@ -8,7 +8,7 @@
 }
 
 <!-- 顶部工具栏 -->
-<div class="d-flex align-items-stretch flex-shrink-0">
+<div class="app-navbar flex-shrink-0">
     <!--begin::Topbar-->
     <div class="d-flex align-items-stretch flex-shrink-0">
         <!--begin::Toolbar wrapper-->
@@ -24,6 +24,9 @@
 
             <!-- 快捷入口 -->
             @await Html.PartialAsync("_Layout_Header_Navbar_QuickLinks")
+
+            <!-- 主题模式 -->
+            @await Html.PartialAsync("_Layout_Header_Navbar_Thememode")
 
             <!-- 当前用户 -->
             @await Html.PartialAsync("_Layout_Header_Navbar_User")

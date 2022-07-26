@@ -1,29 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading;
+﻿using System.ComponentModel;
+using System.Web;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Caching;
+using NewLife.Common;
+using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Services;
+using NewLife.Log;
+using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
-using System.Web;
-using NewLife.Caching;
-using NewLife.Log;
-using NewLife.Cube.Areas.Admin.Models;
-using NewLife.Common;
-using NewLife.Reflection;
-using System.IO;
-using NewLife.Cube.Services;
-using System.Threading.Tasks;
-#if __CORE__
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-#else
-using System.Web.Mvc;
-using System.Web.Security;
-#endif
 using static XCode.Membership.User;
 
 namespace NewLife.Cube.Admin.Controllers
@@ -93,6 +81,10 @@ namespace NewLife.Cube.Admin.Controllers
                 var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
                 df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID + "", e => e.Name);
                 EditFormFields.RemoveField("RoleNames");
+            }
+
+            {
+                AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
             }
         }
 

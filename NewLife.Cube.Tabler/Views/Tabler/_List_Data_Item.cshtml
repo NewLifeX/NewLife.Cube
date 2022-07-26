@@ -68,6 +68,11 @@ else
 
                 <td class="text-center">@dd.ToString("p2")</td>
             }
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            {
+                var dd = (Double)value;
+                <td class="text-center">@dd.ToString("p2")</td>
+            }
             else
             {
                 var dd = (Double)value;
