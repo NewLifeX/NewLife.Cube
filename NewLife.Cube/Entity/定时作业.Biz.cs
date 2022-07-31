@@ -103,11 +103,11 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 业务操作
-        /// <summary>添加定时作业</summary>
-        /// <param name="name"></param>
-        /// <param name="method"></param>
-        /// <param name="cron"></param>
-        /// <param name="enable"></param>
+        /// <summary>检查并添加定时作业</summary>
+        /// <param name="name">作业名称。唯一</param>
+        /// <param name="method">作业方法。定时执行</param>
+        /// <param name="cron">Cron表达式。仅用于首次创建，后续可通过页面修改</param>
+        /// <param name="enable">创建时是否启用。后续可通过页面修改</param>
         /// <returns></returns>
         public static CronJob Add(String name, MethodInfo method, String cron, Boolean enable = true)
         {
