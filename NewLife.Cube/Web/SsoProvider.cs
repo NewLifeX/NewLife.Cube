@@ -76,11 +76,7 @@ namespace NewLife.Cube.Web
             if (url.IsNullOrEmpty()) url = request.Get("redirect_uri");
             if (url.IsNullOrEmpty() && referr)
             {
-#if __CORE__
                 url = request.Headers["Referer"].FirstOrDefault() + "";
-#else
-                url = request.UrlReferrer + "";
-#endif
             }
             if (!url.IsNullOrEmpty() && url.StartsWithIgnoreCase("http"))
             {
