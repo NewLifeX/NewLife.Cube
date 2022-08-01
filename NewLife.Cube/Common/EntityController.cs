@@ -89,7 +89,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         {
             var sb = p.GetBaseUrl(true, true, true);
             if (sb.Length > 0)
-                Session[key] = "../Index?" + sb;
+                Session[key] = "Index?" + sb;
             else
                 Session[key] = Request.GetReferer();
         }
