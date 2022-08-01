@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Charts;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -22,6 +20,20 @@ namespace NewLife.Cube.Cube.Controllers
             LogOnChange = true;
 
             ListFields.RemoveCreateField();
+            ListFields.RemoveRemarkField();
+
+            {
+                var df = ListFields.GetField("ParentID") as ListField;
+                df.DisplayName = "{ParentPath}";
+                df.Url = "?Id={ParentID}";
+            }
+            {
+                var df = ListFields.AddDataField("sub", "Level") as ListField;
+                df.DisplayName = "下级";
+                df.Url = "?parentId={ID}";
+            }
+
+            AddFormFields.AddField("ID");
         }
 
         private static Boolean _inited;
