@@ -33,7 +33,7 @@ namespace NewLife.Cube.Cube.Controllers
                 df.Url = "?parentId={ID}";
             }
 
-            AddFormFields.AddField("ID");
+            //AddFormFields.AddField("ID");
         }
 
         private static Boolean _inited;
