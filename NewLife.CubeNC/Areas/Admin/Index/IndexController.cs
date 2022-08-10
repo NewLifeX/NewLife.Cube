@@ -150,7 +150,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 Process.Start(fileName, args);
 
-                ThreadPoolX.QueueUserWorkItem(() =>
+                ThreadPool.QueueUserWorkItem(s =>
                 {
                     Thread.Sleep(100);
 

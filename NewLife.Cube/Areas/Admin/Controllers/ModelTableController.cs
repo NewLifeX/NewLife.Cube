@@ -83,7 +83,7 @@ namespace NewLife.Cube.Cube.Controllers
 
             // 扫描模型表
             //ModelTable.ScanModel(areaName, menus);
-            ThreadPoolX.QueueUserWorkItem(() =>
+            ThreadPool.QueueUserWorkItem(s =>
             {
                 var mf = ManageProvider.Menu;
                 if (mf == null) return;

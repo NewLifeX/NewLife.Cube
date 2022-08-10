@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using NewLife.Reflection;
+﻿using NewLife.Reflection;
 using XCode.Configuration;
 
 namespace NewLife.Cube.Common;
@@ -17,7 +15,7 @@ public static class FormatEntity
     /// <param name="item"></param>
     /// <param name="entity"></param>
     /// <returns></returns>
-    public static void FromExcelToEntity(this FieldItem fieldsItem,IDictionary<string,object> item, Object entity)
+    public static void FromExcelToEntity(this FieldItem fieldsItem, IDictionary<String, Object> item, Object entity)
     {
         //解析时间
         if (fieldsItem.Type == typeof(DateTime))
@@ -28,11 +26,9 @@ public static class FormatEntity
             {
                 try
                 {
-                    fieldsValueTime = fieldsValue.Contains("/") ? DateTime.Parse(fieldsValue) : DateTime.FromOADate(double.Parse(fieldsValue));
+                    fieldsValueTime = fieldsValue.Contains("/") ? DateTime.Parse(fieldsValue) : DateTime.FromOADate(Double.Parse(fieldsValue));
                 }
-                catch (Exception ex)
-                {
-                }
+                catch { }
             }
 
             entity.SetValue(fieldsItem.Name, fieldsValueTime);

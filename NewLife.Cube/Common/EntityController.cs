@@ -450,8 +450,8 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
 
             //解析json
             //var dataList = JArray.Parse(data);
-            var errorString = string.Empty;
-            int okSum = 0, fiSum = 0;
+            var errorString = String.Empty;
+            Int32 okSum = 0, fiSum = 0;
 
             //using var tran = Entity<TEntity>.Meta.CreateTrans();
             foreach (var itemD in dataList)
@@ -517,10 +517,11 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
 
     /// <summary>修改bool值</summary>
     /// <param name="id"></param>
+    /// <param name="valName"></param>
     /// <param name="val"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
-    public ActionResult SetBool(Int32 id = 0, string valName = "", Boolean val = true)
+    public ActionResult SetBool(Int32 id = 0, String valName = "", Boolean val = true)
     {
         var fi = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase(valName));
         if (fi == null) throw new InvalidOperationException($"未找到{valName}字段。");
