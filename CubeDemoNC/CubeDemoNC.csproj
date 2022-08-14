@@ -40,7 +40,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.8" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.3.2022.810-beta1054" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.3.2022.814-beta0337" />
   </ItemGroup>
 
   <ItemGroup>
