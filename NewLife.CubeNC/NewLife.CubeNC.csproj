@@ -15,12 +15,14 @@
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
     <Deterministic>false</Deterministic>
-    <OutputPath>..\..\Bin</OutputPath>
+    <OutputPath>..\Bin</OutputPath>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <DefineConstants>$(DefineConstants);__CORE__</DefineConstants>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
@@ -63,9 +65,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="10.0.2022.810-beta0004" />
-    <PackageReference Include="NewLife.IP" Version="2.0.2022.810" />
-    <PackageReference Include="NewLife.XCode" Version="11.3.2022.810-beta0602" />
+    <PackageReference Include="NewLife.Core" Version="10.0.2022.813-beta1403" />
+    <PackageReference Include="NewLife.IP" Version="2.0.2022.813-beta1439" />
+    <PackageReference Include="NewLife.XCode" Version="11.3.2022.813-beta1439" />
   </ItemGroup>
 
   <ItemGroup>
