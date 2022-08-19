@@ -4,9 +4,11 @@
 @{
     var entity = Model as IEntity;
     var set = ViewBag.PageSetting as PageSetting;
+    var fact = ViewBag.Factory as IEntityFactory;
+    var fk = fact.Unique;
 
     var rv = entity.GetRouteKey();
-    var id = entity["ID"];
+    var id = entity[fk.Name];
 }
 
 <script type="text/html" id="barSort">

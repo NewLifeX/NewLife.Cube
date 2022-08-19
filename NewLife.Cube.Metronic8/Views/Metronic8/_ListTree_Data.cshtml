@@ -44,7 +44,7 @@
                         {
                             p = fact.EntityType.GetValue("Root") as IEntityTree;
                         }
-                        var id = entity["ID"];
+                        var id = entity[fk.Name];
                         <tr>
                             @* @if (set.EnableSelect)
                                 {
