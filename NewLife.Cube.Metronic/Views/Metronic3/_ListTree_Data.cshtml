@@ -65,7 +65,28 @@
                 }
                 @foreach (var item in fields)
                 {
-                    @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                    var df = item as ListField;
+                    var url = (String)df?.GetUrl(entity);
+                    if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
+                    {
+                        <td></td>
+                    }
+                    else if (df != null && !df.DataAction.IsNullOrEmpty())
+                    {
+                        var name = df.GetDisplayName(entity);
+                        var title = df.GetTitle(entity);
+                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                    }
+                    else if (df != null && !url.IsNullOrEmpty())
+                    {
+                        var name = df.GetLinkName(entity);
+                        var title = df.GetTitle(entity);
+                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@name</a></td>
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                    }
                 }
                 <td class="text-center">
                     @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
