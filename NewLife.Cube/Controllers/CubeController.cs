@@ -53,10 +53,10 @@ public class CubeController : ControllerBaseX
     #region 服务器信息
     private static readonly String _OS = Environment.OSVersion + "";
 
-    /// <summary>获取所有接口</summary>
-    /// <returns></returns>
-    [Route("[controller]")]
-    public ActionResult Get() => Info(null);
+    ///// <summary>服务器信息</summary>
+    ///// <returns></returns>
+    //[Route("[controller]")]
+    //public ActionResult Get() => Info(null);
 
     /// <summary>服务器信息，用户健康检测</summary>
     /// <param name="state">状态信息</param>
@@ -64,23 +64,22 @@ public class CubeController : ControllerBaseX
     public ActionResult Info(String state)
     {
         var asmx = AssemblyX.Entry;
-        var asmx2 = AssemblyX.Create(Assembly.GetExecutingAssembly());
-
-        // 从Body获取state
+        var conn = HttpContext.Connection;
         var ip = HttpContext.GetUserHost();
 
         var rs = new
         {
-            Server = asmx?.Name,
-            asmx?.Version,
+            asmx?.Name,
+            asmx?.Title,
+            asmx?.FileVersion,
             asmx?.Compile,
             OS = _OS,
-            ApiVersion = asmx2?.Version,
 
             UserHost = ip + "",
-            Remote = ip + "",
-            State = state,
+            Remote = conn.RemoteIpAddress + "",
+            Port = conn.LocalPort,
             Time = DateTime.Now,
+            State = state,
         };
 
         return Json(0, null, rs);

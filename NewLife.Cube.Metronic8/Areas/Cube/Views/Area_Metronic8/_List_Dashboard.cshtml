@@ -1,0 +1,86 @@
+﻿@*
+    列表视图顶部仪表盘或导航栏
+*@
+@using NewLife.Cube.Charts;
+@using NewLife.Web;
+@using XCode;
+@{
+    var chart1 = ViewBag.Charts as ECharts[];
+    var chart2 = ViewBag.Charts2 as ECharts[];
+
+    ECharts[] charts = new ECharts[2];
+    if (chart1 != null && chart1.Length > 0) charts[0] = chart1[0];
+    if (chart2 != null && chart2.Length > 0) charts[1] = chart2[0];
+    var i = 0;
+    var columns = 3; // 每行3个图表卡片
+}
+
+@if (charts != null && charts.Length > 0)
+{
+    var len = charts.Length;
+    for (int row = 0; row <= len / columns; row++)
+    {
+        if (len == 0 || i >= len) break;
+        var count = (len > (row + 1) * columns) ? columns : len - row * columns; // 当前行图表卡片数量
+
+        <div class="row g-5 g-xl-8 mx-0">
+            @switch (count)
+            {
+                // 一个图表
+                case 1:
+                    <div class="card mb-3">
+                        <div class="card-body pb-lg-0">
+                            @await Html.PartialAsync("_Cube_Widgets_ECharts", charts[i++])
+                        </div>
+                    </div>
+                    break;
+
+                // 两个图表
+                case 2:
+                    <div class="col-lg-6 px-sm-0 ps-lg-0 pe-lg-3">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_Cube_Widgets_ECharts", charts[i++])
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 px-sm-0 ps-lg-3 pe-lg-0">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_Cube_Widgets_ECharts", charts[i++])
+                            </div>
+                        </div>
+                    </div>
+                    break;
+
+                // 三个图表
+                case 3:
+                    <div class="col-lg-4 px-sm-0 ps-lg-0 pe-lg-3">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_Cube_Widgets_ECharts", charts[i++])
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_Cube_Widgets_ECharts", charts[i++])
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 px-sm-0 ps-lg-3 pe-lg-0">
+                        <div class="card mb-3">
+                            <div class="card-body pb-0">
+                                @await Html.PartialAsync("_Cube_Widgets_ECharts", charts[i++])
+                            </div>
+                        </div>
+                    </div>
+                    break;
+            }
+        </div>
+    }
+}

@@ -21,7 +21,23 @@
             @foreach (var item in fields)
             {
                 var sortUrl = !item.MapField.IsNullOrEmpty() ? page.GetSortUrl(item.MapField) : page.GetSortUrl(item.Name);
-                <th class="text-center" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                var df = item as ListField;
+                var name = df?.Header ?? item.DisplayName ?? item.Name;
+                var title = df?.HeaderTitle ?? item.Description;
+
+                if (item.Type == typeof(DateTime))
+                {
+                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                    <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                }
+                else if (item.Type == null)
+                {
+                    <th class="text-center" title="@title">@name</th>
+                }
+                else
+                {
+                    <th class="text-center" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                }
             }
             <th class="text-center">升</th>
             <th class="text-center">降</th>
@@ -39,7 +55,7 @@
             {
                 p = fact.EntityType.GetValue("Root") as IEntityTree;
             }
-            var id = entity["ID"];
+            var id = entity[fk.Name];
             <tr>
                 @if (set.EnableSelect)
                 {
@@ -47,7 +63,28 @@
                 }
                 @foreach (var item in fields)
                 {
-                    @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                    var df = item as ListField;
+                    var url = (String)df?.GetUrl(entity);
+                    if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
+                    {
+                        <td></td>
+                    }
+                    else if (df != null && !df.DataAction.IsNullOrEmpty())
+                    {
+                        var name = df.GetDisplayName(entity);
+                        var title = df.GetTitle(entity);
+                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                    }
+                    else if (df != null && !url.IsNullOrEmpty())
+                    {
+                        var name = df.GetLinkName(entity);
+                        var title = df.GetTitle(entity);
+                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@name</a></td>
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                    }
                 }
                 <td class="text-center">
                     @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])

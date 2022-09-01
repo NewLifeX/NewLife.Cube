@@ -5,14 +5,17 @@
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
-    <Version>5.0.2022.0101</Version>
-    <FileVersion>5.0.2022.0101</FileVersion>
-    <AssemblyVersion>5.0.*</AssemblyVersion>
-    <LangVersion>latest</LangVersion>
+    <VersionPrefix>5.5</VersionPrefix>
+    <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
+    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
     <!--<InvariantGlobalization>true</InvariantGlobalization>-->
   </PropertyGroup>
 
@@ -36,8 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.6" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.1.2022.606-beta0640" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.8" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.3.2022.814-beta0337" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,15 +9,13 @@
     var entity = Model as IEntity;
     var fields = ViewBag.Fields as FieldCollection;
 
-    var rv = entity.GetRouteKey();
-
     Object htmlAttributes = null;
     if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
 }
 
 <div class="form-horizontal">
     @await Html.PartialAsync("_Form_Header", entity)
-    @using (Html.BeginForm("Add", null, rv, FormMethod.Post, null, htmlAttributes))
+    @using (Html.BeginForm("Add", null, null, FormMethod.Post, null, htmlAttributes))
     {
         <ul>
             @foreach (var item in ViewData.ModelState.Values)

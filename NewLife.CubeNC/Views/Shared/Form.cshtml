@@ -10,12 +10,12 @@
     var isNew = entity.IsNullKey;
     var fields = ViewBag.Fields as FieldCollection;
 
-    var url = "";
+    //var url = "";
     var rv = entity.GetRouteKey();
-    if (rv != null && rv.Count > 0)
-        url = Url.Action(isNew ? "Add" : "Edit", rv);
-    else
-        url = Url.Action(isNew ? "Add" : "Edit");
+    //if (rv != null && rv.Count > 0)
+    //    url = Url.Action(isNew ? "Add" : "Edit", rv);
+    //else
+    //    url = Url.Action(isNew ? "Add" : "Edit");
 
     Object htmlAttributes = null;
     if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
@@ -23,7 +23,7 @@
 
 <div class="form-horizontal">
     @await Html.PartialAsync("_Form_Header", entity)
-    @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, rv, FormMethod.Post, null, htmlAttributes))
+    @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, isNew ? null : rv, FormMethod.Post, null, htmlAttributes))
     {
         @*@Html.AntiForgeryToken()*@
         @*@Html.ValidationSummary()*@
