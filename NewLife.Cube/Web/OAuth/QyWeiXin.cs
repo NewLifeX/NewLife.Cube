@@ -280,7 +280,7 @@ namespace NewLife.Web.OAuth
                 }
             }
 
-            return ApiHelper.ProcessResponse<TResult>(str, dataName);
+            return ApiHelper.ProcessResponse<TResult>(str, null, dataName);
         }
 
         /// <summary>异步请求接口</summary>
@@ -313,7 +313,7 @@ namespace NewLife.Web.OAuth
                 }
             }
 
-            return ApiHelper.ProcessResponse<TResult>(str, dataName);
+            return ApiHelper.ProcessResponse<TResult>(str, null, dataName);
         }
         #endregion
 
