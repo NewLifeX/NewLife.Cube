@@ -411,7 +411,7 @@ public static class ViewHelper
 
         return sb.ToString();
     }
-    ////生成表单分组,对BigText没有做处理
+    ////生成表单分组,添加BigText支持 有字段名不能对齐的小BUG 2022.09.13
     internal static Boolean MakeFormView(Type entityType, String vpath, List<DataField> fields)
     {
         var tmp = @"@model {EntityType}
@@ -510,7 +510,15 @@ else
                 foreach (var item in group)
                 {
                     if (item.PrimaryKey) continue;
-                    sb.AppendLine($"<div class=\"{cls}\">");
+                    
+                    if (item.IsBigText())
+                    {
+                        sb.AppendLine($"<div class=\"form-group col-md-12\">");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"<div class=\"{cls}\">");
+                    }
                     BuildFormItem(item, sb, fact);
                     sb.AppendLine("</div>");
                 }
@@ -536,72 +544,6 @@ else
         File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
         return true;
 
-    }
-    //这是以前没分组的
-    internal static Boolean MakeFormViewX(Type entityType, String vpath, List<DataField> fields)
-    {
-        var tmp = @"@model {EntityType}
-@using {Namespace}
-@using NewLife;
-@using NewLife.Web;
-@using XCode;
-@using XCode.Configuration;
-@using XCode.Membership;
-@using NewLife.Cube;
-@{
-    var entity = Model;
-    var isNew = (entity as IEntity).IsNullKey;
-}
-@foreach (var item in fields)
-{
-    if (!item.PrimaryKey)
-    {
-        <div class=""@cls"">
-            @await Html.PartialAsync(""_Form_Item"", new Pair(entity, item))
-        </div>
-    }
-}
-@await Html.PartialAsync(""_Form_Footer"", entity)
-@if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
-{
-    <div class=""clearfix form-actions col-sm-12 col-md-12"">
-        <label class=""control-label col-xs-4 col-sm-5 col-md-5""></label>
-        <button type=""submit"" class=""btn btn-success btn-sm""><i class=""glyphicon glyphicon-@(isNew ? ""plus"" : ""save"")""></i><strong>@(isNew ? ""新增"" : ""保存"")</strong></button>
-        <button type=""button"" class=""btn btn-danger btn-sm"" onclick=""history.go(-1);""><i class=""glyphicon glyphicon-remove""></i><strong>取消</strong></button>
-    </div>
-}";
-
-        var sb = new StringBuilder();
-        var fact = EntityFactory.CreateFactory(entityType);
-
-        tmp = tmp.Replace("{EntityType}", entityType.Name);
-        tmp = tmp.Replace("{Namespace}", entityType.Namespace);
-
-        //sb.AppendLine($"@model {entityType.FullName}");
-
-        var str = tmp.Substring(null, "@foreach");
-        sb.Append(str);
-
-        var set = Setting.Current;
-        var cls = set.FormGroupClass;
-        if (cls.IsNullOrEmpty()) cls = "form-group col-xs-12 col-sm-6 col-lg-4";
-
-        var ident = new String(' ', 4 * 1);
-        foreach (var item in fields)
-        {
-            if (item.PrimaryKey) continue;
-
-            sb.AppendLine($"<div class=\"{cls}\">");
-            BuildFormItem(item, sb, fact);
-            sb.AppendLine("</div>");
-        }
-
-        var p = tmp.IndexOf(@"@await Html.PartialAsync(""_Form_Footer""");
-        sb.Append(tmp[p..]);
-
-        File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
-
-        return true;
     }
 
     private static void BuildFormItem(DataField field, StringBuilder sb, IEntityFactory fact)
