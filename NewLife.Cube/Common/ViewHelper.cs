@@ -411,7 +411,7 @@ public static class ViewHelper
 
         return sb.ToString();
     }
-    ////这是是手残没做好的表单分组
+    ////生成表单分组,对BigText没有做处理
     internal static Boolean MakeFormView(Type entityType, String vpath, List<DataField> fields)
     {
         var tmp = @"@model {EntityType}
@@ -478,7 +478,7 @@ else
         var fact = EntityFactory.CreateFactory(entityType);
         tmp = tmp.Replace("{EntityType}", entityType.Name);
         tmp = tmp.Replace("{Namespace}", entityType.Namespace);
-        var str = tmp .Substring(null,"@if");
+        var str = tmp.Substring(null, "@if");
         sb.Append(str);
         var set = Setting.Current;
         var cls = set.FormGroupClass;
@@ -490,19 +490,19 @@ else
             sb.AppendLine(@"    <ul class=""nav nav-tabs"" role=""tablist"">");
             foreach (var item in groupList)
             {
-                if (i==0)
+                if (i == 0)
                 {
-                    sb.AppendLine(@"            <li class=""active""><a href=""#item"+i+@""" data-toggle=""tab"">"+ item.Key.IsNullOrEmpty()??"默认" + "</a></li>");
+                    sb.AppendLine(@"            <li class=""active""><a href=""#item" + i + @""" data-toggle=""tab"">" + (item.Key.IsNullOrEmpty() ? "默认" : item.Key) + @"</a></li>");
                 }
                 else
                 {
-                    sb.AppendLine(@"            <li class=""""><a href=""#item""" + i + @""" data-toggle=""tab"">" + item.Key.IsNullOrEmpty() ?? "默认" + "</a></li>");
+                    sb.AppendLine(@"            <li class=""""><a href=""#item" + i + @""" data-toggle=""tab"">" + (item.Key.IsNullOrEmpty() ? "默认" : item.Key) + @"</a></li>");
                 }
                 i++;
             }
             sb.AppendLine(@"    </ul>");
             sb.AppendLine(@"    <div class=""tab-content"">");
-            i=0;
+            i = 0;
             foreach (var group in groupList)
             {
                 sb.AppendLine(@"            <div class=""tab-pane fade in " + (i == 0 ? "active" : "") + @""" id=""" + ("item" + i) + @""">");
@@ -510,7 +510,9 @@ else
                 foreach (var item in group)
                 {
                     if (item.PrimaryKey) continue;
+                    sb.AppendLine($"<div class=\"{cls}\">");
                     BuildFormItem(item, sb, fact);
+                    sb.AppendLine("</div>");
                 }
                 sb.AppendLine(@"                </div>");
                 sb.AppendLine(@"    </div>");
