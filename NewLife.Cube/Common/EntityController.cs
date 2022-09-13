@@ -38,16 +38,24 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         var url = Request.GetReferer();
 
         var entity = FindData(id);
-        Valid(entity, DataObjectMethodType.Delete, true);
-
+        var rs = false;
+        var err = "";
         try
         {
-            OnDelete(entity);
+            if (Valid(entity, DataObjectMethodType.Delete, true))
+            {
+                OnDelete(entity);
+
+                rs = true;
+            }
+            else
+                err = "验证失败";
         }
         catch (Exception ex)
         {
-            var err = ex.GetTrue().Message;
+            err = ex.GetTrue().Message;
             WriteLog("Delete", false, err);
+            //if (LogOnChange) LogProvider.Provider.WriteLog("Delete", entity, err);
 
             if (Request.IsAjaxRequest())
                 return JsonRefresh("删除失败！" + err);
@@ -56,7 +64,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         }
 
         if (Request.IsAjaxRequest())
-            return JsonRefresh("删除成功！");
+            return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
         else if (!url.IsNullOrEmpty())
             return Redirect(url);
         else
@@ -112,38 +120,30 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
 
-        if (!Valid(entity, DataObjectMethodType.Insert, true))
-        {
-            ViewBag.StatusMessage = "验证失败！";
-            ViewBag.Fields = AddFormFields;
-
-            return View("AddForm", entity);
-        }
-
         var rs = false;
         var err = "";
         try
         {
-            //SaveFiles(entity);
+            if (Valid(entity, DataObjectMethodType.Insert, true))
+            {
+                //SaveFiles(entity);
 
-            OnInsert(entity);
+                OnInsert(entity);
 
-            var fs = await SaveFiles(entity);
-            if (fs.Count > 0) OnUpdate(entity);
+                var fs = await SaveFiles(entity);
+                if (fs.Count > 0) OnUpdate(entity);
 
-            if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
+                if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
 
-            rs = true;
-        }
-        catch (ArgumentException aex)
-        {
-            err = aex.Message;
-            ModelState.AddModelError(aex.ParamName, aex.Message);
+                rs = true;
+            }
+            else
+                err = "验证失败";
         }
         catch (Exception ex)
         {
             err = ex.Message;
-            ModelState.AddModelError("", ex.Message);
+            ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);
         }
 
         if (!rs)
@@ -216,40 +216,30 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     [HttpPost]
     public virtual async Task<ActionResult> Edit(TEntity entity)
     {
-        if (!Valid(entity, DataObjectMethodType.Update, true))
-        {
-            ViewBag.StatusMessage = "验证失败！";
-            ViewBag.Fields = EditFormFields;
-
-            return View("EditForm", entity);
-        }
-
         var rs = false;
         var err = "";
         try
         {
-            await SaveFiles(entity);
+            if (Valid(entity, DataObjectMethodType.Update, true))
+            {
+                await SaveFiles(entity);
 
-            OnUpdate(entity);
+                OnUpdate(entity);
 
-            rs = true;
-        }
-        catch (ArgumentException aex)
-        {
-            err = aex.Message;
-            ModelState.AddModelError(aex.ParamName, aex.Message);
+                rs = true;
+            }
+            else
+                err = "验证失败";
         }
         catch (Exception ex)
         {
             err = ex.Message;
-            //ModelState.AddModelError("", ex.Message);
-            ModelState.AddModelError("", ex.Message);
+            ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);
         }
 
         Object id = null;
         if (Factory.Unique != null) id = entity[Factory.Unique.Name];
 
-        //ViewBag.RowsAffected = rs;
         if (!rs)
         {
             WriteLog("Edit", false, err);
