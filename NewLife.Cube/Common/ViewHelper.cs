@@ -411,8 +411,132 @@ public static class ViewHelper
 
         return sb.ToString();
     }
-
+    ////这是是手残没做好的表单分组
     internal static Boolean MakeFormView(Type entityType, String vpath, List<DataField> fields)
+    {
+        var tmp = @"@model {EntityType}
+@using {Namespace}
+@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model;
+    var fields = ViewBag.Fields as FieldCollection;
+}
+
+@if (groupFields.Count > 1)
+{
+    var i = 0;
+    var j = 0;
+    <ul class=""nav nav-tabs"" role=""tablist"">
+        @foreach (var item in groupFields)
+        {
+            <li class=""@(i==0?""active"":"""")""><a href=""@(""#item""+i)"" data-toggle=""tab"">@item.Key</a></li>
+            i++;
+        }
+    </ul>
+    <div class=""tab-content"">
+        @foreach (var group in groupFields)
+        {
+            <div class=""tab-pane fade in @(j==0?""active"":"""")"" id=""@(""item""+j)"">
+                <div class=""row"">
+                    @foreach (var item in group.Value)
+                    {
+                        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
+                        {
+                            if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                                @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+                            else
+                                @await Html.PartialAsync(""_Form_Group"", new ValueTuple<IEntity, DataField>(entity, item))
+                        }
+                    }
+                </div>
+            </div>
+            j++;
+        }
+    </div>
+}
+else
+{
+    foreach (var item in fields)
+    {
+        // 表单页显示非主键或非自增字段
+        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
+        {
+            if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+            else
+                @await Html.PartialAsync(""_Form_Group"", new ValueTuple<IEntity, DataField>(entity, item))
+        }
+    }
+}
+
+@await Html.PartialAsync(""_Form_Footer"", entity)
+
+@await Html.PartialAsync(""_Form_Action"", entity)";
+        var sb = new StringBuilder();
+        var fact = EntityFactory.CreateFactory(entityType);
+        tmp = tmp.Replace("{EntityType}", entityType.Name);
+        tmp = tmp.Replace("{Namespace}", entityType.Namespace);
+        var str = tmp .Substring(null,"@if");
+        sb.Append(str);
+        var set = Setting.Current;
+        var cls = set.FormGroupClass;
+        if (cls.IsNullOrEmpty()) cls = "form-group col-xs-12 col-sm-6 col-lg-4";
+        var groupList = fields.GroupBy(x => x.Category);
+        if (groupList.Count() > 1)
+        {
+            int i = 0;
+            sb.AppendLine(@"    <ul class=""nav nav-tabs"" role=""tablist"">");
+            foreach (var item in groupList)
+            {
+                if (i==0)
+                {
+                    sb.AppendLine(@"            <li class=""active""><a href=""#item"+i+@""" data-toggle=""tab"">"+ item.Key.IsNullOrEmpty()??"默认" + "</a></li>");
+                }
+                else
+                {
+                    sb.AppendLine(@"            <li class=""""><a href=""#item""" + i + @""" data-toggle=""tab"">" + item.Key.IsNullOrEmpty() ?? "默认" + "</a></li>");
+                }
+                i++;
+            }
+            sb.AppendLine(@"    </ul>");
+            sb.AppendLine(@"    <div class=""tab-content"">");
+            i=0;
+            foreach (var group in groupList)
+            {
+                sb.AppendLine(@"            <div class=""tab-pane fade in " + (i == 0 ? "active" : "") + @""" id=""" + ("item" + i) + @""">");
+                sb.AppendLine(@"                <div class=""row"">");
+                foreach (var item in group)
+                {
+                    if (item.PrimaryKey) continue;
+                    BuildFormItem(item, sb, fact);
+                }
+                sb.AppendLine(@"                </div>");
+                sb.AppendLine(@"    </div>");
+                i++;
+            }
+            sb.AppendLine(@"    </div>");
+        }
+        else
+        {
+            foreach (var item in fields)
+            {
+                if (item.PrimaryKey) continue;
+
+                sb.AppendLine($"<div class=\"{cls}\">");
+                BuildFormItem(item, sb, fact);
+                sb.AppendLine("</div>");
+            }
+        }
+        var p = tmp.IndexOf(@"@await Html.PartialAsync(""_Form_Footer""");
+        sb.Append(tmp[p..]);
+        File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
+        return true;
+
+    }
+    //这是以前没分组的
+    internal static Boolean MakeFormViewX(Type entityType, String vpath, List<DataField> fields)
     {
         var tmp = @"@model {EntityType}
 @using {Namespace}
