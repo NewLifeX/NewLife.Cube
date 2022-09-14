@@ -192,58 +192,58 @@ internal class MyJob : IDisposable
     public void Start()
     {
         var job = Job;
-        using var span = Tracer?.NewSpan($"job:{job}:Start");
-        try
-        {
-            // 参数检查
-            var expession = job.Cron;
-            if (expession.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Cron));
+        //using var span = Tracer?.NewSpan($"job:{job}:Start");
+        //try
+        //{
+        // 参数检查
+        var expession = job.Cron;
+        if (expession.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Cron));
 
-            var cmd = job.Method;
-            if (cmd.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Method));
+        var cmd = job.Method;
+        if (cmd.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Method));
 
-            // 标识相同，不要处理
-            var id = $"{expession}@{cmd}";
-            if (id == _id && _timer != null) return;
+        // 标识相同，不要处理
+        var id = $"{expession}@{cmd}";
+        if (id == _id && _timer != null) return;
 
-            var cron = new Cron();
-            if (!cron.Parse(expession)) throw new InvalidOperationException($"无效表达式 {expession}");
+        var cron = new Cron();
+        if (!cron.Parse(expession)) throw new InvalidOperationException($"无效表达式 {expession}");
 
-            // 找到类和方法
-            var p = cmd.LastIndexOf('.');
-            if (p <= 0) throw new InvalidOperationException($"无效作业方法 {cmd}");
+        // 找到类和方法
+        var p = cmd.LastIndexOf('.');
+        if (p <= 0) throw new InvalidOperationException($"无效作业方法 {cmd}");
 
-            var type = cmd[..p].GetTypeEx();
-            var method = type?.GetMethodEx(cmd[(p + 1)..]);
-            if (method == null || !method.IsStatic) throw new InvalidOperationException($"无效作业方法 {cmd}");
+        var type = cmd[..p].GetTypeEx();
+        var method = type?.GetMethodEx(cmd[(p + 1)..]);
+        if (method == null || !method.IsStatic) throw new InvalidOperationException($"无效作业方法 {cmd}");
 
-            _action = method.As<Action<String>>();
-            if (_action == null) throw new InvalidOperationException($"无效作业方法 {cmd}");
+        _action = method.As<Action<String>>();
+        if (_action == null) throw new InvalidOperationException($"无效作业方法 {cmd}");
 
-            JobService.WriteLog("启用", true, $"作业[{job.Name}]，定时 {job.Cron}，方法 {job.Method}", job);
+        JobService.WriteLog("启用", true, $"作业[{job.Name}]，定时 {job.Cron}，方法 {job.Method}", job);
 
-            // 实例化定时器，原定时器销毁
-            _timer.TryDispose();
-            _timer = new TimerX(DoJobWork, job, expession) { Async = true, Tracer = Tracer };
+        // 实例化定时器，原定时器销毁
+        _timer.TryDispose();
+        _timer = new TimerX(DoJobWork, job, expession) { Async = true, Tracer = Tracer };
 
-            job.NextTime = _timer.NextTime;
-            job.Update();
+        job.NextTime = _timer.NextTime;
+        job.Update();
 
-            _id = id;
-        }
-        catch (Exception ex)
-        {
-            span?.SetError(ex, null);
+        _id = id;
+        //}
+        //catch (Exception ex)
+        //{
+        //    span?.SetError(ex, null);
 
-            throw;
-        }
+        //    throw;
+        //}
     }
 
     public void Stop()
     {
         if (_timer != null)
         {
-            using var span = Tracer?.NewSpan($"job:{Job}:Stop");
+            //using var span = Tracer?.NewSpan($"job:{Job}:Stop");
 
             JobService.WriteLog("停用", true, $"作业[{Job.Name}]", Job);
 
