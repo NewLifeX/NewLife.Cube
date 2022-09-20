@@ -34,7 +34,7 @@
                         @if (groupFields.Count > 1)
                         {
                             <ul class="nav">
-                                @for (int i= 0; i < groupFields.Count; i++)
+                                @for (int i = 0; i < groupFields.Count; i++)
                                 {
                                     var key = groupFields[i].Key;
                                     key = key.IsNullOrEmpty() ? "默认选项" : (key.Length < 4 ? key + "选项" : key);
@@ -55,7 +55,7 @@
                         <div class="card-toolbar">
                             <button type="submit" class="btn btn-sm btn-outline btn-outline-primary align-self-center me-2"><i class="fas fa-save text-active-primary"></i><strong>保存</strong></button>
                             <button type="button" class="btn btn-sm btn-outline btn-outline-dashed btn-outline-default btn-active-light align-self-center" onclick="history.go(-1);"><i class="fas fa-reply"></i><strong>取消</strong></button>
-                        </div>                        
+                        </div>
                     }
                 </div>
 
@@ -66,7 +66,7 @@
                     @if (groupFields.Count > 1)
                     {
                         <div class="tab-content">
-                            @for(int i=0; i<groupFields.Count; i++)
+                            @for (int i = 0; i < groupFields.Count; i++)
                             {
                                 <div class="tab-pane fade @(i==0 ? "active show" : "")" id="@("object_tab"+i)">
                                     @foreach (var pi in groupFields[i])
@@ -85,7 +85,7 @@
                                             <div class="col-lg-6">
                                                 @if (dataSource != null)
                                                 {
-                                                    @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(null), val))
+                                                    @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(obj), val))
                                                 }
                                                 else
                                                 {
@@ -122,7 +122,7 @@
                                 <div class="col-lg-6">
                                     @if (dataSource != null)
                                     {
-                                        @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(null), val))
+                                        @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(name, dataSource(obj), val))
                                     }
                                     else
                                     {
