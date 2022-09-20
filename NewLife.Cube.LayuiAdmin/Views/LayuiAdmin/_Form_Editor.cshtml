@@ -26,11 +26,11 @@
     // 数据字段以s结尾，表示多选，其它单选
     if (item.Name.EndsWith("s"))
     {
-        @await Html.PartialAsync("_Form_Type_ListBox", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+        @await Html.PartialAsync("_Form_Type_ListBox", new ListBoxModel(item.Name, dataSource(entity), entity[item.Name]))
     }
     else
     {
-        @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+        @await Html.PartialAsync("_Form_Type_DropDownList", new ListBoxModel(item.Name, dataSource(entity), entity[item.Name]))
     }
 }
 else

@@ -36,7 +36,7 @@ namespace NewLife.Cube.Cube.Controllers
                 var df = ListFields.AddListField("Info", null, "Title");
                 df.DisplayName = "信息页";
                 df.Url = "{Url}";
-                df.DataVisible = (e, f) => !(e as Attachment).Url.IsNullOrEmpty();
+                df.DataVisible = e => !(e as Attachment).Url.IsNullOrEmpty();
             }
 
             {

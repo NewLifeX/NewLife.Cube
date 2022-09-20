@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using NewLife.Data;
-using XCode;
 using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels;
@@ -8,7 +7,7 @@ namespace NewLife.Cube.ViewModels;
 /// <summary>获取数据委托</summary>
 /// <param name="entity"></param>
 /// <returns></returns>
-public delegate String GetValueDelegate(IEntity entity);
+public delegate String GetValueDelegate(Object entity);
 
 /// <summary>列表字段</summary>
 public class ListField : DataField

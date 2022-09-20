@@ -35,7 +35,7 @@
 <div class="input-group col-xs-@(total - label) col-sm-@input">
     @if (dataSource != null)
     {
-        var ds = dataSource(entity, item);
+        var ds = dataSource(entity);
         if (ds is IDictionary<Int32, String> dic)
         {
             if (!ds.Contains(-1))

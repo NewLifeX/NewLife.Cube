@@ -12,15 +12,13 @@ namespace NewLife.Cube.ViewModels;
 
 /// <summary>获取数据源委托</summary>
 /// <param name="entity"></param>
-/// <param name="field"></param>
 /// <returns></returns>
-public delegate IDictionary DataSourceDelegate(IEntity entity, DataField field);
+public delegate IDictionary DataSourceDelegate(Object entity);
 
 /// <summary>数据可见委托</summary>
 /// <param name="entity"></param>
-/// <param name="field"></param>
 /// <returns></returns>
-public delegate Boolean DataVisibleDelegate(IEntity entity, DataField field);
+public delegate Boolean DataVisibleDelegate(Object entity);
 
 /// <summary>数据字段</summary>
 public class DataField

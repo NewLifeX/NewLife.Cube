@@ -31,12 +31,12 @@ namespace NewLife.Cube.Cube.Controllers
 
             {
                 var df = AddFormFields.GetField("RoleIds");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                df.DataSource = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }
 
             {
                 var df = EditFormFields.GetField("RoleIds");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                df.DataSource = e => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
             }
 
             {

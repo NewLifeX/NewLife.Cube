@@ -61,7 +61,7 @@
 
                         @if (dataSource != null)
                         {
-                            @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
+                            @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(null), val))
                         }
                         else
                         {

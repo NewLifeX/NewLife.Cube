@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -31,6 +32,11 @@ namespace NewLife.Cube.Admin.Controllers
             //    df.Url = StarHelper.BuildUrl("{TraceId}");
             //    df.DataVisible = (e, f) => !(e as XLog).TraceId.IsNullOrEmpty();
             //}
+            {
+                // 今天的时间不显示日期
+                var df = ListFields.GetField("CreateTime") as ListField;
+                df.GetValue = e => (e as XLog).CreateTime.ToFullString("").TrimStart(DateTime.Today.ToString("yyyy-MM-dd "));
+            }
         }
 
         /// <summary>搜索数据集</summary>
