@@ -92,7 +92,7 @@ public static class ViewHelper
     var set = ViewBag.PageSetting as PageSetting;
     //var provider = ManageProvider.Provider;
 }
-<table class=""table table-bordered table-hover table-striped table-condensed"">
+<table class=""table table-bordered table-hover table-striped table-condensed table-data-list"">
     <thead>
         <tr>
             @if (set.EnableSelect && ukey != null)
@@ -411,6 +411,7 @@ public static class ViewHelper
 
         return sb.ToString();
     }
+
     ////生成表单分组,添加BigText支持 有字段名不能对齐的小BUG 2022.09.13
     internal static Boolean MakeFormView(Type entityType, String vpath, List<DataField> fields)
     {
@@ -469,24 +470,24 @@ else
                 @await Html.PartialAsync(""_Form_Group"", new ValueTuple<IEntity, DataField>(entity, item))
         }
     }
-}
-
-@await Html.PartialAsync(""_Form_Footer"", entity)
-
-@await Html.PartialAsync(""_Form_Action"", entity)";
+}";
         var sb = new StringBuilder();
+
         var fact = EntityFactory.CreateFactory(entityType);
         tmp = tmp.Replace("{EntityType}", entityType.Name);
         tmp = tmp.Replace("{Namespace}", entityType.Namespace);
+
         var str = tmp.Substring(null, "@if");
         sb.Append(str);
+
         var set = Setting.Current;
         var cls = set.FormGroupClass;
         if (cls.IsNullOrEmpty()) cls = "form-group col-xs-12 col-sm-6 col-lg-4";
-        var groupList = fields.GroupBy(x => x.Category);
+
+        var groupList = fields.GroupBy(x => x.Category + "");
         if (groupList.Count() > 1)
         {
-            int i = 0;
+            var i = 0;
             sb.AppendLine(@"    <ul class=""nav nav-tabs"" role=""tablist"">");
             foreach (var item in groupList)
             {
@@ -510,15 +511,12 @@ else
                 foreach (var item in group)
                 {
                     if (item.PrimaryKey) continue;
-                    
+
                     if (item.IsBigText())
-                    {
                         sb.AppendLine($"<div class=\"form-group col-md-12\">");
-                    }
                     else
-                    {
                         sb.AppendLine($"<div class=\"{cls}\">");
-                    }
+
                     BuildFormItem(item, sb, fact);
                     sb.AppendLine("</div>");
                 }
@@ -539,11 +537,13 @@ else
                 sb.AppendLine("</div>");
             }
         }
-        var p = tmp.IndexOf(@"@await Html.PartialAsync(""_Form_Footer""");
-        sb.Append(tmp[p..]);
-        File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
-        return true;
 
+        //var p = tmp.IndexOf(@"@await Html.PartialAsync(""_Form_Footer""");
+        //sb.Append(tmp[p..]);
+
+        File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
+
+        return true;
     }
 
     private static void BuildFormItem(DataField field, StringBuilder sb, IEntityFactory fact)

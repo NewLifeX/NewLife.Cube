@@ -24,78 +24,80 @@
         url = Url.Action(isNew ? "Add" : "Edit");
     }
 
-    Object htmlAttributes = new {Class="layui-form",lay_filter="add-form-group",id="data_from" };
-    if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { Class="layui-form",lay_filter="component-form-group",enctype = "multipart/form-data",id="data_from" };
+    Object htmlAttributes = new { Class = "layui-form", lay_filter = "add-form-group", id = "data_from" };
+    if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { Class = "layui-form", lay_filter = "component-form-group", enctype = "multipart/form-data", id = "data_from" };
 }
 
 <!--模板表单-->
 @using (Html.BeginForm("Add", null, rv, FormMethod.Post, null, htmlAttributes))
 {
     <div class="layui-fluid">
-    <div class="layui-card">
-    <div class="layui-card-header">@(isNew ? "新增" : "修改")</div>
-    <div class="layui-card-body" style="padding: 15px;">
+        <div class="layui-card">
+            <div class="layui-card-header">@(isNew ? "新增" : "修改")</div>
+            <div class="layui-card-body" style="padding: 15px;">
 
-        @await Html.PartialAsync("_Form_Header", entity)
-        @await Html.PartialAsync("_Form_Body", entity)
-        @await Html.PartialAsync("_Form_Footer", entity)
+                @await Html.PartialAsync("_Form_Header", entity)
+                @await Html.PartialAsync("_Form_Body", entity)
+                @await Html.PartialAsync("_Form_Footer", entity)
+                @await Html.PartialAsync("_Form_Action", entity)
 
-    </div>
-    </div>
+            </div>
+        </div>
     </div>
 }
 @section layuiscripts
-{
-    //表单初始化，否则开关不出现
-    form.render(null, 'add-form-group');
+    {
+        //表单初始化，否则开关不出现
+        form.render(null, 'add-form-group');
 
-            //点击提交按钮
-            form.on('submit(add-form-group)',function(data){
-                var iii = layer.load(1, {
-                  shade: [0.1,'#fff']
-                });
-                var loadIndex = layer.msg('请求中...', {icon: 16, shade: 0.01, time: false});
-                $.ajax({
-                    url:'@url',
-                    data:data.field,
-                    type:"@FormMethod.Post",
-                    dataType:"json",
-                    success:function(data)
-                    {
-                        if(data.code==500)
+                //点击提交按钮
+                form.on('submit(add-form-group)',function(data){
+                    var iii = layer.load(1, {
+                      shade: [0.1,'#fff']
+                    });
+                    var loadIndex = layer.msg('请求中...', {icon: 16, shade: 0.01, time: false});
+                    $.ajax({
+                        url:'@url',
+                        data:data.field,
+                        type:"@FormMethod.Post",
+                        dataType:"json",
+                        success:function(data)
                         {
-                            notice.msg(data.message, {icon: 2});
+                            if(data.code==500)
+                            {
+                                notice.msg(data.message, {icon: 2});
+                                layer.close(iii);
+                            }
+                            else
+                            {
+                                layer.msg("成功",{
+                                   time:1000,
+                                     end:function () {
+                                     location.href = '@Url.Action("Index")'
+                                    }
+                                 })
+                            }
+                        },
+                        error : function(e){
                             layer.close(iii);
+                            console.log(e.status);
+                            console.log(e.responseText);
                         }
-                        else
-                        {
-                            layer.msg("成功",{
-                               time:1000,
-                                 end:function () {
-                                 location.href = '@Url.Action("Index")'
-                                }
-                             })
-                        }
-                    },
-                    error : function(e){
-                        layer.close(iii);
-                        console.log(e.status);
-                        console.log(e.responseText);
-                    }
 
+                    })
+
+                    return false;
                 })
 
-                return false; 
-            })
 
 
-
-    //日期控件
+        //日期控件
     @foreach (var item in fields)
     {
-        if (Type.GetTypeCode(item.Type)==TypeCode.DateTime)
+        if (Type.GetTypeCode(item.Type) == TypeCode.DateTime)
         {
-            @await Html.PartialAsync("_Form_Item_Layui_Date", item);
+            @await Html.PartialAsync("_Form_Item_Layui_Date", item)
+            ;
         }
     }
 
