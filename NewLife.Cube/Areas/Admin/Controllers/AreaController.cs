@@ -32,6 +32,11 @@ namespace NewLife.Cube.Cube.Controllers
                 df.DisplayName = "下级";
                 df.Url = "?parentId={ID}";
             }
+            {
+                var df = ListFields.GetField("Longitude") as ListField;
+                //df.DisplayName = "{Longitude:n2}";
+                df.GetValue = e => (e as Area).Longitude.ToString("n2");
+            }
 
             //AddFormFields.AddField("ID");
         }
