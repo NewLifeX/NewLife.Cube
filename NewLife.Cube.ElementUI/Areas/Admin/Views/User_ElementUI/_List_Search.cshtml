@@ -6,7 +6,7 @@
     var page = ViewBag.Page as Pager;
 }
 <el-form-item label="角色：">
-    @await Html.PartialAsync("_Form_ListBox", new ListBoxModel("roleIds", Role.FindAllWithCache(), page["roleIds"]))
+    @await Html.PartialAsync("_Form_ListBox", new ListBoxModel("roleIds", Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToList(), page["roleIds"]))
 </el-form-item>
 
 @await Html.PartialAsync("_Enable")
