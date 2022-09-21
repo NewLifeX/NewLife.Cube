@@ -19,7 +19,7 @@ services.AddControllersWithViews();
 services.AddCube();
 
 var app = builder.Build();
-    app.UseCube(builder.Environment);
+app.UseCube(builder.Environment);
 app.UseAuthorization();
 app.UseResponseCompression();
 app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Index}/{id?}");

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
@@ -16,6 +17,8 @@ using NewLife.IP;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
+using Stardust;
+using Stardust.Registry;
 using XCode.DataAccessLayer;
 
 namespace NewLife.Cube;
@@ -32,6 +35,16 @@ public static class CubeService
     /// <returns></returns>
     public static IServiceCollection AddCube(this IServiceCollection services)
     {
+        // 引入星尘
+        if (!services.Any(e => e.ServiceType == typeof(StarFactory)))
+        {
+            var star = new StarFactory();
+            services.AddSingleton(star);
+            services.AddSingleton(P => star.Tracer);
+            services.AddSingleton(P => star.Config);
+            services.AddSingleton(p => star.Service);
+        }
+
         // 检查是否延迟启动，可能是重启或更新
         var args = Environment.GetCommandLineArgs();
         if ("-delay".EqualIgnoreCase(args)) Thread.Sleep(3000);
@@ -315,6 +328,18 @@ public static class CubeService
         }
 
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
+
+        // 消费StarWeb服务地址，如果未接入星尘，这里也没必要获取这个地址
+        var registry = app.ApplicationServices.GetService<IRegistry>();
+        if (registry != null)
+        {
+            var webs = registry.ResolveAddressAsync("StarWeb").Result;
+            if (webs != null)
+            {
+                XTrace.WriteLine("StarWeb: {0}", webs.Join());
+                StarHelper.StarWeb = webs.FirstOrDefault();
+            }
+        }
 
         return app;
     }
