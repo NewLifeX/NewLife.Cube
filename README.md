@@ -1,4 +1,11 @@
-﻿## 魔方 NewLife.Cube
+﻿# 魔方 NewLife.Cube
+
+![GitHub top language](https://img.shields.io/github/languages/top/newlifex/newlife.cube?logo=github)
+![GitHub License](https://img.shields.io/github/license/newlifex/newlife.cube?logo=github)
+![Nuget Downloads](https://img.shields.io/nuget/dt/newlife.cube.core?logo=nuget)
+![Nuget](https://img.shields.io/nuget/v/newlife.cube.core?logo=nuget)
+![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/newlife.cube.core?label=dev%20nuget&logo=nuget)
+
 魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！  
 内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。  
 

@@ -67,7 +67,7 @@
     </PackageReference>
     <PackageReference Include="NewLife.Core" Version="10.0.2022.1001" />
     <PackageReference Include="NewLife.IP" Version="2.0.2022.901" />
-    <PackageReference Include="NewLife.Stardust" Version="2.3.2022.917-beta1649" />
+    <PackageReference Include="NewLife.Stardust" Version="2.3.2022.1001" />
     <PackageReference Include="NewLife.XCode" Version="11.3.2022.1001" />
   </ItemGroup>
 
