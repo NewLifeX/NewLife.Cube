@@ -17,12 +17,10 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
-    var set2 = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting;
 
     var charts = ViewBag.Charts as ECharts[];
     var charts2 = ViewBag.Charts2 as ECharts[];
-
-    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -52,7 +50,7 @@
     <div class="wrapper">
         @await Html.PartialAsync("_Layout_Header")
         <div class="page-wrapper">
-            @if (set2 != null && set2.EnableNavbar)
+            @if (pageSetting != null && pageSetting.EnableNavbar)
             {
                 <div class="container-xl">
                     <div class="page-header d-print-none">
@@ -65,7 +63,10 @@
                     @RenderBody()
                 </div>
             </div>
-            @await Html.PartialAsync("_Layout_Footer")
+            @if (pageSetting.EnableFooter)
+            {
+                @await Html.PartialAsync("_Layout_Footer")
+            }
         </div>
     </div>
 
