@@ -1,0 +1,13 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube.WebMiddleware
+@{
+    var set = NewLife.Cube.Setting.Current;
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
+}
+@if (set.ShowRunTime)
+{
+    <!-- /.content-wrapper -->
+    <footer class="main-footer">
+        @Html.Raw(runInfo)
+    </footer>
+}

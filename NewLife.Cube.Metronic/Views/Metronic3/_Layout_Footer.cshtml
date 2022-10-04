@@ -1,0 +1,14 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube.WebMiddleware
+@{
+    var set = NewLife.Cube.Setting.Current;
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
+}
+@if (set.ShowRunTime)
+{
+    <div class="alert alert-custom alert-default alert-shadow gutter-t">
+        <div class="alert-text">
+            @Html.Raw(runInfo)
+        </div>
+    </div>
+}
