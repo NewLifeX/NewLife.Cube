@@ -17,7 +17,11 @@ namespace CubeDemo.Areas.School.Controllers
 
         public ClassController(IServiceProvider provider) => _tracer = provider?.GetService<ITracer>();
 
-        public override ActionResult Index(Pager p = null) => base.Index(p);
+        public override ActionResult Index(Pager p = null)
+        {
+            ViewBag.DisableDbClick = true;
+            return base.Index(p);
+        }
 
         protected override IEnumerable<Class> Search(Pager p)
         {
