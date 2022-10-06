@@ -1,19 +1,21 @@
 ﻿@using NewLife.Common;
+@using NewLife.Cube.WebMiddleware
 @{
-    var cfg = NewLife.Common.SysConfig.Current;
-    var user = ManageProvider.User;
+    var set = NewLife.Cube.Setting.Current;
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 }
-<div class="container footer">
-    <div class="page-divider"></div>
-    <div class="clearfix">
-        <div class="pull-right btn-group dropup">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">友情链接 <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-                <li>友情链接1</li>
-                <li>友情链接2</li>
-                <li>友情链接3</li>
-            </ul>
+@if (set.ShowRunTime)
+{
+    <div class="layui-fluid">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header">运行数据</div>
+                    <div class="layui-card-body">
+                        <blockquote class="layui-elem-quote layui-quote-nm">@Html.Raw(runInfo)</blockquote>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="pull-left"><p class="muted" title="">&copy; 2002-@DateTime.Now.Year @cfg.Company</p></div>
     </div>
-</div>
+}

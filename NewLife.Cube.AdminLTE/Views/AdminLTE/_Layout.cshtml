@@ -19,13 +19,9 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
-    var set2 = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting;
 
     var menu = ViewBag.Menu as IMenu;
-
-    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
-
-    var disabledbclick = ViewBag.DisableDbClick == null ? false : (bool)ViewBag.DisableDbClick;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -50,7 +46,7 @@
 <body class="hold-transition sidebar-mini">
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
-        @if (set2 != null && set2.EnableNavbar)
+        @if (pageSetting != null && pageSetting.EnableNavbar)
         {
             <!-- Content Header (Page header) -->
             <section class="content-header">
@@ -78,14 +74,9 @@
         </section>
         <!-- /.content -->
     </div>
-    @if (set.ShowRunTime)
+    @if (pageSetting.EnableFooter)
     {
-        <!-- /.content-wrapper -->
-        <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-                @Html.Raw(runInfo)
-            </div>
-        </footer>
+        @await Html.PartialAsync("_Layout_Footer")
     }
 
     <!-- Bootstrap 4 -->
@@ -194,18 +185,13 @@
         @*双击跳转到form
                 _List_Data_Action.cshtml变更
                 @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
-        @if (!disabledbclick)
-        {
-            <text>
-                    $('tr').dblclick(function () {
-                        var $this = $(this);
-                        var row = $this.closest("tr");
-                        var findcell = row.find('.editcell');
-                        if (findcell.length > 0) window.location.href = findcell.attr("href");
-                    });
-            </text>
-        }
+                $('tr').dblclick(function () {
+                    var $this = $(this);
+                    var row = $this.closest("tr");
+                    var findcell = row.find('.editcell');
+                    if (findcell.length > 0) window.location.href = findcell.attr("href");
                 });
+        });
     </script>
 
     <!--开关插件-->

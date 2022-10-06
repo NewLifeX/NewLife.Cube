@@ -245,10 +245,10 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public Boolean TitlePrefix { get; set; } = true;
 
-        /// <summary>星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}</summary>
-        [Description("星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}")]
-        [Category("界面配置")]
-        public String StarWeb { get; set; } = "http://star.newlifex.com/trace?id={traceId}";
+        ///// <summary>星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}</summary>
+        //[Description("星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}")]
+        //[Category("界面配置")]
+        //public String StarWeb { get; set; } = "http://star.newlifex.com/trace?id={traceId}";
         #endregion
 
         #region 方法

@@ -5,56 +5,56 @@
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-	var obj = (Object)Model;
-	var list = ViewBag.Fields as IList<DataField>;
-	var dic = list
-		.GroupBy(e => e.Category + "")
-		.ToDictionary(e => e.Key, e => e.ToList());
+    var obj = (Object)Model;
+    var list = ViewBag.Fields as IList<DataField>;
+    var dic = list
+        .GroupBy(e => e.Category + "")
+        .ToDictionary(e => e.Key, e => e.ToList());
 }
 
 @section css{
-<style>
-    /* 移动端 */
+    <style>
+        /* 移动端 */
 
-    @@media screen and (max-width: 768px) {
+        @@media screen and (max-width: 768px) {
 
-        #cube_panel .layui-form .layui-form-item {
-            margin-left: 0px;
+            #cube_panel .layui-form .layui-form-item {
+                margin-left: 0px;
+            }
+
+            #cube_panel .layui-form .layui-form-label {
+                margin-right: 0px;
+            }
         }
 
-        #cube_panel .layui-form .layui-form-label {
-            margin-right: 0px;
+        .layui-form .layui-form-label {
+            width: 100px;
+            padding: 9px 5px;
+            margin-right: 20px
         }
-    }
 
-    .layui-form .layui-form-label {
-        width: 100px;
-        padding: 9px 5px;
-        margin-right: 20px
-    }
-
-    .layui-form .layui-form-item {
-        margin-left: 80px;
-    }
-
-    #cube_panel {
-        padding: 20px;
-    }
-
-        #cube_panel .layui-btn-container {
-            text-align: center;
-            padding-top: 15px;
+        .layui-form .layui-form-item {
+            margin-left: 80px;
         }
-</style>
+
+        #cube_panel {
+            padding: 20px;
+        }
+
+            #cube_panel .layui-btn-container {
+                text-align: center;
+                padding-top: 15px;
+            }
+    </style>
 }
 
-<div class="layui-fluid" id="mainpage">
-    <div class="layui-row layui-col-space15">
-        <div class="layui-col-md12">
-            <div class="layui-panel" id="cube_panel">
-                <div class="layui-btn-container">
-                    @await Html.PartialAsync("_Object_Config_Nav", obj)
-                </div>
+    <div class="layui-fluid" id="mainpage">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md12">
+                <div class="layui-panel" id="cube_panel">
+                    <div class="layui-btn-container">
+                        @await Html.PartialAsync("_Object_Config_Nav", obj)
+                    </div>
 
                 @using (Html.BeginForm("Update", null, FormMethod.Post, new { @class = "layui-form", @ha = "123" }))
                 {
@@ -71,41 +71,45 @@
 
                         foreach (var pi in item.Value)
                         {
-						var name = pi.Name;
-						var val = obj.GetValue(name);
-						var dis = pi.DisplayName;
-						var des = pi.Description;
-						var dataSource = pi.DataSource;
-                        var className = !pi.Nullable ? "layui-form-required" : "";
+                            var name = pi.Name;
+                            var val = obj.GetValue(name);
+                            var dis = pi.DisplayName;
+                            var des = pi.Description;
+                            var dataSource = pi.DataSource;
+                            var className = !pi.Nullable ? "layui-form-required" : "";
 
                             var model = new ItemModel(name, val, pi.Type);
 
                             <div class="layui-form-item">
                                 <label class="layui-form-label @className" for="@name">@(dis)</label>
                                 <div class="layui-input-inline">
-								@if (dataSource != null)
-								{
-									@await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
-								}
-								else
-								{
-                                    @switch (Type.GetTypeCode(pi.Type))
+                                    @if (dataSource != null)
                                     {
-                                        case TypeCode.Boolean:
-                                            model.HtmlAttributes = new Dictionary<string, object> { { "lay-skin", "switch" }, { "lay-text", "on|off" } };
-                                            @await Html.PartialAsync("_Form_Boolean", model)
-                                            break;
-                                        case TypeCode.DateTime:
-                                            model.HtmlAttributes = new { @@class = "layui-input dtController" };
-                                            @await Html.PartialAsync("_Form_DateTime", model)
-                                            break;
-                                        default:
-                                            model.HtmlAttributes = new { @@class = "layui-input" };
-                                            @await Html.PartialAsync("_Form_Editor", model)
-                                            break;
+                                        @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(item.Value), val))
                                     }
-                          								}
-      </div>
+                                    else
+                                    {
+                                        @switch (Type.GetTypeCode(pi.Type))
+                                        {
+                                            case TypeCode.Boolean:
+                                                model.HtmlAttributes = new Dictionary<string, object> { { "lay-skin", "switch" }, { "lay-text", "on|off" } };
+                                                @await Html.PartialAsync("_Form_Boolean", model)
+                                                break;
+                                            case TypeCode.DateTime:
+                                                model.HtmlAttributes = new
+                                                { @@class = "layui-input dtController"
+                                                };
+                                                @await Html.PartialAsync("_Form_DateTime", model)
+                                                break;
+                                            default:
+                                                model.HtmlAttributes = new
+                                                { @@class = "layui-input"
+                                                };
+                                                @await Html.PartialAsync("_Form_Editor", model)
+                                                break;
+                                        }
+                                    }
+                                </div>
                                 <div class="layui-form-mid layui-word-aux">@des</div>
                             </div>
                         }
@@ -125,16 +129,16 @@
 </div>
 
 @section scripts{
-<script>
-    layui.use(['form', 'laydate'], function () {
-        var form = layui.form,
-            laydate = layui.laydate;
+    <script>
+        layui.use(['form', 'laydate'], function () {
+            var form = layui.form,
+                laydate = layui.laydate;
 
-        //日期时间选择器
-        laydate.render({
-            elem: '.dtController'
-            , type: 'datetime'
+            //日期时间选择器
+            laydate.render({
+                elem: '.dtController'
+                , type: 'datetime'
+            });
         });
-    });
-</script>
+    </script>
 }

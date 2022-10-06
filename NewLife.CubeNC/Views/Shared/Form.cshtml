@@ -4,18 +4,11 @@
 @using XCode.Configuration
 @using Microsoft.AspNetCore.Mvc.Rendering;
 @{
-    //Layout = NewLife.Cube.Setting.Current.Layout;
-
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
     var fields = ViewBag.Fields as FieldCollection;
 
-    //var url = "";
     var rv = entity.GetRouteKey();
-    //if (rv != null && rv.Count > 0)
-    //    url = Url.Action(isNew ? "Add" : "Edit", rv);
-    //else
-    //    url = Url.Action(isNew ? "Add" : "Edit");
 
     Object htmlAttributes = null;
     if (fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
@@ -37,5 +30,9 @@
             }
         </ul>
         @await Html.PartialAsync("_Form_Body", entity)
+
+        @await Html.PartialAsync("_Form_Footer", entity)
+
+        @await Html.PartialAsync("_Form_Action", entity)
     }
 </div>

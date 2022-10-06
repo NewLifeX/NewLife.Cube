@@ -87,17 +87,20 @@ namespace NewLife.Cube.Cube.Controllers
             {
                 var mf = ManageProvider.Menu;
                 if (mf == null) return;
-
-                foreach (var areaType in AreaBase.GetAreas())
+                try
                 {
-                    var areaName = areaType.Name.TrimEnd("Area");
-                    var menus = mf.FindByFullName(areaName);
+                    foreach (var areaType in AreaBase.GetAreas())
+                    {
+                        var areaName = areaType.Name.TrimEnd("Area");
+                        var menus = mf.FindByFullName(areaName);
 
-                    var root = mf.FindByFullName(areaType.Namespace + ".Controllers");
-                    if (root == null) root = mf.Root.FindByPath(areaName);
+                        var root = mf.FindByFullName(areaType.Namespace + ".Controllers");
+                        root ??= mf.Root.FindByPath(areaName);
 
-                    if (root != null) ModelTable.ScanModel(areaName, root.Childs);
+                        if (root != null) ModelTable.ScanModel(areaName, root.Childs);
+                    }
                 }
+                catch { }
             });
         }
 

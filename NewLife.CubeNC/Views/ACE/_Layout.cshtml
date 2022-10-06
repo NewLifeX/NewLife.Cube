@@ -4,7 +4,7 @@
 
 @{
     var set = NewLife.Cube.Setting.Current;
-    var set2 = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting;
 
     var title = ViewBag.Title + "";
     if (set.TitlePrefix && title != "" && !title.Contains(" - "))
@@ -12,7 +12,6 @@
         title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
     }
 
-    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
@@ -80,7 +79,7 @@
 </head>
 <body>
     <div class="panel panel-default">
-        @if (set2 != null && set2.EnableNavbar)
+        @if (pageSetting != null && pageSetting.EnableNavbar)
         {
             var remark = (String)@ViewBag.HeaderContent;
             <div class="breadcrumbs" id="breadcrumbs">
@@ -95,11 +94,9 @@
                 @RenderBody()
             </section>
         </div>
-        @if (set.ShowRunTime)
+        @if (pageSetting.EnableFooter)
         {
-            <div class="panel-footer">
-                @Html.Raw(runInfo)
-            </div>
+            @await Html.PartialAsync("_Layout_Footer")
         }
     </div>
     <!-- 最早引入基本脚本 -->
@@ -206,17 +203,12 @@
         @*双击跳转到form
                 _List_Data_Action.cshtml变更
                 @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
-        @if (!disabledbclick)
-        {
-            <text>
-                    $('tr').dblclick(function () {
-                        var $this = $(this);
-                        var row = $this.closest("tr");
-                        var findcell = row.find('.editcell');
-                        if (findcell.length > 0) window.location.href = findcell.attr("href");
-                    });
-            </text>
-        }
+                $('tr').dblclick(function () {
+                    var $this = $(this);
+                    var row = $this.closest("tr");
+                    var findcell = row.find('.editcell');
+                    if (findcell.length > 0) window.location.href = findcell.attr("href");
+                });
         });
     </script>
 

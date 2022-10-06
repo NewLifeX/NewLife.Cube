@@ -69,7 +69,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             {
                 var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID, e => e.Name);
+                df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
                 AddFormFields.RemoveField("RoleNames");
             }
             //{
@@ -79,7 +79,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             {
                 var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
-                df.DataSource = (entity, field) => Role.FindAllWithCache().ToDictionary(e => e.ID + "", e => e.Name);
+                df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
                 EditFormFields.RemoveField("RoleNames");
             }
 

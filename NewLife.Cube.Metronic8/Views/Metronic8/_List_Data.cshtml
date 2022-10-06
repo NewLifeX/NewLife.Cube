@@ -86,7 +86,7 @@
                                 if (df != null && (!df.DataAction.IsNullOrEmpty() || !df.Url.IsNullOrEmpty()))
                                     continue;
 
-                                if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
+                                if (df != null && df.DataVisible != null && !df.DataVisible(entity))
                                 {
                                     <td></td>
                                 }

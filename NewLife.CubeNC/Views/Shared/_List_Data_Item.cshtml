@@ -10,6 +10,7 @@
 
     var value = entity[item.Name];
     var provider = ManageProvider.Provider;
+    var listField = item as ListField;
 
     // 第二名称，去掉后面的数字，便于模式匹配
     var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
@@ -42,7 +43,11 @@ else
             break;
         case TypeCode.DateTime:
             var dt = (DateTime)value;
-            if (name2.EndsWith("Date"))
+            if (listField.GetValue != null)
+            {
+                <td class="text-center">@listField.GetValue(entity)</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("date") || name2.EndsWith("Date"))
             {
                 <td class="text-center">@dt.ToString("yyyy-MM-dd", "")</td>
             }
@@ -52,12 +57,28 @@ else
             }
             break;
         case TypeCode.Decimal:
-            var dc = (Decimal)value;
-            <td class="text-right">@dc.ToString("n2")</td>
+            if (listField.GetValue != null)
+            {
+                <td class="text-center">@listField.GetValue(entity)</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("Money"))
+            {
+                var dc = (Decimal)value;
+                <td class="text-right">@dc.ToString("c")</td>
+            }
+            else
+            {
+                var dc = (Decimal)value;
+                <td class="text-right">@dc.ToString("n2")</td>
+            }
             break;
         case TypeCode.Single:
         case TypeCode.Double:
-            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+            if (listField.GetValue != null)
+            {
+                <td class="text-right">@listField.GetValue(entity)</td>
+            }
+            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
             {
                 var dd = (Double)value;
                 var des = item.Description + "";
@@ -76,7 +97,7 @@ else
             else
             {
                 var dd = (Double)value;
-                <td class="text-right">@dd.ToString("n2")</td>
+                <td class="text-right">@dd.ToString()</td>
             }
             break;
         case TypeCode.Byte:
@@ -86,8 +107,12 @@ else
         case TypeCode.UInt16:
         case TypeCode.UInt32:
         case TypeCode.UInt64:
+            if (listField.GetValue != null)
+            {
+                <td class="text-right">@listField.GetValue(entity)</td>
+            }
             //特殊处理枚举
-            if (item.Type.IsEnum)
+            else if (item.Type.IsEnum)
             {
                 var val = "";
                 try
@@ -127,6 +152,11 @@ else
             break;
         case TypeCode.String:
         default:
+            if (listField.GetValue != null)
+            {
+                <td>@listField.GetValue(entity)</td>
+            }
+            else
             {
                 var val = value;
                 if (!item.MapField.IsNullOrEmpty() && val + "" != "")

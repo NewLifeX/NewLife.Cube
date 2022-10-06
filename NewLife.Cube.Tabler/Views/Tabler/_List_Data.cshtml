@@ -55,7 +55,7 @@
                 {
                     var df = item as ListField;
                     var url = (String)df?.GetUrl(entity);
-                    if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
+                    if (df != null && df.DataVisible != null && !df.DataVisible(entity))
                     {
                         <td></td>
                     }

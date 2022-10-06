@@ -7,6 +7,7 @@
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var set = ViewBag.PageSetting as PageSetting;
+    var today = DateTime.Today.ToString("yyyy-MM-dd ");
 }
 <table class="table table-bordered table-hover table-striped table-condensed">
     <thead>
@@ -19,12 +20,12 @@
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
-            <th class="text-center" title="追踪标识。用于记录调用链追踪标识，在APM查找调用链"><a href="@Html.Raw(page.GetSortUrl("TraceId"))">追踪标识</a></th>
-            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">链接</a></th>
+            <th class="text-center" title="追踪标识。用于记录调用链追踪标识，在APM查找调用链"><a href="@Html.Raw(page.GetSortUrl("TraceId"))">追踪</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">关联</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">IP地址</a></th>
             <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
-            <th class="text-center" style="min-width:134px;"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
+            <th class="text-center"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
             <th class="text-center">附近</th>
             @if (this.Has(PermissionFlags.Detail))
             {
@@ -56,7 +57,7 @@
                 <td>@entity.UserName</td>
                 <td>@entity.CreateIP</td>
                 <td>@entity.CreateIP.IPToAddress()</td>
-                <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("")</td>
+                <td class="text-center" style="max-width:150px">@entity.CreateTime.ToFullString("").TrimStart(today)</td>
                 <td class="text-center">
                     <a href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
                 </td>

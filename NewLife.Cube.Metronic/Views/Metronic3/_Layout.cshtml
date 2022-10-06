@@ -3,7 +3,7 @@
 @using NewLife.Cube.Charts;
 @{
     var set = NewLife.Cube.Setting.Current;
-    var set2 = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting;
 
     var title = ViewBag.Title + "";
     if (set.TitlePrefix && title != "" && !title.Contains(" - "))
@@ -11,7 +11,6 @@
         title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
     }
 
-    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
@@ -84,13 +83,9 @@
                         <div class="container-fluid">
                             @RenderBody()
 
-                            @if (set.ShowRunTime)
+                            @if (pageSetting.EnableFooter)
                             {
-                                <div class="alert alert-custom alert-default alert-shadow gutter-t">
-                                    <div class="alert-text">
-                                        @Html.Raw(runInfo)
-                                    </div>
-                                </div>
+                                @await Html.PartialAsync("_Layout_Footer")
                             }
                         </div>
                     </div>
@@ -194,7 +189,7 @@
     @RenderSection("scripts", required: false)
 
     <!-- 启用列表表头选择 -->
-    @if (set2.EnableSelect)
+    @if (pageSetting.EnableSelect)
     {
         <script>
             $(function () {
@@ -328,18 +323,12 @@
         @*双击跳转到form
                 _List_Data_Action.cshtml变更
                 @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
-
-        @if (!disabledbclick)
-        {
-            <text>
-                    $('tr').dblclick(function () {
-                        var $this = $(this);
-                        var row = $this.closest("tr");
-                        var findcell = row.find('.editcell');
-                        if (findcell.length > 0) window.location.href = findcell.attr("href");
-                    });
-            </text>
-        }
+                $('tr').dblclick(function () {
+                    var $this = $(this);
+                    var row = $this.closest("tr");
+                    var findcell = row.find('.editcell');
+                    if (findcell.length > 0) window.location.href = findcell.attr("href");
+                });
         });
 
         // 区间时间插件

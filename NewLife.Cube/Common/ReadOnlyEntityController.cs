@@ -1222,9 +1222,11 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     private String GetProjectRoot()
     {
         var asm = GetType().Assembly;
+        var name = asm.GetName().Name;
+
         // core程序出现这种情况：bin/Debug/netcoreapp3.1
         // 因此添加"../../../" 
-        var ps = new[] { "./", "../../", "../../" + asm.GetName().Name, "../../../", "../../../" + asm.GetName().Name };
+        var ps = new[] { "./", "../../", "../../" + name, "../../../", "../../../" + name };
         String err = null;
         foreach (var item in ps)
         {

@@ -100,7 +100,7 @@
                                     @foreach (var item in fields)
                                     {
                                         var df = item as ListField;
-                                        if (df != null && df.DataVisible != null && !df.DataVisible(entity, item))
+                                        if (df != null && df.DataVisible != null && !df.DataVisible(entity))
                                         {
                                             <td></td>
                                         }

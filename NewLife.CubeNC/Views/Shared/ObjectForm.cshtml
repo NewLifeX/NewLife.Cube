@@ -44,7 +44,7 @@
 							<div class="input-group col-xs-10 col-md-4">
 								@if (dataSource != null)
 								{
-									@await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
+                                    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(item.Value), val))
 								}
 								else
 								{

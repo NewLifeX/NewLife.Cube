@@ -25,7 +25,7 @@
                 <div class="row">
                     @foreach (var item in group.Value)
                     {
-                        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
+                        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity)))
                         {
                             if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
                                 @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
@@ -44,7 +44,7 @@ else
     foreach (var item in fields)
     {
         // 表单页显示非主键或非自增字段
-        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
+        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity)))
         {
             if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
                 @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
@@ -53,7 +53,3 @@ else
         }
     }
 }
-
-@await Html.PartialAsync("_Form_Footer", entity)
-
-@await Html.PartialAsync("_Form_Action", entity)

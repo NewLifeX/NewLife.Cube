@@ -41,7 +41,7 @@
 		@if (dataSource != null)
 		{
 			@*@Html.ForListBox(item.Name, dataSource(entity, item), entity[item.Name] as String)*@
-			@await Html.PartialAsync("_Form_Type_ListBox", new ListBoxModel(item.Name, dataSource(entity, item), entity[item.Name]))
+			@await Html.PartialAsync("_Form_Type_ListBox", new ListBoxModel(item.Name, dataSource(entity), entity[item.Name]))
 		}
 		else
 		{

@@ -38,14 +38,14 @@ namespace NewLife.Cube.Admin.Controllers
                 if (df != null)
                 {
                     df.Description = $"可选主题 {_uIService.Themes.Join("/")}";
-                    df.DataSource = (f, e) => _uIService.Themes.ToDictionary(e => e, e => e);
+                    df.DataSource = e => _uIService.Themes.ToDictionary(e => e, e => e);
                 }
 
                 df = list.FirstOrDefault(e => e.Name == "Skin");
                 if (df != null)
                 {
                     df.Description = $"可选皮肤 {_uIService.Skins.Join("/")}";
-                    df.DataSource = (f, e) => _uIService.Skins.ToDictionary(e => e, e => e);
+                    df.DataSource = e => _uIService.Skins.ToDictionary(e => e, e => e);
                 }
 
                 df = list.FirstOrDefault(e => e.Name == "EChartsTheme");
@@ -54,7 +54,7 @@ namespace NewLife.Cube.Admin.Controllers
                     var themes = _uIService.GetEChartsThemes();
                     df.Description = $"可选主题 {themes.Join("/")}";
                     themes.Insert(0, "default");
-                    df.DataSource = (f, e) => themes.ToDictionary(e => e, e => e);
+                    df.DataSource = e => themes.ToDictionary(e => e, e => e);
                 }
 
                 _has = true;

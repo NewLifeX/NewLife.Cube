@@ -24,66 +24,66 @@
 }
 
 
-    <div>
-        <el-link href="/Admin/Core">基本设置</el-link>
-        <el-link href="/Admin/Sys">系统设置</el-link>
-        <el-link href="/Admin/XCode">数据中间件</el-link>
-        <el-link href="/Admin/Cube">魔方设置</el-link>
-        <el-link href="/Admin/OAuthConfig">OAuth设置</el-link>
+<div>
+    <el-link href="/Admin/Core">基本设置</el-link>
+    <el-link href="/Admin/Sys">系统设置</el-link>
+    <el-link href="/Admin/XCode">数据中间件</el-link>
+    <el-link href="/Admin/Cube">魔方设置</el-link>
+    <el-link href="/Admin/OAuthConfig">OAuth设置</el-link>
 
 
-    </div>
-    <div>
+</div>
+<div>
 
 
-        <el-form v-bind:model="modelForm" size="mini" ref="modelForm" label-width="100px">
+    <el-form v-bind:model="modelForm" size="mini" ref="modelForm" label-width="100px">
 
-            @foreach (var item in dic)
+        @foreach (var item in dic)
+        {
+            if (dic.Count > 1)
             {
-                if (dic.Count > 1)
-                {
-                    <div class="form-group col-sm-12 col-md-12 col-xd-12">
-                        <label class="control-label col-xs-2 col-md-3 no-padding-left">
-                            <h2>@item.Key</h2>
-                        </label>
-                    </div>
-                }
-                foreach (var pi in item.Value)
-                {
-                    var name = pi.Name;
-                    var val = obj.GetValue(name);
-                    var dis = pi.DisplayName;
-                    var des = pi.Description;
-                    var dataSource = pi.DataSource;
-
-
-                    <el-form-item label="@dis" prop="@name">
-
-                        @if (dataSource != null)
-                        {
-                            @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(null, pi), val))
-                        }
-                        else
-                        {
-                            @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
-                        }
-
-                        @des
-                    </el-form-item>
-                }
+                <div class="form-group col-sm-12 col-md-12 col-xd-12">
+                    <label class="control-label col-xs-2 col-md-3 no-padding-left">
+                        <h2>@item.Key</h2>
+                    </label>
+                </div>
             }
-
-            @if (this.Has(PermissionFlags.Update))
+            foreach (var pi in item.Value)
             {
-                <el-form-item>
-                    <el-button v-on:click="onCloseModelFrom('modelForm')">取 消</el-button>
-                    <el-button type="primary" v-on:click="onSaveSubmit('modelForm')">保 存</el-button>
+                var name = pi.Name;
+                var val = obj.GetValue(name);
+                var dis = pi.DisplayName;
+                var des = pi.Description;
+                var dataSource = pi.DataSource;
+
+
+                <el-form-item label="@dis" prop="@name">
+
+                    @if (dataSource != null)
+                    {
+                        @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(item.Value), val))
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+                    }
+
+                    @des
                 </el-form-item>
-
             }
-        </el-form>
+        }
 
-    </div>
+        @if (this.Has(PermissionFlags.Update))
+        {
+            <el-form-item>
+                <el-button v-on:click="onCloseModelFrom('modelForm')">取 消</el-button>
+                <el-button type="primary" v-on:click="onSaveSubmit('modelForm')">保 存</el-button>
+            </el-form-item>
+
+        }
+    </el-form>
+
+</div>
 
 
 

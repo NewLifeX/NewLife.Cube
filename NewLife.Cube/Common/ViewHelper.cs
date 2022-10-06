@@ -92,7 +92,7 @@ public static class ViewHelper
     var set = ViewBag.PageSetting as PageSetting;
     //var provider = ManageProvider.Provider;
 }
-<table class=""table table-bordered table-hover table-striped table-condensed"">
+<table class=""table table-bordered table-hover table-striped table-condensed table-data-list"">
     <thead>
         <tr>
             @if (set.EnableSelect && ukey != null)
@@ -412,66 +412,134 @@ public static class ViewHelper
         return sb.ToString();
     }
 
+    ////生成表单分组,添加BigText支持 有字段名不能对齐的小BUG 2022.09.13
     internal static Boolean MakeFormView(Type entityType, String vpath, List<DataField> fields)
     {
         var tmp = @"@model {EntityType}
 @using {Namespace}
 @using NewLife;
-@using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
-@using XCode.Membership;
-@using NewLife.Cube;
 @{
     var entity = Model;
-    var isNew = (entity as IEntity).IsNullKey;
+    var fields = ViewBag.Fields as FieldCollection;
 }
-@foreach (var item in fields)
+
+@if (groupFields.Count > 1)
 {
-    if (!item.PrimaryKey)
-    {
-        <div class=""@cls"">
-            @await Html.PartialAsync(""_Form_Item"", new Pair(entity, item))
-        </div>
-    }
-}
-@await Html.PartialAsync(""_Form_Footer"", entity)
-@if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
-{
-    <div class=""clearfix form-actions col-sm-12 col-md-12"">
-        <label class=""control-label col-xs-4 col-sm-5 col-md-5""></label>
-        <button type=""submit"" class=""btn btn-success btn-sm""><i class=""glyphicon glyphicon-@(isNew ? ""plus"" : ""save"")""></i><strong>@(isNew ? ""新增"" : ""保存"")</strong></button>
-        <button type=""button"" class=""btn btn-danger btn-sm"" onclick=""history.go(-1);""><i class=""glyphicon glyphicon-remove""></i><strong>取消</strong></button>
+    var i = 0;
+    var j = 0;
+    <ul class=""nav nav-tabs"" role=""tablist"">
+        @foreach (var item in groupFields)
+        {
+            <li class=""@(i==0?""active"":"""")""><a href=""@(""#item""+i)"" data-toggle=""tab"">@item.Key</a></li>
+            i++;
+        }
+    </ul>
+    <div class=""tab-content"">
+        @foreach (var group in groupFields)
+        {
+            <div class=""tab-pane fade in @(j==0?""active"":"""")"" id=""@(""item""+j)"">
+                <div class=""row"">
+                    @foreach (var item in group.Value)
+                    {
+                        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
+                        {
+                            if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                                @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+                            else
+                                @await Html.PartialAsync(""_Form_Group"", new ValueTuple<IEntity, DataField>(entity, item))
+                        }
+                    }
+                </div>
+            </div>
+            j++;
+        }
     </div>
+}
+else
+{
+    foreach (var item in fields)
+    {
+        // 表单页显示非主键或非自增字段
+        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
+        {
+            if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+            else
+                @await Html.PartialAsync(""_Form_Group"", new ValueTuple<IEntity, DataField>(entity, item))
+        }
+    }
 }";
-
         var sb = new StringBuilder();
-        var fact = EntityFactory.CreateFactory(entityType);
 
+        var fact = EntityFactory.CreateFactory(entityType);
         tmp = tmp.Replace("{EntityType}", entityType.Name);
         tmp = tmp.Replace("{Namespace}", entityType.Namespace);
 
-        //sb.AppendLine($"@model {entityType.FullName}");
-
-        var str = tmp.Substring(null, "@foreach");
+        var str = tmp.Substring(null, "@if");
         sb.Append(str);
 
         var set = Setting.Current;
         var cls = set.FormGroupClass;
         if (cls.IsNullOrEmpty()) cls = "form-group col-xs-12 col-sm-6 col-lg-4";
 
-        var ident = new String(' ', 4 * 1);
-        foreach (var item in fields)
+        var groupList = fields.GroupBy(x => x.Category + "");
+        if (groupList.Count() > 1)
         {
-            if (item.PrimaryKey) continue;
+            var i = 0;
+            sb.AppendLine(@"    <ul class=""nav nav-tabs"" role=""tablist"">");
+            foreach (var item in groupList)
+            {
+                if (i == 0)
+                {
+                    sb.AppendLine(@"            <li class=""active""><a href=""#item" + i + @""" data-toggle=""tab"">" + (item.Key.IsNullOrEmpty() ? "默认" : item.Key) + @"</a></li>");
+                }
+                else
+                {
+                    sb.AppendLine(@"            <li class=""""><a href=""#item" + i + @""" data-toggle=""tab"">" + (item.Key.IsNullOrEmpty() ? "默认" : item.Key) + @"</a></li>");
+                }
+                i++;
+            }
+            sb.AppendLine(@"    </ul>");
+            sb.AppendLine(@"    <div class=""tab-content"">");
+            i = 0;
+            foreach (var group in groupList)
+            {
+                sb.AppendLine(@"            <div class=""tab-pane fade in " + (i == 0 ? "active" : "") + @""" id=""" + ("item" + i) + @""">");
+                sb.AppendLine(@"                <div class=""row"">");
+                foreach (var item in group)
+                {
+                    if (item.PrimaryKey) continue;
 
-            sb.AppendLine($"<div class=\"{cls}\">");
-            BuildFormItem(item, sb, fact);
-            sb.AppendLine("</div>");
+                    if (item.IsBigText())
+                        sb.AppendLine($"<div class=\"form-group col-md-12\">");
+                    else
+                        sb.AppendLine($"<div class=\"{cls}\">");
+
+                    BuildFormItem(item, sb, fact);
+                    sb.AppendLine("</div>");
+                }
+                sb.AppendLine(@"                </div>");
+                sb.AppendLine(@"    </div>");
+                i++;
+            }
+            sb.AppendLine(@"    </div>");
+        }
+        else
+        {
+            foreach (var item in fields)
+            {
+                if (item.PrimaryKey) continue;
+
+                sb.AppendLine($"<div class=\"{cls}\">");
+                BuildFormItem(item, sb, fact);
+                sb.AppendLine("</div>");
+            }
         }
 
-        var p = tmp.IndexOf(@"@await Html.PartialAsync(""_Form_Footer""");
-        sb.Append(tmp[p..]);
+        //var p = tmp.IndexOf(@"@await Html.PartialAsync(""_Form_Footer""");
+        //sb.Append(tmp[p..]);
 
         File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), sb.ToString(), Encoding.UTF8);
 
