@@ -245,10 +245,10 @@ namespace NewLife.Cube
         [Category("界面配置")]
         public Boolean TitlePrefix { get; set; } = true;
 
-        /// <summary>双击事件禁用。列表页表格行双击事件禁用，默认false(启用)</summary>
-        [Description("列表页表格行双击事件禁用，默认false(启用)")]
+        /// <summary>双击事件禁用。列表页表格行双击事件禁用，默认true(启用)</summary>
+        [Description("列表页表格行双击事件禁用，默认true(启用)")]
         [Category("界面配置")]
-        public Boolean ListPageDoubleClickDisable { get; set; } = false;
+        public Boolean ListPageDoubleClickEnable { get; set; } = true;
 
         ///// <summary>星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}</summary>
         //[Description("星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}")]

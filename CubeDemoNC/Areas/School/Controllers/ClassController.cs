@@ -19,7 +19,7 @@ namespace CubeDemo.Areas.School.Controllers
 
         public override ActionResult Index(Pager p = null)
         {
-            ViewBag.DisableDoubleClick = false;
+            ViewBag.DoubleClickEnable = true;
             return base.Index(p);
         }
 
