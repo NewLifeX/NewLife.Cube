@@ -22,7 +22,7 @@
     var charts = ViewBag.Charts as ECharts[];
     var charts2 = ViewBag.Charts2 as ECharts[];
 
-    var disabledbclick = ViewBag.DisableDbClick == null ? false : (bool)ViewBag.DisableDbClick;
+   var dbclickDisable = ViewBag.DisableDoubleClick == null ? NewLife.Cube.Setting.Current.ListPageDoubleClickDisable : (bool)ViewBag.DisableDoubleClick;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -83,7 +83,7 @@
         @*双击跳转到form
                 _List_Data_Action.cshtml变更
                 @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
-            @if (!disabledbclick)
+        @if (!dbclickDisable)
             {
                 <text>
                         $('tr').dblclick(function () {
