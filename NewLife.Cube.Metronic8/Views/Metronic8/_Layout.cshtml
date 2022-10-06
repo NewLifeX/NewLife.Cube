@@ -20,7 +20,7 @@
 
     var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
 
-    var dbclickEnable = ViewBag.DoubleClickEnable == null ? NewLife.Cube.Setting.Current.ListPageDoubleClickEnable : (bool)ViewBag.DoubleClickEnable;
+    var dbclickEnable = pageSetting.EnableTableDoubleClick;
 }
 <!DOCTYPE html>
 

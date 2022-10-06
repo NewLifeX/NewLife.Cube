@@ -25,12 +25,15 @@ namespace NewLife.Cube
 
         /// <summary>启用选择列。默认Update/Delete权限时为true</summary>
         public Boolean EnableSelect { get; set; }
-       
+
         /// <summary>启用尾部。默认true</summary>
         public Boolean EnableFooter { get; set; } = true;
 
         /// <summary>是否只读页面。只读页面没有添加编辑删除等按钮</summary>
         public Boolean IsReadOnly { get; set; }
+
+        /// <summary>启用列表双击事件配置</summary>
+        public Boolean EnableTableDoubleClick { get; set; } = true;
         #endregion
 
         #region 构造
@@ -48,6 +51,7 @@ namespace NewLife.Cube
                 EnableAdd = EnableAdd,
                 EnableKey = EnableKey,
                 EnableSelect = EnableSelect,
+                EnableTableDoubleClick = EnableTableDoubleClick
             };
 
             return set;

@@ -58,6 +58,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     {
         PageSetting.IsReadOnly = true;
 
+        PageSetting.EnableTableDoubleClick = Setting.Current.EnableTableDoubleClick;
+
         SysConfig = SysConfig.Current;
     }
 
@@ -874,7 +876,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
             //模板隐藏这几个字段
             if (fi.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP",
-                        "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP","Enable") || fi.Description.IsNullOrEmpty())
+                        "UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP", "Enable") || fi.Description.IsNullOrEmpty())
             {
                 continue;
             }
