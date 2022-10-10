@@ -19,7 +19,7 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
-    var pageSetting = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -52,7 +52,7 @@
 <body>
     <div id="app">
 
-        @if (pageSetting != null && pageSetting.EnableNavbar)
+        @if (pageSetting.EnableNavbar)
         {
             @await Html.PartialAsync("_Layout_Nav")
 

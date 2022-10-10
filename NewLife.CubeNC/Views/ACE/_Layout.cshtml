@@ -4,7 +4,7 @@
 
 @{
     var set = NewLife.Cube.Setting.Current;
-    var pageSetting = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
     var title = ViewBag.Title + "";
     if (set.TitlePrefix && title != "" && !title.Contains(" - "))
@@ -79,7 +79,7 @@
 </head>
 <body>
     <div class="panel panel-default">
-        @if (pageSetting != null && pageSetting.EnableNavbar)
+        @if (pageSetting.EnableNavbar)
         {
             var remark = (String)@ViewBag.HeaderContent;
             <div class="breadcrumbs" id="breadcrumbs">

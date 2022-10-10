@@ -5,7 +5,7 @@
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var fact = ViewBag.Factory as IEntityFactory;
     var fields = ViewBag.Fields as FieldCollection;
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 @if (set.EnableSelect && fields.Any( f => f.Name.EqualIgnoreCase("Enable")))
 {

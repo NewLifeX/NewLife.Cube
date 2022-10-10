@@ -19,7 +19,7 @@
         act = Url.Action("Index");
     }
 
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
     var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info")
     || an.Contains("changepassword") || an.Contains("binds");

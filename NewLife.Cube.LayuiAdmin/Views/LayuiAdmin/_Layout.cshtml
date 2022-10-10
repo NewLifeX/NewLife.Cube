@@ -3,7 +3,7 @@
 @using NewLife.Cube.WebMiddleware
 @{
     var set = NewLife.Cube.Setting.Current;
-    var pageSetting = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";

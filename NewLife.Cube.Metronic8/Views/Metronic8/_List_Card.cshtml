@@ -14,7 +14,7 @@
     var i = 0;
     var columns = 3;
     var ukey = fact.Unique;
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 
 <!-- 每行3个卡片 -->

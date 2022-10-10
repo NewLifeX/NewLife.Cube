@@ -7,7 +7,7 @@
     var page = ViewBag.Page as Pager;
     var fields = ViewBag.Fields as FieldCollection;
     var ukey = fact.Unique;
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 
 <table lay-filter="parse-table-demo">

@@ -1,6 +1,6 @@
 ﻿@using NewLife.Cube.Extensions
 @{
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 <div class="d-inline-flex input-group px-2">
     @if (set.EnableKey)

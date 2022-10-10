@@ -17,7 +17,7 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
-    var pageSetting = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
     var charts = ViewBag.Charts as ECharts[];
     var charts2 = ViewBag.Charts2 as ECharts[];
@@ -52,7 +52,7 @@
     <div class="wrapper">
         @await Html.PartialAsync("_Layout_Header")
         <div class="page-wrapper">
-            @if (pageSetting != null && pageSetting.EnableNavbar)
+            @if (pageSetting.EnableNavbar)
             {
                 <div class="container-xl">
                     <div class="page-header d-print-none">

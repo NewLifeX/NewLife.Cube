@@ -10,7 +10,7 @@
 @{
     var entity = Model as IEntity;
     var fields = ViewBag.Fields as FieldCollection;
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     var rv = entity.GetRouteKey();
     var lfs = new List<ListField>();
     foreach (var fi in fields)

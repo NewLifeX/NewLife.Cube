@@ -5,7 +5,7 @@
     var entity = (ValueTuple<DataField, string>)Model;
     var item = entity.Item1;
     var type = entity.Item2;
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     var df = item as ListField;
     var name = df?.Header ?? item.DisplayName;
     var title = df?.HeaderTitle ?? item.Description;

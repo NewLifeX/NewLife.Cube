@@ -3,7 +3,7 @@
 @using NewLife.Cube.Charts;
 @{
     var set = NewLife.Cube.Setting.Current;
-    var set2 = ViewBag.PageSetting as PageSetting;
+    var set2 = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
     var title = ViewBag.Title + "";
     if (set.TitlePrefix && title != "" && !title.Contains(" - "))

@@ -18,7 +18,7 @@
         act = Url.Action("Index");
     }
 
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
     // 判断当前是否为实体对象新删改及详情查看视图
     var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info") || an.Contains("detail");

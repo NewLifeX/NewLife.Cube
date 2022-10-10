@@ -8,7 +8,7 @@
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 <div class="col-12">
     <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form">

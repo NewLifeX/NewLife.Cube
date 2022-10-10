@@ -8,7 +8,7 @@
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
 
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 
 <el-form v-bind:inline="true" v-bind:model="screenForm" ref="screenForm" class="form-inline" size="mini">

@@ -5,7 +5,7 @@
 @using NewLife.Web;
 @using XCode;
 @{
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     var user = ViewBag.User as IUser ?? ManageProvider.User;
     var layoutSet = Parameter.GetOrAdd(user.ID, "LayoutSetting", ViewBag.Title as String, "table");
     var mode = layoutSet.Value;

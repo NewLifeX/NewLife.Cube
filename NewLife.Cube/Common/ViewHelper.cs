@@ -89,7 +89,7 @@ public static class ViewHelper
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var ukey = fact.Unique;
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     //var provider = ManageProvider.Provider;
 }
 <table class=""table table-bordered table-hover table-striped table-condensed table-data-list"">

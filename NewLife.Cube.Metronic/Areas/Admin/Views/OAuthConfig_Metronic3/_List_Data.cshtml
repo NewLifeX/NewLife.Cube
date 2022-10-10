@@ -6,7 +6,7 @@
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     var ukey = fact.Unique;
 }
 <table class="table table-hover">

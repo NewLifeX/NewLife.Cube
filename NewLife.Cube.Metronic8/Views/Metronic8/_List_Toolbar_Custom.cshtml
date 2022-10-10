@@ -4,7 +4,7 @@
 @{
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var fact = ViewBag.Factory as IEntityFactory;
-    var set = ViewBag.PageSetting as PageSetting;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 @*<button type="button" class="btn btn-purple btn-sm">
     <span class="ace-icon fa fa-search icon-on-right bigger-110"></span>

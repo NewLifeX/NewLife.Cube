@@ -2,7 +2,7 @@
 @using XCode;
 @{ var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
-    var set = ViewBag.PageSetting as PageSetting; }
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global; }
 
 <!-- 列表顶部仪表盘或导航栏，根据实际应用选择是否放置 -->
 @await Html.PartialAsync("_List_Dashboard")
