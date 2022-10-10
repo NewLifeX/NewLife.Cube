@@ -7,8 +7,8 @@ namespace NewLife.Cube.Extensions;
 /// <summary>星尘助手</summary>
 public static class StarHelper
 {
-    /// <summary>星尘Web地址，用于链路追踪跳转</summary>
-    public static String StarWeb { get; set; }
+    ///// <summary>星尘Web地址，用于链路追踪跳转</summary>
+    //public static String StarWeb { get; set; }
 
     /// <summary>
     /// 生成星尘调用链Url
@@ -19,8 +19,9 @@ public static class StarHelper
     {
         if (traceId.IsNullOrEmpty()) return null;
 
-        //var web = Setting.Current.StarWeb;
-        var web = StarWeb;
+        // 从配置文件加载星尘Web地址，因为控制器初始化时需要用到该地址，而注册服务消费尚未就绪
+        var web = Setting.Current.StarWeb;
+        //var web = StarWeb;
         if (web.IsNullOrEmpty()) return null;
 
         if (web.Contains("{traceId}")) return web.Replace("{traceId}", traceId);

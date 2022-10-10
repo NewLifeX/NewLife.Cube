@@ -244,6 +244,7 @@ public static class CubeService
     /// <returns></returns>
     public static IApplicationBuilder UseCube(this IApplicationBuilder app, IWebHostEnvironment env)
     {
+        var provider = app.ApplicationServices;
         using var span = DefaultTracer.Instance?.NewSpan(nameof(UseCube));
 
         XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
@@ -315,7 +316,7 @@ public static class CubeService
         AreaBase.RegisterArea<Cube.CubeArea>();
 
         // 插件
-        var moduleManager = app.ApplicationServices.GetRequiredService<ModuleManager>();
+        var moduleManager = provider.GetRequiredService<ModuleManager>();
         var modules = moduleManager.LoadAll();
         if (modules.Count > 0)
         {
@@ -329,17 +330,7 @@ public static class CubeService
 
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
-        // 消费StarWeb服务地址，如果未接入星尘，这里也没必要获取这个地址
-        var registry = app.ApplicationServices.GetService<IRegistry>();
-        if (registry != null)
-        {
-            var webs = registry.ResolveAddressAsync("StarWeb").Result;
-            if (webs != null)
-            {
-                XTrace.WriteLine("StarWeb: {0}", webs.Join());
-                StarHelper.StarWeb = webs.FirstOrDefault();
-            }
-        }
+        Task.Run(() => ResolveStarWeb(provider));
 
         return app;
     }
@@ -411,6 +402,28 @@ public static class CubeService
         }
 
         return app;
+    }
+
+    static async Task ResolveStarWeb(IServiceProvider provider)
+    {
+        // 消费StarWeb服务地址，如果未接入星尘，这里也没必要获取这个地址
+        var registry = provider.GetService<IRegistry>();
+        if (registry != null)
+        {
+            var webs = await registry.ResolveAddressAsync("StarWeb");
+            if (webs != null)
+            {
+                XTrace.WriteLine("StarWeb: {0}", webs.Join());
+                //StarHelper.StarWeb = webs.FirstOrDefault();
+                if (webs.Length > 0)
+                {
+                    // 保存到配置文件
+                    var set = Setting.Current;
+                    set.StarWeb = webs[0];
+                    set.Save();
+                }
+            }
+        }
     }
     #endregion
 }
