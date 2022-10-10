@@ -47,7 +47,7 @@ else
             {
                 <td class="text-center">@listField.GetValue(entity)</td>
             }
-            else if (name2.EndsWith("Date"))
+            else if (item.ItemType.EqualIgnoreCase("date") || name2.EndsWith("Date"))
             {
                 <td class="text-center">@dt.ToString("yyyy-MM-dd", "")</td>
             }
@@ -60,6 +60,11 @@ else
             if (listField.GetValue != null)
             {
                 <td class="text-center">@listField.GetValue(entity)</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("Money"))
+            {
+                var dc = (Decimal)value;
+                <td class="text-right">@dc.ToString("c")</td>
             }
             else
             {

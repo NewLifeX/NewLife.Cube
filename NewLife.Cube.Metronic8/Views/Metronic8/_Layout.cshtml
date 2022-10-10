@@ -3,7 +3,7 @@
 @using NewLife.Cube.Charts;
 @{
     var set = NewLife.Cube.Setting.Current;
-    var set2 = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting;
 
     var title = ViewBag.Title + "";
     if (set.TitlePrefix && title != "" && !title.Contains(" - "))
@@ -11,7 +11,6 @@
         title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
     }
 
-    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
@@ -20,6 +19,8 @@
     var charts2 = ViewBag.Charts2 as ECharts[];
 
     var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
+
+    var dbclickEnable = pageSetting.EnableTableDoubleClick;
 }
 <!DOCTYPE html>
 
@@ -60,23 +61,23 @@
 <!--begin::Body-->
 <body data-kt-name="metronic" id="kt_app_body" data-kt-app-layout="dark-sidebar" data-kt-app-header-fixed="true" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true" data-kt-app-sidebar-hoverable="true" data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true" data-kt-app-sidebar-push-footer="true" data-kt-app-toolbar-enabled="true" data-kt-app-toolbar-fixed="true" class="app-default">
     <script>
-        if ( document.documentElement ) { 
+        if (document.documentElement) {
             // 加载主题
-            const defaultThemeMode = "system"; 
-            const name = document.body.getAttribute("data-kt-name"); 
-            let themeMode = localStorage.getItem("kt_" + ( name !== null ? name + "_" : "" ) + "theme_mode_value"); 
-            if ( themeMode === null ) { 
-                if ( defaultThemeMode === "system" ) { 
-                    themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; 
-                } else { 
-                    themeMode = defaultThemeMode; 
-                } 
-            } 
-            document.documentElement.setAttribute("data-theme", themeMode); 
+            const defaultThemeMode = "system";
+            const name = document.body.getAttribute("data-kt-name");
+            let themeMode = localStorage.getItem("kt_" + (name !== null ? name + "_" : "") + "theme_mode_value");
+            if (themeMode === null) {
+                if (defaultThemeMode === "system") {
+                    themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+                } else {
+                    themeMode = defaultThemeMode;
+                }
+            }
+            document.documentElement.setAttribute("data-theme", themeMode);
 
             // 侧边栏状态
             let asideState = KTCookie.get("sidebar_minimize_state");
-            if (asideState === null) { 
+            if (asideState === null) {
                 asideState = "off";
             }
             document.body.setAttribute("data-kt-app-sidebar-minimize", asideState);
@@ -101,7 +102,10 @@
                                 @RenderBody()
 
                                 <!-- 内容底部 -->
-                                @await Html.PartialAsync("_Layout_Footer")
+                                @if (pageSetting.EnableFooter)
+                                {
+                                    @await Html.PartialAsync("_Layout_Footer")
+                                }
                             </div>
                         </div>
                     </div>
@@ -128,7 +132,7 @@
     @RenderSection("scripts", required: false)
 
     <!-- 启用列表表头选择 -->
-    @if (set2.EnableSelect)
+    @if (pageSetting.EnableSelect)
     {
         <script>
             $(function () {
@@ -173,37 +177,42 @@
         @if (set != null && set.BootstrapSelect)
         {
             <text>
-                $('.multiselect').each(function () {
-                    $(this).multiselect({
-                        // 下拉列表仅在列表项比较多时显示过滤框
-                        enableFiltering: $(this).children().length > 10,
-                        buttonClass: 'btn btn-white btn-primary',
-                        templates: {
-                            button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
-                            ul: '<ul class="multiselect-container dropdown-menu"></ul>',
-                            filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
-                            filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
-                            li: '<li><a href="javascript:void(0);"><label></label></a></li>',
-                            divider: '<li class="multiselect-item divider"></li>',
-                            liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
-                        },
-                        filterPlaceholder: '搜索',
-                        nonSelectedText: '无',
-                        allSelectedText: '全选'
+                    $('.multiselect').each(function () {
+                        $(this).multiselect({
+                            // 下拉列表仅在列表项比较多时显示过滤框
+                            enableFiltering: $(this).children().length > 10,
+                            buttonClass: 'btn btn-white btn-primary',
+                            templates: {
+                                button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                                ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                                filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                                filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                                li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                                divider: '<li class="multiselect-item divider"></li>',
+                                liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                            },
+                            filterPlaceholder: '搜索',
+                            nonSelectedText: '无',
+                            allSelectedText: '全选'
+                        });
                     });
-                });
             </text>
         }
 
         @*双击跳转到form
-            _List_Data_Action.cshtml变更
-            @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
-            $('tr').dblclick(function () {
-                var $this = $(this);
-                var row = $this.closest("tr");
-                var findcell = row.find('.editcell');
-                if (findcell.length > 0) window.location.href = findcell.attr("href");
-            });
+                _List_Data_Action.cshtml变更
+                @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
+        @if (dbclickEnable)
+        {
+            <text>
+                    $('tr').dblclick(function () {
+                        var $this = $(this);
+                        var row = $this.closest("tr");
+                        var findcell = row.find('.editcell');
+                        if (findcell.length > 0) window.location.href = findcell.attr("href");
+                    });
+            </text>
+        }
         });
 
         // 时间控件
@@ -219,9 +228,9 @@
                 daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
                 monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
             }
-        }).on('apply.daterangepicker', function(ev, picker){
+        }).on('apply.daterangepicker', function (ev, picker) {
             $(this).val(picker.startDate.format("YYYY-MM-DD HH:mm:ss"));
-        }).on('cancel.daterangepicker', function(ev, picker){
+        }).on('cancel.daterangepicker', function (ev, picker) {
             $(this).val('');
         });
 
@@ -237,9 +246,9 @@
                 daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
                 monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
             }
-        }).on('apply.daterangepicker', function(ev, picker){
+        }).on('apply.daterangepicker', function (ev, picker) {
             $(this).val(picker.startDate.format("YYYY-MM-DD"));
-        }).on('cancel.daterangepicker', function(ev, picker){
+        }).on('cancel.daterangepicker', function (ev, picker) {
             $(this).val('');
         });
 

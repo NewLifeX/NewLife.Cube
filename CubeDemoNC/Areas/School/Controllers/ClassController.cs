@@ -15,9 +15,13 @@ namespace CubeDemo.Areas.School.Controllers
     {
         private readonly ITracer _tracer;
 
-        public ClassController(IServiceProvider provider) => _tracer = provider?.GetService<ITracer>();
+        public ClassController(IServiceProvider provider)
+        {
 
-        public override ActionResult Index(Pager p = null) => base.Index(p);
+            PageSetting.EnableTableDoubleClick = true;
+
+            _tracer = provider?.GetService<ITracer>();
+        }
 
         protected override IEnumerable<Class> Search(Pager p)
         {

@@ -3,7 +3,7 @@
 @using NewLife.Cube.Charts;
 @{
     var set = NewLife.Cube.Setting.Current;
-    var set2 = ViewBag.PageSetting as PageSetting;
+    var pageSetting = ViewBag.PageSetting as PageSetting;
 
     var title = ViewBag.Title + "";
     if (set.TitlePrefix && title != "" && !title.Contains(" - "))
@@ -11,7 +11,6 @@
         title += " - " + NewLife.Common.SysConfig.Current.DisplayName;
     }
 
-    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
@@ -20,6 +19,8 @@
     var charts2 = ViewBag.Charts2 as ECharts[];
 
     var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
+
+    var dbclickEnable = pageSetting.EnableTableDoubleClick;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -31,7 +32,7 @@
     @*上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！*@
     <title>@title</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon">
-	<script src="~/metronic/plugins/global/plugins.bundle.js"></script>
+    <script src="~/metronic/plugins/global/plugins.bundle.js"></script>
 
     <!-- 页面内联样式 -->
     @RenderSection("css", required: false)
@@ -82,13 +83,9 @@
                         <div class="container-fluid">
                             @RenderBody()
 
-                            @if (set.ShowRunTime)
+                            @if (pageSetting.EnableFooter)
                             {
-                                <div class="alert alert-custom alert-default alert-shadow gutter-t">
-                                    <div class="alert-text">
-                                        @Html.Raw(runInfo)
-                                    </div>
-                                </div>
+                                @await Html.PartialAsync("_Layout_Footer")
                             }
                         </div>
                     </div>
@@ -100,7 +97,6 @@
         </div>
     </div>
     <!-- 结束布局页-->
-
     @await Html.PartialAsync("_Layout_LoginUser")
 
     <div id="kt_scrolltop" class="scrolltop">
@@ -180,7 +176,7 @@
     </script>
 
     <!-- Metronic模板脚本 -->
-    
+
     <script src="~/metronic/plugins/custom/prismjs/prismjs.bundle.js"></script>
     <script src="~/metronic/js/scripts.bundle.min.js"></script>
 
@@ -193,7 +189,7 @@
     @RenderSection("scripts", required: false)
 
     <!-- 启用列表表头选择 -->
-    @if (set2.EnableSelect)
+    @if (pageSetting.EnableSelect)
     {
         <script>
             $(function () {
@@ -300,36 +296,45 @@
                 });
             });
 
-            @if (set != null && set.BootstrapSelect) {<text>
-            $('.multiselect').each(function () {
-                $(this).multiselect({
-                    // 下拉列表仅在列表项比较多时显示过滤框
-                    enableFiltering: $(this).children().length > 10,
-                    buttonClass: 'btn btn-white btn-primary',
-                    templates: {
-                        button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
-                        ul: '<ul class="multiselect-container dropdown-menu"></ul>',
-                        filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
-                        filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
-                        li: '<li><a href="javascript:void(0);"><label></label></a></li>',
-                        divider: '<li class="multiselect-item divider"></li>',
-                        liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
-                    },
-                    filterPlaceholder: '搜索',
-                    nonSelectedText: '无',
-                    allSelectedText: '全选'
-                });
-            });
-            </text>}
-            @*双击跳转到form
-            _List_Data_Action.cshtml变更
-            @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
-            $('tr').dblclick(function () {
-                var $this = $(this);
-                var row = $this.closest("tr");
-                var findcell = row.find('.editcell');
-                if (findcell.length > 0) window.location.href = findcell.attr("href");
-            });
+        @if (set != null && set.BootstrapSelect)
+        {
+            <text>
+                    $('.multiselect').each(function () {
+                        $(this).multiselect({
+                            // 下拉列表仅在列表项比较多时显示过滤框
+                            enableFiltering: $(this).children().length > 10,
+                            buttonClass: 'btn btn-white btn-primary',
+                            templates: {
+                                button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                                ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                                filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                                filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                                li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                                divider: '<li class="multiselect-item divider"></li>',
+                                liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                            },
+                            filterPlaceholder: '搜索',
+                            nonSelectedText: '无',
+                            allSelectedText: '全选'
+                        });
+                    });
+            </text>
+        }
+        @*双击跳转到form
+                _List_Data_Action.cshtml变更
+                @Html.ActionLink("编辑", "Edit", new { id = @Model },new{@class="editcell"})*@
+
+        @if (!dbclickEnable)
+        {
+            <text>
+                    $('tr').dblclick(function () {
+                        var $this = $(this);
+                        var row = $this.closest("tr");
+                        var findcell = row.find('.editcell');
+                        if (findcell.length > 0) window.location.href = findcell.attr("href");
+                    });
+            </text>
+        }
         });
 
         // 区间时间插件

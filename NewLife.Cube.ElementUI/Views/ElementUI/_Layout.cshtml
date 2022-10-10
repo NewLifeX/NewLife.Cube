@@ -19,9 +19,7 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
-    var set2 = ViewBag.PageSetting as PageSetting;
-
-    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
+    var pageSetting = ViewBag.PageSetting as PageSetting;
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -54,9 +52,8 @@
 <body>
     <div id="app">
 
-        @if (set2 != null && set2.EnableNavbar)
+        @if (pageSetting != null && pageSetting.EnableNavbar)
         {
-
             @await Html.PartialAsync("_Layout_Nav")
 
         }
@@ -64,12 +61,9 @@
 
         @RenderBody()
 
-        @if (set.ShowRunTime)
+        @if (pageSetting.EnableFooter)
         {
-            <!-- /.content-wrapper -->
-        <footer class="main-footer">
-            @Html.Raw(runInfo)
-        </footer>
+            @await Html.PartialAsync("_Layout_Footer")
         }
     </div>
 
