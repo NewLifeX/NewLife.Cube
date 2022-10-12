@@ -77,7 +77,10 @@ namespace NewLife.Cube.Entity
                 if (AccessUrl.IsNullOrEmpty()) AccessUrl = "access_token?grant_type=authorization_code&client_id={key}&client_secret={secret}&code={code}&state={state}&redirect_uri={redirect}";
             }
 
-            if (FieldMap.IsNullOrEmpty()) FieldMap = new OAuthFieldMap().ToJson(true);
+            if (FieldMap.IsNullOrEmpty())
+                FieldMap = new OAuthFieldMap().ToJson(true);
+            else
+                FieldMap = FieldMap.ToJsonEntity<OAuthFieldMap>().ToJson(true);
         }
 
         /// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>

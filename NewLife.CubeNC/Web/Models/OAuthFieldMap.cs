@@ -34,6 +34,12 @@ namespace NewLife.Cube.Web.Models
         /// <summary>部门名称</summary>
         public String DepartmentName { get; set; }
 
+        /// <summary>父级部门代码，唯一标识</summary>
+        public String ParentDepartmentCode { get; set; }
+
+        /// <summary>父级部门名称</summary>
+        public String ParentDepartmentName { get; set; }
+
         /// <summary>手机</summary>
         public String Mobile { get; set; }
 

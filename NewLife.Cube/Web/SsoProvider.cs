@@ -127,7 +127,7 @@ namespace NewLife.Cube.Web
 
             // 根据OpenID找到用户绑定信息
             var uc = UserConnect.FindByProviderAndOpenID(client.Name, openid);
-            if (uc == null) uc = new UserConnect { Provider = client.Name, OpenID = openid };
+            uc ??= new UserConnect { Provider = client.Name, OpenID = openid };
 
             return uc;
         }
@@ -150,7 +150,7 @@ namespace NewLife.Cube.Web
 
             // 可能因为初始化顺序的问题，导致前面没能给Provider赋值
             var prv = Provider;
-            if (prv == null) prv = Provider = ManageProvider.Provider;
+            prv ??= Provider = ManageProvider.Provider;
 
             // 检查绑定，新用户的uc.UserID为0
             var user = prv.FindByID(uc.UserID);
@@ -245,7 +245,7 @@ namespace NewLife.Cube.Web
                     if (sys.Count > 0)
                     {
                         //roleId = user2.RoleID;
-                        if (roleIds == null) roleIds = new List<Int32>();
+                        roleIds ??= new List<Int32>();
                         roleIds.AddRange(sys);
                     }
                     roleId = GetRole(dic, true);
@@ -254,7 +254,7 @@ namespace NewLife.Cube.Web
                         user2.RoleID = roleId;
 
                         var ids = GetRoles(client.Items, true).ToList();
-                        if (roleIds == null) roleIds = new List<Int32>();
+                        roleIds ??= new List<Int32>();
                         roleIds.AddRange(ids);
                     }
                 }
@@ -267,7 +267,7 @@ namespace NewLife.Cube.Web
                 if (cfg != null && !cfg.AutoRole.IsNullOrEmpty())
                 {
                     var ids = GetRoles(cfg.AutoRole, true).ToList();
-                    if (roleIds == null) roleIds = new List<Int32>();
+                    roleIds ??= new List<Int32>();
                     roleIds.AddRange(ids);
                 }
 
@@ -293,8 +293,39 @@ namespace NewLife.Cube.Web
                             Name = client.DepartmentName,
                             Enable = true
                         };
-                        dep.Insert();
+                        //dep.Insert();
                     }
+
+                    // 父级部门
+                    if (!client.ParentDepartmentCode.IsNullOrEmpty())
+                    {
+                        var pdep = Department.FindByCode(client.ParentDepartmentCode);
+                        pdep ??= new Department
+                        {
+                            Code = client.ParentDepartmentCode,
+                            Name = client.ParentDepartmentName,
+                            Enable = true,
+                        };
+                        pdep.Save();
+
+                        dep.ParentID = pdep.ID;
+                    }
+                    else if (!client.ParentDepartmentName.IsNullOrEmpty())
+                    {
+                        var pdep = Department.FindByCode(client.ParentDepartmentName);
+                        pdep ??= Department.FindByNameAndParentID(client.ParentDepartmentName, 0);
+                        pdep ??= new Department
+                        {
+                            Code = client.ParentDepartmentName,
+                            Name = client.ParentDepartmentName,
+                            Enable = true,
+                        };
+                        pdep.Save();
+
+                        dep.ParentID = pdep.ID;
+                    }
+
+                    dep.Save();
 
                     user2.DepartmentID = dep.ID;
                 }
@@ -764,7 +795,7 @@ namespace NewLife.Cube.Web
         {
             var user = Provider?.FindByName(username);
             // 两级单点登录可能因缓存造成查不到用户
-            if (user == null) user = User.FindForLogin(username);
+            user ??= User.FindForLogin(username);
 
             return user;
         }
