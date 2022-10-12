@@ -291,7 +291,8 @@ namespace NewLife.Cube.Web
                         {
                             Code = client.DepartmentCode,
                             Name = client.DepartmentName,
-                            Enable = true
+                            Enable = true,
+                            Visible = true,
                         };
                         //dep.Insert();
                     }
@@ -305,6 +306,7 @@ namespace NewLife.Cube.Web
                             Code = client.ParentDepartmentCode,
                             Name = client.ParentDepartmentName,
                             Enable = true,
+                            Visible = true,
                         };
                         pdep.Save();
 
@@ -319,6 +321,7 @@ namespace NewLife.Cube.Web
                             Code = client.ParentDepartmentName,
                             Name = client.ParentDepartmentName,
                             Enable = true,
+                            Visible = true,
                         };
                         pdep.Save();
 
