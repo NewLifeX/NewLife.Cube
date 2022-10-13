@@ -245,7 +245,6 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             WriteLog("Edit", false, err);
 
             ViewBag.StatusMessage = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
-            ViewBag.Fields = EditFormFields;
 
             if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
         }
@@ -263,6 +262,8 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
 
         // 重新查找对象数据，以确保取得最新值
         if (id != null) entity = FindData(id);
+
+        ViewBag.Fields = EditFormFields;
 
         return View("EditForm", entity);
     }
