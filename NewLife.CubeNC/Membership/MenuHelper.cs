@@ -229,7 +229,7 @@ namespace NewLife.Cube.Membership
             {
                 if (method.IsStatic || !method.IsPublic) continue;
 
-                if (!method.ReturnType.As<ActionResult>()) continue;
+                if (!method.ReturnType.As<ActionResult>() && !method.ReturnType.As<Task<ActionResult>>()) continue;
 
                 //if (method.GetCustomAttribute<HttpPostAttribute>() != null) continue;
                 if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
