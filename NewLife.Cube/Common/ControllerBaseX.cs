@@ -49,10 +49,10 @@ public class ControllerBaseX : Controller
             HttpContext.Items["userId"] = user.ID;
 
             // 没有菜单时不做权限控制
-            if (Menu != null)
-            {
-                PageSetting.EnableSelect = user.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
-            }
+            //if (Menu != null)
+            //{
+            //    PageSetting.EnableSelect = user.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
+            //}
         }
 
         base.OnActionExecuting(context);
