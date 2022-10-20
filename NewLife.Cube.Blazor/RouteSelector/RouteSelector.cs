@@ -89,10 +89,7 @@ namespace BigCookieKit.AspCore.RouteSelector
         {
             get
             {
-                if (_controller == null)
-                {
-                    _controller = actionInvokerType.GetField("_instance", bindingFlags)?.GetValue(actionInvoker) as Controller;
-                }
+                _controller ??= actionInvokerType.GetField("_instance", bindingFlags)?.GetValue(actionInvoker) as Controller;
 
                 return _controller;
             }
@@ -106,10 +103,7 @@ namespace BigCookieKit.AspCore.RouteSelector
         {
             get
             {
-                if (_result == null)
-                {
-                    _result = actionInvokerType.GetField("_result", bindingFlags)?.GetValue(actionInvoker);
-                }
+                _result ??= actionInvokerType.GetField("_result", bindingFlags)?.GetValue(actionInvoker);
 
                 return _result;
             }

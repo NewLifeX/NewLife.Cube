@@ -185,10 +185,7 @@ namespace BigCookieKit.AspCore.RouteSelector
                     var endpointSelectorPolicy = _endpointSelectorPolicies[i];
                     if (endpointSelectorPolicy.AppliesToEndpoints(node.Matches))
                     {
-                        if (endpointSelectorPolicies == null)
-                        {
-                            endpointSelectorPolicies = new List<IEndpointSelectorPolicy>();
-                        }
+                        endpointSelectorPolicies ??= new List<IEndpointSelectorPolicy>();
 
                         endpointSelectorPolicies.Add(endpointSelectorPolicy);
                     }
@@ -936,14 +933,11 @@ namespace BigCookieKit.AspCore.RouteSelector
                     }
                     else if (segment.IsSimple && parameterPart != null)
                     {
-                        if (parent.Parameters == null)
-                        {
-                            parent.Parameters = new DfaNode()
+                        parent.Parameters ??= new DfaNode()
                             {
                                 PathDepth = parent.PathDepth + 1,
                                 Label = _includeLabel ? parent.Label + "{...}/" : null,
                             };
-                        }
 
                         if (parent.Literals != null)
                         {
@@ -961,14 +955,11 @@ namespace BigCookieKit.AspCore.RouteSelector
                     }
                     else
                     {
-                        if (parent.Parameters == null)
-                        {
-                            parent.Parameters = new DfaNode()
+                        parent.Parameters ??= new DfaNode()
                             {
                                 PathDepth = parent.PathDepth + 1,
                                 Label = _includeLabel ? parent.Label + "{...}/" : null,
                             };
-                        }
 
                         if (parent.Literals != null)
                         {

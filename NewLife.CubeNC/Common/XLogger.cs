@@ -16,7 +16,7 @@ namespace NewLife.Cube
         {
             //builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, XLoggerProvider>());
 
-            if (logger == null) logger = Log.XTrace.Log;
+            logger ??= Log.XTrace.Log;
 
             var provider = new XLoggerProvider { Logger = logger };
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider>(provider));

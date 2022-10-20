@@ -196,7 +196,7 @@ namespace NewLife.Cube.Entity
             // var table = ModelTable.Meta.Cache.Find(e => e.Category.EqualIgnoreCase(areaName) && e.Name == entityTypeName);
             // var table = ModelTable.Find(ModelTable._.Category == areaName & ModelTable._.Name == entityTypeName);
 
-            if (table == null) table = new ModelTable { Name = ctrlName, Enable = true };
+            table ??= new ModelTable { Name = ctrlName, Enable = true };
 
             table.Category = areaName;
             table.Url = url;

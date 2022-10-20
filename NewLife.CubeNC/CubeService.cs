@@ -158,7 +158,7 @@ public static class CubeService
     public static void AddCustomApplicationParts(this IServiceCollection services)
     {
         var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
-        if (manager == null) manager = new ApplicationPartManager();
+        manager ??= new ApplicationPartManager();
 
         var list = FindAllArea();
 
@@ -287,7 +287,7 @@ public static class CubeService
         app.UseSession();
 
         // 如果已引入追踪中间件，则这里不再引入
-        if (TracerMiddleware.Tracer == null) TracerMiddleware.Tracer = DefaultTracer.Instance;
+        TracerMiddleware.Tracer ??= DefaultTracer.Instance;
         if (TracerMiddleware.Tracer != null && !app.Properties.ContainsKey(nameof(TracerMiddleware)))
         {
             app.UseMiddleware<TracerMiddleware>();

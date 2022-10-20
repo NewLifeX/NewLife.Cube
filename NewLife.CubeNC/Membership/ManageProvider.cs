@@ -143,16 +143,13 @@ namespace NewLife.Cube
         private SsoClient _client;
         private IManageUser LoginByOAuth(OAuthConfig oa, String username, String password)
         {
-            if (_client == null)
-            {
-                _client = new SsoClient
+            _client ??= new SsoClient
                 {
                     Server = oa.Server,
                     AppId = oa.AppId,
                     Secret = oa.Secret,
                     SecurityKey = oa.SecurityKey,
                 };
-            }
 
             //var ti = _client.GetToken(username, password).Result;
             //var ui = _client.GetUser(ti.AccessToken).Result as User;

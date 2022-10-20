@@ -164,7 +164,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var builder = CreateWhere();
         if (builder != null)
         {
-            if (builder.Data2 == null) builder.Data2 = p;
+            builder.Data2 ??= p;
             p.State = builder;
         }
 
@@ -230,7 +230,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         // 已登录用户判断系统角色，未登录时不判断
         var user = HttpContext.Items["CurrentUser"] as IUser;
-        if (user == null) user = ManageProvider.User;
+        user ??= ManageProvider.User;
         if (user != null && (user.Roles.Any(e => e.IsSystem) || att.Valid(user.Roles))) return null;
 
         var builder = new WhereBuilder
@@ -306,7 +306,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             PageSize = pageSize
         };
 
-        var rs = Response;
         while (max > 0)
         {
             if (HttpContext.RequestAborted.IsCancellationRequested) yield break;
@@ -348,7 +347,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             PageSize = 0,
         };
 
-        var rs = Response;
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
         if (end.Year < 2000) end = DateTime.Now;
@@ -394,7 +392,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     //[AllowAnonymous]
     public virtual ActionResult Index(Pager p = null)
     {
-        if (p == null) p = ViewBag.Page as Pager;
+        p ??= ViewBag.Page as Pager;
 
         // 缓存数据，用于后续导出
         //SetSession(CacheKey, p);
@@ -1113,7 +1111,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         // 如果该url已存在，则延长有效期
         var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url));
-        if (ut == null) ut = new UserToken { UserID = userId, Url = url };
+        ut ??= new UserToken { UserID = userId, Url = url };
 
         if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(8);
         ut.Enable = true;
@@ -1145,7 +1143,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Data.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
-        var rs = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
+        _ = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
 
         WriteLog("生成列表", true, vpath);
 
@@ -1167,8 +1165,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_Form_Body.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-
-        var rs = ViewHelper.MakeFormView(typeof(TEntity), vpath, EditFormFields);
+        
+        _ = ViewHelper.MakeFormView(typeof(TEntity), vpath, EditFormFields);
 
         WriteLog("生成表单", true, vpath);
 
@@ -1190,8 +1188,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Search.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-
-        var rs = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
+        
+        _ = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
 
         WriteLog("生成搜索", true, vpath);
 

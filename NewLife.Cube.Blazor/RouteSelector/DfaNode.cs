@@ -29,30 +29,21 @@ namespace BigCookieKit.AspCore.RouteSelector
 
         public void AddPolicyEdge(object state, DfaNode node)
         {
-            if (PolicyEdges == null)
-            {
-                PolicyEdges = new Dictionary<object, DfaNode>();
-            }
+            PolicyEdges ??= new Dictionary<object, DfaNode>();
 
             PolicyEdges.Add(state, node);
         }
 
         public void AddLiteral(string literal, DfaNode node)
         {
-            if (Literals == null)
-            {
-                Literals = new Dictionary<string, DfaNode>(StringComparer.OrdinalIgnoreCase);
-            }
+            Literals ??= new Dictionary<string, DfaNode>(StringComparer.OrdinalIgnoreCase);
 
             Literals.Add(literal, node);
         }
 
         public void AddMatch(Endpoint endpoint)
         {
-            if (Matches == null)
-            {
-                Matches = new List<Endpoint>();
-            }
+            Matches ??= new List<Endpoint>();
 
             Matches.Add(endpoint);
         }

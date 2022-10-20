@@ -326,7 +326,7 @@ namespace NewLife.Web
         public TokenProvider GetProvider()
         {
             var prv = TokenProvider;
-            if (prv == null) prv = TokenProvider = new TokenProvider();
+            prv ??= TokenProvider = new TokenProvider();
             if (prv.Key.IsNullOrEmpty()) prv.ReadKey("..\\Keys\\OAuth.prvkey", true);
 
             return prv;

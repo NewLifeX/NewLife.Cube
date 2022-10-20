@@ -37,7 +37,7 @@ namespace NewLife.Cube.Membership
             // 如果根菜单不存在，则添加
             var r = menuFactory.Root;
             var root = menuFactory.FindByFullName(nameSpace);
-            if (root == null) root = r.FindByPath(rootName);
+            root ??= r.FindByPath(rootName);
             //if (root == null) root = r.Childs.FirstOrDefault(e => e.Name.EqualIgnoreCase(rootName));
             //if (root == null) root = r.Childs.FirstOrDefault(e => e.Url.EqualIgnoreCase("~/" + rootName));
             if (root == null)
@@ -92,11 +92,7 @@ namespace NewLife.Cube.Membership
                 if (controller == null)
                 {
                     controller = menuFactory.FindByUrl(url);
-                    if (controller == null)
-                    {
-                        // DisplayName特性作为中文名
-                        controller = node.Add(name, type.GetDisplayName(), type.FullName, url);
-                    }
+                    controller ??= node.Add(name, type.GetDisplayName(), type.FullName, url);
                 }
                 controller.Url = url;
                 controller.FullName = type.FullName;
@@ -243,10 +239,7 @@ namespace NewLife.Cube.Membership
                     // 添加系统信息菜单
                     var name = method.Name;
                     var m2 = menu.Parent.Childs.FirstOrDefault(_ => _.Name == name);
-                    if (m2 == null)
-                    {
-                        m2 = menu.Parent.Add(name, method.GetDisplayName(), $"{controllerType.FullName}.{name}", $"{menu.Url}/{name}");
-                    }
+                    m2 ??= menu.Parent.Add(name, method.GetDisplayName(), $"{controllerType.FullName}.{name}", $"{menu.Url}/{name}");
                     if (m2.Sort == 0) m2.Sort = attMenu.Order;
                     if (m2.Icon.IsNullOrEmpty()) m2.Icon = attMenu.Icon;
                     if (m2.FullName.IsNullOrEmpty()) m2.FullName = $"{controllerType.FullName}.{name}";

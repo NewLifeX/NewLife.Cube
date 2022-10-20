@@ -56,8 +56,7 @@ namespace NewLife.Cube.Cube.Controllers
                 foreach (var item in map)
                 {
                     var drv = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Key));
-                    if (drv == null)
-                        drv = new AppModule { Name = item.Key, Enable = true };
+                    drv ??= new AppModule { Name = item.Key, Enable = true };
 
                     if (drv.DisplayName.IsNullOrEmpty() || drv.DisplayName == drv.Name)
                     {
