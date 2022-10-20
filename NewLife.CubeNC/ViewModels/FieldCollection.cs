@@ -29,6 +29,10 @@ public class FieldCollection : List<DataField>
     #endregion
 
     #region 构造
+    /// <summary>实例化一个字段集合</summary>
+    /// <param name="kind"></param>
+    public FieldCollection(String kind) => Kind = kind;
+
     /// <summary>使用工厂实例化一个字段集合</summary>
     /// <param name="factory"></param>
     /// <param name="kind"></param>
@@ -38,31 +42,34 @@ public class FieldCollection : List<DataField>
         Factory = factory;
         //AddRange(Factory.Fields);
 
-        foreach (var item in Factory.Fields)
+        if (factory != null)
         {
-            Add(item);
-        }
+            foreach (var item in factory.Fields)
+            {
+                Add(item);
+            }
 
-        switch (kind)
-        {
-            case "AddForm":
-                SetRelation(true);
-                //RemoveCreateField();
-                RemoveUpdateField();
-                break;
-            case "EditForm":
-                SetRelation(true);
-                break;
-            case "Detail":
-                SetRelation(true);
-                break;
-            case "Form":
-                SetRelation(true);
-                break;
-            case "List":
-            default:
-                SetRelation(false);
-                break;
+            switch (kind)
+            {
+                case "AddForm":
+                    SetRelation(true);
+                    //RemoveCreateField();
+                    RemoveUpdateField();
+                    break;
+                case "EditForm":
+                    SetRelation(true);
+                    break;
+                case "Detail":
+                    SetRelation(true);
+                    break;
+                case "Form":
+                    SetRelation(true);
+                    break;
+                case "List":
+                default:
+                    SetRelation(false);
+                    break;
+            }
         }
     }
     #endregion

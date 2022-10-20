@@ -40,16 +40,12 @@ public static class RequestHelper
     /// <returns></returns>
     public static Boolean IsAjaxRequest(this HttpRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
+        if (request == null) throw new ArgumentNullException(nameof(request));
+
         if (request.Headers != null && request.Headers["X-Requested-With"] == "XMLHttpRequest") return true;
         if (request.ContentType.EqualIgnoreCase("application/json")) return true;
 
-#if __CORE__
         if (request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
-#else
-            if (request.AcceptTypes.Any(e => e == "application/json")) return true;
-#endif
 
         if (request.GetRequestValue("output").EqualIgnoreCase("json")) return true;
 

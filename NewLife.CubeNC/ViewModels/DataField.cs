@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using NewLife.Collections;
-using NewLife.Reflection;
 using XCode;
 using XCode.Configuration;
 
@@ -105,7 +104,8 @@ public class DataField
         Field = field;
 
         var dc = field.Field;
-        var pi = field.GetValue("_Property", false) as PropertyInfo;
+        //var pi = field.GetValue("_Property", false) as PropertyInfo;
+        var pi = field.Property;
 
         Name = field.Name;
         DisplayName = field.DisplayName;
