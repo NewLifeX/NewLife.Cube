@@ -29,6 +29,4 @@
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
-
 </Project>

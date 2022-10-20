@@ -55,10 +55,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Areas\School\Models\Build.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Build.log</LastGenOutput>
-    </None>
     <None Update="bootstrap.sh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

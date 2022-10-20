@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using NewLife.IO;
 using NewLife.Log;
-using NewLife.School.Entity;
 using NewLife.Security;
 using NewLife.Serialization;
 
@@ -33,25 +31,25 @@ namespace Test
 
         static void Test1()
         {
-            var count = Student.Meta.Count;
-            Console.WriteLine("{0:n0}", count);
+            //var count = Student.Meta.Count;
+            //Console.WriteLine("{0:n0}", count);
 
-            Student.Meta.Session.Dal.Session.ShowSQL = false;
+            //Student.Meta.Session.Dal.Session.ShowSQL = false;
 
-            // 生成一批需要随机查询的编号
-            var ids = Enumerable.Range(0, 1024).Select(e => Rand.Next(count)).ToArray();
+            //// 生成一批需要随机查询的编号
+            //var ids = Enumerable.Range(0, 1024).Select(e => Rand.Next(count)).ToArray();
 
-            count = 10_000_000;
-            var sw = Stopwatch.StartNew();
-            for (var i = 0; i < count; i++)
-            {
-                var id = ids[i % 1024];
-                var entity = Student.FindByID(id);
-            }
-            sw.Stop();
+            //count = 10_000_000;
+            //var sw = Stopwatch.StartNew();
+            //for (var i = 0; i < count; i++)
+            //{
+            //    var id = ids[i % 1024];
+            //    var entity = Student.FindByID(id);
+            //}
+            //sw.Stop();
 
-            var ms = sw.Elapsed.TotalMilliseconds;
-            Console.WriteLine("查询[{0:n0}]次，耗时{1:n0}ms，速度{2:n0}qps", count, ms, count * 1000L / ms);
+            //var ms = sw.Elapsed.TotalMilliseconds;
+            //Console.WriteLine("查询[{0:n0}]次，耗时{1:n0}ms，速度{2:n0}qps", count, ms, count * 1000L / ms);
         }
 
         static async void Test2()
