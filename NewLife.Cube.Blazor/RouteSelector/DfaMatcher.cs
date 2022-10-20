@@ -244,7 +244,7 @@ namespace BigCookieKit.AspCore.RouteSelector
                 var _method = policyType.GetField("_method", BindFlag).GetValue(policyTransitions);
                 var _destination = policyType.GetField("_destination", BindFlag).GetValue(policyTransitions);
                 var _exitDestination = policyType.GetField("_exitDestination", BindFlag).GetValue(policyTransitions);
-                destination = Convert.ToInt32(HttpMethods.Equals(httpMethod, _method) ? _destination : _exitDestination);
+                destination = Convert.ToInt32(Equals(httpMethod, _method) ? _destination : _exitDestination);
                 policyTransitions = states[destination].PolicyTransitions;
             }
             return (states[destination].Candidates, states[destination].Policies);

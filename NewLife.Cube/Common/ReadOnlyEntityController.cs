@@ -43,7 +43,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     public SysConfig SysConfig { get; set; }
 
     /// <summary>当前列表页的查询条件缓存Key</summary>
-    private String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
+    private static String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
     #endregion
 
     #region 构造
@@ -900,9 +900,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         }
 
         // 要导出的数据超大时，启用流式输出
-#if !__CORE__
-        var buffer = true;
-#endif
         if (Factory.Session.Count > 100_000)
         {
             var p = Session[CacheKey] as Pager;
@@ -912,16 +909,10 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
                 RetrieveTotalCount = true
             };
             SearchData(p);
-
-#if !__CORE__
-            // 超过一万行
-            if (p.TotalCount > 10_000) buffer = false;
-#endif
         }
 
         SetAttachment(null, ".xls", true);
 
-#if __CORE__
         var rs = Response;
         var headers = rs.Headers;
         headers[HeaderNames.ContentEncoding] = "UTF8";
@@ -929,20 +920,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         var data = ExportData(1);
         await OnExportExcel(fs, data, rs.Body);
-#else
-        var rs = Response;
-        rs.Charset = "UTF-8";
-        rs.ContentEncoding = Encoding.UTF8;
-        rs.ContentType = "application/vnd.ms-excel";
-
-        if (buffer) SetCompress();
-        rs.Buffer = buffer;
-
-        var data = ExportData();
-        OnExportExcel(fs, data, rs.OutputStream);
-
-        rs.Flush();
-#endif
 
         return new EmptyResult();
     }

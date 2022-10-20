@@ -7,6 +7,7 @@ public static class ExcelExtension
 {
     /// <summary>
     /// 1、2、3 转换A、B、C
+    /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>
     public static String IndexToName(Int32 index)

@@ -229,7 +229,6 @@ public class FileController : ControllerBaseX
     #endregion
 
     #region 上传下载
-#if __CORE__
     /// <summary>上传文件</summary>
     /// <param name="r"></param>
     /// <param name="file"></param>
@@ -282,59 +281,6 @@ public class FileController : ControllerBaseX
             return Json(new { code = 500, message = "上传失败" });
         }
     }
-#else
-    /// <summary>上传文件</summary>
-    /// <param name="r"></param>
-    /// <param name="file"></param>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    public ActionResult Upload(String r, HttpPostedFileBase file)
-    {
-        if (file != null)
-        {
-            var di = GetDirectory(r) ?? Root.AsDirectory();
-            if (di == null) throw new Exception("找不到目录！");
-
-            var dest = di.FullName.CombinePath(file.FileName);
-            WriteLog("上传", true, dest);
-
-            dest.EnsureDirectory(true);
-            file.SaveAs(dest);
-        }
-
-        return RedirectToAction("Index", new { r });
-    }
-
-    /// <summary>上传文件</summary>
-    /// <param name="r"></param>
-    /// <param name="file"></param>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    public ActionResult UploadLayui(String r, HttpPostedFileBase file)
-    {
-        try
-        {
-            if (file != null)
-            {
-                var di = GetDirectory(r) ?? Root.AsDirectory();
-                if (di == null) throw new Exception("找不到目录！");
-
-                var dest = di.FullName.CombinePath(file.FileName);
-                WriteLog("上传", true, dest);
-
-                dest.EnsureDirectory(true);
-                file.SaveAs(dest);
-            }
-
-            return Json(new { code = 0, message = "上传成功" });
-        }
-        catch (Exception ex)
-        {
-            WriteLog("上传失败", false, ex + "");
-            return Json(new { code = 500, message = "上传失败" });
-        }
-    }
-#endif
 
     /// <summary>下载文件</summary>
     /// <param name="r"></param>
@@ -347,11 +293,7 @@ public class FileController : ControllerBaseX
 
         WriteLog("下载", true, fi.FullName);
 
-#if __CORE__
         return PhysicalFile(fi.FullName, "application/octet-stream", fi.Name, true);
-#else
-        return File(fi.FullName, "application/octet-stream", fi.Name);
-#endif
     }
     #endregion
 

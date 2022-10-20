@@ -823,7 +823,7 @@ else
     /// <returns></returns>
     public static IList<MenuTree> GetMenus(this IUser user)
     {
-        if (user == null) user = XCode.Membership.User.FindAll().FirstOrDefault();
+        if (user == null) user = User.FindAll().FirstOrDefault();
 
         var fact = ManageProvider.Menu;
         var menus = fact.Root.Childs;

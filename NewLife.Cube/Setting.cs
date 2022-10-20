@@ -25,11 +25,7 @@ namespace NewLife.Cube
         /// <summary>头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取</summary>
         [Description("头像目录。设定后下载远程头像到本地，默认Avatars子目录，web上一级Avatars。清空表示不抓取")]
         [Category("通用")]
-#if __CORE__
         public String AvatarPath { get; set; } = "Avatars";
-#else
-        public String AvatarPath { get; set; } = "..\\Avatars";
-#endif
 
         /// <summary>上传目录。默认Uploads</summary>
         [Description("上传目录。默认Uploads")]
@@ -263,11 +259,7 @@ namespace NewLife.Cube
         /// <summary>加载时触发</summary>
         protected override void OnLoaded()
         {
-#if __CORE__
             if (StartPage.IsNullOrEmpty()) StartPage = "/Admin/User/Info";
-#else
-            if (StartPage.IsNullOrEmpty()) StartPage = System.Web.HttpRuntime.AppDomainAppVirtualPath.EnsureEnd("/") + "Admin/User/Info";
-#endif
 
             var web = Runtime.IsWeb;
 

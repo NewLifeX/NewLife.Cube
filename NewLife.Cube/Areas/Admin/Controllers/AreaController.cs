@@ -51,7 +51,7 @@ namespace NewLife.Cube.Cube.Controllers
                 //if (Area.Meta.Count == 0) ThreadPoolX.QueueUserWorkItem(() => Area.FetchAndSave());
                 // 必须同步初始化，否则无法取得当前登录用户信息
                 //if (Area.Meta.Count == 0) Area.FetchAndSave();
-                if (Area.Meta.Count == 0) Area.Import("http://x.newlifex.com/Area.csv.gz", true);
+                if (Area.Meta.Count == 0) Import("http://x.newlifex.com/Area.csv.gz", true);
             }
 
             var id = p["id"].ToInt(-1);
@@ -59,7 +59,7 @@ namespace NewLife.Cube.Cube.Controllers
             if (id > 0)
             {
                 var ss = new List<Area>();
-                var entity = Area.FindByID(id);
+                var entity = FindByID(id);
                 if (entity != null) ss.Add(entity);
                 return ss;
             }
@@ -82,7 +82,7 @@ namespace NewLife.Cube.Cube.Controllers
             var end = p["dtEnd"].ToDateTime();
 
             // 地区默认升序
-            if (p.Sort.IsNullOrEmpty()) p.OrderBy = Area._.ID.Asc();
+            if (p.Sort.IsNullOrEmpty()) p.OrderBy = _.ID.Asc();
 
             var list = Area.Search(parentid, level, idstart, idend, enable, p["q"], start, end, p);
 

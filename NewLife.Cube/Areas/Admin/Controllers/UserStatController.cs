@@ -30,7 +30,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             p.RetrieveState = true;
 
-            var list = UserStat.SearchByDate(start, end, p["Q"], p);
+            var list = SearchByDate(start, end, p["Q"], p);
 
             if (list.Count > 0)
             {

@@ -17,7 +17,6 @@
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <DefineConstants>$(DefineConstants);__CORE__</DefineConstants>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -39,18 +38,6 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <WarningLevel>3</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net5.0'">
-    <DefineConstants>$(DefineConstants);__CORE__;NET50</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net6.0'">
-    <DefineConstants>$(DefineConstants);__CORE__;NET60</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Session\ISession2.cs" />
