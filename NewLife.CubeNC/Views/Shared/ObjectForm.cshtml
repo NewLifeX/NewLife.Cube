@@ -3,68 +3,72 @@
 @using System.Reflection;
 @using NewLife.Reflection;
 @{
-	//Layout = NewLife.Cube.Setting.Current.Layout;
+    // 强制设置Layout，因为最终项目可能给前端设置Layout，会覆盖影响魔方内部页面
+    var theme = NewLife.Cube.Setting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
 
-	var obj = (Object)Model;
-	var list = ViewBag.Fields as IList<DataField>;
-	var dic = list
-		.GroupBy(e => e.Category + "")
-		.ToDictionary(e => e.Key, e => e.ToList());
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
+
+    var obj = (Object)Model;
+    var list = ViewBag.Fields as IList<DataField>;
+    var dic = list
+        .GroupBy(e => e.Category + "")
+        .ToDictionary(e => e.Key, e => e.ToList());
 }
 <div class="row">
-	@await Html.PartialAsync("_Object_Nav", obj)
+    @await Html.PartialAsync("_Object_Nav", obj)
 </div>
 <div class="row">
-	<div class="col-md-12">
-		<div class="form-horizontal">
-			@using (Html.BeginForm("Update", null))
-			{
-				@Html.AntiForgeryToken()
-				@Html.ValidationSummary(true)
-				foreach (var item in dic)
-				{
-					if (dic.Count > 1)
-					{
-						<div class="form-group col-sm-12 col-md-12 col-xd-12">
-							<label class="control-label col-xs-2 col-md-3 no-padding-left">
-								<h2>@item.Key</h2>
-							</label>
-						</div>
-					}
-					foreach (var pi in item.Value)
-					{
-						var name = pi.Name;
-						var val = obj.GetValue(name);
-						var dis = pi.DisplayName;
-						var des = pi.Description;
-						var dataSource = pi.DataSource;
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            @using (Html.BeginForm("Update", null))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true)
+                foreach (var item in dic)
+                {
+                    if (dic.Count > 1)
+                    {
+                        <div class="form-group col-sm-12 col-md-12 col-xd-12">
+                            <label class="control-label col-xs-2 col-md-3 no-padding-left">
+                                <h2>@item.Key</h2>
+                            </label>
+                        </div>
+                    }
+                    foreach (var pi in item.Value)
+                    {
+                        var name = pi.Name;
+                        var val = obj.GetValue(name);
+                        var dis = pi.DisplayName;
+                        var des = pi.Description;
+                        var dataSource = pi.DataSource;
 
-						<div class="form-group col-sm-12 col-md-12">
-							<label class="control-label col-xs-2 col-md-3 no-padding-left" for="@name">@(dis)</label>
-							<div class="input-group col-xs-10 col-md-4">
-								@if (dataSource != null)
-								{
+                        <div class="form-group col-sm-12 col-md-12">
+                            <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@name">@(dis)</label>
+                            <div class="input-group col-xs-10 col-md-4">
+                                @if (dataSource != null)
+                                {
                                     @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(item.Value), val))
-								}
-								else
-								{
-									@await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
-								}
-								@Html.ValidationMessage(name)
-							</div>
-							<span class="hidden-xs col-md-5">&nbsp; @des</span>
-						</div>
-					}
-				}
-				if (this.Has(PermissionFlags.Update))
-				{
-					<div class="clearfix form-actions col-sm-12 col-md-12">
-						<label class="control-label col-xs-4 col-sm-5 col-md-5"></label>
-						<button type="submit" class="btn btn-success"><i class="glyphicon glyphicon-save"></i><strong>保存</strong></button>
-						<button type="button" class="btn btn-danger" onclick="history.go(-1);"><i class="glyphicon glyphicon-remove"></i><strong>取消</strong></button>
-					</div>
-				}
-			}
-		</div>
-	</div>
+                                }
+                                else
+                                {
+                                    @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+                                }
+                                @Html.ValidationMessage(name)
+                            </div>
+                            <span class="hidden-xs col-md-5">&nbsp; @des</span>
+                        </div>
+                    }
+                }
+                if (this.Has(PermissionFlags.Update))
+                {
+                    <div class="clearfix form-actions col-sm-12 col-md-12">
+                        <label class="control-label col-xs-4 col-sm-5 col-md-5"></label>
+                        <button type="submit" class="btn btn-success"><i class="glyphicon glyphicon-save"></i><strong>保存</strong></button>
+                        <button type="button" class="btn btn-danger" onclick="history.go(-1);"><i class="glyphicon glyphicon-remove"></i><strong>取消</strong></button>
+                    </div>
+                }
+            }
+        </div>
+    </div>
 </div>

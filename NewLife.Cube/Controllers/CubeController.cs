@@ -22,7 +22,7 @@ namespace NewLife.Cube.Controllers;
 public class CubeController : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources;
-
+ 
     /// <summary>构造函数</summary>
     /// <param name="sources"></param>
     public CubeController(IEnumerable<EndpointDataSource> sources)

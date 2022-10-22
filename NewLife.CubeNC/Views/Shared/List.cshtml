@@ -2,7 +2,11 @@
 @using XCode;
 @using NewLife.Cube.Charts;
 @{
-    //Layout = NewLife.Cube.Setting.Current.Layout;
+    // 强制设置Layout，因为最终项目可能给前端设置Layout，会覆盖影响魔方内部页面
+    var theme = NewLife.Cube.Setting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
+
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
 
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;

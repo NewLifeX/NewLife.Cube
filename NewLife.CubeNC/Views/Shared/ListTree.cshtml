@@ -1,7 +1,10 @@
 ﻿@using NewLife.Web;
 @using XCode;
 @{
-    //Layout = NewLife.Cube.Setting.Current.Layout;
+    var theme = NewLife.Cube.Setting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
+
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
 
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
