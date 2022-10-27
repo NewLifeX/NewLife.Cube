@@ -81,6 +81,20 @@ public static class CubeService
         // 添加Session会话支持
         services.AddSession();
 
+        // 身份验证
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = "Cube";
+            options.DefaultAuthenticateScheme = "Cube";
+            options.DefaultChallengeScheme = "Cube";
+            options.DefaultSignInScheme = "Cube";
+        }).AddCookie("Cube", options =>
+        {
+            options.AccessDeniedPath = "/Admin/User/Login";
+            options.LoginPath = "/Admin/User/Login";
+            options.LogoutPath = "/Admin/User/Logout";
+        });
+
         //// 注册魔方默认UI
         //services.AddCubeDefaultUI();
 
@@ -285,6 +299,7 @@ public static class CubeService
         //app.UseStaticFiles();
         app.UseCookiePolicy();
         app.UseSession();
+        app.UseAuthentication();
 
         // 如果已引入追踪中间件，则这里不再引入
         TracerMiddleware.Tracer ??= DefaultTracer.Instance;

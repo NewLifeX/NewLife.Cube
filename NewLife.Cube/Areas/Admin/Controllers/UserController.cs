@@ -213,6 +213,8 @@ public class UserController : EntityController<User>
     public ActionResult Login()
     {
         var returnUrl = GetRequest("r");
+        if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
+
         // 如果已登录，直接跳转
         if (ManageProvider.User != null)
         {
@@ -327,6 +329,7 @@ public class UserController : EntityController<User>
 
         var set = Setting.Current;
         var returnUrl = GetRequest("r");
+        if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         try
         {
             if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
@@ -418,6 +421,7 @@ public class UserController : EntityController<User>
     public ActionResult Logout()
     {
         var returnUrl = GetRequest("r");
+        if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
 
         var set = Setting.Current;
         if (set.LogoutAll)

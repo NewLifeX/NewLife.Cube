@@ -304,6 +304,7 @@ public class SsoController : ControllerBaseX
             {
                 // 准备返回地址
                 url = GetRequest("r");
+                if (url.IsNullOrEmpty()) url = GetRequest("ReturnUrl");
                 if (url.IsNullOrEmpty()) url = prv.SuccessUrl;
 
                 var state = GetRequest("state");
