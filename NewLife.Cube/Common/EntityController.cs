@@ -274,6 +274,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <returns></returns>
     protected virtual async Task<IList<String>> SaveFiles(TEntity entity, String uploadPath = null)
     {
+        var rs = new List<String>();
         var list = new List<String>();
 
         if (!Request.HasFormContentType) return list;
@@ -290,15 +291,24 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
                     if (file.Name.EqualIgnoreCase(fi.Name, fi.Name + "_attachment"))
                     {
                         var att = await SaveFile(entity, file, uploadPath, null);
-                        if (att != null) list.Add(ViewHelper.GetAttachmentUrl(att));
+                        if (att != null)
+                        {
+                            var url = ViewHelper.GetAttachmentUrl(att);
+                            list.Add(url);
+                            rs.Add(url);
+                        }
                     }
                 }
 
-                if (list.Count > 0) entity.SetItem(fi.Name, list.Join(";"));
+                if (list.Count > 0)
+                {
+                    entity.SetItem(fi.Name, list.Join(";"));
+                    list.Clear();
+                }
             }
         }
 
-        return list;
+        return rs;
     }
 
     /// <summary>保存单个文件</summary>
