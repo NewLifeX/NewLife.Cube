@@ -852,6 +852,7 @@ else
                                 Url = menu.Url,
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
+                                NewWindow = menu.NewWindow,
                                 ParentID = menu.ParentID,
                                 Permissions = menu.Permissions
                             }).ToList();
