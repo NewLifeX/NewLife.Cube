@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0;net7.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
@@ -51,9 +51,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="10.0.2022.1105-beta0228" />
+    <PackageReference Include="NewLife.Core" Version="10.0.2022.1109-beta0133" />
     <PackageReference Include="NewLife.IP" Version="2.0.2022.1101" />
-    <PackageReference Include="NewLife.Stardust" Version="2.4.2022.1101" />
+    <PackageReference Include="NewLife.Stardust" Version="2.4.2022.1108-beta0052" />
     <PackageReference Include="NewLife.XCode" Version="11.3.2022.1106-beta0411" />
   </ItemGroup>
 
