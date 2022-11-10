@@ -120,7 +120,7 @@ namespace NewLife.Cube.Entity
         [DisplayName("在线时间")]
         [Description("在线时间。累计在线总时间，秒")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("OnlineTime", "在线时间。累计在线总时间，秒", "")]
+        [BindColumn("OnlineTime", "在线时间。累计在线总时间，秒", "", ItemType = "TimeSpan")]
         public Int32 OnlineTime { get => _OnlineTime; set { if (OnPropertyChanging("OnlineTime", value)) { _OnlineTime = value; OnPropertyChanged("OnlineTime"); } } }
 
         private DateTime _CreateTime;

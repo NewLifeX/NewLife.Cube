@@ -96,7 +96,7 @@ namespace NewLife.Cube.Entity
         [DisplayName("有效期")]
         [Description("有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("TokenExpire", "有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置", "")]
+        [BindColumn("TokenExpire", "有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置", "", ItemType = "TimeSpan")]
         public Int32 TokenExpire { get => _TokenExpire; set { if (OnPropertyChanging("TokenExpire", value)) { _TokenExpire = value; OnPropertyChanged("TokenExpire"); } } }
 
         private String _Urls;

@@ -135,7 +135,7 @@
       <Column Name="Brower" DataType="String" Description="浏览器" />
       <Column Name="NetType" DataType="String" Description="网络" />
       <Column Name="Status" DataType="String" Length="500" Description="状态" />
-      <Column Name="OnlineTime" DataType="Int32" Description="在线时间。本次在线总时间，秒" />
+      <Column Name="OnlineTime" DataType="Int32" ItemType="TimeSpan" Description="在线时间。本次在线总时间，秒" />
       <Column Name="LastError" DataType="DateTime" Description="最后错误" />
       <Column Name="TraceId" DataType="String" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" />
       <Column Name="Address" DataType="String" Length="200" Description="地址。根据IP计算" />
@@ -164,7 +164,7 @@
       <Column Name="News" DataType="Int32" Description="新用户。今天注册新用户数" />
       <Column Name="NewsT7" DataType="Int32" Description="7天注册。7天内注册新用户数" />
       <Column Name="NewsT30" DataType="Int32" Description="30天注册。30天注册新用户数" />
-      <Column Name="OnlineTime" DataType="Int32" Description="在线时间。累计在线总时间，秒" />
+      <Column Name="OnlineTime" DataType="Int32" ItemType="TimeSpan" Description="在线时间。累计在线总时间，秒" />
       <Column Name="CreateTime" DataType="DateTime" Nullable="False" Description="创建时间" Category="扩展" />
       <Column Name="UpdateTime" DataType="DateTime" Nullable="False" Description="更新时间" Category="扩展" />
       <Column Name="Remark" DataType="String" Length="1000" Description="详细信息" Category="扩展" />
@@ -184,7 +184,7 @@
       <Column Name="White" DataType="String" Length="200" Description="白名单" />
       <Column Name="Black" DataType="String" Length="200" Description="黑名单。黑名单优先于白名单" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
-      <Column Name="TokenExpire" DataType="Int32" Description="有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置" />
+      <Column Name="TokenExpire" DataType="Int32" ItemType="TimeSpan" Description="有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置" />
       <Column Name="Urls" DataType="String" Length="500" Description="回调地址。用于限制回调地址安全性，多个地址逗号隔开" />
       <Column Name="RoleIds" DataType="String" Description="授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制" />
       <Column Name="Scopes" DataType="String" Length="200" Description="能力集合。逗号分隔，password，client_credentials" />

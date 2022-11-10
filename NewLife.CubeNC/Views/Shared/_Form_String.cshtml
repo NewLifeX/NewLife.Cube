@@ -13,12 +13,12 @@
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
     if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
 }
-@if (name.EqualIgnoreCase("Pass", "Password"))
+@if (name.EqualIgnoreCase("Pass", "Password") || Model.ItemType.EqualIgnoreCase("password"))
 {
     if (!atts.ContainsKey("autocomplete")) atts.Add("autocomplete", "off");
     @Html.Password(name, value, atts)
 }
-else if (name.EqualIgnoreCase("Phone", "TelPhone", "OfficePhone", "HomePhone", "Fax"))
+else if (name.EqualIgnoreCase("Phone", "TelPhone", "OfficePhone", "HomePhone", "Fax") || Model.ItemType.EqualIgnoreCase("phone", "fax"))
 {
     if (!atts.ContainsKey("type")) atts.Add("type", "tel");
     <div class="input-group">
@@ -26,7 +26,7 @@ else if (name.EqualIgnoreCase("Phone", "TelPhone", "OfficePhone", "HomePhone", "
         @Html.TextBox(name, value, atts)
     </div>
 }
-else if (name.EqualIgnoreCase("Mobile", "MobilePhone", "CellularPhone"))
+else if (name.EqualIgnoreCase("Mobile", "MobilePhone", "CellularPhone") || Model.ItemType.EqualIgnoreCase("mobile"))
 {
     if (!atts.ContainsKey("type")) atts.Add("type", "tel");
     <div class="input-group">
@@ -34,7 +34,7 @@ else if (name.EqualIgnoreCase("Mobile", "MobilePhone", "CellularPhone"))
         @Html.TextBox(name, value, atts)
     </div>
 }
-else if (name.EqualIgnoreCase("email", "mail"))
+else if (name.EqualIgnoreCase("email", "mail") || Model.ItemType.EqualIgnoreCase("email", "mail"))
 {
     if (!atts.ContainsKey("type")) atts.Add("type", "email");
     <div class="input-group">
@@ -42,7 +42,7 @@ else if (name.EqualIgnoreCase("email", "mail"))
         @Html.TextBox(name, value, atts)
     </div>
 }
-else if (name.EndsWithIgnoreCase("url"))
+else if (name.EndsWithIgnoreCase("url") || Model.ItemType.EqualIgnoreCase("url"))
 {
     //if (!atts.ContainsKey("type")) atts.Add("type", "url");
     <div class="input-group">
