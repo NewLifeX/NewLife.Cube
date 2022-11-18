@@ -134,6 +134,7 @@
       <Column Name="Device" DataType="String" Description="设备" />
       <Column Name="Brower" DataType="String" Description="浏览器" />
       <Column Name="NetType" DataType="String" Description="网络" />
+      <Column Name="DeviceId" DataType="String" Description="设备标识。唯一标识设备，重装后改变" />
       <Column Name="Status" DataType="String" Length="500" Description="状态" />
       <Column Name="OnlineTime" DataType="Int32" ItemType="TimeSpan" Description="在线时间。本次在线总时间，秒" />
       <Column Name="LastError" DataType="DateTime" Description="最后错误" />
