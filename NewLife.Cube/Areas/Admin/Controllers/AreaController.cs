@@ -25,12 +25,12 @@ namespace NewLife.Cube.Cube.Controllers
             {
                 var df = ListFields.GetField("ParentID") as ListField;
                 df.DisplayName = "{ParentPath}";
-                df.Url = "?Id={ParentID}";
+                df.Url = "/Cube/Area?Id={ParentID}";
             }
             {
                 var df = ListFields.AddDataField("sub", "Level") as ListField;
                 df.DisplayName = "下级";
-                df.Url = "?parentId={ID}";
+                df.Url = "/Cube/Area?parentId={ID}";
             }
 
             //AddFormFields.AddField("ID");

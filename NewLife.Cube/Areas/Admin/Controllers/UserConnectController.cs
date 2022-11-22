@@ -26,7 +26,7 @@ namespace NewLife.Cube.Admin.Controllers
             {
                 var df = ListFields.GetField("Provider") as ListField;
                 //df.DisplayName = "{Provider}";
-                df.Url = "?provider={Provider}";
+                df.Url = "/Admin/UserConnect?provider={Provider}";
             }
 
             // 用户列，增加连接
@@ -35,14 +35,14 @@ namespace NewLife.Cube.Admin.Controllers
                 df.Header = "用户";
                 df.HeaderTitle = "对应的本地用户信息";
                 //df.DisplayName = "{UserName}";
-                df.Url = "User?id={UserID}";
+                df.Url = "/Admin/User?id={UserID}";
             }
 
             {
                 var df = ListFields.AddListField("OAuthLog", "Enable");
                 //df.Header = "OAuth日志";
                 df.DisplayName = "OAuth日志";
-                df.Url = "OAuthLog?connectId={ID}";
+                df.Url = "/Admin/OAuthLog?connectId={ID}";
             }
 
             //// 插入一列

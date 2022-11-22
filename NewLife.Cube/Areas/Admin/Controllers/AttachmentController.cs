@@ -21,15 +21,15 @@ namespace NewLife.Cube.Cube.Controllers
 
             {
                 var df = ListFields.GetField("Category") as ListField;
-                df.Url = "?category={Category}";
+                df.Url = "/Cube/Area?category={Category}";
             }
             {
                 var df = ListFields.GetField("Key") as ListField;
-                df.Url = "?category={Category}&key={Key}";
+                df.Url = "/Cube/Area?category={Category}&key={Key}";
             }
             {
                 var df = ListFields.GetField("Extension") as ListField;
-                df.Url = "?ext={Extension}";
+                df.Url = "/Cube/Area?ext={Extension}";
             }
 
             {

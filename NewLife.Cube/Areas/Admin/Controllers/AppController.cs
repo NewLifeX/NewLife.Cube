@@ -26,7 +26,7 @@ namespace NewLife.Cube.Cube.Controllers
                 var df = ListFields.AddListField("AppLog", "Enable");
                 //df.Header = "日志";
                 df.DisplayName = "日志";
-                df.Url = "AppLog?appId={Id}";
+                df.Url = "/Cube/AppLog?appId={Id}";
             }
 
             {
