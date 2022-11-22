@@ -85,6 +85,7 @@ namespace NewLife.Cube.WebMiddleware
                 {
                     var sessionId = token?.MD5_16() ?? ip;
                     olt = _userService.SetWebStatus(sessionId, p, userAgent, ua, user, ip);
+                    FillDeviceId(ctx, olt);
                     ctx.Items["Cube_Online"] = olt;
                 }
                 await _next.Invoke(ctx);
@@ -92,7 +93,7 @@ namespace NewLife.Cube.WebMiddleware
             catch (Exception ex)
             {
                 var uri = ctx.Request.GetRawUrl();
-                if (olt != null) olt.SetError(ex.Message);
+                olt?.SetError(ex.Message);
 
                 XTrace.Log.Error("[{0}]的错误[{1}] {2}", uri, ip, ctx.TraceIdentifier);
 
@@ -198,6 +199,26 @@ namespace NewLife.Cube.WebMiddleware
             }
 
             return true;
+        }
+
+        private static void FillDeviceId(HttpContext ctx, UserOnline online)
+        {
+            if (!online.DeviceId.IsNullOrEmpty()) return;
+
+            var id = ctx.Request.Cookies["CubeDeviceId"];
+            if (id.IsNullOrEmpty())
+            {
+                id = Rand.NextString(16);
+
+                var opt = new CookieOptions
+                {
+                    Expires = DateTimeOffset.Now.AddYears(10)
+                };
+                ctx.Response.Cookies.Append("CubeDeviceId", id, opt);
+            }
+
+            online.DeviceId = id;
+            online.SaveAsync();
         }
     }
 

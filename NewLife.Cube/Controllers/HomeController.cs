@@ -1,41 +1,32 @@
-﻿#if __CORE__
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
-#else
-using System.Web;
-using System.Web.Mvc;
-#endif
 
-namespace NewLife.Cube.Controllers
+namespace NewLife.Cube.Controllers;
+
+/// <summary>主页面</summary>
+//[AllowAnonymous]
+public class CubeHomeController : ControllerBaseX
 {
     /// <summary>主页面</summary>
-    //[AllowAnonymous]
-    public class CubeHomeController : ControllerBaseX
+    /// <returns></returns>
+    public ActionResult Index()
     {
-        /// <summary>主页面</summary>
-        /// <returns></returns>
-        public ActionResult Index()
-        {
-            ViewBag.Message = "主页面";
+        ViewBag.Message = "主页面";
 
-            return View();
+        return View();
+    }
+
+    /// <summary>错误</summary>
+    /// <returns></returns>
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+    {
+        var model = HttpContext.Items["Exception"] as ErrorModel;
+        if (IsJsonRequest)
+        {
+            if (model?.Exception != null) return Json(500, null, model.Exception);
         }
 
-#if __CORE__
-        /// <summary>错误</summary>
-        /// <returns></returns>
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            var model = HttpContext.Items["Exception"] as ErrorModel;
-            if (IsJsonRequest)
-            {
-                if (model?.Exception != null) return Json(500, null, model.Exception);
-            }
-
-            return View("Error", model);
-        }
-#endif
+        return View("Error", model);
     }
 }

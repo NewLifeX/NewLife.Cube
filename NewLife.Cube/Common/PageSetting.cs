@@ -23,8 +23,8 @@ namespace NewLife.Cube
         /// <summary>启用关键字搜索。默认true</summary>
         public Boolean EnableKey { get; set; } = true;
 
-        /// <summary>启用选择列。默认Update/Delete权限时为true</summary>
-        public Boolean EnableSelect { get; set; }
+        /// <summary>启用选择列。默认true</summary>
+        public Boolean EnableSelect { get; set; } = true;
 
         /// <summary>启用尾部。默认true</summary>
         public Boolean EnableFooter { get; set; } = true;

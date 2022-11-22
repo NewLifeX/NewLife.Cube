@@ -41,6 +41,10 @@ namespace NewLife.Cube.ViewModels
         /// </summary>
         /// <value></value>
         public Boolean Visible { get; set; }
+
+        /// <summary>是否新窗口打开</summary>
+        public Boolean NewWindow { get; set; }
+
         /// <summary>可选权限子项</summary>
         public Dictionary<Int32, String> Permissions { get; set; }
         /// <summary>

@@ -285,17 +285,13 @@ namespace NewLife.Cube.Web
                 if (set.UseSsoDepartment && !client.DepartmentCode.IsNullOrEmpty() && !client.DepartmentName.IsNullOrEmpty())
                 {
                     var dep = Department.FindByCode(client.DepartmentCode);
-                    if (dep == null)
-                    {
-                        dep = new Department
+                    dep ??= new Department
                         {
                             Code = client.DepartmentCode,
                             Name = client.DepartmentName,
                             Enable = true,
                             Visible = true,
                         };
-                        //dep.Insert();
-                    }
 
                     // 父级部门
                     if (!client.ParentDepartmentCode.IsNullOrEmpty())

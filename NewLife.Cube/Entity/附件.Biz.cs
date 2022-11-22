@@ -173,7 +173,7 @@ namespace NewLife.Cube.Entity
             //if (File.Exists(fullFile)) File.Delete(fullFile);
 
             // 抓取并保存
-            if (_client == null) _client = new HttpClient();
+            _client ??= new HttpClient();
             var rs = await _client.GetAsync(url);
             var contentType = rs.Content.Headers.ContentType + "";
             if (!contentType.IsNullOrEmpty()) ContentType = contentType;

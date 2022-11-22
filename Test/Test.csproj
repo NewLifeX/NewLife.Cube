@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <OutputPath>..\BinTest\</OutputPath>
     <LangVersion>latest</LangVersion>
     <Version>1.0.0.1130</Version>
@@ -11,17 +11,11 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\CubeDemo\Entity\交易.Biz.cs" Link="Entity\交易.Biz.cs" />
-    <Compile Include="..\CubeDemo\Entity\交易.cs" Link="Entity\交易.cs" />
-    <Compile Include="..\CubeDemo\Entity\学生.Biz.cs" Link="Entity\学生.Biz.cs" />
-    <Compile Include="..\CubeDemo\Entity\学生.cs" Link="Entity\学生.cs" />
-    <Compile Include="..\CubeDemo\Entity\班级.Biz.cs" Link="Entity\班级.Biz.cs" />
-    <Compile Include="..\CubeDemo\Entity\班级.cs" Link="Entity\班级.cs" />
+    <Compile Remove="Entity\**" />
+    <EmbeddedResource Remove="Entity\**" />
+    <None Remove="Entity\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.XCode" Version="11.3.2022.1009" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Entity\" />
+    <PackageReference Include="NewLife.XCode" Version="11.3.2022.1106-beta0411" />
   </ItemGroup>
 </Project>

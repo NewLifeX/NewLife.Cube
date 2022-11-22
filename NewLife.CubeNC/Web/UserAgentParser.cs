@@ -264,8 +264,8 @@ public class UserAgentParser
     private void ParseTencent(String[] infos, String[] exts)
     {
         var inf = infos.FirstOrDefault(e => e.StartsWith("wxwork/"));
-        if (inf == null) inf = infos.FirstOrDefault(e => e.StartsWith("QQ/"));
-        if (inf == null) inf = infos.FirstOrDefault(e => e.StartsWith("MicroMessenger/"));
+        inf ??= infos.FirstOrDefault(e => e.StartsWith("QQ/"));
+        inf ??= infos.FirstOrDefault(e => e.StartsWith("MicroMessenger/"));
         if (inf == null) return;
 
         var p1 = inf.IndexOf('(');

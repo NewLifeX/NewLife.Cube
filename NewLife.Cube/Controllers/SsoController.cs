@@ -304,6 +304,7 @@ public class SsoController : ControllerBaseX
             {
                 // 准备返回地址
                 url = GetRequest("r");
+                if (url.IsNullOrEmpty()) url = GetRequest("ReturnUrl");
                 if (url.IsNullOrEmpty()) url = prv.SuccessUrl;
 
                 var state = GetRequest("state");
@@ -421,10 +422,7 @@ public class SsoController : ControllerBaseX
 
         // 如果已经登录，直接返回。否则跳到登录页面
         var user = prov?.Current;
-        if (user == null)
-        {
-            user = prov?.Provider.TryLogin(HttpContext);
-        }
+        user ??= prov?.Provider.TryLogin(HttpContext);
         if (user != null)
             url = OAuth.GetResult(key, user);
         else if (!loginUrl.IsNullOrEmpty())

@@ -81,6 +81,20 @@ public static class CubeService
         // 添加Session会话支持
         services.AddSession();
 
+        // 身份验证
+        services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = "Cube";
+            options.DefaultAuthenticateScheme = "Cube";
+            options.DefaultChallengeScheme = "Cube";
+            options.DefaultSignInScheme = "Cube";
+        }).AddCookie("Cube", options =>
+        {
+            options.AccessDeniedPath = "/Admin/User/Login";
+            options.LoginPath = "/Admin/User/Login";
+            options.LogoutPath = "/Admin/User/Logout";
+        });
+
         //// 注册魔方默认UI
         //services.AddCubeDefaultUI();
 
@@ -158,7 +172,7 @@ public static class CubeService
     public static void AddCustomApplicationParts(this IServiceCollection services)
     {
         var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
-        if (manager == null) manager = new ApplicationPartManager();
+        manager ??= new ApplicationPartManager();
 
         var list = FindAllArea();
 
@@ -285,9 +299,10 @@ public static class CubeService
         //app.UseStaticFiles();
         app.UseCookiePolicy();
         app.UseSession();
+        app.UseAuthentication();
 
         // 如果已引入追踪中间件，则这里不再引入
-        if (TracerMiddleware.Tracer == null) TracerMiddleware.Tracer = DefaultTracer.Instance;
+        TracerMiddleware.Tracer ??= DefaultTracer.Instance;
         if (TracerMiddleware.Tracer != null && !app.Properties.ContainsKey(nameof(TracerMiddleware)))
         {
             app.UseMiddleware<TracerMiddleware>();

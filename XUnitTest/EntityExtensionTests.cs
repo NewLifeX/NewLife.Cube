@@ -45,7 +45,7 @@ namespace XUnitTest
             var dic = new Dictionary<String, String>();
             foreach (IEntity entity in value as IEnumerable)
             {
-                if (factory == null) factory = entity.GetType().AsFactory();
+                factory ??= entity.GetType().AsFactory();
 
                 var key = entity[factory.Unique.Name] + "";
                 dic[key] = entity + "";

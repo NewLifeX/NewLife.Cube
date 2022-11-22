@@ -117,6 +117,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("NetType", "网络", "")]
         public String NetType { get => _NetType; set { if (OnPropertyChanging("NetType", value)) { _NetType = value; OnPropertyChanged("NetType"); } } }
 
+        private String _DeviceId;
+        /// <summary>设备标识。唯一标识设备，重装后改变</summary>
+        [DisplayName("设备标识")]
+        [Description("设备标识。唯一标识设备，重装后改变")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("DeviceId", "设备标识。唯一标识设备，重装后改变", "")]
+        public String DeviceId { get => _DeviceId; set { if (OnPropertyChanging("DeviceId", value)) { _DeviceId = value; OnPropertyChanged("DeviceId"); } } }
+
         private String _Status;
         /// <summary>状态</summary>
         [DisplayName("状态")]
@@ -130,7 +138,7 @@ namespace NewLife.Cube.Entity
         [DisplayName("在线时间")]
         [Description("在线时间。本次在线总时间，秒")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("OnlineTime", "在线时间。本次在线总时间，秒", "")]
+        [BindColumn("OnlineTime", "在线时间。本次在线总时间，秒", "", ItemType = "TimeSpan")]
         public Int32 OnlineTime { get => _OnlineTime; set { if (OnPropertyChanging("OnlineTime", value)) { _OnlineTime = value; OnPropertyChanged("OnlineTime"); } } }
 
         private DateTime _LastError;
@@ -216,6 +224,7 @@ namespace NewLife.Cube.Entity
                     case "Device": return _Device;
                     case "Brower": return _Brower;
                     case "NetType": return _NetType;
+                    case "DeviceId": return _DeviceId;
                     case "Status": return _Status;
                     case "OnlineTime": return _OnlineTime;
                     case "LastError": return _LastError;
@@ -244,6 +253,7 @@ namespace NewLife.Cube.Entity
                     case "Device": _Device = Convert.ToString(value); break;
                     case "Brower": _Brower = Convert.ToString(value); break;
                     case "NetType": _NetType = Convert.ToString(value); break;
+                    case "DeviceId": _DeviceId = Convert.ToString(value); break;
                     case "Status": _Status = Convert.ToString(value); break;
                     case "OnlineTime": _OnlineTime = value.ToInt(); break;
                     case "LastError": _LastError = value.ToDateTime(); break;
@@ -298,6 +308,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>网络</summary>
             public static readonly Field NetType = FindByName("NetType");
+
+            /// <summary>设备标识。唯一标识设备，重装后改变</summary>
+            public static readonly Field DeviceId = FindByName("DeviceId");
 
             /// <summary>状态</summary>
             public static readonly Field Status = FindByName("Status");
@@ -367,6 +380,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>网络</summary>
             public const String NetType = "NetType";
+
+            /// <summary>设备标识。唯一标识设备，重装后改变</summary>
+            public const String DeviceId = "DeviceId";
 
             /// <summary>状态</summary>
             public const String Status = "Status";

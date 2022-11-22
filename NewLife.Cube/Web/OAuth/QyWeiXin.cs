@@ -232,8 +232,8 @@ namespace NewLife.Web.OAuth
         {
             return new QyWeiXin
             {
-                CorpId = QyWeiXin.GetConfig("CorpId"),
-                CorpSecret = QyWeiXin.GetConfig(name),
+                CorpId = GetConfig("CorpId"),
+                CorpSecret = GetConfig(name),
             };
         }
 

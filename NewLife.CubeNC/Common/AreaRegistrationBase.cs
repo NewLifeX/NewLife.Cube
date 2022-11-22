@@ -127,7 +127,7 @@ namespace NewLife.Cube
             var ns = controller.Namespace;
             if (!ns.EndsWith(".Controllers")) return false;
 
-            if (_namespaces == null) _namespaces = new HashSet<String>(_areas.Keys.Select(e => e.Namespace));
+            _namespaces ??= new HashSet<String>(_areas.Keys.Select(e => e.Namespace));
 
             // 该控制器父级命名空间必须有对应的区域注册类，才会拦截其异常
             ns = ns.TrimEnd(".Controllers");

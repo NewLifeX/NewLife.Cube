@@ -22,7 +22,7 @@ namespace NewLife.Cube.Controllers;
 public class CubeController : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources;
-
+ 
     /// <summary>构造函数</summary>
     /// <param name="sources"></param>
     public CubeController(IEnumerable<EndpointDataSource> sources)
@@ -65,6 +65,8 @@ public class CubeController : ControllerBaseX
     {
         var asmx = AssemblyX.Entry;
         var conn = HttpContext.Connection;
+        var remote = conn.RemoteIpAddress;
+        if (remote.IsIPv4MappedToIPv6) remote = remote.MapToIPv4();
         var ip = HttpContext.GetUserHost();
 
         var rs = new
@@ -75,8 +77,8 @@ public class CubeController : ControllerBaseX
             asmx?.Compile,
             OS = _OS,
 
-            UserHost = ip + "",
-            Remote = conn.RemoteIpAddress + "",
+            UserHost = ip?.ToString(),
+            Remote = remote?.ToString(),
             Port = conn.LocalPort,
             Time = DateTime.Now,
             State = state,

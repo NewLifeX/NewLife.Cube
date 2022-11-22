@@ -4,6 +4,12 @@
 @using XCode.Configuration
 @using Microsoft.AspNetCore.Mvc.Rendering;
 @{
+    // 强制设置Layout，因为最终项目可能给前端设置Layout，会覆盖影响魔方内部页面
+    var theme = NewLife.Cube.Setting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
+
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
+
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
     var fields = ViewBag.Fields as FieldCollection;

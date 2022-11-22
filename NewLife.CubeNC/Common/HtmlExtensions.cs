@@ -68,7 +68,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForEditor(this IHtmlHelper Html, FieldItem field, IEntity entity = null)
         {
-            if (entity == null) entity = Html.ViewData.Model as IEntity;
+            entity ??= Html.ViewData.Model as IEntity;
 
             // 优先处理映射。因为映射可能是字符串
             {
@@ -167,7 +167,7 @@ namespace NewLife.Cube
         /// <returns></returns>
         public static IHtmlContent ForEditor(this IHtmlHelper Html, String name, IEntity entity = null)
         {
-            if (entity == null) entity = Html.ViewData.Model as IEntity;
+            entity ??= Html.ViewData.Model as IEntity;
 
             var fact = EntityFactory.CreateFactory(entity.GetType());
             var field = fact.Table.FindByName(name);

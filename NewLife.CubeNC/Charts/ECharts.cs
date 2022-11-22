@@ -69,7 +69,7 @@ namespace NewLife.Cube.Charts
         /// <param name="series"></param>
         public void Add(Series series)
         {
-            if (Series == null) Series = new List<Series>();
+            Series ??= new List<Series>();
 
             Series.Add(series);
         }
@@ -272,7 +272,7 @@ namespace NewLife.Cube.Charts
 
             // 提示
             var legend = Legend;
-            if (legend == null) legend = Series.Select(e => e.Name).ToArray();
+            legend ??= Series.Select(e => e.Name).ToArray();
             if (legend != null)
             {
                 if (legend is String str)

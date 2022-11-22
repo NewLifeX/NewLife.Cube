@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net5.0;net6.0;net7.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
@@ -17,7 +17,6 @@
     <Deterministic>false</Deterministic>
     <OutputPath>..\Bin</OutputPath>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <DefineConstants>$(DefineConstants);__CORE__</DefineConstants>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -40,18 +39,6 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DefineConstants>$(DefineConstants);DEBUG</DefineConstants>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <WarningLevel>3</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net5.0'">
-    <DefineConstants>$(DefineConstants);__CORE__;NET50</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net6.0'">
-    <DefineConstants>$(DefineConstants);__CORE__;NET60</DefineConstants>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Session\ISession2.cs" />
     <Compile Remove="Session\MemorySession.cs" />
@@ -64,10 +51,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="10.0.2022.1001" />
-    <PackageReference Include="NewLife.IP" Version="2.0.2022.901" />
-    <PackageReference Include="NewLife.Stardust" Version="2.3.2022.1001" />
-    <PackageReference Include="NewLife.XCode" Version="11.3.2022.1009" />
+    <PackageReference Include="NewLife.Core" Version="10.0.2022.1109-beta0133" />
+    <PackageReference Include="NewLife.IP" Version="2.0.2022.1101" />
+    <PackageReference Include="NewLife.Stardust" Version="2.4.2022.1108-beta0052" />
+    <PackageReference Include="NewLife.XCode" Version="11.3.2022.1106-beta0411" />
   </ItemGroup>
 
   <ItemGroup>

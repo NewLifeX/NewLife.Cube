@@ -205,7 +205,7 @@ namespace NewLife.Web
             var expire = 0;
             if (app != null) expire = app.TokenExpire;
 
-            var set = NewLife.Cube.Setting.Current;
+            var set = Cube.Setting.Current;
             if (expire <= 0) expire = set.TokenExpire;
             var exp = DateTime.Now.AddSeconds(expire);
 
@@ -252,7 +252,7 @@ namespace NewLife.Web
             var expire = 0;
             if (log.App != null) expire = log.App.TokenExpire;
 
-            var set = NewLife.Cube.Setting.Current;
+            var set = Cube.Setting.Current;
             if (expire <= 0) expire = set.TokenExpire;
 
             return new TokenInfo
@@ -283,7 +283,7 @@ namespace NewLife.Web
                 }
 
                 // 从配置加载密钥
-                var set = NewLife.Cube.Setting.Current;
+                var set = Cube.Setting.Current;
                 var ss = set.JwtSecret.Split(':');
 
                 var jwt = new JwtBuilder
@@ -326,7 +326,7 @@ namespace NewLife.Web
         public TokenProvider GetProvider()
         {
             var prv = TokenProvider;
-            if (prv == null) prv = TokenProvider = new TokenProvider();
+            prv ??= TokenProvider = new TokenProvider();
             if (prv.Key.IsNullOrEmpty()) prv.ReadKey("..\\Keys\\OAuth.prvkey", true);
 
             return prv;

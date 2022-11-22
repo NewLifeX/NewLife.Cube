@@ -147,7 +147,7 @@ namespace NewLife.Cube.Entity
         /// <param name="menus"></param>
         public static void ScanModel(String areaName, IList<IMenu> menus)
         {
-            var models = ModelTable.FindAll().Where(e => e.Category.EqualIgnoreCase(areaName)).ToList();
+            var models = FindAll().Where(e => e.Category.EqualIgnoreCase(areaName)).ToList();
             foreach (var menu in menus.OrderByDescending(e => e.Sort))
             {
                 if (menu.FullName.IsNullOrEmpty()) continue;
@@ -192,11 +192,11 @@ namespace NewLife.Cube.Entity
             //if (areaName.IsNullOrWhiteSpace()) areaName = menu.Parent.Name;
             //// var areaName = menu.Parent.Name; // 这里Parent有可能为空，读取不到父级
 
-            var table = ModelTable.FindByCategoryAndName(areaName, ctrlName);
+            var table = FindByCategoryAndName(areaName, ctrlName);
             // var table = ModelTable.Meta.Cache.Find(e => e.Category.EqualIgnoreCase(areaName) && e.Name == entityTypeName);
             // var table = ModelTable.Find(ModelTable._.Category == areaName & ModelTable._.Name == entityTypeName);
 
-            if (table == null) table = new ModelTable { Name = ctrlName, Enable = true };
+            table ??= new ModelTable { Name = ctrlName, Enable = true };
 
             table.Category = areaName;
             table.Url = url;
