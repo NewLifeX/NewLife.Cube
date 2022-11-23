@@ -242,7 +242,7 @@ namespace NewLife.Cube
         public Boolean TitlePrefix { get; set; } = true;
 
         /// <summary>双击事件禁用。列表页表格行双击事件禁用，默认true(启用)</summary>
-        [Description("列表页表格行双击事件禁用，默认true(启用)")]
+        [Description("双击事件禁用。列表页表格行双击事件禁用，默认true(启用)")]
         [Category("界面配置")]
         public Boolean EnableTableDoubleClick { get; set; } = true;
 
