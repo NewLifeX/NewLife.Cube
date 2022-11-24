@@ -499,7 +499,7 @@
                     if (type === PROVINCE) {
                         provs = [];
                         for (var i = 0; i < address.length; i++) {
-                            if (address[i].code === value) {
+                            if (parseInt(address[i].code) === value) {
                                 matched = {
                                     code: address[i].code,
                                     address: address[i].address
