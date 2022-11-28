@@ -95,7 +95,7 @@ function doAction(methodName, actionUrl, actionParamter) {
             //console.log(ex);
         },
         beforeSend: function () {
-            tips('正在操作中，请稍候...', 0, 2000);
+            //tips('正在操作中，请稍候...', 0, 2000);
         },
         success: function (s) {
             //console.log(s);
