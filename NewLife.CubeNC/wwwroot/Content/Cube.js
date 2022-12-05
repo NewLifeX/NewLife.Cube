@@ -24,7 +24,7 @@ $(function () {
             //    $this.attr('href', 'javascript:void(0);');
             //}
 
-            var cf = $this.data('action');
+            var cf = $this.data('confirm');
 
             if (cf && cf.length > 0) {
                 confirmDialog(cf, function () {
