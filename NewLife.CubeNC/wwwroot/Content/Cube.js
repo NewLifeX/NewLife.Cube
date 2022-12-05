@@ -14,18 +14,22 @@ $(function () {
         function (e) {
             $this = $(this);
             //动态设置标签参数
-            var url = $this.attr('href');
-            if (url && url.length > 0) {
-                $this.data('url', url);
-                $this.attr('href', 'javascript:void(0);');
+            var url = $this.data('url');
+            if (!url || url == '') {
+                url = $this.attr('href');
             }
+            //if (url && url.length > 0) {
+            //    $this.data('url', url);
+            //    // 避免请求失败导致无法进行后续我。
+            //    $this.attr('href', 'javascript:void(0);');
+            //}
 
-            var cf = $this.data('confirm');
+            var cf = $this.data('action');
 
             if (cf && cf.length > 0) {
-                confirmDialog(cf,function () {
+                confirmDialog(cf, function () {
                     doClickAction($this)
-                } );
+                });
                 return false;
             }
 
@@ -102,18 +106,18 @@ function doAction(methodName, actionUrl, actionParamter) {
         },
         complete: function (result) {
             var rs = result.responseJSON;
-            
+
             if (rs.message || rs.data) {
                 tips(rs.message || rs.data, 0, 1000);
             }
-            
+
             if (rs.url && rs.url.length > 0) {
                 if (rs.url == '[refresh]') {
-                    if(rs.time && +rs.time > 0){
+                    if (rs.time && +rs.time > 0) {
                         setTimeout(function () {
                             location.reload(false)
                         }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
-                    }else {
+                    } else {
                         //刷新页面但不重新加载页面的所有静态资源
                         location.reload(false);
                     }
