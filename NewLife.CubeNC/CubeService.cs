@@ -137,6 +137,12 @@ public static class CubeService
             o.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
         });
 
+        // 配置Json，支持中文编码
+        services.Configure<JsonOptions>(options =>
+        {
+            options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+        });
+
         // UI服务
         services.AddSingleton<UIService>();
         services.AddSingleton<PasswordService>();
