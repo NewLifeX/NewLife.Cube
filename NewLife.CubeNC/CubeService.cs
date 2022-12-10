@@ -16,6 +16,7 @@ using NewLife.Cube.WebMiddleware;
 using NewLife.IP;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using NewLife.Web;
 using Stardust;
 using Stardust.Registry;
@@ -137,9 +138,15 @@ public static class CubeService
             o.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
         });
 
-        // 配置Json，支持中文编码
+        // 配置Json
         services.Configure<JsonOptions>(options =>
         {
+#if NET7_0_OR_GREATER
+            // 支持模型类中的DataMember特性
+            options.JsonSerializerOptions.TypeInfoResolver = DataMemberResolver.Default;
+            options.JsonSerializerOptions.Converters.Add(new JsonConverterForType());
+#endif
+            // 支持中文编码
             options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
         });
 
