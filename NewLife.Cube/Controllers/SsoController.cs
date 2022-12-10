@@ -1,21 +1,17 @@
-﻿using System;
-using System.IO;
-using NewLife.Cube.Entity;
-using NewLife.Cube.Web;
-using NewLife.Log;
-using NewLife.Model;
-using NewLife.Web;
-using XCode.Membership;
-using System.Security.Cryptography;
-using NewLife.Security;
-using NewLife.Cube.Web.Models;
-using NewLife.Remoting;
-using System.Collections.Generic;
+﻿using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Collections;
 using NewLife.Caching;
+using NewLife.Cube.Entity;
+using NewLife.Cube.Web;
+using NewLife.Cube.Web.Models;
+using NewLife.Log;
+using NewLife.Model;
+using NewLife.Remoting;
+using NewLife.Security;
+using NewLife.Web;
+using XCode.Membership;
 
 /*
  * 魔方OAuth在禁用本地登录，且只设置一个第三方登录时，形成单点登录。
