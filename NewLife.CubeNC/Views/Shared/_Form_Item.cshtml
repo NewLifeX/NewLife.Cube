@@ -56,6 +56,14 @@
         {
             @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, ds, entity[item.Name]))
         }
+        else if (item.ItemType.EqualIgnoreCase("singleSelect"))
+        {
+            @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(item.Name, ds, entity[item.Name]))
+        }
+        else if (item.ItemType.EqualIgnoreCase("multipleSelect"))
+        {
+            @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, ds, entity[item.Name]))
+        }
         else
         {
             @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(item.Name, ds, entity[item.Name]))
