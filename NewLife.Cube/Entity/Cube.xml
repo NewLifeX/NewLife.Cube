@@ -189,6 +189,7 @@
       <Column Name="Urls" DataType="String" Length="500" Description="回调地址。用于限制回调地址安全性，多个地址逗号隔开" />
       <Column Name="RoleIds" DataType="String" Description="授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制" />
       <Column Name="Scopes" DataType="String" Length="200" Description="能力集合。逗号分隔，password，client_credentials" />
+      <Column Name="OAuths" DataType="String" Description="三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开" />
       <Column Name="Expired" DataType="DateTime" Description="过期时间。空表示永不过期" />
       <Column Name="Auths" DataType="Int32" Description="次数" />
       <Column Name="LastAuth" DataType="DateTime" Description="最后请求" />

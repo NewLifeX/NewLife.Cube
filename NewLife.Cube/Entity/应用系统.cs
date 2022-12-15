@@ -123,6 +123,14 @@ namespace NewLife.Cube.Entity
         [BindColumn("Scopes", "能力集合。逗号分隔，password，client_credentials", "")]
         public String Scopes { get => _Scopes; set { if (OnPropertyChanging("Scopes", value)) { _Scopes = value; OnPropertyChanged("Scopes"); } } }
 
+        private String _OAuths;
+        /// <summary>三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开</summary>
+        [DisplayName("三方OAuth")]
+        [Description("三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开")]
+        [DataObjectField(false, false, true, 50)]
+        [BindColumn("OAuths", "三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开", "")]
+        public String OAuths { get => _OAuths; set { if (OnPropertyChanging("OAuths", value)) { _OAuths = value; OnPropertyChanged("OAuths"); } } }
+
         private DateTime _Expired;
         /// <summary>过期时间。空表示永不过期</summary>
         [DisplayName("过期时间")]
@@ -234,6 +242,7 @@ namespace NewLife.Cube.Entity
                     case "Urls": return _Urls;
                     case "RoleIds": return _RoleIds;
                     case "Scopes": return _Scopes;
+                    case "OAuths": return _OAuths;
                     case "Expired": return _Expired;
                     case "Auths": return _Auths;
                     case "LastAuth": return _LastAuth;
@@ -264,6 +273,7 @@ namespace NewLife.Cube.Entity
                     case "Urls": _Urls = Convert.ToString(value); break;
                     case "RoleIds": _RoleIds = Convert.ToString(value); break;
                     case "Scopes": _Scopes = Convert.ToString(value); break;
+                    case "OAuths": _OAuths = Convert.ToString(value); break;
                     case "Expired": _Expired = value.ToDateTime(); break;
                     case "Auths": _Auths = value.ToInt(); break;
                     case "LastAuth": _LastAuth = value.ToDateTime(); break;
@@ -322,6 +332,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>能力集合。逗号分隔，password，client_credentials</summary>
             public static readonly Field Scopes = FindByName("Scopes");
+
+            /// <summary>三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开</summary>
+            public static readonly Field OAuths = FindByName("OAuths");
 
             /// <summary>过期时间。空表示永不过期</summary>
             public static readonly Field Expired = FindByName("Expired");
@@ -397,6 +410,9 @@ namespace NewLife.Cube.Entity
 
             /// <summary>能力集合。逗号分隔，password，client_credentials</summary>
             public const String Scopes = "Scopes";
+
+            /// <summary>三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开</summary>
+            public const String OAuths = "OAuths";
 
             /// <summary>过期时间。空表示永不过期</summary>
             public const String Expired = "Expired";
