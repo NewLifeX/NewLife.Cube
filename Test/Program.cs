@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
 using NewLife.Security;
@@ -18,7 +19,7 @@ namespace Test
 
             try
             {
-                Test3();
+                Test1();
             }
             catch (Exception ex)
             {
@@ -31,25 +32,33 @@ namespace Test
 
         static void Test1()
         {
-            //var count = Student.Meta.Count;
-            //Console.WriteLine("{0:n0}", count);
+            var snow = new Snowflake();
 
-            //Student.Meta.Session.Dal.Session.ShowSQL = false;
+            var dt = new DateTime(2000, 1, 1);
+            var id = snow.GetId(dt);
+            XTrace.WriteLine("{0} {1} {1:X16}", dt, id);
 
-            //// 生成一批需要随机查询的编号
-            //var ids = Enumerable.Range(0, 1024).Select(e => Rand.Next(count)).ToArray();
+            dt = new DateTime(2020, 1, 1);
+            id = snow.GetId(dt);
+            XTrace.WriteLine("{0} {1} {1:X16}", dt, id);
 
-            //count = 10_000_000;
-            //var sw = Stopwatch.StartNew();
-            //for (var i = 0; i < count; i++)
-            //{
-            //    var id = ids[i % 1024];
-            //    var entity = Student.FindByID(id);
-            //}
-            //sw.Stop();
+            dt = new DateTime(2022, 1, 1);
+            id = snow.GetId(dt);
+            XTrace.WriteLine("{0} {1} {1:X16}", dt, id);
 
-            //var ms = sw.Elapsed.TotalMilliseconds;
-            //Console.WriteLine("查询[{0:n0}]次，耗时{1:n0}ms，速度{2:n0}qps", count, ms, count * 1000L / ms);
+            dt = new DateTime(2023, 1, 1);
+            id = snow.GetId(dt);
+            XTrace.WriteLine("{0} {1} {1:X16}", dt, id);
+
+            dt = new DateTime(2022, 11, 11);
+            for (int i = 0; i < 365; i++)
+            {
+                dt = dt.AddDays(1);
+                id = snow.GetId(dt);
+                XTrace.WriteLine("{0} {1} {1:X16}", dt, id);
+
+                if (id >= 700_00000000_00000000) break;
+            }
         }
 
         static async void Test2()

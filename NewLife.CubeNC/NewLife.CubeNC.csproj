@@ -52,10 +52,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="10.1.2022.1210-beta0436" />
+    <PackageReference Include="NewLife.Core" Version="10.1.2022.1220-beta0114" />
     <PackageReference Include="NewLife.IP" Version="2.0.2022.1201" />
-    <PackageReference Include="NewLife.Stardust" Version="2.5.2022.1206-beta0251" />
-    <PackageReference Include="NewLife.XCode" Version="11.5.2022.1201" />
+    <PackageReference Include="NewLife.Stardust" Version="2.5.2022.1220-beta0113" />
+    <PackageReference Include="NewLife.XCode" Version="11.5.2022.1223-beta0407" />
   </ItemGroup>
 
   <ItemGroup>
