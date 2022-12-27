@@ -210,8 +210,23 @@ namespace NewLife.Cube.WebMiddleware
             {
                 id = Rand.NextString(16);
 
+                // 顶级域名
+                var url = ctx.Request.GetRawUrl();
+                var domain = url.Host;
+                var ss = domain.Split('.');
+                if (ss.Length >= 3)
+                {
+                    // 国家顶级域名
+                    if (ss[^1].Length == 2 && ss[^2].EqualIgnoreCase("com", "net", "org", "gov", "edu"))
+                        domain = $"{ss[^3]}.{ss[^2]}.{ss[^1]}";
+                    // 全球顶级域名
+                    else
+                        domain = $"{ss[^2]}.{ss[^1]}";
+                }
+
                 var opt = new CookieOptions
                 {
+                    Domain = domain,
                     Expires = DateTimeOffset.Now.AddYears(10)
                 };
                 ctx.Response.Cookies.Append("CubeDeviceId", id, opt);
