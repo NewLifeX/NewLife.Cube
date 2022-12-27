@@ -286,12 +286,12 @@ namespace NewLife.Cube.Web
                 {
                     var dep = Department.FindByCode(client.DepartmentCode);
                     dep ??= new Department
-                        {
-                            Code = client.DepartmentCode,
-                            Name = client.DepartmentName,
-                            Enable = true,
-                            Visible = true,
-                        };
+                    {
+                        Code = client.DepartmentCode,
+                        Name = client.DepartmentName,
+                        Enable = true,
+                        Visible = true,
+                    };
 
                     // 父级部门
                     if (!client.ParentDepartmentCode.IsNullOrEmpty())
@@ -814,6 +814,8 @@ namespace NewLife.Cube.Web
                 dic[item.Name] = item.Value;
             }
 
+            var online = UserOnline.FindAllByUserID(user.ID).FirstOrDefault(e => !e.DeviceId.IsNullOrEmpty());
+
             if (user is User user2)
                 return new
                 {
@@ -831,6 +833,7 @@ namespace NewLife.Cube.Web
                     departmentCode = user2.Department?.Code,
                     departmentName = user2.Department?.Name,
                     areaid = user2.AreaId,
+                    deviceid = online?.DeviceId,
                     avatar = "/Cube/Avatar?id=" + user2.ID,
                     birthday = user2.Birthday.ToString("yyyy-MM-dd", ""),
                     detail = user2.Remark,

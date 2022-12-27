@@ -30,19 +30,19 @@ namespace NewLife.Cube.Entity
         public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
 
         private Int32 _UserID;
-        /// <summary>用户</summary>
+        /// <summary>用户。当前登录人</summary>
         [DisplayName("用户")]
-        [Description("用户")]
+        [Description("用户。当前登录人")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("UserID", "用户", "")]
+        [BindColumn("UserID", "用户。当前登录人", "")]
         public Int32 UserID { get => _UserID; set { if (OnPropertyChanging("UserID", value)) { _UserID = value; OnPropertyChanged("UserID"); } } }
 
         private String _Name;
-        /// <summary>名称</summary>
+        /// <summary>名称。当前登录人，或根据设备标识推算出来的使用人</summary>
         [DisplayName("名称")]
-        [Description("名称")]
+        [Description("名称。当前登录人，或根据设备标识推算出来的使用人")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Name", "名称", "", Master = true)]
+        [BindColumn("Name", "名称。当前登录人，或根据设备标识推算出来的使用人", "", Master = true)]
         public String Name { get => _Name; set { if (OnPropertyChanging("Name", value)) { _Name = value; OnPropertyChanged("Name"); } } }
 
         private String _SessionID;
@@ -78,51 +78,51 @@ namespace NewLife.Cube.Entity
         public String Page { get => _Page; set { if (OnPropertyChanging("Page", value)) { _Page = value; OnPropertyChanged("Page"); } } }
 
         private String _Platform;
-        /// <summary>平台</summary>
+        /// <summary>平台。操作系统平台，Windows/Linux/Android等</summary>
         [DisplayName("平台")]
-        [Description("平台")]
+        [Description("平台。操作系统平台，Windows/Linux/Android等")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Platform", "平台", "")]
+        [BindColumn("Platform", "平台。操作系统平台，Windows/Linux/Android等", "")]
         public String Platform { get => _Platform; set { if (OnPropertyChanging("Platform", value)) { _Platform = value; OnPropertyChanged("Platform"); } } }
 
         private String _OS;
-        /// <summary>系统</summary>
+        /// <summary>系统。操作系统，带版本</summary>
         [DisplayName("系统")]
-        [Description("系统")]
+        [Description("系统。操作系统，带版本")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("OS", "系统", "")]
+        [BindColumn("OS", "系统。操作系统，带版本", "")]
         public String OS { get => _OS; set { if (OnPropertyChanging("OS", value)) { _OS = value; OnPropertyChanged("OS"); } } }
 
         private String _Device;
-        /// <summary>设备</summary>
+        /// <summary>设备。手机品牌型号</summary>
         [DisplayName("设备")]
-        [Description("设备")]
+        [Description("设备。手机品牌型号")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Device", "设备", "")]
+        [BindColumn("Device", "设备。手机品牌型号", "")]
         public String Device { get => _Device; set { if (OnPropertyChanging("Device", value)) { _Device = value; OnPropertyChanged("Device"); } } }
 
         private String _Brower;
-        /// <summary>浏览器</summary>
+        /// <summary>浏览器。浏览器名称，带版本</summary>
         [DisplayName("浏览器")]
-        [Description("浏览器")]
+        [Description("浏览器。浏览器名称，带版本")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("Brower", "浏览器", "")]
+        [BindColumn("Brower", "浏览器。浏览器名称，带版本", "")]
         public String Brower { get => _Brower; set { if (OnPropertyChanging("Brower", value)) { _Brower = value; OnPropertyChanged("Brower"); } } }
 
         private String _NetType;
-        /// <summary>网络</summary>
+        /// <summary>网络。微信访问时，感知到WIFI或4G网络</summary>
         [DisplayName("网络")]
-        [Description("网络")]
+        [Description("网络。微信访问时，感知到WIFI或4G网络")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("NetType", "网络", "")]
+        [BindColumn("NetType", "网络。微信访问时，感知到WIFI或4G网络", "")]
         public String NetType { get => _NetType; set { if (OnPropertyChanging("NetType", value)) { _NetType = value; OnPropertyChanged("NetType"); } } }
 
         private String _DeviceId;
-        /// <summary>设备标识。唯一标识设备，重装后改变</summary>
+        /// <summary>设备标识。唯一标识设备，位于浏览器Cookie，重装后改变</summary>
         [DisplayName("设备标识")]
-        [Description("设备标识。唯一标识设备，重装后改变")]
+        [Description("设备标识。唯一标识设备，位于浏览器Cookie，重装后改变")]
         [DataObjectField(false, false, true, 50)]
-        [BindColumn("DeviceId", "设备标识。唯一标识设备，重装后改变", "")]
+        [BindColumn("DeviceId", "设备标识。唯一标识设备，位于浏览器Cookie，重装后改变", "")]
         public String DeviceId { get => _DeviceId; set { if (OnPropertyChanging("DeviceId", value)) { _DeviceId = value; OnPropertyChanged("DeviceId"); } } }
 
         private String _Status;
@@ -276,10 +276,10 @@ namespace NewLife.Cube.Entity
             /// <summary>编号</summary>
             public static readonly Field ID = FindByName("ID");
 
-            /// <summary>用户</summary>
+            /// <summary>用户。当前登录人</summary>
             public static readonly Field UserID = FindByName("UserID");
 
-            /// <summary>名称</summary>
+            /// <summary>名称。当前登录人，或根据设备标识推算出来的使用人</summary>
             public static readonly Field Name = FindByName("Name");
 
             /// <summary>会话。Web的SessionID或Server的会话编号</summary>
@@ -294,22 +294,22 @@ namespace NewLife.Cube.Entity
             /// <summary>页面</summary>
             public static readonly Field Page = FindByName("Page");
 
-            /// <summary>平台</summary>
+            /// <summary>平台。操作系统平台，Windows/Linux/Android等</summary>
             public static readonly Field Platform = FindByName("Platform");
 
-            /// <summary>系统</summary>
+            /// <summary>系统。操作系统，带版本</summary>
             public static readonly Field OS = FindByName("OS");
 
-            /// <summary>设备</summary>
+            /// <summary>设备。手机品牌型号</summary>
             public static readonly Field Device = FindByName("Device");
 
-            /// <summary>浏览器</summary>
+            /// <summary>浏览器。浏览器名称，带版本</summary>
             public static readonly Field Brower = FindByName("Brower");
 
-            /// <summary>网络</summary>
+            /// <summary>网络。微信访问时，感知到WIFI或4G网络</summary>
             public static readonly Field NetType = FindByName("NetType");
 
-            /// <summary>设备标识。唯一标识设备，重装后改变</summary>
+            /// <summary>设备标识。唯一标识设备，位于浏览器Cookie，重装后改变</summary>
             public static readonly Field DeviceId = FindByName("DeviceId");
 
             /// <summary>状态</summary>
@@ -348,10 +348,10 @@ namespace NewLife.Cube.Entity
             /// <summary>编号</summary>
             public const String ID = "ID";
 
-            /// <summary>用户</summary>
+            /// <summary>用户。当前登录人</summary>
             public const String UserID = "UserID";
 
-            /// <summary>名称</summary>
+            /// <summary>名称。当前登录人，或根据设备标识推算出来的使用人</summary>
             public const String Name = "Name";
 
             /// <summary>会话。Web的SessionID或Server的会话编号</summary>
@@ -366,22 +366,22 @@ namespace NewLife.Cube.Entity
             /// <summary>页面</summary>
             public const String Page = "Page";
 
-            /// <summary>平台</summary>
+            /// <summary>平台。操作系统平台，Windows/Linux/Android等</summary>
             public const String Platform = "Platform";
 
-            /// <summary>系统</summary>
+            /// <summary>系统。操作系统，带版本</summary>
             public const String OS = "OS";
 
-            /// <summary>设备</summary>
+            /// <summary>设备。手机品牌型号</summary>
             public const String Device = "Device";
 
-            /// <summary>浏览器</summary>
+            /// <summary>浏览器。浏览器名称，带版本</summary>
             public const String Brower = "Brower";
 
-            /// <summary>网络</summary>
+            /// <summary>网络。微信访问时，感知到WIFI或4G网络</summary>
             public const String NetType = "NetType";
 
-            /// <summary>设备标识。唯一标识设备，重装后改变</summary>
+            /// <summary>设备标识。唯一标识设备，位于浏览器Cookie，重装后改变</summary>
             public const String DeviceId = "DeviceId";
 
             /// <summary>状态</summary>

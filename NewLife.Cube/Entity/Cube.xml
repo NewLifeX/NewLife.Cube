@@ -123,18 +123,18 @@
   <Table Name="UserOnline" Description="用户在线" ConnName="Log">
     <Columns>
       <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-      <Column Name="UserID" DataType="Int32" Description="用户" />
-      <Column Name="Name" DataType="String" Master="True" Description="名称" />
+      <Column Name="UserID" DataType="Int32" Description="用户。当前登录人" />
+      <Column Name="Name" DataType="String" Master="True" Description="名称。当前登录人，或根据设备标识推算出来的使用人" />
       <Column Name="SessionID" DataType="String" Description="会话。Web的SessionID或Server的会话编号" />
       <Column Name="OAuthProvider" DataType="String" Description="登录方。OAuth提供商，从哪个渠道登录" />
       <Column Name="Times" DataType="Int32" Description="次数" />
       <Column Name="Page" DataType="String" Description="页面" />
-      <Column Name="Platform" DataType="String" Description="平台" />
-      <Column Name="OS" DataType="String" Description="系统" />
-      <Column Name="Device" DataType="String" Description="设备" />
-      <Column Name="Brower" DataType="String" Description="浏览器" />
-      <Column Name="NetType" DataType="String" Description="网络" />
-      <Column Name="DeviceId" DataType="String" Description="设备标识。唯一标识设备，重装后改变" />
+      <Column Name="Platform" DataType="String" Description="平台。操作系统平台，Windows/Linux/Android等" />
+      <Column Name="OS" DataType="String" Description="系统。操作系统，带版本" />
+      <Column Name="Device" DataType="String" Description="设备。手机品牌型号" />
+      <Column Name="Brower" DataType="String" Description="浏览器。浏览器名称，带版本" />
+      <Column Name="NetType" DataType="String" Description="网络。微信访问时，感知到WIFI或4G网络" />
+      <Column Name="DeviceId" DataType="String" Description="设备标识。唯一标识设备，位于浏览器Cookie，重装后改变" />
       <Column Name="Status" DataType="String" Length="500" Description="状态" />
       <Column Name="OnlineTime" DataType="Int32" ItemType="TimeSpan" Description="在线时间。本次在线总时间，秒" />
       <Column Name="LastError" DataType="DateTime" Description="最后错误" />

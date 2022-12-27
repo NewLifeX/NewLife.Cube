@@ -601,6 +601,7 @@ namespace NewLife.Web
             if (dic.TryGetValue("user_detail", out str)) Detail = str.Trim();
 
             if (dic.TryGetValue("Avatar", out str)) Avatar = str.Trim();
+            if (dic.TryGetValue("DeviceId", out str)) DeviceId = str.Trim();
 
             var city = "";
             if (dic.TryGetValue("province", out str)) city += str.Trim();
