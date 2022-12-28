@@ -225,7 +225,8 @@ public class RunTimeMiddleware
             var opt = new CookieOptions
             {
                 Domain = domain,
-                Expires = DateTimeOffset.Now.AddYears(10)
+                Expires = DateTimeOffset.Now.AddYears(10),
+                SameSite = SameSiteMode.Unspecified,
             };
             ctx.Response.Cookies.Append("CubeDeviceId", id, opt);
         }
