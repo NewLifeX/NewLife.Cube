@@ -8,7 +8,7 @@
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
-    <Copyright>©2002-2022 NewLife</Copyright>
+    <Copyright>©2002-2023 NewLife</Copyright>
     <VersionPrefix>5.5</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
@@ -52,10 +52,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NewLife.Core" Version="10.1.2022.1220-beta0114" />
+    <PackageReference Include="NewLife.Core" Version="10.1.2023.101" />
     <PackageReference Include="NewLife.IP" Version="2.0.2022.1201" />
-    <PackageReference Include="NewLife.Stardust" Version="2.5.2022.1220-beta0113" />
-    <PackageReference Include="NewLife.XCode" Version="11.5.2022.1223-beta0407" />
+    <PackageReference Include="NewLife.Stardust" Version="2.5.2023.101" />
+    <PackageReference Include="NewLife.XCode" Version="11.5.2023.101" />
   </ItemGroup>
 
   <ItemGroup>

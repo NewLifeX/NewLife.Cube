@@ -5,7 +5,7 @@
     <AssemblyTitle>魔方用户中心</AssemblyTitle>
     <Description>SSO服务端，OAuth2.0服务端。</Description>
     <Company>新生命开发团队</Company>
-    <Copyright>©2002-2022 NewLife</Copyright>
+    <Copyright>©2002-2023 NewLife</Copyright>
     <VersionPrefix>5.5</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
@@ -21,8 +21,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.1.2022.1220-beta0114" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.5.2022.1220-beta0113" />
+    <PackageReference Include="NewLife.Core" Version="10.1.2023.101" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.5.2023.101" />
   </ItemGroup>
 
   <ItemGroup>
