@@ -17,7 +17,9 @@
     var err = 0;
     if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
 
-    var des = item.Description.TrimStart(item.DisplayName).TrimStart(new Char[] { '.', '。', ',', '，', ';', '；', ':', '：', '(', '（', '\r', '\n' });
+    var des = item.Description;
+    if (!item.DisplayName.IsNullOrEmpty()) des = des?.TrimStart(item.DisplayName);
+    des = des?.TrimStart(new Char[] { '.', '。', ',', '，', ';', '；', ':', '：', '(', '（', '\r', '\n' });
     var display = dataField?.DisplayName ?? item.DisplayName;
 
     // 优化对雪花Id的支持
