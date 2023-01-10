@@ -225,10 +225,20 @@ public class RunTimeMiddleware
 
             var opt = new CookieOptions
             {
+                HttpOnly = true,
                 Domain = domain,
                 Expires = DateTimeOffset.Now.AddYears(10),
                 SameSite = SameSiteMode.Unspecified,
+                //Secure = true,
             };
+
+            // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性
+            if (ctx.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
+            {
+                opt.SameSite = SameSiteMode.None;
+                opt.Secure = true;
+            }
+
             ctx.Response.Cookies.Append("CubeDeviceId", id, opt);
         }
 
