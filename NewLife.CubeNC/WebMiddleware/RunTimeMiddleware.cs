@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net;
 using System.Web;
 using NewLife.Common;
 using NewLife.Cube.Entity;
@@ -212,7 +213,7 @@ public class RunTimeMiddleware
             var url = ctx.Request.GetRawUrl();
             var domain = url.Host;
             var ss = domain.Split('.');
-            if (ss.Length >= 3)
+            if (ss.Length >= 3 && !IPAddress.TryParse(domain, out _))
             {
                 // 国家顶级域名
                 if (ss[^1].Length == 2 && ss[^2].EqualIgnoreCase("com", "net", "org", "gov", "edu"))
