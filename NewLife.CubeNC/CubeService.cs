@@ -103,12 +103,17 @@ public static class CubeService
         // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
         var set = Setting.Current;
         if (set.CorsOrigins == "*")
-            services.AddCors(options => options.AddPolicy("cube_cors", builder =>
-            {
-                builder.AllowAnyOrigin().AllowAnyHeader();
-            }));
+            services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .SetIsOriginAllowed(hostname => true)));
         else if (!set.CorsOrigins.IsNullOrEmpty())
-            services.AddCors(options => options.AddPolicy("cube_cors", builder => builder.WithOrigins(set.CorsOrigins)));
+            services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .WithOrigins(set.CorsOrigins)));
 
         services.Configure<MvcOptions>(opt =>
         {
