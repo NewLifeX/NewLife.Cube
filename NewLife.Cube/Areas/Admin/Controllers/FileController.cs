@@ -235,7 +235,7 @@ public class FileController : ControllerBaseX
     /// <returns></returns>
     [HttpPost]
     [EntityAuthorize(PermissionFlags.Insert)]
-    public ActionResult Upload(String r, IFormFile file)
+    public async Task<ActionResult> Upload(String r, IFormFile file)
     {
         if (file != null)
         {
@@ -246,7 +246,9 @@ public class FileController : ControllerBaseX
             WriteLog("上传", true, dest);
 
             dest.EnsureDirectory(true);
-            System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes());
+            //System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes(-1));
+            using var fs = new FileStream(dest, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            await file.CopyToAsync(fs);
         }
 
         return RedirectToAction("Index", new { r });
@@ -258,7 +260,7 @@ public class FileController : ControllerBaseX
     /// <returns></returns>
     [HttpPost]
     [EntityAuthorize(PermissionFlags.Insert)]
-    public ActionResult UploadLayui(String r, IFormFile file)
+    public async Task<ActionResult> UploadLayui(String r, IFormFile file)
     {
         try
         {
@@ -271,7 +273,9 @@ public class FileController : ControllerBaseX
                 WriteLog("上传", true, dest);
 
                 dest.EnsureDirectory(true);
-                System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes());
+                //System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes(-1));
+                using var fs = new FileStream(dest, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                await file.CopyToAsync(fs);
             }
             return Json(new { code = 0, message = "上传成功" });
         }
