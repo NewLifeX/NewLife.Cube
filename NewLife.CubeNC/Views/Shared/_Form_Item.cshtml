@@ -19,7 +19,7 @@
 
     var des = item.Description;
     if (!item.DisplayName.IsNullOrEmpty()) des = des?.TrimStart(item.DisplayName);
-    des = des?.TrimStart(new Char[] { '.', '。', ',', '，', ';', '；', ':', '：', '(', '（', '\r', '\n' });
+    des = des?.TrimStart(new Char[] { '.', '。', ',', '，', ';', '；', ':', '：', '\r', '\n' });
     var display = dataField?.DisplayName ?? item.DisplayName;
 
     // 优化对雪花Id的支持
