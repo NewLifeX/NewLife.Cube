@@ -22,6 +22,7 @@
     <LangVersion>latest</LangVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
@@ -47,11 +48,13 @@
     <Compile Remove="WebMiddleware\UserBehaviorMiddleware.cs" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="10.1.2023.203" />
     <PackageReference Include="NewLife.IP" Version="2.0.2023.203" />
     <PackageReference Include="NewLife.Stardust" Version="2.6.2023.203" />

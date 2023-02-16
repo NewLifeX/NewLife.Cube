@@ -5,17 +5,21 @@ on:
     branches: [ '*' ]
   pull_request:
     branches: [ '*' ]
+  workflow_dispatch:
 
 jobs:
-  build-test:
-
+  test:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+    - name: Setup dotNET
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.0.x
     - name: Build
-      run: dotnet build -c Release
+      run: |
+        dotnet build -c Release
+    - name: Test
+      run: |
+        dotnet test

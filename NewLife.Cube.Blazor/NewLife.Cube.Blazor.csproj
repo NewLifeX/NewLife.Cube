@@ -19,6 +19,7 @@
     <LangVersion>latest</LangVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
@@ -41,12 +42,14 @@
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="BootstrapBlazor" Version="7.3.0" />
+  <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BootstrapBlazor" Version="7.3.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
