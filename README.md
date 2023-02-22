@@ -24,7 +24,7 @@ XCode教程：<https://newlifex.com/xcode>
 ### 第三代魔方
 
 计划启动第三代魔方的设计，主要方向是借助前后端分离技术重构现代化用户界面，在3月份完成第一个最小可用版（vue）。  
-源码位于魔方代码库的dev分支，欢迎大家积极参与！  
+后端接口源码位于魔方代码库的dev分支，各前端代码库独立，欢迎大家积极参与！  
 
 #### 项目参与须知
 
@@ -57,12 +57,20 @@ XCode教程：<https://newlifex.com/xcode>
 7. [] 设计vue版用户列表页和表单页
 8. [] 设计vue版角色列表页和表单页
 
+Vue版前端代码库：  
+https://github.com/NewLifeX/NewLife.CubeVue
+http://git.newlifex.com/NewLife/NewLife.CubeVue
+
 ### 非主线任务
 
 支持vue之外的前端框架，不限于3月份完成。  
 
 1. [] 新增Blazor，项目 NewLife.Cube.Blazor。 @张善友 @张炳彬
 2. [] 新建AntDesign，项目 NewLife.CubeAntd。 @Van
+
+Antd版前端代码库：  
+https://github.com/NewLifeX/NewLife.CubeAntd
+http://git.newlifex.com/NewLife/NewLife.CubeAntd
 
 ---
 
