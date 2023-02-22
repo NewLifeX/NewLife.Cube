@@ -1,0 +1,65 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Others", "Others", "{32891F65-FBA1-42B2-918E-61F3A9623F2A}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		.github\workflows\publish-beta.yml = .github\workflows\publish-beta.yml
+		.github\workflows\publish.yml = .github\workflows\publish.yml
+		Readme.MD = Readme.MD
+		.github\workflows\test.yml = .github\workflows\test.yml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.CubeNC", "NewLife.CubeNC\NewLife.CubeNC.csproj", "{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnitTest", "XUnitTest\XUnitTest.csproj", "{E3B44ECB-BE8B-4878-B987-CAF116D57961}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CubeSSO", "CubeSSO\CubeSSO.csproj", "{CBCBA758-456E-4852-85E1-D40E56A929D1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube", "NewLife.Cube\NewLife.Cube.csproj", "{734A0375-A437-4B96-A43A-DBD6964B1553}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CubeDemo", "CubeDemo\CubeDemo.csproj", "{C07CC030-EBFA-4E31-B60C-6FEEAC28F3A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{637B6360-D9AB-4CB4-A1B4-6A8A899F57B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D14BC31C-B4F9-425A-999A-C2ED1E0C6D60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3B44ECB-BE8B-4878-B987-CAF116D57961}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBCBA758-456E-4852-85E1-D40E56A929D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBCBA758-456E-4852-85E1-D40E56A929D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBCBA758-456E-4852-85E1-D40E56A929D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBCBA758-456E-4852-85E1-D40E56A929D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{734A0375-A437-4B96-A43A-DBD6964B1553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{734A0375-A437-4B96-A43A-DBD6964B1553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{734A0375-A437-4B96-A43A-DBD6964B1553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{734A0375-A437-4B96-A43A-DBD6964B1553}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C07CC030-EBFA-4E31-B60C-6FEEAC28F3A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C07CC030-EBFA-4E31-B60C-6FEEAC28F3A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C07CC030-EBFA-4E31-B60C-6FEEAC28F3A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C07CC030-EBFA-4E31-B60C-6FEEAC28F3A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6AEA440B-0D90-4F6E-BA9A-D42B27A78D7B}
+	EndGlobalSection
+EndGlobal
