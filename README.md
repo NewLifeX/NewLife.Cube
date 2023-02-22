@@ -12,22 +12,56 @@
 快速体验：  
 > docker run newlifex/cube
 
-演示站点：https://cube.newlifex.com `CentOS7 + CDN`  
-SSO中心：https://sso.newlifex.com `OAuth服务端`  
+演示站点：<https://cube.newlifex.com> `CentOS7 + CDN`  
+SSO中心：<https://sso.newlifex.com> `OAuth服务端`  
 
-魔方教程：https://newlifex.com/cube  
-XCode教程：https://newlifex.com/xcode  
-核心库教程：https://newlifex.com/core  
+魔方教程：<https://newlifex.com/cube>  
+XCode教程：<https://newlifex.com/xcode>  
+核心库教程：<https://newlifex.com/core>  
 
 ---
+
+### 第三代魔方
+
+计划启动第三代魔方的设计，主要方向是借助前后端分离技术重构现代化用户界面，在3月份完成第一个最小可用版（vue）。  
+源码位于魔方代码库的dev分支，欢迎大家积极参与！  
+
+#### 目标蓝图
+
+第三代魔方的远景目标，预计用2~3年时间完成。
+
+1. 重构为现代化用户界面，让魔方下游项目在迁移到三代魔方时，尽可能少修改代码
+2. 前后端分离技术，支持Vue/React/Angular/Blazor等主流前端框架
+3. 魔方理念和用法保持不变，新建WebApi项目后从Nuget引入NewLife.Cube，加入模型生成实体类和Controller即可得到默认皮肤的界面，需要定制时才写前端代码
+4. 增强移动端支持，混合式手机APP、小程序
+5. 增强支持数据大屏
+
+#### 春雨计划
+
+春雨计划，定于2023年3月完成第一个最小vue可用版，待办项如下（欢迎补充）：
+
+1. [] 在dev分支新建WebApi项目NewLife.Cube，占用Asp.Net 4.5的坑位（已弃用），将来发布包也是NewLife.Cube
+2. [] 专属于NetCore版的代码，转移到NewLife.CubeNC目录，尽量保留代码提交历史，方便将来查找
+3. [] 设计全新的EntityController和EntityReadonlyController，只为前端提供接口
+4. [] 编写接口文档
+5. [] 设计vue版主页（框架页）
+6. [] 设计vue版登录页
+7. [] 设计vue版用户列表页和表单页
+8. [] 设计vue版角色列表页和表单页
+
+---
+
 ### 特性
+
 * 通用权限管理，用户、角色、菜单、权限，支持控制器Action权限控制
 * 多数据库，支持 `MySql / SQLite / Sql Server / Oracle / SqlCe / Access`
 * 免部署，系统自动创建数据库表结构，以及初始化数据，无需人工干涉
 * 强大的视图引擎，支持子项目视图重写父项目相同位置视图，任意覆盖修改默认界面
 
 ---
+
 ### ASP.NET Core 安装
+
 * 在 *Visual Studio* 中新建`ASP.NET Core Web`项目
 * 通过 *NuGet* 引用`NewLife.Cube.Core`，或自己编译最新的[魔方 NewLife.CubeNC](http://github.com/NewLifeX/NewLife.Cube)源码
 * 在`appsettings.json`的`ConnectionStrings`段设置名为`Membership`的连接字符串，用户角色权限菜单等存储在该数据库
@@ -39,7 +73,9 @@ XCode教程：https://newlifex.com/xcode
 * 项目发布时只需要拷贝`*.dll`、`appsettings.json`、`*.deps.json`、`*.runtimeconfig.json`，以及其它自己添加的资源文件
 
 ---
+
 ### ASP.NET MVC 安装
+
 * 在 *Visual Studio* 中新建`ASP.NET MVC`项目
 * 通过 *NuGet* 引用`NewLife.Cube`，或自己编译最新的[魔方 NewLife.Cube](http://github.com/NewLifeX/NewLife.Cube)源码
 * 在`Web.config`的`<connectionStrings>`段设置名为`Membership`的连接字符串，用户角色权限菜单等存储在该数据库
@@ -52,6 +88,7 @@ XCode教程：https://newlifex.com/xcode
 * 项目发布时只需要拷贝`Bin`、`web.config`、`Global.asax`，以及其它自己添加的资源文件
 
 ## 新生命项目矩阵
+
 各项目默认支持net7.0/netstandard2.1/netstandard2.0/net4.61，旧版（2022.1225）支持net4.5/net4.0/net2.0  
 
 |                               项目                               | 年份  | 说明                                                                                   |
@@ -87,6 +124,7 @@ XCode教程：https://newlifex.com/xcode
 |                           NewLife.UWB                            | 2020  | 厘米级（10~20cm）高精度室内定位，软硬件一体化，与其它系统联动，大型展厅项目验证        |
 
 ## 新生命开发团队
+
 ![XCode](https://newlifex.com/logo.png)  
 
 新生命团队（NewLife）成立于2002年，是新时代物联网行业解决方案提供者，致力于提供软硬件应用方案咨询、系统架构规划与开发服务。  
@@ -96,8 +134,8 @@ XCode教程：https://newlifex.com/xcode
 我们将不断通过服务的持续改进，成为客户长期信赖的合作伙伴，通过不断的创新和发展，成为国内优秀的IT服务供应商。  
 
 `新生命团队始于2002年，部分开源项目具有20年以上漫长历史，源码库保留有2010年以来所有修改记录`  
-网站：https://newlifex.com  
-开源：https://github.com/newlifex  
+网站：<https://newlifex.com>  
+开源：<https://github.com/newlifex>  
 QQ群：1600800/1600838  
 微信公众号：  
 ![智能大石头](https://newlifex.com/stone.jpg)  
