@@ -25,7 +25,14 @@ XCode教程：<https://newlifex.com/xcode>
 
 计划启动第三代魔方的设计，主要方向是借助前后端分离技术重构现代化用户界面，在3月份完成第一个最小可用版（vue）。  
 源码位于魔方代码库的dev分支，欢迎大家积极参与！  
-参与者加入github上的NewLifeX团队，自由向魔方dev分支提交代码。  
+
+#### 项目参与须知
+
+1. 参与者加入github上的NewLifeX团队，自由向魔方dev分支提交代码或修改文档。  
+2. 统一使用解决方案 `魔方-前后端分离.sln`。  
+3. 欢迎增加更多的前端项目，每一种前端放一个独立目录，如`Antd`则新建 `NewLife.CubeAntd`。  
+4. 大家在文档或代码处，标注负责人。  
+5. 源码库使用github，以及新生命团队糖果库（可申请权限）
 
 #### 目标蓝图
 
@@ -41,14 +48,21 @@ XCode教程：<https://newlifex.com/xcode>
 
 春雨计划，定于2023年3月完成第一个最小vue可用版，待办项如下（欢迎补充）：
 
-1. [] 在dev分支新建WebApi项目NewLife.Cube，占用Asp.Net 4.5的坑位（已弃用），将来发布包也是NewLife.Cube
-2. [] 专属于NetCore版的代码，转移到NewLife.CubeNC目录，尽量保留代码提交历史，方便将来查找
-3. [] 设计全新的EntityController和EntityReadonlyController，只为前端提供接口
+1. [] 在dev分支新建WebApi项目 `NewLife.Cube`，占用Asp.Net 4.5的坑位（已弃用），将来发布包也是 `NewLife.Cube`
+2. [] 专属于NetCore版的代码，转移到 `NewLife.CubeNC` 目录，尽量保留代码提交历史，方便将来查找
+3. [] 设计全新的 `EntityController和EntityReadonlyController`，只为前端提供接口
 4. [] 编写接口文档
-5. [] 设计vue版主页（框架页）
+5. [] 设计vue版主页（框架页），前端项目是 `NewLife.CubeVue`，vue项目调用后端 `CubeDemo`
 6. [] 设计vue版登录页
 7. [] 设计vue版用户列表页和表单页
 8. [] 设计vue版角色列表页和表单页
+
+### 非主线任务
+
+支持vue之外的前端框架，不限于3月份完成。  
+
+1. [] 新增Blazor，项目 NewLife.Cube.Blazor。 @张善友 @张炳彬
+2. [] 新建AntDesign，项目 NewLife.CubeAntd。 @Van
 
 ---
 
