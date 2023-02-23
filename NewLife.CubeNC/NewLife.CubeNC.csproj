@@ -62,38 +62,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppController.cs" Link="Areas\Cube\Controllers\AppController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AppLogController.cs" Link="Areas\Cube\Controllers\AppLogController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AreaController.cs" Link="Areas\Cube\Controllers\AreaController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\AttachmentController.cs" Link="Areas\Cube\Controllers\AttachmentController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CoreController.cs" Link="Areas\Admin\Controllers\CoreController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CronJobController.cs" Link="Areas\Cube\Controllers\CronJobController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\CubeController.cs" Link="Areas\Admin\Controllers\CubeController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DbController.cs" Link="Areas\Admin\Controllers\DbController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\DepartmentController.cs" Link="Areas\Admin\Controllers\DepartmentController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\FileController.cs" Link="Areas\Admin\Controllers\FileController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\LogController.cs" Link="Areas\Admin\Controllers\LogController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\MenuController.cs" Link="Areas\Admin\Controllers\MenuController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelColumnController.cs" Link="Areas\Cube\Controllers\ModelColumnController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ModelTableController.cs" Link="Areas\Cube\Controllers\ModelTableController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthConfigController.cs" Link="Areas\Admin\Controllers\OAuthConfigController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\OAuthLogController.cs" Link="Areas\Admin\Controllers\OAuthLogController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\ParameterController.cs" Link="Areas\Admin\Controllers\ParameterController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\PrincipalAgentController.cs" Link="Areas\Cube\Controllers\PrincipalAgentController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\RoleController.cs" Link="Areas\Admin\Controllers\RoleController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\SysController.cs" Link="Areas\Admin\Controllers\SysController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserConnectController.cs" Link="Areas\Admin\Controllers\UserConnectController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserController.cs" Link="Areas\Admin\Controllers\UserController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserOnlineController.cs" Link="Areas\Admin\Controllers\UserOnlineController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserStatController.cs" Link="Areas\Admin\Controllers\UserStatController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\UserTokenController.cs" Link="Areas\Admin\Controllers\UserTokenController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Controllers\XCodeController.cs" Link="Areas\Admin\Controllers\XCodeController.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\ChangePasswordModel.cs" Link="Areas\Admin\Models\ChangePasswordModel.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\BindsModel.cs" Link="Areas\Admin\Models\BindsModel.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\DbItem.cs" Link="Areas\Admin\Models\DbItem.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\FileItem.cs" Link="Areas\Admin\Models\FileItem.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\LoginViewModel.cs" Link="Areas\Admin\Models\LoginViewModel.cs" />
-    <Compile Include="..\NewLife.Cube\Areas\Admin\Models\UserModel.cs" Link="Areas\Admin\Models\UserModel.cs" />
     <Compile Include="..\NewLife.Cube\Common\ConfigController.cs" Link="Common\ConfigController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ControllerBaseX.cs" Link="Common\ControllerBaseX.cs" />
     <Compile Include="..\NewLife.Cube\Common\DataPermissionAttribute.cs" Link="Common\DataPermissionAttribute.cs" />
@@ -146,9 +114,6 @@
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
     <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
-    <Compile Include="..\NewLife.Cube\ViewModels\FieldModel.cs" Link="ViewModels\FieldModel.cs" />
-    <Compile Include="..\NewLife.Cube\ViewModels\LoginConfigModel.cs" Link="ViewModels\LoginConfigModel.cs" />
-    <Compile Include="..\NewLife.Cube\ViewModels\SelectUserModel.cs" Link="ViewModels\SelectUserModel.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\CheckInData.cs" Link="Web\Models\CheckInData.cs" />
