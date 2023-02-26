@@ -56,8 +56,6 @@
     <Compile Include="..\NewLife.CubeNC\Services\UIService.cs" Link="Services\UIService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
-    <Compile Include="..\NewLife.CubeNC\WebMiddleware\RunTimeMiddleware.cs" Link="WebMiddleware\RunTimeMiddleware.cs" />
-    <Compile Include="..\NewLife.CubeNC\WebMiddleware\TracerMiddleware.cs" Link="WebMiddleware\TracerMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="10.1.2023.221-beta0001" />
@@ -77,7 +75,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Session\" />
-    <Folder Include="WebMiddleware\" />
     <Folder Include="Services\" />
     <Folder Include="Modules\" />
   </ItemGroup>

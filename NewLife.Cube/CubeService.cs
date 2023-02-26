@@ -76,23 +76,22 @@ public static class CubeService
         //    options.MinimumSameSitePolicy = SameSiteMode.None;
         //});
 
+        //// 添加Session会话支持
+        //services.AddSession();
 
-        // 添加Session会话支持
-        services.AddSession();
-
-        // 身份验证
-        services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = "Cube";
-            options.DefaultAuthenticateScheme = "Cube";
-            options.DefaultChallengeScheme = "Cube";
-            options.DefaultSignInScheme = "Cube";
-        }).AddCookie("Cube", options =>
-        {
-            options.AccessDeniedPath = "/Admin/User/Login";
-            options.LoginPath = "/Admin/User/Login";
-            options.LogoutPath = "/Admin/User/Logout";
-        });
+        //// 身份验证
+        //services.AddAuthentication(options =>
+        //{
+        //    options.DefaultScheme = "Cube";
+        //    options.DefaultAuthenticateScheme = "Cube";
+        //    options.DefaultChallengeScheme = "Cube";
+        //    options.DefaultSignInScheme = "Cube";
+        //}).AddCookie("Cube", options =>
+        //{
+        //    options.AccessDeniedPath = "/Admin/User/Login";
+        //    options.LoginPath = "/Admin/User/Login";
+        //    options.LogoutPath = "/Admin/User/Logout";
+        //});
 
         //// 注册魔方默认UI
         //services.AddCubeDefaultUI();
@@ -124,7 +123,7 @@ public static class CubeService
         //    opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
         //});
 
-        services.AddCustomApplicationParts();
+        //services.AddCustomApplicationParts();
 
         // 添加管理提供者
         services.AddManageProvider();
@@ -184,88 +183,88 @@ public static class CubeService
         return services;
     }
 
-    /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assembly，作为本应用的一部分</summary>
-    /// <param name="services"></param>
-    public static void AddCustomApplicationParts(this IServiceCollection services)
-    {
-        var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
-        manager ??= new ApplicationPartManager();
+    ///// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assembly，作为本应用的一部分</summary>
+    ///// <param name="services"></param>
+    //public static void AddCustomApplicationParts(this IServiceCollection services)
+    //{
+    //    var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
+    //    manager ??= new ApplicationPartManager();
 
-        var list = FindAllArea();
+    //    var list = FindAllArea();
 
-        foreach (var asm in list)
-        {
-            XTrace.WriteLine("注册区域视图程序集：{0}", asm.FullName);
+    //    foreach (var asm in list)
+    //    {
+    //        XTrace.WriteLine("注册区域视图程序集：{0}", asm.FullName);
 
-            var factory = ApplicationPartFactory.GetApplicationPartFactory(asm);
-            foreach (var part in factory.GetApplicationParts(asm))
-            {
-                if (!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
-            }
-        }
-    }
+    //        var factory = ApplicationPartFactory.GetApplicationPartFactory(asm);
+    //        foreach (var part in factory.GetApplicationParts(asm))
+    //        {
+    //            if (!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
+    //        }
+    //    }
+    //}
 
-    /// <summary>遍历所有引用了AreaRegistrationBase的程序集</summary>
-    /// <returns></returns>
-    private static List<Assembly> FindAllArea()
-    {
-        var list = new List<Assembly>();
-        var cs = typeof(ControllerBaseX).GetAllSubclasses().ToArray();
-        foreach (var item in cs)
-        {
-            var asm = item.Assembly;
-            if (!list.Contains(asm))
-            {
-                list.Add(asm);
-            }
-        }
-        cs = typeof(RazorPage).GetAllSubclasses().ToArray();
-        foreach (var item in cs)
-        {
-            var asm = item.Assembly;
-            if (!list.Contains(asm))
-            {
-                list.Add(asm);
-            }
-        }
+    //    /// <summary>遍历所有引用了AreaRegistrationBase的程序集</summary>
+    //    /// <returns></returns>
+    //    private static List<Assembly> FindAllArea()
+    //    {
+    //        var list = new List<Assembly>();
+    //        var cs = typeof(ControllerBaseX).GetAllSubclasses().ToArray();
+    //        foreach (var item in cs)
+    //        {
+    //            var asm = item.Assembly;
+    //            if (!list.Contains(asm))
+    //            {
+    //                list.Add(asm);
+    //            }
+    //        }
+    //        cs = typeof(RazorPage).GetAllSubclasses().ToArray();
+    //        foreach (var item in cs)
+    //        {
+    //            var asm = item.Assembly;
+    //            if (!list.Contains(asm))
+    //            {
+    //                list.Add(asm);
+    //            }
+    //        }
 
-#if !NET6_0_OR_GREATER
-        // 反射 *.Views.dll
-        foreach (var item in ".".AsDirectory().GetFiles("*.Views.dll"))
-        {
-            var asm = Assembly.LoadFile(item.FullName);
-            if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
-            {
-                list.Add(asm);
-            }
-        }
+    //#if !NET6_0_OR_GREATER
+    //        // 反射 *.Views.dll
+    //        foreach (var item in ".".AsDirectory().GetFiles("*.Views.dll"))
+    //        {
+    //            var asm = Assembly.LoadFile(item.FullName);
+    //            if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
+    //            {
+    //                list.Add(asm);
+    //            }
+    //        }
 
-        // 反射 NewLife.Cube.*.dll
-        foreach (var item in ".".AsDirectory().GetFiles("NewLife.Cube.*.dll"))
-        {
-            var asm = Assembly.LoadFile(item.FullName);
-            if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
-            {
-                list.Add(asm);
-            }
-        }
-#endif
+    //        // 反射 NewLife.Cube.*.dll
+    //        foreach (var item in ".".AsDirectory().GetFiles("NewLife.Cube.*.dll"))
+    //        {
+    //            var asm = Assembly.LoadFile(item.FullName);
+    //            if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
+    //            {
+    //                list.Add(asm);
+    //            }
+    //        }
+    //#endif
 
-        // 为了能够实现模板覆盖，程序集相互引用需要排序，父程序集在前
-        list.Sort((x, y) =>
-        {
-            if (x == y) return 0;
-            if (x != null && y == null) return 1;
-            if (x == null && y != null) return -1;
+    //        // 为了能够实现模板覆盖，程序集相互引用需要排序，父程序集在前
+    //        list.Sort((x, y) =>
+    //        {
+    //            if (x == y) return 0;
+    //            if (x != null && y == null) return 1;
+    //            if (x == null && y != null) return -1;
 
-            //return x.GetReferencedAssemblies().Any(e => e.FullName == y.FullName) ? 1 : -1;
-            // 对程序集引用进行排序时，不能使用全名，当魔方更新而APP没有重新编译时，版本的不同将会导致全名不同，无法准确进行排序
-            var yname = y.GetName().Name;
-            return x.GetReferencedAssemblies().Any(e => e.Name == yname) ? 1 : -1;
-        });
+    //            //return x.GetReferencedAssemblies().Any(e => e.FullName == y.FullName) ? 1 : -1;
+    //            // 对程序集引用进行排序时，不能使用全名，当魔方更新而APP没有重新编译时，版本的不同将会导致全名不同，无法准确进行排序
+    //            var yname = y.GetName().Name;
+    //            return x.GetReferencedAssemblies().Any(e => e.Name == yname) ? 1 : -1;
+    //        });
 
-        return list;
-    }
+    //        return list;
+    //    }
     #endregion
 
     #region 使用魔方
@@ -280,8 +279,8 @@ public static class CubeService
 
         XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
 
-        // 调整魔方表名
-        FixAppTableName();
+        //// 调整魔方表名
+        //FixAppTableName();
 
         // 使用管理提供者
         app.UseManagerProvider();
@@ -315,7 +314,7 @@ public static class CubeService
         // 注册中间件
         //app.UseStaticFiles();
         app.UseCookiePolicy();
-        app.UseSession();
+        //app.UseSession();
         app.UseAuthentication();
 
         // 如果已引入追踪中间件，则这里不再引入
@@ -367,32 +366,32 @@ public static class CubeService
         return app;
     }
 
-    private static void FixAppTableName()
-    {
-        try
-        {
-            var dal = DAL.Create("Cube");
-            var tables = dal.Tables;
-            if (tables != null && !tables.Any(e => e.TableName.EqualIgnoreCase("OAuthApp")))
-            {
-                XTrace.WriteLine("未发现OAuth应用新表 OAuthApp");
+    //private static void FixAppTableName()
+    //{
+    //    try
+    //    {
+    //        var dal = DAL.Create("Cube");
+    //        var tables = dal.Tables;
+    //        if (tables != null && !tables.Any(e => e.TableName.EqualIgnoreCase("OAuthApp")))
+    //        {
+    //            XTrace.WriteLine("未发现OAuth应用新表 OAuthApp");
 
-                // 验证表名和部分字段名，避免误改其它表
-                var dt = tables.FirstOrDefault(e => e.TableName.EqualIgnoreCase("App"));
-                if (dt != null && dt.Columns.Any(e => e.ColumnName.EqualIgnoreCase("RoleIds")))
-                {
-                    XTrace.WriteLine("发现OAuth应用旧表 App ，准备重命名");
+    //            // 验证表名和部分字段名，避免误改其它表
+    //            var dt = tables.FirstOrDefault(e => e.TableName.EqualIgnoreCase("App"));
+    //            if (dt != null && dt.Columns.Any(e => e.ColumnName.EqualIgnoreCase("RoleIds")))
+    //            {
+    //                XTrace.WriteLine("发现OAuth应用旧表 App ，准备重命名");
 
-                    var rs = dal.Execute($"Alter Table App Rename To OAuthApp");
-                    XTrace.WriteLine("重命名结果：{0}", rs);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            XTrace.WriteException(ex);
-        }
-    }
+    //                var rs = dal.Execute($"Alter Table App Rename To OAuthApp");
+    //                XTrace.WriteLine("重命名结果：{0}", rs);
+    //            }
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        XTrace.WriteException(ex);
+    //    }
+    //}
 
     /// <summary>使用魔方首页</summary>
     /// <param name="app"></param>
