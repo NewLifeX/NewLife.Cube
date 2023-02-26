@@ -345,38 +345,8 @@ public class UserController : EntityController<User>
                 if (errors > 0) _cache.Remove(key);
                 if (ipErrors > 0) _cache.Remove(ipKey);
 
-                if (IsJsonRequest)
-                {
-                    var token = HttpContext.Items["jwtToken"];
-                    return Json(0, "ok", new { /*provider.Current.ID,*/ Token = token });
-                }
-
-                //FormsAuthentication.SetAuthCookie(username, remember ?? false);
-
-
-                // 记录在线统计
-                var stat = UserStat.GetOrAdd(DateTime.Today);
-                if (stat != null)
-                {
-                    stat.Logins++;
-                    stat.SaveAsync(5_000);
-                }
-
-                if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
-
-                // 不要嵌入自己
-                if (returnUrl.EndsWithIgnoreCase("/Admin", "/Admin/User/Login")) returnUrl = null;
-
-                // 登录后自动绑定
-                var logId = Session["Cube_OAuthId"].ToLong();
-                if (logId > 0)
-                {
-                    Session["Cube_OAuthId"] = null;
-                    var log = NewLife.Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
-                    if (log != null && log.Success && !log.RedirectUri.IsNullOrEmpty()) return Redirect(log.RedirectUri);
-                }
-
-                return RedirectToAction("Index", "Index", new { page = returnUrl });
+                var token = HttpContext.Items["jwtToken"];
+                return Json(0, "ok", new { /*provider.Current.ID,*/ Token = token });
             }
 
             // 如果我们进行到这一步时某个地方出错，则重新显示表单
@@ -398,12 +368,7 @@ public class UserController : EntityController<User>
             if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(time));
             if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(time));
 
-            if (IsJsonRequest)
-            {
-                return Json(500, ex.Message);
-            }
-
-            ModelState.AddModelError("", ex.Message);
+            return Json(500, ex.Message);
         }
 
         ////云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
@@ -444,11 +409,7 @@ public class UserController : EntityController<User>
 
         ManageProvider.Provider.Logout();
 
-        if (IsJsonRequest) return Ok();
-
-        if (!returnUrl.IsNullOrEmpty()) return Redirect(returnUrl);
-
-        return RedirectToAction(nameof(Login));
+        return Ok();
     }
     #endregion
 
@@ -584,13 +545,9 @@ public class UserController : EntityController<User>
 
         var user = ManageProvider.Provider.ChangePassword(current.Name, model.NewPassword, requireOldPass ? model.OldPassword : null);
 
-        //(user as User).Update();
-
         ViewBag.StatusMessage = "修改成功！";
 
-        if (IsJsonRequest) return Ok(ViewBag.StatusMessage);
-
-        return ChangePassword();
+        return Ok(ViewBag.StatusMessage);
     }
 
     /// <summary>用户绑定</summary>
@@ -616,9 +573,7 @@ public class UserController : EntityController<User>
             OAuthItems = ms,
         };
 
-        if (IsJsonRequest) return Ok(data: model);
-
-        return View(model);
+        return Ok(data: model);
     }
 
     /// <summary>注册</summary>
@@ -691,42 +646,6 @@ public class UserController : EntityController<User>
         user.Password = null;
         user.SaveWithoutValid();
 
-        if (IsJsonRequest) return Ok();
-
-        return RedirectToAction("Edit", new { id });
+        return Ok();
     }
-
-    ///// <summary>批量启用</summary>
-    ///// <param name="keys"></param>
-    ///// <returns></returns>
-    //[EntityAuthorize(PermissionFlags.Update)]
-    //public ActionResult EnableSelect(String keys) => EnableOrDisableSelect();
-
-    ///// <summary>批量禁用</summary>
-    ///// <param name="keys"></param>
-    ///// <returns></returns>
-    //[EntityAuthorize(PermissionFlags.Update)]
-    //public ActionResult DisableSelect(String keys) => EnableOrDisableSelect(false);
-
-    //private ActionResult EnableOrDisableSelect(Boolean isEnable = true)
-    //{
-    //    var count = 0;
-    //    var ids = GetRequest("keys").SplitAsInt();
-    //    if (ids.Length > 0)
-    //    {
-    //        foreach (var id in ids)
-    //        {
-    //            var user = FindByID(id);
-    //            if (user != null && user.Enable != isEnable)
-    //            {
-    //                user.Enable = isEnable;
-    //                user.Update();
-
-    //                Interlocked.Increment(ref count);
-    //            }
-    //        }
-    //    }
-
-    //    return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个用户");
-    //}
 }

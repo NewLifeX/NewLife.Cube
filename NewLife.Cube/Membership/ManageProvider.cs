@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Extensions;
 using NewLife.Cube.Services;
 using NewLife.Cube.Web;
 using NewLife.Log;

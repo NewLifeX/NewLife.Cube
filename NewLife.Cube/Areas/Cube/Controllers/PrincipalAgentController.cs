@@ -5,14 +5,14 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
 using XCode.Membership;
 
-namespace NewLife.Cube.Cube.Controllers
+namespace NewLife.Cube.Areas.Cube.Controllers
 {
     /// <summary>委托代理</summary>
     [Area("Cube")]
     [Menu(0, true, Icon = "fa-user-secret")]
     public class PrincipalAgentController : EntityController<PrincipalAgent>
     {
-        static PrincipalAgentController() 
+        static PrincipalAgentController()
         {
             ListFields.RemoveField("ID");
             ListFields.RemoveCreateField();

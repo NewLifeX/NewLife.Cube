@@ -41,12 +41,6 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReadmeFile>Readme.MD</PackageReadmeFile>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Session\ISession2.cs" />
-    <Compile Remove="Session\MemorySession.cs" />
-    <Compile Remove="Session\MemorySessionStore.cs" />
-    <Compile Remove="WebMiddleware\UserBehaviorMiddleware.cs" />
-  </ItemGroup>
 
   <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
@@ -75,7 +69,6 @@
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController.cs" Link="Common\ReadOnlyEntityController.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\CubeController.cs" Link="Controllers\CubeController.cs" />
-    <Compile Include="..\NewLife.Cube\Controllers\HomeController.cs" Link="Controllers\HomeController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\ODataController.cs" Link="Controllers\ODataController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\SsoController.cs" Link="Controllers\SsoController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />

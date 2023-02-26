@@ -124,7 +124,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 OnInsert(entity);
 
-                var fs =await SaveFiles(entity);
+                var fs = await SaveFiles(entity);
                 if (fs.Count > 0) OnUpdate(entity);
                 if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
 
@@ -160,11 +160,7 @@ namespace NewLife.Cube.Admin.Controllers
                 // 添加失败，ID清零，否则会显示保存按钮
                 entity[Role.Meta.Unique.Name] = 0;
 
-                if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
-
-                ViewBag.Fields = AddFormFields;
-
-                return View("AddForm", entity);
+                return Json(500, ViewBag.StatusMessage);
             }
 
             ViewBag.StatusMessage = "添加成功！";
@@ -180,22 +176,10 @@ namespace NewLife.Cube.Admin.Controllers
                 // 添加失败，ID清零，否则会显示保存按钮
                 entity[Role.Meta.Unique.Name] = 0;
 
-                if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
-
-                ViewBag.Fields = AddFormFields;
-
-                return View("AddForm", entity);
+                return Json(500, ViewBag.StatusMessage);
             }
 
-            if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
-
-
-            var url = Session["Cube_Add_Referrer"] as String;
-            if (!url.IsNullOrEmpty())
-                return Redirect(url);
-            else
-                // 新增完成跳到列表页，更新完成保持本页
-                return RedirectToAction("Index");
+            return Json(0, ViewBag.StatusMessage);
         }
 
         /// <summary>保存</summary>

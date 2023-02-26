@@ -6,7 +6,7 @@ using NewLife.Cube.Entity;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Cube.Controllers
+namespace NewLife.Cube.Areas.Cube.Controllers
 {
     /// <summary>应用系统</summary>
     [DisplayName("应用系统")]

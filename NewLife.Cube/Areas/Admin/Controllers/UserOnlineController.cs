@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode.Membership;
@@ -23,7 +22,7 @@ public class UserOnlineController : EntityController<UserOnline>
 
         ListFields.RemoveField("ID", "UserID", "SessionID", "Status", "LastError", "CreateIP", "CreateTime");
 
-        ListFields.TraceUrl("TraceId");
+        //ListFields.TraceUrl("TraceId");
 
         {
             var df = ListFields.GetField("Name") as ListField;

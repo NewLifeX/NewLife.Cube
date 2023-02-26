@@ -48,10 +48,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
+    <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
+    <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UIService.cs" Link="Services\UIService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\RunTimeMiddleware.cs" Link="WebMiddleware\RunTimeMiddleware.cs" />
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TracerMiddleware.cs" Link="WebMiddleware\TracerMiddleware.cs" />
   </ItemGroup>
@@ -72,8 +76,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Session\" />
     <Folder Include="WebMiddleware\" />
     <Folder Include="Services\" />
+    <Folder Include="Modules\" />
   </ItemGroup>
 
 </Project>

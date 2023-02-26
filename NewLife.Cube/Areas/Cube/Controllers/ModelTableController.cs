@@ -7,7 +7,7 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Cube.Controllers
+namespace NewLife.Cube.Areas.Cube.Controllers
 {
     /// <summary>模型表</summary>
     [Area("Cube")]
@@ -41,9 +41,7 @@ namespace NewLife.Cube.Cube.Controllers
                      || fa.Name.EqualIgnoreCase(ModelTable._.ConnName)));
 
                 foreach (var field in fields)
-                {
                     field.ShowInList = false;
-                }
 
                 // 调整列宽
                 columns.Find(f => f.Name.EqualIgnoreCase(ModelTable._.Name)).Width = "115";

@@ -57,18 +57,10 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             WriteLog("Delete", false, err);
             //if (LogOnChange) LogProvider.Provider.WriteLog("Delete", entity, err);
 
-            if (Request.IsAjaxRequest())
-                return JsonRefresh("删除失败！" + err);
-
-            throw;
+            return JsonRefresh("删除失败！" + err);
         }
 
-        if (Request.IsAjaxRequest())
-            return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
-        else if (!url.IsNullOrEmpty())
-            return Redirect(url);
-        else
-            return RedirectToAction("Index");
+        return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
     }
 
     /// <summary>表单，添加/修改</summary>
@@ -155,24 +147,12 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Entity<TEntity>.Meta.Unique.Name] = 0;
 
-            if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
-
-            ViewBag.Fields = AddFormFields;
-
-            return View("AddForm", entity);
+            return Json(500, ViewBag.StatusMessage);
         }
 
         ViewBag.StatusMessage = "添加成功！";
 
-        if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
-
-        var key = $"Cube_Add_{typeof(TEntity).FullName}";
-        var url = Session[key] as String;
-        if (!url.IsNullOrEmpty())
-            return Redirect(url);
-        else
-            // 新增完成跳到列表页，更新完成保持本页
-            return RedirectToAction("Index");
+        return Json(0, ViewBag.StatusMessage);
     }
 
     /// <summary>表单，添加/修改</summary>
@@ -202,11 +182,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             Session[key] = Request.GetReferer();
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
-
-        ViewBag.Fields = EditFormFields;
-
-        return View("EditForm", entity);
+        return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
     }
 
     /// <summary>保存</summary>
@@ -246,26 +222,14 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
 
             ViewBag.StatusMessage = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
 
-            if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
+            return Json(500, ViewBag.StatusMessage);
         }
         else
         {
             ViewBag.StatusMessage = "保存成功！";
 
-            if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
-
-            // 实体对象保存成功后直接重定向到列表页，减少用户操作提高操作体验
-            var key = $"Cube_Edit_{typeof(TEntity).FullName}-{id}";
-            var url = Session[key] as String;
-            if (!url.IsNullOrEmpty()) return Redirect(url);
+            return Json(0, ViewBag.StatusMessage);
         }
-
-        // 重新查找对象数据，以确保取得最新值
-        if (id != null) entity = FindData(id);
-
-        ViewBag.Fields = EditFormFields;
-
-        return View("EditForm", entity);
     }
 
     /// <summary>保存所有上传文件</summary>

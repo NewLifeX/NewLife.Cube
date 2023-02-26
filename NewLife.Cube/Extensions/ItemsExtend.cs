@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using NewLife.Data;
 
 namespace NewLife.Cube.Extensions
 {
     class ItemsExtend : IExtend
     {
-        public IDictionary Items { get; set; }
+        public IDictionary<Object, Object> Items { get; set; }
 
         public Object this[String key]
         {
