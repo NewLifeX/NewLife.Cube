@@ -423,43 +423,37 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             {
                 var item = itemD.ToDictionary();
                 if (item[fact.Fields[1].Name].ToString() == fact.Fields[1].DisplayName) //判断首行是否为标体列
-                {
                     continue;
+
+                //检查主字段是否重复
+                if (Entity<TEntity>.Find(fact.Master.Name, item[fact.Master.Name].ToString()) == null)
+                {
+                    //var entity = item.ToJson().ToJsonEntity(fact.EntityType);
+                    var entity = fact.Create();
+
+                    foreach (var fieldsItem in fact.Fields)
+                    {
+                        if (!item.ContainsKey(fieldsItem.Name))
+                        {
+                            if (!fieldsItem.IsNullable)
+                                fieldsItem.FromExcelToEntity(item, entity);
+                        }
+                        else
+                            fieldsItem.FromExcelToEntity(item, entity);
+                    }
+
+                    if (fact.FieldNames.Contains("CreateTime"))
+                        entity["CreateTime"] = DateTime.Now;
+
+                    if (fact.FieldNames.Contains("CreateIP"))
+                        entity["CreateIP"] = "--";
+
+                    okSum += fact.Session.Insert(entity);
                 }
                 else
                 {
-                    //检查主字段是否重复
-                    if (Entity<TEntity>.Find(fact.Master.Name, item[fact.Master.Name].ToString()) == null)
-                    {
-                        //var entity = item.ToJson().ToJsonEntity(fact.EntityType);
-                        var entity = fact.Create();
-
-                        foreach (var fieldsItem in fact.Fields)
-                        {
-                            if (!item.ContainsKey(fieldsItem.Name))
-                            {
-                                if (!fieldsItem.IsNullable)
-                                    fieldsItem.FromExcelToEntity(item, entity);
-
-                                continue;
-                            }
-
-                            fieldsItem.FromExcelToEntity(item, entity);
-                        }
-
-                        if (fact.FieldNames.Contains("CreateTime"))
-                            entity["CreateTime"] = DateTime.Now;
-
-                        if (fact.FieldNames.Contains("CreateIP"))
-                            entity["CreateIP"] = "--";
-
-                        okSum += fact.Session.Insert(entity);
-                    }
-                    else
-                    {
-                        errorString += $"<br>{item[fact.Master.Name]}重复";
-                        fiSum++;
-                    }
+                    errorString += $"<br>{item[fact.Master.Name]}重复";
+                    fiSum++;
                 }
             }
 
@@ -478,7 +472,6 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             return Json(500, ex.GetMessage(), ex);
         }
     }
-
 
     /// <summary>修改bool值</summary>
     /// <param name="id"></param>

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
+using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
 using NewLife.IP;
@@ -66,8 +67,8 @@ public static class CubeService
         // 连接字符串
         DAL.ConnStrs.TryAdd("Cube", "MapTo=Membership");
 
-        // 配置Cookie策略
-        services.ConfigureNonBreakingSameSiteCookies();
+        //// 配置Cookie策略
+        //services.ConfigureNonBreakingSameSiteCookies();
         //services.Configure<CookiePolicyOptions>(options =>
         //{
         //    // 此项为true需要用户授权才能记录cookie
@@ -328,7 +329,7 @@ public static class CubeService
 
         app.UseMiddleware<RunTimeMiddleware>();
 
-        if (env != null) app.UseCubeDefaultUI(env);
+        //if (env != null) app.UseCubeDefaultUI(env);
 
         // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
         app.UseRouter(endpoints =>

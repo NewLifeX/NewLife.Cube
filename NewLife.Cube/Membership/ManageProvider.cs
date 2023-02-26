@@ -361,13 +361,13 @@ public static class ManagerProviderHelper
         var u = provider.FindByName(user);
         if (u == null || !u.Enable) return null;
 
-        // 保存登录信息。如果是json请求，不用记录自动登录
-        if (autologin && u is IAuthUser mu && !req.IsAjaxRequest())
-        {
-            mu.SaveLogin(null);
+        //// 保存登录信息。如果是json请求，不用记录自动登录
+        //if (autologin && u is IAuthUser mu && !req.IsAjaxRequest())
+        //{
+        //    mu.SaveLogin(null);
 
-            LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={jwt.IssuedAt} Expire={jwt.Expire} Token={token}", u.ID, u + "", ip: context.GetUserHost());
-        }
+        //    LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={jwt.IssuedAt} Expire={jwt.Expire} Token={token}", u.ID, u + "", ip: context.GetUserHost());
+        //}
 
         return u;
     }

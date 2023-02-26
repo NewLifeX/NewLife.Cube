@@ -111,6 +111,7 @@
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\CheckInData.cs" Link="Web\Models\CheckInData.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\DepartmentInfo.cs" Link="Web\Models\DepartmentInfo.cs" />
+    <Compile Include="..\NewLife.Cube\Web\Models\OAuthFieldMap.cs" Link="Web\Models\OAuthFieldMap.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\SsoTokenModel.cs" Link="Web\Models\SsoTokenModel.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\TokenInfo.cs" Link="Web\Models\TokenInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\UserInfo.cs" Link="Web\Models\UserInfo.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="..\NewLife.Cube\Web\OAuth\WeixinClient.cs" Link="Web\OAuth\WeixinClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoClient.cs" Link="Web\SsoClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
+    <Compile Include="..\NewLife.Cube\Web\UserAgentParser.cs" Link="Web\UserAgentParser.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
   </ItemGroup>
 
