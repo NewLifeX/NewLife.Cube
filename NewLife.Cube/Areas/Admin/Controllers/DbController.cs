@@ -50,7 +50,7 @@ public class DbController : ControllerBaseX
             list.Add(di);
         }
 
-        return View("Index", list);
+        return Json(0, null, list);
     }
 
     /// <summary>备份数据库</summary>

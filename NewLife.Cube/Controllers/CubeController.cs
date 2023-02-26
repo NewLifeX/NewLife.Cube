@@ -22,7 +22,7 @@ namespace NewLife.Cube.Controllers;
 public class CubeController : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources;
- 
+
     /// <summary>构造函数</summary>
     /// <param name="sources"></param>
     public CubeController(IEnumerable<EndpointDataSource> sources)
@@ -31,23 +31,23 @@ public class CubeController : ControllerBaseX
     }
 
     #region 拦截
-    /// <summary>执行后</summary>
-    /// <param name="context"></param>
-    public override void OnActionExecuted(ActionExecutedContext context)
-    {
-        if (context.Exception != null && !context.ExceptionHandled)
-        {
-            var ex = context.Exception.GetTrue();
-            context.Result = Json(0, null, ex);
-            context.ExceptionHandled = true;
+    ///// <summary>执行后</summary>
+    ///// <param name="context"></param>
+    //public override void OnActionExecuted(ActionExecutedContext context)
+    //{
+    //    if (context.Exception != null && !context.ExceptionHandled)
+    //    {
+    //        var ex = context.Exception.GetTrue();
+    //        context.Result = Json(0, null, ex);
+    //        context.ExceptionHandled = true;
 
-            if (XTrace.Debug) XTrace.WriteException(ex);
+    //        if (XTrace.Debug) XTrace.WriteException(ex);
 
-            return;
-        }
+    //        return;
+    //    }
 
-        base.OnActionExecuted(context);
-    }
+    //    base.OnActionExecuted(context);
+    //}
     #endregion
 
     #region 服务器信息
@@ -130,7 +130,7 @@ public class CubeController : ControllerBaseX
             }
         }
 
-        return Json(eps);
+        return Json(0, null, eps);
     }
     #endregion
 

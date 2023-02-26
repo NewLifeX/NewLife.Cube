@@ -6,6 +6,7 @@ using System.Web;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
 using NewLife.Cube.Common;
@@ -62,50 +63,50 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         SysConfig = SysConfig.Current;
     }
 
-    ///// <summary>动作执行前</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuting(Remoting.ControllerContext filterContext)
-    //{
-    //    var title = GetType().GetDisplayName() ?? typeof(TEntity).GetDisplayName() ?? Entity<TEntity>.Meta.Table.DataTable.DisplayName;
-    //    ViewBag.Title = title;
+    /// <summary>动作执行前</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+        var title = GetType().GetDisplayName() ?? typeof(TEntity).GetDisplayName() ?? Entity<TEntity>.Meta.Table.DataTable.DisplayName;
+        ViewBag.Title = title;
 
-    //    // Ajax请求不需要设置ViewBag
-    //    if (!Request.IsAjaxRequest())
-    //    {
-    //        // 默认加上实体工厂
-    //        ViewBag.Factory = Factory;
+        // Ajax请求不需要设置ViewBag
+        if (!Request.IsAjaxRequest())
+        {
+            // 默认加上实体工厂
+            ViewBag.Factory = Factory;
 
-    //        // 默认加上分页给前台
-    //        var ps = filterContext.ActionArguments.ToNullable();
-    //        var p = ps["p"] as Pager ?? new Pager();
-    //        ViewBag.Page = p;
+            // 默认加上分页给前台
+            var ps = filterContext.ActionArguments.ToNullable();
+            var p = ps["p"] as Pager ?? new Pager();
+            ViewBag.Page = p;
 
-    //        // 用于显示的列
-    //        if (!ps.ContainsKey("entity")) ViewBag.Fields = ListFields;
+            // 用于显示的列
+            if (!ps.ContainsKey("entity")) ViewBag.Fields = ListFields;
 
-    //        if (ViewBag.HeaderTitle == null) ViewBag.HeaderTitle = Entity<TEntity>.Meta.Table.Description + "管理";
+            if (ViewBag.HeaderTitle == null) ViewBag.HeaderTitle = Entity<TEntity>.Meta.Table.Description + "管理";
 
-    //        var txt = (String)ViewBag.HeaderContent;
-    //        if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
-    //        if (txt.IsNullOrEmpty()) txt = GetType().GetDescription();
-    //        if (txt.IsNullOrEmpty()) txt = Entity<TEntity>.Meta.Table.Description;
-    //        //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)
-    //        //    txt = "这里是页头内容，来自于菜单备注，或者给控制器增加Description特性";
-    //        ViewBag.HeaderContent = txt;
-    //    }
+            var txt = (String)ViewBag.HeaderContent;
+            if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
+            if (txt.IsNullOrEmpty()) txt = GetType().GetDescription();
+            if (txt.IsNullOrEmpty()) txt = Entity<TEntity>.Meta.Table.Description;
+            //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)
+            //    txt = "这里是页头内容，来自于菜单备注，或者给控制器增加Description特性";
+            ViewBag.HeaderContent = txt;
+        }
 
-    //    base.OnActionExecuting(filterContext);
-    //}
+        base.OnActionExecuting(filterContext);
+    }
 
-    ///// <summary>执行后</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuted(Remoting.ControllerContext filterContext)
-    //{
-    //    base.OnActionExecuted(filterContext);
+    /// <summary>执行后</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuted(ActionExecutedContext filterContext)
+    {
+        base.OnActionExecuted(filterContext);
 
-    //    var title = ViewBag.Title + "";
-    //    HttpContext.Items["Title"] = title;
-    //}
+        var title = ViewBag.Title + "";
+        HttpContext.Items["Title"] = title;
+    }
     #endregion
 
     #region 数据获取
@@ -391,7 +392,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     //[AllowAnonymous]
     public virtual ActionResult Index(Pager p = null)
     {
-        //p ??= ViewBag.Page as Pager;
+        p ??= ViewBag.Page as Pager;
 
         // 缓存数据，用于后续导出
         //SetSession(CacheKey, p);
@@ -413,7 +414,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         // Json输出
         if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p });
 
-        return Json(0, null, list);
+        return View("List", list);
     }
 
     /// <summary>表单，查看</summary>
@@ -432,12 +433,10 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         // Json输出
         if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.详情));
 
-        //// 用于显示的列
-        //ViewBag.Fields = DetailFields;
+        // 用于显示的列
+        ViewBag.Fields = DetailFields;
 
-        //return View("Detail", entity);
-
-        return Json(0, null, entity);
+        return View("Detail", entity);
     }
 
     /// <summary>清空全表数据</summary>
@@ -530,21 +529,21 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     [DisplayName("页面")]
     public virtual ActionResult Html(String token, Pager p)
     {
-        //try
-        //{
-        var issuer = ValidToken(token);
+        try
+        {
+            var issuer = ValidToken(token);
 
-        // 需要总记录数来分页
-        p.RetrieveTotalCount = true;
+            // 需要总记录数来分页
+            p.RetrieveTotalCount = true;
 
-        var list = SearchData(p);
+            var list = SearchData(p);
 
-        return Json(0, null, list);
-        //}
-        //catch (Exception ex)
-        //{
-        //    return Content(ex.Message);
-        //}
+            return View("List", list);
+        }
+        catch (Exception ex)
+        {
+            return Content(ex.Message);
+        }
     }
 
     /// <summary>Json接口</summary>
@@ -1166,7 +1165,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_Form_Body.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-
+        
         _ = ViewHelper.MakeFormView(typeof(TEntity), vpath, EditFormFields);
 
         WriteLog("生成表单", true, vpath);
@@ -1189,7 +1188,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Search.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-
+        
         _ = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
 
         WriteLog("生成搜索", true, vpath);

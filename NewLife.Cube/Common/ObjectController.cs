@@ -24,34 +24,34 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     /// <summary>实例化</summary>
     public ObjectController() => PageSetting.EnableNavbar = false;
 
-    /// <summary>动作执行前</summary>
-    /// <param name="filterContext"></param>
-    public override void OnActionExecuting(ActionExecutingContext filterContext)
-    {
-        base.OnActionExecuting(filterContext);
+    ///// <summary>动作执行前</summary>
+    ///// <param name="filterContext"></param>
+    //public override void OnActionExecuting(Remoting.ControllerContext filterContext)
+    //{
+    //    base.OnActionExecuting(filterContext);
 
-        // 显示名和描述
-        var name = GetType().GetDisplayName() ?? typeof(TObject).GetDisplayName() ?? typeof(TObject).Name;
-        var des = GetType().GetDescription() ?? typeof(TObject).GetDescription();
+    //    // 显示名和描述
+    //    var name = GetType().GetDisplayName() ?? typeof(TObject).GetDisplayName() ?? typeof(TObject).Name;
+    //    var des = GetType().GetDescription() ?? typeof(TObject).GetDescription();
 
-        ViewBag.Title = name;
-        ViewBag.HeaderTitle = name;
+    //    ViewBag.Title = name;
+    //    ViewBag.HeaderTitle = name;
 
-        var txt = "";
-        if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
-        if (txt.IsNullOrEmpty()) txt = des;
-        ViewBag.HeaderContent = txt;
-    }
+    //    var txt = "";
+    //    if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
+    //    if (txt.IsNullOrEmpty()) txt = des;
+    //    ViewBag.HeaderContent = txt;
+    //}
 
-    /// <summary>执行后</summary>
-    /// <param name="filterContext"></param>
-    public override void OnActionExecuted(ActionExecutedContext filterContext)
-    {
-        base.OnActionExecuted(filterContext);
+    ///// <summary>执行后</summary>
+    ///// <param name="filterContext"></param>
+    //public override void OnActionExecuted(Remoting.ControllerContext filterContext)
+    //{
+    //    base.OnActionExecuted(filterContext);
 
-        var title = ViewBag.Title + "";
-        HttpContext.Items["Title"] = title;
-    }
+    //    var title = ViewBag.Title + "";
+    //    HttpContext.Items["Title"] = title;
+    //}
 
     /// <summary>显示对象</summary>
     /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
@@ -59,30 +59,21 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     [EntityAuthorize(PermissionFlags.Detail)]
     public ActionResult Index(FormatType formatType = FormatType.CamelCase)
     {
-        //var model = new ObjectModel { Value = Value };
-
         var list = GetMembers(Value?.GetType());
-        if (IsJsonRequest)
-        {
-            list = list.Select(e => e.Clone()).ToList();
-            foreach (var item in list)
-            {
-                item.Name = FormatHelper.FormatName(item.Name, formatType);
-                //item.FormatType = formatType;
-            }
-            var dic = list
-                .GroupBy(e => e.Category + "")
-                .ToDictionary(e => e.Key, e => e.ToList());
 
-            //model.Properties = dic;
-
-            return Ok(data: new { Value, Properties = dic });
-        }
-        else
+        list = list.Select(e => e.Clone()).ToList();
+        foreach (var item in list)
         {
-            ViewBag.Fields = list;
-            return View("ObjectForm", Value);
+            item.Name = FormatHelper.FormatName(item.Name, formatType);
+            //item.FormatType = formatType;
         }
+        var dic = list
+            .GroupBy(e => e.Category + "")
+            .ToDictionary(e => e.Key, e => e.ToList());
+
+        //model.Properties = dic;
+
+        return Ok(data: new { Value, Properties = dic });
     }
 
     /// <summary>保存对象</summary>

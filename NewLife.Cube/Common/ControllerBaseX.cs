@@ -9,7 +9,9 @@ using XCode.Membership;
 namespace NewLife.Cube;
 
 /// <summary>控制器基类</summary>
-public class ControllerBaseX : Controller
+[ApiController]
+[Route("[controller]")]
+public class ControllerBaseX : ControllerBase, IActionFilter
 {
     #region 属性
     /// <summary>临时会话扩展信息。仅限本地内存，不支持分布式共享</summary>
@@ -31,15 +33,15 @@ public class ControllerBaseX : Controller
 
     /// <summary>动作执行前</summary>
     /// <param name="context"></param>
-    public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
+    public virtual void OnActionExecuting(Remoting.ControllerContext context)
     {
-        // 页面设置
-        ViewBag.PageSetting = PageSetting;
+        //// 页面设置
+        //ViewBag.PageSetting = PageSetting;
 
-        var ctx = context.HttpContext;
+        var ctx = HttpContext;
         Session = ctx.Items["Session"] as IDictionary<String, Object>;
         Menu = ctx.Items["CurrentMenu"] as IMenu;
-        ViewBag.Menu = Menu;
+        //ViewBag.Menu = Menu;
 
         // 没有用户时无权
         var user = ManageProvider.User;
@@ -54,13 +56,11 @@ public class ControllerBaseX : Controller
             //    PageSetting.EnableSelect = user.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
             //}
         }
-
-        base.OnActionExecuting(context);
     }
 
     /// <summary>动作执行后</summary>
     /// <param name="context"></param>
-    public override void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context)
+    public virtual void OnActionExecuted(Remoting.ControllerContext context)
     {
         var ex = context.Exception?.GetTrue();
         if (ex != null && !context.ExceptionHandled)
@@ -86,8 +86,6 @@ public class ControllerBaseX : Controller
                 context.ExceptionHandled = true;
             }
         }
-
-        base.OnActionExecuted(context);
     }
     #endregion
 

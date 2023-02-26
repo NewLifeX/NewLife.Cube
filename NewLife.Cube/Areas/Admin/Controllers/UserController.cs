@@ -270,7 +270,7 @@ public class UserController : EntityController<User>
         var model = GetViewModel(returnUrl);
         model.OAuthItems = ms.Where(e => e.Visible).ToList();
 
-        return View(model);
+        return Json(0, null, model);
     }
 
     private LoginViewModel GetViewModel(String returnUrl)
@@ -377,7 +377,7 @@ public class UserController : EntityController<User>
         var model = GetViewModel(returnUrl);
         model.OAuthItems = OAuthConfig.GetVisibles();
 
-        return View(model);
+        return Json(0, null, model);
     }
 
     /// <summary>注销</summary>
@@ -443,12 +443,14 @@ public class UserController : EntityController<User>
             return Json(0, "ok", userInfo);
         }
 
-        // 用于显示的列
-        if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
-        ViewBag.Factory = XCode.Membership.User.Meta.Factory;
+        //// 用于显示的列
+        //if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
+        //ViewBag.Factory = XCode.Membership.User.Meta.Factory;
 
-        // 必须指定视图名，因为其它action会调用
-        return View("Info", user);
+        //// 必须指定视图名，因为其它action会调用
+        //return View("Info", user);
+
+        return Json(0, null, user);
     }
 
     /// <summary>更新用户资料</summary>
@@ -514,7 +516,7 @@ public class UserController : EntityController<User>
             SsoName = name,
         };
 
-        return View(model);
+        return Json(0, null, model);
     }
 
     /// <summary>修改密码</summary>
@@ -545,9 +547,11 @@ public class UserController : EntityController<User>
 
         var user = ManageProvider.Provider.ChangePassword(current.Name, model.NewPassword, requireOldPass ? model.OldPassword : null);
 
-        ViewBag.StatusMessage = "修改成功！";
+        //ViewBag.StatusMessage = "修改成功！";
 
-        return Ok(ViewBag.StatusMessage);
+        //return Ok(ViewBag.StatusMessage);
+
+        return Json(0, null, "修改成功！");
     }
 
     /// <summary>用户绑定</summary>
@@ -629,7 +633,7 @@ public class UserController : EntityController<User>
         var model = GetViewModel(null);
         model.OAuthItems = OAuthConfig.GetVisibles();
 
-        return View("Login", model);
+        return Json(0, null, model);
     }
 
     /// <summary>清空密码</summary>

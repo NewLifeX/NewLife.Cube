@@ -378,12 +378,7 @@ public class SsoController : ControllerBaseX
             }
         }
 
-        if (IsJsonRequest) return Ok();
-
-        var url = Provider.GetReturnUrl(Request, true);
-        if (url.IsNullOrEmpty()) url = "/";
-
-        return Redirect(url);
+        return Ok();
     }
     #endregion
 
@@ -862,13 +857,13 @@ public class SsoController : ControllerBaseX
         return File(vs, "image/png");
     }
 
-    private ActionResult SsoJsonOK(Object data) => Json(data);
+    private ActionResult SsoJsonOK(Object data) => Json(0, null, data);
 
     private ActionResult SsoJsonError(Exception ex)
     {
         var code = 500;
         if (ex is ApiException aex && code > 0) code = aex.Code;
-        return Json(new { errcode = code, error = ex.GetTrue().Message });
+        return Json(code, ex.GetTrue().Message);
     }
     #endregion
 }

@@ -65,7 +65,8 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
 
         if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p });
 
-        return View("ListTree", list);
+        //return View("ListTree", list);
+        return Json(0, null, list);
     }
 
     ///// <summary>要导出Xml的对象</summary>

@@ -28,17 +28,17 @@ public class ConfigController<TConfig> : ObjectController<TConfig> where TConfig
         }
     }
 
-    /// <summary>已重载</summary>
-    /// <param name="filterContext"></param>
-    public override void OnActionExecuting(ActionExecutingContext filterContext)
-    {
-        //var fi = XmlConfig<TConfig>._.ConfigFile;
-        //if (fi.IsNullOrEmpty() || !fi.AsFile().Exists) throw new Exception("无法找到配置文件 {0}".F(fi));
+    ///// <summary>已重载</summary>
+    ///// <param name="filterContext"></param>
+    //public override void OnActionExecuting(ActionExecutingContext filterContext)
+    //{
+    //    //var fi = XmlConfig<TConfig>._.ConfigFile;
+    //    //if (fi.IsNullOrEmpty() || !fi.AsFile().Exists) throw new Exception("无法找到配置文件 {0}".F(fi));
 
-        var bs = this.Bootstrap();
-        bs.MaxColumn = 1;
-        bs.LabelWidth = 3;
+    //    var bs = this.Bootstrap();
+    //    bs.MaxColumn = 1;
+    //    bs.LabelWidth = 3;
 
-        base.OnActionExecuting(filterContext);
-    }
+    //    base.OnActionExecuting(filterContext);
+    //}
 }

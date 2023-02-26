@@ -33,8 +33,8 @@ public class IndexController : ControllerBaseX
         var user = ManageProvider.Provider.TryLogin(HttpContext);
         if (user == null) return RedirectToAction("Login", "User", new { r = Request.Path + "" });
 
-        ViewBag.User = ManageProvider.User;
-        ViewBag.Config = SysConfig.Current;
+        //ViewBag.User = ManageProvider.User;
+        //ViewBag.Config = SysConfig.Current;
 
         //// 工作台页面
         //var startPage = Request["page"];
@@ -42,7 +42,8 @@ public class IndexController : ControllerBaseX
 
         //ViewBag.Main = startPage;
 
-        return View();
+        //return View();
+        return Ok();
     }
 
     /// <summary>服务器信息</summary>
@@ -52,29 +53,30 @@ public class IndexController : ControllerBaseX
     [EntityAuthorize(PermissionFlags.Detail)]
     public ActionResult Main(String id)
     {
-        ViewBag.Act = id;
-        ViewBag.Config = SysConfig.Current;
+        //ViewBag.Act = id;
+        //ViewBag.Config = SysConfig.Current;
 
-        var name = Process.GetCurrentProcess().ProcessName;
+        //var name = Process.GetCurrentProcess().ProcessName;
 
-        ViewBag.WebServerName = name;
-        ViewBag.MyAsms = AssemblyX.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+        //ViewBag.WebServerName = name;
+        //ViewBag.MyAsms = AssemblyX.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
 
-        var Asms = AssemblyX.GetAssemblies(null).ToArray();
-        Asms = Asms.OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
-        ViewBag.Asms = Asms;
+        //var Asms = AssemblyX.GetAssemblies(null).ToArray();
+        //Asms = Asms.OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+        //ViewBag.Asms = Asms;
 
-        //return View();
-        switch ((id + "").ToLower())
-        {
-            case "processmodules": return View("ProcessModules");
-            case "assembly": return View("Assembly");
-            case "session": return View("Session");
-            case "cache": return View("Cache");
-            case "servervar": return View("ServerVar");
-            case "memoryfree": return View("MemoryFree");
-            default: return View();
-        }
+        ////return View();
+        //switch ((id + "").ToLower())
+        //{
+        //    case "processmodules": return View("ProcessModules");
+        //    case "assembly": return View("Assembly");
+        //    case "session": return View("Session");
+        //    case "cache": return View("Cache");
+        //    case "servervar": return View("ServerVar");
+        //    case "memoryfree": return View("MemoryFree");
+        //    default: return View();
+        //}
+        return Ok();
     }
 
     /// <summary>重启</summary>

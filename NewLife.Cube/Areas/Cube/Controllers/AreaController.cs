@@ -86,14 +86,14 @@ public class AreaController : EntityController<Area>
         return Area.Search(parentid, level, idstart, idend, enable, p["q"], start, end, p);
     }
 
-    /// <summary>
-    /// 中国地图
-    /// </summary>
-    /// <returns></returns>
-    public ActionResult Map()
-    {
-        PageSetting.EnableNavbar = false;
+    ///// <summary>
+    ///// 中国地图
+    ///// </summary>
+    ///// <returns></returns>
+    //public ActionResult Map()
+    //{
+    //    PageSetting.EnableNavbar = false;
 
-        return View("Map");
-    }
+    //    return View("Map");
+    //}
 }

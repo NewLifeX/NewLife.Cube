@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using XCode.Membership;
+﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using NewLife.Cube.Extensions;
+using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers;
 
@@ -101,10 +95,10 @@ public class FileController : ControllerBaseX
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
 
-        // 计算当前路径
-        var fd = di.FullName;
-        if (fd.StartsWith(Root)) fd = fd[Root.Length..];
-        ViewBag.Current = fd;
+        //// 计算当前路径
+        //var fd = di.FullName;
+        //if (fd.StartsWith(Root)) fd = fd[Root.Length..];
+        //ViewBag.Current = fd;
 
         // 遍历所有子目录
         var fis = di.GetFileSystemInfos();
@@ -141,12 +135,13 @@ public class FileController : ControllerBaseX
             }
         }
 
-        // 剪切板
-        ViewBag.Clip = GetClip();
-        // 提示信息
-        ViewBag.Message = message;
+        //// 剪切板
+        //ViewBag.Clip = GetClip();
+        //// 提示信息
+        //ViewBag.Message = message;
 
-        return View("Index", list);
+        //return View("Index", list);
+        return Ok();
     }
 
     /// <summary>删除</summary>
@@ -277,12 +272,12 @@ public class FileController : ControllerBaseX
                 using var fs = new FileStream(dest, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                 await file.CopyToAsync(fs);
             }
-            return Json(new { code = 0, message = "上传成功" });
+            return Json(0, "上传成功");
         }
         catch (Exception ex)
         {
             WriteLog("上传失败", false, ex + "");
-            return Json(new { code = 500, message = "上传失败" });
+            return Json(500, "上传失败");
         }
     }
 

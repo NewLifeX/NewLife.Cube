@@ -96,10 +96,11 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         else
             Session[key] = Request.GetReferer();
 
-        // 用于显示的列
-        ViewBag.Fields = AddFormFields;
+        //// 用于显示的列
+        //ViewBag.Fields = AddFormFields;
 
-        return View("AddForm", entity);
+        //return View("AddForm", entity);
+        return Json(0, null, entity);
     }
 
     /// <summary>保存</summary>
@@ -138,21 +139,22 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);
         }
 
+        var msg = "";
         if (!rs)
         {
             WriteLog("Add", false, err);
 
-            ViewBag.StatusMessage = SysConfig.Develop ? ("添加失败！" + err) : "添加失败！";
+            msg = SysConfig.Develop ? ("添加失败！" + err) : "添加失败！";
 
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Entity<TEntity>.Meta.Unique.Name] = 0;
 
-            return Json(500, ViewBag.StatusMessage);
+            return Json(500, msg);
         }
 
-        ViewBag.StatusMessage = "添加成功！";
+        msg = "添加成功！";
 
-        return Json(0, ViewBag.StatusMessage);
+        return Json(0, msg);
     }
 
     /// <summary>表单，添加/修改</summary>
@@ -216,19 +218,20 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         Object id = null;
         if (Factory.Unique != null) id = entity[Factory.Unique.Name];
 
+        var msg = "";
         if (!rs)
         {
             WriteLog("Edit", false, err);
 
-            ViewBag.StatusMessage = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
+            msg = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
 
-            return Json(500, ViewBag.StatusMessage);
+            return Json(500, msg);
         }
         else
         {
-            ViewBag.StatusMessage = "保存成功！";
+            msg = "保存成功！";
 
-            return Json(0, ViewBag.StatusMessage);
+            return Json(0, msg);
         }
     }
 
