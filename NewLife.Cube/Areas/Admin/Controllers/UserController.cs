@@ -210,6 +210,7 @@ public class UserController : EntityController<User>
     /// <summary>登录</summary>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public ActionResult Login()
     {
         var returnUrl = GetRequest("r");
@@ -313,7 +314,7 @@ public class UserController : EntityController<User>
 
     /// <summary>密码登录</summary>
     /// <returns></returns>
-    [HttpPost()]
+    [HttpPost]
     [AllowAnonymous]
     public ActionResult Login(LoginModel loginModel)
     {
@@ -383,6 +384,7 @@ public class UserController : EntityController<User>
     /// <summary>注销</summary>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public ActionResult Logout()
     {
         var returnUrl = GetRequest("r");

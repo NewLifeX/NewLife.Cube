@@ -88,6 +88,7 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
     /// <returns></returns>
     [DisplayName("上升")]
     [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
     public ActionResult Up(Int32 id)
     {
         var menu = FindByID(id);
@@ -103,6 +104,7 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
     /// <returns></returns>
     [DisplayName("下降")]
     [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
     public ActionResult Down(Int32 id)
     {
         var menu = FindByID(id);

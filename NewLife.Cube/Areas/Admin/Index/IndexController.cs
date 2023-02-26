@@ -28,6 +28,7 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     //[EntityAuthorize(PermissionFlags.Detail)]
     [AllowAnonymous]
+    [HttpGet]
     public ActionResult Index()
     {
         var user = ManageProvider.Provider.TryLogin(HttpContext);
@@ -51,6 +52,7 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     [DisplayName("服务器信息")]
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
     public ActionResult Main(String id)
     {
         //ViewBag.Act = id;
@@ -83,6 +85,7 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     [DisplayName("重启")]
     [EntityAuthorize((PermissionFlags)16)]
+    [HttpPost]
     public ActionResult Restart()
     {
         //try
@@ -107,6 +110,7 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     [DisplayName("释放内存")]
     [EntityAuthorize((PermissionFlags)16)]
+    [HttpGet]
     public ActionResult MemoryFree()
     {
         try
@@ -124,6 +128,7 @@ public class IndexController : ControllerBaseX
 
         return RedirectToAction(nameof(Main));
     }
+  
     [DllImport("kernel32.dll")]
     static extern Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
 

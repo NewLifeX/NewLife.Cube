@@ -16,7 +16,11 @@ TracerMiddleware.Tracer = star?.Tracer;
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // 解决 NewLife.Setting 与 XCode.Setting 冲突的问题
+    options.CustomSchemaIds(type => type.FullName);
+});
 
 services.AddCube();
 
@@ -33,6 +37,7 @@ app.UseCube(builder.Environment);
 
 app.UseAuthorization();
 
+app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Index}/{id?}");
 app.MapControllers();
 
 app.RegisterService("CubeDemo", null, builder.Environment.EnvironmentName, "/cube/info");

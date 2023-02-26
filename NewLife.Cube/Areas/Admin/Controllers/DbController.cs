@@ -18,6 +18,7 @@ public class DbController : ControllerBaseX
     /// <summary>数据库列表</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
     public ActionResult Index()
     {
         var list = new List<DbItem>();
@@ -57,6 +58,7 @@ public class DbController : ControllerBaseX
     /// <param name="name"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
+    [HttpPost]
     public ActionResult Backup(String name)
     {
         var sw = Stopwatch.StartNew();
@@ -75,6 +77,7 @@ public class DbController : ControllerBaseX
     /// <param name="name"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
+    [HttpPost]
     public ActionResult BackupAndCompress(String name)
     {
         var sw = Stopwatch.StartNew();
@@ -98,6 +101,7 @@ public class DbController : ControllerBaseX
     /// <param name="name"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
     public ActionResult Download(String name)
     {
         var dal = DAL.Create(name);

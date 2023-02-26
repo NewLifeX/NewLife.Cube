@@ -84,7 +84,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //[DisplayName("修改")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
-    public ActionResult Update(TObject obj)
+    public virtual ActionResult Update(TObject obj)
     {
         WriteLog(obj, UserHost);
 

@@ -91,6 +91,7 @@ public class FileController : ControllerBaseX
     /// <summary>文件管理主视图</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
     public ActionResult Index(String r, String sort, String message = "")
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
@@ -148,6 +149,7 @@ public class FileController : ControllerBaseX
     /// <param name="r"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
+    [HttpPost]
     public ActionResult Delete(String r)
     {
         var p = "";
@@ -178,6 +180,7 @@ public class FileController : ControllerBaseX
     /// <param name="r"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
+    [HttpPost]
     public ActionResult Compress(String r)
     {
         var p = "";
@@ -210,6 +213,7 @@ public class FileController : ControllerBaseX
     /// <param name="r"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
     public ActionResult Decompress(String r)
     {
         var fi = GetFile(r);
@@ -230,6 +234,7 @@ public class FileController : ControllerBaseX
     /// <returns></returns>
     [HttpPost]
     [EntityAuthorize(PermissionFlags.Insert)]
+    [HttpPost]
     public async Task<ActionResult> Upload(String r, IFormFile file)
     {
         if (file != null)
@@ -285,6 +290,7 @@ public class FileController : ControllerBaseX
     /// <param name="r"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpPost]
     public ActionResult Download(String r)
     {
         var fi = GetFile(r);
@@ -311,6 +317,7 @@ public class FileController : ControllerBaseX
     /// <param name="f"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpPost]
     public ActionResult Copy(String r, String f)
     {
         var fi = GetItem(f);
@@ -328,6 +335,7 @@ public class FileController : ControllerBaseX
     /// <param name="f"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpPost]
     public ActionResult CancelCopy(String r, String f)
     {
         var fi = GetItem(f);
@@ -344,6 +352,7 @@ public class FileController : ControllerBaseX
     /// <param name="r"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
+    [HttpPost]
     public ActionResult Paste(String r)
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
@@ -368,6 +377,7 @@ public class FileController : ControllerBaseX
     /// <param name="r"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
+    [HttpPost]
     public ActionResult Move(String r)
     {
         var di = GetDirectory(r) ?? Root.AsDirectory();
@@ -391,6 +401,7 @@ public class FileController : ControllerBaseX
     /// <summary>清空剪切板</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpPost]
     public ActionResult ClearClipboard(String r)
     {
         var list = GetClip();
