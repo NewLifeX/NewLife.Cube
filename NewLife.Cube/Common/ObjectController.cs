@@ -57,6 +57,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
     public ActionResult Index(FormatType formatType = FormatType.CamelCase)
     {
         var list = GetMembers(Value?.GetType());
@@ -82,6 +83,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //[HttpPost]
     //[DisplayName("修改")]
     [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
     public ActionResult Update(TObject obj)
     {
         WriteLog(obj, UserHost);

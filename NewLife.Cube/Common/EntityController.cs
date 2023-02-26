@@ -33,6 +33,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除{type}")]
+    [HttpGet]
     public virtual ActionResult Delete(String id)
     {
         var url = Request.GetReferer();
@@ -67,6 +68,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("添加{type}")]
+    [HttpGet]
     public virtual ActionResult Add()
     {
         var entity = Factory.Create(true) as TEntity;
@@ -162,6 +164,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("更新{type}")]
+    [HttpGet]
     public virtual ActionResult Edit(String id)
     {
         var entity = FindData(id);
@@ -340,6 +343,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <param name="reason">操作原因</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
     public virtual ActionResult EnableSelect(String keys, String reason) => EnableOrDisableSelect(true, reason);
 
     /// <summary>批量禁用</summary>
@@ -347,6 +351,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <param name="reason">操作原因</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
     public virtual ActionResult DisableSelect(String keys, String reason) => EnableOrDisableSelect(false, reason);
 
     /// <summary>
@@ -385,25 +390,12 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     #endregion
 
     #region 高级Action
-    /// <summary>导入Xml</summary>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("导入")]
-    [HttpPost]
-    public virtual ActionResult ImportXml() => throw new NotImplementedException();
-
-    /// <summary>导入Json</summary>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("导入")]
-    [HttpPost]
-    public virtual ActionResult ImportJson() => throw new NotImplementedException();
-
     /// <summary>导入Excel</summary>
     /// 当前采用前端解析的excel，表头第一行数据无效，从第二行开始处理
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("导入Excel")]
+    [HttpPost]
     public virtual ActionResult ImportExcel(String data)
     {
         if (String.IsNullOrWhiteSpace(data)) return Json(500, null, $"“{nameof(data)}”不能为 null 或空白。");
@@ -475,87 +467,6 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             return Json(500, ex.GetMessage(), ex);
         }
     }
-
-    /// <summary>修改bool值</summary>
-    /// <param name="id"></param>
-    /// <param name="valName"></param>
-    /// <param name="val"></param>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Update)]
-    public ActionResult SetBool(Int32 id = 0, String valName = "", Boolean val = true)
-    {
-        var fi = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase(valName));
-        if (fi == null) throw new InvalidOperationException($"未找到{valName}字段。");
-
-        var rs = 0;
-        if (id > 0)
-        {
-            var entity = FindData(id);
-            if (entity == null) throw new ArgumentNullException(nameof(id), "找不到任务 " + id);
-
-            //entity.Enable = enable;
-            entity.SetItem(fi.Name, val);
-            if (Valid(entity, DataObjectMethodType.Update, true))
-                rs += OnUpdate(entity);
-        }
-        else
-        {
-            var ids = GetRequest("keys").SplitAsInt();
-
-            foreach (var item in ids)
-            {
-                var entity = FindData(item);
-                if (entity != null)
-                {
-                    //entity.Enable = enable;
-                    entity.SetItem(fi.Name, val);
-                    if (Valid(entity, DataObjectMethodType.Update, true))
-                        rs += OnUpdate(entity);
-                }
-            }
-        }
-        return JsonRefresh($"操作成功！共更新[{rs}]行！");
-    }
-
-    /// <summary>启用 或 禁用</summary>
-    /// <param name="id"></param>
-    /// <param name="enable"></param>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Update)]
-    public virtual ActionResult SetEnable(Int32 id = 0, Boolean enable = true)
-    {
-        var fi = Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Enable"));
-        if (fi == null) throw new InvalidOperationException($"启用/禁用仅支持Enable字段。");
-
-        var rs = 0;
-        if (id > 0)
-        {
-            var entity = FindData(id);
-            if (entity == null) throw new ArgumentNullException(nameof(id), "找不到任务 " + id);
-
-            //entity.Enable = enable;
-            entity.SetItem(fi.Name, enable);
-            if (Valid(entity, DataObjectMethodType.Update, true))
-                rs += OnUpdate(entity);
-        }
-        else
-        {
-            var ids = GetRequest("keys").SplitAsInt();
-
-            foreach (var item in ids)
-            {
-                var entity = FindData(item);
-                if (entity != null)
-                {
-                    //entity.Enable = enable;
-                    entity.SetItem(fi.Name, enable);
-                    if (Valid(entity, DataObjectMethodType.Update, true))
-                        rs += OnUpdate(entity);
-                }
-            }
-        }
-        return JsonRefresh($"操作成功！共更新[{rs}]行！");
-    }
     #endregion
 
     #region 批量删除
@@ -563,6 +474,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除选中")]
+    [HttpPost]
     public virtual ActionResult DeleteSelect()
     {
         var count = 0;
@@ -592,6 +504,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除全部")]
+    [HttpPost]
     public virtual ActionResult DeleteAll()
     {
         var url = Request.GetReferer();
@@ -657,6 +570,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("同步{type}")]
+    [HttpPost]
     public async Task<ActionResult> Sync()
     {
         //if (id.IsNullOrEmpty()) return RedirectToAction(nameof(Index));
@@ -737,6 +651,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("还原")]
+    [HttpPost]
     public virtual ActionResult Restore()
     {
         try

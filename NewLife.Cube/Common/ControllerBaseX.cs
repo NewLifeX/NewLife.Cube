@@ -10,7 +10,7 @@ namespace NewLife.Cube;
 
 /// <summary>控制器基类</summary>
 [ApiController]
-[Route("[controller]")]
+[Route("[controller]/[action]")]
 public class ControllerBaseX : ControllerBase, IActionFilter
 {
     #region 属性
@@ -33,7 +33,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
     /// <summary>动作执行前</summary>
     /// <param name="context"></param>
-    public virtual void OnActionExecuting(Remoting.ControllerContext context)
+    void IActionFilter.OnActionExecuting(Remoting.ControllerContext context)
     {
         //// 页面设置
         //ViewBag.PageSetting = PageSetting;
@@ -60,7 +60,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
     /// <summary>动作执行后</summary>
     /// <param name="context"></param>
-    public virtual void OnActionExecuted(Remoting.ControllerContext context)
+    void IActionFilter.OnActionExecuted(Remoting.ControllerContext context)
     {
         var ex = context.Exception?.GetTrue();
         if (ex != null && !context.ExceptionHandled)

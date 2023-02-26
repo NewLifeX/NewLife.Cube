@@ -388,7 +388,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("{type}管理")]
-    //[AllowAnonymous]
+    [HttpGet]
     public virtual ActionResult Index(Pager p = null)
     {
         //p ??= ViewBag.Page as Pager;
@@ -421,6 +421,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("查看{type}")]
+    [HttpGet]
     public virtual ActionResult Detail(String id)
     {
         var entity = FindData(id);
@@ -444,6 +445,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("清空")]
+    [HttpPost]
     public virtual ActionResult Clear()
     {
         var url = Request.GetReferer();
@@ -472,87 +474,16 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             throw;
         }
     }
-
-    /// <summary>
-    /// 获取字段
-    /// </summary>
-    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
-    /// <returns></returns>
-    [EntityAuthorize]
-    [Obsolete("使用GetFields")]
-    public virtual ActionResult GetEntityFields(String kind, FormatType formatType = FormatType.CamelCase)
-    {
-        var fields = kind switch
-        {
-            "Detail" => DetailFields,
-            "EditForm" => EditFormFields,
-            "AddForm" => AddFormFields,
-            "List" => ListFields,
-            _ => ListFields
-        };
-
-        var data = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.TypeStr = s.Type.Name;
-
-            return fm;
-        }).ToList();
-
-        var customs = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.IsCustom = true;
-
-            return fm;
-        }).ToList();
-
-        data.AddRange(customs);
-
-        return Ok(data: data);
-    }
-
     #endregion
 
     #region 数据接口
-    /// <summary>页面</summary>
-    /// <param name="token">令牌</param>
-    /// <param name="p">分页</param>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [DisplayName("页面")]
-    public virtual ActionResult Html(String token, Pager p)
-    {
-        //try
-        //{
-        var issuer = ValidToken(token);
-
-        // 需要总记录数来分页
-        p.RetrieveTotalCount = true;
-
-        var list = SearchData(p);
-
-        return Json(0, null, list);
-        //}
-        //catch (Exception ex)
-        //{
-        //    return Content(ex.Message);
-        //}
-    }
-
     /// <summary>Json接口</summary>
     /// <param name="token">令牌</param>
     /// <param name="p">分页</param>
     /// <returns></returns>
     [AllowAnonymous]
     [DisplayName("Json接口")]
+    [HttpGet]
     public virtual ActionResult Json(String token, Pager p)
     {
         try
@@ -621,6 +552,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [AllowAnonymous]
     [DisplayName("Xml接口")]
+    [HttpGet]
     public virtual ActionResult Xml(String token, Pager p)
     {
         var xml = "";
@@ -660,6 +592,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [AllowAnonymous]
     [DisplayName("Excel接口")]
+    [HttpGet]
     public virtual async Task<ActionResult> Csv(String token, Pager p)
     {
         var issuer = ValidToken(token);
@@ -688,6 +621,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [AllowAnonymous]
     [DisplayName("Excel接口")]
+    [HttpGet]
     public virtual async Task<ActionResult> Excel(String token, Pager p)
     {
         var issuer = ValidToken(token);
@@ -739,6 +673,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出")]
+    [HttpGet]
     public virtual ActionResult ExportXml()
     {
         var obj = OnExportXml();
@@ -783,6 +718,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出")]
+    [HttpGet]
     public virtual ActionResult ExportJson()
     {
         var json = OnExportJson().ToJson(true);
@@ -800,6 +736,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出")]
+    [HttpGet]
     public virtual async Task<ActionResult> ExportExcel()
     {
         // 准备需要输出的列
@@ -860,6 +797,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出模板")]
+    [HttpGet]
     public virtual async Task<ActionResult> ExportExcelTemplate()
     {
         // 准备需要输出的列
@@ -956,6 +894,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出")]
+    [HttpGet]
     public virtual async Task<ActionResult> ExportCsv()
     {
         // 准备需要输出的列
@@ -1016,6 +955,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("备份")]
+    [HttpGet]
     public virtual ActionResult Backup()
     {
         try
@@ -1051,6 +991,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出")]
+    [HttpGet]
     public virtual async Task<ActionResult> BackupAndExport()
     {
         var fact = Factory;
@@ -1092,6 +1033,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("分享{type}")]
+    [HttpGet]
     public virtual ActionResult Share()
     {
         // 当前用户所有令牌
@@ -1132,6 +1074,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("生成列表")]
+    [HttpGet]
     public ActionResult MakeList()
     {
         if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
@@ -1155,6 +1098,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("生成表单")]
+    [HttpGet]
     public ActionResult MakeForm()
     {
         if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
@@ -1178,6 +1122,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("生成搜索")]
+    [HttpGet]
     public ActionResult MakeSearch()
     {
         if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
@@ -1290,6 +1235,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
     /// <returns></returns>
     [EntityAuthorize]
+    [HttpGet]
     public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
     {
         var fields = kind switch
@@ -1331,6 +1277,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <summary>获取所有表</summary>
     /// <returns></returns>
     [EntityAuthorize]
+    [HttpGet]
     public virtual ActionResult GetTables()
     {
         var tables = ModelTable.GetValids();
@@ -1341,6 +1288,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="formatType">Name的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
     /// <returns></returns>
     [EntityAuthorize]
+    [HttpGet]
     public virtual ActionResult GetColumns(FormatType formatType = FormatType.CamelCase)
     {
         var tables = ModelTable.GetValids();
@@ -1361,10 +1309,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     #endregion
 
     #region 权限菜单
-    /// <summary>菜单顺序。扫描时会反射读取</summary>
-    [Obsolete("=>MenuAttribute")]
-    protected static Int32 MenuOrder { get; set; }
-
     /// <summary>控制器对应菜单</summary>
     protected static IMenu ThisMenu { get; set; }
 

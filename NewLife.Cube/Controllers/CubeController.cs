@@ -61,6 +61,7 @@ public class CubeController : ControllerBaseX
     /// <summary>服务器信息，用户健康检测</summary>
     /// <param name="state">状态信息</param>
     /// <returns></returns>
+    [HttpGet]
     public ActionResult Info(String state)
     {
         var asmx = AssemblyX.Entry;
@@ -91,6 +92,7 @@ public class CubeController : ControllerBaseX
     #region 接口信息
     /// <summary>获取所有接口信息</summary>
     /// <returns></returns>
+    [HttpGet]
     public ActionResult Apis()
     {
         var set = new List<EndpointDataSource>();
@@ -140,6 +142,7 @@ public class CubeController : ControllerBaseX
     /// <param name="departmentId"></param>
     /// <param name="key"></param>
     /// <returns></returns>
+    [HttpGet]
     public ActionResult UserSearch(Int32 roleId = 0, Int32 departmentId = 0, String key = null)
     {
         var exp = new WhereExpression();
@@ -172,6 +175,7 @@ public class CubeController : ControllerBaseX
     /// <param name="parentid"></param>
     /// <param name="key"></param>
     /// <returns></returns>
+    [HttpGet]
     public ActionResult DepartmentSearch(Int32 parentid = -1, String key = null)
     {
         var exp = new WhereExpression();
@@ -203,6 +207,7 @@ public class CubeController : ControllerBaseX
     /// <param name="id"></param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public ActionResult Area(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -225,6 +230,7 @@ public class CubeController : ControllerBaseX
     /// <param name="id"></param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public ActionResult AreaChilds(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -241,6 +247,7 @@ public class CubeController : ControllerBaseX
     /// <param name="isContainSelf">是否包含查询的地区</param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public ActionResult AreaParents(Int32 id = 0, Boolean isContainSelf = false)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -265,6 +272,7 @@ public class CubeController : ControllerBaseX
     /// <param name="id"></param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public ActionResult AreaAllParents(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -295,6 +303,7 @@ public class CubeController : ControllerBaseX
     /// <param name="id">用户编号</param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public virtual ActionResult Avatar(Int32 id)
     {
         if (id <= 0) throw new ArgumentNullException(nameof(id));
@@ -348,6 +357,7 @@ public class CubeController : ControllerBaseX
     /// <param name="name">The name.</param>
     /// <param name="value">The value.</param>
     /// <returns></returns>
+    [HttpPost]
     public ActionResult SaveLayout(Int32 userid, String category, String name, String value)
     {
         if (!category.EqualIgnoreCase("LayoutSetting"))
@@ -368,6 +378,7 @@ public class CubeController : ControllerBaseX
     /// <param name="id"></param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public async Task<ActionResult> Image(String id)
     {
         if (id.IsNullOrEmpty()) return NotFound("非法附件编号");
@@ -405,6 +416,7 @@ public class CubeController : ControllerBaseX
     /// <param name="id"></param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
     public async Task<ActionResult> File(String id)
     {
         if (id.IsNullOrEmpty()) return NotFound("非法附件编号");

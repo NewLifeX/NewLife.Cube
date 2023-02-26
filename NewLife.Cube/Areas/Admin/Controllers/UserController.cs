@@ -418,6 +418,7 @@ public class UserController : EntityController<User>
     /// <returns></returns>
     //[AllowAnonymous]
     [EntityAuthorize]
+    [HttpGet]
     public ActionResult Info(Int32 id)
     {
         //if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
@@ -504,6 +505,7 @@ public class UserController : EntityController<User>
     /// <returns></returns>
     //[AllowAnonymous]
     [EntityAuthorize]
+    [HttpGet]
     public ActionResult ChangePassword()
     {
         var user = ManageProvider.User as XCode.Membership.User;
@@ -558,6 +560,7 @@ public class UserController : EntityController<User>
     /// <returns></returns>
     //[AllowAnonymous]
     [EntityAuthorize]
+    [HttpGet]
     public ActionResult Binds()
     {
         var user = ManageProvider.User as XCode.Membership.User;
@@ -640,6 +643,7 @@ public class UserController : EntityController<User>
     /// <param name="id"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
     public ActionResult ClearPassword(Int32 id)
     {
         if (!ManageProvider.User.Role.IsSystem) throw new Exception("清除密码操作需要管理员权限，非法操作！");
