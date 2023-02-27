@@ -10,7 +10,8 @@ namespace NewLife.Cube;
 
 /// <summary>控制器基类</summary>
 [ApiController]
-[Route("[controller]/[action]")]
+[Produces("application/json")]
+[Route("[area]/[controller]/[action]")]
 public class ControllerBaseX : ControllerBase, IActionFilter
 {
     #region 属性

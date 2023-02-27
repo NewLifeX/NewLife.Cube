@@ -1,14 +1,11 @@
 ﻿using System.Buffers;
 using System.ComponentModel;
-using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Entity;
 using NewLife.Data;
-using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
@@ -19,6 +16,7 @@ namespace NewLife.Cube.Controllers;
 
 /// <summary>魔方前端数据接口</summary>
 [DisplayName("数据接口")]
+[Route("[controller]/[action]")]
 public class CubeController : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources;

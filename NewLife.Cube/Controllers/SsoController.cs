@@ -43,6 +43,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Controllers;
 
 /// <summary>单点登录控制器</summary>
+[Route("[controller]/[action]")]
 public class SsoController : ControllerBaseX
 {
     /// <summary>当前提供者</summary>

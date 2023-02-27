@@ -366,33 +366,6 @@ public static class CubeService
         return app;
     }
 
-    //private static void FixAppTableName()
-    //{
-    //    try
-    //    {
-    //        var dal = DAL.Create("Cube");
-    //        var tables = dal.Tables;
-    //        if (tables != null && !tables.Any(e => e.TableName.EqualIgnoreCase("OAuthApp")))
-    //        {
-    //            XTrace.WriteLine("未发现OAuth应用新表 OAuthApp");
-
-    //            // 验证表名和部分字段名，避免误改其它表
-    //            var dt = tables.FirstOrDefault(e => e.TableName.EqualIgnoreCase("App"));
-    //            if (dt != null && dt.Columns.Any(e => e.ColumnName.EqualIgnoreCase("RoleIds")))
-    //            {
-    //                XTrace.WriteLine("发现OAuth应用旧表 App ，准备重命名");
-
-    //                var rs = dal.Execute($"Alter Table App Rename To OAuthApp");
-    //                XTrace.WriteLine("重命名结果：{0}", rs);
-    //            }
-    //        }
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        XTrace.WriteException(ex);
-    //    }
-    //}
-
     /// <summary>使用魔方首页</summary>
     /// <param name="app"></param>
     /// <returns></returns>

@@ -63,7 +63,6 @@
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\CubeController.cs" Link="Controllers\CubeController.cs" />
-    <Compile Include="..\NewLife.Cube\Controllers\ODataController.cs" Link="Controllers\ODataController.cs" />
     <Compile Include="..\NewLife.Cube\Controllers\SsoController.cs" Link="Controllers\SsoController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />

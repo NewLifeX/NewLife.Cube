@@ -10,5 +10,4 @@ namespace NewLife.Cube.Admin.Controllers;
 [Menu(0, false)]
 public class XCodeController : ConfigController<XCode.Setting>
 {
-    public override ActionResult Update(XCode.Setting obj) => base.Update(obj);
 }
