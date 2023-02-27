@@ -483,7 +483,7 @@ public class UserController : EntityController<User>
         }
 
         // 用于显示的列
-        if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
+        if (ViewBag.Fields == null) ViewBag.Fields = OnGetFields("EditForm", user);
         ViewBag.Factory = XCode.Membership.User.Meta.Factory;
 
         // 必须指定视图名，因为其它action会调用

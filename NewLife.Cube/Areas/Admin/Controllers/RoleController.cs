@@ -71,7 +71,7 @@ namespace NewLife.Cube.Admin.Controllers
             if (!Valid(entity, DataObjectMethodType.Insert, true))
             {
                 ViewBag.StatusMessage = "验证失败！";
-                ViewBag.Fields = AddFormFields;
+                ViewBag.Fields = OnGetFields("AddForm", null);
 
                 return View("AddForm", entity);
             }
@@ -162,7 +162,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
 
-                ViewBag.Fields = AddFormFields;
+                ViewBag.Fields = OnGetFields("AddForm", entity);
 
                 return View("AddForm", entity);
             }
@@ -182,7 +182,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
 
-                ViewBag.Fields = AddFormFields;
+                ViewBag.Fields = OnGetFields("AddForm", entity);
 
                 return View("AddForm", entity);
             }

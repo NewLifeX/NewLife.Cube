@@ -307,4 +307,20 @@ public class FieldCollection : List<DataField>
         return dic;
     }
     #endregion
+
+    #region 克隆
+    /// <summary>克隆集合</summary>
+    /// <returns></returns>
+    public FieldCollection Clone()
+    {
+        var fs = new FieldCollection(Kind);
+
+        foreach (var item in this)
+        {
+            fs.Add(item.Clone());
+        }
+
+        return fs;
+    }
+    #endregion
 }

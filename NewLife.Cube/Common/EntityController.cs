@@ -105,7 +105,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             Session[key] = Request.GetReferer();
 
         // 用于显示的列
-        ViewBag.Fields = AddFormFields;
+        ViewBag.Fields = OnGetFields("AddForm", entity);
 
         return View("AddForm", entity);
     }
@@ -157,7 +157,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
 
             if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
 
-            ViewBag.Fields = AddFormFields;
+            ViewBag.Fields = OnGetFields("AddForm", entity);
 
             return View("AddForm", entity);
         }
@@ -204,7 +204,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         // Json输出
         if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
 
-        ViewBag.Fields = EditFormFields;
+        ViewBag.Fields = OnGetFields("EditForm", entity);
 
         return View("EditForm", entity);
     }
@@ -263,7 +263,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         // 重新查找对象数据，以确保取得最新值
         if (id != null) entity = FindData(id);
 
-        ViewBag.Fields = EditFormFields;
+        ViewBag.Fields = OnGetFields("EditForm", entity);
 
         return View("EditForm", entity);
     }

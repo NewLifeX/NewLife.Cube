@@ -82,7 +82,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             ViewBag.Page = p;
 
             // 用于显示的列
-            if (!ps.ContainsKey("entity")) ViewBag.Fields = ListFields;
+            if (!ps.ContainsKey("entity")) ViewBag.Fields = OnGetFields("List", null);
 
             if (ViewBag.HeaderTitle == null) ViewBag.HeaderTitle = Entity<TEntity>.Meta.Table.Description + "管理";
 
@@ -434,7 +434,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.详情));
 
         // 用于显示的列
-        ViewBag.Fields = DetailFields;
+        ViewBag.Fields = OnGetFields("Detail", entity);
 
         return View("Detail", entity);
     }
@@ -471,53 +471,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             throw;
         }
     }
-
-    /// <summary>
-    /// 获取字段
-    /// </summary>
-    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
-    /// <returns></returns>
-    [EntityAuthorize]
-    [Obsolete("使用GetFields")]
-    public virtual ActionResult GetEntityFields(String kind, FormatType formatType = FormatType.CamelCase)
-    {
-        var fields = kind switch
-        {
-            "Detail" => DetailFields,
-            "EditForm" => EditFormFields,
-            "AddForm" => AddFormFields,
-            "List" => ListFields,
-            _ => ListFields
-        };
-
-        var data = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.TypeStr = s.Type.Name;
-
-            return fm;
-        }).ToList();
-
-        var customs = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.IsCustom = true;
-
-            return fm;
-        }).ToList();
-
-        data.AddRange(customs);
-
-        return Ok(data: data);
-    }
-
     #endregion
 
     #region 数据接口
@@ -1165,7 +1118,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_Form_Body.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-        
+
         _ = ViewHelper.MakeFormView(typeof(TEntity), vpath, EditFormFields);
 
         WriteLog("生成表单", true, vpath);
@@ -1188,7 +1141,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Search.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-        
+
         _ = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
 
         WriteLog("生成搜索", true, vpath);
@@ -1282,14 +1235,11 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <summary>表单字段过滤</summary>
     protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, "Detail");
 
-    /// <summary>
-    /// 获取字段
-    /// </summary>
-    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
+    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    /// <param name="kind"></param>
+    /// <param name="entity"></param>
     /// <returns></returns>
-    [EntityAuthorize]
-    public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
+    protected virtual FieldCollection OnGetFields(String kind, TEntity entity)
     {
         var fields = kind switch
         {
@@ -1299,6 +1249,20 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             "List" => ListFields,
             _ => ListFields
         };
+
+        return fields.Clone();
+    }
+
+    /// <summary>
+    /// 获取字段
+    /// </summary>
+    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
+    /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
+    /// <returns></returns>
+    [EntityAuthorize]
+    public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
+    {
+        var fields = OnGetFields(kind, null);
 
         var data = fields.Select(s =>
         {
