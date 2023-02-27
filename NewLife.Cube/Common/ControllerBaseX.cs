@@ -44,6 +44,9 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         Menu = ctx.Items["CurrentMenu"] as IMenu;
         //ViewBag.Menu = Menu;
 
+        // 仅用于测试，跳过报错
+        Session ??= new Dictionary<String, Object>();
+
         // 没有用户时无权
         var user = ManageProvider.User;
         if (user != null)
