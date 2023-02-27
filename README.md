@@ -26,11 +26,15 @@ XCode教程：<https://newlifex.com/xcode>
 计划启动第三代魔方的设计，主要方向是借助前后端分离技术重构现代化用户界面，在3月份完成第一个最小可用版（vue）。  
 后端接口源码位于魔方代码库的dev分支，各前端代码库独立，欢迎大家积极参与！  
 
+Vue版：https://vue.newlifex.com  
+Antd版：https://antd.newlifex.com  
+Swagger：https://cube3.newlifex.com  
+
 #### 项目参与须知
 
 1. 参与者加入github上的NewLifeX团队，自由向魔方dev分支提交代码或修改文档。  
-2. 统一使用解决方案 `魔方-前后端分离.sln`。  
-3. 欢迎增加更多的前端项目，每一种前端放一个独立目录，如`Antd`则新建 `NewLife.CubeAntd`。  
+2. 用于前后端分离的WebApi版魔方后台 `NewLife.Cube`，原 `NewLife.CubeNC` 保留MVC继续维护。  
+3. 欢迎增加更多的前端项目，每一种前端新建独立代码库，如`Antd`则新建 `NewLife.CubeAntd`。  
 4. 大家在文档或代码处，标注负责人。  
 5. 源码库使用github，以及新生命团队糖果库（可申请权限）
 
@@ -38,8 +42,8 @@ XCode教程：<https://newlifex.com/xcode>
 
 第三代魔方的远景目标，预计用2~3年时间完成。
 
-1. 重构为现代化用户界面，让魔方下游项目在迁移到三代魔方时，尽可能少修改代码
-2. 前后端分离技术，支持Vue/React/Angular/Blazor等主流前端框架
+1. 重构为现代化用户界面，保留魔方默认视图以及视图定制的思想，让下游项目在迁移到第三代魔方时，尽可能少修改代码
+2. 前后端分离技术，支持`Vue/React/Angular/Blazor`等主流前端框架
 3. 魔方理念和用法保持不变，新建WebApi项目后从Nuget引入NewLife.Cube，加入模型生成实体类和Controller即可得到默认皮肤的界面，需要定制时才写前端代码
 4. 增强移动端支持，混合式手机APP、小程序
 5. 增强支持数据大屏
@@ -48,10 +52,10 @@ XCode教程：<https://newlifex.com/xcode>
 
 春雨计划，定于2023年3月完成第一个最小vue可用版，待办项如下（欢迎补充）：
 
-1. [] 在dev分支新建WebApi项目 `NewLife.Cube`，占用Asp.Net 4.5的坑位（已弃用），将来发布包也是 `NewLife.Cube`
-2. [] 专属于NetCore版的代码，转移到 `NewLife.CubeNC` 目录，尽量保留代码提交历史，方便将来查找
-3. [] 设计全新的 `EntityController和EntityReadonlyController`，只为前端提供接口
-4. [] 编写接口文档
+1. [*] 在dev分支新建WebApi项目 `NewLife.Cube`，占用Asp.Net 4.5的坑位（已弃用），将来发布包也是 `NewLife.Cube`
+2. [*] 专属于NetCore版的代码，转移到 `NewLife.CubeNC` 目录，尽量保留代码提交历史，方便将来查找
+3. [*] 设计全新的 `EntityController`和`EntityReadonlyController`，只为前端提供接口
+4. [*] 编写接口文档
 5. [] 设计vue版主页（框架页），前端项目是 `NewLife.CubeVue`，vue项目调用后端 `CubeDemo`
 6. [] 设计vue版登录页
 7. [] 设计vue版用户列表页和表单页
@@ -65,16 +69,20 @@ http://git.newlifex.com/NewLife/NewLife.CubeVue
 
 支持vue之外的前端框架，不限于3月份完成。  
 
-1. [] 新增Blazor，项目 NewLife.Cube.Blazor。 @张善友 @张炳彬
+1. [] 新增Blazor，项目 NewLife.CubeBlazor。 @张善友 @张炳彬
 2. [] 新建AntDesign，项目 NewLife.CubeAntd。 @Van
 
 Antd版前端代码库：  
 https://github.com/NewLifeX/NewLife.CubeAntd
 http://git.newlifex.com/NewLife/NewLife.CubeAntd
 
+Blazor版前端代码库：  
+https://github.com/NewLifeX/NewLife.CubeBlazor
+http://git.newlifex.com/NewLife/NewLife.CubeBlazor
+
 ---
 
-### 特性
+### 魔方特性
 
 * 通用权限管理，用户、角色、菜单、权限，支持控制器Action权限控制
 * 多数据库，支持 `MySql / SQLite / Sql Server / Oracle / SqlCe / Access`
