@@ -1,6 +1,7 @@
 ﻿@model ValueTuple<IEntity, DataField>
 @using NewLife;
 @using NewLife.Cube
+@using System.Text;
 @using XCode;
 @using XCode.Configuration;
 @{
@@ -9,11 +10,44 @@
 
     var value = entity[field.Name] as String;
 
-    //var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
-    //if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+    var list = new List<String>();
+    var its = (field.ItemType + "").Split('-', StringSplitOptions.RemoveEmptyEntries);
+    var sb = new StringBuilder();
+    foreach (var item in its)
+    {
+        //var at = "";
+        //switch (item.ToLower())
+        //{
+        //    case "image": at = "image/*"; break;
+        //    case "jpg": at = "image/jpeg"; break;
+        //    case "jpeg": at = "image/jpeg"; break;
+        //    default: at = ""; break;
+        //}
+        var at = item.ToLower() switch
+        {
+            "image" => "image/*",
+            "jpg" or "jpeg" => "image/jpeg",
+            "png" => "image/png",
+            "zip" => "application/zip,application/x-zip,application/x-zip-compressed",
+            "doc" or "docx" => "application/msword",
+            "xls" or "xlsx" => "application/vnd.ms-excel",
+            "ppt" or "pptx" => "application/vnd.ms-powerpoint",
+            "pdf" => "application/pdf",
+            "xml" => "text/xml, application/xml",
+            "json" => "application/json",
+            _ => "",
+        };
+        if (!at.IsNullOrEmpty() && !list.Contains(at)) list.Add(at);
+    }
 
     var accept = "";
-    if (field.ItemType.EqualIgnoreCase("image")) accept = "image/*";
+    if (list.Count > 0) accept = list.Join(",");
+    //if (field.ItemType.EndsWithIgnoreCase("image", "-image")) accept = "image/*";
+    //if (field.ItemType.EndsWithIgnoreCase("-jpg", "-jpeg")) accept = "image/jpeg";
+    //if (field.ItemType.EndsWithIgnoreCase("zip", "-zip")) accept = "application/zip,application/x-zip,application/x-zip-compressed";
+    //if (field.ItemType.EndsWithIgnoreCase("-doc", "-docx")) accept = "application/msword";
+    //if (field.ItemType.EndsWithIgnoreCase("-xls", "-xlsx")) accept = "application/vnd.ms-excel";
+    //if (field.ItemType.EndsWithIgnoreCase("-ppt", "-pptx")) accept = "application/vnd.ms-powerpoint";
 }
 @Html.TextBox(field.Name, entity[field.Name], new { @class = "form-control" })
 @Html.TextBox(field.Name+"_attachment", entity[field.Name], new { type = "file", accept })
