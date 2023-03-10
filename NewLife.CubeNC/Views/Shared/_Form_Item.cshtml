@@ -99,7 +99,7 @@
             {
                 @await Html.PartialAsync("_Form_Image", Model)
             }
-            else if (item.ItemType.EqualIgnoreCase("file"))
+            else if (item.ItemType.StartsWithIgnoreCase("file", "file-"))
             {
                 @await Html.PartialAsync("_Form_File", Model)
             }
