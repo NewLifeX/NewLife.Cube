@@ -59,7 +59,7 @@ public class Setting : Config<Setting>
 
     /// <summary>Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值</summary>
     [Description("Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值")]
-    [Category("用户登录")]
+    [Category("通用")]
     public String CookieDomain { get; set; }
 
     /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
