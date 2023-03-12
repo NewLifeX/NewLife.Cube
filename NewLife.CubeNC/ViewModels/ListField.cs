@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 using NewLife.Data;
 using XCode.Configuration;
 
@@ -22,8 +24,8 @@ public class ListField : DataField
     /// <summary>单元格链接。数据单元格的链接</summary>
     public String Url { get; set; }
 
-    /// <summary>单元格图标。数据单元格前端显示时的图标或图片</summary>
-    public String Icon { get; set; }
+    ///// <summary>单元格图标。数据单元格前端显示时的图标或图片</summary>
+    //public String Icon { get; set; }
 
     /// <summary>链接目标。_blank/_self/_parent/_top</summary>
     public String Target { get; set; }
@@ -41,6 +43,7 @@ public class ListField : DataField
     public String DataAction { get; set; }
 
     /// <summary>获取数据委托。可用于自定义列表页单元格数值的显示</summary>
+    [XmlIgnore, IgnoreDataMember]
     public GetValueDelegate GetValue { get; set; }
     #endregion
 
@@ -52,6 +55,27 @@ public class ListField : DataField
         base.Fill(field);
 
         Header = field.DisplayName;
+    }
+
+    /// <summary>克隆</summary>
+    /// <returns></returns>
+    public override DataField Clone()
+    {
+        var df = base.Clone();
+        if (df is ListField field)
+        {
+            field.Text = Text;
+            field.Title = Title;
+            field.Url = Url;
+            //field.Icon = Icon;
+            field.Target = Target;
+            field.Header = Header;
+            field.HeaderTitle = HeaderTitle;
+            field.DataAction = DataAction;
+            field.GetValue = GetValue;
+        }
+
+        return df;
     }
     #endregion
 

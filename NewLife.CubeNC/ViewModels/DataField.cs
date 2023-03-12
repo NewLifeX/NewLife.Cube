@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
 using NewLife.Collections;
+using NewLife.Reflection;
 using XCode;
 using XCode.Configuration;
 
@@ -39,10 +40,7 @@ public class DataField
     [IgnoreDataMember]
     public Type Type { get; set; }
 
-    ///// <summary>数据类型</summary>
-    //public String DataType { get; set; }
-
-    /// <summary>元素类型。image,file,html,singleSelect,multipleSelect</summary>
+    /// <summary>元素类型。image,file-zip,html,singleSelect,multipleSelect</summary>
     public String ItemType { get; set; }
 
     /// <summary>长度</summary>
@@ -63,10 +61,8 @@ public class DataField
     /// <summary>只读</summary>
     public Boolean Readonly { get; set; }
 
-    ///// <summary>排序</summary>
-    //public Int32 Sort { get; set; }
-
     /// <summary>原始字段</summary>
+    [XmlIgnore, IgnoreDataMember]
     public FieldItem Field { get; set; }
 
     /// <summary>映射字段</summary>
@@ -77,9 +73,11 @@ public class DataField
     public MapProvider MapProvider { get; set; }
 
     /// <summary>多选数据源</summary>
+    [XmlIgnore, IgnoreDataMember]
     public DataSourceDelegate DataSource { get; set; }
 
     /// <summary>是否显示</summary>
+    [XmlIgnore, IgnoreDataMember]
     public DataVisibleDelegate DataVisible { get; set; }
 
     /// <summary>扩展属性</summary>
@@ -147,29 +145,36 @@ public class DataField
     /// <returns></returns>
     public virtual DataField Clone()
     {
-        //var df = GetType().CreateInstance() as DataField;
+        var df = GetType().CreateInstance() as DataField;
 
-        //df.Name = Name;
-        //df.DisplayName = DisplayName;
-        //df.Description = Description;
-        //df.Category = Category;
-        //df.Type = Type;
-        //df.DataType = DataType;
-        //df.ItemType = ItemType;
-        //df.Length = Length;
-        //df.Precision = Precision;
-        //df.Scale = Scale;
-        //df.Nullable = Nullable;
-        //df.PrimaryKey = PrimaryKey;
-        //df.Readonly = Readonly;
-        //df.MapField = MapField;
-        //df.MapProvider = MapProvider;
-        //df.DataSource = DataSource;
-        //df.Properties = Properties;
+        df.Name = Name;
+        df.DisplayName = DisplayName;
+        df.Description = Description;
+        df.Category = Category;
 
-        //return df;
+        df.Type = Type;
+        df.ItemType = ItemType;
+        df.Length = Length;
+        df.Precision = Precision;
+        df.Scale = Scale;
+        df.Nullable = Nullable;
+        df.PrimaryKey = PrimaryKey;
+        df.Readonly = Readonly;
 
-        return MemberwiseClone() as DataField;
+        df.Field = Field;
+        df.MapField = MapField;
+        df.MapProvider = MapProvider;
+        df.DataSource = DataSource;
+        df.Properties = Properties;
+
+        foreach (var item in Properties)
+        {
+            df.Properties[item.Key] = item.Value;
+        }
+
+        return df;
+
+        //return MemberwiseClone() as DataField;
     }
 
     /// <summary>是否大文本字段</summary>
