@@ -68,6 +68,12 @@ else
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
     if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
     if (!atts.ContainsKey("role")) atts.Add("role", "number");
-    if (!atts.ContainsKey("title") && Model.ItemType.EqualIgnoreCase("TimeSpan")) atts.Add("title", TimeSpan.FromSeconds(value.ToInt()).ToString());
+    if (!atts.ContainsKey("title"))
+    {
+        if (Model.ItemType.EqualIgnoreCase("TimeSpan"))
+            atts.Add("title", TimeSpan.FromSeconds(value.ToInt()).ToString());
+        else if (Model.ItemType.EqualIgnoreCase("GMK"))
+            atts.Add("title", value.ToLong().ToGMK().ToString());
+    }
     @Html.TextBox(name, value.ToLong(), Model.Format, atts)
 }
