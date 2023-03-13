@@ -172,7 +172,14 @@ public class FieldCollection : List<DataField>
     {
         foreach (var item in names)
         {
-            if (!item.IsNullOrEmpty()) RemoveAll(e => e.Name.EqualIgnoreCase(item));
+            if (!item.IsNullOrEmpty())
+            {
+                // 模糊匹配
+                if (item.Contains("*"))
+                    RemoveAll(e => item.IsMatch(e.Name));
+                else
+                    RemoveAll(e => e.Name.EqualIgnoreCase(item));
+            }
         }
 
         return this;
