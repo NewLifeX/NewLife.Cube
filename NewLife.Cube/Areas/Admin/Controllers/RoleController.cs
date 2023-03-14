@@ -124,7 +124,7 @@ namespace NewLife.Cube.Admin.Controllers
 
                 OnInsert(entity);
 
-                var fs =await SaveFiles(entity);
+                var fs = await SaveFiles(entity);
                 if (fs.Count > 0) OnUpdate(entity);
                 if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
 
