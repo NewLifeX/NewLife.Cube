@@ -283,7 +283,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         foreach (var fi in fields)
         {
             var dc = fi.Field;
-            if (dc.ItemType.EqualIgnoreCase("file", "image"))
+            if (dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-"))
             {
                 // 允许一次性上传多个文件到服务端
                 foreach (var file in files)
