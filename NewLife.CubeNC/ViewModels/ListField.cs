@@ -82,7 +82,18 @@ public class ListField : DataField
     #region 数据格式化
     private static readonly Regex _reg = new(@"{(\w+)}", RegexOptions.Compiled);
 
-    private static String Replace(String input, IExtend data) => _reg.Replace(input, m => data[m.Groups[1].Value + ""] + "");
+    private static String Replace(String input, IExtend data)
+    {
+        return _reg.Replace(input, m =>
+        {
+            var val = data[m.Groups[1].Value + ""];
+
+            // 特殊处理时间
+            if (val is DateTime dt) return dt == dt.Date ? dt.ToString("yyyy-MM-dd") : dt.ToFullString();
+
+            return val + "";
+        });
+    }
 
     /// <summary>针对指定实体对象计算DisplayName，替换其中变量</summary>
     /// <param name="data"></param>
