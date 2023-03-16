@@ -85,7 +85,7 @@ namespace NewLife.Cube
             if (field.Type == typeof(String))
             {
                 var dc = field.Field;
-                if (dc != null && dc.ItemType.EqualIgnoreCase("file", "image"))
+                if (dc != null && (dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-")))
                 {
                     var h1 = Html.ForString(field.Name, (String)entity[field.Name], field.Length);
                     var h2 = Html.ForFile(field.Name, entity[field.Name], dc.ItemType);
