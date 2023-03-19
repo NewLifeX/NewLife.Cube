@@ -430,7 +430,7 @@ namespace NewLife.Web
             if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
             {
                 // 授权以外的连接，使用令牌服务地址
-                if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize"))
+                if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize", "logout"))
                     url = AccessServer.EnsureEnd("/") + url.TrimStart('/');
                 else
                     url = Server.EnsureEnd("/") + url.TrimStart('/');
