@@ -1229,12 +1229,10 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, "Detail");
 
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
-    /// <param name="kind"></param>
+    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
     /// <param name="entity"></param>
     /// <returns></returns>
-    [EntityAuthorize]
-    [HttpGet]
-    public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
+    protected virtual FieldCollection OnGetFields(String kind, TEntity entity)
     {
         var fields = kind switch
         {
@@ -1255,6 +1253,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
     /// <returns></returns>
     [EntityAuthorize]
+    [HttpGet]
     public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
     {
         var fields = OnGetFields(kind, null);

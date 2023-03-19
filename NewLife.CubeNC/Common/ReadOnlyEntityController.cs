@@ -1282,6 +1282,24 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <summary>表单字段过滤</summary>
     protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, "Detail");
 
+    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    protected virtual FieldCollection OnGetFields(String kind, TEntity entity)
+    {
+        var fields = kind switch
+        {
+            "Detail" => DetailFields,
+            "EditForm" => EditFormFields,
+            "AddForm" => AddFormFields,
+            "List" => ListFields,
+            _ => ListFields
+        };
+
+        return fields.Clone();
+    }
+
     /// <summary>
     /// 获取字段
     /// </summary>
