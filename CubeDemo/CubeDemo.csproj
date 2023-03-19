@@ -32,4 +32,8 @@
     <ProjectReference Include="..\NewLife.Cube\NewLife.Cube.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
 </Project>
