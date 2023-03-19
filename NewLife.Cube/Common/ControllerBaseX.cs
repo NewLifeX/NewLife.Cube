@@ -74,21 +74,18 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             WriteLog(act, false, ex.ToString());
         }
 
-        if (IsJsonRequest)
+        if (ex != null && !context.ExceptionHandled)
         {
-            if (ex != null && !context.ExceptionHandled)
+            var code = 500;
+            var message = ex.Message;
+            if (ex is ApiException aex)
             {
-                var code = 500;
-                var message = ex.Message;
-                if (ex is ApiException aex)
-                {
-                    code = aex.Code;
-                    message = aex.Message;
-                }
-
-                context.Result = Json(code, message, null);
-                context.ExceptionHandled = true;
+                code = aex.Code;
+                message = aex.Message;
             }
+
+            context.Result = Json(code, message, null);
+            context.ExceptionHandled = true;
         }
     }
     #endregion

@@ -57,10 +57,18 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             WriteLog("Delete", false, err);
             //if (LogOnChange) LogProvider.Provider.WriteLog("Delete", entity, err);
 
-            return JsonRefresh("删除失败！" + err);
+            if (Request.IsAjaxRequest())
+                return JsonRefresh("删除失败！" + err);
+
+            throw;
         }
 
-        return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
+        if (Request.IsAjaxRequest())
+            return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
+        else if (!url.IsNullOrEmpty())
+            return Redirect(url);
+        else
+            return RedirectToAction("Index");
     }
 
     /// <summary>表单，添加/修改</summary>
@@ -147,12 +155,24 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Entity<TEntity>.Meta.Unique.Name] = 0;
 
-            return Json(500, ViewBag.StatusMessage);
+            if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
+
+            ViewBag.Fields = AddFormFields;
+
+            return View("AddForm", entity);
         }
 
         ViewBag.StatusMessage = "添加成功！";
 
-        return Json(0, ViewBag.StatusMessage);
+        if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
+
+        var key = $"Cube_Add_{typeof(TEntity).FullName}";
+        var url = Session[key] as String;
+        if (!url.IsNullOrEmpty())
+            return Redirect(url);
+        else
+            // 新增完成跳到列表页，更新完成保持本页
+            return RedirectToAction("Index");
     }
 
     /// <summary>表单，添加/修改</summary>
@@ -182,7 +202,11 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             Session[key] = Request.GetReferer();
 
         // Json输出
-        return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
+        if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
+
+        ViewBag.Fields = EditFormFields;
+
+        return View("EditForm", entity);
     }
 
     /// <summary>保存</summary>
@@ -222,14 +246,26 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
 
             ViewBag.StatusMessage = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
 
-            return Json(500, ViewBag.StatusMessage);
+            if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
         }
         else
         {
             ViewBag.StatusMessage = "保存成功！";
 
-            return Json(0, ViewBag.StatusMessage);
+            if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
+
+            // 实体对象保存成功后直接重定向到列表页，减少用户操作提高操作体验
+            var key = $"Cube_Edit_{typeof(TEntity).FullName}-{id}";
+            var url = Session[key] as String;
+            if (!url.IsNullOrEmpty()) return Redirect(url);
         }
+
+        // 重新查找对象数据，以确保取得最新值
+        if (id != null) entity = FindData(id);
+
+        ViewBag.Fields = EditFormFields;
+
+        return View("EditForm", entity);
     }
 
     /// <summary>保存所有上传文件</summary>
@@ -423,37 +459,43 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             {
                 var item = itemD.ToDictionary();
                 if (item[fact.Fields[1].Name].ToString() == fact.Fields[1].DisplayName) //判断首行是否为标体列
-                    continue;
-
-                //检查主字段是否重复
-                if (Entity<TEntity>.Find(fact.Master.Name, item[fact.Master.Name].ToString()) == null)
                 {
-                    //var entity = item.ToJson().ToJsonEntity(fact.EntityType);
-                    var entity = fact.Create();
-
-                    foreach (var fieldsItem in fact.Fields)
-                    {
-                        if (!item.ContainsKey(fieldsItem.Name))
-                        {
-                            if (!fieldsItem.IsNullable)
-                                fieldsItem.FromExcelToEntity(item, entity);
-                        }
-                        else
-                            fieldsItem.FromExcelToEntity(item, entity);
-                    }
-
-                    if (fact.FieldNames.Contains("CreateTime"))
-                        entity["CreateTime"] = DateTime.Now;
-
-                    if (fact.FieldNames.Contains("CreateIP"))
-                        entity["CreateIP"] = "--";
-
-                    okSum += fact.Session.Insert(entity);
+                    continue;
                 }
                 else
                 {
-                    errorString += $"<br>{item[fact.Master.Name]}重复";
-                    fiSum++;
+                    //检查主字段是否重复
+                    if (Entity<TEntity>.Find(fact.Master.Name, item[fact.Master.Name].ToString()) == null)
+                    {
+                        //var entity = item.ToJson().ToJsonEntity(fact.EntityType);
+                        var entity = fact.Create();
+
+                        foreach (var fieldsItem in fact.Fields)
+                        {
+                            if (!item.ContainsKey(fieldsItem.Name))
+                            {
+                                if (!fieldsItem.IsNullable)
+                                    fieldsItem.FromExcelToEntity(item, entity);
+
+                                continue;
+                            }
+
+                            fieldsItem.FromExcelToEntity(item, entity);
+                        }
+
+                        if (fact.FieldNames.Contains("CreateTime"))
+                            entity["CreateTime"] = DateTime.Now;
+
+                        if (fact.FieldNames.Contains("CreateIP"))
+                            entity["CreateIP"] = "--";
+
+                        okSum += fact.Session.Insert(entity);
+                    }
+                    else
+                    {
+                        errorString += $"<br>{item[fact.Master.Name]}重复";
+                        fiSum++;
+                    }
                 }
             }
 
@@ -472,6 +514,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             return Json(500, ex.GetMessage(), ex);
         }
     }
+
 
     /// <summary>修改bool值</summary>
     /// <param name="id"></param>

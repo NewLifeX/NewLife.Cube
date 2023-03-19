@@ -70,18 +70,21 @@ public class ControllerBaseX : Controller
             WriteLog(act, false, ex.ToString());
         }
 
-        if (ex != null && !context.ExceptionHandled)
+        if (IsJsonRequest)
         {
-            var code = 500;
-            var message = ex.Message;
-            if (ex is ApiException aex)
+            if (ex != null && !context.ExceptionHandled)
             {
-                code = aex.Code;
-                message = aex.Message;
-            }
+                var code = 500;
+                var message = ex.Message;
+                if (ex is ApiException aex)
+                {
+                    code = aex.Code;
+                    message = aex.Message;
+                }
 
-            context.Result = Json(code, message, null);
-            context.ExceptionHandled = true;
+                context.Result = Json(code, message, null);
+                context.ExceptionHandled = true;
+            }
         }
 
         base.OnActionExecuted(context);
