@@ -1,12 +1,7 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Extensions;
 using NewLife.Log;
-using NewLife.Remoting;
-using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -64,50 +59,51 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
     }
 
-    /// <summary>表单，添加/修改</summary>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("添加{type}")]
-    [HttpGet]
-    public virtual ActionResult Add()
-    {
-        var entity = Factory.Create(true) as TEntity;
+    ///// <summary>表单，添加/修改</summary>
+    ///// <returns></returns>
+    //[EntityAuthorize(PermissionFlags.Insert)]
+    //[DisplayName("添加{type}")]
+    //[HttpGet]
+    //public virtual ActionResult Add()
+    //{
+    //    var entity = Factory.Create(true) as TEntity;
 
-        // 填充QueryString参数
-        var qs = Request.Query;
-        foreach (var item in Entity<TEntity>.Meta.Fields)
-        {
-            var v = qs[item.Name];
-            if (v.Count > 0) entity[item.Name] = v[0];
-        }
+    //    // 填充QueryString参数
+    //    var qs = Request.Query;
+    //    foreach (var item in Entity<TEntity>.Meta.Fields)
+    //    {
+    //        var v = qs[item.Name];
+    //        if (v.Count > 0) entity[item.Name] = v[0];
+    //    }
 
-        // 验证数据权限
-        Valid(entity, DataObjectMethodType.Insert, false);
+    //    // 验证数据权限
+    //    Valid(entity, DataObjectMethodType.Insert, false);
 
-        // 记下添加前的来源页，待会添加成功以后跳转
-        // 如果列表页有查询条件，优先使用
-        var key = $"Cube_Add_{typeof(TEntity).FullName}";
-        if (Session[CacheKey] is Pager p)
-        {
-            var sb = p.GetBaseUrl(true, true, true);
-            if (sb.Length > 0)
-                Session[key] = "Index?" + sb;
-            else
-                Session[key] = Request.GetReferer();
-        }
-        else
-            Session[key] = Request.GetReferer();
+    //    // 记下添加前的来源页，待会添加成功以后跳转
+    //    // 如果列表页有查询条件，优先使用
+    //    var key = $"Cube_Add_{typeof(TEntity).FullName}";
+    //    if (Session[CacheKey] is Pager p)
+    //    {
+    //        var sb = p.GetBaseUrl(true, true, true);
+    //        if (sb.Length > 0)
+    //            Session[key] = "Index?" + sb;
+    //        else
+    //            Session[key] = Request.GetReferer();
+    //    }
+    //    else
+    //        Session[key] = Request.GetReferer();
 
-        //// 用于显示的列
-        //ViewBag.Fields = AddFormFields;
+    //    //// 用于显示的列
+    //    //ViewBag.Fields = AddFormFields;
 
-        //return View("AddForm", entity);
-        return Json(0, null, entity);
-    }
+    //    //return View("AddForm", entity);
+    //    return Json(0, null, entity);
+    //}
 
     /// <summary>保存</summary>
     /// <param name="entity"></param>
     /// <returns></returns>
+    [DisplayName("添加{type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
     public virtual async Task<ActionResult> Add(TEntity entity)
@@ -160,41 +156,42 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         return Json(0, msg);
     }
 
-    /// <summary>表单，添加/修改</summary>
-    /// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Update)]
-    [DisplayName("更新{type}")]
-    [HttpGet]
-    public virtual ActionResult Edit(String id)
-    {
-        var entity = FindData(id);
-        if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
+    ///// <summary>表单，添加/修改</summary>
+    ///// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
+    ///// <returns></returns>
+    //[EntityAuthorize(PermissionFlags.Update)]
+    //[DisplayName("更新{type}")]
+    //[HttpGet]
+    //public virtual ActionResult Edit(String id)
+    //{
+    //    var entity = FindData(id);
+    //    if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
 
-        // 验证数据权限
-        Valid(entity, DataObjectMethodType.Update, false);
+    //    // 验证数据权限
+    //    Valid(entity, DataObjectMethodType.Update, false);
 
-        // 如果列表页有查询条件，优先使用
-        var key = $"Cube_Edit_{typeof(TEntity).FullName}-{id}";
-        if (Session[CacheKey] is Pager p)
-        {
-            var sb = p.GetBaseUrl(true, true, true);
-            if (sb.Length > 0)
-                Session[key] = "../Index?" + sb;
-            else
-                Session[key] = Request.GetReferer();
-        }
-        else
-            Session[key] = Request.GetReferer();
+    //    // 如果列表页有查询条件，优先使用
+    //    var key = $"Cube_Edit_{typeof(TEntity).FullName}-{id}";
+    //    if (Session[CacheKey] is Pager p)
+    //    {
+    //        var sb = p.GetBaseUrl(true, true, true);
+    //        if (sb.Length > 0)
+    //            Session[key] = "../Index?" + sb;
+    //        else
+    //            Session[key] = Request.GetReferer();
+    //    }
+    //    else
+    //        Session[key] = Request.GetReferer();
 
-        // Json输出
-        return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
-    }
+    //    // Json输出
+    //    return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
+    //}
 
     /// <summary>保存</summary>
     /// <param name="entity"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
+    [DisplayName("更新{type}")]
     [HttpPost]
     public virtual async Task<ActionResult> Edit(TEntity entity)
     {
