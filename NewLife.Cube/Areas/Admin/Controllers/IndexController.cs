@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Log;
-using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers;
@@ -130,18 +128,4 @@ public class IndexController : ControllerBaseX
 
     [DllImport("kernel32.dll")]
     static extern Boolean SetProcessWorkingSetSize(IntPtr proc, Int32 min, Int32 max);
-
-    /// <summary>菜单不可见</summary>
-    /// <param name="menu"></param>
-    /// <returns></returns>
-    protected override IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu)
-    {
-        if (menu.Visible)
-        {
-            menu.Visible = false;
-            (menu as IEntity).Update();
-        }
-
-        return base.ScanActionMenu(menu);
-    }
 }

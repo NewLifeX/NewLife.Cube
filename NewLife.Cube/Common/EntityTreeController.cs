@@ -53,20 +53,15 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
         //ListFields.AddRange(list);
     }
 
-    /// <summary>列表页视图。子控制器可重载，以传递更多信息给视图，比如修改要显示的列</summary>
+    /// <summary>实体树的数据来自缓存</summary>
     /// <param name="p"></param>
     /// <returns></returns>
-    protected override ActionResult IndexView(Pager p)
+    protected override IEnumerable<TEntity> Search(Pager p)
     {
         // 一页显示全部菜单，取自缓存
         p.PageSize = 10000;
 
-        var list = EntityTree<TEntity>.Root.AllChilds;
-
-        if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p });
-
-        //return View("ListTree", list);
-        return Json(0, null, list);
+        return EntityTree<TEntity>.Root.AllChilds;
     }
 
     ///// <summary>要导出Xml的对象</summary>

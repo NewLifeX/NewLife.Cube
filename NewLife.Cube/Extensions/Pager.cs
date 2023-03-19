@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
@@ -28,23 +29,23 @@ public class Pager : PageParameter, IExtend3
     }
 
     /// <summary>名称类。用户可根据需要修改Url参数名</summary>
-    [XmlIgnore, ScriptIgnore]
-    public static __ _ = new __();
+    [XmlIgnore, ScriptIgnore, IgnoreDataMember]
+    public static __ _ = new();
     #endregion
 
     #region 扩展属性
     /// <summary>参数集合</summary>
-    [XmlIgnore, ScriptIgnore]
+    [XmlIgnore, ScriptIgnore, IgnoreDataMember]
     public IDictionary<String, String> Params { get; set; } = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>分页链接模版。内部将会替换{链接}和{名称}</summary>
-    [XmlIgnore, ScriptIgnore]
+    [XmlIgnore, ScriptIgnore, IgnoreDataMember]
     public String PageUrlTemplate { get; set; } = "<a href=\"{链接}\">{名称}</a>";
 
-    private static readonly PageParameter _def = new PageParameter();
+    private static readonly PageParameter _def = new();
 
     /// <summary>默认参数。如果分页参数为默认参数，则不参与构造Url</summary>
-    [XmlIgnore, ScriptIgnore]
+    [XmlIgnore, ScriptIgnore, IgnoreDataMember]
     public PageParameter Default { get; set; } = _def;
 
     /// <summary>获取/设置 参数</summary>
@@ -189,11 +190,11 @@ public class Pager : PageParameter, IExtend3
     {
         if (PageIndex == 1)
         {
-            if (name == "首页" || name == "上一页") return name;
+            if (name is "首页" or "上一页") return name;
         }
         if (PageIndex >= PageCount)
         {
-            if (name == "尾页" || name == "下一页") return name;
+            if (name is "尾页" or "下一页") return name;
         }
 
         if (PageIndex > 1)

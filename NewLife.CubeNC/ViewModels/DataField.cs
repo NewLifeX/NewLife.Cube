@@ -37,7 +37,7 @@ public class DataField
     public String Category { get; set; }
 
     /// <summary>属性类型</summary>
-    [IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember]
     public Type Type { get; set; }
 
     /// <summary>元素类型。image,file-zip,html,singleSelect,multipleSelect</summary>

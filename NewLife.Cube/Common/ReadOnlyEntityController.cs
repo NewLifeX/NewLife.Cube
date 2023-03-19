@@ -2,6 +2,7 @@
 using System.IO.Compression;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Web;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +16,7 @@ using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
+using NewLife.Messaging;
 using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Serialization;
@@ -56,8 +58,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     public ReadOnlyEntityController()
     {
         PageSetting.IsReadOnly = true;
-
-        PageSetting.EnableTableDoubleClick = Setting.Current.EnableTableDoubleClick;
 
         SysConfig = SysConfig.Current;
     }
@@ -389,24 +389,14 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("{type}管理")]
     [HttpGet]
-    public virtual ActionResult Index(Pager p = null)
+    public virtual ActionResult Index()
     {
-        //p ??= ViewBag.Page as Pager;
-
-        // 缓存数据，用于后续导出
-        //SetSession(CacheKey, p);
-        Session[CacheKey] = p;
-
-        return IndexView(p);
-    }
-
-    /// <summary>列表页视图。子控制器可重载，以传递更多信息给视图，比如修改要显示的列</summary>
-    /// <param name="p"></param>
-    /// <returns></returns>
-    protected virtual ActionResult IndexView(Pager p)
-    {
-        // 需要总记录数来分页
-        p.RetrieveTotalCount = true;
+        var p = new Pager
+        {
+            Params = WebHelper.Params,
+            // 需要总记录数来分页
+            RetrieveTotalCount = true
+        };
 
         var list = SearchData(p);
 
@@ -432,11 +422,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         // Json输出
         if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.详情));
-
-        //// 用于显示的列
-        //ViewBag.Fields = DetailFields;
-
-        //return View("Detail", entity);
 
         return Json(0, null, entity);
     }
@@ -1252,37 +1237,29 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
     /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
     /// <returns></returns>
-    [EntityAuthorize]
+    [AllowAnonymous]
     [HttpGet]
     public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
     {
         var fields = OnGetFields(kind, null);
 
-        var data = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
+        //return Ok(data: fields);
 
-            fm.Copy(s);
+        Object data = new { code = 0, data = fields };
 
-            fm.TypeStr = s.Type.Name;
+        //var writer = new JsonWriter
+        //{
+        //    Indented = false,
+        //    IgnoreNullValues = true,
+        //    CamelCase = true,
+        //    Int64AsString = true,
+        //};
+        //writer.Write(data);
+        //var json = writer.GetString();
+        //var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { IgnoreNullValues = true });
 
-            return fm;
-        }).ToList();
-
-        var customs = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.IsCustom = true;
-
-            return fm;
-        }).ToList();
-
-        data.AddRange(customs);
-
-        return Ok(data: data);
+        //return Content(json, "application/json", Encoding.UTF8);
+        return new JsonResult(data);
     }
 
     ///// <summary>获取所有表</summary>

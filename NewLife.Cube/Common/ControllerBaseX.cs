@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
 using NewLife.Remoting;
@@ -97,33 +96,11 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     protected virtual String GetRequest(String key) => Request.GetRequestValue(key);
     #endregion
 
-    #region 权限菜单
-    /// <summary>获取可用于生成权限菜单的Action集合</summary>
-    /// <param name="menu">该控制器所在菜单</param>
-    /// <returns></returns>
-    [Obsolete("=>MenuAttribute")]
-    protected virtual IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu) => new Dictionary<MethodInfo, Int32>();
-    #endregion
-
     #region Ajax处理
-    /// <summary>返回结果并跳转</summary>
-    /// <param name="data">结果。可以是错误文本、成功文本、其它结构化数据</param>
-    /// <param name="url">提示信息后跳转的目标地址，[refresh]表示刷新当前页</param>
-    /// <returns></returns>
-    protected virtual ActionResult JsonTips(Object data, String url = null) => Json(0, data as String, data, new { url });
-
     /// <summary>返回结果并刷新</summary>
     /// <param name="data">消息</param>
     /// <returns></returns>
     protected virtual ActionResult JsonRefresh(Object data) => Json(0, data as String, data, new { url = "[refresh]" });
-
-    /// <summary>
-    /// 返回结果并刷新
-    /// </summary>
-    /// <param name="data">消息</param>
-    /// <param name="time">延迟刷新秒数</param>
-    /// <returns></returns>
-    protected virtual ActionResult JsonRefresh(Object data, Int32 time) => Json(0, data as String, data, new { url = "[refresh]", time });
 
     /// <summary>是否Json请求</summary>
     protected virtual Boolean IsJsonRequest
