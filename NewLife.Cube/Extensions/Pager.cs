@@ -100,6 +100,20 @@ public class Pager : PageParameter, IExtend3
             }
         }
     }
+
+    /// <summary>借助字典实例化</summary>
+    /// <param name="parameters"></param>
+    public Pager(IDictionary<String, String> parameters)
+    {
+        if (parameters.TryGetValue(nameof(PageIndex), out var str)) PageIndex = str.ToInt();
+        if (parameters.TryGetValue(nameof(PageSize), out str)) PageSize = str.ToInt();
+        if (parameters.TryGetValue(nameof(Desc), out str)) Desc = str.ToBoolean();
+        if (parameters.TryGetValue(nameof(StartRow), out str)) StartRow = str.ToLong();
+        if (parameters.TryGetValue(nameof(Sort), out str)) Sort = str;
+        if (parameters.TryGetValue(nameof(OrderBy), out str)) OrderBy = str;
+
+        Params = parameters;
+    }
     #endregion
 
     #region 方法

@@ -391,9 +391,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     [HttpGet]
     public virtual ActionResult Index()
     {
-        var p = new Pager
+        var p = new Pager(WebHelper.Params)
         {
-            Params = WebHelper.Params,
             // 需要总记录数来分页
             RetrieveTotalCount = true
         };
@@ -403,7 +402,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         // Json输出
         if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p });
 
-        return Json(0, null, list);
+        return Json(0, null, list, new { pager = p });
     }
 
     /// <summary>表单，查看</summary>
