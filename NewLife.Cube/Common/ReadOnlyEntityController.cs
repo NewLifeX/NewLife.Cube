@@ -388,7 +388,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("{type}管理")]
-    [HttpGet]
+    [HttpGet("/[area]/[controller]")]
     public virtual ActionResult Index()
     {
         var p = new Pager(WebHelper.Params)

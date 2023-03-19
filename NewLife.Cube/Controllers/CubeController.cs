@@ -206,7 +206,7 @@ public class CubeController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
-    public ActionResult Area(Int32 id = 0)
+    public ActionResult GetArea(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
         if (r == null) return Json(500, null, "找不到地区");
