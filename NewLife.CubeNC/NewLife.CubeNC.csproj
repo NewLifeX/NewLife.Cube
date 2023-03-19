@@ -62,8 +62,6 @@
     <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
-    <Compile Include="..\NewLife.Cube\Controllers\CubeController.cs" Link="Controllers\CubeController.cs" />
-    <Compile Include="..\NewLife.Cube\Controllers\SsoController.cs" Link="Controllers\SsoController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
@@ -99,7 +97,6 @@
     <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
-    <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\CheckInData.cs" Link="Web\Models\CheckInData.cs" />

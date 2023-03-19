@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
-using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
