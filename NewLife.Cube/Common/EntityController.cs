@@ -125,6 +125,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
 
                 OnInsert(entity);
 
+                // 先插入再保存附件，主要是为了在附件表关联业务对象主键
                 var fs = await SaveFiles(entity);
                 if (fs.Count > 0) OnUpdate(entity);
 
@@ -245,17 +246,18 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     protected virtual async Task<IList<String>> SaveFiles(TEntity entity, String uploadPath = null)
     {
         var rs = new List<String>();
-        var list = new List<String>();
 
-        if (!Request.HasFormContentType) return list;
+        if (!Request.HasFormContentType) return rs;
+
         var files = Request.Form.Files;
         var fields = Factory.Fields;
         foreach (var fi in fields)
         {
             var dc = fi.Field;
-            if (dc.ItemType.EqualIgnoreCase("file", "image"))
+            if (dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-"))
             {
                 // 允许一次性上传多个文件到服务端
+                var list = new List<String>();
                 foreach (var file in files)
                 {
                     if (file.Name.EqualIgnoreCase(fi.Name, fi.Name + "_attachment"))
@@ -270,11 +272,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
                     }
                 }
 
-                if (list.Count > 0)
-                {
-                    entity.SetItem(fi.Name, list.Join(";"));
-                    list.Clear();
-                }
+                if (list.Count > 0) entity.SetItem(fi.Name, list.Join(";"));
             }
         }
 

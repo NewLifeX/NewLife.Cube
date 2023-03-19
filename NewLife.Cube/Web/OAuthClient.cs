@@ -421,20 +421,20 @@ public class OAuthClient
     }
     #endregion
 
-    #region 辅助
-    /// <summary>替换地址模版参数</summary>
-    /// <param name="url"></param>
-    /// <returns></returns>
-    protected virtual String GetUrl(String url)
-    {
-        if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
+        #region 辅助
+        /// <summary>替换地址模版参数</summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        protected virtual String GetUrl(String url)
         {
-            // 授权以外的连接，使用令牌服务地址
-            if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize"))
-                url = AccessServer.EnsureEnd("/") + url.TrimStart('/');
-            else
-                url = Server.EnsureEnd("/") + url.TrimStart('/');
-        }
+            if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
+            {
+                // 授权以外的连接，使用令牌服务地址
+                if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize", "logout"))
+                    url = AccessServer.EnsureEnd("/") + url.TrimStart('/');
+                else
+                    url = Server.EnsureEnd("/") + url.TrimStart('/');
+            }
 
         url = url
            .Replace("{key}", HttpUtility.UrlEncode(Key + ""))

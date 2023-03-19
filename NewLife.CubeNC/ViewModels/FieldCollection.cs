@@ -172,7 +172,14 @@ public class FieldCollection : List<DataField>
     {
         foreach (var item in names)
         {
-            if (!item.IsNullOrEmpty()) RemoveAll(e => e.Name.EqualIgnoreCase(item));
+            if (!item.IsNullOrEmpty())
+            {
+                // 模糊匹配
+                if (item.Contains("*"))
+                    RemoveAll(e => item.IsMatch(e.Name));
+                else
+                    RemoveAll(e => e.Name.EqualIgnoreCase(item));
+            }
         }
 
         return this;
@@ -305,6 +312,22 @@ public class FieldCollection : List<DataField>
         }
 
         return dic;
+    }
+    #endregion
+
+    #region 克隆
+    /// <summary>克隆集合</summary>
+    /// <returns></returns>
+    public FieldCollection Clone()
+    {
+        var fs = new FieldCollection(Kind);
+
+        foreach (var item in this)
+        {
+            fs.Add(item.Clone());
+        }
+
+        return fs;
     }
     #endregion
 }

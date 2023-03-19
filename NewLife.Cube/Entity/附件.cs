@@ -74,7 +74,7 @@ namespace NewLife.Cube.Entity
         [DisplayName("文件大小")]
         [Description("文件大小")]
         [DataObjectField(false, false, false, 0)]
-        [BindColumn("Size", "文件大小", "")]
+        [BindColumn("Size", "文件大小", "", ItemType = "GMK")]
         public Int64 Size { get => _Size; set { if (OnPropertyChanging("Size", value)) { _Size = value; OnPropertyChanged("Size"); } } }
 
         private String _ContentType;

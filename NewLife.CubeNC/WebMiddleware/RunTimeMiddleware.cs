@@ -209,19 +209,19 @@ public class RunTimeMiddleware
         {
             id = Rand.NextString(16);
 
-            // 顶级域名
-            var url = ctx.Request.GetRawUrl();
-            var domain = url.Host;
-            var ss = domain.Split('.');
-            if (ss.Length >= 3 && !IPAddress.TryParse(domain, out _))
-            {
-                // 国家顶级域名
-                if (ss[^1].Length == 2 && ss[^2].EqualIgnoreCase("com", "net", "org", "gov", "edu"))
-                    domain = $"{ss[^3]}.{ss[^2]}.{ss[^1]}";
-                // 全球顶级域名
-                else
-                    domain = $"{ss[^2]}.{ss[^1]}";
-            }
+            //// 顶级域名
+            //var url = ctx.Request.GetRawUrl();
+            //var domain = url.Host;
+            //var ss = domain.Split('.');
+            //if (ss.Length >= 3 && !IPAddress.TryParse(domain, out _))
+            //{
+            //    // 国家顶级域名
+            //    if (ss[^1].Length == 2 && ss[^2].EqualIgnoreCase("com", "net", "org", "gov", "edu"))
+            //        domain = $"{ss[^3]}.{ss[^2]}.{ss[^1]}";
+            //    // 全球顶级域名
+            //    else
+            //        domain = $"{ss[^2]}.{ss[^1]}";
+            //}
 
             var opt = new CookieOptions
             {
@@ -235,8 +235,10 @@ public class RunTimeMiddleware
             // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性
             if (ctx.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
             {
+                var domain = Setting.Current.CookieDomain;
+                if (!domain.IsNullOrEmpty()) opt.Domain = domain;
+
                 //opt.HttpOnly = true;
-                opt.Domain = domain;
                 opt.SameSite = SameSiteMode.None;
                 opt.Secure = true;
             }

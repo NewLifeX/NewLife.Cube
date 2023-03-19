@@ -383,8 +383,12 @@ public static class ManagerProviderHelper
         var res = context?.Response;
         if (res == null) return;
 
-        var option = new CookieOptions();
-        option.SameSite = (Microsoft.AspNetCore.Http.SameSiteMode)Setting.Current.SameSiteMode;
+        var set = Setting.Current;
+        var option = new CookieOptions
+        {
+            SameSite = (Microsoft.AspNetCore.Http.SameSiteMode)set.SameSiteMode
+        };
+        if (!set.CookieDomain.IsNullOrEmpty()) option.Domain = set.CookieDomain;
 
         var token = "";
         if (user != null)

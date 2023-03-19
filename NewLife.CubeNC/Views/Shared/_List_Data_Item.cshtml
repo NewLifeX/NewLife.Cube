@@ -149,6 +149,10 @@ else
 
                 <td class="text-center">@dd.ToString("p2")</td>
             }
+            else if (item.ItemType.EqualIgnoreCase("GMK"))
+            {
+                <td class="text-right">@(value.ToLong().ToGMK())</td>
+            }
             else
             {
                 <td class="text-right">@Convert.ToInt64(value).ToString("n0")</td>

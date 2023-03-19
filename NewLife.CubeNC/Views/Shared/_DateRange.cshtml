@@ -15,8 +15,8 @@
         @if (formatStr == "yyyy-MM-dd" && (dtStart.Year > 2000 || dtEnd.Year > 2000))
         {
             var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
-            if (dtStart.Year > 2000) url.UrlParam("dtStart", dtStart.AddDays(-step).ToString("yyyy-MM-dd"));
-            if (dtEnd.Year > 2000) url.UrlParam("dtEnd", dtEnd.AddDays(-step).ToString("yyyy-MM-dd"));
+            if (dtStart.Year > 2000 && dtEnd.Year > 2000) url.UrlParam("dtStart", dtStart.AddDays(-step).ToString("yyyy-MM-dd"));
+            if (dtStart.Year > 2000 && dtEnd.Year > 2000) url.UrlParam("dtEnd", dtEnd.AddDays(-step).ToString("yyyy-MM-dd"));
             <span class="input-group-addon"><a href="?@Html.Raw(url)" title="前一段"><i class="fa fa-calendar"></i></a></span>
         }
         else
@@ -30,8 +30,8 @@
     @if (formatStr == "yyyy-MM-dd" && (dtStart.Year > 2000 || dtEnd.Year > 2000))
     {
         var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
-        if (dtStart.Year > 2000) url.UrlParam("dtStart", dtStart.AddDays(step).ToString("yyyy-MM-dd"));
-        if (dtEnd.Year > 2000) url.UrlParam("dtEnd", dtEnd.AddDays(step).ToString("yyyy-MM-dd"));
+        if (dtStart.Year > 2000 && dtEnd.Year > 2000) url.UrlParam("dtStart", dtStart.AddDays(step).ToString("yyyy-MM-dd"));
+        if (dtStart.Year > 2000 && dtEnd.Year > 2000) url.UrlParam("dtEnd", dtEnd.AddDays(step).ToString("yyyy-MM-dd"));
         <label for="dtEnd" class="control-label"><a href="?@Html.Raw(url)" title="后一段">~</a></label>
     }
     else
