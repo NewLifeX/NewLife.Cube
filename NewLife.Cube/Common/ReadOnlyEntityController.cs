@@ -400,9 +400,9 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var list = SearchData(p);
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p });
+        if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p, stat = p.State });
 
-        return Json(0, null, list, new { pager = p });
+        return Json(0, null, list, new { pager = p, stat = p.State });
     }
 
     /// <summary>表单，查看</summary>
