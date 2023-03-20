@@ -24,16 +24,16 @@ XCode教程：<https://newlifex.com/xcode>
 ### 第三代魔方
 
 计划启动第三代魔方的设计，主要方向是借助前后端分离技术重构现代化用户界面，在3月份完成第一个最小可用版（vue）。  
-后端接口源码位于魔方代码库的dev分支，各前端代码库独立，欢迎大家积极参与！  
+后端接口源码已合并到魔方代码库的`master`分支，各前端代码库独立，欢迎大家积极参与！  
 
 Vue版：https://vue.newlifex.com  
 Antd版：https://antd.newlifex.com  
-Swagger：https://cube3.newlifex.com  
+Swagger：http://sh03.newlifex.com:3880/swagger/index.html  
 
 #### 项目参与须知
 
 1. 参与者加入github上的NewLifeX团队，自由向魔方dev分支提交代码或修改文档。  
-2. 用于前后端分离的WebApi版魔方后台 `NewLife.Cube`，原 `NewLife.CubeNC` 保留MVC继续维护。  
+2. 用于前后端分离的WebApi版魔方后台是 `NewLife.Cube`，原 `NewLife.CubeNC` 保留MVC继续维护。  
 3. 欢迎增加更多的前端项目，每一种前端新建独立代码库，如`Antd`则新建 `NewLife.CubeAntd`。  
 4. 大家在文档或代码处，标注负责人。  
 5. 源码库使用github，以及新生命团队糖果库（可申请权限）
@@ -79,6 +79,20 @@ http://git.newlifex.com/NewLife/NewLife.CubeAntd
 Blazor版前端代码库：  
 https://github.com/NewLifeX/NewLife.CubeBlazor
 http://git.newlifex.com/NewLife/NewLife.CubeBlazor
+
+### WebApi接口说明
+1. 接口地址 http://sh03.newlifex.com:3880/swagger/index.html
+2. 登录地址 /Admin/User/Login ， 测试账号 admin/admin，test/test
+3. JWT令牌传递方式：请求头 Authentication（推荐）、Cookie、Url参数token
+4. 每个控制器，都有一个 GetFields 接口，获取可用于展示的字段信息，如 http://sh03.newlifex.com:3880/Cube/App/GetFields?kind=List，kind参数可选List/Detail/AddForm/EditForm
+5. 控制器主路由对应列表页数据获取接口，调用各控制器的Search查找数据，由于查询参数多变，接口入参没有固定模型，而是直接从请求字符串中获取参数。如 http://sh03.newlifex.com:3880/Cube/Area?parentid=0&pageSize=7
+6. 列表页接口，返回数据中pager为分页信息
+7. 列表页接口，返回数据中state为统计行，如用户统计 http://sh03.newlifex.com:3880/Admin/UserStat
+8. 详情接口 Detail，参数id固定为主键查询，如 http://sh03.newlifex.com:3880/Cube/Area?id=450921
+9. 新增接口 Add，Post需要新增的实体对象
+10. 修改接口 Edit，Post需要修改的实体对象，务必带有主键
+11. 删除接口 Delete，Get删除参数id指定的数据
+
 
 ---
 
