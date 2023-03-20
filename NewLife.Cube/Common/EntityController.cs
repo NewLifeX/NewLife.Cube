@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Log;
-using NewLife.Web;
+using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
 
@@ -10,8 +11,12 @@ namespace NewLife.Cube;
 
 /// <summary>实体控制器基类</summary>
 /// <typeparam name="TEntity"></typeparam>
-//[EntityAuthorize]
-public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
+public class EntityController<TEntity> : EntityController<TEntity, TEntity> where TEntity : Entity<TEntity>, new() { }
+
+/// <summary>实体控制器基类</summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TModel"></typeparam>
+public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
 {
     #region 属性
     private String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
@@ -101,13 +106,17 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     //}
 
     /// <summary>保存</summary>
-    /// <param name="entity"></param>
+    /// <param name="model"></param>
     /// <returns></returns>
     [DisplayName("添加{type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
-    public virtual async Task<ActionResult> Add(TEntity entity)
+    public virtual async Task<ActionResult> Add(TModel model)
     {
+        // 实例化实体对象，然后拷贝
+        var entity = Factory.Create(false) as TEntity;
+        entity.Copy(model);
+
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
 
@@ -188,13 +197,17 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
     //}
 
     /// <summary>保存</summary>
-    /// <param name="entity"></param>
+    /// <param name="model"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("更新{type}")]
     [HttpPost]
-    public virtual async Task<ActionResult> Edit(TEntity entity)
+    public virtual async Task<ActionResult> Edit(TModel model)
     {
+        // 实例化实体对象，然后拷贝
+        var entity = Factory.Create(true) as TEntity;
+        entity.Copy(model);
+
         var rs = false;
         var err = "";
         try
