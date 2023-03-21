@@ -7,6 +7,7 @@ using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Configuration;
+using XCode.DataAccessLayer;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
@@ -872,6 +873,11 @@ else
 
         return $"/cube/file/{attachment.Id}{attachment.Extension}";
     }
+
+    /// <summary>是否附件列</summary>
+    /// <param name="dc"></param>
+    /// <returns></returns>
+    public static Boolean IsAttachment(this IDataColumn dc) => dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-");
 }
 
 /// <summary>Bootstrap页面控制。允许继承</summary>

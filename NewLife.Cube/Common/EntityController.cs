@@ -264,7 +264,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         foreach (var fi in fields)
         {
             var dc = fi.Field;
-            if (dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-"))
+            if (dc.IsAttachment())
             {
                 // 允许一次性上传多个文件到服务端
                 var list = new List<String>();

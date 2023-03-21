@@ -291,12 +291,13 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         var list = new List<String>();
 
         if (!Request.HasFormContentType) return list;
+
         var files = Request.Form.Files;
         var fields = Factory.Fields;
         foreach (var fi in fields)
         {
             var dc = fi.Field;
-            if (dc.ItemType.EqualIgnoreCase("file", "image"))
+            if (dc.IsAttachment())
             {
                 // 允许一次性上传多个文件到服务端
                 foreach (var file in files)

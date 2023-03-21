@@ -95,7 +95,7 @@
         }
         else if (item.Type == typeof(String))
         {
-            if (item.ItemType.EqualIgnoreCase("image"))
+            if (item.ItemType.EqualIgnoreCase("image", "image-"))
             {
                 @await Html.PartialAsync("_Form_Image", Model)
             }

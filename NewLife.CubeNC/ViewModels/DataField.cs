@@ -7,6 +7,7 @@ using NewLife.Collections;
 using NewLife.Reflection;
 using XCode;
 using XCode.Configuration;
+using XCode.DataAccessLayer;
 
 namespace NewLife.Cube.ViewModels;
 
@@ -180,6 +181,11 @@ public class DataField
     /// <summary>是否大文本字段</summary>
     /// <returns></returns>
     public virtual Boolean IsBigText() => Type == typeof(String) && (Length < 0 || Length >= 300 || Length >= 200 && Name.EqualIgnoreCase("Remark", "Description", "Comment"));
+
+    /// <summary>是否附件列</summary>
+    /// <param name="dc"></param>
+    /// <returns></returns>
+    public Boolean IsAttachment() => ItemType.EqualIgnoreCase("file", "image") || ItemType.StartsWithIgnoreCase("file-", "image-");
     #endregion
 
     #region 服务

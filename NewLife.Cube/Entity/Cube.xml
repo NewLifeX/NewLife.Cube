@@ -269,7 +269,7 @@
       <Column Name="DisplayName" DataType="String" Description="显示名" />
       <Column Name="Type" DataType="String" Description="类型。.NET/Javascript/Lua" />
       <Column Name="ClassName" DataType="String" Description="类名。完整类名" />
-      <Column Name="FilePath" DataType="String" ItemType="file" Length="200" Description="文件。插件文件包，zip压缩" />
+      <Column Name="FilePath" DataType="String" ItemType="file-zip" Length="200" Description="文件。插件文件包，zip压缩" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="CreateUser" DataType="String" Description="创建人" Model="False" Category="扩展" />
       <Column Name="CreateUserId" DataType="Int32" Description="创建者" Model="False" Category="扩展" />
