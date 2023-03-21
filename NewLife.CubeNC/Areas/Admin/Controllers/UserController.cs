@@ -87,7 +87,54 @@ public class UserController : EntityController<User>
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
         }
     }
+    protected override FieldCollection OnGetFields(String kind, User entity)
+    {
+        switch (kind.ToLower())
+        {
+            case "addform":
+            case "editform":
+                {
+                    var CurrUser = ManageProvider.User;//理论上肯定大于0
+                    var RoleData = Role.FindAllWithCache().Where(w => w.IsSystem == false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+                    if (CurrUser != null)
+                    {
+                        if (CurrUser.Role.IsSystem)
+                        {
+                            RoleData = Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+                        }
+                    }
+                    if (kind.ToLower() == "addform")
+                    {
+                        var AddRoleIDField = AddFormFields.GetField("RoleID");
+                        if (AddRoleIDField != null)
+                        {
+                            AddRoleIDField.DataSource = entity => RoleData;
+                        }
+                        var AddRoleIDsField = AddFormFields.GetField("RoleIds");
+                        if (AddRoleIDsField != null)
+                        {
+                            AddRoleIDsField.DataSource = entity => RoleData;
+                        }
+                    }
+                    if (kind.ToLower() == "editform")
+                    {
+                        var EditRoleIDField = EditFormFields.GetField("RoleID");
+                        if (EditRoleIDField != null)
+                        {
+                            EditRoleIDField.DataSource = entity => RoleData;
+                        }
+                        var EditRoleIDsField = EditFormFields.GetField("RoleIds");
+                        if (EditRoleIDsField != null)
+                        {
+                            EditRoleIDsField.DataSource = entity => RoleData;
+                        }
+                    }
 
+                    break;
+                }
+        }
+        return base.OnGetFields(kind, entity);
+    }
     /// <summary>
     /// 实例化用户控制器
     /// </summary>
