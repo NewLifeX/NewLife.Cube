@@ -4,12 +4,22 @@
 @using System.Linq;
 @{
     var page = ViewBag.Page as Pager;
+    var name = (Object)Model + "";
+    if (name.IsNullOrEmpty()) name = "enable";
 
     var dic = new Dictionary<Int32, String>();
-    dic.Add(1, "启用");
-    dic.Add(0, "禁用");
+    if (name == "enable")
+    {
+        dic.Add(1, "启用");
+        dic.Add(0, "禁用");
+    }
+    else
+    {
+        dic.Add(1, "是");
+        dic.Add(0, "否");
+    }
 }
 <div class="form-group">
-    <label for="enable" class="control-label">状态：</label>
-    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel("enable", dic,  page["enable"], "全部", true, null))
+    <label for="@name" class="control-label">状态：</label>
+    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dic,  page[name], "全部", true, null))
 </div>
