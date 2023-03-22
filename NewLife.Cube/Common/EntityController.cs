@@ -2,6 +2,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
@@ -114,8 +115,11 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     public virtual async Task<ActionResult> Add(TModel model)
     {
         // 实例化实体对象，然后拷贝
-        var entity = Factory.Create(false) as TEntity;
-        entity.Copy(model);
+        if (model is not TEntity entity)
+        {
+            entity = Factory.Create(false) as TEntity;
+            entity.Copy(model);
+        }
 
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
@@ -205,8 +209,15 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     public virtual async Task<ActionResult> Edit(TModel model)
     {
         // 实例化实体对象，然后拷贝
-        var entity = Factory.Create(true) as TEntity;
-        entity.Copy(model);
+        if (model is not TEntity entity)
+        {
+            var uk = Factory.Unique;
+            var key = model is IExtend ext ? ext[uk.Name] : model.GetValue(uk.Name);
+
+            // 先查出来，再拷贝。这里没有考虑脏数据的问题，有可能拷贝后并没有脏数据
+            entity = FindData(key);
+            entity.Copy(model, false, uk.Name);
+        }
 
         var rs = false;
         var err = "";
