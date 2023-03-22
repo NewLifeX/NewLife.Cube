@@ -7,17 +7,17 @@ public class FormField : DataField
     public String GroupView { get; set; }
 
     #region 方法
-    /// <summary>克隆</summary>
-    /// <returns></returns>
-    public override DataField Clone()
-    {
-        var df = base.Clone();
-        if (df is FormField ff)
-        {
-            ff.GroupView = GroupView;
-        }
+    ///// <summary>克隆</summary>
+    ///// <returns></returns>
+    //public override DataField Clone()
+    //{
+    //    var df = base.Clone();
+    //    if (df is FormField ff)
+    //    {
+    //        ff.GroupView = GroupView;
+    //    }
 
-        return df;
-    }
+    //    return df;
+    //}
     #endregion
 }

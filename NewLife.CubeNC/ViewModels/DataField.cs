@@ -7,7 +7,6 @@ using NewLife.Collections;
 using NewLife.Reflection;
 using XCode;
 using XCode.Configuration;
-using XCode.DataAccessLayer;
 
 namespace NewLife.Cube.ViewModels;
 
@@ -146,36 +145,38 @@ public class DataField
     /// <returns></returns>
     public virtual DataField Clone()
     {
-        var df = GetType().CreateInstance() as DataField;
+        //var df = GetType().CreateInstance() as DataField;
 
-        df.Name = Name;
-        df.DisplayName = DisplayName;
-        df.Description = Description;
-        df.Category = Category;
+        //df.Name = Name;
+        //df.DisplayName = DisplayName;
+        //df.Description = Description;
+        //df.Category = Category;
 
-        df.Type = Type;
-        df.ItemType = ItemType;
-        df.Length = Length;
-        df.Precision = Precision;
-        df.Scale = Scale;
-        df.Nullable = Nullable;
-        df.PrimaryKey = PrimaryKey;
-        df.Readonly = Readonly;
+        //df.Type = Type;
+        //df.ItemType = ItemType;
+        //df.Length = Length;
+        //df.Precision = Precision;
+        //df.Scale = Scale;
+        //df.Nullable = Nullable;
+        //df.PrimaryKey = PrimaryKey;
+        //df.Readonly = Readonly;
 
-        df.Field = Field;
-        df.MapField = MapField;
-        df.MapProvider = MapProvider;
-        df.DataSource = DataSource;
-        df.Properties = Properties;
+        //df.Field = Field;
+        //df.MapField = MapField;
+        //df.MapProvider = MapProvider;
+        //df.DataSource = DataSource;
+        ////df.Properties = Properties;
 
-        foreach (var item in Properties)
-        {
-            df.Properties[item.Key] = item.Value;
-        }
+        //foreach (var item in Properties)
+        //{
+        //    df.Properties[item.Key] = item.Value;
+        //}
 
-        return df;
+        //df._services = _services;
 
-        //return MemberwiseClone() as DataField;
+        //return df;
+
+        return MemberwiseClone() as DataField;
     }
 
     /// <summary>是否大文本字段</summary>
@@ -183,7 +184,6 @@ public class DataField
     public virtual Boolean IsBigText() => Type == typeof(String) && (Length < 0 || Length >= 300 || Length >= 200 && Name.EqualIgnoreCase("Remark", "Description", "Comment"));
 
     /// <summary>是否附件列</summary>
-    /// <param name="dc"></param>
     /// <returns></returns>
     public Boolean IsAttachment() => ItemType.EqualIgnoreCase("file", "image") || ItemType.StartsWithIgnoreCase("file-", "image-");
     #endregion

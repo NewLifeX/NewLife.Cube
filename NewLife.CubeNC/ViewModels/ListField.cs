@@ -57,26 +57,26 @@ public class ListField : DataField
         Header = field.DisplayName;
     }
 
-    /// <summary>克隆</summary>
-    /// <returns></returns>
-    public override DataField Clone()
-    {
-        var df = base.Clone();
-        if (df is ListField field)
-        {
-            field.Text = Text;
-            field.Title = Title;
-            field.Url = Url;
-            //field.Icon = Icon;
-            field.Target = Target;
-            field.Header = Header;
-            field.HeaderTitle = HeaderTitle;
-            field.DataAction = DataAction;
-            field.GetValue = GetValue;
-        }
+    ///// <summary>克隆</summary>
+    ///// <returns></returns>
+    //public override DataField Clone()
+    //{
+    //    var df = base.Clone();
+    //    if (df is ListField field)
+    //    {
+    //        field.Text = Text;
+    //        field.Title = Title;
+    //        field.Url = Url;
+    //        //field.Icon = Icon;
+    //        field.Target = Target;
+    //        field.Header = Header;
+    //        field.HeaderTitle = HeaderTitle;
+    //        field.DataAction = DataAction;
+    //        field.GetValue = GetValue;
+    //    }
 
-        return df;
-    }
+    //    return df;
+    //}
     #endregion
 
     #region 数据格式化
