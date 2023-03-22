@@ -2,6 +2,7 @@
 using System.Reflection;
 using NewLife.Configuration;
 using NewLife.Security;
+using XCode.Configuration;
 
 namespace NewLife.Cube;
 
@@ -10,6 +11,10 @@ namespace NewLife.Cube;
 [Config("Cube")]
 public class Setting : Config<Setting>
 {
+    #region 静态
+    static Setting() => Provider = new DbConfigProvider { UserId = 0, Category = "Cube" };
+    #endregion
+
     #region 通用
     /// <summary>是否启用调试。默认true</summary>
     [Description("调试")]
