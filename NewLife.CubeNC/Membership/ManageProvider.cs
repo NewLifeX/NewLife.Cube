@@ -113,7 +113,7 @@ public class ManageProvider2 : ManageProvider
         Current = user;
 
         // 过期时间
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var expire = TimeSpan.FromMinutes(0);
         if (remember && user != null)
         {
@@ -147,7 +147,7 @@ public class ManageProvider2 : ManageProvider
         //var ui = _client.GetUser(ti.AccessToken).Result as User;
         var ui = _client.UserAuth(username, password).Result;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var log = LogProvider.Provider;
 
         // 仅验证登录，不要角色信息
@@ -302,7 +302,7 @@ public static class ManagerProviderHelper
     /// <returns></returns>
     public static JwtBuilder GetJwt()
     {
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
 
         // 生成令牌
         var ss = set.JwtSecret?.Split(':');
@@ -383,7 +383,7 @@ public static class ManagerProviderHelper
         var res = context?.Response;
         if (res == null) return;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var option = new CookieOptions
         {
             SameSite = (Microsoft.AspNetCore.Http.SameSiteMode)set.SameSiteMode

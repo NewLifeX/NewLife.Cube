@@ -20,7 +20,7 @@ namespace NewLife.Cube.Services
             if (password == null) throw new ArgumentNullException(nameof(password));
 
             // 没有设置密码强度，直接通过
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             if (set.PaswordStrength.IsNullOrEmpty() || set.PaswordStrength == "*") return true;
 
             if (_regex == null || set.PaswordStrength != _old)

@@ -4,7 +4,7 @@
 @using XCode.Configuration
 @using Microsoft.AspNetCore.Mvc.Rendering;
 @{
-    var theme = NewLife.Cube.Setting.Current.Theme;
+    var theme = NewLife.Cube.CubeSetting.Current.Theme;
     if (String.IsNullOrEmpty(theme)) theme = "ACE";
 
     Layout = "~/Views/" + theme + "/_Layout.cshtml";

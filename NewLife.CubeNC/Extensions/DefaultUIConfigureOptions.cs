@@ -64,7 +64,7 @@ namespace NewLife.Cube.Extensions
         public static IApplicationBuilder UseCubeDefaultUI(this IApplicationBuilder app, IWebHostEnvironment env)
         {
             // 强行设置WebRootPath，避免魔方首次启动下载资源文件后无法马上使用的问题
-            var root = Setting.Current.WebRootPath.GetFullPath();
+            var root = CubeSetting.Current.WebRootPath.GetFullPath();
 
             env.WebRootPath = root;
 

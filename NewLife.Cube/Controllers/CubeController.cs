@@ -309,7 +309,7 @@ public class CubeController : ControllerBaseX
         var user = ManageProvider.Provider?.FindByID(id) as IUser;
         if (user == null) throw new Exception("用户不存在 " + id);
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var av = "";
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
         {

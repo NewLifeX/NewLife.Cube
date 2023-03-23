@@ -5,7 +5,7 @@
     var user = ManageProvider.User;
     var menu = Menu.Find("Name", "Cube");
     var hasConfig = user.Has(menu, null);
-    var home = NewLife.Cube.Setting.Current.StartPage;
+    var home = NewLife.Cube.CubeSetting.Current.StartPage;
     var retUrl = Context.Request.GetEncodedPathAndQuery();
 }
 

@@ -14,7 +14,7 @@ namespace NewLife.Cube
         public void PopulateValues(ViewLocationExpanderContext context)
         {
             // 选择视图使用的主题样式，首页的视图特殊处理
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             var theme = set.Theme;
             if (context.AreaName.EqualIgnoreCase("Admin") &&
                 context.ControllerName.EqualIgnoreCase("Index") &&

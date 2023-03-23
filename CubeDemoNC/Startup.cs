@@ -10,7 +10,7 @@ using NewLife.Cube.Metronic;
 using NewLife.Cube.Metronic8;
 using NewLife.Cube.Tabler;
 using NewLife.Cube.WebMiddleware;
-using Setting = NewLife.Cube.Setting;
+using CubeSetting = NewLife.Cube.CubeSetting;
 
 namespace CubeDemoNC
 {
@@ -36,7 +36,7 @@ namespace CubeDemoNC
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             if (env.IsDevelopment() || set.Debug)
             {
                 app.UseDeveloperExceptionPage();

@@ -3,7 +3,7 @@
 @using NewLife.Cube.WebMiddleware;
 
 @{
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 }
 

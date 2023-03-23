@@ -20,7 +20,7 @@ public static class StarHelper
         if (traceId.IsNullOrEmpty()) return null;
 
         // 从配置文件加载星尘Web地址，因为控制器初始化时需要用到该地址，而注册服务消费尚未就绪
-        var web = Setting.Current.StarWeb;
+        var web = CubeSetting.Current.StarWeb;
         //var web = StarWeb;
         if (web.IsNullOrEmpty()) return null;
 

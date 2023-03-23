@@ -183,7 +183,7 @@ public class RunTimeMiddleware
         if (ua.Compatible.IsNullOrEmpty()) return true;
 
         // 判断爬虫
-        var code = Setting.Current.RobotError;
+        var code = CubeSetting.Current.RobotError;
         if (code > 0 && ua.IsRobot && !ua.Brower.IsNullOrEmpty())
         {
             var name = ua.Brower;

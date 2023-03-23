@@ -192,7 +192,7 @@ public class SsoController : ControllerBaseX
 
             // 短时间内不要重复拉取用户信息
             // 注意，这里可能因为没有OpenID和UserName，无法判断得到用户链接，需要GetUserInfo后方能匹配UserConnect
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             var uc = prov.GetConnect(client);
             if (uc.UpdateTime.AddSeconds(set.RefreshUserPeriod) < DateTime.Now)
             {
@@ -292,7 +292,7 @@ public class SsoController : ControllerBaseX
         var url = "";
 
         // 准备跳转到验证中心
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (client != null && set.LogoutAll)
         {
             if (client.LogoutUrl.IsNullOrEmpty() && name.EqualIgnoreCase("NewLife")) client.LogoutUrl = "logout?client_id={key}&redirect_uri={redirect}&state={state}";
@@ -770,7 +770,7 @@ public class SsoController : ControllerBaseX
         prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
 
         // 过期时间
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var expire = TimeSpan.FromMinutes(0);
         if (set.SessionTimeout > 0)
             expire = TimeSpan.FromSeconds(set.SessionTimeout);
@@ -841,7 +841,7 @@ public class SsoController : ControllerBaseX
         var user = ManageProvider.Provider?.FindByID(id) as IUser;
         if (user == null) throw new Exception("用户不存在 " + id);
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var av = "";
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
         {

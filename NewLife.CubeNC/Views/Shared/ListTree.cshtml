@@ -1,7 +1,7 @@
 ﻿@using NewLife.Web;
 @using XCode;
 @{
-    var theme = NewLife.Cube.Setting.Current.Theme;
+    var theme = NewLife.Cube.CubeSetting.Current.Theme;
     if (String.IsNullOrEmpty(theme)) theme = "ACE";
 
     Layout = "~/Views/" + theme + "/_Layout.cshtml";

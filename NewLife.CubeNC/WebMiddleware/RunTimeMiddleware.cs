@@ -183,7 +183,7 @@ public class RunTimeMiddleware
         if (ua.Compatible.IsNullOrEmpty()) return true;
 
         // 判断爬虫
-        var code = Setting.Current.RobotError;
+        var code = CubeSetting.Current.RobotError;
         if (code > 0 && ua.IsRobot && !ua.Brower.IsNullOrEmpty())
         {
             var name = ua.Brower;
@@ -235,7 +235,7 @@ public class RunTimeMiddleware
             // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性
             if (ctx.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
             {
-                var domain = Setting.Current.CookieDomain;
+                var domain = CubeSetting.Current.CookieDomain;
                 if (!domain.IsNullOrEmpty()) opt.Domain = domain;
 
                 //opt.HttpOnly = true;

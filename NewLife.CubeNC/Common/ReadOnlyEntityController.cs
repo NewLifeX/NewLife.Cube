@@ -58,7 +58,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     {
         PageSetting.IsReadOnly = true;
 
-        PageSetting.EnableTableDoubleClick = Setting.Current.EnableTableDoubleClick;
+        PageSetting.EnableTableDoubleClick = CubeSetting.Current.EnableTableDoubleClick;
 
         SysConfig = SysConfig.Current;
     }
@@ -1115,7 +1115,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(8);
         ut.Enable = true;
-        ut.Expire = DateTime.Now.AddSeconds(Setting.Current.ShareExpire);
+        ut.Expire = DateTime.Now.AddSeconds(CubeSetting.Current.ShareExpire);
         ut.Save();
 
         //var url2 = $"/Admin/UserToken?q={ut.Token}";

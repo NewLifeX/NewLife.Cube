@@ -13,7 +13,7 @@ namespace NewLife.Cube.ViewModels
     /// </summary>
     public class LoginConfigModel
     {
-        private readonly Setting _set = Setting.Current;
+        private readonly CubeSetting _set = CubeSetting.Current;
         private readonly SysConfig _cubeSet = SysConfig.Current;
 
         /// <summary>

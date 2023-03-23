@@ -58,7 +58,7 @@ namespace NewLife.Cube.Admin.Controllers
 
             // 工作台页面
             var startPage = Request.GetRequestValue("page");
-            if (startPage.IsNullOrEmpty()) startPage = Setting.Current.StartPage;
+            if (startPage.IsNullOrEmpty()) startPage = CubeSetting.Current.StartPage;
 
             ViewBag.Main = startPage;
             ViewBag.Menus = GetMenu();

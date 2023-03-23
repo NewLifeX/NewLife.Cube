@@ -481,7 +481,7 @@ else
         var str = tmp.Substring(null, "@if");
         sb.Append(str);
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var cls = set.FormGroupClass;
         if (cls.IsNullOrEmpty()) cls = "form-group col-xs-12 col-sm-6 col-lg-4";
 
@@ -727,7 +727,7 @@ else
     {
         if (user == null || user.Avatar.IsNullOrEmpty()) return null;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
 
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWithIgnoreCase("/Sso/"))
         {
@@ -754,7 +754,7 @@ else
     {
         if (filename.IsNullOrEmpty()) return null;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (!filename.IsNullOrEmpty())
         {
             // 修正资源访问起始路径
@@ -797,7 +797,7 @@ else
         foreach (var item in paths)
         {
             var p = item.TrimStart("/");
-            p = Setting.Current.WebRootPath.CombinePath(p);
+            p = CubeSetting.Current.WebRootPath.CombinePath(p);
 
             var di = p.AsDirectory();
             if (di.Exists)

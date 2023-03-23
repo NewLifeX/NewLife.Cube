@@ -201,7 +201,7 @@ namespace NewLife.Cube.Web
 
             // 单点登录不要保存Cookie，让它在Session过期时请求认证中心
             //prv.SaveCookie(user);
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             if (set.SessionTimeout > 0)
             {
                 var expire = TimeSpan.FromSeconds(set.SessionTimeout);
@@ -222,7 +222,7 @@ namespace NewLife.Cube.Web
             // 用户信息
             if (dic != null && user is User user2)
             {
-                var set = Setting.Current;
+                var set = CubeSetting.Current;
 
                 // SSO信息优先于本地，根据配置覆盖本地
                 if (user2.Code.IsNullOrEmpty() || set.ForceBindUserCode && !client.UserCode.IsNullOrEmpty()) user2.Code = client.UserCode;
@@ -352,7 +352,7 @@ namespace NewLife.Cube.Web
                 // 本地头像，如果不存在，也要更新
                 else if (user2.Avatar.StartsWithIgnoreCase("/Sso/Avatar/", "/Sso/Avatar?"))
                 {
-                    var av2 = Setting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
+                    var av2 = CubeSetting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
                     if (!File.Exists(av2))
                     {
                         LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"{user2.Avatar} => {av}", user.ID, user + "");
@@ -398,7 +398,7 @@ namespace NewLife.Cube.Web
                     }
                 }
 
-                var set = Setting.Current;
+                var set = CubeSetting.Current;
                 var cfg = OAuthConfig.FindByName(client.Name);
                 //if (!cfg.AutoRegister) throw new InvalidOperationException($"绑定[{cfg}]要求本地已登录！");
                 if (user == null && !set.AutoRegister && !cfg.AutoRegister)
@@ -875,7 +875,7 @@ namespace NewLife.Cube.Web
             if (!url.StartsWithIgnoreCase("http")) return false;
 
             // 不要扩展名
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             var dest = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
 
             //// 头像是否已存在

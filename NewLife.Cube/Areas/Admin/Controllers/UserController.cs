@@ -230,7 +230,7 @@ public class UserController : EntityController<User>
 
         // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
         var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
-        if (ms != null && !Setting.Current.AllowLogin)
+        if (ms != null && !CubeSetting.Current.AllowLogin)
         {
             if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
             if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
@@ -276,7 +276,7 @@ public class UserController : EntityController<User>
 
     private LoginViewModel GetViewModel(String returnUrl)
     {
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var sys = SysConfig.Current;
         var model = new LoginViewModel
         {
@@ -328,7 +328,7 @@ public class UserController : EntityController<User>
         var ipKey = $"Login:{UserHost}";
         var ipErrors = _cache.Get<Int32>(ipKey);
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         try
@@ -390,7 +390,7 @@ public class UserController : EntityController<User>
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (set.LogoutAll)
         {
             // 如果是单点登录，则走单点登录注销
@@ -477,7 +477,7 @@ public class UserController : EntityController<User>
         var file = HttpContext.Request.Form.Files["avatar"];
         if (file != null)
         {
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             var fileName = user.ID + Path.GetExtension(file.FileName);
             var att = await SaveFile(user, file, set.AvatarPath, fileName);
             if (att != null) user.Avatar = att.FilePath;
@@ -497,7 +497,7 @@ public class UserController : EntityController<User>
     protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
     {
         // 修改保存目录和文件名
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
 
         return base.SaveFile(entity, file, set.AvatarPath, fileName);
@@ -596,7 +596,7 @@ public class UserController : EntityController<User>
         var password = registerModel.Password;
         var password2 = registerModel.Password2;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
         try

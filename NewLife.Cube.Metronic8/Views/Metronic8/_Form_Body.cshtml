@@ -11,7 +11,7 @@
     var fields = ViewBag.Fields as FieldCollection;
     var groupFields = fields.GroupByCategory(entity);
 
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var cls = set.FormGroupClass;
     if (cls.IsNullOrEmpty())
     {

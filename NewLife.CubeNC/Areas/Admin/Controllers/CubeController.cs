@@ -11,7 +11,7 @@ namespace NewLife.Cube.Admin.Controllers;
 [DisplayName("魔方设置")]
 [Area("Admin")]
 [Menu(30, true, Icon = "fa-wrench")]
-public class CubeController : ConfigController<Setting>
+public class CubeController : ConfigController<CubeSetting>
 {
     private Boolean _has;
     private readonly UIService _uIService;
@@ -26,7 +26,7 @@ public class CubeController : ConfigController<Setting>
     {
         if (!_has)
         {
-            var list = GetMembers(typeof(Setting));
+            var list = GetMembers(typeof(CubeSetting));
             var df = list.FirstOrDefault(e => e.Name == "Theme");
             if (df != null)
             {

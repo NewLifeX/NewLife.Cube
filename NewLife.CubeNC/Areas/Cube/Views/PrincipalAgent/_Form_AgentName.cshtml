@@ -8,7 +8,7 @@
     var entity = pair.Item1 as PrincipalAgent;
     var field = pair.Item2;
 
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var cls = set.FormGroupClass;
     if (cls.IsNullOrEmpty()) { cls = "form-group col-xs-12 col-sm-6 col-lg-4"; }
 }
