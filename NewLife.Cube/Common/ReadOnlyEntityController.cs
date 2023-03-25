@@ -148,7 +148,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var builder = CreateWhere();
         if (builder != null)
         {
-            builder.Data2 ??= p;
+            builder.Data2 ??= p.Items;
             p.State = builder;
         }
 
@@ -224,7 +224,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             //Data = Session,
         };
         builder.SetData(Session);
-        builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
+        //builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
+        builder.Data2 = HttpContext.Items.ToDictionary(e => e.Key + "", e => e.Value);
 
         return builder;
     }

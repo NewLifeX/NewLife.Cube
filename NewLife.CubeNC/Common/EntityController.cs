@@ -127,11 +127,16 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         if (model is not TEntity entity)
         {
             entity = Factory.Create(true) as TEntity;
-            entity.Copy(model);
+          
+            if (model is TEntity src)
+                entity.CopyFrom(src, true);
+            else
+                entity.Copy(model);
         }
 
         // 检测避免乱用Add/id
-        if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
+        if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0)
+            throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
 
         var rs = false;
         var err = "";
@@ -181,11 +186,10 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
 
         var key = $"Cube_Add_{typeof(TEntity).FullName}";
         var url = Session[key] as String;
-        if (!url.IsNullOrEmpty())
-            return Redirect(url);
-        else
-            // 新增完成跳到列表页，更新完成保持本页
-            return RedirectToAction("Index");
+        if (!url.IsNullOrEmpty()) return Redirect(url);
+
+        // 新增完成跳到列表页，更新完成保持本页
+        return RedirectToAction("Index");
     }
 
     /// <summary>表单，添加/修改</summary>
@@ -233,11 +237,15 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         if (model is not TEntity entity)
         {
             var uk = Factory.Unique;
-            var key = model is IExtend ext ? ext[uk.Name] : model.GetValue(uk.Name);
+            var key = model is IModel ext ? ext[uk.Name] : model.GetValue(uk.Name);
 
             // 先查出来，再拷贝。这里没有考虑脏数据的问题，有可能拷贝后并没有脏数据
             entity = FindData(key);
-            entity.Copy(model, false, uk.Name);
+
+            if (model is TEntity src)
+                entity.CopyFrom(src, true);
+            else
+                entity.Copy(model, false, uk.Name);
         }
 
         var rs = false;

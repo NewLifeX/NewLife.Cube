@@ -5,7 +5,7 @@ using NewLife.Data;
 namespace NewLife.Cube.Charts;
 
 /// <summary>系列。一组数值以及他们映射成的图</summary>
-public class Series : IExtend3
+public class Series : IExtend
 {
     #region 属性
     /// <summary>图表类型</summary>

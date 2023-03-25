@@ -187,7 +187,7 @@ namespace NewLife.Cube.Web
             if (user is IEntity entity) entity.Update();
 
             // 用户角色可能有更新，需要清空扩展属性，避免Roles保留脏数据，导致用户首次访问显示无权限
-            (user as EntityBase).Extends = null;
+            (user as IEntity).Extends.Clear();
 
             // 写日志
             var log = LogProvider.Provider;

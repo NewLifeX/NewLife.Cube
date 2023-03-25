@@ -65,6 +65,6 @@ public static class StarHelper
         /// <param name="field"></param>
         /// <param name="data"></param>
         /// <returns></returns>
-        public String Resolve(DataField field, IExtend data) => BuildUrl(data[field.Name] as String);
+        public String Resolve(DataField field, IModel data) => BuildUrl(data[field.Name] as String);
     }
 }

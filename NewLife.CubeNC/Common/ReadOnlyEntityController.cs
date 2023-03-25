@@ -13,7 +13,6 @@ using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
-using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -164,7 +163,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var builder = CreateWhere();
         if (builder != null)
         {
-            builder.Data2 ??= p;
+            builder.Data2 ??= p.Items;
             p.State = builder;
         }
 
@@ -240,7 +239,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             //Data = Session,
         };
         builder.SetData(Session);
-        builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
+        //builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
+        builder.Data2 = HttpContext.Items.ToDictionary(e => e.Key + "", e => e.Value);
 
         return builder;
     }

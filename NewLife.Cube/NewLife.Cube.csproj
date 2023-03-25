@@ -48,6 +48,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Extensions\ItemsExtend.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
@@ -70,10 +74,10 @@
     <Compile Include="..\NewLife.CubeNC\ViewModels\SelectUserModel.cs" Link="ViewModels\SelectUserModel.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.2.2023.322-beta0150" />
+    <PackageReference Include="NewLife.Core" Version="10.2.2023.323-beta1548" />
     <PackageReference Include="NewLife.IP" Version="2.0.2023.203" />
     <PackageReference Include="NewLife.Stardust" Version="2.8.2023.318-beta0213" />
-    <PackageReference Include="NewLife.XCode" Version="11.7.2023.322-beta1520" />
+    <PackageReference Include="NewLife.XCode" Version="11.7.2023.324-beta1635" />
   </ItemGroup>
 
   <ItemGroup>
