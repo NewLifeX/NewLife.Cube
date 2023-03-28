@@ -327,6 +327,7 @@ public static class CubeService
         }
 
         app.UseMiddleware<RunTimeMiddleware>();
+        app.UseMiddleware<TenantMiddleware>();
 
         //if (env != null) app.UseCubeDefaultUI(env);
 

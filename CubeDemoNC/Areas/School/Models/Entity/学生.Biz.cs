@@ -26,7 +26,7 @@ using XCode.Shards;
 
 namespace NewLife.School.Entity;
 
-public partial class Student : Entity<Student>
+public partial class Student : Entity<Student>, ITenantSource
 {
     #region 对象操作
     static Student()

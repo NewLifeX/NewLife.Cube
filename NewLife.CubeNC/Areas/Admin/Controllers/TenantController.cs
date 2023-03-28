@@ -14,6 +14,27 @@ public class TenantController : EntityController<Tenant>
         LogOnChange = true;
 
         //ListFields.RemoveField("Secret", "Logo", "AuthUrl", "AccessUrl", "UserUrl", "Remark");
+
+        {
+            var df = ListFields.AddListField("Users", null, "ManagerName");
+            df.DisplayName = "用户";
+            df.Url = "/Admin/TenantUser?tenantId={Id}";
+        }
+
+        {
+            var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            AddFormFields.RemoveField("RoleNames");
+        }
+        {
+            var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            EditFormFields.RemoveField("RoleNames");
+        }
+
+        {
+            AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
+        }
     }
 
     /// <summary>搜索数据集</summary>

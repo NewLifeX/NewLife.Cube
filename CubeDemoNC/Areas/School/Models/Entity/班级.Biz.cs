@@ -26,7 +26,7 @@ using XCode.Shards;
 
 namespace NewLife.School.Entity;
 
-public partial class Class : Entity<Class>
+public partial class Class : Entity<Class>, ITenantSource
 {
     #region 对象操作
     static Class()
@@ -146,7 +146,7 @@ public partial class Class : Entity<Class>
         var model = new ClassModel();
         model.Copy(this);
 
-         return model;
+        return model;
     }
 
     #endregion
