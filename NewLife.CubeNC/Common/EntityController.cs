@@ -128,7 +128,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         {
             entity = Factory.Create(true) as TEntity;
           
-            if (model is TEntity src)
+            if (model is IModel src)
                 entity.CopyFrom(src, true);
             else
                 entity.Copy(model);
@@ -242,7 +242,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             // 先查出来，再拷贝。这里没有考虑脏数据的问题，有可能拷贝后并没有脏数据
             entity = FindData(key);
 
-            if (model is TEntity src)
+            if (model is IModel src)
                 entity.CopyFrom(src, true);
             else
                 entity.Copy(model, false, uk.Name);

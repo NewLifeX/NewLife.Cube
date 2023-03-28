@@ -195,7 +195,7 @@ public class CubeController : ControllerBaseX
             e.Name,
             e.FullName,
             //e.ManagerID,
-            Manager = FindByID(e.ManagerID)?.ToString(),
+            Manager = FindByID(e.ManagerId)?.ToString(),
         }).ToArray());
     }
     #endregion
