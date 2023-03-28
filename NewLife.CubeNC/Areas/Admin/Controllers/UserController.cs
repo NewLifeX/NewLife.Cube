@@ -87,6 +87,7 @@ public class UserController : EntityController<User>
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
         }
     }
+
     protected override FieldCollection OnGetFields(String kind, User entity)
     {
         switch (kind.ToLower())
@@ -135,6 +136,7 @@ public class UserController : EntityController<User>
         }
         return base.OnGetFields(kind, entity);
     }
+
     /// <summary>
     /// 实例化用户控制器
     /// </summary>
