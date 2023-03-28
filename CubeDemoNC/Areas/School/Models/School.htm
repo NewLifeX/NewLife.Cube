@@ -1,4 +1,4 @@
-<style>
+﻿<style>
     table {
         border-collapse: collapse;
         border: 1px solid;
@@ -50,12 +50,23 @@
     </thead>
     <tbody>
         <tr>
-            <td>ID</td>
+            <td>Id</td>
             <td>编号</td>
             <td>Int32</td>
             <td></td>
             <td></td>
             <td title="自增">AI</td>
+            <td>N</td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td>TenantId</td>
+            <td>租户</td>
+            <td>Int32</td>
+            <td></td>
+            <td></td>
+            <td></td>
             <td>N</td>
             <td></td>
         </tr>
@@ -188,7 +199,7 @@
     </thead>
     <tbody>
         <tr>
-            <td>ID</td>
+            <td>Id</td>
             <td>编号</td>
             <td>Int32</td>
             <td></td>
@@ -199,7 +210,18 @@
         </tr>
 
         <tr>
-            <td>ClassID</td>
+            <td>TenantId</td>
+            <td>租户</td>
+            <td>Int32</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>N</td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td>ClassId</td>
             <td>班级</td>
             <td>Int32</td>
             <td></td>
@@ -370,9 +392,9 @@
     </thead>
     <tbody>
         <tr>
-            <td>ID</td>
+            <td>Id</td>
             <td>订单编号</td>
-            <td>Int32</td>
+            <td>Int64</td>
             <td></td>
             <td></td>
             <td title="自增">AI</td>
@@ -381,7 +403,18 @@
         </tr>
 
         <tr>
-            <td>NodeID</td>
+            <td>TenantId</td>
+            <td>租户</td>
+            <td>Int32</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>N</td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td>NodeId</td>
             <td>节点号</td>
             <td>Int32</td>
             <td></td>

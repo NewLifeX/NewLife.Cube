@@ -30,7 +30,7 @@ namespace CubeDemo.Areas.School.Controllers
             var id = p["Id"].ToInt(-1);
             if (id > 0)
             {
-                var entity = Class.FindByID(id);
+                var entity = Class.FindById(id);
                 return entity == null ? new List<Class>() : new List<Class> { entity };
             }
 
