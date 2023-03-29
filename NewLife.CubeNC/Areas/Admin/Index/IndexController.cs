@@ -221,7 +221,7 @@ public class IndexController : ControllerBaseX
 
     private IList<MenuTree> GetMenu()
     {
-        var user = _provider.Current as IUser ?? XCode.Membership.User.FindAll().FirstOrDefault();
+        var user = _provider.Current as IUser;
 
         var fact = ManageProvider.Menu;
         var menus = fact.Root.Childs;
