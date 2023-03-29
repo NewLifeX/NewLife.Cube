@@ -130,6 +130,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Cube\Controllers\ModelColumnController.cs" />
+    <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
   </ItemGroup>
 

@@ -16,7 +16,7 @@ public class FieldCollection : List<DataField>
 {
     #region 属性
     /// <summary>类型</summary>
-    public String Kind { get; set; }
+    public ViewKinds Kind { get; set; }
 
     /// <summary>工厂</summary>
     public IEntityFactory Factory { get; set; }
@@ -31,12 +31,12 @@ public class FieldCollection : List<DataField>
     #region 构造
     /// <summary>实例化一个字段集合</summary>
     /// <param name="kind"></param>
-    public FieldCollection(String kind) => Kind = kind;
+    public FieldCollection(ViewKinds kind) => Kind = kind;
 
     /// <summary>使用工厂实例化一个字段集合</summary>
     /// <param name="factory"></param>
     /// <param name="kind"></param>
-    public FieldCollection(IEntityFactory factory, String kind)
+    public FieldCollection(IEntityFactory factory, ViewKinds kind)
     {
         Kind = kind;
         Factory = factory;
@@ -51,21 +51,22 @@ public class FieldCollection : List<DataField>
 
             switch (kind)
             {
-                case "AddForm":
+                case ViewKinds.List:
+                    SetRelation(false);
+                    break;
+                case ViewKinds.Detail:
+                    SetRelation(true);
+                    break;
+                case ViewKinds.AddForm:
                     SetRelation(true);
                     //RemoveCreateField();
                     RemoveUpdateField();
                     break;
-                case "EditForm":
+                case ViewKinds.EditForm:
                     SetRelation(true);
                     break;
-                case "Detail":
-                    SetRelation(true);
+                case ViewKinds.Search:
                     break;
-                case "Form":
-                    SetRelation(true);
-                    break;
-                case "List":
                 default:
                     SetRelation(false);
                     break;
@@ -82,11 +83,8 @@ public class FieldCollection : List<DataField>
     {
         DataField df = Kind switch
         {
-            "AddForm" => new FormField(),
-            "EditForm" => new FormField(),
-            "Detail" => new FormField(),
-            "Form" => new FormField(),
-            "List" => new ListField(),
+            ViewKinds.List => new ListField(),
+            ViewKinds.Detail or ViewKinds.AddForm or ViewKinds.EditForm => new FormField(),
             _ => throw new NotImplementedException(),
         };
         //df.Sort = Count + 1;

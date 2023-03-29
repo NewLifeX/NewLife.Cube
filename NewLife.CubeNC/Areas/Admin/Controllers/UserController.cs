@@ -7,6 +7,8 @@ using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.ViewModels;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -88,53 +90,34 @@ public class UserController : EntityController<User, UserModel>
         }
     }
 
-    protected override FieldCollection OnGetFields(String kind, User entity)
+    protected override FieldCollection OnGetFields(ViewKinds kind, IModel model)
     {
-        switch (kind.ToLower())
-        {
-            case "addform":
-            case "editform":
-                {
-                    var CurrUser = ManageProvider.User;//理论上肯定大于0
-                    var RoleData = Role.FindAllWithCache().Where(w => w.IsSystem == false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-                    if (CurrUser != null)
-                    {
-                        if (CurrUser.Role.IsSystem)
-                        {
-                            RoleData = Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-                        }
-                    }
-                    if (kind.ToLower() == "addform")
-                    {
-                        var AddRoleIDField = AddFormFields.GetField("RoleID");
-                        if (AddRoleIDField != null)
-                        {
-                            AddRoleIDField.DataSource = entity => RoleData;
-                        }
-                        var AddRoleIDsField = AddFormFields.GetField("RoleIds");
-                        if (AddRoleIDsField != null)
-                        {
-                            AddRoleIDsField.DataSource = entity => RoleData;
-                        }
-                    }
-                    if (kind.ToLower() == "editform")
-                    {
-                        var EditRoleIDField = EditFormFields.GetField("RoleID");
-                        if (EditRoleIDField != null)
-                        {
-                            EditRoleIDField.DataSource = entity => RoleData;
-                        }
-                        var EditRoleIDsField = EditFormFields.GetField("RoleIds");
-                        if (EditRoleIDsField != null)
-                        {
-                            EditRoleIDsField.DataSource = entity => RoleData;
-                        }
-                    }
+        var fields = base.OnGetFields(kind, model);
+        if (fields == null) return fields;
 
-                    break;
-                }
+        var user = ManageProvider.User;//理论上肯定大于0
+        var roles = Role.FindAllWithCache().Where(w => w.IsSystem == false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        if (user != null)
+        {
+            if (user.Role.IsSystem)
+            {
+                roles = Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            }
         }
-        return base.OnGetFields(kind, entity);
+
+        switch (kind)
+        {
+            case ViewKinds.AddForm:
+            case ViewKinds.EditForm:
+                var df = fields.GetField("RoleID");
+                if (df != null) df.DataSource = entity => roles;
+
+                var df2 = fields.GetField("RoleIds");
+                if (df2 != null) df2.DataSource = entity => roles;
+                break;
+        }
+
+        return fields;
     }
 
     /// <summary>

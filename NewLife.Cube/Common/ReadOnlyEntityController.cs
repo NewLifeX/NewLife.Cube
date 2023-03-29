@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
+using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Web;
@@ -410,7 +411,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var list = SearchData(p);
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, OnFilter(list.Cast<IModel>(), "ListFields"), new { pager = p, stat = p.State });
+        if (IsJsonRequest) return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List), new { pager = p, stat = p.State });
 
         return Json(0, null, list, new { pager = p, stat = p.State });
     }
@@ -430,7 +431,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         Valid(entity, DataObjectMethodType.Select, false);
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, OnFilter(entity, "Detail"));
+        if (IsJsonRequest) return Json(0, null, OnFilter(entity, ViewKinds.Detail));
 
         return Json(0, null, entity);
     }
@@ -1203,7 +1204,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     #region 列表字段和表单字段
     private static FieldCollection _ListFields;
     /// <summary>列表字段过滤</summary>
-    protected static FieldCollection ListFields => _ListFields ??= new FieldCollection(Factory, "List");
+    protected static FieldCollection ListFields => _ListFields ??= new FieldCollection(Factory, ViewKinds.List);
 
     //private static FieldCollection _FormFields;
     ///// <summary>表单字段过滤</summary>
@@ -1212,31 +1213,30 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     private static FieldCollection _AddFormFields;
     /// <summary>表单字段过滤</summary>
-    protected static FieldCollection AddFormFields => _AddFormFields ??= new FieldCollection(Factory, "AddForm");
+    protected static FieldCollection AddFormFields => _AddFormFields ??= new FieldCollection(Factory, ViewKinds.AddForm);
 
     private static FieldCollection _EditFormFields;
     /// <summary>表单字段过滤</summary>
-    protected static FieldCollection EditFormFields => _EditFormFields ??= new FieldCollection(Factory, "EditForm");
+    protected static FieldCollection EditFormFields => _EditFormFields ??= new FieldCollection(Factory, ViewKinds.EditForm);
 
     private static FieldCollection _DetailFields;
     /// <summary>表单字段过滤</summary>
-    protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, "Detail");
+    protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, ViewKinds.Detail);
 
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
     /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="entity"></param>
+    /// <param name="model"></param>
     /// <returns></returns>
-    protected virtual FieldCollection OnGetFields(String kind, TEntity entity)
+    protected virtual FieldCollection OnGetFields(ViewKinds kind, IModel model)
     {
         var fields = kind switch
         {
-            "Detail" => DetailFields,
-            "EditForm" => EditFormFields,
-            "AddForm" => AddFormFields,
-            "List" => ListFields,
-            _ => ListFields
+            ViewKinds.List => ListFields,
+            ViewKinds.Detail => DetailFields,
+            ViewKinds.AddForm => AddFormFields,
+            ViewKinds.EditForm => EditFormFields,
+            _ => ListFields,
         };
-
         return fields.Clone();
     }
 
@@ -1244,11 +1244,10 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// 获取字段
     /// </summary>
     /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
-    public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
+    public virtual ActionResult GetFields(ViewKinds kind)
     {
         var fields = OnGetFields(kind, null);
 
@@ -1263,12 +1262,12 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="model"></param>
     /// <param name="kind"></param>
     /// <returns></returns>
-    protected virtual IDictionary<String, Object> OnFilter(IModel model, String kind)
+    protected virtual IDictionary<String, Object> OnFilter(IModel model, ViewKinds kind)
     {
         if (model == null) return null;
 
         var dic = new Dictionary<String, Object>();
-        var fields = OnGetFields(kind, null);
+        var fields = OnGetFields(kind, model);
         if (fields != null)
         {
             var names = Factory.FieldNames;
@@ -1288,13 +1287,13 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="models"></param>
     /// <param name="kind"></param>
     /// <returns></returns>
-    protected virtual IEnumerable<IDictionary<String, Object>> OnFilter(IEnumerable<IModel> models, String kind)
+    protected virtual IEnumerable<IDictionary<String, Object>> OnFilter(IEnumerable<IModel> models, ViewKinds kind)
     {
         if (models == null) yield break;
 
         foreach (var item in models)
         {
-            yield return OnFilter(item, null);
+            yield return OnFilter(item, kind);
         }
     }
     #endregion
