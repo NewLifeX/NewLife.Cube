@@ -11,6 +11,8 @@
     }
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
+
+    var tenant = Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
 }
 <!-- #section:basics/navbar.layout -->
 <div id="navbar" class="navbar navbar-default">
@@ -36,6 +38,12 @@
                 </small>
             </a>
         </div>
+        @if (tenant != null)
+        {
+            <div class="pull-left">
+                <h3>@tenant.Name</h3>
+            </div>
+        }
 
         <!-- #section:basics/navbar.dropdown -->
         <div class="navbar-buttons navbar-header pull-right" role="navigation">
@@ -64,14 +72,14 @@
                         </li>
 
                         @*@if (user.Has("Admin/Sys", PermissionFlags.Detail))
-                            {
-                                <li>
-                                    <a href="~/Admin/Sys" target="main">
-                                        <i class="ace-icon fa fa-cog"></i>
-                                        设置
-                                    </a>
-                                </li>
-                            }*@
+                        {
+                        <li>
+                        <a href="~/Admin/Sys" target="main">
+                        <i class="ace-icon fa fa-cog"></i>
+                        设置
+                        </a>
+                        </li>
+                        }*@
 
                         <li>
                             <a href="~/Admin/User/Info/@uid" target="main">

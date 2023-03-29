@@ -414,6 +414,26 @@ public static class ManagerProviderHelper
     }
     #endregion
 
+    /// <summary>改变选中的租户</summary>
+    /// <param name="context"></param>
+    /// <param name="tenantId"></param>
+    public static void ChangeTenant(HttpContext context, Int32 tenantId)
+    {
+        var res = context?.Response;
+        if (res == null) return;
+
+        var set = CubeSetting.Current;
+        var option = new CookieOptions
+        {
+            SameSite = (Microsoft.AspNetCore.Http.SameSiteMode)set.SameSiteMode
+        };
+        if (!set.CookieDomain.IsNullOrEmpty()) option.Domain = set.CookieDomain;
+
+        if (tenantId <= 0) option.Expires = DateTimeOffset.MinValue;
+
+        res.Cookies.Append("TenantId", tenantId + "", option);
+    }
+
     /// <summary>
     /// 添加管理提供者
     /// </summary>

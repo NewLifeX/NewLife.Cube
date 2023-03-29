@@ -6,7 +6,7 @@ namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>租户管理</summary>
 [Area("Admin")]
-[Menu(20, false)]
+[Menu(75, false)]
 public class TenantController : EntityController<Tenant>
 {
     static TenantController()
@@ -33,7 +33,7 @@ public class TenantController : EntityController<Tenant>
         }
 
         {
-            AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
+            AddFormFields.GroupVisible = (entity, group) => (entity as Tenant).Id == 0 && group != "扩展";
         }
     }
 

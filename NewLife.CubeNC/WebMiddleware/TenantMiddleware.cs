@@ -18,16 +18,31 @@ public class TenantMiddleware
     public async Task Invoke(HttpContext ctx)
     {
         // 找到租户，并设置上下文。该上下文将全局影响魔方和XCode
+        var changed = false;
         try
         {
-            TenantContext.Current = new TenantContext { TenantId = 0 };
+            if (TenantContext.Current == null)
+            {
+                var tenantId = ctx.Request.Cookies["TenantId"].ToInt(-1);
+                if (tenantId > 0)
+                {
+                    TenantContext.Current = new TenantContext { TenantId = tenantId };
+                    ManageProvider.Provider.Tenant = Tenant.FindById(tenantId);
+
+                    changed = true;
+                }
+            }
 
             await _next.Invoke(ctx);
         }
         finally
         {
-            TenantContext.Current = null;
+            if (changed)
+            {
+                TenantContext.Current = null;
 
+                ManageProvider.Provider.Tenant = null;
+            }
         }
     }
 }
