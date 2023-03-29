@@ -50,6 +50,10 @@
   <ItemGroup>
     <Compile Remove="Areas\Cube\Controllers\ModelColumnController.cs" />
     <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
+    <Compile Remove="Entity\模型列.Biz.cs" />
+    <Compile Remove="Entity\模型列.cs" />
+    <Compile Remove="Entity\模型表.Biz.cs" />
+    <Compile Remove="Entity\模型表.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
   </ItemGroup>
 
@@ -65,7 +69,6 @@
     <Compile Include="..\NewLife.CubeNC\ViewModels\DataField.cs" Link="ViewModels\DataField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ErrorModel.cs" Link="ViewModels\ErrorModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\FieldCollection.cs" Link="ViewModels\FieldCollection.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\FieldModel.cs" Link="ViewModels\FieldModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\FormField.cs" Link="ViewModels\FormField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ItemModel.cs" Link="ViewModels\ItemModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\IUrlExtend.cs" Link="ViewModels\IUrlExtend.cs" />

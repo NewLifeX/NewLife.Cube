@@ -76,10 +76,6 @@
     <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.cs" Link="Entity\应用系统.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\模型列.Biz.cs" Link="Entity\模型列.Biz.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\模型列.cs" Link="Entity\模型列.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\模型表.Biz.cs" Link="Entity\模型表.Biz.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\模型表.cs" Link="Entity\模型表.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs" Link="Entity\用户令牌.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.cs" Link="Entity\用户令牌.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户在线.Biz.cs" Link="Entity\用户在线.Biz.cs" />
@@ -130,9 +126,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Cube\Views\ModelTable\**" />
+    <Content Remove="Areas\Cube\Views\ModelTable\**" />
+    <EmbeddedResource Remove="Areas\Cube\Views\ModelTable\**" />
+    <None Remove="Areas\Cube\Views\ModelTable\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Areas\Cube\Controllers\ModelColumnController.cs" />
     <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
+    <Compile Remove="ViewModels\FieldModel.cs" />
   </ItemGroup>
 
   <ItemGroup>

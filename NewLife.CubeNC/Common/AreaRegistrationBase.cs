@@ -77,8 +77,8 @@ namespace NewLife.Cube
 
             // 初始化数据库
             _ = Menu.Meta.Count;
-            _ = ModelTable.Meta.Count;
-            _ = ModelColumn.Meta.Count;
+            //_ = ModelTable.Meta.Count;
+            //_ = ModelColumn.Meta.Count;
 
             //using var tran = (mf as IEntityFactory).Session.CreateTrans();
 

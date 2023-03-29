@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -127,7 +128,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         if (model is not TEntity entity)
         {
             entity = Factory.Create(true) as TEntity;
-          
+
             if (model is IModel src)
                 entity.CopyFrom(src, true);
             else
@@ -219,7 +220,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             Session[key] = Request.GetReferer();
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
+        if (IsJsonRequest) return Json(0, null, OnFilter(entity, ViewKinds.EditForm));
 
         ViewBag.Fields = EditFormFields;
 

@@ -73,8 +73,8 @@ public class AreaBase : AreaAttribute
 
         // 初始化数据库
         _ = Menu.Meta.Count;
-        _ = ModelTable.Meta.Count;
-        _ = ModelColumn.Meta.Count;
+        //_ = ModelTable.Meta.Count;
+        //_ = ModelColumn.Meta.Count;
 
         var menus = MenuHelper.ScanController(mf, areaName, areaType);
 
