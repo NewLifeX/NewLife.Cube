@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Web;
 using XCode;
@@ -110,16 +111,16 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
                 whereExpression &= masterTime.Between(start, end);
         }
 
-        // 根据模型列设置，拼接作为搜索字段的字段
-        var modelTable = ModelTable;
-        var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
+        //// 根据模型列设置，拼接作为搜索字段的字段
+        //var modelTable = ModelTable;
+        //var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
 
-        foreach (var col in modelCols)
-        {
-            var val = p[col.Name];
-            if (val.IsNullOrWhiteSpace()) continue;
-            whereExpression &= col.Field == val;
-        }
+        //foreach (var col in modelCols)
+        //{
+        //    var val = p[col.Name];
+        //    if (val.IsNullOrWhiteSpace()) continue;
+        //    whereExpression &= col.Field == val;
+        //}
 
         //添加映射字段查询
         foreach (var item in Entity<TEntity>.Meta.Factory.Fields)
@@ -409,7 +410,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var list = SearchData(p);
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p, stat = p.State });
+        if (IsJsonRequest) return Json(0, null, OnFilter(list.Cast<IModel>(), "ListFields"), new { pager = p, stat = p.State });
 
         return Json(0, null, list, new { pager = p, stat = p.State });
     }
@@ -429,7 +430,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         Valid(entity, DataObjectMethodType.Select, false);
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.详情));
+        if (IsJsonRequest) return Json(0, null, OnFilter(entity, "Detail"));
 
         return Json(0, null, entity);
     }
@@ -1251,127 +1252,50 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     {
         var fields = OnGetFields(kind, null);
 
-        //return Ok(data: fields);
-
         Object data = new { code = 0, data = fields };
 
-        //var writer = new JsonWriter
-        //{
-        //    Indented = false,
-        //    IgnoreNullValues = true,
-        //    CamelCase = true,
-        //    Int64AsString = true,
-        //};
-        //writer.Write(data);
-        //var json = writer.GetString();
-        //var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { IgnoreNullValues = true });
-
-        //return Content(json, "application/json", Encoding.UTF8);
         return new JsonResult(data);
-    }
-
-    ///// <summary>获取所有表</summary>
-    ///// <returns></returns>
-    //[EntityAuthorize]
-    //[HttpGet]
-    //public virtual ActionResult GetTables()
-    //{
-    //    var tables = ModelTable.GetValids();
-    //    return Ok(data: tables);
-    //}
-
-    ///// <summary>获取当前表所有列</summary>
-    ///// <param name="formatType">Name的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
-    ///// <returns></returns>
-    //[EntityAuthorize]
-    //[HttpGet]
-    //public virtual ActionResult GetColumns(FormatType formatType = FormatType.CamelCase)
-    //{
-    //    var tables = ModelTable.GetValids();
-    //    var ctrl = GetType().FullName;
-    //    var table = tables.FirstOrDefault(e => e.Controller == ctrl);
-    //    if (table == null) return Json(500, $"无法找到当前控制器[{ctrl}]的模型表信息");
-
-    //    var columns = ModelColumn.FindAllByTableId(table.Id);
-    //    columns = columns.Where(e => e.Enable).OrderBy(e => e.Sort).ToArray();
-
-    //    foreach (var item in columns)
-    //    {
-    //        item.Name = item.Name.FormatName(formatType);
-    //    }
-
-    //    return Ok(data: columns);
-    //}
-    #endregion
-
-    #region 权限菜单
-    /// <summary>控制器对应菜单</summary>
-    protected static IMenu ThisMenu { get; set; }
-
-    /// <summary>
-    /// 模型表设置，生成模型表数据之后调用
-    /// </summary>
-    protected static Func<ModelTable, ModelTable> ModelTableSetting { get; set; } = table => table;
-
-    /// <summary>控制器对应模型表</summary>
-    protected static ModelTable ModelTable
-    {
-        get
-        {
-            var menu = ThisMenu;
-            var pmenu = menu?.Parent;
-            return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name);
-            //return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name) ??
-            //    ModelTableSetting(ModelTable.ScanModel(pmenu?.Name, menu?.Name, menu?.FullName, menu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
-        }
     }
 
     /// <summary>
     /// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
     /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="showInForm"></param>
+    /// <param name="model"></param>
+    /// <param name="kind"></param>
     /// <returns></returns>
-    protected virtual TEntity EntityFilter(TEntity entity, ShowInForm showInForm)
+    protected virtual IDictionary<String, Object> OnFilter(IModel model, String kind)
     {
-        if (entity == null) return null;
-        var modelTable = ModelTable;
+        if (model == null) return null;
 
-        var modelColumns = modelTable?.GetColumns()?.Where(w => !w.ShowInForm.HasFlag(showInForm));
-
-        if (modelColumns == null) return entity;
-
-        foreach (var column in modelColumns)
+        var dic = new Dictionary<String, Object>();
+        var fields = OnGetFields(kind, null);
+        if (fields != null)
         {
-            if (entity[column.Name] != null) entity[column.Name] = null;
+            var names = Factory.FieldNames;
+            foreach (var field in fields)
+            {
+                if (!field.Name.IsNullOrEmpty() && names.Contains(field.Name))
+                    dic[field.Name] = model[field.Name];
+            }
         }
 
-        return entity;
+        return dic;
     }
 
     /// <summary>
     /// 实体列表过滤器，根据模型列的列表页显示类型，不显示的字段去掉
     /// </summary>
-    /// <param name="entities"></param>
+    /// <param name="models"></param>
+    /// <param name="kind"></param>
     /// <returns></returns>
-    protected virtual IEnumerable<TEntity> EntitiesFilter(IEnumerable<TEntity> entities)
+    protected virtual IEnumerable<IDictionary<String, Object>> OnFilter(IEnumerable<IModel> models, String kind)
     {
-        if (entities == null) return null;
-        var modelTable = ModelTable;
-        // 不显示的列
-        var modelColumns = modelTable?.GetColumns()?.Where(w => !w.ShowInList).ToList();
+        if (models == null) yield break;
 
-        if (modelColumns == null) return entities;
-
-        foreach (var entity in entities)
+        foreach (var item in models)
         {
-            foreach (var column in modelColumns.Where(column => entity[column.Name] != null))
-            {
-                entity[column.Name] = null;
-            }
+            yield return OnFilter(item, null);
         }
-
-        return entities;
     }
     #endregion
 }

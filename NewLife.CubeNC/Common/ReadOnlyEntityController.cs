@@ -495,53 +495,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             throw;
         }
     }
-
-    /// <summary>
-    /// 获取字段
-    /// </summary>
-    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
-    /// <returns></returns>
-    [EntityAuthorize]
-    [Obsolete("使用GetFields")]
-    public virtual ActionResult GetEntityFields(String kind, FormatType formatType = FormatType.CamelCase)
-    {
-        var fields = kind switch
-        {
-            "Detail" => DetailFields,
-            "EditForm" => EditFormFields,
-            "AddForm" => AddFormFields,
-            "List" => ListFields,
-            _ => ListFields
-        };
-
-        var data = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.TypeStr = s.Type.Name;
-
-            return fm;
-        }).ToList();
-
-        var customs = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.IsCustom = true;
-
-            return fm;
-        }).ToList();
-
-        data.AddRange(customs);
-
-        return Ok(data: data);
-    }
-
     #endregion
 
     #region 数据接口
@@ -1330,82 +1283,18 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
     /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
     /// <returns></returns>
-    [EntityAuthorize]
+    [AllowAnonymous]
     public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
     {
-        var fields = kind switch
-        {
-            "Detail" => DetailFields,
-            "EditForm" => EditFormFields,
-            "AddForm" => AddFormFields,
-            "List" => ListFields,
-            _ => ListFields
-        };
+        var fields = OnGetFields(kind, null);
 
-        var data = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
+        Object data = new { code = 0, data = fields };
 
-            fm.Copy(s);
-
-            fm.TypeStr = s.Type.Name;
-
-            return fm;
-        }).ToList();
-
-        var customs = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.IsCustom = true;
-
-            return fm;
-        }).ToList();
-
-        data.AddRange(customs);
-
-        return Ok(data: data);
-    }
-
-    /// <summary>获取所有表</summary>
-    /// <returns></returns>
-    [EntityAuthorize]
-    public virtual ActionResult GetTables()
-    {
-        var tables = ModelTable.GetValids();
-        return Ok(data: tables);
-    }
-
-    /// <summary>获取当前表所有列</summary>
-    /// <param name="formatType">Name的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
-    /// <returns></returns>
-    [EntityAuthorize]
-    public virtual ActionResult GetColumns(FormatType formatType = FormatType.CamelCase)
-    {
-        var tables = ModelTable.GetValids();
-        var ctrl = GetType().FullName;
-        var table = tables.FirstOrDefault(e => e.Controller == ctrl);
-        if (table == null) return Json(500, $"无法找到当前控制器[{ctrl}]的模型表信息");
-
-        var columns = ModelColumn.FindAllByTableId(table.Id);
-        columns = columns.Where(e => e.Enable).OrderBy(e => e.Sort).ToArray();
-
-        foreach (var item in columns)
-        {
-            item.Name = item.Name.FormatName(formatType);
-        }
-
-        return Ok(data: columns);
+        return new JsonResult(data);
     }
     #endregion
 
     #region 权限菜单
-    /// <summary>菜单顺序。扫描时会反射读取</summary>
-    [Obsolete("=>MenuAttribute")]
-    protected static Int32 MenuOrder { get; set; }
-
     /// <summary>控制器对应菜单</summary>
     protected static IMenu ThisMenu { get; set; }
 

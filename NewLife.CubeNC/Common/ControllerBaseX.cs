@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
 using NewLife.Remoting;
@@ -96,14 +95,6 @@ public class ControllerBaseX : Controller
     /// <param name="key"></param>
     /// <returns></returns>
     protected virtual String GetRequest(String key) => Request.GetRequestValue(key);
-    #endregion
-
-    #region 权限菜单
-    /// <summary>获取可用于生成权限菜单的Action集合</summary>
-    /// <param name="menu">该控制器所在菜单</param>
-    /// <returns></returns>
-    [Obsolete("=>MenuAttribute")]
-    protected virtual IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu) => new Dictionary<MethodInfo, Int32>();
     #endregion
 
     #region Ajax处理
