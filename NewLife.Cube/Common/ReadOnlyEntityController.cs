@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Web;
 using XCode;

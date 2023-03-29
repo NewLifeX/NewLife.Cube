@@ -22,7 +22,7 @@ namespace NewLife.Cube.Admin.Controllers;
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [Area("Admin")]
 [Menu(100, true, Icon = "fa-user")]
-public class UserController : EntityController<User>
+public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
