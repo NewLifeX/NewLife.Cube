@@ -28,7 +28,7 @@ XCode教程：<https://newlifex.com/xcode>
 
 Vue版：https://vue.newlifex.com  
 Antd版：https://antd.newlifex.com  
-Swagger：http://sh03.newlifex.com:3880/swagger/index.html  
+Swagger：https://cube3.newlifex.com/swagger/index.html  
 
 #### 项目参与须知
 
@@ -37,6 +37,7 @@ Swagger：http://sh03.newlifex.com:3880/swagger/index.html
 3. 欢迎增加更多的前端项目，每一种前端新建独立代码库，如`Antd`则新建 `NewLife.CubeAntd`。  
 4. 大家在文档或代码处，标注负责人。  
 5. 源码库使用github，以及新生命团队糖果库（可申请权限）
+6. 项目待办任务管理 https://github.com/orgs/NewLifeX/projects/1 。  
 
 #### 目标蓝图
 
@@ -44,7 +45,7 @@ Swagger：http://sh03.newlifex.com:3880/swagger/index.html
 
 1. 重构为现代化用户界面，保留魔方默认视图以及视图定制的思想，让下游项目在迁移到第三代魔方时，尽可能少修改代码
 2. 前后端分离技术，支持`Vue/React/Angular/Blazor`等主流前端框架
-3. 魔方理念和用法保持不变，新建WebApi项目后从Nuget引入NewLife.Cube，加入模型生成实体类和Controller即可得到默认皮肤的界面，需要定制时才写前端代码
+3. 魔方理念和用法保持不变，新建WebApi项目后从Nuget引入`NewLife.Cube`，加入模型生成实体类和Controller即可得到默认皮肤的界面，需要定制时才写前端代码
 4. 增强移动端支持，混合式手机APP、小程序
 5. 增强支持数据大屏
 
@@ -56,8 +57,8 @@ Swagger：http://sh03.newlifex.com:3880/swagger/index.html
 2. [*] 专属于NetCore版的代码，转移到 `NewLife.CubeNC` 目录，尽量保留代码提交历史，方便将来查找
 3. [*] 设计全新的 `EntityController`和`EntityReadonlyController`，只为前端提供接口
 4. [*] 编写接口文档
-5. [] 设计vue版主页（框架页），前端项目是 `NewLife.CubeVue`，vue项目调用后端 `CubeDemo`
-6. [] 设计vue版登录页
+5. [*] 设计vue版主页（框架页），前端项目是 `NewLife.CubeVue`，vue项目调用后端 `CubeDemo`
+6. [*] 设计vue版登录页
 7. [] 设计vue版用户列表页和表单页
 8. [] 设计vue版角色列表页和表单页
 
@@ -69,8 +70,8 @@ http://git.newlifex.com/NewLife/NewLife.CubeVue
 
 支持vue之外的前端框架，不限于3月份完成。  
 
-1. [] 新增Blazor，项目 NewLife.CubeBlazor。 @张善友 @张炳彬
-2. [] 新建AntDesign，项目 NewLife.CubeAntd。 @Van
+1. [*] 新增Blazor，项目 NewLife.CubeBlazor。 @张善友 @张炳彬
+2. [*] 新建AntDesign，项目 NewLife.CubeAntd。 @Van
 
 Antd版前端代码库：  
 https://github.com/NewLifeX/NewLife.CubeAntd
@@ -81,17 +82,18 @@ https://github.com/NewLifeX/NewLife.CubeBlazor
 http://git.newlifex.com/NewLife/NewLife.CubeBlazor
 
 ### WebApi接口说明
-1. 接口地址 http://sh03.newlifex.com:3880/swagger/index.html
-2. 登录地址 /Admin/User/Login ， 测试账号 admin/admin，test/test
+1. 接口地址 https://cube3.newlifex.com/swagger/index.html
+2. 登录地址 `/Admin/User/Login` ， 测试账号 `admin/admin`，`test/test`
 3. JWT令牌传递方式：请求头 Authentication（推荐）、Cookie、Url参数token
-4. 每个控制器，都有一个 GetFields 接口，获取可用于展示的字段信息，如 http://sh03.newlifex.com:3880/Cube/App/GetFields?kind=List，kind参数可选List/Detail/AddForm/EditForm
-5. 控制器主路由对应列表页数据获取接口，调用各控制器的Search查找数据，由于查询参数多变，接口入参没有固定模型，而是直接从请求字符串中获取参数。如 http://sh03.newlifex.com:3880/Cube/Area?parentid=0&pageSize=7
-6. 列表页接口，返回数据中pager为分页信息
-7. 列表页接口，返回数据中state为统计行，如用户统计 http://sh03.newlifex.com:3880/Admin/UserStat
-8. 详情接口 Detail，参数id固定为主键查询，如 http://sh03.newlifex.com:3880/Cube/Area?id=450921
-9. 新增接口 Add，Post需要新增的实体对象
-10. 修改接口 Edit，Post需要修改的实体对象，务必带有主键
-11. 删除接口 Delete，Get删除参数id指定的数据
+4. 首页框架获取菜单 `/Admin/Index/GetMenuTree`
+5. 每个控制器，都有一个 `/{Area}/{Controller}/GetFields` 接口，获取可用于展示的字段信息，如 https://cube3.newlifex.com/Cube/App/GetFields?kind=1，kind参数可选List/Detail/AddForm/EditForm
+6. 控制器主路由对应列表页数据获取接口，调用各控制器的Search查找数据，由于查询参数多变，接口入参没有固定模型，而是直接从请求字符串中获取参数。如 https://cube3.newlifex.com/Cube/Area?parentid=0&pageSize=7
+7. 列表页接口，返回数据中pager为分页信息
+8. 列表页接口，返回数据中state为统计行，如用户统计 https://cube3.newlifex.com/Admin/UserStat
+9. 详情接口 `/{Area}/{Controller}/Detail`，参数id固定为主键查询，如 https://cube3.newlifex.com/Cube/Area?id=450921
+10. 新增接口 `/{Area}/{Controller}/Add`，Post需要新增的实体对象
+11. 修改接口 `/{Area}/{Controller}/Edit`，Post需要修改的实体对象，务必带有主键
+12. 删除接口 `/{Area}/{Controller}/Delete`，Get删除参数id指定的数据
 
 
 ---
