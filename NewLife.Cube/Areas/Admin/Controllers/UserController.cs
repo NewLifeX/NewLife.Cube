@@ -7,6 +7,7 @@ using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -207,73 +208,6 @@ public class UserController : EntityController<User>
     }
 
     #region 登录注销
-    /// <summary>登录</summary>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public ActionResult Login()
-    {
-        var returnUrl = GetRequest("r");
-        if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
-
-        // 如果已登录，直接跳转
-        if (ManageProvider.User != null)
-        {
-            if (Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-            else
-                return RedirectToAction("Index", "Index", new { page = returnUrl });
-        }
-
-        // 是否已完成第三方登录
-        var logId = Session["Cube_OAuthId"].ToLong();
-
-        // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-        var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
-        if (ms != null && !CubeSetting.Current.AllowLogin)
-        {
-            if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
-            if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
-
-            // 只有一个，跳转
-            if (ms.Count == 1)
-            {
-                var url = $"~/Sso/Login?name={ms[0].Name}";
-                if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
-
-                return Redirect(url);
-            }
-        }
-
-        // 部分提供支持应用内免登录，直接跳转
-        if (ms != null && ms.Count > 0 && logId == 0 && GetRequest("autologin") != "0")
-        {
-            var agent = Request.Headers["User-Agent"] + "";
-            if (!agent.IsNullOrEmpty())
-            {
-                foreach (var item in ms)
-                {
-                    var client = OAuthClient.Create(item.Name);
-                    if (client != null && client.Support(agent))
-                    {
-                        var url = $"~/Sso/Login?name={item.Name}";
-                        if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
-
-                        return Redirect(url);
-                    }
-                }
-            }
-        }
-
-        //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
-        //ViewBag.ReturnUrl = returnUrl;
-
-        var model = GetViewModel(returnUrl);
-        model.OAuthItems = ms.Where(e => e.Visible).ToList();
-
-        return Json(0, null, model);
-    }
-
     private LoginViewModel GetViewModel(String returnUrl)
     {
         var set = CubeSetting.Current;
@@ -415,52 +349,10 @@ public class UserController : EntityController<User>
     }
     #endregion
 
-    /// <summary>获取用户资料</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    //[AllowAnonymous]
-    [EntityAuthorize]
-    [HttpGet]
-    public ActionResult Info(Int32 id)
-    {
-        //if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
-
-        var user = ManageProvider.User as XCode.Membership.User;
-        if (user == null) return RedirectToAction("Login");
-
-        if (id > 0 && id != user.ID) throw new Exception("禁止查看非当前登录用户资料");
-
-        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
-        if (user == null) throw new Exception("无效用户编号！");
-
-        //user.Password = null;
-        user["Password"] = null;
-
-        if (IsJsonRequest)
-        {
-            var userInfo = new UserInfo();
-            userInfo.Copy(user);
-            userInfo.SetPermission(user.Roles);
-            userInfo.SetRoleNames(user.Roles);
-
-            return Json(0, "ok", userInfo);
-        }
-
-        //// 用于显示的列
-        //if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
-        //ViewBag.Factory = XCode.Membership.User.Meta.Factory;
-
-        //// 必须指定视图名，因为其它action会调用
-        //return View("Info", user);
-
-        return Json(0, null, user);
-    }
-
     /// <summary>更新用户资料</summary>
     /// <param name="user"></param>
     /// <returns></returns>
     [HttpPost]
-    //[AllowAnonymous]
     [EntityAuthorize]
     public async Task<ActionResult> Info(User user)
     {
@@ -485,7 +377,7 @@ public class UserController : EntityController<User>
 
         user.Update();
 
-        return Info(user.ID);
+        return Json(0, null, OnFilter(user, ViewKinds.EditForm));
     }
 
     /// <summary>保存文件</summary>
@@ -501,26 +393,6 @@ public class UserController : EntityController<User>
         if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
 
         return base.SaveFile(entity, file, set.AvatarPath, fileName);
-    }
-
-    /// <summary>修改密码</summary>
-    /// <returns></returns>
-    //[AllowAnonymous]
-    [EntityAuthorize]
-    [HttpGet]
-    public ActionResult ChangePassword()
-    {
-        var user = ManageProvider.User as XCode.Membership.User;
-        if (user == null) return RedirectToAction("Login");
-
-        var name = Session["Cube_Sso"] as String;
-        var model = new ChangePasswordModel
-        {
-            Name = user.Name,
-            SsoName = name,
-        };
-
-        return Json(0, null, model);
     }
 
     /// <summary>修改密码</summary>
