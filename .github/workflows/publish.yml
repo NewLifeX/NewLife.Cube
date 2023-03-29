@@ -22,13 +22,14 @@ jobs:
         dotnet build -c Release --version-suffix ${{ env.VERSION }}
     - name: Pack
       run: |
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube/NewLife.Cube.csproj
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.CubeNC/NewLife.CubeNC.csproj
-        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.AdminLTE/NewLife.Cube.AdminLTE.csproj
-        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.ElementUI/NewLife.Cube.ElementUI.csproj
-        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.LayuiAdmin/NewLife.Cube.LayuiAdmin.csproj
+        #dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.AdminLTE/NewLife.Cube.AdminLTE.csproj
+        #dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.ElementUI/NewLife.Cube.ElementUI.csproj
+        #dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.LayuiAdmin/NewLife.Cube.LayuiAdmin.csproj
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Metronic/NewLife.Cube.Metronic.csproj
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Metronic8/NewLife.Cube.Metronic8.csproj
-        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Tabler/NewLife.Cube.Tabler.csproj
+        #dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Tabler/NewLife.Cube.Tabler.csproj
 
     - name: Publish
       run: |
