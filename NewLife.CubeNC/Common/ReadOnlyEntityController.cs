@@ -224,26 +224,50 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     protected virtual WhereBuilder CreateWhere()
     {
+        var exp = "";
         var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
-        if (att == null) return null;
+        if (att != null)
+        {
+            // 已登录用户判断系统角色，未登录时不判断
+            var user = HttpContext.Items["CurrentUser"] as IUser;
+            user ??= ManageProvider.User;
+            if (user == null || !user.Roles.Any(e => e.IsSystem) && !att.Valid(user.Roles))
+                exp = att.Expression;
+        }
 
-        // 已登录用户判断系统角色，未登录时不判断
-        var user = HttpContext.Items["CurrentUser"] as IUser;
-        user ??= ManageProvider.User;
-        if (user != null && (user.Roles.Any(e => e.IsSystem) || att.Valid(user.Roles))) return null;
+        // 多租户
+        var ctxTenant = TenantContext.Current;
+        if (ctxTenant != null && IsTenantSource)
+        {
+            var tenant = Tenant.FindById(ctxTenant.TenantId);
+            if (tenant != null)
+            {
+                HttpContext.Items["TenantId"] = tenant.Id;
+
+                if (!exp.IsNullOrEmpty())
+                    exp = "TenantId={#TenantId} and " + exp;
+                else
+                    exp = "TenantId={#TenantId}";
+            }
+        }
+
+        if (exp.IsNullOrEmpty()) return null;
 
         var builder = new WhereBuilder
         {
             Factory = Factory,
-            Expression = att.Expression,
+            Expression = exp,
             //Data = Session,
         };
         builder.SetData(Session);
         //builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
-        builder.Data2 = HttpContext.Items.ToDictionary(e => e.Key + "", e => e.Value);
+        builder.SetData2(HttpContext.Items.ToDictionary(e => e.Key + "", e => e.Value));
 
         return builder;
     }
+
+    /// <summary>是否租户实体类</summary>
+    protected Boolean IsTenantSource => typeof(TEntity).GetInterfaces().Any(e => e == typeof(ITenantSource));
 
     /// <summary>获取选中键</summary>
     /// <returns></returns>
@@ -1165,7 +1189,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_Form_Body.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-        
+
         _ = ViewHelper.MakeFormView(typeof(TEntity), vpath, EditFormFields);
 
         WriteLog("生成表单", true, vpath);
@@ -1188,7 +1212,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Search.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-        
+
         _ = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
 
         WriteLog("生成搜索", true, vpath);
