@@ -40,9 +40,17 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
+    <Compile Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
     <Compile Remove="wwwroot\assets\logo\**" />
+    <Content Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
+    <Content Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
     <Content Remove="wwwroot\assets\logo\**" />
+    <EmbeddedResource Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
+    <EmbeddedResource Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
     <EmbeddedResource Remove="wwwroot\assets\logo\**" />
+    <None Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
+    <None Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
     <None Remove="wwwroot\assets\logo\**" />
   </ItemGroup>
 

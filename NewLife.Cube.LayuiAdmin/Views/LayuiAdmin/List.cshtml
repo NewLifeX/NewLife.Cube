@@ -18,8 +18,8 @@
     var fields = ViewBag.Fields as FieldCollection;
     var ukey = fact.Unique;
 
-    var modelTable = ViewBag.ModelTable as ModelTable;
-    var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
+    //var modelTable = ViewBag.ModelTable as ModelTable;
+    //var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
 
 
     var act = Context.Request.Path + "";
@@ -58,7 +58,7 @@
                                     var name = df?.Header ?? item.DisplayName;
                                     var title = df?.HeaderTitle ?? item.Description;
                                     //高级筛选使用
-                                    var isfilter = modelCols.Exists(a => a.Name == item.Name);
+                                    var isfilter = fields.Exists(a => a.Name == item.Name);
 
                                     if (item.Type == typeof(DateTime))
                                     {
