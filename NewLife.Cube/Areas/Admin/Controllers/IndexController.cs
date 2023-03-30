@@ -33,7 +33,7 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     //[EntityAuthorize(PermissionFlags.Detail)]
     [AllowAnonymous]
-    [HttpGet]
+    [HttpGet("/[area]/[controller]")]
     public ActionResult Index()
     {
         var user = ManageProvider.Provider.TryLogin(HttpContext);

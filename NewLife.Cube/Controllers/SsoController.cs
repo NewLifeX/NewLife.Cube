@@ -64,12 +64,6 @@ public class SsoController : ControllerBaseX
         };
     }
 
-    /// <summary>首页</summary>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public virtual ActionResult Index() => Redirect("~/");
-
     #region 单点登录客户端
     private String GetUserAgent() => Request.Headers["User-Agent"] + "";
 

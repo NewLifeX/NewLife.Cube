@@ -18,7 +18,7 @@ public class DbController : ControllerBaseX
     /// <summary>数据库列表</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpGet]
+    [HttpGet("/[area]/[controller]")]
     public ActionResult Index()
     {
         var list = new List<DbItem>();
