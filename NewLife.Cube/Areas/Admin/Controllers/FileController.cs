@@ -1,13 +1,15 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using NewLife;
+using NewLife.Cube.Admin;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>文件管理</summary>
 [DisplayName("文件")]
 [EntityAuthorize(PermissionFlags.Detail)]
-[Area("Admin")]
+[AdminArea]
 [Menu(28, false, Icon = "fa-file")]
 public class FileController : ControllerBaseX
 {
@@ -124,17 +126,13 @@ public class FileController : ControllerBaseX
         // 在开头插入上一级目录
         var root = Root.TrimEnd(Path.DirectorySeparatorChar);
         if (!di.FullName.EqualIgnoreCase(Root, root))
-        {
             if (di.Parent != null)
-            {
                 list.Insert(0, new FileItem
                 {
                     Name = "../",
                     Directory = true,
                     FullName = GetFullName(di.Parent.FullName)
                 });
-            }
-        }
 
         //// 剪切板
         //ViewBag.Clip = GetClip();

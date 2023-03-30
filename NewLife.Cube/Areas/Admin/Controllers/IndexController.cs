@@ -7,10 +7,10 @@ using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>首页</summary>
-[Area("Admin")]
+[AdminArea]
 [DisplayName("首页")]
 public class IndexController : ControllerBaseX
 {
@@ -149,13 +149,10 @@ public class IndexController : ControllerBaseX
         var fact = ManageProvider.Menu;
         var menus = fact.Root.Childs;
         if (user?.Role != null)
-        {
             menus = fact.GetMySubMenus(fact.Root.ID, user, true);
-        }
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
-        if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
-
+        if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) menus = menus[0].Childs; 
         var menuTree = MenuTree.GetMenuTree(pMenuTree =>
         {
             var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);

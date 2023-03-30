@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NewLife.Web;
+﻿using NewLife.Web;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>租户关系</summary>
-[Area("Admin")]
+[AdminArea]
 [Menu(10, false)]
 public class TenantUserController : EntityController<TenantUser>
 {

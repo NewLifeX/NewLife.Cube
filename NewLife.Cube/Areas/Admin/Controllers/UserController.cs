@@ -9,19 +9,18 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
-using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
 using static XCode.Membership.User;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
 [DataPermission(null, "ID={#userId}")]
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
-[Area("Admin")]
+[AdminArea]
 [Menu(100, true, Icon = "fa-user")]
 public class UserController : EntityController<User>
 {
@@ -145,22 +144,16 @@ public class UserController : EntityController<User>
             var rs = areaIds.ToList();
             var r = Area.FindByID(areaIds[areaIds.Length - 1]);
             if (r != null)
-            {
                 // 城市，要下一级
                 if (r.Level == 2)
-                {
                     rs.AddRange(r.Childs.Select(e => e.ID));
-                }
                 // 省份，要下面两级
                 else if (r.Level == 1)
                 {
                     rs.AddRange(r.Childs.Select(e => e.ID));
                     foreach (var item in r.Childs)
-                    {
                         rs.AddRange(item.Childs.Select(e => e.ID));
-                    }
                 }
-            }
             areaIds = rs.ToArray();
         }
 
@@ -169,9 +162,7 @@ public class UserController : EntityController<User>
         var list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
 
         foreach (var user in list2)
-        {
             user.Password = null;
-        }
 
         return list2;
     }
@@ -184,22 +175,18 @@ public class UserController : EntityController<User>
     protected override Boolean Valid(User entity, DataObjectMethodType type, Boolean post)
     {
         if (!post && type == DataObjectMethodType.Update)
-        {
             // 清空密码，不向浏览器输出
             //entity.Password = null;
             entity["Password"] = null;
-        }
 
         if (post && type == DataObjectMethodType.Update)
         {
             var ds = (entity as IEntity).Dirtys;
             if (ds["Password"])
-            {
                 if (entity.Password.IsNullOrEmpty())
                     ds["Password"] = false;
                 else
                     entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
-            }
 
             if (!entity.RoleIds.IsNullOrEmpty()) entity.RoleIds = entity.RoleIds == "-1" ? null : entity.RoleIds.Replace(",-1,", ",");
         }
@@ -437,7 +424,7 @@ public class UserController : EntityController<User>
     [HttpGet]
     public ActionResult Binds()
     {
-        var user = ManageProvider.User as XCode.Membership.User;
+        var user = ManageProvider.User as User;
         if (user == null) return RedirectToAction("Login");
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);

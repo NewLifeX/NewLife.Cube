@@ -1,24 +1,22 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>系统设置控制器</summary>
 [DisplayName("魔方设置")]
-[Area("Admin")]
+[AdminArea]
 [Menu(30, true, Icon = "fa-wrench")]
 public class CubeController : ConfigController<CubeSetting>
 {
-    private Boolean _has;
-    private readonly UIService _uIService;
+    //private Boolean _has;
+    //private readonly UIService _uIService;
 
-    /// <summary>实例化</summary>
-    /// <param name="uIService"></param>
-    public CubeController(UIService uIService) => _uIService = uIService;
+    ///// <summary>实例化</summary>
+    ///// <param name="uIService"></param>
+    //public CubeController(UIService uIService) => _uIService = uIService;
 
     ///// <summary>执行前</summary>
     ///// <param name="filterContext"></param>
