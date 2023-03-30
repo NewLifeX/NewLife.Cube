@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -422,7 +423,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("查看{type}")]
     [HttpGet]
-    public virtual ActionResult Detail(String id)
+    public virtual ActionResult Detail([Required] String id)
     {
         var entity = FindData(id);
         if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);

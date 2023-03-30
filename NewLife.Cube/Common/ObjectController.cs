@@ -80,7 +80,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //[HttpPost]
     //[DisplayName("修改")]
     [EntityAuthorize(PermissionFlags.Update)]
-    [HttpPost]
+    [HttpPut("/[area]/[controller]")]
     public virtual ActionResult Update(TObject obj)
     {
         WriteLog(obj, UserHost);

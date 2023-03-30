@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Data;
@@ -33,8 +34,8 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除{type}")]
-    [HttpGet]
-    public virtual ActionResult Delete(String id)
+    [HttpDelete("/[area]/[controller]")]
+    public virtual ActionResult Delete([Required] String id)
     {
         var url = Request.GetReferer();
 
@@ -64,53 +65,12 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
     }
 
-    ///// <summary>表单，添加/修改</summary>
-    ///// <returns></returns>
-    //[EntityAuthorize(PermissionFlags.Insert)]
-    //[DisplayName("添加{type}")]
-    //[HttpGet]
-    //public virtual ActionResult Add()
-    //{
-    //    var entity = Factory.Create(true) as TEntity;
-
-    //    // 填充QueryString参数
-    //    var qs = Request.Query;
-    //    foreach (var item in Entity<TEntity>.Meta.Fields)
-    //    {
-    //        var v = qs[item.Name];
-    //        if (v.Count > 0) entity[item.Name] = v[0];
-    //    }
-
-    //    // 验证数据权限
-    //    Valid(entity, DataObjectMethodType.Insert, false);
-
-    //    // 记下添加前的来源页，待会添加成功以后跳转
-    //    // 如果列表页有查询条件，优先使用
-    //    var key = $"Cube_Add_{typeof(TEntity).FullName}";
-    //    if (Session[CacheKey] is Pager p)
-    //    {
-    //        var sb = p.GetBaseUrl(true, true, true);
-    //        if (sb.Length > 0)
-    //            Session[key] = "Index?" + sb;
-    //        else
-    //            Session[key] = Request.GetReferer();
-    //    }
-    //    else
-    //        Session[key] = Request.GetReferer();
-
-    //    //// 用于显示的列
-    //    //ViewBag.Fields = AddFormFields;
-
-    //    //return View("AddForm", entity);
-    //    return Json(0, null, entity);
-    //}
-
     /// <summary>保存</summary>
     /// <param name="model"></param>
     /// <returns></returns>
     [DisplayName("添加{type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
-    [HttpPost]
+    [HttpPost("/[area]/[controller]")]
     public virtual async Task<ActionResult> Insert(TModel model)
     {
         // 实例化实体对象，然后拷贝
@@ -170,46 +130,15 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
 
         msg = "添加成功！";
 
-        return Json(0, msg);
+        return Json(0, msg, entity);
     }
-
-    ///// <summary>表单，添加/修改</summary>
-    ///// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
-    ///// <returns></returns>
-    //[EntityAuthorize(PermissionFlags.Update)]
-    //[DisplayName("更新{type}")]
-    //[HttpGet]
-    //public virtual ActionResult Edit(String id)
-    //{
-    //    var entity = FindData(id);
-    //    if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要编辑的数据[{0}]不存在！", id);
-
-    //    // 验证数据权限
-    //    Valid(entity, DataObjectMethodType.Update, false);
-
-    //    // 如果列表页有查询条件，优先使用
-    //    var key = $"Cube_Edit_{typeof(TEntity).FullName}-{id}";
-    //    if (Session[CacheKey] is Pager p)
-    //    {
-    //        var sb = p.GetBaseUrl(true, true, true);
-    //        if (sb.Length > 0)
-    //            Session[key] = "../Index?" + sb;
-    //        else
-    //            Session[key] = Request.GetReferer();
-    //    }
-    //    else
-    //        Session[key] = Request.GetReferer();
-
-    //    // Json输出
-    //    return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
-    //}
 
     /// <summary>保存</summary>
     /// <param name="model"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("更新{type}")]
-    [HttpPost]
+    [HttpPut("/[area]/[controller]")]
     public virtual async Task<ActionResult> Update(TModel model)
     {
         // 实例化实体对象，然后拷贝
@@ -264,7 +193,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         {
             msg = "保存成功！";
 
-            return Json(0, msg);
+            return Json(0, msg, entity);
         }
     }
 
