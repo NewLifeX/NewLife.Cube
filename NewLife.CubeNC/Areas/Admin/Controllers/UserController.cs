@@ -516,7 +516,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 用于显示的列
         if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
-        ViewBag.Factory = XCode.Membership.User.Meta.Factory;
+        ViewBag.Factory = Factory;
 
         // 必须指定视图名，因为其它action会调用
         return View("Info", user);

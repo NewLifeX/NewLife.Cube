@@ -120,7 +120,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var whereExpression = Entity<TEntity>.SearchWhereByKeys(key);
         if (start > DateTime.MinValue || end > DateTime.MinValue)
         {
-            var masterTime = Entity<TEntity>.Meta.Factory.MasterTime;
+            var masterTime = Factory.MasterTime;
             if (masterTime != null)
                 whereExpression &= masterTime.Between(start, end);
         }
@@ -137,7 +137,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         //}
 
         //添加映射字段查询
-        foreach (var item in Entity<TEntity>.Meta.Factory.Fields)
+        foreach (var item in Factory.Fields)
         {
             var val = p[item.Name];
             if (!val.IsNullOrWhiteSpace())

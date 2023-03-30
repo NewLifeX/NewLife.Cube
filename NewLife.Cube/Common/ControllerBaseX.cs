@@ -1,9 +1,16 @@
-﻿using System.Text;
+﻿using System.Reflection;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Extensions;
+using NewLife.Log;
+using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using XCode.Membership;
+using IActionFilter = Microsoft.AspNetCore.Mvc.Filters.IActionFilter;
 
 namespace NewLife.Cube;
 
@@ -17,14 +24,25 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     /// <summary>临时会话扩展信息。仅限本地内存，不支持分布式共享</summary>
     public IDictionary<String, Object> Session { get; private set; }
 
+    /// <summary>令牌</summary>
+    public String Token { get; set; }
+
     /// <summary>当前页面菜单。用于权限控制</summary>
     public IMenu Menu { get; set; }
+
+    /// <summary>当前用户</summary>
+    public IManageUser CurrentUser { get; set; }
+
+    /// <summary>当前租户</summary>
+    public ITenantUser CurrentTenant { get; set; }
 
     /// <summary>用户主机</summary>
     public String UserHost => HttpContext.GetUserHost();
 
     /// <summary>页面设置</summary>
     public PageSetting PageSetting { get; set; }
+
+    private IDictionary<String, Object> _args;
     #endregion
 
     #region 构造
@@ -33,8 +51,11 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
     /// <summary>动作执行前</summary>
     /// <param name="context"></param>
-    void IActionFilter.OnActionExecuting(Remoting.ControllerContext context)
+    [NonAction]
+    public virtual void OnActionExecuting(ActionExecutingContext context)
     {
+        _args = context.ActionArguments;
+
         var ctx = HttpContext;
         Session = ctx.Items["Session"] as IDictionary<String, Object>;
         Menu = ctx.Items["CurrentMenu"] as IMenu;
@@ -46,6 +67,8 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         var user = ManageProvider.User;
         if (user != null)
         {
+            CurrentUser = user as IManageUser;
+
             // 设置变量，数据权限使用
             HttpContext.Items["userId"] = user.ID;
 
@@ -55,24 +78,85 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             //    PageSetting.EnableSelect = user.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
             //}
         }
+
+        // 当前租户
+        var tid = TenantContext.Current?.TenantId ?? 0;
+        if (tid > 0)
+        {
+            var tus = TenantUser.FindAllByUserId(user.ID);
+            CurrentTenant = tus.FirstOrDefault(e => e.TenantId == tid);
+        }
+
+        // 访问令牌
+        var request = context.HttpContext.Request;
+        var token = request.Query["Token"] + "";
+        if (token.IsNullOrEmpty()) token = (request.Headers["Authorization"] + "").TrimStart("Bearer ");
+        if (token.IsNullOrEmpty()) token = request.Headers["X-Token"] + "";
+        if (token.IsNullOrEmpty()) token = request.Cookies["Token"] + "";
+        Token = token;
+
+        try
+        {
+            if (!token.IsNullOrEmpty())
+            {
+            }
+
+            if (user == null && context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
+            {
+                throw new ApiException(403, "认证失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            WriteLog(null, false, ex.ToString());
+
+            context.Result = Json(0, null, ex);
+        }
     }
 
     /// <summary>动作执行后</summary>
     /// <param name="context"></param>
-    void IActionFilter.OnActionExecuted(Remoting.ControllerContext context)
+    [NonAction]
+    public virtual void OnActionExecuted(ActionExecutedContext context)
     {
         var ex = context.Exception?.GetTrue();
         if (ex != null && !context.ExceptionHandled)
         {
-            // 控制器发生异常时，写审计日志
-            var act = GetControllerAction().LastOrDefault();
-            WriteLog(act, false, ex.ToString());
+            WriteLog(null, false, ex.ToString());
         }
 
-        if (ex != null && !context.ExceptionHandled)
+        var traceId = DefaultSpan.Current?.TraceId;
+
+        if (context.Result != null)
         {
-            context.Result = Json(0, null, ex);
+            if (context.Result is ObjectResult obj)
+            {
+                //context.Result = new JsonResult(new { code = obj.StatusCode ?? 0, data = obj.Value });
+                var rs = new { code = obj.StatusCode ?? 0, data = obj.Value, traceId };
+                context.Result = new ContentResult
+                {
+                    Content = rs.ToJson(false, true, true),
+                    ContentType = "application/json",
+                    StatusCode = 200
+                };
+            }
+            else if (context.Result is EmptyResult)
+            {
+                context.Result = new JsonResult(new { code = 0, data = new { }, traceId });
+            }
+        }
+        else if (context.Exception != null && !context.ExceptionHandled)
+        {
+            //var ex = context.Exception.GetTrue();
+            if (ex is ApiException aex)
+                context.Result = new JsonResult(new { code = aex.Code, data = aex.Message, traceId });
+            else
+                context.Result = new JsonResult(new { code = 500, data = ex.Message, traceId });
+
             context.ExceptionHandled = true;
+
+            // 输出异常日志
+            if (XTrace.Debug) XTrace.WriteException(ex);
         }
     }
     #endregion
@@ -140,6 +224,8 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     /// <param name="remark"></param>
     protected virtual void WriteLog(String action, Boolean success, String remark)
     {
+        action ??= GetControllerAction().LastOrDefault();
+
         var type = GetType();
         if (type.BaseType.IsGenericType) type = type.BaseType.GetGenericArguments().FirstOrDefault();
 

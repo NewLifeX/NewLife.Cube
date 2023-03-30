@@ -4,8 +4,6 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
-using NewLife.Cube.Common;
-using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Log;
@@ -106,7 +104,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var whereExpression = Entity<TEntity>.SearchWhereByKeys(key);
         if (start > DateTime.MinValue || end > DateTime.MinValue)
         {
-            var masterTime = Entity<TEntity>.Meta.Factory.MasterTime;
+            var masterTime = Factory.MasterTime;
             if (masterTime != null)
                 whereExpression &= masterTime.Between(start, end);
         }
@@ -123,7 +121,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         //}
 
         //添加映射字段查询
-        foreach (var item in Entity<TEntity>.Meta.Factory.Fields)
+        foreach (var item in Factory.Fields)
         {
             var val = p[item.Name];
             if (!val.IsNullOrWhiteSpace())
@@ -394,7 +392,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     #endregion
 
     #region 默认Action
-    /// <summary>数据列表首页</summary>
+    /// <summary>多行数据列表</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("{type}管理")]
@@ -412,7 +410,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List), new { pager = p, stat = p.State });
     }
 
-    /// <summary>表单，查看</summary>
+    /// <summary>查看单行数据</summary>
     /// <param name="id">主键。可能为空（表示添加），所以用字符串而不是整数</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
@@ -1240,13 +1238,14 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
-    public virtual ActionResult GetFields(ViewKinds kind)
+    public virtual List<DataField> GetFields(ViewKinds kind)
     {
         var fields = OnGetFields(kind, null);
 
-        Object data = new { code = 0, data = fields };
+        //Object data = new { code = 0, data = fields };
 
-        return new JsonResult(data);
+        //return new JsonResult(data);
+        return fields;
     }
 
     /// <summary>

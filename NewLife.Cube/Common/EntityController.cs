@@ -29,7 +29,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     #endregion
 
     #region 默认Action
-    /// <summary>删除</summary>
+    /// <summary>删除数据</summary>
     /// <param name="id"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Delete)]
@@ -63,7 +63,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             return Json(500, "删除失败！" + err, entity);
     }
 
-    /// <summary>保存</summary>
+    /// <summary>添加数据</summary>
     /// <param name="model"></param>
     /// <returns></returns>
     [DisplayName("添加{type}")]
@@ -131,7 +131,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         return Json(0, msg, entity);
     }
 
-    /// <summary>保存</summary>
+    /// <summary>更新数据</summary>
     /// <param name="model"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]

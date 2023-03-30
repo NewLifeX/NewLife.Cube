@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
@@ -19,56 +20,11 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     /// <summary>实例化</summary>
     public ObjectController() => PageSetting.EnableNavbar = false;
 
-    ///// <summary>动作执行前</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuting(Remoting.ControllerContext filterContext)
-    //{
-    //    base.OnActionExecuting(filterContext);
-
-    //    // 显示名和描述
-    //    var name = GetType().GetDisplayName() ?? typeof(TObject).GetDisplayName() ?? typeof(TObject).Name;
-    //    var des = GetType().GetDescription() ?? typeof(TObject).GetDescription();
-
-    //    ViewBag.Title = name;
-
-    //    var txt = "";
-    //    if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
-    //    if (txt.IsNullOrEmpty()) txt = des;
-    //    ViewBag.HeaderContent = txt;
-    //}
-
-    ///// <summary>执行后</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuted(Remoting.ControllerContext filterContext)
-    //{
-    //    base.OnActionExecuted(filterContext);
-
-    //    var title = ViewBag.Title + "";
-    //    HttpContext.Items["Title"] = title;
-    //}
-
     /// <summary>显示对象</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet("/[area]/[controller]")]
-    public ActionResult Index()
-    {
-        var list = GetMembers(Value?.GetType());
-
-        list = list.Select(e => e.Clone()).ToList();
-        //foreach (var item in list)
-        //{
-        //    item.Name = FormatHelper.FormatName(item.Name, formatType);
-        //    //item.FormatType = formatType;
-        //}
-        var dic = list
-            .GroupBy(e => e.Category + "")
-            .ToDictionary(e => e.Key, e => e.ToList());
-
-        //model.Properties = dic;
-
-        return Json(0, null, new { Value, Properties = dic });
-    }
+    public TObject Index() => Value;
 
     /// <summary>保存对象</summary>
     /// <param name="obj"></param>
@@ -77,7 +33,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //[DisplayName("修改")]
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPut("/[area]/[controller]")]
-    public virtual ActionResult Update(TObject obj)
+    public virtual TObject Update(TObject obj)
     {
         WriteLog(obj, UserHost);
 
@@ -103,7 +59,25 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 
         Value = obj;
 
-        return Json(0, "保存成功");
+        //return Json(0, "保存成功");
+        return obj;
+    }
+
+    /// <summary>
+    /// 获取字段
+    /// </summary>
+    /// <param name="kind"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpGet]
+    public virtual IList<DataField> GetFields(ViewKinds kind)
+    {
+        var list = GetMembers(Value?.GetType());
+        //var dic = list
+        //.GroupBy(e => e.Category + "")
+        //.ToDictionary(e => e.Key, e => e.ToList());
+
+        return list;
     }
 
     private Boolean GetBool(String name)

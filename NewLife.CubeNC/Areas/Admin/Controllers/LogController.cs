@@ -67,7 +67,7 @@ namespace NewLife.Cube.Admin.Controllers
                     if (range <= 0) range = 10;
 
                     // 雪花Id，抽取时间
-                    var snow = XLog.Meta.Factory.Snow;
+                    var snow = Factory.Snow;
                     if (snow.TryParse(id, out var time, out var _, out var _))
                     {
                         start = time.AddSeconds(-range);

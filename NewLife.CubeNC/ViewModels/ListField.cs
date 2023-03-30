@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using NewLife.Data;
@@ -43,7 +44,7 @@ public class ListField : DataField
     public String DataAction { get; set; }
 
     /// <summary>获取数据委托。可用于自定义列表页单元格数值的显示</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public GetValueDelegate GetValue { get; set; }
     #endregion
 

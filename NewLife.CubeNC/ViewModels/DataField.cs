@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using NewLife.Collections;
 using NewLife.Reflection;
@@ -37,8 +38,11 @@ public class DataField
     public String Category { get; set; }
 
     /// <summary>属性类型</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public Type Type { get; set; }
+
+    /// <summary>属性类型</summary>
+    public String TypeName => Type?.Name;
 
     /// <summary>元素类型。image,file-zip,html,singleSelect,multipleSelect</summary>
     public String ItemType { get; set; }
@@ -62,26 +66,26 @@ public class DataField
     public Boolean Readonly { get; set; }
 
     /// <summary>原始字段</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public FieldItem Field { get; set; }
 
     /// <summary>映射字段</summary>
     public String MapField { get; set; }
 
     /// <summary>映射提供者</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public MapProvider MapProvider { get; set; }
 
     /// <summary>多选数据源</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public DataSourceDelegate DataSource { get; set; }
 
     /// <summary>是否显示</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public DataVisibleDelegate DataVisible { get; set; }
 
     /// <summary>扩展属性</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public IDictionary<String, String> Properties { get; set; } = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
     #endregion
 

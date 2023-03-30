@@ -1,4 +1,7 @@
 ﻿using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using NewLife.Cube.ViewModels;
 using XCode;
 using XCode.Configuration;
@@ -19,12 +22,15 @@ public class FieldCollection : List<DataField>
     public ViewKinds Kind { get; set; }
 
     /// <summary>工厂</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public IEntityFactory Factory { get; set; }
 
     /// <summary>需要隐藏的分组名</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public ICollection<String> HiddenGroups { get; } = new HashSet<String>();
 
     /// <summary>是否显示分组</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public GroupVisibleDelegate GroupVisible { get; set; }
     #endregion
 
