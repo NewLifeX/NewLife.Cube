@@ -78,6 +78,6 @@ public class CronJobController : EntityController<CronJob>
             JobService.Wake(entity.Id, -1);
         }
 
-        return JsonRefresh($"已安排执行！");
+        return Json(0, "已安排执行！");
     }
 }

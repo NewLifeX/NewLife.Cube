@@ -35,13 +35,9 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     /// <param name="context"></param>
     void IActionFilter.OnActionExecuting(Remoting.ControllerContext context)
     {
-        //// 页面设置
-        //ViewBag.PageSetting = PageSetting;
-
         var ctx = HttpContext;
         Session = ctx.Items["Session"] as IDictionary<String, Object>;
         Menu = ctx.Items["CurrentMenu"] as IMenu;
-        //ViewBag.Menu = Menu;
 
         // 仅用于测试，跳过报错
         Session ??= new Dictionary<String, Object>();
@@ -75,15 +71,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
         if (ex != null && !context.ExceptionHandled)
         {
-            var code = 500;
-            var message = ex.Message;
-            if (ex is ApiException aex)
-            {
-                code = aex.Code;
-                message = aex.Message;
-            }
-
-            context.Result = Json(code, message, null);
+            context.Result = Json(0, null, ex);
             context.ExceptionHandled = true;
         }
     }
@@ -96,37 +84,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     protected virtual String GetRequest(String key) => Request.GetRequestValue(key);
     #endregion
 
-    #region Ajax处理
-    /// <summary>返回结果并刷新</summary>
-    /// <param name="data">消息</param>
-    /// <returns></returns>
-    protected virtual ActionResult JsonRefresh(Object data) => Json(0, data as String, data, new { url = "[refresh]" });
-
-    /// <summary>是否Json请求</summary>
-    protected virtual Boolean IsJsonRequest
-    {
-        get
-        {
-            if (Request.ContentType.EqualIgnoreCase("application/json")) return true;
-
-            if (Request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
-
-            if (GetRequest("output").EqualIgnoreCase("json")) return true;
-            if ((RouteData.Values["output"] + "").EqualIgnoreCase("json")) return true;
-
-            return false;
-        }
-    }
-    #endregion
-
     #region Json结果
-    /// <summary>成功响应Json结果</summary>
-    /// <param name="message">消息，成功或失败时的文本消息</param>
-    /// <param name="data">数据对象</param>
-    /// <returns></returns>
-    [NonAction]
-    public virtual ActionResult Ok(String message = "ok", Object data = null) => Json(0, message, data);
-
     /// <summary>响应Json结果</summary>
     /// <param name="code">代码。0成功，其它为错误代码</param>
     /// <param name="message">消息，成功或失败时的文本消息</param>

@@ -142,7 +142,7 @@ public class FileController : ControllerBaseX
         //ViewBag.Message = message;
 
         //return View("Index", list);
-        return Ok();
+        return Json(0, "ok");
     }
 
     /// <summary>删除</summary>

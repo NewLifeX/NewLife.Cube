@@ -28,9 +28,6 @@ public class RoleController : EntityController<Role>
     /// <param name="filterContext"></param>
     public override void OnActionExecuting(ActionExecutingContext filterContext)
     {
-        ViewBag.HeaderTitle = "角色管理";
-        //ViewBag.HeaderContent = "系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。";
-
         var bs = this.Bootstrap();
         bs.MaxColumn = 1;
 

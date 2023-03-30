@@ -344,7 +344,7 @@ public class CubeController : ControllerBaseX
     //    if(para == null) throw new ArgumentNullException(nameof(para));
     //    para.SaveAsync();
 
-    //    return Ok();
+    //    return Json(0, "ok");
     //}
 
     /// <summary>
@@ -365,7 +365,7 @@ public class CubeController : ControllerBaseX
         para.SetItem("Value", value);
         para.Save();
 
-        return Ok();
+        return Json(0, "ok");
     }
     #endregion
 

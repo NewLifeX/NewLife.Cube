@@ -379,7 +379,7 @@ public class SsoController : ControllerBaseX
             }
         }
 
-        return Ok();
+        return Json(0, "ok");
     }
     #endregion
 

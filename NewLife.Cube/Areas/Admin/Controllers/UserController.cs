@@ -345,7 +345,7 @@ public class UserController : EntityController<User>
 
         ManageProvider.Provider.Logout();
 
-        return Ok();
+        return Json(0, "ok");
     }
     #endregion
 
@@ -454,7 +454,7 @@ public class UserController : EntityController<User>
             OAuthItems = ms,
         };
 
-        return Ok(data: model);
+        return Json(0, null, model);
     }
 
     /// <summary>注册</summary>
@@ -528,6 +528,6 @@ public class UserController : EntityController<User>
         user.Password = null;
         user.SaveWithoutValid();
 
-        return Ok();
+        return Json(0, "ok");
     }
 }

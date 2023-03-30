@@ -16,9 +16,6 @@ public class IndexController : ControllerBaseX
 {
     private readonly IManageProvider _provider;
 
-    /// <summary>菜单顺序。扫描是会反射读取</summary>
-    protected static Int32 MenuOrder { get; set; } = 10;
-
     static IndexController() => MachineInfo.RegisterAsync();
 
     /// <summary>实例化</summary>
@@ -49,7 +46,7 @@ public class IndexController : ControllerBaseX
         //ViewBag.Main = startPage;
 
         //return View();
-        return Ok();
+        return Json(0, "ok");
     }
 
     /// <summary>服务器信息</summary>
@@ -83,7 +80,7 @@ public class IndexController : ControllerBaseX
         //    case "memoryfree": return View("MemoryFree");
         //    default: return View();
         //}
-        return Ok();
+        return Json(0, "ok");
     }
 
     /// <summary>重启</summary>
@@ -143,7 +140,7 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     [EntityAuthorize]
     [HttpGet]
-    public ActionResult GetMenuTree() => Ok(data: GetMenu());
+    public ActionResult GetMenuTree() => Json(0, null, GetMenu());
 
     private IList<MenuTree> GetMenu()
     {

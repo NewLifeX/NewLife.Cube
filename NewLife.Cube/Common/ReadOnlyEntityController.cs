@@ -70,8 +70,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     //        // 用于显示的列
     //        if (!ps.ContainsKey("entity")) ViewBag.Fields = ListFields;
 
-    //        if (ViewBag.HeaderTitle == null) ViewBag.HeaderTitle = Entity<TEntity>.Meta.Table.Description + "管理";
-
     //        var txt = (String)ViewBag.HeaderContent;
     //        if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
     //        if (txt.IsNullOrEmpty()) txt = GetType().GetDescription();
@@ -411,10 +409,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         var list = SearchData(p);
 
-        // Json输出
-        if (IsJsonRequest) return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List), new { pager = p, stat = p.State });
-
-        return Json(0, null, list, new { pager = p, stat = p.State });
+        return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List), new { pager = p, stat = p.State });
     }
 
     /// <summary>表单，查看</summary>
@@ -431,10 +426,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
 
-        // Json输出
-        if (IsJsonRequest) return Json(0, null, OnFilter(entity, ViewKinds.Detail));
-
-        return Json(0, null, entity);
+        return Json(0, null, OnFilter(entity, ViewKinds.Detail));
     }
 
     ///// <summary>清空全表数据</summary>

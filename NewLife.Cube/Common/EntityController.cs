@@ -37,8 +37,6 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     [HttpDelete("/[area]/[controller]")]
     public virtual ActionResult Delete([Required] String id)
     {
-        var url = Request.GetReferer();
-
         var entity = FindData(id);
         var rs = false;
         var err = "";
@@ -57,12 +55,12 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         {
             err = ex.GetTrue().Message;
             WriteLog("Delete", false, err);
-            //if (LogOnChange) LogProvider.Provider.WriteLog("Delete", entity, err);
-
-            return JsonRefresh("删除失败！" + err);
         }
 
-        return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
+        if (rs)
+            return Json(0, "删除成功！", entity);
+        else
+            return Json(500, "删除失败！" + err, entity);
     }
 
     /// <summary>保存</summary>
@@ -341,7 +339,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             }
         }
 
-        return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个");
+        return Json(0, $"共{(isEnable ? "启用" : "禁用")}[{count}]个");
     }
     #endregion
 

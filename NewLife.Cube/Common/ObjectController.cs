@@ -16,9 +16,6 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     /// <summary>要展现和修改的对象</summary>
     protected abstract TObject Value { get; set; }
 
-    /// <summary>菜单顺序。扫描时会反射读取</summary>
-    protected static Int32 MenuOrder { get; set; }
-
     /// <summary>实例化</summary>
     public ObjectController() => PageSetting.EnableNavbar = false;
 
@@ -33,7 +30,6 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //    var des = GetType().GetDescription() ?? typeof(TObject).GetDescription();
 
     //    ViewBag.Title = name;
-    //    ViewBag.HeaderTitle = name;
 
     //    var txt = "";
     //    if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
@@ -71,7 +67,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 
         //model.Properties = dic;
 
-        return Ok(data: new { Value, Properties = dic });
+        return Json(0, null, new { Value, Properties = dic });
     }
 
     /// <summary>保存对象</summary>
@@ -107,10 +103,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 
         Value = obj;
 
-        if (IsJsonRequest)
-            return Ok("保存成功");
-        else
-            return Redirect("Index");
+        return Json(0, "保存成功");
     }
 
     private Boolean GetBool(String name)

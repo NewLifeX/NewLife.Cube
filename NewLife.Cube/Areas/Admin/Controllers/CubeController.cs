@@ -62,5 +62,5 @@ public class CubeController : ConfigController<CubeSetting>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
-    public ActionResult GetLoginConfig() => Ok(data: new LoginConfigModel());
+    public ActionResult GetLoginConfig() => Json(0, null, new LoginConfigModel());
 }

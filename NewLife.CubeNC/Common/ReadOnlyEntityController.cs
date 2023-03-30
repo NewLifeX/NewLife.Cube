@@ -84,8 +84,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             // 用于显示的列
             if (!ps.ContainsKey("entity")) ViewBag.Fields = ListFields;
 
-            if (ViewBag.HeaderTitle == null) ViewBag.HeaderTitle = Entity<TEntity>.Meta.Table.Description + "管理";
-
             var txt = (String)ViewBag.HeaderContent;
             if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
             if (txt.IsNullOrEmpty()) txt = GetType().GetDescription();
