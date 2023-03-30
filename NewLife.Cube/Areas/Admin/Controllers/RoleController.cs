@@ -60,7 +60,7 @@ public class RoleController : EntityController<Role>
     /// <param name="entity"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public override async Task<ActionResult> Add(Role entity)
+    public override async Task<ActionResult> Insert(Role entity)
     {
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
@@ -188,7 +188,7 @@ public class RoleController : EntityController<Role>
     /// <summary>保存</summary>
     /// <param name="entity"></param>
     /// <returns></returns>
-    public override async Task<ActionResult> Edit(Role entity)
+    public override async Task<ActionResult> Update(Role entity)
     {
         // 保存权限项
         var menus = XCode.Membership.Menu.Root.AllChilds;
@@ -225,7 +225,7 @@ public class RoleController : EntityController<Role>
             if (entity.Has(item)) entity.Permissions.Remove(item);
         }
 
-        return await base.Edit(entity);
+        return await base.Update(entity);
     }
 
     /// <summary>

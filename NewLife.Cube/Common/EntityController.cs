@@ -111,7 +111,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     [DisplayName("添加{type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
-    public virtual async Task<ActionResult> Add(TModel model)
+    public virtual async Task<ActionResult> Insert(TModel model)
     {
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
@@ -210,7 +210,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("更新{type}")]
     [HttpPost]
-    public virtual async Task<ActionResult> Edit(TModel model)
+    public virtual async Task<ActionResult> Update(TModel model)
     {
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
