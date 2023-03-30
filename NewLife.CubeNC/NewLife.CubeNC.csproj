@@ -57,7 +57,6 @@
 
   <ItemGroup>
     <Compile Include="..\NewLife.Cube\Common\DataPermissionAttribute.cs" Link="Common\DataPermissionAttribute.cs" />
-    <Compile Include="..\NewLife.Cube\Common\FormatType.cs" Link="Common\FormatType.cs" />
     <Compile Include="..\NewLife.Cube\Common\MembershipExtensions.cs" Link="Common\MembershipExtensions.cs" />
     <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />

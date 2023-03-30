@@ -2,8 +2,6 @@
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
@@ -54,20 +52,19 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //}
 
     /// <summary>显示对象</summary>
-    /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpGet]
-    public ActionResult Index(FormatType formatType = FormatType.CamelCase)
+    [HttpGet("/[area]/[controller]")]
+    public ActionResult Index()
     {
         var list = GetMembers(Value?.GetType());
 
         list = list.Select(e => e.Clone()).ToList();
-        foreach (var item in list)
-        {
-            item.Name = FormatHelper.FormatName(item.Name, formatType);
-            //item.FormatType = formatType;
-        }
+        //foreach (var item in list)
+        //{
+        //    item.Name = FormatHelper.FormatName(item.Name, formatType);
+        //    //item.FormatType = formatType;
+        //}
         var dic = list
             .GroupBy(e => e.Category + "")
             .ToDictionary(e => e.Key, e => e.ToList());

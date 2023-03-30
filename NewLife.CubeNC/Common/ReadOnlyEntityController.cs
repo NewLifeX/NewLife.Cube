@@ -1281,7 +1281,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// 获取字段
     /// </summary>
     /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
     /// <returns></returns>
     [AllowAnonymous]
     public virtual ActionResult GetFields(ViewKinds kind)
