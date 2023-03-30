@@ -13,7 +13,7 @@
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
     <Deterministic>false</Deterministic>
-    <OutputPath>..\Bin</OutputPath>
+    <OutputPath>..\Bin3</OutputPath>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ImplicitUsings>enable</ImplicitUsings>
