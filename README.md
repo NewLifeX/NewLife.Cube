@@ -91,8 +91,8 @@ http://git.newlifex.com/NewLife/NewLife.CubeBlazor
 7. 列表页接口，返回数据中pager为分页信息
 8. 列表页接口，返回数据中state为统计行，如用户统计 https://cube3.newlifex.com/Admin/UserStat
 9. 详情接口 `/{Area}/{Controller}/Detail`，参数id固定为主键查询，如 https://cube3.newlifex.com/Cube/Area?id=450921
-10. 新增接口 `/{Area}/{Controller}/Add`，Post需要新增的实体对象
-11. 修改接口 `/{Area}/{Controller}/Edit`，Post需要修改的实体对象，务必带有主键
+10. 新增接口 `/{Area}/{Controller}/Insert`，Post需要新增的实体对象
+11. 修改接口 `/{Area}/{Controller}/Update`，Post需要修改的实体对象，务必带有主键
 12. 删除接口 `/{Area}/{Controller}/Delete`，Get删除参数id指定的数据
 
 
