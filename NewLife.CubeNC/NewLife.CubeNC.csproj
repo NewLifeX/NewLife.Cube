@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net5.0;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
@@ -49,7 +49,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.2.2023.325-beta0247" />
+    <PackageReference Include="NewLife.Core" Version="10.2.2023.330-beta0153" />
     <PackageReference Include="NewLife.IP" Version="2.0.2023.203" />
     <PackageReference Include="NewLife.Stardust" Version="2.8.2023.325-beta0149" />
     <PackageReference Include="NewLife.XCode" Version="11.7.2023.328-beta1337" />
