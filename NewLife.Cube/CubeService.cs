@@ -67,35 +67,6 @@ public static class CubeService
         // 连接字符串
         DAL.ConnStrs.TryAdd("Cube", "MapTo=Membership");
 
-        //// 配置Cookie策略
-        //services.ConfigureNonBreakingSameSiteCookies();
-        //services.Configure<CookiePolicyOptions>(options =>
-        //{
-        //    // 此项为true需要用户授权才能记录cookie
-        //    options.CheckConsentNeeded = context => false;
-        //    options.MinimumSameSitePolicy = SameSiteMode.None;
-        //});
-
-        //// 添加Session会话支持
-        //services.AddSession();
-
-        //// 身份验证
-        //services.AddAuthentication(options =>
-        //{
-        //    options.DefaultScheme = "Cube";
-        //    options.DefaultAuthenticateScheme = "Cube";
-        //    options.DefaultChallengeScheme = "Cube";
-        //    options.DefaultSignInScheme = "Cube";
-        //}).AddCookie("Cube", options =>
-        //{
-        //    options.AccessDeniedPath = "/Admin/User/Login";
-        //    options.LoginPath = "/Admin/User/Login";
-        //    options.LogoutPath = "/Admin/User/Logout";
-        //});
-
-        //// 注册魔方默认UI
-        //services.AddCubeDefaultUI();
-
         // 配置跨域处理，允许所有来源
         // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
         var set = CubeSetting.Current;
@@ -112,19 +83,6 @@ public static class CubeService
             .AllowCredentials()
             .WithOrigins(set.CorsOrigins)));
 
-        //services.Configure<MvcOptions>(opt =>
-        //{
-        //    opt.ModelBinderProviders.Insert(0, new JsonModelBinderProvider());
-
-        //    // 分页器绑定
-        //    opt.ModelBinderProviders.Insert(0, new PagerModelBinderProvider());
-
-        //    // 模型绑定
-        //    opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
-        //});
-
-        //services.AddCustomApplicationParts();
-
         // 添加管理提供者
         services.AddManageProvider();
 
@@ -134,11 +92,8 @@ public static class CubeService
             options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
         });
 
-        //// 配置视图引擎
-        //services.Configure<RazorViewEngineOptions>(o =>
-        //{
-        //    o.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
-        //});
+        // 添加管理提供者
+        services.AddManageProvider();
 
         // 配置Json
         services.Configure<JsonOptions>(options =>
@@ -154,12 +109,10 @@ public static class CubeService
         });
 
         // UI服务
-        services.AddSingleton<UIService>();
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
 
         services.AddHostedService<JobService>();
-        //services.AddHostedService<UserService>();
 
         // 注册IP地址库
         IpResolver.Register();
@@ -195,9 +148,6 @@ public static class CubeService
         using var span = DefaultTracer.Instance?.NewSpan(nameof(UseCube));
 
         XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
-
-        //// 调整魔方表名
-        //FixAppTableName();
 
         // 使用管理提供者
         app.UseManagerProvider();
@@ -246,8 +196,6 @@ public static class CubeService
         app.UseMiddleware<RunTimeMiddleware>();
         app.UseMiddleware<TenantMiddleware>();
 
-        //if (env != null) app.UseCubeDefaultUI(env);
-
         // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
         app.UseRouter(endpoints =>
         {
@@ -258,11 +206,11 @@ public static class CubeService
                 "{area}/{controller=Index}/{action=Index}/{id?}");
         });
 
-        ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
+        //ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
 
         // 自动检查并添加菜单
-        AreaBase.RegisterArea<Admin.AdminArea>();
-        AreaBase.RegisterArea<Cube.CubeArea>();
+        AreaBase.RegisterArea<Areas.Admin.AdminArea>();
+        AreaBase.RegisterArea<Areas.Cube.CubeArea>();
 
         // 插件
         var moduleManager = provider.GetRequiredService<ModuleManager>();
@@ -280,22 +228,6 @@ public static class CubeService
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
         Task.Run(() => ResolveStarWeb(provider));
-
-        return app;
-    }
-
-    /// <summary>使用魔方首页</summary>
-    /// <param name="app"></param>
-    /// <returns></returns>
-    public static IApplicationBuilder UseCubeHome(this IApplicationBuilder app)
-    {
-        app.UseRouter(endpoints =>
-        {
-            endpoints.MapControllerRoute(
-                "Default",
-                "{controller=CubeHome}/{action=Index}/{id?}"
-                );
-        });
 
         return app;
     }

@@ -21,10 +21,10 @@ public class ManageProvider2 : ManageProvider
     #region 静态实例
     internal static IHttpContextAccessor Context;
 
-    /// <summary>
-    /// 节点路由
-    /// </summary>
-    public static IEndpointRouteBuilder EndpointRoute { get; set; }
+    ///// <summary>
+    ///// 节点路由
+    ///// </summary>
+    //public static IEndpointRouteBuilder EndpointRoute { get; set; }
     #endregion
 
     #region 属性

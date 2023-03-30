@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Membership;
@@ -17,9 +18,12 @@ namespace NewLife.Cube;
 /// 2，静态构造注册一次视图引擎、绑定提供者、过滤器
 /// 3，注册区域默认路由
 /// </remarks>
-public class AreaBase : AreaAttribute
+public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
 {
     private static readonly ConcurrentDictionary<Type, Type> _areas = new();
+
+    /// <summary>分组名称</summary>
+    public String GroupName => RouteValue;
 
     /// <summary>实例化区域注册</summary>
     public AreaBase(String areaName) : base(areaName) => RegisterArea(GetType());
@@ -95,7 +99,7 @@ public class AreaBase : AreaAttribute
         var task = Task.Run(() =>
         {
             //Thread.Sleep(1000);
-            XTrace.WriteLine("新增了菜单，需要检查权限。二次检查，双重保障");
+            XTrace.WriteLine("二次检查功能菜单权限，双重保障");
             typeof(Role).Invoke("CheckRole");
         });
         task.Wait(5_000);

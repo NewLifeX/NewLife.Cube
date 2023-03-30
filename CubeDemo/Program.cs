@@ -1,6 +1,13 @@
-﻿using NewLife.Cube;
+﻿using CubeDemo;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
+using NewLife.Cube;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 XTrace.UseConsole();
 
@@ -16,10 +23,41 @@ TracerMiddleware.Tracer = star?.Tracer;
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, SwaggerConfigureOptions>();
 builder.Services.AddSwaggerGen(options =>
 {
     // 解决 NewLife.Setting 与 XCode.Setting 冲突的问题
     options.CustomSchemaIds(type => type.FullName);
+    options.IncludeXmlComments("NewLife.Cube.xml".GetFullPath());
+
+    //options.SwaggerDoc("v1", new OpenApiInfo
+    //{
+    //    Version = "v1",
+    //    Title = "第三代魔方",
+    //    Description = "第三代魔方WebApi接口，用于前后端分离",
+    //    TermsOfService = new Uri("https://newlifex.com"),
+    //});
+
+    options.DocInclusionPredicate((docName, apiDesc) =>
+    {
+        if (apiDesc.ActionDescriptor is not ControllerActionDescriptor controller) return false;
+
+        foreach (var item in controller.ControllerTypeInfo.GetCustomAttributes(true))
+        {
+            if (item is IApiDescriptionGroupNameProvider att)
+            {
+
+            }
+        }
+        var groups = controller.ControllerTypeInfo
+            .GetCustomAttributes(true)
+            .OfType<IApiDescriptionGroupNameProvider>()
+            .Select(e => e.GroupName).ToList();
+
+        if (docName == "v1" && (groups == null || groups.Count == 0)) return true;
+
+        return groups != null && groups.Any(e => e == docName);
+    });
 });
 
 services.AddCube();
@@ -30,7 +68,18 @@ var app = builder.Build();
 //if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    //app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        //options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        //options.RoutePrefix = String.Empty;
+        var apiDescriptionGroups = app.Services.GetRequiredService<IApiDescriptionGroupCollectionProvider>().ApiDescriptionGroups.Items;
+        foreach (var description in apiDescriptionGroups)
+        {
+            var group = description.GroupName ?? "v1";
+            options.SwaggerEndpoint($"/swagger/{group}/swagger.json", group);
+        }
+    });
 }
 
 app.UseCube(builder.Environment);

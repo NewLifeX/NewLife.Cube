@@ -16,6 +16,7 @@ namespace NewLife.Cube.Controllers;
 
 /// <summary>魔方前端数据接口</summary>
 [DisplayName("数据接口")]
+[ApiExplorerSettings(GroupName = "Basic")]
 [Route("[controller]/[action]")]
 public class CubeController : ControllerBaseX
 {
