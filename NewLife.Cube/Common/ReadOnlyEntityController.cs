@@ -407,7 +407,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         var list = SearchData(p);
 
-        return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List), new { pager = p, stat = p.State });
+        return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List).ToList(), new { pager = p, stat = p.State });
     }
 
     /// <summary>查看单行数据</summary>
