@@ -1234,7 +1234,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <summary>
     /// 获取字段
     /// </summary>
-    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
+    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm</param>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
