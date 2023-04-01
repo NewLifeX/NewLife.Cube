@@ -27,12 +27,12 @@ public class TenantController : EntityController<Tenant>
             if (entity != null) return new[] { entity };
         }
 
-        //var roleId = p["roleId"].ToInt(-1);
-        var roleIds = p["roleIds"].SplitAsInt();
+        var managerId = p["managerId"].ToInt(-1);
+        //var roleIds = p["roleIds"].SplitAsInt();
         var enable = p["enable"]?.ToBoolean();
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
 
-        return Tenant.Search(null, start, end, p["q"], p);
+        return Tenant.Search(null, managerId, enable, start, end, p["q"], p);
     }
 }

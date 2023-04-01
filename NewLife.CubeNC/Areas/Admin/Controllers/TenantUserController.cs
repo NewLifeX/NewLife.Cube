@@ -29,6 +29,6 @@ public class TenantUserController : EntityController<TenantUser>
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
 
-        return TenantUser.Search(tenantId, userId, start, end, p["q"], p);
+        return TenantUser.Search(tenantId, userId, roleId, enable, start, end, p["q"], p);
     }
 }

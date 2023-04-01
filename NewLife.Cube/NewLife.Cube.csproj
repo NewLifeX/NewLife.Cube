@@ -7,7 +7,7 @@
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2023 NewLife</Copyright>
-    <VersionPrefix>5.5</VersionPrefix>
+    <VersionPrefix>6.0</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -81,10 +81,10 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.2.2023.330-beta0153" />
+    <PackageReference Include="NewLife.Core" Version="10.2.2023.401" />
     <PackageReference Include="NewLife.IP" Version="2.0.2023.203" />
     <PackageReference Include="NewLife.Stardust" Version="2.8.2023.325-beta0149" />
-    <PackageReference Include="NewLife.XCode" Version="11.7.2023.328-beta1337" />
+    <PackageReference Include="NewLife.XCode" Version="11.8.2023.401" />
   </ItemGroup>
 
   <ItemGroup>
