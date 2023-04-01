@@ -9,6 +9,7 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
+using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -335,6 +336,29 @@ public class UserController : EntityController<User>
         return Json(0, "ok");
     }
     #endregion
+
+    /// <summary>获取当前登录用户资料</summary>
+    /// <returns></returns>
+    [HttpGet]
+    [EntityAuthorize]
+    public ActionResult Info()
+    {
+        var user = ManageProvider.User as XCode.Membership.User;
+        if (user == null) throw new Exception("当前登录用户无效！");
+
+        user = XCode.Membership.User.FindByKeyForEdit(user.ID);
+        if (user == null) throw new Exception("无效用户编号！");
+
+        user["Password"] = null;
+
+        var userInfo = new UserInfo();
+        userInfo.Copy(user);
+        userInfo.SetPermission(user.Roles);
+        userInfo.SetRoleNames(user.Roles);
+
+        return Json(0, "ok", userInfo);
+
+    }
 
     /// <summary>更新用户资料</summary>
     /// <param name="user"></param>
