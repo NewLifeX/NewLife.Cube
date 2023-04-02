@@ -15,8 +15,8 @@ namespace NewLife.Cube;
 public class EntityController<TEntity> : EntityController<TEntity, TEntity> where TEntity : Entity<TEntity>, new() { }
 
 /// <summary>实体控制器基类</summary>
-/// <typeparam name="TEntity"></typeparam>
-/// <typeparam name="TModel"></typeparam>
+/// <typeparam name="TEntity">实体类型</typeparam>
+/// <typeparam name="TModel">数据模型，用于接口数据传输</typeparam>
 public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
 {
     #region 属性
@@ -82,6 +82,15 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
                 entity.Copy(model);
         }
 
+        return await Insert(entity);
+    }
+
+    /// <summary>添加数据</summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    [NonAction]
+    public virtual async Task<ApiResponse<TEntity>> Insert(TEntity entity)
+    {
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0)
             throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
@@ -154,6 +163,15 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
                 entity.Copy(model, false, uk.Name);
         }
 
+        return await Update(entity);
+    }
+
+    /// <summary>更新数据</summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    [NonAction]
+    public virtual async Task<ApiResponse<TEntity>> Update(TEntity entity)
+    {
         var rs = false;
         var err = "";
         try

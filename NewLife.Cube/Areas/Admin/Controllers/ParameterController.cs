@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -8,7 +7,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("字典参数")]
 [AdminArea]
 [Menu(30, false, Icon = "fa-wrench")]
-public class ParameterController : EntityController<Parameter>
+public class ParameterController : EntityController<Parameter, ParameterModel>
 {
     static ParameterController()
     {

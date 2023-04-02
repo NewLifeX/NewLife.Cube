@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel;
+using NewLife.Cube.Admin;
 using NewLife.Web;
 using XCode.Membership;
 
@@ -12,7 +10,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("部门")]
 [AdminArea]
 [Menu(95, true, Icon = "fa-users")]
-public class DepartmentController : EntityController<Department>
+public class DepartmentController : EntityController<Department, DepartmentModel>
 {
     static DepartmentController()
     {

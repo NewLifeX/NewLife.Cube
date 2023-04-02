@@ -6,7 +6,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>租户管理</summary>
 [AdminArea]
 [Menu(20, false)]
-public class TenantController : EntityController<Tenant>
+public class TenantController : EntityController<Tenant, TenantModel>
 {
     static TenantController()
     {
