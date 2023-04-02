@@ -435,7 +435,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var list = SearchData(p);
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, OnFilter(list, ViewKinds.List), new { pager = p });
+        if (IsJsonRequest) return Json(0, null, list, new { page = p });
 
         return View("List", list);
     }
@@ -454,7 +454,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         Valid(entity, DataObjectMethodType.Select, false);
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, OnFilter(entity, ViewKinds.Detail));
+        if (IsJsonRequest) return Json(0, null, entity);
 
         // 用于显示的列
         ViewBag.Fields = DetailFields;
@@ -540,7 +540,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             var list = SearchData(p);
 
             // Json输出
-            return Json(0, null, list, new { issuer, pager = p });
+            return Json(0, null, list, new { issuer, page = p });
         }
         catch (Exception ex)
         {
@@ -1290,45 +1290,45 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         return new JsonResult(data);
     }
 
-    /// <summary>
-    /// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
-    /// </summary>
-    /// <param name="model"></param>
-    /// <param name="kind"></param>
-    /// <returns></returns>
-    protected virtual IDictionary<String, Object> OnFilter(IModel model, ViewKinds kind)
-    {
-        if (model == null) return null;
+    ///// <summary>
+    ///// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
+    ///// </summary>
+    ///// <param name="model"></param>
+    ///// <param name="kind"></param>
+    ///// <returns></returns>
+    //protected virtual IDictionary<String, Object> OnFilter(IModel model, ViewKinds kind)
+    //{
+    //    if (model == null) return null;
 
-        var dic = new Dictionary<String, Object>();
-        var fields = OnGetFields(kind, model);
-        if (fields != null)
-        {
-            var names = Factory.FieldNames;
-            foreach (var field in fields)
-            {
-                if (!field.Name.IsNullOrEmpty() && names.Contains(field.Name))
-                    dic[field.Name] = model[field.Name];
-            }
-        }
+    //    var dic = new Dictionary<String, Object>();
+    //    var fields = OnGetFields(kind, model);
+    //    if (fields != null)
+    //    {
+    //        var names = Factory.FieldNames;
+    //        foreach (var field in fields)
+    //        {
+    //            if (!field.Name.IsNullOrEmpty() && names.Contains(field.Name))
+    //                dic[field.Name] = model[field.Name];
+    //        }
+    //    }
 
-        return dic;
-    }
+    //    return dic;
+    //}
 
-    /// <summary>
-    /// 实体列表过滤器，根据模型列的列表页显示类型，不显示的字段去掉
-    /// </summary>
-    /// <param name="models"></param>
-    /// <param name="kind"></param>
-    /// <returns></returns>
-    protected virtual IEnumerable<IDictionary<String, Object>> OnFilter(IEnumerable<IModel> models, ViewKinds kind)
-    {
-        if (models == null) yield break;
+    ///// <summary>
+    ///// 实体列表过滤器，根据模型列的列表页显示类型，不显示的字段去掉
+    ///// </summary>
+    ///// <param name="models"></param>
+    ///// <param name="kind"></param>
+    ///// <returns></returns>
+    //protected virtual IEnumerable<IDictionary<String, Object>> OnFilter(IEnumerable<IModel> models, ViewKinds kind)
+    //{
+    //    if (models == null) yield break;
 
-        foreach (var item in models)
-        {
-            yield return OnFilter(item, kind);
-        }
-    }
+    //    foreach (var item in models)
+    //    {
+    //        yield return OnFilter(item, kind);
+    //    }
+    //}
     #endregion
 }

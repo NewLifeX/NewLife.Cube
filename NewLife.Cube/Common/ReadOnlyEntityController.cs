@@ -397,7 +397,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("{type}管理")]
     [HttpGet("/[area]/[controller]")]
-    public virtual ActionResult Index()
+    public virtual ApiListResponse<TEntity> Index()
     {
         var p = new Pager(WebHelper.Params)
         {
@@ -407,7 +407,13 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         var list = SearchData(p);
 
-        return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List).ToList(), new { pager = p, stat = p.State });
+        //return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List).ToList(), new { pager = p, stat = p.State });
+        return new ApiListResponse<TEntity>
+        {
+            data = list.ToList(),
+            page = p.ToModel(),
+            stat = (TEntity)p.State,
+        };
     }
 
     /// <summary>查看单行数据</summary>
@@ -416,7 +422,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("查看{type}")]
     [HttpGet]
-    public virtual ActionResult Detail([Required] String id)
+    public virtual TEntity Detail([Required] String id)
     {
         var entity = FindData(id);
         if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
@@ -424,7 +430,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
 
-        return Json(0, null, OnFilter(entity, ViewKinds.Detail));
+        //return Json(0, null, OnFilter(entity, ViewKinds.Detail));
+        return entity;
     }
 
     ///// <summary>清空全表数据</summary>
@@ -1248,45 +1255,45 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         return fields;
     }
 
-    /// <summary>
-    /// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
-    /// </summary>
-    /// <param name="model"></param>
-    /// <param name="kind"></param>
-    /// <returns></returns>
-    protected virtual IDictionary<String, Object> OnFilter(IModel model, ViewKinds kind)
-    {
-        if (model == null) return null;
+    ///// <summary>
+    ///// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
+    ///// </summary>
+    ///// <param name="model"></param>
+    ///// <param name="kind"></param>
+    ///// <returns></returns>
+    //protected virtual IDictionary<String, Object> OnFilter(IModel model, ViewKinds kind)
+    //{
+    //    if (model == null) return null;
 
-        var dic = new Dictionary<String, Object>();
-        var fields = OnGetFields(kind, model);
-        if (fields != null)
-        {
-            var names = Factory.FieldNames;
-            foreach (var field in fields)
-            {
-                if (!field.Name.IsNullOrEmpty() && names.Contains(field.Name))
-                    dic[field.Name] = model[field.Name];
-            }
-        }
+    //    var dic = new Dictionary<String, Object>();
+    //    var fields = OnGetFields(kind, model);
+    //    if (fields != null)
+    //    {
+    //        var names = Factory.FieldNames;
+    //        foreach (var field in fields)
+    //        {
+    //            if (!field.Name.IsNullOrEmpty() && names.Contains(field.Name))
+    //                dic[field.Name] = model[field.Name];
+    //        }
+    //    }
 
-        return dic;
-    }
+    //    return dic;
+    //}
 
-    /// <summary>
-    /// 实体列表过滤器，根据模型列的列表页显示类型，不显示的字段去掉
-    /// </summary>
-    /// <param name="models"></param>
-    /// <param name="kind"></param>
-    /// <returns></returns>
-    protected virtual IEnumerable<IDictionary<String, Object>> OnFilter(IEnumerable<IModel> models, ViewKinds kind)
-    {
-        if (models == null) yield break;
+    ///// <summary>
+    ///// 实体列表过滤器，根据模型列的列表页显示类型，不显示的字段去掉
+    ///// </summary>
+    ///// <param name="models"></param>
+    ///// <param name="kind"></param>
+    ///// <returns></returns>
+    //protected virtual IEnumerable<IDictionary<String, Object>> OnFilter(IEnumerable<IModel> models, ViewKinds kind)
+    //{
+    //    if (models == null) yield break;
 
-        foreach (var item in models)
-        {
-            yield return OnFilter(item, kind);
-        }
-    }
+    //    foreach (var item in models)
+    //    {
+    //        yield return OnFilter(item, kind);
+    //    }
+    //}
     #endregion
 }

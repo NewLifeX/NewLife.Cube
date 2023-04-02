@@ -64,7 +64,7 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
 
         var list = EntityTree<TEntity>.Root.AllChilds;
 
-        if (IsJsonRequest) return Json(0, null, OnFilter(list, ViewKinds.List), new { pager = p });
+        if (IsJsonRequest) return Json(0, null, list, new { page = p });
 
         return View("ListTree", list);
     }

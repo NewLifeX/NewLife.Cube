@@ -220,7 +220,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             Session[key] = Request.GetReferer();
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, OnFilter(entity, ViewKinds.EditForm));
+        if (IsJsonRequest) return Json(0, null, entity);
 
         ViewBag.Fields = EditFormFields;
 

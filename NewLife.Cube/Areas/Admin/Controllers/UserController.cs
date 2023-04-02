@@ -343,8 +343,7 @@ public class UserController : EntityController<User>
     [EntityAuthorize]
     public ActionResult Info()
     {
-        var user = ManageProvider.User as XCode.Membership.User;
-        if (user == null) throw new Exception("当前登录用户无效！");
+        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);
         if (user == null) throw new Exception("无效用户编号！");
@@ -388,7 +387,10 @@ public class UserController : EntityController<User>
 
         user.Update();
 
-        return Json(0, null, OnFilter(user, ViewKinds.EditForm));
+        var user2 = user.CloneEntity();
+        user2.Password = null;
+
+        return Json(0, null, user);
     }
 
     /// <summary>保存文件</summary>
