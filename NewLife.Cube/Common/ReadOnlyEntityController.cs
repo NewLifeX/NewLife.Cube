@@ -410,9 +410,9 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         //return Json(0, null, OnFilter(list.Cast<IModel>(), ViewKinds.List).ToList(), new { pager = p, stat = p.State });
         return new ApiListResponse<TEntity>
         {
-            data = list.ToList(),
-            page = p.ToModel(),
-            stat = (TEntity)p.State,
+            Data = list.ToList(),
+            Page = p.ToModel(),
+            Stat = (TEntity)p.State,
         };
     }
 
@@ -422,7 +422,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("查看{type}")]
     [HttpGet]
-    public virtual TEntity Detail([Required] String id)
+    public virtual ApiResponse<TEntity> Detail([Required] String id)
     {
         var entity = FindData(id);
         if (entity == null || (entity as IEntity).IsNullKey) throw new XException("要查看的数据[{0}]不存在！", id);
@@ -431,7 +431,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         Valid(entity, DataObjectMethodType.Select, false);
 
         //return Json(0, null, OnFilter(entity, ViewKinds.Detail));
-        return entity;
+        return new ApiResponse<TEntity> { Data = entity };
     }
 
     ///// <summary>清空全表数据</summary>

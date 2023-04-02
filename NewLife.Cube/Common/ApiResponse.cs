@@ -6,10 +6,10 @@ namespace NewLife.Cube;
 public interface IApiResponse
 {
     /// <summary>代码。0表示成功，其它为错误代码</summary>
-    Int32 code { get; set; }
+    Int32 Code { get; set; }
 
     /// <summary>消息内容。成功或错误时的提示文本</summary>
-    String message { get; set; }
+    String Message { get; set; }
 }
 
 /// <summary>响应模型</summary>
@@ -17,16 +17,39 @@ public interface IApiResponse
 public class ApiResponse<T> : IApiResponse
 {
     /// <summary>代码。0表示成功，其它为错误代码</summary>
-    public Int32 code { get; set; }
+    public Int32 Code { get; set; }
 
     /// <summary>消息内容。成功或错误时的提示文本</summary>
-    public String message { get; set; }
+    public String Message { get; set; }
 
     /// <summary>响应数据</summary>
-    public T data { get; set; }
+    public T Data { get; set; }
 
     /// <summary>跟踪编号</summary>
-    public String traceId { get; set; }
+    public String TraceId { get; set; }
+
+    /// <summary>实例化</summary>
+    public ApiResponse() { }
+
+    /// <summary>实例化</summary>
+    /// <param name="code"></param>
+    /// <param name="message"></param>
+    public ApiResponse(Int32 code, String message)
+    {
+        Code = code;
+        Message = message;
+    }
+
+    /// <summary>实例化</summary>
+    /// <param name="code"></param>
+    /// <param name="message"></param>
+    /// <param name="data"></param>
+    public ApiResponse(Int32 code, String message, T data)
+    {
+        Code = code;
+        Message = message;
+        Data = data;
+    }
 }
 
 /// <summary>列表响应模型</summary>
@@ -34,8 +57,8 @@ public class ApiResponse<T> : IApiResponse
 public class ApiListResponse<T> : ApiResponse<IList<T>>
 {
     /// <summary>分页信息</summary>
-    public PageModel page { get; set; }
+    public PageModel Page { get; set; }
 
     /// <summary>统计行数据</summary>
-    public T stat { get; set; }
+    public T Stat { get; set; }
 }

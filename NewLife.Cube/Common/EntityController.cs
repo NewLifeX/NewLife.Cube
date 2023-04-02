@@ -35,7 +35,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     [EntityAuthorize(PermissionFlags.Delete)]
     [DisplayName("删除{type}")]
     [HttpDelete("/[area]/[controller]")]
-    public virtual ActionResult Delete([Required] String id)
+    public virtual ApiResponse<TEntity> Delete([Required] String id)
     {
         var entity = FindData(id);
         var rs = false;
@@ -58,9 +58,9 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         }
 
         if (rs)
-            return Json(0, "删除成功！", entity);
+            return new ApiResponse<TEntity>(0, "删除成功！", entity);
         else
-            return Json(500, "删除失败！" + err, entity);
+            return new ApiResponse<TEntity>(500, "删除失败！" + err, entity);
     }
 
     /// <summary>添加数据</summary>
@@ -69,7 +69,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     [DisplayName("添加{type}")]
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost("/[area]/[controller]")]
-    public virtual async Task<ActionResult> Insert(TModel model)
+    public virtual async Task<ApiResponse<TEntity>> Insert(TModel model)
     {
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
@@ -123,12 +123,12 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Entity<TEntity>.Meta.Unique.Name] = 0;
 
-            return Json(500, msg);
+            return new ApiResponse<TEntity>(500, msg, null);
         }
 
         msg = "添加成功！";
 
-        return Json(0, msg, entity);
+        return new ApiResponse<TEntity>(0, msg, entity);
     }
 
     /// <summary>更新数据</summary>
@@ -137,7 +137,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     [EntityAuthorize(PermissionFlags.Update)]
     [DisplayName("更新{type}")]
     [HttpPut("/[area]/[controller]")]
-    public virtual async Task<ActionResult> Update(TModel model)
+    public virtual async Task<ApiResponse<TEntity>> Update(TModel model)
     {
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
@@ -185,13 +185,13 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
 
             msg = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
 
-            return Json(500, msg);
+            return new ApiResponse<TEntity>(500, msg, null);
         }
         else
         {
             msg = "保存成功！";
 
-            return Json(0, msg, entity);
+            return new ApiResponse<TEntity>(0, msg, entity);
         }
     }
 
