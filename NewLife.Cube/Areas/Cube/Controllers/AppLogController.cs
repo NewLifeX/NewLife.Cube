@@ -14,8 +14,6 @@ public class AppLogController : ReadOnlyEntityController<AppLog>
 {
     static AppLogController()
     {
-        ListFields.RemoveField("ID");
-
         //ListFields.TraceUrl("TraceId");
         //{
         //    var df = ListFields.GetField("TraceId") as ListField;

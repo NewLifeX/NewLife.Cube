@@ -16,7 +16,7 @@ public class RoleController : EntityController<Role>
 {
     static RoleController()
     {
-        ListFields.RemoveField("ID", "Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "UpdateUserID", "UpdateIP", "Remark");
+        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "UpdateUserID", "UpdateIP", "Remark");
         ListFields.RemoveCreateField();
 
         {

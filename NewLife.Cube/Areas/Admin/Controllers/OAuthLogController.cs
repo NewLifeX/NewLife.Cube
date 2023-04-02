@@ -16,8 +16,7 @@ public class OAuthLogController : ReadOnlyEntityController<OAuthLog>
 {
     static OAuthLogController()
     {
-        ListFields.RemoveField("Id")
-            .RemoveUpdateField();
+        ListFields.RemoveUpdateField();
 
         //ListFields.TraceUrl("TraceId");
     }

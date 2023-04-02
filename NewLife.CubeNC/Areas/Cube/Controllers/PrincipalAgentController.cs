@@ -14,7 +14,6 @@ namespace NewLife.Cube.Cube.Controllers
     {
         static PrincipalAgentController() 
         {
-            ListFields.RemoveField("ID");
             ListFields.RemoveCreateField();
 
             LogOnChange = true;

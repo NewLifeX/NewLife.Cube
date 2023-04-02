@@ -16,7 +16,7 @@ namespace NewLife.Cube.Cube.Controllers
     {
         static AttachmentController()
         {
-            ListFields.RemoveField("ID", "Hash", "Url", "Source", "UpdateUserID", "UpdateIP", "Remark");
+            ListFields.RemoveField("Hash", "Url", "Source", "UpdateUserID", "UpdateIP", "Remark");
             ListFields.RemoveCreateField();
 
             {
