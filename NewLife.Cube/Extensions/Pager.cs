@@ -227,7 +227,7 @@ public class Pager : PageParameter, IExtend
 
     /// <summary>转为分页模型</summary>
     /// <returns></returns>
-    public PageModel ToModel() => new() { PageIndex = PageIndex, PageSize = PageSize, TotalCount = TotalCount };
+    public PageModel ToModel() => new() { PageIndex = PageIndex, PageSize = PageSize, TotalCount = TotalCount, LongTotalCount = TotalCount.ToString() };
     #endregion
 
     #region IExtend接口
@@ -252,6 +252,9 @@ public class PageModel
 
     /// <summary>获取 或 设置 总记录数</summary>
     public virtual Int64 TotalCount { get; set; }
+
+    /// <summary>获取 或 设置 总记录数，字符串类型</summary>
+    public virtual String LongTotalCount { get; set; }
 
     ///// <summary>获取 页数</summary>
     //public virtual Int64 PageCount { get; set; }
