@@ -205,7 +205,10 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             rs = dic;
         }
 
-        return Content(OnJsonSerialize(rs), "application/json", Encoding.UTF8);
+        var json = OnJsonSerialize(rs);
+        DefaultSpan.Current?.AppendTag(json);
+
+        return Content(json, "application/json", Encoding.UTF8);
     }
 
     /// <summary>Json序列化。默认使用FastJson</summary>

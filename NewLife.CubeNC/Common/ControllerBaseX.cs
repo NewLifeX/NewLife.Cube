@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
+using NewLife.Log;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using XCode.Membership;
@@ -167,7 +168,10 @@ public class ControllerBaseX : Controller
             rs = dic;
         }
 
-        return Content(OnJsonSerialize(rs), "application/json", Encoding.UTF8);
+        var json = OnJsonSerialize(rs);
+        DefaultSpan.Current?.AppendTag(json);
+
+        return Content(json, "application/json", Encoding.UTF8);
     }
 
     /// <summary>Json序列化。默认使用FastJson</summary>
