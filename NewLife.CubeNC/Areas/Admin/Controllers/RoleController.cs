@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -65,7 +66,7 @@ public class RoleController : EntityController<Role>
         if (!Valid(entity, DataObjectMethodType.Insert, true))
         {
             ViewBag.StatusMessage = "验证失败！";
-            ViewBag.Fields = AddFormFields;
+            ViewBag.Fields = OnGetFields(ViewKinds.AddForm, entity);
 
             return View("AddForm", entity);
         }
@@ -156,7 +157,7 @@ public class RoleController : EntityController<Role>
 
             if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
 
-            ViewBag.Fields = AddFormFields;
+            ViewBag.Fields = OnGetFields(ViewKinds.AddForm, entity);
 
             return View("AddForm", entity);
         }
@@ -176,7 +177,7 @@ public class RoleController : EntityController<Role>
 
             if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
 
-            ViewBag.Fields = AddFormFields;
+            ViewBag.Fields = OnGetFields(ViewKinds.AddForm, entity);
 
             return View("AddForm", entity);
         }
