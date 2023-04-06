@@ -237,7 +237,7 @@ public class SsoController : ControllerBaseX
             }
 
             // 登录后自动绑定
-            var logId = Session["Cube_OAuthId"].ToLong();
+            var logId = Session.ContainsKey("Cube_OAuthId") ? Session["Cube_OAuthId"].ToLong() : 0;
             if (logId > 0 && logId != log.Id)
             {
                 Session["Cube_OAuthId"] = null;
