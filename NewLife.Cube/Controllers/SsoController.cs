@@ -125,6 +125,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
+    [HttpGet("{id}")]
     public virtual ActionResult LoginInfo(String id, String code, String state)
     {
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
