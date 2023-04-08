@@ -1,11 +1,22 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Numerics;
+using System.Reflection;
+using System.Reflection.PortableExecutable;
+using System.Runtime;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
+using NewLife.Reflection;
+using NewLife.Web;
 using XCode.Membership;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
@@ -15,14 +26,15 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 public class IndexController : ControllerBaseX
 {
     private readonly IManageProvider _provider;
+    private readonly IWebHostEnvironment _env;
 
     static IndexController() => MachineInfo.RegisterAsync();
 
     /// <summary>实例化</summary>
-    public IndexController(IManageProvider manageProvider)
+    public IndexController(IManageProvider manageProvider, IWebHostEnvironment env)
     {
         _provider = manageProvider;
-
+        _env=env;
         PageSetting.EnableNavbar = false;
     }
 
@@ -55,33 +67,146 @@ public class IndexController : ControllerBaseX
     [DisplayName("服务器信息")]
     [EntityAuthorize(PermissionFlags.Detail)]
     [HttpGet]
-    public ActionResult Main(String id)
+    public ActionResult Main()
     {
-        //ViewBag.Act = id;
-        //ViewBag.Config = SysConfig.Current;
-
-        //var name = Process.GetCurrentProcess().ProcessName;
-
-        //ViewBag.WebServerName = name;
-        //ViewBag.MyAsms = AssemblyX.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
-
-        //var Asms = AssemblyX.GetAssemblies(null).ToArray();
-        //Asms = Asms.OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
-        //ViewBag.Asms = Asms;
-
-        ////return View();
-        //switch ((id + "").ToLower())
-        //{
-        //    case "processmodules": return View("ProcessModules");
-        //    case "assembly": return View("Assembly");
-        //    case "session": return View("Session");
-        //    case "cache": return View("Cache");
-        //    case "servervar": return View("ServerVar");
-        //    case "memoryfree": return View("MemoryFree");
-        //    default: return View();
-        //}
-        return Json(0, "ok");
+        var req = HttpContext.Request;
+        var conn = HttpContext.Connection;
+        var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
+        var mi = MachineInfo.Current ?? new MachineInfo();
+        var process = Process.GetCurrentProcess();
+        var asm = Assembly.GetExecutingAssembly();
+        var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
+        var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
+        var addrLocal = conn.LocalIpAddress;
+        var addrRemote = conn.RemoteIpAddress;
+        if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+        if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+        var userHost = HttpContext.GetUserHost();
+        var result = new
+        {
+            system = req.GetRawUrl().AbsoluteUri,
+            path = _env.ContentRootPath,
+            host = req.Headers["Host"],
+            local = addrLocal + ":" + conn.LocalPort,
+            remote = addrRemote + ":" + conn.RemotePort,
+            application = process.ProcessName,
+            applicationTitle = Environment.CommandLine,
+            version = ver,
+            os = mi.OSName,
+            osVersion = mi.OSVersion,
+            machineId = mi.UUID,
+            machineProduct = mi.Product,
+            cpu = mi.Processor + Environment.ProcessorCount + "核心 使用率" + mi.CpuRate.ToString("p0") + mi.Temperature + " ℃",
+            openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
+            serverTime = DateTime.Now,
+            memory = "物理：" + (mi.AvailableMemory / 1024 / 1024).ToString("n0") + "M/" + (mi.Memory / 1024 / 1024).ToString("n0") + "M    工作/提交: " + (process.WorkingSet64 / 1024 / 1024).ToString("n0") + "M/@" + (process.PrivateMemorySize64 / 1024 / 1024).ToString("n0") + "M   GC: " + (GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0") + "M",
+            processTime = process.TotalProcessorTime.TotalSeconds.ToString("N2") + "秒 启动于" + process.StartTime.ToLocalTime().ToFullString(),
+            gc = gc,
+            //startTime = ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
+        };
+        return Json(0,null,result);
     }
+
+
+
+    /// <summary>服务器变量列表</summary>
+    /// <returns></returns>
+    [DisplayName("服务器变量列表")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult ServerVarList()
+    {
+        var req = HttpContext.Request;
+        var list=new List<dynamic>();
+        foreach(var kv in req.Headers)
+        {
+            var v = kv.Value.ToString();
+            var key = kv.Key;
+            list.Add(new { name=key, value=v });
+        }
+        var rqlist = new List<dynamic>();
+        foreach (var pi in req.GetType().GetProperties())
+        {
+            var type = pi.PropertyType;
+            if (pi.GetIndexParameters().Length > 0 || (type != typeof(String)
+                                                  && type != typeof(Uri)
+                                                  && type != typeof(PathString)
+                                                  && type != typeof(HostString)
+                                                  && !typeof(Boolean).IsAssignableFrom(type)
+                                                  && !typeof(String).IsAssignableFrom(type)))
+            {
+                continue;
+            }
+            rqlist.Add(new { name = pi.Name, value = req.GetValue(pi) });
+        }
+            return Json(0,null,new {server=list,requestName= req.GetType().FullName, request=rqlist});
+    }
+    /// <summary>进程模块列表</summary>
+    /// <param name="model">All全部,OnlyUser用户</param>
+    /// <returns></returns>
+    [DisplayName("进程模块列表")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult ProcessList(String model)
+    {
+        var isAll = String.Equals("All", model, StringComparison.OrdinalIgnoreCase);
+        var process = Process.GetCurrentProcess();
+        var result = new List<dynamic>();
+        foreach (ProcessModule item in process.Modules)
+        {
+            try
+            {
+                if (isAll || item.FileVersionInfo.CompanyName != "Microsoft Corporation")
+                {
+                    result.Add(new
+                    {
+                        name = item.ModuleName,
+                        companyName = item.FileVersionInfo.CompanyName,
+                        productName = item.FileVersionInfo.ProductName,
+                        description = item.FileVersionInfo.FileDescription,
+                        version = item.FileVersionInfo.FileVersion,
+                        size = item.ModuleMemorySize,
+                        fileName = item.FileName
+                    });
+                }
+            }
+            catch { }
+        }
+        return Json(0, null, result);
+    }
+
+
+    /// <summary>程序集列表</summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [DisplayName("程序集列表")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public ActionResult AssemblyList(String model)
+    {
+        var isAll = String.Equals("All", model, StringComparison.OrdinalIgnoreCase);
+        var result =new List<dynamic>();
+        AssemblyX[] asms = null;
+        if(isAll)
+           asms=AssemblyX.GetAssemblies(null).OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+        else
+            asms = AssemblyX.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+        foreach (var assembly in asms)
+        {
+            result.Add(new
+            {
+                name = assembly.Name,
+                title = assembly.Title,
+                fileVersion = assembly.FileVersion,
+                version = assembly.Version,
+                compileTime = assembly.Compile.ToFullString(),
+                location = assembly.Asm.Location
+            });
+        }
+        return Json(0,null, result);
+    }
+
+
 
     /// <summary>重启</summary>
     /// <returns></returns>
