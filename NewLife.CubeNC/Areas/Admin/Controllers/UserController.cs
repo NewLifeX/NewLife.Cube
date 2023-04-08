@@ -90,7 +90,11 @@ public class UserController : EntityController<User, UserModel>
         }
     }
 
-    protected override FieldCollection OnGetFields(ViewKinds kind, IModel model)
+    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
     {
         var fields = base.OnGetFields(kind, model);
         if (fields == null) return fields;
@@ -515,7 +519,7 @@ public class UserController : EntityController<User, UserModel>
         }
 
         // 用于显示的列
-        if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
+        if (ViewBag.Fields == null) ViewBag.Fields = OnGetFields(ViewKinds.EditForm, null);
         ViewBag.Factory = Factory;
 
         // 必须指定视图名，因为其它action会调用

@@ -1221,11 +1221,15 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <summary>表单字段过滤</summary>
     protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, ViewKinds.Detail);
 
+    private static FieldCollection _SearchFields;
+    /// <summary>搜索字段过滤</summary>
+    protected static FieldCollection SearchFields => _SearchFields ??= new FieldCollection(Factory, ViewKinds.Search);
+
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
-    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="model"></param>
+    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
+    /// <param name="model">获取字段列表时的相关模型。对webapi版暂时无效</param>
     /// <returns></returns>
-    protected virtual FieldCollection OnGetFields(ViewKinds kind, IModel model)
+    protected virtual FieldCollection OnGetFields(ViewKinds kind, Object model)
     {
         var fields = kind switch
         {
@@ -1233,15 +1237,14 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             ViewKinds.Detail => DetailFields,
             ViewKinds.AddForm => AddFormFields,
             ViewKinds.EditForm => EditFormFields,
+            ViewKinds.Search => SearchFields,
             _ => ListFields,
         };
         return fields.Clone();
     }
 
-    /// <summary>
-    /// 获取字段
-    /// </summary>
-    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm</param>
+    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]

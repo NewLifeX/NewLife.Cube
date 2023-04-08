@@ -5,6 +5,7 @@ using System.Xml.Serialization;
 using NewLife.Cube.ViewModels;
 using XCode;
 using XCode.Configuration;
+using XCode.DataAccessLayer;
 
 namespace NewLife.Cube;
 
@@ -72,6 +73,37 @@ public class FieldCollection : List<DataField>
                     SetRelation(true);
                     break;
                 case ViewKinds.Search:
+                    // 有索引的字段
+                    var fs = new List<FieldItem>();
+                    var ds = new List<String>();
+                    foreach (var idx in factory.Table.DataTable.Indexes)
+                    {
+                        foreach (var elm in idx.Columns)
+                        {
+                            var dc = factory.Table.DataTable.GetColumn(elm);
+                            if (dc != null && !ds.Contains(dc.Name))
+                            {
+                                ds.Add(dc.Name);
+                                fs.Add(factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(dc.Name)));
+                            }
+                        }
+                    }
+
+                    // 有映射的字段
+                    foreach (var item in factory.Fields)
+                    {
+                        if (item.Map != null && !ds.Contains(item.Name))
+                        {
+                            ds.Add(item.Name);
+                            fs.Add(item);
+                        }
+                    }
+
+                    Clear();
+                    foreach (var elm in fs)
+                    {
+                        AddField(elm.Name);
+                    }
                     break;
                 default:
                     SetRelation(false);
@@ -91,6 +123,7 @@ public class FieldCollection : List<DataField>
         {
             ViewKinds.List => new ListField(),
             ViewKinds.Detail or ViewKinds.AddForm or ViewKinds.EditForm => new FormField(),
+            ViewKinds.Search => new SearchField(),
             _ => throw new NotImplementedException(),
         };
         //df.Sort = Count + 1;
