@@ -70,7 +70,6 @@
                                 网站首页
                             </a>
                         </li>
-
                         @*@if (user.Has("Admin/Sys", PermissionFlags.Detail))
                         {
                         <li>
@@ -80,16 +79,20 @@
                         </a>
                         </li>
                         }*@
-
                         <li>
                             <a href="~/Admin/User/Info/@uid" target="main">
                                 <i class="ace-icon fa fa-user"></i>
                                 个人信息
                             </a>
                         </li>
-
                         <li class="divider"></li>
-
+                        <li>
+                            <a href="~/Admin/User/Info/@uid" target="main">
+                                <i class="ace-icon fa fa-user"></i>
+                                个人信息
+                            </a>
+                        </li>
+                        <li class="divider"></li>
                         <li>
                             <a href="~/Admin/User/Logout">
                                 <i class="ace-icon fa fa-power-off"></i>

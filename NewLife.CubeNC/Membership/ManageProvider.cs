@@ -1,4 +1,5 @@
-﻿using System.Security.Principal;
+﻿using System.Linq;
+using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
@@ -292,8 +293,44 @@ public static class ManagerProviderHelper
             if (user != null) provider.SetCurrent(user, serviceProvider);
         }
 
+        // 如果Null直接返回
+        if (user == null) return null;
+
         // 设置前端当前用户
-        if (user != null) provider.SetPrincipal(serviceProvider);
+        provider.SetPrincipal(serviceProvider);
+
+        // 处理租户相关信息
+        {
+            var tlist = TenantUser.FindAllByUserId(user.ID);
+            var tenantId = GetCookieTenantID(context);
+            if (tenantId > 0)
+            {
+                if (tlist.Count <= 0 || tlist.All(e => !e.Enable))
+                {
+                    ChangeTenant(context, 0);
+                }
+                else if (tlist.Count == 1)
+                {
+                    var entity = tlist.FirstOrDefault();
+                    if (entity.TenantId != tenantId && entity.Tenant.Enable)
+                    {
+                        ChangeTenant(context, entity.TenantId);
+                    }
+                    else
+                    {
+                        ChangeTenant(context, 0);
+                    }
+                }
+                else if (tlist.All(e => e.TenantId != tenantId || !e.Enable))
+                {
+                    ChangeTenant(context, 0);
+                }
+            }
+            else if (tlist.Count == 1 && (tlist.FirstOrDefault()?.Tenant.Enable ?? false))
+            {
+                ChangeTenant(context, tlist.FirstOrDefault()?.TenantId ?? 0);
+            }
+        }
 
         return user;
     }
@@ -432,6 +469,17 @@ public static class ManagerProviderHelper
         if (tenantId <= 0) option.Expires = DateTimeOffset.MinValue;
 
         res.Cookies.Append("TenantId", tenantId + "", option);
+    }
+
+    /// <summary>获取cookie中tenantId</summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public static Int32 GetCookieTenantID(HttpContext context)
+    {
+        var res = context?.Request;
+        if (res == null) return 0;
+
+        return res.Cookies["TenantId"].ToInt(0);
     }
 
     /// <summary>
