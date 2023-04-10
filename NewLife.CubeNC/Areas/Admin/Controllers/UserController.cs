@@ -389,7 +389,6 @@ public class UserController : EntityController<User, UserModel>
 
                 //FormsAuthentication.SetAuthCookie(username, remember ?? false);
 
-
                 // 记录在线统计
                 var stat = UserStat.GetOrAdd(DateTime.Today);
                 if (stat != null)
@@ -397,6 +396,9 @@ public class UserController : EntityController<User, UserModel>
                     stat.Logins++;
                     stat.SaveAsync(5_000);
                 }
+
+                // 设置租户
+                SetTenant(provider.Current.ID);
 
                 if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
 
@@ -730,6 +732,21 @@ public class UserController : EntityController<User, UserModel>
         if (IsJsonRequest) return Ok();
 
         return RedirectToAction("Edit", new { id });
+    }
+
+    /// <summary>设置租户</summary>
+    /// <param name="userId">当前用户编号</param>
+    private void SetTenant(Int32 userId)
+    {
+        var tenantUser = TenantUser.FindAllByUserId(userId);
+        if (tenantUser != null && tenantUser.Count == 1)
+        {
+            var entity = tenantUser.FirstOrDefault().Tenant;
+
+            if (entity == null || !entity.Enable) return;
+
+            ManagerProviderHelper.ChangeTenant(HttpContext, tenantUser.FirstOrDefault().TenantId);
+        }
     }
 
     ///// <summary>批量启用</summary>
