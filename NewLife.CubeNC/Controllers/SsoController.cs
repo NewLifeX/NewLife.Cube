@@ -215,8 +215,7 @@ public class SsoController : ControllerBaseX
             Session["Cube_Sso"] = client.Name;
 
             // 记录在线统计
-            var olt = HttpContext.Items["Cube_Online"] as UserOnline;
-            if (olt != null)
+            if (HttpContext.Items["Cube_Online"] is UserOnline olt)
             {
                 olt.OAuthProvider = client.Name;
                 olt.SaveAsync();
