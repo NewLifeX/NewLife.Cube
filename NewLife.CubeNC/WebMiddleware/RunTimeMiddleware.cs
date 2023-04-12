@@ -76,8 +76,10 @@ public class RunTimeMiddleware
         var user = ManageProvider.User;
         try
         {
+            var set = CubeSetting.Current;
             var p = ctx.Request.Path + "";
-            if (!p.EndsWithIgnoreCase(ExcludeSuffixes))
+            if (!p.EndsWithIgnoreCase(ExcludeSuffixes) &&
+                (set.EnableUserOnline == 2 || set.EnableUserOnline == 1 && user != null))
             {
                 // 浏览器设备标识作为会话标识
                 var deviceId = FillDeviceId(ctx);
