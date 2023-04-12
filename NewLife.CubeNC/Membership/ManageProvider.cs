@@ -303,30 +303,12 @@ public static class ManagerProviderHelper
         {
             var tlist = TenantUser.FindAllByUserId(user.ID);
             var tenantId = GetCookieTenantID(context);
-            if (tenantId > 0)
+
+            if (tlist.Any(e => e.TenantId == tenantId))
             {
-                if (tlist.Count <= 0 || tlist.All(e => !e.Enable))
-                {
-                    ChangeTenant(context, 0);
-                }
-                else if (tlist.Count == 1)
-                {
-                    var entity = tlist.FirstOrDefault();
-                    if (entity.TenantId != tenantId && entity.Tenant.Enable)
-                    {
-                        ChangeTenant(context, entity.TenantId);
-                    }
-                    else
-                    {
-                        ChangeTenant(context, 0);
-                    }
-                }
-                else if (tlist.All(e => e.TenantId != tenantId || !e.Enable))
-                {
-                    ChangeTenant(context, 0);
-                }
+                ChangeTenant(context, tenantId);
             }
-            else if (tlist.Count == 1 && (tlist.FirstOrDefault()?.Tenant.Enable ?? false))
+            else
             {
                 ChangeTenant(context, tlist.FirstOrDefault()?.TenantId ?? 0);
             }
