@@ -239,7 +239,7 @@
       <Column Name="FileName" DataType="String" Master="True" Length="200" Nullable="False" Description="文件名。原始文件名" />
       <Column Name="Extension" DataType="String" Description="扩展名" />
       <Column Name="Size" DataType="Int64" ItemType="GMK" Description="文件大小" />
-      <Column Name="ContentType" DataType="String" Description="内容类型。用于Http响应" />
+      <Column Name="ContentType" DataType="String" Length="200" Description="内容类型。用于Http响应" />
       <Column Name="FilePath" DataType="String" Length="200" Description="路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件" />
       <Column Name="Hash" DataType="String" Description="哈希。MD5" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
