@@ -8,7 +8,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Cube.Controllers
 {
     /// <summary>委托代理</summary>
- [CubeArea]
+    [CubeArea]
     [Menu(0, true, Icon = "fa-user-secret")]
     public class PrincipalAgentController : EntityController<PrincipalAgent>
     {
@@ -20,19 +20,19 @@ namespace NewLife.Cube.Areas.Cube.Controllers
 
             {
                 var ff = AddFormFields.GetField("PrincipalName") as FormField;
-                ff.GroupView = "_Form_PrincipalName";
+                //ff.GroupView = "_Form_PrincipalName";
             }
             {
                 var ff = EditFormFields.GetField("PrincipalName") as FormField;
-                ff.GroupView = "_Form_PrincipalName";
+                //ff.GroupView = "_Form_PrincipalName";
             }
             {
                 var ff = AddFormFields.GetField("AgentName") as FormField;
-                ff.GroupView = "_Form_AgentName";
+                //ff.GroupView = "_Form_AgentName";
             }
             {
                 var ff = EditFormFields.GetField("AgentName") as FormField;
-                ff.GroupView = "_Form_AgentName";
+                //ff.GroupView = "_Form_AgentName";
             }
         }
 
