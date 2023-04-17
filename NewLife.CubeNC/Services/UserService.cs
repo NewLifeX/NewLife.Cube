@@ -147,6 +147,8 @@ public class UserService
 
         using var span = _tracer?.NewSpan("ClearExpireOnline");
 
+        var set = CubeSetting.Current;
+
         // 减少Sql日志
         var dal = UserOnline.Meta.Session.Dal;
         var oldSql = dal.Session.ShowSQL;
@@ -163,10 +165,14 @@ public class UserService
             _onlines = total - list.Count;
 
             // 设置统计
-            var stat = UserStat.GetOrAdd(DateTime.Today);
-            if (stat != null)
+            UserStat stat = null;
+            if (set.EnableUserStat)
             {
-                if (total > stat.MaxOnline) stat.MaxOnline = total;
+                stat = UserStat.GetOrAdd(DateTime.Today);
+                if (stat != null)
+                {
+                    if (total > stat.MaxOnline) stat.MaxOnline = total;
+                }
             }
 
             // 设置离线
@@ -178,11 +184,11 @@ public class UserService
                     user2.Online = false;
                     user2.OnlineTime += item.OnlineTime;
                     user2.Save();
-
-                    if (stat != null) stat.OnlineTime += item.OnlineTime;
                 }
+
+                if (stat != null) stat.OnlineTime += item.OnlineTime;
             }
-            stat.SaveAsync();
+            stat?.Update();
 
             return list;
         }
@@ -203,19 +209,26 @@ public class UserService
     /// <param name="user"></param>
     public static void ClearOnline(User user)
     {
+        var set = CubeSetting.Current;
+
         // 在线表删除
         var olts = UserOnline.FindAllByUserID(user.ID);
         if (olts.Count > 0)
         {
-            var stat = UserStat.GetOrAdd(DateTime.Today);
             foreach (var olt in olts)
             {
                 user.OnlineTime += olt.OnlineTime;
                 olt.Delete();
-
-                if (stat != null) stat.OnlineTime += olt.OnlineTime;
             }
-            stat.SaveAsync();
+            if (set.EnableUserStat)
+            {
+                var stat = UserStat.GetOrAdd(DateTime.Today);
+                foreach (var olt in olts)
+                {
+                    stat.OnlineTime += olt.OnlineTime;
+                }
+                stat.Update();
+            }
         }
 
         user.Online = false;
