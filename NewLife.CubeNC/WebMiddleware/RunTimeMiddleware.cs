@@ -238,11 +238,16 @@ public class RunTimeMiddleware
             if (ctx.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
             {
                 var domain = CubeSetting.Current.CookieDomain;
-                if (!domain.IsNullOrEmpty()) opt.Domain = domain;
+                if (!domain.IsNullOrEmpty())
+                {
+                    opt.Domain = domain;
+                    opt.SameSite = SameSiteMode.None;
+                    opt.Secure = true;
+                }
 
                 //opt.HttpOnly = true;
-                opt.SameSite = SameSiteMode.None;
-                opt.Secure = true;
+                //opt.SameSite = SameSiteMode.None;
+                //opt.Secure = true;
             }
 
             ctx.Response.Cookies.Append("CubeDeviceId", id, opt);
