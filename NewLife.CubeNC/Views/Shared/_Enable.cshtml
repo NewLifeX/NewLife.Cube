@@ -4,14 +4,21 @@
 @using System.Linq;
 @{
     var page = ViewBag.Page as Pager;
-    var name = (Object)Model + "";
+    //var name = (Object)Model + "";
+    var name = "";
+    if (Model is String str) name = str;
     if (name.IsNullOrEmpty()) name = "enable";
 
     var dic = new Dictionary<Int32, String>();
-    if (name == "enable")
+    if (name.EqualIgnoreCase("enable"))
     {
         dic.Add(1, "启用");
         dic.Add(0, "禁用");
+    }
+    else if (name.EqualIgnoreCase("success"))
+    {
+        dic.Add(1, "成功");
+        dic.Add(0, "失败");
     }
     else
     {
