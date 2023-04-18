@@ -11,6 +11,9 @@
     }
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
+
+    var tenant = Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
+    var trName = tenant == null ? $"{roleNames}" : $"{tenant?.Name} / {roleNames}";
 }
 
 <div class="layui-header">
@@ -26,12 +29,12 @@
 
     <ul class="layui-nav layui-layout-right">
         <li class="layui-nav-item layui-hide layui-show-md-inline-block">
-            <a href="javascript:;">
+            <a href="javascript:;" title="@trName">
                 @if (user != null && !user.Avatar.IsNullOrEmpty())
                 {
                     <img class="layui-nav-img" src="@user.GetAvatarUrl()" alt="@user">
                 }
-                @user / @roleNames
+                @user / @trName
             </a>
             <dl class="layui-nav-child">
                 <dd><a href="javascript:;" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="用户信息">用户信息</a></dd>

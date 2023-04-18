@@ -82,10 +82,10 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.2.2023.401" />
+    <PackageReference Include="NewLife.Core" Version="10.2.2023.417-beta0032" />
     <PackageReference Include="NewLife.IP" Version="2.0.2023.401" />
-    <PackageReference Include="NewLife.Stardust" Version="2.8.2023.403" />
-    <PackageReference Include="NewLife.XCode" Version="11.8.2023.401" />
+    <PackageReference Include="NewLife.Stardust" Version="2.8.2023.416-beta1214" />
+    <PackageReference Include="NewLife.XCode" Version="11.8.2023.412-beta1750" />
   </ItemGroup>
 
   <ItemGroup>

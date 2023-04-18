@@ -13,6 +13,8 @@
     var name = cfg == null ? "" : cfg.DisplayName;
 
     var tenant = Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
+
+    var trName = tenant == null ? $"[{roleNames}]" : $"[{tenant?.Name}/{roleNames}]";
 }
 <!-- #section:basics/navbar.layout -->
 <div id="navbar" class="navbar navbar-default">
@@ -38,12 +40,6 @@
                 </small>
             </a>
         </div>
-        @if (tenant != null)
-        {
-            <div class="pull-left">
-                <h3>@tenant.Name</h3>
-            </div>
-        }
 
         <!-- #section:basics/navbar.dropdown -->
         <div class="navbar-buttons navbar-header pull-right" role="navigation">
@@ -55,9 +51,9 @@
                         {
                             <img class="nav-user-photo hidden-xs" src="@user.GetAvatarUrl()" alt="@user" />
                         }
-                        <span class="user-info hidden-xs">
+                        <span class="user-info hidden-xs" title="@trName">
                             @*<small>欢迎，</small>*@
-                            @user <br /> [@roleNames]
+                            @user <br /> @trName
                         </span>
 
                         <i class="ace-icon fa fa-caret-down"></i>
@@ -68,21 +64,6 @@
                             <a href="~/" target="_blank">
                                 <i class="ace-icon fa fa-cog"></i>
                                 网站首页
-                            </a>
-                        </li>
-                        @*@if (user.Has("Admin/Sys", PermissionFlags.Detail))
-                        {
-                        <li>
-                        <a href="~/Admin/Sys" target="main">
-                        <i class="ace-icon fa fa-cog"></i>
-                        设置
-                        </a>
-                        </li>
-                        }*@
-                        <li>
-                            <a href="~/Admin/User/Info/@uid" target="main">
-                                <i class="ace-icon fa fa-user"></i>
-                                个人信息
                             </a>
                         </li>
                         <li class="divider"></li>

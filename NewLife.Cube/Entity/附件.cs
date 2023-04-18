@@ -81,7 +81,7 @@ namespace NewLife.Cube.Entity
         /// <summary>内容类型。用于Http响应</summary>
         [DisplayName("内容类型")]
         [Description("内容类型。用于Http响应")]
-        [DataObjectField(false, false, true, 50)]
+        [DataObjectField(false, false, true, 200)]
         [BindColumn("ContentType", "内容类型。用于Http响应", "")]
         public String ContentType { get => _ContentType; set { if (OnPropertyChanging("ContentType", value)) { _ContentType = value; OnPropertyChanged("ContentType"); } } }
 
