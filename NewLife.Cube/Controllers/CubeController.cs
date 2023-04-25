@@ -348,12 +348,16 @@ public class CubeController : ControllerBaseX
             {
                 var ns = Enum.GetNames(type);
                 var vs = Enum.GetValues(type);
-                var dic = new Dictionary<String, Object>();
+                var list = new Dictionary<String, Object>[ns.Length];
                 for (var i = 0; i < ns.Length; i++)
                 {
-                    dic[ns[i]] = vs.GetValue(i);
+                    list[i] = new Dictionary<String, Object>
+                    {
+                        ["Label"] = ns[i],
+                        ["Value"] = vs.GetValue(i),
+                    };
                 }
-                source.Add(code, dic);
+                source.Add(code, list);
             }
         }
 
