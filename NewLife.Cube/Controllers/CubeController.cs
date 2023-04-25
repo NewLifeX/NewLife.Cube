@@ -332,7 +332,34 @@ public class CubeController : ControllerBaseX
     }
     #endregion
 
-    #region 字典参数        
+    #region 字典参数
+    /// <summary>查询一批Code的数据源</summary>
+    /// <param name="codes"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpGet]
+    public ActionResult Lookup(String codes)
+    {
+        var source = new Dictionary<String, Object>();
+        foreach (var code in codes.Split(","))
+        {
+            var type = code.GetTypeEx();
+            if (type != null && type.IsEnum)
+            {
+                var ns = Enum.GetNames(type);
+                var vs = Enum.GetValues(type);
+                var dic = new Dictionary<String, Object>();
+                for (var i = 0; i < ns.Length; i++)
+                {
+                    dic[ns[i]] = vs.GetValue(i);
+                }
+                source.Add(code, dic);
+            }
+        }
+
+        return Json(0, null, source);
+    }
+
     ///// <summary>
     ///// 保存字典参数到后台
     ///// </summary>
