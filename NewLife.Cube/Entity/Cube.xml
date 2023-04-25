@@ -391,4 +391,27 @@
       <Index Columns="AgentId" />
     </Indexes>
   </Table>
+  <Table Name="OrderManager" Description="指令管理">
+    <Columns>
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Name" DataType="String" Master="True" Description="指令名称" />
+      <Column Name="Code" DataType="String" Length="100" Description="指令编号" />
+      <Column Name="OptCategory" DataType="String" Description="操作类型" />
+      <Column Name="Enable" DataType="Boolean" Description="启用" />
+      <Column Name="Data" DataType="String" Length="150" Description="数据,进行后续操作依赖值" />
+      <Column Name="DataType" DataType="String" Description="数据类型,String、Int、Double、Decimal等" />
+      <Column Name="Url" DataType="String" Description="请求地址" />
+      <Column Name="Method" DataType="String" Description="请求方式,GET、POST、PUT、DELETE" />
+      <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
+      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+      <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+      <Column Name="UpdateUserId" DataType="Int32" Description="更新者" Category="扩展" />
+      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+      <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+      <Column Name="Remark" DataType="String" Length="500" Description="内容" Category="扩展" />
+    </Columns>
+    <Indexes>
+      <Index Columns="Code" Unique="True" />
+    </Indexes>
+  </Table>
 </Tables>
