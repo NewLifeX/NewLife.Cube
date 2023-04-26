@@ -11,9 +11,11 @@ namespace NewLife.Cube.Areas.Cube.Controllers
         /// <summary>根据code获取指令集合</summary>
         /// <param name="codes"></param>
         /// <returns></returns>
+        [HttpGet()]
+        [EntityAuthorize]
         public IActionResult GetInfo(String codes)
         {
-            return Json(0, message: "ok", data: OrderManager.FindAllByCodes(codes).ToJson());
+            return Json(0, message: "ok", data: OrderManager.FindAllByCodes(codes));
         }
     }
 }

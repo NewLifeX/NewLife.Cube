@@ -402,6 +402,8 @@
       <Column Name="DataType" DataType="String" Description="数据类型,String、Int、Double、Decimal等" />
       <Column Name="Url" DataType="String" Description="请求地址" />
       <Column Name="Method" DataType="String" Description="请求方式,GET、POST、PUT、DELETE" />
+      <Column Name="ValueField" DataType="String" Description="值字段" />
+      <Column Name="LabelField" DataType="String" Description="文本字段" />
       <Column Name="CreateUserId" DataType="Int32" Description="创建者" Category="扩展" />
       <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
