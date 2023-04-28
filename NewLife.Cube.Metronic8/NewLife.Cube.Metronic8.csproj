@@ -43,15 +43,19 @@
     <Compile Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <Compile Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
     <Compile Remove="wwwroot\assets\logo\**" />
+    <Compile Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <Content Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <Content Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
     <Content Remove="wwwroot\assets\logo\**" />
+    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <EmbeddedResource Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <EmbeddedResource Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
     <EmbeddedResource Remove="wwwroot\assets\logo\**" />
+    <EmbeddedResource Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <None Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <None Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
     <None Remove="wwwroot\assets\logo\**" />
+    <None Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -120,11 +124,6 @@
     <Content Remove="wwwroot\assets\media\sketchy\9-dark.png" />
     <Content Remove="wwwroot\assets\media\sketchy\9.png" />
     <Content Remove="wwwroot\assets\media\verification.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon-block.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-classic.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-document.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\ckeditor\ckeditor-inline.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\draggable\draggable.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading%402x.gif" />
     <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading.gif" />
@@ -245,11 +244,6 @@
     <EmbeddedResource Include="wwwroot\assets\media\sketchy\9-dark.png" />
     <EmbeddedResource Include="wwwroot\assets\media\sketchy\9.png" />
     <EmbeddedResource Include="wwwroot\assets\media\verification.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon-block.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\ckeditor\ckeditor-balloon.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\ckeditor\ckeditor-classic.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\ckeditor\ckeditor-document.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\ckeditor\ckeditor-inline.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\draggable\draggable.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading.gif" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading@2x.gif" />
