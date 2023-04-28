@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.ViewModels;
 using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers;
@@ -30,5 +32,11 @@ public class MenuController : EntityTreeController<Menu>
         if (post) XCode.Membership.Menu.Meta.Session.ClearCache($"{type}-{entity}", true);
 
         return rs;
+    }
+
+    public override void OnActionExecuting(ActionExecutingContext filterContext) 
+    {
+        ViewBag.Fields = OnGetFields(ViewKinds.List, null);
+        base.OnActionExecuting(filterContext);
     }
 }
