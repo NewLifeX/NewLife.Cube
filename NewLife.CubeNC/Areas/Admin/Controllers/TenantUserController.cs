@@ -14,6 +14,8 @@ public class TenantUserController : EntityController<TenantUser>
         LogOnChange = true;
 
         //ListFields.RemoveField("Secret", "Logo", "AuthUrl", "AccessUrl", "UserUrl", "Remark");
+        ListFields.RemoveField("ID", "Remark")
+            .RemoveField("CreateUserId", "CreateTime", "CreateIP", "UpdateUserId", "UpdateTime", "UpdateIP");
     }
 
     /// <summary>搜索数据集</summary>
