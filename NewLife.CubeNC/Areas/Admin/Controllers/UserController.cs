@@ -780,7 +780,7 @@ public class UserController : EntityController<User, UserModel>
     private void SetTenant(Int32 userId)
     {
         var tenantUser = TenantUser.FindAllByUserId(userId);
-        if (tenantUser != null && tenantUser.Count == 1)
+        if (tenantUser != null)
         {
             var entity = tenantUser.FirstOrDefault().Tenant;
 
