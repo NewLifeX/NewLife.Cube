@@ -17,6 +17,7 @@
     var tList = TenantUser.FindAllByUserId(user.ID);
 
     var tenantName = tenant?.Name;
+    var flag = false;
 }
 <!-- #section:basics/navbar.layout -->
 <div id="navbar" class="navbar navbar-default">
@@ -84,7 +85,6 @@
                         </li>
                     </ul>
                 </li>
-
                 <!-- /section:basics/navbar.user_menu -->
             </ul>
         </div>
@@ -103,31 +103,25 @@
                         </a>
 
                         <ul class="dropdown-menu-right dropdown-menu dropdown-caret">
+
                             @foreach (var item in tList)
                             {
+                                if (flag)
+                                {
+                                    <li class="divider"></li>
+                                }
+                                else
+                                {
+                                    flag = true;
+                                }
+
                                 <li>
                                     <a href="~/Admin/Index?tenantid=@item.TenantId" target="_blank">
                                         <i class="ace-icon fa fa-cog"></i>
                                         @item.TenantName
                                     </a>
                                 </li>
-                                <li class="divider"></li>
                             }
-
-
-                            @*  <li>
-                        <a href="~/Admin/Index?tenantid=" target="main">
-                        <i class="ace-icon fa fa-user"></i>
-                        租户b
-                        </a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                        <a href="~/Admin/User/Logout">
-                        <i class="ace-icon fa fa-power-off"></i>
-                        租户c
-                        </a>
-                        </li>*@
                         </ul>
                     </li>
                 </ul>
