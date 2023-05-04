@@ -14,7 +14,9 @@
 
     var tenant = Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
 
-    var trName = tenant == null ? $"[{roleNames}]" : $"[{tenant?.Name}/{roleNames}]";
+    var tList = TenantUser.FindAllByUserId(user.ID);
+
+    var tenantName = tenant?.Name;
 }
 <!-- #section:basics/navbar.layout -->
 <div id="navbar" class="navbar navbar-default">
@@ -51,15 +53,15 @@
                         {
                             <img class="nav-user-photo hidden-xs" src="@user.GetAvatarUrl()" alt="@user" />
                         }
-                        <span class="user-info hidden-xs" title="@trName">
+                        <span class="user-info hidden-xs">
                             @*<small>欢迎，</small>*@
-                            @user <br /> @trName
+                            @user<br />@roleNames
                         </span>
 
                         <i class="ace-icon fa fa-caret-down"></i>
                     </a>
 
-                    <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+                    <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-caret">
                         <li>
                             <a href="~/" target="_blank">
                                 <i class="ace-icon fa fa-cog"></i>
@@ -87,6 +89,50 @@
             </ul>
         </div>
 
+        <!--tenant-->
+        @if (tenantName != null)
+        {
+            <div class="navbar-buttons navbar-header pull-right" role="navigation">
+                <ul class="nav ace-nav">
+                    <li class="light-blue">
+                        <a data-toggle="dropdown" href="#" class="dropdown-toggle" target="main">
+                            <span class="hidden-xs" title="@tenantName" style="line-height:45px;top:0px;">
+                                @tenantName
+                            </span>
+                            <i class="ace-icon fa fa-caret-down"></i>
+                        </a>
+
+                        <ul class="dropdown-menu-right dropdown-menu dropdown-caret">
+                            @foreach (var item in tList)
+                            {
+                                <li>
+                                    <a href="~/Admin/Index?tenantid=@item.TenantId" target="_blank">
+                                        <i class="ace-icon fa fa-cog"></i>
+                                        @item.TenantName
+                                    </a>
+                                </li>
+                                <li class="divider"></li>
+                            }
+
+
+                            @*  <li>
+                        <a href="~/Admin/Index?tenantid=" target="main">
+                        <i class="ace-icon fa fa-user"></i>
+                        租户b
+                        </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                        <a href="~/Admin/User/Logout">
+                        <i class="ace-icon fa fa-power-off"></i>
+                        租户c
+                        </a>
+                        </li>*@
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        }
         <!-- /section:basics/navbar.dropdown -->
     </div>
     <!-- /.navbar-container -->
