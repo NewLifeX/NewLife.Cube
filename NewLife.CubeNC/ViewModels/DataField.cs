@@ -72,6 +72,9 @@ public class DataField
     /// <summary>映射字段</summary>
     public String MapField { get; set; }
 
+    /// <summary>LOV 配置代码</summary>
+    public String LovCode { get; set; }
+
     /// <summary>映射提供者</summary>
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public MapProvider MapProvider { get; set; }

@@ -54,6 +54,9 @@ public class CubeSetting : Config<CubeSetting>
     [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
     [Category("通用")]
     public String CorsOrigins { get; set; }
+#if DEBUG
+    = "*";
+#endif
 
     /// <summary>在iframe中展示。SAMEORIGIN-允许相同域名，ALLOWALL-允许任何域名</summary>
     [Description("在iframe中展示。默认为空-只允许相同域名，SAMEORIGIN-允许相同域名和端口，ALLOWALL-允许任何域名")]

@@ -38,6 +38,12 @@ public class UserController : EntityController<User, UserModel>
         ListFields.RemoveField("Remark");
 
         {
+            // 为RoleId搜索字段增加LovCode
+            var df = SearchFields.GetField(XCode.Membership.User._.RoleID);
+            df.LovCode = "Role";
+        }
+
+        {
             var df = ListFields.AddListField("Link", "Logins");
             //df.Header = "链接";
             df.HeaderTitle = "第三方登录的链接信息";
