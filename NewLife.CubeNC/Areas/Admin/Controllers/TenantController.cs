@@ -6,7 +6,7 @@ namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>租户管理</summary>
 [Area("Admin")]
-[Menu(75, false)]
+[Menu(75, true, Icon = "fa-user-circle")]
 public class TenantController : EntityController<Tenant>
 {
     static TenantController()

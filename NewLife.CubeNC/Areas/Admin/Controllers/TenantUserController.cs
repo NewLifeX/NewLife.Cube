@@ -6,16 +6,14 @@ namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>租户关系</summary>
 [Area("Admin")]
-[Menu(10, false)]
+[Menu(10, true, Icon = "fa-users")]
 public class TenantUserController : EntityController<TenantUser>
 {
     static TenantUserController()
     {
         LogOnChange = true;
 
-        //ListFields.RemoveField("Secret", "Logo", "AuthUrl", "AccessUrl", "UserUrl", "Remark");
-        ListFields.RemoveField("ID", "Remark")
-            .RemoveField("CreateUserId", "CreateTime", "CreateIP", "UpdateUserId", "UpdateTime", "UpdateIP");
+        ListFields.RemoveField("ID", "Remark").RemoveField("CreateUserId", "CreateTime", "CreateIP", "UpdateUserId", "UpdateTime", "UpdateIP");
     }
 
     /// <summary>搜索数据集</summary>
