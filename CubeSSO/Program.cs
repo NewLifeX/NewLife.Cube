@@ -1,4 +1,5 @@
-﻿using System.Runtime.Loader;
+﻿using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using NewLife.Cube;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
@@ -43,6 +44,14 @@ Console.CancelKeyPress += (s, e) =>
 {
     XTrace.WriteLine("CancelKeyPress!");
 };
+PosixSignalRegistration.Create(PosixSignal.SIGINT, ctx =>
+{
+    XTrace.WriteLine("SIGINT");
+});
+PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx =>
+{
+    XTrace.WriteLine("SIGTERM");
+});
 
 app.Run();
 
