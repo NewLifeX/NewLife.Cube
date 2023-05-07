@@ -32,29 +32,4 @@ app.UseResponseCompression();
 
 app.RegisterService("SSO", null, builder.Environment.EnvironmentName, "/cube/info");
 
-AssemblyLoadContext.Default.Unloading += ctx =>
-{
-    XTrace.WriteLine("Unloading!");
-};
-AppDomain.CurrentDomain.ProcessExit += (s, e) =>
-{
-    XTrace.WriteLine("ProcessExit!");
-};
-Console.CancelKeyPress += (s, e) =>
-{
-    XTrace.WriteLine("CancelKeyPress!");
-};
-PosixSignalRegistration.Create(PosixSignal.SIGINT, ctx =>
-{
-    XTrace.WriteLine("SIGINT");
-});
-PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx =>
-{
-    XTrace.WriteLine("SIGTERM");
-});
-
 app.Run();
-
-XTrace.WriteLine("Finish!");
-Thread.Sleep(3000);
-XTrace.WriteLine("Exit!");
