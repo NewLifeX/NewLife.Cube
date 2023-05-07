@@ -12,8 +12,10 @@
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
 
-    var tenant = Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
-    var trName = tenant == null ? $"{roleNames}" : $"{tenant?.Name} / {roleNames}";
+    var tList = TenantUser.FindAllByUserId(user.ID);
+    var tenant = XCode.Membership.Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
+    var tenantName = tenant?.Name;
+    var flag = false;
 }
 
 <div class="layui-header">
@@ -29,18 +31,44 @@
 
     <ul class="layui-nav layui-layout-right">
         <li class="layui-nav-item layui-hide layui-show-md-inline-block">
-            <a href="javascript:;" title="@trName">
+            <a href="javascript:void(0);">
                 @if (user != null && !user.Avatar.IsNullOrEmpty())
                 {
                     <img class="layui-nav-img" src="@user.GetAvatarUrl()" alt="@user">
                 }
-                @user / @trName
+                @user / @roleNames
             </a>
             <dl class="layui-nav-child">
-                <dd><a href="javascript:;" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="用户信息">用户信息</a></dd>
+                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="用户信息">用户信息</a></dd>
                 <hr>
-                <dd><a href="javascript:;" lay-header-event="menuSetting" data-url='/Admin/User/Logout' data-title="注销" data-loginout="true">注销</a></dd>
+                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Logout' data-title="注销" data-loginout="true">注销</a></dd>
             </dl>
         </li>
     </ul>
+
+    @if (tenantName != null)
+    {
+        <ul class="layui-nav layui-layout-right" style="right:140px;">
+            <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+                <a href="javascript:;">
+                    @tenantName
+                </a>
+                <dl class="layui-nav-child">
+                    @foreach (var item in tList)
+                    {
+                        if (flag)
+                        {
+                            <hr>
+                        }
+                        else
+                        {
+                            flag = true;
+                        }
+
+                        <dd><a href="~/Admin/Index?tenantid=@item.TenantId" lay-header-event="menuSetting" data-title="@item.TenantName">@item.TenantName</a></dd>
+                    }
+                </dl>
+            </li>
+        </ul>
+    }
 </div>
