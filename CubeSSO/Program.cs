@@ -1,4 +1,6 @@
-﻿using NewLife.Cube;
+﻿using System.Runtime.InteropServices;
+using System.Runtime.Loader;
+using NewLife.Cube;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 
