@@ -42,7 +42,7 @@ public static class LayuiAdminService
     }
 }
 
-[DisplayName("Metronic皮肤")]
+[DisplayName("LayuiAdmin皮肤")]
 internal class LayuiAdminModule : IModule
 {
     public void Add(IServiceCollection services) { }
