@@ -65,8 +65,6 @@
     <Content Remove="wwwroot\assets\media\verification.png" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.js" />
-    <Content Remove="wwwroot\layui\css\layui.css" />
-    <Content Remove="wwwroot\layui\font\iconfont.woff2" />
     <Content Remove="wwwroot\layui\layui.js" />
     <Content Remove="wwwroot\modules\dataGrid.js" />
     <Content Remove="wwwroot\modules\excel.js" />
