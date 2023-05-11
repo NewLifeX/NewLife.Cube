@@ -229,6 +229,14 @@ public static class CubeService
 
         Task.Run(() => ResolveStarWeb(provider));
 
+        // 注册退出事件
+        if (app is IHost web)
+            NewLife.Model.Host.RegisterExit(() =>
+            {
+                XTrace.WriteLine("魔方优雅退出！");
+                web.StopAsync().Wait();
+            });
+
         return app;
     }
 

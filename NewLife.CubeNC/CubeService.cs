@@ -32,7 +32,7 @@ public static class CubeService
     #region 配置魔方
     /// <summary>添加魔方，放在AddControllersWithViews之后</summary>
     /// <param name="services"></param>
-    /// <returns></returns>
+    /// <returns></returns>o
     public static IServiceCollection AddCube(this IServiceCollection services)
     {
         // 引入星尘
@@ -365,6 +365,14 @@ public static class CubeService
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
         Task.Run(() => ResolveStarWeb(provider));
+
+        // 注册退出事件
+        if (app is IHost web)
+            NewLife.Model.Host.RegisterExit(() =>
+            {
+                XTrace.WriteLine("魔方优雅退出！");
+                web.StopAsync().Wait();
+            });
 
         return app;
     }
