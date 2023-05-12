@@ -67,38 +67,9 @@ public static class CubeService
         // 连接字符串
         DAL.ConnStrs.TryAdd("Cube", "MapTo=Membership");
 
-        //// 配置Cookie策略
-        //services.ConfigureNonBreakingSameSiteCookies();
-        //services.Configure<CookiePolicyOptions>(options =>
-        //{
-        //    // 此项为true需要用户授权才能记录cookie
-        //    options.CheckConsentNeeded = context => false;
-        //    options.MinimumSameSitePolicy = SameSiteMode.None;
-        //});
-
-        //// 添加Session会话支持
-        //services.AddSession();
-
-        //// 身份验证
-        //services.AddAuthentication(options =>
-        //{
-        //    options.DefaultScheme = "Cube";
-        //    options.DefaultAuthenticateScheme = "Cube";
-        //    options.DefaultChallengeScheme = "Cube";
-        //    options.DefaultSignInScheme = "Cube";
-        //}).AddCookie("Cube", options =>
-        //{
-        //    options.AccessDeniedPath = "/Admin/User/Login";
-        //    options.LoginPath = "/Admin/User/Login";
-        //    options.LogoutPath = "/Admin/User/Logout";
-        //});
-
-        //// 注册魔方默认UI
-        //services.AddCubeDefaultUI();
-
         // 配置跨域处理，允许所有来源
         // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (set.CorsOrigins == "*")
             services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
             .AllowAnyMethod()
@@ -112,19 +83,6 @@ public static class CubeService
             .AllowCredentials()
             .WithOrigins(set.CorsOrigins)));
 
-        //services.Configure<MvcOptions>(opt =>
-        //{
-        //    opt.ModelBinderProviders.Insert(0, new JsonModelBinderProvider());
-
-        //    // 分页器绑定
-        //    opt.ModelBinderProviders.Insert(0, new PagerModelBinderProvider());
-
-        //    // 模型绑定
-        //    opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
-        //});
-
-        //services.AddCustomApplicationParts();
-
         // 添加管理提供者
         services.AddManageProvider();
 
@@ -134,11 +92,8 @@ public static class CubeService
             options.TextEncoderSettings = new TextEncoderSettings(UnicodeRanges.All);
         });
 
-        //// 配置视图引擎
-        //services.Configure<RazorViewEngineOptions>(o =>
-        //{
-        //    o.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
-        //});
+        // 添加管理提供者
+        services.AddManageProvider();
 
         // 配置Json
         services.Configure<JsonOptions>(options =>
@@ -154,12 +109,10 @@ public static class CubeService
         });
 
         // UI服务
-        services.AddSingleton<UIService>();
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
 
         services.AddHostedService<JobService>();
-        //services.AddHostedService<UserService>();
 
         // 注册IP地址库
         IpResolver.Register();
@@ -182,89 +135,6 @@ public static class CubeService
 
         return services;
     }
-
-    ///// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assembly，作为本应用的一部分</summary>
-    ///// <param name="services"></param>
-    //public static void AddCustomApplicationParts(this IServiceCollection services)
-    //{
-    //    var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
-    //    manager ??= new ApplicationPartManager();
-
-    //    var list = FindAllArea();
-
-    //    foreach (var asm in list)
-    //    {
-    //        XTrace.WriteLine("注册区域视图程序集：{0}", asm.FullName);
-
-    //        var factory = ApplicationPartFactory.GetApplicationPartFactory(asm);
-    //        foreach (var part in factory.GetApplicationParts(asm))
-    //        {
-    //            if (!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
-    //        }
-    //    }
-    //}
-
-    //    /// <summary>遍历所有引用了AreaRegistrationBase的程序集</summary>
-    //    /// <returns></returns>
-    //    private static List<Assembly> FindAllArea()
-    //    {
-    //        var list = new List<Assembly>();
-    //        var cs = typeof(ControllerBaseX).GetAllSubclasses().ToArray();
-    //        foreach (var item in cs)
-    //        {
-    //            var asm = item.Assembly;
-    //            if (!list.Contains(asm))
-    //            {
-    //                list.Add(asm);
-    //            }
-    //        }
-    //        cs = typeof(RazorPage).GetAllSubclasses().ToArray();
-    //        foreach (var item in cs)
-    //        {
-    //            var asm = item.Assembly;
-    //            if (!list.Contains(asm))
-    //            {
-    //                list.Add(asm);
-    //            }
-    //        }
-
-    //#if !NET6_0_OR_GREATER
-    //        // 反射 *.Views.dll
-    //        foreach (var item in ".".AsDirectory().GetFiles("*.Views.dll"))
-    //        {
-    //            var asm = Assembly.LoadFile(item.FullName);
-    //            if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
-    //            {
-    //                list.Add(asm);
-    //            }
-    //        }
-
-    //        // 反射 NewLife.Cube.*.dll
-    //        foreach (var item in ".".AsDirectory().GetFiles("NewLife.Cube.*.dll"))
-    //        {
-    //            var asm = Assembly.LoadFile(item.FullName);
-    //            if (!list.Contains(asm) && !list.Any(e => e.FullName == asm.FullName))
-    //            {
-    //                list.Add(asm);
-    //            }
-    //        }
-    //#endif
-
-    //        // 为了能够实现模板覆盖，程序集相互引用需要排序，父程序集在前
-    //        list.Sort((x, y) =>
-    //        {
-    //            if (x == y) return 0;
-    //            if (x != null && y == null) return 1;
-    //            if (x == null && y != null) return -1;
-
-    //            //return x.GetReferencedAssemblies().Any(e => e.FullName == y.FullName) ? 1 : -1;
-    //            // 对程序集引用进行排序时，不能使用全名，当魔方更新而APP没有重新编译时，版本的不同将会导致全名不同，无法准确进行排序
-    //            var yname = y.GetName().Name;
-    //            return x.GetReferencedAssemblies().Any(e => e.Name == yname) ? 1 : -1;
-    //        });
-
-    //        return list;
-    //    }
     #endregion
 
     #region 使用魔方
@@ -279,13 +149,10 @@ public static class CubeService
 
         XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
 
-        //// 调整魔方表名
-        //FixAppTableName();
-
         // 使用管理提供者
         app.UseManagerProvider();
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
 
         // 使用Cube前添加自己的管道
         if (env != null)
@@ -327,8 +194,7 @@ public static class CubeService
         }
 
         app.UseMiddleware<RunTimeMiddleware>();
-
-        //if (env != null) app.UseCubeDefaultUI(env);
+        app.UseMiddleware<TenantMiddleware>();
 
         // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
         app.UseRouter(endpoints =>
@@ -340,11 +206,11 @@ public static class CubeService
                 "{area}/{controller=Index}/{action=Index}/{id?}");
         });
 
-        ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
+        //ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
 
         // 自动检查并添加菜单
-        AreaBase.RegisterArea<Admin.AdminArea>();
-        AreaBase.RegisterArea<Cube.CubeArea>();
+        AreaBase.RegisterArea<Areas.Admin.AdminArea>();
+        AreaBase.RegisterArea<Areas.Cube.CubeArea>();
 
         // 插件
         var moduleManager = provider.GetRequiredService<ModuleManager>();
@@ -363,21 +229,13 @@ public static class CubeService
 
         Task.Run(() => ResolveStarWeb(provider));
 
-        return app;
-    }
-
-    /// <summary>使用魔方首页</summary>
-    /// <param name="app"></param>
-    /// <returns></returns>
-    public static IApplicationBuilder UseCubeHome(this IApplicationBuilder app)
-    {
-        app.UseRouter(endpoints =>
-        {
-            endpoints.MapControllerRoute(
-                "Default",
-                "{controller=CubeHome}/{action=Index}/{id?}"
-                );
-        });
+        // 注册退出事件
+        if (app is IHost web)
+            NewLife.Model.Host.RegisterExit(() =>
+            {
+                XTrace.WriteLine("魔方优雅退出！");
+                web.StopAsync().Wait();
+            });
 
         return app;
     }
@@ -422,7 +280,7 @@ public static class CubeService
                 if (webs.Length > 0)
                 {
                     // 保存到配置文件
-                    var set = Setting.Current;
+                    var set = CubeSetting.Current;
                     set.StarWeb = webs[0];
                     set.Save();
                 }

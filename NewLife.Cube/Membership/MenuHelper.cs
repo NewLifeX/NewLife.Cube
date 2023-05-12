@@ -224,7 +224,8 @@ public static class MenuHelper
         {
             if (method.IsStatic || !method.IsPublic) continue;
 
-            if (!method.ReturnType.As<ActionResult>() && !method.ReturnType.As<Task<ActionResult>>()) continue;
+            // 取消判断返回值类型，避免各种不同的返回值的方法生成不了权限项
+            //if (!method.ReturnType.As<ActionResult>() && !method.ReturnType.As<Task<ActionResult>>()) continue;
 
             //if (method.GetCustomAttribute<HttpPostAttribute>() != null) continue;
             if (method.GetCustomAttribute<AllowAnonymousAttribute>() != null) continue;
@@ -248,7 +249,8 @@ public static class MenuHelper
             else
             {
                 //var attAuth = method.GetCustomAttribute<EntityAuthorizeAttribute>();
-                if (attAuth != null && attAuth.Permission > PermissionFlags.None) dic.Add(method, (Int32)attAuth.Permission);
+                if (attAuth != null && attAuth.Permission > PermissionFlags.None) 
+                    dic.Add(method, (Int32)attAuth.Permission);
             }
         }
 

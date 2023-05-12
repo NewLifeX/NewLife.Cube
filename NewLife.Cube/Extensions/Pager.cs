@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
@@ -8,7 +9,7 @@ using NewLife.Data;
 namespace NewLife.Web;
 
 /// <summary>分页器。包含分页排序参数，支持构造Url的功能</summary>
-public class Pager : PageParameter, IExtend3
+public class Pager : PageParameter, IExtend
 {
     #region 名称
     /// <summary>名称类。用户可根据需要修改Url参数名</summary>
@@ -28,23 +29,23 @@ public class Pager : PageParameter, IExtend3
     }
 
     /// <summary>名称类。用户可根据需要修改Url参数名</summary>
-    [XmlIgnore, ScriptIgnore]
-    public static __ _ = new __();
+    [XmlIgnore, ScriptIgnore, IgnoreDataMember]
+    public static __ _ = new();
     #endregion
 
     #region 扩展属性
     /// <summary>参数集合</summary>
-    [XmlIgnore, ScriptIgnore]
+    [XmlIgnore, ScriptIgnore, IgnoreDataMember]
     public IDictionary<String, String> Params { get; set; } = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>分页链接模版。内部将会替换{链接}和{名称}</summary>
-    [XmlIgnore, ScriptIgnore]
+    [XmlIgnore, ScriptIgnore, IgnoreDataMember]
     public String PageUrlTemplate { get; set; } = "<a href=\"{链接}\">{名称}</a>";
 
-    private static readonly PageParameter _def = new PageParameter();
+    private static readonly PageParameter _def = new();
 
     /// <summary>默认参数。如果分页参数为默认参数，则不参与构造Url</summary>
-    [XmlIgnore, ScriptIgnore]
+    [XmlIgnore, ScriptIgnore, IgnoreDataMember]
     public PageParameter Default { get; set; } = _def;
 
     /// <summary>获取/设置 参数</summary>
@@ -98,6 +99,20 @@ public class Pager : PageParameter, IExtend3
                 this[item.Key] = item.Value;
             }
         }
+    }
+
+    /// <summary>借助字典实例化</summary>
+    /// <param name="parameters"></param>
+    public Pager(IDictionary<String, String> parameters)
+    {
+        if (parameters.TryGetValue(nameof(PageIndex), out var str)) PageIndex = str.ToInt();
+        if (parameters.TryGetValue(nameof(PageSize), out str)) PageSize = str.ToInt();
+        if (parameters.TryGetValue(nameof(Desc), out str)) Desc = str.ToBoolean();
+        if (parameters.TryGetValue(nameof(StartRow), out str)) StartRow = str.ToLong();
+        if (parameters.TryGetValue(nameof(Sort), out str)) Sort = str;
+        if (parameters.TryGetValue(nameof(OrderBy), out str)) OrderBy = str;
+
+        Params = parameters;
     }
     #endregion
 
@@ -189,11 +204,11 @@ public class Pager : PageParameter, IExtend3
     {
         if (PageIndex == 1)
         {
-            if (name == "首页" || name == "上一页") return name;
+            if (name is "首页" or "上一页") return name;
         }
         if (PageIndex >= PageCount)
         {
-            if (name == "尾页" || name == "下一页") return name;
+            if (name is "尾页" or "下一页") return name;
         }
 
         if (PageIndex > 1)
@@ -209,6 +224,10 @@ public class Pager : PageParameter, IExtend3
 
         return name;
     }
+
+    /// <summary>转为分页模型</summary>
+    /// <returns></returns>
+    public PageModel ToModel() => new() { PageIndex = PageIndex, PageSize = PageSize, TotalCount = TotalCount, LongTotalCount = TotalCount.ToString() };
     #endregion
 
     #region IExtend接口
@@ -219,4 +238,24 @@ public class Pager : PageParameter, IExtend3
 
     Object IExtend.this[String key] { get => Params[key]; set => Params[key] = value == null ? null : value + ""; }
     #endregion
+}
+
+/// <summary>分页模型</summary>
+public class PageModel
+{
+    /// <summary>获取 或 设置 页面索引。从1开始，默认1</summary>
+    /// <remarks>如果设定了开始行，分页时将不再使用PageIndex</remarks>
+    public virtual Int32 PageIndex { get; set; }
+
+    /// <summary>获取 或 设置 页面大小。默认20，若为0表示不分页</summary>
+    public virtual Int32 PageSize { get; set; }
+
+    /// <summary>获取 或 设置 总记录数</summary>
+    public virtual Int64 TotalCount { get; set; }
+
+    /// <summary>获取 或 设置 总记录数，字符串类型</summary>
+    public virtual String LongTotalCount { get; set; }
+
+    ///// <summary>获取 页数</summary>
+    //public virtual Int64 PageCount { get; set; }
 }

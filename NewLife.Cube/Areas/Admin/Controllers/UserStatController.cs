@@ -1,19 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Entity;
+﻿using NewLife.Cube.Entity;
 using NewLife.Web;
 using XCode.Membership;
 using static NewLife.Cube.Entity.UserStat;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>访问统计控制器</summary>
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false)]
 public class UserStatController : ReadOnlyEntityController<UserStat>
 {
     static UserStatController()
     {
-        ListFields.RemoveField("ID", "CreateTime", "UpdateTime", "Remark");
+        ListFields.RemoveField("CreateTime", "UpdateTime", "Remark");
     }
 
     /// <summary>搜索数据集</summary>

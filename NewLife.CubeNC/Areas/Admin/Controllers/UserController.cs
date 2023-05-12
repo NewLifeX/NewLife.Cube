@@ -7,6 +7,8 @@ using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.ViewModels;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -22,7 +24,7 @@ namespace NewLife.Cube.Admin.Controllers;
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [Area("Admin")]
 [Menu(100, true, Icon = "fa-user")]
-public class UserController : EntityController<User>
+public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
@@ -86,6 +88,40 @@ public class UserController : EntityController<User>
         {
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
         }
+    }
+
+    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
+    {
+        var fields = base.OnGetFields(kind, model);
+        if (fields == null) return fields;
+
+        var user = ManageProvider.User;//理论上肯定大于0
+        var roles = Role.FindAllWithCache().Where(w => w.IsSystem == false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        if (user != null)
+        {
+            if (user.Role.IsSystem)
+            {
+                roles = Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            }
+        }
+
+        switch (kind)
+        {
+            case ViewKinds.AddForm:
+            case ViewKinds.EditForm:
+                var df = fields.GetField("RoleID");
+                if (df != null) df.DataSource = entity => roles;
+
+                var df2 = fields.GetField("RoleIds");
+                if (df2 != null) df2.DataSource = entity => roles;
+                break;
+        }
+
+        return fields;
     }
 
     /// <summary>
@@ -229,7 +265,7 @@ public class UserController : EntityController<User>
 
         // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
         var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
-        if (ms != null && !Setting.Current.AllowLogin)
+        if (ms != null && !CubeSetting.Current.AllowLogin)
         {
             if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
             if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
@@ -275,7 +311,7 @@ public class UserController : EntityController<User>
 
     private LoginViewModel GetViewModel(String returnUrl)
     {
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var sys = SysConfig.Current;
         var model = new LoginViewModel
         {
@@ -327,7 +363,7 @@ public class UserController : EntityController<User>
         var ipKey = $"Login:{UserHost}";
         var ipErrors = _cache.Get<Int32>(ipKey);
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         try
@@ -353,7 +389,6 @@ public class UserController : EntityController<User>
 
                 //FormsAuthentication.SetAuthCookie(username, remember ?? false);
 
-
                 // 记录在线统计
                 var stat = UserStat.GetOrAdd(DateTime.Today);
                 if (stat != null)
@@ -361,6 +396,9 @@ public class UserController : EntityController<User>
                     stat.Logins++;
                     stat.SaveAsync(5_000);
                 }
+
+                // 设置租户
+                SetTenant(provider.Current.ID);
 
                 if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
 
@@ -423,7 +461,7 @@ public class UserController : EntityController<User>
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (set.LogoutAll)
         {
             // 如果是单点登录，则走单点登录注销
@@ -483,8 +521,8 @@ public class UserController : EntityController<User>
         }
 
         // 用于显示的列
-        if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
-        ViewBag.Factory = XCode.Membership.User.Meta.Factory;
+        if (ViewBag.Fields == null) ViewBag.Fields = OnGetFields(ViewKinds.EditForm, null);
+        ViewBag.Factory = Factory;
 
         // 必须指定视图名，因为其它action会调用
         return View("Info", user);
@@ -511,7 +549,7 @@ public class UserController : EntityController<User>
         var file = HttpContext.Request.Form.Files["avatar"];
         if (file != null)
         {
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             var fileName = user.ID + Path.GetExtension(file.FileName);
             var att = await SaveFile(user, file, set.AvatarPath, fileName);
             if (att != null) user.Avatar = att.FilePath;
@@ -531,7 +569,7 @@ public class UserController : EntityController<User>
     protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
     {
         // 修改保存目录和文件名
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
 
         return base.SaveFile(entity, file, set.AvatarPath, fileName);
@@ -632,7 +670,7 @@ public class UserController : EntityController<User>
         var password = registerModel.Password;
         var password2 = registerModel.Password2;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
         try
@@ -694,6 +732,62 @@ public class UserController : EntityController<User>
         if (IsJsonRequest) return Ok();
 
         return RedirectToAction("Edit", new { id });
+    }
+
+    /// <summary>设置租户</summary>
+    /// <returns></returns>
+    [EntityAuthorize]
+    public ActionResult TenantSetting()
+    {
+        var user = ManageProvider.User as User;
+        if (user == null) return RedirectToAction("Login");
+
+        var tlist = TenantUser.FindAllByUserId(user.ID);
+        var model = new TenantSettingModel(user.Name)
+        {
+            Tenants = tlist.ToDictionary(e => e.TenantId, v => v.TenantName)
+        };
+
+        if (IsJsonRequest) return Ok(data: model);
+
+        var tid = ManagerProviderHelper.GetCookieTenantID(HttpContext);
+        var t = Tenant.FindById(tid);
+
+        ViewData["TenantId"] = t?.Id ?? 0;
+
+        return View(model);
+    }
+
+    /// <summary>租户设置</summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [EntityAuthorize]
+    public ActionResult TenantSetting(TenantSettingModel model)
+    {
+        var tagTenantId = Request.Form["TagTenantId"].ToInt(-1);
+
+        if (tagTenantId > 0) ManagerProviderHelper.ChangeTenant(HttpContext, tagTenantId);
+
+        ViewBag.StatusMessage = "保存成功";
+        if (IsJsonRequest) return Ok(ViewBag.StatusMessage);
+
+        return TenantSetting();
+    }
+
+    /// <summary>设置租户</summary>
+    /// <param name="userId">当前用户编号</param>
+    private void SetTenant(Int32 userId)
+    {
+        var tenantUser = TenantUser.FindAllByUserId(userId);
+        if (tenantUser != null && tenantUser.Count > 0)
+        {
+            var entity = tenantUser.FirstOrDefault().Tenant;
+
+            if (entity == null || !entity.Enable) return;
+
+            ManagerProviderHelper.ChangeTenant(HttpContext, tenantUser.FirstOrDefault().TenantId);
+        }
     }
 
     ///// <summary>批量启用</summary>

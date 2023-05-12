@@ -1,10 +1,16 @@
 ﻿using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Extensions;
+using NewLife.Log;
+using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using XCode.Membership;
+using IActionFilter = Microsoft.AspNetCore.Mvc.Filters.IActionFilter;
 
 namespace NewLife.Cube;
 
@@ -18,14 +24,25 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     /// <summary>临时会话扩展信息。仅限本地内存，不支持分布式共享</summary>
     public IDictionary<String, Object> Session { get; private set; }
 
+    /// <summary>令牌</summary>
+    public String Token { get; set; }
+
     /// <summary>当前页面菜单。用于权限控制</summary>
     public IMenu Menu { get; set; }
+
+    /// <summary>当前用户</summary>
+    public IManageUser CurrentUser { get; set; }
+
+    /// <summary>当前租户</summary>
+    public ITenantUser CurrentTenant { get; set; }
 
     /// <summary>用户主机</summary>
     public String UserHost => HttpContext.GetUserHost();
 
     /// <summary>页面设置</summary>
     public PageSetting PageSetting { get; set; }
+
+    private IDictionary<String, Object> _args;
     #endregion
 
     #region 构造
@@ -34,15 +51,14 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
     /// <summary>动作执行前</summary>
     /// <param name="context"></param>
-    void IActionFilter.OnActionExecuting(Remoting.ControllerContext context)
+    [NonAction]
+    public virtual void OnActionExecuting(ActionExecutingContext context)
     {
-        //// 页面设置
-        //ViewBag.PageSetting = PageSetting;
+        _args = context.ActionArguments;
 
         var ctx = HttpContext;
         Session = ctx.Items["Session"] as IDictionary<String, Object>;
         Menu = ctx.Items["CurrentMenu"] as IMenu;
-        //ViewBag.Menu = Menu;
 
         // 仅用于测试，跳过报错
         Session ??= new Dictionary<String, Object>();
@@ -51,6 +67,8 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         var user = ManageProvider.User;
         if (user != null)
         {
+            CurrentUser = user as IManageUser;
+
             // 设置变量，数据权限使用
             HttpContext.Items["userId"] = user.ID;
 
@@ -60,35 +78,96 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             //    PageSetting.EnableSelect = user.Has(Menu, PermissionFlags.Update, PermissionFlags.Delete);
             //}
         }
+
+        // 当前租户
+        var tid = TenantContext.Current?.TenantId ?? 0;
+        if (tid > 0)
+        {
+            var tus = TenantUser.FindAllByUserId(user.ID);
+            CurrentTenant = tus.FirstOrDefault(e => e.TenantId == tid);
+        }
+
+        // 访问令牌
+        var request = context.HttpContext.Request;
+        var token = request.Query["Token"] + "";
+        if (token.IsNullOrEmpty()) token = (request.Headers["Authorization"] + "").TrimStart("Bearer ");
+        if (token.IsNullOrEmpty()) token = request.Headers["X-Token"] + "";
+        if (token.IsNullOrEmpty()) token = request.Cookies["Token"] + "";
+        Token = token;
+
+        try
+        {
+            if (!token.IsNullOrEmpty())
+            {
+            }
+
+            if (user == null && context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
+            {
+                throw new ApiException(403, "认证失败");
+            }
+        }
+        catch (Exception ex)
+        {
+            WriteLog(null, false, ex.ToString());
+
+            context.Result = Json(0, null, ex);
+        }
     }
 
     /// <summary>动作执行后</summary>
     /// <param name="context"></param>
-    void IActionFilter.OnActionExecuted(Remoting.ControllerContext context)
+    [NonAction]
+    public virtual void OnActionExecuted(ActionExecutedContext context)
     {
         var ex = context.Exception?.GetTrue();
         if (ex != null && !context.ExceptionHandled)
         {
-            // 控制器发生异常时，写审计日志
-            var act = GetControllerAction().LastOrDefault();
-            WriteLog(act, false, ex.ToString());
+            WriteLog(null, false, ex.ToString());
         }
 
-        if (IsJsonRequest)
-        {
-            if (ex != null && !context.ExceptionHandled)
-            {
-                var code = 500;
-                var message = ex.Message;
-                if (ex is ApiException aex)
-                {
-                    code = aex.Code;
-                    message = aex.Message;
-                }
+        var traceId = DefaultSpan.Current?.TraceId;
 
-                context.Result = Json(code, message, null);
-                context.ExceptionHandled = true;
+        if (context.Result != null)
+        {
+            if (context.Result is ObjectResult obj)
+            {
+                if (obj.Value is IApiResponse response)
+                {
+                    context.Result = new ContentResult
+                    {
+                        Content = OnJsonSerialize(response),
+                        ContentType = "application/json",
+                        StatusCode = 200
+                    };
+                }
+                else
+                {
+                    var rs = new { code = obj.StatusCode ?? 0, data = obj.Value, traceId };
+                    context.Result = new ContentResult
+                    {
+                        Content = OnJsonSerialize(rs),
+                        ContentType = "application/json",
+                        StatusCode = 200
+                    };
+                }
             }
+            else if (context.Result is EmptyResult)
+            {
+                context.Result = new JsonResult(new { code = 0, data = new { }, traceId });
+            }
+        }
+        else if (context.Exception != null && !context.ExceptionHandled)
+        {
+            //var ex = context.Exception.GetTrue();
+            if (ex is ApiException aex)
+                context.Result = new JsonResult(new { code = aex.Code, data = aex.Message, traceId });
+            else
+                context.Result = new JsonResult(new { code = 500, data = ex.Message, traceId });
+
+            context.ExceptionHandled = true;
+
+            // 输出异常日志
+            if (XTrace.Debug) XTrace.WriteException(ex);
         }
     }
     #endregion
@@ -100,59 +179,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     protected virtual String GetRequest(String key) => Request.GetRequestValue(key);
     #endregion
 
-    #region 权限菜单
-    /// <summary>获取可用于生成权限菜单的Action集合</summary>
-    /// <param name="menu">该控制器所在菜单</param>
-    /// <returns></returns>
-    [Obsolete("=>MenuAttribute")]
-    protected virtual IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu) => new Dictionary<MethodInfo, Int32>();
-    #endregion
-
-    #region Ajax处理
-    /// <summary>返回结果并跳转</summary>
-    /// <param name="data">结果。可以是错误文本、成功文本、其它结构化数据</param>
-    /// <param name="url">提示信息后跳转的目标地址，[refresh]表示刷新当前页</param>
-    /// <returns></returns>
-    protected virtual ActionResult JsonTips(Object data, String url = null) => Json(0, data as String, data, new { url });
-
-    /// <summary>返回结果并刷新</summary>
-    /// <param name="data">消息</param>
-    /// <returns></returns>
-    protected virtual ActionResult JsonRefresh(Object data) => Json(0, data as String, data, new { url = "[refresh]" });
-
-    /// <summary>
-    /// 返回结果并刷新
-    /// </summary>
-    /// <param name="data">消息</param>
-    /// <param name="time">延迟刷新秒数</param>
-    /// <returns></returns>
-    protected virtual ActionResult JsonRefresh(Object data, Int32 time) => Json(0, data as String, data, new { url = "[refresh]", time });
-
-    /// <summary>是否Json请求</summary>
-    protected virtual Boolean IsJsonRequest
-    {
-        get
-        {
-            if (Request.ContentType.EqualIgnoreCase("application/json")) return true;
-
-            if (Request.Headers["Accept"].Any(e => e.Split(',').Any(a => a.Trim() == "application/json"))) return true;
-
-            if (GetRequest("output").EqualIgnoreCase("json")) return true;
-            if ((RouteData.Values["output"] + "").EqualIgnoreCase("json")) return true;
-
-            return false;
-        }
-    }
-    #endregion
-
     #region Json结果
-    /// <summary>成功响应Json结果</summary>
-    /// <param name="message">消息，成功或失败时的文本消息</param>
-    /// <param name="data">数据对象</param>
-    /// <returns></returns>
-    [NonAction]
-    public virtual ActionResult Ok(String message = "ok", Object data = null) => Json(0, message, data);
-
     /// <summary>响应Json结果</summary>
     /// <param name="code">代码。0成功，其它为错误代码</param>
     /// <param name="message">消息，成功或失败时的文本消息</param>
@@ -178,7 +205,10 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             rs = dic;
         }
 
-        return Content(OnJsonSerialize(rs), "application/json", Encoding.UTF8);
+        var json = OnJsonSerialize(rs);
+        DefaultSpan.Current?.AppendTag(json);
+
+        return Content(json, "application/json", Encoding.UTF8);
     }
 
     /// <summary>Json序列化。默认使用FastJson</summary>
@@ -208,6 +238,8 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     /// <param name="remark"></param>
     protected virtual void WriteLog(String action, Boolean success, String remark)
     {
+        action ??= GetControllerAction().LastOrDefault();
+
         var type = GetType();
         if (type.BaseType.IsGenericType) type = type.BaseType.GetGenericArguments().FirstOrDefault();
 

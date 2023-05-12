@@ -1,0 +1,43 @@
+﻿@model TenantSettingModel
+@using System.Linq
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using NewLife.Cube.Entity;
+@using NewLife.Cube.Areas.Admin.Models;
+@{
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(null);
+    atts.Add("class", "multiselect");
+    atts.Add("id", "Tenants");
+
+    var tenantId = ViewData["TenantId"]?.ToInt();
+}
+<div class="row">
+    @await Html.PartialAsync("_User_Nav")
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-horizontal">
+            @using (Html.BeginForm("TenantSetting", "User"))
+            {
+                <div class="form-group">
+                    <label class="control-label col-md-2">用户名</label>
+                    <div class="input-group col-md-6">
+                        <input value="@Model.UserName" class="col-xs-12 col-sm-8 col-md-6 col-lg-4" disabled="disabled" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">当前租户</label>
+                    <div class="input-group col-md-6">
+                        @Html.DropDownList("TagTenantId",new SelectList(Model.Tenants, "Key", "Value", tenantId),"请选择",atts)
+                    </div>
+                </div>
+                <div class="clearfix form-actions">
+                    <label class="control-label col-sm-4"></label>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="glyphicon glyphicon-save"></i><strong>保存</strong></button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="history.go(-1);"><i class="glyphicon glyphicon-remove"></i><strong>取消</strong></button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

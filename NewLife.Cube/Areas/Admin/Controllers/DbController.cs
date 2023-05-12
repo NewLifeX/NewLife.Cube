@@ -1,24 +1,25 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Admin;
 using NewLife.Reflection;
 using XCode;
 using XCode.DataAccessLayer;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>数据库管理</summary>
 [DisplayName("数据库")]
 [EntityAuthorize(PermissionFlags.Detail)]
-[Area("Admin")]
+[AdminArea]
 [Menu(26, true, Icon = "fa-database")]
 public class DbController : ControllerBaseX
 {
     /// <summary>数据库列表</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpGet]
+    [HttpGet("/[area]/[controller]")]
     public ActionResult Index()
     {
         var list = new List<DbItem>();

@@ -1,7 +1,9 @@
 ﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using NewLife.Data;
+using NewLife.Reflection;
 using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels;
@@ -43,7 +45,7 @@ public class ListField : DataField
     public String DataAction { get; set; }
 
     /// <summary>获取数据委托。可用于自定义列表页单元格数值的显示</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public GetValueDelegate GetValue { get; set; }
     #endregion
 
@@ -57,36 +59,46 @@ public class ListField : DataField
         Header = field.DisplayName;
     }
 
-    /// <summary>克隆</summary>
-    /// <returns></returns>
-    public override DataField Clone()
-    {
-        var df = base.Clone();
-        if (df is ListField field)
-        {
-            field.Text = Text;
-            field.Title = Title;
-            field.Url = Url;
-            //field.Icon = Icon;
-            field.Target = Target;
-            field.Header = Header;
-            field.HeaderTitle = HeaderTitle;
-            field.DataAction = DataAction;
-            field.GetValue = GetValue;
-        }
+    ///// <summary>克隆</summary>
+    ///// <returns></returns>
+    //public override DataField Clone()
+    //{
+    //    var df = base.Clone();
+    //    if (df is ListField field)
+    //    {
+    //        field.Text = Text;
+    //        field.Title = Title;
+    //        field.Url = Url;
+    //        //field.Icon = Icon;
+    //        field.Target = Target;
+    //        field.Header = Header;
+    //        field.HeaderTitle = HeaderTitle;
+    //        field.DataAction = DataAction;
+    //        field.GetValue = GetValue;
+    //    }
 
-        return df;
-    }
+    //    return df;
+    //}
     #endregion
 
     #region 数据格式化
-    private static readonly Regex _reg = new(@"{(\w+)}", RegexOptions.Compiled);
+    private static readonly Regex _reg = new(@"{(\w+(?:\.\w+)*)}", RegexOptions.Compiled);
 
-    private static String Replace(String input, IExtend data)
+    private static String Replace(String input, IModel data)
     {
         return _reg.Replace(input, m =>
         {
-            var val = data[m.Groups[1].Value + ""];
+            //var val = data[m.Groups[1].Value + ""];
+            // 循环解析多层数值
+            var names = m.Groups[1].Value.Split('.');
+            var val = data[names[0]];
+            for (var i = 1; i < names.Length && val != null; i++)
+            {
+                if (val is IModel model)
+                    val = model[names[i]] ?? val.GetValue(names[i]);
+                else
+                    val = val.GetValue(names[i]);
+            }
 
             // 特殊处理时间
             if (val is DateTime dt) return dt == dt.Date ? dt.ToString("yyyy-MM-dd") : dt.ToFullString();
@@ -98,7 +110,7 @@ public class ListField : DataField
     /// <summary>针对指定实体对象计算DisplayName，替换其中变量</summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    public virtual String GetDisplayName(IExtend data)
+    public virtual String GetDisplayName(IModel data)
     {
         if (DisplayName.IsNullOrEmpty()) return null;
 
@@ -108,7 +120,7 @@ public class ListField : DataField
     /// <summary>针对指定实体对象计算链接名，替换其中变量</summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    public virtual String GetLinkName(IExtend data)
+    public virtual String GetLinkName(IModel data)
     {
         // 如果设置了单元格文字，则优先使用。Text>Entity[name]>DisplayName
         var txt = Text;
@@ -129,7 +141,7 @@ public class ListField : DataField
     /// <summary>针对指定实体对象计算url，替换其中变量</summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    public virtual String GetUrl(IExtend data)
+    public virtual String GetUrl(IModel data)
     {
         var svc = GetService<IUrlExtend>();
         if (svc != null) return svc.Resolve(this, data);
@@ -143,7 +155,7 @@ public class ListField : DataField
     /// <summary>针对指定实体对象计算title，替换其中变量</summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    public virtual String GetTitle(IExtend data)
+    public virtual String GetTitle(IModel data)
     {
         if (Title.IsNullOrEmpty()) return null;
 

@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
@@ -17,9 +16,6 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 {
     /// <summary>要展现和修改的对象</summary>
     protected abstract TObject Value { get; set; }
-
-    /// <summary>菜单顺序。扫描时会反射读取</summary>
-    protected static Int32 MenuOrder { get; set; }
 
     /// <summary>实例化</summary>
     public ObjectController() => PageSetting.EnableNavbar = false;
@@ -35,7 +31,6 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         var des = GetType().GetDescription() ?? typeof(TObject).GetDescription();
 
         ViewBag.Title = name;
-        ViewBag.HeaderTitle = name;
 
         var txt = "";
         if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
@@ -54,10 +49,9 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     }
 
     /// <summary>显示对象</summary>
-    /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    public ActionResult Index(FormatType formatType = FormatType.CamelCase)
+    public ActionResult Index()
     {
         //var model = new ObjectModel { Value = Value };
 
@@ -65,11 +59,11 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         if (IsJsonRequest)
         {
             list = list.Select(e => e.Clone()).ToList();
-            foreach (var item in list)
-            {
-                item.Name = FormatHelper.FormatName(item.Name, formatType);
-                //item.FormatType = formatType;
-            }
+            //foreach (var item in list)
+            //{
+            //    item.Name = FormatHelper.FormatName(item.Name, formatType);
+            //    //item.FormatType = formatType;
+            //}
             var dic = list
                 .GroupBy(e => e.Category + "")
                 .ToDictionary(e => e.Key, e => e.ToList());

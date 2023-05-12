@@ -11,6 +11,13 @@
     }
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
+
+    var tenant = Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
+
+    var tList = TenantUser.FindAllByUserId(user.ID);
+
+    var tenantName = tenant?.Name;
+    var flag = false;
 }
 <!-- #section:basics/navbar.layout -->
 <div id="navbar" class="navbar navbar-default">
@@ -48,40 +55,27 @@
                             <img class="nav-user-photo hidden-xs" src="@user.GetAvatarUrl()" alt="@user" />
                         }
                         <span class="user-info hidden-xs">
-                            @*<small>欢迎，</small>*@
-                            @user <br /> [@roleNames]
+                            @user<br />@roleNames
                         </span>
 
                         <i class="ace-icon fa fa-caret-down"></i>
                     </a>
 
-                    <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+                    <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-caret">
                         <li>
                             <a href="~/" target="_blank">
                                 <i class="ace-icon fa fa-cog"></i>
                                 网站首页
                             </a>
                         </li>
-
-                        @*@if (user.Has("Admin/Sys", PermissionFlags.Detail))
-                            {
-                                <li>
-                                    <a href="~/Admin/Sys" target="main">
-                                        <i class="ace-icon fa fa-cog"></i>
-                                        设置
-                                    </a>
-                                </li>
-                            }*@
-
+                        <li class="divider"></li>
                         <li>
                             <a href="~/Admin/User/Info/@uid" target="main">
                                 <i class="ace-icon fa fa-user"></i>
                                 个人信息
                             </a>
                         </li>
-
                         <li class="divider"></li>
-
                         <li>
                             <a href="~/Admin/User/Logout">
                                 <i class="ace-icon fa fa-power-off"></i>
@@ -90,11 +84,48 @@
                         </li>
                     </ul>
                 </li>
-
                 <!-- /section:basics/navbar.user_menu -->
             </ul>
         </div>
 
+        <!--tenant-->
+        @if (tenantName != null)
+        {
+            <div class="navbar-buttons navbar-header pull-right" role="navigation">
+                <ul class="nav ace-nav">
+                    <li class="light-blue">
+                        <a data-toggle="dropdown" href="#" class="dropdown-toggle" target="main">
+                            <span class="hidden-xs" title="@tenantName" style="line-height:45px;top:0px;">
+                                @tenantName
+                            </span>
+                            <i class="ace-icon fa fa-caret-down"></i>
+                        </a>
+
+                        <ul class="dropdown-menu-right dropdown-menu dropdown-caret">
+
+                            @foreach (var item in tList)
+                            {
+                                if (flag)
+                                {
+                                    <li class="divider"></li>
+                                }
+                                else
+                                {
+                                    flag = true;
+                                }
+
+                                <li>
+                                    <a href="~/Admin/Index?tenantid=@item.TenantId" target="_blank">
+                                        <i class="ace-icon fa fa-cog"></i>
+                                        @item.TenantName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        }
         <!-- /section:basics/navbar.dropdown -->
     </div>
     <!-- /.navbar-container -->

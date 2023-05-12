@@ -10,7 +10,7 @@
     var fn = field.MapField.ToLower();
 
     var fs = ViewBag.Fields as FieldCollection;
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var map = field.MapProvider;
 
     var fact = map == null ? null : EntityFactory.CreateFactory(map.EntityType);

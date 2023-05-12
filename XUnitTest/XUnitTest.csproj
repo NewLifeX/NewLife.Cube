@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
-    <OutputPath>..\BinTest</OutputPath>
+    <OutputPath>..\Bin\UnitTest</OutputPath>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

@@ -7,6 +7,7 @@ using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Configuration;
+using XCode.DataAccessLayer;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
@@ -77,76 +78,78 @@ public static class ViewHelper
 
     internal static Boolean MakeListView(Type entityType, String vpath, List<DataField> fields)
     {
-        var tmp = @"@model IList<{EntityType}>
-@using {Namespace}
-@using NewLife;
-@using NewLife.Web;
-@using XCode;
-@using XCode.Configuration;
-@using XCode.Membership;
-@using NewLife.Cube;
-@{
-    var fact = ViewBag.Factory as IEntityFactory;
-    var page = ViewBag.Page as Pager;
-    var ukey = fact.Unique;
-    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
-    //var provider = ManageProvider.Provider;
-}
-<table class=""table table-bordered table-hover table-striped table-condensed table-data-list"">
-    <thead>
-        <tr>
-            @if (set.EnableSelect && ukey != null)
-            {
-                <th class=""text-center"" style=""width:10px;""><input type=""checkbox"" id=""chkAll"" title=""全选"" /></th>
+        var tmp = """
+            @model IList<{EntityType}>
+            @using {Namespace}
+            @using NewLife;
+            @using NewLife.Cube;
+            @using NewLife.Web;
+            @using XCode;
+            @using XCode.Configuration;
+            @using XCode.Membership;
+            @{
+                var fact = ViewBag.Factory as IEntityFactory;
+                var page = ViewBag.Page as Pager;
+                var ukey = fact.Unique;
+                var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+                //var provider = ManageProvider.Provider;
             }
-            @foreach(var item in fields)
-            {
-                var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
-                <th class=""text-center""><a href=""@Html.Raw(sortUrl)"">@item.DisplayName</a></th>
-            }
-            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-            {
-                <th class=""text-center"">操作</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var entity in Model)
-        {
-            <tr>
-                @if (set.EnableSelect && ukey != null)
-                {
-                    <td class=""text-center""><input type=""checkbox"" name=""keys"" value=""@entity.ID"" /></td>
-                }
-                @foreach (var item in fields)
-                {
-                    @await Html.PartialAsync(""_List_Data_Item"", new ValueTuple<IEntity, DataField>(entity, item))
-                }
-                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-                {
-                    <td class=""text-center"">
-                        @await Html.PartialAsync(""_List_Data_Action"", (Object)entity)
-                    </td>
-                }
-            </tr>
-        }
-        @if (page.State is {EntityType})
-        {
-            var entity = page.State as {EntityType};
-            <tr>
-                @if (set.EnableSelect)
-                {
-                    <td></td>
-                }
-                @await Html.PartialAsync(""_List_Data_Stat"", entity)
-                @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
-                {
-                    <td></td>
-                }
-            </tr>
-        }
-    </tbody>
-</table>";
+            <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
+                <thead>
+                    <tr>
+                        @if (set.EnableSelect && ukey != null)
+                        {
+                            <th class="text-center" style="width:10px;"><input type="checkbox" id="chkAll" title="全选" /></th>
+                        }
+                        @foreach(var item in fields)
+                        {
+                            var sortUrl = item.OriField != null ? page.GetSortUrl(item.OriField.Name) : page.GetSortUrl(item.Name);
+                            <th class="text-center"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
+                        }
+                        @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                        {
+                            <th class="text-center">操作</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entity in Model)
+                    {
+                        <tr>
+                            @if (set.EnableSelect && ukey != null)
+                            {
+                                <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
+                            }
+                            @foreach (var item in fields)
+                            {
+                                @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                            }
+                            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                            {
+                                <td class="text-center">
+                                    @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                                </td>
+                            }
+                        </tr>
+                    }
+                    @if (page.State is {EntityType})
+                    {
+                        var entity = page.State as {EntityType};
+                        <tr>
+                            @if (set.EnableSelect)
+                            {
+                                <td></td>
+                            }
+                            @await Html.PartialAsync("_List_Data_Stat", entity)
+                            @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+                            {
+                                <td></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            """;
         var sb = new StringBuilder();
         var fact = EntityFactory.CreateFactory(entityType);
 
@@ -415,62 +418,67 @@ public static class ViewHelper
     ////生成表单分组,添加BigText支持 有字段名不能对齐的小BUG 2022.09.13
     internal static Boolean MakeFormView(Type entityType, String vpath, List<DataField> fields)
     {
-        var tmp = @"@model {EntityType}
-@using {Namespace}
-@using NewLife;
-@using XCode;
-@using XCode.Configuration;
-@{
-    var entity = Model;
-    var fields = ViewBag.Fields as FieldCollection;
-}
+        var tmp = """
+            @model {EntityType}
+            @using {Namespace}
+            @using NewLife;
+            @using NewLife.Cube;
+            @using NewLife.Web;
+            @using XCode;
+            @using XCode.Configuration;
+            @using XCode.Membership;
+            @{
+                var entity = Model;
+                var fields = ViewBag.Fields as FieldCollection;
+            }
 
-@if (groupFields.Count > 1)
-{
-    var i = 0;
-    var j = 0;
-    <ul class=""nav nav-tabs"" role=""tablist"">
-        @foreach (var item in groupFields)
-        {
-            <li class=""@(i==0?""active"":"""")""><a href=""@(""#item""+i)"" data-toggle=""tab"">@item.Key</a></li>
-            i++;
-        }
-    </ul>
-    <div class=""tab-content"">
-        @foreach (var group in groupFields)
-        {
-            <div class=""tab-pane fade in @(j==0?""active"":"""")"" id=""@(""item""+j)"">
-                <div class=""row"">
-                    @foreach (var item in group.Value)
+            @if (groupFields.Count > 1)
+            {
+                var i = 0;
+                var j = 0;
+                <ul class="nav nav-tabs" role="tablist">
+                    @foreach (var item in groupFields)
                     {
-                        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
-                        {
-                            if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
-                                @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
-                            else
-                                @await Html.PartialAsync(""_Form_Group"", new ValueTuple<IEntity, DataField>(entity, item))
-                        }
+                        <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@item.Key</a></li>
+                        i++;
+                    }
+                </ul>
+                <div class="tab-content">
+                    @foreach (var group in groupFields)
+                    {
+                        <div class="tab-pane fade in @(j==0?"active":"")" id="@("item"+j)">
+                            <div class="row">
+                                @foreach (var item in group.Value)
+                                {
+                                    if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
+                                    {
+                                        if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                                            @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+                                        else
+                                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+                                    }
+                                }
+                            </div>
+                        </div>
+                        j++;
                     }
                 </div>
-            </div>
-            j++;
-        }
-    </div>
-}
-else
-{
-    foreach (var item in fields)
-    {
-        // 表单页显示非主键或非自增字段
-        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
-        {
-            if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
-                @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+            }
             else
-                @await Html.PartialAsync(""_Form_Group"", new ValueTuple<IEntity, DataField>(entity, item))
-        }
-    }
-}";
+            {
+                foreach (var item in fields)
+                {
+                    // 表单页显示非主键或非自增字段
+                    if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
+                    {
+                        if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                            @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+                        else
+                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+                    }
+                }
+            }
+            """;
         var sb = new StringBuilder();
 
         var fact = EntityFactory.CreateFactory(entityType);
@@ -480,7 +488,7 @@ else
         var str = tmp.Substring(null, "@if");
         sb.Append(str);
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var cls = set.FormGroupClass;
         if (cls.IsNullOrEmpty()) cls = "form-group col-xs-12 col-sm-6 col-lg-4";
 
@@ -676,24 +684,29 @@ else
 
     internal static Boolean MakeSearchView(Type entityType, String vpath, List<DataField> fields)
     {
-        var tmp = @"@using {Namespace}
-@using NewLife;
-@using NewLife.Web;
-@using XCode;
-@{
-    var fact = ViewBag.Factory as IEntityFactory;
-    var page = ViewBag.Page as Pager;
-}
-@*<div class=""form-group"">
-    @Html.ActionLink(""用户链接"", ""Index"", ""UserConnect"", null, new { @class = ""btn btn-success btn-sm"" })
-    @Html.ActionLink(""用户在线"", ""Index"", ""UserOnline"", null, new { @class = ""btn btn-success btn-sm"" })
-    <label for=""RoleID"" class=""control-label"">角色：</label>
-    @Html.ForDropDownList(""RoleID"", Role.FindAllWithCache().Cast<IEntity>().ToList(), page[""roldId""], ""全部"", true)
-    @Html.ForDropDownList(""p"", VisitStat.FindAllPageName(), page[""p""], ""全部页面"", true)
-    @Html.ForListBox(""roleIds"", Role.FindAllWithCache(), page[""roleIds""])
-</ div>*@
-@*@await Html.PartialAsync(""_SelectDepartment"", ""departmentId"")*@
-@*@await Html.PartialAsync(""_DateRange"")*@";
+        var tmp = """
+            @using {Namespace}
+            @using NewLife;
+            @using NewLife.Cube;
+            @using NewLife.Web;
+            @using XCode;
+            @using XCode.Configuration;
+            @using XCode.Membership;
+            @{
+                var fact = ViewBag.Factory as IEntityFactory;
+                var page = ViewBag.Page as Pager;
+            }
+            @*<div class="form-group">
+                @Html.ActionLink("用户链接", "Index", "UserConnect", null, new { @class = "btn btn-success btn-sm" })
+                @Html.ActionLink("用户在线", "Index", "UserOnline", null, new { @class = "btn btn-success btn-sm" })
+                <label for="RoleID" class="control-label">角色：</label>
+                @Html.ForDropDownList("RoleID", Role.FindAllWithCache().Cast<IEntity>().ToList(), page["roldId"], "全部", true)
+                @Html.ForDropDownList("p", VisitStat.FindAllPageName(), page["p"], "全部页面", true)
+                @Html.ForListBox("roleIds", Role.FindAllWithCache(), page["roleIds"])
+            </ div>*@
+            @*@await Html.PartialAsync("_SelectDepartment", "departmentId")*@
+            @*@await Html.PartialAsync("_DateRange")*@
+            """;
 
         //var sb = new StringBuilder();
         //var fact = EntityFactory.CreateFactory(entityType);
@@ -726,7 +739,7 @@ else
     {
         if (user == null || user.Avatar.IsNullOrEmpty()) return null;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
 
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWithIgnoreCase("/Sso/"))
         {
@@ -753,7 +766,7 @@ else
     {
         if (filename.IsNullOrEmpty()) return null;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (!filename.IsNullOrEmpty())
         {
             // 修正资源访问起始路径
@@ -796,7 +809,7 @@ else
         foreach (var item in paths)
         {
             var p = item.TrimStart("/");
-            p = Setting.Current.WebRootPath.CombinePath(p);
+            p = CubeSetting.Current.WebRootPath.CombinePath(p);
 
             var di = p.AsDirectory();
             if (di.Exists)
@@ -872,6 +885,11 @@ else
 
         return $"/cube/file/{attachment.Id}{attachment.Extension}";
     }
+
+    /// <summary>是否附件列</summary>
+    /// <param name="dc"></param>
+    /// <returns></returns>
+    public static Boolean IsAttachment(this IDataColumn dc) => dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-");
 }
 
 /// <summary>Bootstrap页面控制。允许继承</summary>

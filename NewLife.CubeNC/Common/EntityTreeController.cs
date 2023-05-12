@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -63,7 +64,7 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
 
         var list = EntityTree<TEntity>.Root.AllChilds;
 
-        if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p });
+        if (IsJsonRequest) return Json(0, null, list, new { page = p });
 
         return View("ListTree", list);
     }

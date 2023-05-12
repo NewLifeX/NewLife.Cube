@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net5.0;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
@@ -41,6 +41,18 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReadmeFile>Readme.MD</PackageReadmeFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
+    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
+    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
+    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0|AnyCPU'">
+    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
@@ -49,21 +61,18 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.2.2023.301" />
-    <PackageReference Include="NewLife.IP" Version="2.0.2023.203" />
-    <PackageReference Include="NewLife.Stardust" Version="2.7.2023.301" />
-    <PackageReference Include="NewLife.XCode" Version="11.6.2023.301" />
+    <PackageReference Include="NewLife.Core" Version="10.3.2023.511-beta0915" />
+    <PackageReference Include="NewLife.IP" Version="2.0.2023.401" />
+    <PackageReference Include="NewLife.Stardust" Version="2.8.2023.510-beta2330" />
+    <PackageReference Include="NewLife.XCode" Version="11.8.2023.511-beta0917" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\NewLife.Cube\Common\DataPermissionAttribute.cs" Link="Common\DataPermissionAttribute.cs" />
-    <Compile Include="..\NewLife.Cube\Common\FormatType.cs" Link="Common\FormatType.cs" />
     <Compile Include="..\NewLife.Cube\Common\MembershipExtensions.cs" Link="Common\MembershipExtensions.cs" />
     <Compile Include="..\NewLife.Cube\Common\NoPermissionException.cs" Link="Common\NoPermissionException.cs" />
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
-    <Compile Include="..\NewLife.Cube\Controllers\CubeController.cs" Link="Controllers\CubeController.cs" />
-    <Compile Include="..\NewLife.Cube\Controllers\SsoController.cs" Link="Controllers\SsoController.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
@@ -78,10 +87,6 @@
     <Compile Include="..\NewLife.Cube\Entity\应用日志.cs" Link="Entity\应用日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.Biz.cs" Link="Entity\应用系统.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\应用系统.cs" Link="Entity\应用系统.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\模型列.Biz.cs" Link="Entity\模型列.Biz.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\模型列.cs" Link="Entity\模型列.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\模型表.Biz.cs" Link="Entity\模型表.Biz.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\模型表.cs" Link="Entity\模型表.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.Biz.cs" Link="Entity\用户令牌.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户令牌.cs" Link="Entity\用户令牌.cs" />
     <Compile Include="..\NewLife.Cube\Entity\用户在线.Biz.cs" Link="Entity\用户在线.Biz.cs" />
@@ -99,7 +104,6 @@
     <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
-    <Compile Include="..\NewLife.Cube\Setting.cs" Link="Setting.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\CheckInData.cs" Link="Web\Models\CheckInData.cs" />
@@ -130,6 +134,20 @@
 
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Areas\Cube\Views\ModelTable\**" />
+    <Content Remove="Areas\Cube\Views\ModelTable\**" />
+    <EmbeddedResource Remove="Areas\Cube\Views\ModelTable\**" />
+    <None Remove="Areas\Cube\Views\ModelTable\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Areas\Cube\Controllers\ModelColumnController.cs" />
+    <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
+    <Compile Remove="Extensions\ItemsExtend.cs" />
+    <Compile Remove="ViewModels\FieldModel.cs" />
   </ItemGroup>
 
   <ItemGroup>

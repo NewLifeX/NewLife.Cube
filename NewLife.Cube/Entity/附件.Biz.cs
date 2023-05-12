@@ -164,7 +164,7 @@ namespace NewLife.Cube.Entity
 
             Source = url;
 
-            if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
+            if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
 
             var fullFile = uploadPath.CombinePath(file).GetBasePath();
             XTrace.WriteLine("抓取附件 {0}，保存到 {1}", url, file);
@@ -216,7 +216,7 @@ namespace NewLife.Cube.Entity
             var file = BuildFilePath(filePath);
             if (file.IsNullOrEmpty()) return false;
 
-            if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
+            if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
 
             // 保存文件，优先原名字
             var fullFile = uploadPath.CombinePath(file).GetBasePath();
@@ -250,7 +250,7 @@ namespace NewLife.Cube.Entity
             var file = FilePath;
             if (file.IsNullOrEmpty()) return null;
 
-            if (uploadPath.IsNullOrEmpty()) uploadPath = Setting.Current.UploadPath;
+            if (uploadPath.IsNullOrEmpty()) uploadPath = CubeSetting.Current.UploadPath;
 
             return uploadPath.CombinePath(file).GetBasePath();
         }

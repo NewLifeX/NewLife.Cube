@@ -43,6 +43,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Controllers;
 
 /// <summary>单点登录控制器</summary>
+[ApiExplorerSettings(GroupName = "Basic")]
 [Route("[controller]/[action]")]
 public class SsoController : ControllerBaseX
 {
@@ -63,12 +64,6 @@ public class SsoController : ControllerBaseX
             Log = LogProvider.Provider.AsLog("OAuth")
         };
     }
-
-    /// <summary>首页</summary>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public virtual ActionResult Index() => Redirect("~/");
 
     #region 单点登录客户端
     private String GetUserAgent() => Request.Headers["User-Agent"] + "";
@@ -130,6 +125,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
+    [HttpGet("{id}")]
     public virtual ActionResult LoginInfo(String id, String code, String state)
     {
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
@@ -196,7 +192,7 @@ public class SsoController : ControllerBaseX
 
             // 短时间内不要重复拉取用户信息
             // 注意，这里可能因为没有OpenID和UserName，无法判断得到用户链接，需要GetUserInfo后方能匹配UserConnect
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             var uc = prov.GetConnect(client);
             if (uc.UpdateTime.AddSeconds(set.RefreshUserPeriod) < DateTime.Now)
             {
@@ -219,8 +215,7 @@ public class SsoController : ControllerBaseX
             Session["Cube_Sso"] = client.Name;
 
             // 记录在线统计
-            var olt = HttpContext.Items["Cube_Online"] as UserOnline;
-            if (olt != null)
+            if (HttpContext.Items["Cube_Online"] is UserOnline olt)
             {
                 olt.OAuthProvider = client.Name;
                 olt.SaveAsync();
@@ -241,7 +236,7 @@ public class SsoController : ControllerBaseX
             }
 
             // 登录后自动绑定
-            var logId = Session["Cube_OAuthId"].ToLong();
+            var logId = Session.ContainsKey("Cube_OAuthId") ? Session["Cube_OAuthId"].ToLong() : 0;
             if (logId > 0 && logId != log.Id)
             {
                 Session["Cube_OAuthId"] = null;
@@ -297,7 +292,7 @@ public class SsoController : ControllerBaseX
         var url = "";
 
         // 准备跳转到验证中心
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (client != null && set.LogoutAll)
         {
             if (client.LogoutUrl.IsNullOrEmpty() && name.EqualIgnoreCase("NewLife")) client.LogoutUrl = "logout?client_id={key}&redirect_uri={redirect}&state={state}";
@@ -385,7 +380,7 @@ public class SsoController : ControllerBaseX
             }
         }
 
-        return Ok();
+        return Json(0, "ok");
     }
     #endregion
 
@@ -782,7 +777,7 @@ public class SsoController : ControllerBaseX
         prv.Current = user ?? throw new XException("用户[{0}]不存在", username);
 
         // 过期时间
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var expire = TimeSpan.FromMinutes(0);
         if (set.SessionTimeout > 0)
             expire = TimeSpan.FromSeconds(set.SessionTimeout);
@@ -855,7 +850,7 @@ public class SsoController : ControllerBaseX
         var user = ManageProvider.Provider?.FindByID(id) as IUser;
         if (user == null) throw new Exception("用户不存在 " + id);
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var av = "";
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
         {

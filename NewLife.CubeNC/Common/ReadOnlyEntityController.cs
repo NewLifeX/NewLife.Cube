@@ -58,7 +58,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     {
         PageSetting.IsReadOnly = true;
 
-        PageSetting.EnableTableDoubleClick = Setting.Current.EnableTableDoubleClick;
+        PageSetting.EnableTableDoubleClick = CubeSetting.Current.EnableTableDoubleClick;
 
         SysConfig = SysConfig.Current;
     }
@@ -81,10 +81,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             var p = ps["p"] as Pager ?? new Pager();
             ViewBag.Page = p;
 
-            // 用于显示的列
-            if (!ps.ContainsKey("entity")) ViewBag.Fields = ListFields;
-
-            if (ViewBag.HeaderTitle == null) ViewBag.HeaderTitle = Entity<TEntity>.Meta.Table.Description + "管理";
+            //// 用于显示的列
+            //if (!ps.ContainsKey("entity")) ViewBag.Fields = OnGetFields(ViewKinds.List, null);
 
             var txt = (String)ViewBag.HeaderContent;
             if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
@@ -122,24 +120,24 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var whereExpression = Entity<TEntity>.SearchWhereByKeys(key);
         if (start > DateTime.MinValue || end > DateTime.MinValue)
         {
-            var masterTime = Entity<TEntity>.Meta.Factory.MasterTime;
+            var masterTime = Factory.MasterTime;
             if (masterTime != null)
                 whereExpression &= masterTime.Between(start, end);
         }
 
-        // 根据模型列设置，拼接作为搜索字段的字段
-        var modelTable = ModelTable;
-        var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
+        //// 根据模型列设置，拼接作为搜索字段的字段
+        //var modelTable = ModelTable;
+        //var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
 
-        foreach (var col in modelCols)
-        {
-            var val = p[col.Name];
-            if (val.IsNullOrWhiteSpace()) continue;
-            whereExpression &= col.Field == val;
-        }
+        //foreach (var col in modelCols)
+        //{
+        //    var val = p[col.Name];
+        //    if (val.IsNullOrWhiteSpace()) continue;
+        //    whereExpression &= col.Field == val;
+        //}
 
         //添加映射字段查询
-        foreach (var item in Entity<TEntity>.Meta.Factory.Fields)
+        foreach (var item in Factory.Fields)
         {
             var val = p[item.Name];
             if (!val.IsNullOrWhiteSpace())
@@ -164,7 +162,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var builder = CreateWhere();
         if (builder != null)
         {
-            builder.Data2 ??= p;
+            builder.Data2 ??= p.Items;
             p.State = builder;
         }
 
@@ -225,25 +223,50 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     protected virtual WhereBuilder CreateWhere()
     {
+        var exp = "";
         var att = GetType().GetCustomAttribute<DataPermissionAttribute>();
-        if (att == null) return null;
+        if (att != null)
+        {
+            // 已登录用户判断系统角色，未登录时不判断
+            var user = HttpContext.Items["CurrentUser"] as IUser;
+            user ??= ManageProvider.User;
+            if (user == null || !user.Roles.Any(e => e.IsSystem) && !att.Valid(user.Roles))
+                exp = att.Expression;
+        }
 
-        // 已登录用户判断系统角色，未登录时不判断
-        var user = HttpContext.Items["CurrentUser"] as IUser;
-        user ??= ManageProvider.User;
-        if (user != null && (user.Roles.Any(e => e.IsSystem) || att.Valid(user.Roles))) return null;
+        // 多租户
+        var ctxTenant = TenantContext.Current;
+        if (ctxTenant != null && IsTenantSource)
+        {
+            var tenant = Tenant.FindById(ctxTenant.TenantId);
+            if (tenant != null)
+            {
+                HttpContext.Items["TenantId"] = tenant.Id;
+
+                if (!exp.IsNullOrEmpty())
+                    exp = "TenantId={#TenantId} and " + exp;
+                else
+                    exp = "TenantId={#TenantId}";
+            }
+        }
+
+        if (exp.IsNullOrEmpty()) return null;
 
         var builder = new WhereBuilder
         {
             Factory = Factory,
-            Expression = att.Expression,
+            Expression = exp,
             //Data = Session,
         };
         builder.SetData(Session);
-        builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
+        //builder.Data2 = new ItemsExtend { Items = HttpContext.Items };
+        builder.SetData2(HttpContext.Items.ToDictionary(e => e.Key + "", e => e.Value));
 
         return builder;
     }
+
+    /// <summary>是否租户实体类</summary>
+    protected Boolean IsTenantSource => typeof(TEntity).GetInterfaces().Any(e => e == typeof(ITenantSource));
 
     /// <summary>获取选中键</summary>
     /// <returns></returns>
@@ -411,8 +434,11 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         var list = SearchData(p);
 
+        // 用于显示的列
+        ViewBag.Fields = OnGetFields(ViewKinds.List, list);
+
         // Json输出
-        if (IsJsonRequest) return Json(0, null, EntitiesFilter(list), new { pager = p });
+        if (IsJsonRequest) return Json(0, null, list, new { page = p });
 
         return View("List", list);
     }
@@ -431,10 +457,10 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         Valid(entity, DataObjectMethodType.Select, false);
 
         // Json输出
-        if (IsJsonRequest) return Json(0, null, EntityFilter(entity, ShowInForm.详情));
+        if (IsJsonRequest) return Json(0, null, entity);
 
         // 用于显示的列
-        ViewBag.Fields = DetailFields;
+        ViewBag.Fields = OnGetFields(ViewKinds.Detail, entity);
 
         return View("Detail", entity);
     }
@@ -471,53 +497,6 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             throw;
         }
     }
-
-    /// <summary>
-    /// 获取字段
-    /// </summary>
-    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
-    /// <returns></returns>
-    [EntityAuthorize]
-    [Obsolete("使用GetFields")]
-    public virtual ActionResult GetEntityFields(String kind, FormatType formatType = FormatType.CamelCase)
-    {
-        var fields = kind switch
-        {
-            "Detail" => DetailFields,
-            "EditForm" => EditFormFields,
-            "AddForm" => AddFormFields,
-            "List" => ListFields,
-            _ => ListFields
-        };
-
-        var data = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.TypeStr = s.Type.Name;
-
-            return fm;
-        }).ToList();
-
-        var customs = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.IsCustom = true;
-
-            return fm;
-        }).ToList();
-
-        data.AddRange(customs);
-
-        return Ok(data: data);
-    }
-
     #endregion
 
     #region 数据接口
@@ -564,7 +543,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             var list = SearchData(p);
 
             // Json输出
-            return Json(0, null, list, new { issuer, pager = p });
+            return Json(0, null, list, new { issuer, page = p });
         }
         catch (Exception ex)
         {
@@ -1115,7 +1094,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(8);
         ut.Enable = true;
-        ut.Expire = DateTime.Now.AddSeconds(Setting.Current.ShareExpire);
+        ut.Expire = DateTime.Now.AddSeconds(CubeSetting.Current.ShareExpire);
         ut.Save();
 
         //var url2 = $"/Admin/UserToken?q={ut.Token}";
@@ -1143,7 +1122,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Data.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
 
-        _ = ViewHelper.MakeListView(typeof(TEntity), vpath, ListFields);
+        _ = ViewHelper.MakeListView(typeof(TEntity), vpath, OnGetFields(ViewKinds.List, null));
 
         WriteLog("生成列表", true, vpath);
 
@@ -1165,7 +1144,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_Form_Body.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-        
+
         _ = ViewHelper.MakeFormView(typeof(TEntity), vpath, EditFormFields);
 
         WriteLog("生成表单", true, vpath);
@@ -1188,8 +1167,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var cs = GetControllerAction();
         var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Search.cshtml";
         if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
-        
-        _ = ViewHelper.MakeSearchView(typeof(TEntity), vpath, ListFields);
+
+        _ = ViewHelper.MakeSearchView(typeof(TEntity), vpath, OnGetFields(ViewKinds.List, null));
 
         WriteLog("生成搜索", true, vpath);
 
@@ -1263,7 +1242,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     #region 列表字段和表单字段
     private static FieldCollection _ListFields;
     /// <summary>列表字段过滤</summary>
-    protected static FieldCollection ListFields => _ListFields ??= new FieldCollection(Factory, "List");
+    protected static FieldCollection ListFields => _ListFields ??= new FieldCollection(Factory, ViewKinds.List);
 
     //private static FieldCollection _FormFields;
     ///// <summary>表单字段过滤</summary>
@@ -1272,165 +1251,90 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     private static FieldCollection _AddFormFields;
     /// <summary>表单字段过滤</summary>
-    protected static FieldCollection AddFormFields => _AddFormFields ??= new FieldCollection(Factory, "AddForm");
+    protected static FieldCollection AddFormFields => _AddFormFields ??= new FieldCollection(Factory, ViewKinds.AddForm);
 
     private static FieldCollection _EditFormFields;
     /// <summary>表单字段过滤</summary>
-    protected static FieldCollection EditFormFields => _EditFormFields ??= new FieldCollection(Factory, "EditForm");
+    protected static FieldCollection EditFormFields => _EditFormFields ??= new FieldCollection(Factory, ViewKinds.EditForm);
 
     private static FieldCollection _DetailFields;
     /// <summary>表单字段过滤</summary>
-    protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, "Detail");
+    protected static FieldCollection DetailFields => _DetailFields ??= new FieldCollection(Factory, ViewKinds.Detail);
 
-    /// <summary>
-    /// 获取字段
-    /// </summary>
-    /// <param name="kind">字段类型：详情-Detail、编辑-EditForm、添加-AddForm、列表-List</param>
-    /// <param name="formatType">Name和ColumnName的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
+    private static FieldCollection _SearchFields;
+    /// <summary>搜索字段过滤</summary>
+    protected static FieldCollection SearchFields => _SearchFields ??= new FieldCollection(Factory, ViewKinds.Search);
+
+    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
+    /// <param name="model">获取字段列表时的相关模型，可能是实体对象或实体列表，可依次来定制要显示的字段</param>
     /// <returns></returns>
-    [EntityAuthorize]
-    public virtual ActionResult GetFields(String kind, FormatType formatType = FormatType.CamelCase)
+    protected virtual FieldCollection OnGetFields(ViewKinds kind, Object model)
     {
         var fields = kind switch
         {
-            "Detail" => DetailFields,
-            "EditForm" => EditFormFields,
-            "AddForm" => AddFormFields,
-            "List" => ListFields,
-            _ => ListFields
+            ViewKinds.List => ListFields,
+            ViewKinds.Detail => DetailFields,
+            ViewKinds.AddForm => AddFormFields,
+            ViewKinds.EditForm => EditFormFields,
+            ViewKinds.Search => SearchFields,
+            _ => ListFields,
         };
-
-        var data = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.TypeStr = s.Type.Name;
-
-            return fm;
-        }).ToList();
-
-        var customs = fields.Select(s =>
-        {
-            var fm = new FieldModel(formatType);
-
-            fm.Copy(s);
-
-            fm.IsCustom = true;
-
-            return fm;
-        }).ToList();
-
-        data.AddRange(customs);
-
-        return Ok(data: data);
+        return fields.Clone();
     }
 
-    /// <summary>获取所有表</summary>
+    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
     /// <returns></returns>
-    [EntityAuthorize]
-    public virtual ActionResult GetTables()
+    [AllowAnonymous]
+    public virtual ActionResult GetFields(ViewKinds kind)
     {
-        var tables = ModelTable.GetValids();
-        return Ok(data: tables);
+        var fields = OnGetFields(kind, null);
+
+        Object data = new { code = 0, data = fields };
+
+        return new JsonResult(data);
     }
 
-    /// <summary>获取当前表所有列</summary>
-    /// <param name="formatType">Name的值的格式。0-小驼峰，1-小写，2-保持默认。默认0</param>
-    /// <returns></returns>
-    [EntityAuthorize]
-    public virtual ActionResult GetColumns(FormatType formatType = FormatType.CamelCase)
-    {
-        var tables = ModelTable.GetValids();
-        var ctrl = GetType().FullName;
-        var table = tables.FirstOrDefault(e => e.Controller == ctrl);
-        if (table == null) return Json(500, $"无法找到当前控制器[{ctrl}]的模型表信息");
+    ///// <summary>
+    ///// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
+    ///// </summary>
+    ///// <param name="model"></param>
+    ///// <param name="kind"></param>
+    ///// <returns></returns>
+    //protected virtual IDictionary<String, Object> OnFilter(IModel model, ViewKinds kind)
+    //{
+    //    if (model == null) return null;
 
-        var columns = ModelColumn.FindAllByTableId(table.Id);
-        columns = columns.Where(e => e.Enable).OrderBy(e => e.Sort).ToArray();
+    //    var dic = new Dictionary<String, Object>();
+    //    var fields = OnGetFields(kind, model);
+    //    if (fields != null)
+    //    {
+    //        var names = Factory.FieldNames;
+    //        foreach (var field in fields)
+    //        {
+    //            if (!field.Name.IsNullOrEmpty() && names.Contains(field.Name))
+    //                dic[field.Name] = model[field.Name];
+    //        }
+    //    }
 
-        foreach (var item in columns)
-        {
-            item.Name = item.Name.FormatName(formatType);
-        }
+    //    return dic;
+    //}
 
-        return Ok(data: columns);
-    }
-    #endregion
+    ///// <summary>
+    ///// 实体列表过滤器，根据模型列的列表页显示类型，不显示的字段去掉
+    ///// </summary>
+    ///// <param name="models"></param>
+    ///// <param name="kind"></param>
+    ///// <returns></returns>
+    //protected virtual IEnumerable<IDictionary<String, Object>> OnFilter(IEnumerable<IModel> models, ViewKinds kind)
+    //{
+    //    if (models == null) yield break;
 
-    #region 权限菜单
-    /// <summary>菜单顺序。扫描时会反射读取</summary>
-    [Obsolete("=>MenuAttribute")]
-    protected static Int32 MenuOrder { get; set; }
-
-    /// <summary>控制器对应菜单</summary>
-    protected static IMenu ThisMenu { get; set; }
-
-    /// <summary>
-    /// 模型表设置，生成模型表数据之后调用
-    /// </summary>
-    protected static Func<ModelTable, ModelTable> ModelTableSetting { get; set; } = table => table;
-
-    /// <summary>控制器对应模型表</summary>
-    protected static ModelTable ModelTable
-    {
-        get
-        {
-            var menu = ThisMenu;
-            var pmenu = menu?.Parent;
-            return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name);
-            //return ModelTable.FindByCategoryAndName(pmenu?.Name, menu?.Name) ??
-            //    ModelTableSetting(ModelTable.ScanModel(pmenu?.Name, menu?.Name, menu?.FullName, menu?.Url.TrimStart("~"), Entity<TEntity>.Meta.Factory));
-        }
-    }
-
-    /// <summary>
-    /// 实体过滤器，根据模型列的表单显示类型，不显示的字段去掉
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <param name="showInForm"></param>
-    /// <returns></returns>
-    protected virtual TEntity EntityFilter(TEntity entity, ShowInForm showInForm)
-    {
-        if (entity == null) return null;
-        var modelTable = ModelTable;
-
-        var modelColumns = modelTable?.GetColumns()?.Where(w => !w.ShowInForm.HasFlag(showInForm));
-
-        if (modelColumns == null) return entity;
-
-        foreach (var column in modelColumns)
-        {
-            if (entity[column.Name] != null) entity[column.Name] = null;
-        }
-
-        return entity;
-    }
-
-    /// <summary>
-    /// 实体列表过滤器，根据模型列的列表页显示类型，不显示的字段去掉
-    /// </summary>
-    /// <param name="entities"></param>
-    /// <returns></returns>
-    protected virtual IEnumerable<TEntity> EntitiesFilter(IEnumerable<TEntity> entities)
-    {
-        if (entities == null) return null;
-        var modelTable = ModelTable;
-        // 不显示的列
-        var modelColumns = modelTable?.GetColumns()?.Where(w => !w.ShowInList).ToList();
-
-        if (modelColumns == null) return entities;
-
-        foreach (var entity in entities)
-        {
-            foreach (var column in modelColumns.Where(column => entity[column.Name] != null))
-            {
-                entity[column.Name] = null;
-            }
-        }
-
-        return entities;
-    }
+    //    foreach (var item in models)
+    //    {
+    //        yield return OnFilter(item, kind);
+    //    }
+    //}
     #endregion
 }

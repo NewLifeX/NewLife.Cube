@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net5.0;net6.0;net7.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2023 NewLife</Copyright>
-    <VersionPrefix>5.5</VersionPrefix>
+    <VersionPrefix>6.0</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -24,14 +24,14 @@
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>NewLife.Cube.Core</PackageId>
+    <PackageId>NewLife.Cube</PackageId>
     <Authors>$(Company)</Authors>
     <PackageProjectUrl>https://newlifex.com/cube</PackageProjectUrl>
     <PackageIcon>leaf.png</PackageIcon>
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>完善附件功能支持；增加魔方模块接口；升级EChart对时间轴的支持；表单页支持Category分组</PackageReleaseNotes>
+    <PackageReleaseNotes>第三代魔方，前后端分离</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -48,20 +48,44 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Cube\Controllers\ModelColumnController.cs" />
+    <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
+    <Compile Remove="Common\FormatType.cs" />
+    <Compile Remove="Entity\模型列.Biz.cs" />
+    <Compile Remove="Entity\模型列.cs" />
+    <Compile Remove="Entity\模型表.Biz.cs" />
+    <Compile Remove="Entity\模型表.cs" />
+    <Compile Remove="Extensions\ItemsExtend.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\UIService.cs" Link="Services\UIService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\DataField.cs" Link="ViewModels\DataField.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\ErrorModel.cs" Link="ViewModels\ErrorModel.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\FieldCollection.cs" Link="ViewModels\FieldCollection.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\FormField.cs" Link="ViewModels\FormField.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\ItemModel.cs" Link="ViewModels\ItemModel.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\IUrlExtend.cs" Link="ViewModels\IUrlExtend.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\ListBoxModel.cs" Link="ViewModels\ListBoxModel.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\ListField.cs" Link="ViewModels\ListField.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\LoginConfigModel.cs" Link="ViewModels\LoginConfigModel.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\MenuTree.cs" Link="ViewModels\MenuTree.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\SearchField.cs" Link="ViewModels\SearchField.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\SelectUserModel.cs" Link="ViewModels\SelectUserModel.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\ViewKinds.cs" Link="ViewModels\ViewKinds.cs" />
+    <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.1.2023.221-beta0001" />
-    <PackageReference Include="NewLife.IP" Version="2.0.2023.203" />
-    <PackageReference Include="NewLife.Stardust" Version="2.7.2023.221-beta0001" />
-    <PackageReference Include="NewLife.XCode" Version="11.5.2023.203" />
+    <PackageReference Include="NewLife.Core" Version="10.3.2023.511-beta0915" />
+    <PackageReference Include="NewLife.IP" Version="2.0.2023.401" />
+    <PackageReference Include="NewLife.Stardust" Version="2.8.2023.510-beta2330" />
+    <PackageReference Include="NewLife.XCode" Version="11.8.2023.511-beta0917" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,6 +101,7 @@
     <Folder Include="Session\" />
     <Folder Include="Services\" />
     <Folder Include="Modules\" />
+    <Folder Include="ViewModels\" />
   </ItemGroup>
 
 </Project>

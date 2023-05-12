@@ -19,8 +19,6 @@ namespace NewLife.Cube.Cube.Controllers
     {
         static AppLogController()
         {
-            ListFields.RemoveField("ID");
-
             ListFields.TraceUrl("TraceId");
             //{
             //    var df = ListFields.GetField("TraceId") as ListField;

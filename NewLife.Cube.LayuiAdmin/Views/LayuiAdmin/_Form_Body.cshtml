@@ -4,7 +4,7 @@
 @{
     var entity = Model as IEntity;
     var fields = ViewBag.Fields as FieldCollection;
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var isNew = entity.IsNullKey;
 }
 

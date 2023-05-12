@@ -27,7 +27,7 @@
     else if (chart.Height < 0)
         style += $"height: {-chart.Height}%;";
 
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var theme = set.EChartsTheme;
     if (theme.EqualIgnoreCase("Default")) theme = "";
 }

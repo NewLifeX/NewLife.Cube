@@ -1,7 +1,11 @@
 ﻿using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using NewLife.Cube.ViewModels;
 using XCode;
 using XCode.Configuration;
+using XCode.DataAccessLayer;
 
 namespace NewLife.Cube;
 
@@ -16,27 +20,30 @@ public class FieldCollection : List<DataField>
 {
     #region 属性
     /// <summary>类型</summary>
-    public String Kind { get; set; }
+    public ViewKinds Kind { get; set; }
 
     /// <summary>工厂</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public IEntityFactory Factory { get; set; }
 
     /// <summary>需要隐藏的分组名</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public ICollection<String> HiddenGroups { get; } = new HashSet<String>();
 
     /// <summary>是否显示分组</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public GroupVisibleDelegate GroupVisible { get; set; }
     #endregion
 
     #region 构造
     /// <summary>实例化一个字段集合</summary>
     /// <param name="kind"></param>
-    public FieldCollection(String kind) => Kind = kind;
+    public FieldCollection(ViewKinds kind) => Kind = kind;
 
     /// <summary>使用工厂实例化一个字段集合</summary>
     /// <param name="factory"></param>
     /// <param name="kind"></param>
-    public FieldCollection(IEntityFactory factory, String kind)
+    public FieldCollection(IEntityFactory factory, ViewKinds kind)
     {
         Kind = kind;
         Factory = factory;
@@ -51,21 +58,53 @@ public class FieldCollection : List<DataField>
 
             switch (kind)
             {
-                case "AddForm":
+                case ViewKinds.List:
+                    SetRelation(false);
+                    break;
+                case ViewKinds.Detail:
+                    SetRelation(true);
+                    break;
+                case ViewKinds.AddForm:
                     SetRelation(true);
                     //RemoveCreateField();
                     RemoveUpdateField();
                     break;
-                case "EditForm":
+                case ViewKinds.EditForm:
                     SetRelation(true);
                     break;
-                case "Detail":
-                    SetRelation(true);
+                case ViewKinds.Search:
+                    // 有索引的字段
+                    var fs = new List<FieldItem>();
+                    var ds = new List<String>();
+                    foreach (var idx in factory.Table.DataTable.Indexes)
+                    {
+                        foreach (var elm in idx.Columns)
+                        {
+                            var dc = factory.Table.DataTable.GetColumn(elm);
+                            if (dc != null && !ds.Contains(dc.Name))
+                            {
+                                ds.Add(dc.Name);
+                                fs.Add(factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(dc.Name)));
+                            }
+                        }
+                    }
+
+                    // 有映射的字段
+                    foreach (var item in factory.Fields)
+                    {
+                        if (item.Map != null && !ds.Contains(item.Name))
+                        {
+                            ds.Add(item.Name);
+                            fs.Add(item);
+                        }
+                    }
+
+                    Clear();
+                    foreach (var elm in fs)
+                    {
+                        AddField(elm.Name);
+                    }
                     break;
-                case "Form":
-                    SetRelation(true);
-                    break;
-                case "List":
                 default:
                     SetRelation(false);
                     break;
@@ -82,11 +121,9 @@ public class FieldCollection : List<DataField>
     {
         DataField df = Kind switch
         {
-            "AddForm" => new FormField(),
-            "EditForm" => new FormField(),
-            "Detail" => new FormField(),
-            "Form" => new FormField(),
-            "List" => new ListField(),
+            ViewKinds.List => new ListField(),
+            ViewKinds.Detail or ViewKinds.AddForm or ViewKinds.EditForm => new FormField(),
+            ViewKinds.Search => new SearchField(),
             _ => throw new NotImplementedException(),
         };
         //df.Sort = Count + 1;

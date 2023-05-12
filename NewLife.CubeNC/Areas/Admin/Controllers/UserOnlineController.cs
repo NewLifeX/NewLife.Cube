@@ -21,7 +21,7 @@ public class UserOnlineController : EntityController<UserOnline>
     {
         PageSetting.EnableAdd = false;
 
-        ListFields.RemoveField("ID", "UserID", "SessionID", "Status", "LastError", "CreateIP", "CreateTime");
+        ListFields.RemoveField("UserID", "SessionID", "Status", "LastError", "CreateIP", "CreateTime");
 
         ListFields.TraceUrl("TraceId");
 

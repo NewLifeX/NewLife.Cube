@@ -11,7 +11,8 @@
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
     <Deterministic>false</Deterministic>
-    <OutputPath>..\Bin</OutputPath>
+    <OutputPath>..\Bin\CubeDemoNC</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <SignAssembly>True</SignAssembly>
@@ -40,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="7.0.3" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.6.2023.301" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="7.0.5" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.8.2023.510-beta2330" />
   </ItemGroup>
 
   <ItemGroup>

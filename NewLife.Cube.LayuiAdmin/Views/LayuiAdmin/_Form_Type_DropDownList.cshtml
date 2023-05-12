@@ -11,7 +11,7 @@
     var type = value.GetType();
 
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
-    if (NewLife.Cube.Setting.Current.BootstrapSelect)
+    if (NewLife.Cube.CubeSetting.Current.BootstrapSelect)
         atts.Add("class", "form-select form-select-sm");
     else
         atts.Add("class", "form-select form-select-sm");

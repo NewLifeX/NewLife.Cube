@@ -1,4 +1,5 @@
-﻿using System.Security.Principal;
+﻿using System.Linq;
+using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
@@ -113,7 +114,7 @@ public class ManageProvider2 : ManageProvider
         Current = user;
 
         // 过期时间
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var expire = TimeSpan.FromMinutes(0);
         if (remember && user != null)
         {
@@ -147,7 +148,7 @@ public class ManageProvider2 : ManageProvider
         //var ui = _client.GetUser(ti.AccessToken).Result as User;
         var ui = _client.UserAuth(username, password).Result;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var log = LogProvider.Provider;
 
         // 仅验证登录，不要角色信息
@@ -292,8 +293,26 @@ public static class ManagerProviderHelper
             if (user != null) provider.SetCurrent(user, serviceProvider);
         }
 
+        // 如果Null直接返回
+        if (user == null) return null;
+
         // 设置前端当前用户
-        if (user != null) provider.SetPrincipal(serviceProvider);
+        provider.SetPrincipal(serviceProvider);
+
+        // 处理租户相关信息
+        {
+            var tlist = TenantUser.FindAllByUserId(user.ID);
+            var tenantId = GetCookieTenantID(context);
+
+            if (tlist.Any(e => e.TenantId == tenantId))
+            {
+                ChangeTenant(context, tenantId);
+            }
+            else
+            {
+                ChangeTenant(context, tlist.FirstOrDefault()?.TenantId ?? 0);
+            }
+        }
 
         return user;
     }
@@ -302,7 +321,7 @@ public static class ManagerProviderHelper
     /// <returns></returns>
     public static JwtBuilder GetJwt()
     {
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
 
         // 生成令牌
         var ss = set.JwtSecret?.Split(':');
@@ -383,7 +402,7 @@ public static class ManagerProviderHelper
         var res = context?.Response;
         if (res == null) return;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var option = new CookieOptions
         {
             SameSite = (Microsoft.AspNetCore.Http.SameSiteMode)set.SameSiteMode
@@ -413,6 +432,37 @@ public static class ManagerProviderHelper
         context.Items["jwtToken"] = token;
     }
     #endregion
+
+    /// <summary>改变选中的租户</summary>
+    /// <param name="context"></param>
+    /// <param name="tenantId"></param>
+    public static void ChangeTenant(HttpContext context, Int32 tenantId)
+    {
+        var res = context?.Response;
+        if (res == null) return;
+
+        var set = CubeSetting.Current;
+        var option = new CookieOptions
+        {
+            SameSite = (Microsoft.AspNetCore.Http.SameSiteMode)set.SameSiteMode
+        };
+        if (!set.CookieDomain.IsNullOrEmpty()) option.Domain = set.CookieDomain;
+
+        if (tenantId <= 0) option.Expires = DateTimeOffset.MinValue;
+
+        res.Cookies.Append("TenantId", tenantId + "", option);
+    }
+
+    /// <summary>获取cookie中tenantId</summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public static Int32 GetCookieTenantID(HttpContext context)
+    {
+        var res = context?.Request;
+        if (res == null) return 0;
+
+        return res.Cookies["TenantId"].ToInt(0);
+    }
 
     /// <summary>
     /// 添加管理提供者

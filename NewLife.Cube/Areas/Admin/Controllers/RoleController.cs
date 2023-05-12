@@ -5,37 +5,24 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>角色控制器</summary>
 [DisplayName("角色")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
-[Area("Admin")]
+[AdminArea]
 [Menu(90, true, Icon = "fa-user-plus")]
-public class RoleController : EntityController<Role>
+public class RoleController : EntityController<Role, RoleModel>
 {
     static RoleController()
     {
-        ListFields.RemoveField("ID", "Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "UpdateUserID", "UpdateIP", "Remark");
+        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6", "UpdateUserID", "UpdateIP", "Remark");
         ListFields.RemoveCreateField();
 
         {
             var df = ListFields.AddListField("Remark", "UpdateUser");
         }
     }
-
-    ///// <summary>动作执行前</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuting(ActionExecutingContext filterContext)
-    //{
-    //    ViewBag.HeaderTitle = "角色管理";
-    //    //ViewBag.HeaderContent = "系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。";
-
-    //    var bs = this.Bootstrap();
-    //    bs.MaxColumn = 1;
-
-    //    base.OnActionExecuting(filterContext);
-    //}
 
     /// <summary>搜索数据集</summary>
     /// <param name="p"></param>
@@ -60,20 +47,18 @@ public class RoleController : EntityController<Role>
     /// <param name="entity"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public override async Task<ActionResult> Add(Role entity)
+    public override async Task<ApiResponse<Role>> Insert(Role entity)
     {
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
 
         if (!Valid(entity, DataObjectMethodType.Insert, true))
-        {
             //ViewBag.StatusMessage = "验证失败！";
             //ViewBag.Fields = AddFormFields;
 
             //return View("AddForm", entity);
 
-            return Json(500, "验证失败！");
-        }
+            return new ApiResponse<Role>(500, "验证失败！", null);
 
         var rs = false;
         var err = "";
@@ -117,9 +102,7 @@ public class RoleController : EntityController<Role>
 
             // 删除已经被放弃权限的项
             foreach (var item in dels)
-            {
                 if (entity.Has(item)) entity.Permissions.Remove(item);
-            }
 
             OnInsert(entity);
 
@@ -155,13 +138,13 @@ public class RoleController : EntityController<Role>
         {
             WriteLog("Add", false, err);
 
-            msg = SysConfig.Develop ? ("添加失败！" + err) : "添加失败！";
+            msg = SysConfig.Develop ? "添加失败！" + err : "添加失败！";
             //ViewBag.StatusMessage = msg;
 
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Role.Meta.Unique.Name] = 0;
 
-            return Json(500, msg);
+            return new ApiResponse<Role>(500, msg);
         }
 
         //ViewBag.StatusMessage = "添加成功！";
@@ -173,22 +156,22 @@ public class RoleController : EntityController<Role>
         {
             WriteLog("Edit", false, err);
 
-            msg = SysConfig.Develop ? ("添加明细失败！" + err) : "添加明细失败！";
+            msg = SysConfig.Develop ? "添加明细失败！" + err : "添加明细失败！";
             //ViewBag.StatusMessage = msg;
 
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Role.Meta.Unique.Name] = 0;
 
-            return Json(500, msg);
+            return new ApiResponse<Role>(500, msg);
         }
 
-        return Json(0, msg);
+        return new ApiResponse<Role>(0, msg, entity);
     }
 
     /// <summary>保存</summary>
     /// <param name="entity"></param>
     /// <returns></returns>
-    public override async Task<ActionResult> Edit(Role entity)
+    public override async Task<ApiResponse<Role>> Update(Role entity)
     {
         // 保存权限项
         var menus = XCode.Membership.Menu.Root.AllChilds;
@@ -221,11 +204,9 @@ public class RoleController : EntityController<Role>
         }
         // 删除已经被放弃权限的项
         foreach (var item in dels)
-        {
             if (entity.Has(item)) entity.Permissions.Remove(item);
-        }
 
-        return await base.Edit(entity);
+        return await base.Update(entity);
     }
 
     /// <summary>
@@ -240,9 +221,7 @@ public class RoleController : EntityController<Role>
     protected virtual Boolean AddDetailed(IEntity entity)
     {
         if (entity == null)
-        {
             return false;
-        }
         // TO DO
         return true;
     }

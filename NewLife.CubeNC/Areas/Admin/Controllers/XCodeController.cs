@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube.Admin.Controllers
@@ -8,7 +9,7 @@ namespace NewLife.Cube.Admin.Controllers
     [DisplayName("数据中间件")]
     [Area("Admin")]
     [Menu(0, false)]
-    public class XCodeController : ConfigController<XCode.Setting>
+    public class XCodeController : ConfigController<XCodeSetting>
     {
     }
 }

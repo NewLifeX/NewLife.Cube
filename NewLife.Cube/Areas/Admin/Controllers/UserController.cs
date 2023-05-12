@@ -14,15 +14,15 @@ using XCode;
 using XCode.Membership;
 using static XCode.Membership.User;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
 [DataPermission(null, "ID={#userId}")]
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
-[Area("Admin")]
+[AdminArea]
 [Menu(100, true, Icon = "fa-user")]
-public class UserController : EntityController<User>
+public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
@@ -36,6 +36,12 @@ public class UserController : EntityController<User>
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveUpdateField();
         ListFields.RemoveField("Remark");
+
+        {
+            // 为RoleId搜索字段增加LovCode
+            var df = SearchFields.GetField(XCode.Membership.User._.RoleID);
+            df.LovCode = "Role";
+        }
 
         {
             var df = ListFields.AddListField("Link", "Logins");
@@ -144,22 +150,16 @@ public class UserController : EntityController<User>
             var rs = areaIds.ToList();
             var r = Area.FindByID(areaIds[areaIds.Length - 1]);
             if (r != null)
-            {
                 // 城市，要下一级
                 if (r.Level == 2)
-                {
                     rs.AddRange(r.Childs.Select(e => e.ID));
-                }
                 // 省份，要下面两级
                 else if (r.Level == 1)
                 {
                     rs.AddRange(r.Childs.Select(e => e.ID));
                     foreach (var item in r.Childs)
-                    {
                         rs.AddRange(item.Childs.Select(e => e.ID));
-                    }
                 }
-            }
             areaIds = rs.ToArray();
         }
 
@@ -168,9 +168,7 @@ public class UserController : EntityController<User>
         var list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
 
         foreach (var user in list2)
-        {
             user.Password = null;
-        }
 
         return list2;
     }
@@ -183,22 +181,18 @@ public class UserController : EntityController<User>
     protected override Boolean Valid(User entity, DataObjectMethodType type, Boolean post)
     {
         if (!post && type == DataObjectMethodType.Update)
-        {
             // 清空密码，不向浏览器输出
             //entity.Password = null;
             entity["Password"] = null;
-        }
 
         if (post && type == DataObjectMethodType.Update)
         {
             var ds = (entity as IEntity).Dirtys;
             if (ds["Password"])
-            {
                 if (entity.Password.IsNullOrEmpty())
                     ds["Password"] = false;
                 else
                     entity.Password = ManageProvider.Provider.PasswordProvider.Hash(entity.Password);
-            }
 
             if (!entity.RoleIds.IsNullOrEmpty()) entity.RoleIds = entity.RoleIds == "-1" ? null : entity.RoleIds.Replace(",-1,", ",");
         }
@@ -207,76 +201,9 @@ public class UserController : EntityController<User>
     }
 
     #region 登录注销
-    /// <summary>登录</summary>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public ActionResult Login()
-    {
-        var returnUrl = GetRequest("r");
-        if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
-
-        // 如果已登录，直接跳转
-        if (ManageProvider.User != null)
-        {
-            if (Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
-            else
-                return RedirectToAction("Index", "Index", new { page = returnUrl });
-        }
-
-        // 是否已完成第三方登录
-        var logId = Session["Cube_OAuthId"].ToLong();
-
-        // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-        var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
-        if (ms != null && !Setting.Current.AllowLogin)
-        {
-            if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
-            if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
-
-            // 只有一个，跳转
-            if (ms.Count == 1)
-            {
-                var url = $"~/Sso/Login?name={ms[0].Name}";
-                if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
-
-                return Redirect(url);
-            }
-        }
-
-        // 部分提供支持应用内免登录，直接跳转
-        if (ms != null && ms.Count > 0 && logId == 0 && GetRequest("autologin") != "0")
-        {
-            var agent = Request.Headers["User-Agent"] + "";
-            if (!agent.IsNullOrEmpty())
-            {
-                foreach (var item in ms)
-                {
-                    var client = OAuthClient.Create(item.Name);
-                    if (client != null && client.Support(agent))
-                    {
-                        var url = $"~/Sso/Login?name={item.Name}";
-                        if (!returnUrl.IsNullOrEmpty()) url += "&r=" + HttpUtility.UrlEncode(returnUrl);
-
-                        return Redirect(url);
-                    }
-                }
-            }
-        }
-
-        //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
-        //ViewBag.ReturnUrl = returnUrl;
-
-        var model = GetViewModel(returnUrl);
-        model.OAuthItems = ms.Where(e => e.Visible).ToList();
-
-        return Json(0, null, model);
-    }
-
     private LoginViewModel GetViewModel(String returnUrl)
     {
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var sys = SysConfig.Current;
         var model = new LoginViewModel
         {
@@ -328,7 +255,7 @@ public class UserController : EntityController<User>
         var ipKey = $"Login:{UserHost}";
         var ipErrors = _cache.Get<Int32>(ipKey);
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         try
@@ -390,7 +317,7 @@ public class UserController : EntityController<User>
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (set.LogoutAll)
         {
             // 如果是单点登录，则走单点登录注销
@@ -411,56 +338,36 @@ public class UserController : EntityController<User>
 
         ManageProvider.Provider.Logout();
 
-        return Ok();
+        return Json(0, "ok");
     }
     #endregion
 
-    /// <summary>获取用户资料</summary>
-    /// <param name="id"></param>
+    /// <summary>获取当前登录用户资料</summary>
     /// <returns></returns>
-    //[AllowAnonymous]
-    [EntityAuthorize]
     [HttpGet]
-    public ActionResult Info(Int32 id)
+    [EntityAuthorize]
+    public ActionResult Info()
     {
-        //if (id == null || id.Value <= 0) throw new Exception("无效用户编号！");
-
-        var user = ManageProvider.User as XCode.Membership.User;
-        if (user == null) return RedirectToAction("Login");
-
-        if (id > 0 && id != user.ID) throw new Exception("禁止查看非当前登录用户资料");
+        if (ManageProvider.User is not User user) throw new Exception("当前登录用户无效！");
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);
         if (user == null) throw new Exception("无效用户编号！");
 
-        //user.Password = null;
         user["Password"] = null;
 
-        if (IsJsonRequest)
-        {
-            var userInfo = new UserInfo();
-            userInfo.Copy(user);
-            userInfo.SetPermission(user.Roles);
-            userInfo.SetRoleNames(user.Roles);
+        var userInfo = new UserInfo();
+        userInfo.Copy(user);
+        userInfo.SetPermission(user.Roles);
+        userInfo.SetRoleNames(user.Roles);
 
-            return Json(0, "ok", userInfo);
-        }
+        return Json(0, "ok", userInfo);
 
-        //// 用于显示的列
-        //if (ViewBag.Fields == null) ViewBag.Fields = EditFormFields;
-        //ViewBag.Factory = XCode.Membership.User.Meta.Factory;
-
-        //// 必须指定视图名，因为其它action会调用
-        //return View("Info", user);
-
-        return Json(0, null, user);
     }
 
     /// <summary>更新用户资料</summary>
     /// <param name="user"></param>
     /// <returns></returns>
     [HttpPost]
-    //[AllowAnonymous]
     [EntityAuthorize]
     public async Task<ActionResult> Info(User user)
     {
@@ -477,7 +384,7 @@ public class UserController : EntityController<User>
         var file = HttpContext.Request.Form.Files["avatar"];
         if (file != null)
         {
-            var set = Setting.Current;
+            var set = CubeSetting.Current;
             var fileName = user.ID + Path.GetExtension(file.FileName);
             var att = await SaveFile(user, file, set.AvatarPath, fileName);
             if (att != null) user.Avatar = att.FilePath;
@@ -485,7 +392,10 @@ public class UserController : EntityController<User>
 
         user.Update();
 
-        return Info(user.ID);
+        var user2 = user.CloneEntity();
+        user2.Password = null;
+
+        return Json(0, null, user);
     }
 
     /// <summary>保存文件</summary>
@@ -497,30 +407,10 @@ public class UserController : EntityController<User>
     protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
     {
         // 修改保存目录和文件名
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
 
         return base.SaveFile(entity, file, set.AvatarPath, fileName);
-    }
-
-    /// <summary>修改密码</summary>
-    /// <returns></returns>
-    //[AllowAnonymous]
-    [EntityAuthorize]
-    [HttpGet]
-    public ActionResult ChangePassword()
-    {
-        var user = ManageProvider.User as XCode.Membership.User;
-        if (user == null) return RedirectToAction("Login");
-
-        var name = Session["Cube_Sso"] as String;
-        var model = new ChangePasswordModel
-        {
-            Name = user.Name,
-            SsoName = name,
-        };
-
-        return Json(0, null, model);
     }
 
     /// <summary>修改密码</summary>
@@ -565,7 +455,7 @@ public class UserController : EntityController<User>
     [HttpGet]
     public ActionResult Binds()
     {
-        var user = ManageProvider.User as XCode.Membership.User;
+        var user = ManageProvider.User as User;
         if (user == null) return RedirectToAction("Login");
 
         user = XCode.Membership.User.FindByKeyForEdit(user.ID);
@@ -582,7 +472,7 @@ public class UserController : EntityController<User>
             OAuthItems = ms,
         };
 
-        return Ok(data: model);
+        return Json(0, null, model);
     }
 
     /// <summary>注册</summary>
@@ -596,7 +486,7 @@ public class UserController : EntityController<User>
         var password = registerModel.Password;
         var password2 = registerModel.Password2;
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
         try
@@ -656,6 +546,6 @@ public class UserController : EntityController<User>
         user.Password = null;
         user.SaveWithoutValid();
 
-        return Ok();
+        return Json(0, "ok");
     }
 }

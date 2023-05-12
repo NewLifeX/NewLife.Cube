@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
+using NewLife.Log;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using XCode.Membership;
@@ -70,18 +70,21 @@ public class ControllerBaseX : Controller
             WriteLog(act, false, ex.ToString());
         }
 
-        if (ex != null && !context.ExceptionHandled)
+        if (IsJsonRequest)
         {
-            var code = 500;
-            var message = ex.Message;
-            if (ex is ApiException aex)
+            if (ex != null && !context.ExceptionHandled)
             {
-                code = aex.Code;
-                message = aex.Message;
-            }
+                var code = 500;
+                var message = ex.Message;
+                if (ex is ApiException aex)
+                {
+                    code = aex.Code;
+                    message = aex.Message;
+                }
 
-            context.Result = Json(code, message, null);
-            context.ExceptionHandled = true;
+                context.Result = Json(code, message, null);
+                context.ExceptionHandled = true;
+            }
         }
 
         base.OnActionExecuted(context);
@@ -93,14 +96,6 @@ public class ControllerBaseX : Controller
     /// <param name="key"></param>
     /// <returns></returns>
     protected virtual String GetRequest(String key) => Request.GetRequestValue(key);
-    #endregion
-
-    #region 权限菜单
-    /// <summary>获取可用于生成权限菜单的Action集合</summary>
-    /// <param name="menu">该控制器所在菜单</param>
-    /// <returns></returns>
-    [Obsolete("=>MenuAttribute")]
-    protected virtual IDictionary<MethodInfo, Int32> ScanActionMenu(IMenu menu) => new Dictionary<MethodInfo, Int32>();
     #endregion
 
     #region Ajax处理
@@ -173,7 +168,10 @@ public class ControllerBaseX : Controller
             rs = dic;
         }
 
-        return Content(OnJsonSerialize(rs), "application/json", Encoding.UTF8);
+        var json = OnJsonSerialize(rs);
+        DefaultSpan.Current?.AppendTag(json);
+
+        return Content(json, "application/json", Encoding.UTF8);
     }
 
     /// <summary>Json序列化。默认使用FastJson</summary>

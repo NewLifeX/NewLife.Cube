@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Tables xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model2022.xsd" Output="Entity" NameSpace="NewLife.School.Entity" ConnName="School" BaseClass="Entity" Version="11.1.2022.0522" Document="https://newlifex.com/xcode/model" xmlns="https://newlifex.com/Model2022.xsd">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Tables xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model2022.xsd" Output="Entity" NameSpace="NewLife.School.Entity" ConnName="School" BaseClass="Entity" ModelClass="{name}Model" ModelInterface="I{name}" Version="11.7.2023.0327" Document="https://newlifex.com/xcode/model" DisplayName="" CubeOutput="" xmlns="https://newlifex.com/Model2022.xsd">
   <Table Name="Class" Description="班级" DbType="SqlServer">
     <Columns>
-      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="TenantId" DataType="Int32" Map="Tenant@Id@$" Description="租户" />
       <Column Name="Name" DataType="String" Master="True" Description="名称" />
       <Column Name="Enable" DataType="Boolean" Description="启用" />
       <Column Name="GraduationDate" DataType="DateTime" Description="毕业时间" />
@@ -17,10 +18,11 @@
   </Table>
   <Table Name="Student" Description="学生" DbType="SqlServer">
     <Columns>
-      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-      <Column Name="ClassID" DataType="Int32" Description="班级" Category="基本信息" />
+      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+      <Column Name="TenantId" DataType="Int32" Map="Tenant@Id@$" Description="租户" />
+      <Column Name="ClassId" DataType="Int32" Map="Class@Id@$" Description="班级" Category="基本信息" />
       <Column Name="Name" DataType="String" Master="True" Description="名称" Category="基本信息" />
-      <Column Name="Sex" DataType="Int32" Description="性别" Type="SexKind" Category="基本信息" />
+      <Column Name="Sex" DataType="Int32" Description="性别" Type="XCode.Membership.SexKinds" Category="基本信息" />
       <Column Name="Age" DataType="Int32" Description="年龄" Category="基本信息" />
       <Column Name="Mobile" DataType="String" Description="手机" Category="基本信息" />
       <Column Name="Address" DataType="String" Description="地址" Category="基本信息" />
@@ -34,13 +36,15 @@
       <Column Name="Remark" DataType="String" Length="200" Description="备注" Category="扩展信息" />
     </Columns>
     <Indexes>
-      <Index Columns="ClassID" />
+      <Index Columns="TenantId,ClassId" />
+      <Index Columns="ClassId" />
     </Indexes>
   </Table>
   <Table Name="Trade" Description="交易" ConnName="Bill" DbType="SqlServer">
     <Columns>
-      <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="订单编号" />
-      <Column Name="NodeID" DataType="Int32" Description="节点号" />
+      <Column Name="Id" DataType="Int64" Identity="True" PrimaryKey="True" Description="订单编号" />
+      <Column Name="TenantId" DataType="Int32" Map="Tenant@Id@$" Description="租户" />
+      <Column Name="NodeId" DataType="Int32" Description="节点号" />
       <Column Name="Tid" DataType="String" Description="订单号" />
       <Column Name="Status" DataType="Int32" Description="状态" />
       <Column Name="PayStatus" DataType="Int32" Description="是否支付" />
@@ -57,5 +61,9 @@
       <Column Name="IsSend" DataType="Int32" Description="更新者" />
       <Column Name="ErrorMsg" DataType="String" Length="200" Description="错误原因" />
     </Columns>
+    <Indexes>
+      <Index Columns="TenantId,NodeId" />
+      <Index Columns="NodeId" />
+    </Indexes>
   </Table>
 </Tables>

@@ -63,7 +63,7 @@ namespace NewLife.Cube.Entity
         [DisplayName("文件")]
         [Description("文件。插件文件包，zip压缩")]
         [DataObjectField(false, false, true, 200)]
-        [BindColumn("FilePath", "文件。插件文件包，zip压缩", "", ItemType = "file")]
+        [BindColumn("FilePath", "文件。插件文件包，zip压缩", "", ItemType = "file-zip")]
         public String FilePath { get => _FilePath; set { if (OnPropertyChanging("FilePath", value)) { _FilePath = value; OnPropertyChanged("FilePath"); } } }
 
         private Boolean _Enable;

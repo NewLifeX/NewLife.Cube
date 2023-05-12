@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
-    <OutputPath>..\BinTest\</OutputPath>
+    <OutputPath>..\Bin\Test\</OutputPath>
     <LangVersion>latest</LangVersion>
     <Version>1.0.0.1130</Version>
     <FileVersion>1.0.0.1130</FileVersion>
@@ -17,6 +17,6 @@
     <None Remove="Entity\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.XCode" Version="11.6.2023.301" />
+    <PackageReference Include="NewLife.XCode" Version="11.8.2023.511-beta0917" />
   </ItemGroup>
 </Project>

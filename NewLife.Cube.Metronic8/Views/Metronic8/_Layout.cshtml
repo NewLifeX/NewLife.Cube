@@ -2,7 +2,7 @@
 @using NewLife.Cube.WebMiddleware;
 @using NewLife.Cube.Charts;
 @{
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
     var title = ViewBag.Title + "";

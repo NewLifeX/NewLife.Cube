@@ -85,7 +85,7 @@ namespace NewLife.Cube
             if (field.Type == typeof(String))
             {
                 var dc = field.Field;
-                if (dc != null && (dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-")))
+                if (dc != null && dc.IsAttachment())
                 {
                     var h1 = Html.ForString(field.Name, (String)entity[field.Name], field.Length);
                     var h2 = Html.ForFile(field.Name, entity[field.Name], dc.ItemType);
@@ -127,7 +127,7 @@ namespace NewLife.Cube
             // 如果没有外部关联，输出数字编辑框和标签
             // 如果映射目标列表项过多，不能使用下拉
             var fact = map.Provider == null ? null : EntityFactory.CreateFactory(map.Provider.EntityType);
-            if (map.Provider == null || fact != null && fact.Session.Count > Setting.Current.MaxDropDownList)
+            if (map.Provider == null || fact != null && fact.Session.Count > CubeSetting.Current.MaxDropDownList)
             {
                 var label = $"&nbsp;<label class=\"\">{entity[field.Name]}</label>";
                 if (field.OriField != null) field = field.OriField;
@@ -486,7 +486,7 @@ namespace NewLife.Cube
                 data = new SelectList(items, selectedValue);
 
             var atts = new Dictionary<String, Object>();
-            if (Setting.Current.BootstrapSelect)
+            if (CubeSetting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
                 atts.Add("class", "form-control form-control-sm");
@@ -511,7 +511,7 @@ namespace NewLife.Cube
         public static IHtmlContent ForDropDownList<T>(this IHtmlHelper Html, String name, IList<T> list, Object selectedValue = null, String optionLabel = null, Boolean autoPostback = false) where T : IEntity
         {
             var atts = new Dictionary<String, Object>();
-            if (Setting.Current.BootstrapSelect)
+            if (CubeSetting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
                 atts.Add("class", "form-control form-control-sm");
@@ -541,7 +541,7 @@ namespace NewLife.Cube
         public static IHtmlContent ForListBox(this IHtmlHelper Html, String name, IDictionary dic, String selectedValues)
         {
             var atts = new RouteValueDictionary();
-            if (Setting.Current.BootstrapSelect)
+            if (CubeSetting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
                 atts.Add("class", "form-control form-control-sm");
@@ -560,7 +560,7 @@ namespace NewLife.Cube
         public static IHtmlContent ForListBox<TEntity>(this IHtmlHelper Html, String name, IList<TEntity> list, String selectedValues) where TEntity : IEntity
         {
             var atts = new RouteValueDictionary();
-            if (Setting.Current.BootstrapSelect)
+            if (CubeSetting.Current.BootstrapSelect)
                 atts.Add("class", "multiselect");
             else
                 atts.Add("class", "form-control form-control-sm");

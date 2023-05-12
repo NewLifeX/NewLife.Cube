@@ -4,7 +4,7 @@
 @using XCode.Configuration
 @using Microsoft.AspNetCore.Mvc.Rendering;
 @{
-    var theme = NewLife.Cube.Setting.Current.Theme;
+    var theme = NewLife.Cube.CubeSetting.Current.Theme;
     if (String.IsNullOrEmpty(theme)) theme = "ACE";
 
     Layout = "~/Views/" + theme + "/_Layout.cshtml";
@@ -15,7 +15,7 @@
     var rv = entity.GetRouteKey();
 
     Object htmlAttributes = null;
-    if (fields != null && fields.Any(e => e.ItemType.EqualIgnoreCase("file", "image"))) htmlAttributes = new { enctype = "multipart/form-data" };
+    if (fields != null && fields.Any(e => e.IsAttachment())) htmlAttributes = new { enctype = "multipart/form-data" };
 }
 
 <div class="form-horizontal">

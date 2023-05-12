@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
@@ -18,64 +17,14 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     /// <summary>要展现和修改的对象</summary>
     protected abstract TObject Value { get; set; }
 
-    /// <summary>菜单顺序。扫描时会反射读取</summary>
-    protected static Int32 MenuOrder { get; set; }
-
     /// <summary>实例化</summary>
     public ObjectController() => PageSetting.EnableNavbar = false;
 
-    ///// <summary>动作执行前</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuting(Remoting.ControllerContext filterContext)
-    //{
-    //    base.OnActionExecuting(filterContext);
-
-    //    // 显示名和描述
-    //    var name = GetType().GetDisplayName() ?? typeof(TObject).GetDisplayName() ?? typeof(TObject).Name;
-    //    var des = GetType().GetDescription() ?? typeof(TObject).GetDescription();
-
-    //    ViewBag.Title = name;
-    //    ViewBag.HeaderTitle = name;
-
-    //    var txt = "";
-    //    if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
-    //    if (txt.IsNullOrEmpty()) txt = des;
-    //    ViewBag.HeaderContent = txt;
-    //}
-
-    ///// <summary>执行后</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuted(Remoting.ControllerContext filterContext)
-    //{
-    //    base.OnActionExecuted(filterContext);
-
-    //    var title = ViewBag.Title + "";
-    //    HttpContext.Items["Title"] = title;
-    //}
-
     /// <summary>显示对象</summary>
-    /// <param name="formatType">0-小驼峰，1-小写，2-保持默认</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    [HttpGet]
-    public ActionResult Index(FormatType formatType = FormatType.CamelCase)
-    {
-        var list = GetMembers(Value?.GetType());
-
-        list = list.Select(e => e.Clone()).ToList();
-        foreach (var item in list)
-        {
-            item.Name = FormatHelper.FormatName(item.Name, formatType);
-            //item.FormatType = formatType;
-        }
-        var dic = list
-            .GroupBy(e => e.Category + "")
-            .ToDictionary(e => e.Key, e => e.ToList());
-
-        //model.Properties = dic;
-
-        return Ok(data: new { Value, Properties = dic });
-    }
+    [HttpGet("/[area]/[controller]")]
+    public TObject Index() => Value;
 
     /// <summary>保存对象</summary>
     /// <param name="obj"></param>
@@ -83,8 +32,8 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //[HttpPost]
     //[DisplayName("修改")]
     [EntityAuthorize(PermissionFlags.Update)]
-    [HttpPost]
-    public virtual ActionResult Update(TObject obj)
+    [HttpPut("/[area]/[controller]")]
+    public virtual TObject Update(TObject obj)
     {
         WriteLog(obj, UserHost);
 
@@ -110,10 +59,25 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 
         Value = obj;
 
-        if (IsJsonRequest)
-            return Ok("保存成功");
-        else
-            return Redirect("Index");
+        //return Json(0, "保存成功");
+        return obj;
+    }
+
+    /// <summary>
+    /// 获取字段
+    /// </summary>
+    /// <param name="kind"></param>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpGet]
+    public virtual IList<DataField> GetFields(ViewKinds kind)
+    {
+        var list = GetMembers(Value?.GetType());
+        //var dic = list
+        //.GroupBy(e => e.Category + "")
+        //.ToDictionary(e => e.Key, e => e.ToList());
+
+        return list;
     }
 
     private Boolean GetBool(String name)

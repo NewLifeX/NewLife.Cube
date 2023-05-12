@@ -13,7 +13,7 @@
     if (userId <= 0) userId = page[id].ToInt();
     var showValue = XCode.Membership.User.FindByID(userId)?.ToString();
 
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');

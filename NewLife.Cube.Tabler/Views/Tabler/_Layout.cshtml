@@ -2,7 +2,7 @@
 @using NewLife.Cube.WebMiddleware;
 @using NewLife.Cube.Charts;
 @{
-    var set = NewLife.Cube.Setting.Current;
+    var set = NewLife.Cube.CubeSetting.Current;
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var roleNames = "";
     if (user != null) roleNames = user.Roles == null ? "" : user.Roles.Join();

@@ -9,7 +9,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>定时任务</summary>
-[Area("Cube")]
+[CubeArea]
 [Menu(35, true, Icon = "fa-clock-o")]
 public class CronJobController : EntityController<CronJob>
 {
@@ -78,6 +78,6 @@ public class CronJobController : EntityController<CronJob>
             JobService.Wake(entity.Id, -1);
         }
 
-        return JsonRefresh($"已安排执行！");
+        return Json(0, "已安排执行！");
     }
 }

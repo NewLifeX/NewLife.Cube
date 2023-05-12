@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using NewLife.Collections;
 using NewLife.Reflection;
@@ -37,8 +38,11 @@ public class DataField
     public String Category { get; set; }
 
     /// <summary>属性类型</summary>
-    [IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public Type Type { get; set; }
+
+    /// <summary>属性类型</summary>
+    public String TypeName => Type?.Name;
 
     /// <summary>元素类型。image,file-zip,html,singleSelect,multipleSelect</summary>
     public String ItemType { get; set; }
@@ -62,26 +66,29 @@ public class DataField
     public Boolean Readonly { get; set; }
 
     /// <summary>原始字段</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public FieldItem Field { get; set; }
 
     /// <summary>映射字段</summary>
     public String MapField { get; set; }
 
+    /// <summary>LOV 配置代码</summary>
+    public String LovCode { get; set; }
+
     /// <summary>映射提供者</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public MapProvider MapProvider { get; set; }
 
     /// <summary>多选数据源</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public DataSourceDelegate DataSource { get; set; }
 
     /// <summary>是否显示</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public DataVisibleDelegate DataVisible { get; set; }
 
     /// <summary>扩展属性</summary>
-    [XmlIgnore, IgnoreDataMember]
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public IDictionary<String, String> Properties { get; set; } = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
     #endregion
 
@@ -145,41 +152,47 @@ public class DataField
     /// <returns></returns>
     public virtual DataField Clone()
     {
-        var df = GetType().CreateInstance() as DataField;
+        //var df = GetType().CreateInstance() as DataField;
 
-        df.Name = Name;
-        df.DisplayName = DisplayName;
-        df.Description = Description;
-        df.Category = Category;
+        //df.Name = Name;
+        //df.DisplayName = DisplayName;
+        //df.Description = Description;
+        //df.Category = Category;
 
-        df.Type = Type;
-        df.ItemType = ItemType;
-        df.Length = Length;
-        df.Precision = Precision;
-        df.Scale = Scale;
-        df.Nullable = Nullable;
-        df.PrimaryKey = PrimaryKey;
-        df.Readonly = Readonly;
+        //df.Type = Type;
+        //df.ItemType = ItemType;
+        //df.Length = Length;
+        //df.Precision = Precision;
+        //df.Scale = Scale;
+        //df.Nullable = Nullable;
+        //df.PrimaryKey = PrimaryKey;
+        //df.Readonly = Readonly;
 
-        df.Field = Field;
-        df.MapField = MapField;
-        df.MapProvider = MapProvider;
-        df.DataSource = DataSource;
-        df.Properties = Properties;
+        //df.Field = Field;
+        //df.MapField = MapField;
+        //df.MapProvider = MapProvider;
+        //df.DataSource = DataSource;
+        ////df.Properties = Properties;
 
-        foreach (var item in Properties)
-        {
-            df.Properties[item.Key] = item.Value;
-        }
+        //foreach (var item in Properties)
+        //{
+        //    df.Properties[item.Key] = item.Value;
+        //}
 
-        return df;
+        //df._services = _services;
 
-        //return MemberwiseClone() as DataField;
+        //return df;
+
+        return MemberwiseClone() as DataField;
     }
 
     /// <summary>是否大文本字段</summary>
     /// <returns></returns>
     public virtual Boolean IsBigText() => Type == typeof(String) && (Length < 0 || Length >= 300 || Length >= 200 && Name.EqualIgnoreCase("Remark", "Description", "Comment"));
+
+    /// <summary>是否附件列</summary>
+    /// <returns></returns>
+    public Boolean IsAttachment() => ItemType.EqualIgnoreCase("file", "image") || ItemType.StartsWithIgnoreCase("file-", "image-");
     #endregion
 
     #region 服务

@@ -4,7 +4,7 @@
 
 @{
     var user = ManageProvider.User as IUser ?? User.Identity as IUser;
-    var startpage = user.Role.Ex4.IsNullOrEmpty() ? NewLife.Cube.Setting.Current.StartPage : user.Role.Ex4;
+    var startpage = user.Role.Ex4.IsNullOrEmpty() ? NewLife.Cube.CubeSetting.Current.StartPage : user.Role.Ex4;
 }
 <!DOCTYPE html>
 

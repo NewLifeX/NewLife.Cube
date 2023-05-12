@@ -87,35 +87,12 @@
                                     @foreach (var item in dbs)
                                     {
                                         var dal = DAL.Create(item.Name);
+                                        var pk = dal.ProtectedKey;
+
                                         // 密码需要保密
-                                        var str = item.ConnStr;
-                                        if (!str.IsNullOrEmpty())
-                                        {
-                                            var ss = str.Split(";");
-                                            for (var i = 0; i < ss.Length; i++)
-                                            {
-                                                if (ss[i].StartsWithIgnoreCase("password=", "pass=", "pwd="))
-                                                {
-                                                    ss[i] = ss[i].Substring(null, "=") + "={保密}";
-                                                    str = ss.Join(";");
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        var str2 = dal.Db.ConnectionString;
-                                        if (!str2.IsNullOrEmpty())
-                                        {
-                                            var ss = str2.Split(";");
-                                            for (var i = 0; i < ss.Length; i++)
-                                            {
-                                                if (ss[i].StartsWithIgnoreCase("password=", "pass=", "pwd="))
-                                                {
-                                                    ss[i] = ss[i].Substring(null, "=") + "={保密}";
-                                                    str2 = ss.Join(";");
-                                                    break;
-                                                }
-                                            }
-                                        }
+                                        var str = pk.Hide(item.ConnStr);
+                                        var str2 = pk.Hide(dal.Db.ConnectionString);
+
                                         <tr>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
-using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
@@ -33,7 +32,7 @@ public static class CubeService
     #region 配置魔方
     /// <summary>添加魔方，放在AddControllersWithViews之后</summary>
     /// <param name="services"></param>
-    /// <returns></returns>
+    /// <returns></returns>o
     public static IServiceCollection AddCube(this IServiceCollection services)
     {
         // 引入星尘
@@ -101,7 +100,7 @@ public static class CubeService
 
         // 配置跨域处理，允许所有来源
         // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
         if (set.CorsOrigins == "*")
             services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
             .AllowAnyMethod()
@@ -288,7 +287,7 @@ public static class CubeService
         // 使用管理提供者
         app.UseManagerProvider();
 
-        var set = Setting.Current;
+        var set = CubeSetting.Current;
 
         // 使用Cube前添加自己的管道
         if (env != null)
@@ -330,6 +329,7 @@ public static class CubeService
         }
 
         app.UseMiddleware<RunTimeMiddleware>();
+        app.UseMiddleware<TenantMiddleware>();
 
         if (env != null) app.UseCubeDefaultUI(env);
 
@@ -365,6 +365,14 @@ public static class CubeService
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
         Task.Run(() => ResolveStarWeb(provider));
+
+        // 注册退出事件
+        if (app is IHost web)
+            NewLife.Model.Host.RegisterExit(() =>
+            {
+                XTrace.WriteLine("魔方优雅退出！");
+                web.StopAsync().Wait();
+            });
 
         return app;
     }
@@ -452,7 +460,7 @@ public static class CubeService
                 if (webs.Length > 0)
                 {
                     // 保存到配置文件
-                    var set = Setting.Current;
+                    var set = CubeSetting.Current;
                     set.StarWeb = webs[0];
                     set.Save();
                 }

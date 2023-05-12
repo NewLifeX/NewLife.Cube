@@ -1,7 +1,8 @@
-﻿using NewLife.Cube;
+﻿using System.Runtime.InteropServices;
+using System.Runtime.Loader;
+using NewLife.Cube;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
-using Stardust;
 
 XTrace.UseConsole();
 
@@ -19,12 +20,15 @@ services.AddControllersWithViews();
 services.AddCube();
 
 var app = builder.Build();
-app.UseCube(builder.Environment);
 app.UseStaticFiles();
+
+app.UseCube(builder.Environment);
+app.UseCubeHome();
+
 app.UseAuthorization();
 app.UseResponseCompression();
-app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Index}/{id?}");
-app.MapControllerRoute(name: "default2", pattern: "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
+//app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Index}/{id?}");
+//app.MapControllerRoute(name: "default2", pattern: "{area=Admin}/{controller=Index}/{action=Index}/{id?}");
 
 app.RegisterService("SSO", null, builder.Environment.EnvironmentName, "/cube/info");
 

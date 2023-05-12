@@ -17,7 +17,7 @@ namespace NewLife.Cube.Admin.Controllers
     {
         static UserStatController()
         {
-            ListFields.RemoveField("ID", "CreateTime", "UpdateTime", "Remark");
+            ListFields.RemoveField("CreateTime", "UpdateTime", "Remark");
         }
 
         /// <summary>搜索数据集</summary>

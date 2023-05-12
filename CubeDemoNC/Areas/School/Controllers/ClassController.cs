@@ -11,7 +11,7 @@ namespace CubeDemo.Areas.School.Controllers
 {
     [SchoolArea]
     [DisplayName("班级")]
-    public class ClassController : EntityController<Class>
+    public class ClassController : EntityController<Class, ClassModel>
     {
         private readonly ITracer _tracer;
 
@@ -30,7 +30,7 @@ namespace CubeDemo.Areas.School.Controllers
             var id = p["Id"].ToInt(-1);
             if (id > 0)
             {
-                var entity = Class.FindByID(id);
+                var entity = Class.FindById(id);
                 return entity == null ? new List<Class>() : new List<Class> { entity };
             }
 

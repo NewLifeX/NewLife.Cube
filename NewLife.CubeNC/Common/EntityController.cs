@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
+using NewLife.Data;
 using NewLife.Log;
+using NewLife.Reflection;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -15,8 +18,12 @@ namespace NewLife.Cube;
 
 /// <summary>实体控制器基类</summary>
 /// <typeparam name="TEntity"></typeparam>
-//[EntityAuthorize]
-public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
+public class EntityController<TEntity> : EntityController<TEntity, TEntity> where TEntity : Entity<TEntity>, new() { }
+
+/// <summary>实体控制器基类</summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TModel"></typeparam>
+public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
 {
     #region 属性
     private String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
@@ -57,10 +64,18 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             WriteLog("Delete", false, err);
             //if (LogOnChange) LogProvider.Provider.WriteLog("Delete", entity, err);
 
-            return JsonRefresh("删除失败！" + err);
+            if (Request.IsAjaxRequest())
+                return JsonRefresh("删除失败！" + err);
+
+            throw;
         }
 
-        return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
+        if (Request.IsAjaxRequest())
+            return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
+        else if (!url.IsNullOrEmpty())
+            return Redirect(url);
+        else
+            return RedirectToAction("Index");
     }
 
     /// <summary>表单，添加/修改</summary>
@@ -97,20 +112,32 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             Session[key] = Request.GetReferer();
 
         // 用于显示的列
-        ViewBag.Fields = AddFormFields;
+        ViewBag.Fields = OnGetFields(ViewKinds.AddForm, entity);
 
         return View("AddForm", entity);
     }
 
     /// <summary>保存</summary>
-    /// <param name="entity"></param>
+    /// <param name="model"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
-    public virtual async Task<ActionResult> Add(TEntity entity)
+    public virtual async Task<ActionResult> Add(TModel model)
     {
+        // 实例化实体对象，然后拷贝
+        if (model is not TEntity entity)
+        {
+            entity = Factory.Create(true) as TEntity;
+
+            if (model is IModel src)
+                entity.CopyFrom(src, true);
+            else
+                entity.Copy(model);
+        }
+
         // 检测避免乱用Add/id
-        if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
+        if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0)
+            throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
 
         var rs = false;
         var err = "";
@@ -147,12 +174,23 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Entity<TEntity>.Meta.Unique.Name] = 0;
 
-            return Json(500, ViewBag.StatusMessage);
+            if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
+
+            ViewBag.Fields = OnGetFields(ViewKinds.AddForm, entity);
+
+            return View("AddForm", entity);
         }
 
         ViewBag.StatusMessage = "添加成功！";
 
-        return Json(0, ViewBag.StatusMessage);
+        if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
+
+        var key = $"Cube_Add_{typeof(TEntity).FullName}";
+        var url = Session[key] as String;
+        if (!url.IsNullOrEmpty()) return Redirect(url);
+
+        // 新增完成跳到列表页，更新完成保持本页
+        return RedirectToAction("Index");
     }
 
     /// <summary>表单，添加/修改</summary>
@@ -182,16 +220,35 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             Session[key] = Request.GetReferer();
 
         // Json输出
-        return Json(0, null, EntityFilter(entity, ShowInForm.编辑));
+        if (IsJsonRequest) return Json(0, null, entity);
+
+        ViewBag.Fields = OnGetFields(ViewKinds.EditForm, entity);
+
+        return View("EditForm", entity);
     }
 
     /// <summary>保存</summary>
-    /// <param name="entity"></param>
+    /// <param name="model"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
-    public virtual async Task<ActionResult> Edit(TEntity entity)
+    public virtual async Task<ActionResult> Edit(TModel model)
     {
+        // 实例化实体对象，然后拷贝
+        if (model is not TEntity entity)
+        {
+            var uk = Factory.Unique;
+            var key = model is IModel ext ? ext[uk.Name] : model.GetValue(uk.Name);
+
+            // 先查出来，再拷贝。这里没有考虑脏数据的问题，有可能拷贝后并没有脏数据
+            entity = FindData(key);
+
+            if (model is IModel src)
+                entity.CopyFrom(src, true);
+            else
+                entity.Copy(model, false, uk.Name);
+        }
+
         var rs = false;
         var err = "";
         try
@@ -222,14 +279,26 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
 
             ViewBag.StatusMessage = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
 
-            return Json(500, ViewBag.StatusMessage);
+            if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
         }
         else
         {
             ViewBag.StatusMessage = "保存成功！";
 
-            return Json(0, ViewBag.StatusMessage);
+            if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
+
+            // 实体对象保存成功后直接重定向到列表页，减少用户操作提高操作体验
+            var key = $"Cube_Edit_{typeof(TEntity).FullName}-{id}";
+            var url = Session[key] as String;
+            if (!url.IsNullOrEmpty()) return Redirect(url);
         }
+
+        // 重新查找对象数据，以确保取得最新值
+        if (id != null) entity = FindData(id);
+
+        ViewBag.Fields = OnGetFields(ViewKinds.EditForm, entity);
+
+        return View("EditForm", entity);
     }
 
     /// <summary>保存所有上传文件</summary>
@@ -242,12 +311,13 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
         var list = new List<String>();
 
         if (!Request.HasFormContentType) return list;
+
         var files = Request.Form.Files;
         var fields = Factory.Fields;
         foreach (var fi in fields)
         {
             var dc = fi.Field;
-            if (dc.ItemType.EqualIgnoreCase("file", "image"))
+            if (dc.IsAttachment())
             {
                 // 允许一次性上传多个文件到服务端
                 foreach (var file in files)
@@ -423,37 +493,43 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             {
                 var item = itemD.ToDictionary();
                 if (item[fact.Fields[1].Name].ToString() == fact.Fields[1].DisplayName) //判断首行是否为标体列
-                    continue;
-
-                //检查主字段是否重复
-                if (Entity<TEntity>.Find(fact.Master.Name, item[fact.Master.Name].ToString()) == null)
                 {
-                    //var entity = item.ToJson().ToJsonEntity(fact.EntityType);
-                    var entity = fact.Create();
-
-                    foreach (var fieldsItem in fact.Fields)
-                    {
-                        if (!item.ContainsKey(fieldsItem.Name))
-                        {
-                            if (!fieldsItem.IsNullable)
-                                fieldsItem.FromExcelToEntity(item, entity);
-                        }
-                        else
-                            fieldsItem.FromExcelToEntity(item, entity);
-                    }
-
-                    if (fact.FieldNames.Contains("CreateTime"))
-                        entity["CreateTime"] = DateTime.Now;
-
-                    if (fact.FieldNames.Contains("CreateIP"))
-                        entity["CreateIP"] = "--";
-
-                    okSum += fact.Session.Insert(entity);
+                    continue;
                 }
                 else
                 {
-                    errorString += $"<br>{item[fact.Master.Name]}重复";
-                    fiSum++;
+                    //检查主字段是否重复
+                    if (Entity<TEntity>.Find(fact.Master.Name, item[fact.Master.Name].ToString()) == null)
+                    {
+                        //var entity = item.ToJson().ToJsonEntity(fact.EntityType);
+                        var entity = fact.Create();
+
+                        foreach (var fieldsItem in fact.Fields)
+                        {
+                            if (!item.ContainsKey(fieldsItem.Name))
+                            {
+                                if (!fieldsItem.IsNullable)
+                                    fieldsItem.FromExcelToEntity(item, entity);
+
+                                continue;
+                            }
+
+                            fieldsItem.FromExcelToEntity(item, entity);
+                        }
+
+                        if (fact.FieldNames.Contains("CreateTime"))
+                            entity["CreateTime"] = DateTime.Now;
+
+                        if (fact.FieldNames.Contains("CreateIP"))
+                            entity["CreateIP"] = "--";
+
+                        okSum += fact.Session.Insert(entity);
+                    }
+                    else
+                    {
+                        errorString += $"<br>{item[fact.Master.Name]}重复";
+                        fiSum++;
+                    }
                 }
             }
 
@@ -472,6 +548,7 @@ public class EntityController<TEntity> : ReadOnlyEntityController<TEntity> where
             return Json(500, ex.GetMessage(), ex);
         }
     }
+
 
     /// <summary>修改bool值</summary>
     /// <param name="id"></param>
