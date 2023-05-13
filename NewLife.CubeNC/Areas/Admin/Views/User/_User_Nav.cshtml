@@ -1,6 +1,14 @@
-﻿<div class="text-center col-md-12" style="margin-bottom: 10px">
-    @Html.ActionLink("基本信息", "Info", "User", null, new { @class = "btn btn-success btn-sm" })
-    @Html.ActionLink("修改密码", "ChangePassword", "User", null, new { @class = "btn btn-success btn-sm" })
-    @Html.ActionLink("第三方授权", "Binds", "User", null, new { @class = "btn btn-success btn-sm" })
-    @Html.ActionLink("租户信息", "TenantSetting", "User", null, new { @class = "btn btn-success btn-sm" })
+﻿@{
+    var userId = ManageProvider.User?.ID ?? 0;
+    var path = Context.Request.Path + "";
+}
+<div class="navbar-collapse collapse" style="text-align:center">
+    <ul class="nav nav-pills" style="margin-bottom: 10px; display: inline-block;float: none;">
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Info")?"active":"")"><a href="/Admin/User/Info">基本信息</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/ChangePassword")?"active":"")"><a href="/Admin/User/ChangePassword">修改密码</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Binds")?"active":"")"><a href="/Admin/User/Binds">第三方授权</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/TenantSetting")?"active":"")"><a href="/Admin/User/TenantSetting">租户信息</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/OAuthLog")?"active":"")"><a href="/Admin/OAuthLog?userId=@userId">OAuth日志</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Log")?"active":"")"><a href="/Admin/Log?userId=@userId">日志</a></li>
+    </ul>
 </div>
