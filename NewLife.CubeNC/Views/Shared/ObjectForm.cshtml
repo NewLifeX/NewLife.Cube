@@ -23,41 +23,94 @@
         <div class="form-horizontal">
             @using (Html.BeginForm("Update", null))
             {
+                var i = 0;
+                var j = 0;
                 @Html.AntiForgeryToken()
                 @Html.ValidationSummary(true)
-                foreach (var item in dic)
+                @if (dic.Count > 1)
                 {
-                    if (dic.Count > 1)
-                    {
-                        <div class="form-group col-sm-12 col-md-12 col-xd-12">
-                            <label class="control-label col-xs-2 col-md-3 no-padding-left">
-                                <h2>@item.Key</h2>
-                            </label>
-                        </div>
-                    }
-                    foreach (var pi in item.Value)
-                    {
-                        var name = pi.Name;
-                        var val = obj.GetValue(name);
-                        var dis = pi.DisplayName;
-                        var des = pi.Description;
-                        var dataSource = pi.DataSource;
+                    <ul class="nav nav-tabs" role="tablist">
+                        @foreach (var item in dic)
+                        {
+                            <li class="@(i==0?"active":"")"><a href="@("#item"+i)" data-toggle="tab">@item.Key</a></li>
+                            i++;
+                        }
+                    </ul>
+                    <div class="tab-content">
+                        @foreach (var group in dic)
+                        {
+                            <div class="tab-pane fade in @(j==0?"active":"")" id="@("item"+j)">
+                                <div class="row">
+                                    @foreach (var pi in group.Value)
+                                    {
+                                        var name = pi.Name;
+                                        var val = obj.GetValue(name);
+                                        var dis = pi.DisplayName;
+                                        var des = pi.Description;
+                                        var dataSource = pi.DataSource;
 
-                        <div class="form-group col-sm-12 col-md-12">
-                            <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@name">@(dis)</label>
-                            <div class="input-group col-xs-10 col-md-4">
-                                @if (dataSource != null)
-                                {
-                                    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(item.Value), val))
-                                }
-                                else
-                                {
-                                    @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
-                                }
-                                @Html.ValidationMessage(name)
+                                        <div class="form-group col-sm-12 col-md-12">
+                                            <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@name">
+                                                @(
+                                                    dis
+                                                    )
+                                            </label>
+                                            <div class="input-group col-xs-10 col-md-4">
+                                                @if (dataSource != null)
+                                                {
+                                                    @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(group.Value), val))
+                                                }
+                                                else
+                                                {
+                                                    @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+                                                }
+                                                @Html.ValidationMessage(name)
+                                            </div>
+                                            <span class="hidden-xs col-md-5">&nbsp; @des</span>
+                                        </div>
+                                    }
+                                </div>
                             </div>
-                            <span class="hidden-xs col-md-5">&nbsp; @des</span>
-                        </div>
+                            j++;
+                        }
+                    </div>
+                }
+                else
+                {
+                    foreach (var item in dic)
+                    {
+                        if (dic.Count > 1)
+                        {
+                            <div class="form-group col-sm-12 col-md-12 col-xd-12">
+                                <label class="control-label col-xs-2 col-md-3 no-padding-left">
+                                    <h2>@item.Key</h2>
+                                </label>
+                            </div>
+                        }
+                        foreach (var pi in item.Value)
+                        {
+                            var name = pi.Name;
+                            var val = obj.GetValue(name);
+                            var dis = pi.DisplayName;
+                            var des = pi.Description;
+                            var dataSource = pi.DataSource;
+
+                            <div class="form-group col-sm-12 col-md-12">
+                                <label class="control-label col-xs-2 col-md-3 no-padding-left" for="@name">@(dis)</label>
+                                <div class="input-group col-xs-10 col-md-4">
+                                    @if (dataSource != null)
+                                    {
+                                        @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(item.Value), val))
+                                    }
+                                    else
+                                    {
+                                        @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+                                    }
+                                    @Html.ValidationMessage(name)
+                                </div>
+                                <span class="hidden-xs col-md-5">&nbsp; @des</span>
+                            </div>
+                        }
                     }
                 }
                 if (this.Has(PermissionFlags.Update))
