@@ -69,7 +69,14 @@
                     {
                         var name = df.GetLinkName(entity);
                         var title = df.GetTitle(entity);
-                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@name</a></td>
+                        if (name.StartsWith("<") && name.EndsWith(">"))
+                        {
+                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@(Html.Raw(name))</a></td>
+                        }
+                        else
+                        {
+                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@name</a></td>
+                        }
                     }
                     else
                     {
