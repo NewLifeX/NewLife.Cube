@@ -78,6 +78,11 @@ else
             {
                 <td class="text-right">@listField.GetValue(entity)</td>
             }
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            {
+                var dd = (Double)value;
+                <td class="text-center">@dd.ToString("p2")</td>
+            }
             else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
             {
                 var dd = (Double)value;
@@ -87,11 +92,6 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td class="text-center">@dd.ToString("p2")</td>
-            }
-            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
-            {
-                var dd = (Double)value;
                 <td class="text-center">@dd.ToString("p2")</td>
             }
             else
@@ -126,6 +126,10 @@ else
             {
                 <td class="text-right">@(TimeSpan.FromSeconds(value.ToInt()))</td>
             }
+            else if (item.ItemType.EqualIgnoreCase("GMK"))
+            {
+                <td class="text-right">@(value.ToLong().ToGMK())</td>
+            }
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
                 //var provider = ViewData["Provider"] as IManageProvider;
@@ -148,10 +152,6 @@ else
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
                 <td class="text-center">@dd.ToString("p2")</td>
-            }
-            else if (item.ItemType.EqualIgnoreCase("GMK"))
-            {
-                <td class="text-right">@(value.ToLong().ToGMK())</td>
             }
             else
             {
