@@ -2,6 +2,7 @@
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Caching;
 using NewLife.Common;
@@ -40,34 +41,47 @@ public class UserController : EntityController<User, UserModel>
         ListFields.RemoveField("Remark");
 
         {
-            var df = ListFields.AddListField("Link", "Logins");
-            //df.Header = "链接";
-            df.HeaderTitle = "第三方登录的链接信息";
-            df.DisplayName = "链接";
-            df.Title = "第三方登录的链接信息";
-            df.Url = "/Admin/UserConnect?userId={ID}";
+            var df = ListFields.AddListField("AvatarImage", "Name");
+            df.DisplayName = "<image src=\"{Avatar}\" />";
+            df.Url = "/Admin/User/Detail?id={ID}";
         }
-
         {
-            var df = ListFields.AddListField("Token", "Logins");
-            //df.Header = "令牌";
-            df.DisplayName = "令牌";
-            df.Url = "/Admin/UserToken?userId={ID}";
+            var df = ListFields.GetField("Name") as ListField;
+            df.Url = "/Admin/User/Detail?id={ID}";
         }
-
         {
-            var df = ListFields.AddListField("Log", "Logins");
-            //df.Header = "日志";
-            df.DisplayName = "日志";
-            df.Url = "/Admin/Log?userId={ID}";
+            var df = ListFields.GetField("DisplayName") as ListField;
+            df.Url = "/Admin/User/Detail?id={ID}";
         }
+        //{
+        //    var df = ListFields.AddListField("Link", "Logins");
+        //    //df.Header = "链接";
+        //    df.HeaderTitle = "第三方登录的链接信息";
+        //    df.DisplayName = "链接";
+        //    df.Title = "第三方登录的链接信息";
+        //    df.Url = "/Admin/UserConnect?userId={ID}";
+        //}
 
-        {
-            var df = ListFields.AddListField("OAuthLog", "Logins");
-            //df.Header = "OAuth日志";
-            df.DisplayName = "OAuth日志";
-            df.Url = "/Admin/OAuthLog?userId={ID}";
-        }
+        //{
+        //    var df = ListFields.AddListField("Token", "Logins");
+        //    //df.Header = "令牌";
+        //    df.DisplayName = "令牌";
+        //    df.Url = "/Admin/UserToken?userId={ID}";
+        //}
+
+        //{
+        //    var df = ListFields.AddListField("Log", "Logins");
+        //    //df.Header = "日志";
+        //    df.DisplayName = "日志";
+        //    df.Url = "/Admin/Log?userId={ID}";
+        //}
+
+        //{
+        //    var df = ListFields.AddListField("OAuthLog", "Logins");
+        //    //df.Header = "OAuth日志";
+        //    df.DisplayName = "OAuth日志";
+        //    df.Url = "/Admin/OAuthLog?userId={ID}";
+        //}
 
         {
             var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
@@ -96,8 +110,12 @@ public class UserController : EntityController<User, UserModel>
     {
         base.OnActionExecuting(filterContext);
 
-        if (filterContext.ActionDescriptor.Id.EqualIgnoreCase(nameof(Info), nameof(ChangePassword), nameof(Binds), nameof(TenantSetting)))
+        if (filterContext.ActionDescriptor is ControllerActionDescriptor act &&
+            act.ActionName.EqualIgnoreCase(nameof(Detail), nameof(Info), nameof(ChangePassword), nameof(Binds), nameof(TenantSetting)))
+        {
             PageSetting.NavView = "_User_Nav";
+            PageSetting.EnableNavbar = false;
+        }
     }
 
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>

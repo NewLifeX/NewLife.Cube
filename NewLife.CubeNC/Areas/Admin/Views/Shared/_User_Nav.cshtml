@@ -1,13 +1,26 @@
 ﻿@{
-    var userId = ManageProvider.User?.ID ?? 0;
     var path = Context.Request.Path + "";
+
+    var currentId = ManageProvider.User?.ID ?? 0;
+    var userId = Context.Request.Query["userId"].ToInt(0);
+    if (userId == 0 && path.StartsWithIgnoreCase("/Admin/User/Detail"))
+    {
+        userId = Context.Request.Query["Id"].ToInt(0);
+    }
+    if (userId == 0) userId = currentId;
 }
 <div class="navbar-collapse collapse" style="text-align:center">
     <ul class="nav nav-pills" style="margin-bottom: 10px; display: inline-block;float: none;">
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Info")?"active":"")"><a href="/Admin/User/Info">基本信息</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/ChangePassword")?"active":"")"><a href="/Admin/User/ChangePassword">修改密码</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Binds")?"active":"")"><a href="/Admin/User/Binds">第三方授权</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/TenantSetting")?"active":"")"><a href="/Admin/User/TenantSetting">租户信息</a></li>
+        @if (userId == currentId)
+        {
+            <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Info")?"active":"")"><a href="/Admin/User/Info">基本信息</a></li>
+            <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/ChangePassword")?"active":"")"><a href="/Admin/User/ChangePassword">修改密码</a></li>
+            <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Binds")?"active":"")"><a href="/Admin/User/Binds">第三方授权</a></li>
+            <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/TenantSetting")?"active":"")"><a href="/Admin/User/TenantSetting">租户信息</a></li>
+        }
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Detail")?"active":"")"><a href="/Admin/User/Detail?Id=@userId">用户信息</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/UserConnect")?"active":"")"><a href="/Admin/UserConnect?userId=@userId">三方链接</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/UserToken")?"active":"")"><a href="/Admin/UserToken?userId=@userId">令牌</a></li>
         <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/OAuthLog")?"active":"")"><a href="/Admin/OAuthLog?userId=@userId">OAuth日志</a></li>
         <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Log")?"active":"")"><a href="/Admin/Log?userId=@userId">日志</a></li>
     </ul>

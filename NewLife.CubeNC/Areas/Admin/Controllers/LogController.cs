@@ -49,7 +49,10 @@ public class LogController : ReadOnlyEntityController<XLog>
         // 指定了用户
         var userid = GetRequest("userId").ToInt(-1);
         if (userid > 0)
+        {
             PageSetting.NavView = "_User_Nav";
+            PageSetting.EnableNavbar = false;
+        }
     }
 
     /// <summary>搜索数据集</summary>
