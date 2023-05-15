@@ -2,13 +2,13 @@
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
-using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -88,6 +88,16 @@ public class UserController : EntityController<User, UserModel>
         {
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
         }
+    }
+
+    /// <summary>已重载。</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+        base.OnActionExecuting(filterContext);
+
+        if (filterContext.ActionDescriptor.Id.EqualIgnoreCase(nameof(Info), nameof(ChangePassword), nameof(Binds), nameof(TenantSetting)))
+            PageSetting.NavView = "_User_Nav";
     }
 
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>

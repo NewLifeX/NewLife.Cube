@@ -151,6 +151,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Shared\_List_Nav.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>

@@ -15,10 +15,12 @@
     var charts = ViewBag.Charts as ECharts[];
     var charts2 = ViewBag.Charts2 as ECharts[];
 }
-
-<div class="row">
-    @await Html.PartialAsync("_List_Nav")
-</div>
+@if (!set.NavView.IsNullOrEmpty())
+{
+    <div class="row">
+        @await Html.PartialAsync(set.NavView)
+    </div>
+}
 @if (set.EnableToolbar)
 {
     <div class="clearfix">

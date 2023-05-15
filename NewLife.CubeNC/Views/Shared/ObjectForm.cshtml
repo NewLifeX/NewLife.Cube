@@ -9,15 +9,20 @@
 
     Layout = "~/Views/" + theme + "/_Layout.cshtml";
 
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+
     var obj = (Object)Model;
     var list = ViewBag.Fields as IList<DataField>;
     var dic = list
         .GroupBy(e => e.Category + "")
         .ToDictionary(e => e.Key, e => e.ToList());
 }
-<div class="row">
-    @await Html.PartialAsync("_Object_Nav", obj)
-</div>
+@if (!set.NavView.IsNullOrEmpty())
+{
+    <div class="row">
+        @await Html.PartialAsync(set.NavView)
+    </div>
+}
 <div class="row">
     <div class="col-md-12">
         <div class="form-horizontal">

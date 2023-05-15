@@ -51,7 +51,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     /// <summary>显示对象</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    public ActionResult Index()
+    public virtual ActionResult Index()
     {
         //var model = new ObjectModel { Value = Value };
 
@@ -85,7 +85,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
     //[HttpPost]
     //[DisplayName("修改")]
     [EntityAuthorize(PermissionFlags.Update)]
-    public ActionResult Update(TObject obj)
+    public virtual ActionResult Update(TObject obj)
     {
         WriteLog(obj, UserHost);
 
