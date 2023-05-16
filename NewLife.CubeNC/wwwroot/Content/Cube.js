@@ -48,6 +48,33 @@ $(function () {
             }
             location = url;
         });
+
+    // 多标签页打开请求地址
+    $(document).on('click'
+        , 'a[data-action="tab"]'
+        , function (data) {
+            $this = $(this);
+            var url = $this.attr('href');
+            if (url && url.length > 0) {
+                $this.data('url', url);
+            }
+
+            var title = $this.data('title');
+            if (!title || title.length <= 0) {
+                title = $this.html();
+            }
+
+            var obj = {
+                url: url,
+                title: title,
+                kind: 'tab'
+            };
+
+            sendEventToParent(obj);
+
+            return false;
+        }
+    )
 });
 
 function doClickAction($this) {
@@ -133,4 +160,9 @@ function doAction(methodName, actionUrl, actionParamter) {
             }
         }
     });
+}
+
+// 发送页面内消息
+function sendEventToParent(data) {
+    window.parent.postMessage(data, '*');
 }

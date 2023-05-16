@@ -8,6 +8,7 @@
     var fields = ViewBag.Fields as FieldCollection;
     var ukey = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    var nulti_tabs = CubeSetting.Current.Skin == "layui";
 }
 <table class="table table-bordered table-hover table-striped table-condensed table-data-list">
     <thead>
@@ -71,11 +72,11 @@
                         var title = df.GetTitle(entity);
                         if (!String.IsNullOrEmpty(name) && name.StartsWith("<") && name.EndsWith(">"))
                         {
-                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@(Html.Raw(name))</a></td>
+                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@(Html.Raw(name)) data-action=@(nulti_tabs ? "tab" : "")</a></td>
                         }
                         else
                         {
-                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@name</a></td>
+                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target" data-action=@(nulti_tabs ? "tab" : "")>@name</a></td>
                         }
                     }
                     else

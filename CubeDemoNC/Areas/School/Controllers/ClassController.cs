@@ -15,9 +15,17 @@ namespace CubeDemo.Areas.School.Controllers
     {
         private readonly ITracer _tracer;
 
+        static ClassController()
+        {
+            {
+                var df = ListFields.AddListField("test", null, "ID");
+                df.DisplayName = "测试多标签";
+                df.Url = "/School/Class";
+            }
+        }
+
         public ClassController(IServiceProvider provider)
         {
-
             PageSetting.EnableTableDoubleClick = true;
 
             _tracer = provider?.GetService<ITracer>();
