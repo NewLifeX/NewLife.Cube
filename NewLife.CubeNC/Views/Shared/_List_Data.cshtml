@@ -72,11 +72,11 @@
                         var title = df.GetTitle(entity);
                         if (!String.IsNullOrEmpty(name) && name.StartsWith("<") && name.EndsWith(">"))
                         {
-                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target">@(Html.Raw(name)) data-action=@(nulti_tabs ? "tab" : "")</a></td>
+                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@(nulti_tabs?df.Target:df.Target=="_frame"?"":df.Target)">@(Html.Raw(name))</a></td>
                         }
                         else
                         {
-                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@df.Target" data-action=@(nulti_tabs ? "tab" : "")>@name</a></td>
+                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@(nulti_tabs?df.Target:df.Target=="_frame"?"":df.Target)">@name</a></td>
                         }
                     }
                     else

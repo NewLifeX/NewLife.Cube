@@ -29,7 +29,7 @@ public class ListField : DataField
     ///// <summary>单元格图标。数据单元格前端显示时的图标或图片</summary>
     //public String Icon { get; set; }
 
-    /// <summary>链接目标。_blank/_self/_parent/_top</summary>
+    /// <summary>链接目标。_blank/_self/_parent/_top/_frame</summary>
     public String Target { get; set; }
 
     /// <summary>头部文字</summary>

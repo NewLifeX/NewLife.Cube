@@ -21,6 +21,7 @@ namespace CubeDemo.Areas.School.Controllers
                 var df = ListFields.AddListField("test", null, "ID");
                 df.DisplayName = "测试多标签";
                 df.Url = "/School/Class";
+                df.Target = "_frame";
             }
         }
 

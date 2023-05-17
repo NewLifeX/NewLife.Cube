@@ -51,9 +51,11 @@ $(function () {
 
     // 多标签页打开请求地址
     $(document).on('click'
-        , 'a[data-action="tab"]'
+        , 'a[target="_frame"]'
         , function (data) {
+
             $this = $(this);
+            //动态设置标签参数
             var url = $this.attr('href');
             if (url && url.length > 0) {
                 $this.data('url', url);
@@ -162,7 +164,7 @@ function doAction(methodName, actionUrl, actionParamter) {
     });
 }
 
-// 发送页面内消息
+// 发送消息到框架页-执行打开标签操作
 function sendEventToParent(data) {
     window.parent.postMessage(data, '*');
 }
