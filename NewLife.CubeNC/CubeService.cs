@@ -452,18 +452,27 @@ public static class CubeService
         var registry = provider.GetService<IRegistry>();
         if (registry != null)
         {
-            var webs = await registry.ResolveAddressAsync("StarWeb");
-            if (webs != null)
+            using var span = DefaultTracer.Instance?.NewSpan(nameof(ResolveStarWeb));
+            try
             {
-                XTrace.WriteLine("StarWeb: {0}", webs.Join());
-                //StarHelper.StarWeb = webs.FirstOrDefault();
-                if (webs.Length > 0)
+                var webs = await registry.ResolveAddressAsync("StarWeb");
+                if (webs != null)
                 {
-                    // 保存到配置文件
-                    var set = CubeSetting.Current;
-                    set.StarWeb = webs[0];
-                    set.Save();
+                    XTrace.WriteLine("StarWeb: {0}", webs.Join());
+                    //StarHelper.StarWeb = webs.FirstOrDefault();
+                    if (webs.Length > 0)
+                    {
+                        // 保存到配置文件
+                        var set = CubeSetting.Current;
+                        set.StarWeb = webs[0];
+                        set.Save();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                span?.SetError(ex, null);
+                XTrace.WriteLine(ex.Message);
             }
         }
     }

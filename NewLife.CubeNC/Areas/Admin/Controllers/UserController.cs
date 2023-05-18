@@ -43,7 +43,7 @@ public class UserController : EntityController<User, UserModel>
         {
             var df = ListFields.AddListField("AvatarImage", "Name");
             df.Header = "";
-            df.Text = "<img src=\"{Avatar}&w=64&h=64\" style=\"width:64px;height:64px;\" />";
+            df.Text = "<img src=\"{Avatar}\" style=\"width:64px;height:64px;\" />";
             df.Url = "/Admin/User/Detail?id={ID}";
             df.Target = "_blank";
             df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();

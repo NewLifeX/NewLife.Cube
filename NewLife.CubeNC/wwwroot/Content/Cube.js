@@ -55,10 +55,15 @@ $(function () {
         , function (data) {
 
             $this = $(this);
-            //动态设置标签参数
+            // 动态设置标签参数
             var url = $this.attr('href');
             if (url && url.length > 0) {
                 $this.data('url', url);
+            }
+
+            // 判断当前是否在容器当中，如果当前页面在容器中则使用容器标签，否则直接当前页面进行跳转
+            if (window.frames.length == parent.frames.length) {
+                window.location.href = url;
             }
 
             var title = $this.data('title');
@@ -166,5 +171,6 @@ function doAction(methodName, actionUrl, actionParamter) {
 
 // 发送消息到框架页-执行打开标签操作
 function sendEventToParent(data) {
-    window.parent.postMessage(data, '*');
+    // 只向同域框架发送消息，避免消息干扰
+    window.parent.postMessage(data, location.origin);
 }

@@ -80,6 +80,8 @@ layui.use(['element_cube', 'layer', 'util'], function () {
     // 添加消息监听
     window.addEventListener('message', function (event) {
 
+        if (event.origin != this.location.origin) return false;
+
         switch (event.data.kind) {
             case 'tab':
                 cubeAddTab(event.data.url, event.data.title, true);
