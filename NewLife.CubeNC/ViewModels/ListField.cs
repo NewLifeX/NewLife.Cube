@@ -29,7 +29,11 @@ public class ListField : DataField
     ///// <summary>单元格图标。数据单元格前端显示时的图标或图片</summary>
     //public String Icon { get; set; }
 
-    /// <summary>链接目标。_blank/_self/_parent/_top/_frame</summary>
+    /// <summary>
+    /// 链接目标。参考：TargetEnum 
+    /// _blank/_self/_parent/_top
+    /// 默认：null,会根据皮肤自动判断打开方式，layui:在框架页多标签打开，ace:在当前页面进行跳转
+    /// </summary>
     public String Target { get; set; }
 
     /// <summary>头部文字</summary>
@@ -41,7 +45,9 @@ public class ListField : DataField
     ///// <summary>头部链接。一般是排序</summary>
     //public String HeaderUrl { get; set; }
 
-    /// <summary>数据动作。设为action时走ajax请求</summary>
+    /// <summary>
+    /// 数据动作。参考：DataAction
+    /// 默认：null 作为普通url操作；action 走ajax请求</summary>
     public String DataAction { get; set; }
 
     /// <summary>获取数据委托。可用于自定义列表页单元格数值的显示</summary>

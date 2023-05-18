@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube;
+using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.School.Entity;
 using NewLife.Web;
@@ -19,9 +20,23 @@ namespace CubeDemo.Areas.School.Controllers
         {
             {
                 var df = ListFields.AddListField("test", null, "ID");
-                df.DisplayName = "测试多标签";
-                df.Url = "/School/Class";
-                df.Target = "_frame";
+                df.DisplayName = "AJAX操作请求";
+                df.Url = "/School/Class/Hello";
+                df.DataAction = "action";
+            }
+
+            {
+                var df = ListFields.AddListField("test1", null, "ID");
+                df.DisplayName = "当前页打开";
+                df.Url = "/School/Student";
+                df.Target = TargetEnum._self + "";
+            }
+
+            {
+                var df = ListFields.AddListField("test1", null, "ID");
+                df.DisplayName = "浏览器多标签页打开";
+                df.Url = "/School/Student";
+                df.Target = TargetEnum._blank + "";
             }
         }
 
@@ -30,6 +45,15 @@ namespace CubeDemo.Areas.School.Controllers
             PageSetting.EnableTableDoubleClick = true;
 
             _tracer = provider?.GetService<ITracer>();
+        }
+
+        public IActionResult Hello()
+        {
+            return Json(new
+            {
+                code = "200",
+                data = "ok"
+            });
         }
 
         protected override IEnumerable<Class> Search(Pager p)

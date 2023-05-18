@@ -7,8 +7,8 @@ $(function () {
     window.confirmDialog = parent['confirmDialog'] || function (msg, func) { if (confirm(msg)) func(); };
     window.tips = parent['tips'] || function (msg, modal, time, jumpUrl) { alert(msg); location.reload(); };
 
-    //根据data-action的值确定操作类型 action为请求后端执行业务操作，url为直接跳转指定url地址
-    //按钮请求action
+    // 根据data-action的值确定操作类型 action为请求后端执行业务操作，url为直接跳转指定url地址
+    // 按钮请求action
     $(document).on('click',
         'button[data-action="action"], input[data-action="action"], a[data-action="action"]',
         function (e) {
@@ -34,10 +34,11 @@ $(function () {
             }
 
             doClickAction($this);
-            //阻止按钮本身的事件冒泡
+            // 阻止按钮本身的事件冒泡
             return false;
         });
-    //直接执行Url地址
+
+    // 直接执行Url地址
     $(document).on('click'
         , 'button[data-action="url"],input[data-action="url"],a[data-action="url"]'
         , function (data) {
@@ -88,6 +89,7 @@ function doClickAction($this) {
     var fields = $this.data('fields');
     //参数
     var parameter = '';
+
     if (fields && fields.length > 0) {
         var fieldArr = fields.split(',');
         for (var i = 0; i < fieldArr.length; i++) {
