@@ -89,5 +89,7 @@ layui.use(['element_cube', 'layer', 'util'], function () {
             default:
         }
     });
-});
 
+    // 标识框架名称
+    window.frameName = 'layui';
+});

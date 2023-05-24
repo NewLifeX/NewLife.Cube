@@ -52,7 +52,7 @@ $(function () {
 
     // 多标签页打开请求地址
     $(document).on('click'
-        , 'a[target="_frame"]'
+        , 'a[target="_blank"]'
         , function (data) {
 
             $this = $(this);
@@ -67,18 +67,28 @@ $(function () {
                 window.location.href = url;
             }
 
-            var title = $this.data('title');
-            if (!title || title.length <= 0) {
-                title = $this.html();
+            // 获取框架名称
+            var parentName = window.parent.frameName;
+            // 根据框架决定实现方案
+            switch (parentName) {
+                case "layui":
+                    var title = $this.data('title');
+                    if (!title || title.length <= 0) {
+                        title = $this.html();
+                    }
+
+                    var obj = {
+                        url: url,
+                        title: title,
+                        kind: 'tab'
+                    };
+
+                    sendEventToParent(obj);
+                    break;
+                default:
+                    window.location.href = url;
+                    break;
             }
-
-            var obj = {
-                url: url,
-                title: title,
-                kind: 'tab'
-            };
-
-            sendEventToParent(obj);
 
             return false;
         }

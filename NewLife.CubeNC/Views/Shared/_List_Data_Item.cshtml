@@ -15,7 +15,6 @@
     // 第二名称，去掉后面的数字，便于模式匹配
     var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
     var name2 = item.Name.TrimEnd(digits);
-    var nulti_tabs = CubeSetting.Current.Skin == "layui";
 }
 @if (item.PrimaryKey)
 {
@@ -174,7 +173,7 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        <td class="text-center"><a href="@name?@key=@val" tager=@(nulti_tabs?"_frame":"")>@value</a></td>
+                        <td class="text-center"><a href="@name?@key=@val" tager=@(listField.Target)>@value</a></td>
                     }
                     else
                     {

@@ -28,7 +28,7 @@ namespace CubeDemo.Areas.School.Controllers
             {
                 var df = ListFields.AddListField("test1", null, "ID");
                 df.DisplayName = "当前页打开";
-                df.Url = "/School/Student";
+                df.Url = "/School/Class";
                 df.Target = TargetEnum._self + "";
             }
 
