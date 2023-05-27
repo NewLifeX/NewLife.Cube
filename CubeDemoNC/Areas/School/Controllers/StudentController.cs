@@ -8,7 +8,7 @@ namespace CubeDemo.Areas.School.Controllers;
 
 [SchoolArea]
 [DisplayName("学生")]
-public class StudentController : EntityController<Student, StudentModel>
+public class StudentController : ReadOnlyEntityController<Student>
 {
     static StudentController()
     {
