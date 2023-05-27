@@ -249,11 +249,22 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     protected override Boolean Valid(User entity, DataObjectMethodType type, Boolean post)
     {
-        if (!post && type == DataObjectMethodType.Update)
+        if (!post)
         {
             // 清空密码，不向浏览器输出
             //entity.Password = null;
             entity["Password"] = null;
+        }
+
+        if (post)
+        {
+            // 非系统管理员，禁止修改任何人的角色
+            var user = ManageProvider.User;
+            if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
+            {
+                if (entity2.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
+                if (entity2.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
+            }
         }
 
         if (post && type == DataObjectMethodType.Update)
@@ -575,6 +586,7 @@ public class UserController : EntityController<User, UserModel>
         var entity = user as IEntity;
         if (entity.Dirtys["Name"]) throw new Exception("禁止修改用户名！");
         if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
+        if (entity.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
         if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
 
         var file = HttpContext.Request.Form.Files["avatar"];
