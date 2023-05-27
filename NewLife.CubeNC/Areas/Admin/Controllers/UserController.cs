@@ -121,39 +121,39 @@ public class UserController : EntityController<User, UserModel>
         }
     }
 
-    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
-    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
-    {
-        var fields = base.OnGetFields(kind, model);
-        if (fields == null) return fields;
+    ///// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
+    ///// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
+    ///// <param name="model"></param>
+    ///// <returns></returns>
+    //protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
+    //{
+    //    var fields = base.OnGetFields(kind, model);
+    //    if (fields == null) return fields;
 
-        var user = ManageProvider.User;//理论上肯定大于0
-        var roles = Role.FindAllWithCache().Where(w => w.IsSystem == false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-        if (user != null)
-        {
-            if (user.Role.IsSystem)
-            {
-                roles = Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-            }
-        }
+    //    var user = ManageProvider.User;//理论上肯定大于0
+    //    var roles = Role.FindAllWithCache().Where(w => w.IsSystem == false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+    //    if (user != null)
+    //    {
+    //        if (user.Role.IsSystem)
+    //        {
+    //            roles = Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+    //        }
+    //    }
 
-        switch (kind)
-        {
-            case ViewKinds.AddForm:
-            case ViewKinds.EditForm:
-                var df = fields.GetField("RoleID");
-                if (df != null) df.DataSource = entity => roles;
+    //    switch (kind)
+    //    {
+    //        case ViewKinds.AddForm:
+    //        case ViewKinds.EditForm:
+    //            var df = fields.GetField("RoleID");
+    //            if (df != null) df.DataSource = entity => roles;
 
-                var df2 = fields.GetField("RoleIds");
-                if (df2 != null) df2.DataSource = entity => roles;
-                break;
-        }
+    //            var df2 = fields.GetField("RoleIds");
+    //            if (df2 != null) df2.DataSource = entity => roles;
+    //            break;
+    //    }
 
-        return fields;
-    }
+    //    return fields;
+    //}
 
     /// <summary>
     /// 实例化用户控制器
