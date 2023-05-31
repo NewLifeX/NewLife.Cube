@@ -27,8 +27,8 @@ public class UserOnlineController : EntityController<UserOnline>
 
         {
             var df = ListFields.GetField("Name") as ListField;
-            //df.DisplayName = "跟踪";
-            df.Url = "/Admin/User?id={UserID}";
+            df.Url = "/Admin/User/Detail?id={UserID}";
+            df.Target = "_frame";
             df.DataVisible = e => (e as UserOnline).UserID > 0;
         }
     }

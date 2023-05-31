@@ -64,7 +64,8 @@ $(function () {
 
             // 判断当前是否在容器当中，如果当前页面在容器中则使用容器标签，否则直接当前页面进行跳转
             if (window.frames.length == parent.frames.length) {
-                window.location.href = url;
+                //window.location.href = url;
+                return true;
             }
 
             // 获取框架名称
@@ -84,13 +85,55 @@ $(function () {
                     };
 
                     sendEventToParent(obj);
-                    break;
-                default:
-                    window.location.href = url;
-                    break;
+
+                    return false;
             }
 
-            return false;
+            return true;
+        }
+    )
+
+    // 多标签页打开请求地址
+    $(document).on('click'
+        , 'a[target="_frame"]'
+        , function (data) {
+
+            $this = $(this);
+            // 动态设置标签参数
+            var url = $this.attr('href');
+            if (url && url.length > 0) {
+                $this.data('url', url);
+            }
+
+            // 判断当前是否在容器当中，如果当前页面在容器中则使用容器标签，否则直接当前页面进行跳转
+            if (window.frames.length == parent.frames.length) {
+                window.location.href = url;
+                return true;
+            }
+
+            // 获取框架名称
+            var parentName = window.parent.frameName;
+            // 根据框架决定实现方案
+            switch (parentName) {
+                case "layui":
+                    var title = $this.data('title');
+                    if (!title || title.length <= 0) {
+                        title = $this.html();
+                    }
+
+                    var obj = {
+                        url: url,
+                        title: title,
+                        kind: 'tab'
+                    };
+
+                    sendEventToParent(obj);
+
+                    return false;
+            }
+
+            window.location.href = url;
+            return true;
         }
     )
 });
