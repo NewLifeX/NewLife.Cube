@@ -64,7 +64,8 @@ $(function () {
 
             // 判断当前是否在容器当中，如果当前页面在容器中则使用容器标签，否则直接当前页面进行跳转
             if (window.frames.length == parent.frames.length) {
-                window.location.href = url;
+                //window.location.href = url;
+                return true;
             }
 
             // 获取框架名称

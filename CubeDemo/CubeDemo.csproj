@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.5" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.8.2023.516-beta0720" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.9.2023.601" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
