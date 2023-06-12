@@ -77,19 +77,40 @@ layui.use(['element_cube', 'layer', 'util'], function () {
         });
     }
 
-    // 添加消息监听
-    window.addEventListener('message', function (event) {
+    //// 添加消息监听
+    //window.addEventListener('message', function (event) {
 
-        if (event.origin != this.location.origin) return false;
+    //    if (event.origin != this.location.origin) return false;
 
-        switch (event.data.kind) {
-            case 'tab':
-                cubeAddTab(event.data.url, event.data.title, true);
-                break;
-            default:
-        }
-    });
+    //    switch (event.data.kind) {
+    //        case 'tab':
+    //            cubeAddTab(event.data.url, event.data.title, true);
+    //            break;
+    //        default:
+    //    }
+    //});
 
     // 标识框架名称
     window.frameName = 'layui';
+
+    // 添加标签
+    window.cubeAddTab = function cubeAddTab(url, title, isRandom) {
+        var idmark = url;
+        if (isRandom) idmark = url + Math.random();
+
+        var li = $('.cube-tab-title').children('ul').children('li[lay-id="' + idmark + '"]');
+
+        if (li && li.length > 0) {
+            cube.tabChangeCube('cube-layout-tabs', url);
+            return true;
+        }
+
+        cube.tabAddCube('cube-layout-tabs', {
+            title: title,
+            content: '<iframe src="' + url + '" frameborder="0" class="cube-iframe">',
+            id: idmark
+        });
+
+        return false;
+    };
 });

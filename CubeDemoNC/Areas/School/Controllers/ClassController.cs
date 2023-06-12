@@ -21,6 +21,7 @@ public class ClassController : EntityController<Class, ClassModel>
             df.DisplayName = "AJAX操作请求";
             df.Url = "/School/Class/Hello";
             df.DataAction = "action";
+            df.Title= "Title";
         }
 
         {
@@ -35,6 +36,7 @@ public class ClassController : EntityController<Class, ClassModel>
             df.DisplayName = "浏览器多标签页打开";
             df.Url = "/School/Student";
             df.Target = TargetEnum._blank + "";
+            df.Title = "Title";
         }
     }
 

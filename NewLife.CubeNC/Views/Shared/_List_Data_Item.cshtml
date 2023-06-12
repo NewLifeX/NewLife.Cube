@@ -173,7 +173,7 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        <td class="text-center"><a href="@name?@key=@val" tager=@(listField.Target)>@value</a></td>
+                        <td class="text-center"><a href="@name?@key=@val" tager=@(listField.Target) title="@listField.Title??@listField.DisplayName">@value</a></td>
                     }
                     else
                     {

@@ -68,29 +68,15 @@ $(function () {
             }
 
             // 获取框架名称
-            var parentName = window.parent.frameName;
-            // 根据框架决定实现方案
-            switch (parentName) {
-                case "layui":
-                    var title = $this.data('title');
-                    if (!title || title.length <= 0) {
-                        title = $this.html();
-                    }
+            //var parentName = window.parent.frameName;
 
-                    var obj = {
-                        url: url,
-                        title: title,
-                        kind: 'tab'
-                    };
-
-                    sendEventToParent(obj);
-                    break;
-                default:
-                    window.location.href = url;
-                    break;
+            var title = $this.data('title') ?? $this.attr('title');
+            if (!title || title.length <= 0) {
+                title = $this.html();
             }
 
-            return false;
+            // 外部框架自行定义cubeAddTab方法，用于打开标签页
+            return window.parent.cubeAddTab(url, title, true);
         }
     )
 });
@@ -181,8 +167,8 @@ function doAction(methodName, actionUrl, actionParamter) {
     });
 }
 
-// 发送消息到框架页-执行打开标签操作
-function sendEventToParent(data) {
-    // 只向同域框架发送消息，避免消息干扰
-    window.parent.postMessage(data, location.origin);
-}
+//// 发送消息到框架页-执行打开标签操作
+//function sendEventToParent(data) {
+//    // 只向同域框架发送消息，避免消息干扰
+//    window.parent.postMessage(data, location.origin);
+//}

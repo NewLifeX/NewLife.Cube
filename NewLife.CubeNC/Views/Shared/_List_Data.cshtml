@@ -63,7 +63,7 @@
                     {
                         var name = df.GetDisplayName(entity);
                         var title = df.GetTitle(entity);
-                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction">@name</a></td>
+                        <td class="text-center" title="@title"><a href="@Html.Raw(url)" data-action="@df.DataAction" title="@title">@name</a></td>
                     }
                     else if (df != null && !url.IsNullOrEmpty())
                     {
@@ -71,11 +71,11 @@
                         var title = df.GetTitle(entity);
                         if (!String.IsNullOrEmpty(name) && name.StartsWith("<") && name.EndsWith(">"))
                         {
-                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@(df.Target)">@(Html.Raw(name))</a></td>
+                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@(df.Target)" title="@title">@(Html.Raw(name))</a></td>
                         }
                         else
                         {
-                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@(df.Target)">@name</a></td>
+                            <td class="text-center" title="@title"><a href="@Html.Raw(url)" target="@(df.Target)" title="@title">@name</a></td>
                         }
                     }
                     else
