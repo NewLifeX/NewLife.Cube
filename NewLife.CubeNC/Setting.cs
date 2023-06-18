@@ -117,8 +117,8 @@ public class CubeSetting : Config<CubeSetting>
     //[Category("用户登录")]
     //public Int32 MinPasswordLength { get; set; } = 6;
 
-    /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号</summary>
-    [Description("密码强度。*表示无限制，默认8位起，数字大小写字母和符号")]
+    /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$</summary>
+    [Description("密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$")]
     [Category("用户登录")]
     public String PaswordStrength { get; set; } = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
 
