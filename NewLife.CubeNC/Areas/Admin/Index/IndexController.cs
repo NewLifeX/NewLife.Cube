@@ -48,7 +48,7 @@ public class IndexController : ControllerBaseX
 
         //!!! 租户切换
         var tenantId = Request.Query["TenantId"].ToInt(-1);
-        if (tenantId > 0)
+        if (tenantId >= 0)
         {
             // 判断租户关系
             var list = TenantUser.FindAllByUserId(user.ID);
