@@ -13,6 +13,8 @@
     var name = cfg == null ? "" : cfg.DisplayName;
 
     var tList = TenantUser.FindAllByUserId(user.ID);
+    if (roleNames.Contains("管理员")) tList.Add(new TenantUser() { TenantId = 0 });
+
     var tenant = XCode.Membership.Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
     var tenantName = tenant?.Name;
     var flag = false;
@@ -46,12 +48,12 @@
         </li>
     </ul>
 
-    @if (tenantName != null)
+    @if (tList.Count > 0)
     {
         <ul class="layui-nav layui-layout-right" style="right:140px;">
             <li class="layui-nav-item layui-hide layui-show-md-inline-block">
                 <a href="javascript:;">
-                    @tenantName
+                    @(tenantName ?? "管理员")
                 </a>
                 <dl class="layui-nav-child">
                     @foreach (var item in tList)
@@ -65,7 +67,7 @@
                             flag = true;
                         }
 
-                        <dd><a href="~/Admin/Index?tenantid=@item.TenantId" lay-header-event="menuSetting" data-title="@item.TenantName">@item.TenantName</a></dd>
+                        <dd><a href="~/Admin/Index?tenantid=@item.TenantId" lay-header-event="menuSetting" data-title="@(item.TenantName??"管理员")">@(item.TenantName ?? "管理员")</a></dd>
                     }
                 </dl>
             </li>

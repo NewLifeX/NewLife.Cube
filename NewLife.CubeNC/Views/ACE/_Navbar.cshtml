@@ -12,10 +12,10 @@
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
 
-    var tenant = Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
-
     var tList = TenantUser.FindAllByUserId(user.ID);
+    if (roleNames.Contains("管理员")) tList.Add(new TenantUser() { TenantId = 0 });
 
+    var tenant = XCode.Membership.Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
     var tenantName = tenant?.Name;
     var flag = false;
 }
@@ -89,14 +89,14 @@
         </div>
 
         <!--tenant-->
-        @if (tenantName != null)
+        @if (tList.Count > 0)
         {
             <div class="navbar-buttons navbar-header pull-right" role="navigation">
                 <ul class="nav ace-nav">
                     <li class="light-blue">
                         <a data-toggle="dropdown" href="#" class="dropdown-toggle" target="main">
                             <span class="hidden-xs" title="@tenantName" style="line-height:45px;top:0px;">
-                                @tenantName
+                                @(tenantName ?? "管理员")
                             </span>
                             <i class="ace-icon fa fa-caret-down"></i>
                         </a>
@@ -117,7 +117,7 @@
                                 <li>
                                     <a href="~/Admin/Index?tenantid=@item.TenantId" target="_blank">
                                         <i class="ace-icon fa fa-cog"></i>
-                                        @item.TenantName
+                                        @(item.TenantName ?? "管理员")
                                     </a>
                                 </li>
                             }

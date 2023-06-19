@@ -435,7 +435,7 @@ public static class ManagerProviderHelper
 
     /// <summary>改变选中的租户</summary>
     /// <param name="context"></param>
-    /// <param name="tenantId"></param>
+    /// <param name="tenantId">0管理员场景，大于0租户场景</param>
     public static void ChangeTenant(HttpContext context, Int32 tenantId)
     {
         var res = context?.Response;
@@ -448,7 +448,7 @@ public static class ManagerProviderHelper
         };
         if (!set.CookieDomain.IsNullOrEmpty()) option.Domain = set.CookieDomain;
 
-        if (tenantId <= 0) option.Expires = DateTimeOffset.MinValue;
+        if (tenantId < 0) option.Expires = DateTimeOffset.MinValue;
 
         res.Cookies.Append("TenantId", tenantId + "", option);
     }
