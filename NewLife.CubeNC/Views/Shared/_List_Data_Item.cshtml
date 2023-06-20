@@ -127,7 +127,7 @@ else
             }
             else if (item.ItemType.EqualIgnoreCase("Time"))
             {
-                <td class="text-center">@(value.ToLong().ToDateTime().ToLocalTime())</td>
+                <td class="text-center">@(value.ToLong().ToDateTime().ToLocalTime().ToFullString(""))</td>
             }
             else if (item.ItemType.EqualIgnoreCase("GMK"))
             {
