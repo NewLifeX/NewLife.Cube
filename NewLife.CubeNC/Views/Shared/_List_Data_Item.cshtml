@@ -125,6 +125,10 @@ else
             {
                 <td class="text-right">@(TimeSpan.FromSeconds(value.ToInt()))</td>
             }
+            else if (item.ItemType.EqualIgnoreCase("Time"))
+            {
+                <td class="text-center">@(value.ToLong().ToDateTime().ToLocalTime())</td>
+            }
             else if (item.ItemType.EqualIgnoreCase("GMK"))
             {
                 <td class="text-right">@(value.ToLong().ToGMK())</td>
