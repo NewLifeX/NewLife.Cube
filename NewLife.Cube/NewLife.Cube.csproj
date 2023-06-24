@@ -70,6 +70,7 @@
     <Compile Include="..\NewLife.CubeNC\ViewModels\ErrorModel.cs" Link="ViewModels\ErrorModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\FieldCollection.cs" Link="ViewModels\FieldCollection.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\FormField.cs" Link="ViewModels\FormField.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\ILinkExtend.cs" Link="ViewModels\ILinkExtend.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ItemModel.cs" Link="ViewModels\ItemModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\IUrlExtend.cs" Link="ViewModels\IUrlExtend.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ListBoxModel.cs" Link="ViewModels\ListBoxModel.cs" />

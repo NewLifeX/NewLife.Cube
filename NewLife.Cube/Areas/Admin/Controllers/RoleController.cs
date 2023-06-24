@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -50,21 +48,15 @@ public class RoleController : EntityController<Role, RoleModel>
     public override async Task<ApiResponse<Role>> Insert(Role entity)
     {
         // 检测避免乱用Add/id
-        if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0) throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
+        if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0)
+            throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
 
-        if (!Valid(entity, DataObjectMethodType.Insert, true))
-            //ViewBag.StatusMessage = "验证失败！";
-            //ViewBag.Fields = AddFormFields;
-
-            //return View("AddForm", entity);
-
-            return new ApiResponse<Role>(500, "验证失败！", null);
+        if (!Valid(entity, DataObjectMethodType.Insert, true)) return new ApiResponse<Role>(500, "验证失败！", null);
 
         var rs = false;
         var err = "";
         try
         {
-            //SaveFiles(entity);
             entity.CreateTime = DateTime.Now;
             entity.CreateIP = GetHostAddresses();
             entity.Enable = true;
@@ -78,7 +70,9 @@ public class RoleController : EntityController<Role, RoleModel>
                 // 是否授权该项
                 var has = GetBool("p" + item.ID);
                 if (!has)
+                {
                     dels.Add(item.ID);
+                }
                 else
                 {
                     // 遍历所有权限子项
@@ -102,25 +96,17 @@ public class RoleController : EntityController<Role, RoleModel>
 
             // 删除已经被放弃权限的项
             foreach (var item in dels)
+            {
                 if (entity.Has(item)) entity.Permissions.Remove(item);
+            }
 
             OnInsert(entity);
 
-            var fs = await SaveFiles(entity);
-            if (fs.Count > 0) OnUpdate(entity);
+            //var fs = await SaveFiles(entity);
+            //if (fs.Count > 0) OnUpdate(entity);
             if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
 
             rs = true;
-
-            //var masterCode = Entity<TEntity>.Meta.Factory.AllFields.Find(x => {
-            //    return x.Field.ColumnName.Equals("QrCode");
-            //});
-            //if (masterCode != null)
-            //{
-            //    //更新二维码
-            //    entity.SetValue("QrCode", entity["QrCode"].ToString() + "?data={\"name\":\""+ entity["Name"]+ "\",\"code\":\""+entity["Code"]+"\"}";
-            //    entity.Update();
-            //}
         }
         catch (ArgumentException aex)
         {
@@ -218,13 +204,7 @@ public class RoleController : EntityController<Role, RoleModel>
     /// <summary>添加实体主表对应的从表记录</summary>
     /// <param name="entity"></param>
     /// <returns></returns>
-    protected virtual Boolean AddDetailed(IEntity entity)
-    {
-        if (entity == null)
-            return false;
-        // TO DO
-        return true;
-    }
+    protected virtual Boolean AddDetailed(IEntity entity) => entity != null;
 
     /// <summary>验证实体对象</summary>
     /// <param name="entity"></param>

@@ -739,9 +739,12 @@ public static class ViewHelper
     {
         if (user == null || user.Avatar.IsNullOrEmpty()) return null;
 
+        // 绝对路径
+        if (user.Avatar.StartsWithIgnoreCase("http://", "https://", "/")) return user.Avatar;
+
         var set = CubeSetting.Current;
 
-        if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWithIgnoreCase("/Sso/"))
+        if (!user.Avatar.StartsWithIgnoreCase("/Sso/"))
         {
             var av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath();
             if (File.Exists(av)) return "/Cube/Avatar?id=" + user.ID;

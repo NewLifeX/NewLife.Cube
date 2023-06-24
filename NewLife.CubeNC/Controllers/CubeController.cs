@@ -298,8 +298,8 @@ public class CubeController : ControllerBaseX
     {
         if (id <= 0) throw new ArgumentNullException(nameof(id));
 
-        var user = ManageProvider.Provider?.FindByID(id) as IUser;
-        if (user == null) throw new Exception("用户不存在 " + id);
+        if (ManageProvider.Provider?.FindByID(id) is not IUser user) 
+            throw new Exception("用户不存在 " + id);
 
         var set = CubeSetting.Current;
         var av = "";
