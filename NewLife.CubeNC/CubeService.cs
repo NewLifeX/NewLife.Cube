@@ -283,6 +283,7 @@ public static class CubeService
 
         // 调整魔方表名
         FixAppTableName();
+        FixAvatar();
 
         // 使用管理提供者
         app.UseManagerProvider();
@@ -397,6 +398,56 @@ public static class CubeService
                     XTrace.WriteLine("重命名结果：{0}", rs);
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+        }
+    }
+
+    /// <summary>修正头像附件，移动到附件上传目录</summary>
+    private static void FixAvatar()
+    {
+        var set = CubeSetting.Current;
+        if (set.AvatarPath.IsNullOrEmpty()) return;
+
+        var av = set.AvatarPath.CombinePath("User").AsDirectory();
+        if (!av.Exists) return;
+
+        // 如果附件目录跟头像目录一致，则不需要移动
+        var dst = set.UploadPath.CombinePath("User").AsDirectory();
+        if (dst.FullName.EqualIgnoreCase(av.FullName)) return;
+
+        try
+        {
+            // 确保目标目录存在
+            dst.Parent.FullName.EnsureDirectory(false);
+
+            //av.MoveTo(dst.FullName);
+            //av.CopyTo(dst.FullName, null, true, e => XTrace.WriteLine("移动 {0}", e));
+
+            // 来源目录根，用于截断
+            var root = av.FullName.EnsureEnd(Path.DirectorySeparatorChar.ToString());
+            foreach (var item in av.GetAllFiles(null, true))
+            {
+                var name = item.FullName.TrimStart(root);
+                var dfile = dst.FullName.CombinePath(name);
+                if (!File.Exists(dfile))
+                {
+                    XTrace.WriteLine("移动 {0}", name);
+                    item.MoveTo(dfile.EnsureDirectory(true), false);
+                }
+                else
+                {
+                    item.Delete();
+                }
+
+                //if (item.Exists) item.Delete();
+                //if (File.Exists(item.FullName)) File.Delete(item.FullName);
+            }
+
+            // 删除空目录
+            if (!av.GetAllFiles(null, true).Any()) av.Delete(true);
         }
         catch (Exception ex)
         {
