@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using System.Web;
 using NewLife.Cube.Entity;
@@ -421,20 +417,20 @@ public class OAuthClient
     }
     #endregion
 
-        #region 辅助
-        /// <summary>替换地址模版参数</summary>
-        /// <param name="url"></param>
-        /// <returns></returns>
-        protected virtual String GetUrl(String url)
+    #region 辅助
+    /// <summary>替换地址模版参数</summary>
+    /// <param name="url"></param>
+    /// <returns></returns>
+    protected virtual String GetUrl(String url)
+    {
+        if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
         {
-            if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
-            {
-                // 授权以外的连接，使用令牌服务地址
-                if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize", "logout"))
-                    url = AccessServer.EnsureEnd("/") + url.TrimStart('/');
-                else
-                    url = Server.EnsureEnd("/") + url.TrimStart('/');
-            }
+            // 授权以外的连接，使用令牌服务地址
+            if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize", "logout"))
+                url = AccessServer.EnsureEnd("/") + url.TrimStart('/');
+            else
+                url = Server.EnsureEnd("/") + url.TrimStart('/');
+        }
 
         url = url
            .Replace("{key}", HttpUtility.UrlEncode(Key + ""))
@@ -641,6 +637,17 @@ public class OAuthClient
         // 获取用户信息出错时抛出异常
         // 2021-07-19 企业微信正常请求返回"errmsg": "ok"，导致登录报错，所以暂时注释
         if ((dic.TryGetValue("error", out str) || dic.TryGetValue("errmsg", out str)) && str != "ok") throw new InvalidOperationException(str);
+    }
+
+    /// <summary>获取头像路径</summary>
+    /// <returns></returns>
+    public String GetAvatarUrl()
+    {
+        var av = Avatar;
+        if (av != null && av.StartsWith("/") && Server.StartsWithIgnoreCase("http"))
+            return new Uri(new Uri(Server), av) + "";
+
+        return null;
     }
     #endregion
 
