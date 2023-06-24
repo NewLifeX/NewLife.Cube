@@ -107,7 +107,7 @@ public class DingTalkClient : OAuthClient
         var sign = ts.GetBytes().SHA256(Secret.GetBytes()).ToBase64();
         url = url.Replace("{timestamp}", ts).Replace("{signature}", HttpUtility.UrlEncode(sign));
 
-        url = GetUrl(url);
+        url = GetUrl(nameof(GetAccessToken), url);
 
         var tmp_code = new { tmp_auth_code = code };
         WriteLog("GetUserInfo {0} {1}", url, tmp_code.ToJson());

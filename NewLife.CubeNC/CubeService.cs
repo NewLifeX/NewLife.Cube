@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
@@ -288,6 +289,8 @@ public static class CubeService
         // 使用管理提供者
         app.UseManagerProvider();
 
+        FixOAuth();
+
         var set = CubeSetting.Current;
 
         // 使用Cube前添加自己的管道
@@ -452,6 +455,19 @@ public static class CubeService
         catch (Exception ex)
         {
             XTrace.WriteException(ex);
+        }
+    }
+
+    private static void FixOAuth()
+    {
+        var list = OAuthConfig.FindAllWithCache();
+        foreach (var cfg in list)
+        {
+            if (cfg.Server.StartsWithIgnoreCase("https://sso.newlifex.com/sso"))
+            {
+                cfg.Server = "https://sso.newlifex.com/sso,http://sso2.newlifex.com/sso";
+                cfg.Update();
+            }
         }
     }
 
