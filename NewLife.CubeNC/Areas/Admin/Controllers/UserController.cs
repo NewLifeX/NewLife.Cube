@@ -10,6 +10,7 @@ using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -43,67 +44,44 @@ public class UserController : EntityController<User, UserModel>
         {
             var df = ListFields.AddListField("AvatarImage", "Name");
             df.Header = "";
-            df.Text = "<img src=\"{Avatar}\" style=\"width:64px;height:64px;\" />";
-            df.Url = "/Admin/User/Detail?id={ID}";
+            //df.Text = "<img src=\"{Avatar}\" style=\"width:64px;height:64px;\" />";
+            //df.Url = "/Admin/User/Detail?id={ID}";
             df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();
+            // 使用ILinkExtend，高度定制头像超链接
+            df.AddService(new MyAvatar());
+        }
+        {
+            var df = ListFields.GetField("Name") as ListField;
+            df.Url = "/Admin/User/Detail?id={ID}";
+            df.Target = "_blank";
         }
         {
             var df = ListFields.GetField("DisplayName") as ListField;
             df.Url = "/Admin/User/Detail?id={ID}";
             df.Target = "_blank";
         }
-        //{
-        //    var df = ListFields.GetField("DisplayName") as ListField;
-        //    df.Url = "/Admin/User/Detail?id={ID}";
-        //}
-        //{
-        //    var df = ListFields.AddListField("Link", "Logins");
-        //    //df.Header = "链接";
-        //    df.HeaderTitle = "第三方登录的链接信息";
-        //    df.DisplayName = "链接";
-        //    df.Title = "第三方登录的链接信息";
-        //    df.Url = "/Admin/UserConnect?userId={ID}";
-        //}
-
-        //{
-        //    var df = ListFields.AddListField("Token", "Logins");
-        //    //df.Header = "令牌";
-        //    df.DisplayName = "令牌";
-        //    df.Url = "/Admin/UserToken?userId={ID}";
-        //}
-
-        //{
-        //    var df = ListFields.AddListField("Log", "Logins");
-        //    //df.Header = "日志";
-        //    df.DisplayName = "日志";
-        //    df.Url = "/Admin/Log?userId={ID}";
-        //}
-
-        //{
-        //    var df = ListFields.AddListField("OAuthLog", "Logins");
-        //    //df.Header = "OAuth日志";
-        //    df.DisplayName = "OAuth日志";
-        //    df.Url = "/Admin/OAuthLog?userId={ID}";
-        //}
 
         {
             var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             AddFormFields.RemoveField("RoleNames");
         }
-        //{
-        //    var df = AddFormFields.GetField("RegisterTime");
-        //    df.DataVisible = (e, f) => f.Name != "RegisterTime";
-        //}
-
         {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
         }
-
         {
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
+        }
+    }
+
+    class MyAvatar : ILinkExtend
+    {
+        public String Resolve(DataField field, IModel data)
+        {
+            var user = data as User;
+            return $"<a href=\"/Admin/User/Detail?id={user.ID}\"><img src=\"{user.GetAvatarUrl()}\" style=\"width:64px;height:64px;\" /></a>";
         }
     }
 

@@ -24,7 +24,7 @@
     //var modelTable = ViewBag.ModelTable as ModelTable;
     //var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
 
-    
+
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty())
     {
@@ -73,10 +73,10 @@
                                     {
                                         <th lay-data="{field:'@df.Name',title:'@name',sort:true,align:'center',filter: @isfilter.ToString().ToLower()}">@name</th>
                                     }
-@*                                    else if (item.Type == typeof(Boolean))
-                                    {
-                                        <th lay-data="{field:'@df.Name',title:'@name',sort:true,align:'center',templet: '#boolTbState'}">@name</th>
-                                    }*@
+                                    @*                                    else if (item.Type == typeof(Boolean))
+                                {
+                                <th lay-data="{field:'@df.Name',title:'@name',sort:true,align:'center',templet: '#boolTbState'}">@name</th>
+                                }*@
                                     else
                                     {
                                         <th lay-data="{field:'@item.Name',title:'@item.Description',sort:true,filter: @isfilter.ToString().ToLower()}">@item.DisplayName</th>
@@ -108,14 +108,16 @@
                                         {
                                             var url = df.GetUrl(entity);
                                             var name = df.GetDisplayName(entity) ?? df.Header;
-                                            <td title="@df.Title"><a lay-data="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs" lay-event="action" data-action="@df.DataAction">@name</a></td>
+                                            <td title="@df.Title">
+                                                <a lay-data="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs" lay-event="action" data-action="@df.DataAction">@name</a>
+                                            </td>
                                         }
                                         else if (df != null && !df.Url.IsNullOrEmpty())
                                         {
                                             var url = df.GetUrl(entity);
                                             var name = df.GetDisplayName(entity) ?? df.Header;
                                             <td title="@df.Title">
-                                                    <a href="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs">@name</a>
+                                                <a href="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs">@name</a>
                                             </td>
                                         }
                                         else
@@ -134,7 +136,7 @@
     </div>
 </div>
 @section layuiscripts{
-@*        table.init('parse-table', { //转化静态表格
+    @*        table.init('parse-table', { //转化静态表格
             page: true,
             limit: 20,
             limits: [20, 50, 100],
@@ -142,112 +144,112 @@
             defaultToolbar: ['filter','print',"exports",{title:'高级',layEvent: 'moreTool',icon: 'layui-icon-spread-left',id:"demo"}],
             toolbar: "#table-toolbar"
         });*@
-        var ii = layer.load(0, {shade: false});
+                var ii = layer.load(0, {shade: false});
 
-        var listTB=table.init('parse-table', { //转化静态表格
-            page: false,
-            limit: @pager.PageSize,
-            limits: [20, 50, 100],
-            even: true,
-            defaultToolbar: ['filter'],
-            toolbar: "#table-toolbar",
-            height: 'full-100',
-            cellMinWidth: 100,
-            filterUrl:"@Url.Action("Index")",
-            filterMethod:"from",
-            drag: {toolbar: true},
-@*            where:JSON.parse('@Html.Raw(Context.Request.GetRequestValue("filterSos"))'),*@
-            @*where:{filterSos:'@Html.Raw(Context.Request.GetRequestValue("filterSos"))'},*@
-            filter: {
-                @*items:['column','data','condition','editCondition','clearCache'],*@
-                items:['column','data','condition','clearCache'],
-                cache: false,
-                bottom: false
-            },
-            done: function () {
-                soulTable.render(this)
-            }
-        });
+                var listTB=table.init('parse-table', { //转化静态表格
+                    page: false,
+                    limit: @pager.PageSize,
+                    limits: [20, 50, 100],
+                    even: true,
+                    defaultToolbar: ['filter'],
+                    toolbar: "#table-toolbar",
+                    height: 'full-100',
+                    cellMinWidth: 100,
+                    filterUrl:"@Url.Action("Index")",
+                    filterMethod:"from",
+                    drag: {toolbar: true},
+    @*            where:JSON.parse('@Html.Raw(Context.Request.GetRequestValue("filterSos"))'),*@
+    @*where:{filterSos:'@Html.Raw(Context.Request.GetRequestValue("filterSos"))'},*@
+                    filter: {
+    @*items:['column','data','condition','editCondition','clearCache'],*@
+                        items:['column','data','condition','clearCache'],
+                        cache: false,
+                        bottom: false
+                    },
+                    done: function () {
+                        soulTable.render(this)
+                    }
+                });
 
-    layer.close(ii);
-    $("#parse-table,#listPager").removeClass("layui-hide");
+            layer.close(ii);
+            $("#parse-table,#listPager").removeClass("layui-hide");
 
-    //头工具栏事件
-    table.on('toolbar(parse-table)', function(obj){
-      var checkStatus = table.checkStatus(obj.config.id);
-      switch(obj.event){
-        case 'B_Detele_Data':
-          var checkdata = checkStatus.data;
-          layer.confirm('该操作将删除选中数据并不可恢复！确认删除？', function(index){
-          $.get('@Url.Action("DeleteSelect")',{Keys:stringArray(checkdata)},function(res){
-              layer.msg(res.message,{
-                       time:500,
-                       end:function () {
-                           if(res.code==0)
-                           location.href = '@Url.Action("Index")'
+            //头工具栏事件
+            table.on('toolbar(parse-table)', function(obj){
+              var checkStatus = table.checkStatus(obj.config.id);
+              switch(obj.event){
+                case 'B_Detele_Data':
+                  var checkdata = checkStatus.data;
+                  layer.confirm('该操作将删除选中数据并不可恢复！确认删除？', function(index){
+                  $.get('@Url.Action("DeleteSelect")',{Keys:stringArray(checkdata)},function(res){
+                      layer.msg(res.message,{
+                               time:500,
+                               end:function () {
+                                   if(res.code==0)
+                                   location.href = '@Url.Action("Index")'
+                              }
+                      })
+                  });
+                  layer.close(index);
+                });
+                break;
+                case 'Add_Data':
+                  location.href='@Url.Action("Add", rv)'
+                break;
+                case 'ImpExcel':
+                    layer.open({
+                      type: 1,
+                      title: '导入excel',
+                      skin: 'layui-layer-admin',
+                      closeBtn: false,
+                      area: ['300px', '300px'],
+                      anim: 5,
+                      shadeClose: true,
+                      content: laytpl($('#list-imp-excel').html()).render({}),
+                      cancel : function() {
+                            layer.close();
+                      },
+                      success : function(layero, index) {
+                            ImportExcel();
                       }
-              })
-          });
-          layer.close(index);
-        });
-        break;
-        case 'Add_Data':
-          location.href='@Url.Action("Add", rv)'
-        break;
-        case 'ImpExcel':
-            layer.open({
-              type: 1,
-              title: '导入excel',
-              skin: 'layui-layer-admin',
-              closeBtn: false,
-              area: ['300px', '300px'],
-              anim: 5,
-              shadeClose: true,
-              content: laytpl($('#list-imp-excel').html()).render({}),
-              cancel : function() {
-					layer.close();
-			  },
-			  success : function(layero, index) {
-					ImportExcel();
-			  }
+                    });
+                break;
+                case 'moreTool':
+                break;
+                case 'BatchPrint':
+                  var checkdata = checkStatus.data;
+                  if(checkdata.length ===0){
+                     layer.msg('请选中一行或多行数据');
+                     return;
+                  }
+                  layer.open({
+                        type: 2,
+                        title: '批量打印',
+                        shadeClose: true,
+                        shade: 0.2,
+                        area: ['90%', '80%'],
+                        content: '@Url.Action("BatchPrint")?id='+stringArray(checkdata),
+                          btn: ['打印', '取消'],
+                          btnAlign: 'c',
+                          yes: function(index, layero){
+                            //layer.closeAll();//关闭所有弹出层
+                          var iframeWindow = window['layui-layer-iframe' + index]  //获取弹框页面
+
+                            iframeWindow.window.print();
+                          },
+                        end: function () {
+                        }
+                    });
+                break;
+              };
             });
-        break;
-        case 'moreTool':
-        break;
-        case 'BatchPrint':
-          var checkdata = checkStatus.data;
-          if(checkdata.length ===0){
-             layer.msg('请选中一行或多行数据');
-             return;
-          }
-          layer.open({
-                type: 2,
-                title: '批量打印',
-                shadeClose: true,
-                shade: 0.2,
-                area: ['90%', '80%'],
-                content: '@Url.Action("BatchPrint")?id='+stringArray(checkdata),
-                  btn: ['打印', '取消'], 
-                  btnAlign: 'c', 
-                  yes: function(index, layero){ 
-                    //layer.closeAll();//关闭所有弹出层 
-                  var iframeWindow = window['layui-layer-iframe' + index]  //获取弹框页面
-                   
-                    iframeWindow.window.print(); 
-                  }, 
-                end: function () { 
-                }
-            });
-        break;
-      };
-    });
 
     @if (this.Has(PermissionFlags.Detail))
     {
         @await Html.PartialAsync("DropDown/_Detail")
     }
 
-    @if (this.Has(PermissionFlags.Delete)) 
+    @if (this.Has(PermissionFlags.Delete))
     {
         @await Html.PartialAsync("DropDown/_Delete")
     }
@@ -261,94 +263,94 @@
     }
 
 
-    //监听行工具事件
-    table.on('tool(parse-table)', function(obj){
-      var data = obj.data;
-      if(obj.event === 'del'){
-        layer.confirm('该操作将删除选中数据并不可恢复！确认删除？', function(index){
-           $.get('@Url.Action("Delete")/'+data["@fact.Unique.Name"],function(res){
-                obj.del();
-                layer.close(index);
-           });
-        });
-      } 
-      else if(obj.event === 'edit'){
-          location.href = '@Url.Action("Edit")/'+data["@fact.Unique.Name"];
-      }
-      else if(obj.event === 'select'){
-          location.href = '@Url.Action("Detail")/'+data["@fact.Unique.Name"];
-      }
-      else if(obj.event === 'print'){
-          layer.open({
-                type: 2,
-                title: '打印',
-                shadeClose: true,
-                shade: 0.2,
-                area: ['30%', '50%'],
-                content: '@Url.Action("Print")?id='+data["@fact.Unique.Name"],
-                  btn: ['打印', '取消'], 
-                  btnAlign: 'c', 
-                  yes: function(index, layero){ 
-                    //layer.closeAll();//关闭所有弹出层 
-                  var iframeWindow = window['layui-layer-iframe' + index]  //获取弹框页面
-                   
-                    iframeWindow.window.print(); 
-                  }, 
-                end: function () { 
-                }
-            });
-      }
-      else if(obj.event === 'action'){
-            var url=$(this).attr("lay-data");
-            var dataaction=$(this).attr("data-action");
-            var datavalname=$(this).attr("data-valname");
-            var dataval=$(this).attr("data-val");
-            var dataoldval=$(this).attr("data-oldval");
-            if(dataaction)
-            {
-                $.get(url,function(res){
-                      layer.msg(res.message,{
-                                   time:500,
-                                     end:function () {
-                                         if(res.code==0)
-                                         debugger;
-                                            @*location.href = '@Url.Action("Index")'*@
-                                            location.reload();
-                                            //同步更新缓存对应的值
+            //监听行工具事件
+            table.on('tool(parse-table)', function(obj){
+              var data = obj.data;
+              if(obj.event === 'del'){
+                layer.confirm('该操作将删除选中数据并不可恢复！确认删除？', function(index){
+                   $.get('@Url.Action("Delete")/'+data["@fact.Unique.Name"],function(res){
+                        obj.del();
+                        layer.close(index);
+                   });
+                });
+              }
+              else if(obj.event === 'edit'){
+                  location.href = '@Url.Action("Edit")/'+data["@fact.Unique.Name"];
+              }
+              else if(obj.event === 'select'){
+                  location.href = '@Url.Action("Detail")/'+data["@fact.Unique.Name"];
+              }
+              else if(obj.event === 'print'){
+                  layer.open({
+                        type: 2,
+                        title: '打印',
+                        shadeClose: true,
+                        shade: 0.2,
+                        area: ['30%', '50%'],
+                        content: '@Url.Action("Print")?id='+data["@fact.Unique.Name"],
+                          btn: ['打印', '取消'],
+                          btnAlign: 'c',
+                          yes: function(index, layero){
+                            //layer.closeAll();//关闭所有弹出层
+                          var iframeWindow = window['layui-layer-iframe' + index]  //获取弹框页面
 
-                                            @*var thisActionObj=$(data[datavalname]);
+                            iframeWindow.window.print();
+                          },
+                        end: function () {
+                        }
+                    });
+              }
+              else if(obj.event === 'action'){
+                    var url=$(this).attr("lay-data");
+                    var dataaction=$(this).attr("data-action");
+                    var datavalname=$(this).attr("data-valname");
+                    var dataval=$(this).attr("data-val");
+                    var dataoldval=$(this).attr("data-oldval");
+                    if(dataaction)
+                    {
+                        $.get(url,function(res){
+                              layer.msg(res.message,{
+                                           time:500,
+                                             end:function () {
+                                                 if(res.code==0)
+                                                 debugger;
+    @*location.href = '@Url.Action("Index")'*@
+                                                    location.reload();
+                                                    //同步更新缓存对应的值
+
+    @*var thisActionObj=$(data[datavalname]);
                                             thisActionObj.attr("lay-data",thisActionObj.attr("lay-data").replace("val="+dataoldval,"val="+dataval));
                                             thisActionObj.attr("data-val",dataoldval);
                                             thisActionObj.attr("data-oldval",dataval);
                                             data[datavalname]=thisActionObj.prop("outerHTML");
                                             obj.update(data);
                                             listTB.reload();*@
-                                            
-                                    }
-                                 })
-                   });
-           }
 
-      }
+                                            }
+                                         })
+                           });
+                   }
+
+              }
+            });
+
+            //单击事件
+            table.on('row(parse-table)', function(obj){
+              var data = obj.data;
+    @*console.info("单击");*@
+            });
+
+            //双击事件
+            table.on('rowDouble(parse-table)', function(obj){
+              var data = obj.data;
+              var jumpUrl='@Url.Action("Detail", rv)';
+              if(jumpUrl.indexOf('?')>-1){
+                jumpUrl=jumpUrl.slice(0,jumpUrl.indexOf('?'));
+              }
+              debugger;
+                location.href = jumpUrl+'/'+data["@fact.Unique.Name"];
     });
 
-    //单击事件
-    table.on('row(parse-table)', function(obj){
-      var data = obj.data;
-      @*console.info("单击");*@
-    });
-
-    //双击事件
-    table.on('rowDouble(parse-table)', function(obj){
-      var data = obj.data;
-      var jumpUrl='@Url.Action("Detail", rv)';
-      if(jumpUrl.indexOf('?')>-1){
-        jumpUrl=jumpUrl.slice(0,jumpUrl.indexOf('?'));
-      }
-      debugger;
-        location.href = jumpUrl+'/'+data["@fact.Unique.Name"];
-    });
-    
     function renderStartDate(){
         insStart.config.min='1900-1-1';
         insStart.config.max=insEnd.config.max;
@@ -363,12 +365,12 @@
         insEnd.config.min = lay.extend({}, date, {
           month: date.month - 1
         });
-        
+
         //自动弹出结束日期的选择器
        insEnd.config.elem[0].focus();
       }
     });
-    
+
     //结束日期
     var insEnd = laydate.render({
       elem: '#test-laydate-end'
@@ -386,72 +388,72 @@
 
 }
 @section scripts{
-<script type="text/html" id="table-toolbar">
-      <div class="layui-row layui-col-space5" style="text-align: right;">
-        <div class="layui-inline" style="float: left;">
-              <div class="layui-btn-container">
-                  @if (this.Has(PermissionFlags.Delete))
-                  {
-                    <button class="layui-btn layui-btn-sm layui-btn-danger icon-btn" lay-event="B_Detele_Data"><i class="layui-icon">&#xe640;</i>批量删除</button>
-                  }
-                  @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
-                  {
-                    <button class="layui-btn layui-btn-sm icon-btn" lay-event="Add_Data"><i class="layui-icon">&#xe654;</i>新增</button>
-                    @*<button class="layui-btn layui-btn-sm icon-btn" lay-event="ImpExcel"><i class="layui-icon">&#xe67d;</i>导入</button>*@
-                  }
-                  @*<button class="layui-btn layui-btn-sm icon-btn" id="toolMore">更多<i class="layui-icon layui-icon-down layui-font-12"></i></button>*@
-            </div>
-        </div>
-        @if (pager != null)
-        {
-            if (!isdis)
+    <script type="text/html" id="table-toolbar">
+        <div class="layui-row layui-col-space5" style="text-align: right;">
+          <div class="layui-inline" style="float: left;">
+                <div class="layui-btn-container">
+                    @if (this.Has(PermissionFlags.Delete))
+                    {
+                              <button class="layui-btn layui-btn-sm layui-btn-danger icon-btn" lay-event="B_Detele_Data"><i class="layui-icon">&#xe640;</i>批量删除</button>
+                    }
+                    @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+                    {
+                              <button class="layui-btn layui-btn-sm icon-btn" lay-event="Add_Data"><i class="layui-icon">&#xe654;</i>新增</button>
+                        @*<button class="layui-btn layui-btn-sm icon-btn" lay-event="ImpExcel"><i class="layui-icon">&#xe67d;</i>导入</button>*@
+                    }
+                    @*<button class="layui-btn layui-btn-sm icon-btn" id="toolMore">更多<i class="layui-icon layui-icon-down layui-font-12"></i></button>*@
+              </div>
+          </div>
+            @if (pager != null)
             {
-                <div class="layui-inline">
-                    <form action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
-                    <div class="layui-row layui-col-space5">
-                        @foreach (var item in fields)
-                        {
-                            if (!item.MapField.IsNullOrEmpty())
-                            {
-                                if (item.MapProvider != null)
+                if (!isdis)
+                {
+                                  <div class="layui-inline">
+                                      <form action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
+                                      <div class="layui-row layui-col-space5">
+                                @foreach (var item in fields)
                                 {
-                                    var factory=item.MapProvider.EntityType.AsFactory();
-                                    var list=factory.FindAll();
-                                    var result = new Dictionary<string,string>();
-                                    foreach (var item1 in list)
+                                    if (!item.MapField.IsNullOrEmpty())
                                     {
-                                        var displayName=$"{item1["Name"]}[{item1[factory.Master.Name].ToString()}]";
-                                        if(item1[factory.Master.Name]!=null&&item1[factory.Master.Name].ToString()==item1["Name"])
-                                            displayName=item1[factory.Master.Name].ToString();
+                                        if (item.MapProvider != null)
+                                        {
+                                            var factory = item.MapProvider.EntityType.AsFactory();
+                                            var list = factory.FindAll();
+                                            var result = new Dictionary<string, string>();
+                                            foreach (var item1 in list)
+                                            {
+                                                var displayName = $"{item1["Name"]}[{item1[factory.Master.Name].ToString()}]";
+                                                if (item1[factory.Master.Name] != null && item1[factory.Master.Name].ToString() == item1["Name"])
+                                                    displayName = item1[factory.Master.Name].ToString();
 
-                                        result.Add(item1[factory.Unique.Name].ToString(), displayName);
+                                                result.Add(item1[factory.Unique.Name].ToString(), displayName);
+                                            }
+
+                                                                              <div class="layui-inline">
+                                                                                <label class="layui-form-label" style="width:auto;">@item.DisplayName:</label>
+                                                                                <div class="layui-input-inline">
+                                                    @Html.ForDropDownList(item.MapField, result, pager[item.MapField], "全部", true)
+                                                                                </div>
+                                                                              </div>
+                                        }
                                     }
-
-                                    <div class="layui-inline">
-                                      <label class="layui-form-label" style="width:auto;">@item.DisplayName:</label>
-                                      <div class="layui-input-inline">
-                                        @Html.ForDropDownList(item.MapField, result, pager[item.MapField], "全部", true)
-                                      </div>
-                                    </div>
                                 }
-                            }
-                        }
 
-                     <div class="layui-inline">
-                    <label class="layui-form-label">关键字:</label>
-                    <div class="layui-inline">
-                    <input class="layui-input" name="q" id="test-table-demoReload" autocomplete="off" placeholder="多关键词空格隔开" value="@Context.Request.GetRequestValue("q")">
-                    </div>
-                    <input type="hidden" class="layui-input" name="dtSearch" value="true">
-                    <button class="layui-btn" data-type="reload" type="submit"><i class="layui-icon">&#xe615;</i>搜索</button>
-                    </div>
-                    </div>
-                    </form>
-                </div>
+                                       <div class="layui-inline">
+                                      <label class="layui-form-label">关键字:</label>
+                                      <div class="layui-inline">
+                                      <input class="layui-input" name="q" id="test-table-demoReload" autocomplete="off" placeholder="多关键词空格隔开" value="@Context.Request.GetRequestValue("q")">
+                                      </div>
+                                      <input type="hidden" class="layui-input" name="dtSearch" value="true">
+                                      <button class="layui-btn" data-type="reload" type="submit"><i class="layui-icon">&#xe615;</i>搜索</button>
+                                      </div>
+                                      </div>
+                                      </form>
+                                  </div>
+                }
             }
-        }
-      </div>
-</script>
+        </div>
+    </script>
 
     @* 设置行操作按钮*@
     @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
@@ -477,19 +479,21 @@
 }
 
 <script>
-    function stringArray(checkdata){
-        var get_data=new Array();
-          //拼接字符串
-          for(var i=0;i<checkdata.length;i++){
-            if(checkdata[i].@fact.Unique){
+    function stringArray(checkdata) {
+        var get_data = new Array();
+        //拼接字符串
+        for (var i = 0; i < checkdata.length; i++) {
+            if (checkdata[i].@fact.Unique) {
                 get_data.push(checkdata[i].@fact.Unique);
             }
-          }
+        }
 
-          return get_data.join(',');
+        return get_data.join(',');
     }
 </script>
 
 <style>
-.layui-table-tool-temp{padding-right:36px;}
+    .layui-table-tool-temp {
+        padding-right: 36px;
+    }
 </style>
