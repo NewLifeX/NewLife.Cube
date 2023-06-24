@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
@@ -44,6 +45,8 @@ public class AttachmentController : EntityController<Attachment>
             df.Url = "/cube/file/{Id}{Extension}";
             df.Target = "_blank";
         }
+
+        ListFields.TraceUrl();
     }
 
     /// <summary>搜索</summary>

@@ -355,7 +355,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     {
         if (fileName.IsNullOrEmpty()) fileName = file.FileName;
 
-        using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveFile), fileName ?? file.FileName);
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveFile), new { name = file.Name, fileName, uploadPath });
 
         var id = Factory.Unique != null ? entity[Factory.Unique] : null;
         var att = new Attachment

@@ -145,7 +145,7 @@ public class ListField : DataField
         //return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
         return Replace(txt, data);
     }
-
+     
     /// <summary>针对指定实体对象计算超链接HTML，替换其中变量，支持ILinkExtend</summary>
     /// <param name="data"></param>
     /// <returns></returns>

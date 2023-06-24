@@ -246,6 +246,7 @@
       <Column Name="UploadTime" DataType="DateTime" Description="上传时间。附件上传时间，可用于构造文件存储路径" />
       <Column Name="Url" DataType="String" Length="500" Description="网址。链接到附件所在信息页的地址" />
       <Column Name="Source" DataType="String" Length="500" Description="来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取" />
+      <Column Name="TraceId" DataType="String" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" Category="扩展" />
       <Column Name="CreateUser" DataType="String" Description="创建者" Category="扩展" />
       <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
       <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
