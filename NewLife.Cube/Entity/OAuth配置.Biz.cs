@@ -99,7 +99,7 @@ namespace NewLife.Cube.Entity
                 NickName = "新生命用户中心",
                 Logo = "/Content/images/logo/NewLife.png",
 
-                Server = "https://sso.newlifex.com/sso,http://sso2.newlifex.com/sso",
+                Server = "https://sso.newlifex.com/sso",
                 AppId = "NewLife.Cube",
                 Secret = Rand.NextString(16),
 

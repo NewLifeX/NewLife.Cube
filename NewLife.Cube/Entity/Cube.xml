@@ -66,7 +66,7 @@
       <Column Name="Logo" DataType="String" Description="图标" />
       <Column Name="AppId" DataType="String" Description="应用标识" />
       <Column Name="Secret" DataType="String" Length="200" Description="应用密钥" />
-      <Column Name="Server" DataType="String" Length="200" Description="服务地址。支持设置两个服务器地址，自动选择http/https" />
+      <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
       <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
       <Column Name="GrantType" DataType="Int32" Description="授权类型" Type="GrantTypes" />
       <Column Name="Scope" DataType="String" Description="授权范围" />

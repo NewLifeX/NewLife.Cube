@@ -29,9 +29,6 @@ public class OAuthClient
     /// <summary>验证服务器地址</summary>
     public String Server { get; set; }
 
-    /// <summary>验证服务器地址2。用于设置http专用地址，在主地址为https时，如果当前应用不是https则选择该专用地址</summary>
-    public String Server2 { get; set; }
-
     /// <summary>令牌服务地址。可以不同于验证地址的内网直达地址</summary>
     public String AccessServer { get; set; }
 
@@ -171,20 +168,7 @@ public class OAuthClient
     public virtual void Apply(OAuthConfig mi)
     {
         Name = mi.Name;
-        if (!mi.Server.IsNullOrEmpty())
-        {
-            //Server = mi.Server;
-            var ss = mi.Server.Split(',');
-            if (ss.Length <= 1)
-            {
-                Server = mi.Server;
-            }
-            else
-            {
-                Server = ss.FirstOrDefault(e => e.StartsWithIgnoreCase("https://")) ?? ss[0];
-                Server2 = ss.FirstOrDefault(e => e.StartsWithIgnoreCase("http://")) ?? ss[1];
-            }
-        }
+        if (!mi.Server.IsNullOrEmpty()) Server = mi.Server;
         if (!mi.AccessServer.IsNullOrEmpty()) AccessServer = mi.AccessServer;
         if (!mi.AuthUrl.IsNullOrEmpty()) AuthUrl = mi.AuthUrl;
         if (!mi.AccessUrl.IsNullOrEmpty()) AccessUrl = mi.AccessUrl;
@@ -227,12 +211,12 @@ public class OAuthClient
         _redirect = redirect;
         _state = state;
 
-        var url = AuthUrl;
-        // 如果回跳地址是http开头，而授权地址是https开头，则需要使用备用地址（Server2有设置的前提下）
-        if (!url.StartsWithIgnoreCase("http://", "https://") && redirect.StartsWithIgnoreCase("http://") && !Server2.IsNullOrEmpty())
-            url = Server2.EnsureEnd("/") + url.TrimStart('/');
+        //var url = AuthUrl;
+        //// 如果回跳地址是http开头，而授权地址是https开头，则需要使用备用地址（Server2有设置的前提下）
+        //if (!url.StartsWithIgnoreCase("http://", "https://") && redirect.StartsWithIgnoreCase("http://") && !Server2.IsNullOrEmpty())
+        //    url = Server2.EnsureEnd("/") + url.TrimStart('/');
 
-        url = GetUrl(nameof(Authorize), url);
+        var url = GetUrl(nameof(Authorize), AuthUrl);
         if (!state.IsNullOrEmpty()) WriteLog("Authorize {0}", url);
 
         return url;

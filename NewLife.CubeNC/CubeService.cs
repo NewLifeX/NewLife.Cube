@@ -289,7 +289,7 @@ public static class CubeService
         // 使用管理提供者
         app.UseManagerProvider();
 
-        FixOAuth();
+        //FixOAuth();
 
         var set = CubeSetting.Current;
 
@@ -458,18 +458,18 @@ public static class CubeService
         }
     }
 
-    private static void FixOAuth()
-    {
-        var list = OAuthConfig.FindAllWithCache();
-        foreach (var cfg in list)
-        {
-            if (cfg.Server.StartsWithIgnoreCase("https://sso.newlifex.com/sso"))
-            {
-                cfg.Server = "https://sso.newlifex.com/sso,http://sso2.newlifex.com/sso";
-                cfg.Update();
-            }
-        }
-    }
+    //private static void FixOAuth()
+    //{
+    //    var list = OAuthConfig.FindAllWithCache();
+    //    foreach (var cfg in list)
+    //    {
+    //        if (cfg.Server.StartsWithIgnoreCase("https://sso.newlifex.com/sso"))
+    //        {
+    //            cfg.Server = "https://sso.newlifex.com/sso,http://sso2.newlifex.com/sso";
+    //            cfg.Update();
+    //        }
+    //    }
+    //}
 
     /// <summary>使用魔方首页</summary>
     /// <param name="app"></param>
