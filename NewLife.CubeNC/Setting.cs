@@ -60,15 +60,15 @@ public class CubeSetting : Config<CubeSetting>
     [Category("通用")]
     public String XFrameOptions { get; set; }
 
-    /// <summary>Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）</summary>
-    [Description("Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）")]
-    [Category("通用")]
-    public Int32 SameSiteMode { get; set; } = -1;
+    ///// <summary>Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）</summary>
+    //[Description("Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）")]
+    //[Category("通用")]
+    //public Int32 SameSiteMode { get; set; } = -1;
 
-    /// <summary>Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值</summary>
-    [Description("Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值")]
-    [Category("通用")]
-    public String CookieDomain { get; set; }
+    ///// <summary>Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值</summary>
+    //[Description("Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值")]
+    //[Category("通用")]
+    //public String CookieDomain { get; set; }
 
     /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
     [Description("分享有效期。分享令牌的有效期，默认7200秒")]

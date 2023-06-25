@@ -10,8 +10,10 @@ using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Serialization;
+using NewLife.Web;
 using XCode;
 using XCode.Membership;
+using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
 using JwtBuilder = NewLife.Web.JwtBuilder;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -406,10 +408,15 @@ public static class ManagerProviderHelper
         var set = CubeSetting.Current;
         var option = new CookieOptions
         {
-            SameSite = (SameSiteMode)set.SameSiteMode
+            SameSite = SameSiteMode.Unspecified,
         };
-        if (!set.CookieDomain.IsNullOrEmpty()) option.Domain = set.CookieDomain;
-        if (option.SameSite == SameSiteMode.None) option.Secure = true;
+        // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性，跨域也可以读取
+        if (context.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
+        {
+            //if (!set.CookieDomain.IsNullOrEmpty()) option.Domain = set.CookieDomain;
+            option.SameSite = SameSiteMode.None;
+            option.Secure = true;
+        }
 
         var token = "";
         if (user != null)
@@ -446,10 +453,15 @@ public static class ManagerProviderHelper
         var set = CubeSetting.Current;
         var option = new CookieOptions
         {
-            SameSite = (SameSiteMode)set.SameSiteMode
+            SameSite = SameSiteMode.Unspecified,
         };
-        if (!set.CookieDomain.IsNullOrEmpty()) option.Domain = set.CookieDomain;
-        if (option.SameSite == SameSiteMode.None) option.Secure = true;
+        // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性，跨域也可以读取
+        if (context.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
+        {
+            //if (!set.CookieDomain.IsNullOrEmpty()) option.Domain = set.CookieDomain;
+            option.SameSite = SameSiteMode.None;
+            option.Secure = true;
+        }
 
         if (tenantId < 0) option.Expires = DateTimeOffset.MinValue;
 
