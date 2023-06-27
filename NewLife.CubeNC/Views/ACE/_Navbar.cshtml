@@ -16,7 +16,9 @@
     if (roleNames.Contains("管理员")) tList.Add(new TenantUser() { TenantId = 0 });
 
     var tenant = XCode.Membership.Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
-    var tenantName = tenant?.Name;
+    var lastTenant = tList.LastOrDefault();
+
+    var tenantName = tenant != null ? tList.Select(e => e.TenantId).Contains(tenant.Id) ? tenant.Name : lastTenant?.TenantName : lastTenant?.TenantName;
     var flag = false;
 }
 <!-- #section:basics/navbar.layout -->
@@ -55,7 +57,7 @@
                             <img class="nav-user-photo hidden-xs" src="@user.GetAvatarUrl()" alt="@user" />
                         }
                         <span class="user-info hidden-xs">
-                            @user<br />@roleNames
+                            @user<br />
                         </span>
 
                         <i class="ace-icon fa fa-caret-down"></i>
