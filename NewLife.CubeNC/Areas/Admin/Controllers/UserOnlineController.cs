@@ -28,7 +28,7 @@ public class UserOnlineController : EntityController<UserOnline>
         {
             var df = ListFields.GetField("Name") as ListField;
             df.Url = "/Admin/User/Detail?id={UserID}";
-            df.Target = "_frame";
+            df.Target = "_blank";
             df.DataVisible = e => (e as UserOnline).UserID > 0;
         }
     }

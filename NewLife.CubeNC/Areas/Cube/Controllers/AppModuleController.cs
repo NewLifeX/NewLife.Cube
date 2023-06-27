@@ -22,7 +22,7 @@ public class AppModuleController : EntityController<AppModule>
             var df = ListFields.AddListField("Log");
             df.DisplayName = "日志";
             df.Url = "/Admin/Log?category=应用插件&linkId={Id}";
-            df.Target = "_frame";
+            df.Target = "_blank";
         }
     }
 

@@ -26,14 +26,14 @@ public class CronJobController : EntityController<CronJob>
             //df.Header = "日志";
             df.DisplayName = "日志";
             df.Url = "/Admin/Log?category=定时作业&linkId={Id}";
-            df.Target = "_frame";
+            df.Target = "_blank";
         }
         {
             var df = ListFields.AddListField("JobLog", null, "Enable");
             //df.Header = "作业日志";
             df.DisplayName = "作业日志";
             df.Url = "/Admin/Log?category=JobService&linkId={Id}";
-            df.Target = "_frame";
+            df.Target = "_blank";
         }
         {
             var df = ListFields.AddListField("Execute", null, "NextTime");

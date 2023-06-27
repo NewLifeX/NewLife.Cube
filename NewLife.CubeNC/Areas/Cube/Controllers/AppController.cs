@@ -27,7 +27,7 @@ public class AppController : EntityController<App>
             //df.Header = "日志";
             df.DisplayName = "日志";
             df.Url = "/Cube/AppLog?appId={Id}";
-            df.Target = "_frame";
+            df.Target = "_blank";
         }
 
         {
@@ -45,7 +45,7 @@ public class AppController : EntityController<App>
             //df.Header = "修改日志";
             df.DisplayName = "修改日志";
             df.Url = "/Admin/Log?category=应用系统&linkId={ID}";
-            df.Target = "_frame";
+            df.Target = "_blank";
         }
     }
 }
