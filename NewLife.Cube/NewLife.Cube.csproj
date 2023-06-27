@@ -59,6 +59,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\NewLife.CubeNC\Membership\ManagerProviderHelper.cs" Link="Membership\ManagerProviderHelper.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
@@ -82,7 +83,7 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.3.2023.627-beta0836" />
+    <PackageReference Include="NewLife.Core" Version="10.3.2023.627-beta1611" />
     <PackageReference Include="NewLife.IP" Version="2.0.2023.603-beta0005" />
     <PackageReference Include="NewLife.Stardust" Version="2.9.2023.627-beta0441" />
     <PackageReference Include="NewLife.XCode" Version="11.8.2023.624-beta0021" />

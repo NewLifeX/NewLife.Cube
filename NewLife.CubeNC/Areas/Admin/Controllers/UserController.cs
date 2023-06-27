@@ -418,7 +418,7 @@ public class UserController : EntityController<User, UserModel>
                 }
 
                 // 设置租户
-                SetTenant(provider.Current.ID);
+                HttpContext.ChooseTenant(provider.Current.ID);
 
                 if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
 
@@ -771,7 +771,7 @@ public class UserController : EntityController<User, UserModel>
 
         if (IsJsonRequest) return Ok(data: model);
 
-        var tid = ManagerProviderHelper.GetCookieTenantID(HttpContext);
+        var tid = HttpContext.GetTenantId();
         var t = Tenant.FindById(tid);
 
         ViewData["TenantId"] = t?.Id ?? 0;
@@ -788,7 +788,7 @@ public class UserController : EntityController<User, UserModel>
     {
         var tagTenantId = Request.Form["TagTenantId"].ToInt(-1);
 
-        if (tagTenantId > 0) ManagerProviderHelper.ChangeTenant(HttpContext, tagTenantId);
+        if (tagTenantId > 0) HttpContext.SaveTenant(tagTenantId);
 
         ViewBag.StatusMessage = "保存成功";
         if (IsJsonRequest) return Ok(ViewBag.StatusMessage);
@@ -796,20 +796,20 @@ public class UserController : EntityController<User, UserModel>
         return TenantSetting();
     }
 
-    /// <summary>设置租户</summary>
-    /// <param name="userId">当前用户编号</param>
-    private void SetTenant(Int32 userId)
-    {
-        var tenantUser = TenantUser.FindAllByUserId(userId);
-        if (tenantUser != null && tenantUser.Count > 0)
-        {
-            var entity = tenantUser.FirstOrDefault().Tenant;
+    ///// <summary>设置租户</summary>
+    ///// <param name="userId">当前用户编号</param>
+    //private void SetTenant(Int32 userId)
+    //{
+    //    var tenantUser = TenantUser.FindAllByUserId(userId);
+    //    if (tenantUser != null && tenantUser.Count > 0)
+    //    {
+    //        var entity = tenantUser.FirstOrDefault().Tenant;
 
-            if (entity == null || !entity.Enable) return;
+    //        if (entity == null || !entity.Enable) return;
 
-            ManagerProviderHelper.ChangeTenant(HttpContext, tenantUser.FirstOrDefault().TenantId);
-        }
-    }
+    //        HttpContext.SaveTenant(tenantUser.FirstOrDefault().TenantId);
+    //    }
+    //}
 
     ///// <summary>批量启用</summary>
     ///// <param name="keys"></param>

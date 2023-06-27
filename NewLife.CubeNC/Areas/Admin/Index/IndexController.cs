@@ -59,7 +59,8 @@ public class IndexController : ControllerBaseX
                 XTrace.WriteLine("用户[{0}]切换到租户[{1}/{2}]", user, tenant?.Name ?? "系统管理员", tenant?.Code ?? "0");
 
                 // 切换租户，保存到Cookie
-                ManagerProviderHelper.ChangeTenant(HttpContext, tenantId);
+                HttpContext.SaveTenant(tenantId);
+
                 return Redirect("/Admin");
             }
         }

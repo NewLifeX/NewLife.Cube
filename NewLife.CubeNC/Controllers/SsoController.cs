@@ -258,8 +258,7 @@ public class SsoController : ControllerBaseX
             }
 
             // 设置租户
-            var tEntity = TenantUser.FindAllByUserId(user.ID).FirstOrDefault();
-            ManagerProviderHelper.ChangeTenant(HttpContext, tEntity?.TenantId ?? 0);
+            HttpContext.ChooseTenant(user.ID);
 
             return Redirect(url);
         }
