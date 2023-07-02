@@ -50,7 +50,7 @@ $(function () {
             location = url;
         });
 
-    // 多标签页打开请求地址
+    // 多标签页打开请求地址，否则新页打开
     $(document).on('click'
         , 'a[target="_blank"]'
         , function (data) {
@@ -70,6 +70,34 @@ $(function () {
 
             // 获取框架名称
             //var parentName = window.parent.frameName;
+
+            var title = $this.data('title') ?? $this.attr('title');
+            if (!title || title.length <= 0) {
+                title = $this.html();
+            }
+
+            // 外部框架自行定义cubeAddTab方法，用于打开标签页
+            return window.parent.cubeAddTab(url, title, true);
+        }
+    )
+
+    // 多标签页打开请求地址，否则本页打开
+    $(document).on('click'
+        , 'a[target="_frame"]'
+        , function (data) {
+
+            $this = $(this);
+            // 动态设置标签参数
+            var url = $this.attr('href');
+            if (url && url.length > 0) {
+                $this.data('url', url);
+            }
+
+            // 判断当前是否在容器当中，如果当前页面在容器中则使用容器标签，否则直接当前页面进行跳转
+            if (window.frames.length == parent.frames.length) {
+                window.location.href = url;
+                return true;
+            }
 
             var title = $this.data('title') ?? $this.attr('title');
             if (!title || title.length <= 0) {
