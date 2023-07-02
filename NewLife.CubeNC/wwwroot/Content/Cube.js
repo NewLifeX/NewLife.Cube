@@ -74,6 +74,10 @@ $(function () {
             var title = $this.data('title') ?? $this.attr('title');
             if (!title || title.length <= 0) {
                 title = $this.html();
+            } else {
+                var p = title.indexOf('。');
+                if (p < 0) p = title.indexOf('，');
+                if (p > 0) title = title.substr(0, p);
             }
 
             // 外部框架自行定义cubeAddTab方法，用于打开标签页
@@ -102,6 +106,10 @@ $(function () {
             var title = $this.data('title') ?? $this.attr('title');
             if (!title || title.length <= 0) {
                 title = $this.html();
+            } else {
+                var p = title.indexOf('。');
+                if (p < 0) p = title.indexOf('，');
+                if (p > 0) title = title.substr(0, p);
             }
 
             // 外部框架自行定义cubeAddTab方法，用于打开标签页
