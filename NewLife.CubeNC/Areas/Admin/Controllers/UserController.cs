@@ -45,19 +45,19 @@ public class UserController : EntityController<User, UserModel>
             var df = ListFields.AddListField("AvatarImage", "Name");
             df.Header = "";
             //df.Text = "<img src=\"{Avatar}\" style=\"width:64px;height:64px;\" />";
-            //df.Url = "/Admin/User/Detail?id={ID}";
+            //df.Url = "/Admin/User/Edit?id={ID}";
             df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();
             // 使用ILinkExtend，高度定制头像超链接
             df.AddService(new MyAvatar());
         }
         {
             var df = ListFields.GetField("Name") as ListField;
-            df.Url = "/Admin/User/Detail?id={ID}";
+            df.Url = "/Admin/User/Edit?id={ID}";
             df.Target = "_blank";
         }
         {
             var df = ListFields.GetField("DisplayName") as ListField;
-            df.Url = "/Admin/User/Detail?id={ID}";
+            df.Url = "/Admin/User/Edit?id={ID}";
             df.Target = "_blank";
         }
 
@@ -81,7 +81,7 @@ public class UserController : EntityController<User, UserModel>
         public String Resolve(DataField field, IModel data)
         {
             var user = data as User;
-            return $"<a href=\"/Admin/User/Detail?id={user.ID}\" target=\"_blank\"><img src=\"{user.GetAvatarUrl()}\" style=\"width:64px;height:64px;\" /></a>";
+            return $"<a href=\"/Admin/User/Edit?id={user.ID}\" target=\"_blank\"><img src=\"{user.GetAvatarUrl()}\" style=\"width:64px;height:64px;\" /></a>";
         }
     }
 
@@ -92,7 +92,7 @@ public class UserController : EntityController<User, UserModel>
         base.OnActionExecuting(filterContext);
 
         if (filterContext.ActionDescriptor is ControllerActionDescriptor act &&
-            act.ActionName.EqualIgnoreCase(nameof(Detail), nameof(Info), nameof(ChangePassword), nameof(Binds), nameof(TenantSetting)))
+            act.ActionName.EqualIgnoreCase(nameof(Detail), nameof(Edit), nameof(Info), nameof(ChangePassword), nameof(Binds), nameof(TenantSetting)))
         {
             PageSetting.NavView = "_User_Nav";
             PageSetting.EnableNavbar = false;

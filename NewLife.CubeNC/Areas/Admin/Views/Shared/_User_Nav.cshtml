@@ -3,7 +3,7 @@
 
     var currentId = ManageProvider.User?.ID ?? 0;
     var userId = Context.Request.Query["userId"].ToInt(0);
-    if (userId == 0 && path.StartsWithIgnoreCase("/Admin/User/Detail"))
+    if (userId == 0 && path.StartsWithIgnoreCase("/Admin/User/Detail", "/Admin/User/Edit"))
     {
         userId = Context.Request.Query["Id"].ToInt(0);
     }
@@ -18,7 +18,7 @@
             <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Binds")?"active":"")"><a href="/Admin/User/Binds">第三方授权</a></li>
             <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/TenantSetting")?"active":"")"><a href="/Admin/User/TenantSetting">租户信息</a></li>
         }
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Detail")?"active":"")"><a href="/Admin/User/Detail?Id=@userId">用户信息</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Edit")?"active":"")"><a href="/Admin/User/Edit?Id=@userId">用户信息</a></li>
         <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/UserConnect")?"active":"")"><a href="/Admin/UserConnect?userId=@userId">三方链接</a></li>
         <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/UserToken")?"active":"")"><a href="/Admin/UserToken?userId=@userId">令牌</a></li>
         <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/OAuthLog")?"active":"")"><a href="/Admin/OAuthLog?userId=@userId">OAuth日志</a></li>

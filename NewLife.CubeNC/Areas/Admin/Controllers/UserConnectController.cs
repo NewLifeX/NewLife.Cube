@@ -34,7 +34,7 @@ public class UserConnectController : EntityController<UserConnect>
             df.Header = "用户";
             df.HeaderTitle = "对应的本地用户信息";
             //df.DisplayName = "{UserName}";
-            df.Url = "/Admin/User/Detail?id={UserID}";
+            df.Url = "/Admin/User/Edit?id={UserID}";
             df.Target = "_blank";
         }
 
