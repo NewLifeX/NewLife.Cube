@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml.Serialization;
 using NewLife.Collections;
 using NewLife.Data;
@@ -145,7 +146,7 @@ public class ListField : DataField
         //return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
         return Replace(txt, data);
     }
-     
+
     /// <summary>针对指定实体对象计算超链接HTML，替换其中变量，支持ILinkExtend</summary>
     /// <param name="data"></param>
     /// <returns></returns>
@@ -168,7 +169,7 @@ public class ListField : DataField
         sb.AppendFormat("<a href=\"{0}\"", url);
         if (!target.IsNullOrEmpty()) sb.AppendFormat(" target=\"{0}\"", target);
         if (!action.IsNullOrEmpty()) sb.AppendFormat(" data-action=\"{0}\"", action);
-        if (!title.IsNullOrEmpty()) sb.AppendFormat(" title=\"{0}\"", title);
+        if (!title.IsNullOrEmpty()) sb.AppendFormat(" title=\"{0}\"", HttpUtility.HtmlEncode(title));
         sb.Append(">");
         sb.Append(linkName);
         sb.Append("</a>");
