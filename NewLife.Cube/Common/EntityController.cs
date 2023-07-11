@@ -303,7 +303,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             // 写日志
             var type = entity.GetType();
             var log = LogProvider.Provider.CreateLog(type, "上传", rs, $"上传 {file.FileName} ，目录 {uploadPath} ，保存为 {att.FilePath} " + msg, 0, null, UserHost);
-            log.LinkID = id.ToInt();
+            log.LinkID = id.ToLong();
             log.SaveAsync();
         }
 
