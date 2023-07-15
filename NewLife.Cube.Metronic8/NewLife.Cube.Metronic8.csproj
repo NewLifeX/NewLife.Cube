@@ -42,18 +42,22 @@
   <ItemGroup>
     <Compile Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <Compile Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
+    <Compile Remove="wwwroot\assets\js\custom\authentication\password-reset\**" />
     <Compile Remove="wwwroot\assets\logo\**" />
     <Compile Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <Content Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <Content Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\password-reset\**" />
     <Content Remove="wwwroot\assets\logo\**" />
     <Content Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <EmbeddedResource Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <EmbeddedResource Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\password-reset\**" />
     <EmbeddedResource Remove="wwwroot\assets\logo\**" />
     <EmbeddedResource Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <None Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <None Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
+    <None Remove="wwwroot\assets\js\custom\authentication\password-reset\**" />
     <None Remove="wwwroot\assets\logo\**" />
     <None Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
   </ItemGroup>
@@ -63,8 +67,6 @@
     <Content Remove="wwwroot\assets\css\style.bundle.js" />
     <Content Remove="wwwroot\assets\cube.js" />
     <Content Remove="wwwroot\assets\favicon.ico" />
-    <Content Remove="wwwroot\assets\js\custom\authentication\password-reset\new-password.js" />
-    <Content Remove="wwwroot\assets\js\custom\authentication\password-reset\password-reset.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\general.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\two-steps.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-up\coming-soon.js" />
@@ -142,21 +144,6 @@
     <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
@@ -183,8 +170,6 @@
     <EmbeddedResource Include="wwwroot\assets\css\style.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\cube.js" />
     <EmbeddedResource Include="wwwroot\assets\favicon.ico" />
-    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\password-reset\new-password.js" />
-    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\password-reset\password-reset.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\general.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\two-steps.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-up\coming-soon.js" />
@@ -262,21 +247,6 @@
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
@@ -309,6 +279,7 @@
   <ItemGroup>
     <Folder Include="Areas\Admin\Views\Shared\" />
     <Folder Include="Views\Shared\" />
+    <Folder Include="wwwroot\assets\plugins\global\fonts\%40fortawesome\" />
   </ItemGroup>
 
   <ItemGroup>
