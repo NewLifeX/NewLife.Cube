@@ -127,13 +127,6 @@
     <Content Remove="wwwroot\assets\media\sketchy\9.png" />
     <Content Remove="wwwroot\assets\media\verification.png" />
     <Content Remove="wwwroot\assets\plugins\custom\draggable\draggable.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading%402x.gif" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading.gif" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search%402x-disabled.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search%402x.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search-disabled.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\flatpickr\zh.js" />
     <Content Remove="wwwroot\assets\plugins\custom\fslightbox\fslightbox.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.js" />
@@ -230,13 +223,6 @@
     <EmbeddedResource Include="wwwroot\assets\media\sketchy\9.png" />
     <EmbeddedResource Include="wwwroot\assets\media\verification.png" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\draggable\draggable.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading.gif" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading@2x.gif" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search-disabled.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search@2x-disabled.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search@2x.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\flatpickr\zh.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fslightbox\fslightbox.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.js" />
