@@ -67,7 +67,11 @@
     <Content Remove="wwwroot\assets\css\style.bundle.js" />
     <Content Remove="wwwroot\assets\cube.js" />
     <Content Remove="wwwroot\assets\favicon.ico" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\reset-password\new-password.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\reset-password\reset-password.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\general.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\i18n.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\two-factor.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\two-steps.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-up\coming-soon.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-up\free-trial.js" />
@@ -77,6 +81,7 @@
     <Content Remove="wwwroot\assets\js\custom\layout-builder\layout-builder.js" />
     <Content Remove="wwwroot\assets\js\custom\widgets.js" />
     <Content Remove="wwwroot\assets\js\scripts.bundle.js" />
+    <Content Remove="wwwroot\assets\js\widgets.bundle.js" />
     <Content Remove="wwwroot\assets\media\bg-4.jpg" />
     <Content Remove="wwwroot\assets\media\logos\Logo.png" />
     <Content Remove="wwwroot\assets\media\logos\NewLife.png" />
@@ -130,6 +135,12 @@
     <Content Remove="wwwroot\assets\plugins\custom\fslightbox\fslightbox.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\jkanban\jkanban.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\jkanban\jkanban.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\jstree\images\jstree\32px.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\jstree\images\jstree\throbber.gif" />
+    <Content Remove="wwwroot\assets\plugins\custom\jstree\jstree.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\jstree\jstree.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.css" />
@@ -137,8 +148,30 @@
     <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-v4compatibility.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-v4compatibility.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.woff" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.eot" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.woff" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.svg" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.ttf" />
@@ -163,7 +196,11 @@
     <EmbeddedResource Include="wwwroot\assets\css\style.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\cube.js" />
     <EmbeddedResource Include="wwwroot\assets\favicon.ico" />
+    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\reset-password\new-password.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\reset-password\reset-password.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\general.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\i18n.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\two-factor.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\two-steps.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-up\coming-soon.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-up\free-trial.js" />
@@ -173,6 +210,7 @@
     <EmbeddedResource Include="wwwroot\assets\js\custom\layout-builder\layout-builder.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\widgets.js" />
     <EmbeddedResource Include="wwwroot\assets\js\scripts.bundle.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\widgets.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\media\bg-4.jpg" />
     <EmbeddedResource Include="wwwroot\assets\media\logos\Logo.png" />
     <EmbeddedResource Include="wwwroot\assets\media\logos\NewLife.png" />
@@ -226,6 +264,12 @@
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fslightbox\fslightbox.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.js" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jkanban\jkanban.bundle.css" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jkanban\jkanban.bundle.js" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jstree\images\jstree\32px.png" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jstree\images\jstree\throbber.gif" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jstree\jstree.bundle.css" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jstree\jstree.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.css" />
@@ -233,8 +277,30 @@
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.css" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.js" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.woff2" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.woff2" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.woff2" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-v4compatibility.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-v4compatibility.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.eot" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.svg" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.woff" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.eot" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.svg" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.woff" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.eot" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.svg" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.woff" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.svg" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.ttf" />
@@ -265,7 +331,6 @@
   <ItemGroup>
     <Folder Include="Areas\Admin\Views\Shared\" />
     <Folder Include="Views\Shared\" />
-    <Folder Include="wwwroot\assets\plugins\global\fonts\%40fortawesome\" />
   </ItemGroup>
 
   <ItemGroup>
