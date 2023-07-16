@@ -32,7 +32,7 @@
 
     //直接执行Url地址
     $(document).on('click'
-        , 'button[data-action="url"],input[data-action="url"],a[data-action="url"]'
+        , 'button[data-action="url"],input[data-action="url"],a[data-action="url"],a[target="_blank"]'
         , function (data) {
             $this = $(this);
             var url = $this.attr('href');
