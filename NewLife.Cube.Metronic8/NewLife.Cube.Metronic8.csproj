@@ -152,6 +152,10 @@
     <Content Remove="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.ttf" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-duotone-900.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-duotone-900.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-light-300.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-light-300.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.ttf" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.ttf" />
@@ -281,6 +285,10 @@
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.ttf" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.woff2" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-duotone-900.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-duotone-900.woff2" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-light-300.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-light-300.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.ttf" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.ttf" />
