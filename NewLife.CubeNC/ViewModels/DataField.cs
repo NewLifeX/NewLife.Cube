@@ -65,6 +65,36 @@ public class DataField
     /// <summary>只读</summary>
     public Boolean Readonly { get; set; }
 
+    /// <summary>
+    /// 是否可见
+    /// </summary>
+    public Boolean Visible { get; set; }
+
+    /// <summary>
+    /// 是否必填
+    /// </summary>
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// 权限相关。用户自由发挥
+    /// </summary>
+    public string Authority { get; set; }
+
+    /// <summary>
+    /// 扩展字段。用户自由发挥
+    /// </summary>
+    public string Extended1 { get; set; }
+
+    /// <summary>
+    /// 扩展字段。用户自由发挥
+    /// </summary>
+    public string Extended2 { get; set; }
+
+    /// <summary>
+    /// 扩展字段。用户自由发挥
+    /// </summary>
+    public string Extended3 { get; set; }
+
     /// <summary>原始字段</summary>
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public FieldItem Field { get; set; }
