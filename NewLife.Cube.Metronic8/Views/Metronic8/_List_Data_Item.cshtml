@@ -14,6 +14,7 @@
 
     var value = entity[item.Name];
     var provider = ManageProvider.Provider;
+    var listField = item as ListField;
 
     // 第二名称，去掉后面的数字，便于模式匹配
     var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
@@ -55,12 +56,33 @@ else
             }
             break;
         case TypeCode.Decimal:
-            var dc = (Decimal)value;
-            <td class="text-end">@dc.ToString("n2")</td>
+            if (listField.GetValue != null)
+            {
+                <td class="text-end">@listField.GetValue(entity)</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("Money"))
+            {
+                var dc = (Decimal)value;
+                <td class="text-end">@dc.ToString("c")</td>
+            }
+            else
+            {
+                var dc = (Decimal)value;
+                <td class="text-end">@dc.ToString("n2")</td>
+            }
             break;
         case TypeCode.Single:
         case TypeCode.Double:
-            if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            if (listField.GetValue != null)
+            {
+                <td class="text-end">@listField.GetValue(entity)</td>
+            }
+            else if(item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            {
+                var dd = (Double)value;
+                <td class="text-end">@dd.ToString("p2")</td>
+            }
+            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = (Double)value;
                 var des = item.Description + "";
@@ -94,6 +116,18 @@ else
                 }
                 catch { }
                 <td>@val</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("TimeSpan"))
+            {
+                <td class="text-end">@(TimeSpan.FromSeconds(value.ToInt()))</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("Time"))
+            {
+                <td class="text-center">@(value.ToLong().ToDateTime().ToLocalTime().ToFullString(""))</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("GMK"))
+            {
+                <td class="text-end">@(value.ToLong().ToGMK())</td>
             }
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
