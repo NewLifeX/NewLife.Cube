@@ -48,29 +48,8 @@
                 <div class="bullet bg-secondary h-35px w-1px mx-3"></div>
             }
         }
-
-        <!-- 批量操作 -->
-        <div class="toolbar-batch">
-            @await Html.PartialAsync("_List_Toolbar_Batch")
-        </div>
-
         <!-- 自定义工具按钮 -->
         @await Html.PartialAsync("_List_Toolbar_Custom")
-
-        <!--begin::列表模式-->
-        <ul class="nav nav-pills me-2">
-            <li class="nav-item m-0">
-                <a id="btn_mode_card" class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary me-3 mode @(mode.EqualIgnoreCase("card") ? "active" : "")" data-mode="card" data-bs-toggle="tab" href="#kt_card_pane">
-                    <i class="far fa-th-large fs-md-2"></i>
-                </a>
-            </li>
-            <li class="nav-item me-2">
-                <a id="btn_mode_table" class="btn btn-sm btn-icon btn-light btn-color-muted btn-active-primary mode @(mode.EqualIgnoreCase("table") ? "active" : "")" data-mode="table" data-bs-toggle="tab" href="#kt_table_pane">
-                    <i class="far fa-list fs-md-2"></i>
-                </a>
-            </li>
-        </ul>
-        <!--end::列表模式-->
 
         <!--begin::Wrapper-->
         @await Html.PartialAsync("_List_Toolbar_Adv")
