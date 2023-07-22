@@ -164,33 +164,6 @@
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-v4compatibility.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.js" />
     <Content Remove="wwwroot\favicon.ico" />
@@ -297,33 +270,6 @@
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-v4compatibility.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-duotone.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-outline.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\keenicons\keenicons-solid.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\plugins.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\plugins.bundle.js" />
     <EmbeddedResource Include="wwwroot\favicon.ico" />
@@ -346,26 +292,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\Assembly.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\Main.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\ProcessModules.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\ServerVar.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\Session.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
     <Content Update="Views\Metronic8\ObjectForm.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
