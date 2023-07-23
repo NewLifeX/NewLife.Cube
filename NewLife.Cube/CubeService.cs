@@ -120,7 +120,7 @@ public static class CubeService
         // 插件
         var moduleManager = new ModuleManager();
         services.AddSingleton(moduleManager);
-        var modules = moduleManager.LoadAll();
+        var modules = moduleManager.LoadAll(services);
         if (modules.Count > 0)
         {
             XTrace.WriteLine("加载功能插件[{0}]个", modules.Count);
