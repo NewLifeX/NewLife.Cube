@@ -4,6 +4,7 @@
 @using NewLife;
 @using Microsoft.AspNetCore.Routing
 @using NewLife.Cube.Entity
+@using NewLife.Cube.Extensions;
 @using XCode;
 @using XCode.Configuration;
 @using XCode.Membership;
@@ -153,6 +154,20 @@
                                     else if (fi.Name.EqualIgnoreCase("CreateIP", "UpdateIP") || fi.Name.Contains("IP"))
                                     {
                                         <td data-bs-toggle="tooltip" title="@((value+"").IPToAddress())">@((value + "").IPToAddress())</td>
+                                    }
+                                    else if (fi.Name.EqualIgnoreCase("TraceId"))
+                                    {
+                                        var traceId = (String)value;
+                                        if (!traceId.IsNullOrEmpty())
+                                        {
+                                            <td>
+                                                <a href="@StarHelper.BuildUrl(traceId)" title="链路追踪，用于APM性能追踪定位，还原该事件的调用链" target="_blank">链路追踪</a>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>@value</td>
+                                        }
                                     }
                                     else if (fi.IsBigText())
                                     {
