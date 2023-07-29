@@ -1,0 +1,15 @@
+﻿@*
+    系统抽屉
+<button class="btn btn-primary me-3" data-kt-drawer-show="true" data-kt-drawer-target="#cube_drawer_form">新增/编辑/查看</button>
+*@
+@{
+}
+
+@await Html.PartialAsync("_Layout_Drawer_Configure")
+@await Html.PartialAsync("_Layout_Drawer_Custom")
+@await Html.PartialAsync("_Layout_Drawer_Log")
+@await Html.PartialAsync("_Layout_Drawer_Form")
+@await Html.PartialAsync("_Layout_Drawer_Notifycation")
+@await Html.PartialAsync("_Layout_Drawer_Search")
+
+

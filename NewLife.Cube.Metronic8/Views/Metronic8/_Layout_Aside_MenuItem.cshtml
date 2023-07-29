@@ -20,6 +20,7 @@
     }
     icon = icon.Contains("fa-") ? icon : "fa-" + icon.TrimStart("fa-");
     icon = item.Name.EqualIgnoreCase("cube") ? "fa-cube" : icon;
+    icon = item.Name.EndsWithIgnoreCase("admin") ? "fa-gear" : icon;
 }
 
 @if (item.Visible)
@@ -56,7 +57,7 @@
         <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
             <span class="menu-link">
                 <span class="@(rs_p ? "menu-icon" : "menu-bullet") text-gray-700">
-                    <span class="fas fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></span>
+                    <i class="fa-duotone fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></i>
                 </span>
                 <a class="menu-link @(rs_active?"active":"")" href="@(item.Url != null ? Url.Content(item.Url) : "#")">
                     <span class="menu-bullet">
