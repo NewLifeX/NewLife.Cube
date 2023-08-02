@@ -1,0 +1,87 @@
+﻿@using NewLife;
+@using NewLife.Cube
+@using NewLife.Cube.Extensions;
+@using NewLife.Web;
+@using XCode
+@{
+    var fields = ViewBag.Fields as FieldCollection;
+    var pager = ViewBag.Page as Pager;
+    var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty())
+    {
+        act = Url.Action("Index");
+    }
+
+    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info")
+    || an.Contains("changepassword") || an.Contains("binds");
+}
+
+@if (pager != null)
+{
+    if (!isdis)
+    {
+        <form action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
+            <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                <div class="layui-form-item">
+                    @foreach (var item in fields)
+                    {
+                        if (!item.MapField.IsNullOrEmpty())
+                        {
+                            if (item.MapProvider != null)
+                            {
+                                var factory = item.MapProvider.EntityType.AsFactory();
+                                var list = factory.FindAll();
+                                var result = new Dictionary<string, string>();
+                                foreach (var item1 in list)
+                                {
+                                    var displayName = $"{item1["Name"]}[{item1[factory.Master.Name].ToString()}]";
+                                    if (item1[factory.Master.Name] != null && item1[factory.Master.Name].ToString() == item1["Name"])
+                                        displayName = item1[factory.Master.Name].ToString();
+
+                                    result.Add(item1[factory.Unique.Name].ToString(), displayName);
+                                }
+
+                                <div class="layui-inline MapProvider">
+                                    <label class="layui-form-label">@item.DisplayName:</label>
+                                    <div class="layui-input-inline">
+                                        @Html.ForDropDownList(item.MapField, result, pager[item.MapField], "全部", true)
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+@*                    <div class="layui-inline" id="ID-laydate-rangeLinked">
+                        <label class="layui-form-label" style="width:auto;">日期：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" autocomplete="off" id="ID-laydate-start-date" class="layui-input" name="dtStart" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")">
+                        </div>
+                        <div class="layui-form-mid">-</div>
+                        <div class="layui-input-inline">
+                            <input type="text" autocomplete="off" id="ID-laydate-end-date" name="dtEnd" class="layui-input" placeholder="结束日期" value="@Context.Request.GetRequestValue("dtEnd")">
+                        </div>
+                    </div>*@
+                    <div class="layui-inline">
+                        <label class="layui-form-label">关键字:</label>
+                        <div class="layui-inline">
+                            <input class="layui-input" name="q" id="test-table-demoReload" autocomplete="off" placeholder="多关键词空格隔开" value="@Context.Request.GetRequestValue("q")">
+                        </div>
+                        <button class="layui-btn" data-type="reload" type="submit">搜索</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    }
+}
+<script>
+    layui.use(['laydate'], function () {
+        var laydate = layui.laydate;
+        // 日期范围 - 左右面板联动选择模式
+        laydate.render({
+            elem: '#ID-laydate-rangeLinked',
+            range: ['#ID-laydate-start-date', '#ID-laydate-end-date'],
+            rangeLinked: true // 开启日期范围选择时的区间联动标注模式 ---  2.8+ 新增
+        });
+    });
+</script>

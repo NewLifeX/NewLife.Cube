@@ -20,8 +20,8 @@
     var fields = ViewBag.Fields as FieldCollection;
     var ukey = fact.Unique;
 
-    //var modelTable = ViewBag.ModelTable as ModelTable;
-    //var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
+    var modelTable = ViewBag.ModelTable as ModelTable;
+    var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty())
     {
@@ -46,6 +46,7 @@
     <div class="layui-row layui-col-space15">
         <div class="layui-col-md12">
             <div class="layui-card">
+                @await Html.PartialAsync("_List_Serch")
                 <div class="layui-card-body">
                     <table lay-filter="parse-table" id="parse-table">
                         <thead>
@@ -112,81 +113,82 @@
             defaultToolbar: ['filter','print',"exports",{title:'高级',layEvent: 'moreTool',icon: 'layui-icon-spread-left',id:"demo"}],
             toolbar: "#table-toolbar"
         });*@
-                                var ii = layer.load(0, {shade: false});
+                            var ii = layer.load(0, {shade: false});
 
-                    table.init('parse-table', { //转化静态表格
-                        page: false,
-                        limit: @pager.PageSize,
-                        limits: [20, 50, 100],
-                        even: true,
-                        defaultToolbar: ['filter','print',"exports"],
-                        toolbar: "#table-toolbar",
-                        height: 'full-100',
-                        cellMinWidth: 100,
-                        filterUrl:"@Url.Action("Index")",
-                        filterMethod:"from",
-                        drag: {toolbar: true},
+                table.init('parse-table', { //转化静态表格
+                    page: false,
+                    limit: @pager.PageSize,
+                    limits: [20, 50, 100],
+                    even: true,
+                    defaultToolbar: ['filter','print',"exports"],
+                    toolbar: "#table-toolbar",
+                    height: 'full-100',
+                    cellMinWidth: 100,
+                    filterUrl:"@Url.Action("Index")",
+                    filterMethod:"from",
+                    drag: {toolbar: true},
     @*            where:JSON.parse('@Html.Raw(Context.Request.GetRequestValue("filterSos"))'),*@
     @*where:{filterSos:'@Html.Raw(Context.Request.GetRequestValue("filterSos"))'},*@
-                        filter: {
+                    filter: {
     @*items:['column','data','condition','editCondition','clearCache'],*@
-                            items:['column','data','condition','clearCache'],
-                            cache: false,
-                            bottom: false
-                        },
-                        done: function () {
-                            soulTable.render(this)
-                        }
-                    });
+                        items:['column','data','condition','clearCache'],
+                        cache: false,
+                        bottom: false
+                    },
+                    done: function () {
+                        soulTable.render(this)
+                    }
+                });
 
-                            layer.close(ii);
-                            $("#parse-table,#listPager").removeClass("layui-hide");
+                        layer.close(ii);
+                        $("#parse-table,#listPager").removeClass("layui-hide");
 
-                            //头工具栏事件
-                            table.on('toolbar(parse-table)', function(obj){
-                              var checkStatus = table.checkStatus(obj.config.id);
-                              switch(obj.event){
-                                case 'B_Detele_Data':
-                                debugger;
-                                  var checkdata = checkStatus.data;
-                                  layer.confirm('该操作将删除选中数据并不可恢复！确认删除？', function(index){
-                                  $.get('@Url.Action("DeleteSelect")',{Keys:stringArray(checkdata)},function(res){
-                                      layer.msg(res.message,{
-                                               time:500,
-                                               end:function () {
-                                                   if(res.code==0)
-                                                   location.href = '@Url.Action("Index")'
-                                              }
-                                      })
-                                  });
-                                  layer.close(index);
-                                });
-                                break;
-                                case 'Add_Data':
-                                  location.href='@Url.Action("Add", rv)'
-                                break;
-                                case 'ImpExcel':
-                                    layer.open({
-                                      type: 1,
-                                      title: '导入excel',
-                                      skin: 'layui-layer-admin',
-                                      closeBtn: false,
-                                      area: ['300px', '300px'],
-                                      anim: 5,
-                                      shadeClose: true,
-                                      content: laytpl($('#list-imp-excel').html()).render({}),
-                                      cancel : function() {
-                                            layer.close();
-                                      },
-                                      success : function(layero, index) {
-                                            ImportExcel();
-                                      }
-                                    });
-                                break;
-                                case 'moreTool':
-                                break;
-                              };
+                        //头工具栏事件
+                        table.on('toolbar(parse-table)', function(obj){
+                          var checkStatus = table.checkStatus(obj.config.id);
+                          switch(obj.event){
+                            case 'B_Detele_Data':
+                            debugger;
+                              var checkdata = checkStatus.data;
+                              layer.confirm('该操作将删除选中数据并不可恢复！确认删除？', function(index){
+                              $.get('@Url.Action("DeleteSelect")',{Keys:stringArray(checkdata)},function(res){
+                                  layer.msg(res.message,{
+                                           time:500,
+                                           end:function () {
+                                               if(res.code==0)
+                                               location.href = '@Url.Action("Index")'
+                                          }
+                                  })
+                              });
+                              layer.close(index);
                             });
+                            break;
+                            case 'Add_Data':
+                              location.href='@Url.Action("Add", rv)'
+                            break;
+                            case 'ImpExcel':
+                                layer.open({
+                                  type: 1,
+                                  title: '导入excel',
+                                  skin: 'layui-layer-admin',
+                                  closeBtn: false,
+                                  area: ['300px', '300px'],
+                                  anim: 5,
+                                  shadeClose: true,
+                                  closeBtn:2,
+                                  content: laytpl($('#list-imp-excel').html()).render({}),
+                                  cancel : function() {
+                                        layer.close();
+                                  },
+                                  success : function(layero, index) {
+                                        ImportExcel();
+                                  }
+                                });
+                            break;
+                            case 'moreTool':
+                            break;
+                          };
+                        });
 
     @if (this.Has(PermissionFlags.Detail))
     {
@@ -208,36 +210,36 @@
 
 
 
-                            //监听行工具事件
-                            table.on('tool(parse-table)', function(obj){
-                              var data = obj.data;
+                        //监听行工具事件
+                        table.on('tool(parse-table)', function(obj){
+                          var data = obj.data;
 
-                              var data_id=data["@fact.Unique.Name"];
+                          var data_id=data["@fact.Unique.Name"];
 
-                              if(!data_id)
-                                data_id=$(this).attr("value");
+                          if(!data_id)
+                            data_id=$(this).attr("value");
 
-                              if(obj.event === 'del'){
-                                layer.confirm('真的删除该数据吗', function(index){
-                                       $.get('@Url.Action("Delete")/'+data_id,function(res){
-                                        obj.del();
-                                        layer.close(index);
-                                   });
-                                });
-                              }
-                              else if(obj.event === 'edit'){
-                                  location.href = '@Url.Action("Edit")/'+data_id;
-                              }
-                              else if(obj.event === 'near'){
-                                  var contentUrl='@Url.Action("Index")?act=near&id='+obj.data.@fact.Unique.Name+'&range=10&search=1';
-                                  layer.open({
-                                                type: 2,
-                                                title: '查看前后10行日志',
-                                                shadeClose: false,           //弹出框之外的地方是否可以点击
-                                                offset: '10%',
-                                                area: ['70%', '80%'],
-                                                btn: ['确定','取消'],
-                                                yes: function(index, layero){
+                          if(obj.event === 'del'){
+                            layer.confirm('真的删除该数据吗', function(index){
+                                   $.get('@Url.Action("Delete")/'+data_id,function(res){
+                                    obj.del();
+                                    layer.close(index);
+                               });
+                            });
+                          }
+                          else if(obj.event === 'edit'){
+                              location.href = '@Url.Action("Edit")/'+data_id;
+                          }
+                          else if(obj.event === 'near'){
+                              var contentUrl='@Url.Action("Index")?act=near&id='+obj.data.@fact.Unique.Name+'&range=10&search=1';
+                              layer.open({
+                                            type: 2,
+                                            title: '查看前后10行日志',
+                                            shadeClose: false,           //弹出框之外的地方是否可以点击
+                                            offset: '10%',
+                                            area: ['70%', '80%'],
+                                            btn: ['确定','取消'],
+                                            yes: function(index, layero){
     @*var iframe = window['layui-layer-iframe' + index]; // 获取弹出层iframe对象
                                             var data = iframe.getChooseData();   // 执行弹出页面层的方法getChooseData()，获取选中的数据
                                             if(data != false){
@@ -250,30 +252,30 @@
                                                                 }
                                                              })
                                                });*@
-                                                        layer.closeAll();
+                                                    layer.closeAll();
     @*}*@
-                                                },btn2: function(){
-                                                 layer.closeAll();
-                                                },
-                                                        content: contentUrl
-                                            });
-                              }
-                              else if(obj.event === 'select'){
-                                  location.href = '@Url.Action("Detail")/'+data_id;
-                              }
-                              else if(obj.event === 'action'){
-                                    var url=$(this).attr("lay-data");
-                                    var dataaction=$(this).attr("data-action");
-                                    if(dataaction)
-                                    {
-                                        $.get(url,function(res){
-                                              layer.msg(res.message,{
-                                                           time:500,
-                                                             end:function () {
-                                                                 if(res.code==0)
+                                            },btn2: function(){
+                                             layer.closeAll();
+                                            },
+                                                    content: contentUrl
+                                        });
+                          }
+                          else if(obj.event === 'select'){
+                              location.href = '@Url.Action("Detail")/'+data_id;
+                          }
+                          else if(obj.event === 'action'){
+                                var url=$(this).attr("lay-data");
+                                var dataaction=$(this).attr("data-action");
+                                if(dataaction)
+                                {
+                                    $.get(url,function(res){
+                                          layer.msg(res.message,{
+                                                       time:500,
+                                                         end:function () {
+                                                             if(res.code==0)
     @*location.href = '@Url.Action("Index")'*@
-                                                                    location.reload();
-                                                                    //同步更新缓存对应的值
+                                                                location.reload();
+                                                                //同步更新缓存对应的值
     @*var newEnable="";
                                             if(data.Enable.lastIndexOf('=True')){
                                                 newEnable=data.Enable.replace("=True","=False");
@@ -286,58 +288,29 @@
     @*data.Enable=newEnable;*@
     @* obj.update(data);
                                             table.reload("parse-table");*@
-                                                            }
-                                                         })
-                                           });
-                                   }
+                                                        }
+                                                     })
+                                       });
+                               }
 
-                              }
-                            });
+                          }
+                        });
 
-                            //单击事件
-                            table.on('row(parse-table)', function(obj){
-                              var data = obj.data;
+                        //单击事件
+                        table.on('row(parse-table)', function(obj){
+                          var data = obj.data;
     @*console.info("单击");*@
-                            });
+                        });
 
-                            //双击事件
-                            table.on('rowDouble(parse-table)', function(obj){
-                              var data = obj.data;
-                              var jumpUrl='@Url.Action("Edit", rv)';
-                              if(jumpUrl.indexOf('?')>-1){
-                                jumpUrl=jumpUrl.slice(0,jumpUrl.indexOf('?'));
-                              }
-                              debugger;
-                                location.href = jumpUrl+'/'+data["@fact.Unique.Name"];
-    });
-
-        //开始日期
-    var insStart = laydate.render({
-      elem: '#test-laydate-start'
-      ,min: '1999-1-1' //最小范围内的日期时间值
-      ,max:0
-      ,done: function(value, date){
-        //更新结束日期的最小日期
-        insEnd.config.min = lay.extend({}, date, {
-          month: date.month - 1
-        });
-
-        //自动弹出结束日期的选择器
-       insEnd.config.elem[0].focus();
-      }
-    });
-
-    //结束日期
-    var insEnd = laydate.render({
-      elem: '#test-laydate-end'
-      ,min: '1999-1-1' //最小范围内的日期时间值
-      ,max:0
-      ,done: function(value, date){
-        //更新开始日期的最大日期
-        insStart.config.max = lay.extend({}, date, {
-          month: date.month - 1
-        });
-      }
+                        //双击事件
+                        table.on('rowDouble(parse-table)', function(obj){
+                          var data = obj.data;
+                          var jumpUrl='@Url.Action("Edit", rv)';
+                          if(jumpUrl.indexOf('?')>-1){
+                            jumpUrl=jumpUrl.slice(0,jumpUrl.indexOf('?'));
+                          }
+                          debugger;
+                            location.href = jumpUrl+'/'+data["@fact.Unique.Name"];
     });
 
 
@@ -346,73 +319,7 @@
     <script type="text/html" id="nearOpt">
         <a lay-event="near" class="layui-btn layui-btn-primary layui-btn-xs" title="前后10行日志">附近</a>
     </script>
-    <script type="text/html" id="table-toolbar">
-        <div class="layui-row layui-col-space5 @hideSearch">
-          <div class="layui-col-md3" style="text-align:left;">
-                <div class="layui-btn-container">
-                    @if (this.Has(PermissionFlags.Delete))
-                    {
-                                  <button class="layui-btn layui-btn-sm layui-btn-danger icon-btn" lay-event="B_Detele_Data"><i class="layui-icon">&#xe640;</i>批量删除</button>
-                    }
-                    @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
-                    {
-                                  <button class="layui-btn layui-btn-sm icon-btn" lay-event="Add_Data"><i class="layui-icon">&#xe654;</i>新增</button>
-                                  <button class="layui-btn layui-btn-sm icon-btn" lay-event="ImpExcel"><i class="layui-icon">&#xe654;</i>导入</button>
-                    }
-                    <button class="layui-btn layui-btn-sm icon-btn" id="toolMore">更多<i class="layui-icon layui-icon-down layui-font-12"></i></button>
-              </div>
-          </div>
-            @if (pager != null)
-            {
-
-                                  <div class="layui-col-md9" style="text-align:right;">
-                                      <form action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
-                                      <div class="layui-row layui-col-space5">
-                            @foreach (var item in fields)
-                            {
-                                if (!item.MapField.IsNullOrEmpty())
-                                {
-                                    if (item.MapProvider != null)
-                                    {
-                                        var factory = item.MapProvider.EntityType.AsFactory();
-                                        var list = factory.FindAll();
-                                        var result = new Dictionary<string, string>();
-                                        foreach (var item1 in list)
-                                        {
-                                            var displayName = $"{item1["Name"]}[{item1[factory.Master.Name].ToString()}]";
-                                            if (item1[factory.Master.Name] != null && item1[factory.Master.Name].ToString() == item1["Name"])
-                                                displayName = item1[factory.Master.Name].ToString();
-
-                                            result.Add(item1[factory.Unique.Name].ToString(), displayName);
-                                        }
-
-                                                                                          <div class="layui-inline MapProvider layui-hide">
-                                                                                            <label class="layui-form-label" style="width:auto;">@item.DisplayName:</label>
-                                                                                            <div class="layui-input-inline">
-                                                @Html.ForDropDownList(item.MapField, result, pager[item.MapField], "全部", true)
-                                                                                            </div>
-                                                                                          </div>
-                                    }
-                                }
-                            }
-                                      <div class="layui-inline"><input type="text" class="layui-input" id="test-laydate-start" autocomplete="off" name="dtStart" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")"></div>
-                                      <div class="layui-inline"><label class="layui-form-label" style="width:20px">~</label></div>
-                                      <div class="layui-inline">
-                                          <input type="text" class="layui-input" id="test-laydate-end" name="dtEnd" autocomplete="off" placeholder="结束日期" value="@Context.Request.GetRequestValue("dtEnd")"></div>
-                                      <div class="layui-inline">
-                                      <label class="layui-form-label">关键字:</label>
-                                      <div class="layui-inline">
-                                      <input class="layui-input" name="q" id="test-table-demoReload" autocomplete="off" placeholder="多关键词空格隔开" value="@Context.Request.GetRequestValue("q")">
-                                      </div>
-                                      <button class="layui-btn" data-type="reload" type="submit"><i class="layui-icon">&#xe615;</i>搜索</button>
-                                      </div>
-                                      </div>
-                                      </form>
-                                  </div>
-
-            }
-        </div>
-    </script>
+    @await Html.PartialAsync("_List_Toolbar")
 
     @* 设置行操作按钮*@
     @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
