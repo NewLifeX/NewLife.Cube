@@ -20,8 +20,6 @@
     var fields = ViewBag.Fields as FieldCollection;
     var ukey = fact.Unique;
 
-    var modelTable = ViewBag.ModelTable as ModelTable;
-    var modelCols = modelTable?.GetColumns()?.Where(w => w.ShowInSearch)?.ToList() ?? new List<ModelColumn>();
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty())
     {
