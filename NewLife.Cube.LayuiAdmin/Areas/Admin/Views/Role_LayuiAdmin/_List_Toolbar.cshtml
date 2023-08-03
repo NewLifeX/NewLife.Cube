@@ -1,0 +1,25 @@
+﻿@using NewLife.Cube;
+@using XCode.Membership;
+@*
+   列表集合表头 Bar
+*@
+@{
+    var set = ViewBag.PageSetting as PageSetting;
+}
+
+<script type="text/html" id="table-toolbar">
+    <div class="layui-row layui-col-space5" style="text-align: right;">
+      <div class="layui-inline" style="float: left;">
+            <div class="layui-btn-container">
+                @if (this.Has(PermissionFlags.Delete))
+                {
+                      <button class="layui-btn layui-btn-sm layui-btn-danger icon-btn" lay-event="B_Detele_Data"><i class="layui-icon">&#xe640;</i>批量删除</button>
+                }
+                @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+                {
+                      <button class="layui-btn layui-btn-sm icon-btn" lay-event="Add_Data"><i class="layui-icon">&#xe654;</i>新增</button>
+                }
+          </div>
+      </div>
+    </div>
+</script>

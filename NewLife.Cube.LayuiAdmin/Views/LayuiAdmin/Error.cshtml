@@ -2,9 +2,7 @@
 @using NewLife.Cube.ViewModels;
 @using Microsoft.AspNetCore.Mvc.Filters
 @{
-    //Layout = "_Ace_Layout.cshtml";
     Layout = "_Layout.cshtml";
-    //Layout = NewLife.Cube.Setting.Current.Layout;
     ViewBag.Title = "处理你的请求时出错";
 
     var error = "没有捕捉到异常信息";
@@ -12,13 +10,13 @@
     var ex = Model?.Exception;
     if (ex != null)
     {
-        if (NewLife.Cube.CubeSetting.Current.Debug)
+        if (NewLife.Cube.Setting.Current.Debug)
         {
             error = ex + "";
         }
         else
         {
-            error = "内部错误：" + ex.GetTrue().GetType().FullName;
+            error = ex.Message;
         }
         error = error?.Replace("--->", "--->" + Environment.NewLine);
     }
@@ -41,19 +39,19 @@
     </div>*@
 
 <div class="layui-fluid">
-<div class="layadmin-tips">
-<i class="layui-icon" face>&#xe664;</i>
-<div class="layui-text" style="font-size: 20px;">
-<strong>
-            <pre class="alert info">RequestId: @Model?.RequestId</pre>
-        </strong>
-        <strong>
-            <pre class="alert info">Uri: @Model?.Uri</pre>
-        </strong>
-        <strong>
-            <pre class="alert alert-danger" role="alert">@error</pre>
-        </strong>
-</div>
-<a href="javascript: history.go(-1);" class="btn btn-info">返回上一页</a>
-</div>
+    <div class="layadmin-tips">
+        <i class="layui-icon" face>&#xe664;</i>
+        <div class="layui-text" style="width:70%;">
+            <strong>
+                <pre class="alert info">RequestId: @Model?.RequestId</pre>
+            </strong>
+            <strong>
+                <pre class="alert info">Uri: @Model?.Uri</pre>
+            </strong>
+            <strong>
+                <pre class="alert alert-danger" role="alert">@error</pre>
+            </strong>
+        </div>
+        <a href="javascript: history.go(-1);" class="btn btn-info">返回上一页</a>
+    </div>
 </div>
