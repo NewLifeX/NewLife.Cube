@@ -72,6 +72,8 @@ else
     {
         if (Model.ItemType.EqualIgnoreCase("TimeSpan"))
             atts.Add("title", TimeSpan.FromSeconds(value.ToInt()).ToString());
+        else if (Model.ItemType.EqualIgnoreCase("Time"))
+            atts.Add("title", value.ToLong().ToDateTime().ToLocalTime().ToFullString(""));
         else if (Model.ItemType.EqualIgnoreCase("GMK"))
             atts.Add("title", value.ToLong().ToGMK().ToString());
     }

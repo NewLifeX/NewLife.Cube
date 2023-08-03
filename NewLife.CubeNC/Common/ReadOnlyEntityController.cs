@@ -9,14 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
-using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
-using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
-using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -270,7 +267,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     /// <summary>获取选中键</summary>
     /// <returns></returns>
-    protected virtual String[] SelectKeys => GetRequest("Keys").Split(",");
+    protected virtual String[] SelectKeys => GetRequest("Keys")?.Split(",");
 
     /// <summary>多次导出数据</summary>
     /// <returns></returns>
@@ -1058,6 +1055,41 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             XTrace.WriteException(ex);
 
             WriteLog("备份导出", false, ex.GetMessage());
+
+            return Json(500, null, ex);
+        }
+    }
+
+    /// <summary>从服务器本地目录还原</summary>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Insert)]
+    [DisplayName("还原")]
+    public virtual ActionResult Restore()
+    {
+        try
+        {
+            var fact = Factory;
+            var dal = fact.Session.Dal;
+
+            var name = GetType().Name.TrimEnd("Controller");
+            var fileName = $"{name}_*.gz";
+
+            var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
+            //var fi = di?.GetFiles(fileName)?.LastOrDefault();
+            var fi = di?.GetFiles(fileName)?.OrderByDescending(e => e.Name).FirstOrDefault();
+            if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
+
+            var rs = dal.Restore(fi.FullName, fact.Table.DataTable);
+
+            WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
+
+            return Json(0, $"恢复[{fileName}]（{rs:n0}行）成功！");
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("恢复", false, ex.GetMessage());
 
             return Json(500, null, ex);
         }

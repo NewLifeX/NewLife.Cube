@@ -10,7 +10,12 @@
     var page = ViewBag.Page as Pager;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
-
+@if (!set.NavView.IsNullOrEmpty())
+{
+    <div class="row">
+        @await Html.PartialAsync(set.NavView)
+    </div>
+}
 @if (set.EnableToolbar)
 {
     <div class="clearfix">

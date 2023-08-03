@@ -1,5 +1,4 @@
 ﻿using NewLife.Cube.Web.Models;
-using NewLife.Log;
 using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Security;
@@ -28,15 +27,16 @@ public class SsoClient
     /// </remarks>
     public String SecurityKey { get; set; }
 
-    private HttpClient _client;
+    private ApiHttpClient _client;
     #endregion
 
-    private HttpClient GetClient()
+    private ApiHttpClient GetClient()
     {
         if (_client != null) return _client;
 
-        _client = DefaultTracer.Instance.CreateHttpClient();
-        _client.BaseAddress = new Uri(Server);
+        //_client = DefaultTracer.Instance.CreateHttpClient();
+        //_client.BaseAddress = new Uri(Server);
+        _client = new ApiHttpClient(Server);
 
         return _client;
     }

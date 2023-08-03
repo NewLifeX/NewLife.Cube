@@ -330,7 +330,7 @@ layui.use(['form'], function() {
                                 foreach (var item in entity.Permissions.OrderBy(e => e.Key))
                                 {
                                     var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID,title=item.Value,lay_filter="pro_child"})
+                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentID,title=item.Value,lay_filter="pro_child"})
                                 @*@Html.Label(id, item.Value)*@
                                 @*var chec = role.Has(entity.ID, (PermissionFlags)item.Key)?"checked":"";*@
                                 <script type="text/javascript">
@@ -345,7 +345,7 @@ layui.use(['form'], function() {
                                 @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID,title="只读",lay_skin="primary",lay_filter="pro_detail"})
                                 @*@Html.Label("pc_readonly_" + entity.ID, "只读")*@
                                 <text>&nbsp;</text>
-                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ID,title="全部",lay_skin="primary",lay_filter="pro_all" })
+                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ID,title="全部",lay_skin="primary",lay_filter="pro_all" })
                                 @*@Html.Label("pc_all_" + entity.ID, "全部")*@
                             }
                         </td>

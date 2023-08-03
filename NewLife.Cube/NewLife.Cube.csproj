@@ -59,6 +59,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\NewLife.CubeNC\Membership\ManagerProviderHelper.cs" Link="Membership\ManagerProviderHelper.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="..\NewLife.CubeNC\ViewModels\ErrorModel.cs" Link="ViewModels\ErrorModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\FieldCollection.cs" Link="ViewModels\FieldCollection.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\FormField.cs" Link="ViewModels\FormField.cs" />
+    <Compile Include="..\NewLife.CubeNC\ViewModels\ILinkExtend.cs" Link="ViewModels\ILinkExtend.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ItemModel.cs" Link="ViewModels\ItemModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\IUrlExtend.cs" Link="ViewModels\IUrlExtend.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ListBoxModel.cs" Link="ViewModels\ListBoxModel.cs" />
@@ -77,15 +79,14 @@
     <Compile Include="..\NewLife.CubeNC\ViewModels\LoginConfigModel.cs" Link="ViewModels\LoginConfigModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\MenuTree.cs" Link="ViewModels\MenuTree.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\SearchField.cs" Link="ViewModels\SearchField.cs" />
-    <Compile Include="..\NewLife.CubeNC\ViewModels\SelectUserModel.cs" Link="ViewModels\SelectUserModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ViewKinds.cs" Link="ViewModels\ViewKinds.cs" />
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.3.2023.511-beta0915" />
-    <PackageReference Include="NewLife.IP" Version="2.0.2023.401" />
-    <PackageReference Include="NewLife.Stardust" Version="2.8.2023.510-beta2330" />
-    <PackageReference Include="NewLife.XCode" Version="11.8.2023.511-beta0917" />
+    <PackageReference Include="NewLife.Core" Version="10.5.2023.801" />
+    <PackageReference Include="NewLife.IP" Version="2.1.2023.704-beta0221" />
+    <PackageReference Include="NewLife.Stardust" Version="2.9.2023.801" />
+    <PackageReference Include="NewLife.XCode" Version="11.9.2023.801" />
   </ItemGroup>
 
   <ItemGroup>

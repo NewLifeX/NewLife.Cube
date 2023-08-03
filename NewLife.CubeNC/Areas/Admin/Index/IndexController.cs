@@ -48,25 +48,20 @@ public class IndexController : ControllerBaseX
 
         //!!! 租户切换
         var tenantId = Request.Query["TenantId"].ToInt(-1);
-        if (tenantId > 0)
+        if (tenantId >= 0)
         {
             // 判断租户关系
             var list = TenantUser.FindAllByUserId(user.ID);
-            if (list.Any(e => e.TenantId == tenantId))
+            if (list.Any(e => e.TenantId == tenantId) || tenantId == 0)
             {
                 var tenant = Tenant.FindById(tenantId);
-                if (tenant != null)
-                {
-                    XTrace.WriteLine("用户[{0}]切换到租户[{1}/{2}]", user, tenant.Name, tenant.Code);
 
-                    // 切换租户，保存到Cookie
-                    ManagerProviderHelper.ChangeTenant(HttpContext, tenantId);
+                XTrace.WriteLine("用户[{0}]切换到租户[{1}/{2}]", user, tenant?.Name ?? "系统管理员", tenant?.Code ?? "0");
 
-                    //TenantContext.Current = new TenantContext { TenantId = tenantId };
-                    //ManageProvider.Provider.Tenant = tenant;
+                // 切换租户，保存到Cookie
+                HttpContext.SaveTenant(tenantId);
 
-                    return Redirect("/Admin");
-                }
+                return Redirect("/Admin");
             }
         }
 

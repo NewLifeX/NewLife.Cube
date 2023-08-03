@@ -22,6 +22,7 @@
     <LangVersion>latest</LangVersion>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
+    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
     <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -33,25 +34,13 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>完善附件功能支持；增加魔方模块接口；升级EChart对时间轴的支持；表单页支持Category分组</PackageReleaseNotes>
+    <PackageReleaseNotes>新增导航条支持；支持多标签页链接</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReadmeFile>Readme.MD</PackageReadmeFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net6.0|AnyCPU'">
-    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net6.0|AnyCPU'">
-    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0|AnyCPU'">
-    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0|AnyCPU'">
-    <DefineConstants>$(DefineConstants);MVC</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -61,10 +50,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.3.2023.511-beta0915" />
-    <PackageReference Include="NewLife.IP" Version="2.0.2023.401" />
-    <PackageReference Include="NewLife.Stardust" Version="2.8.2023.510-beta2330" />
-    <PackageReference Include="NewLife.XCode" Version="11.8.2023.511-beta0917" />
+    <PackageReference Include="NewLife.Core" Version="10.5.2023.801" />
+    <PackageReference Include="NewLife.IP" Version="2.1.2023.704-beta0221" />
+    <PackageReference Include="NewLife.Stardust" Version="2.9.2023.801" />
+    <PackageReference Include="NewLife.XCode" Version="11.9.2023.801" />
   </ItemGroup>
 
   <ItemGroup>
@@ -151,6 +140,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Shared\_List_Nav.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
   <ItemGroup>
@@ -164,5 +157,11 @@
       <Link>Entity\Cube.xml</Link>
     </None>
     <None Include="..\NewLife.Cube\Entity\xcodetool.exe" Link="Entity\xcodetool.exe" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Views\Shared\_Suggest.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 </Project>

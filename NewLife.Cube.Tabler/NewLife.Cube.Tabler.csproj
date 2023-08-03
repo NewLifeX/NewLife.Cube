@@ -54,6 +54,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\Content\tabler\css\apexcharts.css" />
+    <Content Remove="wwwroot\Content\tabler\css\nouislider.min.css" />
+    <Content Remove="wwwroot\Content\tabler\css\tabler-social.min.css" />
+    <Content Remove="wwwroot\Content\tabler\js\bootstrap.bundle.min.js.map" />
+    <Content Remove="wwwroot\Content\tabler\js\countUp.min.js" />
+    <Content Remove="wwwroot\Content\tabler\js\litepicker.amd.js" />
+    <Content Remove="wwwroot\Content\tabler\js\litepicker.commonjs2.js" />
+    <Content Remove="wwwroot\Content\tabler\js\litepicker.umd.js" />
+    <Content Remove="wwwroot\Content\tabler\js\nouislider.min.js" />
+    <Content Remove="wwwroot\Content\tabler\js\tom-select.base.min.js" />
+    <Content Remove="wwwroot\Content\tabler\js\tom-select.base.min.js.map" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>
 

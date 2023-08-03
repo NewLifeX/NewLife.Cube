@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.ViewModels;
-using NewLife.Data;
 using NewLife.Log;
 using NewLife.Web;
 using XCode;
@@ -254,7 +253,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     /// <summary>获取选中键</summary>
     /// <returns></returns>
-    protected virtual String[] SelectKeys => GetRequest("Keys").Split(",");
+    protected virtual String[] SelectKeys => GetRequest("Keys")?.Split(",");
 
     /// <summary>多次导出数据</summary>
     /// <returns></returns>

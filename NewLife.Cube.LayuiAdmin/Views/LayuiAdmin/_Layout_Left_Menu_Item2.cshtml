@@ -33,7 +33,10 @@
                   <dl class="layui-nav-child">
                 @foreach (var sub in menus)
                 {
-                    <dd data-name="tags"><a lay-href="@(sub.Url != null ? Url.Content(sub.Url) : "#")">@sub.DisplayName</a></dd>
+                    if (sub.Visible)
+                    {
+                        <dd data-name="tags"><a lay-href="@(sub.Url != null ? Url.Content(sub.Url) : "#")">@sub.DisplayName</a></dd>
+                    }
                 }
                 </dd>
     }

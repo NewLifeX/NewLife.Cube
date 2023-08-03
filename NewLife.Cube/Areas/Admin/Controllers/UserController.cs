@@ -384,9 +384,9 @@ public class UserController : EntityController<User, UserModel>
         var file = HttpContext.Request.Form.Files["avatar"];
         if (file != null)
         {
-            var set = CubeSetting.Current;
-            var fileName = user.ID + Path.GetExtension(file.FileName);
-            var att = await SaveFile(user, file, set.AvatarPath, fileName);
+            //var set = CubeSetting.Current;
+            //var fileName = user.ID + Path.GetExtension(file.FileName);
+            var att = await SaveFile(user, file, null, null);
             if (att != null) user.Avatar = att.FilePath;
         }
 
@@ -398,20 +398,20 @@ public class UserController : EntityController<User, UserModel>
         return Json(0, null, user);
     }
 
-    /// <summary>保存文件</summary>
-    /// <param name="entity">实体对象</param>
-    /// <param name="file">文件</param>
-    /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
-    /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
-    /// <returns></returns>
-    protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
-    {
-        // 修改保存目录和文件名
-        var set = CubeSetting.Current;
-        if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
+    ///// <summary>保存文件</summary>
+    ///// <param name="entity">实体对象</param>
+    ///// <param name="file">文件</param>
+    ///// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
+    ///// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
+    ///// <returns></returns>
+    //protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
+    //{
+    //    // 修改保存目录和文件名
+    //    var set = CubeSetting.Current;
+    //    if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
 
-        return base.SaveFile(entity, file, set.AvatarPath, fileName);
-    }
+    //    return base.SaveFile(entity, file, set.AvatarPath, fileName);
+    //}
 
     /// <summary>修改密码</summary>
     /// <param name="model"></param>

@@ -1,9 +1,12 @@
 ﻿using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Xml.Serialization;
+using NewLife.Collections;
 using NewLife.Data;
 using NewLife.Reflection;
+using XCode;
 using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels;
@@ -29,7 +32,11 @@ public class ListField : DataField
     ///// <summary>单元格图标。数据单元格前端显示时的图标或图片</summary>
     //public String Icon { get; set; }
 
-    /// <summary>链接目标。_blank/_self/_parent/_top</summary>
+    /// <summary>
+    /// 链接目标。参考：TargetEnum 
+    /// _blank/_self/_parent/_top
+    /// 默认：null,会根据皮肤自动判断打开方式，layui:在框架页多标签打开，ace:在当前页面进行跳转
+    /// </summary>
     public String Target { get; set; }
 
     /// <summary>头部文字</summary>
@@ -41,7 +48,9 @@ public class ListField : DataField
     ///// <summary>头部链接。一般是排序</summary>
     //public String HeaderUrl { get; set; }
 
-    /// <summary>数据动作。设为action时走ajax请求</summary>
+    /// <summary>
+    /// 数据动作。参考：DataAction
+    /// 默认：null 作为普通url操作；action 走ajax请求</summary>
     public String DataAction { get; set; }
 
     /// <summary>获取数据委托。可用于自定义列表页单元格数值的显示</summary>
@@ -136,6 +145,38 @@ public class ListField : DataField
 
         //return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
         return Replace(txt, data);
+    }
+
+    /// <summary>针对指定实体对象计算超链接HTML，替换其中变量，支持ILinkExtend</summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public virtual String GetLink(IModel data)
+    {
+        var svc = GetService<ILinkExtend>();
+        if (svc != null) return svc.Resolve(this, data);
+
+        var url = GetUrl(data);
+        if (url.IsNullOrEmpty()) return null;
+
+        var title = GetTitle(data);
+        var target = Target;
+        var action = DataAction;
+
+        var linkName = GetLinkName(data);
+        //if (linkName.IsNullOrEmpty()) linkName = GetDisplayName(data);
+
+        var sb = Pool.StringBuilder.Get();
+        sb.AppendFormat("<a href=\"{0}\"", url);
+        if (!target.IsNullOrEmpty()) sb.AppendFormat(" target=\"{0}\"", target);
+        if (!action.IsNullOrEmpty()) sb.AppendFormat(" data-action=\"{0}\"", action);
+        if (!title.IsNullOrEmpty()) sb.AppendFormat(" title=\"{0}\"", HttpUtility.HtmlEncode(title));
+        sb.Append(">");
+        sb.Append(linkName);
+        sb.Append("</a>");
+
+        var link = sb.Put(true);
+
+        return Replace(link, data);
     }
 
     /// <summary>针对指定实体对象计算url，替换其中变量</summary>

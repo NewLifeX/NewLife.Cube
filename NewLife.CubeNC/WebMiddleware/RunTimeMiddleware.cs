@@ -225,7 +225,7 @@ public class RunTimeMiddleware
             //        domain = $"{ss[^2]}.{ss[^1]}";
             //}
 
-            var opt = new CookieOptions
+            var option = new CookieOptions
             {
                 HttpOnly = true,
                 //Domain = domain,
@@ -234,23 +234,23 @@ public class RunTimeMiddleware
                 //Secure = true,
             };
 
-            // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性
+            // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性，跨域也可以读取
             if (ctx.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
             {
-                var domain = CubeSetting.Current.CookieDomain;
-                if (!domain.IsNullOrEmpty())
-                {
-                    opt.Domain = domain;
-                    opt.SameSite = SameSiteMode.None;
-                    opt.Secure = true;
-                }
+                //var domain = CubeSetting.Current.CookieDomain;
+                //if (!domain.IsNullOrEmpty())
+                //{
+                //    option.Domain = domain;
+                //    option.SameSite = SameSiteMode.None;
+                //    option.Secure = true;
+                //}
 
-                //opt.HttpOnly = true;
-                //opt.SameSite = SameSiteMode.None;
-                //opt.Secure = true;
+                //option.HttpOnly = true;
+                option.SameSite = SameSiteMode.None;
+                option.Secure = true;
             }
 
-            ctx.Response.Cookies.Append("CubeDeviceId", id, opt);
+            ctx.Response.Cookies.Append("CubeDeviceId", id, option);
         }
 
         //online.DeviceId = id;

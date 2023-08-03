@@ -54,6 +54,7 @@ public static class StarHelper
 
         df.Title = "链路追踪，用于APM性能追踪定位，还原该事件的调用链";
         df.DataVisible = e => !((e as IEntity)[df.Name] as String).IsNullOrEmpty();
+        df.Target = "_blank";
         df.AddService(new StarUrlExtend());
 
         return df;

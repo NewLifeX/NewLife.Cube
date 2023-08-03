@@ -50,7 +50,7 @@
                 <td class="text-center">
                     @if (!entity.TraceId.IsNullOrEmpty())
                     {
-                        <a href="@StarHelper.BuildUrl(entity.TraceId)" target="_blank">追踪</a>
+                        <a href="@StarHelper.BuildUrl(entity.TraceId)" title="链路追踪，用于APM性能追踪定位，还原该事件的调用链" target="_blank">追踪</a>
                     }
                 </td>
                 <td class="text-right">@entity.LinkID.ToString("n0")</td>

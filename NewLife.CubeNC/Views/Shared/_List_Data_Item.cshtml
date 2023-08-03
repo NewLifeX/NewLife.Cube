@@ -15,7 +15,6 @@
     // 第二名称，去掉后面的数字，便于模式匹配
     var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
     var name2 = item.Name.TrimEnd(digits);
-
 }
 @if (item.PrimaryKey)
 {
@@ -78,7 +77,12 @@ else
             {
                 <td class="text-right">@listField.GetValue(entity)</td>
             }
-            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            {
+                var dd = (Double)value;
+                <td class="text-center">@dd.ToString("p2")</td>
+            }
+            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = (Double)value;
                 var des = item.Description + "";
@@ -87,11 +91,6 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; }
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
-                <td class="text-center">@dd.ToString("p2")</td>
-            }
-            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
-            {
-                var dd = (Double)value;
                 <td class="text-center">@dd.ToString("p2")</td>
             }
             else
@@ -126,6 +125,14 @@ else
             {
                 <td class="text-right">@(TimeSpan.FromSeconds(value.ToInt()))</td>
             }
+            else if (item.ItemType.EqualIgnoreCase("Time"))
+            {
+                <td class="text-center">@(value.ToLong().ToDateTime().ToLocalTime().ToFullString(""))</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("GMK"))
+            {
+                <td class="text-right">@(value.ToLong().ToGMK())</td>
+            }
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
                 //var provider = ViewData["Provider"] as IManageProvider;
@@ -138,7 +145,7 @@ else
                     <td class="text-center">@value</td>
                 }
             }
-            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = Convert.ToDouble(value);
                 var des = item.Description + "";
@@ -148,10 +155,6 @@ else
                 if (des.Contains("万分之一")) { dd /= 10000; }
 
                 <td class="text-center">@dd.ToString("p2")</td>
-            }
-            else if (item.ItemType.EqualIgnoreCase("GMK"))
-            {
-                <td class="text-right">@(value.ToLong().ToGMK())</td>
             }
             else
             {
@@ -174,7 +177,7 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        <td class="text-center"><a href="@name?@key=@val">@value</a></td>
+                        <td class="text-center"><a href="@name?@key=@val" tager=@(listField.Target) title="@listField.Title??@listField.DisplayName">@value</a></td>
                     }
                     else
                     {
