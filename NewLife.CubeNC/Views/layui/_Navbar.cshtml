@@ -23,7 +23,7 @@
 }
 
 <div class="layui-header">
-    <div class="layui-logo layui-bg-black">@name</div>
+    <div class="layui-logo layui-bg-black layui-hide-xs">@name</div>
 
     <!-- 头部区域（可配合layui 已有的水平导航） -->
     <ul class="layui-nav layui-layout-left">
@@ -34,7 +34,7 @@
     </ul>
 
     <ul class="layui-nav layui-layout-right">
-        <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+        <li class="layui-nav-item layui-show-md-inline-block">
             <a href="javascript:void(0);">
                 @if (user != null && !user.Avatar.IsNullOrEmpty())
                 {
@@ -53,7 +53,7 @@
     @if (tList.Count > 0)
     {
         <ul class="layui-nav layui-layout-right" style="right:140px;">
-            <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+            <li class="layui-nav-item layui-show-md-inline-block">
                 <a href="javascript:;">
                     @(tenantName ?? "管理员")
                 </a>
