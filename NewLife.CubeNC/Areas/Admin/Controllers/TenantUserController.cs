@@ -57,13 +57,17 @@ public class TenantUserController : EntityController<TenantUser>
     /// <returns></returns>
     protected override IEnumerable<TenantUser> Search(Pager p)
     {
-        var tenantId = p["tenantId"].ToInt(-1);
+        //var tenantId = p["tenantId"].ToInt(-1);
         var userId = p["userId"].ToInt(-1);
         var roleId = p["roleId"].ToInt(-1);
         var enable = p["enable"]?.ToBoolean();
 
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
+
+        var tenantId = TenantContext.Current.TenantId;
+
+        tenantId = tenantId == 0 ? p["tenantId"].ToInt(-1) : tenantId;
 
         return TenantUser.Search(tenantId, userId, roleId, enable, start, end, p["q"], p);
     }
