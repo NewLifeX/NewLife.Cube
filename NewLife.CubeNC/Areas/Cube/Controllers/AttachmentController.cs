@@ -15,7 +15,7 @@ public class AttachmentController : EntityController<Attachment>
 {
     static AttachmentController()
     {
-        ListFields.RemoveField("Hash", "Url", "Source", "UpdateUserID", "UpdateIP", "Remark");
+        ListFields.RemoveField("Id", "Hash", "Url", "Source", "UpdateUserID", "UpdateIP", "Remark");
         ListFields.RemoveCreateField();
 
         {

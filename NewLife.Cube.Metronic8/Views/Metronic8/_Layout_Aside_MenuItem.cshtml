@@ -57,7 +57,7 @@
         <div data-kt-menu-trigger="click" class="menu-item menu-accordion @(item.ID == menu.ParentID || rs ? "show" : "")">
             <span class="menu-link">
                 <span class="@(rs_p ? "menu-icon" : "menu-bullet") text-gray-700">
-                    <i class="fa-duotone fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></i>
+                    <i class="far fa-@icon @(rs_active?" text-primary":" text-gray-700") @(rs_p ? " fs-3" : "")"></i>
                 </span>
                 <a class="menu-link @(rs_active?"active":"")" href="@(item.Url != null ? Url.Content(item.Url) : "#")">
                     <span class="menu-bullet">
