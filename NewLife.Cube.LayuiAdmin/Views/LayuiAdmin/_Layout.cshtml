@@ -1,20 +1,20 @@
-﻿@using NewLife.Common;
-@using NewLife.Cube
-@using NewLife.Cube.WebMiddleware
+﻿@using BRX.Common;
+@using BRX.Cube
+@using BRX.Cube.WebMiddleware
 @{
-    var set = NewLife.Cube.CubeSetting.Current;
-    var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
-
+    var set = BRX.Cube.Setting.Current;
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
+
+    var runInfo = !set.ShowRunTime ? "" : RunTimeMiddleware.GetInfo(this.Context);
 }
 <!DOCTYPE html>
 
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>@ViewBag.Title - @SysConfig.Current.DisplayName</title>
+    <title>@SysConfig.Current.DisplayName</title>
     <meta name="description" content="@SysConfig.Current.Company" />
     <meta name="keywords" content="@SysConfig.Current.Company" />
     <meta name="renderer" content="webkit">
@@ -35,10 +35,21 @@
 <!--begin::Body-->
 <body class="layui-layout-body">
   @RenderBody()
-    @if (pageSetting.EnableFooter)
-    {
-        @await Html.PartialAsync("_Layout_Footer")
-    }
+        @if (set.ShowRunTime)
+        {
+            <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+            <div class="layui-col-md12">
+            <div class="layui-card">
+            <div class="layui-card-header">运行数据</div>
+            <div class="layui-card-body">
+                <blockquote class="layui-elem-quote layui-quote-nm">@Html.Raw(runInfo)</blockquote>
+            </div>
+            </div>
+            </div>
+            </div>
+            </div>
+        }
     <!----------------------------------------以下为Javascript脚本区域----------------------------------------------------------------->
     <script>
       layui.config({
@@ -84,6 +95,46 @@
             layedit.sync(editIndex);
           }
         });
+
+
+        //主题设置
+        form.on("switch(header-theme-mode)", function(e) {
+            var isdark = e.elem.checked;
+            var msgBox;
+            if (isdark) {
+                msgBox = layer.msg("\u5df2\u8bbe\u7f6e\u6df1\u8272\u6a21\u5f0f<br>\u5982\u9700\u6700\u4f73\u6548\u679c\uff0c\u5efa\u8bae\u5207\u6362\u660e\u4eae\u6a21\u5f0f", {
+                    offset: "24px",
+                    time: 5e3,
+                    anim: "slideDown",
+                    isOutAnim: !1
+                });
+                 layui.data("layui", {
+                    key: "themeMode",
+                    value: "dark"
+                });
+            } else
+            {
+                layui.data("layui", {
+                    key: "themeMode",
+                    value: ""
+                });
+            }
+        });
+
+
+        //主题定时设置
+        setInterval(function() {
+            var themeMode = layui.data("layui").themeMode;
+            if("dark" === themeMode){
+                    layui.link("/layui/css/modules/layui-theme-dark/layui-theme-dark.css", null, "theme-dark");
+            }
+            else{
+                $("#layuicss-theme-dark").remove();
+            }
+                $("#ID-header-theme-mode").prop("checked", "dark" === themeMode);
+
+                form.render("checkbox");
+        }, 1000);
     
       });
       
@@ -101,4 +152,7 @@
     @RenderSection("scripts", required: false)
 </body>
 <!--end::Body-->
+<style>
+    .layui-nav *{margin-bottom:6px;}
+</style>
 </html>
