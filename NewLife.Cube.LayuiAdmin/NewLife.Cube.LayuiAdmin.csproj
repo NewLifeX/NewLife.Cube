@@ -66,6 +66,7 @@
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.js" />
     <Content Remove="wwwroot\layui\layui.js" />
+    <Content Remove="wwwroot\modules\cron.js" />
     <Content Remove="wwwroot\modules\dataGrid.js" />
     <Content Remove="wwwroot\modules\excel.js" />
     <Content Remove="wwwroot\modules\excel.min.js" />

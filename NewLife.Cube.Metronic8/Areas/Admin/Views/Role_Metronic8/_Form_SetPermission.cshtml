@@ -89,7 +89,7 @@
                                             {
                                                 var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
                                                 <div class="form-check form-check-sm form-check-custom form-check-solid me-5">
-                                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @class = "form-check-input", @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ParentID })
+                                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @class = "form-check-input", @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentID })
                                                     @Html.Label(id, item.Value)
                                                 </div>
                                             }
@@ -104,7 +104,7 @@
                                             </div>
 
                                             <div class="form-check form-check-sm form-check-custom form-check-solid me-5">
-                                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "form-check-input pro_all", @prochildkey = "pro_" + (Int32)PermissionFlags.All + "_" + entity.ID })
+                                                @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "form-check-input pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ID })
                                                 @Html.Label("pc_all_" + entity.ID, "全部")
                                             </div>
                                         </div>

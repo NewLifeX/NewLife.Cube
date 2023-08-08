@@ -43,6 +43,7 @@
         <div class="layui-row layui-col-space15">
             <div class="layui-col-md12">
                 <div class="layui-card">
+                    @await Html.PartialAsync("_List_Serch")
                     <div class="layui-card-body">
                         <table lay-filter="parse-table" id="parse-table" class="layui-hide">
                             <thead>
@@ -192,6 +193,7 @@
                           area: ['300px', '300px'],
                           anim: 5,
                           shadeClose: true,
+                          closeBtn:2,
                           content: laytpl($('#list-imp-excel').html()).render({}),
                           cancel : function() {
                                 layer.close();
@@ -296,106 +298,10 @@
                     location.href = jumpUrl+'/'+data["@fact.Unique.Name"];
     });
 
-        //开始日期
-    var insStart = laydate.render({
-      elem: '#test-laydate-start'
-      ,min: '1999-1-1' //最小范围内的日期时间值
-      ,max:0
-      ,done: function(value, date){
-        //更新结束日期的最小日期
-        insEnd.config.min = lay.extend({}, date, {
-          month: date.month - 1
-        });
-        
-        //自动弹出结束日期的选择器
-       insEnd.config.elem[0].focus();
-      }
-    });
-    
-    //结束日期
-    var insEnd = laydate.render({
-      elem: '#test-laydate-end'
-      ,min: '1999-1-1' //最小范围内的日期时间值
-      ,max:0
-      ,done: function(value, date){
-        //更新开始日期的最大日期
-        insStart.config.max = lay.extend({}, date, {
-          month: date.month - 1
-        });
-      }
-    });
-
 
 }
 @section scripts{
-<script type="text/html" id="table-toolbar">
-      <div class="layui-row layui-col-space5">
-        <div class="layui-col-md3" style="text-align:left;">
-              <div class="layui-btn-container">
-                  @if (this.Has(PermissionFlags.Delete))
-                  {
-                    <button class="layui-btn layui-btn-sm layui-btn-danger icon-btn" lay-event="B_Detele_Data"><i class="layui-icon">&#xe640;</i>批量删除</button>
-                  }
-                  @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
-                  {
-                    <button class="layui-btn layui-btn-sm icon-btn" lay-event="Add_Data"><i class="layui-icon">&#xe654;</i>新增</button>
-                    <button class="layui-btn layui-btn-sm icon-btn" lay-event="ImpExcel"><i class="layui-icon">&#xe654;</i>导入</button>
-                  }
-                  <button class="layui-btn layui-btn-sm icon-btn" id="toolMore">更多<i class="layui-icon layui-icon-down layui-font-12"></i></button>
-            </div>
-        </div>
-        @if (pager != null)
-        {
-            if (!isdis)
-            {
-                <div class="layui-col-md9" style="text-align:right;">
-                    <form action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
-                    <div class="layui-row layui-col-space5">
-                        @foreach (var item in fields)
-                        {
-                            if (!item.MapField.IsNullOrEmpty())
-                            {
-                                if (item.MapProvider != null)
-                                {
-                                    var factory=item.MapProvider.EntityType.AsFactory();
-                                    var list=factory.FindAll();
-                                    var result = new Dictionary<string,string>();
-                                    foreach (var item1 in list)
-                                    {
-                                        var displayName=$"{item1["Name"]}[{item1[factory.Master.Name].ToString()}]";
-                                        if(item1[factory.Master.Name]!=null&&item1[factory.Master.Name].ToString()==item1["Name"])
-                                            displayName=item1[factory.Master.Name].ToString();
-
-                                        result.Add(item1[factory.Unique.Name].ToString(), displayName);
-                                    }
-
-                                    <div class="layui-inline">
-                                      <label class="layui-form-label" style="width:auto;">@item.DisplayName:</label>
-                                      <div class="layui-input-inline">
-                                        @Html.ForDropDownList(item.MapField, result, pager[item.MapField], "全部", true)
-                                      </div>
-                                    </div>
-                                }
-                            }
-                        }
-                    <div class="layui-inline"><input type="text" class="layui-input" id="test-laydate-start" autocomplete="off" name="dtStart" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")"></div>
-                    <div class="layui-inline"><label class="layui-form-label" style="width:20px">~</label></div>
-                    <div class="layui-inline">
-                        <input type="text" class="layui-input" id="test-laydate-end" name="dtEnd" autocomplete="off" placeholder="结束日期" value="@Context.Request.GetRequestValue("dtEnd")"></div>
-                    <div class="layui-inline">
-                    <label class="layui-form-label">关键字:</label>
-                    <div class="layui-inline">
-                    <input class="layui-input" name="q" id="test-table-demoReload" autocomplete="off" placeholder="多关键词空格隔开" value="@Context.Request.GetRequestValue("q")">
-                    </div>
-                    <button class="layui-btn" data-type="reload" type="submit"><i class="layui-icon">&#xe615;</i>搜索</button>
-                    </div>
-                    </div>
-                    </form>
-                </div>
-            }
-        }
-      </div>
-</script>
+    @await Html.PartialAsync("_List_Toolbar")
 
     @* 设置行操作按钮*@
     @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))

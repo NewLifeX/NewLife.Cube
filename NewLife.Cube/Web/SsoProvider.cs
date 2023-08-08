@@ -852,7 +852,7 @@ public class SsoProvider
     /// <param name="user"></param>
     /// <param name="url"></param>
     /// <returns></returns>
-    public virtual Boolean FetchAvatar(IManageUser user, String url = null)
+    public virtual async Task<Boolean> FetchAvatar(IManageUser user, String url = null)
     {
         using var span = Tracer?.NewSpan(nameof(FetchAvatar), user + "");
 
@@ -885,8 +885,8 @@ public class SsoProvider
         try
         {
             var client = new HttpClient();
-            var rs = client.GetAsync(url).Result;
-            var buf = rs.Content.ReadAsByteArrayAsync().Result;
+            var rs = await client.GetAsync(url);
+            var buf = await rs.Content.ReadAsByteArrayAsync();
             File.WriteAllBytes(dest, buf);
 
             // 更新头像
@@ -897,10 +897,10 @@ public class SsoProvider
         }
         catch (Exception ex)
         {
+            span?.SetError(ex, null);
+
             XTrace.WriteLine("抓取头像失败，{0}, {1}", user, url);
             XTrace.WriteException(ex);
-
-            span?.SetError(ex, null);
         }
 
         return false;

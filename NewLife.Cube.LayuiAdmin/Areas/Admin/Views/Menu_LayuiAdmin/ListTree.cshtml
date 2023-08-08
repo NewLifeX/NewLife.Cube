@@ -1,0 +1,333 @@
+﻿@using NewLife.Cube.Extensions
+@using NewLife.Cube;
+@using NewLife.Cube.ViewModels;
+@using NewLife.Web;
+@using NewLife;
+@using XCode;
+@using NewLife.Serialization;
+@using XCode.Membership;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var pager = ViewBag.Page as Pager;
+    var fields = ViewBag.Fields as FieldCollection;
+    var fk = fact.Unique;
+    var set = ViewBag.PageSetting as PageSetting;
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty())
+    {
+        act = Url.Action("Index");
+    }
+
+    var an = ViewContext.RouteData.Values["action"].ToString().ToLower();
+    var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info")
+    || an.Contains("changepassword") || an.Contains("binds");
+
+    var rv = pager.GetRouteValue();
+}
+
+<!--列表集合表头-->
+@await Html.PartialAsync("_List_Toolbar")
+<!--列表集合内容-->
+<div class="layui-fluid" id="mainpage">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    @if (pager != null)
+                    {
+                        if (!isdis)
+                        {
+                            <!-- 表格工具栏 -->
+                            <form class="layui-form toolbar layui-hide" action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
+                                <div class="layui-form-item">
+                                    <div class="layui-inline">
+                                        <label class="layui-form-label">开始日期:</label>
+                                        <div class="layui-input-inline">
+                                            <input type="text" class="layui-input" id="test-laydate-start" name="dtStart" autocomplete="off" placeholder="开始日期" value="@Context.Request.GetRequestValue("dtStart")">
+                                        </div>
+                                    </div>
+                                    <div class="layui-inline">
+                                        <label class="layui-form-label">结束日期:</label>
+                                        <div class="layui-input-inline">
+                                            <input type="text" class="layui-input" id="test-laydate-end" name="dtEnd" autocomplete="off" placeholder="结束日期" value="@Context.Request.GetRequestValue("dtEnd")">
+                                        </div>
+                                    </div>
+                                    <div class="layui-inline">
+                                        <label class="layui-form-label">关键字:</label>
+                                        <div class="layui-input-inline">
+                                            <input class="layui-input" name="q" id="test-table-demoReload" autocomplete="off" value="@Context.Request.GetRequestValue("q")">
+                                        </div>
+                                    </div>
+                                    <div class="layui-inline">
+                                        &emsp;
+                                        <button class="layui-btn icon-btn" lay-filter="authoritiesTbSearch" type="submit" lay-submit>
+                                            <i class="layui-icon">&#xe615;</i>搜索
+                                        </button>&nbsp;
+                                    </div>
+                                </div>
+                            </form>
+                        }
+                    }
+                    <table lay-filter="parse-table" id="parse-table"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--列表页脚-->
+@await Html.PartialAsync("_List_Footer")
+@section layuiscripts{
+
+                        // 渲染表格
+                        var insTb = treeTable.render({
+                            elem: '#parse-table',
+                            url:'@Html.Raw(pager.GetFormAction(act))',
+    @*data: JSON.parse('@Html.Raw(BRX.Serialization.JsonHelper.ToJson(Model))'),*@
+    @*toolbar: ['<p>',
+                '<button lay-event="Add_Data" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>&nbsp;',
+                '</p>'].join(''),*@
+                            height: 'full-100',
+                            toolbar: "#table-toolbar",
+                            tree: {
+                                customName:{
+                                    name:"displayName",
+                                    pid:"parentID"
+                                },
+                                async: {
+                                    enable: true,
+                                    url: '@Html.Raw(pager.GetFormAction(act))',
+                                    autoParam: ["parentID=id"]
+                                },
+                                data:{
+                                    rootPid:"0"
+                                },
+                                view:{
+    @*showIcon:false,
+                            showFlexIconIfNotParent:true,*@
+                                    dblClickExpand:false
+                                }
+                            },
+                            cols: [[
+                              {type: 'checkbox', fixed: 'left'},
+                              {field: 'id', title: '编号', width: 80, sort: true, fixed: 'left'},
+                              {field: 'displayName', title: '名称', width: 220, fixed: 'left'},
+                              {field: 'fullName', title: '完整名', width: 400, sort: true},
+                              {field: 'url', title: '链接', width: 300, sort: true},
+                              {field: 'sort', title: '排序', width: 80, sort: true},
+                              {field: 'visible',width: 80, title: '可见',templet:'#barVisible'},
+                              {field: 'permission', title: '权限子项'},
+                              {title: '排序', toolbar: '#barSort', sort:true, width: 120,fixed:'right'},
+                              {title: '操作', toolbar: '#barOpt', sort:true, width: 181,fixed:'right'}
+                            ]],
+                            page: true,
+                            limit: @pager.PageSize,
+                            limits: [20, 50, 100],
+                            even: true
+                        });
+
+    @*insTb.expandAll();*@
+
+                    //头工具栏事件
+                    treeTable.on('toolbar(parse-table)', function(obj){
+                        debugger;
+                        var checkStatus = treeTable.checkStatus(obj.config.id);
+                      switch(obj.event){
+                        case 'B_Detele_Data':
+                          var checkdata = checkStatus.data;
+                          layer.confirm('该操作将删除选中数据并不可恢复！确认删除？', function(index){
+                           $.get('@Url.Action("DeleteSelect")',{Keys:stringArray(checkdata)},function(res){
+                                  layer.msg(res.message,{
+                                           time:500,
+                                           end:function () {
+                                               if(res.code==0)
+                                               location.href = '@Url.Action("Index")'
+                                          }
+                                  })
+                              });
+                          layer.close(index);
+                        });
+                        break;
+                        case 'Add_Data':
+                          location.href='@Url.Action("Add", rv)'
+                        break;
+                        case 'moreTool':
+                        break;
+                      };
+                    });
+
+    @if (this.Has(PermissionFlags.Detail))
+    {
+        @await Html.PartialAsync("DropDown/_Detail")
+    }
+
+    @if (this.Has(PermissionFlags.Delete))
+    {
+        @await Html.PartialAsync("DropDown/_Delete")
+    }
+    @if (this.Has(PermissionFlags.Update))
+    {
+        @await Html.PartialAsync("DropDown/_Update")
+    }
+    @if (this.Has(PermissionFlags.All))
+    {
+        @await Html.PartialAsync("DropDown/_All")
+    }
+
+                    //监听行工具事件
+                    treeTable.on('tool(parse-table)', function(obj){
+                      var data = obj.data;
+                      if(obj.event === 'del'){
+                        layer.confirm('真的删除行么', function(index){
+                           $.get('@Url.Action("Delete")/'+data["@(fact.Unique.Name.ToLower())"],function(res){
+                                obj.del();
+                                layer.close(index);
+                           });
+                        });
+                      }
+                      else if(obj.event === 'edit'){
+                          debugger;
+                          location.href = '@Url.Action("Edit")/'+data["@(fact.Unique.Name.ToLower())"];
+                      }
+                      else if(obj.event === 'select'){
+                          location.href = '@Url.Action("Detail")/'+data["@(fact.Unique.Name.ToLower())"];
+                      }
+                      else if(obj.event === 'action'){
+                            var url=$(this).attr("lay-data");
+                            var dataaction=$(this).attr("data-action");
+                            if(dataaction)
+                            {
+                                $.get(url,function(res){
+                                      layer.msg(res.message,{
+                                                   time:500,
+                                                     end:function () {
+                                                         if(res.code==0)
+                                                            location.href = '@Url.Action("Index")'
+                                                            //同步更新缓存对应的值
+    @*var newEnable="";
+                                            if(data.Enable.lastIndexOf('=True')){
+                                                newEnable=data.Enable.replace("=True","=False");
+                                            }
+                                            if(data.Enable.lastIndexOf('=False')){
+                                                newEnable=data.Enable.replace("=False","=True");
+                                            }*@
+
+
+    @*data.Enable=newEnable;*@
+    @* obj.update(data);
+                                            table.reload("parse-table");*@
+                                                    }
+                                                 })
+                                   });
+                           }
+
+                      }
+                    });
+
+                    treeTable.expandAll('parse-table', true); // 展开全部节点
+
+                    //双击事件
+                    treeTable.on('rowDouble(parse-table)', function(obj){
+                      var data = obj.data;
+                      location.href = '@Url.Action("Edit", rv)/'+data["@(fact.Unique.Name.ToLower())"]
+    });
+
+        //开始日期
+    var insStart = laydate.render({
+      elem: '#test-laydate-start'
+      ,min: 0
+      ,done: function(value, date){
+        //更新结束日期的最小日期
+        insEnd.config.min = lay.extend({}, date, {
+          month: date.month - 1
+        });
+
+        //自动弹出结束日期的选择器
+       insEnd.config.elem[0].focus();
+      }
+    });
+
+    //结束日期
+    var insEnd = laydate.render({
+      elem: '#test-laydate-end'
+      ,min: 0
+      ,done: function(value, date){
+        //更新开始日期的最大日期
+        insStart.config.max = lay.extend({}, date, {
+          month: date.month - 1
+        });
+      }
+    });
+}
+
+@section scripts{
+    <script type="text/html" id="table-toolbar">
+        <div class="layui-row layui-col-space5">
+          <div class="layui-col-md2" style="text-align:left;">
+                <div class="layui-btn-container">
+                    @if (this.Has(PermissionFlags.Delete))
+                    {
+                                <button class="layui-btn layui-btn-sm layui-btn-danger icon-btn" lay-event="B_Detele_Data"><i class="layui-icon">&#xe640;</i>批量删除</button>
+                    }
+                    @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+                    {
+                                      <button class="layui-btn layui-btn-sm icon-btn" lay-event="Add_Data"><i class="layui-icon">&#xe654;</i>新增</button>
+                    }
+              </div>
+          </div>
+        </div>
+    </script>
+
+    @* 设置行操作按钮*@
+    @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
+    {
+        @foreach (var entity in Model)
+        {
+            @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+            break;
+        }
+    }
+
+    @* 设置行排序按钮*@
+    @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update))
+    {
+        @foreach (var entity in Model)
+        {
+            @await Html.PartialAsync("_List_Data_Sort", (Object)entity)
+            break;
+        }
+    }
+
+    @* 设置行状态按钮*@
+    @if (this.Has(PermissionFlags.Update))
+    {
+        @foreach (var item in fields)
+        {
+            if (item.Type == typeof(Boolean))
+            {
+                @await Html.PartialAsync("_ListTree_Boolean", (Object)item)
+            }
+        }
+    }
+}
+
+<script>
+    function stringArray(checkdata) {
+        var get_data = new Array();
+        //拼接字符串
+        for (var i = 0; i < checkdata.length; i++) {
+            if (checkdata[i].@fact.Unique.Name.ToLower()) {
+                get_data.push(checkdata[i].@fact.Unique.Name.ToLower());
+            }
+        }
+
+        return get_data.join(',');
+    }
+</script>
+
+<style>
+    .ew-tree-table {
+        margin-bottom: -8px;
+    }
+</style>
+
