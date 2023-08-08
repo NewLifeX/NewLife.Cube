@@ -327,7 +327,7 @@ a:hover{color:var(--lay-color-text-3)}
 .layui-form-checkbox.layui-checkbox-disabled>div{background-color: var(--lay-color-fill-3) !important;}
 /* 复选框-默认风格 */
 .layui-form-checkbox[lay-skin=primary]{background-image:none;background-color:initial;border-color:initial!important}
-.layui-form-checkbox[lay-skin=primary]>div{background-image:none;background-color:initial;color:var(--lay-color-text-2)}
+.layui-form-checkbox[lay-skin=primary]>div{background-image:none;background-color:initial;/*color:var(--lay-color-text-2)*/}
 .layui-form-checkbox[lay-skin=primary]>i{border-color:var(--lay-color-border-1);background-color:var(--lay-color-fill-2)}
 .layui-form-checkbox[lay-skin=primary]:hover>i{border-color:var(--lay-color-secondary-hover);color:var(--lay-color-text-1)}
 .layui-form-checked[lay-skin=primary]>i{background-color:var(--lay-color-secondary);color:var(--lay-color-text-1);border-color:var(--lay-color-secondary-active)!important}

@@ -44,6 +44,23 @@ else if (length < 0 || length >= 300 || (length >= 200 && name.EqualIgnoreCase("
     atts.Add("class", "layui-textarea");
 	@Html.TextArea(name, (String)value, 3, 20, atts)
 }
+else if (name.EqualIgnoreCase("cron"))
+{
+    @Html.TextBox(name, value, atts)
+    <script>
+        layui.config({
+            base: '/modules/' //静态资源所在路径
+        }).use(['cron'], function () {
+            var cron = layui.cron;
+            cron.render({
+                elem: "#@name", // 绑定元素
+                done: function (cronStr) {
+                    console.log(cronStr);
+                }
+            });
+        })
+    </script>
+}
 else
 {
 	@Html.TextBox(name, value, atts)
