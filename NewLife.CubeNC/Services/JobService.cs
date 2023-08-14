@@ -292,7 +292,9 @@ internal class MyJob : IDisposable
         // 检查分布式锁，避免多节点重复执行
         if (!CheckRunning(job))
         {
-            JobService.WriteLog(job.Name, false, "分布式锁检查失败，跳过执行", job);
+            var set = CubeSetting.Current;
+            if (set.Debug)
+                JobService.WriteLog(job.Name, false, "分布式锁检查失败，跳过执行", job);
             return;
         }
 

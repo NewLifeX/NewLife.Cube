@@ -656,7 +656,7 @@ public class OAuthClient
         if (av != null && av.StartsWith("/") && Server.StartsWithIgnoreCase("http"))
             return new Uri(new Uri(Server), av) + "";
 
-        return null;
+        return av;
     }
     #endregion
 
