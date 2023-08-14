@@ -29,7 +29,7 @@ namespace NewLife.Cube.Admin.Controllers;
 public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
-    private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
+    private readonly ICache _cache;
     private readonly PasswordService _passwordService;
     private readonly UserService _userService;
 
@@ -99,48 +99,16 @@ public class UserController : EntityController<User, UserModel>
         }
     }
 
-    ///// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
-    ///// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
-    ///// <param name="model"></param>
-    ///// <returns></returns>
-    //protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
-    //{
-    //    var fields = base.OnGetFields(kind, model);
-    //    if (fields == null) return fields;
-
-    //    var user = ManageProvider.User;//理论上肯定大于0
-    //    var roles = Role.FindAllWithCache().Where(w => w.IsSystem == false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-    //    if (user != null)
-    //    {
-    //        if (user.Role.IsSystem)
-    //        {
-    //            roles = Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-    //        }
-    //    }
-
-    //    switch (kind)
-    //    {
-    //        case ViewKinds.AddForm:
-    //        case ViewKinds.EditForm:
-    //            var df = fields.GetField("RoleID");
-    //            if (df != null) df.DataSource = entity => roles;
-
-    //            var df2 = fields.GetField("RoleIds");
-    //            if (df2 != null) df2.DataSource = entity => roles;
-    //            break;
-    //    }
-
-    //    return fields;
-    //}
-
     /// <summary>
     /// 实例化用户控制器
     /// </summary>
     /// <param name="passwordService"></param>
+    /// <param name="cacheProvider"></param>
     /// <param name="userService"></param>
-    public UserController(PasswordService passwordService, UserService userService)
+    public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService)
     {
         _passwordService = passwordService;
+        _cache = cacheProvider.Cache;
         _userService = userService;
     }
 
