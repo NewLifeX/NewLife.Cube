@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
@@ -54,6 +54,19 @@ namespace NewLife.Cube.Entity
 
             //return Find(_.Id == id);
         }
+
+    /// <summary>根据应用查找</summary>
+    /// <param name="appId">应用</param>
+    /// <returns>实体列表</returns>
+    public static IList<AppLog> FindAllByAppId(Int32 appId)
+    {
+        if (appId <= 0) return new List<AppLog>();
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.AppId == appId);
+
+        return FindAll(_.AppId == appId);
+    }
         #endregion
 
         #region 高级查询
