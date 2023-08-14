@@ -198,6 +198,14 @@ public partial class OAuthConfig
     [BindColumn("FieldMap", "字段映射。SSO用户字段如何映射到OAuthClient内部属性", "")]
     public String FieldMap { get => _FieldMap; set { if (OnPropertyChanging("FieldMap", value)) { _FieldMap = value; OnPropertyChanged("FieldMap"); } } }
 
+    private Boolean _FetchAvatar;
+    /// <summary>抓取头像。是否抓取头像并保存到本地</summary>
+    [DisplayName("抓取头像")]
+    [Description("抓取头像。是否抓取头像并保存到本地")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("FetchAvatar", "抓取头像。是否抓取头像并保存到本地", "")]
+    public Boolean FetchAvatar { get => _FetchAvatar; set { if (OnPropertyChanging("FetchAvatar", value)) { _FetchAvatar = value; OnPropertyChanged("FetchAvatar"); } } }
+
     private Int32 _CreateUserID;
     /// <summary>创建者</summary>
     [Category("扩展")]
@@ -292,6 +300,7 @@ public partial class OAuthConfig
             "Sort" => _Sort,
             "SecurityKey" => _SecurityKey,
             "FieldMap" => _FieldMap,
+            "FetchAvatar" => _FetchAvatar,
             "CreateUserID" => _CreateUserID,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
@@ -327,6 +336,7 @@ public partial class OAuthConfig
                 case "Sort": _Sort = value.ToInt(); break;
                 case "SecurityKey": _SecurityKey = Convert.ToString(value); break;
                 case "FieldMap": _FieldMap = Convert.ToString(value); break;
+                case "FetchAvatar": _FetchAvatar = value.ToBoolean(); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -412,6 +422,9 @@ public partial class OAuthConfig
 
         /// <summary>字段映射。SSO用户字段如何映射到OAuthClient内部属性</summary>
         public static readonly Field FieldMap = FindByName("FieldMap");
+
+        /// <summary>抓取头像。是否抓取头像并保存到本地</summary>
+        public static readonly Field FetchAvatar = FindByName("FetchAvatar");
 
         /// <summary>创建者</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -505,6 +518,9 @@ public partial class OAuthConfig
 
         /// <summary>字段映射。SSO用户字段如何映射到OAuthClient内部属性</summary>
         public const String FieldMap = "FieldMap";
+
+        /// <summary>抓取头像。是否抓取头像并保存到本地</summary>
+        public const String FetchAvatar = "FetchAvatar";
 
         /// <summary>创建者</summary>
         public const String CreateUserID = "CreateUserID";

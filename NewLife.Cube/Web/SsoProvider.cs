@@ -349,6 +349,8 @@ public class SsoProvider
             // 本地头像，如果不存在，也要更新
             else if (user2.Avatar.StartsWithIgnoreCase("/Sso/Avatar/", "/Sso/Avatar?"))
             {
+                // 在分布式系统中，可能存在多个节点，需要判断头像在当前节点是否存在
+                // 使用OSS存储头像成本比较高，还不如在各个节点都存一份
                 var av2 = CubeSetting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
                 if (!File.Exists(av2))
                 {
@@ -358,8 +360,11 @@ public class SsoProvider
                 }
             }
 
-            // 下载远程头像到本地，Avatar还是保存远程头像地址
-            if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user, av));
+            if (client.Config != null && client.Config.FetchAvatar)
+            {
+                // 如果Avatar还是保存远程头像地址，下载远程头像到本地
+                if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user, av));
+            }
         }
     }
 
