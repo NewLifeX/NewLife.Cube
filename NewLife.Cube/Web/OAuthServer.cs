@@ -1,9 +1,13 @@
 ﻿using System.Web;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Web;
 using NewLife.Cube.Web.Models;
 using NewLife.Log;
 using NewLife.Model;
+using NewLife.Security;
 using NewLife.Serialization;
+using XCode.Membership;
+using ILog = NewLife.Log.ILog;
 
 namespace NewLife.Web;
 
@@ -319,11 +323,45 @@ public class OAuthServer
     /// <returns></returns>
     public TokenProvider GetProvider()
     {
-        var prv = TokenProvider;
-        prv ??= TokenProvider = new TokenProvider();
-        if (prv.Key.IsNullOrEmpty()) prv.ReadKey("..\\Keys\\OAuth.prvkey", true);
+        var provider = TokenProvider;
+        provider ??= TokenProvider = new TokenProvider();
+        if (provider.Key.IsNullOrEmpty())
+        {
+            // 从配置加载密钥
+            var prv = Parameter.GetOrAdd(0, "Keys", "OAuth.prvkey");
+            var pub = Parameter.GetOrAdd(0, "Keys", "OAuth.pubkey");
 
-        return prv;
+            if (prv.LongValue.IsNullOrEmpty())
+            {
+                // 从文件加载密钥
+                var file = "..\\Keys\\OAuth.prvkey";
+                provider.ReadKey(file, false);
+
+                // 删除文件
+                var file2 = file.GetBasePath();
+                if (File.Exists(file2)) File.Delete(file2);
+                file2 = Path.ChangeExtension(file, ".pubkey");
+                file2 = file2.GetBasePath();
+                if (File.Exists(file2)) File.Delete(file2);
+
+                prv.LongValue = provider.Key;
+
+                // 生成新密钥
+                if (prv.LongValue.IsNullOrEmpty())
+                {
+                    var ss = DSAHelper.GenerateKey();
+                    prv.LongValue = ss[0];
+                    pub.LongValue = ss[1];
+                }
+
+                prv.Update();
+                pub.Update();
+            }
+
+            provider.Key = prv.LongValue;
+        }
+
+        return provider;
     }
     #endregion
 
