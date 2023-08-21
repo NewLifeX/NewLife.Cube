@@ -51,7 +51,10 @@ namespace NewLife.Cube.Cube.Controllers
                 //if (Area.Meta.Count == 0) ThreadPoolX.QueueUserWorkItem(() => Area.FetchAndSave());
                 // 必须同步初始化，否则无法取得当前登录用户信息
                 //if (Area.Meta.Count == 0) Area.FetchAndSave();
-                if (Area.Meta.Count == 0) Import("http://x.newlifex.com/Area.csv.gz", true);
+          
+                //todo
+                //if (Area.Meta.Count == 0) Import("http://x.newlifex.com/Area.csv.gz", true);//严重性	代码	说明	项目	文件	行	禁止显示状态                错误 CS7036  未提供与“Area.Import(string, bool, int, bool)”的所需参数“level”对应的参数 NewLife.CubeNC(net6.0), NewLife.CubeNC(net7.0)    D:\X\NewLife.Cube\NewLife.CubeNC\Areas\Cube\Controllers\AreaController.cs   54  活动
+
             }
 
             var id = p["id"].ToInt(-1);
