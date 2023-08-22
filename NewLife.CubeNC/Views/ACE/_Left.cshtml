@@ -15,6 +15,8 @@
     @foreach (var menu in menus.Where(w => w.Visible))
     {
         var childs = menu.Children ?? new List<MenuTree>();
+        if (set.EnableTenant) childs = MenuHelper.FilterByTenant(childs, ctx != null && ctx.TenantId > 0);
+ 
         if (_idx >= icos.Length) { _idx = 0; }
         var ico = !menu.Icon.IsNullOrEmpty() ? menu.Icon : icos[_idx++];
         <li @Html.Raw(menu == menus[0] ? "class=\"active open\"" : "")>

@@ -240,10 +240,20 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             {
                 HttpContext.Items["TenantId"] = tenant.Id;
 
-                if (!exp.IsNullOrEmpty())
-                    exp = "TenantId={#TenantId} and " + exp;
+                if (typeof(TEntity) == typeof(Tenant))
+                {
+                    if (!exp.IsNullOrEmpty())
+                        exp = "Id={#TenantId} and " + exp;
+                    else
+                        exp = "Id={#TenantId}";
+                }
                 else
-                    exp = "TenantId={#TenantId}";
+                {
+                    if (!exp.IsNullOrEmpty())
+                        exp = "TenantId={#TenantId} and " + exp;
+                    else
+                        exp = "TenantId={#TenantId}";
+                }
             }
         }
 

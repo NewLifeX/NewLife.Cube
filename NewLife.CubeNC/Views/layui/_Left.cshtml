@@ -17,6 +17,8 @@
             @foreach (var menu in menus.Where(e => e.Visible))
             {
                 var childs = menu.Children ?? new List<MenuTree>();
+                if (set.EnableTenant) childs = MenuHelper.FilterByTenant(childs, ctx != null && ctx.TenantId > 0);
+
                 <li class="layui-nav-item @(flag?"layui-nav-itemed":"")">
                 <a href="javascript:;">@menu.DisplayName</a>
                 @if (childs.Any())

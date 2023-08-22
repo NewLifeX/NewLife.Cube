@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
@@ -273,19 +274,65 @@ public static class MenuHelper
 
         foreach (var item in menus)
         {
-            var flag = false;
             if (!item.FullName.IsNullOrEmpty())
             {
-                var type = Type.GetType(item.FullName);
-                if (type != null && type.As<ITenantController>())
+                // 控制器菜单是否支持租户显示
+                if (CheckVisibleInTenant(item))
                 {
-                    flag = true;
+                    // 支持租户显示，且当前是租户，则显示
+                    if (isTenant)
+                        list.Add(item);
+                    // 同时支持租户和管理员显示
+                    else if (CheckVisibleInAdmin(item))
+                        list.Add(item);
+                }
+                else
+                {
+                    // 不支持租户显示，且不是租户，则显示
+                    if (!isTenant)
+                        list.Add(item);
+                    else if (item.Children != null)
+                    {
+                        // 虽然当前大菜单不支持租户显示，但是子菜单支持，则显示
+                        if (item.Children.Any(e => CheckVisibleInTenant(e)))
+                            list.Add(item);
+                    }
                 }
             }
-
-            if (isTenant && flag || !isTenant && !flag) list.Add(item);
         }
 
         return list;
+    }
+
+    static Dictionary<String, Boolean> _tenants = new();
+    static Boolean CheckVisibleInTenant(MenuTree menu)
+    {
+        var key = menu.FullName;
+        if (_tenants.TryGetValue(key, out var rs)) return rs;
+
+        var type = Type.GetType(menu.FullName);
+        var att = type?.GetCustomAttribute<MenuAttribute>();
+        if (att != null && att.Mode.Has(MenuModes.Tenant))
+        {
+            return _tenants[key] = true;
+        }
+
+        return _tenants[key] = false;
+    }
+
+    static Dictionary<String, Boolean> _admins = new();
+    static Boolean CheckVisibleInAdmin(MenuTree menu)
+    {
+        var key = menu.FullName;
+        if (_admins.TryGetValue(key, out var rs)) return rs;
+
+        var type = Type.GetType(menu.FullName);
+        var att = type?.GetCustomAttribute<MenuAttribute>();
+        if (att != null && att.Mode.Has(MenuModes.Admin))
+        {
+            return _admins[key] = true;
+        }
+
+        return _admins[key] = false;
     }
 }
