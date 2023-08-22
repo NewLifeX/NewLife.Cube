@@ -263,7 +263,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     }
 
     /// <summary>是否租户实体类</summary>
-    protected Boolean IsTenantSource => typeof(TEntity).GetInterfaces().Any(e => e == typeof(ITenantSource));
+    public Boolean IsTenantSource => typeof(TEntity).GetInterfaces().Any(e => e == typeof(ITenantSource));
 
     /// <summary>获取选中键</summary>
     /// <returns></returns>

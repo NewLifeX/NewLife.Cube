@@ -1,8 +1,14 @@
-﻿@using NewLife.Model;
+﻿@using NewLife.Cube.Membership;
+@using NewLife.Model;
 @using NewLife.Cube.ViewModels;
 @{
     var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
     var flag = true;
+
+    // 根据租户模式过滤菜单
+    var ctx = TenantContext.Current;
+    var set = CubeSetting.Current;
+    if (set.EnableTenant) menus = MenuHelper.FilterByTenant(menus, ctx != null && ctx.TenantId > 0);
 }
 
 <div class="layui-side layui-bg-black">

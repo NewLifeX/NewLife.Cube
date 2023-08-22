@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
@@ -260,5 +261,31 @@ public static class MenuHelper
         }
 
         return dic;
+    }
+
+    /// <summary>根据租户隔离菜单</summary>
+    /// <param name="menus"></param>
+    /// <param name="isTenant"></param>
+    /// <returns></returns>
+    public static IList<MenuTree> FilterByTenant(IList<MenuTree> menus, Boolean isTenant)
+    {
+        var list = new List<MenuTree>();
+
+        foreach (var item in menus)
+        {
+            var flag = false;
+            if (!item.FullName.IsNullOrEmpty())
+            {
+                var type = Type.GetType(item.FullName);
+                if (type != null && type.As<ITenantController>())
+                {
+                    flag = true;
+                }
+            }
+
+            if (isTenant && flag || !isTenant && !flag) list.Add(item);
+        }
+
+        return list;
     }
 }
