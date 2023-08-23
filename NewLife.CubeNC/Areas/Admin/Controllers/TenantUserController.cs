@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NewLife.Web;
 using XCode.Membership;
+using UserX = XCode.Membership.User;
 
 namespace NewLife.Cube.Admin.Controllers;
 
@@ -34,21 +35,38 @@ public class TenantUserController : EntityController<TenantUser>
         var RoleIds = tenant?.RoleIds.SplitAsInt(",");
         // 新增界面
         {
+            // 角色组
             var df = AddFormFields.GetField("RoleIds");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 ? true : RoleIds?.Contains(e.ID) ?? false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 || (RoleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
         }
         {
+            // 角色
             var df = AddFormFields.GetField("RoleId");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 ? true : RoleIds?.Contains(e.ID) ?? false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 || (RoleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
         }
+        {
+            // 用户
+            var df = AddFormFields.GetField("UserId");
+            var list = TenantUser.FindAllByTenantId(TenantId).Select(e => e.UserId);
+            df.DataSource = entity => UserX.FindAllWithCache().Where(e => TenantId == 0 || !list.Any() || !list.Contains(e.ID)).OrderByDescending(e => e.ID).ToDictionary(e => e.ID, e => e.DisplayName);
+        }
+
         // 编辑界面
         {
+            // 角色组
             var df = EditFormFields.GetField("RoleIds");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 ? true : RoleIds?.Contains(e.ID) ?? false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 || (RoleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
         }
         {
+            // 角色
             var df = EditFormFields.GetField("RoleId");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 ? true : RoleIds?.Contains(e.ID) ?? false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 || (RoleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        }
+        {
+            // 用户
+            var df = EditFormFields.GetField("UserId");
+            var list = TenantUser.FindAllByTenantId(TenantId).Select(e => e.UserId);
+            df.DataSource = entity => UserX.FindAllWithCache().Where(e => TenantId == 0 || !list.Any() || !list.Contains(e.ID)).OrderByDescending(e => e.ID).ToDictionary(e => e.ID, e => e.DisplayName);
         }
     }
 
