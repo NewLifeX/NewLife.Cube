@@ -240,10 +240,20 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             {
                 HttpContext.Items["TenantId"] = tenant.Id;
 
-                if (!exp.IsNullOrEmpty())
-                    exp = "TenantId={#TenantId} and " + exp;
+                if (typeof(TEntity) == typeof(Tenant))
+                {
+                    if (!exp.IsNullOrEmpty())
+                        exp = "Id={#TenantId} and " + exp;
+                    else
+                        exp = "Id={#TenantId}";
+                }
                 else
-                    exp = "TenantId={#TenantId}";
+                {
+                    if (!exp.IsNullOrEmpty())
+                        exp = "TenantId={#TenantId} and " + exp;
+                    else
+                        exp = "TenantId={#TenantId}";
+                }
             }
         }
 
@@ -263,7 +273,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     }
 
     /// <summary>是否租户实体类</summary>
-    protected Boolean IsTenantSource => typeof(TEntity).GetInterfaces().Any(e => e == typeof(ITenantSource));
+    public Boolean IsTenantSource => typeof(TEntity).GetInterfaces().Any(e => e == typeof(ITenantSource));
 
     /// <summary>获取选中键</summary>
     /// <returns></returns>

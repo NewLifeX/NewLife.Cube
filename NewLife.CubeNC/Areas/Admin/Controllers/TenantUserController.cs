@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode.Membership;
 using UserX = XCode.Membership.User;
@@ -7,7 +9,7 @@ namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>租户关系</summary>
 [Area("Admin")]
-[Menu(10, true, Icon = "fa-users")]
+[Menu(10, true, Icon = "fa-users", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class TenantUserController : EntityController<TenantUser>
 {
     static TenantUserController()
@@ -28,11 +30,12 @@ public class TenantUserController : EntityController<TenantUser>
         }
     }
 
+    /// <summary>实例化</summary>
     public TenantUserController()
     {
-        var TenantId = TenantContext.Current.TenantId;
-        var tenant = Tenant.FindById(TenantId);
-        var RoleIds = tenant?.RoleIds.SplitAsInt(",");
+        var tenantId = TenantContext.CurrentId;
+        var tenant = Tenant.FindById(tenantId);
+        var roleIds = tenant?.RoleIds.SplitAsInt(",");
         // 新增界面
         {
             // 角色组
@@ -60,14 +63,33 @@ public class TenantUserController : EntityController<TenantUser>
         {
             // 角色
             var df = EditFormFields.GetField("RoleId");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 || (RoleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 ? true : roleIds?.Contains(e.ID) ?? false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
         }
+    }
+
+    /// <summary>获取字段信息</summary>
+    /// <param name="kind"></param>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
+    {
+        var rs = base.OnGetFields(kind, model);
+
+        if (TenantContext.CurrentId > 0)
         {
-            // 用户
-            var df = EditFormFields.GetField("UserId");
-            var list = TenantUser.FindAllByTenantId(TenantId).Select(e => e.UserId);
-            df.DataSource = entity => UserX.FindAllWithCache().Where(e => TenantId == 0 || !list.Any() || !list.Contains(e.ID)).OrderByDescending(e => e.ID).ToDictionary(e => e.ID, e => e.DisplayName);
+            switch (kind)
+            {
+                case ViewKinds.Detail:
+                case ViewKinds.AddForm:
+                case ViewKinds.EditForm:
+                    rs.RemoveField("TenantId", "TenantName");
+                    break;
+                default:
+                    break;
+            }
         }
+
+        return rs;
     }
 
     /// <summary>搜索数据集</summary>
@@ -83,10 +105,26 @@ public class TenantUserController : EntityController<TenantUser>
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
 
-        var tenantId = TenantContext.Current.TenantId;
+        var tenantId = TenantContext.CurrentId;
 
         tenantId = tenantId == 0 ? p["tenantId"].ToInt(-1) : tenantId;
 
         return TenantUser.Search(tenantId, userId, roleId, enable, start, end, p["q"], p);
+    }
+
+    /// <summary>验证数据</summary>
+    /// <param name="entity"></param>
+    /// <param name="type"></param>
+    /// <param name="post"></param>
+    /// <returns></returns>
+    protected override Boolean Valid(TenantUser entity, DataObjectMethodType type, Boolean post)
+    {
+        if (type == DataObjectMethodType.Insert)
+        {
+            if (entity.TenantId == 0) entity.TenantId = TenantContext.CurrentId;
+            if (entity.UserId == 0) entity.UserId = ManageProvider.Provider.Current.ID;
+        }
+
+        return base.Valid(entity, type, post);
     }
 }

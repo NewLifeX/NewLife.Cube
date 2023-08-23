@@ -1,8 +1,13 @@
-﻿@using NewLife.Model;
+﻿@using NewLife.Cube.Membership;
+@using NewLife.Model;
 @using NewLife.Cube.ViewModels;
 @{
     var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
     var flag = true;
+
+    // 根据租户模式过滤菜单
+    var set = CubeSetting.Current;
+    if (set.EnableTenant) menus = MenuHelper.FilterByTenant(menus, TenantContext.CurrentId > 0);
 }
 
 <div class="layui-side layui-bg-black">
@@ -11,6 +16,8 @@
             @foreach (var menu in menus.Where(e => e.Visible))
             {
                 var childs = menu.Children ?? new List<MenuTree>();
+                if (set.EnableTenant) childs = MenuHelper.FilterByTenant(childs, TenantContext.CurrentId > 0);
+
                 <li class="layui-nav-item @(flag?"layui-nav-itemed":"")">
                 <a href="javascript:;">@menu.DisplayName</a>
                 @if (childs.Any())

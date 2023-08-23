@@ -80,7 +80,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         }
 
         // 当前租户
-        var tid = TenantContext.Current?.TenantId ?? 0;
+        var tid = TenantContext.CurrentId;
         if (tid > 0)
         {
             var tus = TenantUser.FindAllByUserId(user.ID);
