@@ -9,9 +9,8 @@
     var ico = !item.Icon.IsNullOrEmpty() ? item.Icon : "fa-caret-right";
 
     // 根据租户模式过滤菜单
-    var ctx = TenantContext.Current;
     var set = CubeSetting.Current;
-    if (set.EnableTenant) childs = MenuHelper.FilterByTenant(childs, ctx != null && ctx.TenantId > 0);
+    if (set.EnableTenant) childs = MenuHelper.FilterByTenant(childs, TenantContext.CurrentId > 0);
 }
 <li>
     @if (childs.Any())

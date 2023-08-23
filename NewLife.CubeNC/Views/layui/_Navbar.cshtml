@@ -47,7 +47,7 @@
     {
         var tList = TenantUser.FindAllByUserId(user.ID);
 
-        var tenant = XCode.Membership.Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
+        var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
         var tenantName = tenant?.Name;
 
         <ul class="layui-nav layui-layout-right" style="right:140px;">

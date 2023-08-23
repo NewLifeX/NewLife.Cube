@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode.Membership;
 
@@ -51,6 +53,8 @@ public class TenantController : EntityController<Tenant>
             if (entity != null) return new[] { entity };
         }
 
+        if (TenantContext.CurrentId > 0) PageSetting.EnableAdd = false;
+
         var managerId = p["managerId"].ToInt(-1);
         //var roleIds = p["roleIds"].SplitAsInt();
         var enable = p["enable"]?.ToBoolean();
@@ -58,5 +62,20 @@ public class TenantController : EntityController<Tenant>
         var end = p["dtEnd"].ToDateTime();
 
         return Tenant.Search(null, managerId, enable, start, end, p["q"], p);
+    }
+
+    /// <summary>验证数据</summary>
+    /// <param name="entity"></param>
+    /// <param name="type"></param>
+    /// <param name="post"></param>
+    /// <returns></returns>
+    protected override Boolean Valid(Tenant entity, DataObjectMethodType type, Boolean post)
+    {
+        if (/*!post &&*/ type == DataObjectMethodType.Insert)
+        {
+            if (entity.ManagerId == 0) entity.ManagerId = ManageProvider.Provider.Current.ID;
+        }
+
+        return base.Valid(entity, type, post);
     }
 }

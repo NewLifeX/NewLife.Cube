@@ -34,15 +34,19 @@ public class DepartmentController : EntityController<Department>
     protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
     {
         var rs = base.OnGetFields(kind, model);
-        switch (kind)
+
+        if (TenantContext.CurrentId > 0)
         {
-            case ViewKinds.Detail:
-            case ViewKinds.AddForm:
-            case ViewKinds.EditForm:
-                rs.RemoveField("TenantId", "TenantName");
-                break;
-            default:
-                break;
+            switch (kind)
+            {
+                case ViewKinds.Detail:
+                case ViewKinds.AddForm:
+                case ViewKinds.EditForm:
+                    rs.RemoveField("TenantId", "TenantName");
+                    break;
+                default:
+                    break;
+            }
         }
 
         return rs;
@@ -67,5 +71,21 @@ public class DepartmentController : EntityController<Department>
         var visible = p["visible"]?.ToBoolean();
 
         return Department.Search(parentId, enable, visible, p["Q"], p);
+    }
+
+    /// <summary>验证数据</summary>
+    /// <param name="entity"></param>
+    /// <param name="type"></param>
+    /// <param name="post"></param>
+    /// <returns></returns>
+    protected override Boolean Valid(Department entity, DataObjectMethodType type, Boolean post)
+    {
+        if (/*!post &&*/ type == DataObjectMethodType.Insert)
+        {
+            if (entity.TenantId == 0) entity.TenantId = TenantContext.CurrentId;
+            if (entity.ManagerId == 0) entity.ManagerId = ManageProvider.Provider.Current.ID;
+        }
+
+        return base.Valid(entity, type, post);
     }
 }
