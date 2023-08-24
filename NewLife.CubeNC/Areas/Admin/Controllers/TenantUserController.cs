@@ -24,9 +24,19 @@ public class TenantUserController : EntityController<TenantUser>
             AddFormFields.RemoveField("RoleNames");
         }
         {
+            var df = AddFormFields.AddDataField("RoleId", "RoleName");
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            AddFormFields.RemoveField("RoleName");
+        }
+        {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
+        }
+        {
+            var df = EditFormFields.AddDataField("RoleId", "RoleName");
+            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            EditFormFields.RemoveField("RoleName");
         }
     }
 
@@ -40,30 +50,39 @@ public class TenantUserController : EntityController<TenantUser>
         {
             // 角色组
             var df = AddFormFields.GetField("RoleIds");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 || (RoleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
         }
         {
             // 角色
             var df = AddFormFields.GetField("RoleId");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 || (RoleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
         }
         {
             // 用户
             var df = AddFormFields.GetField("UserId");
-            var list = TenantUser.FindAllByTenantId(TenantId).Select(e => e.UserId);
-            df.DataSource = entity => UserX.FindAllWithCache().Where(e => TenantId == 0 || !list.Any() || !list.Contains(e.ID)).OrderByDescending(e => e.ID).ToDictionary(e => e.ID, e => e.DisplayName);
+            var list = TenantUser.FindAllByTenantId(tenantId).Select(e => e.UserId).ToList();
+            if (tenantId > 0) list.Add(tenant.ManagerId);
+            df.DataSource = entity => UserX.FindAllWithCache().Where(e => !list.Any(x => x == e.ID)).OrderByDescending(e => e.ID).ToDictionary(e => e.ID, e => e.DisplayName);
         }
 
         // 编辑界面
         {
             // 角色组
             var df = EditFormFields.GetField("RoleIds");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => TenantId == 0 || (RoleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
         }
         {
             // 角色
             var df = EditFormFields.GetField("RoleId");
-            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 ? true : roleIds?.Contains(e.ID) ?? false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.MapField = "RoleId";
+        }
+        {
+            // 用户
+            var df = AddFormFields.GetField("UserId");
+            var list = TenantUser.FindAllByTenantId(tenantId).Select(e => e.UserId).ToList();
+            if (tenantId > 0) list.Add(tenant.ManagerId);
+            df.DataSource = entity => UserX.FindAllWithCache().Where(e => !list.Any(x => x == e.ID)).OrderByDescending(e => e.ID).ToDictionary(e => e.ID, e => e.DisplayName);
         }
     }
 
