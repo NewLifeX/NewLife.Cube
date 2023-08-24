@@ -29,6 +29,11 @@ public class TenantUserController : EntityController<TenantUser>
             AddFormFields.RemoveField("RoleName");
         }
         {
+            var df = AddFormFields.AddDataField("TenantId", "TenantName");
+            df.DataSource = entity => Tenant.FindAllWithCache().OrderByDescending(e => e.Id).ToDictionary(e => e.Id, e => e.Name);
+            AddFormFields.RemoveField("TenantName");
+        }
+        {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
@@ -37,6 +42,11 @@ public class TenantUserController : EntityController<TenantUser>
             var df = EditFormFields.AddDataField("RoleId", "RoleName");
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             EditFormFields.RemoveField("RoleName");
+        }
+        {
+            var df = EditFormFields.AddDataField("TenantId", "TenantName");
+            df.DataSource = entity => Tenant.FindAllWithCache().OrderByDescending(e => e.Id).ToDictionary(e => e.Id, e => e.Name);
+            EditFormFields.RemoveField("TenantName");
         }
     }
 
@@ -64,6 +74,11 @@ public class TenantUserController : EntityController<TenantUser>
             if (tenantId > 0) list.Add(tenant.ManagerId);
             df.DataSource = entity => UserX.FindAllWithCache().Where(e => !list.Any(x => x == e.ID)).OrderByDescending(e => e.ID).ToDictionary(e => e.ID, e => e.DisplayName);
         }
+        {
+            // 租户
+            var df = AddFormFields.GetField("TenantId");
+            df.DataSource = entity => Tenant.FindAllWithCache().Where(e => tenantId == 0 || e.Id == tenantId).OrderByDescending(e => e.Id).ToDictionary(e => e.Id, e => e.Name);
+        }
 
         // 编辑界面
         {
@@ -75,7 +90,6 @@ public class TenantUserController : EntityController<TenantUser>
             // 角色
             var df = EditFormFields.GetField("RoleId");
             df.DataSource = entity => Role.FindAllWithCache().Where(e => tenantId == 0 || (roleIds?.Contains(e.ID) ?? false)).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-            df.MapField = "RoleId";
         }
         {
             // 用户
@@ -83,6 +97,11 @@ public class TenantUserController : EntityController<TenantUser>
             var list = TenantUser.FindAllByTenantId(tenantId).Select(e => e.UserId).ToList();
             if (tenantId > 0) list.Add(tenant.ManagerId);
             df.DataSource = entity => UserX.FindAllWithCache().Where(e => !list.Any(x => x == e.ID)).OrderByDescending(e => e.ID).ToDictionary(e => e.ID, e => e.DisplayName);
+        }
+        {
+            // 租户
+            var df = AddFormFields.GetField("TenantId");
+            df.DataSource = entity => Tenant.FindAllWithCache().Where(e => tenantId == 0 || e.Id == tenantId).OrderByDescending(e => e.Id).ToDictionary(e => e.Id, e => e.Name);
         }
     }
 
