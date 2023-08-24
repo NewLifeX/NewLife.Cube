@@ -49,8 +49,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApi版", "WebApi版", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "测试", "测试", "{12E138A8-D4DF-4CAD-8205-897D3A7AE95C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XCode", "..\NewLife.XCode\XCode\XCode.csproj", "{A2CC81D0-D576-47AF-894D-599073FA905F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,10 +111,6 @@ Global
 		{D800A693-B55C-40F3-B80E-C0BE2EC3E79C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D800A693-B55C-40F3-B80E-C0BE2EC3E79C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D800A693-B55C-40F3-B80E-C0BE2EC3E79C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2CC81D0-D576-47AF-894D-599073FA905F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2CC81D0-D576-47AF-894D-599073FA905F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A2CC81D0-D576-47AF-894D-599073FA905F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2CC81D0-D576-47AF-894D-599073FA905F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
