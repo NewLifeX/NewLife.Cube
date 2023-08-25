@@ -25,9 +25,8 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
-    private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
+    private readonly ICache _cache;
     private readonly PasswordService _passwordService;
-    private readonly UserService _userService;
 
     static UserController()
     {
@@ -98,11 +97,11 @@ public class UserController : EntityController<User, UserModel>
     /// 实例化用户控制器
     /// </summary>
     /// <param name="passwordService"></param>
-    /// <param name="userService"></param>
-    public UserController(PasswordService passwordService, UserService userService)
+    /// <param name="cacheProvider"></param>
+    public UserController(PasswordService passwordService, ICacheProvider cacheProvider)
     {
         _passwordService = passwordService;
-        _userService = userService;
+        _cache = cacheProvider.Cache;
     }
 
     /// <summary>搜索数据集</summary>
@@ -250,9 +249,9 @@ public class UserController : EntityController<User, UserModel>
         var remember = loginModel.Remember;
 
         // 连续错误校验
-        var key = $"Login:{username}";
+        var key = $"CubeLogin:{username}";
         var errors = _cache.Get<Int32>(key);
-        var ipKey = $"Login:{UserHost}";
+        var ipKey = $"CubeLogin:{UserHost}";
         var ipErrors = _cache.Get<Int32>(ipKey);
 
         var set = CubeSetting.Current;

@@ -349,6 +349,8 @@ public class SsoProvider
             // 本地头像，如果不存在，也要更新
             else if (user2.Avatar.StartsWithIgnoreCase("/Sso/Avatar/", "/Sso/Avatar?"))
             {
+                // 在分布式系统中，可能存在多个节点，需要判断头像在当前节点是否存在
+                // 使用OSS存储头像成本比较高，还不如在各个节点都存一份
                 var av2 = CubeSetting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
                 if (!File.Exists(av2))
                 {
@@ -358,8 +360,11 @@ public class SsoProvider
                 }
             }
 
-            // 下载远程头像到本地，Avatar还是保存远程头像地址
-            if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user, av));
+            if (client.Config != null && client.Config.FetchAvatar)
+            {
+                // 如果Avatar还是保存远程头像地址，下载远程头像到本地
+                if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user, av));
+            }
         }
     }
 
@@ -971,31 +976,63 @@ public class SsoProvider
         if (key.IsNullOrEmpty())
         {
             if (name.IsNullOrEmpty()) name = "SsoSecurity";
-            var file = $"..\\Keys\\{name}.prvkey".GetFullPath();
-            if (File.Exists(file)) key = File.ReadAllText(file);
 
-            if (key.IsNullOrEmpty())
+            var prv = Parameter.GetOrAdd(0, "Keys", $"{name}.prvkey");
+            var pub = Parameter.GetOrAdd(0, "Keys", $"{name}.pubkey");
+
+            try
             {
-                file.EnsureDirectory(true);
+                var file = $"..\\Keys\\{name}.prvkey".GetFullPath();
+                if (File.Exists(file))
+                {
+                    if (prv.LongValue.IsNullOrEmpty()) prv.LongValue = File.ReadAllText(file);
+
+                    File.Delete(file);
+                }
+                file = $"..\\Keys\\{name}.pubkey".GetFullPath();
+                if (File.Exists(file))
+                {
+                    if (pub.LongValue.IsNullOrEmpty()) pub.LongValue = File.ReadAllText(file);
+
+                    File.Delete(file);
+                }
+
+                var di = file.AsFile().Directory;
+                if (di.Exists && !di.GetAllFiles().Any()) di.Delete(true);
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
+            }
+
+            if (prv.LongValue.IsNullOrEmpty())
+            {
+                //file.EnsureDirectory(true);
 
                 var ks = RSAHelper.GenerateKey();
-                File.WriteAllText(file, ks[0]);
-                File.WriteAllText(file.TrimEnd(".prvkey") + ".pubkey", ks[1]);
-                key = ks[0];
+                //File.WriteAllText(file, ks[0]);
+                //File.WriteAllText(file.TrimEnd(".prvkey") + ".pubkey", ks[1]);
+                prv.LongValue = ks[0];
+                pub.LongValue = ks[1];
             }
+
+            key = prv.LongValue;
+
+            prv.Update();
+            pub.Update();
         }
         if (key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(SecurityKey), $"无法找到名为[{name}]的密钥");
 
-        var name2 = "";
-        var p = key.IndexOf('$');
-        if (p >= 0)
-        {
-            name2 = key[..p];
-            key = key[(p + 1)..];
-        }
+        //var name2 = "";
+        //var p = key.IndexOf('$');
+        //if (p >= 0)
+        //{
+        //    name2 = key[..p];
+        //    key = key[(p + 1)..];
+        //}
 
-        if (!name.IsNullOrEmpty() && !name2.IsNullOrEmpty() && !name.EqualIgnoreCase(name2))
-            throw new ArgumentOutOfRangeException(nameof(SecurityKey), $"无法找到名为[{name}]的密钥");
+        //if (!name.IsNullOrEmpty() && !name2.IsNullOrEmpty() && !name.EqualIgnoreCase(name2))
+        //    throw new ArgumentOutOfRangeException(nameof(SecurityKey), $"无法找到名为[{name}]的密钥");
 
         return key;
     }
