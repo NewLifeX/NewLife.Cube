@@ -117,53 +117,53 @@
     <script src="@res/artDialog/dist/dialog.new.life.js"></script>
 
     <script type="text/javascript">
-                $(function () {
-                    var $frmContent = $('#main');
-                    function fixFrmContentSize() {
-                        var offset = $frmContent.offset();
-                        var top = offset.top;
-                        var height = document.documentElement.clientHeight;
-                        $frmContent.height(height - top);
+        $(function () {
+            var $frmContent = $('#main');
+            function fixFrmContentSize() {
+                var offset = $frmContent.offset();
+                var top = offset.top;
+                var height = document.documentElement.clientHeight;
+                $frmContent.height(height - top);
+            }
+            fixFrmContentSize();
+            $(window).resize(fixFrmContentSize);
+
+            //增加iframe被嵌套的检测2015-6-4 景裔增加
+            if (window != top) {
+                top.location.href = location.href;
+            }
+
+            //菜单active样式
+            $(".nav-list").children("li").click(function () {
+                var $this = $(this);
+                $this.siblings("li").each(function () {
+                    var $item = $(this);
+                    if ($item.attr("class") == "open") {
+                        $item.removeClass("open");
+                        $item.children(".submenu").hide();
                     }
-                    fixFrmContentSize();
-                    $(window).resize(fixFrmContentSize);
-
-                    //增加iframe被嵌套的检测2015-6-4 景裔增加
-                    if (window != top) {
-                        top.location.href = location.href;
-                    }
-
-                    //菜单active样式
-                    $(".nav-list").children("li").click(function () {
-                        var $this = $(this);
-                        $this.siblings("li").each(function () {
-                            var $item = $(this);
-                            if ($item.attr("class") == "open") {
-                                $item.removeClass("open");
-                                $item.children(".submenu").hide();
-                            }
-                        });
-                        $this.addClass('open');
-                    });
-
-                    $(".submenu li").click(function () {
-                        var $this = $(this);
-                        //兄弟节点去焦
-                        $this.siblings("li").removeClass("active");
-                        $this.addClass('active');
-                        //父节点获取焦点
-                        var $parent = $this.parent().parent();
-                        $parent.addClass("active");
-                        $parent.siblings("li").each(function () {
-                            var $item = $(this);
-                            $item.removeClass("open").removeClass("active");
-                            $item.children(".submenu").hide();
-                            if ($item.children(".submenu").length != 0) {
-                                $item.children(".submenu").children("li").removeClass("active");
-                            }
-                        });
-                    });
                 });
+                $this.addClass('open');
+            });
+
+            $(".submenu li").click(function () {
+                var $this = $(this);
+                //兄弟节点去焦
+                $this.siblings("li").removeClass("active");
+                $this.addClass('active');
+                //父节点获取焦点
+                var $parent = $this.parent().parent();
+                $parent.addClass("active");
+                $parent.siblings("li").each(function () {
+                    var $item = $(this);
+                    $item.removeClass("open").removeClass("active");
+                    $item.children(".submenu").hide();
+                    if ($item.children(".submenu").length != 0) {
+                        $item.children(".submenu").children("li").removeClass("active");
+                    }
+                });
+            });
+        });
 
     </script>
 </body>
