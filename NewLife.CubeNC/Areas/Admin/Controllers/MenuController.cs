@@ -18,25 +18,4 @@ public class MenuController : EntityTreeController<Menu>
         // 过滤要显示的字段
         ListFields.RemoveField("Remark");
     }
-
-    /// <summary>验证实体对象</summary>
-    /// <param name="entity"></param>
-    /// <param name="type"></param>
-    /// <param name="post"></param>
-    /// <returns></returns>
-    protected override Boolean Valid(Menu entity, DataObjectMethodType type, Boolean post)
-    {
-        var rs = base.Valid(entity, type, post);
-
-        // 清空缓存
-        if (post) XCode.Membership.Menu.Meta.Session.ClearCache($"{type}-{entity}", true);
-
-        return rs;
-    }
-
-    public override void OnActionExecuting(ActionExecutingContext filterContext) 
-    {
-        ViewBag.Fields = OnGetFields(ViewKinds.List, null);
-        base.OnActionExecuting(filterContext);
-    }
 }
