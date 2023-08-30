@@ -159,6 +159,9 @@
     <None Include="..\NewLife.Cube\Entity\xcodetool.exe" Link="Entity\xcodetool.exe" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\NewLife.XCode\XCode\XCode.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Update="Views\Shared\_Suggest.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

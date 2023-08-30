@@ -46,6 +46,15 @@
     @if (set.EnableTenant && user != null)
     {
         var tList = TenantUser.FindAllByUserId(user.ID);
+        var tManager = Tenant.FindByManagerId(user.ID);
+        if (tManager != null)
+        {
+            tList.Add(new TenantUser()
+                    {
+                        TenantId = tManager.Id,
+                        UserId = user.ID
+                    });
+        }
 
         var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
         var tenantName = tenant?.Name;
