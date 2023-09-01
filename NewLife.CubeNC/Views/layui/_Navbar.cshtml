@@ -45,20 +45,9 @@
 
     @if (set.EnableTenant && user != null)
     {
-        var tList = TenantUser.FindAllByUserId(user.ID);
-        // 创建租户或修改租户管理员时，会自动添加租户管理员到租户用户表，所以这里不需要再添加
-        // var tManager = Tenant.FindByManagerId(user.ID);
-        // if (tManager != null)
-        // {
-        //     tList.Add(new TenantUser()
-        //             {
-        //                 TenantId = tManager.Id,
-        //                 UserId = user.ID
-        //             });
-        // }
-
+        var tList = TenantUser.FindAllByUserId(user.ID).Where(e => e.Tenant.Enable);
         var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
-        var tenantName = tenant?.Name;
+        var tenantName = tenant == null ? null : tenant.Enable ? tenant.Name : null;
 
         <ul class="layui-nav layui-layout-right" style="right:140px;">
             <li class="layui-nav-item layui-show-md-inline-block">
