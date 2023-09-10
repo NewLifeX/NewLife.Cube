@@ -100,6 +100,26 @@ public static class ManagerProviderHelper
             else
                 SaveTenant(context, 0);
         }
+
+        CheckTenantRole();
+    }
+
+    private static Int32 _checkRole;
+    /// <summary>检查并添加租户管理员角色</summary>
+    private static void CheckTenantRole()
+    {
+        if (_checkRole > 0 || Interlocked.CompareExchange(ref _checkRole, 1, 0) != 0) return;
+
+        var role = Role.FindByName("租户管理员");
+        if (role == null)
+        {
+            role = new Role
+            {
+                Name = "租户管理员",
+                Enable = true,
+            };
+            role.Insert();
+        }
     }
 
     /// <summary>设置租户</summary>
