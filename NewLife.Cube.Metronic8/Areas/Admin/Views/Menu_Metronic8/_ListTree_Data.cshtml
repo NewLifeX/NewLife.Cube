@@ -54,11 +54,11 @@
                                 {
                                     if (!menu.Icon.IsNullOrEmpty())
                                     {
-                                        <i class="fas @menu.Icon text-primary"></i>
+                                        <i class="far @menu.Icon text-primary"></i>
                                     }
                                     else
                                     {
-                                        <i class="fas fa-bookmark text-white"></i>
+                                        <i class="far fa-bookmark text-white"></i>
                                     }
                                 }
                                 @entity.TreeNodeName
@@ -69,11 +69,11 @@
                             <td class="text-center">
                                 @if (entity.Visible)
                                 {
-                                    <i class="fas fa-check fw-bolder text-success"></i>
+                                    <i class="far fa-check fw-bolder text-success"></i>
                                 }
                                 else
                                 {
-                                    <i class="fas fa-times fw-bolder text-danger"></i>
+                                    <i class="far fa-times fw-bolder text-danger"></i>
                                 }
                             </td>
                             <td>@entity.Permission</td>
@@ -82,13 +82,13 @@
                                 <td class="text-center">
                                     @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
                                     {
-                                        <a href="@Url.Action("Up", new { id })"><span class="fas fa-angle-up fs-2 fw-bolder text-success"></span></a>
+                                        <a href="@Url.Action("Up", new { id })"><span class="far fa-angle-up fs-2 fw-bolder text-success"></span></a>
                                     }
                                 </td>
                                 <td class="text-center">
                                     @if (p != null && entity != p.Childs[p.Childs.Count - 1])
                                     {
-                                        <a href="@Url.Action("Down", new { id })"><span class="fas fa-angle-down fs-2 fw-bolder text-danger"></span></a>
+                                        <a href="@Url.Action("Down", new { id })"><span class="far fa-angle-down fs-2 fw-bolder text-danger"></span></a>
                                     }
                                 </td>
                                 <td>

@@ -54,7 +54,7 @@ public class SsoController : ControllerBaseX
     public static OAuthServer OAuth { get; set; }
 
     /// <summary>存储最近用过的code，避免用户刷新页面</summary>
-    private static readonly ICache _codeCache = new MemoryCache { Period = 60 };
+    private readonly ICache _cache;
 
     static SsoController()
     {
@@ -64,6 +64,10 @@ public class SsoController : ControllerBaseX
             Log = LogProvider.Provider.AsLog("OAuth")
         };
     }
+
+    /// <summary>实例化单点登录控制器</summary>
+    /// <param name="cacheProvider"></param>
+    public SsoController(ICacheProvider cacheProvider) => _cache = cacheProvider.Cache;
 
     #region 单点登录客户端
     private String GetUserAgent() => Request.Headers["User-Agent"] + "";
@@ -149,7 +153,7 @@ public class SsoController : ControllerBaseX
             return Redirect(OnLogin(client, null, null, log));
         }
         // 短期内用过的code也跳回
-        if (!_codeCache.Add(code, code, 600))
+        if (!_cache.Add(code, code, 600))
             return Redirect(OnLogin(client, null, null, log));
 
         // 构造redirect_uri，部分提供商（百度）要求获取AccessToken的时候也要传递

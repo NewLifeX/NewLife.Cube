@@ -38,7 +38,7 @@
                             if (df != null && (!df.DataAction.IsNullOrEmpty() || !df.Url.IsNullOrEmpty()))
                                 continue;
 
-                            if (item.Type == typeof(Boolean))
+                            if (item.PrimaryKey || item.Type == typeof(Boolean))
                             {
                                 <th class="text-center" data-bs-toggle="tooltip" title="@title">@name</th>
                             }

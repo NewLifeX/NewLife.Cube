@@ -1,4 +1,4 @@
-﻿using NewLife.Data;
+using NewLife.Data;
 using NewLife.Log;
 using XCode;
 using XCode.Cache;
@@ -73,6 +73,32 @@ public partial class Attachment : Entity<Attachment>
     /// <param name="key">业务主键</param>
     /// <returns>实体列表</returns>
     public static IList<Attachment> FindAllByCategoryAndKey(String category, String key) => FindAll(_.Category == category & _.Key == key);
+
+    /// <summary>根据路径查找</summary>
+    /// <param name="filePath">路径</param>
+    /// <returns>实体列表</returns>
+    public static IList<Attachment> FindAllByFilePath(String filePath)
+    {
+        if (filePath.IsNullOrEmpty()) return new List<Attachment>();
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.FilePath.EqualIgnoreCase(filePath));
+
+        return FindAll(_.FilePath == filePath);
+    }
+
+    /// <summary>根据扩展名查找</summary>
+    /// <param name="extension">扩展名</param>
+    /// <returns>实体列表</returns>
+    public static IList<Attachment> FindAllByExtension(String extension)
+    {
+        if (extension.IsNullOrEmpty()) return new List<Attachment>();
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.Extension.EqualIgnoreCase(extension));
+
+        return FindAll(_.Extension == extension);
+    }
     #endregion
 
     #region 高级查询

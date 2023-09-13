@@ -1,10 +1,15 @@
-﻿@using NewLife.Model;
+﻿@using NewLife.Cube.Membership;
+@using NewLife.Model;
 @using XCode.Membership;
 @using NewLife.Cube.ViewModels;
 @{
     var item = Model as MenuTree;
     var childs = item.Children ?? new List<MenuTree>();
     var url = item.Url.IsNullOrEmpty() ? "" : Url.Content(item.Url);
+
+    // 根据租户模式过滤菜单
+    var set = CubeSetting.Current;
+    if (set.EnableTenant) childs = MenuHelper.FilterByTenant(childs, TenantContext.CurrentId > 0);
 }
 
 @if (item.Visible)

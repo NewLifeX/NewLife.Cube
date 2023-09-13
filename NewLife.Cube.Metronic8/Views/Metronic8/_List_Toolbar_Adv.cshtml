@@ -7,38 +7,38 @@
 @*<div class="">*@
     <button class="btn btn-sm btn-icon btn-light-primary btn-active-primary w-70px" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" data-bs-toggle="tooltip" data-bs-placement="top" title="高级操作">
         高级&nbsp;&nbsp;
-        <span class="ace-icon fa fa-caret-down icon-on-right me-3"></span>
+        <span class="ace-icon far fa-chevron-down icon-on-right me-3"></span>
     </button>
 
     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary w-200px py-3" data-kt-menu="true">
             <div class="menu-item px-3">
                 <a href="@Url.Action("ExportExcel")" class="menu-link text-hover-primary px-3" data-bs-toggle="tooltip" data-bs-placement="top" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据">
-                    <i class="la la-file-excel fs-2 px-3"></i>
+                    <i class="far fa-file-excel fs-2 px-3"></i>
                     导出Excel
                 </a>
             </div>
             <div class="menu-item px-3">
                 <a href="@Url.Action("ExportCsv")" class="menu-link text-hover-primary px-3" data-bs-toggle="tooltip" data-bs-placement="top" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输">
-                    <i class="la la-file-csv fs-2 px-3"></i>
+                    <i class="far fa-file-csv fs-2 px-3"></i>
                     导出CSV
                 </a>
             </div>
             <div class="menu-item px-3">
                 <a href="@Url.Action("ExportXml")" class="menu-link text-hover-primary px-3">
-                    <i class="la la-file-alt fs-2 px-3"></i>
+                    <i class="far fa-file-alt fs-2 px-3"></i>
                     导出XML
                 </a>
             </div>
             <div class="menu-item px-3">
                 <a href="@Url.Action("ExportJson")" class="menu-link text-hover-primary px-3">
-                    <i class="la la-file fs-2 px-3"></i>
+                    <i class="far fa-file fs-2 px-3"></i>
                     导出Json
                 </a>
             </div>
             <div class="separator"></div>
             <div class="menu-item px-3">
                 <a href="@Url.Action("Share")" class="menu-link text-hover-primary px-3">
-                    <i class="la fa-share-alt fs-2 px-3"></i>
+                    <i class="far fa-share-alt fs-2 px-3"></i>
                     分享
                 </a>
             </div>
@@ -51,7 +51,7 @@
             </div>*@
             <div class="menu-item px-3">
                 <a href="@Url.Action("Sync")" class="menu-link text-hover-primary px-3" data-action="action" data-confirm="该操作将清空数据并不可恢复！确认同步？" data-bs-toggle="tooltip" data-bs-placement="top" title="清空并从主服务器同步数据">
-                    <i class="la la-sync fs-2 px-3"></i>
+                    <i class="far fa-sync fs-2 px-3"></i>
                     同步
                 </a>
             </div>
@@ -60,13 +60,13 @@
                 <div class="separator"></div>
                 <div class="menu-item px-3">
                     <a href="@Url.Action("DeleteSelect")" class="menu-link text-hover-primary px-3" data-action="action" data-fields="keys" data-confirm="该操作将删除选中数据并不可恢复！确认删除？" data-bs-toggle="tooltip" data-bs-placement="top" title="删除选中数据">
-                        <i class="la la-remove fs-2 px-3"></i>
+                        <i class="far fa-remove fs-2 px-3"></i>
                         删除选中对象
                     </a>
                 </div>
                 <div class="menu-item px-3">
-                    <a href="@Url.Action("DeleteAll")" class="menu-link text-hover-primary px-3" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" data-bs-toggle="tooltip" data-bs-placement="top" title="删除当前查询的所有数据">
-                        <i class="la la-circle-o fs-2 px-3"></i>
+                    <a href="@Url.Action("DeleteAll")" class="menu-link text-hover-danger px-3" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" data-bs-toggle="tooltip" data-bs-placement="top" title="删除当前查询的所有数据">
+                        <i class="far fa-eraser fs-2 px-3"></i>
                         删除全部对象
                         <span class="label label-light-danger label-rounded font-weight-bold">!</span>
                     </a>
@@ -77,19 +77,19 @@
                 <div class="separator"></div>
                 <div class="menu-item px-3">
                     <a href="@Url.Action("Backup")" class="menu-link text-hover-primary px-3" data-action="action" data-bs-toggle="tooltip" data-bs-placement="top" title="备份到服务器本地目录">
-                        <i class="la la-cloud-upload fs-2 px-3"></i>
+                        <i class="far fa-cloud-upload fs-2 px-3"></i>
                         备份
                     </a>
                 </div>
                 <div class="menu-item px-3">
                     <a href="@Url.Action("Restore")" class="menu-link text-hover-primary px-3" data-action="action" data-bs-toggle="tooltip" data-bs-placement="top" title="从服务器本地目录还原">
-                        <i class="la la-cloud-download fs-2 px-3"></i>
+                        <i class="far fa-cloud-download fs-2 px-3"></i>
                         还原
                     </a>
                 </div>
                 <div class="menu-item px-3">
                     <a href="@Url.Action("BackupAndExport")" class="menu-link text-hover-primary px-3" data-bs-toggle="tooltip" data-bs-placement="top" title="备份并下载">
-                        <i class="la la-archive fs-2 px-3"></i>
+                        <i class="far fa-archive fs-2 px-3"></i>
                         备份导出压缩文件
                     </a>
                 </div>
@@ -98,7 +98,7 @@
                     <div class="separator"></div>
                     <div class="menu-item px-3">
                         <a href="@Url.Action("Clear")" class="menu-link text-hover-primary px-3" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" data-bs-toggle="tooltip" data-bs-placement="top" title="删除数据表所有数据，并重置自增字段">
-                            <i class="la la-trash fs-2 px-3"></i>
+                            <i class="far fa-trash fs-2 px-3"></i>
                             清空数据表
                             <span class="label label-light-danger label-rounded font-weight-bold">!</span>
                         </a>
@@ -107,14 +107,14 @@
                 <div class="separator"></div>
                 <div class="menu-item px-3">
                     <a href="@Url.Action("MakeList")" class="menu-link text-hover-primary px-3">
-                        <i class="la la-th-list fs-2 px-3"></i>
+                        <i class="far fa-th-list fs-2 px-3"></i>
                         生成列表
                         
                     </a>
                 </div>
                 <div class="menu-item px-3">
                     <a href="@Url.Action("MakeForm")" class="menu-link text-hover-primary px-3">
-                        <i class="la la-pencil-square-o fs-2 px-3"></i>
+                        <i class="far fa-pencil-square-o fs-2 px-3"></i>
                         生成表单
                         
                     </a>

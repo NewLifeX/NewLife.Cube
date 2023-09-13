@@ -1,45 +1,53 @@
-﻿
-@{
-    var user = Model != null ? Model as IUser:ViewBag.User ;
+﻿@{
+    var user = Model != null ? Model as IUser : ViewBag.User;
 }
 
 <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
-          
-          @* <li class="layui-nav-item" lay-unselect>
-            <a lay-href="app/message/index.html" layadmin-event="message" lay-text="消息中心">
-              <i class="layui-icon layui-icon-notice"></i>  
-              
-              <!-- 如果有新消息，则显示小圆点 -->
-              <span class="layui-badge-dot"></span>
-            </a>
-          </li>*@
-          <li class="layui-nav-item layui-hide-xs" lay-unselect>
-            <a href="javascript:;" layadmin-event="theme">
-              <i class="layui-icon layui-icon-theme"></i>
-            </a>
-          </li>
-          <li class="layui-nav-item layui-hide-xs" lay-unselect>
-            <a href="javascript:;" layadmin-event="note">
-              <i class="layui-icon layui-icon-note"></i>
-            </a>
-          </li>
-          <li class="layui-nav-item layui-hide-xs" lay-unselect>
-            <a href="javascript:;" layadmin-event="fullscreen">
-              <i class="layui-icon layui-icon-screen-full"></i>
-            </a>
-          </li>
-          <li class="layui-nav-item" lay-unselect>
-            <a href="javascript:;">
-              <cite>@(user.DisplayName??@user.Name)</cite>
-            </a>
-            <dl class="layui-nav-child">
-              <dd><a lay-href="/Admin/User/Info">基本资料</a></dd>
-              <dd><a lay-href="/Admin/User/ChangePassword">修改密码</a></dd>
-              <hr>
-              <dd layadmin-event="logout" style="text-align: center;"><a>退出</a></dd>
-            </dl>
-          </li>
-          <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-unselect>
-            <a href="javascript:;" layadmin-event="more"><i class="layui-icon layui-icon-more-vertical"></i></a>
-          </li>
-        </ul>
+
+    @* <li class="layui-nav-item" lay-unselect>
+    <a lay-href="app/message/index.html" layadmin-event="message" lay-text="消息中心">
+    <i class="layui-icon layui-icon-notice"></i>
+
+    <!-- 如果有新消息，则显示小圆点 -->
+    <span class="layui-badge-dot"></span>
+    </a>
+    </li>*@
+    <li class="layui-nav-item layui-hide-xs" lay-unselect>
+        <div class="layui-form ws-header-theme" lay-filter="header-theme">
+            <input type="checkbox" name="theme-mode" id="ID-header-theme-mode" lay-filter="header-theme-mode" lay-skin="switch">
+            <div lay-checkbox>
+                <i class="layui-icon layui-icon-moon"></i> |
+                <i class="layui-icon layui-icon-light"></i>
+            </div>
+        </div>
+    </li>
+    <li class="layui-nav-item layui-hide-xs" lay-unselect>
+        <a href="javascript:;" layadmin-event="theme">
+            <i class="layui-icon layui-icon-theme"></i>
+        </a>
+    </li>
+    <li class="layui-nav-item layui-hide-xs" lay-unselect>
+        <a href="javascript:;" layadmin-event="note">
+            <i class="layui-icon layui-icon-note"></i>
+        </a>
+    </li>
+    <li class="layui-nav-item layui-hide-xs" lay-unselect>
+        <a href="javascript:;" layadmin-event="fullscreen">
+            <i class="layui-icon layui-icon-screen-full"></i>
+        </a>
+    </li>
+    <li class="layui-nav-item" lay-unselect>
+        <a href="javascript:;">
+            <cite>@(user.DisplayName ?? @user.Name)</cite>
+        </a>
+        <dl class="layui-nav-child">
+            <dd><a lay-href="/Admin/User/Info">基本资料</a></dd>
+            <dd><a lay-href="/Admin/User/ChangePassword">修改密码</a></dd>
+            <hr>
+            <dd layadmin-event="logout" style="text-align: center;"><a>退出</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-unselect>
+        <a href="javascript:;" layadmin-event="more"><i class="layui-icon layui-icon-more-vertical"></i></a>
+    </li>
+</ul>

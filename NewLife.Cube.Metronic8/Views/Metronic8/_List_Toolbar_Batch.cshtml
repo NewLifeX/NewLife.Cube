@@ -7,12 +7,12 @@
     var fields = ViewBag.Fields as FieldCollection;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
-@if (set.EnableSelect /*&& fields.Any( f => f.Name.EqualIgnoreCase("Enable"))*/)
+@if (set.EnableSelect && fields.Any( f => f.Name.EqualIgnoreCase("Enable")))
 {
     <button type="button" class="btn btn-sm btn-icon btn-light-success btn-active-success me-2" data-action="action" data-url="@Url.Action("EnableSelect")" data-fields="keys" disabled data-bs-toggle="tooltip" title="批量启用">
-        <i class="fas fa-check-circle fs-md-2"></i>
+        <i class="far fa-check-circle fs-md-2"></i>
     </button>
     <button type="button" class="btn btn-sm btn-icon btn-light-danger btn-active-danger me-2" data-action="action" data-url="@Url.Action("DisableSelect")" data-fields="keys" disabled data-bs-toggle="tooltip" title="批量禁用">
-        <i class="fas fa-times-circle fs-md-2"></i>
+        <i class="far fa-times-circle fs-md-2"></i>
     </button>
 }

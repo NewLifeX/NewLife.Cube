@@ -18,7 +18,7 @@ public class AppController : EntityController<App>
     {
         LogOnChange = true;
 
-        ListFields.RemoveField("Secret", "HomePage", "Logo", "White", "Black", "Urls", "Remark");
+        ListFields.RemoveField("Id", "Secret", "HomePage", "Logo", "White", "Black", "Urls", "Remark");
         ListFields.RemoveCreateField();
         ListFields.RemoveUpdateField();
 

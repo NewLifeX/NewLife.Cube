@@ -1,6 +1,6 @@
 ﻿<!-- 头部 -->
-<div id="kt_app_header" class="app-header">
-    <div class="app-container container-fluid d-flex align-items-stretch justify-content-between px-lg-5">
+<div id="kt_app_header" class="app-header" data-kt-sticky="true" data-kt-sticky-activate="{default: true, lg: true}" data-kt-sticky-name="app-header-minimize" data-kt-sticky-offset="{default: '200px', lg: '0'}" data-kt-sticky-animation="false">
+    <div id="kt_app_header_container" class="app-container container-fluid d-flex align-items-stretch justify-content-between px-lg-5">
         <!-- 手机版 菜单 同步图标 -->
         <div class="d-flex align-items-center d-lg-none ms-n3 me-1" title="Show aside menu">
             <div class="btn btn-icon btn-active-light-primary w-30px h-30px w-md-40px h-md-40px" id="kt_app_sidebar_mobile_toggle">
@@ -26,7 +26,7 @@
         </div>
 
         <!-- 顶部 Bar -->
-        <div class="d-flex align-items-stretch justify-content-between flex-lg-grow-1" id="kt_app_header_wrapper">
+        <div id="kt_app_header_wrapper" class="d-flex align-items-stretch justify-content-between flex-lg-grow-1">
             @await Html.PartialAsync("_Layout_Header_Breadcrumb")
             @await Html.PartialAsync("_Layout_Header_Menu")
             @await Html.PartialAsync("_Layout_Header_Navbar")

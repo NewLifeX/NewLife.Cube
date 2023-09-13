@@ -12,14 +12,7 @@
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
 
-    var tList = TenantUser.FindAllByUserId(user.ID);
-    if (roleNames.Contains("管理员")) tList.Add(new TenantUser() { TenantId = 0 });
-
-    var tenant = XCode.Membership.Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
-    var lastTenant = tList.LastOrDefault();
-
-    var tenantName = tenant != null ? tList.Select(e => e.TenantId).Contains(tenant.Id) ? tenant.Name : lastTenant?.TenantName : lastTenant?.TenantName;
-    var flag = false;
+    var set = CubeSetting.Current;
 }
 <!-- #section:basics/navbar.layout -->
 <div id="navbar" class="navbar navbar-default">
@@ -67,7 +60,7 @@
                         <li>
                             <a href="~/" target="_blank">
                                 <i class="ace-icon fa fa-cog"></i>
-                                网站首页
+                                系统首页
                             </a>
                         </li>
                         <li class="divider"></li>
@@ -91,35 +84,42 @@
         </div>
 
         <!--tenant-->
-        @if (tList.Count > 0)
+        @if (set.EnableTenant && user != null)
         {
+            var tList = TenantUser.FindAllByUserId(user.ID);
+
+            var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
+            var tenantName = tenant?.Name;
+
             <div class="navbar-buttons navbar-header pull-right" role="navigation">
                 <ul class="nav ace-nav">
                     <li class="light-blue">
                         <a data-toggle="dropdown" href="#" class="dropdown-toggle" target="main">
-                            <span class="hidden-xs" title="@tenantName" style="line-height:45px;top:0px;">
-                                @(tenantName ?? "管理员")
+                            <span class="hidden-xs" title="租户模式禁止访问系统管理，平台管理模式禁止访问租户页面" style="line-height:45px;top:0px;">
+                                @(tenantName ?? "系统后台")
                             </span>
                             <i class="ace-icon fa fa-caret-down"></i>
                         </a>
 
                         <ul class="dropdown-menu-right dropdown-menu dropdown-caret">
+                            @if (user.Roles.Any(e => e.IsSystem))
+                            {
+                                <li>
+                                    <a href="~/Admin/Index?tenantid=0">
+                                        <span class="hidden-xs" title="系统管理后台，用于管理租户，但不能访问租户页面" style="line-height:45px;top:0px;">
+                                            系统管理后台
+                                        </span>
+                                    </a>
+                                </li>
+                                <li class="divider"></li>
+                            }
 
                             @foreach (var item in tList)
                             {
-                                if (flag)
-                                {
-                                    <li class="divider"></li>
-                                }
-                                else
-                                {
-                                    flag = true;
-                                }
-
                                 <li>
-                                    <a href="~/Admin/Index?tenantid=@item.TenantId" target="_blank">
+                                    <a href="~/Admin/Index?tenantid=@item.TenantId">
                                         <i class="ace-icon fa fa-cog"></i>
-                                        @(item.TenantName ?? "管理员")
+                                        @item.TenantName
                                     </a>
                                 </li>
                             }

@@ -1,14 +1,21 @@
-﻿@using NewLife.Model;
+﻿@using NewLife.Cube.Membership;
+@using NewLife.Model;
 @using NewLife.Cube.ViewModels;
 @{
     String[] icos = new String[] { "fa-tachometer", "fa-desktop", "fa-list", "fa-pencil-square-o", "fa-list-alt", "fa-calendar", "fa-picture-o", "fa-tag", "fa-file-o" };
     Int32 _idx = 0;
     var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
+
+    // 根据租户模式过滤菜单
+    var set = CubeSetting.Current;
+    if (set.EnableTenant) menus = MenuHelper.FilterByTenant(menus, TenantContext.CurrentId > 0);
 }
 <ul class="nav nav-list">
-    @foreach (var menu in menus.Where(w=>w.Visible))
+    @foreach (var menu in menus.Where(w => w.Visible))
     {
         var childs = menu.Children ?? new List<MenuTree>();
+        if (set.EnableTenant) childs = MenuHelper.FilterByTenant(childs, TenantContext.CurrentId > 0);
+ 
         if (_idx >= icos.Length) { _idx = 0; }
         var ico = !menu.Icon.IsNullOrEmpty() ? menu.Icon : icos[_idx++];
         <li @Html.Raw(menu == menus[0] ? "class=\"active open\"" : "")>
@@ -23,18 +30,11 @@
                 <b class="arrow"></b>
 
                 <ul @Html.Raw(menu == menus[0] ? "class=\"submenu nav-show\" style=\"display:block;\"" : "class=\"submenu nav-hide\" style=\"display:none;\"")>
-                    @foreach (var menu2 in childs.Where(w=>w.Visible))
+                    @foreach (var menu2 in childs.Where(w => w.Visible))
                     {
-                        @await Html.PartialAsync("_Left_Item", menu2);
+                        @await Html.PartialAsync("_Left_Item", menu2)
                     }
                 </ul>
-
-                @*<ul class="submenu">
-                        @foreach (IMenu menu2 in childs)
-                        {
-                            @await Html.PartialAsync("_Left_Item", menu2);
-                        }
-                    </ul>*@
             }
         </li>
     }

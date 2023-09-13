@@ -5,6 +5,7 @@ using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
@@ -170,7 +171,7 @@ public static class CubeService
         // 插件
         var moduleManager = new ModuleManager();
         services.AddSingleton(moduleManager);
-        var modules = moduleManager.LoadAll();
+        var modules = moduleManager.LoadAll(services);
         if (modules.Count > 0)
         {
             XTrace.WriteLine("加载功能插件[{0}]个", modules.Count);
