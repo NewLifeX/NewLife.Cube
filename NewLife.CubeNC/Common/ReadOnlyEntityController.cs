@@ -82,7 +82,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             ViewBag.Page = p;
 
             //// 用于显示的列
-            //if (!ps.ContainsKey("entity")) ViewBag.Fields = OnGetFields(ViewKinds.List, null);
+            if (!ps.ContainsKey("entity")) ViewBag.Fields = OnGetFields(ViewKinds.List, null);//注释掉后会导致分享的页面报错。2023-09-15 取消注释
 
             var txt = (String)ViewBag.HeaderContent;
             if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
