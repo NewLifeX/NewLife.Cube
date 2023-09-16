@@ -154,7 +154,7 @@
                             else
                             {
 
-                                @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (Int32)PermissionFlags.Detail + "_" + entity.ID })
+                                @Html.CheckBox("pc_readonly_" + entity.ID, false, new { @class = "pro_detail", @prochildkey = "pro_" + (UInt32)PermissionFlags.Detail + "_" + entity.ID })
                                 @Html.Label("pc_readonly_" + entity.ID, "只读")
                                 <text>&nbsp;</text>
                                 @Html.CheckBox("pc_all_" + entity.ID, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ID })
