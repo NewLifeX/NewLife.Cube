@@ -5,9 +5,11 @@ using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
+using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
@@ -169,7 +171,7 @@ public static class CubeService
         // 插件
         var moduleManager = new ModuleManager();
         services.AddSingleton(moduleManager);
-        var modules = moduleManager.LoadAll();
+        var modules = moduleManager.LoadAll(services);
         if (modules.Count > 0)
         {
             XTrace.WriteLine("加载功能插件[{0}]个", modules.Count);
@@ -283,9 +285,12 @@ public static class CubeService
 
         // 调整魔方表名
         FixAppTableName();
+        FixAvatar();
 
         // 使用管理提供者
         app.UseManagerProvider();
+
+        //FixOAuth();
 
         var set = CubeSetting.Current;
 
@@ -404,6 +409,69 @@ public static class CubeService
         }
     }
 
+    /// <summary>修正头像附件，移动到附件上传目录</summary>
+    private static void FixAvatar()
+    {
+        var set = CubeSetting.Current;
+        if (set.AvatarPath.IsNullOrEmpty()) return;
+
+        var av = set.AvatarPath.CombinePath("User").AsDirectory();
+        if (!av.Exists) return;
+
+        // 如果附件目录跟头像目录一致，则不需要移动
+        var dst = set.UploadPath.CombinePath("User").AsDirectory();
+        if (dst.FullName.EqualIgnoreCase(av.FullName)) return;
+
+        try
+        {
+            // 确保目标目录存在
+            dst.Parent.FullName.EnsureDirectory(false);
+
+            //av.MoveTo(dst.FullName);
+            //av.CopyTo(dst.FullName, null, true, e => XTrace.WriteLine("移动 {0}", e));
+
+            // 来源目录根，用于截断
+            var root = av.FullName.EnsureEnd(Path.DirectorySeparatorChar.ToString());
+            foreach (var item in av.GetAllFiles(null, true))
+            {
+                var name = item.FullName.TrimStart(root);
+                var dfile = dst.FullName.CombinePath(name);
+                if (!File.Exists(dfile))
+                {
+                    XTrace.WriteLine("移动 {0}", name);
+                    item.MoveTo(dfile.EnsureDirectory(true), false);
+                }
+                else
+                {
+                    item.Delete();
+                }
+
+                //if (item.Exists) item.Delete();
+                //if (File.Exists(item.FullName)) File.Delete(item.FullName);
+            }
+
+            // 删除空目录
+            if (!av.GetAllFiles(null, true).Any()) av.Delete(true);
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+        }
+    }
+
+    //private static void FixOAuth()
+    //{
+    //    var list = OAuthConfig.FindAllWithCache();
+    //    foreach (var cfg in list)
+    //    {
+    //        if (cfg.Server.StartsWithIgnoreCase("https://sso.newlifex.com/sso"))
+    //        {
+    //            cfg.Server = "https://sso.newlifex.com/sso,http://sso2.newlifex.com/sso";
+    //            cfg.Update();
+    //        }
+    //    }
+    //}
+
     /// <summary>使用魔方首页</summary>
     /// <param name="app"></param>
     /// <returns></returns>
@@ -452,18 +520,27 @@ public static class CubeService
         var registry = provider.GetService<IRegistry>();
         if (registry != null)
         {
-            var webs = await registry.ResolveAddressAsync("StarWeb");
-            if (webs != null)
+            using var span = DefaultTracer.Instance?.NewSpan(nameof(ResolveStarWeb));
+            try
             {
-                XTrace.WriteLine("StarWeb: {0}", webs.Join());
-                //StarHelper.StarWeb = webs.FirstOrDefault();
-                if (webs.Length > 0)
+                var webs = await registry.ResolveAddressAsync("StarWeb");
+                if (webs != null)
                 {
-                    // 保存到配置文件
-                    var set = CubeSetting.Current;
-                    set.StarWeb = webs[0];
-                    set.Save();
+                    XTrace.WriteLine("StarWeb: {0}", webs.Join());
+                    //StarHelper.StarWeb = webs.FirstOrDefault();
+                    if (webs.Length > 0)
+                    {
+                        // 保存到配置文件
+                        var set = CubeSetting.Current;
+                        set.StarWeb = webs[0];
+                        set.Save();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                span?.SetError(ex, null);
+                XTrace.WriteLine(ex.Message);
             }
         }
     }

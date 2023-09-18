@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
 using NewLife.Web;
@@ -52,6 +53,30 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
 
         //ListFields.Clear();
         //ListFields.AddRange(list);
+    }
+
+    /// <summary>验证实体对象</summary>
+    /// <param name="entity"></param>
+    /// <param name="type"></param>
+    /// <param name="post"></param>
+    /// <returns></returns>
+    protected override Boolean Valid(TEntity entity, DataObjectMethodType type, Boolean post)
+    {
+        var rs = base.Valid(entity, type, post);
+
+        // 清空缓存
+        if (post) Factory.Session.ClearCache($"{type}-{entity}", true);
+
+        return rs;
+    }
+
+    /// <summary>设置字段列表</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+        ViewBag.Fields = OnGetFields(ViewKinds.List, null);
+
+        base.OnActionExecuting(filterContext);
     }
 
     /// <summary>列表页视图。子控制器可重载，以传递更多信息给视图，比如修改要显示的列</summary>

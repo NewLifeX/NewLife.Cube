@@ -12,14 +12,11 @@
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
 
-    var tList = TenantUser.FindAllByUserId(user.ID);
-    var tenant = XCode.Membership.Tenant.FindById(TenantContext.Current?.TenantId ?? 0);
-    var tenantName = tenant?.Name;
-    var flag = false;
+    var set = CubeSetting.Current;
 }
 
 <div class="layui-header">
-    <div class="layui-logo layui-bg-black">@name</div>
+    <div class="layui-logo layui-bg-black layui-hide-xs">@name</div>
 
     <!-- 头部区域（可配合layui 已有的水平导航） -->
     <ul class="layui-nav layui-layout-left">
@@ -30,13 +27,13 @@
     </ul>
 
     <ul class="layui-nav layui-layout-right">
-        <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+        <li class="layui-nav-item layui-show-md-inline-block">
             <a href="javascript:void(0);">
                 @if (user != null && !user.Avatar.IsNullOrEmpty())
                 {
                     <img class="layui-nav-img" src="@user.GetAvatarUrl()" alt="@user">
                 }
-                @user / @roleNames
+                @user
             </a>
             <dl class="layui-nav-child">
                 <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="用户信息">用户信息</a></dd>
@@ -46,26 +43,33 @@
         </li>
     </ul>
 
-    @if (tenantName != null)
+    @if (set.EnableTenant && user != null)
     {
+        var tList = TenantUser.FindAllByUserId(user.ID).Where(e => e.Tenant.Enable);
+        var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
+        var tenantName = tenant == null ? null : tenant.Enable ? tenant.Name : null;
+
         <ul class="layui-nav layui-layout-right" style="right:140px;">
-            <li class="layui-nav-item layui-hide layui-show-md-inline-block">
+            <li class="layui-nav-item layui-show-md-inline-block">
                 <a href="javascript:;">
-                    @tenantName
+                    @(tenantName ?? "系统后台")
                 </a>
                 <dl class="layui-nav-child">
+                    @if (user.Roles.Any(e => e.IsSystem))
+                    {
+                        <dd>
+                            <a href="~/Admin/Index?tenantid=0">
+                                <span class="hidden-xs" title="系统管理后台，用于管理租户，但不能访问租户页面" style="line-height:45px;top:0px;">
+                                    系统管理后台
+                                </span>
+                            </a>
+                        </dd>
+                        <dd class="divider"></dd>
+                    }
+
                     @foreach (var item in tList)
                     {
-                        if (flag)
-                        {
-                            <hr>
-                        }
-                        else
-                        {
-                            flag = true;
-                        }
-
-                        <dd><a href="~/Admin/Index?tenantid=@item.TenantId" lay-header-event="menuSetting" data-title="@item.TenantName">@item.TenantName</a></dd>
+                        <dd><a href="~/Admin/Index?tenantid=@item.TenantId" lay-header-event="menuSetting">@item.TenantName</a></dd>
                     }
                 </dl>
             </li>

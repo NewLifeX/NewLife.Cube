@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Log;
-using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Threading;
 using XCode.DataAccessLayer;
@@ -15,11 +15,19 @@ namespace NewLife.Cube.Services;
 public class JobService : IHostedService
 {
     #region 核心控制
+
+    private static readonly IList<MyJob> _jobs = new List<MyJob>();
+    private readonly ICacheProvider _cacheProvider;
     private readonly ITracer _tracer;
 
     /// <summary>实例化作业服务</summary>
-    /// <param name="provider"></param>
-    public JobService(IServiceProvider provider) => _tracer = ModelExtension.GetService<ITracer>(provider);
+    /// <param name="cacheProvider"></param>
+    /// <param name="tracer"></param>
+    public JobService(ICacheProvider cacheProvider, ITracer tracer)
+    {
+        _tracer = tracer;
+        _cacheProvider = cacheProvider;
+    }
 
     private static TimerX _timer;
     /// <summary>启动</summary>
@@ -27,7 +35,7 @@ public class JobService : IHostedService
     /// <returns></returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _timer = new TimerX(DoJob, null, 1_000, 3600_000);
+        _timer = new TimerX(DoJob, null, 1_000, 600_000);
 
         return Task.CompletedTask;
     }
@@ -53,10 +61,8 @@ public class JobService : IHostedService
     public static void Wake(Int32 jobId, Int32 ms)
     {
         var job = _jobs.FirstOrDefault(e => e.Job.Id == jobId);
-        if (job != null) job.Wake(ms);
+        job?.Wake(ms);
     }
-
-    private static readonly IList<MyJob> _jobs = new List<MyJob>();
 
     private void DoJob(Object state)
     {
@@ -73,7 +79,7 @@ public class JobService : IHostedService
             var job = _jobs.FirstOrDefault(e => e.Job.Id == item.Id);
             if (job == null)
             {
-                job = new MyJob { Job = item, Tracer = _tracer };
+                job = new MyJob { Job = item, CacheProvider = _cacheProvider, Tracer = _tracer };
                 _jobs.Add(job);
             }
             job.Job = item;
@@ -181,6 +187,8 @@ internal class MyJob : IDisposable
 {
     public CronJob Job { get; set; }
 
+    public ICacheProvider CacheProvider { get; set; }
+
     public ITracer Tracer { get; set; }
 
     private TimerX _timer;
@@ -256,9 +264,40 @@ internal class MyJob : IDisposable
 
     public void Wake(Int32 ms) => _timer?.SetNext(ms);
 
+    private Boolean CheckRunning(CronJob job)
+    {
+        // 检查分布式锁，避免多节点重复执行
+        var key = $"Job:{job.Id}";
+        if (!CacheProvider.Cache.Add(key, job.Name, 10)) return false;
+
+        // 有时候可能并没有配置Redis，借助数据库事务实现去重，需要20230804版本的XCode
+        using var tran = CronJob.Meta.CreateTrans();
+
+        // 如果短时间内重复执行，跳过
+        var job2 = CronJob.FindByKey(job.Id);
+        if (job2 != null && job2.LastTime.AddSeconds(10) > DateTime.Now) return false;
+
+        job2.LastTime = DateTime.Now;
+        job2.Update();
+
+        tran.Commit();
+
+        return true;
+    }
+
     private void DoJobWork(Object state)
     {
         var job = Job;
+
+        // 检查分布式锁，避免多节点重复执行
+        if (!CheckRunning(job))
+        {
+            var set = CubeSetting.Current;
+            if (set.Debug)
+                JobService.WriteLog(job.Name, false, "分布式锁检查失败，跳过执行", job);
+            return;
+        }
+
         job.LastTime = DateTime.Now;
 
         using var span = Tracer?.NewSpan($"job:{job}", job);

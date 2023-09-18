@@ -1,4 +1,8 @@
 ﻿using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection;
 using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -19,7 +23,7 @@ public class ModuleManager
     /// <summary>
     /// 加载所有插件
     /// </summary>
-    public IDictionary<String, IModule> LoadAll()
+    public IDictionary<String, IModule> LoadAll(IServiceCollection services = null)
     {
         if (Modules != null) return Modules;
 
@@ -39,7 +43,14 @@ public class ModuleManager
                         var filePath = item.FilePath.GetFullPath();
                         if (!File.Exists(filePath)) continue;
 
-                        type = Assembly.LoadFrom(item.FilePath).GetType(item.ClassName);
+                        var assembly = Assembly.LoadFrom(filePath);
+                        type = assembly.GetType(item.ClassName);
+                        if (services != null) {
+                            services.AddMvc()
+                                .ConfigureApplicationPartManager(_ => { 
+                                    _.ApplicationParts.Add(new CompiledRazorAssemblyPart(assembly));
+                                });
+                        }
                     }
 
                     if (type != null)

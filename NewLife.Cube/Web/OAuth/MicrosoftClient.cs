@@ -145,8 +145,9 @@ namespace NewLife.Web.OAuth
         }
 
         /// <summary>获取Url，替换变量</summary>
+        /// <param name="name"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-        protected override String GetUrl(String url) => base.GetUrl(url).Replace("{tenant}", Tenant);
+        protected override String GetUrl(String name, String url) => base.GetUrl(name, url).Replace("{tenant}", Tenant);
     }
 }

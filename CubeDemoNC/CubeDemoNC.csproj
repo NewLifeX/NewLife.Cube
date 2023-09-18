@@ -41,18 +41,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="7.0.5" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.8.2023.510-beta2330" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="7.0.10" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.9.2023.829-beta0552" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NewLife.Cube.Blazor\NewLife.Cube.Blazor.csproj" />
     <ProjectReference Include="..\NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj" />
-    <ProjectReference Include="..\NewLife.Cube.ElementUI\NewLife.Cube.ElementUI.csproj" />
-    <ProjectReference Include="..\NewLife.Cube.LayuiAdmin\NewLife.Cube.LayuiAdmin.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Metronic8\NewLife.Cube.Metronic8.csproj" />
-    <ProjectReference Include="..\NewLife.Cube.Metronic\NewLife.Cube.Metronic.csproj" />
-    <ProjectReference Include="..\NewLife.Cube.Tabler\NewLife.Cube.Tabler.csproj" />
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
   </ItemGroup>
 

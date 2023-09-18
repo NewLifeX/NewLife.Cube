@@ -1,10 +1,12 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
@@ -120,7 +122,7 @@ public static class CubeService
         // 插件
         var moduleManager = new ModuleManager();
         services.AddSingleton(moduleManager);
-        var modules = moduleManager.LoadAll();
+        var modules = moduleManager.LoadAll(services);
         if (modules.Count > 0)
         {
             XTrace.WriteLine("加载功能插件[{0}]个", modules.Count);
@@ -179,7 +181,20 @@ public static class CubeService
         app.UseStaticHttpContext();
 
         // 注册中间件
-        //app.UseStaticFiles();
+
+        // 如果，头像目录设置不为空，开启静态文件中间件
+        if (!set.AvatarPath.IsNullOrWhiteSpace())
+        {
+            var root = env.ContentRootPath;
+            var path = root.CombinePath(set.AvatarPath);
+            path.EnsureDirectory(false);
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(path),
+                RequestPath = set.AvatarPath.EnsureStart("/")
+            });
+        }
+
         app.UseCookiePolicy();
         //app.UseSession();
         app.UseAuthentication();

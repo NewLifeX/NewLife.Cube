@@ -2,6 +2,8 @@
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
@@ -27,7 +29,7 @@ namespace NewLife.Cube.Admin.Controllers;
 public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
-    private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
+    private readonly ICache _cache;
     private readonly PasswordService _passwordService;
     private readonly UserService _userService;
 
@@ -40,33 +42,23 @@ public class UserController : EntityController<User, UserModel>
         ListFields.RemoveField("Remark");
 
         {
-            var df = ListFields.AddListField("Link", "Logins");
-            //df.Header = "链接";
-            df.HeaderTitle = "第三方登录的链接信息";
-            df.DisplayName = "链接";
-            df.Title = "第三方登录的链接信息";
-            df.Url = "/Admin/UserConnect?userId={ID}";
+            var df = ListFields.AddListField("AvatarImage", "Name");
+            df.Header = "";
+            //df.Text = "<img src=\"{Avatar}\" style=\"width:64px;height:64px;\" />";
+            //df.Url = "/Admin/User/Edit?id={ID}";
+            df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();
+            // 使用ILinkExtend，高度定制头像超链接
+            df.AddService(new MyAvatar());
         }
-
         {
-            var df = ListFields.AddListField("Token", "Logins");
-            //df.Header = "令牌";
-            df.DisplayName = "令牌";
-            df.Url = "/Admin/UserToken?userId={ID}";
+            var df = ListFields.GetField("Name") as ListField;
+            df.Url = "/Admin/User/Edit?id={ID}";
+            df.Target = "_blank";
         }
-
         {
-            var df = ListFields.AddListField("Log", "Logins");
-            //df.Header = "日志";
-            df.DisplayName = "日志";
-            df.Url = "/Admin/Log?userId={ID}";
-        }
-
-        {
-            var df = ListFields.AddListField("OAuthLog", "Logins");
-            //df.Header = "OAuth日志";
-            df.DisplayName = "OAuth日志";
-            df.Url = "/Admin/OAuthLog?userId={ID}";
+            var df = ListFields.GetField("DisplayName") as ListField;
+            df.Url = "/Admin/User/Edit?id={ID}";
+            df.Target = "_blank";
         }
 
         {
@@ -74,64 +66,49 @@ public class UserController : EntityController<User, UserModel>
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             AddFormFields.RemoveField("RoleNames");
         }
-        //{
-        //    var df = AddFormFields.GetField("RegisterTime");
-        //    df.DataVisible = (e, f) => f.Name != "RegisterTime";
-        //}
-
         {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
             df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
         }
-
         {
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
         }
     }
 
-    /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
-    /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
+    class MyAvatar : ILinkExtend
     {
-        var fields = base.OnGetFields(kind, model);
-        if (fields == null) return fields;
-
-        var user = ManageProvider.User;//理论上肯定大于0
-        var roles = Role.FindAllWithCache().Where(w => w.IsSystem == false).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-        if (user != null)
+        public String Resolve(DataField field, IModel data)
         {
-            if (user.Role.IsSystem)
-            {
-                roles = Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
-            }
+            var user = data as User;
+            return $"<a href=\"/Admin/User/Edit?id={user.ID}\" target=\"_blank\"><img src=\"{user.GetAvatarUrl()}\" style=\"width:64px;height:64px;\" /></a>";
         }
+    }
 
-        switch (kind)
+    /// <summary>已重载。</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+        base.OnActionExecuting(filterContext);
+
+        if (filterContext.ActionDescriptor is ControllerActionDescriptor act &&
+            act.ActionName.EqualIgnoreCase(nameof(Detail), nameof(Edit), nameof(Info), nameof(ChangePassword), nameof(Binds), nameof(TenantSetting)))
         {
-            case ViewKinds.AddForm:
-            case ViewKinds.EditForm:
-                var df = fields.GetField("RoleID");
-                if (df != null) df.DataSource = entity => roles;
-
-                var df2 = fields.GetField("RoleIds");
-                if (df2 != null) df2.DataSource = entity => roles;
-                break;
+            PageSetting.NavView = "_User_Nav";
+            PageSetting.EnableNavbar = false;
         }
-
-        return fields;
     }
 
     /// <summary>
     /// 实例化用户控制器
     /// </summary>
     /// <param name="passwordService"></param>
+    /// <param name="cacheProvider"></param>
     /// <param name="userService"></param>
-    public UserController(PasswordService passwordService, UserService userService)
+    public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService)
     {
         _passwordService = passwordService;
+        _cache = cacheProvider.Cache;
         _userService = userService;
     }
 
@@ -218,11 +195,22 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     protected override Boolean Valid(User entity, DataObjectMethodType type, Boolean post)
     {
-        if (!post && type == DataObjectMethodType.Update)
+        if (!post)
         {
             // 清空密码，不向浏览器输出
             //entity.Password = null;
             entity["Password"] = null;
+        }
+
+        if (post)
+        {
+            // 非系统管理员，禁止修改任何人的角色
+            var user = ManageProvider.User;
+            if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
+            {
+                if (entity2.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
+                if (entity2.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
+            }
         }
 
         if (post && type == DataObjectMethodType.Update)
@@ -398,7 +386,7 @@ public class UserController : EntityController<User, UserModel>
                 }
 
                 // 设置租户
-                SetTenant(provider.Current.ID);
+                HttpContext.ChooseTenant(provider.Current.ID);
 
                 if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
 
@@ -544,15 +532,16 @@ public class UserController : EntityController<User, UserModel>
         var entity = user as IEntity;
         if (entity.Dirtys["Name"]) throw new Exception("禁止修改用户名！");
         if (entity.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
+        if (entity.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
         if (entity.Dirtys["Enable"]) throw new Exception("禁止修改禁用！");
 
         var file = HttpContext.Request.Form.Files["avatar"];
         if (file != null)
         {
-            var set = CubeSetting.Current;
-            var fileName = user.ID + Path.GetExtension(file.FileName);
-            var att = await SaveFile(user, file, set.AvatarPath, fileName);
-            if (att != null) user.Avatar = att.FilePath;
+            //var set = CubeSetting.Current;
+            //var fileName = user.ID + Path.GetExtension(file.FileName);
+            var att = await SaveFile(user, file, null, null);
+            if (att != null) user.Avatar = ViewHelper.GetAttachmentUrl(att);
         }
 
         user.Update();
@@ -560,20 +549,20 @@ public class UserController : EntityController<User, UserModel>
         return Info(user.ID);
     }
 
-    /// <summary>保存文件</summary>
-    /// <param name="entity">实体对象</param>
-    /// <param name="file">文件</param>
-    /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
-    /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
-    /// <returns></returns>
-    protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
-    {
-        // 修改保存目录和文件名
-        var set = CubeSetting.Current;
-        if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
+    ///// <summary>保存文件</summary>
+    ///// <param name="entity">实体对象</param>
+    ///// <param name="file">文件</param>
+    ///// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
+    ///// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
+    ///// <returns></returns>
+    //protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
+    //{
+    //    // 修改保存目录和文件名
+    //    var set = CubeSetting.Current;
+    //    if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
 
-        return base.SaveFile(entity, file, set.AvatarPath, fileName);
-    }
+    //    return base.SaveFile(entity, file, set.AvatarPath, fileName);
+    //}
 
     /// <summary>修改密码</summary>
     /// <returns></returns>
@@ -750,7 +739,7 @@ public class UserController : EntityController<User, UserModel>
 
         if (IsJsonRequest) return Ok(data: model);
 
-        var tid = ManagerProviderHelper.GetCookieTenantID(HttpContext);
+        var tid = HttpContext.GetTenantId();
         var t = Tenant.FindById(tid);
 
         ViewData["TenantId"] = t?.Id ?? 0;
@@ -767,7 +756,7 @@ public class UserController : EntityController<User, UserModel>
     {
         var tagTenantId = Request.Form["TagTenantId"].ToInt(-1);
 
-        if (tagTenantId > 0) ManagerProviderHelper.ChangeTenant(HttpContext, tagTenantId);
+        if (tagTenantId > 0) HttpContext.SaveTenant(tagTenantId);
 
         ViewBag.StatusMessage = "保存成功";
         if (IsJsonRequest) return Ok(ViewBag.StatusMessage);
@@ -775,20 +764,20 @@ public class UserController : EntityController<User, UserModel>
         return TenantSetting();
     }
 
-    /// <summary>设置租户</summary>
-    /// <param name="userId">当前用户编号</param>
-    private void SetTenant(Int32 userId)
-    {
-        var tenantUser = TenantUser.FindAllByUserId(userId);
-        if (tenantUser != null && tenantUser.Count > 0)
-        {
-            var entity = tenantUser.FirstOrDefault().Tenant;
+    ///// <summary>设置租户</summary>
+    ///// <param name="userId">当前用户编号</param>
+    //private void SetTenant(Int32 userId)
+    //{
+    //    var tenantUser = TenantUser.FindAllByUserId(userId);
+    //    if (tenantUser != null && tenantUser.Count > 0)
+    //    {
+    //        var entity = tenantUser.FirstOrDefault().Tenant;
 
-            if (entity == null || !entity.Enable) return;
+    //        if (entity == null || !entity.Enable) return;
 
-            ManagerProviderHelper.ChangeTenant(HttpContext, tenantUser.FirstOrDefault().TenantId);
-        }
-    }
+    //        HttpContext.SaveTenant(tenantUser.FirstOrDefault().TenantId);
+    //    }
+    //}
 
     ///// <summary>批量启用</summary>
     ///// <param name="keys"></param>

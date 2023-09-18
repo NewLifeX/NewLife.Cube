@@ -21,14 +21,14 @@ public class UserOnlineController : EntityController<UserOnline>
     {
         PageSetting.EnableAdd = false;
 
-        ListFields.RemoveField("UserID", "SessionID", "Status", "LastError", "CreateIP", "CreateTime");
+        ListFields.RemoveField("ID", "UserID", "SessionID", "Status", "LastError", "CreateIP", "CreateTime");
 
         ListFields.TraceUrl("TraceId");
 
         {
             var df = ListFields.GetField("Name") as ListField;
-            //df.DisplayName = "跟踪";
-            df.Url = "/Admin/User?id={UserID}";
+            df.Url = "/Admin/User/Edit?id={UserID}";
+            df.Target = "_blank";
             df.DataVisible = e => (e as UserOnline).UserID > 0;
         }
     }

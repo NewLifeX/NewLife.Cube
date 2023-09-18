@@ -52,7 +52,7 @@ public class SsoController : ControllerBaseX
     public static OAuthServer OAuth { get; set; }
 
     /// <summary>存储最近用过的code，避免用户刷新页面</summary>
-    private static readonly ICache _codeCache = new MemoryCache { Period = 60 };
+    private readonly ICache _cache;
 
     static SsoController()
     {
@@ -62,6 +62,10 @@ public class SsoController : ControllerBaseX
             Log = LogProvider.Provider.AsLog("OAuth")
         };
     }
+
+    /// <summary>实例化单点登录控制器</summary>
+    /// <param name="cacheProvider"></param>
+    public SsoController(ICacheProvider cacheProvider) => _cache = cacheProvider.Cache;
 
     /// <summary>首页</summary>
     /// <returns></returns>
@@ -149,7 +153,7 @@ public class SsoController : ControllerBaseX
             return Redirect(OnLogin(client, null, null, log));
         }
         // 短期内用过的code也跳回
-        if (!_codeCache.Add(code, code, 600))
+        if (!_cache.Add(code, code, 600))
             return Redirect(OnLogin(client, null, null, log));
 
         // 构造redirect_uri，部分提供商（百度）要求获取AccessToken的时候也要传递
@@ -258,8 +262,7 @@ public class SsoController : ControllerBaseX
             }
 
             // 设置租户
-            var tEntity = TenantUser.FindAllByUserId(user.ID).FirstOrDefault();
-            ManagerProviderHelper.ChangeTenant(HttpContext, tEntity?.TenantId ?? 0);
+            HttpContext.ChooseTenant(user.ID);
 
             return Redirect(url);
         }

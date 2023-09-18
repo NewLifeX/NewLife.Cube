@@ -236,7 +236,7 @@ public static class ViewHelper
                         break;
                     case TypeCode.Single:
                     case TypeCode.Double:
-                        if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                        if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
                             var des = item.Description + "";
                             if (des.Contains("十分之一"))
@@ -267,17 +267,17 @@ public static class ViewHelper
                             sb.AppendFormat(@"<td class=""text-center"">@entity.{0}</td>", item.Name);
                         else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                             BuildUser(item, sb);
-                        else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                        else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
                             var des = item.Description + "";
                             if (des.Contains("十分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10d).ToString(""p2""))</td>", item.Name);
                             else if (des.Contains("百分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
                             else if (des.Contains("千分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000d).ToString(""p2""))</td>", item.Name);
                             else if (des.Contains("万分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
                             else
                                 sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
                         }
@@ -354,7 +354,7 @@ public static class ViewHelper
                         break;
                     case TypeCode.Single:
                     case TypeCode.Double:
-                        if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                        if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
                             var des = item.Description + "";
                             if (des.Contains("十分之一"))
@@ -386,17 +386,17 @@ public static class ViewHelper
                             sb.Append(@"<td></td>");
                         else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                             sb.Append(@"<td></td>");
-                        else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                        else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
                             var des = item.Description + "";
                             if (des.Contains("十分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10d).ToString(""p2""))</td>", item.Name);
                             else if (des.Contains("百分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
                             else if (des.Contains("千分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000d).ToString(""p2""))</td>", item.Name);
                             else if (des.Contains("万分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
                             else
                                 sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
                         }
@@ -739,9 +739,12 @@ public static class ViewHelper
     {
         if (user == null || user.Avatar.IsNullOrEmpty()) return null;
 
+        // 绝对路径
+        if (user.Avatar.StartsWithIgnoreCase("http://", "https://", "/")) return user.Avatar;
+
         var set = CubeSetting.Current;
 
-        if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWithIgnoreCase("/Sso/"))
+        if (!user.Avatar.StartsWithIgnoreCase("/Sso/"))
         {
             var av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath();
             if (File.Exists(av)) return "/Cube/Avatar?id=" + user.ID;
@@ -862,6 +865,7 @@ public static class ViewHelper
                                 ID = menu.ID,
                                 Name = menu.Name,
                                 DisplayName = menu.DisplayName ?? menu.Name,
+                                FullName = menu.FullName,
                                 Url = menu.Url,
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,

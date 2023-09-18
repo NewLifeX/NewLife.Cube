@@ -6,17 +6,17 @@ on:
     paths:
         - 'NewLife.Cube/**'
         - 'NewLife.CubeNC/**'
-        - 'NewLife.CubeNC.Metronic/**'
-        - 'NewLife.CubeNC.Metronic8/**'
-        - 'NewLife.CubeNC.LayuiAdmin/**'
+        - 'NewLife.Cube.Metronic/**'
+        - 'NewLife.Cube.Metronic8/**'
+        - 'NewLife.Cube.LayuiAdmin/**'
   pull_request:
     branches: [ master ]
     paths:
         - 'NewLife.Cube/**'
         - 'NewLife.CubeNC/**'
-        - 'NewLife.CubeNC.Metronic/**'
-        - 'NewLife.CubeNC.Metronic8/**'
-        - 'NewLife.CubeNC.LayuiAdmin/**'
+        - 'NewLife.Cube.Metronic/**'
+        - 'NewLife.Cube.Metronic8/**'
+        - 'NewLife.Cube.LayuiAdmin/**'
   workflow_dispatch:
 
 jobs:

@@ -50,7 +50,12 @@ public class AreaController : EntityController<Area>
             //if (Area.Meta.Count == 0) ThreadPoolX.QueueUserWorkItem(() => Area.FetchAndSave());
             // 必须同步初始化，否则无法取得当前登录用户信息
             //if (Area.Meta.Count == 0) Area.FetchAndSave();
-            if (Area.Meta.Count == 0) Import("http://x.newlifex.com/Area.csv.gz", true);
+            if (Area.Meta.Count == 0)
+            {
+                // 先加载民政部数据，然后导入旧版数据
+                FetchAndSave(null);
+                Import("http://x.newlifex.com/Area.csv.gz", true, 4, false);
+            }
         }
 
         var id = p["id"].ToInt(-1);

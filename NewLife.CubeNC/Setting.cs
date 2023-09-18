@@ -60,15 +60,15 @@ public class CubeSetting : Config<CubeSetting>
     [Category("通用")]
     public String XFrameOptions { get; set; }
 
-    /// <summary>Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）</summary>
-    [Description("Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）")]
-    [Category("通用")]
-    public Int32 SameSiteMode { get; set; } = -1;
+    ///// <summary>Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）</summary>
+    //[Description("Cookie模式。token的cookies默认模式（ -1 Unspecified，0 None，1 Lax，2 Strict）")]
+    //[Category("通用")]
+    //public Int32 SameSiteMode { get; set; } = -1;
 
-    /// <summary>Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值</summary>
-    [Description("Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值")]
-    [Category("通用")]
-    public String CookieDomain { get; set; }
+    ///// <summary>Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值</summary>
+    //[Description("Cookie域名。可用于把Cookie写到顶级域名，默认为空写当前域。写顶级域要求https，同时会导致普通http无法在本地域写同名键值")]
+    //[Category("通用")]
+    //public String CookieDomain { get; set; }
 
     /// <summary>分享有效期。分享令牌的有效期，默认7200秒</summary>
     [Description("分享有效期。分享令牌的有效期，默认7200秒")]
@@ -79,16 +79,6 @@ public class CubeSetting : Config<CubeSetting>
     [Description("机器人错误码。设置后拦截各种爬虫并返回相应错误，如404/500，默认0不拦截")]
     [Category("通用")]
     public Int32 RobotError { get; set; }
-
-    /// <summary>用户在线。是否记录用户在线信息，0表示不记录，1表示仅记录已登录用户，2表示记录所有访客。默认2</summary>
-    [Description("用户在线。是否记录用户在线信息，0表示不记录，1表示仅记录已登录用户，2表示记录所有访客。默认2")]
-    [Category("通用")]
-    public Int32 EnableUserOnline { get; set; } = 2;
-
-    /// <summary>用户统计。是否统计用户访问，默认true</summary>
-    [Description("用户统计。是否统计用户访问，默认true")]
-    [Category("通用")]
-    public Boolean EnableUserStat { get; set; } = true;
     #endregion
 
     #region 用户登录
@@ -117,8 +107,8 @@ public class CubeSetting : Config<CubeSetting>
     //[Category("用户登录")]
     //public Int32 MinPasswordLength { get; set; } = 6;
 
-    /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号</summary>
-    [Description("密码强度。*表示无限制，默认8位起，数字大小写字母和符号")]
+    /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$</summary>
+    [Description("密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$")]
     [Category("用户登录")]
     public String PaswordStrength { get; set; } = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
 
@@ -273,6 +263,23 @@ public class CubeSetting : Config<CubeSetting>
     [Description("星尘Web。星尘控制台地址，支持直达调用链 /trace?id={traceId} 或 /graph?id={traceId}")]
     [Category("界面配置")]
     public String StarWeb { get; set; }
+    #endregion
+
+    #region 系统功能
+    /// <summary>多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面</summary>
+    [Description("多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面")]
+    [Category("系统功能")]
+    public Boolean EnableTenant { get; set; }
+
+    /// <summary>用户在线。是否记录用户在线信息，0表示不记录，1表示仅记录已登录用户，2表示记录所有访客。默认2</summary>
+    [Description("用户在线。是否记录用户在线信息，0表示不记录，1表示仅记录已登录用户，2表示记录所有访客。默认2")]
+    [Category("系统功能")]
+    public Int32 EnableUserOnline { get; set; } = 2;
+
+    /// <summary>用户统计。是否统计用户访问，默认true</summary>
+    [Description("用户统计。是否统计用户访问，默认true")]
+    [Category("系统功能")]
+    public Boolean EnableUserStat { get; set; } = true;
     #endregion
 
     #region 方法

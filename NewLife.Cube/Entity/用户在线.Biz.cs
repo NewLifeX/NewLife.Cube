@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NewLife.Data;
 using XCode;
@@ -109,6 +109,19 @@ namespace NewLife.Cube.Entity
 
             return Find(_.SessionID == sessionId);
         }
+
+    /// <summary>根据会话查找</summary>
+    /// <param name="sessionId">会话</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserOnline> FindAllBySessionID(String sessionId)
+    {
+        if (sessionId.IsNullOrEmpty()) return new List<UserOnline>();
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.SessionID.EqualIgnoreCase(sessionId));
+
+        return FindAll(_.SessionID == sessionId);
+    }
         #endregion
 
         #region 高级查询

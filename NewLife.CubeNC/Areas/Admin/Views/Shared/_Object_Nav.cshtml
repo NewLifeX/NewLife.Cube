@@ -1,10 +1,13 @@
 ﻿@{
-    var Obj = Model as Object;
+    var obj = Model as Object;
+    var path = Context.Request.Path + "";
 }
-<div class="text-center col-md-12" style="margin-bottom: 10px">
-    @Html.ActionLink("基本设置", "Index", "Core", null, new { @class = "btn btn-success btn-sm" })
-    @Html.ActionLink("系统设置", "Index", "Sys", null, new { @class = "btn btn-success btn-sm" })
-    @Html.ActionLink("数据中间件", "Index", "XCode", null, new { @class = "btn btn-success btn-sm" })
-    @Html.ActionLink("魔方设置", "Index", "Cube", null, new { @class = "btn btn-success btn-sm" })
-    @Html.ActionLink("OAuth设置", "Index", "OAuthConfig", null, new { @class = "btn btn-success btn-sm" })
+<div class="navbar-collapse collapse text-center">
+    <ul class="nav nav-pills" style="margin-bottom: 10px; display: inline-block;float: none;">
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Core")?"active":"")"><a href="/Admin/Core">基本设置</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Sys")?"active":"")"><a href="/Admin/Sys">系统设置</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/XCode")?"active":"")"><a href="/Admin/XCode">数据中间件</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Cube")?"active":"")"><a href="/Admin/Cube">魔方设置</a></li>
+        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/OAuthConfig")?"active":"")"><a href="/Admin/OAuthConfig">OAuth设置</a></li>
+    </ul>
 </div>

@@ -54,6 +54,8 @@ public class CubeController : ConfigController<CubeSetting>
         }
 
         base.OnActionExecuting(filterContext);
+
+        PageSetting.NavView = "_Object_Nav";
     }
 
     /// <summary>

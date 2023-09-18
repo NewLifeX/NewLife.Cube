@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Reflection;
+﻿using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
+using System.Xml.Serialization;
 using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Model;
@@ -62,6 +60,10 @@ public class OAuthClient
     /// 字段映射
     /// </summary>
     public IDictionary<String, Object> FieldMap { get; set; }
+
+    /// <summary>OAuth配置</summary>
+    [XmlIgnore, IgnoreDataMember]
+    public OAuthConfig Config { get; set; }
 
     /// <summary>APM跟踪器</summary>
     public static ITracer Tracer { get; set; } = DefaultTracer.Instance;
@@ -181,6 +183,8 @@ public class OAuthClient
         if (!mi.Secret.IsNullOrEmpty()) Secret = mi.Secret;
         if (!mi.Scope.IsNullOrEmpty()) Scope = mi.Scope;
         if (!mi.FieldMap.IsNullOrEmpty()) FieldMap = JsonParser.Decode(mi.FieldMap);
+
+        Config = mi;
     }
 
     /// <summary>是否支持指定用户端，也就是判断是否在特定应用内打开，例如QQ/DingDing/WeiXin</summary>
@@ -215,7 +219,12 @@ public class OAuthClient
         _redirect = redirect;
         _state = state;
 
-        var url = GetUrl(AuthUrl);
+        //var url = AuthUrl;
+        //// 如果回跳地址是http开头，而授权地址是https开头，则需要使用备用地址（Server2有设置的前提下）
+        //if (!url.StartsWithIgnoreCase("http://", "https://") && redirect.StartsWithIgnoreCase("http://") && !Server2.IsNullOrEmpty())
+        //    url = Server2.EnsureEnd("/") + url.TrimStart('/');
+
+        var url = GetUrl(nameof(Authorize), AuthUrl);
         if (!state.IsNullOrEmpty()) WriteLog("Authorize {0}", url);
 
         return url;
@@ -232,7 +241,7 @@ public class OAuthClient
 
         Code = code;
 
-        var url = GetUrl(AccessUrl);
+        var url = GetUrl(nameof(GetAccessToken), AccessUrl);
         WriteLog("GetAccessToken {0}", url);
 
         var html = GetHtml(nameof(GetAccessToken), url);
@@ -274,7 +283,7 @@ public class OAuthClient
     {
         if (AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(AccessToken), "未设置授权码");
 
-        var url = GetUrl(OpenIDUrl);
+        var url = GetUrl(nameof(GetOpenID), OpenIDUrl);
         WriteLog("GetOpenID {0}", url);
 
         var html = GetHtml(nameof(GetOpenID), url);
@@ -356,7 +365,7 @@ public class OAuthClient
         var url = UserUrl;
         if (url.IsNullOrEmpty()) throw new ArgumentNullException(nameof(UserUrl), "未设置用户信息地址");
 
-        url = GetUrl(url);
+        url = GetUrl(nameof(GetUserInfo), url);
         WriteLog("GetUserInfo {0}", url);
 
         var html = GetHtml(nameof(GetUserInfo), url);
@@ -414,27 +423,31 @@ public class OAuthClient
         _redirect = redirect;
         _state = state;
 
-        url = GetUrl(url);
+        url = GetUrl(nameof(Logout), url);
         WriteLog("Logout {0}", url);
 
         return url;
     }
     #endregion
 
-        #region 辅助
-        /// <summary>替换地址模版参数</summary>
-        /// <param name="url"></param>
-        /// <returns></returns>
-        protected virtual String GetUrl(String url)
+    #region 辅助
+    /// <summary>替换地址模版参数</summary>
+    /// <param name="name"></param>
+    /// <param name="url"></param>
+    /// <returns></returns>
+    protected virtual String GetUrl(String name, String url)
+    {
+        if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
         {
-            if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
-            {
-                // 授权以外的连接，使用令牌服务地址
-                if (!AccessServer.IsNullOrEmpty() && !url.StartsWithIgnoreCase("auth", "sns_authorize", "logout"))
-                    url = AccessServer.EnsureEnd("/") + url.TrimStart('/');
-                else
-                    url = Server.EnsureEnd("/") + url.TrimStart('/');
-            }
+            // 是否内部操作
+            var isInternal = !name.EqualIgnoreCase(nameof(Authorize), nameof(Logout));
+
+            // 授权以外的连接，使用令牌服务地址
+            if (!AccessServer.IsNullOrEmpty() && isInternal)
+                url = AccessServer.EnsureEnd("/") + url.TrimStart('/');
+            else
+                url = Server.EnsureEnd("/") + url.TrimStart('/');
+        }
 
         url = url
            .Replace("{key}", HttpUtility.UrlEncode(Key + ""))
@@ -641,6 +654,17 @@ public class OAuthClient
         // 获取用户信息出错时抛出异常
         // 2021-07-19 企业微信正常请求返回"errmsg": "ok"，导致登录报错，所以暂时注释
         if ((dic.TryGetValue("error", out str) || dic.TryGetValue("errmsg", out str)) && str != "ok") throw new InvalidOperationException(str);
+    }
+
+    /// <summary>获取头像路径</summary>
+    /// <returns></returns>
+    public String GetAvatarUrl()
+    {
+        var av = Avatar;
+        if (av != null && av.StartsWith("/") && Server.StartsWithIgnoreCase("http"))
+            return new Uri(new Uri(Server), av) + "";
+
+        return av;
     }
     #endregion
 

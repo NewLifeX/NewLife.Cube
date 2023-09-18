@@ -13,6 +13,13 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(28, false, Icon = "fa-file")]
 public class FileController : ControllerBaseX
 {
+    #region 构造
+    private IWebHostEnvironment _env;
+
+    /// <summary>构造函数</summary>
+    public FileController(IWebHostEnvironment env) => _env = env;
+    #endregion
+
     #region 基础
     private String Root => "../".GetCurrentPath();
 
@@ -275,7 +282,7 @@ public class FileController : ControllerBaseX
                 using var fs = new FileStream(dest, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                 await file.CopyToAsync(fs);
             }
-            return Json(0, "上传成功");
+            return Json(0, "上传成功", r.EnsureStart("/").EnsureEnd("/")  + file.FileName);
         }
         catch (Exception ex)
         {
@@ -283,6 +290,50 @@ public class FileController : ControllerBaseX
             return Json(500, "上传失败");
         }
     }
+
+    /// <summary>上传头像</summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [EntityAuthorize(PermissionFlags.Insert)]
+    public async Task<ActionResult> UploadAvatar(IFormFile file)
+    {
+
+        // 判断文件是否属于图片
+        if (!file.ContentType.Contains("image"))
+        {
+            return Json(500, "只能上传图片文件");
+        }
+
+        try
+        {
+            var set = CubeSetting.Current;
+            var r = set.AvatarPath.EnsureEnd("/");
+            var root = _env.ContentRootPath;
+            var path = root.CombinePath(set.AvatarPath);
+
+            if (file != null)
+            {
+                var di = path.AsDirectory();
+                if (di == null) throw new Exception("找不到目录！");
+
+                var dest = di.FullName.CombinePath(file.FileName);
+                WriteLog("上传", true, dest);
+
+                dest.EnsureDirectory(true);
+                //System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes(-1));
+                using var fs = new FileStream(dest, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                await file.CopyToAsync(fs);
+            }
+            return Json(0, "上传成功", r.EnsureStart("/").EnsureEnd("/")  + file.FileName);
+        }
+        catch (Exception ex)
+        {
+            WriteLog("上传失败", false, ex + "");
+            return Json(500, "上传失败");
+        }
+    }
+
 
     /// <summary>下载文件</summary>
     /// <param name="r"></param>

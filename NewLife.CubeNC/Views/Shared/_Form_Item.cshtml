@@ -66,15 +66,15 @@
         }
 
         // 数据字段以s结尾，表示多选，其它单选
-        if (item.Name.EndsWith("s"))
-        {
-            @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, ds, itemModel.Value))
-        }
-        else if (item.ItemType.EqualIgnoreCase("singleSelect"))
+        if (item.ItemType.EqualIgnoreCase("singleSelect"))
         {
             @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(item.Name, ds, itemModel.Value))
         }
         else if (item.ItemType.EqualIgnoreCase("multipleSelect"))
+        {
+            @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, ds, itemModel.Value))
+        }
+        else if (item.Name.EndsWith("s"))
         {
             @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(item.Name, ds, itemModel.Value))
         }

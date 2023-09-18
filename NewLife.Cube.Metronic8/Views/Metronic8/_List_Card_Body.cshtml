@@ -4,6 +4,7 @@
 @using NewLife;
 @using Microsoft.AspNetCore.Routing
 @using NewLife.Cube.Entity
+@using NewLife.Cube.Extensions;
 @using XCode;
 @using XCode.Configuration;
 @using XCode.Membership;
@@ -44,7 +45,7 @@
                         {
                             case TypeCode.Boolean:
                                 var flag = (Boolean)value;
-                                var icon = flag ? "fas fa-brands fa-toggle-on" : "fas fa-brands fa-toggle-off";
+                                var icon = flag ? "fas fa-toggle-on" : "fas fa-toggle-off";
                                 <td>
                                    <i class="@icon fs-1 @(flag ? "text-primary" : "text-gray-600")"></i> 
                                 </td>
@@ -69,7 +70,7 @@
 
                             case TypeCode.Single:
                             case TypeCode.Double:
-                                if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                                if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || fi.ItemType.EqualIgnoreCase("percent", "Percentage"))
                                 {
                                     var dd = (Double)value;
                                     var des = fi.Description + "";
@@ -153,6 +154,20 @@
                                     else if (fi.Name.EqualIgnoreCase("CreateIP", "UpdateIP") || fi.Name.Contains("IP"))
                                     {
                                         <td data-bs-toggle="tooltip" title="@((value+"").IPToAddress())">@((value + "").IPToAddress())</td>
+                                    }
+                                    else if (fi.Name.EqualIgnoreCase("TraceId"))
+                                    {
+                                        var traceId = (String)value;
+                                        if (!traceId.IsNullOrEmpty())
+                                        {
+                                            <td>
+                                                <a href="@StarHelper.BuildUrl(traceId)" title="链路追踪，用于APM性能追踪定位，还原该事件的调用链" target="_blank">链路追踪</a>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>@value</td>
+                                        }
                                     }
                                     else if (fi.IsBigText())
                                     {

@@ -42,18 +42,22 @@
   <ItemGroup>
     <Compile Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <Compile Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
+    <Compile Remove="wwwroot\assets\js\custom\authentication\password-reset\**" />
     <Compile Remove="wwwroot\assets\logo\**" />
     <Compile Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <Content Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <Content Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\password-reset\**" />
     <Content Remove="wwwroot\assets\logo\**" />
     <Content Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <EmbeddedResource Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <EmbeddedResource Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
+    <EmbeddedResource Remove="wwwroot\assets\js\custom\authentication\password-reset\**" />
     <EmbeddedResource Remove="wwwroot\assets\logo\**" />
     <EmbeddedResource Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
     <None Remove="Areas\Cube\Views\ModelColumn_Metronic8\**" />
     <None Remove="Areas\Cube\Views\ModelTable_Metronic8\**" />
+    <None Remove="wwwroot\assets\js\custom\authentication\password-reset\**" />
     <None Remove="wwwroot\assets\logo\**" />
     <None Remove="wwwroot\assets\plugins\custom\ckeditor\**" />
   </ItemGroup>
@@ -63,9 +67,11 @@
     <Content Remove="wwwroot\assets\css\style.bundle.js" />
     <Content Remove="wwwroot\assets\cube.js" />
     <Content Remove="wwwroot\assets\favicon.ico" />
-    <Content Remove="wwwroot\assets\js\custom\authentication\password-reset\new-password.js" />
-    <Content Remove="wwwroot\assets\js\custom\authentication\password-reset\password-reset.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\reset-password\new-password.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\reset-password\reset-password.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\general.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\i18n.js" />
+    <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\two-factor.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-in\two-steps.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-up\coming-soon.js" />
     <Content Remove="wwwroot\assets\js\custom\authentication\sign-up\free-trial.js" />
@@ -75,6 +81,7 @@
     <Content Remove="wwwroot\assets\js\custom\layout-builder\layout-builder.js" />
     <Content Remove="wwwroot\assets\js\custom\widgets.js" />
     <Content Remove="wwwroot\assets\js\scripts.bundle.js" />
+    <Content Remove="wwwroot\assets\js\widgets.bundle.js" />
     <Content Remove="wwwroot\assets\media\bg-4.jpg" />
     <Content Remove="wwwroot\assets\media\logos\Logo.png" />
     <Content Remove="wwwroot\assets\media\logos\NewLife.png" />
@@ -125,16 +132,15 @@
     <Content Remove="wwwroot\assets\media\sketchy\9.png" />
     <Content Remove="wwwroot\assets\media\verification.png" />
     <Content Remove="wwwroot\assets\plugins\custom\draggable\draggable.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading%402x.gif" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading.gif" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search%402x-disabled.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search%402x.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search-disabled.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search.png" />
-    <Content Remove="wwwroot\assets\plugins\custom\flatpickr\zh.js" />
     <Content Remove="wwwroot\assets\plugins\custom\fslightbox\fslightbox.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\jkanban\jkanban.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\jkanban\jkanban.bundle.js" />
+    <Content Remove="wwwroot\assets\plugins\custom\jstree\images\jstree\32px.png" />
+    <Content Remove="wwwroot\assets\plugins\custom\jstree\images\jstree\throbber.gif" />
+    <Content Remove="wwwroot\assets\plugins\custom\jstree\jstree.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\jstree\jstree.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.css" />
@@ -142,38 +148,22 @@
     <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.css" />
+    <Content Remove="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.woff" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.svg" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-duotone-900.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-duotone-900.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-light-300.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-light-300.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.woff" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-regular-400.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.svg" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.woff" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-solid-900.woff2" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-v4compatibility.ttf" />
+    <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-v4compatibility.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff2" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.eot" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.svg" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.ttf" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff" />
-    <Content Remove="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\global\plugins.bundle.js" />
     <Content Remove="wwwroot\favicon.ico" />
@@ -183,9 +173,11 @@
     <EmbeddedResource Include="wwwroot\assets\css\style.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\cube.js" />
     <EmbeddedResource Include="wwwroot\assets\favicon.ico" />
-    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\password-reset\new-password.js" />
-    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\password-reset\password-reset.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\reset-password\new-password.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\reset-password\reset-password.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\general.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\i18n.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\two-factor.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-in\two-steps.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-up\coming-soon.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\authentication\sign-up\free-trial.js" />
@@ -195,6 +187,7 @@
     <EmbeddedResource Include="wwwroot\assets\js\custom\layout-builder\layout-builder.js" />
     <EmbeddedResource Include="wwwroot\assets\js\custom\widgets.js" />
     <EmbeddedResource Include="wwwroot\assets\js\scripts.bundle.js" />
+    <EmbeddedResource Include="wwwroot\assets\js\widgets.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\media\bg-4.jpg" />
     <EmbeddedResource Include="wwwroot\assets\media\logos\Logo.png" />
     <EmbeddedResource Include="wwwroot\assets\media\logos\NewLife.png" />
@@ -245,16 +238,15 @@
     <EmbeddedResource Include="wwwroot\assets\media\sketchy\9.png" />
     <EmbeddedResource Include="wwwroot\assets\media\verification.png" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\draggable\draggable.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading.gif" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\loading@2x.gif" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search-disabled.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search@2x-disabled.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\esri-leaflet-geocoder\search@2x.png" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\custom\flatpickr\zh.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fslightbox\fslightbox.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\fullcalendar\fullcalendar.bundle.js" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jkanban\jkanban.bundle.css" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jkanban\jkanban.bundle.js" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jstree\images\jstree\32px.png" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jstree\images\jstree\throbber.gif" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jstree\jstree.bundle.css" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\jstree\jstree.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.css" />
@@ -262,38 +254,22 @@
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.svg" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.css" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.js" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.woff" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-brands-400.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.svg" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-duotone-900.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-duotone-900.woff2" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-light-300.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-light-300.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.woff" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-regular-400.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.svg" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.woff" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-solid-900.woff2" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-v4compatibility.ttf" />
+    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\@fortawesome\fa-v4compatibility.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\bootstrap-icons\bootstrap-icons.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-brands-400.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-regular-400.woff2" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.eot" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.svg" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.ttf" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff" />
-    <EmbeddedResource Include="wwwroot\assets\plugins\global\fonts\line-awesome\la-solid-900.woff2" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\plugins.bundle.css" />
     <EmbeddedResource Include="wwwroot\assets\plugins\global\plugins.bundle.js" />
     <EmbeddedResource Include="wwwroot\favicon.ico" />
@@ -316,26 +292,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\Assembly.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\Main.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\ProcessModules.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\ServerVar.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Update="Areas\Admin\Views\Index_Metronic8\Session.cshtml">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
     <Content Update="Views\Metronic8\ObjectForm.cshtml">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

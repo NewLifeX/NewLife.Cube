@@ -25,9 +25,8 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
-    private static readonly ICache _cache = Cache.Default ?? new MemoryCache();
+    private readonly ICache _cache;
     private readonly PasswordService _passwordService;
-    private readonly UserService _userService;
 
     static UserController()
     {
@@ -98,11 +97,11 @@ public class UserController : EntityController<User, UserModel>
     /// 实例化用户控制器
     /// </summary>
     /// <param name="passwordService"></param>
-    /// <param name="userService"></param>
-    public UserController(PasswordService passwordService, UserService userService)
+    /// <param name="cacheProvider"></param>
+    public UserController(PasswordService passwordService, ICacheProvider cacheProvider)
     {
         _passwordService = passwordService;
-        _userService = userService;
+        _cache = cacheProvider.Cache;
     }
 
     /// <summary>搜索数据集</summary>
@@ -250,9 +249,9 @@ public class UserController : EntityController<User, UserModel>
         var remember = loginModel.Remember;
 
         // 连续错误校验
-        var key = $"Login:{username}";
+        var key = $"CubeLogin:{username}";
         var errors = _cache.Get<Int32>(key);
-        var ipKey = $"Login:{UserHost}";
+        var ipKey = $"CubeLogin:{UserHost}";
         var ipErrors = _cache.Get<Int32>(ipKey);
 
         var set = CubeSetting.Current;
@@ -384,9 +383,9 @@ public class UserController : EntityController<User, UserModel>
         var file = HttpContext.Request.Form.Files["avatar"];
         if (file != null)
         {
-            var set = CubeSetting.Current;
-            var fileName = user.ID + Path.GetExtension(file.FileName);
-            var att = await SaveFile(user, file, set.AvatarPath, fileName);
+            //var set = CubeSetting.Current;
+            //var fileName = user.ID + Path.GetExtension(file.FileName);
+            var att = await SaveFile(user, file, null, null);
             if (att != null) user.Avatar = att.FilePath;
         }
 
@@ -398,20 +397,20 @@ public class UserController : EntityController<User, UserModel>
         return Json(0, null, user);
     }
 
-    /// <summary>保存文件</summary>
-    /// <param name="entity">实体对象</param>
-    /// <param name="file">文件</param>
-    /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
-    /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
-    /// <returns></returns>
-    protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
-    {
-        // 修改保存目录和文件名
-        var set = CubeSetting.Current;
-        if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
+    ///// <summary>保存文件</summary>
+    ///// <param name="entity">实体对象</param>
+    ///// <param name="file">文件</param>
+    ///// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
+    ///// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
+    ///// <returns></returns>
+    //protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
+    //{
+    //    // 修改保存目录和文件名
+    //    var set = CubeSetting.Current;
+    //    if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
 
-        return base.SaveFile(entity, file, set.AvatarPath, fileName);
-    }
+    //    return base.SaveFile(entity, file, set.AvatarPath, fileName);
+    //}
 
     /// <summary>修改密码</summary>
     /// <param name="model"></param>

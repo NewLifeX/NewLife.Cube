@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using NewLife.Collections;
 using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
+using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
@@ -140,7 +141,8 @@ public class EntityModelBinderProvider : IModelBinderProvider
     {
         if (context == null) throw new ArgumentNullException(nameof(context));
 
-        if (!context.Metadata.ModelType.As<IEntity>()) return null;
+        if (!context.Metadata.ModelType.As<IEntity>() &&
+            !context.Metadata.ModelType.As<IModel>()) return null;
 
         var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
         var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
