@@ -181,19 +181,19 @@ namespace NewLife.Cube.Areas.Admin.Models
         /// <param name="roles"></param>
         public void SetPermission(IRole[] roles)
         {
-            var ps = new Dictionary<Int32, Int32>();
+            var ps = new Dictionary<Int32, UInt32>();
             foreach (var role in roles)
             {
                 foreach (var rolePermission in role.Permissions)
                 {
                     if (!ps.ContainsKey(rolePermission.Key))
                     {
-                        ps[rolePermission.Key] = rolePermission.Value.ToInt();
+                        ps[rolePermission.Key] = Convert.ToUInt32(rolePermission.Value);
                         continue;
                     }
 
                     var permission = ps[rolePermission.Key];
-                    var addPermission = rolePermission.Value.ToInt();
+                    var addPermission = Convert.ToUInt32(rolePermission.Value);
 
                     // 总权限=旧权限+新权限-重复权限
                     // 比如，旧权限1+2+8=11，新权限1+2+16=19，重复权限11&19=3，总权限=11+19-3=27
