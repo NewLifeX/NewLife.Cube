@@ -62,7 +62,6 @@ public class IndexController : ControllerBaseX
     }
 
     /// <summary>服务器信息</summary>
-    /// <param name="id"></param>
     /// <returns></returns>
     [DisplayName("服务器信息")]
     [EntityAuthorize(PermissionFlags.Detail)]

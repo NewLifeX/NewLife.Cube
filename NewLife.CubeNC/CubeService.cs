@@ -132,6 +132,10 @@ public static class CubeService
         // 添加管理提供者
         services.AddManageProvider();
 
+        // 添加数据保护
+        services.AddDataProtection()
+            .PersistKeysToDb();
+
         // 防止汉字被自动编码
         services.Configure<WebEncoderOptions>(options =>
         {

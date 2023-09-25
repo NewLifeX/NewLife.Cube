@@ -523,7 +523,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
-    public virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
+    public new virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
     {
         if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
         if (grant_type.IsNullOrEmpty()) grant_type = "password";

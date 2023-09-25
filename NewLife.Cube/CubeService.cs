@@ -97,6 +97,10 @@ public static class CubeService
         // 添加管理提供者
         services.AddManageProvider();
 
+        // 添加数据保护
+        services.AddDataProtection()
+            .PersistKeysToDb();
+
         // 配置Json
         services.Configure<JsonOptions>(options =>
         {
