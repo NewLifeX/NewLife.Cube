@@ -5,11 +5,9 @@ using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
-using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
@@ -79,7 +77,6 @@ public static class CubeService
         //    options.MinimumSameSitePolicy = SameSiteMode.None;
         //});
 
-
         // 添加Session会话支持
         services.AddSession();
 
@@ -132,7 +129,11 @@ public static class CubeService
         // 添加管理提供者
         services.AddManageProvider();
 
-        // 添加数据保护
+        // 添加数据保护，优先在外部支持Redis持久化，这里默认使用数据库持久化
+        //if (services.Any(e => e.ServiceType == typeof(FullRedis) || e.ServiceType == typeof(ICacheProvider) && e.ImplementationType == typeof(RedisCacheProvider)))
+        //    services.AddDataProtection().PersistKeysToRedis();
+        //else
+        //    services.AddDataProtection().PersistKeysToDb();
         services.AddDataProtection()
             .PersistKeysToDb();
 

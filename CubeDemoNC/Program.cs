@@ -6,7 +6,7 @@ namespace CubeDemoNC;
 public class Program
 {
     public static void Main(string[] args)
-    { 
+    {
         Environment.SetEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
 
         XTrace.UseConsole();
@@ -18,13 +18,13 @@ public class Program
         do
         {
             app.Start(CreateHostBuilder(args).Build());
-        } while ( app.Restarting);
+        } while (app.Restarting);
     }
 
     //public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
     //    WebHost.CreateDefaultBuilder(args)
     //        .UseStartup<Startup>();
-     
+
 
     public static IHostBuilder CreateHostBuilder(String[] args)
     {

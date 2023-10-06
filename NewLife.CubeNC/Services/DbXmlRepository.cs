@@ -1,5 +1,6 @@
 ﻿using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.Repositories;
+using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Threading;
 using XCode.Membership;
@@ -17,6 +18,8 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
     public DbXmlRepository(String key)
     {
         if (key.IsNullOrEmpty()) throw new ArgumentNullException(nameof(key));
+
+        XTrace.WriteLine("DataProtection使用数据库持久化密钥，Key={0}", key);
 
         _key = key;
 

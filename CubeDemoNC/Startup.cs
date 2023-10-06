@@ -1,11 +1,18 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
 using NewLife;
+using NewLife.Caching.Services;
+using NewLife.Caching;
 using NewLife.Cube;
 using NewLife.Cube.AdminLTE;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.WebMiddleware;
 using CubeSetting = NewLife.Cube.CubeSetting;
+using NewLife.Cube.Services;
+using NewLife.Redis.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using NewLife.Log;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace CubeDemoNC;
 
@@ -21,12 +28,29 @@ public class Startup
         var star = services.AddStardust(null);
         TracerMiddleware.Tracer = star?.Tracer;
 
+        // 分布式服务，使用配置中心RedisCache配置
+        services.AddSingleton<ICacheProvider, RedisCacheProvider>();
+
+        var config = star.GetConfig();
+        var cacheConn = config["RedisCache"];
+        if (!cacheConn.IsNullOrEmpty())
+        {
+            var redis = new FullRedis { Log = XTrace.Log, Tracer = star.Tracer };
+            redis.Init(cacheConn);
+            services.AddSingleton(redis);
+        }
+
         // 启用接口响应压缩
         services.AddResponseCompression();
 
         services.AddControllersWithViews();
         services.AddCube();
         //services.AddBlazor();
+
+        if (!cacheConn.IsNullOrEmpty())
+        {
+            services.AddDataProtection().PersistKeysToRedis();
+        }
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

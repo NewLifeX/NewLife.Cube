@@ -169,7 +169,7 @@ else
             }
             else
             {
-                var val = value;            
+                var val = value;
                 if (!item.MapField.IsNullOrEmpty() && val + "" != "")
                 {
                     if (item.MapProvider != null)
@@ -179,7 +179,7 @@ else
                         val = entity[item.MapField];
                         //从菜单查找相关
                         var menu = Menu.FindForName(@name);
-                        if (menu!=null)
+                        if (menu != null)
                         {
                             //获取控制器名称,拼接全路径
                             var fullPath = $"{this.Context.Request.Scheme}://{this.Context.Request.Host}/{menu.ParentNodeName}/{@name}?{@key}={@val}";
@@ -208,15 +208,12 @@ else
                 {
                     if (!item.ItemType.IsNullOrEmpty() && item.ItemType.EqualIgnoreCase("file-WebUploader"))
                     {
-
-                        <td class="text-center">@Html.Partial("_View_ImgView",value)</td>
-
+                        <td class="text-center">@await Html.PartialAsync("_View_ImgView",value)</td>
                     }
                     else
                     {
                         <td>@value</td>
                     }
-                   
                 }
             }
             break;

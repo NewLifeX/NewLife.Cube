@@ -1,11 +1,8 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
@@ -15,7 +12,6 @@ using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
 using NewLife.IP;
 using NewLife.Log;
-using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
 using Stardust;
@@ -97,7 +93,11 @@ public static class CubeService
         // 添加管理提供者
         services.AddManageProvider();
 
-        // 添加数据保护
+        // 添加数据保护，优先在外部支持Redis持久化，这里默认使用数据库持久化
+        //if (services.Any(e => e.ServiceType == typeof(FullRedis) || e.ServiceType == typeof(ICacheProvider) && e.ImplementationType == typeof(RedisCacheProvider)))
+        //    services.AddDataProtection().PersistKeysToRedis();
+        //else
+        //    services.AddDataProtection().PersistKeysToDb();
         services.AddDataProtection()
             .PersistKeysToDb();
 
