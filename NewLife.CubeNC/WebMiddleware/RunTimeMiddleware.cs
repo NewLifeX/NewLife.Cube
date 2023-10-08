@@ -41,6 +41,7 @@ public class RunTimeMiddleware
         var userAgent = ctx.Request.Headers["User-Agent"] + "";
         var ua = new UserAgentParser();
         ua.Parse(userAgent);
+        ctx.Items["UserAgent"] = ua;
 
         // 识别拦截爬虫
         if (!ValidRobot(ctx, ua)) return;

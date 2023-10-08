@@ -8,6 +8,7 @@ using NewLife.Cube.Web;
 using NewLife.Cube.Web.Models;
 using NewLife.Log;
 using NewLife.Model;
+using NewLife.Net;
 using NewLife.Remoting;
 using NewLife.Security;
 using NewLife.Web;
@@ -82,12 +83,20 @@ public class SsoController : ControllerBaseX
     public virtual ActionResult Login(String name)
     {
         var prov = Provider;
-        var client = prov.GetClient(name);
-        client.Init(GetUserAgent());
-
         var rurl = prov.GetReturnUrl(Request, true);
 
-        return base.Redirect(OnLogin(client, null, rurl, null));
+        try
+        {
+            var client = prov.GetClient(name);
+            client.Init(GetUserAgent());
+
+            return base.Redirect(OnLogin(client, null, rurl, null));
+        }
+        catch (InvalidOperationException)
+        {
+            var retUrl = "~/Admin/User/Login".AppendReturn(rurl);
+            return Redirect(retUrl);
+        }
     }
 
     private String OnLogin(OAuthClient client, String state, String returnUrl, OAuthLog log)
