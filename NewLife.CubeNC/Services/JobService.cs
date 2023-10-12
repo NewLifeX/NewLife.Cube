@@ -17,16 +17,16 @@ public class JobService : IHostedService
     #region 核心控制
 
     private static readonly IList<MyJob> _jobs = new List<MyJob>();
-    private readonly ICacheProvider _cacheProvider;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ITracer _tracer;
 
     /// <summary>实例化作业服务</summary>
-    /// <param name="cacheProvider"></param>
+    /// <param name="serviceProvider"></param>
     /// <param name="tracer"></param>
-    public JobService(ICacheProvider cacheProvider, ITracer tracer)
+    public JobService(IServiceProvider serviceProvider, ITracer tracer)
     {
         _tracer = tracer;
-        _cacheProvider = cacheProvider;
+        _serviceProvider = serviceProvider;
     }
 
     private static TimerX _timer;
@@ -79,7 +79,8 @@ public class JobService : IHostedService
             var job = _jobs.FirstOrDefault(e => e.Job.Id == item.Id);
             if (job == null)
             {
-                job = new MyJob { Job = item, CacheProvider = _cacheProvider, Tracer = _tracer };
+                //将ICacheProvider 改为IServiceProvider注入，避免没有星辰注册导致的Job注入错误
+                job = new MyJob { Job = item, CacheProvider = _serviceProvider.GetService<ICacheProvider>(), Tracer = _tracer };
                 _jobs.Add(job);
             }
             job.Job = item;
@@ -268,7 +269,7 @@ internal class MyJob : IDisposable
     {
         // 检查分布式锁，避免多节点重复执行
         var key = $"Job:{job.Id}";
-        if (!CacheProvider.Cache.Add(key, job.Name, 10)) return false;
+        if (CacheProvider!=null&&!CacheProvider.Cache.Add(key, job.Name, 10)) return false;
 
         // 有时候可能并没有配置Redis，借助数据库事务实现去重，需要20230804版本的XCode
         using var tran = CronJob.Meta.CreateTrans();

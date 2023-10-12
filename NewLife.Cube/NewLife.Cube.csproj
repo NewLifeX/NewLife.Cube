@@ -89,7 +89,7 @@
     <PackageReference Include="NewLife.IP" Version="2.1.2023.704-beta0221" />
     <PackageReference Include="NewLife.Redis.Extensions" Version="5.5.2023.1001" />
     <PackageReference Include="NewLife.Stardust" Version="2.9.2023.1001" />
-    <PackageReference Include="NewLife.XCode" Version="11.10.2023.1001" />
+    <PackageReference Include="NewLife.XCode" Version="11.10.2023.1012" />
   </ItemGroup>
 
   <ItemGroup>
