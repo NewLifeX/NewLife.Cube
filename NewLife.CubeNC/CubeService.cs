@@ -5,8 +5,10 @@ using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
+using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
@@ -161,6 +163,8 @@ public static class CubeService
             // 支持中文编码
             options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
         });
+        //默认注入缓存实现
+        services.TryAddSingleton<ICacheProvider, CacheProvider>();
 
         // UI服务
         services.AddSingleton<UIService>();
