@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202309.xsd" xmlns="https://newlifex.com/Model202309.xsd">
+<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202309.xsd" Document="https://newlifex.com/xcode/model" xmlns="https://newlifex.com/Model202309.xsd">
   <Option>
     <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
     <ClassNameTemplate />
@@ -17,6 +17,8 @@
     <ModelNameForCopy />
     <!--带有索引器。实现IModel接口-->
     <HasIModel>False</HasIModel>
+    <!--可为null上下文。生成String?等-->
+    <Nullable>False</Nullable>
     <!--数据库连接名-->
     <ConnName>Cube</ConnName>
     <!--模型类模版。设置后生成模型类，用于接口数据传输，例如{name}Model-->
@@ -31,10 +33,6 @@
     <ModelNameForToModel />
     <!--命名格式。Default/Upper/Lower/Underline-->
     <NameFormat>Default</NameFormat>
-    <!--生成器版本-->
-    <Version>11.9.2023.0910</Version>
-    <!--帮助文档-->
-    <Document>https://newlifex.com/xcode/model</Document>
     <!--魔方区域显示名-->
     <DisplayName />
     <!--魔方控制器输出目录-->
@@ -399,6 +397,7 @@
         <Column Name="Method" DataType="String" Length="200" Description="命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数" />
         <Column Name="Argument" DataType="String" Length="2000" Description="参数。方法参数，时间日期、网址、SQL等" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="EnableLog" DataType="Boolean" Description="启用日志" />
         <Column Name="LastTime" DataType="DateTime" Description="最后时间。最后一次执行作业的时间" />
         <Column Name="NextTime" DataType="DateTime" Description="下一次时间。下一次执行作业的时间" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />

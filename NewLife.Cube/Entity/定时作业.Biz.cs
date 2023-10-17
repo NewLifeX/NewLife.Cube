@@ -124,6 +124,7 @@ public partial class CronJob : Entity<CronJob>
             Method = $"{method.DeclaringType.FullName}.{method.Name}",
             Cron = cron,
             Enable = enable,
+            EnableLog = true,
             Remark = method.GetDescription(),
         };
 

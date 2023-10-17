@@ -109,6 +109,8 @@ public class JobService : IHostedService
     #region 辅助
     internal static void WriteLog(String action, Boolean success, String remark, CronJob job)
     {
+        if (!job.EnableLog) return;
+
         var log = LogProvider.Provider.CreateLog("JobService", action, success, remark);
         if (job != null) log.LinkID = job.Id;
         log.TraceId = DefaultSpan.Current?.TraceId;

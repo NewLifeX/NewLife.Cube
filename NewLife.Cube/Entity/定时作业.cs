@@ -78,6 +78,14 @@ public partial class CronJob
     [BindColumn("Enable", "启用", "")]
     public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
+    private Boolean _EnableLog;
+    /// <summary>启用日志</summary>
+    [DisplayName("启用日志")]
+    [Description("启用日志")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("EnableLog", "启用日志", "")]
+    public Boolean EnableLog { get => _EnableLog; set { if (OnPropertyChanging("EnableLog", value)) { _EnableLog = value; OnPropertyChanged("EnableLog"); } } }
+
     private DateTime _LastTime;
     /// <summary>最后时间。最后一次执行作业的时间</summary>
     [DisplayName("最后时间")]
@@ -173,6 +181,7 @@ public partial class CronJob
             "Method" => _Method,
             "Argument" => _Argument,
             "Enable" => _Enable,
+            "EnableLog" => _EnableLog,
             "LastTime" => _LastTime,
             "NextTime" => _NextTime,
             "CreateUserID" => _CreateUserID,
@@ -195,6 +204,7 @@ public partial class CronJob
                 case "Method": _Method = Convert.ToString(value); break;
                 case "Argument": _Argument = Convert.ToString(value); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
+                case "EnableLog": _EnableLog = value.ToBoolean(); break;
                 case "LastTime": _LastTime = value.ToDateTime(); break;
                 case "NextTime": _NextTime = value.ToDateTime(); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
@@ -237,6 +247,9 @@ public partial class CronJob
 
         /// <summary>启用</summary>
         public static readonly Field Enable = FindByName("Enable");
+
+        /// <summary>启用日志</summary>
+        public static readonly Field EnableLog = FindByName("EnableLog");
 
         /// <summary>最后时间。最后一次执行作业的时间</summary>
         public static readonly Field LastTime = FindByName("LastTime");
@@ -291,6 +304,9 @@ public partial class CronJob
 
         /// <summary>启用</summary>
         public const String Enable = "Enable";
+
+        /// <summary>启用日志</summary>
+        public const String EnableLog = "EnableLog";
 
         /// <summary>最后时间。最后一次执行作业的时间</summary>
         public const String LastTime = "LastTime";
