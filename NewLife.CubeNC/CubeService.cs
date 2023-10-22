@@ -66,6 +66,7 @@ public static class CubeService
         }
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        IpResolver.Register();
 
         // 连接字符串
         DAL.ConnStrs.TryAdd("Cube", "MapTo=Membership");
