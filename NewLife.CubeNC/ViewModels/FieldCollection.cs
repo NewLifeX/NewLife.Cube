@@ -222,6 +222,27 @@ public class FieldCollection : List<DataField>
         return this;
     }
 
+    /// <summary>删除从指定字段开始的所有字段</summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public FieldCollection RemoveBegin(String name)
+    {
+        if (!name.IsNullOrEmpty())
+        {
+            for (var i = 0; i < Count; i++)
+            {
+                var str = this[i].Name;
+                if (name.Contains('*') && str.IsMatch(name) || str.EqualIgnoreCase(name))
+                {
+                    RemoveRange(i, Count - i);
+                    break;
+                }
+            }
+        }
+
+        return this;
+    }
+
     /// <summary>操作字段列表，把旧项换成新项</summary>
     /// <param name="oriName"></param>
     /// <param name="newName"></param>
