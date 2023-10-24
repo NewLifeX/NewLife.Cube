@@ -89,7 +89,7 @@
         {
             @await Html.PartialAsync("_Form_Map", Model)
         }
-        else if (item.Readonly)
+        else if (item.ReadOnly)
         {
             <input class="form-control" id="@item.Name" type="text" value="@itemModel.Value" readonly>
         }

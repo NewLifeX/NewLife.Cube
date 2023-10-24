@@ -63,7 +63,7 @@
 				{
 					@await Html.PartialAsync("_Form_Type_Map", Model)
 				}
-				else if (item.Readonly)
+				else if (item.ReadOnly)
 				{
                     @await Html.PartialAsync("_Form_Type_String_DataField", new ValueTuple<ItemModel, DataField>(itemModel, item))
 					<label class="layui-form-label @className">@entity[item.Name]</label>

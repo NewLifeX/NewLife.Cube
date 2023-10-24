@@ -582,7 +582,7 @@ public static class ViewHelper
         {
             sb.AppendLine($"        @Html.ForDropDownList(\"{field.MapField}\", {fact.EntityType.Name}.Meta.AllFields.First(e=>e.Name==\"{field.Name}\").Map.Provider.GetDataSource(), @entity.{field.Name})");
         }
-        else if (field.Readonly)
+        else if (field.ReadOnly)
             sb.AppendLine($"        <label class=\"form-control\">@entity.{field.Name}</label>");
         else if (field.Type == typeof(String))
             BuildStringItem(field, sb);

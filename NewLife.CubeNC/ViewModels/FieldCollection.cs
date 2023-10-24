@@ -145,6 +145,27 @@ public class FieldCollection : List<DataField>
         return df;
     }
 
+    /// <summary>为指定属性创建数据字段</summary>
+    /// <param name="property"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public DataField Add(PropertyInfo property)
+    {
+        DataField df = Kind switch
+        {
+            ViewKinds.List => new ListField(),
+            ViewKinds.Detail or ViewKinds.AddForm or ViewKinds.EditForm => new FormField(),
+            ViewKinds.Search => new SearchField(),
+            _ => throw new NotImplementedException(),
+        };
+
+        if (property != null) df.Fill(property);
+
+        Add(df);
+
+        return df;
+    }
+
     /// <summary>设置扩展关系</summary>
     /// <param name="isForm">是否表单使用</param>
     /// <returns></returns>
