@@ -177,18 +177,7 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        //从菜单查找相关
-                        var menu = Menu.FindForName(@name);
-                        if (menu != null)
-                        {
-                            //获取控制器名称,拼接全路径
-                            var fullPath = $"{this.Context.Request.Scheme}://{this.Context.Request.Host}/{menu.ParentNodeName}/{@name}?{@key}={@val}";
-                            <td class="text-center"><a href="@fullPath">@value</a></td>
-                        }
-                        else
-                        {
-                            <td class="text-center"><a href="@name?@key=@val">@value</a></td>
-                        }
+                        <td class="text-center"><a href="@name?@key=@val">@value</a></td>
                     }
                     else
                     {
@@ -206,14 +195,7 @@ else
                 }
                 else
                 {
-                    if (!item.ItemType.IsNullOrEmpty() && item.ItemType.EqualIgnoreCase("file-WebUploader"))
-                    {
-                        <td class="text-center">@await Html.PartialAsync("_View_ImgView",value)</td>
-                    }
-                    else
-                    {
-                        <td>@value</td>
-                    }
+                    <td>@value</td>
                 }
             }
             break;
