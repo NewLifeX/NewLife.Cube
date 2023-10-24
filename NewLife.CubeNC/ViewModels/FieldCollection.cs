@@ -203,7 +203,7 @@ public class FieldCollection : List<DataField>
     }
 
     /// <summary>删除字段</summary>
-    /// <param name="names"></param>
+    /// <param name="names">要删除的字段名称，支持*模糊匹配</param>
     /// <returns></returns>
     public FieldCollection RemoveField(params String[] names)
     {
@@ -212,7 +212,7 @@ public class FieldCollection : List<DataField>
             if (!item.IsNullOrEmpty())
             {
                 // 模糊匹配
-                if (item.Contains("*"))
+                if (item.Contains('*'))
                     RemoveAll(e => item.IsMatch(e.Name));
                 else
                     RemoveAll(e => e.Name.EqualIgnoreCase(item));
