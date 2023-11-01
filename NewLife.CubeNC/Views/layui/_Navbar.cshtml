@@ -45,7 +45,7 @@
 
     @if (set.EnableTenant && user != null)
     {
-        var tList = TenantUser.FindAllByUserId(user.ID).Where(e => e.Tenant.Enable);
+        var tList = TenantUser.FindAllByUserId(user.ID).Where(e => e.Tenant != null && e.Tenant.Enable);
         var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
         var tenantName = tenant == null ? null : tenant.Enable ? tenant.Name : null;
 
