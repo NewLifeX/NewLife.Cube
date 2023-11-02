@@ -33,9 +33,10 @@ public class Startup
 
         var config = star.GetConfig();
         var cacheConn = config["RedisCache"];
+        Redis redis = null;
         if (!cacheConn.IsNullOrEmpty())
         {
-            var redis = new FullRedis { Log = XTrace.Log, Tracer = star.Tracer };
+            redis = new FullRedis { Log = XTrace.Log, Tracer = star.Tracer };
             redis.Init(cacheConn);
             services.AddSingleton(redis);
         }
@@ -47,9 +48,9 @@ public class Startup
         services.AddCube();
         //services.AddBlazor();
 
-        if (!cacheConn.IsNullOrEmpty())
+        if (redis != null)
         {
-            services.AddDataProtection().PersistKeysToRedis();
+            services.AddDataProtection().PersistKeysToRedis(redis);
         }
     }
 
