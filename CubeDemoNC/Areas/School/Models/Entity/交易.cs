@@ -20,7 +20,7 @@ namespace NewLife.School.Entity;
 [BindIndex("IX_Trade_TenantId_NodeId", false, "TenantId,NodeId")]
 [BindIndex("IX_Trade_NodeId", false, "NodeId")]
 [BindTable("Trade", Description = "交易", ConnName = "Bill", DbType = DatabaseType.SqlServer)]
-public partial class Trade : ITrade, IEntity<TradeModel>
+public partial class Trade : ITrade, IEntity<ITrade>
 {
     #region 属性
     private Int64 _Id;
@@ -171,7 +171,7 @@ public partial class Trade : ITrade, IEntity<TradeModel>
     #region 拷贝
     /// <summary>拷贝模型对象</summary>
     /// <param name="model">模型</param>
-    public void Copy(TradeModel model)
+    public void Copy(ITrade model)
     {
         Id = model.Id;
         TenantId = model.TenantId;
@@ -251,6 +251,14 @@ public partial class Trade : ITrade, IEntity<TradeModel>
     #endregion
 
     #region 关联映射
+    /// <summary>租户</summary>
+    [XmlIgnore, IgnoreDataMember, ScriptIgnore]
+    public XCode.Membership.Tenant Tenant => Extends.Get(nameof(Tenant), k => XCode.Membership.Tenant.FindById(TenantId));
+
+    /// <summary>租户</summary>
+    [Map(nameof(TenantId), typeof(XCode.Membership.Tenant), "Id")]
+    public String TenantName => Tenant?.Name;
+
     #endregion
 
     #region 字段名

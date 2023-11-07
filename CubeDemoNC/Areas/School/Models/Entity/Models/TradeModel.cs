@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Data;
+using NewLife.Reflection;
 
 namespace NewLife.School.Entity;
 
@@ -95,7 +96,7 @@ public partial class TradeModel : IModel
                 "Modified" => Modified,
                 "IsSend" => IsSend,
                 "ErrorMsg" => ErrorMsg,
-                _ => null
+                _ => this.GetValue(name, false),
             };
         }
         set
@@ -120,6 +121,7 @@ public partial class TradeModel : IModel
                 case "Modified": Modified = value.ToInt(); break;
                 case "IsSend": IsSend = value.ToInt(); break;
                 case "ErrorMsg": ErrorMsg = Convert.ToString(value); break;
+                default: this.SetValue(name, value); break;
             }
         }
     }

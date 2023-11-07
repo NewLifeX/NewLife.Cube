@@ -20,7 +20,7 @@ namespace NewLife.School.Entity;
 [BindIndex("IX_Student_TenantId_ClassId", false, "TenantId,ClassId")]
 [BindIndex("IX_Student_ClassId", false, "ClassId")]
 [BindTable("Student", Description = "学生", ConnName = "School", DbType = DatabaseType.SqlServer)]
-public partial class Student : IStudent, IEntity<StudentModel>
+public partial class Student : IStudent, IEntity<IStudent>
 {
     #region 属性
     private Int32 _Id;
@@ -169,7 +169,7 @@ public partial class Student : IStudent, IEntity<StudentModel>
     #region 拷贝
     /// <summary>拷贝模型对象</summary>
     /// <param name="model">模型</param>
-    public void Copy(StudentModel model)
+    public void Copy(IStudent model)
     {
         Id = model.Id;
         TenantId = model.TenantId;
@@ -243,6 +243,14 @@ public partial class Student : IStudent, IEntity<StudentModel>
     #endregion
 
     #region 关联映射
+    /// <summary>租户</summary>
+    [XmlIgnore, IgnoreDataMember, ScriptIgnore]
+    public XCode.Membership.Tenant Tenant => Extends.Get(nameof(Tenant), k => XCode.Membership.Tenant.FindById(TenantId));
+
+    /// <summary>租户</summary>
+    [Map(nameof(TenantId), typeof(XCode.Membership.Tenant), "Id")]
+    public String TenantName => Tenant?.Name;
+
     /// <summary>班级</summary>
     [XmlIgnore, IgnoreDataMember, ScriptIgnore]
     public Class Class => Extends.Get(nameof(Class), k => Class.FindById(ClassId));

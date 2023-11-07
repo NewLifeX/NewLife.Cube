@@ -26,6 +26,11 @@ class EntityModelBinder : ComplexTypeModelBinder
     protected override Object CreateModel(ModelBindingContext bindingContext)
     {
         var modelType = bindingContext.ModelType;
+        if (modelType.As<IEntity>() || modelType.As<IModel>())
+        {
+            // 如果提交数据里面刚好有名为model的字段，这是Add/Edit接口的入参，则需要清空modelName，否则无法绑定
+            if (bindingContext.ModelName == "model") bindingContext.ModelName = String.Empty;
+        }
         if (!modelType.As<IEntity>()) return base.CreateModel(bindingContext);
 
         var fact = EntityFactory.CreateFactory(modelType);

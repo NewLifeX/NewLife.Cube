@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Data;
+using NewLife.Reflection;
 
 namespace NewLife.School.Entity;
 
@@ -87,7 +88,7 @@ public partial class StudentModel : IModel
                 "UpdateTime" => UpdateTime,
                 "UpdateIP" => UpdateIP,
                 "Remark" => Remark,
-                _ => null
+                _ => this.GetValue(name, false),
             };
         }
         set
@@ -110,6 +111,7 @@ public partial class StudentModel : IModel
                 case "UpdateTime": UpdateTime = value.ToDateTime(); break;
                 case "UpdateIP": UpdateIP = Convert.ToString(value); break;
                 case "Remark": Remark = Convert.ToString(value); break;
+                default: this.SetValue(name, value); break;
             }
         }
     }
