@@ -117,6 +117,7 @@ public class Startup
         //app.UseMetronic8(env);
         //app.UseLayuiAdmin(env);
         //app.UseBlazor(env);
+        app.UseCubeHome();
 
         app.UseAuthorization();
 

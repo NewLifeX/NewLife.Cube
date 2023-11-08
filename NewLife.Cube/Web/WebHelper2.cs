@@ -3,6 +3,7 @@ using NewLife.Collections;
 using NewLife.Cube.Extensions;
 using NewLife.Serialization;
 using XCode;
+using XCode.Membership;
 
 namespace NewLife.Cube;
 
@@ -143,4 +144,22 @@ public static class WebHelper2
     /// <returns></returns>
     public static String GetReferer(this HttpRequest request) => request.Headers["Referer"].FirstOrDefault();
     #endregion
+
+    /// <summary>修正多租户菜单</summary>
+    public static void FixTenantMenu()
+    {
+        var root = Menu.FindByName("Admin");
+        if (root != null)
+        {
+            var set = CubeSetting.Current;
+            foreach (var item in root.Childs)
+            {
+                if (item.Name.Contains("Tenant"))
+                {
+                    item.Visible = set.EnableTenant;
+                    item.Update();
+                }
+            }
+        }
+    }
 }

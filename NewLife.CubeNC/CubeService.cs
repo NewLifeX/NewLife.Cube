@@ -22,6 +22,7 @@ using NewLife.Web;
 using Stardust;
 using Stardust.Registry;
 using XCode.DataAccessLayer;
+using XCode.Membership;
 
 namespace NewLife.Cube;
 
@@ -296,6 +297,7 @@ public static class CubeService
         // 调整魔方表名
         FixAppTableName();
         FixAvatar();
+        WebHelper2.FixTenantMenu();
 
         // 使用管理提供者
         app.UseManagerProvider();
