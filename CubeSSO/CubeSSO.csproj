@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyTitle>魔方用户中心</AssemblyTitle>
     <Description>SSO服务端，OAuth2.0服务端。</Description>
     <Company>新生命开发团队</Company>
@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.6.2023.1101" />
+    <PackageReference Include="NewLife.Core" Version="10.6.2023.1115" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="2.9.2023.1103" />
   </ItemGroup>
 
