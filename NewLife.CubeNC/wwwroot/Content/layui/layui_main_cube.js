@@ -55,6 +55,9 @@ layui.use(['element_cube', 'layer', 'util'], function () {
             var title = othis.data('title');
 
             cubeAddTab(url, title);
+
+            // 将链接记录到url的hash，下次打开该链接将自动打开该标签页
+            location.hash = url;
         }
     });
 
@@ -113,4 +116,20 @@ layui.use(['element_cube', 'layer', 'util'], function () {
 
         return false;
     };
+
+    // 判断url是否存在hash，自动打开该标签页
+    if (location.hash && location.hash.startsWith('#/')) {
+        const url = location.hash.replace('#', '');
+        const eleA = $(`.layui-nav .layui-nav-item dd a[data-url="${url}"]`)
+        if (eleA) {
+            // 点击对应菜单
+            eleA.click()
+            // 菜单对应父级
+            const eleLi = eleA.parents('.layui-nav-item')
+            // 关闭其他打开菜单
+            eleLi.siblings('.layui-nav-itemed').find('>a').click()
+            // 展开父级菜单
+            if (!eleLi.hasClass('layui-nav-itemed')) eleLi.find('>a').click()            
+        }
+    }
 });
