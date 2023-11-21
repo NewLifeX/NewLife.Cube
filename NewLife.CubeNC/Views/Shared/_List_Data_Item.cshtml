@@ -68,7 +68,14 @@ else
             else
             {
                 var dc = (Decimal)value;
-                <td class="text-right">@dc.ToString("n2")</td>
+                if (item.Scale > 0)
+                {
+                    <td class="text-right">@dc.ToString("n" + item.Scale)</td>
+                }
+                else
+                {
+                    <td class="text-right">@dc.ToString()</td>
+                }
             }
             break;
         case TypeCode.Single:
@@ -96,7 +103,14 @@ else
             else
             {
                 var dd = (Double)value;
-                <td class="text-right">@dd.ToString()</td>
+                if (item.Scale > 0)
+                {
+                    <td class="text-right">@dd.ToString("n" + item.Scale)</td>
+                }
+                else
+                {
+                    <td class="text-right">@dd.ToString()</td>
+                }
             }
             break;
         case TypeCode.Byte:

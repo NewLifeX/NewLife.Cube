@@ -26,6 +26,7 @@
             // 第二名称，去掉后面的数字，便于模式匹配
             var name2 = item.Name.TrimEnd(digits);
 
+            var listField = item as ListField;
             var value = entity[item.Name];
             switch (Type.GetTypeCode(item.Type))
             {
@@ -34,12 +35,40 @@
                     <td></td>
                     break;
                 case TypeCode.Decimal:
-                    var dc = (Decimal)value;
-                    <td class="text-right">@dc.ToString("n2")</td>
+                    if (listField.GetValue != null)
+                    {
+                        <td class="text-center">@listField.GetValue(entity)</td>
+                    }
+                    else if (item.ItemType.EqualIgnoreCase("Money"))
+                    {
+                        var dc = (Decimal)value;
+                        <td class="text-right">@dc.ToString("c")</td>
+                    }
+                    else
+                    {
+                        var dc = (Decimal)value;
+                        if (item.Scale > 0)
+                        {
+                            <td class="text-right">@dc.ToString("n" + item.Scale)</td>
+                        }
+                        else
+                        {
+                            <td class="text-right">@dc.ToString()</td>
+                        }
+                    }
                     break;
                 case TypeCode.Single:
                 case TypeCode.Double:
-                    if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+                    if (listField.GetValue != null)
+                    {
+                        <td class="text-right">@listField.GetValue(entity)</td>
+                    }
+                    else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+                    {
+                        var dd = (Double)value;
+                        <td class="text-center">@dd.ToString("p2")</td>
+                    }
+                    else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                     {
                         var dd = (Double)value;
                         var des = item.Description + "";
@@ -53,7 +82,14 @@
                     else
                     {
                         var dd = (Double)value;
-                        <td class="text-right">@dd.ToString()</td>
+                        if (item.Scale > 0)
+                        {
+                            <td class="text-right">@dd.ToString("n" + item.Scale)</td>
+                        }
+                        else
+                        {
+                            <td class="text-right">@dd.ToString()</td>
+                        }
                     }
                     break;
                 case TypeCode.Byte:

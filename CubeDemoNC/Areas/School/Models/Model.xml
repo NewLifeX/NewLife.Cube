@@ -67,6 +67,8 @@
         <Column Name="Mobile" DataType="String" Description="手机" Category="基本信息" />
         <Column Name="Address" DataType="String" Description="地址" Category="基本信息" />
         <Column Name="Enable" DataType="Boolean" Description="启用" Category="基本信息" />
+        <Column Name="Weight" DataType="Double" Scale="2" Description="体重。小数" />
+        <Column Name="Amount" DataType="Decimal" Scale="3" Description="存款。小数" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展信息" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展信息" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展信息" />

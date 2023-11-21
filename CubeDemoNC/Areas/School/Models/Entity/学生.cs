@@ -102,6 +102,22 @@ public partial class Student : IStudent, IEntity<IStudent>
     [BindColumn("Enable", "启用", "")]
     public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
+    private Double _Weight;
+    /// <summary>体重。小数</summary>
+    [DisplayName("体重")]
+    [Description("体重。小数")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("Weight", "体重。小数", "", Precision = 0, Scale = 2)]
+    public Double Weight { get => _Weight; set { if (OnPropertyChanging("Weight", value)) { _Weight = value; OnPropertyChanged("Weight"); } } }
+
+    private Decimal _Amount;
+    /// <summary>存款。小数</summary>
+    [DisplayName("存款")]
+    [Description("存款。小数")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("Amount", "存款。小数", "", Precision = 0, Scale = 3)]
+    public Decimal Amount { get => _Amount; set { if (OnPropertyChanging("Amount", value)) { _Amount = value; OnPropertyChanged("Amount"); } } }
+
     private Int32 _CreateUserID;
     /// <summary>创建者</summary>
     [Category("扩展信息")]
@@ -180,6 +196,8 @@ public partial class Student : IStudent, IEntity<IStudent>
         Mobile = model.Mobile;
         Address = model.Address;
         Enable = model.Enable;
+        Weight = model.Weight;
+        Amount = model.Amount;
         CreateUserID = model.CreateUserID;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
@@ -207,6 +225,8 @@ public partial class Student : IStudent, IEntity<IStudent>
             "Mobile" => _Mobile,
             "Address" => _Address,
             "Enable" => _Enable,
+            "Weight" => _Weight,
+            "Amount" => _Amount,
             "CreateUserID" => _CreateUserID,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
@@ -229,6 +249,8 @@ public partial class Student : IStudent, IEntity<IStudent>
                 case "Mobile": _Mobile = Convert.ToString(value); break;
                 case "Address": _Address = Convert.ToString(value); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
+                case "Weight": _Weight = value.ToDouble(); break;
+                case "Amount": _Amount = Convert.ToDecimal(value); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -293,6 +315,12 @@ public partial class Student : IStudent, IEntity<IStudent>
         /// <summary>启用</summary>
         public static readonly Field Enable = FindByName("Enable");
 
+        /// <summary>体重。小数</summary>
+        public static readonly Field Weight = FindByName("Weight");
+
+        /// <summary>存款。小数</summary>
+        public static readonly Field Amount = FindByName("Amount");
+
         /// <summary>创建者</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
 
@@ -346,6 +374,12 @@ public partial class Student : IStudent, IEntity<IStudent>
 
         /// <summary>启用</summary>
         public const String Enable = "Enable";
+
+        /// <summary>体重。小数</summary>
+        public const String Weight = "Weight";
+
+        /// <summary>存款。小数</summary>
+        public const String Amount = "Amount";
 
         /// <summary>创建者</summary>
         public const String CreateUserID = "CreateUserID";
