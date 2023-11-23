@@ -62,7 +62,7 @@ public class ECharts : IExtend
     public Object this[String key] { get => Items[key]; set => Items[key] = value; }
 
     String _timeField;
-    Func<IExtend, String> _timeSelector;
+    Func<IModel, String> _timeSelector;
     #endregion
 
     #region 方法
@@ -82,7 +82,7 @@ public class ECharts : IExtend
     /// <param name="type">图表类型，默认折线图line</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series Add<T>(IList<T> list, String name, String type = "line", Func<T, Object> selector = null) where T : IExtend
+    public Series Add<T>(IList<T> list, String name, String type = "line", Func<T, Object> selector = null) where T : IModel
     {
         if (type.IsNullOrEmpty()) type = "line";
 
@@ -110,7 +110,7 @@ public class ECharts : IExtend
     /// <param name="type">图表类型，默认折线图line</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series Add<T>(IList<T> list, FieldItem field, String type = "line", Func<T, Object> selector = null) where T : IExtend
+    public Series Add<T>(IList<T> list, FieldItem field, String type = "line", Func<T, Object> selector = null) where T : IModel
     {
         if (type.IsNullOrEmpty()) type = "line";
 
@@ -137,7 +137,7 @@ public class ECharts : IExtend
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <param name="smooth">折线光滑</param>
     /// <returns></returns>
-    public Series AddLine<T>(IList<T> list, String name, Func<T, Object> selector = null, Boolean smooth = false) where T : IExtend
+    public Series AddLine<T>(IList<T> list, String name, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
     {
         var data = _timeField != null ?
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[name] : selector(e) }).ToArray() :
@@ -163,7 +163,7 @@ public class ECharts : IExtend
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <param name="smooth">折线光滑</param>
     /// <returns></returns>
-    public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IExtend
+    public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
     {
         var data = _timeField != null ?
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
@@ -188,7 +188,7 @@ public class ECharts : IExtend
     /// <param name="name">要使用数据的字段</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series AddBar<T>(IList<T> list, String name, Func<T, Object> selector = null) where T : IExtend
+    public Series AddBar<T>(IList<T> list, String name, Func<T, Object> selector = null) where T : IModel
     {
         var sr = new Series
         {
@@ -207,7 +207,7 @@ public class ECharts : IExtend
     /// <param name="field">要使用数据的字段</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IExtend
+    public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IModel
     {
         var sr = new Series
         {
@@ -226,7 +226,7 @@ public class ECharts : IExtend
     /// <param name="field">要使用数据的字段</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series AddPie<T>(IList<T> list, FieldItem field, Func<T, NameValue> selector = null) where T : IExtend
+    public Series AddPie<T>(IList<T> list, FieldItem field, Func<T, NameValue> selector = null) where T : IModel
     {
         var nameKey = field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
         var sr = new Series
@@ -245,7 +245,7 @@ public class ECharts : IExtend
     /// <param name="list">数据列表，从中选择数据构建X轴</param>
     /// <param name="name">作为X轴的字段，支持time时间轴</param>
     /// <param name="selector">构建X轴的委托</param>
-    public void SetX<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IExtend
+    public void SetX<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
     {
         XAxis = new
         {
@@ -258,7 +258,7 @@ public class ECharts : IExtend
     /// <param name="list">数据列表，从中选择数据构建X轴</param>
     /// <param name="name">作为X轴的字段，支持time时间轴</param>
     /// <param name="selector">构建X轴的委托</param>
-    public void SetX4Time<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IExtend
+    public void SetX4Time<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
     {
         XAxis = new
         {
@@ -277,7 +277,7 @@ public class ECharts : IExtend
     /// <param name="list">数据列表，从中选择数据构建X轴</param>
     /// <param name="field">作为X轴的字段，支持time时间轴</param>
     /// <param name="selector">构建X轴的委托</param>
-    public void SetX<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : class, IExtend
+    public void SetX<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : class, IModel
     {
         if (field != null && field.Type == typeof(DateTime))
         {
@@ -301,7 +301,7 @@ public class ECharts : IExtend
         }
     }
 
-    Object GetTimeValue(IExtend entity) => _timeSelector != null ? _timeSelector(entity) : entity[_timeField];
+    Object GetTimeValue(IModel entity) => _timeSelector != null ? _timeSelector(entity) : entity[_timeField];
 
     /// <summary>设置Y轴</summary>
     /// <param name="name"></param>
@@ -344,7 +344,7 @@ public class ECharts : IExtend
     /// <param name="list"></param>
     /// <param name="field"></param>
     /// <param name="selector"></param>
-    public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IExtend
+    public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IModel
         => Legend = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();
 
     /// <summary>添加缩放。默认X0轴，其它设置可直接修改返回对象</summary>
