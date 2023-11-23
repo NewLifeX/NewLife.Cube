@@ -102,6 +102,15 @@ public partial class Student : IStudent, IEntity<IStudent>
     [BindColumn("Enable", "启用", "")]
     public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
+    private String _Avatar;
+    /// <summary>头像</summary>
+    [Category("基本信息")]
+    [DisplayName("头像")]
+    [Description("头像")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("Avatar", "头像", "", ItemType = "image")]
+    public String Avatar { get => _Avatar; set { if (OnPropertyChanging("Avatar", value)) { _Avatar = value; OnPropertyChanged("Avatar"); } } }
+
     private Double _Weight;
     /// <summary>体重。小数</summary>
     [DisplayName("体重")]
@@ -196,6 +205,7 @@ public partial class Student : IStudent, IEntity<IStudent>
         Mobile = model.Mobile;
         Address = model.Address;
         Enable = model.Enable;
+        Avatar = model.Avatar;
         Weight = model.Weight;
         Amount = model.Amount;
         CreateUserID = model.CreateUserID;
@@ -225,6 +235,7 @@ public partial class Student : IStudent, IEntity<IStudent>
             "Mobile" => _Mobile,
             "Address" => _Address,
             "Enable" => _Enable,
+            "Avatar" => _Avatar,
             "Weight" => _Weight,
             "Amount" => _Amount,
             "CreateUserID" => _CreateUserID,
@@ -249,6 +260,7 @@ public partial class Student : IStudent, IEntity<IStudent>
                 case "Mobile": _Mobile = Convert.ToString(value); break;
                 case "Address": _Address = Convert.ToString(value); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
+                case "Avatar": _Avatar = Convert.ToString(value); break;
                 case "Weight": _Weight = value.ToDouble(); break;
                 case "Amount": _Amount = Convert.ToDecimal(value); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
@@ -315,6 +327,9 @@ public partial class Student : IStudent, IEntity<IStudent>
         /// <summary>启用</summary>
         public static readonly Field Enable = FindByName("Enable");
 
+        /// <summary>头像</summary>
+        public static readonly Field Avatar = FindByName("Avatar");
+
         /// <summary>体重。小数</summary>
         public static readonly Field Weight = FindByName("Weight");
 
@@ -374,6 +389,9 @@ public partial class Student : IStudent, IEntity<IStudent>
 
         /// <summary>启用</summary>
         public const String Enable = "Enable";
+
+        /// <summary>头像</summary>
+        public const String Avatar = "Avatar";
 
         /// <summary>体重。小数</summary>
         public const String Weight = "Weight";

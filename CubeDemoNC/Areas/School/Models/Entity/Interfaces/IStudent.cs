@@ -38,6 +38,9 @@ public partial interface IStudent
     /// <summary>启用</summary>
     Boolean Enable { get; set; }
 
+    /// <summary>头像</summary>
+    String Avatar { get; set; }
+
     /// <summary>体重。小数</summary>
     Double Weight { get; set; }
 

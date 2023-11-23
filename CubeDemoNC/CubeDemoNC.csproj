@@ -22,13 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Areas\School\Views\**" />
-    <Content Remove="Areas\School\Views\**" />
-    <EmbeddedResource Remove="Areas\School\Views\**" />
-    <None Remove="Areas\School\Views\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Remove="appsettings.json" />
   </ItemGroup>
 
@@ -38,6 +31,7 @@
 
   <ItemGroup>
     <None Include="appsettings.json" />
+    <None Include="Areas\School\Views\Student\_List_Search.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
