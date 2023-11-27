@@ -126,6 +126,10 @@ layui.define('jquery', function(exports) {
                 item.eq(index).addClass(SHOW).siblings().removeClass(SHOW);
             }
 
+            let url = othis.attr('lay-id');
+            // 将链接记录到url的hash，下次打开该链接将自动打开该标签页
+            location.hash = url;
+
             layui.event.call(this, MOD_NAME, 'tab(' + filter + ')', {
                 elem: parents,
                 index: index
