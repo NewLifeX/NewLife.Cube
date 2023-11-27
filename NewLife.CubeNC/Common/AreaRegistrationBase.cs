@@ -57,7 +57,7 @@ public class AreaBase : AreaAttribute
                 XTrace.WriteException(ex);
             }
         });
-        task.Wait(5_000);
+        task.Wait(1_000);
     }
 
     /// <summary>自动扫描控制器，并添加到菜单</summary>
@@ -105,7 +105,7 @@ public class AreaBase : AreaAttribute
             XTrace.WriteLine("新增了菜单，需要检查权限。二次检查，双重保障");
             typeof(Role).Invoke("CheckRole");
         });
-        task.Wait(5_000);
+        task.Wait(1_000);
 
         XTrace.WriteLine("end---------初始化[{0}]的菜单体系---------end", areaName);
     }

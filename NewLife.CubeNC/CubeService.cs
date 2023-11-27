@@ -21,8 +21,8 @@ using NewLife.Serialization;
 using NewLife.Web;
 using Stardust;
 using Stardust.Registry;
+using XCode;
 using XCode.DataAccessLayer;
-using XCode.Membership;
 
 namespace NewLife.Cube;
 
@@ -294,6 +294,13 @@ public static class CubeService
 
         XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
 
+        // 初始化数据库连接
+        var set = CubeSetting.Current;
+        if (set.IsNew)
+            EntityFactory.InitAll();
+        else
+            EntityFactory.InitAllAsync();
+
         // 调整魔方表名
         FixAppTableName();
         FixAvatar();
@@ -303,8 +310,6 @@ public static class CubeService
         app.UseManagerProvider();
 
         //FixOAuth();
-
-        var set = CubeSetting.Current;
 
         // 使用Cube前添加自己的管道
         if (env != null)
