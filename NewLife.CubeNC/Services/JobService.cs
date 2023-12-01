@@ -46,7 +46,9 @@ public class JobService : IHostedService
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _timer.TryDispose();
-        _jobs.TryDispose();
+
+        // 避免释放过程中集合被修改
+        _jobs?.ToArray().TryDispose();
         _jobs.Clear();
 
         return Task.CompletedTask;
@@ -271,7 +273,7 @@ internal class MyJob : IDisposable
     {
         // 检查分布式锁，避免多节点重复执行
         var key = $"Job:{job.Id}";
-        if (CacheProvider!=null&&!CacheProvider.Cache.Add(key, job.Name, 10)) return false;
+        if (CacheProvider != null && !CacheProvider.Cache.Add(key, job.Name, 10)) return false;
 
         // 有时候可能并没有配置Redis，借助数据库事务实现去重，需要20230804版本的XCode
         using var tran = CronJob.Meta.CreateTrans();
