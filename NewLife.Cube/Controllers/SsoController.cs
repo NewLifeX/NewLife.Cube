@@ -208,7 +208,7 @@ public class SsoController : ControllerBaseX
             if (uc.ID == 0) uc = prov.GetConnect(client);
             uc.Fill(client);
 
-            var url = prov.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind");
+            var url = prov.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind", log.UserId);
 
             log.ConnectId = uc.ID;
             log.UserId = uc.UserID;
@@ -355,6 +355,7 @@ public class SsoController : ControllerBaseX
             Scope = client.Scope,
             State = null,
             RedirectUri = url,
+            UserId = user.ID,
             TraceId = DefaultSpan.Current?.TraceId,
         };
         log.Insert();
