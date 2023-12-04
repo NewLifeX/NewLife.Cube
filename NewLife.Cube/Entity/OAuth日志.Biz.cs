@@ -117,6 +117,10 @@ namespace NewLife.Cube.Entity
         #endregion
 
         #region 业务操作
+        /// <summary>删除指定日期之前的数据</summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public static Int32 DeleteBefore(DateTime date) => Delete(_.Id < Meta.Factory.Snow.GetId(date) & _.UserId == 0);
         #endregion
     }
 }

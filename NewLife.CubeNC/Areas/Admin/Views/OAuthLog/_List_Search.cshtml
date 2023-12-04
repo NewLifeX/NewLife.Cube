@@ -12,4 +12,4 @@
     <label for="provider" class="control-label">提供商：</label>
     @Html.ForDropDownList("provider", providers, page["provider"], "全部", true)
 </div>
-@*@Html.Partial("_DateRange")*@
+@await Html.PartialAsync("_DateRange")
