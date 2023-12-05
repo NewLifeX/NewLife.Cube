@@ -850,11 +850,8 @@ public class SsoController : ControllerBaseX
     {
         if (id <= 0) throw new ArgumentNullException(nameof(id));
 
-        var prv = Provider;
-        if (prv == null) throw new ArgumentNullException(nameof(Provider));
-
-        var user = ManageProvider.Provider?.FindByID(id) as IUser;
-        if (user == null) throw new Exception("用户不存在 " + id);
+        var prv = Provider ?? throw new ArgumentNullException(nameof(Provider));
+        var user = ManageProvider.Provider?.FindByID(id) as IUser ?? throw new Exception("用户不存在 " + id);
 
         var set = CubeSetting.Current;
         var av = "";
@@ -869,6 +866,27 @@ public class SsoController : ControllerBaseX
         {
             av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
             if (!System.IO.File.Exists(av)) av = null;
+
+            // 使用最后一个第三方头像
+            if (av.IsNullOrEmpty() && user is IManageUser muser)
+            {
+                var list = UserConnect.FindAllByUserID(user.ID);
+                foreach (var item in list.OrderByDescending(e => e.UpdateTime))
+                {
+                    var url = item.Avatar;
+                    if (!url.IsNullOrEmpty() && url.StartsWithIgnoreCase("http://", "https://"))
+                    {
+                        //av = url;
+
+                        // 自动下载头像
+                        var cfg = OAuthConfig.FindByName(item.Provider);
+                        if (cfg != null && cfg.FetchAvatar)
+                            Task.Run(() => prv.FetchAvatar(muser, url));
+
+                        return Redirect(url);
+                    }
+                }
+            }
         }
 
         if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);

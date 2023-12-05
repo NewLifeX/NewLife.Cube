@@ -364,7 +364,8 @@ public class SsoProvider
             if (client.Config != null && client.Config.FetchAvatar)
             {
                 // 如果Avatar还是保存远程头像地址，下载远程头像到本地
-                if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user, av));
+                if (user2.Avatar.StartsWithIgnoreCase("http://", "https://") && !set.AvatarPath.IsNullOrEmpty())
+                    Task.Run(() => FetchAvatar(user, av));
             }
         }
     }
@@ -872,16 +873,16 @@ public class SsoProvider
         //if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
 
         // 尝试从用户链接获取头像地址
-        if (url.IsNullOrEmpty() || !url.StartsWithIgnoreCase("http"))
+        if (url.IsNullOrEmpty() || !url.StartsWithIgnoreCase("http://", "https://"))
         {
             var list = UserConnect.FindAllByUserID(user.ID);
             url = list.OrderByDescending(e => e.UpdateTime)
-                .Where(e => !e.Avatar.IsNullOrEmpty() && e.Avatar.StartsWithIgnoreCase("http"))
+                .Where(e => !e.Avatar.IsNullOrEmpty() && e.Avatar.StartsWithIgnoreCase("http://", "https://"))
                 .FirstOrDefault()?.Avatar;
         }
 
         if (url.IsNullOrEmpty()) return false;
-        if (!url.StartsWithIgnoreCase("http")) return false;
+        if (!url.StartsWithIgnoreCase("http://", "https://")) return false;
 
         // 不要扩展名
         var set = CubeSetting.Current;
