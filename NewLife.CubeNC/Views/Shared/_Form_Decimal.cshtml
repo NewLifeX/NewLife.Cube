@@ -11,5 +11,8 @@
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
     if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
 }
-<span class="input-group-addon"><i class="glyphicon glyphicon-yen"></i></span>
+@if (Model.ItemType.EqualIgnoreCase("Money"))
+{
+    <span class="input-group-addon"><i class="glyphicon glyphicon-yen"></i></span>
+}
 @Html.TextBox(name, value, Model.Format, atts)
