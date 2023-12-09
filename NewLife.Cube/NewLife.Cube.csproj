@@ -63,6 +63,7 @@
     <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\DataRetentionService.cs" Link="Services\DataRetentionService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbDataProtectionBuilderExtensions.cs" Link="Services\DbDataProtectionBuilderExtensions.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbXmlRepository.cs" Link="Services\DbXmlRepository.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />

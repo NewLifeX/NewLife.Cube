@@ -126,6 +126,7 @@ public static class CubeService
         services.AddSingleton<UserService>();
 
         services.AddHostedService<JobService>();
+        services.AddHostedService<DataRetentionService>();
 
         // 注册IP地址库
         IpResolver.Register();
