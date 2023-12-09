@@ -130,9 +130,10 @@ public partial class OAuthLog
 
     private String _TraceId;
     /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
+    [Category("扩展")]
     [DisplayName("追踪")]
     [Description("追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链")]
-    [DataObjectField(false, false, true, 50)]
+    [DataObjectField(false, false, true, 200)]
     [BindColumn("TraceId", "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链", "")]
     public String TraceId { get => _TraceId; set { if (OnPropertyChanging("TraceId", value)) { _TraceId = value; OnPropertyChanged("TraceId"); } } }
 

@@ -60,7 +60,7 @@
         <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
         <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
-        <Column Name="Remark" DataType="String" Length="5000" Description="备注" />
+        <Column Name="Remark" DataType="String" Length="5000" Description="备注" Category="扩展" />
       </Columns>
       <Indexes>
         <Index Columns="Provider,OpenID" Unique="True" />
@@ -85,7 +85,7 @@
         <Column Name="Source" DataType="String" Description="来源" />
         <Column Name="AccessToken" DataType="String" Length="2000" Description="访问令牌" />
         <Column Name="RefreshToken" DataType="String" Length="2000" Description="刷新令牌" />
-        <Column Name="TraceId" DataType="String" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" />
+        <Column Name="TraceId" DataType="String" Length="200" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" Category="扩展" />
         <Column Name="Remark" DataType="String" Length="2000" Description="详细信息" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
@@ -178,8 +178,8 @@
         <Column Name="Status" DataType="String" Length="500" Description="状态" />
         <Column Name="OnlineTime" DataType="Int32" ItemType="TimeSpan" Description="在线时间。本次在线总时间，秒" />
         <Column Name="LastError" DataType="DateTime" Description="最后错误" />
-        <Column Name="TraceId" DataType="String" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" />
         <Column Name="Address" DataType="String" Length="200" Description="地址。根据IP计算" />
+        <Column Name="TraceId" DataType="String" Length="200" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Nullable="False" Description="创建时间" Category="扩展" />
         <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
@@ -258,13 +258,13 @@
         <Column Name="State" DataType="String" Length="500" Description="状态数据" />
         <Column Name="AccessToken" DataType="String" Length="2000" Description="访问令牌" />
         <Column Name="RefreshToken" DataType="String" Length="2000" Description="刷新令牌" />
-        <Column Name="TraceId" DataType="String" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" />
-        <Column Name="Remark" DataType="String" Length="2000" Description="详细信息" />
+        <Column Name="TraceId" DataType="String" Length="200" Description="追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链" />
         <Column Name="CreateUser" DataType="String" Description="创建者。可以是设备编码等唯一使用者标识" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
         <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
         <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="2000" Description="备注" Category="扩展" />
       </Columns>
       <Indexes>
         <Index Columns="AppId" />
