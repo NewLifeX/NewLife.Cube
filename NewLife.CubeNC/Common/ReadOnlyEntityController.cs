@@ -75,7 +75,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
             // 默认加上分页给前台
             var ps = filterContext.ActionArguments.ToNullable();
-            var p = ps["p"] as Pager ?? new Pager();
+            var p = ps["p"] as Pager ?? new Pager(WebHelper.Params);
             ViewBag.Page = p;
 
             //// 用于显示的列
