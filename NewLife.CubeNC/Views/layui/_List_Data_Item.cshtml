@@ -69,20 +69,29 @@ else
             break;
         case TypeCode.Decimal:
             var dc = (Decimal)value;
-            <td>@dc.ToString("n2")</td>
+            if (item.Scale > 0)
+            {
+                <td>@dc.ToString("n" + item.Scale)</td>
+            }
+            else
+            {
+                <td>@dc.ToString()</td>
+            }
             break;
         case TypeCode.Single:
         case TypeCode.Double:
             if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = (Double)value;
+                var scale = item.Scale >= 2 ? item.Scale - 2 : 2;
                 var des = item.Description + "";
-                if (des.Contains("十分之一")) { dd /= 10; }
-                if (des.Contains("百分之一")) { dd /= 100; }
-                if (des.Contains("千分之一")) { dd /= 1000; }
-                if (des.Contains("万分之一")) { dd /= 10000; }
+                if (des.Contains("十分之一")) { dd /= 10; scale += 1; }
+                if (des.Contains("百分之一")) { dd /= 100; scale += 2; }
+                if (des.Contains("千分之一")) { dd /= 1000; scale += 3; }
+                if (des.Contains("万分之一")) { dd /= 10000; scale += 4; }
+                scale = scale >= 2 ? scale - 2 : 2;
 
-                <td>@dd.ToString("p2")</td>
+                <td>@dd.ToString("p" + scale)</td>
             }
             else
             {
