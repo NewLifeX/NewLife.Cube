@@ -44,6 +44,15 @@ public static class WebHelper
                     if (kv.Key.IsNullOrWhiteSpace()) continue;
                     if (kv.Key.StartsWithIgnoreCase("__VIEWSTATE")) continue;
 
+                    // 空值不需要
+                    var value = kv.Value;
+                    if (value.Count == 0)
+                    {
+                        // 如果请求字符串里面有值而后面表单提交为空，则抹去。例如Url带有firstId参数，而表单上清空了firstId选择，此时不希望查询该条件
+                        if (dic.ContainsKey(kv.Key)) dic.Remove(kv.Key);
+                        continue;
+                    }
+
                     var v = kv.Value.ToString().Trim();
                     if (!v.IsNullOrWhiteSpace() || !dic.ContainsKey(kv.Key))
                         dic[kv.Key] = v;
