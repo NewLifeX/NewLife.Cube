@@ -18,47 +18,78 @@ public static class WebHelper
             var ctx = HttpContext.Current;
             if (ctx.Items["Params"] is IDictionary<String, String> dic) return dic;
 
-            var req = ctx.Request;
-            // 这里必须用可空字典，否则直接通过索引查不到数据时会抛出异常
-            dic = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+            dic = GetParams(ctx, false, true, true, true, false);
 
-            // 依次从查询字符串、表单、body读取参数
-            //foreach (var kv in req.RouteValues)
-            //{
-            //    if (kv.Key.IsNullOrWhiteSpace()) continue;
+            ctx.Items["Params"] = dic;
 
-            //    dic[kv.Key] = kv.Value?.ToString().Trim();
-            //}
+            return dic;
+        }
+    }
+
+    /// <summary>获取请求参数字段，Key不区分大小写，合并多数据源</summary>
+    /// <param name="ctx">Http上下文</param>
+    /// <param name="route">从路由参数获取</param>
+    /// <param name="query">从Url请求参数获取</param>
+    /// <param name="form">从表单获取</param>
+    /// <param name="body">从Body解析Json获取</param>
+    /// <param name="mergeValue">同名是否合并参数值</param>
+    /// <returns></returns>
+    public static IDictionary<String, String> GetParams(this Microsoft.AspNetCore.Http.HttpContext ctx, Boolean route, Boolean query, Boolean form, Boolean body, Boolean mergeValue)
+    {
+        var req = ctx.Request;
+
+        // 这里必须用可空字典，否则直接通过索引查不到数据时会抛出异常
+        var dic = new NullableDictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+
+        // 依次从查询字符串、表单、body读取参数
+        if (route)
+        {
+            foreach (var kv in req.RouteValues)
+            {
+                if (kv.Key.IsNullOrWhiteSpace()) continue;
+
+                dic[kv.Key] = kv.Value?.ToString().Trim();
+            }
+        }
+
+        if (query)
+        {
             foreach (var kv in req.Query)
             {
                 if (kv.Key.IsNullOrWhiteSpace()) continue;
 
                 var v = kv.Value.ToString().Trim();
-                if (!v.IsNullOrWhiteSpace() || !dic.ContainsKey(kv.Key))
-                    dic[kv.Key] = v;
-            }
-            if (req.HasFormContentType)
-            {
-                foreach (var kv in req.Form)
+                if (mergeValue && dic.TryGetValue(kv.Key, out var old) && !old.IsNullOrEmpty())
                 {
-                    if (kv.Key.IsNullOrWhiteSpace()) continue;
-                    if (kv.Key.StartsWithIgnoreCase("__VIEWSTATE")) continue;
-
-                    // 空值不需要
-                    var value = kv.Value;
-                    if (value.Count == 0)
-                    {
-                        // 如果请求字符串里面有值而后面表单提交为空，则抹去。例如Url带有firstId参数，而表单上清空了firstId选择，此时不希望查询该条件
-                        if (dic.ContainsKey(kv.Key)) dic.Remove(kv.Key);
-                        continue;
-                    }
-
-                    var v = kv.Value.ToString().Trim();
-                    if (!v.IsNullOrWhiteSpace() || !dic.ContainsKey(kv.Key))
-                        dic[kv.Key] = v;
+                    dic[kv.Key] = $"{old},{v}";
+                }
+                else
+                {
+                    dic[kv.Key] = v;
                 }
             }
+        }
+        if (form && req.HasFormContentType)
+        {
+            foreach (var kv in req.Form)
+            {
+                if (kv.Key.IsNullOrWhiteSpace()) continue;
+                if (kv.Key.StartsWithIgnoreCase("__VIEWSTATE")) continue;
 
+                var v = kv.Value.ToString().Trim();
+                if (mergeValue && dic.TryGetValue(kv.Key, out var old) && !old.IsNullOrEmpty())
+                {
+                    dic[kv.Key] = $"{old},{v}";
+                }
+                else
+                {
+                    dic[kv.Key] = v;
+                }
+            }
+        }
+
+        if (body)
+        {
             // 尝试从body读取json格式的参数
             if (req.GetRequestBody<Object>() is NullableDictionary<String, Object> entityBody)
             {
@@ -67,15 +98,19 @@ public static class WebHelper
                     var v = kv.Value?.ToString()?.Trim();
                     if (v.IsNullOrWhiteSpace()) continue;
 
-                    if (!v.IsNullOrWhiteSpace() || !dic.ContainsKey(kv.Key))
+                    if (mergeValue && dic.TryGetValue(kv.Key, out var old) && !old.IsNullOrEmpty())
+                    {
+                        dic[kv.Key] = $"{old},{v}";
+                    }
+                    else
+                    {
                         dic[kv.Key] = v;
+                    }
                 }
             }
-
-            ctx.Items["Params"] = dic;
-
-            return dic;
         }
+
+        return dic;
     }
 
     /// <summary>获取原始请求Url，支持反向代理</summary>
