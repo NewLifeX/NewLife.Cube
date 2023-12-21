@@ -10,6 +10,7 @@ namespace CubeDemo.Areas.School.Controllers;
 
 [SchoolArea]
 [DisplayName("学生")]
+[Menu(0, true, Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class StudentController : EntityController<Student, StudentModel>
 {
     static StudentController()
