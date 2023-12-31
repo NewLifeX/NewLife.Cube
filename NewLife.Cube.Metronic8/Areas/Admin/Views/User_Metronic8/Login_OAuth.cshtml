@@ -24,7 +24,7 @@
 
             if (!set.ResourceUrl.IsNullOrEmpty())
             {
-                url += "&r=" + HttpUtility.UrlEncode(set.ResourceUrl);
+                url += "&r=" + HttpUtility.UrlEncode(set.ReturnUrl);
             }
             url = "/" + url;
             var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
