@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
@@ -205,6 +206,8 @@ public static class CubeService
     /// <param name="services"></param>
     public static void AddCustomApplicationParts(this IServiceCollection services)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(AddCustomApplicationParts));
+
         var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
         manager ??= new ApplicationPartManager();
 
@@ -226,25 +229,22 @@ public static class CubeService
     /// <returns></returns>
     private static List<Assembly> FindAllArea()
     {
-        var list = new List<Assembly>();
-        var cs = typeof(ControllerBaseX).GetAllSubclasses().ToArray();
-        foreach (var item in cs)
+        var bag = new ConcurrentBag<Assembly>();
+        var baseType = typeof(ControllerBaseX);
+        var baseType2 = typeof(RazorPage);
+        Parallel.ForEach(AppDomain.CurrentDomain.GetAssemblies(), asm =>
         {
-            var asm = item.Assembly;
-            if (!list.Contains(asm))
+            foreach (var type in asm.GetTypes())
             {
-                list.Add(asm);
+                if (type.IsInterface || type.IsAbstract || type.IsGenericType) continue;
+                if (type != baseType && type.As(baseType) || type.As(baseType2))
+                {
+                    bag.Add(asm);
+                    break;
+                }
             }
-        }
-        cs = typeof(RazorPage).GetAllSubclasses().ToArray();
-        foreach (var item in cs)
-        {
-            var asm = item.Assembly;
-            if (!list.Contains(asm))
-            {
-                list.Add(asm);
-            }
-        }
+        });
+        var list = bag.ToList();
 
 #if !NET6_0_OR_GREATER
         // 反射 *.Views.dll

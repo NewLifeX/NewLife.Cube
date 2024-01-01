@@ -20,6 +20,7 @@ using Stardust;
 using Stardust.Registry;
 using XCode.DataAccessLayer;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using XCode;
 
 namespace NewLife.Cube;
 
@@ -162,6 +163,13 @@ public static class CubeService
         using var span = DefaultTracer.Instance?.NewSpan(nameof(UseCube));
 
         XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
+
+        // 初始化数据库连接
+        var set = CubeSetting.Current;
+        if (set.IsNew)
+            EntityFactory.InitAll();
+        else
+            EntityFactory.InitAllAsync();
 
         // 使用管理提供者
         app.UseManagerProvider();

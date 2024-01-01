@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using NewLife.Cube.Membership;
 using NewLife.Log;
-using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
 
@@ -65,19 +64,14 @@ public class AreaBase : AreaAttribute
     protected static void ScanController(Type areaType)
     {
         var areaName = areaType.Name.TrimEnd("Area");
-        XTrace.WriteLine("start------初始化[{0}]的菜单体系------start", areaName);
+        //XTrace.WriteLine("start------初始化[{0}]的菜单体系------start", areaName);
 
         var mf = ManageProvider.Menu;
         if (mf == null) return;
 
         // 初始化数据库
         _ = Menu.Meta.Count;
-        //_ = ModelTable.Meta.Count;
-        //_ = ModelColumn.Meta.Count;
 
-        //using var tran = (mf as IEntityFactory).Session.CreateTrans();
-
-        //var menus = mf.ScanController(areaName, areaType.Assembly, areaType.Namespace + ".Controllers");
         var menus = MenuHelper.ScanController(mf, areaName, areaType);
 
         // 更新区域名称为友好中文名
@@ -93,21 +87,17 @@ public class AreaBase : AreaAttribute
             (menu as IEntity).Update();
         }
 
-        //tran.Commit();
-
-        //// 扫描模型表
-        //ScanModel(areaName, menus);
-
         // 再次检查菜单权限，因为上面的ScanController里开启菜单权限检查时，菜单可能还没有生成
         var task = Task.Run(() =>
         {
             //Thread.Sleep(1000);
-            XTrace.WriteLine("新增了菜单，需要检查权限。二次检查，双重保障");
-            typeof(Role).Invoke("CheckRole");
+            //XTrace.WriteLine("新增了菜单，需要检查权限。二次检查，双重保障");
+            //typeof(Role).Invoke("CheckRole");
+            Role.CheckRole();
         });
         task.Wait(1_000);
 
-        XTrace.WriteLine("end---------初始化[{0}]的菜单体系---------end", areaName);
+        //XTrace.WriteLine("end---------初始化[{0}]的菜单体系---------end", areaName);
     }
 
     private static ICollection<String> _namespaces;

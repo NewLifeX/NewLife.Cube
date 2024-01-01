@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
@@ -188,9 +187,9 @@ public static class MenuHelper
             var task = Task.Run(() =>
             {
                 XTrace.WriteLine("新增了菜单，需要检查权限");
-                //var fact = ManageProvider.GetFactory<IRole>();
-                var fact = typeof(Role).AsFactory();
-                fact.EntityType.Invoke("CheckRole");
+                //var fact = typeof(Role).AsFactory();
+                //fact.EntityType.Invoke("CheckRole");
+                Role.CheckRole();
             });
             task.Wait(5_000);
         }
