@@ -174,8 +174,6 @@ public static class CubeService
         // 使用管理提供者
         app.UseManagerProvider();
 
-        var set = CubeSetting.Current;
-
         // 使用Cube前添加自己的管道
         if (env != null)
         {
