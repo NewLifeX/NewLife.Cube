@@ -160,15 +160,15 @@ public class ListField : DataField
         var svc = GetService<ILinkExtend>();
         if (svc != null) return svc.Resolve(this, data);
 
+        var linkName = GetLinkName(data);
+        //if (linkName.IsNullOrEmpty()) linkName = GetDisplayName(data);
+
         var url = GetUrl(data);
-        if (url.IsNullOrEmpty()) return null;
+        if (url.IsNullOrEmpty()) return linkName;
 
         var title = GetTitle(data);
         var target = Target;
         var action = DataAction;
-
-        var linkName = GetLinkName(data);
-        //if (linkName.IsNullOrEmpty()) linkName = GetDisplayName(data);
 
         var sb = Pool.StringBuilder.Get();
         sb.AppendFormat("<a href=\"{0}\"", url);
