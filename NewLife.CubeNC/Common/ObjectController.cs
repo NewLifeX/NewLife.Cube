@@ -164,6 +164,17 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 
             var v1 = obj.GetValue(pi);
             var v2 = cfg.GetValue(pi);
+
+            if (v1 is DateTime dt1)
+                v1 = dt1.ToFullString();
+            else if (v1 is IList list)
+                v1 = list.Join(",");
+
+            if (v2 is DateTime dt2)
+                v2 = dt2.ToFullString();
+            else if (v2 is IList list)
+                v2 = list.Join(",");
+
             if (!Equals(v1, v2) && (pi.PropertyType != typeof(String) || v1 + "" != v2 + ""))
             {
                 if (sb.Length > 0) sb.Append(", ");
