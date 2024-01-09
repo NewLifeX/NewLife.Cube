@@ -2,7 +2,7 @@
     var obj = Model as Object;
     var path = Context.Request.Path + "";
 }
-<div class="navbar-collapse collapse text-center">
+<div class="navbar-collapse text-center">
     <ul class="nav nav-pills" style="margin-bottom: 10px; display: inline-block;float: none;">
         <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Core")?"active":"")"><a href="/Admin/Core">基本设置</a></li>
         <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Sys")?"active":"")"><a href="/Admin/Sys">系统设置</a></li>
