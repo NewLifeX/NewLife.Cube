@@ -70,7 +70,7 @@
                     {
                         <td></td>
                     }
-                    else if (df != null && (link = df.GetLink(entity)) != null)
+                    else if (df != null && (link = df.GetLink(entity, page)) != null)
                     {
                         <td class="text-center align-middle">@Html.Raw(link)</td>
                     }

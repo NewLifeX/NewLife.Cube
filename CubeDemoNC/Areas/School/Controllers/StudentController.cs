@@ -22,7 +22,7 @@ public class StudentController : EntityController<Student, StudentModel>
         {
             var df = ListFields.AddListField("test", null, "Enable");
             df.DisplayName = "新生命团队";
-            df.Url = "https://newlifex.com?studentId={Id}&name={Name}";
+            df.Url = "https://newlifex.com?studentId={Id}&name={Name}&st={page:Sort}";
             df.Target = "_blank";
         }
     }
