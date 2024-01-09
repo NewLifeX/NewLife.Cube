@@ -1,6 +1,7 @@
 ﻿@model ItemModel
 @using NewLife;
 @using NewLife.Cube
+@using System.Collections
 @using XCode;
 @using XCode.Configuration;
 @{
@@ -47,5 +48,18 @@
     case TypeCode.String:
         //@Html.ForString(name, value + "", 0, htmlAttributes)
         @await Html.PartialAsync("_Form_String", Model)
+        break;
+    default:
+        if (value is IList list)
+        {
+            Model.Value = list.Join(",");
+            Model.Type = typeof(String);
+            @await Html.PartialAsync("_Form_String", Model)
+        }
+        else if (type.As<IList>())
+        {
+            Model.Type = typeof(String);
+            @await Html.PartialAsync("_Form_String", Model)
+        }
         break;
 }

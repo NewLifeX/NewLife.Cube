@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -94,15 +95,36 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         {
             if (Type.GetTypeCode(item.PropertyType) == TypeCode.Object)
             {
-                var pv = obj.GetValue(item);
-                foreach (var pi in item.PropertyType.GetProperties(true))
+                // 支持数组
+                if (item.PropertyType.As<IList>())
                 {
-                    if (keys.Contains(pi.Name))
+                    if (Request.HasFormContentType)
                     {
-                        var v = (Object)Request.GetRequestValue(pi.Name);
-                        if (pi.PropertyType == typeof(Boolean)) v = GetBool(pi.Name);
+                        var value = Request.Form[item.Name];
+                        var ss = value.ToString().Split(",");
 
-                        pv.SetValue(pi, v);
+                        var elmType = item.PropertyType.GetElementTypeEx();
+                        var arr = Array.CreateInstance(elmType, ss.Length);
+                        for (var i = 0; i < arr.Length; i++)
+                        {
+                            arr.SetValue(ss[i].ChangeType(elmType), i);
+                        }
+
+                        obj.SetValue(item, arr);
+                    }
+                }
+                else
+                {
+                    var pv = obj.GetValue(item);
+                    foreach (var pi in item.PropertyType.GetProperties(true))
+                    {
+                        if (keys.Contains(pi.Name))
+                        {
+                            var v = (Object)Request.GetRequestValue(pi.Name);
+                            if (pi.PropertyType == typeof(Boolean)) v = GetBool(pi.Name);
+
+                            pv.SetValue(pi, v);
+                        }
                     }
                 }
             }
