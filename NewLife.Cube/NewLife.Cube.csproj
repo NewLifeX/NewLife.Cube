@@ -87,11 +87,11 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.6.2024.101" />
+    <PackageReference Include="NewLife.Core" Version="10.6.2024.112-beta0523" />
     <PackageReference Include="NewLife.IP" Version="2.1.2024.101" />
-    <PackageReference Include="NewLife.Redis.Extensions" Version="5.5.2024.101" />
+    <PackageReference Include="NewLife.Redis.Extensions" Version="5.5.2024.105" />
     <PackageReference Include="NewLife.Stardust" Version="2.9.2024.101" />
-    <PackageReference Include="NewLife.XCode" Version="11.10.2024.101" />
+    <PackageReference Include="NewLife.XCode" Version="11.10.2024.112-beta1221" />
   </ItemGroup>
 
   <ItemGroup>
