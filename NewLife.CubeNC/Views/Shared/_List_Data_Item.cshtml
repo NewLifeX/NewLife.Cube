@@ -39,6 +39,7 @@
             tdClass = "text-nowrap;max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;";
             break;
     }
+    // 叠加样式
     if (!listField.Class.IsNullOrEmpty())
     {
         if (tdClass.IsNullOrEmpty() || listField.Class.Contains("text-"))
@@ -77,6 +78,15 @@ else
             if (listField.GetValue != null)
             {
                 <td class="@(tdClass ?? "text-center")">@listField.GetValue(entity)</td>
+            }
+            else if (item.ItemType.EqualIgnoreCase("time"))
+            {
+                <td class="@(tdClass ?? "text-center")">@dt.ToFullString("")</td>
+            }
+            else if (item.ItemType.StartsWithIgnoreCase("time-"))
+            {
+                var format = item.ItemType.Substring("time-".Length);
+                <td class="@(tdClass ?? "text-center")">@dt.ToString(format, "")</td>
             }
             else if (item.ItemType.EqualIgnoreCase("date") || name2.EndsWith("Date"))
             {
@@ -240,8 +250,15 @@ else
                 }
                 else if (item.IsBigText())
                 {
-                    //防止内容过长
-                    <td style="@tdClass" title="@value">@value</td>
+                    // 防止内容过长
+                    if (!tdClass.IsNullOrEmpty())
+                    {
+                        <td style="@tdClass" title="@value">@value</td>
+                    }
+                    else
+                    {
+                        <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td>
+                    }
                 }
                 else
                 {
