@@ -98,14 +98,20 @@
                                     @foreach (var item in fields)
                                     {
                                         var df = item as ListField;
-                                        var link = "";
+                                        var txt = "";
                                         if (df != null && df.DataVisible != null && !df.DataVisible(entity))
                                         {
                                             <td></td>
                                         }
-                                        else if (df != null && (link = df.GetLink(entity, page2)) != null)
+                                        else if (df != null && (txt = df.GetLink(entity, page2)) != null)
                                         {
-                                            <td class="text-center">@Html.Raw(link)</td>
+                                            var tdClass = df.GetTextClass();
+                                            <td class="@(tdClass??"text-center")">@Html.Raw(txt)</td>
+                                        }
+                                        else if (df != null && (txt = df.GetText(entity, page2)) != null)
+                                        {
+                                            var tdClass = df.GetTextClass();
+                                            <td class="@tdClass)">@Html.Raw(txt)</td>
                                         }
                                         else
                                         {

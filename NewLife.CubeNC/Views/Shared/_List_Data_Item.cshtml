@@ -17,37 +17,7 @@
     var name2 = item.Name.TrimEnd(digits);
 
     // 文本对齐方式
-    var tdClass = "";
-    switch (listField.TextAlign)
-    {
-        case TextAligns.Default:
-            tdClass = "";
-            break;
-        case TextAligns.Left:
-            tdClass = "text-left";
-            break;
-        case TextAligns.Center:
-            tdClass = "text-center";
-            break;
-        case TextAligns.Right:
-            tdClass = "text-right";
-            break;
-        case TextAligns.Justify:
-            tdClass = "text-justify";
-            break;
-        case TextAligns.Nowrap:
-            tdClass = "text-nowrap;max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;";
-            break;
-    }
-    // 叠加样式
-    if (!listField.Class.IsNullOrEmpty())
-    {
-        if (tdClass.IsNullOrEmpty() || listField.Class.Contains("text-"))
-            tdClass = listField.Class;
-        else
-            tdClass += ";" + listField.Class;
-    }
-    if (tdClass.IsNullOrEmpty()) tdClass = null;
+    var tdClass = listField.GetTextClass();
 }
 @if (item.PrimaryKey)
 {

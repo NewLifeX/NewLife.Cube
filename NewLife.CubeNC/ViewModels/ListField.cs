@@ -151,18 +151,34 @@ public class ListField : DataField
         return rs;
     }
 
+    /// <summary>针对指定实体对象计算单元格文字，替换其中变量</summary>
+    /// <param name="data"></param>
+    /// <param name="page"></param>
+    /// <returns></returns>
+    public virtual String GetText(IModel data, IExtend page = null)
+    {
+        var txt = Text;
+        if (txt.IsNullOrEmpty()) return null;
+
+        //return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
+        var rs = Replace(txt, data);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+
+        return rs;
+    }
+
     /// <summary>针对指定实体对象计算链接名，替换其中变量</summary>
     /// <param name="data"></param>
     /// <param name="page"></param>
     /// <returns></returns>
-    public virtual String GetLinkName(IModel data, IExtend page = null)
+    public virtual String GetLineName(IModel data, IExtend page = null)
     {
         // 如果设置了单元格文字，则优先使用。Text>Entity[name]>DisplayName
         var txt = Text;
         if (txt.IsNullOrEmpty())
         {
             // 在数据列中，实体对象取属性值优先于显示名
-            if (Field != null && DisplayName == Field.DisplayName) return data[Name] as String;
+            if (Field != null && DisplayName == Field.DisplayName) return data[Name] + "";
 
             txt = DisplayName;
         }
@@ -185,11 +201,11 @@ public class ListField : DataField
         var svc = GetService<ILinkExtend>();
         if (svc != null) return svc.Resolve(this, data);
 
-        var linkName = GetLinkName(data, page);
+        var linkName = GetLineName(data, page);
         //if (linkName.IsNullOrEmpty()) linkName = GetDisplayName(data);
 
         var url = GetUrl(data, page);
-        if (url.IsNullOrEmpty()) return linkName;
+        if (url.IsNullOrEmpty()) return null;
 
         var title = GetTitle(data, page);
         var target = Target;
@@ -200,7 +216,7 @@ public class ListField : DataField
         if (!target.IsNullOrEmpty()) sb.AppendFormat(" target=\"{0}\"", target);
         if (!action.IsNullOrEmpty()) sb.AppendFormat(" data-action=\"{0}\"", action);
         if (!title.IsNullOrEmpty()) sb.AppendFormat(" title=\"{0}\"", HttpUtility.HtmlEncode(title));
-        sb.Append(">");
+        sb.Append('>');
         sb.Append(linkName);
         sb.Append("</a>");
 
