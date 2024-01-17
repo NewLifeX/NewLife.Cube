@@ -67,12 +67,14 @@ public static class CubeService
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         IpResolver.Register();
 
+        var set = CubeSetting.Current;
+        services.AddSingleton(set);
+
         // 连接字符串
         DAL.ConnStrs.TryAdd("Cube", "MapTo=Membership");
 
         // 配置跨域处理，允许所有来源
         // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
-        var set = CubeSetting.Current;
         if (set.CorsOrigins == "*")
             services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
             .AllowAnyMethod()
