@@ -32,6 +32,10 @@ public class MenuAttribute : Attribute
     /// 图标
     /// </summary>
     public String Icon { get; set; }
+
+    /// <summary>最后更新时间。小于该更新时间的菜单设置将被覆盖。</summary>
+    /// <remarks>一般应用于区域类，表明代码已修改菜单参数，希望强行覆盖已有菜单设置</remarks>
+    public String LastUpdate { get; set; }
     #endregion
 
     /// <summary>

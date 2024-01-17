@@ -53,6 +53,8 @@ public static class MenuHelper
         }
         if (controllerTypes.Count == 0) return list;
 
+        var attArea = areaType.GetCustomAttribute<MenuAttribute>();
+
         // 如果根菜单不存在，则添加
         var r = menuFactory.Root;
         var root = menuFactory.FindByFullName(nameSpace);
@@ -64,12 +66,11 @@ public static class MenuHelper
             root = r.Add(rootName, null, nameSpace, "/" + rootName);
             list.Add(root);
 
-            var att = areaType.GetCustomAttribute<MenuAttribute>();
-            if (att != null && (!root.Visible || !root.Necessary))
+            if (attArea != null && (!root.Visible || !root.Necessary))
             {
-                root.Sort = att.Order;
-                root.Visible = att.Visible;
-                root.Icon = att.Icon;
+                root.Sort = attArea.Order;
+                root.Visible = attArea.Visible;
+                root.Icon = attArea.Icon;
             }
         }
         if (root.FullName != nameSpace) root.FullName = nameSpace;
@@ -178,6 +179,14 @@ public static class MenuHelper
             if (att != null)
             {
                 if (controller.Icon.IsNullOrEmpty()) controller.Icon = att.Icon;
+
+                // 小于该更新时间的菜单设置将被覆盖
+                if ((controller.UpdateTime < att.LastUpdate.ToDateTime() || controller.UpdateTime < attArea.LastUpdate.ToDateTime()) &&
+                    (!controller.Visible || !controller.Necessary))
+                {
+                    controller.Sort = att.Order;
+                    controller.Visible = att.Visible;
+                }
             }
 
             // 排序
@@ -185,16 +194,11 @@ public static class MenuHelper
             {
                 if (att != null)
                 {
-                    if (!root.Visible || !root.Necessary)
+                    if (!controller.Visible || !controller.Necessary)
                     {
                         controller.Sort = att.Order;
                         controller.Visible = att.Visible;
                     }
-                }
-                else
-                {
-                    var pi = type.GetPropertyEx("MenuOrder");
-                    if (pi != null) controller.Sort = pi.GetValue(null).ToInt();
                 }
             }
         }
