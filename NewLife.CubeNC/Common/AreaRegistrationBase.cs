@@ -35,7 +35,7 @@ public class AreaBase : AreaAttribute
         XTrace.WriteLine("开始注册权限管理区域[{0}]，控制器命名空间[{1}]", areaName, ns);
 
         // 更新区域名集合
-        var rs = CubeService.AreaNames?.ToList() ?? new List<String>();
+        var rs = CubeService.AreaNames?.ToList() ?? [];
         if (!rs.Contains(areaName))
         {
             rs.Add(areaName);

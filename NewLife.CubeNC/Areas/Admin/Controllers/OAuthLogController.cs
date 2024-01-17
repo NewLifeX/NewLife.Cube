@@ -15,7 +15,7 @@ namespace NewLife.Cube.Admin.Controllers;
 /// <summary>OAuth日志</summary>
 [DataPermission(null, "UserId={#userId}")]
 [DisplayName("OAuth日志")]
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false)]
 public class OAuthLogController : ReadOnlyEntityController<OAuthLog>
 {

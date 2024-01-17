@@ -7,7 +7,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>租户管理</summary>
-[Area("Admin")]
+[AdminArea]
 [Menu(75, true, Icon = "fa-user-circle", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class TenantController : EntityController<Tenant>
 {

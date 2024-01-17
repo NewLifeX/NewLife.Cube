@@ -11,7 +11,7 @@ namespace NewLife.Cube.Admin.Controllers;
 /// <summary>数据库管理</summary>
 [DisplayName("数据库")]
 [EntityAuthorize(PermissionFlags.Detail)]
-[Area("Admin")]
+[AdminArea]
 [Menu(26, true, Icon = "fa-database")]
 public class DbController : ControllerBaseX
 {

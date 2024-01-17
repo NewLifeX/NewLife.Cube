@@ -10,7 +10,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Cube.Controllers;
 
 /// <summary>定时任务</summary>
-[Area("Cube")]
+[CubeArea]
 [Menu(35, true, Icon = "fa-clock-o")]
 public class CronJobController : EntityController<CronJob>
 {

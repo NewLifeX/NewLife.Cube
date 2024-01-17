@@ -257,7 +257,7 @@ public class DataField
     #endregion
 
     #region 服务
-    private readonly List<Object> _services = new();
+    private readonly List<Object> _services = [];
     /// <summary>添加服务</summary>
     /// <typeparam name="TService"></typeparam>
     /// <param name="service"></param>

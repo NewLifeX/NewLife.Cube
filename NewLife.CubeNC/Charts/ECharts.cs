@@ -360,7 +360,7 @@ public class ECharts : IExtend
             End = end,
         };
 
-        var list = DataZoom?.ToList() ?? new List<DataZoom>();
+        var list = DataZoom?.ToList() ?? [];
         list.Add(dz);
 
         DataZoom = list.ToArray();

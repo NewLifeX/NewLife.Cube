@@ -26,9 +26,31 @@ public static class MenuHelper
 
         var list = new List<IMenu>();
 
-        // 所有控制器
-        var types = areaType.Assembly.GetTypes();
-        var controllerTypes = types.Where(e => e.Name.EndsWith("Controller") && e.Namespace == nameSpace).ToList();
+        // 搜索所有控制器，找到本区域所属控制器，优先属性其次命名空间
+        //var types = areaType.Assembly.GetTypes();
+        //var controllerTypes = types.Where(e => e.Name.EndsWith("Controller") && e.Namespace == nameSpace).ToList();
+        var controllerTypes = new List<Type>();
+        var target = areaType.Assembly.GetName().Name;
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (asm != areaType.Assembly && !asm.GetReferencedAssemblies().Any(e => e.Name == target)) continue;
+
+            foreach (var item in asm.GetTypes())
+            {
+                if (!item.Name.EndsWith("Controller")) continue;
+
+                // 优先使用特性
+                var atts = item.GetCustomAttributes();
+                if (atts.Any(e => e.GetType() == areaType))
+                {
+                    controllerTypes.Add(item);
+                }
+                else if (item.Namespace == nameSpace && !atts.Any(e => e is AreaAttribute))
+                {
+                    controllerTypes.Add(item);
+                }
+            }
+        }
         if (controllerTypes.Count == 0) return list;
 
         // 如果根菜单不存在，则添加
@@ -303,7 +325,7 @@ public static class MenuHelper
         return list;
     }
 
-    static Dictionary<String, Boolean> _tenants = new();
+    static Dictionary<String, Boolean> _tenants = [];
     static Boolean CheckVisibleInTenant(MenuTree menu)
     {
         var key = menu.FullName;
@@ -327,7 +349,7 @@ public static class MenuHelper
         return _tenants[key] = false;
     }
 
-    static Dictionary<String, Boolean> _admins = new();
+    static Dictionary<String, Boolean> _admins = [];
     static Boolean CheckVisibleInAdmin(MenuTree menu)
     {
         var key = menu.FullName;

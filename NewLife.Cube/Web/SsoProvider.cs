@@ -246,7 +246,7 @@ public class SsoProvider
                 if (sys.Count > 0)
                 {
                     //roleId = user2.RoleID;
-                    roleIds ??= new List<Int32>();
+                    roleIds ??= [];
                     roleIds.AddRange(sys);
                 }
                 roleId = GetRole(dic, true);
@@ -255,7 +255,7 @@ public class SsoProvider
                     user2.RoleID = roleId;
 
                     var ids = GetRoles(client.Items, true).ToList();
-                    roleIds ??= new List<Int32>();
+                    roleIds ??= [];
                     roleIds.AddRange(ids);
                 }
             }
@@ -268,7 +268,7 @@ public class SsoProvider
             if (cfg != null && !cfg.AutoRole.IsNullOrEmpty())
             {
                 var ids = GetRoles(cfg.AutoRole, true).ToList();
-                roleIds ??= new List<Int32>();
+                roleIds ??= [];
                 roleIds.AddRange(ids);
             }
 

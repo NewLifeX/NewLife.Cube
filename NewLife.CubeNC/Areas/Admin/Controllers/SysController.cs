@@ -8,7 +8,7 @@ namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>系统设置控制器</summary>
 [DisplayName("系统设置")]
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false)]
 public class SysController : ConfigController<SysConfig>
 {

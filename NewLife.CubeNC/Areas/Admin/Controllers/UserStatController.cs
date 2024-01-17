@@ -8,7 +8,7 @@ using static NewLife.Cube.Entity.UserStat;
 namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>访问统计控制器</summary>
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false)]
 public class UserStatController : ReadOnlyEntityController<UserStat>
 {

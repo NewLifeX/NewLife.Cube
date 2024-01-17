@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Web;
@@ -10,7 +9,7 @@ namespace NewLife.Cube.Cube.Controllers;
 
 /// <summary>应用日志</summary>
 [DisplayName("应用日志")]
-[Area("Cube")]
+[CubeArea]
 [Menu(0, false)]
 public class AppLogController : ReadOnlyEntityController<AppLog>
 {

@@ -46,7 +46,7 @@
 ## 区域
 
 - [官方文档](https://docs.microsoft.com/zh-cn/aspnet/core/mvc/controllers/areas)
-- `Asp. Net Mvc`中的区域会自动注册本区域文件夹里面的控制器作为区域的控制器， `Asp. Net Core Mvc`需要在控制器使用特性`[Area("Admin")]`指定区域，如果不指定区域就是和正常控制器一样，即使它位于区域文件夹
+- `Asp. Net Mvc`中的区域会自动注册本区域文件夹里面的控制器作为区域的控制器， `Asp. Net Core Mvc`需要在控制器使用特性`[AdminArea]`指定区域，如果不指定区域就是和正常控制器一样，即使它位于区域文件夹
 - `Asp. Net Core Mvc`一定要进行区域路由注册，否则无法匹配带有`Area`特性的控制器
 - 在没有任何路由注册默认控制器为`Index`的情况下，如果有控制器名为`IndexController`，在`Asp. Net Mvc`中访问`/Admin/`，会匹配此控制器，但在`Asp. Net Core Mvc`中需要指定路由默认控制器有`Index`才能匹配
 - 总的来说，`Asp. Net Core Mvc`什么都要指定都要设置，不能偷懒

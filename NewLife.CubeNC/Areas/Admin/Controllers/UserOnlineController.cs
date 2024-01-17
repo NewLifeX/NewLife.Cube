@@ -10,7 +10,7 @@ namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>用户在线控制器</summary>
 [DataPermission(null, "UserID={#userId}")]
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false)]
 public class UserOnlineController : EntityController<UserOnline>
 {

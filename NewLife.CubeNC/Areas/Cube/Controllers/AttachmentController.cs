@@ -9,7 +9,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Cube.Controllers;
 
 /// <summary>附件管理</summary>
-[Area("Cube")]
+[CubeArea]
 [Menu(38, true, Icon = "fa-file-text")]
 public class AttachmentController : EntityController<Attachment>
 {

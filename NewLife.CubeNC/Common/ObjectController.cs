@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -95,36 +94,15 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         {
             if (Type.GetTypeCode(item.PropertyType) == TypeCode.Object)
             {
-                // 支持数组
-                if (item.PropertyType.As<IList>())
+                var pv = obj.GetValue(item);
+                foreach (var pi in item.PropertyType.GetProperties(true))
                 {
-                    if (Request.HasFormContentType)
+                    if (keys.Contains(pi.Name))
                     {
-                        var value = Request.Form[item.Name];
-                        var ss = value.ToString().Split(",");
+                        var v = (Object)Request.GetRequestValue(pi.Name);
+                        if (pi.PropertyType == typeof(Boolean)) v = GetBool(pi.Name);
 
-                        var elmType = item.PropertyType.GetElementTypeEx();
-                        var arr = Array.CreateInstance(elmType, ss.Length);
-                        for (var i = 0; i < arr.Length; i++)
-                        {
-                            arr.SetValue(ss[i].ChangeType(elmType), i);
-                        }
-
-                        obj.SetValue(item, arr);
-                    }
-                }
-                else
-                {
-                    var pv = obj.GetValue(item);
-                    foreach (var pi in item.PropertyType.GetProperties(true))
-                    {
-                        if (keys.Contains(pi.Name))
-                        {
-                            var v = (Object)Request.GetRequestValue(pi.Name);
-                            if (pi.PropertyType == typeof(Boolean)) v = GetBool(pi.Name);
-
-                            pv.SetValue(pi, v);
-                        }
+                        pv.SetValue(pi, v);
                     }
                 }
             }
@@ -164,17 +142,6 @@ public abstract class ObjectController<TObject> : ControllerBaseX
 
             var v1 = obj.GetValue(pi);
             var v2 = cfg.GetValue(pi);
-
-            if (v1 is DateTime dt1)
-                v1 = dt1.ToFullString();
-            else if (v1 is IList list)
-                v1 = list.Join(",");
-
-            if (v2 is DateTime dt2)
-                v2 = dt2.ToFullString();
-            else if (v2 is IList list)
-                v2 = list.Join(",");
-
             if (!Equals(v1, v2) && (pi.PropertyType != typeof(String) || v1 + "" != v2 + ""))
             {
                 if (sb.Length > 0) sb.Append(", ");
@@ -187,7 +154,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         WriteLog("修改", true, sb.ToString());
     }
 
-    private static readonly Dictionary<Type, IList<DataField>> _cache = new();
+    private static readonly Dictionary<Type, IList<DataField>> _cache = [];
     /// <summary>获取指定类型的成员集合（带缓存）</summary>
     /// <param name="type"></param>
     /// <returns></returns>

@@ -8,7 +8,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Cube.Controllers;
 
 /// <summary>委托代理</summary>
-[Area("Cube")]
+[CubeArea]
 [Menu(0, true, Icon = "fa-user-secret")]
 public class PrincipalAgentController : EntityController<PrincipalAgent>
 {

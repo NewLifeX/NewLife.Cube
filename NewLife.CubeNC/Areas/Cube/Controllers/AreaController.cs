@@ -11,7 +11,7 @@ namespace NewLife.Cube.Cube.Controllers;
 
 /// <summary>地区</summary>
 [DisplayName("地区")]
-[Area("Cube")]
+[CubeArea]
 [Menu(50, true, Icon = "fa-area-chart")]
 public class AreaController : EntityController<Area>
 {
