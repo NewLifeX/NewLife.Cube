@@ -1,5 +1,6 @@
 ﻿@model ValueTuple<IEntity, DataField>
 @using NewLife;
+@using NewLife.Cube.ViewModels
 @using XCode;
 @using XCode.Configuration;
 @{
@@ -13,7 +14,7 @@
 }
 @if (field.IsBigText())
 {
-    <div class="form-group col-md-12">
+    <div class="form-group col-xs-12 col-md-6">
         @await Html.PartialAsync("_Form_BigText", (Object)Model)
     </div>
 }
