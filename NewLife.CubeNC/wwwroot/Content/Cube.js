@@ -81,7 +81,7 @@ $(function () {
             }
 
             // 外部框架自行定义cubeAddTab方法，用于打开标签页
-            return window.parent.cubeAddTab(url, title, true);
+            return window.parent.cubeAddTab(url, title);
         }
     )
 
@@ -113,7 +113,7 @@ $(function () {
             }
 
             // 外部框架自行定义cubeAddTab方法，用于打开标签页
-            return window.parent.cubeAddTab(url, title, true);
+            return window.parent.cubeAddTab(url, title);
         }
     )
 });
