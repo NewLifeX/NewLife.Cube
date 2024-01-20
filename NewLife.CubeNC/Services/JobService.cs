@@ -82,7 +82,12 @@ public class JobService : IHostedService
             if (job == null)
             {
                 //将ICacheProvider 改为IServiceProvider注入，避免没有星辰注册导致的Job注入错误
-                job = new MyJob { Job = item, CacheProvider = _serviceProvider.GetService<ICacheProvider>(), Tracer = _tracer };
+                job = new MyJob
+                {
+                    Job = item,
+                    CacheProvider = _serviceProvider.GetService<ICacheProvider>(),
+                    Tracer = _tracer
+                };
                 _jobs.Add(job);
             }
             job.Job = item;
@@ -111,7 +116,7 @@ public class JobService : IHostedService
     #region 辅助
     internal static void WriteLog(String action, Boolean success, String remark, CronJob job)
     {
-        if (!job.EnableLog) return;
+        if (job != null && !job.EnableLog) return;
 
         var log = LogProvider.Provider.CreateLog("JobService", action, success, remark);
         if (job != null) log.LinkID = job.Id;
@@ -178,7 +183,7 @@ public class JobService : IHostedService
 
                     sw.Stop();
 
-                    var job = TimerX.Current?.State as CronJob;
+                    var job = (TimerX.Current?.State as MyJob)?.Job;
                     WriteLog(nameof(BackupDb), true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}", job);
                 }
             }
@@ -205,9 +210,7 @@ internal class MyJob : IDisposable
     public void Start()
     {
         var job = Job;
-        //using var span = Tracer?.NewSpan($"job:{job}:Start");
-        //try
-        //{
+
         // 参数检查
         var expession = job.Cron;
         if (expession.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Cron));
@@ -237,19 +240,12 @@ internal class MyJob : IDisposable
 
         // 实例化定时器，原定时器销毁
         _timer.TryDispose();
-        _timer = new TimerX(DoJobWork, job, expession) { Async = true, Tracer = Tracer };
+        _timer = new TimerX(DoJobWork, this, expession) { Async = true, Tracer = Tracer };
 
         job.NextTime = _timer.NextTime;
         job.Update();
 
         _id = id;
-        //}
-        //catch (Exception ex)
-        //{
-        //    span?.SetError(ex, null);
-
-        //    throw;
-        //}
     }
 
     public void Stop()
