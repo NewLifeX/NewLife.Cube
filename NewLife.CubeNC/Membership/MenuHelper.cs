@@ -181,7 +181,7 @@ public static class MenuHelper
                 if (controller.Icon.IsNullOrEmpty()) controller.Icon = att.Icon;
 
                 // 小于该更新时间的菜单设置将被覆盖
-                if ((controller.UpdateTime < att.LastUpdate.ToDateTime() || controller.UpdateTime < attArea.LastUpdate.ToDateTime()) &&
+                if ((controller.UpdateTime < att.LastUpdate.ToDateTime() || attArea != null && controller.UpdateTime < attArea.LastUpdate.ToDateTime()) &&
                     (!controller.Visible || !controller.Necessary))
                 {
                     controller.Sort = att.Order;

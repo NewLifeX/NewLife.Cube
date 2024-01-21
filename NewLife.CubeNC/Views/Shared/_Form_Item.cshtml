@@ -95,11 +95,11 @@
         }
         else if (item.Type == typeof(String))
         {
-            if (item.ItemType.EqualIgnoreCase("image", "image-"))
+            if (item.ItemType.EqualIgnoreCase("image") || item.ItemType.StartsWithIgnoreCase("image-"))
             {
                 @await Html.PartialAsync("_Form_Image", Model)
             }
-            else if (item.ItemType.StartsWithIgnoreCase("file", "file-"))
+            else if (item.ItemType.EqualIgnoreCase("file") || item.ItemType.StartsWithIgnoreCase("file-"))
             {
                 @await Html.PartialAsync("_Form_File", Model)
             }
