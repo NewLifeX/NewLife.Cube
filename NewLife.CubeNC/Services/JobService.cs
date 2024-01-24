@@ -1,12 +1,17 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection;
+
 using NewLife.Caching;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Jobs;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Threading;
+
 using XCode.DataAccessLayer;
 using XCode.Membership;
+
 using IHostedService = Microsoft.Extensions.Hosting.IHostedService;
 
 namespace NewLife.Cube.Services;
@@ -204,6 +209,8 @@ internal class MyJob : IDisposable
     private TimerX _timer;
     private String _id;
     private Action<String> _action;
+    private Type _type;
+    private MethodInfo _method;
 
     public void Dispose() => Stop();
 
@@ -229,12 +236,15 @@ internal class MyJob : IDisposable
         var p = cmd.LastIndexOf('.');
         if (p <= 0) throw new InvalidOperationException($"无效作业方法 {cmd}");
 
-        var type = cmd[..p].GetTypeEx();
-        var method = type?.GetMethodEx(cmd[(p + 1)..]);
-        if (method == null || !method.IsStatic) throw new InvalidOperationException($"无效作业方法 {cmd}");
+        _type = cmd[..p].GetTypeEx();
+        _method = _type?.GetMethodEx(cmd[(p + 1)..]);
+        if (_method == null) throw new InvalidOperationException($"无效作业方法 {cmd}");
 
-        _action = method.As<Action<String>>();
-        if (_action == null) throw new InvalidOperationException($"无效作业方法 {cmd}");
+        if (_method.IsStatic)
+        {
+            _action = _method.As<Action<String>>();
+            if (_action == null) throw new InvalidOperationException($"无效作业方法 {cmd}");
+        }
 
         JobService.WriteLog("启用", true, $"作业[{job.Name}]，定时 {job.Cron}，方法 {job.Method}", job);
 
@@ -307,7 +317,15 @@ internal class MyJob : IDisposable
         var success = true;
         try
         {
-            _action?.Invoke(job.Argument);
+            if (_method.IsStatic)
+            {
+                _action?.Invoke(job.Argument);
+            }
+            else
+            {
+                var instance = _type?.CreateInstance() as CubeJobBase;
+                instance?.Execute(job.Argument);
+            }
         }
         catch (Exception ex)
         {

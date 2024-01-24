@@ -3,15 +3,18 @@ using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
+
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Jobs;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
@@ -20,8 +23,10 @@ using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
+
 using Stardust;
 using Stardust.Registry;
+
 using XCode;
 using XCode.DataAccessLayer;
 
@@ -388,6 +393,9 @@ public static class CubeService
         }
 
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
+
+        var Schedulers = new CubeSchedulers();  // 系统自带作业计划
+        Schedulers.ScanJobsAsync().Wait();
 
         Task.Run(() => ResolveStarWeb(provider));
 
