@@ -239,14 +239,21 @@ public static class CubeService
         var baseType2 = typeof(RazorPage);
         Parallel.ForEach(AppDomain.CurrentDomain.GetAssemblies(), asm =>
         {
-            foreach (var type in asm.GetTypes())
+            try
             {
-                if (type.IsInterface || type.IsAbstract || type.IsGenericType) continue;
-                if (type != baseType && type.As(baseType) || type.As(baseType2))
+                foreach (var type in asm.GetTypes())
                 {
-                    bag.Add(asm);
-                    break;
+                    if (type.IsInterface || type.IsAbstract || type.IsGenericType) continue;
+                    if (type != baseType && type.As(baseType) || type.As(baseType2))
+                    {
+                        bag.Add(asm);
+                        break;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteLine("在[{0}]中扫描视图报错：{1}", asm.GetName().Name, ex.Message);
             }
         });
         var list = bag.ToList();
