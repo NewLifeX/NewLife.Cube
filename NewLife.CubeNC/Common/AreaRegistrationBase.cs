@@ -56,7 +56,7 @@ public class AreaBase : AreaAttribute
                 XTrace.WriteException(ex);
             }
         });
-        task.Wait(1_000);
+        //task.Wait(1_000);
     }
 
     /// <summary>自动扫描控制器，并添加到菜单</summary>
@@ -95,7 +95,7 @@ public class AreaBase : AreaAttribute
             //typeof(Role).Invoke("CheckRole");
             Role.CheckRole();
         });
-        task.Wait(1_000);
+        //task.Wait(1_000);
 
         //XTrace.WriteLine("end---------初始化[{0}]的菜单体系---------end", areaName);
     }
