@@ -59,6 +59,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\NewLife.CubeNC\Jobs\CubeJobBase.cs" Link="Jobs\CubeJobBase.cs" />
+    <Compile Include="..\NewLife.CubeNC\Jobs\CubeSchedulers.cs" Link="Jobs\CubeSchedulers.cs" />
+    <Compile Include="..\NewLife.CubeNC\Jobs\ICubeJob.cs" Link="Jobs\ICubeJob.cs" />
     <Compile Include="..\NewLife.CubeNC\Membership\ManagerProviderHelper.cs" Link="Membership\ManagerProviderHelper.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
@@ -108,6 +111,7 @@
     <Folder Include="Services\" />
     <Folder Include="Modules\" />
     <Folder Include="ViewModels\" />
+    <Folder Include="Jobs\" />
   </ItemGroup>
 
 </Project>
