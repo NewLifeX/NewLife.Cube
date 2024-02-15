@@ -1,6 +1,5 @@
 ﻿@using NewLife;
 @using NewLife.Cube
-@using NewLife.Cube.ViewModels
 @using XCode;
 @using XCode.Configuration;
 @{
@@ -12,44 +11,29 @@
     if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
 
     var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
-
-
-    var total = 12;
-    var label = 3;
-    var span = 4;
-    if (err == 0 && des.IsNullOrEmpty())
-    {
-        span = 0;
-    }
-
-    var input = total - label - span;
-
 }
-
-<label class="control-label col-xs-@label col-sm-1 col-md-@label" ">@field.DisplayName</label>
-
-<div class="input-group col-xs-@(total - label) col-sm-@input">
-@if (field.ReadOnly)
-{
-    var row = (Int32)Math.Round(field.Length / 100d);
-    if (row < 3) row = 3;
-    @*<label class="form-control">@entity[field.Name]</label>*@
-        <textarea class="form-control" id="@field.Name" rows="@row" readonly>@entity[field.Name]</textarea>
-}
-else
-{
-    @*@Html.ForString(field.Name, (String)entity[field.Name], field.Length)*@
-    @await Html.PartialAsync("_Form_String", new ItemModel(field.Name, entity[field.Name], field.Type) { Length = field.Length })
-}
-</div>
-
+<label class="control-label col-xs-12 col-sm-3 col-md-2 col-lg-1">@field.DisplayName</label>
 @if (err > 0)
 {
-    <span class="col-sm-@span alert alert-danger">
+    <span class="col-sm-9 alert alert-danger">
         @Html.ValidationMessage(field.Name)
     </span>
 }
-@if (!des.IsNullOrEmpty())
+else if (!des.IsNullOrEmpty())
 {
-    <span class="hidden-xs col-sm-@span"><span class="middle">@des</span></span>
+    <span class="col-sm-9"><span class="middle">@des</span></span>
 }
+<div class="input-group col-xs-12 col-sm-11 col-md-offset-1">
+    @if (field.ReadOnly)
+    {
+        var row = (Int32)Math.Round(field.Length / 100d);
+        if (row < 3) row = 3;
+        @*<label class="form-control">@entity[field.Name]</label>*@
+        <textarea class="form-control" id="@field.Name" rows="@row" readonly>@entity[field.Name]</textarea>
+    }
+    else
+    {
+        @*@Html.ForString(field.Name, (String)entity[field.Name], field.Length)*@
+        @await Html.PartialAsync("_Form_String", new ItemModel(field.Name, entity[field.Name], field.Type) { Length = field.Length })
+    }
+</div>
