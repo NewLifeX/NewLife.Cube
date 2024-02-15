@@ -65,6 +65,9 @@ public class DataRetentionService : IHostedService
             var rs = OAuthLog.DeleteBefore(time);
             XTrace.WriteLine("删除[{0}]之前的 OAuthLog 共：{1:n0}", time.ToFullString(), rs);
 
+            rs = AppLog.DeleteBefore(time);
+            XTrace.WriteLine("删除[{0}]之前的 AppLog 共：{1:n0}", time.ToFullString(), rs);
+
             rs = DeleteLogBefore(time);
             XTrace.WriteLine("删除[{0}]之前的 Log 共：{1:n0}", time.ToFullString(), rs);
         }
