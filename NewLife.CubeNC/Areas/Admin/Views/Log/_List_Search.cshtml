@@ -11,9 +11,11 @@
     @*@Html.ActionLink("访问统计", "Index", "VisitStat", null, new { @class = "btn btn-success btn-sm" })*@
     <label for="category" class="control-label">类别：</label>
     @Html.ForDropDownList("category", Log.FindAllCategoryName(), page["category"], "全部", true)
+</div>
+<div class="form-group">
     <label for="act" class="control-label">操作：</label>
     @Html.ForDropDownList("act", Log.FindAllActionName(), page["act"], "全部", true)
-    @await Html.PartialAsync("_Enable", "success")
 </div>
+@await Html.PartialAsync("_Enable", "success")
 @await Html.PartialAsync("_SelectUser", new SelectUserModel { Id = "userId", UserId = page["userId"].ToInt(-1) })
 @await Html.PartialAsync("_DateRange")

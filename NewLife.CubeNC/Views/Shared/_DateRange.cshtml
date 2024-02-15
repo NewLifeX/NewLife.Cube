@@ -25,8 +25,6 @@
         }
         <input name="dtStart" id="dtStart" value="@p["dtStart"]" dateformat="@formatStr" class="form-control form_datetime" autocomplete="off" />
     </div>
-</div>
-<div class="form-group">
     @if (formatStr == "yyyy-MM-dd" && (dtStart.Year > 2000 || dtEnd.Year > 2000))
     {
         var url = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });

@@ -34,9 +34,6 @@
     <title>@title</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon">
 
-    <!-- 页面内联样式 -->
-    @RenderSection("css", required: false)
-
     @if (set != null && set.BootstrapSelect)
     {
         <link rel="stylesheet" href="@res/bootstrap/css/bootstrap-multiselect.css">
@@ -62,6 +59,10 @@
 
     <!-- 自定义样式 -->
     <link rel="stylesheet" href="@res/Cube.css?v=@ver">
+
+    <!-- 页面内联样式 -->
+    @RenderSection("css", required: false)
+
     <!-- JQuery作为一等公民，页面内部随时可能使用 -->
     <script src="@res/js/jquery-3.6.0.min.js"></script>
     @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
