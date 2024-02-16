@@ -40,7 +40,7 @@ public class JobService : IHostedService
     /// <returns></returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        _timer = new TimerX(DoJob, null, 1_000, 600_000);
+        _timer = new TimerX(DoJob, null, 1_000, 600_000) { Async = true };
 
         return Task.CompletedTask;
     }

@@ -165,13 +165,14 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         }
 
         // 数字型主键，默认降序
-        if (p.Sort.IsNullOrEmpty())
+        if (p.Sort.IsNullOrEmpty() && p.OrderBy.IsNullOrEmpty())
         {
             var uk = Factory.Unique;
             if (uk != null && uk.Type.IsInt())
             {
-                p.Sort = uk.Name;
-                p.Desc = true;
+                p.OrderBy = uk.Desc();
+                //p.Sort = uk.Name;
+                //p.Desc = true;
             }
         }
 

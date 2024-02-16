@@ -110,7 +110,7 @@ public class Pager : PageParameter, IExtend
         if (parameters.TryGetValue(nameof(Desc), out str)) Desc = str.ToBoolean();
         if (parameters.TryGetValue(nameof(StartRow), out str)) StartRow = str.ToLong();
         if (parameters.TryGetValue(nameof(Sort), out str)) Sort = str;
-        if (parameters.TryGetValue(nameof(OrderBy), out str)) OrderBy = str;
+        //if (parameters.TryGetValue(nameof(OrderBy), out str)) OrderBy = str;
 
         Params = parameters;
     }
