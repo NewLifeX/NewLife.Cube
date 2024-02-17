@@ -35,6 +35,9 @@ public class PageSetting
 
     /// <summary>启用列表双击事件配置</summary>
     public Boolean EnableTableDoubleClick { get; set; } = true;
+
+    /// <summary>是否启用默认的数字主键降序。默认true</summary>
+    public Boolean OrderByKey { get; set; } = true;
     #endregion
 
     #region 构造

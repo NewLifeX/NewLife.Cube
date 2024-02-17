@@ -165,7 +165,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         }
 
         // 数字型主键，默认降序
-        if (p.Sort.IsNullOrEmpty() && p.OrderBy.IsNullOrEmpty())
+        if (PageSetting.OrderByKey && p.Sort.IsNullOrEmpty() && p.OrderBy.IsNullOrEmpty())
         {
             var uk = Factory.Unique;
             if (uk != null && uk.Type.IsInt())
