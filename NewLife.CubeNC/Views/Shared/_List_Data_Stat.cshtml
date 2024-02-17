@@ -28,6 +28,7 @@
 
             var listField = item as ListField;
             var value = entity[item.Name];
+            var tdClass = listField.GetTextClass();
             switch (Type.GetTypeCode(item.Type))
             {
                 case TypeCode.Boolean:
@@ -37,23 +38,23 @@
                 case TypeCode.Decimal:
                     if (listField.GetValue != null)
                     {
-                        <td class="text-center">@listField.GetValue(entity)</td>
+                        <td class="@(tdClass ?? "text-center")">@listField.GetValue(entity)</td>
                     }
                     else if (item.ItemType.EqualIgnoreCase("Money"))
                     {
                         var dc = (Decimal)value;
-                        <td class="text-right">@dc.ToString("c")</td>
+                        <td class="@(tdClass ?? "text-right")">@dc.ToString("c")</td>
                     }
                     else
                     {
                         var dc = (Decimal)value;
                         if (item.Scale > 0)
                         {
-                            <td class="text-right">@dc.ToString("n" + item.Scale)</td>
+                            <td class="@(tdClass ?? "text-right")">@dc.ToString("n" + item.Scale)</td>
                         }
                         else
                         {
-                            <td class="text-right">@dc.ToString()</td>
+                            <td class="@(tdClass ?? "text-right")">@dc.ToString()</td>
                         }
                     }
                     break;
@@ -61,18 +62,18 @@
                 case TypeCode.Double:
                     if (listField.GetValue != null)
                     {
-                        <td class="text-right">@listField.GetValue(entity)</td>
+                        <td class="@(tdClass ?? "text-right")">@listField.GetValue(entity)</td>
                     }
                     else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                     {
                         var dd = (Double)value;
                         var scale = item.Scale >= 2 ? item.Scale - 2 : 2;
-                        <td class="text-center">@dd.ToString("p" + scale)</td>
+                        <td class="@(tdClass ?? "text-center")">@dd.ToString("p" + scale)</td>
                     }
                     else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                     {
                         var dd = (Double)value;
-                        var scale = item.Scale;
+                        var scale = 0;
                         var des = item.Description + "";
                         if (des.Contains("十分之一")) { dd /= 10; scale += 1; }
                         if (des.Contains("百分之一")) { dd /= 100; scale += 2; }
@@ -80,18 +81,18 @@
                         if (des.Contains("万分之一")) { dd /= 10000; scale += 4; }
                         scale = scale >= 2 ? scale - 2 : 2;
 
-                        <td class="text-center">@dd.ToString("p" + scale)</td>
+                        <td class="@(tdClass ?? "text-center")">@dd.ToString("p" + scale)</td>
                     }
                     else
                     {
                         var dd = (Double)value;
                         if (item.Scale > 0)
                         {
-                            <td class="text-right">@dd.ToString("n" + item.Scale)</td>
+                            <td class="@(tdClass ?? "text-right")">@dd.ToString("n" + item.Scale)</td>
                         }
                         else
                         {
-                            <td class="text-right">@dd.ToString()</td>
+                            <td class="@(tdClass ?? "text-right")">@dd.ToString()</td>
                         }
                     }
                     break;
@@ -102,10 +103,26 @@
                 case TypeCode.UInt16:
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
+                    if (listField.GetValue != null)
+                    {
+                        <td class="@(tdClass ?? "text-right")">@listField.GetValue(entity)</td>
+                    }
                     //特殊处理枚举
                     if (item.Type.IsEnum)
                     {
                         <td></td>
+                    }
+                    else if (item.ItemType.EqualIgnoreCase("TimeSpan"))
+                    {
+                        <td class="@(tdClass ?? "text-right")">@(TimeSpan.FromSeconds(value.ToInt()))</td>
+                    }
+                    else if (item.ItemType.EqualIgnoreCase("Time"))
+                    {
+                        <td class="@(tdClass ?? "text-center")">@(value.ToLong().ToDateTime().ToLocalTime().ToFullString(""))</td>
+                    }
+                    else if (item.ItemType.EqualIgnoreCase("GMK"))
+                    {
+                        <td class="@(tdClass ?? "text-right")">@(value.ToLong().ToGMK())</td>
                     }
                     else if (name2.EqualIgnoreCase("CreateUserID", "UpdateUserID") || name2.EndsWith("ID") || name2.EndsWith("Id"))
                     {
@@ -121,11 +138,11 @@
                         if (des.Contains("千分之一")) { dd /= 1000; scale = 1; }
                         if (des.Contains("万分之一")) { dd /= 10000; scale = 2; }
 
-                        <td class="text-center">@dd.ToString("p" + scale)</td>
+                        <td class="@(tdClass ?? "text-center")">@dd.ToString("p" + scale)</td>
                     }
                     else
                     {
-                        <td class="text-right">@Convert.ToInt64(value).ToString("n0")</td>
+                        <td class="@(tdClass ?? "text-right")">@Convert.ToInt64(value).ToString("n0")</td>
                     }
                     break;
                 case TypeCode.String:
