@@ -1,4 +1,5 @@
-﻿using NewLife.Cube.Entity;
+﻿using System.ComponentModel;
+using NewLife.Cube.Entity;
 using NewLife.Log;
 
 namespace NewLife.Cube.Jobs;
@@ -6,17 +7,24 @@ namespace NewLife.Cube.Jobs;
 /// <summary>Http作业参数</summary>
 public class HttpJobArgument
 {
-    /// <summary>请求方法</summary>
+    /// <summary>请求方法。Get/Post</summary>
+    [DisplayName("请求方法")]
+    [Description("Get/Post")]
     public String Method { get; set; }
 
     /// <summary>请求地址</summary>
+    [DisplayName("请求地址")]
     public String Url { get; set; }
 
     /// <summary>请求参数</summary>
+    [DisplayName("请求参数")]
+    [Description("字符串提交，一般是Json")]
     public String Body { get; set; }
 }
 
 /// <summary>HTTP服务</summary>
+[DisplayName("发起Http请求")]
+[Description("Http请求指定Url")]
 [CronJob("RunHttp", "25 0 0 * * ? *")]
 public class HttpService : CubeJobBase<HttpJobArgument>
 {

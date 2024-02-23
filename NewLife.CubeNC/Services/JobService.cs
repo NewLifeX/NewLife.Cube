@@ -149,7 +149,7 @@ public class JobService : IHostedService
             var job = jobs.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
             job ??= new CronJob
             {
-                Name = att.Name,
+                Name = name,
                 Cron = att?.Cron,
                 Enable = true,
                 Remark = type.GetDescription(),
@@ -157,6 +157,7 @@ public class JobService : IHostedService
 
             job.DisplayName = type.GetDisplayName();
             job.Method = type.FullName;
+            if (job.Remark.IsNullOrEmpty()) job.Remark = type.GetDescription();
 
             job.Save();
         }
@@ -186,7 +187,6 @@ internal class MyJob : IDisposable
     private Type _type;
     private MethodInfo _method;
     private Action<String> _action;
-    private Boolean _isCubeJob;
 
     ~MyJob() => Dispose();
 
@@ -212,11 +212,7 @@ internal class MyJob : IDisposable
 
         // 找到类和方法
         _type = cmd.GetTypeEx();
-        if (_type != null && _type.As<ICubeJob>())
-        {
-            _isCubeJob = true;
-        }
-        else
+        if (_type == null || !_type.As<ICubeJob>())
         {
             var p = cmd.LastIndexOf('.');
             if (p <= 0) throw new InvalidOperationException($"无效作业方法 {cmd}");
@@ -312,7 +308,7 @@ internal class MyJob : IDisposable
                 var instance = ServiceProvider?.GetService(_type) ?? _type?.CreateInstance();
                 if (instance is ICubeJob cubeJob)
                 {
-                    await cubeJob.Execute(job.Argument);
+                    message = await cubeJob.Execute(job.Argument);
                 }
                 else
                 {

@@ -1,8 +1,12 @@
-﻿using System;
+﻿using System.Collections;
 using System.ComponentModel;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
+using NewLife.Cube.ViewModels;
+using NewLife.Reflection;
+using NewLife.Serialization;
 using NewLife.Threading;
 using XCode;
 using XCode.Membership;
@@ -42,6 +46,13 @@ public class CronJobController : EntityController<CronJob>
             df.Url = "/Cube/CronJob/ExecuteNow?id={Id}";
             df.DataAction = "action";
         }
+
+        // 扩展Argument字段
+        {
+            var ef = EditFormFields.GetField("Argument") as FormField;
+            ef.GetExpand = e => (e as CronJob)?.GetArgument();
+            ef.RetainExpand = false;
+        }
     }
 
     /// <summary>修改数据时，唤醒作业服务跟进</summary>
@@ -64,6 +75,45 @@ public class CronJobController : EntityController<CronJob>
 
         return base.Valid(entity, type, post);
     }
+
+    ///// <summary>获取字段信息。加上参数扩展字段</summary>
+    ///// <param name="kind"></param>
+    ///// <param name="model"></param>
+    ///// <returns></returns>
+    //protected override FieldCollection OnGetFields(ViewKinds kind, Object model)
+    //{
+    //    var fields = base.OnGetFields(kind, model);
+
+    //    // 表单嵌入配置字段
+    //    if (kind == ViewKinds.EditForm && model is CronJob entity)
+    //    {
+    //        // 获取参数对象，展开参数，作为表单字段
+    //        var p = entity.GetArgument();
+    //        if (p != null && p is not String)
+    //            fields.Expand(entity, p);
+    //    }
+
+    //    return fields;
+    //}
+
+    ///// <summary>更新实体前，从表单读取扩展字段数据</summary>
+    ///// <param name="entity"></param>
+    ///// <returns></returns>
+    //protected override Int32 OnUpdate(CronJob entity)
+    //{
+    //    // 获取参数对象，展开参数，从表单字段接收参数
+    //    var p = entity.GetArgument();
+    //    if (p != null && p is not String && !(entity as IEntity).Dirtys[nameof(entity.Argument)])
+    //    {
+    //        var form = Request.Form;
+    //        var flag = FieldCollection.ReadForm(p, form);
+
+    //        // 保存参数对象
+    //        if (flag) entity.Argument = p.ToJson(true);
+    //    }
+
+    //    return base.OnUpdate(entity);
+    //}
 
     /// <summary>马上执行</summary>
     /// <param name="id"></param>

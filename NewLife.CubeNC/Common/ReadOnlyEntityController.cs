@@ -5,6 +5,7 @@ using System.Text;
 using System.Web;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Net.Http.Headers;
@@ -1335,7 +1336,28 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             ViewKinds.Search => SearchFields,
             _ => ListFields,
         };
-        return fields.Clone();
+        fields = fields.Clone();
+
+        // 表单嵌入配置字段
+        if (kind == ViewKinds.EditForm && model is TEntity entity)
+        {
+            // 获取参数对象，展开参数，作为表单字段
+            foreach (var item in fields.ToArray())
+            {
+                if (item is FormField ef && ef.GetExpand != null)
+                {
+                    var p = ef.GetExpand(entity);
+                    if (p != null && p is not String)
+                    {
+                        if (!ef.RetainExpand) fields.Remove(ef);
+
+                        fields.Expand(entity, p, ef.Name + "_");
+                    }
+                }
+            }
+        }
+
+        return fields;
     }
 
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
