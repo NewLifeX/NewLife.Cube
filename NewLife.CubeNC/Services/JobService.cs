@@ -261,14 +261,14 @@ internal class MyJob : IDisposable
     {
         // 检查分布式锁，避免多节点重复执行
         var key = $"Job:{job.Id}";
-        if (CacheProvider != null && !CacheProvider.Cache.Add(key, job.Name, 10)) return false;
+        if (CacheProvider != null && !CacheProvider.Cache.Add(key, job.Name, 5)) return false;
 
         // 有时候可能并没有配置Redis，借助数据库事务实现去重，需要20230804版本的XCode
         using var tran = CronJob.Meta.CreateTrans();
 
         // 如果短时间内重复执行，跳过
         var job2 = CronJob.FindByKey(job.Id);
-        if (job2 != null && job2.LastTime.AddSeconds(10) > DateTime.Now) return false;
+        if (job2 != null && job2.LastTime.AddSeconds(5) > DateTime.Now) return false;
 
         job2.LastTime = DateTime.Now;
         job2.Update();

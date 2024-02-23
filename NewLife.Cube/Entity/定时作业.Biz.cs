@@ -118,20 +118,21 @@ public partial class CronJob : Entity<CronJob>
 
         if (name.IsNullOrEmpty()) name = method.Name;
         var job = FindByName(name);
-        if (job != null) return job;
 
-        job = new CronJob
+        job ??= new CronJob
         {
             Name = name,
-            DisplayName = method.GetDisplayName(),
-            Method = $"{method.DeclaringType.FullName}.{method.Name}",
             Cron = cron,
             Enable = enable,
             EnableLog = true,
             Remark = method.GetDescription(),
         };
 
-        job.Insert();
+        job.DisplayName = method.GetDisplayName();
+        job.Method = $"{method.DeclaringType.FullName}.{method.Name}";
+        if (job.Remark.IsNullOrEmpty()) job.Remark = method.GetDescription();
+
+        job.Save();
 
         return job;
     }
