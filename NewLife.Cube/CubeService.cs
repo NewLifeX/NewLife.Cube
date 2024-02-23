@@ -128,8 +128,11 @@ public static class CubeService
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
 
-        services.AddHostedService<JobService>();
+        //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();
+
+        // 添加定时作业
+        services.AddCubeJob();
 
         // 注册IP地址库
         IpResolver.Register();

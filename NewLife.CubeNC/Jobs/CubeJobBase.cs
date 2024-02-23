@@ -1,34 +1,27 @@
-﻿namespace NewLife.Cube.Jobs;
+﻿using NewLife.Serialization;
 
-/// <summary>
-/// CronJob作业基类
-/// </summary>
-public abstract class CubeJobBase : ICubeJob
+namespace NewLife.Cube.Jobs;
+
+/// <summary>CronJob作业基类</summary>
+/// <typeparam name="TArgument"></typeparam>
+public abstract class CubeJobBase<TArgument> : ICubeJob where TArgument : class, new()
 {
-    /// <summary>
-    /// 作业名称
-    /// </summary>
-    private readonly String _jobName;
-
-    /// <summary>
-    /// 获取作业名称
-    /// </summary>
-    public virtual String GetJobName()
+    /// <summary>执行</summary>
+    /// <param name="argument"></param>
+    /// <returns></returns>
+    public virtual async Task<String> Execute(String argument)
     {
-        return _jobName;
+        var arg = new TArgument();
+        if (!argument.IsNullOrEmpty())
+        {
+            arg = argument.ToJsonEntity(typeof(TArgument)) as TArgument;
+        }
+
+        return await OnExecute(arg);
     }
 
-    /// <summary>
-    /// 获取Cron表达式
-    /// </summary>
-    public virtual String GetCron()
-    {
-        return null;
-    }
-
-    /// <summary>
-    /// 执行
-    /// </summary>
-    /// <param name="argument">参数格式</param>
-    public abstract void Execute(String argument);
+    /// <summary>执行</summary>
+    /// <param name="argument"></param>
+    /// <returns></returns>
+    protected abstract Task<String> OnExecute(TArgument argument);
 }

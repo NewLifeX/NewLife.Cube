@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using NewLife.Data;
+using NewLife.Log;
 using XCode;
 using XCode.Membership;
 
@@ -148,5 +149,23 @@ public partial class CronJob : Entity<CronJob>
     ///// <param name="enable"></param>
     ///// <returns></returns>
     //public static CronJob Add(String name, Action<CronJob> action, String cron, Boolean enable = true) => Add(name, action.Method, cron, enable);
+
+    /// <summary>写日志</summary>
+    /// <param name="action"></param>
+    /// <param name="success"></param>
+    /// <param name="remark"></param>
+    public void WriteLog(String action, Boolean success, String remark)
+    {
+        var job = this;
+        if (job != null && !job.EnableLog) return;
+
+        if (action.IsNullOrEmpty()) action = Name;
+
+        var log = LogProvider.Provider.CreateLog("JobService", action, success, remark);
+        if (job != null) log.LinkID = job.Id;
+        log.TraceId = DefaultSpan.Current?.TraceId;
+
+        log.SaveAsync();
+    }
     #endregion
 }

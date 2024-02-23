@@ -394,7 +394,7 @@
         <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称" />
         <Column Name="DisplayName" DataType="String" Description="显示名" />
         <Column Name="Cron" DataType="String" Description="Cron表达式。用于定时执行的Cron表达式" />
-        <Column Name="Method" DataType="String" Length="200" Description="命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数" />
+        <Column Name="Method" DataType="String" Length="200" Description="命令。ICubeJob类名或静态方法全名(包含一个String参数)" />
         <Column Name="Argument" DataType="String" Length="2000" Description="参数。方法参数，时间日期、网址、SQL等" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="EnableLog" DataType="Boolean" Description="启用日志" />

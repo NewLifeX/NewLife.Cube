@@ -181,9 +181,11 @@ public static class CubeService
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
 
-        services.AddHostedService<JobService>();
-        //services.AddHostedService<UserService>();
+        //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();
+
+        // 添加定时作业
+        services.AddCubeJob();
 
         // 注册IP地址库
         IpResolver.Register();
@@ -400,9 +402,6 @@ public static class CubeService
         }
 
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
-
-        var Schedulers = new CubeSchedulers();  // 系统自带作业计划
-        Schedulers.ScanJobsAsync().Wait();
 
         Task.Run(() => ResolveStarWeb(provider));
 

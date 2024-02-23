@@ -55,11 +55,11 @@ public partial class CronJob
     public String Cron { get => _Cron; set { if (OnPropertyChanging("Cron", value)) { _Cron = value; OnPropertyChanged("Cron"); } } }
 
     private String _Method;
-    /// <summary>命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数</summary>
+    /// <summary>命令。ICubeJob类名或静态方法全名(包含一个String参数)</summary>
     [DisplayName("命令")]
-    [Description("命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数")]
+    [Description("命令。ICubeJob类名或静态方法全名(包含一个String参数)")]
     [DataObjectField(false, false, true, 200)]
-    [BindColumn("Method", "命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数", "")]
+    [BindColumn("Method", "命令。ICubeJob类名或静态方法全名(包含一个String参数)", "")]
     public String Method { get => _Method; set { if (OnPropertyChanging("Method", value)) { _Method = value; OnPropertyChanged("Method"); } } }
 
     private String _Argument;
@@ -239,7 +239,7 @@ public partial class CronJob
         /// <summary>Cron表达式。用于定时执行的Cron表达式</summary>
         public static readonly Field Cron = FindByName("Cron");
 
-        /// <summary>命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数</summary>
+        /// <summary>命令。ICubeJob类名或静态方法全名(包含一个String参数)</summary>
         public static readonly Field Method = FindByName("Method");
 
         /// <summary>参数。方法参数，时间日期、网址、SQL等</summary>
@@ -296,7 +296,7 @@ public partial class CronJob
         /// <summary>Cron表达式。用于定时执行的Cron表达式</summary>
         public const String Cron = "Cron";
 
-        /// <summary>命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数</summary>
+        /// <summary>命令。ICubeJob类名或静态方法全名(包含一个String参数)</summary>
         public const String Method = "Method";
 
         /// <summary>参数。方法参数，时间日期、网址、SQL等</summary>
