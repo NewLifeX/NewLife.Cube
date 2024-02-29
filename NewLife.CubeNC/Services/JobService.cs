@@ -305,9 +305,12 @@ internal class MyJob : IDisposable
             }
             else
             {
+                //todo 新功能IServiceProvider.CreateInstance可以在第二位创建对象，定时任务类就不需要注册到容器里面了
                 var instance = ServiceProvider?.GetService(_type) ?? _type?.CreateInstance();
                 if (instance is ICubeJob cubeJob)
                 {
+                    if (instance is CubeJobBase cubeJob2) cubeJob2.Job = job;
+
                     message = await cubeJob.Execute(job.Argument);
                 }
                 else
