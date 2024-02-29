@@ -20,7 +20,7 @@ public class SqlJobArgument
 /// <summary>SQL服务</summary>
 [DisplayName("执行Sql")]
 [Description("在指定数据库连接上，执行指定Sql语句")]
-[CronJob("RunSql", "15 * * * * ? *")]
+[CronJob("RunSql", "15 * * * * ? *", Enable = false)]
 public class SqlService : CubeJobBase<SqlJobArgument>
 {
     private readonly ITracer _tracer;

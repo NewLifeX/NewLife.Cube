@@ -8,4 +8,7 @@ public class CronJobAttribute(String name, String cron) : Attribute
 
     /// <summary>Cron表达式。仅用于创建作业，后续以用户修改后的为准</summary>
     public String Cron { get; set; } = cron;
+
+    /// <summary>默认启用。创建作业时是否自动启用</summary>
+    public Boolean Enable { get; set; }
 }

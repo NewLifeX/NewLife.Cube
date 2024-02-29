@@ -25,7 +25,7 @@ public class HttpJobArgument
 /// <summary>HTTP服务</summary>
 [DisplayName("发起Http请求")]
 [Description("Http请求指定Url")]
-[CronJob("RunHttp", "25 0 0 * * ? *")]
+[CronJob("RunHttp", "25 0 0 * * ? *", Enable = false)]
 public class HttpService : CubeJobBase<HttpJobArgument>
 {
     private readonly ITracer _tracer;
