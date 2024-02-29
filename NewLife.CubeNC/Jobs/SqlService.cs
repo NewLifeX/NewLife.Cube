@@ -34,10 +34,12 @@ public class SqlService : CubeJobBase<SqlJobArgument>
     /// <returns></returns>
     protected override Task<String> OnExecute(SqlJobArgument argument)
     {
-        using var span = _tracer?.NewSpan("RunSql", argument);
-
         var connName = argument.ConnName;
         var sql = argument.Sql;
+        if (connName.IsNullOrEmpty()) throw new ArgumentNullException(nameof(argument.ConnName));
+        if (sql.IsNullOrEmpty()) throw new ArgumentNullException(nameof(argument.Sql));
+
+        using var span = _tracer?.NewSpan("RunSql", argument);
 
         var rs = DAL.Create(connName).Execute(sql);
         return Task.FromResult("返回：" + rs);

@@ -4,7 +4,6 @@ using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Jobs;
 using NewLife.Log;
-using NewLife.Model;
 using NewLife.Reflection;
 using NewLife.Threading;
 using IHostedService = Microsoft.Extensions.Hosting.IHostedService;
@@ -306,8 +305,10 @@ internal class MyJob : IDisposable
             }
             else
             {
-                //todo 新功能IServiceProvider.CreateInstance可以在第二位创建对象，定时任务类就不需要注册到容器里面了
-                var instance = ServiceProvider?.GetService(_type) ?? ServiceProvider?.CreateInstance(_type) ?? _type?.CreateInstance();
+                // 新功能IServiceProvider.CreateInstance可以在第二位创建对象，定时任务类就不需要注册到容器里面了
+                var instance = ServiceProvider?.GetService(_type);
+                instance ??= NewLife.Model.ModelExtension.CreateInstance(ServiceProvider, _type);
+                instance ??= _type?.CreateInstance();
                 if (instance is ICubeJob cubeJob)
                 {
                     if (instance is CubeJobBase cubeJob2) cubeJob2.Job = job;

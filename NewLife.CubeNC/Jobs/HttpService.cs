@@ -49,14 +49,14 @@ public class HttpService : CubeJobBase<HttpJobArgument>
         {
             var rs = await client.GetStringAsync(argument.Url);
 
-            return !rs.IsNullOrEmpty() && rs.Length > 50 ? rs[..50] : rs;
+            return !rs.IsNullOrEmpty() && rs.Length > 500 ? rs[..500] : rs;
         }
         else
         {
             var res = await client.PostAsync(argument.Url, new StringContent(argument.Body));
             var rs = await res.Content.ReadAsStringAsync();
 
-            return !rs.IsNullOrEmpty() && rs.Length > 50 ? rs[..50] : rs;
+            return !rs.IsNullOrEmpty() && rs.Length > 500 ? rs[..500] : rs;
         }
     }
 }
