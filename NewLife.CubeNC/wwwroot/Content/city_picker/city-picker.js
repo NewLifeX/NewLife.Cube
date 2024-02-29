@@ -67,7 +67,7 @@
                 code = this.options.district;
             }
             var context = this;
-            if (code !== 0) {
+            if (code && code !== 0) {
                 $.ajaxSettings.async = false;
                 $.getJSON(this.options.areaParents + code, function (json) {
                     $.each(json.data, function (i, n) {
