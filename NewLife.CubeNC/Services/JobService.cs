@@ -123,8 +123,8 @@ public class JobService : IHostedService
             {
                 WriteLog("控制", false, $"作业[{item.Name}/{item.DisplayName}]失败，{ex.Message}", item);
 
-                item.Enable = false;
-                item.Update();
+                //item.Enable = false;
+                //item.Update();
             }
         }
 
@@ -216,16 +216,20 @@ internal class MyJob : IDisposable
         if (_type == null || !_type.As<ICubeJob>())
         {
             var p = cmd.LastIndexOf('.');
-            if (p <= 0) throw new InvalidOperationException($"无效作业方法 {cmd}");
+            if (p <= 0) throw new InvalidOperationException($"无效作业方法[{cmd}]");
 
-            _type = cmd[..p].GetTypeEx();
-            _method = _type?.GetMethodEx(cmd[(p + 1)..]);
-            if (_method == null) throw new InvalidOperationException($"无效作业方法 {cmd}");
+            var typeName = cmd[..p];
+            _type = typeName.GetTypeEx();
+            if (_type == null) throw new InvalidOperationException($"无法找到作业类[{typeName}]");
+
+            var methodName = cmd[(p + 1)..];
+            _method = _type.GetMethodEx(methodName);
+            if (_method == null) throw new InvalidOperationException($"类[{_type.FullName}]中找不到作业方法[{methodName}]");
 
             if (_method.IsStatic)
             {
                 _action = _method.As<Action<String>>();
-                if (_action == null) throw new InvalidOperationException($"无效作业方法 {cmd}");
+                if (_action == null) throw new InvalidOperationException($"无效作业方法[{cmd}]，静态方法无法转为Action<String>委托");
             }
         }
 
