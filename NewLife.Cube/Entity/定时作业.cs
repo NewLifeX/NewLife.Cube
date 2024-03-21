@@ -70,6 +70,14 @@ public partial class CronJob
     [BindColumn("Argument", "参数。方法参数，时间日期、网址、SQL等", "")]
     public String Argument { get => _Argument; set { if (OnPropertyChanging("Argument", value)) { _Argument = value; OnPropertyChanged("Argument"); } } }
 
+    private String _Data;
+    /// <summary>数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点</summary>
+    [DisplayName("数据")]
+    [Description("数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点")]
+    [DataObjectField(false, false, true, 200)]
+    [BindColumn("Data", "数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点", "")]
+    public String Data { get => _Data; set { if (OnPropertyChanging("Data", value)) { _Data = value; OnPropertyChanged("Data"); } } }
+
     private Boolean _Enable;
     /// <summary>启用</summary>
     [DisplayName("启用")]
@@ -180,6 +188,7 @@ public partial class CronJob
             "Cron" => _Cron,
             "Method" => _Method,
             "Argument" => _Argument,
+            "Data" => _Data,
             "Enable" => _Enable,
             "EnableLog" => _EnableLog,
             "LastTime" => _LastTime,
@@ -203,6 +212,7 @@ public partial class CronJob
                 case "Cron": _Cron = Convert.ToString(value); break;
                 case "Method": _Method = Convert.ToString(value); break;
                 case "Argument": _Argument = Convert.ToString(value); break;
+                case "Data": _Data = Convert.ToString(value); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
                 case "EnableLog": _EnableLog = value.ToBoolean(); break;
                 case "LastTime": _LastTime = value.ToDateTime(); break;
@@ -244,6 +254,9 @@ public partial class CronJob
 
         /// <summary>参数。方法参数，时间日期、网址、SQL等</summary>
         public static readonly Field Argument = FindByName("Argument");
+
+        /// <summary>数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点</summary>
+        public static readonly Field Data = FindByName("Data");
 
         /// <summary>启用</summary>
         public static readonly Field Enable = FindByName("Enable");
@@ -301,6 +314,9 @@ public partial class CronJob
 
         /// <summary>参数。方法参数，时间日期、网址、SQL等</summary>
         public const String Argument = "Argument";
+
+        /// <summary>数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点</summary>
+        public const String Data = "Data";
 
         /// <summary>启用</summary>
         public const String Enable = "Enable";

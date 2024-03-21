@@ -41,7 +41,7 @@ public class JobService : IHostedService
 {
     #region 核心控制
 
-    private static readonly IList<MyJob> _jobs = new List<MyJob>();
+    private static readonly IList<MyJob> _jobs = [];
     private readonly IServiceProvider _serviceProvider;
     private readonly ITracer _tracer;
 
@@ -204,8 +204,8 @@ internal class MyJob : IDisposable
         var cmd = job.Method;
         if (cmd.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Method));
 
-        // 标识相同，不要处理
-        var id = $"{expession}@{cmd}";
+        // 标识相同，不要处理。可能在运行过程中用户修改了作业参数
+        var id = $"{expession}@{cmd}@{job.Argument}";
         if (id == _id && _timer != null) return;
 
         var cron = new Cron();
@@ -322,7 +322,7 @@ internal class MyJob : IDisposable
                 }
                 else
                 {
-                    _method?.Invoke(instance, new Object[] { job.Argument });
+                    _method?.Invoke(instance, [job.Argument]);
                 }
             }
         }
