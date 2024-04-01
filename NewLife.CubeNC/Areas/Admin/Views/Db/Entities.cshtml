@@ -1,0 +1,82 @@
+﻿@model DbEntitiesModel
+@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime.Versioning;
+@using NewLife.Common;
+@using XCode.DataAccessLayer
+@{
+    //Layout = NewLife.Cube.Setting.Current.Layout;
+
+    ViewBag.Title = "实体类列表";
+}
+
+@foreach (var factory in Model.Entities)
+{
+    var table = factory.Table.DataTable;
+    <h3>@table.DisplayName（@factory.EntityType.Name / @table.TableName）<span title="该表总行数">[@factory.Session.LongCount]</span></h3>
+    <table class="table table-bordered table-hover table-striped table-condensed">
+        <thead>
+            <tr>
+                <th class="text-center">名称</th>
+                <th class="text-center">显示名</th>
+                <th class="text-center">类型</th>
+                <th class="text-center">长度</th>
+                <th class="text-center">精度</th>
+                <th class="text-center">主键</th>
+                <th class="text-center">允许空</th>
+                <th class="text-center">备注</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var field in factory.Fields)
+            {
+                var column = field.Field;
+                <tr>
+                    <td>@field.Name</td>
+                    <td>@field.DisplayName</td>
+                    <td class="text-center">@(field.Type?.FullName.TrimStart("System."))</td>
+
+                    @if (field.Length > 0)
+                    {
+                        <td class="text-center">@field.Length</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+
+                    @if (column.Precision > 0 || column.Scale > 0)
+                    {
+                        <td class="text-center">(@column.Precision, @column.Scale)</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+
+                    @if (column.Identity)
+                    {
+                        <td title="自增" class="text-center">AI</td>
+                    }
+                    else if (field.PrimaryKey)
+                    {
+                        <td title="主键" class="text-center">PK</td>
+                    }
+                    else if (table.Indexes.Any(e => e.Unique && e.Columns.Length == 1 && e.Columns[0].EqualIgnoreCase(field.Name, field.ColumnName)))
+                    {
+                        <td title="唯一索引" class="text-center">UQ</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
+
+                    <td class="text-center">@(column.Nullable ? "" : "N")</td>
+                    <td>@(column.Description?.TrimStart(column.DisplayName).TrimStart("。", "，"))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br />
+}

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Reflection;
 using XCode;
 using XCode.DataAccessLayer;
@@ -109,5 +110,39 @@ public class DbController : ControllerBaseX
         WriteLog("下载", true, "下载数据库架构 " + name);
 
         return File(xml.GetBytes(), "application/xml", name + ".xml");
+    }
+
+    /// <summary>显示数据表</summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    public ActionResult ShowTables(String name)
+    {
+        var dal = DAL.Create(name);
+
+        var model = new DbTablesModel
+        {
+            Name = name,
+            Tables = dal.Tables.Take(100).ToList()
+        };
+
+        return View("Tables", model);
+    }
+
+    /// <summary>显示实体类</summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    public ActionResult ShowEntities(String name)
+    {
+        var types = EntityFactory.LoadEntities(name);
+
+        var model = new DbEntitiesModel
+        {
+            Name = name,
+            Entities = types.Select(e => e.AsFactory()).Where(e => e != null).OrderBy(e => e.Table.DataTable.Name).ToList(),
+        };
+
+        return View("Entities", model);
     }
 }
