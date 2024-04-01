@@ -137,10 +137,30 @@ public class DbController : ControllerBaseX
     {
         var types = EntityFactory.LoadEntities(name);
 
+        var list = new List<DbEntityModel>();
+        foreach (var item in types)
+        {
+            var factory = item.AsFactory();
+            if (factory == null) continue;
+
+            var dm = new DbEntityModel
+            {
+                Name = item.Name,
+                Factory = factory,
+                Table = factory.Table.DataTable,
+            };
+
+            // 如果数据表已存在，则获取行数
+            if (factory.Session.Dal.TableNames.Contains(dm.Table.TableName))
+                dm.Count = factory.Session.LongCount;
+
+            list.Add(dm);
+        }
+
         var model = new DbEntitiesModel
         {
             Name = name,
-            Entities = types.Select(e => e.AsFactory()).Where(e => e != null).OrderBy(e => e.Table.DataTable.Name).ToList(),
+            Entities = list.OrderBy(e => e.Name).ToList(),
         };
 
         return View("Entities", model);

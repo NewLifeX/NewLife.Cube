@@ -11,10 +11,11 @@
     ViewBag.Title = "实体类列表";
 }
 
-@foreach (var factory in Model.Entities)
+@foreach (var item in Model.Entities)
 {
+    var factory = item.Factory;
     var table = factory.Table.DataTable;
-    <h3>@table.DisplayName（@factory.EntityType.Name / @table.TableName）<span title="该表总行数">[@factory.Session.LongCount]</span></h3>
+    <h3>@table.DisplayName（@item.Name / @table.TableName）<span title="该表总行数">[@item.Count]</span></h3>
     <table class="table table-bordered table-hover table-striped table-condensed">
         <thead>
             <tr>
