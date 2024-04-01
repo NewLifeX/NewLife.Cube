@@ -13,6 +13,8 @@
             <th class="text-center">类型</th>
             <th class="text-center">连接字符串</th>
             <th class="text-center">版本</th>
+            <th class="text-center">实体个数</th>
+            <th class="text-center">表个数</th>
             <th class="text-center">备份</th>
             <th class="text-center">备份并压缩</th>
             <th class="text-center">下载表结构</th>
@@ -33,6 +35,8 @@
                 <td>@item.Type</td>
                 <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@str2">@str</td>
                 <td>@item.Version</td>
+                <td class="text-center">@item.Entities</td>
+                <td class="text-center">@item.Tables</td>
                 <td>@Html.ActionLink("备份", "Backup", new { Name = item.Name })，共 @item.Backups.ToString("n0")个</td>
                 <td>@Html.ActionLink("备份并压缩", "BackupAndCompress", new { Name = item.Name })</td>
                 <td class="text-center">@Html.ActionLink("下载", "Download", new { Name = item.Name })</td>

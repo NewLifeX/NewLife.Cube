@@ -45,6 +45,9 @@ public class DbController : ControllerBaseX
             });
             if (t.Wait(300)) di.Version = t.Result;
 
+            di.Tables = dal.Tables.Count;
+            di.Entities = EntityFactory.LoadEntities(item.Key).Count();
+
             if (dir.Exists) di.Backups = dir.GetFiles($"{dal.ConnName}_*", SearchOption.TopDirectoryOnly).Length;
 
             list.Add(di);
