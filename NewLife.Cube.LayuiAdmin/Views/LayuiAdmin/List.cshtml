@@ -9,7 +9,7 @@
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
     var fact = ViewBag.Factory as IEntityFactory;
-    var pager = ViewBag.Page as Pager;
+    var page2 = ViewBag.Page as Pager;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
     var charts = ViewBag.Charts as ECharts[];
@@ -33,7 +33,7 @@
     var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info")
     || an.Contains("changepassword") || an.Contains("binds");
 
-    var rv = pager.GetRouteValue();
+    var rv = page2.GetRouteValue();
 }
 
 @section css{
@@ -54,7 +54,7 @@
                                 }
                                 @foreach (var item in fields)
                                 {
-                                    var sortUrl = !item.MapField.IsNullOrEmpty() ? pager.GetSortUrl(item.MapField) : pager.GetSortUrl(item.Name);
+                                    var sortUrl = !item.MapField.IsNullOrEmpty() ? page2.GetSortUrl(item.MapField) : page2.GetSortUrl(item.Name);
                                     var df = item as ListField;
                                     var name = df?.Header ?? item.DisplayName;
                                     var title = df?.HeaderTitle ?? item.Description;
@@ -98,14 +98,20 @@
                                     @foreach (var item in fields)
                                     {
                                         var df = item as ListField;
-                                        var link = "";
+                                        var txt = "";
                                         if (df != null && df.DataVisible != null && !df.DataVisible(entity))
                                         {
                                             <td></td>
                                         }
-                                        else if (df != null && (link = df.GetLink(entity)) != null)
+                                        else if (df != null && (txt = df.GetLink(entity, page2)) != null)
                                         {
-                                            <td class="text-center">@Html.Raw(link)</td>
+                                            var tdClass = df.GetTextClass();
+                                            <td class="@(tdClass??"text-center")">@Html.Raw(txt)</td>
+                                        }
+                                        else if (df != null && (txt = df.GetText(entity, page2)) != null)
+                                        {
+                                            var tdClass = df.GetTextClass();
+                                            <td class="@tdClass)">@Html.Raw(txt)</td>
                                         }
                                         else
                                         {
@@ -135,7 +141,7 @@
 
         table.init('parse-table', { //转化静态表格
             page: false,
-            limit: @pager.PageSize,
+            limit: @page2.PageSize,
             limits: [20, 50, 100],
             even: true,
             defaultToolbar: ['filter','print',"exports"],

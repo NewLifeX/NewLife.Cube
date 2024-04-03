@@ -44,6 +44,7 @@ public class UserService
 
     #region 用户在线
     /// <summary>设置会话状态</summary>
+    /// <param name="online"></param>
     /// <param name="sessionId"></param>
     /// <param name="deviceId"></param>
     /// <param name="page"></param>
@@ -53,54 +54,58 @@ public class UserService
     /// <param name="name"></param>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public UserOnline SetStatus(String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null)
+    public UserOnline SetStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null)
     {
+        if (online != null && online.SessionID != sessionId) online = null;
+
         // LastError 设计缺陷，非空设计导致无法在插入中忽略
-        var entity = UserOnline.GetOrAdd(sessionId, UserOnline.FindBySessionID, k => new UserOnline
+        online ??= UserOnline.GetOrAdd(sessionId, UserOnline.FindBySessionID, k => new UserOnline
         {
             SessionID = k,
             LastError = new DateTime(1970, 1, 2),//MSSql不能使用1973年之前的日期
             CreateIP = ip,
             CreateTime = DateTime.Now
         });
-        //var entity = FindBySessionID(sessionid) ?? new UserOnline();
-        //entity.SessionID = sessionid;
-        entity.DeviceId = deviceId;
-        entity.Page = page;
+        //var online = FindBySessionID(sessionid) ?? new UserOnline();
+        //online.SessionID = sessionid;
+        online.DeviceId = deviceId;
+        online.Page = page;
 
         if (userAgent != null)
         {
-            entity.Platform = userAgent.Platform;
-            entity.OS = userAgent.OSorCPU;
+            online.Platform = userAgent.Platform;
+            online.OS = userAgent.OSorCPU;
             if (userAgent.Device.IsNullOrEmpty() || !userAgent.DeviceBuild.IsNullOrEmpty() && userAgent.DeviceBuild.Contains(userAgent.Device))
-                entity.Device = userAgent.DeviceBuild;
+                online.Device = userAgent.DeviceBuild;
             else
-                entity.Device = userAgent.Device;
-            entity.Brower = userAgent.Brower;
-            entity.NetType = userAgent.NetType;
+                online.Device = userAgent.Device;
+            online.Brower = userAgent.Brower;
+            online.NetType = userAgent.NetType;
         }
 
-        if (!status.IsNullOrEmpty() || entity.LastError.AddMinutes(3) < DateTime.Now) entity.Status = status;
+        if (!status.IsNullOrEmpty() || online.LastError.AddMinutes(3) < DateTime.Now) online.Status = status;
 
-        entity.Times++;
-        if (userid > 0) entity.UserID = userid;
-        if (!name.IsNullOrEmpty()) entity.Name = name;
+        online.Times++;
+        if (userid > 0) online.UserID = userid;
+        if (!name.IsNullOrEmpty()) online.Name = name;
 
-        entity.Address = ip.IPToAddress();
+        online.Address = ip.IPToAddress();
 
         // 累加在线时间
-        entity.UpdateTime = DateTime.Now;
-        entity.UpdateIP = ip;
-        entity.OnlineTime = (Int32)(entity.UpdateTime - entity.CreateTime).TotalSeconds;
-        entity.TraceId = DefaultSpan.Current?.TraceId;
-        entity.SaveAsync(5_000);
+        online.UpdateTime = DateTime.Now;
+        online.UpdateIP = ip;
+        online.OnlineTime = (Int32)(online.UpdateTime - online.CreateTime).TotalSeconds;
+        online.TraceId = DefaultSpan.Current?.TraceId;
+        online.SaveAsync(5_000);
 
-        Interlocked.Increment(ref _onlines);
+        if (_onlines == 0 || online.Times <= 1)
+            Interlocked.Increment(ref _onlines);
 
-        return entity;
+        return online;
     }
 
     /// <summary>设置网页会话状态</summary>
+    /// <param name="online"></param>
     /// <param name="sessionId"></param>
     /// <param name="deviceId"></param>
     /// <param name="page"></param>
@@ -109,12 +114,12 @@ public class UserService
     /// <param name="user"></param>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public UserOnline SetWebStatus(String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, IUser user, String ip)
+    public UserOnline SetWebStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, IUser user, String ip)
     {
         // 网页使用一个定时器来清理过期
         StartTimer();
 
-        if (user == null) return SetStatus(sessionId, deviceId, page, status, userAgent, 0, null, ip);
+        if (user == null) return SetStatus(online, sessionId, deviceId, page, status, userAgent, 0, null, ip);
 
         // 根据IP修正用户城市
         if (user is User user2 && (user2.AreaId == 0 || user2.AreaId % 10000 == 0))
@@ -134,7 +139,7 @@ public class UserService
             }
         }
 
-        return SetStatus(sessionId, deviceId, page, status, userAgent, user.ID, user + "", ip);
+        return SetStatus(online, sessionId, deviceId, page, status, userAgent, user.ID, user + "", ip);
     }
 
     /// <summary>删除过期，指定过期时间</summary>
@@ -143,7 +148,7 @@ public class UserService
     public IList<UserOnline> ClearExpire(Int32 secTimeout = 20 * 60)
     {
         // 无在线则不执行
-        if (_onlines == 0) return new List<UserOnline>();
+        if (_onlines == 0) return [];
 
         using var span = _tracer?.NewSpan("ClearExpireOnline");
 
@@ -162,18 +167,22 @@ public class UserService
 
             // 修正在线数
             var total = UserOnline.Meta.Count;
-            _onlines = total - list.Count;
 
             // 设置统计
             UserStat stat = null;
-            if (set.EnableUserStat)
+            if (total != _onlines || list.Count > 0)
             {
-                stat = UserStat.GetOrAdd(DateTime.Today);
-                if (stat != null)
+                if (set.EnableUserStat)
                 {
-                    if (total > stat.MaxOnline) stat.MaxOnline = total;
+                    stat = UserStat.GetOrAdd(DateTime.Today);
+                    if (stat != null)
+                    {
+                        if (total > stat.MaxOnline) stat.MaxOnline = total;
+                    }
                 }
             }
+
+            _onlines = total - list.Count;
 
             // 设置离线
             foreach (var item in list)

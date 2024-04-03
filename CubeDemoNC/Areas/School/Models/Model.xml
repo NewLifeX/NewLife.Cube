@@ -1,69 +1,113 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Tables xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model2022.xsd" Output="Entity" NameSpace="NewLife.School.Entity" ConnName="School" BaseClass="Entity" ModelClass="{name}Model" ModelInterface="I{name}" Version="11.7.2023.0327" Document="https://newlifex.com/xcode/model" DisplayName="" CubeOutput="" xmlns="https://newlifex.com/Model2022.xsd">
-  <Table Name="Class" Description="班级" DbType="SqlServer">
-    <Columns>
-      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-      <Column Name="TenantId" DataType="Int32" Map="Tenant@Id@$" Description="租户" />
-      <Column Name="Name" DataType="String" Master="True" Description="名称" />
-      <Column Name="Enable" DataType="Boolean" Description="启用" />
-      <Column Name="GraduationDate" DataType="DateTime" Description="毕业时间" />
-      <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
-      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
-      <Column Name="CreateIP" DataType="String" Description="创建地址" />
-      <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
-      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
-      <Column Name="UpdateIP" DataType="String" Description="更新地址" />
-      <Column Name="Remark" DataType="String" Length="200" Description="备注" />
-    </Columns>
-  </Table>
-  <Table Name="Student" Description="学生" DbType="SqlServer">
-    <Columns>
-      <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-      <Column Name="TenantId" DataType="Int32" Map="Tenant@Id@$" Description="租户" />
-      <Column Name="ClassId" DataType="Int32" Map="Class@Id@$" Description="班级" Category="基本信息" />
-      <Column Name="Name" DataType="String" Master="True" Description="名称" Category="基本信息" />
-      <Column Name="Sex" DataType="Int32" Description="性别" Type="XCode.Membership.SexKinds" Category="基本信息" />
-      <Column Name="Age" DataType="Int32" Description="年龄" Category="基本信息" />
-      <Column Name="Mobile" DataType="String" Description="手机" Category="基本信息" />
-      <Column Name="Address" DataType="String" Description="地址" Category="基本信息" />
-      <Column Name="Enable" DataType="Boolean" Description="启用" Category="基本信息" />
-      <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展信息" />
-      <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展信息" />
-      <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展信息" />
-      <Column Name="UpdateUserID" DataType="Int32" Description="更新者" Category="扩展信息" />
-      <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展信息" />
-      <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展信息" />
-      <Column Name="Remark" DataType="String" Length="200" Description="备注" Category="扩展信息" />
-    </Columns>
-    <Indexes>
-      <Index Columns="TenantId,ClassId" />
-      <Index Columns="ClassId" />
-    </Indexes>
-  </Table>
-  <Table Name="Trade" Description="交易" ConnName="Bill" DbType="SqlServer">
-    <Columns>
-      <Column Name="Id" DataType="Int64" Identity="True" PrimaryKey="True" Description="订单编号" />
-      <Column Name="TenantId" DataType="Int32" Map="Tenant@Id@$" Description="租户" />
-      <Column Name="NodeId" DataType="Int32" Description="节点号" />
-      <Column Name="Tid" DataType="String" Description="订单号" />
-      <Column Name="Status" DataType="Int32" Description="状态" />
-      <Column Name="PayStatus" DataType="Int32" Description="是否支付" />
-      <Column Name="ShipStatus" DataType="Int32" Description="是否发货" />
-      <Column Name="CreateIPReceiverPhone" DataType="String" Description="收货人电话" />
-      <Column Name="ReceiverMobile" DataType="String" Description="收货人手机号" />
-      <Column Name="ReceiverState" DataType="String" Description="收货省" />
-      <Column Name="ReceiverCity" DataType="String" Description="收货人区" />
-      <Column Name="ReceiverDistrict" ColumnName="Receiver_District" DataType="String" Description="收货区" />
-      <Column Name="ReceiverAddress" DataType="String" Description="收货地址" />
-      <Column Name="BuyerName" DataType="String" Description="买家昵称" />
-      <Column Name="Created" DataType="Int32" Description="创建时间" />
-      <Column Name="Modified" DataType="Int32" Description="是否发送过" />
-      <Column Name="IsSend" DataType="Int32" Description="更新者" />
-      <Column Name="ErrorMsg" DataType="String" Length="200" Description="错误原因" />
-    </Columns>
-    <Indexes>
-      <Index Columns="TenantId,NodeId" />
-      <Index Columns="NodeId" />
-    </Indexes>
-  </Table>
-</Tables>
+<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202309.xsd" Version="11.7.2023.0327" Document="https://newlifex.com/xcode/model" xmlns="https://newlifex.com/Model202309.xsd">
+  <Option>
+    <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
+    <ClassNameTemplate />
+    <!--显示名模板。其中{displayName}替换为Table.DisplayName-->
+    <DisplayNameTemplate />
+    <!--基类。可能包含基类和接口，其中{name}替换为Table.Name-->
+    <BaseClass>Entity</BaseClass>
+    <!--命名空间-->
+    <Namespace>NewLife.School.Entity</Namespace>
+    <!--输出目录-->
+    <Output>Entity</Output>
+    <!--是否使用中文文件名。默认false-->
+    <ChineseFileName>False</ChineseFileName>
+    <!--用于生成Copy函数的参数类型。例如{name}或I{name}-->
+    <ModelNameForCopy />
+    <!--带有索引器。实现IModel接口-->
+    <HasIModel>True</HasIModel>
+    <!--可为null上下文。生成String?等-->
+    <Nullable>False</Nullable>
+    <!--数据库连接名-->
+    <ConnName>School</ConnName>
+    <!--模型类模版。设置后生成模型类，用于接口数据传输，例如{name}Model-->
+    <ModelClass>{name}Model</ModelClass>
+    <!--模型类输出目录。默认当前目录的Models子目录-->
+    <ModelsOutput>.\Models\</ModelsOutput>
+    <!--模型接口模版。设置后生成模型接口，用于约束模型类和实体类，例如I{name}-->
+    <ModelInterface>I{name}</ModelInterface>
+    <!--模型接口输出目录。默认当前目录的Interfaces子目录-->
+    <InterfacesOutput>.\Interfaces\</InterfacesOutput>
+    <!--用户实体转为模型类的模型类。例如{name}或{name}DTO-->
+    <ModelNameForToModel />
+    <!--命名格式。Default/Upper/Lower/Underline-->
+    <NameFormat>Default</NameFormat>
+    <!--魔方区域显示名-->
+    <DisplayName />
+    <!--魔方控制器输出目录-->
+    <CubeOutput />
+  </Option>
+  <Tables>
+    <Table Name="Class" Description="班级" DbType="SqlServer">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Map="XCode.Membership.Tenant@Id@Name@TenantName" Description="租户" />
+        <Column Name="Name" DataType="String" Master="True" Description="名称" />
+        <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="GraduationDate" DataType="DateTime" Description="毕业时间" />
+        <Column Name="Model" DataType="String" Length="20" Description="设备型号" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新者" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" />
+        <Column Name="Remark" DataType="String" Length="200" Description="备注" />
+      </Columns>
+    </Table>
+    <Table Name="Student" Description="学生" DbType="SqlServer">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Map="XCode.Membership.Tenant@Id@Name@TenantName" Description="租户" />
+        <Column Name="ClassId" DataType="Int32" Map="Class@Id@$" Description="班级" Category="基本信息" />
+        <Column Name="Name" DataType="String" Master="True" Description="名称" Category="基本信息" />
+        <Column Name="Sex" DataType="Int32" Description="性别" Type="XCode.Membership.SexKinds" Category="基本信息" />
+        <Column Name="Age" DataType="Int32" Description="年龄" Category="基本信息" />
+        <Column Name="Mobile" DataType="String" Description="手机" Category="基本信息" />
+        <Column Name="Address" DataType="String" Description="地址" Category="基本信息" />
+        <Column Name="Enable" DataType="Boolean" Description="启用" Category="基本信息" />
+        <Column Name="Avatar" DataType="String" ItemType="image" Description="头像" Category="基本信息" />
+        <Column Name="Weight" DataType="Double" Scale="2" Description="体重。小数" />
+        <Column Name="Amount" DataType="Decimal" Scale="3" Description="存款。小数" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展信息" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展信息" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展信息" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新者" Category="扩展信息" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展信息" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展信息" />
+        <Column Name="Remark" DataType="String" Length="200" Description="备注" Category="扩展信息" />
+      </Columns>
+      <Indexes>
+        <Index Columns="TenantId,ClassId" />
+        <Index Columns="ClassId" />
+      </Indexes>
+    </Table>
+    <Table Name="Trade" Description="交易" ConnName="Bill" DbType="SqlServer">
+      <Columns>
+        <Column Name="Id" DataType="Int64" Identity="True" PrimaryKey="True" Description="订单编号" />
+        <Column Name="TenantId" DataType="Int32" Map="XCode.Membership.Tenant@Id@Name@TenantName" Description="租户" />
+        <Column Name="NodeId" DataType="Int32" Description="节点号" />
+        <Column Name="Tid" DataType="String" Description="订单号" />
+        <Column Name="Status" DataType="Int32" Description="状态" />
+        <Column Name="PayStatus" DataType="Int32" Description="是否支付" />
+        <Column Name="ShipStatus" DataType="Int32" Description="是否发货" />
+        <Column Name="CreateIPReceiverPhone" DataType="String" Description="收货人电话" />
+        <Column Name="ReceiverMobile" DataType="String" Description="收货人手机号" />
+        <Column Name="ReceiverState" DataType="String" Description="收货省" />
+        <Column Name="ReceiverCity" DataType="String" Description="收货人区" />
+        <Column Name="ReceiverDistrict" ColumnName="Receiver_District" DataType="String" Description="收货区" />
+        <Column Name="ReceiverAddress" DataType="String" Description="收货地址" />
+        <Column Name="BuyerName" DataType="String" Description="买家昵称" />
+        <Column Name="Created" DataType="Int32" Description="创建时间" />
+        <Column Name="Modified" DataType="Int32" Description="是否发送过" />
+        <Column Name="IsSend" DataType="Int32" Description="更新者" />
+        <Column Name="ErrorMsg" DataType="String" Length="200" Description="错误原因" />
+      </Columns>
+      <Indexes>
+        <Index Columns="TenantId,NodeId" />
+        <Index Columns="NodeId" />
+      </Indexes>
+    </Table>
+  </Tables>
+</EntityModel>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
@@ -22,13 +22,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Areas\School\Views\**" />
-    <Content Remove="Areas\School\Views\**" />
-    <EmbeddedResource Remove="Areas\School\Views\**" />
-    <None Remove="Areas\School\Views\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Remove="appsettings.json" />
   </ItemGroup>
 
@@ -38,11 +31,13 @@
 
   <ItemGroup>
     <None Include="appsettings.json" />
+    <None Include="Areas\School\Views\Student\_List_Search.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="7.0.10" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.9.2023.829-beta0552" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.2" />
+    <PackageReference Include="NewLife.Redis.Extensions" Version="5.5.2024.402" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.9.2024.402" />
   </ItemGroup>
 
   <ItemGroup>

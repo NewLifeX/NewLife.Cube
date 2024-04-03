@@ -24,7 +24,7 @@ namespace NewLife.Cube.Admin.Controllers;
 [DataPermission(null, "ID={#userId}")]
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
-[Area("Admin")]
+[AdminArea]
 [Menu(100, true, Icon = "fa-user")]
 public class UserController : EntityController<User, UserModel>
 {
@@ -62,13 +62,24 @@ public class UserController : EntityController<User, UserModel>
         }
 
         {
+            var df = AddFormFields.AddDataField("RoleId", "RoleName");
+            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            AddFormFields.RemoveField("RoleName");
+        }
+        {
+            var df = EditFormFields.AddDataField("RoleId", "RoleName");
+            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            EditFormFields.RemoveField("RoleName");
+        }
+
+        {
             var df = AddFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             AddFormFields.RemoveField("RoleNames");
         }
         {
             var df = EditFormFields.AddDataField("RoleIds", "RoleNames");
-            df.DataSource = entity => Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+            df.DataSource = entity => Role.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
             EditFormFields.RemoveField("RoleNames");
         }
         {

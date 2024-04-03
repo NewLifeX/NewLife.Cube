@@ -55,11 +55,11 @@ public partial class CronJob
     public String Cron { get => _Cron; set { if (OnPropertyChanging("Cron", value)) { _Cron = value; OnPropertyChanged("Cron"); } } }
 
     private String _Method;
-    /// <summary>命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数</summary>
+    /// <summary>命令。ICubeJob类名或静态方法全名(包含一个String参数)</summary>
     [DisplayName("命令")]
-    [Description("命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数")]
+    [Description("命令。ICubeJob类名或静态方法全名(包含一个String参数)")]
     [DataObjectField(false, false, true, 200)]
-    [BindColumn("Method", "命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数", "")]
+    [BindColumn("Method", "命令。ICubeJob类名或静态方法全名(包含一个String参数)", "")]
     public String Method { get => _Method; set { if (OnPropertyChanging("Method", value)) { _Method = value; OnPropertyChanged("Method"); } } }
 
     private String _Argument;
@@ -70,6 +70,14 @@ public partial class CronJob
     [BindColumn("Argument", "参数。方法参数，时间日期、网址、SQL等", "")]
     public String Argument { get => _Argument; set { if (OnPropertyChanging("Argument", value)) { _Argument = value; OnPropertyChanged("Argument"); } } }
 
+    private String _Data;
+    /// <summary>数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点</summary>
+    [DisplayName("数据")]
+    [Description("数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点")]
+    [DataObjectField(false, false, true, 200)]
+    [BindColumn("Data", "数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点", "")]
+    public String Data { get => _Data; set { if (OnPropertyChanging("Data", value)) { _Data = value; OnPropertyChanged("Data"); } } }
+
     private Boolean _Enable;
     /// <summary>启用</summary>
     [DisplayName("启用")]
@@ -77,6 +85,14 @@ public partial class CronJob
     [DataObjectField(false, false, false, 0)]
     [BindColumn("Enable", "启用", "")]
     public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
+
+    private Boolean _EnableLog;
+    /// <summary>启用日志</summary>
+    [DisplayName("启用日志")]
+    [Description("启用日志")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("EnableLog", "启用日志", "")]
+    public Boolean EnableLog { get => _EnableLog; set { if (OnPropertyChanging("EnableLog", value)) { _EnableLog = value; OnPropertyChanged("EnableLog"); } } }
 
     private DateTime _LastTime;
     /// <summary>最后时间。最后一次执行作业的时间</summary>
@@ -172,7 +188,9 @@ public partial class CronJob
             "Cron" => _Cron,
             "Method" => _Method,
             "Argument" => _Argument,
+            "Data" => _Data,
             "Enable" => _Enable,
+            "EnableLog" => _EnableLog,
             "LastTime" => _LastTime,
             "NextTime" => _NextTime,
             "CreateUserID" => _CreateUserID,
@@ -194,7 +212,9 @@ public partial class CronJob
                 case "Cron": _Cron = Convert.ToString(value); break;
                 case "Method": _Method = Convert.ToString(value); break;
                 case "Argument": _Argument = Convert.ToString(value); break;
+                case "Data": _Data = Convert.ToString(value); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
+                case "EnableLog": _EnableLog = value.ToBoolean(); break;
                 case "LastTime": _LastTime = value.ToDateTime(); break;
                 case "NextTime": _NextTime = value.ToDateTime(); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
@@ -229,14 +249,20 @@ public partial class CronJob
         /// <summary>Cron表达式。用于定时执行的Cron表达式</summary>
         public static readonly Field Cron = FindByName("Cron");
 
-        /// <summary>命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数</summary>
+        /// <summary>命令。ICubeJob类名或静态方法全名(包含一个String参数)</summary>
         public static readonly Field Method = FindByName("Method");
 
         /// <summary>参数。方法参数，时间日期、网址、SQL等</summary>
         public static readonly Field Argument = FindByName("Argument");
 
+        /// <summary>数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点</summary>
+        public static readonly Field Data = FindByName("Data");
+
         /// <summary>启用</summary>
         public static readonly Field Enable = FindByName("Enable");
+
+        /// <summary>启用日志</summary>
+        public static readonly Field EnableLog = FindByName("EnableLog");
 
         /// <summary>最后时间。最后一次执行作业的时间</summary>
         public static readonly Field LastTime = FindByName("LastTime");
@@ -283,14 +309,20 @@ public partial class CronJob
         /// <summary>Cron表达式。用于定时执行的Cron表达式</summary>
         public const String Cron = "Cron";
 
-        /// <summary>命令。作业方法全名，含命名空间和类名，静态方法，包含一个String参数</summary>
+        /// <summary>命令。ICubeJob类名或静态方法全名(包含一个String参数)</summary>
         public const String Method = "Method";
 
         /// <summary>参数。方法参数，时间日期、网址、SQL等</summary>
         public const String Argument = "Argument";
 
+        /// <summary>数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点</summary>
+        public const String Data = "Data";
+
         /// <summary>启用</summary>
         public const String Enable = "Enable";
+
+        /// <summary>启用日志</summary>
+        public const String EnableLog = "EnableLog";
 
         /// <summary>最后时间。最后一次执行作业的时间</summary>
         public const String LastTime = "LastTime";

@@ -7,7 +7,7 @@ namespace NewLife.Cube.Admin.Controllers;
 /// <summary>文件管理</summary>
 [DisplayName("文件")]
 [EntityAuthorize(PermissionFlags.Detail)]
-[Area("Admin")]
+[AdminArea]
 [Menu(28, false, Icon = "fa-file")]
 public class FileController : ControllerBaseX
 {
@@ -299,7 +299,7 @@ public class FileController : ControllerBaseX
     private List<FileItem> GetClip()
     {
         var list = Session[CLIPKEY] as List<FileItem>;
-        if (list == null) Session[CLIPKEY] = list = new List<FileItem>();
+        if (list == null) Session[CLIPKEY] = list = [];
 
         return list;
     }

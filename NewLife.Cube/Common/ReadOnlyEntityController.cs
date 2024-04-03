@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
+using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -135,7 +136,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <summary>搜索数据，支持数据权限</summary>
     /// <param name="p"></param>
     /// <returns></returns>
-    protected IEnumerable<TEntity> SearchData(Pager p)
+    protected virtual IEnumerable<TEntity> SearchData(Pager p)
     {
         // 缓存数据，用于后续导出
         //SetSession(CacheKey, p);
@@ -147,6 +148,18 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         {
             builder.Data2 ??= p.Items;
             p.State = builder;
+        }
+
+        // 数字型主键，默认降序
+        if (PageSetting.OrderByKey && p.Sort.IsNullOrEmpty() && p.OrderBy.IsNullOrEmpty())
+        {
+            var uk = Factory.Unique;
+            if (uk != null && uk.Type.IsInt())
+            {
+                p.OrderBy = uk.Desc();
+                //p.Sort = uk.Name;
+                //p.Desc = true;
+            }
         }
 
         return Search(p);

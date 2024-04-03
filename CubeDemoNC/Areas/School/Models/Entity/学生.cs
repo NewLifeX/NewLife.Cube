@@ -20,7 +20,7 @@ namespace NewLife.School.Entity;
 [BindIndex("IX_Student_TenantId_ClassId", false, "TenantId,ClassId")]
 [BindIndex("IX_Student_ClassId", false, "ClassId")]
 [BindTable("Student", Description = "学生", ConnName = "School", DbType = DatabaseType.SqlServer)]
-public partial class Student : IStudent, IEntity<StudentModel>
+public partial class Student : IStudent, IEntity<IStudent>
 {
     #region 属性
     private Int32 _Id;
@@ -102,6 +102,31 @@ public partial class Student : IStudent, IEntity<StudentModel>
     [BindColumn("Enable", "启用", "")]
     public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
+    private String _Avatar;
+    /// <summary>头像</summary>
+    [Category("基本信息")]
+    [DisplayName("头像")]
+    [Description("头像")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("Avatar", "头像", "", ItemType = "image")]
+    public String Avatar { get => _Avatar; set { if (OnPropertyChanging("Avatar", value)) { _Avatar = value; OnPropertyChanged("Avatar"); } } }
+
+    private Double _Weight;
+    /// <summary>体重。小数</summary>
+    [DisplayName("体重")]
+    [Description("体重。小数")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("Weight", "体重。小数", "", Precision = 0, Scale = 2)]
+    public Double Weight { get => _Weight; set { if (OnPropertyChanging("Weight", value)) { _Weight = value; OnPropertyChanged("Weight"); } } }
+
+    private Decimal _Amount;
+    /// <summary>存款。小数</summary>
+    [DisplayName("存款")]
+    [Description("存款。小数")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("Amount", "存款。小数", "", Precision = 0, Scale = 3)]
+    public Decimal Amount { get => _Amount; set { if (OnPropertyChanging("Amount", value)) { _Amount = value; OnPropertyChanged("Amount"); } } }
+
     private Int32 _CreateUserID;
     /// <summary>创建者</summary>
     [Category("扩展信息")]
@@ -169,7 +194,7 @@ public partial class Student : IStudent, IEntity<StudentModel>
     #region 拷贝
     /// <summary>拷贝模型对象</summary>
     /// <param name="model">模型</param>
-    public void Copy(StudentModel model)
+    public void Copy(IStudent model)
     {
         Id = model.Id;
         TenantId = model.TenantId;
@@ -180,6 +205,9 @@ public partial class Student : IStudent, IEntity<StudentModel>
         Mobile = model.Mobile;
         Address = model.Address;
         Enable = model.Enable;
+        Avatar = model.Avatar;
+        Weight = model.Weight;
+        Amount = model.Amount;
         CreateUserID = model.CreateUserID;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
@@ -207,6 +235,9 @@ public partial class Student : IStudent, IEntity<StudentModel>
             "Mobile" => _Mobile,
             "Address" => _Address,
             "Enable" => _Enable,
+            "Avatar" => _Avatar,
+            "Weight" => _Weight,
+            "Amount" => _Amount,
             "CreateUserID" => _CreateUserID,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
@@ -229,6 +260,9 @@ public partial class Student : IStudent, IEntity<StudentModel>
                 case "Mobile": _Mobile = Convert.ToString(value); break;
                 case "Address": _Address = Convert.ToString(value); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
+                case "Avatar": _Avatar = Convert.ToString(value); break;
+                case "Weight": _Weight = value.ToDouble(); break;
+                case "Amount": _Amount = Convert.ToDecimal(value); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -243,6 +277,14 @@ public partial class Student : IStudent, IEntity<StudentModel>
     #endregion
 
     #region 关联映射
+    /// <summary>租户</summary>
+    [XmlIgnore, IgnoreDataMember, ScriptIgnore]
+    public XCode.Membership.Tenant Tenant => Extends.Get(nameof(Tenant), k => XCode.Membership.Tenant.FindById(TenantId));
+
+    /// <summary>租户</summary>
+    [Map(nameof(TenantId), typeof(XCode.Membership.Tenant), "Id")]
+    public String TenantName => Tenant?.Name;
+
     /// <summary>班级</summary>
     [XmlIgnore, IgnoreDataMember, ScriptIgnore]
     public Class Class => Extends.Get(nameof(Class), k => Class.FindById(ClassId));
@@ -284,6 +326,15 @@ public partial class Student : IStudent, IEntity<StudentModel>
 
         /// <summary>启用</summary>
         public static readonly Field Enable = FindByName("Enable");
+
+        /// <summary>头像</summary>
+        public static readonly Field Avatar = FindByName("Avatar");
+
+        /// <summary>体重。小数</summary>
+        public static readonly Field Weight = FindByName("Weight");
+
+        /// <summary>存款。小数</summary>
+        public static readonly Field Amount = FindByName("Amount");
 
         /// <summary>创建者</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -338,6 +389,15 @@ public partial class Student : IStudent, IEntity<StudentModel>
 
         /// <summary>启用</summary>
         public const String Enable = "Enable";
+
+        /// <summary>头像</summary>
+        public const String Avatar = "Avatar";
+
+        /// <summary>体重。小数</summary>
+        public const String Weight = "Weight";
+
+        /// <summary>存款。小数</summary>
+        public const String Amount = "Amount";
 
         /// <summary>创建者</summary>
         public const String CreateUserID = "CreateUserID";

@@ -24,7 +24,7 @@ else if (!des.IsNullOrEmpty())
     <span class="col-sm-9"><span class="middle">@des</span></span>
 }
 <div class="col-sm-11 col-md-offset-1">
-    @if (field.Readonly)
+    @if (field.ReadOnly)
     {
         <label class="form-control">@entity[field.Name]</label>
     }

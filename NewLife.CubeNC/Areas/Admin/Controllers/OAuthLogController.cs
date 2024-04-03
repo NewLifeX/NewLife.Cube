@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -15,12 +11,13 @@ namespace NewLife.Cube.Admin.Controllers;
 /// <summary>OAuth日志</summary>
 [DataPermission(null, "UserId={#userId}")]
 [DisplayName("OAuth日志")]
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false)]
 public class OAuthLogController : ReadOnlyEntityController<OAuthLog>
 {
     static OAuthLogController()
     {
+        ListFields.RemoveField("Id");
         ListFields.RemoveUpdateField();
 
         ListFields.TraceUrl("TraceId");

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <OutputPath>..\Bin\Test\</OutputPath>
     <LangVersion>latest</LangVersion>
     <Version>1.0.0.1130</Version>
@@ -17,6 +17,6 @@
     <None Remove="Entity\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.XCode" Version="11.9.2023.829-beta0727" />
+    <PackageReference Include="NewLife.XCode" Version="11.11.2024.402" />
   </ItemGroup>
 </Project>

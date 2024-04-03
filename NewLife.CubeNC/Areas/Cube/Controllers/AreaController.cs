@@ -11,7 +11,7 @@ namespace NewLife.Cube.Cube.Controllers;
 
 /// <summary>地区</summary>
 [DisplayName("地区")]
-[Area("Cube")]
+[CubeArea]
 [Menu(50, true, Icon = "fa-area-chart")]
 public class AreaController : EntityController<Area>
 {
@@ -36,28 +36,34 @@ public class AreaController : EntityController<Area>
         //AddFormFields.AddField("ID");
     }
 
-    private static Boolean _inited;
-
-    /// <summary>搜索数据集</summary>
-    /// <param name="p"></param>
-    /// <returns></returns>
-    protected override IEnumerable<Area> Search(Pager p)
+    private static Int32 _inited;
+    /// <summary>初始化地区数据</summary>
+    public static void InitAreaData()
     {
-        if (!_inited)
+        if (_inited == 0 && Interlocked.CompareExchange(ref _inited, 1, 0) == 0)
         {
-            _inited = true;
-
             // 异步初始化数据
             //if (Area.Meta.Count == 0) ThreadPoolX.QueueUserWorkItem(() => Area.FetchAndSave());
             // 必须同步初始化，否则无法取得当前登录用户信息
             //if (Area.Meta.Count == 0) Area.FetchAndSave();
             if (Area.Meta.Count == 0)
             {
-                // 先加载民政部数据，然后导入旧版数据
-                FetchAndSave(null);
-                Import("http://x.newlifex.com/Area.csv.gz", true, 4, false);
+                Task.Run(() =>
+                {
+                    // 先加载民政部数据，然后导入旧版数据
+                    FetchAndSave(null);
+                    Import("http://x.newlifex.com/Area.csv.gz", true, 4, false);
+                });
             }
         }
+    }
+
+    /// <summary>搜索数据集</summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    protected override IEnumerable<Area> Search(Pager p)
+    {
+        InitAreaData();
 
         var id = p["id"].ToInt(-1);
         if (id < 0) id = p["q"].ToInt(-1);

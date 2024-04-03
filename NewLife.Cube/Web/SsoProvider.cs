@@ -137,8 +137,9 @@ public class SsoProvider
     /// <param name="context">服务提供者。可用于获取HttpContext成员</param>
     /// <param name="uc">用户链接</param>
     /// <param name="forceBind">强行绑定，把第三方账号强行绑定到当前已登录账号</param>
+    /// <param name="userId"></param>
     /// <returns></returns>
-    public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc, Boolean forceBind)
+    public virtual String OnLogin(OAuthClient client, IServiceProvider context, UserConnect uc, Boolean forceBind, Int32 userId)
     {
         using var span = Tracer?.NewSpan("SsoProviderLogin", $"connectid={uc.ID} openid={uc.OpenID} username={uc.UserName}");
 
@@ -154,7 +155,7 @@ public class SsoProvider
 
         // 检查绑定，新用户的uc.UserID为0
         var user = prv.FindByID(uc.UserID);
-        if (forceBind || user == null || !uc.Enable) user = OnBind(uc, client);
+        if (forceBind || user == null || !uc.Enable) user = OnBind(uc, client, userId);
 
         try
         {
@@ -245,7 +246,7 @@ public class SsoProvider
                 if (sys.Count > 0)
                 {
                     //roleId = user2.RoleID;
-                    roleIds ??= new List<Int32>();
+                    roleIds ??= [];
                     roleIds.AddRange(sys);
                 }
                 roleId = GetRole(dic, true);
@@ -254,7 +255,7 @@ public class SsoProvider
                     user2.RoleID = roleId;
 
                     var ids = GetRoles(client.Items, true).ToList();
-                    roleIds ??= new List<Int32>();
+                    roleIds ??= [];
                     roleIds.AddRange(ids);
                 }
             }
@@ -267,7 +268,7 @@ public class SsoProvider
             if (cfg != null && !cfg.AutoRole.IsNullOrEmpty())
             {
                 var ids = GetRoles(cfg.AutoRole, true).ToList();
-                roleIds ??= new List<Int32>();
+                roleIds ??= [];
                 roleIds.AddRange(ids);
             }
 
@@ -363,7 +364,8 @@ public class SsoProvider
             if (client.Config != null && client.Config.FetchAvatar)
             {
                 // 如果Avatar还是保存远程头像地址，下载远程头像到本地
-                if (user2.Avatar.StartsWithIgnoreCase("http") && !set.AvatarPath.IsNullOrEmpty()) Task.Run(() => FetchAvatar(user, av));
+                if (user2.Avatar.StartsWithIgnoreCase("http://", "https://") && !set.AvatarPath.IsNullOrEmpty())
+                    Task.Run(() => FetchAvatar(user, av));
             }
         }
     }
@@ -371,9 +373,10 @@ public class SsoProvider
     /// <summary>绑定用户，用户未有效绑定或需要强制绑定时</summary>
     /// <param name="uc"></param>
     /// <param name="client"></param>
-    public virtual IManageUser OnBind(UserConnect uc, OAuthClient client)
+    /// <param name="userId"></param>
+    public virtual IManageUser OnBind(UserConnect uc, OAuthClient client, Int32 userId)
     {
-        using var span = Tracer?.NewSpan("SsoProviderBind", $"connectid={uc.ID} openid={uc.OpenID} username={uc.UserName}");
+        using var span = Tracer?.NewSpan("SsoProviderBind", $"connectid={uc.ID} openid={uc.OpenID} username={uc.UserName} userId={userId}");
 
         var log = LogProvider.Provider;
         var prv = Provider;
@@ -381,6 +384,11 @@ public class SsoProvider
 
         // 如果未登录，需要注册一个
         var user = prv.Current;
+        if (user == null && userId > 0)
+        {
+            // 已登录用户，一般在Bind之前创建OAuthLog时就已经记录了。可避免cookie丢失导致无法识别已登录用户问题
+            user = prv.FindByID(userId);
+        }
         if (user == null)
         {
             // 匹配UnionId
@@ -865,16 +873,16 @@ public class SsoProvider
         //if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
 
         // 尝试从用户链接获取头像地址
-        if (url.IsNullOrEmpty() || !url.StartsWithIgnoreCase("http"))
+        if (url.IsNullOrEmpty() || !url.StartsWithIgnoreCase("http://", "https://"))
         {
             var list = UserConnect.FindAllByUserID(user.ID);
             url = list.OrderByDescending(e => e.UpdateTime)
-                .Where(e => !e.Avatar.IsNullOrEmpty() && e.Avatar.StartsWithIgnoreCase("http"))
+                .Where(e => !e.Avatar.IsNullOrEmpty() && e.Avatar.StartsWithIgnoreCase("http://", "https://"))
                 .FirstOrDefault()?.Avatar;
         }
 
         if (url.IsNullOrEmpty()) return false;
-        if (!url.StartsWithIgnoreCase("http")) return false;
+        if (!url.StartsWithIgnoreCase("http://", "https://")) return false;
 
         // 不要扩展名
         var set = CubeSetting.Current;

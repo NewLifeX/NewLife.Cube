@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Reflection;
 using XCode;
 using XCode.DataAccessLayer;
@@ -11,7 +12,7 @@ namespace NewLife.Cube.Admin.Controllers;
 /// <summary>数据库管理</summary>
 [DisplayName("数据库")]
 [EntityAuthorize(PermissionFlags.Detail)]
-[Area("Admin")]
+[AdminArea]
 [Menu(26, true, Icon = "fa-database")]
 public class DbController : ControllerBaseX
 {
@@ -44,6 +45,9 @@ public class DbController : ControllerBaseX
                 catch { return null; }
             });
             if (t.Wait(300)) di.Version = t.Result;
+
+            di.Tables = dal.Tables.Count;
+            di.Entities = EntityFactory.LoadEntities(item.Key).Count();
 
             if (dir.Exists) di.Backups = dir.GetFiles($"{dal.ConnName}_*", SearchOption.TopDirectoryOnly).Length;
 
@@ -106,5 +110,63 @@ public class DbController : ControllerBaseX
         WriteLog("下载", true, "下载数据库架构 " + name);
 
         return File(xml.GetBytes(), "application/xml", name + ".xml");
+    }
+
+    /// <summary>显示数据表</summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    public ActionResult ShowTables(String name)
+    {
+        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new Exception("非法操作！");
+
+        var dal = DAL.Create(name);
+
+        var model = new DbTablesModel
+        {
+            Name = name,
+            Tables = dal.Tables.Take(100).ToList()
+        };
+
+        return View("Tables", model);
+    }
+
+    /// <summary>显示实体类</summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    public ActionResult ShowEntities(String name)
+    {
+        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new Exception("非法操作！");
+
+        var types = EntityFactory.LoadEntities(name);
+
+        var list = new List<DbEntityModel>();
+        foreach (var item in types)
+        {
+            var factory = item.AsFactory();
+            if (factory == null) continue;
+
+            var dm = new DbEntityModel
+            {
+                Name = item.Name,
+                Factory = factory,
+                Table = factory.Table.DataTable,
+            };
+
+            // 如果数据表已存在，则获取行数
+            if (factory.Session.Dal.TableNames.Contains(dm.Table.TableName))
+                dm.Count = factory.Session.LongCount;
+
+            list.Add(dm);
+        }
+
+        var model = new DbEntitiesModel
+        {
+            Name = name,
+            Entities = list.OrderBy(e => e.Name).ToList(),
+        };
+
+        return View("Entities", model);
     }
 }

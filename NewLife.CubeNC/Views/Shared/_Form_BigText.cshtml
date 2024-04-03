@@ -12,7 +12,7 @@
 
     var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
 }
-<label class="control-label col-sm-3 col-md-2 col-lg-1">@field.DisplayName</label>
+<label class="control-label col-xs-12 col-sm-3 col-md-2 col-lg-1">@field.DisplayName</label>
 @if (err > 0)
 {
     <span class="col-sm-9 alert alert-danger">
@@ -23,8 +23,8 @@ else if (!des.IsNullOrEmpty())
 {
     <span class="col-sm-9"><span class="middle">@des</span></span>
 }
-<div class="input-group col-sm-11 col-md-offset-1">
-    @if (field.Readonly)
+<div class="input-group col-xs-12 col-sm-11 col-md-offset-1">
+    @if (field.ReadOnly)
     {
         var row = (Int32)Math.Round(field.Length / 100d);
         if (row < 3) row = 3;

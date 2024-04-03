@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Entity;
+﻿using NewLife.Cube.Entity;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;

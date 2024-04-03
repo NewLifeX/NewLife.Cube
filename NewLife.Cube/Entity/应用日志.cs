@@ -114,17 +114,9 @@ public partial class AppLog
     /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
     [DisplayName("追踪")]
     [Description("追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链")]
-    [DataObjectField(false, false, true, 50)]
+    [DataObjectField(false, false, true, 200)]
     [BindColumn("TraceId", "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链", "")]
     public String TraceId { get => _TraceId; set { if (OnPropertyChanging("TraceId", value)) { _TraceId = value; OnPropertyChanged("TraceId"); } } }
-
-    private String _Remark;
-    /// <summary>详细信息</summary>
-    [DisplayName("详细信息")]
-    [Description("详细信息")]
-    [DataObjectField(false, false, true, 2000)]
-    [BindColumn("Remark", "详细信息", "")]
-    public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
 
     private String _CreateUser;
     /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
@@ -170,6 +162,15 @@ public partial class AppLog
     [DataObjectField(false, false, true, 0)]
     [BindColumn("UpdateTime", "更新时间", "")]
     public DateTime UpdateTime { get => _UpdateTime; set { if (OnPropertyChanging("UpdateTime", value)) { _UpdateTime = value; OnPropertyChanged("UpdateTime"); } } }
+
+    private String _Remark;
+    /// <summary>备注</summary>
+    [Category("扩展")]
+    [DisplayName("备注")]
+    [Description("备注")]
+    [DataObjectField(false, false, true, 2000)]
+    [BindColumn("Remark", "备注", "")]
+    public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
     #endregion
 
     #region 获取/设置 字段值
@@ -192,12 +193,12 @@ public partial class AppLog
             "AccessToken" => _AccessToken,
             "RefreshToken" => _RefreshToken,
             "TraceId" => _TraceId,
-            "Remark" => _Remark,
             "CreateUser" => _CreateUser,
             "CreateIP" => _CreateIP,
             "CreateTime" => _CreateTime,
             "UpdateIP" => _UpdateIP,
             "UpdateTime" => _UpdateTime,
+            "Remark" => _Remark,
             _ => base[name]
         };
         set
@@ -216,12 +217,12 @@ public partial class AppLog
                 case "AccessToken": _AccessToken = Convert.ToString(value); break;
                 case "RefreshToken": _RefreshToken = Convert.ToString(value); break;
                 case "TraceId": _TraceId = Convert.ToString(value); break;
-                case "Remark": _Remark = Convert.ToString(value); break;
                 case "CreateUser": _CreateUser = Convert.ToString(value); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "UpdateIP": _UpdateIP = Convert.ToString(value); break;
                 case "UpdateTime": _UpdateTime = value.ToDateTime(); break;
+                case "Remark": _Remark = Convert.ToString(value); break;
                 default: base[name] = value; break;
             }
         }
@@ -271,9 +272,6 @@ public partial class AppLog
         /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
         public static readonly Field TraceId = FindByName("TraceId");
 
-        /// <summary>详细信息</summary>
-        public static readonly Field Remark = FindByName("Remark");
-
         /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
         public static readonly Field CreateUser = FindByName("CreateUser");
 
@@ -288,6 +286,9 @@ public partial class AppLog
 
         /// <summary>更新时间</summary>
         public static readonly Field UpdateTime = FindByName("UpdateTime");
+
+        /// <summary>备注</summary>
+        public static readonly Field Remark = FindByName("Remark");
 
         static Field FindByName(String name) => Meta.Table.FindByName(name);
     }
@@ -331,9 +332,6 @@ public partial class AppLog
         /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
         public const String TraceId = "TraceId";
 
-        /// <summary>详细信息</summary>
-        public const String Remark = "Remark";
-
         /// <summary>创建者。可以是设备编码等唯一使用者标识</summary>
         public const String CreateUser = "CreateUser";
 
@@ -348,6 +346,9 @@ public partial class AppLog
 
         /// <summary>更新时间</summary>
         public const String UpdateTime = "UpdateTime";
+
+        /// <summary>备注</summary>
+        public const String Remark = "Remark";
     }
     #endregion
 }

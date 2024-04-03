@@ -7,7 +7,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Cube.Controllers;
 
 /// <summary>应用插件管理</summary>
-[Area("Cube")]
+[CubeArea]
 [Menu(36)]
 public class AppModuleController : EntityController<AppModule>
 {

@@ -5,6 +5,7 @@ using System.Text;
 using System.Web;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Net.Http.Headers;
@@ -14,6 +15,7 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.IO;
 using NewLife.Log;
+using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -75,7 +77,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
             // 默认加上分页给前台
             var ps = filterContext.ActionArguments.ToNullable();
-            var p = ps["p"] as Pager ?? new Pager();
+            var p = ps["p"] as Pager ?? new Pager(WebHelper.Params);
             ViewBag.Page = p;
 
             //// 用于显示的列
@@ -149,7 +151,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <summary>搜索数据，支持数据权限</summary>
     /// <param name="p"></param>
     /// <returns></returns>
-    protected IEnumerable<TEntity> SearchData(Pager p)
+    protected virtual IEnumerable<TEntity> SearchData(Pager p)
     {
         // 缓存数据，用于后续导出
         //SetSession(CacheKey, p);
@@ -161,6 +163,18 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         {
             builder.Data2 ??= p.Items;
             p.State = builder;
+        }
+
+        // 数字型主键，默认降序
+        if (PageSetting.OrderByKey && p.Sort.IsNullOrEmpty() && p.OrderBy.IsNullOrEmpty())
+        {
+            var uk = Factory.Unique;
+            if (uk != null && uk.Type.IsInt())
+            {
+                p.OrderBy = uk.Desc();
+                //p.Sort = uk.Name;
+                //p.Desc = true;
+            }
         }
 
         return Search(p);
@@ -1326,7 +1340,28 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             ViewKinds.Search => SearchFields,
             _ => ListFields,
         };
-        return fields.Clone();
+        fields = fields.Clone();
+
+        // 表单嵌入配置字段
+        if (kind == ViewKinds.EditForm && model is TEntity entity)
+        {
+            // 获取参数对象，展开参数，作为表单字段
+            foreach (var item in fields.ToArray())
+            {
+                if (item is FormField ef && ef.GetExpand != null)
+                {
+                    var p = ef.GetExpand(entity);
+                    if (p != null && p is not String)
+                    {
+                        if (!ef.RetainExpand) fields.Remove(ef);
+
+                        fields.Expand(entity, p, ef.Name + "_");
+                    }
+                }
+            }
+        }
+
+        return fields;
     }
 
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>

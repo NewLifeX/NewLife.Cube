@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Reflection;
 using NewLife.Data;
+using NewLife.Log;
+using NewLife.Reflection;
+using NewLife.Serialization;
 using XCode;
 using XCode.Membership;
 
@@ -115,19 +118,21 @@ public partial class CronJob : Entity<CronJob>
 
         if (name.IsNullOrEmpty()) name = method.Name;
         var job = FindByName(name);
-        if (job != null) return job;
 
-        job = new CronJob
+        job ??= new CronJob
         {
             Name = name,
-            DisplayName = method.GetDisplayName(),
-            Method = $"{method.DeclaringType.FullName}.{method.Name}",
             Cron = cron,
             Enable = enable,
+            EnableLog = true,
             Remark = method.GetDescription(),
         };
 
-        job.Insert();
+        job.DisplayName = method.GetDisplayName();
+        job.Method = $"{method.DeclaringType.FullName}.{method.Name}";
+        if (job.Remark.IsNullOrEmpty()) job.Remark = method.GetDescription();
+
+        job.Save();
 
         return job;
     }
@@ -147,5 +152,46 @@ public partial class CronJob : Entity<CronJob>
     ///// <param name="enable"></param>
     ///// <returns></returns>
     //public static CronJob Add(String name, Action<CronJob> action, String cron, Boolean enable = true) => Add(name, action.Method, cron, enable);
+
+    /// <summary>获取参数对象。通过类型反射得到泛型参数</summary>
+    /// <returns></returns>
+    public Object GetArgument()
+    {
+        var type = Method.GetTypeEx();
+        if (type == null) return null;
+
+        // 约定基类的泛型参数作为参数
+        var paramType = type.BaseType?.GetGenericArguments().FirstOrDefault();
+        if (paramType == null) return null;
+
+        if (Argument.IsNullOrEmpty()) return paramType.CreateInstance();
+
+        try
+        {
+            return JsonHelper.ToJsonEntity(Argument, paramType);
+        }
+        catch
+        {
+            return paramType.CreateInstance();
+        }
+    }
+
+    /// <summary>写日志</summary>
+    /// <param name="action"></param>
+    /// <param name="success"></param>
+    /// <param name="remark"></param>
+    public void WriteLog(String action, Boolean success, String remark)
+    {
+        var job = this;
+        if (job != null && !job.EnableLog) return;
+
+        if (action.IsNullOrEmpty()) action = Name;
+
+        var log = LogProvider.Provider.CreateLog("JobService", action, success, remark);
+        if (job != null) log.LinkID = job.Id;
+        log.TraceId = DefaultSpan.Current?.TraceId;
+
+        log.SaveAsync();
+    }
     #endregion
 }

@@ -6,7 +6,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>OAuth配置</summary>
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false)]
 public class OAuthConfigController : EntityController<OAuthConfig>
 {

@@ -45,8 +45,8 @@
     }
     var input = total - label - span;
 }
-<label class="control-label col-xs-@(label) col-sm-@label">@display</label>
-<div class="input-group col-xs-@(total - label) col-sm-@input">
+<label class="control-label col-xs-12 col-sm-@label">@display</label>
+<div class="input-group col-xs-12 col-sm-@input">
     @if (dataSource != null)
     {
         var ds = dataSource(entity);
@@ -89,17 +89,17 @@
         {
             @await Html.PartialAsync("_Form_Map", Model)
         }
-        else if (item.Readonly)
+        else if (item.ReadOnly)
         {
             <input class="form-control" id="@item.Name" type="text" value="@itemModel.Value" readonly>
         }
         else if (item.Type == typeof(String))
         {
-            if (item.ItemType.EqualIgnoreCase("image", "image-"))
+            if (item.ItemType.EqualIgnoreCase("image") || item.ItemType.StartsWithIgnoreCase("image-"))
             {
                 @await Html.PartialAsync("_Form_Image", Model)
             }
-            else if (item.ItemType.StartsWithIgnoreCase("file", "file-"))
+            else if (item.ItemType.EqualIgnoreCase("file") || item.ItemType.StartsWithIgnoreCase("file-"))
             {
                 @await Html.PartialAsync("_Form_File", Model)
             }

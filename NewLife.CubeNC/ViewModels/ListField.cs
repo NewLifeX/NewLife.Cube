@@ -3,10 +3,10 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Serialization;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using NewLife.Collections;
 using NewLife.Data;
 using NewLife.Reflection;
-using XCode;
 using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels;
@@ -44,6 +44,12 @@ public class ListField : DataField
 
     /// <summary>头部标题。数据移上去后显示的文字</summary>
     public String HeaderTitle { get; set; }
+
+    /// <summary>文本对齐方式</summary>
+    public TextAligns TextAlign { get; set; }
+
+    /// <summary>单元格样式</summary>
+    public String Class { get; set; }
 
     ///// <summary>头部链接。一般是排序</summary>
     //public String HeaderUrl { get; set; }
@@ -92,6 +98,7 @@ public class ListField : DataField
 
     #region 数据格式化
     private static readonly Regex _reg = new(@"{(\w+(?:\.\w+)*)}", RegexOptions.Compiled);
+    private static readonly Regex _reg2 = new(@"{page:(\w+)}", RegexOptions.Compiled);
 
     private static String Replace(String input, IModel data)
     {
@@ -116,27 +123,62 @@ public class ListField : DataField
         });
     }
 
+    private static String Replace(String input, IExtend data)
+    {
+        return _reg2.Replace(input, m =>
+        {
+            var name = m.Groups[1].Value;
+            var val = data[name];
+
+            // 特殊处理时间
+            if (val is DateTime dt) return dt == dt.Date ? dt.ToString("yyyy-MM-dd") : dt.ToFullString();
+
+            return val + "";
+        });
+    }
+
     /// <summary>针对指定实体对象计算DisplayName，替换其中变量</summary>
     /// <param name="data"></param>
+    /// <param name="page"></param>
     /// <returns></returns>
-    public virtual String GetDisplayName(IModel data)
+    public virtual String GetDisplayName(IModel data, IExtend page = null)
     {
         if (DisplayName.IsNullOrEmpty()) return null;
 
-        return Replace(DisplayName, data);
+        var rs = Replace(DisplayName, data);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+
+        return rs;
+    }
+
+    /// <summary>针对指定实体对象计算单元格文字，替换其中变量</summary>
+    /// <param name="data"></param>
+    /// <param name="page"></param>
+    /// <returns></returns>
+    public virtual String GetText(IModel data, IExtend page = null)
+    {
+        var txt = Text;
+        if (txt.IsNullOrEmpty()) return null;
+
+        //return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
+        var rs = Replace(txt, data);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+
+        return rs;
     }
 
     /// <summary>针对指定实体对象计算链接名，替换其中变量</summary>
     /// <param name="data"></param>
+    /// <param name="page"></param>
     /// <returns></returns>
-    public virtual String GetLinkName(IModel data)
+    public virtual String GetLineName(IModel data, IExtend page = null)
     {
         // 如果设置了单元格文字，则优先使用。Text>Entity[name]>DisplayName
         var txt = Text;
         if (txt.IsNullOrEmpty())
         {
             // 在数据列中，实体对象取属性值优先于显示名
-            if (Field != null && DisplayName == Field.DisplayName) return data[Name] as String;
+            if (Field != null && DisplayName == Field.DisplayName) return data[Name] + "";
 
             txt = DisplayName;
         }
@@ -144,33 +186,37 @@ public class ListField : DataField
         if (txt.IsNullOrEmpty()) return null;
 
         //return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
-        return Replace(txt, data);
+        var rs = Replace(txt, data);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+
+        return rs;
     }
 
     /// <summary>针对指定实体对象计算超链接HTML，替换其中变量，支持ILinkExtend</summary>
     /// <param name="data"></param>
+    /// <param name="page"></param>
     /// <returns></returns>
-    public virtual String GetLink(IModel data)
+    public virtual String GetLink(IModel data, IExtend page = null)
     {
         var svc = GetService<ILinkExtend>();
         if (svc != null) return svc.Resolve(this, data);
 
-        var url = GetUrl(data);
+        var linkName = GetLineName(data, page);
+        //if (linkName.IsNullOrEmpty()) linkName = GetDisplayName(data);
+
+        var url = GetUrl(data, page);
         if (url.IsNullOrEmpty()) return null;
 
-        var title = GetTitle(data);
+        var title = GetTitle(data, page);
         var target = Target;
         var action = DataAction;
-
-        var linkName = GetLinkName(data);
-        //if (linkName.IsNullOrEmpty()) linkName = GetDisplayName(data);
 
         var sb = Pool.StringBuilder.Get();
         sb.AppendFormat("<a href=\"{0}\"", url);
         if (!target.IsNullOrEmpty()) sb.AppendFormat(" target=\"{0}\"", target);
         if (!action.IsNullOrEmpty()) sb.AppendFormat(" data-action=\"{0}\"", action);
         if (!title.IsNullOrEmpty()) sb.AppendFormat(" title=\"{0}\"", HttpUtility.HtmlEncode(title));
-        sb.Append(">");
+        sb.Append('>');
         sb.Append(linkName);
         sb.Append("</a>");
 
@@ -181,8 +227,9 @@ public class ListField : DataField
 
     /// <summary>针对指定实体对象计算url，替换其中变量</summary>
     /// <param name="data"></param>
+    /// <param name="page"></param>
     /// <returns></returns>
-    public virtual String GetUrl(IModel data)
+    public virtual String GetUrl(IModel data, IExtend page = null)
     {
         var svc = GetService<IUrlExtend>();
         if (svc != null) return svc.Resolve(this, data);
@@ -190,18 +237,25 @@ public class ListField : DataField
         if (Url.IsNullOrEmpty()) return null;
 
         //return _reg.Replace(Url, m => data[m.Groups[1].Value + ""] + "");
-        return Replace(Url, data);
+        var rs = Replace(Url, data);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+
+        return rs;
     }
 
     /// <summary>针对指定实体对象计算title，替换其中变量</summary>
     /// <param name="data"></param>
+    /// <param name="page"></param>
     /// <returns></returns>
-    public virtual String GetTitle(IModel data)
+    public virtual String GetTitle(IModel data, IExtend page = null)
     {
         if (Title.IsNullOrEmpty()) return null;
 
         //return _reg.Replace(Title, m => data[m.Groups[1].Value + ""] + "");
-        return Replace(Title, data);
+        var rs = Replace(Title, data);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+
+        return rs;
     }
     #endregion
 }

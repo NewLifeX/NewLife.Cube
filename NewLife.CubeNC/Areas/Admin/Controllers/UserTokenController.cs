@@ -11,7 +11,7 @@ namespace NewLife.Cube.Admin.Controllers;
 [DataPermission(null, "UserID={#userId}")]
 [DisplayName("用户令牌")]
 [Description("授权指定用户访问接口数据，支持有效期")]
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false)]
 public class UserTokenController : EntityController<UserToken>
 {

@@ -1,0 +1,24 @@
+﻿@using NewLife.School.Entity
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model IList<Class>
+@{
+    var now = DateTime.Now;
+    var time = DateTime.UtcNow;
+
+    var list = Model;
+}
+
+现在的UTC时间是：@time，北京时间是：@now
+
+@foreach (var item in list)
+{
+    <div>@item.Name</div>
+    <div>@item.CreateTime.ToFullString()</div>
+}
+
+<form action="/School/Abc/ggg">
+名字：<input type="text" name="name" />
+<input type="submit" value="提交" />
+</form>

@@ -15,7 +15,7 @@ namespace NewLife.Cube.Admin.Controllers;
 
 /// <summary>首页</summary>
 [DisplayName("首页")]
-[Area("Admin")]
+[AdminArea]
 [Menu(0, false, Icon = "fa-home")]
 public class IndexController : ControllerBaseX
 {

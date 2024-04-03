@@ -5,6 +5,7 @@ using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Data;
+using NewLife.Reflection;
 
 namespace NewLife.School.Entity;
 
@@ -38,6 +39,15 @@ public partial class StudentModel : IModel
 
     /// <summary>启用</summary>
     public Boolean Enable { get; set; }
+
+    /// <summary>头像</summary>
+    public String Avatar { get; set; }
+
+    /// <summary>体重。小数</summary>
+    public Double Weight { get; set; }
+
+    /// <summary>存款。小数</summary>
+    public Decimal Amount { get; set; }
 
     /// <summary>创建者</summary>
     public Int32 CreateUserID { get; set; }
@@ -80,6 +90,9 @@ public partial class StudentModel : IModel
                 "Mobile" => Mobile,
                 "Address" => Address,
                 "Enable" => Enable,
+                "Avatar" => Avatar,
+                "Weight" => Weight,
+                "Amount" => Amount,
                 "CreateUserID" => CreateUserID,
                 "CreateTime" => CreateTime,
                 "CreateIP" => CreateIP,
@@ -87,7 +100,7 @@ public partial class StudentModel : IModel
                 "UpdateTime" => UpdateTime,
                 "UpdateIP" => UpdateIP,
                 "Remark" => Remark,
-                _ => null
+                _ => this.GetValue(name, false),
             };
         }
         set
@@ -103,6 +116,9 @@ public partial class StudentModel : IModel
                 case "Mobile": Mobile = Convert.ToString(value); break;
                 case "Address": Address = Convert.ToString(value); break;
                 case "Enable": Enable = value.ToBoolean(); break;
+                case "Avatar": Avatar = Convert.ToString(value); break;
+                case "Weight": Weight = value.ToDouble(); break;
+                case "Amount": Amount = Convert.ToDecimal(value); break;
                 case "CreateUserID": CreateUserID = value.ToInt(); break;
                 case "CreateTime": CreateTime = value.ToDateTime(); break;
                 case "CreateIP": CreateIP = Convert.ToString(value); break;
@@ -110,6 +126,7 @@ public partial class StudentModel : IModel
                 case "UpdateTime": UpdateTime = value.ToDateTime(); break;
                 case "UpdateIP": UpdateIP = Convert.ToString(value); break;
                 case "Remark": Remark = Convert.ToString(value); break;
+                default: this.SetValue(name, value); break;
             }
         }
     }
@@ -129,6 +146,9 @@ public partial class StudentModel : IModel
         Mobile = model.Mobile;
         Address = model.Address;
         Enable = model.Enable;
+        Avatar = model.Avatar;
+        Weight = model.Weight;
+        Amount = model.Amount;
         CreateUserID = model.CreateUserID;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -155,7 +154,7 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         WriteLog("修改", true, sb.ToString());
     }
 
-    private static readonly Dictionary<Type, IList<DataField>> _cache = new();
+    private static readonly Dictionary<Type, IList<DataField>> _cache = [];
     /// <summary>获取指定类型的成员集合（带缓存）</summary>
     /// <param name="type"></param>
     /// <returns></returns>
@@ -164,31 +163,10 @@ public abstract class ObjectController<TObject> : ControllerBaseX
         if (_cache.TryGetValue(type, out var rs)) return rs;
 
         var pis = type.GetProperties(true);
-        var list = new List<DataField>();
+        var list = new FieldCollection(ViewKinds.EditForm);
         foreach (var pi in pis)
         {
-            var cat = pi.GetCustomAttribute<CategoryAttribute>();
-            var category = cat?.Category ?? "";
-            var dis = pi.GetDisplayName();
-            var des = pi.GetDescription();
-            if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
-            if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
-            {
-                des = dis.Substring("。");
-                dis = dis.Substring(null, "。");
-            }
-
-            var df = new DataField
-            {
-                Name = pi.Name,
-                DisplayName = dis ?? pi.Name,
-                Description = des,
-                Type = pi.PropertyType,
-                //DataType = pi.PropertyType.FullName,
-                Category = category,
-            };
-
-            list.Add(df);
+            list.Add(pi);
         }
 
         _cache[type] = list;

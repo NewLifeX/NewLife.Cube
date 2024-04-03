@@ -38,6 +38,15 @@ public partial interface IStudent
     /// <summary>启用</summary>
     Boolean Enable { get; set; }
 
+    /// <summary>头像</summary>
+    String Avatar { get; set; }
+
+    /// <summary>体重。小数</summary>
+    Double Weight { get; set; }
+
+    /// <summary>存款。小数</summary>
+    Decimal Amount { get; set; }
+
     /// <summary>创建者</summary>
     Int32 CreateUserID { get; set; }
 

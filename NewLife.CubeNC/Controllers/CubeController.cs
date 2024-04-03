@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Data;
 using NewLife.Log;
@@ -226,6 +227,8 @@ public class CubeController : ControllerBaseX
     [AllowAnonymous]
     public ActionResult AreaChilds(Int32 id = 0)
     {
+        AreaController.InitAreaData();
+
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
         if (r == null) return Json(500, null, "找不到地区");
 
@@ -298,7 +301,7 @@ public class CubeController : ControllerBaseX
     {
         if (id <= 0) throw new ArgumentNullException(nameof(id));
 
-        if (ManageProvider.Provider?.FindByID(id) is not IUser user) 
+        if (ManageProvider.Provider?.FindByID(id) is not IUser user)
             throw new Exception("用户不存在 " + id);
 
         var set = CubeSetting.Current;

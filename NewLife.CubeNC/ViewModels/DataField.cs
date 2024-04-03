@@ -5,7 +5,6 @@ using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 using System.Xml.Serialization;
 using NewLife.Collections;
-using NewLife.Reflection;
 using XCode;
 using XCode.Configuration;
 
@@ -63,7 +62,7 @@ public class DataField
     public Boolean PrimaryKey { get; set; }
 
     /// <summary>只读</summary>
-    public Boolean Readonly { get; set; }
+    public Boolean ReadOnly { get; set; }
 
     /// <summary>
     /// 是否可见
@@ -154,7 +153,7 @@ public class DataField
         Length = field.Length;
         Nullable = field.IsNullable;
         PrimaryKey = field.PrimaryKey;
-        Readonly = field.ReadOnly;
+        ReadOnly = field.ReadOnly;
 
         if (field.Map != null)
         {
@@ -176,6 +175,38 @@ public class DataField
                 }
             }
         }
+    }
+
+    /// <summary>从PropertyInfo填充</summary>
+    /// <param name="property"></param>
+    public virtual void Fill(PropertyInfo property)
+    {
+        Name = property.Name;
+        Type = property.PropertyType;
+
+        Category = property?.GetCustomAttribute<CategoryAttribute>()?.Category + "";
+
+        var df = property.GetCustomAttribute<DataObjectFieldAttribute>();
+        if (df != null)
+        {
+            Length = df.Length;
+            Nullable = df.IsNullable;
+            PrimaryKey = df.PrimaryKey;
+        }
+
+        var dis = property.GetDisplayName();
+        var des = property.GetDescription();
+        if (dis.IsNullOrEmpty() && !des.IsNullOrEmpty()) { dis = des; des = null; }
+        if (!dis.IsNullOrEmpty() && des.IsNullOrEmpty() && dis.Contains("。"))
+        {
+            des = dis.Substring("。");
+            dis = dis.Substring(null, "。");
+        }
+        DisplayName = dis ?? property.Name;
+        Description = des;
+
+        var ra = property.GetCustomAttribute<ReadOnlyAttribute>();
+        if (ra != null) ReadOnly = ra.IsReadOnly;
     }
 
     /// <summary>克隆</summary>
@@ -226,7 +257,7 @@ public class DataField
     #endregion
 
     #region 服务
-    private readonly List<Object> _services = new();
+    private readonly List<Object> _services = [];
     /// <summary>添加服务</summary>
     /// <typeparam name="TService"></typeparam>
     /// <param name="service"></param>

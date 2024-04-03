@@ -79,6 +79,16 @@ public class CubeSetting : Config<CubeSetting>
     [Description("机器人错误码。设置后拦截各种爬虫并返回相应错误，如404/500，默认0不拦截")]
     [Category("通用")]
     public Int32 RobotError { get; set; }
+
+    /// <summary>数据保留时间。审计日期与OAuth日志，默认30天</summary>
+    [Description("数据保留时间。审计日期与OAuth日志，默认30天")]
+    [Category("通用")]
+    public Int32 DataRetention { get; set; } = 30;
+
+    /// <summary>文件保留时间。备份文件保留时间，默认15天</summary>
+    [Description("文件保留时间。备份文件保留时间，默认15天")]
+    [Category("通用")]
+    public Int32 FileRetention { get; set; } = 15;
     #endregion
 
     #region 用户登录

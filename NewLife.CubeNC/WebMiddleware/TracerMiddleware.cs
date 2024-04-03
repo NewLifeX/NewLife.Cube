@@ -47,6 +47,11 @@ public class TracerMiddleware
                         span.Tag = Environment.NewLine + buf.ToStr(null, 0, count);
                         req.Body.Position = 0;
                     }
+                    else
+                    {
+                        span.AppendTag($"ContentLength: {req.ContentLength}");
+                        span.AppendTag($"ContentType: {req.ContentType}");
+                    }
 
                     if (span.Tag.Length < 500)
                     {

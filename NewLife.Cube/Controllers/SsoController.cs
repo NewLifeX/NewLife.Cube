@@ -208,7 +208,7 @@ public class SsoController : ControllerBaseX
             if (uc.ID == 0) uc = prov.GetConnect(client);
             uc.Fill(client);
 
-            var url = prov.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind");
+            var url = prov.OnLogin(client, HttpContext.RequestServices, uc, log.Action == "Bind", log.UserId);
 
             log.ConnectId = uc.ID;
             log.UserId = uc.UserID;
@@ -355,6 +355,7 @@ public class SsoController : ControllerBaseX
             Scope = client.Scope,
             State = null,
             RedirectUri = url,
+            UserId = user.ID,
             TraceId = DefaultSpan.Current?.TraceId,
         };
         log.Insert();
@@ -523,7 +524,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
-    public virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
+    public new virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
     {
         if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
         if (grant_type.IsNullOrEmpty()) grant_type = "password";

@@ -12,7 +12,7 @@
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
     var fact = ViewBag.Factory as IEntityFactory;
-    var pager = ViewBag.Page as Pager;
+    var page2 = ViewBag.Page as Pager;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
     var charts = ViewBag.Charts as ECharts[];
@@ -36,7 +36,7 @@
     var isdis = an.Contains("add") || an.Contains("edit") || an.Contains("delete") || an.Contains("info")
     || an.Contains("changepassword") || an.Contains("binds");
 
-    var rv = pager.GetRouteValue();
+    var rv = page2.GetRouteValue();
 }
 
 @section css{
@@ -56,7 +56,7 @@
                                 }
                                 @foreach (var item in fields)
                                 {
-                                    var sortUrl = !item.MapField.IsNullOrEmpty() ? pager.GetSortUrl(item.MapField) : pager.GetSortUrl(item.Name);
+                                    var sortUrl = !item.MapField.IsNullOrEmpty() ? page2.GetSortUrl(item.MapField) : page2.GetSortUrl(item.Name);
                                     var df = item as ListField;
                                     var name = df?.Header ?? item.DisplayName;
                                     var title = df?.HeaderTitle ?? item.Description;
@@ -106,16 +106,16 @@
                                         }
                                         else if (df != null && !df.DataAction.IsNullOrEmpty())
                                         {
-                                            var url = df.GetUrl(entity);
-                                            var name = df.GetDisplayName(entity) ?? df.Header;
+                                            var url = df.GetUrl(entity, page2);
+                                            var name = df.GetDisplayName(entity, page2) ?? df.Header;
                                             <td title="@df.Title">
                                                 <a lay-data="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs" lay-event="action" data-action="@df.DataAction">@name</a>
                                             </td>
                                         }
                                         else if (df != null && !df.Url.IsNullOrEmpty())
                                         {
-                                            var url = df.GetUrl(entity);
-                                            var name = df.GetDisplayName(entity) ?? df.Header;
+                                            var url = df.GetUrl(entity, page2);
+                                            var name = df.GetDisplayName(entity, page2) ?? df.Header;
                                             <td title="@df.Title">
                                                 <a href="@Html.Raw(url)" class="layui-btn layui-btn-primary layui-btn-xs">@name</a>
                                             </td>
@@ -148,7 +148,7 @@
 
                 var listTB=table.init('parse-table', { //转化静态表格
                     page: false,
-                    limit: @pager.PageSize,
+                    limit: @page2.PageSize,
                     limits: [20, 50, 100],
                     even: true,
                     defaultToolbar: ['filter'],
@@ -404,12 +404,12 @@
                     @*<button class="layui-btn layui-btn-sm icon-btn" id="toolMore">更多<i class="layui-icon layui-icon-down layui-font-12"></i></button>*@
               </div>
           </div>
-            @if (pager != null)
+            @if (page2 != null)
             {
                 if (!isdis)
                 {
                                   <div class="layui-inline">
-                                      <form action="@Html.Raw(pager.GetFormAction(act))" method="post" role="form">
+                                      <form action="@Html.Raw(page2.GetFormAction(act))" method="post" role="form">
                                       <div class="layui-row layui-col-space5">
                                 @foreach (var item in fields)
                                 {
@@ -432,7 +432,7 @@
                                                                               <div class="layui-inline">
                                                                                 <label class="layui-form-label" style="width:auto;">@item.DisplayName:</label>
                                                                                 <div class="layui-input-inline">
-                                                    @Html.ForDropDownList(item.MapField, result, pager[item.MapField], "全部", true)
+                                                    @Html.ForDropDownList(item.MapField, result, page2[item.MapField], "全部", true)
                                                                                 </div>
                                                                               </div>
                                         }

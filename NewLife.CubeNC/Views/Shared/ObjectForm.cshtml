@@ -15,7 +15,7 @@
     var list = ViewBag.Fields as IList<DataField>;
     var dic = list
         .GroupBy(e => e.Category + "")
-        .ToDictionary(e => e.Key, e => e.ToList());
+        .ToDictionary(e => e.Key.IsNullOrEmpty() ? "默认" : e.Key, e => e.ToList());
 }
 @if (!set.NavView.IsNullOrEmpty())
 {

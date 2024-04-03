@@ -18,7 +18,7 @@ namespace NewLife.School.Entity;
 [DataObject]
 [Description("班级")]
 [BindTable("Class", Description = "班级", ConnName = "School", DbType = DatabaseType.SqlServer)]
-public partial class Class : IClass, IEntity<ClassModel>
+public partial class Class : IClass, IEntity<IClass>
 {
     #region 属性
     private Int32 _Id;
@@ -60,6 +60,14 @@ public partial class Class : IClass, IEntity<ClassModel>
     [DataObjectField(false, false, true, 0)]
     [BindColumn("GraduationDate", "毕业时间", "")]
     public DateTime GraduationDate { get => _GraduationDate; set { if (OnPropertyChanging("GraduationDate", value)) { _GraduationDate = value; OnPropertyChanged("GraduationDate"); } } }
+
+    private String _Model;
+    /// <summary>设备型号</summary>
+    [DisplayName("设备型号")]
+    [Description("设备型号")]
+    [DataObjectField(false, false, true, 20)]
+    [BindColumn("Model", "设备型号", "")]
+    public String Model { get => _Model; set { if (OnPropertyChanging("Model", value)) { _Model = value; OnPropertyChanged("Model"); } } }
 
     private Int32 _CreateUserID;
     /// <summary>创建者</summary>
@@ -121,13 +129,14 @@ public partial class Class : IClass, IEntity<ClassModel>
     #region 拷贝
     /// <summary>拷贝模型对象</summary>
     /// <param name="model">模型</param>
-    public void Copy(ClassModel model)
+    public void Copy(IClass model)
     {
         Id = model.Id;
         TenantId = model.TenantId;
         Name = model.Name;
         Enable = model.Enable;
         GraduationDate = model.GraduationDate;
+        Model = model.Model;
         CreateUserID = model.CreateUserID;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
@@ -151,6 +160,7 @@ public partial class Class : IClass, IEntity<ClassModel>
             "Name" => _Name,
             "Enable" => _Enable,
             "GraduationDate" => _GraduationDate,
+            "Model" => _Model,
             "CreateUserID" => _CreateUserID,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
@@ -169,6 +179,7 @@ public partial class Class : IClass, IEntity<ClassModel>
                 case "Name": _Name = Convert.ToString(value); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
                 case "GraduationDate": _GraduationDate = value.ToDateTime(); break;
+                case "Model": _Model = Convert.ToString(value); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -183,6 +194,14 @@ public partial class Class : IClass, IEntity<ClassModel>
     #endregion
 
     #region 关联映射
+    /// <summary>租户</summary>
+    [XmlIgnore, IgnoreDataMember, ScriptIgnore]
+    public XCode.Membership.Tenant Tenant => Extends.Get(nameof(Tenant), k => XCode.Membership.Tenant.FindById(TenantId));
+
+    /// <summary>租户</summary>
+    [Map(nameof(TenantId), typeof(XCode.Membership.Tenant), "Id")]
+    public String TenantName => Tenant?.Name;
+
     #endregion
 
     #region 字段名
@@ -203,6 +222,9 @@ public partial class Class : IClass, IEntity<ClassModel>
 
         /// <summary>毕业时间</summary>
         public static readonly Field GraduationDate = FindByName("GraduationDate");
+
+        /// <summary>设备型号</summary>
+        public static readonly Field Model = FindByName("Model");
 
         /// <summary>创建者</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -245,6 +267,9 @@ public partial class Class : IClass, IEntity<ClassModel>
 
         /// <summary>毕业时间</summary>
         public const String GraduationDate = "GraduationDate";
+
+        /// <summary>设备型号</summary>
+        public const String Model = "Model";
 
         /// <summary>创建者</summary>
         public const String CreateUserID = "CreateUserID";

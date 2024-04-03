@@ -22,7 +22,7 @@ public class RunTimeMiddleware
     private readonly UserService _userService;
 
     /// <summary>会话提供者</summary>
-    static readonly SessionProvider _sessionProvider = new SessionProvider();
+    static readonly SessionProvider _sessionProvider = new();
 
     /// <summary>实例化</summary>
     /// <param name="next"></param>
@@ -41,6 +41,7 @@ public class RunTimeMiddleware
         var userAgent = ctx.Request.Headers["User-Agent"] + "";
         var ua = new UserAgentParser();
         ua.Parse(userAgent);
+        ctx.Items["UserAgent"] = ua;
 
         // 识别拦截爬虫
         if (!ValidRobot(ctx, ua)) return;
@@ -49,7 +50,7 @@ public class RunTimeMiddleware
         ManageProvider.UserHost = ip;
 
         // 创建Session集合
-        var token = CreateSession(ctx);
+        var (token, session) = CreateSession(ctx);
 
         var inf = new RunTimeInfo();
         ctx.Items[nameof(RunTimeInfo)] = inf;
@@ -65,14 +66,14 @@ public class RunTimeMiddleware
         // 设计时收集执行的SQL语句
         if (SysConfig.Current.Develop)
         {
-            inf.Sqls = new List<String>();
+            inf.Sqls = [];
             DAL.LocalFilter = s => inf.Sqls.Add(s);
         }
 
         // 日志控制，精确标注Web类型线程
         WriteLogEventArgs.Current.IsWeb = true;
 
-        UserOnline olt = null;
+        var online = session["Online"] as UserOnline;
         var user = ManageProvider.User;
         try
         {
@@ -85,16 +86,17 @@ public class RunTimeMiddleware
                 var deviceId = FillDeviceId(ctx);
                 //var sessionId = token?.MD5_16() ?? ip;
                 var sessionId = deviceId;
-                olt = _userService.SetWebStatus(sessionId, deviceId, p, userAgent, ua, user, ip);
+                online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip);
                 //FillDeviceId(ctx, olt);
-                ctx.Items["Cube_Online"] = olt;
+                session["Online"] = online;
+                ctx.Items["Cube_Online"] = online;
             }
             await _next.Invoke(ctx);
         }
         catch (Exception ex)
         {
             var uri = ctx.Request.GetRawUrl();
-            olt?.SetError(ex.Message);
+            online?.SetError(ex.Message);
 
             XTrace.Log.Error("[{0}]的错误[{1}] {2}", uri, ip, ctx.TraceIdentifier);
 
@@ -132,8 +134,7 @@ public class RunTimeMiddleware
     /// <returns></returns>
     public static String GetInfo(HttpContext ctx)
     {
-        var rtinf = ctx.Items[nameof(RunTimeInfo)] as RunTimeInfo;
-        if (rtinf == null) return null;
+        if (ctx.Items[nameof(RunTimeInfo)] is not RunTimeInfo rtinf) return null;
 
         var inf = String.Format(DbRunTimeFormat,
                                 DAL.QueryTimes - rtinf.QueryTimes,
@@ -150,7 +151,7 @@ public class RunTimeMiddleware
         return inf;
     }
 
-    private static String CreateSession(HttpContext ctx)
+    private static (String, IDictionary<String, Object>) CreateSession(HttpContext ctx)
     {
         // 准备Session
         var ss = ctx.Session;
@@ -166,12 +167,13 @@ public class RunTimeMiddleware
             }
 
             //Session = _sessionProvider.GetSession(ss.Id);
-            ctx.Items["Session"] = _sessionProvider.GetSession(token);
+            var session = _sessionProvider.GetSession(token);
+            ctx.Items["Session"] = session;
 
-            return token;
+            return (token, session);
         }
 
-        return null;
+        return (null, null);
     }
 
     /// <summary>忽略的后缀</summary>

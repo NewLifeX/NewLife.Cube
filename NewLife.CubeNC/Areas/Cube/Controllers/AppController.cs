@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel;
 using NewLife.Cube.Entity;
 using XCode;
 using XCode.Membership;
@@ -10,7 +7,7 @@ namespace NewLife.Cube.Cube.Controllers;
 
 /// <summary>应用系统</summary>
 [DisplayName("应用系统")]
-[Area("Cube")]
+[CubeArea]
 [Menu(38, true, Icon = "fa-star")]
 public class AppController : EntityController<App>
 {

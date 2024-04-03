@@ -45,7 +45,7 @@
 		{
 			@await Html.PartialAsync("_Form_Map", Model)
 		}
-		else if (item.Readonly)
+		else if (item.ReadOnly)
 		{
 			<label class="form-control">@entity[item.Name]</label>
 		}

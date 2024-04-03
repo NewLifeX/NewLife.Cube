@@ -1,28 +1,23 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Numerics;
 using System.Reflection;
-using System.Reflection.PortableExecutable;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode.Membership;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>首页</summary>
-[AdminArea]
 [DisplayName("首页")]
+[AdminArea]
+[Menu(0, false, Icon = "fa-home")]
 public class IndexController : ControllerBaseX
 {
     private readonly IManageProvider _provider;
@@ -62,7 +57,6 @@ public class IndexController : ControllerBaseX
     }
 
     /// <summary>服务器信息</summary>
-    /// <param name="id"></param>
     /// <returns></returns>
     [DisplayName("服务器信息")]
     [EntityAuthorize(PermissionFlags.Detail)]

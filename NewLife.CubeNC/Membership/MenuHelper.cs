@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
@@ -27,10 +26,34 @@ public static class MenuHelper
 
         var list = new List<IMenu>();
 
-        // 所有控制器
-        var types = areaType.Assembly.GetTypes();
-        var controllerTypes = types.Where(e => e.Name.EndsWith("Controller") && e.Namespace == nameSpace).ToList();
+        // 搜索所有控制器，找到本区域所属控制器，优先属性其次命名空间
+        //var types = areaType.Assembly.GetTypes();
+        //var controllerTypes = types.Where(e => e.Name.EndsWith("Controller") && e.Namespace == nameSpace).ToList();
+        var controllerTypes = new List<Type>();
+        var target = areaType.Assembly.GetName().Name;
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (asm != areaType.Assembly && !asm.GetReferencedAssemblies().Any(e => e.Name == target)) continue;
+
+            foreach (var item in asm.GetTypes())
+            {
+                if (!item.Name.EndsWith("Controller")) continue;
+
+                // 优先使用特性
+                var atts = item.GetCustomAttributes();
+                if (atts.Any(e => e.GetType() == areaType))
+                {
+                    controllerTypes.Add(item);
+                }
+                else if (item.Namespace == nameSpace && !atts.Any(e => e is AreaAttribute))
+                {
+                    controllerTypes.Add(item);
+                }
+            }
+        }
         if (controllerTypes.Count == 0) return list;
+
+        var attArea = areaType.GetCustomAttribute<MenuAttribute>();
 
         // 如果根菜单不存在，则添加
         var r = menuFactory.Root;
@@ -43,12 +66,11 @@ public static class MenuHelper
             root = r.Add(rootName, null, nameSpace, "/" + rootName);
             list.Add(root);
 
-            var att = areaType.GetCustomAttribute<MenuAttribute>();
-            if (att != null && (!root.Visible || !root.Necessary))
+            if (attArea != null && (!root.Visible || !root.Necessary))
             {
-                root.Sort = att.Order;
-                root.Visible = att.Visible;
-                root.Icon = att.Icon;
+                root.Sort = attArea.Order;
+                root.Visible = attArea.Visible;
+                root.Icon = attArea.Icon;
             }
         }
         if (root.FullName != nameSpace) root.FullName = nameSpace;
@@ -157,6 +179,14 @@ public static class MenuHelper
             if (att != null)
             {
                 if (controller.Icon.IsNullOrEmpty()) controller.Icon = att.Icon;
+
+                // 小于该更新时间的菜单设置将被覆盖
+                if ((controller.UpdateTime < att.LastUpdate.ToDateTime() || attArea != null && controller.UpdateTime < attArea.LastUpdate.ToDateTime()) &&
+                    (!controller.Visible || !controller.Necessary))
+                {
+                    controller.Sort = att.Order;
+                    controller.Visible = att.Visible;
+                }
             }
 
             // 排序
@@ -164,16 +194,11 @@ public static class MenuHelper
             {
                 if (att != null)
                 {
-                    if (!root.Visible || !root.Necessary)
+                    if (!controller.Visible || !controller.Necessary)
                     {
                         controller.Sort = att.Order;
                         controller.Visible = att.Visible;
                     }
-                }
-                else
-                {
-                    var pi = type.GetPropertyEx("MenuOrder");
-                    if (pi != null) controller.Sort = pi.GetValue(null).ToInt();
                 }
             }
         }
@@ -190,9 +215,9 @@ public static class MenuHelper
             var task = Task.Run(() =>
             {
                 XTrace.WriteLine("新增了菜单，需要检查权限");
-                //var fact = ManageProvider.GetFactory<IRole>();
-                var fact = typeof(Role).AsFactory();
-                fact.EntityType.Invoke("CheckRole");
+                //var fact = typeof(Role).AsFactory();
+                //fact.EntityType.Invoke("CheckRole");
+                Role.CheckRole();
             });
             task.Wait(5_000);
         }
@@ -304,13 +329,21 @@ public static class MenuHelper
         return list;
     }
 
-    static Dictionary<String, Boolean> _tenants = new();
+    static Dictionary<String, Boolean> _tenants = [];
     static Boolean CheckVisibleInTenant(MenuTree menu)
     {
         var key = menu.FullName;
         if (_tenants.TryGetValue(key, out var rs)) return rs;
 
         var type = Type.GetType(menu.FullName);
+        if (type == null)
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                type = assembly.GetType(menu.FullName);
+                if (type != null) break;
+            }
+        }
         var att = type?.GetCustomAttribute<MenuAttribute>();
         if (att != null && att.Mode.Has(MenuModes.Tenant))
         {
@@ -320,7 +353,7 @@ public static class MenuHelper
         return _tenants[key] = false;
     }
 
-    static Dictionary<String, Boolean> _admins = new();
+    static Dictionary<String, Boolean> _admins = [];
     static Boolean CheckVisibleInAdmin(MenuTree menu)
     {
         var key = menu.FullName;

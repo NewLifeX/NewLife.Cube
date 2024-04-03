@@ -1,16 +1,20 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
+
+using NewLife.Caching;
 using NewLife.Common;
-using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Jobs;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
@@ -19,8 +23,11 @@ using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
+
 using Stardust;
 using Stardust.Registry;
+
+using XCode;
 using XCode.DataAccessLayer;
 
 namespace NewLife.Cube;
@@ -66,6 +73,7 @@ public static class CubeService
         }
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        IpResolver.Register();
 
         // 连接字符串
         DAL.ConnStrs.TryAdd("Cube", "MapTo=Membership");
@@ -78,7 +86,6 @@ public static class CubeService
         //    options.CheckConsentNeeded = context => false;
         //    options.MinimumSameSitePolicy = SameSiteMode.None;
         //});
-
 
         // 添加Session会话支持
         services.AddSession();
@@ -100,9 +107,11 @@ public static class CubeService
         //// 注册魔方默认UI
         //services.AddCubeDefaultUI();
 
+        var set = CubeSetting.Current;
+        services.AddSingleton(set);
+
         // 配置跨域处理，允许所有来源
         // CORS，全称 Cross-Origin Resource Sharing （跨域资源共享），是一种允许当前域的资源能被其他域访问的机制
-        var set = CubeSetting.Current;
         if (set.CorsOrigins == "*")
             services.AddCors(options => options.AddPolicy("cube_cors", builder => builder
             .AllowAnyMethod()
@@ -132,6 +141,14 @@ public static class CubeService
         // 添加管理提供者
         services.AddManageProvider();
 
+        // 添加数据保护，优先在外部支持Redis持久化，这里默认使用数据库持久化
+        //if (services.Any(e => e.ServiceType == typeof(FullRedis) || e.ServiceType == typeof(ICacheProvider) && e.ImplementationType == typeof(RedisCacheProvider)))
+        //    services.AddDataProtection().PersistKeysToRedis();
+        //else
+        //    services.AddDataProtection().PersistKeysToDb();
+        services.AddDataProtection()
+            .PersistKeysToDb();
+
         // 防止汉字被自动编码
         services.Configure<WebEncoderOptions>(options =>
         {
@@ -145,7 +162,7 @@ public static class CubeService
         });
 
         // 配置Json
-        services.Configure<JsonOptions>(options =>
+        services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
         {
 #if NET7_0_OR_GREATER
             // 支持模型类中的DataMember特性
@@ -156,14 +173,19 @@ public static class CubeService
             // 支持中文编码
             options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
         });
+        //默认注入缓存实现
+        services.TryAddSingleton<ICacheProvider, CacheProvider>();
 
         // UI服务
         services.AddSingleton<UIService>();
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
 
-        services.AddHostedService<JobService>();
-        //services.AddHostedService<UserService>();
+        //services.AddHostedService<JobService>();
+        services.AddHostedService<DataRetentionService>();
+
+        // 添加定时作业
+        services.AddCubeJob();
 
         // 注册IP地址库
         IpResolver.Register();
@@ -191,6 +213,8 @@ public static class CubeService
     /// <param name="services"></param>
     public static void AddCustomApplicationParts(this IServiceCollection services)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(AddCustomApplicationParts));
+
         var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
         manager ??= new ApplicationPartManager();
 
@@ -212,25 +236,29 @@ public static class CubeService
     /// <returns></returns>
     private static List<Assembly> FindAllArea()
     {
-        var list = new List<Assembly>();
-        var cs = typeof(ControllerBaseX).GetAllSubclasses().ToArray();
-        foreach (var item in cs)
+        var bag = new ConcurrentBag<Assembly>();
+        var baseType = typeof(ControllerBaseX);
+        var baseType2 = typeof(RazorPage);
+        Parallel.ForEach(AppDomain.CurrentDomain.GetAssemblies(), asm =>
         {
-            var asm = item.Assembly;
-            if (!list.Contains(asm))
+            try
             {
-                list.Add(asm);
+                foreach (var type in asm.GetTypes())
+                {
+                    if (type.IsInterface || type.IsAbstract || type.IsGenericType) continue;
+                    if (type != baseType && type.As(baseType) || type.As(baseType2))
+                    {
+                        bag.Add(asm);
+                        break;
+                    }
+                }
             }
-        }
-        cs = typeof(RazorPage).GetAllSubclasses().ToArray();
-        foreach (var item in cs)
-        {
-            var asm = item.Assembly;
-            if (!list.Contains(asm))
+            catch (Exception ex)
             {
-                list.Add(asm);
+                XTrace.WriteLine("在[{0}]中扫描视图报错：{1}", asm.GetName().Name, ex.Message);
             }
-        }
+        });
+        var list = bag.ToList();
 
 #if !NET6_0_OR_GREATER
         // 反射 *.Views.dll
@@ -283,16 +311,22 @@ public static class CubeService
 
         XTrace.WriteLine("{0} Start 初始化魔方 {0}", new String('=', 32));
 
+        // 初始化数据库连接
+        var set = CubeSetting.Current;
+        if (set.IsNew)
+            EntityFactory.InitAll();
+        else
+            EntityFactory.InitAllAsync();
+
         // 调整魔方表名
         FixAppTableName();
         FixAvatar();
+        WebHelper2.FixTenantMenu();
 
         // 使用管理提供者
         app.UseManagerProvider();
 
         //FixOAuth();
-
-        var set = CubeSetting.Current;
 
         // 使用Cube前添加自己的管道
         if (env != null)
