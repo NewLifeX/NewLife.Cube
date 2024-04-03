@@ -50,11 +50,18 @@ public class CronJobController : EntityController<CronJob>
     {
         if (post)
         {
-            var cron = new Cron();
-            if (!cron.Parse(entity.Cron)) throw new ArgumentException("Cron表达式有误！", nameof(entity.Cron));
+            var next = DateTime.MinValue;
+            foreach (var item in entity.Cron.Split(";"))
+            {
+                var cron = new Cron();
+                if (!cron.Parse(item)) throw new ArgumentException("Cron表达式有误！", nameof(entity.Cron));
+
+                var dt = cron.GetNext(DateTime.Now);
+                if (next == DateTime.MinValue || dt < next) next = dt;
+            }
 
             // 重算下一次的时间
-            if (entity is IEntity e && !e.Dirtys[nameof(entity.Name)]) entity.NextTime = cron.GetNext(DateTime.Now);
+            if (entity is IEntity e && !e.Dirtys[nameof(entity.Name)]) entity.NextTime = next;
 
             JobService.Wake();
         }
