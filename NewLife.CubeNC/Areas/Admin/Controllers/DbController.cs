@@ -118,6 +118,8 @@ public class DbController : ControllerBaseX
     [EntityAuthorize(PermissionFlags.Detail)]
     public ActionResult ShowTables(String name)
     {
+        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new Exception("非法操作！");
+
         var dal = DAL.Create(name);
 
         var model = new DbTablesModel
@@ -135,6 +137,8 @@ public class DbController : ControllerBaseX
     [EntityAuthorize(PermissionFlags.Detail)]
     public ActionResult ShowEntities(String name)
     {
+        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new Exception("非法操作！");
+
         var types = EntityFactory.LoadEntities(name);
 
         var list = new List<DbEntityModel>();

@@ -2,11 +2,10 @@
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
-using NewLife.Caching.Services;
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Modules;
@@ -18,9 +17,8 @@ using NewLife.Serialization;
 using NewLife.Web;
 using Stardust;
 using Stardust.Registry;
-using XCode.DataAccessLayer;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using XCode;
+using XCode.DataAccessLayer;
 
 namespace NewLife.Cube;
 

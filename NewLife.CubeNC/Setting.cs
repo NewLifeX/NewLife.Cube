@@ -84,6 +84,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("数据保留时间。审计日期与OAuth日志，默认30天")]
     [Category("通用")]
     public Int32 DataRetention { get; set; } = 30;
+
+    /// <summary>文件保留时间。备份文件保留时间，默认15天</summary>
+    [Description("文件保留时间。备份文件保留时间，默认15天")]
+    [Category("通用")]
+    public Int32 FileRetention { get; set; } = 15;
     #endregion
 
     #region 用户登录
