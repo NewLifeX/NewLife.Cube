@@ -1,6 +1,6 @@
 ﻿namespace NewLife.Cube.ViewModels;
 
-/// <summary获取扩展字段委托</summary>
+/// <summary>获取扩展字段委托</summary>
 /// <param name="entity"></param>
 /// <returns></returns>
 public delegate Object GetExpandDelegate(Object entity);

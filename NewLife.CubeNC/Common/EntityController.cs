@@ -720,18 +720,21 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     /// <returns></returns>
     protected virtual Int32 OnUpdate(TEntity entity)
     {
-        // 遍历表单字段，部分字段可能有扩展
-        foreach (var item in EditFormFields)
+        if (Request.HasFormContentType)
         {
-            if (item is FormField ef && ef.GetExpand != null)
+            // 遍历表单字段，部分字段可能有扩展
+            foreach (var item in EditFormFields)
             {
-                // 获取参数对象，展开参数，从表单字段接收参数
-                var p = ef.GetExpand(entity);
-                if (p != null && p is not String && !(entity as IEntity).Dirtys[ef.Name])
+                if (item is FormField ef && ef.GetExpand != null)
                 {
-                    // 保存参数对象
-                    if (FieldCollection.ReadForm(p, Request.Form, ef.Name + "_"))
-                        entity.SetItem(ef.Name, p.ToJson(true));
+                    // 获取参数对象，展开参数，从表单字段接收参数
+                    var p = ef.GetExpand(entity);
+                    if (p != null && p is not String && !(entity as IEntity).Dirtys[ef.Name])
+                    {
+                        // 保存参数对象
+                        if (FieldCollection.ReadForm(p, Request.Form, ef.Name + "_"))
+                            entity.SetItem(ef.Name, p.ToJson(true));
+                    }
                 }
             }
         }

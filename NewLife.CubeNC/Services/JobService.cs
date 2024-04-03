@@ -208,8 +208,11 @@ internal class MyJob : IDisposable
         var id = $"{expession}@{cmd}@{job.Argument}";
         if (id == _id && _timer != null) return;
 
-        var cron = new Cron();
-        if (!cron.Parse(expession)) throw new InvalidOperationException($"无效表达式 {expession}");
+        foreach (var item in expession.Split(";"))
+        {
+            var cron = new Cron();
+            if (!cron.Parse(item)) throw new InvalidOperationException($"无效表达式 {item}");
+        }
 
         // 找到类和方法
         _type = cmd.GetTypeEx();
@@ -339,7 +342,17 @@ internal class MyJob : IDisposable
 
         job.WriteLog(job.Name, success, message);
 
-        job.NextTime = _timer.Cron.GetNext(_timer.NextTime);
+        //job.NextTime = _timer.Cron.GetNext(_timer.NextTime);
+        // 本次任务未完成，timer.NextTime不变
+        //job.NextTime = _timer.NextTime;
+        var next = DateTime.MinValue;
+        foreach (var cron in _timer.Crons)
+        {
+            var dt = cron.GetNext(_timer.NextTime);
+            if (next == DateTime.MinValue || dt < next) next = dt;
+        }
+        job.NextTime = next;
+
         job.Update();
     }
 }
