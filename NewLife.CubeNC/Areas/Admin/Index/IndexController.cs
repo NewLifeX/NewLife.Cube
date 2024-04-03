@@ -47,8 +47,9 @@ public class IndexController : ControllerBaseX
         ViewBag.Config = SysConfig.Current;
 
         //!!! 租户切换
+        var set = CubeSetting.Current;
         var tenantId = Request.Query["TenantId"].ToInt(-1);
-        if (tenantId >= 0)
+        if (tenantId >= 0 && set.EnableTenant)
         {
             // 判断租户关系
             var list = TenantUser.FindAllByUserId(user.ID);

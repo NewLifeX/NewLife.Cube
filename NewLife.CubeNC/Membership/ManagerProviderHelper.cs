@@ -73,6 +73,9 @@ public static class ManagerProviderHelper
     /// <param name="userId"></param>
     public static void ChooseTenant(this HttpContext context, Int32 userId)
     {
+        var set = CubeSetting.Current;
+        if (!set.EnableTenant) return;
+
         /*
          * 用户登录后的租户选择逻辑：
          *  已选租户且有效

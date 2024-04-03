@@ -21,7 +21,8 @@ public class TenantMiddleware
         var changed = false;
         try
         {
-            if (TenantContext.Current == null)
+            var set = CubeSetting.Current;
+            if (set.EnableTenant && TenantContext.Current == null)
             {
                 var tenantId = ctx.GetTenantId();
                 if (tenantId > 0)

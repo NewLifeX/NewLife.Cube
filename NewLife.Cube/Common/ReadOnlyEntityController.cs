@@ -218,18 +218,32 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         }
 
         // 多租户
-        var ctxTenant = TenantContext.Current;
-        if (ctxTenant != null && IsTenantSource)
+        var set = CubeSetting.Current;
+        if (set.EnableTenant)
         {
-            var tenant = Tenant.FindById(ctxTenant.TenantId);
-            if (tenant != null)
+            var ctxTenant = TenantContext.Current;
+            if (ctxTenant != null && IsTenantSource)
             {
-                HttpContext.Items["TenantId"] = tenant.Id;
+                var tenant = Tenant.FindById(ctxTenant.TenantId);
+                if (tenant != null)
+                {
+                    HttpContext.Items["TenantId"] = tenant.Id;
 
-                if (!exp.IsNullOrEmpty())
-                    exp = "TenantId={#TenantId} and " + exp;
-                else
-                    exp = "TenantId={#TenantId}";
+                    if (typeof(TEntity) == typeof(Tenant))
+                    {
+                        if (!exp.IsNullOrEmpty())
+                            exp = "Id={#TenantId} and " + exp;
+                        else
+                            exp = "Id={#TenantId}";
+                    }
+                    else
+                    {
+                        if (!exp.IsNullOrEmpty())
+                            exp = "TenantId={#TenantId} and " + exp;
+                        else
+                            exp = "TenantId={#TenantId}";
+                    }
+                }
             }
         }
 
