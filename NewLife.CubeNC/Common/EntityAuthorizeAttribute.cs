@@ -184,8 +184,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
 
         var ctx = filterContext.HttpContext;
         var mf = ManageProvider.Menu;
-        var menu = ctx.Items["CurrentMenu"] as IMenu;
-        if (menu == null)
+        if (ctx.Items["CurrentMenu"] is not IMenu menu)
         {
             menu = mf.FindByFullName(fullName) ?? mf.FindByFullName(type.FullName) ?? mf.FindByUrl(url) ?? mf.FindByUrl("~" + url);
 

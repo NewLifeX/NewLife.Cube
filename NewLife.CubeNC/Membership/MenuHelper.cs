@@ -71,6 +71,7 @@ public static class MenuHelper
                 root.Sort = attArea.Order;
                 root.Visible = attArea.Visible;
                 root.Icon = attArea.Icon;
+                root.Ex4 = attArea.HelpUrl;
             }
         }
         if (root.FullName != nameSpace) root.FullName = nameSpace;
@@ -179,6 +180,7 @@ public static class MenuHelper
             if (att != null)
             {
                 if (controller.Icon.IsNullOrEmpty()) controller.Icon = att.Icon;
+                if (controller.Ex4.IsNullOrEmpty()) controller.Ex4 = att.HelpUrl;
 
                 // 小于该更新时间的菜单设置将被覆盖
                 if ((controller.UpdateTime < att.LastUpdate.ToDateTime() || attArea != null && controller.UpdateTime < attArea.LastUpdate.ToDateTime()) &&
@@ -186,6 +188,9 @@ public static class MenuHelper
                 {
                     controller.Sort = att.Order;
                     controller.Visible = att.Visible;
+
+                    if (!att.Icon.IsNullOrEmpty()) controller.Icon = att.Icon;
+                    if (!att.HelpUrl.IsNullOrEmpty()) controller.Ex4 = att.HelpUrl;
                 }
             }
 
@@ -268,6 +273,7 @@ public static class MenuHelper
                 m2 ??= menu.Parent.Add(name, method.GetDisplayName(), $"{controllerType.FullName}.{name}", $"{menu.Url}/{name}");
                 if (m2.Sort == 0) m2.Sort = attMenu.Order;
                 if (m2.Icon.IsNullOrEmpty()) m2.Icon = attMenu.Icon;
+                if (m2.Ex4.IsNullOrEmpty()) m2.Ex4 = attMenu.HelpUrl;
                 if (m2.FullName.IsNullOrEmpty()) m2.FullName = $"{controllerType.FullName}.{name}";
                 if (attAuth != null) m2.Permissions[(Int32)attAuth.Permission] = attAuth.Permission.GetDescription();
                 if (m2 is IEntity entity) entity.Update();

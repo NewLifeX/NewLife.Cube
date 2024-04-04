@@ -5,6 +5,7 @@
 @{
     var set = NewLife.Cube.CubeSetting.Current;
     var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    var menu = ViewBag.Menu as IMenu;
 
     var title = ViewBag.Title + "";
     if (set.TitlePrefix && title != "" && !title.Contains(" - "))
@@ -87,7 +88,16 @@
                 <ul class="breadcrumb">
                     @await Html.PartialAsync("_Layout_Nav")
                 </ul>
-                <div class="hidden-xs" style="float: right; margin-left: 40px;max-width:1000px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@remark">@remark</div>
+                <div class="hidden-xs" style="float: right; margin-left: 40px;max-width:1000px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@remark">
+                    @if (menu != null && !menu.Ex4.IsNullOrEmpty() && menu.Ex4.StartsWithIgnoreCase("http://", "https://"))
+                    {
+                        <a href="@(menu.Ex4)" target="_blank">@remark</a>
+                    }
+                    else
+                    {
+                        <text>@remark</text>
+                    }
+                </div>
             </div>
         }
         <div class="page-content">
@@ -216,7 +226,7 @@
 
             </text>
         }
-                        });
+                                                        });
     </script>
 
     <!--开关插件-->
