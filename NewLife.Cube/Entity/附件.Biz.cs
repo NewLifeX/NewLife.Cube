@@ -181,6 +181,10 @@ public partial class Attachment : Entity<Attachment>
     {
         if (url.IsNullOrEmpty()) return false;
 
+        // 清理url的#后续部分
+        var p = url.IndexOf('#');
+        if (p > 0) url = url[..p];
+
         // 提前生成雪花Id，用于保存文件
         var isNew = Id == 0;
         if (Id == 0) Id = Meta.Factory.Snow.NewId();
