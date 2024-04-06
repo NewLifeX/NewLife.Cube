@@ -115,6 +115,9 @@ public class DataRetentionService : IHostedService
         var di = NewLife.Setting.Current.BackupPath.AsDirectory();
         if (!di.Exists) return;
 
+        // 小于该大小的文件将不会被删除，即使超过保留时间
+        var minSize = set.FileRetentionSize * 1024;
+
         // 保留数据的起点
         var time = DateTime.Now.AddDays(-set.FileRetention);
 
@@ -123,6 +126,8 @@ public class DataRetentionService : IHostedService
         {
             foreach (var fi in di.GetAllFiles("*.*", false))
             {
+                if (minSize > 0 && fi.Length < minSize) continue;
+
                 var name = fi.Name;
                 var p = name.LastIndexOf('_');
                 if (p > 0)
