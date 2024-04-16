@@ -63,7 +63,7 @@ public static class CubeService
         }
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        IpResolver.Register();
+        //IpResolver.Register();
 
         var set = CubeSetting.Current;
         services.AddSingleton(set);
