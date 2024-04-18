@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Web;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
@@ -7,7 +8,7 @@ using NewLife.IO;
 namespace NewLife.Cube.Results;
 
 /// <summary>Csv动作结果</summary>
-public class CsvActionResult : IActionResult
+public class CsvResult : IActionResult
 {
     /// <summary>字段列表</summary>
     public IList<DataField> Fields { get; set; }
@@ -18,6 +19,9 @@ public class CsvActionResult : IActionResult
     /// <summary>内容类型</summary>
     public String ContentType { get; set; } = "application/vnd.ms-excel";
 
+    /// <summary>附件文件名。若指定，则作为文件下载输出</summary>
+    public String AttachmentName { get; set; }
+
     /// <summary>执行并输出结果</summary>
     /// <param name="context"></param>
     /// <returns></returns>
@@ -26,8 +30,12 @@ public class CsvActionResult : IActionResult
         var rs = context.HttpContext.Response;
         rs.Headers[HeaderNames.ContentEncoding] = "UTF8";
 
-        if (!ContentType.IsNullOrEmpty())
-            rs.Headers[HeaderNames.ContentType] = ContentType;
+        if (!AttachmentName.IsNullOrEmpty())
+        {
+            if (!ContentType.IsNullOrEmpty())
+                rs.Headers[HeaderNames.ContentType] = ContentType;
+            rs.Headers[HeaderNames.ContentDisposition] = "attachment; filename=" + HttpUtility.UrlEncode(AttachmentName);
+        }
 
         await using var csv = new CsvFile(rs.Body, true);
 
