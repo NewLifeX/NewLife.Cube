@@ -3,7 +3,7 @@
     "CubeDemoNC": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:7080;https://localhost:5001",
+      "applicationUrl": "http://localhost:7080;https://localhost:7081",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

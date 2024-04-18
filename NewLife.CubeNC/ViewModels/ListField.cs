@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using NewLife.Collections;
 using NewLife.Data;
 using NewLife.Reflection;
+using NewLife.Web;
 using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels;
@@ -99,6 +100,7 @@ public class ListField : DataField
     #region 数据格式化
     private static readonly Regex _reg = new(@"{(\w+(?:\.\w+)*)}", RegexOptions.Compiled);
     private static readonly Regex _reg2 = new(@"{page:(\w+)}", RegexOptions.Compiled);
+    private static readonly Regex _reg3 = new(@"{page:(\$?\w+)\(([\w,\s]*)\)}", RegexOptions.Compiled);
 
     private static String Replace(String input, IModel data)
     {
@@ -123,9 +125,13 @@ public class ListField : DataField
         });
     }
 
+    /// <summary>替换模版中的{page:name}标签数据，从page读取</summary>
+    /// <param name="input"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
     private static String Replace(String input, IExtend data)
     {
-        return _reg2.Replace(input, m =>
+        input = _reg2.Replace(input, m =>
         {
             var name = m.Groups[1].Value;
             var val = data[name];
@@ -135,6 +141,26 @@ public class ListField : DataField
 
             return val + "";
         });
+
+        input = _reg3.Replace(input, m =>
+        {
+            var name = m.Groups[1].Value;
+            var ps = m.Groups[2].Value;
+            Object val = null;
+            if (name.EqualIgnoreCase("$BaseUrl"))
+            {
+                // 专属标签{page:$BaseUrl(id,name , kind)}，用于拼接Url中的参数，排除指定标签
+                if (data is Pager pager)
+                    val = pager.GetBaseUrl(true, false, false, ps?.Split(",").Select(e => e.Trim()).ToArray());
+            }
+
+            // 特殊处理时间
+            if (val is DateTime dt) return dt == dt.Date ? dt.ToString("yyyy-MM-dd") : dt.ToFullString();
+
+            return val + "";
+        });
+
+        return input;
     }
 
     /// <summary>针对指定实体对象计算DisplayName，替换其中变量</summary>
