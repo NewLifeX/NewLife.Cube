@@ -122,6 +122,13 @@ public class DataField
     #endregion
 
     #region 构造
+    /// <summary>实例化数据字段</summary>
+    public DataField() { }
+
+    /// <summary>实例化数据字段</summary>
+    /// <param name="field"></param>
+    public DataField(FieldItem field) => Fill(field);
+
     /// <summary>已重载</summary>
     /// <returns></returns>
     public override String ToString() => $"{Name} {DisplayName} {Type.Name}";

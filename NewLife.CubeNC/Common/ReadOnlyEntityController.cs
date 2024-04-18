@@ -5,14 +5,14 @@ using System.Text;
 using System.Web;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Net.Http.Headers;
 using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
+using NewLife.Cube.Results;
 using NewLife.Cube.ViewModels;
+using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -663,7 +663,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [AllowAnonymous]
     [DisplayName("Excel接口")]
-    public virtual async Task<ActionResult> Csv(String token, Pager p)
+    public virtual IActionResult Csv(String token, Pager p)
     {
         var issuer = ValidToken(token);
 
@@ -672,17 +672,20 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         var list = SearchData(p);
 
-        // 准备需要输出的列
-        var fs = Factory.Fields.ToList();
+        // 准备需要输出的列，包括IExtend属性
+        var fields = Factory.Fields.Select(e => new DataField(e)).ToList();
+        if (list.FirstOrDefault() is IExtend ext)
+        {
+            foreach (var item in ext.Items)
+            {
+                if (!fields.Any(e => e.Name.EqualIgnoreCase(item.Key)))
+                {
+                    fields.Add(new DataField { Name = item.Key, Type = item.Value?.GetType(), });
+                }
+            }
+        }
 
-        var rs = Response;
-        var headers = rs.Headers;
-        headers[HeaderNames.ContentEncoding] = "UTF8";
-        //headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
-
-        await OnExportCsv(fs, list, rs.Body);
-
-        return new EmptyResult();
+        return new CsvActionResult { Fields = fields, Data = list };
     }
 
     /// <summary>Csv接口</summary>
@@ -691,7 +694,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [AllowAnonymous]
     [DisplayName("Excel接口")]
-    public virtual async Task<ActionResult> Excel(String token, Pager p)
+    public virtual IActionResult Excel(String token, Pager p)
     {
         var issuer = ValidToken(token);
 
@@ -726,14 +729,20 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             }
         }
 
-        var rs = Response;
-        var headers = rs.Headers;
-        headers[HeaderNames.ContentEncoding] = "UTF8";
-        //headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+        // 准备需要输出的列，包括IExtend属性
+        var fields = Factory.Fields.Select(e => new DataField(e)).ToList();
+        if (list.FirstOrDefault() is IExtend ext)
+        {
+            foreach (var item in ext.Items)
+            {
+                if (!fields.Any(e => e.Name.EqualIgnoreCase(item.Key)))
+                {
+                    fields.Add(new DataField { Name = item.Key, Type = item.Value?.GetType(), });
+                }
+            }
+        }
 
-        await OnExportExcel(fs, list, rs.Body);
-
-        return new EmptyResult();
+        return new ExcelActionResult { Fields = fields, Data = list };
     }
     #endregion
 
@@ -803,7 +812,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出")]
-    public virtual async Task<ActionResult> ExportExcel()
+    public virtual IActionResult ExportExcel()
     {
         // 准备需要输出的列
         var fs = new List<FieldItem>();
@@ -848,22 +857,29 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         SetAttachment(null, ".xls", true);
 
-        var rs = Response;
-        var headers = rs.Headers;
-        headers[HeaderNames.ContentEncoding] = "UTF8";
-        headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+        var list = ExportData();
 
-        var data = ExportData();
-        await OnExportExcel(fs, data, rs.Body);
+        // 准备需要输出的列，包括IExtend属性
+        var fields = Factory.Fields.Select(e => new DataField(e)).ToList();
+        if (list.FirstOrDefault() is IExtend ext)
+        {
+            foreach (var item in ext.Items)
+            {
+                if (!fields.Any(e => e.Name.EqualIgnoreCase(item.Key)))
+                {
+                    fields.Add(new DataField { Name = item.Key, Type = item.Value?.GetType(), });
+                }
+            }
+        }
 
-        return new EmptyResult();
+        return new ExcelActionResult { Fields = fields, Data = list };
     }
 
     /// <summary>导出Excel模板</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出模板")]
-    public virtual async Task<ActionResult> ExportExcelTemplate()
+    public virtual IActionResult ExportExcelTemplate()
     {
         // 准备需要输出的列
         var fs = new List<FieldItem>();
@@ -915,35 +931,42 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
         SetAttachment(null, ".xls", true);
 
-        var rs = Response;
-        var headers = rs.Headers;
-        headers[HeaderNames.ContentEncoding] = "UTF8";
-        headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
+        var list = ExportData(1);
 
-        var data = ExportData(1);
-        await OnExportExcel(fs, data, rs.Body);
+        // 准备需要输出的列，包括IExtend属性
+        var fields = Factory.Fields.Select(e => new DataField(e)).ToList();
+        if (list.FirstOrDefault() is IExtend ext)
+        {
+            foreach (var item in ext.Items)
+            {
+                if (!fields.Any(e => e.Name.EqualIgnoreCase(item.Key)))
+                {
+                    fields.Add(new DataField { Name = item.Key, Type = item.Value?.GetType(), });
+                }
+            }
+        }
 
-        return new EmptyResult();
+        return new ExcelActionResult { Fields = fields, Data = list };
     }
 
     /// <summary>导出Excel，可重载修改要输出的列</summary>
-    /// <param name="fs">字段列表</param>
+    /// <param name="fields">字段列表</param>
     /// <param name="list">数据集</param>
     /// <param name="output">输出流</param>
-    protected virtual async ValueTask OnExportExcel(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
+    protected virtual async ValueTask OnExportExcel(IList<DataField> fields, IEnumerable<TEntity> list, Stream output)
     {
         await using var csv = new CsvFile(output, true);
 
         // 列头
         var headers = new List<String>();
-        foreach (var fi in fs)
+        foreach (var fi in fields)
         {
             var name = fi.DisplayName;
             if (name.IsNullOrEmpty()) name = fi.Description;
             if (name.IsNullOrEmpty()) name = fi.Name;
 
             // 第一行以ID开头的csv文件，容易被识别为SYLK文件
-            if (name == "ID" && fi == fs[0]) name = "Id";
+            if (name == "ID" && fi == fields[0]) name = "Id";
             headers.Add(name);
         }
         await csv.WriteLineAsync(headers);
@@ -951,7 +974,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         // 内容
         foreach (var entity in list)
         {
-            await csv.WriteLineAsync(fs.Select(e => entity[e.Name]));
+            await csv.WriteLineAsync(fields.Select(e => entity[e.Name]));
         }
     }
 
@@ -959,11 +982,8 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
     [DisplayName("导出")]
-    public virtual async Task<ActionResult> ExportCsv()
+    public virtual IActionResult ExportCsv()
     {
-        // 准备需要输出的列
-        var fs = Factory.Fields.ToList();
-
         if (Factory.Session.Count > 100_000)
         {
             var p = Session[CacheKey] as Pager;
@@ -978,39 +998,26 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var name = GetType().Name.TrimEnd("Controller");
         SetAttachment(name, ".csv", true);
 
-        var rs = Response;
-        var headers = rs.Headers;
-        headers[HeaderNames.ContentEncoding] = "UTF8";
-        headers[HeaderNames.ContentType] = "application/vnd.ms-excel";
-
         //// 允许同步IO，便于CsvFile刷数据Flush
         //var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
         //if (ft != null) ft.AllowSynchronousIO = true;
 
-        var data = ExportData();
-        await OnExportCsv(fs, data, rs.Body);
+        var list = ExportData();
 
-        return new EmptyResult();
-    }
-
-    /// <summary>导出Csv，可重载修改要输出的列</summary>
-    /// <param name="fs">字段列表</param>
-    /// <param name="list">数据集</param>
-    /// <param name="output">输出流</param>
-    protected virtual async ValueTask OnExportCsv(List<FieldItem> fs, IEnumerable<TEntity> list, Stream output)
-    {
-        await using var csv = new CsvFile(output, true);
-
-        // 列头
-        var headers = fs.Select(e => e.Name).ToArray();
-        if (headers[0] == "ID") headers[0] = "Id";
-        await csv.WriteLineAsync(headers);
-
-        // 内容
-        foreach (var entity in list)
+        // 准备需要输出的列，包括IExtend属性
+        var fields = Factory.Fields.Select(e => new DataField(e)).ToList();
+        if (list.FirstOrDefault() is IExtend ext)
         {
-            await csv.WriteLineAsync(fs.Select(e => entity[e.Name]));
+            foreach (var item in ext.Items)
+            {
+                if (!fields.Any(e => e.Name.EqualIgnoreCase(item.Key)))
+                {
+                    fields.Add(new DataField { Name = item.Key, Type = item.Value?.GetType(), });
+                }
+            }
         }
+
+        return new CsvActionResult { Fields = fields, Data = list };
     }
     #endregion
 
