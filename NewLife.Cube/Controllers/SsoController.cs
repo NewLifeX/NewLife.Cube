@@ -70,7 +70,7 @@ public class SsoController : ControllerBaseX
     public SsoController(ICacheProvider cacheProvider) => _cache = cacheProvider.Cache;
 
     #region 单点登录客户端
-    private String GetUserAgent() => Request.Headers["User-Agent"] + "";
+    private String GetUserAgent() => Request.Headers.UserAgent + "";
 
     /// <summary>第三方登录</summary>
     /// <param name="name"></param>

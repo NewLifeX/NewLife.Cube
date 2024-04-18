@@ -31,7 +31,7 @@ public static class SameSiteCookiesServiceCollectionExtensions
     {
         if (options.SameSite == SameSiteMode.None)
         {
-            var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
+            var userAgent = httpContext.Request.Headers.UserAgent.ToString();
 
             if (DisallowsSameSiteNone(userAgent))
             {

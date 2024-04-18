@@ -79,6 +79,16 @@ public class CubeSetting : Config<CubeSetting>
     [Description("机器人错误码。设置后拦截各种爬虫并返回相应错误，如404/500，默认0不拦截")]
     [Category("通用")]
     public Int32 RobotError { get; set; }
+
+    ///// <summary>强制使用SSL。强制访问https，使用http访问时跳转</summary>
+    //[Description("强制使用SSL。强制访问https，使用http访问时跳转")]
+    //[Category("通用")]
+    //public Boolean ForceSSL { get; set; }
+
+    /// <summary>强制跳转。指定目标schema和host，在GET访问发现不一致时强制跳转，host支持*。常用于强制跳转https，如https://*:8081</summary>
+    [Description("强制跳转。指定目标schema和host，在GET访问发现不一致时强制跳转，host支持*。常用于强制跳转https，如https://*:8081")]
+    [Category("通用")]
+    public String ForceRedirect { get; set; }
     #endregion
 
     #region 用户登录

@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Net;
 using System.Web;
 using NewLife.Common;
 using NewLife.Cube.Entity;
@@ -38,13 +37,16 @@ public class RunTimeMiddleware
     /// <returns></returns>
     public async Task Invoke(HttpContext ctx)
     {
-        var userAgent = ctx.Request.Headers["User-Agent"] + "";
+        var userAgent = ctx.Request.Headers.UserAgent + "";
         var ua = new UserAgentParser();
         ua.Parse(userAgent);
         ctx.Items["UserAgent"] = ua;
 
         // 识别拦截爬虫
         if (!ValidRobot(ctx, ua)) return;
+
+        // 强制访问Https
+        if (MiddlewareHelper.CheckForceRedirect(ctx)) return;
 
         var ip = ctx.GetUserHost();
         ManageProvider.UserHost = ip;

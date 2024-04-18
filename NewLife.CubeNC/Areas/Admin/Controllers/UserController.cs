@@ -282,7 +282,7 @@ public class UserController : EntityController<User, UserModel>
         // 部分提供支持应用内免登录，直接跳转
         if (ms != null && ms.Count > 0 && logId == 0 && GetRequest("autologin") != "0")
         {
-            var agent = Request.Headers["User-Agent"] + "";
+            var agent = Request.Headers.UserAgent + "";
             if (!agent.IsNullOrEmpty())
             {
                 foreach (var item in ms)

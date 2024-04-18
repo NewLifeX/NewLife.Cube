@@ -73,7 +73,7 @@ public class SsoController : ControllerBaseX
     public virtual ActionResult Index() => Redirect("~/");
 
     #region 单点登录客户端
-    private String GetUserAgent() => Request.Headers["User-Agent"] + "";
+    private String GetUserAgent() => Request.Headers.UserAgent + "";
 
     /// <summary>第三方登录</summary>
     /// <param name="name"></param>
