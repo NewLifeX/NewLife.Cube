@@ -102,7 +102,15 @@ public class ListField : DataField
     private static readonly Regex _reg2 = new(@"{page:(\w+)}", RegexOptions.Compiled);
     private static readonly Regex _reg3 = new(@"{page:(\$?\w+)\(([\w,\s]*)\)}", RegexOptions.Compiled);
 
-    private static String Replace(String input, IModel data)
+    enum EnumModes
+    {
+        Default = 0,
+        String = 1,
+        DisplayName = 2,
+        Int = 3,
+    }
+
+    private static String Replace(String input, IModel data, EnumModes enumMode)
     {
         return _reg.Replace(input, m =>
         {
@@ -120,6 +128,16 @@ public class ListField : DataField
 
             // 特殊处理时间
             if (val is DateTime dt) return dt == dt.Date ? dt.ToString("yyyy-MM-dd") : dt.ToFullString();
+            if (val != null && val.GetType().IsEnum)
+            {
+                return enumMode switch
+                {
+                    EnumModes.Default or EnumModes.String => val + "",
+                    EnumModes.DisplayName => (val as Enum)?.GetDescription() ?? val + "",
+                    EnumModes.Int => val.ToInt() + "",
+                    _ => val + "",
+                };
+            }
 
             return val + "";
         });
@@ -128,8 +146,9 @@ public class ListField : DataField
     /// <summary>替换模版中的{page:name}标签数据，从page读取</summary>
     /// <param name="input"></param>
     /// <param name="data"></param>
+    /// <param name="enumMode"></param>
     /// <returns></returns>
-    private static String Replace(String input, IExtend data)
+    private static String Replace(String input, IExtend data, EnumModes enumMode)
     {
         input = _reg2.Replace(input, m =>
         {
@@ -138,6 +157,16 @@ public class ListField : DataField
 
             // 特殊处理时间
             if (val is DateTime dt) return dt == dt.Date ? dt.ToString("yyyy-MM-dd") : dt.ToFullString();
+            if (val != null && val.GetType().IsEnum)
+            {
+                return enumMode switch
+                {
+                    EnumModes.Default or EnumModes.String => val + "",
+                    EnumModes.DisplayName => (val as Enum)?.GetDescription() ?? val + "",
+                    EnumModes.Int => val.ToInt() + "",
+                    _ => val + "",
+                };
+            }
 
             return val + "";
         });
@@ -171,8 +200,8 @@ public class ListField : DataField
     {
         if (DisplayName.IsNullOrEmpty()) return null;
 
-        var rs = Replace(DisplayName, data);
-        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+        var rs = Replace(DisplayName, data, EnumModes.DisplayName);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page, EnumModes.DisplayName);
 
         return rs;
     }
@@ -187,8 +216,8 @@ public class ListField : DataField
         if (txt.IsNullOrEmpty()) return null;
 
         //return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
-        var rs = Replace(txt, data);
-        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+        var rs = Replace(txt, data, EnumModes.DisplayName);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page, EnumModes.DisplayName);
 
         return rs;
     }
@@ -197,7 +226,7 @@ public class ListField : DataField
     /// <param name="data"></param>
     /// <param name="page"></param>
     /// <returns></returns>
-    public virtual String GetLineName(IModel data, IExtend page = null)
+    public virtual String GetLinkName(IModel data, IExtend page = null)
     {
         // 如果设置了单元格文字，则优先使用。Text>Entity[name]>DisplayName
         var txt = Text;
@@ -212,8 +241,8 @@ public class ListField : DataField
         if (txt.IsNullOrEmpty()) return null;
 
         //return _reg.Replace(txt, m => data[m.Groups[1].Value + ""] + "");
-        var rs = Replace(txt, data);
-        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+        var rs = Replace(txt, data, EnumModes.DisplayName);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page, EnumModes.DisplayName);
 
         return rs;
     }
@@ -227,7 +256,7 @@ public class ListField : DataField
         var svc = GetService<ILinkExtend>();
         if (svc != null) return svc.Resolve(this, data);
 
-        var linkName = GetLineName(data, page);
+        var linkName = GetLinkName(data, page);
         //if (linkName.IsNullOrEmpty()) linkName = GetDisplayName(data);
 
         var url = GetUrl(data, page);
@@ -248,7 +277,7 @@ public class ListField : DataField
 
         var link = sb.Put(true);
 
-        return Replace(link, data);
+        return Replace(link, data, EnumModes.String);
     }
 
     /// <summary>针对指定实体对象计算url，替换其中变量</summary>
@@ -263,8 +292,8 @@ public class ListField : DataField
         if (Url.IsNullOrEmpty()) return null;
 
         //return _reg.Replace(Url, m => data[m.Groups[1].Value + ""] + "");
-        var rs = Replace(Url, data);
-        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+        var rs = Replace(Url, data, EnumModes.Int);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page, EnumModes.Int);
 
         return rs;
     }
@@ -278,8 +307,8 @@ public class ListField : DataField
         if (Title.IsNullOrEmpty()) return null;
 
         //return _reg.Replace(Title, m => data[m.Groups[1].Value + ""] + "");
-        var rs = Replace(Title, data);
-        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page);
+        var rs = Replace(Title, data, EnumModes.DisplayName);
+        if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page, EnumModes.DisplayName);
 
         return rs;
     }
