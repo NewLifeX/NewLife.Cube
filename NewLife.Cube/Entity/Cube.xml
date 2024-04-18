@@ -220,11 +220,12 @@
         <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。AppID" />
         <Column Name="DisplayName" DataType="String" Description="显示名" />
         <Column Name="Secret" DataType="String" Description="密钥。AppSecret" />
+        <Column Name="Category" DataType="String" Description="类别" />
+        <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="HomePage" DataType="String" Length="200" Description="首页" />
         <Column Name="Logo" DataType="String" ItemType="image" Description="图标。附件路径" />
-        <Column Name="White" DataType="String" Length="200" Description="白名单" />
-        <Column Name="Black" DataType="String" Length="200" Description="黑名单。黑名单优先于白名单" />
-        <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="White" DataType="String" Description="IP白名单。符合条件的来源IP才允许访问，支持*通配符，多个逗号隔开" Category="安全告警" />
+        <Column Name="Black" DataType="String" Description="IP黑名单。符合条件的来源IP禁止访问，支持*通配符，多个逗号隔开" Category="安全告警" />
         <Column Name="TokenExpire" DataType="Int32" ItemType="TimeSpan" Description="有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置" />
         <Column Name="Urls" DataType="String" Length="500" Description="回调地址。用于限制回调地址安全性，多个地址逗号隔开" />
         <Column Name="RoleIds" DataType="String" Description="授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制" />
