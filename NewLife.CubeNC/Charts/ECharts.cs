@@ -46,7 +46,7 @@ public class ECharts : IExtend
     public DataZoom[] DataZoom { get; set; }
 
     /// <summary>系列数据</summary>
-    public IList<Series> Series { get; set; }
+    public IList<Series> Series { get; set; } = [];
 
     /// <summary>标记的图形。设置后添加的图形都使用该值</summary>
     [ScriptIgnore]
@@ -70,8 +70,6 @@ public class ECharts : IExtend
     /// <param name="series"></param>
     public void Add(Series series)
     {
-        Series ??= new List<Series>();
-
         Series.Add(series);
     }
 
@@ -384,7 +382,7 @@ public class ECharts : IExtend
 
         // 提示
         var legend = Legend;
-        legend ??= Series.Select(e => e.Name).ToArray();
+        legend ??= Series?.Select(e => e.Name).ToArray();
         if (legend != null)
         {
             if (legend is String str)
