@@ -1,4 +1,5 @@
-﻿using NewLife.Web;
+﻿using NewLife.Log;
+using NewLife.Web;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.WebMiddleware;
@@ -17,29 +18,75 @@ public static class MiddlewareHelper
         if (set.ForceRedirect.IsNullOrEmpty()) return false;
 
         // 分解跳转地址
-        var ss = set.ForceRedirect.Split("://", ":");
-        var scheme = ss.Length > 0 ? ss[0] : "";
-        var host = ss.Length > 1 ? ss[1] : ss[0];
-        var port = ss.Length > 2 ? ss[2].ToInt() : 0;
-        if (ss.Length == 1) scheme = null;
-        if (host == "*") host = null;
+        var u = new MyUri(set.ForceRedirect);
+        if (u.Host == "*") u.Host = null;
 
-        if (scheme.IsNullOrEmpty() && host.IsNullOrEmpty() && port == 0) return false;
+        if (u.Scheme.IsNullOrEmpty() && u.Host.IsNullOrEmpty() && u.Port == 0) return false;
 
         var uri = ctx.Request.GetRawUrl();
-        if ((scheme.IsNullOrEmpty() || uri.Scheme.EqualIgnoreCase(scheme)) &&
-            (host.IsNullOrEmpty() || uri.Host.EqualIgnoreCase(host)) &&
-            (port == 0 || port == uri.Port)) return false;
+        if ((u.Scheme.IsNullOrEmpty() || uri.Scheme.EqualIgnoreCase(u.Scheme)) &&
+            (u.Host.IsNullOrEmpty() || uri.Host.EqualIgnoreCase(u.Host)) &&
+            (u.Port == 0 || u.Port == uri.Port)) return false;
+
+        using var span = DefaultTracer.Instance?.NewSpan("ForceRedirect", uri + "");
+        span?.AppendTag($"规则：{set.ForceRedirect}");
 
         // 重建url
-        if (scheme.IsNullOrEmpty()) scheme = uri.Scheme;
-        if (host.IsNullOrEmpty()) host = uri.Host;
-        if (port == 0) port = uri.Port;
+        if (u.Scheme.IsNullOrEmpty()) u.Scheme = uri.Scheme;
+        if (u.Host.IsNullOrEmpty()) u.Host = uri.Host;
+        if (u.Port == 0) u.Port = uri.Port;
 
-        var url = $"{scheme}://{host}:{port}{uri.PathAndQuery}";
+        var url = u.Scheme.EqualIgnoreCase("http", "ws") && u.Port == 80 ||
+            u.Scheme.EqualIgnoreCase("https", "wss") && u.Port == 443 ?
+            $"{u.Scheme}://{u.Host}{uri.PathAndQuery}" :
+            $"{u.Scheme}://{u.Host}:{u.Port}{uri.PathAndQuery}";
+
+        span?.AppendTag($"跳转：{url}");
 
         ctx.Response.Redirect(url);
 
         return true;
+    }
+
+    class MyUri
+    {
+        public String Scheme { get; set; }
+        public String Host { get; set; }
+        public Int32 Port { get; set; }
+        public String PathAndQuery { get; set; }
+
+        public MyUri(String value)
+        {
+            // 先处理头尾，再处理中间的主机和端口
+            var p = value.IndexOf("://");
+            if (p >= 0)
+            {
+                Scheme = value[..p];
+                p += 3;
+            }
+            else
+                p = 0;
+
+            var p2 = value.IndexOf('/', p);
+            if (p2 > 0)
+            {
+                PathAndQuery = value[p2..];
+                value = value[p..p2];
+            }
+            else
+                value = value[p..];
+
+            // 拆分主机和端口，注意IPv6地址
+            p2 = value.LastIndexOf(':');
+            if (p2 > 0)
+            {
+                Host = value[..p2];
+                Port = value[(p2 + 1)..].ToInt();
+            }
+            else
+            {
+                Host = value;
+            }
+        }
     }
 }
