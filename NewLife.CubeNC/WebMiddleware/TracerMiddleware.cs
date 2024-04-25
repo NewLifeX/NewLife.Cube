@@ -69,12 +69,12 @@ public class TracerMiddleware
             }
         }
 
-        // 自动记录用户访问主机地址
-        SaveServiceAddress(ctx);
-
         try
         {
             await _next.Invoke(ctx);
+
+            // 自动记录用户访问主机地址
+            SaveServiceAddress(ctx);
 
             // 根据状态码识别异常
             if (span != null)
@@ -193,29 +193,12 @@ public class TracerMiddleware
         var baseAddress = $"{uri.Scheme}://{uri.Authority}";
 
         var set = NewLife.Setting.Current;
-        if (set.ServiceAddress.IsNullOrEmpty())
+        var ss = set.ServiceAddress.Split(",").ToList();
+        if (!ss.Contains(baseAddress))
         {
-            set.ServiceAddress = baseAddress;
+            ss.Insert(0, baseAddress);
+            set.ServiceAddress = ss.Take(3).Join(",");
             set.Save();
-        }
-        else if (uri.Host.StartsWithIgnoreCase("127.", "localhost:"))
-        {
-            var ss = set.ServiceAddress.Split(",");
-            if (!ss.Contains(baseAddress))
-            {
-                set.ServiceAddress = set.ServiceAddress + "," + baseAddress;
-                set.Save();
-            }
-        }
-        else
-        {
-            var ss = set.ServiceAddress.Split(",").Where(e => !e.Contains("://127.") && !e.Contains("://localhost:")).ToList();
-            if (!ss.Contains(baseAddress))
-            {
-                ss.Add(baseAddress);
-                set.ServiceAddress = ss.Join(",");
-                set.Save();
-            }
         }
     }
 }

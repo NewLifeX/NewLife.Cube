@@ -1,4 +1,5 @@
 ﻿using System;
+using NewLife;
 using Xunit;
 
 namespace XUnitTest;
@@ -16,11 +17,24 @@ public class MyUriTests
     [InlineData("localhost", null, "localhost", 0, null)]
     public void Parse(String url, String schema, String host, Int32 port, String path)
     {
-        var uri = new MyUri(url);
-        Assert.Equal(schema, uri.Scheme);
-        Assert.Equal(host, uri.Host);
-        Assert.Equal(port, uri.Port);
-        Assert.Equal(path, uri.PathAndQuery);
+        {
+            var uri = new MyUri(url);
+            Assert.Equal(schema, uri.Scheme);
+            Assert.Equal(host, uri.Host);
+            Assert.Equal(port, uri.Port);
+            Assert.Equal(path, uri.PathAndQuery);
+        }
+        {
+            if (!url.StartsWithIgnoreCase("http://", "https://"))
+                url = "http://" + url;
+            if (schema.IsNullOrEmpty()) schema = "http";
+
+            var uri = new Uri(url);
+            Assert.Equal(schema?.ToLower(), uri.Scheme);
+            Assert.Equal(host, uri.Host);
+            Assert.Equal(port > 0 ? port : 80, uri.Port);
+            Assert.Equal(!path.IsNullOrEmpty() ? path : "/", uri.PathAndQuery);
+        }
     }
 }
 

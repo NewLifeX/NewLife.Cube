@@ -118,21 +118,17 @@ public static class WebHelper
     /// <returns></returns>
     public static Uri GetRawUrl(this HttpRequest request)
     {
-        Uri uri = null;
-
-        //// 配置
-        //var ms = OAuthConfig.GetValids();
-        //var mi = ms.FirstOrDefault(e => !e.AppUrl.IsNullOrEmpty());
-        //if (mi != null) uri = new Uri(mi.AppUrl);
+        // 加速，避免重复计算
+        if (request.HttpContext.Items["_RawUrl"] is Uri uri) return uri;
 
         // 取请求头
-        if (uri == null)
-        {
-            var url = request.GetEncodedUrl();
-            uri = new Uri(url);
-        }
+        var url = request.GetEncodedUrl();
+        uri = new Uri(url);
 
-        return GetRawUrl(uri, k => request.Headers[k]);
+        uri = GetRawUrl(uri, k => request.Headers[k]);
+        request.HttpContext.Items["_RawUrl"] = uri;
+
+        return uri;
     }
 
     /// <summary>保存上传文件</summary>
