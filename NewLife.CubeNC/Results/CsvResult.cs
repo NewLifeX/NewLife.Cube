@@ -47,7 +47,8 @@ public class CsvResult : IActionResult
         // 内容
         foreach (var entity in Data)
         {
-            await csv.WriteLineAsync(Fields.Select(e => entity[e.Name]));
+            // 导出枚举类型时，使用数字而不是字符串
+            await csv.WriteLineAsync(Fields.Select(e => e.Type.IsEnum ? (Int32)entity[e.Name] : entity[e.Name]));
         }
     }
 }
