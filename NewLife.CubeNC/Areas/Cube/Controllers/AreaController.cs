@@ -110,7 +110,7 @@ public class AreaController : EntityController<Area>
                     Height = 400,
                 };
                 chart.SetX(list2, _.Kind, e => e.Kind ?? "未知");
-                chart.SetY(null, "value");
+                chart.SetY("个数", "value");
                 chart.SetTooltip();
 
                 var bar = chart.AddBar(list2, _.Kind, e => e.ID);

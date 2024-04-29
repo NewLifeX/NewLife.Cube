@@ -30,6 +30,9 @@ public class Series : IExtend
     ///// <summary>标记线。例如平均线</summary>
     //public Object MarkLine { get; set; }
 
+    /// <summary>Y轴索引。设置1表示使用第二个Y轴</summary>
+    public Int32 YAxisIndex { get => Items["YAxisIndex"].ToInt(); set => Items["YAxisIndex"] = value; }
+
     /// <summary>扩展字典</summary>
     [ScriptIgnore]
     public IDictionary<String, Object> Items { get; set; } = new NullableDictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
