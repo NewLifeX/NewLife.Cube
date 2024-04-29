@@ -1222,9 +1222,14 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         if (post && LogOnChange)
         {
             // 必须提前写修改日志，否则修改后脏数据失效，保存的日志为空
-            if (type == DataObjectMethodType.Delete ||
-                (type == DataObjectMethodType.Update && (entity as IEntity).HasDirty))
-                LogProvider.Provider.WriteLog(type + "", entity);
+            switch (type)
+            {
+                case DataObjectMethodType.Insert:
+                case DataObjectMethodType.Delete:
+                case DataObjectMethodType.Update when (entity as IEntity).HasDirty:
+                    LogProvider.Provider.WriteLog(type + "", entity);
+                    break;
+            }
         }
 
         return true;
