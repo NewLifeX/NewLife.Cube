@@ -193,6 +193,7 @@ public class TracerMiddleware
         var baseAddress = $"{uri.Scheme}://{uri.Authority}";
 
         var set = NewLife.Setting.Current;
+        if (set.ServiceAddress.IsNullOrWhiteSpace()) return;
         var ss = set.ServiceAddress.Split(",").ToList();
         if (!ss.Contains(baseAddress))
         {
