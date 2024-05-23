@@ -117,16 +117,18 @@ public class AccessService
         var sec = (Int32)(now - now.Date).TotalSeconds;
         var time = sec / rule.LimitCycle;
 
+        // 限流缓存键
         var cacheKey = $"access:{rule.Id}:{key}:{time}";
         if (session != null) session["_access_limit"] = cacheKey;
 
-        var count = _cacheProvider.Cache.Increment(cacheKey, 1);
-        if (count > rule.LimitTimes) return false;
-
-        if (count <= 2)
-        {
+        // 递增并设置过期时间
+        var hits = _cacheProvider.Cache.Increment(cacheKey, 1);
+        if (hits <= 2)
             _cacheProvider.Cache.SetExpire(cacheKey, TimeSpan.FromSeconds(rule.LimitCycle));
-        }
+
+        DefaultSpan.Current?.AppendTag($"cacheKey={cacheKey} startTime={TimeSpan.FromSeconds(time * rule.LimitCycle)} hits={hits}");
+
+        if (hits > rule.LimitTimes) return false;
 
         return true;
     }
