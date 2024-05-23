@@ -13,5 +13,7 @@ public class AccessRuleController : EntityController<AccessRule>
     static AccessRuleController()
     {
         LogOnChange = true;
+
+        ListFields.RemoveCreateField().RemoveRemarkField();
     }
 }

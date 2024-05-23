@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using NewLife.Data;
+using NewLife.Log;
 using XCode;
 
 namespace NewLife.Cube.Entity;
@@ -91,54 +92,73 @@ public partial class AccessRule : Entity<AccessRule>
         return true;
     }
 
-    ///// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
-    //[EditorBrowsable(EditorBrowsableState.Never)]
-    //protected override void InitData()
-    //{
-    //    // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
-    //    if (Meta.Session.Count > 0) return;
+    /// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    protected override void InitData()
+    {
+        // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
+        if (Meta.Session.Count > 0) return;
 
-    //    if (XTrace.Debug) XTrace.WriteLine("开始初始化AccessRule[访问规则]数据……");
+        if (XTrace.Debug) XTrace.WriteLine("开始初始化AccessRule[访问规则]数据……");
 
-    //    var entity = new AccessRule();
-    //    entity.Name = "abc";
-    //    entity.Enable = true;
-    //    entity.Priority = 0;
-    //    entity.Url = "abc";
-    //    entity.UserAgent = "abc";
-    //    entity.IP = "abc";
-    //    entity.LoginedUser = "abc";
-    //    entity.ActionKind = 0;
-    //    entity.BlockCode = 0;
-    //    entity.BlockContent = "abc";
-    //    entity.LimitDimension = 0;
-    //    entity.LimitCycle = 0;
-    //    entity.LimitTimes = 0;
-    //    entity.CreateUserID = 0;
-    //    entity.CreateTime = DateTime.Now;
-    //    entity.CreateIP = "abc";
-    //    entity.UpdateUserID = 0;
-    //    entity.UpdateTime = DateTime.Now;
-    //    entity.UpdateIP = "abc";
-    //    entity.Remark = "abc";
-    //    entity.Insert();
+        var entity = new AccessRule
+        {
+            Name = "封禁IP",
+            Enable = false,
+            Url = "*",
+            UserAgent = "*",
+            IP = "10.0.*",
+            ActionKind = AccessActionKinds.Block,
+            BlockCode = 302,
+            BlockContent = "https://newlifex.com",
+            Remark = "指定IP段访问时，直接跳转目标Url",
+        };
+        entity.Insert();
 
-    //    if (XTrace.Debug) XTrace.WriteLine("完成初始化AccessRule[访问规则]数据！");
-    //}
+        entity = new AccessRule
+        {
+            Name = "封禁爬虫",
+            Enable = false,
+            Url = "!/Admin/*,!/Cube/*",
+            UserAgent = "*bot*,*spider*",
+            IP = "",
+            ActionKind = AccessActionKinds.Block,
+            BlockCode = 302,
+            BlockContent = "https://newlifex.com",
+            Remark = "蜘蛛访问Admin和Cube以外路径时，直接跳转目标Url",
+        };
+        entity.Insert();
 
-    ///// <summary>已重载。基类先调用Valid(true)验证数据，然后在事务保护内调用OnInsert</summary>
-    ///// <returns></returns>
-    //public override Int32 Insert()
-    //{
-    //    return base.Insert();
-    //}
+        entity = new AccessRule
+        {
+            Name = "IP访问太快",
+            Enable = false,
+            Url = "*",
+            UserAgent = "",
+            IP = "",
+            ActionKind = AccessActionKinds.Block,
+            BlockCode = 200,
+            BlockContent = "<h1>访问太频繁啦，坐下来喝杯咖啡吧！</h1>",
+            LimitDimension = LimitDimensions.IP,
+            LimitCycle = 60,
+            LimitTimes = 100,
+            Remark = "单个IP访问过快时（60秒超100次），给出友好提示！",
+        };
+        entity.Insert();
 
-    ///// <summary>已重载。在事务保护范围内处理业务，位于Valid之后</summary>
-    ///// <returns></returns>
-    //protected override Int32 OnDelete()
-    //{
-    //    return base.OnDelete();
-    //}
+        entity = new AccessRule
+        {
+            Name = "内网优先",
+            Enable = false,
+            Priority = 999,
+            IP = "192.*",
+            ActionKind = AccessActionKinds.Pass,
+            Remark = "内网可信来源访问，直接放行！",
+        };
+        entity.Insert();
+
+        if (XTrace.Debug) XTrace.WriteLine("完成初始化AccessRule[访问规则]数据！");
+    }
     #endregion
 
     #region 扩展属性
