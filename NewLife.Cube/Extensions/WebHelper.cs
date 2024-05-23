@@ -338,7 +338,9 @@ public static class WebHelper
     /// <returns></returns>
     internal static String FillDeviceId(Microsoft.AspNetCore.Http.HttpContext ctx)
     {
+        // http/https分开使用不同的Cookie名，避免站点同时支持http和https时，Cookie冲突
         var id = ctx.Request.Cookies["CubeDeviceId"];
+        if (id.IsNullOrEmpty()) id = ctx.Request.Cookies["CubeDeviceId0"];
         if (id.IsNullOrEmpty()) id = ctx.Session?.GetString("CubeDeviceId");
         if (id.IsNullOrEmpty())
         {
@@ -367,9 +369,12 @@ public static class WebHelper
                 //option.HttpOnly = true;
                 option.SameSite = SameSiteMode.None;
                 option.Secure = true;
-            }
 
-            ctx.Response.Cookies.Append("CubeDeviceId", id, option);
+                ctx.Response.Cookies.Append("CubeDeviceId", id, option);
+            }
+            else
+                ctx.Response.Cookies.Append("CubeDeviceId0", id, option);
+
             ctx.Session?.SetString("CubeDeviceId", id);
         }
 
