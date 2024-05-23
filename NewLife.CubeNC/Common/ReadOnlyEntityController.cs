@@ -300,8 +300,11 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     /// <summary>多次导出数据</summary>
     /// <returns></returns>
-    protected virtual IEnumerable<TEntity> ExportData(Int32 max = 10_000_000)
+    protected virtual IEnumerable<TEntity> ExportData(Int32 max = 0)
     {
+        var set = CubeSetting.Current;
+        if (max <= 0) max = set.MaxExport;
+
         // 计算目标数据量
         var p = Session[CacheKey] as Pager;
         p = new Pager(p)
@@ -962,8 +965,11 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     {
         try
         {
+            var set = CubeSetting.Current;
+
             var fact = Factory;
-            if (fact.Session.Count > 10_000_000) throw new XException($"数据量[{fact.Session.Count:n0}>10_000_000]，禁止备份！");
+            if (fact.Session.Count > set.MaxBackup)
+                throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
 
             var dal = fact.Session.Dal;
 
@@ -995,8 +1001,11 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     [DisplayName("导出")]
     public virtual async Task<ActionResult> BackupAndExport()
     {
+        var set = CubeSetting.Current;
+
         var fact = Factory;
-        if (fact.Session.Count > 10_000_000) throw new XException($"数据量[{fact.Session.Count:n0}>10_000_000]，禁止备份！");
+        if (fact.Session.Count > set.MaxBackup)
+            throw new XException($"数据量[{fact.Session.Count:n0}>{set.MaxBackup:n0}]，禁止备份！");
 
         var dal = fact.Session.Dal;
 
