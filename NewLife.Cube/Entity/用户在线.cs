@@ -105,11 +105,11 @@ public partial class UserOnline
     public String Device { get => _Device; set { if (OnPropertyChanging("Device", value)) { _Device = value; OnPropertyChanged("Device"); } } }
 
     private String _Brower;
-    /// <summary>浏览器。浏览器名称，带版本</summary>
-    [DisplayName("浏览器")]
-    [Description("浏览器。浏览器名称，带版本")]
+    /// <summary>用户代理。浏览器名称，带版本</summary>
+    [DisplayName("用户代理")]
+    [Description("用户代理。浏览器名称，带版本")]
     [DataObjectField(false, false, true, 50)]
-    [BindColumn("Brower", "浏览器。浏览器名称，带版本", "")]
+    [BindColumn("Brower", "用户代理。浏览器名称，带版本", "")]
     public String Brower { get => _Brower; set { if (OnPropertyChanging("Brower", value)) { _Brower = value; OnPropertyChanged("Brower"); } } }
 
     private String _NetType;
@@ -307,7 +307,7 @@ public partial class UserOnline
         /// <summary>设备。手机品牌型号</summary>
         public static readonly Field Device = FindByName("Device");
 
-        /// <summary>浏览器。浏览器名称，带版本</summary>
+        /// <summary>用户代理。浏览器名称，带版本</summary>
         public static readonly Field Brower = FindByName("Brower");
 
         /// <summary>网络。微信访问时，感知到WIFI或4G网络</summary>
@@ -379,7 +379,7 @@ public partial class UserOnline
         /// <summary>设备。手机品牌型号</summary>
         public const String Device = "Device";
 
-        /// <summary>浏览器。浏览器名称，带版本</summary>
+        /// <summary>用户代理。浏览器名称，带版本</summary>
         public const String Brower = "Brower";
 
         /// <summary>网络。微信访问时，感知到WIFI或4G网络</summary>

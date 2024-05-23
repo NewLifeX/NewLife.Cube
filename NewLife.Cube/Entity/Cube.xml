@@ -172,7 +172,7 @@
         <Column Name="Platform" DataType="String" Description="平台。操作系统平台，Windows/Linux/Android等" />
         <Column Name="OS" DataType="String" Description="系统。操作系统，带版本" />
         <Column Name="Device" DataType="String" Description="设备。手机品牌型号" />
-        <Column Name="Brower" DataType="String" Description="浏览器。浏览器名称，带版本" />
+        <Column Name="Brower" DataType="String" Description="用户代理。浏览器名称，带版本" />
         <Column Name="NetType" DataType="String" Description="网络。微信访问时，感知到WIFI或4G网络" />
         <Column Name="DeviceId" DataType="String" Description="设备标识。唯一标识设备，位于浏览器Cookie，重装后改变" />
         <Column Name="Status" DataType="String" Length="500" Description="状态" />
@@ -458,6 +458,34 @@
       </Columns>
       <Indexes>
         <Index Columns="Code" Unique="True" />
+      </Indexes>
+    </Table>
+    <Table Name="AccessRule" Description="访问规则。控制系统访问的安全访问规则，放行或拦截或限流">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称" />
+        <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="Priority" DataType="Int32" Description="优先级。较大优先" />
+        <Column Name="Url" DataType="String" Length="500" Description="URL路径。支持*模糊匹配，多个逗号隔开" />
+        <Column Name="UserAgent" DataType="String" Length="500" Description="用户代理。支持*模糊匹配，多个逗号隔开" />
+        <Column Name="IP" DataType="String" Length="500" Description="来源IP。支持*模糊匹配，多个逗号隔开" />
+        <Column Name="LoginedUser" DataType="String" Length="500" Description="登录用户。支持*模糊匹配，多个逗号隔开" />
+        <Column Name="ActionKind" DataType="Int32" Description="动作。放行/拦截/限流" Type="AccessActionKinds" />
+        <Column Name="BlockCode" DataType="Int32" Description="拦截代码。拦截时返回Http代码，如404/500/302等" />
+        <Column Name="BlockContent" DataType="String" Length="500" Description="拦截内容。拦截时返回内容，返回302时此处调目标地址" />
+        <Column Name="LimitDimension" DataType="Int32" Description="限流维度。IP/用户" Type="LimitDimensions" />
+        <Column Name="LimitCycle" DataType="Int32" ItemType="TimeSpan" Description="限流时间。限流时的考察时间，期间累加规则触发次数，如600秒" />
+        <Column Name="LimitTimes" DataType="Int32" Description="限流次数。限流考察期间达到该阈值时，执行拦截" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新者" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="内容" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="Name" Unique="True" />
       </Indexes>
     </Table>
   </Tables>
