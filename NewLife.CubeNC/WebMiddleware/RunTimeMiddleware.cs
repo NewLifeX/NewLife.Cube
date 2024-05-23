@@ -43,7 +43,7 @@ public class RunTimeMiddleware
         ctx.Items["UserAgent"] = ua;
 
         // 识别拦截爬虫
-        if (!ValidRobot(ctx, ua)) return;
+        if (!WebHelper.ValidRobot(ctx, ua)) return;
 
         // 强制访问Https
         if (MiddlewareHelper.CheckForceRedirect(ctx)) return;
@@ -85,7 +85,7 @@ public class RunTimeMiddleware
                 (set.EnableUserOnline == 2 || set.EnableUserOnline == 1 && user != null))
             {
                 // 浏览器设备标识作为会话标识
-                var deviceId = FillDeviceId(ctx);
+                var deviceId = WebHelper.FillDeviceId(ctx);
                 //var sessionId = token?.MD5_16() ?? ip;
                 var sessionId = deviceId;
                 online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip);
@@ -183,85 +183,6 @@ public class RunTimeMiddleware
         ".html", ".htm", ".js", ".css", ".map", ".png", ".jpg", ".gif", ".ico",  // 脚本样式图片
         ".woff", ".woff2", ".svg", ".ttf", ".otf", ".eot"   // 字体
     };
-
-    private static Boolean ValidRobot(HttpContext ctx, UserAgentParser ua)
-    {
-        if (ua.Compatible.IsNullOrEmpty()) return true;
-
-        // 判断爬虫
-        var code = CubeSetting.Current.RobotError;
-        if (code > 0 && ua.IsRobot && !ua.Brower.IsNullOrEmpty())
-        {
-            var name = ua.Brower;
-            var p = name.IndexOf('/');
-            if (p > 0) name = name[..p];
-
-            // 埋点
-            using var span = DefaultTracer.Instance?.NewSpan($"bot:{name}", ua.UserAgent);
-
-            ctx.Response.StatusCode = code;
-            return false;
-        }
-
-        return true;
-    }
-
-    private static String FillDeviceId(HttpContext ctx)
-    {
-        //if (!online.DeviceId.IsNullOrEmpty()) return;
-
-        var id = ctx.Request.Cookies["CubeDeviceId"];
-        if (id.IsNullOrEmpty())
-        {
-            id = Rand.NextString(16);
-
-            //// 顶级域名
-            //var url = ctx.Request.GetRawUrl();
-            //var domain = url.Host;
-            //var ss = domain.Split('.');
-            //if (ss.Length >= 3 && !IPAddress.TryParse(domain, out _))
-            //{
-            //    // 国家顶级域名
-            //    if (ss[^1].Length == 2 && ss[^2].EqualIgnoreCase("com", "net", "org", "gov", "edu"))
-            //        domain = $"{ss[^3]}.{ss[^2]}.{ss[^1]}";
-            //    // 全球顶级域名
-            //    else
-            //        domain = $"{ss[^2]}.{ss[^1]}";
-            //}
-
-            var option = new CookieOptions
-            {
-                HttpOnly = true,
-                //Domain = domain,
-                Expires = DateTimeOffset.Now.AddYears(10),
-                SameSite = SameSiteMode.Unspecified,
-                //Secure = true,
-            };
-
-            // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性，跨域也可以读取
-            if (ctx.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
-            {
-                //var domain = CubeSetting.Current.CookieDomain;
-                //if (!domain.IsNullOrEmpty())
-                //{
-                //    option.Domain = domain;
-                //    option.SameSite = SameSiteMode.None;
-                //    option.Secure = true;
-                //}
-
-                //option.HttpOnly = true;
-                option.SameSite = SameSiteMode.None;
-                option.Secure = true;
-            }
-
-            ctx.Response.Cookies.Append("CubeDeviceId", id, option);
-        }
-
-        //online.DeviceId = id;
-        //online.SaveAsync();
-
-        return id;
-    }
 }
 
 /// <summary>运行时间信息</summary>
