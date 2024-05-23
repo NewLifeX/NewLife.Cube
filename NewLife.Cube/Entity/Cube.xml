@@ -172,7 +172,7 @@
         <Column Name="Platform" DataType="String" Description="平台。操作系统平台，Windows/Linux/Android等" />
         <Column Name="OS" DataType="String" Description="系统。操作系统，带版本" />
         <Column Name="Device" DataType="String" Description="设备。手机品牌型号" />
-        <Column Name="Brower" DataType="String" Description="用户代理。浏览器名称，带版本" />
+        <Column Name="Brower" DataType="String" Description="浏览器。浏览器名称，带版本" />
         <Column Name="NetType" DataType="String" Description="网络。微信访问时，感知到WIFI或4G网络" />
         <Column Name="DeviceId" DataType="String" Description="设备标识。唯一标识设备，位于浏览器Cookie，重装后改变" />
         <Column Name="Status" DataType="String" Length="500" Description="状态" />

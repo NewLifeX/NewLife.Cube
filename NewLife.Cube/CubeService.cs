@@ -122,9 +122,10 @@ public static class CubeService
         //默认注入缓存实现
         services.TryAddSingleton<ICacheProvider, CacheProvider>();
 
-        // UI服务
+        // 服务
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
+        services.AddSingleton<AccessService>();
 
         //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();

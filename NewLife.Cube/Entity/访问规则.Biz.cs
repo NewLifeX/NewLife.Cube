@@ -133,10 +133,10 @@ public partial class AccessRule : Entity<AccessRule>
         {
             Name = "IP访问太快",
             Enable = false,
-            Url = "*",
+            Url = "!*.js,*.css,*.ico,*.jpg,*.png",
             UserAgent = "",
             IP = "",
-            ActionKind = AccessActionKinds.Block,
+            ActionKind = AccessActionKinds.Limit,
             BlockCode = 200,
             BlockContent = "<h1>访问太频繁啦，坐下来喝杯咖啡吧！</h1>",
             LimitDimension = LimitDimensions.IP,

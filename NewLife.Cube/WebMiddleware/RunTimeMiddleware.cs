@@ -20,6 +20,7 @@ public class RunTimeMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly UserService _userService;
+    private readonly AccessService _accessService;
 
     /// <summary>会话提供者</summary>
     static readonly SessionProvider _sessionProvider = new();
@@ -27,10 +28,12 @@ public class RunTimeMiddleware
     /// <summary>实例化</summary>
     /// <param name="next"></param>
     /// <param name="userService"></param>
-    public RunTimeMiddleware(RequestDelegate next, UserService userService)
+    /// <param name="accessService"></param>
+    public RunTimeMiddleware(RequestDelegate next, UserService userService, AccessService accessService)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _userService = userService;
+        _accessService = accessService;
     }
 
     /// <summary>调用</summary>
@@ -48,11 +51,36 @@ public class RunTimeMiddleware
         // 强制访问Https
         if (MiddlewareHelper.CheckForceRedirect(ctx)) return;
 
+        var url = ctx.Request.GetRawUrl();
         var ip = ctx.GetUserHost();
         ManageProvider.UserHost = ip;
+        var user = ManageProvider.User;
 
         // 创建Session集合
         var (token, session) = CreateSession(ctx);
+
+        // 安全访问
+        var rule = _accessService.Valid(url + "", ua, ip, user, session);
+        if (rule != null && rule.ActionKind is AccessActionKinds.Block or AccessActionKinds.Limit)
+        {
+            if (rule.BlockCode == 302)
+            {
+                ctx.Response.Redirect(rule.BlockContent);
+            }
+            else if (rule.BlockCode > 0)
+            {
+                ctx.Response.StatusCode = rule.BlockCode;
+                ctx.Response.ContentType = "text/html";
+                await ctx.Response.WriteAsync(rule.BlockContent);
+                await ctx.Response.CompleteAsync();
+            }
+            else
+            {
+                ctx.Abort();
+            }
+
+            return;
+        }
 
         var inf = new RunTimeInfo();
         ctx.Items[nameof(RunTimeInfo)] = inf;
@@ -76,7 +104,6 @@ public class RunTimeMiddleware
         WriteLogEventArgs.Current.IsWeb = true;
 
         var online = session["Online"] as UserOnline;
-        var user = ManageProvider.User;
         try
         {
             var set = CubeSetting.Current;
