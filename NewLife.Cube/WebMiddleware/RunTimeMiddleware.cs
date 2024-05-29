@@ -103,7 +103,7 @@ public class RunTimeMiddleware
         // 日志控制，精确标注Web类型线程
         WriteLogEventArgs.Current.IsWeb = true;
 
-        var online = session["Online"] as UserOnline;
+        var online = session == null || !session.ContainsKey("Online") ? new UserOnline() : session["Online"] as UserOnline;
         try
         {
             var set = CubeSetting.Current;
@@ -117,7 +117,15 @@ public class RunTimeMiddleware
                 var sessionId = deviceId;
                 online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip);
                 //FillDeviceId(ctx, olt);
-                session["Online"] = online;
+                if (session == null)
+                {
+                    session = new Dictionary<String, Object>();
+                    session.Add("Online", online);
+                }
+                else
+                {
+                    session["Online"] = online;
+                }
                 ctx.Items["Cube_Online"] = online;
             }
             await _next.Invoke(ctx);
@@ -183,16 +191,17 @@ public class RunTimeMiddleware
     private static (String, IDictionary<String, Object>) CreateSession(HttpContext ctx)
     {
         // 准备Session
-        var ss = ctx.Session;
+        var ss = ctx.Items["Session"] as IDictionary<String, Object>;
         if (ss != null)
         {
             //var token = Request.Cookies["Token"];
-            var token = ss.GetString("Cube_Token");
+            ss.TryGetValue("Cube_Token", out var objectToken);
+            var token = objectToken as String;
             if (token.IsNullOrEmpty())
             {
                 token = Rand.NextString(16);
                 //Response.Cookies.Append("Token", token, new CookieOptions { });
-                ss.SetString("Cube_Token", token);
+                ss["Cube_Token"] = token;
             }
 
             //Session = _sessionProvider.GetSession(ss.Id);
