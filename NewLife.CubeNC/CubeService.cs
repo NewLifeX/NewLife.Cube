@@ -3,18 +3,15 @@ using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
-
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
-using NewLife.Cube.Jobs;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
@@ -176,10 +173,11 @@ public static class CubeService
         //默认注入缓存实现
         services.TryAddSingleton<ICacheProvider, CacheProvider>();
 
-        // UI服务
+        // 服务
         services.AddSingleton<UIService>();
         services.AddSingleton<PasswordService>();
         services.AddSingleton<UserService>();
+        services.AddSingleton<AccessService>();
 
         //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();

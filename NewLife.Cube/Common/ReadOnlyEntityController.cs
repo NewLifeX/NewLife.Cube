@@ -284,8 +284,11 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     /// <summary>多次导出数据</summary>
     /// <returns></returns>
-    protected virtual IEnumerable<TEntity> ExportData(Int32 max = 10_000_000)
+    protected virtual IEnumerable<TEntity> ExportData(Int32 max = 0)
     {
+        var set = CubeSetting.Current;
+        if (max <= 0) max = set.MaxExport;
+
         // 计算目标数据量
         var p = Session[CacheKey] as Pager;
         p = new Pager(p)
@@ -325,7 +328,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     /// <summary>分页导出数据</summary>
     /// <param name="pageSize">页大小。默认10_000</param>
-    /// <param name="max">最大行数。默认10_000_000</param>
+    /// <param name="max">最大行数</param>
     /// <returns></returns>
     protected virtual IEnumerable<TEntity> ExportDataByPage(Int32 pageSize, Int32 max)
     {
@@ -366,7 +369,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     /// <summary>时间分片导出数据</summary>
     /// <param name="step">分片不仅。默认60</param>
-    /// <param name="max">最大行数。默认10_000_000</param>
+    /// <param name="max">最大行数</param>
     /// <returns></returns>
     protected virtual IEnumerable<TEntity> ExportDataByDatetime(Int32 step, Int32 max)
     {

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 using NewLife.Caching;
+using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Jobs;
 using NewLife.Log;
@@ -268,7 +269,7 @@ internal class MyJob : IDisposable
     private Boolean CheckRunning(CronJob job)
     {
         // 检查分布式锁，避免多节点重复执行
-        var key = $"Job:{job.Id}";
+        var key = $"Job:{SysConfig.Current.Name}:{job.Id}";
         if (CacheProvider != null && !CacheProvider.Cache.Add(key, job.Name, 5)) return false;
 
         // 有时候可能并没有配置Redis，借助数据库事务实现去重，需要20230804版本的XCode
