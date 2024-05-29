@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using NewLife;
 using NewLife.Cube;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
@@ -29,7 +29,7 @@ builder.Services.AddSwaggerGen(options =>
     options.CustomSchemaIds(type => type.FullName);
     options.IncludeXmlComments("NewLife.Cube.xml".GetFullPath());
 
-    options.SwaggerDoc("v1", new OpenApiInfo { Version = "v1", Title = "第三代魔方", Description = "第三代魔方WebApi接口，用于前后端分离。" });
+    //options.SwaggerDoc("v1", new OpenApiInfo { Version = "v1", Title = "第三代魔方", Description = "第三代魔方WebApi接口，用于前后端分离。" });
     //options.SwaggerDoc("Basic", new OpenApiInfo { Version = "basic", Title = "基础模块" });
     //options.SwaggerDoc("Admin", new OpenApiInfo { Version = "admin", Title = "系统管理" });
     //options.SwaggerDoc("Cube", new OpenApiInfo { Version = "cube", Title = "魔方管理" });
@@ -65,7 +65,8 @@ var app = builder.Build();
         var groups = app.Services.GetRequiredService<IApiDescriptionGroupCollectionProvider>().ApiDescriptionGroups.Items;
         foreach (var description in groups)
         {
-            var group = description.GroupName ?? "v1";
+            var group = description.GroupName;
+            if(group.IsNullOrEmpty()) continue;
             options.SwaggerEndpoint($"/swagger/{group}/swagger.json", group);
         }
     });
