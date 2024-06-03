@@ -1073,7 +1073,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
             WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
 
-            return Json(0, $"恢复[{fileName}]（{rs:n0}行）成功！");
+            return JsonRefresh($"恢复[{fileName}]（{rs:n0}行）成功！", 2);
         }
         catch (Exception ex)
         {
