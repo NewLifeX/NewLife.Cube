@@ -3,7 +3,6 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 using System.Web;
-using System.Xml.Linq;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +13,6 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.Results;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
-using NewLife.IO;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Security;
@@ -67,6 +65,23 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="filterContext"></param>
     public override void OnActionExecuting(ActionExecutingContext filterContext)
     {
+        var ps = filterContext.ActionArguments.ToNullable();
+        var p = ps["p"] as Pager ?? new Pager(WebHelper.Params);
+
+        // 多选框强制使用Form提交数据，未选中时不会提交数据，但也要强行覆盖Url参数
+        if (Request.HasFormContentType)
+        {
+            foreach (var item in OnGetFields(ViewKinds.Search, null))
+            {
+                if (item is SearchField sf && sf.Multiple)
+                {
+                    p[sf.Name] = Request.Form.TryGetValue(sf.Name, out var vs) ? (String)vs : null;
+                    //// 以下写法，Form没有数据时，也会返回空字符串，而不是null
+                    //p[sf.Name] = Request.Form[sf.Name];
+                }
+            }
+        }
+
         var title = GetType().GetDisplayName() ?? typeof(TEntity).GetDisplayName() ?? Entity<TEntity>.Meta.Table.DataTable.DisplayName;
         ViewBag.Title = title;
 
@@ -77,12 +92,11 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             ViewBag.Factory = Factory;
 
             // 默认加上分页给前台
-            var ps = filterContext.ActionArguments.ToNullable();
-            var p = ps["p"] as Pager ?? new Pager(WebHelper.Params);
             ViewBag.Page = p;
 
-            //// 用于显示的列
-            if (!ps.ContainsKey("entity")) ViewBag.Fields = OnGetFields(ViewKinds.List, null);//注释掉后会导致分享的页面报错。2023-09-15 取消注释
+            // 用于显示的列
+            // 注释掉后会导致分享的页面报错。2023-09-15 取消注释
+            if (!ps.ContainsKey("entity")) ViewBag.Fields = OnGetFields(ViewKinds.List, null);
 
             var txt = (String)ViewBag.HeaderContent;
             if (txt.IsNullOrEmpty()) txt = Menu?.Remark;

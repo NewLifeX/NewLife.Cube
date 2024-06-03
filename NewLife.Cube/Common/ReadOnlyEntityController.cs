@@ -47,48 +47,29 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         SysConfig = SysConfig.Current;
     }
 
-    ///// <summary>动作执行前</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuting(Remoting.ControllerContext filterContext)
-    //{
-    //    var title = GetType().GetDisplayName() ?? typeof(TEntity).GetDisplayName() ?? Entity<TEntity>.Meta.Table.DataTable.DisplayName;
-    //    ViewBag.Title = title;
+    /// <summary>动作执行前</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext filterContext)
+    {
+        // 多选框强制使用Form提交数据，未选中时不会提交数据，但也要强行覆盖Url参数
+        if (Request.HasFormContentType)
+        {
+            if (filterContext.ActionArguments.TryGetValue("p", out var aa) && aa is Pager p)
+            {
+                foreach (var item in OnGetFields(ViewKinds.Search, null))
+                {
+                    if (item is SearchField sf && sf.Multiple)
+                    {
+                        p[sf.Name] = Request.Form.TryGetValue(sf.Name, out var vs) ? (String)vs : null;
+                        //// 以下写法，Form没有数据时，也会返回空字符串，而不是null
+                        //p[sf.Name] = Request.Form[sf.Name];
+                    }
+                }
+            }
+        }
 
-    //    // Ajax请求不需要设置ViewBag
-    //    if (!Request.IsAjaxRequest())
-    //    {
-    //        // 默认加上实体工厂
-    //        ViewBag.Factory = Factory;
-
-    //        // 默认加上分页给前台
-    //        var ps = filterContext.ActionArguments.ToNullable();
-    //        var p = ps["p"] as Pager ?? new Pager();
-    //        ViewBag.Page = p;
-
-    //        // 用于显示的列
-    //        if (!ps.ContainsKey("entity")) ViewBag.Fields = ListFields;
-
-    //        var txt = (String)ViewBag.HeaderContent;
-    //        if (txt.IsNullOrEmpty()) txt = Menu?.Remark;
-    //        if (txt.IsNullOrEmpty()) txt = GetType().GetDescription();
-    //        if (txt.IsNullOrEmpty()) txt = Entity<TEntity>.Meta.Table.Description;
-    //        //if (txt.IsNullOrEmpty() && SysConfig.Current.Develop)
-    //        //    txt = "这里是页头内容，来自于菜单备注，或者给控制器增加Description特性";
-    //        ViewBag.HeaderContent = txt;
-    //    }
-
-    //    base.OnActionExecuting(filterContext);
-    //}
-
-    ///// <summary>执行后</summary>
-    ///// <param name="filterContext"></param>
-    //public override void OnActionExecuted(Remoting.ControllerContext filterContext)
-    //{
-    //    base.OnActionExecuted(filterContext);
-
-    //    var title = ViewBag.Title + "";
-    //    HttpContext.Items["Title"] = title;
-    //}
+        base.OnActionExecuting(filterContext);
+    }
     #endregion
 
     #region 数据获取

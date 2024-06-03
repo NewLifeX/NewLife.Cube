@@ -105,7 +105,14 @@ public class FieldCollection : List<DataField>
                     Clear();
                     foreach (var elm in fs)
                     {
-                        AddField(elm.Name);
+                        var sf = Create(elm) as SearchField;
+                        // Flags枚举，支持多选
+                        if (elm.Type != null && elm.Type.IsEnum && elm.Type.GetCustomAttributes<FlagsAttribute>().Any())
+                        {
+                            sf.Multiple = true;
+                        }
+
+                        Add(sf);
                     }
                     break;
                 default:
