@@ -58,7 +58,7 @@ else
                 var format = item.ItemType.Substring("time-".Length);
                 <td class="@(tdClass ?? "text-center")">@dt.ToString(format, "")</td>
             }
-            else if (item.ItemType.EqualIgnoreCase("date") || name2.EndsWith("Date"))
+            else if (item.ItemType.EqualIgnoreCase("Date") || item.ItemType.IsNullOrEmpty() && name2.EndsWith("Date"))
             {
                 <td class="@(tdClass ?? "text-center")">@dt.ToString("yyyy-MM-dd", "")</td>
             }

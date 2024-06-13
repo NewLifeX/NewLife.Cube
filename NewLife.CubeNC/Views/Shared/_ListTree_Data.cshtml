@@ -25,9 +25,9 @@
                 var name = df?.Header ?? item.DisplayName ?? item.Name;
                 var title = df?.HeaderTitle ?? item.Description;
 
-                if (item.Type == typeof(DateTime))
+                if (item.Type == typeof(DateTime) && item.Services.Count == 0)
                 {
-                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                    var width = item.ItemType == "Date" ? 80 : 134;
                     <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                 }
                 else if (item.Type == null)

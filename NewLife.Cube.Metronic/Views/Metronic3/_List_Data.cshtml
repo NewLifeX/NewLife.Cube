@@ -30,7 +30,7 @@
 
                 if (item.Type == typeof(DateTime) || item.Type == typeof(Boolean))
                 {
-                    var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                    var width = item.ItemType == "Date" ? 80 : 134;
                     <th class="text-center" style="min-width:@(width)px;" title="@item.Description"><a href="@Html.Raw(sortUrl)">@item.DisplayName</a></th>
                 }
                 else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)

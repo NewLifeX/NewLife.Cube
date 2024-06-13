@@ -42,9 +42,9 @@
                             {
                                 <th class="text-center" data-bs-toggle="tooltip" title="@title">@name</th>
                             }
-                            else if (item.Type == typeof(DateTime))
+                            else if (item.Type == typeof(DateTime) && item.Services.Count == 0)
                             {
-                                var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                                var width = item.ItemType == "Date" ? 80 : 134;
                                 <th style="min-width:@(width)px;" data-bs-toggle="tooltip" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                             }
                             else if (item.Type == typeof(Int32) || item.Type == typeof(Int64) || item.Type == typeof(Double) || item.Type == typeof(Decimal)

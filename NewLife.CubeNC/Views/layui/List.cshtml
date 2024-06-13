@@ -35,9 +35,9 @@
                                 <tr>
                                     @foreach (var item in fields)
                                 {
-                                    if (item.Type == typeof(DateTime))
+                                    if (item.Type == typeof(DateTime) && item.Services.Count == 0)
                                     {
-                                        var width = item.Name.EndsWithIgnoreCase("Date") ? 96 : 150;
+                                        var width = item.ItemType == "Date" ? 96 : 150;
                                         <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
                                     }
                                     else

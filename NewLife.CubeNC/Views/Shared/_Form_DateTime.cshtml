@@ -20,7 +20,7 @@
     //if (format.IsNullOrWhiteSpace()) format = "yyyy-MM-dd HH:mm:ss";
 
     // 日期
-    if (Model.ItemType.EqualIgnoreCase("date") || name.EndsWithIgnoreCase("Date", "day"))
+    if (Model.ItemType.EqualIgnoreCase("Date") || Model.ItemType.IsNullOrEmpty() && name.EndsWithIgnoreCase("Date", "day"))
     {
         if (value > DateTime.MinValue) obj = value.ToString("yyyy-MM-dd");
         //format = "yyyy-mm-dd";

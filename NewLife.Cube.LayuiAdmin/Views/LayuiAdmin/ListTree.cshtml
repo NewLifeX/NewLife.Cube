@@ -86,9 +86,9 @@
                 {
                     continue;
                 }
-                if (item.Type == typeof(DateTime))
+                if (item.Type == typeof(DateTime) && item.Services.Count == 0)
                 {
-                    var width = item.Name.EndsWithIgnoreCase("Date") ? 96 : 150;
+                    var width = item.ItemType == "Date" ? 96 : 150;
                     @await Html.PartialAsync("_ListTree_Cols", new ValueTuple<DataField, string>(item, "Date"))
                 }
                 else if (item.Type == null)

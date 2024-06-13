@@ -176,9 +176,9 @@ public static class ViewHelper
             sb.Append(@"<th class=""text-center""");
 
             // 固定宽度
-            if (item.Type == typeof(DateTime))
+            if (item.Type == typeof(DateTime) && item.Services.Count == 0)
             {
-                var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
+                var width = item.ItemType == "Date" ? 80 : 134;
                 sb.AppendFormat(@" style=""min-width:{0}px;""", width);
             }
 
