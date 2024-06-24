@@ -56,7 +56,7 @@
                 p = fact.EntityType.GetValue("Root") as IEntityTree;
             }
             var id = entity[fk.Name];
-            <tr>
+            <tr class="@(fields.GetRowClass?.Invoke(entity))">
                 @if (set.EnableSelect)
                 {
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity[fk.Name]" /></td>
@@ -71,12 +71,12 @@
                     }
                     else if (df != null && (txt = df.GetLink(entity, page)) != null)
                     {
-                        var tdClass = df.GetTextClass();
+                        var tdClass = df.GetTextClass(entity);
                         <td class="@(tdClass??"text-center")">@Html.Raw(txt)</td>
                     }
                     else if (df != null && (txt = df.GetText(entity, page)) != null)
                     {
-                        var tdClass = df.GetTextClass();
+                        var tdClass = df.GetTextClass(entity);
                         <td class="@tdClass)">@Html.Raw(txt)</td>
                     }
                     else

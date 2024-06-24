@@ -28,7 +28,7 @@
 
             var listField = item as ListField;
             var value = entity[item.Name];
-            var tdClass = listField.GetTextClass();
+            var tdClass = listField.GetTextClass(entity);
             switch (Type.GetTypeCode(item.Type))
             {
                 case TypeCode.Boolean:

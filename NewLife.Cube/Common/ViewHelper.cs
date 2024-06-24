@@ -894,47 +894,6 @@ public static class ViewHelper
     /// <param name="dc"></param>
     /// <returns></returns>
     public static Boolean IsAttachment(this IDataColumn dc) => dc.ItemType.EqualIgnoreCase("file", "image") || dc.ItemType.StartsWithIgnoreCase("file-", "image-");
-
-    /// <summary>获取文本样式</summary>
-    /// <param name="listField"></param>
-    /// <returns></returns>
-    public static String GetTextClass(this ListField listField)
-    {
-        // 文本对齐方式
-        var tdClass = "";
-        switch (listField.TextAlign)
-        {
-            case TextAligns.Default:
-                tdClass = "";
-                break;
-            case TextAligns.Left:
-                tdClass = "text-left";
-                break;
-            case TextAligns.Center:
-                tdClass = "text-center";
-                break;
-            case TextAligns.Right:
-                tdClass = "text-right";
-                break;
-            case TextAligns.Justify:
-                tdClass = "text-justify";
-                break;
-            case TextAligns.Nowrap:
-                tdClass = "text-nowrap;max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;";
-                break;
-        }
-        // 叠加样式
-        if (!listField.Class.IsNullOrEmpty())
-        {
-            if (tdClass.IsNullOrEmpty() || listField.Class.Contains("text-"))
-                tdClass = listField.Class;
-            else
-                tdClass += ";" + listField.Class;
-        }
-        if (tdClass.IsNullOrEmpty()) tdClass = null;
-
-        return tdClass;
-    }
 }
 
 /// <summary>Bootstrap页面控制。允许继承</summary>

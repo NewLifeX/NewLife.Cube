@@ -90,7 +90,7 @@
                         <tbody>
                             @foreach (var entity in Model)
                             {
-                                <tr>
+                                <tr class="@(fields.GetRowClass?.Invoke(entity))">
                                     @if (set.EnableSelect && ukey != null)
                                     {
                                         <td lay-data="{checkbox:true}"></td>
@@ -105,12 +105,12 @@
                                         }
                                         else if (df != null && (txt = df.GetLink(entity, page2)) != null)
                                         {
-                                            var tdClass = df.GetTextClass();
+                                            var tdClass = df.GetTextClass(entity);
                                             <td class="@(tdClass??"text-center")">@Html.Raw(txt)</td>
                                         }
                                         else if (df != null && (txt = df.GetText(entity, page2)) != null)
                                         {
-                                            var tdClass = df.GetTextClass();
+                                            var tdClass = df.GetTextClass(entity);
                                             <td class="@tdClass)">@Html.Raw(txt)</td>
                                         }
                                         else

@@ -55,7 +55,7 @@
                         <tbody>
                             @foreach (var entity in Model)
                             {
-                                <tr>
+                                <tr class="@(fields.GetRowClass?.Invoke(entity))">
                                     @foreach (var item in fields)
                                     {
                                         var df = item as ListField;
@@ -66,12 +66,12 @@
                                         }
                                         else if (df != null && (txt = df.GetLink(entity, page)) != null)
                                         {
-                                            var tdClass = df.GetTextClass();
+                                            var tdClass = df.GetTextClass(entity);
                                             <td class="@(tdClass??"text-center")">@Html.Raw(txt)</td>
                                         }
                                         else if (df != null && (txt = df.GetText(entity, page)) != null)
                                         {
-                                            var tdClass = df.GetTextClass();
+                                            var tdClass = df.GetTextClass(entity);
                                             <td class="@tdClass)">@Html.Raw(txt)</td>
                                         }
                                         else

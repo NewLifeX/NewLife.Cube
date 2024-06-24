@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Serialization;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using NewLife.Collections;
 using NewLife.Data;
 using NewLife.Reflection;
@@ -12,10 +11,10 @@ using XCode.Configuration;
 
 namespace NewLife.Cube.ViewModels;
 
-/// <summary>获取数据委托</summary>
-/// <param name="entity"></param>
-/// <returns></returns>
-public delegate String GetValueDelegate(Object entity);
+///// <summary>获取数据委托</summary>
+///// <param name="entity"></param>
+///// <returns></returns>
+//public delegate String GetValueDelegate(Object entity);
 
 /// <summary>列表字段</summary>
 public class ListField : DataField
@@ -63,6 +62,10 @@ public class ListField : DataField
     /// <summary>获取数据委托。可用于自定义列表页单元格数值的显示</summary>
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
     public GetValueDelegate GetValue { get; set; }
+
+    /// <summary>获取样式委托。可用于自定义列表页单元格的样式</summary>
+    [XmlIgnore, IgnoreDataMember, JsonIgnore]
+    public GetValueDelegate GetClass { get; set; }
     #endregion
 
     #region 方法
@@ -311,6 +314,48 @@ public class ListField : DataField
         if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page, EnumModes.DisplayName);
 
         return rs;
+    }
+
+    /// <summary>获取文本样式</summary>
+    /// <returns></returns>
+    public String GetTextClass(IModel data)
+    {
+        if (GetClass != null && data != null) return GetClass(data);
+
+        // 文本对齐方式
+        var tdClass = "";
+        switch (TextAlign)
+        {
+            case TextAligns.Default:
+                tdClass = "";
+                break;
+            case TextAligns.Left:
+                tdClass = "text-left";
+                break;
+            case TextAligns.Center:
+                tdClass = "text-center";
+                break;
+            case TextAligns.Right:
+                tdClass = "text-right";
+                break;
+            case TextAligns.Justify:
+                tdClass = "text-justify";
+                break;
+            case TextAligns.Nowrap:
+                tdClass = "text-nowrap;max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;";
+                break;
+        }
+        // 叠加样式
+        if (!Class.IsNullOrEmpty())
+        {
+            if (tdClass.IsNullOrEmpty() || Class.Contains("text-"))
+                tdClass = Class;
+            else
+                tdClass += ";" + Class;
+        }
+        if (tdClass.IsNullOrEmpty()) tdClass = null;
+
+        return tdClass;
     }
     #endregion
 }

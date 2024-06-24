@@ -92,7 +92,7 @@
                         <tbody>
                             @foreach (var entity in Model)
                             {
-                                <tr>
+                                <tr class="@(fields.GetRowClass?.Invoke(entity))">
                                     @if (set.EnableSelect && ukey != null)
                                     {
                                         <td lay-data="{checkbox:true}"></td>
