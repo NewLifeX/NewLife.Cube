@@ -305,7 +305,11 @@ public class UserController : EntityController<User, UserModel>
         var model = GetViewModel(returnUrl);
         model.OAuthItems = ms.Where(e => e.Visible).ToList();
 
-        return View(model);
+
+        var uAgent = Request.Headers["User-Agent"] + "";
+        var isMobile = uAgent.Contains("Android") || uAgent.Contains("iPhone") || uAgent.Contains("iPad");
+
+        return isMobile ? View("MLogin", model) : View(model);
     }
 
     private LoginViewModel GetViewModel(String returnUrl)
