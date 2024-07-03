@@ -190,12 +190,21 @@ public class TracerMiddleware
         var uri = ctx.Request.GetRawUrl();
         if (uri == null) return;
 
+        // 排除本机地址
+        var host = uri.Authority;
+        var p = host.LastIndexOf(':');
+        if (p >= 0) host = host[..p];
+        if (host.EqualIgnoreCase("127.0.0.1", "localhost", "[::1]")) return;
+
         var baseAddress = $"{uri.Scheme}://{uri.Authority}";
 
         var set = NewLife.Setting.Current;
-        var ss = (set.ServiceAddress + "").Split(",").ToList();
+        var ss = set.ServiceAddress.Split(",").ToList();
         if (!ss.Contains(baseAddress))
         {
+            // 过滤掉本机地址
+            ss = ss.Where(e => !e.EqualIgnoreCase("127.0.0.1", "localhost", "[::1]")).ToList();
+
             ss.Insert(0, baseAddress);
             set.ServiceAddress = ss.Take(3).Join(",");
             set.Save();
