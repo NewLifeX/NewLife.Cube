@@ -341,7 +341,7 @@ public static class WebHelper
         // http/https分开使用不同的Cookie名，避免站点同时支持http和https时，Cookie冲突
         var id = ctx.Request.Cookies["CubeDeviceId"];
         if (id.IsNullOrEmpty()) id = ctx.Request.Cookies["CubeDeviceId0"];
-        if (id.IsNullOrEmpty()) id = ctx.Session?.GetString("CubeDeviceId");
+        //if (id.IsNullOrEmpty()) id = ctx.Session?.GetString("CubeDeviceId");
         if (id.IsNullOrEmpty())
         {
             id = Rand.NextString(16);
@@ -375,7 +375,7 @@ public static class WebHelper
             else
                 ctx.Response.Cookies.Append("CubeDeviceId0", id, option);
 
-            ctx.Session?.SetString("CubeDeviceId", id);
+            //ctx.Session?.SetString("CubeDeviceId", id);
         }
 
         return id;

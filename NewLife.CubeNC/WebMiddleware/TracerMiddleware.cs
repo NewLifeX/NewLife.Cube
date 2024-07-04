@@ -199,7 +199,7 @@ public class TracerMiddleware
         var baseAddress = $"{uri.Scheme}://{uri.Authority}";
 
         var set = NewLife.Setting.Current;
-        var ss = set.ServiceAddress.Split(",").ToList();
+        var ss = set.ServiceAddress?.Split(",").ToList() ?? new List<string>();
         if (!ss.Contains(baseAddress))
         {
             // 过滤掉本机地址
