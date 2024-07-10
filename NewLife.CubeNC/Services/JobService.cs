@@ -44,6 +44,7 @@ public class JobService : IHostedService
 
     private static readonly IList<MyJob> _jobs = [];
     private readonly IServiceProvider _serviceProvider;
+    private readonly ICacheProvider _cacheProvider;
     private readonly ITracer _tracer;
 
     /// <summary>实例化作业服务</summary>
@@ -53,6 +54,7 @@ public class JobService : IHostedService
     {
         _tracer = tracer;
         _serviceProvider = serviceProvider;
+        _cacheProvider = serviceProvider.GetService<ICacheProvider>();
     }
 
     private static TimerX _timer;
@@ -105,7 +107,7 @@ public class JobService : IHostedService
                 job = new MyJob
                 {
                     Job = item,
-                    CacheProvider = _serviceProvider.GetService<ICacheProvider>(),
+                    CacheProvider = _cacheProvider,
                     ServiceProvider = _serviceProvider,
                     Tracer = _tracer
                 };
