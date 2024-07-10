@@ -96,10 +96,10 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TracerMiddleware.cs" Link="WebMiddleware\TracerMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="10.10.2024.507" />
+    <PackageReference Include="NewLife.Core" Version="10.10.2024.701" />
     <PackageReference Include="NewLife.IP" Version="2.1.2024.407" />
-    <PackageReference Include="NewLife.Stardust" Version="2.9.2024.417-beta1339" />
-    <PackageReference Include="NewLife.XCode" Version="11.12.2024.515" />
+    <PackageReference Include="NewLife.Stardust" Version="3.0.2024.708" />
+    <PackageReference Include="NewLife.XCode" Version="11.13.2024.701" />
   </ItemGroup>
 
   <ItemGroup>

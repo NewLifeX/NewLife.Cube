@@ -6,7 +6,6 @@ using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 using NewLife.Cube.Web;
 using NewLife.Log;
-using NewLife.Remoting;
 using NewLife.Security;
 using NewLife.Web;
 using XCode.DataAccessLayer;
@@ -52,13 +51,13 @@ public class RunTimeMiddleware
         // 强制访问Https
         if (MiddlewareHelper.CheckForceRedirect(ctx)) return;
 
+        // 创建Session集合。后续 ManageProvider.User 需要用到Session
+        var (token, session) = CreateSession(ctx);
+
         var url = ctx.Request.GetRawUrl();
         var ip = ctx.GetUserHost();
         ManageProvider.UserHost = ip;
         var user = ManageProvider.User;
-
-        // 创建Session集合
-        var (token, session) = CreateSession(ctx);
 
         // 安全访问
         var rule = _accessService.Valid(url + "", ua, ip, user, session);
