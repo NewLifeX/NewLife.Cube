@@ -305,7 +305,6 @@ public class UserController : EntityController<User, UserModel>
         var model = GetViewModel(returnUrl);
         model.OAuthItems = ms.Where(e => e.Visible).ToList();
 
-
         var uAgent = Request.Headers["User-Agent"] + "";
         var isMobile = uAgent.Contains("Android") || uAgent.Contains("iPhone") || uAgent.Contains("iPad");
 

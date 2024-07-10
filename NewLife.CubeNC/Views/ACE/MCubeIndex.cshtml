@@ -1,0 +1,170 @@
+﻿@{
+    Layout = null;
+
+    var User = ViewBag.User;
+    var cfg = ViewBag.Config;
+
+    var title = ViewBag.Title + "";
+    if (title != "" && !title.EndsWith(" - ")) { title += " - "; }
+    title += cfg.DisplayName;
+
+    var set = NewLife.Cube.CubeSetting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+    <title>@title</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!-- bootstrap & fontawesome -->
+    <link rel="stylesheet" href="@res/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="@res/bootstrap/css/font-awesome.min.css" />
+
+    <!-- page specific plugin styles -->
+    <!-- text fonts -->
+    <link rel="stylesheet" href="@res/ace/css/ace-fonts.min.css" />
+
+    <!-- ace styles -->
+    <link rel="stylesheet" href="@res/ace/css/ace.min.css" class="ace-main-stylesheet" id="main-ace-style" />
+    @*artdialog style*@
+    <link href="@res/artDialog/css/ui-dialog.css" rel="stylesheet" />
+
+    <!--[if lte IE 9]>
+        <link rel="stylesheet" href="@res/ace/css/ace-part2.min.css" class="ace-main-stylesheet" />
+    <![endif]-->
+    <!--[if lte IE 9]>
+        <link rel="stylesheet" href="@res/ace/css/ace-ie.min.css" />
+    <![endif]-->
+    <!-- inline styles related to this page -->
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="@res/Cube.css" type="text/css" />
+    <!-- ace settings handler -->
+    <script src="@res/ace/js/ace-extra.min.js"></script>
+
+    <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+    <!--[if lte IE 8]>
+    <script src="@res/js/html5shiv.min.js"></script>
+    <script src="@res/js/respond.min.js"></script>
+    <![endif]-->
+    <!-- JQuery作为一等公民，页面内部随时可能使用 -->
+    <script src="@res/js/jquery-3.6.0.min.js"></script>
+</head>
+<body class="skin-3 no-skin" style="overflow: hidden;">
+    @await Html.PartialAsync("_Navbar")
+    <div class="main-container" id="main-container">
+        <script type="text/javascript">
+            $(function () {
+                try { ace.settings.check('main-container', 'fixed') } catch (e) { }
+            });
+        </script>
+
+        <!-- #section:basics/sidebar -->
+        <div id="sidebar" class="sidebar responsive">
+            <script type="text/javascript">
+                $(function () {
+                    try { ace.settings.check('sidebar', 'fixed') } catch (e) { }
+                });
+            </script>
+
+            @await Html.PartialAsync("_Left")
+            <!-- #section:basics/sidebar.layout.minimize -->
+            <div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
+                <i class="ace-icon fa fa-angle-double-left" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
+            </div>
+
+            <!-- /section:basics/sidebar.layout.minimize -->
+            <script type="text/javascript">
+                $(function () {
+                    try { ace.settings.check('sidebar', 'collapsed') } catch (e) { }
+                })
+            </script>
+        </div>
+
+        <!-- /section:basics/sidebar -->
+        <div class="main-content">
+            <div class="main-content-inner">
+                <!-- /section:basics/content.breadcrumbs -->
+                <div class="page-content" style="padding: 0px;">
+                    <iframe style="width: 100%; height: 100%; margin: 0; padding: 0; border: none;" id="main" name="main" src="@ViewBag.Main"></iframe>
+                </div>
+                <!-- /.page-content -->
+            </div>
+        </div>
+        <!-- /.main-content -->
+        <a href="#" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+            <i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
+        </a>
+    </div>
+    <!-- /.main-container -->
+    <!-- basic scripts -->
+    <script src="@res/bootstrap/js/bootstrap.min.js"></script>
+    <script src="@res/js/jquery-ui.custom.min.js"></script>
+    <script src="@res/js/jquery.ui.touch-punch.min.js"></script>
+
+    <!-- ace scripts -->
+    <script src="@res/ace/js/ace-elements.min.js"></script>
+    <script src="@res/ace/js/ace.min.js"></script>
+    @*artDialog*@
+    <script src="@res/artDialog/dist/dialog-plus-min.js"></script>
+    <script src="@res/artDialog/dist/dialog.new.life.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            var $frmContent = $('#main');
+            function fixFrmContentSize() {
+                var offset = $frmContent.offset();
+                var top = offset.top;
+                var height = document.documentElement.clientHeight;
+                $frmContent.height(height - top);
+            }
+            fixFrmContentSize();
+            $(window).resize(fixFrmContentSize);
+
+            //增加iframe被嵌套的检测2015-6-4 景裔增加
+            if (window != top) {
+                top.location.href = location.href;
+            }
+
+            //菜单active样式
+            $(".nav-list").children("li").click(function () {
+                var $this = $(this);
+                $this.siblings("li").each(function () {
+                    var $item = $(this);
+                    if ($item.attr("class") == "open") {
+                        $item.removeClass("open");
+                        $item.children(".submenu").hide();
+                    }
+                });
+                $this.addClass('open');
+            });
+
+            $(".submenu li").click(function () {
+                var $this = $(this);
+                //兄弟节点去焦
+                $this.siblings("li").removeClass("active");
+                $this.addClass('active');
+                //父节点获取焦点
+                var $parent = $this.parent().parent();
+                $parent.addClass("active");
+                $parent.siblings("li").each(function () {
+                    var $item = $(this);
+                    $item.removeClass("open").removeClass("active");
+                    $item.children(".submenu").hide();
+                    if ($item.children(".submenu").length != 0) {
+                        $item.children(".submenu").children("li").removeClass("active");
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>

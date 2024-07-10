@@ -73,7 +73,10 @@ public class IndexController : ControllerBaseX
         ViewBag.Main = startPage;
         ViewBag.Menus = GetMenu();
 
-        return View("CubeIndex");
+        var uAgent = Request.Headers["User-Agent"] + "";
+        var isMobile = uAgent.Contains("Android") || uAgent.Contains("iPhone") || uAgent.Contains("iPad");
+
+        return isMobile ? View("MCubeIndex") : View("CubeIndex");
     }
 
     /// <summary>服务器信息</summary>
