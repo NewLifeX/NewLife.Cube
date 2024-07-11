@@ -33,6 +33,8 @@ public class UserController : EntityController<User, UserModel>
     private readonly PasswordService _passwordService;
     private readonly UserService _userService;
 
+    private Boolean _isMobile { get; set; } = false;
+
     static UserController()
     {
         ListFields.RemoveField("Avatar", "RoleIds", "Online", "Age", "Birthday", "LastLoginIP", "RegisterIP", "RegisterTime");
@@ -101,6 +103,9 @@ public class UserController : EntityController<User, UserModel>
     public override void OnActionExecuting(ActionExecutingContext filterContext)
     {
         base.OnActionExecuting(filterContext);
+
+        var uAgent = Request.Headers["User-Agent"] + "";
+        _isMobile = uAgent.Contains("Android") || uAgent.Contains("iPhone") || uAgent.Contains("iPad");
 
         if (filterContext.ActionDescriptor is ControllerActionDescriptor act &&
             act.ActionName.EqualIgnoreCase(nameof(Detail), nameof(Edit), nameof(Info), nameof(ChangePassword), nameof(Binds), nameof(TenantSetting)))
@@ -305,10 +310,7 @@ public class UserController : EntityController<User, UserModel>
         var model = GetViewModel(returnUrl);
         model.OAuthItems = ms.Where(e => e.Visible).ToList();
 
-        var uAgent = Request.Headers["User-Agent"] + "";
-        var isMobile = uAgent.Contains("Android") || uAgent.Contains("iPhone") || uAgent.Contains("iPad");
-
-        return isMobile ? View("MLogin", model) : View(model);
+        return _isMobile ? View("MLogin", model) : View(model);
     }
 
     private LoginViewModel GetViewModel(String returnUrl)
