@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using NewLife.Cube.Entity;
 using NewLife.Log;
@@ -69,7 +70,7 @@ public class ModuleManager
     /// <summary>
     /// 扫描所有程序集，加载插件
     /// </summary>
-    public static IDictionary<String, Type> ScanAll()
+    public static IDictionary<String, Type> ScanAllModules()
     {
         var dic = new Dictionary<String, Type>();
         foreach (var item in AssemblyX.FindAllPlugins(typeof(IModule), true, true))
@@ -81,6 +82,54 @@ public class ModuleManager
         }
 
         return dic;
+    }
+
+    /// <summary>扫描加载适配器插件</summary>
+    public static IDictionary<String, Type> ScanAllAdapters()
+    {
+        var dic = new Dictionary<String, Type>();
+        foreach (var item in AssemblyX.FindAllPlugins(typeof(IAdapter), true, true))
+        {
+            var att = item.GetCustomAttribute<ModuleAttribute>();
+            var name = att?.Name ?? item.Name.TrimEnd("Adapter");
+
+            dic[name] = item;
+        }
+
+        return dic;
+    }
+
+    /// <summary>合并插件数据</summary>
+    /// <param name="name"></param>
+    /// <param name="type"></param>
+    /// <param name="modules"></param>
+    /// <param name="kind"></param>
+    public static void Merge(String name, Type type, IList<AppModule> modules, String kind)
+    {
+        var drv = modules.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));
+        drv ??= new AppModule { Name = name, Enable = true };
+
+        if (drv.DisplayName.IsNullOrEmpty() || drv.DisplayName == drv.Name)
+        {
+            var dname = type.GetDisplayName();
+            if (!dname.IsNullOrEmpty()) drv.DisplayName = dname;
+        }
+
+        if (drv.Type.IsNullOrEmpty()) drv.Type = kind;
+        drv.ClassName = type.FullName;
+
+        var file = type.Assembly?.Location;
+        if (!file.IsNullOrEmpty())
+        {
+            var root = ".".GetFullPath();
+            if (file.StartsWithIgnoreCase(root))
+                file = file[root.Length..].TrimStart('/', '\\');
+        }
+        if (!file.IsNullOrEmpty()) drv.FilePath = file;
+
+        drv.Save();
+
+        modules.Add(drv);
     }
     #endregion
 }

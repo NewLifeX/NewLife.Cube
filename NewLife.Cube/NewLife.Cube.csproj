@@ -66,6 +66,8 @@
     <Compile Include="..\NewLife.CubeNC\Jobs\ICubeJob.cs" Link="Jobs\ICubeJob.cs" />
     <Compile Include="..\NewLife.CubeNC\Jobs\SqlService.cs" Link="Jobs\SqlService.cs" />
     <Compile Include="..\NewLife.CubeNC\Membership\ManagerProviderHelper.cs" Link="Membership\ManagerProviderHelper.cs" />
+    <Compile Include="..\NewLife.CubeNC\Modules\DefaultAdapter.cs" Link="Modules\DefaultAdapter.cs" />
+    <Compile Include="..\NewLife.CubeNC\Modules\IAdapter.cs" Link="Modules\IAdapter.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\IModule.cs" Link="Modules\IModule.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />

@@ -18,3 +18,4 @@ bld/
 *.user
 *.pubxml
 /.vscode
+/Bin3

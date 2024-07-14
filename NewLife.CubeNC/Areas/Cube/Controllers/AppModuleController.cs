@@ -49,38 +49,19 @@ public class AppModuleController : EntityController<AppModule>
 
     private static void ScanAppModule()
     {
+        var list = AppModule.FindAll();
+
         // 扫描本地目录所有协议插件
-        var map = ModuleManager.ScanAll();
-        if (map != null)
+        var map = ModuleManager.ScanAllModules();
+        foreach (var item in map)
         {
-            var list = AppModule.FindAll();
-            foreach (var item in map)
-            {
-                var drv = list.FirstOrDefault(e => e.Name.EqualIgnoreCase(item.Key));
-                drv ??= new AppModule { Name = item.Key, Enable = true };
+            ModuleManager.Merge(item.Key, item.Value, list, "Module");
+        }
 
-                if (drv.DisplayName.IsNullOrEmpty() || drv.DisplayName == drv.Name)
-                {
-                    var dname = item.Value.GetDisplayName();
-                    if (!dname.IsNullOrEmpty()) drv.DisplayName = dname;
-                }
-
-                if (drv.Type.IsNullOrEmpty()) drv.Type = ".NET";
-                drv.ClassName = item.Value.FullName;
-
-                var file = item.Value.Assembly?.Location;
-                if (!file.IsNullOrEmpty())
-                {
-                    var root = ".".GetFullPath();
-                    if (file.StartsWithIgnoreCase(root))
-                        file = file[root.Length..].TrimStart('/', '\\');
-                }
-                if (!file.IsNullOrEmpty()) drv.FilePath = file;
-
-                drv.Save();
-
-                list.Add(drv);
-            }
+        // 扫描适配器插件
+        foreach (var item in ModuleManager.ScanAllAdapters())
+        {
+            ModuleManager.Merge(item.Key, item.Value, list, "Adapter");
         }
     }
 }
