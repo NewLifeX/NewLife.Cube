@@ -12,13 +12,13 @@ public class Program
         XTrace.UseConsole();
 
         //CacheBase.Debug = true;
-        //CreateWebHostBuilder(args).Build().Run();  
-        var app = ApplicationManager.Load();
+        CreateHostBuilder(args).Build().Run();
+        //var app = ApplicationManager.Load();
 
-        do
-        {
-            app.Start(CreateHostBuilder(args).Build());
-        } while (app.Restarting);
+        //do
+        //{
+        //    app.Start(CreateHostBuilder(args).Build());
+        //} while (app.Restarting);
     }
 
     //public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

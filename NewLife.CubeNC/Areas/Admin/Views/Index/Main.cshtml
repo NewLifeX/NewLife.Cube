@@ -184,12 +184,12 @@
                 </td>
                 <td class="name">
                     @{
-                        var app = ApplicationManager.Load();
+                        var startTime = DateTime.Now.AddMilliseconds(-Environment.TickCount64);
                     }
                     应用启动：
                 </td>
                 <td class="value">
-                    启动于 @app.StartTime.ToLocalTime().ToFullString()
+                    启动于 @startTime.ToLocalTime().ToFullString()
                 </td>
             </tr>
         </tbody>

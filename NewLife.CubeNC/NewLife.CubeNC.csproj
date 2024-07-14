@@ -143,6 +143,7 @@
   <ItemGroup>
     <Compile Remove="Areas\Cube\Controllers\ModelColumnController.cs" />
     <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
+    <Compile Remove="Common\ApplicationManager.cs" />
     <Compile Remove="Common\ITenantController.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
     <Compile Remove="ViewModels\FieldModel.cs" />

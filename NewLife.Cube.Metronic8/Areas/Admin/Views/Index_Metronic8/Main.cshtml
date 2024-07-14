@@ -227,12 +227,12 @@
                             </td>
                             <td class="name fw-bold">
                                 @{
-                                    var app = ApplicationManager.Load();
+                                    var startTime = DateTime.Now.AddMilliseconds(-Environment.TickCount64);
                                 }
                                 应用启动：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
-                                启动于 @app.StartTime.ToLocalTime().ToFullString()
+                                启动于 @startTime.ToLocalTime().ToFullString()
                             </td>
                         </tr>
                     </tbody>

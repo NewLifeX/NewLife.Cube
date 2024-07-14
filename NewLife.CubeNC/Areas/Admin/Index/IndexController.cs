@@ -150,7 +150,7 @@ public class IndexController : ControllerBaseX
     [EntityAuthorize((PermissionFlags)16)]
     public ActionResult Restart()
     {
-        var manager = ApplicationManager.Load();
+        //var manager = ApplicationManager.Load();
 
         try
         {
@@ -168,7 +168,7 @@ public class IndexController : ControllerBaseX
                 Thread.Sleep(100);
 
                 // 本进程退出
-                manager.Stop();
+                //manager.Stop();
                 Thread.Sleep(200);
                 //p.Kill();
                 Environment.Exit(0);
@@ -178,7 +178,7 @@ public class IndexController : ControllerBaseX
         {
             XTrace.WriteException(ex);
 
-            manager.Restart();
+            //manager.Restart();
         }
 
         return JsonRefresh("重启成功", 2);

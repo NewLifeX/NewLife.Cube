@@ -30,7 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="appsettings.json" />
+    <None Include="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Areas\School\Views\Student\_List_Search.cshtml" />
   </ItemGroup>
 
@@ -43,7 +45,11 @@
   <ItemGroup>
     <ProjectReference Include="..\NewLife.Cube.Blazor\NewLife.Cube.Blazor.csproj" />
     <ProjectReference Include="..\NewLife.Cube.AdminLTE\NewLife.Cube.AdminLTE.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.ElementUI\NewLife.Cube.ElementUI.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.LayuiAdmin\NewLife.Cube.LayuiAdmin.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Metronic8\NewLife.Cube.Metronic8.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.Metronic\NewLife.Cube.Metronic.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.Tabler\NewLife.Cube.Tabler.csproj" />
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
   </ItemGroup>
 

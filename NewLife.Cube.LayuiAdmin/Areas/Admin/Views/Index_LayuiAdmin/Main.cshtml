@@ -32,7 +32,7 @@
     var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
 }
 
-@section css{
+@section css {
     <style>
         /*服务器信息*/
         #ServerInfo .laytable-cell-1-0-0 {
@@ -253,7 +253,9 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                @{ var process = Process.GetCurrentProcess();}
+                                                @{
+                                                    var process = Process.GetCurrentProcess();
+                                                }
                                                 <div class="layui-table-cell laytable-cell-1-0-0">
                                                     内存：
                                                 </div>
@@ -292,13 +294,15 @@
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-2">
-                                                    @{ var app = ApplicationManager.Load();}
+                                                    @{
+                                                        var startTime = DateTime.Now.AddMilliseconds(-Environment.TickCount64);
+                                                    }
                                                     应用启动：
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-3">
-                                                    启动于 @app.StartTime.ToLocalTime().ToFullString()
+                                                    启动于 @startTime.ToLocalTime().ToFullString()
                                                 </div>
                                             </td>
                                         </tr>
@@ -417,7 +421,7 @@
     </div>
 </div>
 
-@section scripts{
+@section scripts {
     <script>
         layui.use(['jquery'], function () {
             var $ = layui.$;
