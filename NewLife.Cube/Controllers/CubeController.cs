@@ -1,10 +1,12 @@
 ﻿using System.Buffers;
 using System.ComponentModel;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Services;
 using NewLife.Data;
 using NewLife.Reflection;
 using XCode;
@@ -20,42 +22,20 @@ namespace NewLife.Cube.Controllers;
 [Route("[controller]/[action]")]
 public class CubeController : ControllerBaseX
 {
+    private readonly PageService _pageService;
     private readonly IList<EndpointDataSource> _sources;
 
     /// <summary>构造函数</summary>
+    /// <param name="pageService"></param>
     /// <param name="sources"></param>
-    public CubeController(IEnumerable<EndpointDataSource> sources)
+    public CubeController(PageService pageService, IEnumerable<EndpointDataSource> sources)
     {
         _sources = sources.ToList();
+        _pageService = pageService;
     }
-
-    #region 拦截
-    ///// <summary>执行后</summary>
-    ///// <param name="context"></param>
-    //public override void OnActionExecuted(ActionExecutedContext context)
-    //{
-    //    if (context.Exception != null && !context.ExceptionHandled)
-    //    {
-    //        var ex = context.Exception.GetTrue();
-    //        context.Result = Json(0, null, ex);
-    //        context.ExceptionHandled = true;
-
-    //        if (XTrace.Debug) XTrace.WriteException(ex);
-
-    //        return;
-    //    }
-
-    //    base.OnActionExecuted(context);
-    //}
-    #endregion
 
     #region 服务器信息
     private static readonly String _OS = Environment.OSVersion + "";
-
-    ///// <summary>服务器信息</summary>
-    ///// <returns></returns>
-    //[Route("[controller]")]
-    //public ActionResult Get() => Info(null);
 
     /// <summary>服务器信息，用户健康检测</summary>
     /// <param name="state">状态信息</param>
@@ -334,7 +314,7 @@ public class CubeController : ControllerBaseX
     }
     #endregion
 
-    #region 字典参数
+    #region 页面配置
     /// <summary>查询一批Code的数据源</summary>
     /// <param name="codes"></param>
     /// <returns></returns>
@@ -400,6 +380,29 @@ public class CubeController : ControllerBaseX
         para.Save();
 
         return Json(0, "ok");
+    }
+
+    /// <summary>获取页面配置信息。列表页、表单页所需显示字段，以及各字段显示方式</summary>
+    /// <param name="kind"></param>
+    /// <param name="page"></param>
+    /// <returns></returns>
+    [HttpGet]
+    public ActionResult GetPageInfo(String kind, String page)
+    {
+        var rs = _pageService.GetPageInfo(kind, page);
+        return Json(0, null, rs);
+    }
+
+    /// <summary>保存页面配置信息。</summary>
+    /// <param name="kind"></param>
+    /// <param name="page"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public ActionResult SetPageInfo(String kind, String page, [FromBody] JsonElement value)
+    {
+        var rs = _pageService.SetPageInfo(kind, page, value.ToDictionary());
+        return Json(0, null, rs);
     }
     #endregion
 

@@ -17,6 +17,7 @@ namespace NewLife.Cube.Entity;
 [Serializable]
 [DataObject]
 [Description("应用插件。基于魔方实现的应用功能插件")]
+[BindIndex("IU_AppModule_Type_Name", true, "Type,Name")]
 [BindTable("AppModule", Description = "应用插件。基于魔方实现的应用功能插件", ConnName = "Cube", DbType = DatabaseType.None)]
 public partial class AppModule
 {
@@ -215,6 +216,33 @@ public partial class AppModule
     #endregion
 
     #region 扩展查询
+    /// <summary>根据类型、名称查找</summary>
+    /// <param name="type">类型</param>
+    /// <param name="name">名称</param>
+    /// <returns>实体对象</returns>
+    public static AppModule FindByTypeAndName(String type, String name)
+    {
+        if (type.IsNullOrEmpty()) return null;
+        if (name.IsNullOrEmpty()) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.Type.EqualIgnoreCase(type) && e.Name.EqualIgnoreCase(name));
+
+        return Find(_.Type == type & _.Name == name);
+    }
+
+    /// <summary>根据类型查找</summary>
+    /// <param name="type">类型</param>
+    /// <returns>实体列表</returns>
+    public static IList<AppModule> FindAllByType(String type)
+    {
+        if (type.IsNullOrEmpty()) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.Type.EqualIgnoreCase(type));
+
+        return FindAll(_.Type == type);
+    }
     #endregion
 
     #region 字段名

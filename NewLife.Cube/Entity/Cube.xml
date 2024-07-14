@@ -323,6 +323,9 @@
         <Column Name="UpdateIP" DataType="String" Description="更新地址" Model="False" Category="扩展" />
         <Column Name="Remark" DataType="String" Length="500" Description="描述" Category="扩展" />
       </Columns>
+      <Indexes>
+        <Index Columns="Type,Name" Unique="True" />
+      </Indexes>
     </Table>
     <Table Name="ModelTable" Description="模型表。实体表模型">
       <Columns>

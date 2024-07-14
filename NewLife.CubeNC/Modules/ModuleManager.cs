@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using NewLife.Cube.Entity;
 using NewLife.Log;
@@ -13,10 +12,11 @@ namespace NewLife.Cube.Modules;
 public class ModuleManager
 {
     #region 工厂
-    /// <summary>
-    /// 插件集合
-    /// </summary>
+    /// <summary>模块插件集合</summary>
     public IDictionary<String, IModule> Modules { get; private set; }
+
+    /// <summary>模块插件集合</summary>
+    public IDictionary<String, IAdapter> Adapters { get; private set; }
 
     /// <summary>
     /// 加载所有插件
@@ -25,44 +25,72 @@ public class ModuleManager
     {
         if (Modules != null) return Modules;
 
-        var dic = new Dictionary<String, IModule>();
+        var modules = new Dictionary<String, IModule>();
+        var adapters = new Dictionary<String, IAdapter>();
         var list = AppModule.FindAllWithCache();
         foreach (var item in list)
         {
-            if (item.Enable && !item.ClassName.IsNullOrEmpty())
+            if (!item.Enable || item.ClassName.IsNullOrEmpty()) continue;
+
+            try
             {
-                try
+                var type = Type.GetType(item.ClassName);
+                if (type == null)
                 {
-                    var type = Type.GetType(item.ClassName);
+                    if (item.FilePath.IsNullOrEmpty() || !item.FilePath.EndsWithIgnoreCase(".dll")) continue;
+
+                    type = item.ClassName.GetTypeEx();
                     if (type == null)
                     {
-                        if (item.FilePath.IsNullOrEmpty() || !item.FilePath.EndsWithIgnoreCase(".dll")) continue;
-
                         var filePath = item.FilePath.GetFullPath();
                         if (!File.Exists(filePath)) continue;
 
                         var assembly = Assembly.LoadFrom(filePath);
                         type = assembly.GetType(item.ClassName);
+                    }
+
+                    if (item.Type == "Module")
+                    {
                         services?.AddMvc()
                                 .ConfigureApplicationPartManager(_ =>
                                 {
-                                    _.ApplicationParts.Add(new CompiledRazorAssemblyPart(assembly));
+                                    _.ApplicationParts.Add(new CompiledRazorAssemblyPart(type.Assembly));
                                 });
                     }
+                }
 
-                    if (type != null)
+                if (type != null)
+                {
+                    if (item.Type == "Module")
                     {
-                        if (Activator.CreateInstance(type) is IModule module) dic[item.Name] = module;
+                        if (Activator.CreateInstance(type) is IModule module) modules[item.Name] = module;
+                    }
+                    else if (item.Type == "Adapter")
+                    {
+                        if (Activator.CreateInstance(type) is IAdapter module) adapters[item.Name] = module;
                     }
                 }
-                catch (Exception ex)
-                {
-                    XTrace.WriteException(ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                XTrace.WriteException(ex);
             }
         }
 
-        return Modules = dic;
+        Adapters = adapters;
+
+        return Modules = modules;
+    }
+
+    /// <summary>获取指定名称的适配器</summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public IAdapter GetAdapter(String name)
+    {
+        if (name.IsNullOrEmpty()) name = "Default";
+        if (Adapters.TryGetValue(name, out var module)) return module;
+
+        return null;
     }
     #endregion
 

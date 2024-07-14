@@ -1,7 +1,9 @@
-﻿namespace NewLife.Cube.Modules;
+﻿using System.ComponentModel;
+
+namespace NewLife.Cube.Modules;
 
 /// <summary>默认适配器</summary>
-[Module("默认适配器")]
+[DisplayName("魔方适配器")]
 public class DefaultAdapter : IAdapter
 {
 }
