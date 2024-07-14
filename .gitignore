@@ -19,3 +19,7 @@ bld/
 *.pubxml
 /.vscode
 /Bin3
+/BinSSO
+/BinTest/net7.0
+/packages
+*.log
