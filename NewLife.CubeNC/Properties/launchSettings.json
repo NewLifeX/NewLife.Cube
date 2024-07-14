@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "NewLife.CubeNC": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:58433;http://localhost:58434"
+    }
+  }
+}

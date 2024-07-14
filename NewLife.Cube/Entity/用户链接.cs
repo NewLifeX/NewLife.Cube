@@ -257,6 +257,34 @@ public partial class UserConnect
     #region 关联映射
     #endregion
 
+    #region 扩展查询
+    /// <summary>根据提供商查找</summary>
+    /// <param name="provider">提供商</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserConnect> FindAllByProvider(String provider)
+    {
+        if (provider.IsNullOrEmpty()) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.Provider.EqualIgnoreCase(provider));
+
+        return FindAll(_.Provider == provider);
+    }
+
+    /// <summary>根据全局标识查找</summary>
+    /// <param name="unionId">全局标识</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserConnect> FindAllByUnionID(String unionId)
+    {
+        if (unionId.IsNullOrEmpty()) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UnionID.EqualIgnoreCase(unionId));
+
+        return FindAll(_.UnionID == unionId);
+    }
+    #endregion
+
     #region 字段名
     /// <summary>取得用户链接字段信息的快捷方式</summary>
     public partial class _

@@ -222,6 +222,21 @@ public partial class ModelTable
     #region 关联映射
     #endregion
 
+    #region 扩展查询
+    /// <summary>根据分类查找</summary>
+    /// <param name="category">分类</param>
+    /// <returns>实体列表</returns>
+    public static IList<ModelTable> FindAllByCategory(String category)
+    {
+        if (category.IsNullOrEmpty()) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.Category.EqualIgnoreCase(category));
+
+        return FindAll(_.Category == category);
+    }
+    #endregion
+
     #region 字段名
     /// <summary>取得模型表字段信息的快捷方式</summary>
     public partial class _
