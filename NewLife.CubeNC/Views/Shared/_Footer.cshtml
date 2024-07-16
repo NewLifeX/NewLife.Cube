@@ -1,12 +1,13 @@
 ﻿@using NewLife;
 @{
     var set = NewLife.Cube.CubeSetting.Current;
+    var copyright = set.GetCopyright();
 }
 <footer>
     <div style="margin-top:20px;" class="text-center">
-        @if (!set.Copyright.IsNullOrEmpty())
+        @if (!copyright.IsNullOrEmpty())
         {
-            <span>@set.Copyright</span>
+            <span>@copyright</span>
         }
         @if (!set.Registration.IsNullOrEmpty())
         {

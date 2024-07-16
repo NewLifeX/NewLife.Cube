@@ -5,8 +5,10 @@
 @{
     Layout = null;
     ViewBag.Title = "登录";
+
     var set = Model;
-    var loginTip = NewLife.Cube.CubeSetting.Current.LoginTip;
+    var config = NewLife.Cube.CubeSetting.Current;
+    var loginTip = config.LoginTip;
 }
 <!DOCTYPE html>
 <html>
@@ -185,7 +187,7 @@
 
                 <div class="d-flex flex-center flex-column flex-wrap p-5 pb-3">
                     <div class="d-flex flex-center fs-10 text-muted">
-                        <a>@NewLife.Cube.CubeSetting.Current.Copyright</a>
+                        <a>@config.GetCopyright()</a>
                         <a>&nbsp;&nbsp;VER: @SysConfig.Current.Version</a>
                     </div>
                     <div class="d-flex flex-center fw-bold fs-10">
