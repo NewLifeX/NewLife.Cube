@@ -87,7 +87,6 @@ public class ModuleManager
     /// <returns></returns>
     public IAdapter GetAdapter(String name)
     {
-        if (name.IsNullOrEmpty()) name = "Default";
         if (Adapters.TryGetValue(name, out var module)) return module;
 
         return null;

@@ -66,13 +66,13 @@
                     }
                     else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                     {
-                        var dd = (Double)value;
+                        var dd = value.ToDouble();
                         var scale = item.Scale >= 2 ? item.Scale - 2 : 2;
                         <td class="@(tdClass ?? "text-center")">@dd.ToString("p" + scale)</td>
                     }
                     else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                     {
-                        var dd = (Double)value;
+                        var dd = value.ToDouble();
                         var scale = 0;
                         var des = item.Description + "";
                         if (des.Contains("十分之一")) { dd /= 10; scale += 1; }
@@ -85,7 +85,7 @@
                     }
                     else
                     {
-                        var dd = (Double)value;
+                        var dd = value.ToDouble();
                         if (item.Scale > 0)
                         {
                             <td class="@(tdClass ?? "text-right")">@dd.ToString("n" + item.Scale)</td>

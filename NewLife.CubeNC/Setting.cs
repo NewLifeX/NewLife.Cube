@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using NewLife.Configuration;
 using NewLife.Security;
 using XCode.Configuration;
@@ -348,11 +349,43 @@ public class CubeSetting : Config<CubeSetting>
             }
         }
 
+        // 版权信息中的年份替换为当前年份
+        if (!Copyright.IsNullOrEmpty() && Copyright.Contains('-'))
+        {
+            var reg = new Regex(@"(\d{4})-(\d{4})");
+            Copyright = reg.Replace(Copyright, math => $"{math.Groups[1]}-{{now:yyyy}}");
+            //for (var i = 2000; i <= DateTime.Today.Year; i++)
+            //{
+            //    Copyright = Copyright.Replace(i + "", "{now:yyyy}");
+            //}
+        }
+
         if (PaswordStrength.IsNullOrEmpty()) PaswordStrength = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
         if (MaxLoginError <= 0) MaxLoginError = 5;
         if (LoginForbiddenTime <= 0) LoginForbiddenTime = 300;
 
         base.OnLoaded();
+    }
+
+    /// <summary>获取版权信息。动态替换年份</summary>
+    /// <returns></returns>
+    public String GetCopyright()
+    {
+        var cr = Copyright;
+        if (cr.IsNullOrEmpty()) return null;
+
+        var p1 = cr.IndexOf("{now");
+        if (p1 < 0) return cr;
+
+        var format = "";
+        var p2 = cr.IndexOf('}', p1);
+        if (p2 > 0) format = cr.Substring(p1 + 1, p2 - p1 - 1).TrimStart("now").TrimStart(":");
+
+        var now = DateTime.Now;
+        if (format.IsNullOrEmpty())
+            return cr[..p1] + now.Year + cr[(p2 + 1)..];
+        else
+            return cr[..p1] + now.ToString(format) + cr[(p2 + 1)..];
     }
     #endregion
 }

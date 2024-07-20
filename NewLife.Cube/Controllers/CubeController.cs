@@ -383,25 +383,25 @@ public class CubeController : ControllerBaseX
     }
 
     /// <summary>获取页面配置信息。列表页、表单页所需显示字段，以及各字段显示方式</summary>
-    /// <param name="kind"></param>
-    /// <param name="page"></param>
+    /// <param name="kind">种类。用于区分不同的前端类型，如Vue/Antd/QuickVue</param>
+    /// <param name="page">页面路径。如/admin/user</param>
     /// <returns></returns>
     [HttpGet]
-    public ActionResult GetPageInfo(String kind, String page)
+    public ActionResult GetPageConfig(String kind, String page)
     {
-        var rs = _pageService.GetPageInfo(kind, page);
+        var rs = _pageService.GetPageConfig(kind, page, CurrentUser?.ID ?? 0);
         return Json(0, null, rs);
     }
 
-    /// <summary>保存页面配置信息。</summary>
-    /// <param name="kind"></param>
-    /// <param name="page"></param>
-    /// <param name="value"></param>
+    /// <summary>保存页面配置信息。需要自定义部分字段，其它信息由字段列表和适配器动态生成</summary>
+    /// <param name="kind">种类。用于区分不同的前端类型，如Vue/Antd/QuickVue</param>
+    /// <param name="page">页面路径。如/admin/user</param>
+    /// <param name="value">配置对象。作为Body直接Post的Json配置</param>
     /// <returns></returns>
     [HttpPost]
-    public ActionResult SetPageInfo(String kind, String page, [FromBody] JsonElement value)
+    public ActionResult SetPageConfig(String kind, String page, [FromBody] JsonElement value)
     {
-        var rs = _pageService.SetPageInfo(kind, page, value.ToDictionary());
+        var rs = _pageService.SetPageConfig(kind, page, value.ToDictionary());
         return Json(0, null, rs);
     }
     #endregion
