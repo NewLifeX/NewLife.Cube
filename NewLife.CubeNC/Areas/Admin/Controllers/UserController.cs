@@ -455,7 +455,7 @@ public class UserController : EntityController<User, UserModel>
         var model = GetViewModel(returnUrl);
         model.OAuthItems = OAuthConfig.GetVisibles();
 
-        return View(model);
+        return _isMobile ? View("MLogin", model) : View(model);
     }
 
     /// <summary>注销</summary>
