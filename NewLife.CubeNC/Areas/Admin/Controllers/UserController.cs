@@ -596,7 +596,7 @@ public class UserController : EntityController<User, UserModel>
             SsoName = name,
         };
 
-        return View(model);
+        return _isMobile ? View("MLogin", model) : View(model);
     }
 
     /// <summary>修改密码</summary>
