@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Reflection;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -529,7 +530,8 @@ public class UserController : EntityController<User, UserModel>
         ViewBag.Factory = Factory;
 
         // 必须指定视图名，因为其它action会调用
-        return View("Info", user);
+        //return View("Info", user);
+        return _isMobile ? View("MInfo", user) : View("Info", user);
     }
 
     /// <summary>更新用户资料</summary>
@@ -596,7 +598,7 @@ public class UserController : EntityController<User, UserModel>
             SsoName = name,
         };
 
-        return _isMobile ? View("MLogin", model) : View(model);
+        return _isMobile ? View("MChangePassword", model) : View("ChangePassword", model);
     }
 
     /// <summary>修改密码</summary>
