@@ -40,6 +40,7 @@ public class RunTimeMiddleware
     /// <returns></returns>
     public async Task Invoke(HttpContext ctx)
     {
+        // 分析浏览器
         var userAgent = ctx.Request.Headers.UserAgent + "";
         var ua = new UserAgentParser();
         ua.Parse(userAgent);
@@ -57,6 +58,8 @@ public class RunTimeMiddleware
         var url = ctx.Request.GetRawUrl();
         var ip = ctx.GetUserHost();
         ManageProvider.UserHost = ip;
+
+        // 获取当前用户。先找Items，再找Session2，没有自动登录能力
         var user = ManageProvider.User;
 
         // 安全访问

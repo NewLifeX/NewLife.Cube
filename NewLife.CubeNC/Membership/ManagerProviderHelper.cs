@@ -45,27 +45,37 @@ public static class ManagerProviderHelper
     /// <param name="context">Http上下文，兼容NetCore</param>
     public static IManageUser TryLogin(this IManageProvider provider, HttpContext context)
     {
-        var serviceProvider = context?.RequestServices;
-
-        // 判断当前登录用户
-        var user = provider.GetCurrent(serviceProvider);
-        if (user == null)
+        ISpan span = null;
+        try
         {
-            // 尝试从Cookie登录
-            user = provider.LoadCookie(true, context);
-            if (user != null) provider.SetCurrent(user, serviceProvider);
+            var serviceProvider = context?.RequestServices;
+
+            // 判断当前登录用户
+            var user = provider.GetCurrent(serviceProvider);
+            if (user == null)
+            {
+                span = DefaultTracer.Instance?.NewSpan(nameof(TryLogin));
+
+                // 尝试从Cookie登录
+                user = provider.LoadCookie(true, context);
+                if (user != null) provider.SetCurrent(user, serviceProvider);
+            }
+
+            // 如果Null直接返回
+            if (user == null) return null;
+
+            // 设置前端当前用户
+            provider.SetPrincipal(serviceProvider);
+
+            // 处理租户相关信息
+            context.ChooseTenant(user.ID);
+
+            return user;
         }
-
-        // 如果Null直接返回
-        if (user == null) return null;
-
-        // 设置前端当前用户
-        provider.SetPrincipal(serviceProvider);
-
-        // 处理租户相关信息
-        context.ChooseTenant(user.ID);
-
-        return user;
+        finally
+        {
+            span?.Dispose();
+        }
     }
 
     /// <summary>设置租户</summary>
@@ -161,6 +171,8 @@ public static class ManagerProviderHelper
     /// <returns></returns>
     public static IManageUser LoadCookie(this IManageProvider provider, Boolean autologin, HttpContext context)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(LoadCookie));
+
         var key = $"token-{SysConfig.Current.Name}";
         var req = context?.Request;
         var token = req?.Cookies[key];
@@ -175,10 +187,12 @@ public static class ManagerProviderHelper
         if (token.IsNullOrEmpty() || token.Split(".").Length != 3) return null;
 
         token = token.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
+        span?.AppendTag(token);
 
         var jwt = GetJwt();
         if (!jwt.TryDecode(token, out var msg))
         {
+            span?.AppendTag($"令牌无效：{msg}");
             XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
 
             return null;
@@ -186,10 +200,12 @@ public static class ManagerProviderHelper
 
         var user = jwt.Subject;
         if (user.IsNullOrEmpty()) return null;
+        span?.AppendTag($"用户：{user}");
 
         // 判断有效期
         if (jwt.Expire < DateTime.Now)
         {
+            span?.AppendTag($"令牌过期：{jwt.Expire.ToFullString()}");
             XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
 
             return null;
@@ -204,7 +220,7 @@ public static class ManagerProviderHelper
         {
             mu.SaveLogin(null);
 
-            LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} Time={jwt.IssuedAt} Expire={jwt.Expire} Token={token}", u.ID, u + "", ip: context.GetUserHost());
+            LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} IssuedAt={jwt.IssuedAt.ToFullString()} Expire={jwt.Expire.ToFullString()}", u.ID, u + "", ip: context.GetUserHost());
         }
 #endif
 
@@ -218,6 +234,8 @@ public static class ManagerProviderHelper
     /// <param name="context">Http上下文，兼容NetCore</param>
     public static void SaveCookie(this IManageProvider provider, IManageUser user, TimeSpan expire, HttpContext context)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveCookie), new { user.Name, expire });
+
         var res = context?.Response;
         if (res == null) return;
 

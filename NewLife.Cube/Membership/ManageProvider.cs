@@ -21,7 +21,7 @@ public class ManageProvider2 : ManageProvider
     #endregion
 
     #region IManageProvider 接口
-    /// <summary>获取当前用户</summary>
+    /// <summary>获取当前用户。先找Items，再找Session2，没有自动登录能力</summary>
     /// <param name="context"></param>
     /// <returns></returns>
     public override IManageUser GetCurrent(IServiceProvider context = null)
@@ -49,11 +49,13 @@ public class ManageProvider2 : ManageProvider
         }
     }
 
-    /// <summary>设置当前用户</summary>
+    /// <summary>设置当前用户。仅修改Items和Session2，不干涉Cookie</summary>
     /// <param name="user"></param>
     /// <param name="context"></param>
     public override void SetCurrent(IManageUser user, IServiceProvider context = null)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(SetCurrent), user);
+
         var ctx = (ModelExtension.GetService<IHttpContextAccessor>(context) ?? Context)
             ?.HttpContext;
         if (ctx == null) return;
