@@ -112,13 +112,13 @@
                     {
                         <td></td>
                     }
-                    else if (item.ItemType.EqualIgnoreCase("TimeSpan"))
+                    else if (item.ItemType.StartsWithIgnoreCase("TimeSpan"))
                     {
-                        <td class="@(tdClass ?? "text-right")">@(TimeSpan.FromSeconds(value.ToInt()))</td>
+                        <td class="@(tdClass ?? "text-right")">@(item.FormatValue(value))</td>
                     }
-                    else if (item.ItemType.EqualIgnoreCase("Time"))
+                    else if (item.ItemType.StartsWithIgnoreCase("Time"))
                     {
-                        <td class="@(tdClass ?? "text-center")">@(value.ToLong().ToDateTime().ToLocalTime().ToFullString(""))</td>
+                        <td class="@(tdClass ?? "text-center")">@(item.FormatValue(value))</td>
                     }
                     else if (item.ItemType.EqualIgnoreCase("GMK"))
                     {

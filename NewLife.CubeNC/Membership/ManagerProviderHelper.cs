@@ -234,7 +234,7 @@ public static class ManagerProviderHelper
     /// <param name="context">Http上下文，兼容NetCore</param>
     public static void SaveCookie(this IManageProvider provider, IManageUser user, TimeSpan expire, HttpContext context)
     {
-        using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveCookie), new { user.Name, expire });
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveCookie), new { user?.Name, expire });
 
         var res = context?.Response;
         if (res == null) return;

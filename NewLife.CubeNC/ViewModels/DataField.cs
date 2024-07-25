@@ -261,6 +261,11 @@ public class DataField
     /// <summary>是否附件列</summary>
     /// <returns></returns>
     public Boolean IsAttachment() => ItemType.EqualIgnoreCase("file", "image") || ItemType.StartsWithIgnoreCase("file-", "image-");
+
+    /// <summary>格式化数据用于显示</summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public virtual String FormatValue(Object value) => ViewHelper.FormatValue(!ItemType.IsNullOrEmpty() ? ItemType : Field?.Field?.DataScale, value, Description);
     #endregion
 
     #region 服务

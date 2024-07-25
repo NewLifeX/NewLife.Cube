@@ -205,7 +205,7 @@
         <Column Name="News" DataType="Int32" Description="新用户。今天注册新用户数" />
         <Column Name="NewsT7" DataType="Int32" Description="7天注册。7天内注册新用户数" />
         <Column Name="NewsT30" DataType="Int32" Description="30天注册。30天注册新用户数" />
-        <Column Name="OnlineTime" DataType="Int32" ItemType="TimeSpan" Description="在线时间。累计在线总时间，秒" />
+        <Column Name="OnlineTime" DataType="Int32" ItemType="TimeSpan:d'.'hh':'mm':'ss" Description="在线时间。累计在线总时间，秒" />
         <Column Name="CreateTime" DataType="DateTime" Nullable="False" Description="创建时间" Category="扩展" />
         <Column Name="UpdateTime" DataType="DateTime" Nullable="False" Description="更新时间" Category="扩展" />
         <Column Name="Remark" DataType="String" Length="1000" Description="详细信息" Category="扩展" />
