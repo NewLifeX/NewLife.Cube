@@ -122,6 +122,7 @@
         <Column Name="SecurityKey" DataType="String" Length="500" Description="安全密钥。公钥，用于RSA加密用户密码，在通信链路上保护用户密码安全，密钥前面可以增加keyName，形成keyName$keyValue，用于向服务端指示所使用的密钥标识，方便未来更换密钥。" />
         <Column Name="FieldMap" DataType="String" Length="500" Description="字段映射。SSO用户字段如何映射到OAuthClient内部属性" />
         <Column Name="FetchAvatar" DataType="Boolean" Description="抓取头像。是否抓取头像并保存到本地" />
+        <Column Name="IsDeleted" DataType="Boolean" Description="删除。是否已删除，可恢复" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
@@ -234,6 +235,7 @@
         <Column Name="Expired" DataType="DateTime" Description="过期时间。空表示永不过期" />
         <Column Name="Auths" DataType="Int32" Description="次数" />
         <Column Name="LastAuth" DataType="DateTime" Description="最后请求" />
+        <Column Name="IsDeleted" DataType="Boolean" Description="删除。是否已删除，可恢复" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />

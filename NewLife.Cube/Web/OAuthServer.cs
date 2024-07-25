@@ -47,7 +47,7 @@ public class OAuthServer
             app.Insert();
         }
 
-        if (!app.Enable) throw new XException("应用[{0}]不可用", client_id);
+        if (!app.Enable || app.IsDeleted) throw new XException("应用[{0}]不可用", client_id);
         if (app.Expired.Year > 2000 && app.Expired < DateTime.Now) throw new XException("应用[{0}]已过期", client_id);
 
         if (!ip.IsNullOrEmpty() && !app.ValidSource(ip)) throw new XException("来源地址不合法 {0}", ip);

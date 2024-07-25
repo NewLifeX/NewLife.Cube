@@ -9,6 +9,28 @@ namespace NewLife.Cube.Services;
 /// <summary>应用服务</summary>
 public class TokenService
 {
+    /// <summary>根据名称查找</summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public App FindByName(String name)
+    {
+        var app = App.FindByName(name);
+        if (app == null || app.IsDeleted) return null;
+
+        return app;
+    }
+
+    /// <summary>根据密钥查找</summary>
+    /// <param name="appKey"></param>
+    /// <returns></returns>
+    public App FindBySecret(String appKey)
+    {
+        var app = App.FindBySecret(appKey);
+        if (app == null || app.IsDeleted) return null;
+
+        return app;
+    }
+
     /// <summary>验证应用密码，不存在时新增</summary>
     /// <param name="username"></param>
     /// <param name="password"></param>
@@ -21,7 +43,7 @@ public class TokenService
         //if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password));
 
         // 查找应用
-        var app = App.FindByName(username);
+        var app = FindByName(username);
         // 查找或创建应用，避免多线程创建冲突
         app ??= App.GetOrAdd(username, App.FindByName, k => new App
         {
@@ -45,6 +67,7 @@ public class TokenService
     /// <param name="name"></param>
     /// <param name="secret"></param>
     /// <param name="expire"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
     public TokenModel IssueToken(String name, String secret, Int32 expire, String id = null)
     {
@@ -134,7 +157,7 @@ public class TokenService
         if (!jwt.TryDecode(token, out var message)) throw new ApiException(403, $"非法访问[{jwt.Subject}]，{message}");
 
         // 验证应用
-        var app = App.FindByName(jwt.Subject)
+        var app = FindByName(jwt.Subject)
             ?? throw new ApiException(403, $"无效应用[{jwt.Subject}]");
         if (!app.Enable) throw new ApiException(403, $"已停用应用[{jwt.Subject}]");
 
@@ -161,7 +184,7 @@ public class TokenService
         if (!jwt.TryDecode(token, out var message)) ex = new ApiException(403, $"非法访问 {message}");
 
         // 验证应用
-        var app = App.FindByName(jwt.Subject);
+        var app = FindByName(jwt.Subject);
         if ((app == null || !app.Enable) && ex == null) ex = new ApiException(401, $"无效应用[{jwt.Subject}]");
 
         return (app, ex);

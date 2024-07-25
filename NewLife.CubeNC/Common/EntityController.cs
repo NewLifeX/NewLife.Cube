@@ -12,6 +12,7 @@ using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
+using XCode.Configuration;
 using XCode.Membership;
 
 namespace NewLife.Cube;
@@ -44,19 +45,34 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     {
         var url = Request.GetReferer();
 
+        var act = "删除";
         var entity = FindData(id);
         var rs = false;
         var err = "";
         try
         {
-            if (Valid(entity, DataObjectMethodType.Delete, true))
+            // 假删除与还原
+            var fi = GetDeleteField();
+            if (fi != null)
             {
-                OnDelete(entity);
+                var restore = GetRequest("restore").ToBoolean();
+                entity.SetItem(fi.Name, !restore);
+                if (restore) act = "恢复";
 
-                rs = true;
+                if (Valid(entity, DataObjectMethodType.Update, true))
+                    OnUpdate(entity);
+                else
+                    err = "验证失败";
             }
             else
-                err = "验证失败";
+            {
+                if (Valid(entity, DataObjectMethodType.Delete, true))
+                    OnDelete(entity);
+                else
+                    err = "验证失败";
+            }
+
+            rs = true;
         }
         catch (Exception ex)
         {
@@ -65,18 +81,20 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             //if (LogOnChange) LogProvider.Provider.WriteLog("Delete", entity, err);
 
             if (Request.IsAjaxRequest())
-                return JsonRefresh("删除失败！" + err);
+                return JsonRefresh($"{act}失败！{err}");
 
             throw;
         }
 
         if (Request.IsAjaxRequest())
-            return JsonRefresh(rs ? "删除成功！" : "删除失败！" + err);
+            return JsonRefresh(rs ? $"{act}成功！" : $"{act}失败！{err}");
         else if (!url.IsNullOrEmpty())
             return Redirect(url);
         else
             return RedirectToAction("Index");
     }
+
+    private static FieldItem GetDeleteField() => Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted") && e.Type == typeof(Boolean));
 
     /// <summary>表单，添加/修改</summary>
     /// <returns></returns>
@@ -639,10 +657,14 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     [DisplayName("删除选中")]
     public virtual ActionResult DeleteSelect()
     {
-        var count = 0;
+        var total = 0;
+        var success = 0;
         var keys = SelectKeys;
         if (keys != null && keys.Length > 0)
         {
+            // 假删除
+            var fi = GetDeleteField();
+
             using var tran = Entity<TEntity>.Meta.CreateTrans();
             var list = new List<IEntity>();
             foreach (var item in keys)
@@ -651,15 +673,28 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
                 if (entity != null)
                 {
                     // 验证数据权限
-                    if (Valid(entity, DataObjectMethodType.Delete, true)) list.Add(entity);
-
-                    count++;
+                    if (fi != null)
+                    {
+                        entity.SetItem(fi.Name, true);
+                        if (Valid(entity, DataObjectMethodType.Update, true)) list.Add(entity);
+                    }
+                    else
+                    {
+                        if (Valid(entity, DataObjectMethodType.Delete, true)) list.Add(entity);
+                    }
                 }
             }
-            list.Delete();
+
+            total = list.Count;
+            if (fi != null)
+                success = list.Update();
+            else
+                success = list.Delete();
+
             tran.Commit();
         }
-        return JsonRefresh($"共删除{count}行数据");
+
+        return JsonRefresh($"共删除{total}行数据，成功{success}行");
     }
 
     /// <summary>删除全部</summary>
@@ -670,7 +705,11 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     {
         var url = Request.GetReferer();
 
-        var count = 0;
+        // 假删除
+        var fi = GetDeleteField();
+
+        var total = 0;
+        var success = 0;
         var p = Session[CacheKey] as Pager;
         p = new Pager(p);
         if (p != null)
@@ -683,25 +722,37 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
                 // 不要查记录数
                 p.RetrieveTotalCount = false;
 
-                var list = SearchData(p).ToList();
-                if (list.Count == 0) break;
+                var data = SearchData(p).ToList();
+                if (data.Count == 0) break;
 
-                count += list.Count;
-                //list.Delete();
+                total += data.Count;
+
                 using var tran = Entity<TEntity>.Meta.CreateTrans();
-                var list2 = new List<IEntity>();
-                foreach (var entity in list)
+                var list = new List<IEntity>();
+                foreach (var entity in data)
                 {
                     // 验证数据权限
-                    if (Valid(entity, DataObjectMethodType.Delete, true)) list2.Add(entity);
+                    if (fi != null)
+                    {
+                        entity.SetItem(fi.Name, true);
+                        if (Valid(entity, DataObjectMethodType.Update, true)) list.Add(entity);
+                    }
+                    else
+                    {
+                        if (Valid(entity, DataObjectMethodType.Delete, true)) list.Add(entity);
+                    }
                 }
-                list2.Delete();
+
+                if (fi != null)
+                    success += list.Update();
+                else
+                    success += list.Delete();
                 tran.Commit();
             }
         }
 
         if (Request.IsAjaxRequest())
-            return JsonRefresh($"共删除{count}行数据");
+            return JsonRefresh($"共删除{total}行数据，成功{success}行");
         else if (!url.IsNullOrEmpty())
             return Redirect(url);
         else

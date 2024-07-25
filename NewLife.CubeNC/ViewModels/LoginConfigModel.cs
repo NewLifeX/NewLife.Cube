@@ -41,7 +41,7 @@ namespace NewLife.Cube.ViewModels
         /// 提供者
         /// </summary>
         public List<OAuthConfigModel> Providers =>
-            OAuthConfig.FindAllWithCache().Where(w=>w.Enable).Select(s =>
+            OAuthConfig.GetVisibles().Select(s =>
             {
                 var m = new OAuthConfigModel();
                 m.Copy(s);

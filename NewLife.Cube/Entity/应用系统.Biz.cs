@@ -167,16 +167,16 @@ public partial class App : Entity<App>
         return true;
     }
 
-    /// <summary>验证应用密钥是否有效</summary>
-    /// <param name="appkey"></param>
-    /// <returns></returns>
-    public static App Valid(String appkey)
-    {
-        var app = FindBySecret(appkey);
-        if (app == null || !app.Enable) throw new XException("非法授权！");
+    ///// <summary>验证应用密钥是否有效</summary>
+    ///// <param name="appkey"></param>
+    ///// <returns></returns>
+    //public static App Valid(String appkey)
+    //{
+    //    var app = FindBySecret(appkey);
+    //    if (app == null || !app.Enable) throw new XException("非法授权！");
 
-        return app;
-    }
+    //    return app;
+    //}
 
     /// <summary>写应用历史</summary>
     /// <param name="action"></param>

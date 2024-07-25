@@ -206,6 +206,14 @@ public partial class OAuthConfig
     [BindColumn("FetchAvatar", "抓取头像。是否抓取头像并保存到本地", "")]
     public Boolean FetchAvatar { get => _FetchAvatar; set { if (OnPropertyChanging("FetchAvatar", value)) { _FetchAvatar = value; OnPropertyChanged("FetchAvatar"); } } }
 
+    private Boolean _IsDeleted;
+    /// <summary>删除。是否已删除，可恢复</summary>
+    [DisplayName("删除")]
+    [Description("删除。是否已删除，可恢复")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("IsDeleted", "删除。是否已删除，可恢复", "")]
+    public Boolean IsDeleted { get => _IsDeleted; set { if (OnPropertyChanging("IsDeleted", value)) { _IsDeleted = value; OnPropertyChanged("IsDeleted"); } } }
+
     private Int32 _CreateUserID;
     /// <summary>创建者</summary>
     [Category("扩展")]
@@ -301,6 +309,7 @@ public partial class OAuthConfig
             "SecurityKey" => _SecurityKey,
             "FieldMap" => _FieldMap,
             "FetchAvatar" => _FetchAvatar,
+            "IsDeleted" => _IsDeleted,
             "CreateUserID" => _CreateUserID,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
@@ -337,6 +346,7 @@ public partial class OAuthConfig
                 case "SecurityKey": _SecurityKey = Convert.ToString(value); break;
                 case "FieldMap": _FieldMap = Convert.ToString(value); break;
                 case "FetchAvatar": _FetchAvatar = value.ToBoolean(); break;
+                case "IsDeleted": _IsDeleted = value.ToBoolean(); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -428,6 +438,9 @@ public partial class OAuthConfig
 
         /// <summary>抓取头像。是否抓取头像并保存到本地</summary>
         public static readonly Field FetchAvatar = FindByName("FetchAvatar");
+
+        /// <summary>删除。是否已删除，可恢复</summary>
+        public static readonly Field IsDeleted = FindByName("IsDeleted");
 
         /// <summary>创建者</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -524,6 +537,9 @@ public partial class OAuthConfig
 
         /// <summary>抓取头像。是否抓取头像并保存到本地</summary>
         public const String FetchAvatar = "FetchAvatar";
+
+        /// <summary>删除。是否已删除，可恢复</summary>
+        public const String IsDeleted = "IsDeleted";
 
         /// <summary>创建者</summary>
         public const String CreateUserID = "CreateUserID";

@@ -605,7 +605,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         var app = App.FindBySecret(token);
         if (app != null)
         {
-            if (!app.Enable) throw new XException("非法授权！");
+            if (!app.Enable || app.IsDeleted) throw new XException("非法授权！");
 
             return app?.ToString();
         }

@@ -55,7 +55,7 @@ public class OAuthController : ControllerBase
                 var (jwt, ex) = _tokenService.DecodeTokenWithError(model.refresh_token, set.JwtSecret);
 
                 // 验证应用
-                var app = App.FindByName(jwt?.Subject);
+                var app = _tokenService.FindByName(jwt?.Subject);
                 if (app == null || !app.Enable)
                     ex ??= new ApiException(403, $"无效应用[{jwt.Subject}]");
 
