@@ -103,6 +103,7 @@ public partial class OAuthConfig : Entity<OAuthConfig>
             Debug = true,
             Visible = true,
             AutoRegister = true,
+            FetchAvatar = true,
         };
         entity.Insert();
 
@@ -121,6 +122,7 @@ public partial class OAuthConfig : Entity<OAuthConfig>
 
             Visible = false,
             AutoRegister = true,
+            FetchAvatar = true,
         };
         cfg.Insert();
 
@@ -209,6 +211,7 @@ public partial class OAuthConfig : Entity<OAuthConfig>
             Logo = logo,
             Visible = true,
             AutoRegister = true,
+            FetchAvatar = true,
             Remark = remark,
         };
 
