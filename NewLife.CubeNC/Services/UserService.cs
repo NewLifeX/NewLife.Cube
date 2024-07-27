@@ -37,7 +37,7 @@ public class UserService
             User.Meta.Factory.AdditionalFields.Remove(nameof(User.__.OnlineTime));
 
             _timer = new TimerX(s => ClearExpire(), null, 1000, 60 * 1000) { Async = true };
-            _timer2 = new TimerX(DoStat, null, 1000, 60 * 1000) { Async = true };
+            _timer2 = new TimerX(DoStat, null, 3000, 60 * 1000) { Async = true };
         }
     }
     #endregion
