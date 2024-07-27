@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Membership;
 using NewLife.Log;
+using NewLife.Model;
 using NewLife.Reflection;
 using XCode;
 using XCode.Membership;
@@ -69,25 +70,29 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
             create = true;
         }
 
+        //using var span = DefaultTracer.Instance?.NewSpan(nameof(OnAuthorization));
+        var span = DefaultSpan.Current;
+
         // 根据控制器定位资源菜单
         var menu = ResolveMenu(filterContext, create);
+        span?.AppendTag($"menu: {menu}");
 
         // 如果已经处理过，就不处理了
         if (filterContext.Result != null) return;
 
-        if (!AuthorizeCore(filterContext.HttpContext, menu))
+        if (!AuthorizeCore(filterContext.HttpContext, menu, out var user))
         {
-            HandleUnauthorizedRequest(filterContext, menu);
+            HandleUnauthorizedRequest(filterContext, menu, user);
         }
     }
 
-    private Boolean AuthorizeCore(Microsoft.AspNetCore.Http.HttpContext httpContext, IMenu menu)
+    private Boolean AuthorizeCore(Microsoft.AspNetCore.Http.HttpContext httpContext, IMenu menu, out IManageUser user)
     {
         var prv = ManageProvider.Provider;
         var ctx = httpContext;
 
         // 判断当前登录用户
-        var user = ManagerProviderHelper.TryLogin(prv, httpContext);
+        user = ManagerProviderHelper.TryLogin(prv, httpContext);
         if (user == null) return false;
 
         // 判断权限
@@ -95,8 +100,9 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         {
             if (user is IUser user2) return user2.Has(menu, Permission);
 
-            var msg = $"访问菜单 {menu} 需要 {Permission.GetDescription()} 权限";
+            var msg = $"访问资源[{menu}]时无法验证用户[{user}]的权限";
             LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
+            DefaultSpan.Current?.AppendTag(msg);
         }
         else
         {
@@ -106,7 +112,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         return false;
     }
 
-    private void HandleUnauthorizedRequest(AuthorizationFilterContext filterContext, IMenu menu)
+    private void HandleUnauthorizedRequest(AuthorizationFilterContext filterContext, IMenu menu, IManageUser user)
     {
         // 来到这里，有可能没登录，有可能没权限
         var prv = ManageProvider.Provider;
@@ -117,7 +123,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         }
         else
         {
-            filterContext.Result = NoPermission(filterContext, menu, Permission);
+            filterContext.Result = NoPermission(filterContext, menu, Permission, user);
         }
     }
 
@@ -125,8 +131,9 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     /// <param name="filterContext"></param>
     /// <param name="menu"></param>
     /// <param name="permission"></param>
+    /// <param name="user"></param>
     /// <returns></returns>
-    public static ActionResult NoPermission(AuthorizationFilterContext filterContext, IMenu menu, PermissionFlags permission)
+    public static ActionResult NoPermission(AuthorizationFilterContext filterContext, IMenu menu, PermissionFlags permission, IManageUser user)
     {
         var act = (ControllerActionDescriptor)filterContext.ActionDescriptor;
         var ctrl = act;
@@ -134,8 +141,9 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         var ctx = filterContext.HttpContext;
 
         var res = $"[{ctrl.ControllerName}/{act.ActionName}]";
-        var msg = $"访问资源 {res} 需要 {permission.GetDescription()} 权限";
+        var msg = $"{user}访问资源 {res} 需要 {permission.GetDescription()} 权限";
         LogProvider.Provider.WriteLog("访问", "拒绝", false, msg, ip: ctx.GetUserHost());
+        DefaultSpan.Current?.AppendTag(msg);
 
         filterContext.HttpContext.Response.StatusCode = 403;
         return new JsonResult(new { code = 403, message = msg });

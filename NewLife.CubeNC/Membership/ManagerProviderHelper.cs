@@ -6,7 +6,6 @@ using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Web;
-using XCode;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 using IServiceCollection = Microsoft.Extensions.DependencyInjection.IServiceCollection;
@@ -86,6 +85,8 @@ public static class ManagerProviderHelper
         var set = CubeSetting.Current;
         if (!set.EnableTenant) return;
 
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(ChooseTenant), new { userId });
+
         /*
          * 用户登录后的租户选择逻辑：
          *  已选租户且有效
@@ -140,6 +141,8 @@ public static class ManagerProviderHelper
     /// <param name="tenantId"></param>
     public static void SetTenant(this HttpContext context, Int32 tenantId)
     {
+        DefaultSpan.Current?.AppendTag($"SetTenant: {tenantId}");
+
         TenantContext.Current = new TenantContext { TenantId = tenantId };
         ManageProvider.Provider.Tenant = Tenant.FindById(tenantId);
     }
@@ -176,15 +179,16 @@ public static class ManagerProviderHelper
         var key = $"token-{SysConfig.Current.Name}";
         var req = context?.Request;
         var token = req?.Cookies[key];
+        var ts = token?.Split(".") ?? [];
 
         // 尝试从url中获取token
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["token"];
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["jwtToken"];
+        if (ts.Length != 3) token = req?.Query["token"];
+        if (ts.Length != 3) token = req?.Query["jwtToken"];
 
         // 尝试从头部获取token
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Headers[HeaderNames.Authorization];
+        if (ts.Length != 3) token = req?.Headers[HeaderNames.Authorization];
 
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) return null;
+        if (ts.Length != 3) return null;
 
         token = token.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
         span?.AppendTag(token);
@@ -284,6 +288,8 @@ public static class ManagerProviderHelper
     {
         var res = context?.Response;
         if (res == null) return;
+
+        DefaultSpan.Current?.AppendTag($"SaveTenant: {tenantId}");
 
         var option = new CookieOptions
         {

@@ -531,6 +531,8 @@ public class SsoProvider
         var user = prv.Current;
         if (user == null) return null;
 
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(BindAfterLogin), new { oauthId, user.Name, user.NickName });
+
         var log = OAuthLog.FindById(oauthId);
         if (log == null) return null;
 

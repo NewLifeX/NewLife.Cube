@@ -215,7 +215,7 @@ public class IndexController : ControllerBaseX
     /// 获取菜单树
     /// </summary>
     /// <returns></returns>
-    [EntityAuthorize()]
+    [EntityAuthorize]
     public ActionResult GetMenuTree() => Ok(data: GetMenu());
 
     private IList<MenuTree> GetMenu()

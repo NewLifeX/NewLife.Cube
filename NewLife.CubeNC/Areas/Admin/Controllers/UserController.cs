@@ -33,6 +33,7 @@ public class UserController : EntityController<User, UserModel>
     private readonly ICache _cache;
     private readonly PasswordService _passwordService;
     private readonly UserService _userService;
+    private readonly ITracer _tracer;
 
     private Boolean _isMobile { get; set; } = false;
 
@@ -122,11 +123,12 @@ public class UserController : EntityController<User, UserModel>
     /// <param name="passwordService"></param>
     /// <param name="cacheProvider"></param>
     /// <param name="userService"></param>
-    public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService)
+    public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService, ITracer tracer)
     {
         _passwordService = passwordService;
         _cache = cacheProvider.Cache;
         _userService = userService;
+        _tracer = tracer;
     }
 
     /// <summary>搜索数据集</summary>
@@ -361,12 +363,15 @@ public class UserController : EntityController<User, UserModel>
         var username = loginModel.Username;
         var password = loginModel.Password;
         var remember = loginModel.Remember;
+        var ip = UserHost;
 
         // 连续错误校验
         var key = $"Login:{username}";
         var errors = _cache.Get<Int32>(key);
-        var ipKey = $"Login:{UserHost}";
+        var ipKey = $"Login:{ip}";
         var ipErrors = _cache.Get<Int32>(ipKey);
+
+        using var span = _tracer?.NewSpan(nameof(Login), new { username, ip, errors, ipErrors });
 
         var set = CubeSetting.Current;
         var returnUrl = GetRequest("r");
@@ -376,8 +381,10 @@ public class UserController : EntityController<User, UserModel>
             if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
             if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password), "密码不能为空！");
 
-            if (errors >= set.MaxLoginError && set.MaxLoginError > 0) throw new InvalidOperationException($"[{username}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
-            if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0) throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (errors >= set.MaxLoginError && set.MaxLoginError > 0)
+                throw new InvalidOperationException($"[{username}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
+                throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
             var provider = ManageProvider.Provider;
             if (ModelState.IsValid && provider.Login(username, password, remember) != null)
@@ -432,6 +439,8 @@ public class UserController : EntityController<User, UserModel>
             LogProvider.Provider.WriteLog(typeof(User), action, false, ex.Message, 0, username, UserHost);
             XTrace.WriteLine("[{0}]登录失败！{1}", username, ex.Message);
             XTrace.WriteException(ex);
+
+            span?.SetError(ex, null);
 
             // 累加错误数，首次出错时设置过期时间
             _cache.Increment(key, 1);
