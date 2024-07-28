@@ -60,6 +60,16 @@ public static class ViewHelper
             }
         }
 
+        // 如果是分表，需要加载分表字段
+        var shardField = fact.ShardPolicy?.Field;
+        if (shardField != null)
+        {
+            var value = entity[shardField.Name];
+            if (value is DateTime dt) value = dt.ToFullString("").TrimEnd(" 00:00:00");
+
+            rv[shardField.Name] = value;
+        }
+
         return rv;
     }
 

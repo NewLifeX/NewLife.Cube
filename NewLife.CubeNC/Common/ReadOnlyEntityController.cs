@@ -200,6 +200,34 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <returns></returns>
     protected virtual TEntity Find(Object key)
     {
+        // 分表需要特殊处理
+        var fact = Factory;
+        var shardField = fact.ShardPolicy?.Field;
+        if (shardField != null)
+        {
+            var dt = GetRequest(shardField.Name).ToDateTime();
+            if (dt.Year > 2000)
+            {
+                //return fact.AutoShard(dt, dt.AddSeconds(1), () => FindByKey(key)).FirstOrDefault();
+                //using var split = fact.CreateShard(dt);
+                //var unique = fact.Unique;
+                //if (unique != null)
+                //    return Entity<TEntity>.Find(unique.Equal(key));
+                //else
+                //    return FindByKey(key);
+
+                var entity = new TEntity();
+                entity[fact.Unique.Name] = key;
+                entity[shardField.Name] = dt;
+                return FindByKey(entity);
+            }
+        }
+
+        return FindByKey(key);
+    }
+
+    private TEntity FindByKey(Object key)
+    {
         var fact = Factory;
         if (fact.Unique == null)
         {
