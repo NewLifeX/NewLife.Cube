@@ -179,16 +179,15 @@ public static class ManagerProviderHelper
         var key = $"token-{SysConfig.Current.Name}";
         var req = context?.Request;
         var token = req?.Cookies[key];
-        var ts = token?.Split(".") ?? [];
 
         // 尝试从url中获取token
-        if (ts.Length != 3) token = req?.Query["token"];
-        if (ts.Length != 3) token = req?.Query["jwtToken"];
+        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["token"];
+        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["jwtToken"];
 
         // 尝试从头部获取token
-        if (ts.Length != 3) token = req?.Headers[HeaderNames.Authorization];
+        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Headers[HeaderNames.Authorization];
 
-        if (ts.Length != 3) return null;
+        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) return null;
 
         token = token.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
         span?.AppendTag(token);
