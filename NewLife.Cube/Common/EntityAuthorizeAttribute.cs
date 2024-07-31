@@ -155,13 +155,20 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         //var ctrl = act.ControllerDescriptor;
         var type = act.ControllerTypeInfo;
         var fullName = type.FullName + "." + act.ActionName;
-        var url = filterContext.HttpContext.Request.Path;
+        var url = filterContext.HttpContext.Request.Path + "";
 
         var ctx = filterContext.HttpContext;
         var mf = ManageProvider.Menu;
         if (ctx.Items["CurrentMenu"] is not IMenu menu)
         {
             menu = mf.FindByFullName(fullName) ?? mf.FindByFullName(type.FullName) ?? mf.FindByUrl(url) ?? mf.FindByUrl("~" + url);
+
+            // 缩短Url后再次尝试
+            if (menu == null)
+            {
+                var url2 = "/" + url.Split("/").Take(3).Join("/");
+                menu = mf.FindByUrl(url2);
+            }
 
             // 兼容旧版本视图权限
             ctx.Items["CurrentMenu"] = menu;
