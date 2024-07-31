@@ -3,7 +3,7 @@ using NewLife.Cube.Entity;
 using NewLife.Web;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>OAuth配置</summary>
 [AdminArea]

@@ -5,7 +5,7 @@ using NewLife.Web;
 using XCode.Membership;
 using static NewLife.Cube.Entity.UserStat;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>访问统计控制器</summary>
 [AdminArea]

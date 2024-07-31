@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>系统设置控制器</summary>
 [DisplayName("魔方设置")]

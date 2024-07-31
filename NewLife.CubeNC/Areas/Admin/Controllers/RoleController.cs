@@ -6,7 +6,7 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>角色控制器</summary>
 [DisplayName("角色")]

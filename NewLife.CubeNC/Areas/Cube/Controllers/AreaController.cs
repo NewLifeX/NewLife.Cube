@@ -7,7 +7,7 @@ using XCode;
 using XCode.Membership;
 using static XCode.Membership.Area;
 
-namespace NewLife.Cube.Cube.Controllers;
+namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>地区</summary>
 [DisplayName("地区")]

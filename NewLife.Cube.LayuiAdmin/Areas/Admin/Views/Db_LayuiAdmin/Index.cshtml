@@ -4,9 +4,10 @@
 
 @using NewLife.Common;
 @using NewLife.Cube
-@using NewLife.Cube.Admin;
+@using NewLife.Cube.Areas.Admin;
 @using XCode.DataAccessLayer;
 @using NewLife;
+@using NewLife.Cube.Areas.Admin.Models;
 
 @{
     var dbs = Model as IList<DbItem>;
@@ -56,7 +57,7 @@
     </div>
 </div>
 
-@section layuiscripts{
+@section layuiscripts {
             table.init('parse-table', { //转化静态表格
             page: true,
             limit: 20,

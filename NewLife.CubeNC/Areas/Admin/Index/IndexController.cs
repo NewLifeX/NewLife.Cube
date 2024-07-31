@@ -11,7 +11,7 @@ using NewLife.Log;
 using NewLife.Reflection;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>首页</summary>
 [DisplayName("首页")]

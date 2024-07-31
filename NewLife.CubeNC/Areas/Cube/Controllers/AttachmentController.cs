@@ -6,7 +6,7 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Cube.Controllers;
+namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>附件管理</summary>
 [CubeArea]

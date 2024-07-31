@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>字典参数</summary>
 [DisplayName("字典参数")]

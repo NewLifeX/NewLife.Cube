@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>设置控制器</summary>
 [DisplayName("数据中间件")]

@@ -4,7 +4,7 @@ using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>部门</summary>
 [DataPermission(null, "ManagerID={#userId}")]

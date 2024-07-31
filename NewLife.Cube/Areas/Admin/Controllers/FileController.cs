@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife;
-using NewLife.Cube.Admin;
+using NewLife.Cube.Areas.Admin.Models;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;

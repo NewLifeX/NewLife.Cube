@@ -12,7 +12,7 @@ using NewLife.Threading;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Cube.Controllers;
+namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>定时任务</summary>
 [CubeArea]

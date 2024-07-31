@@ -7,7 +7,7 @@ using XCode;
 using XCode.DataAccessLayer;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>数据库管理</summary>
 [DisplayName("数据库")]

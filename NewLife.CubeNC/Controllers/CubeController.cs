@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using NewLife.Cube.Cube.Controllers;
+using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Data;
 using NewLife.Log;

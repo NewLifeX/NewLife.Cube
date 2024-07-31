@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using NewLife.Cube.Admin;
 using NewLife.Web;
 using XCode.Membership;
 

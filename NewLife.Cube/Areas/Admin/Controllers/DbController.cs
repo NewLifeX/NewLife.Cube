@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Admin;
+using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Reflection;
 using XCode;
 using XCode.DataAccessLayer;

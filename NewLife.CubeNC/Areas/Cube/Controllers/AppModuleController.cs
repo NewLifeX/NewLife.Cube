@@ -4,7 +4,7 @@ using NewLife.Cube.Modules;
 using NewLife.Web;
 using XCode.Membership;
 
-namespace NewLife.Cube.Cube.Controllers;
+namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>应用插件管理</summary>
 [CubeArea]

@@ -19,7 +19,7 @@ using XCode;
 using XCode.Membership;
 using static XCode.Membership.User;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户控制器</summary>
 [DataPermission(null, "ID={#userId}")]

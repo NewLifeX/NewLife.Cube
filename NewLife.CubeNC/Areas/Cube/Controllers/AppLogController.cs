@@ -5,7 +5,7 @@ using NewLife.Web;
 using XCode;
 using XCode.Membership;
 
-namespace NewLife.Cube.Cube.Controllers;
+namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>应用日志</summary>
 [DisplayName("应用日志")]

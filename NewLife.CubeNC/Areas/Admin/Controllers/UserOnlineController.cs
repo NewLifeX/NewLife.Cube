@@ -6,7 +6,7 @@ using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>用户在线控制器</summary>
 [DataPermission(null, "UserID={#userId}")]

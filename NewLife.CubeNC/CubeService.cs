@@ -381,8 +381,8 @@ public static class CubeService
         ManageProvider2.EndpointRoute = (IEndpointRouteBuilder)app.Properties["__EndpointRouteBuilder"];
 
         // 自动检查并添加菜单
-        AreaBase.RegisterArea<Admin.AdminArea>();
-        AreaBase.RegisterArea<Cube.CubeArea>();
+        AreaBase.RegisterArea<Areas.Admin.AdminArea>();
+        AreaBase.RegisterArea<Areas.Cube.CubeArea>();
 
         // 插件
         var moduleManager = provider.GetRequiredService<ModuleManager>();

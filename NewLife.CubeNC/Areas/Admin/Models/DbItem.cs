@@ -1,7 +1,6 @@
-﻿using NewLife.Cube.Areas.Admin.Models;
-using XCode.DataAccessLayer;
+﻿using XCode.DataAccessLayer;
 
-namespace NewLife.Cube.Admin;
+namespace NewLife.Cube.Areas.Admin.Models;
 
 /// <summary>数据项</summary>
 public class DbItem : ICubeModel

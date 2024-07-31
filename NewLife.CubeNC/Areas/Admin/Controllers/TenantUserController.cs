@@ -5,7 +5,7 @@ using NewLife.Web;
 using XCode.Membership;
 using UserX = XCode.Membership.User;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>租户关系</summary>
 [AdminArea]

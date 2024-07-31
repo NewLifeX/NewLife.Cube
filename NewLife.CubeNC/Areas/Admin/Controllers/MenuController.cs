@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>菜单控制器</summary>
 [DisplayName("菜单")]

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Common;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>系统设置控制器</summary>
 [DisplayName("系统设置")]

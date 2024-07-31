@@ -1,4 +1,5 @@
-﻿@{
+﻿@using NewLife.Cube.Areas.Admin.Controllers;
+@{
     //Layout = null;
 
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
@@ -18,6 +19,6 @@
 
     var name = cfg == null ? "" : cfg.DisplayName;
 
-    ViewBag.MyAsms = NewLife.Cube.Admin.Controllers.IndexController.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+    ViewBag.MyAsms = IndexController.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
 }
 @await Html.PartialAsync("Main")

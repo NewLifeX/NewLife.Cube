@@ -5,7 +5,7 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
 using XCode.Membership;
 
-namespace NewLife.Cube.Cube.Controllers;
+namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>委托代理</summary>
 [CubeArea]

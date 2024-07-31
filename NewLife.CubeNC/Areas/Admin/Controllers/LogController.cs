@@ -7,7 +7,7 @@ using XCode.Membership;
 using static XCode.Membership.Log;
 using XLog = XCode.Membership.Log;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>审计日志控制器</summary>
 [DataPermission(null, "CreateUserID={#userId}")]

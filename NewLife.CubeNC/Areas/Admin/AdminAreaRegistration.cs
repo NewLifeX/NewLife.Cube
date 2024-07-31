@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace NewLife.Cube.Admin;
+namespace NewLife.Cube.Areas.Admin;
 
 /// <summary>权限管理区域注册</summary>
 [DisplayName("系统管理")]

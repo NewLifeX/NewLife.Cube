@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Areas.Admin.Models;
 using XCode.Membership;
 
-namespace NewLife.Cube.Admin.Controllers;
+namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>文件管理</summary>
 [DisplayName("文件")]
