@@ -5,6 +5,7 @@
 @using System.Runtime.Versioning;
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Http.Features
 @using NewLife.Caching
 @using NewLife.Common;
 @using NewLife.Serialization;
@@ -106,7 +107,7 @@
     </el-descriptions-item>
     <el-descriptions-item label="进程时间">@process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()</el-descriptions-item>
     <el-descriptions-item label="Session">
-        @httpContext.Session.Keys.Count() 个
+        @(httpContext.Features.Get<ISessionFeature>()?.Session.Keys.Count() ?? 0) 个
         <a href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
         ，@gc
     </el-descriptions-item>

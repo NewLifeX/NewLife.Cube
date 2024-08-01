@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using NewLife.Collections;
 using NewLife.Cube;
 using NewLife.Cube.Extensions;
@@ -338,10 +339,14 @@ public static class WebHelper
     /// <returns></returns>
     internal static String FillDeviceId(Microsoft.AspNetCore.Http.HttpContext ctx)
     {
+        // 准备Session，避免未启用Session时ctx.Session直接抛出异常
+        var ss = ctx.Features.Get<ISessionFeature>()?.Session;
+        if (ss != null && !ss.IsAvailable) ss = null;
+
         // http/https分开使用不同的Cookie名，避免站点同时支持http和https时，Cookie冲突
-        var id = ctx.Request.Cookies["CubeDeviceId"];
+        var id = ss?.GetString("CubeDeviceId");
+        if (id.IsNullOrEmpty()) id = ctx.Request.Cookies["CubeDeviceId"];
         if (id.IsNullOrEmpty()) id = ctx.Request.Cookies["CubeDeviceId0"];
-        //if (id.IsNullOrEmpty()) id = ctx.Session?.GetString("CubeDeviceId");
         if (id.IsNullOrEmpty())
         {
             id = Rand.NextString(16);
@@ -375,7 +380,7 @@ public static class WebHelper
             else
                 ctx.Response.Cookies.Append("CubeDeviceId0", id, option);
 
-            //ctx.Session?.SetString("CubeDeviceId", id);
+            ss?.SetString("CubeDeviceId", id);
         }
 
         return id;

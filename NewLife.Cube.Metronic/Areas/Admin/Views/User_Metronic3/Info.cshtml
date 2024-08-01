@@ -199,16 +199,16 @@
 
             <div class="tab-pane" id="user_change_password" role="tabpanel">
                 <div class="container">
-                    @{ 
-                        var model = new ChangePasswordModel { Name = user.Name, SsoName = Context.Session.Get<String>("Cube_Sso") };
+                    @{
+                        var ss = Context.Items[""] as IDictionary<String, Object>;
+                        var model = new ChangePasswordModel { Name = user.Name, SsoName = (String)ss["Cube_Sso"] };
                     }
-                     @await Html.PartialAsync("ChangePassword", model)
+                    @await Html.PartialAsync("ChangePassword", model)
                 </div>
             </div>
 
             <div class="tab-pane" id="user_log" role="tabpanel">
                 <div class="container">
-
                 </div>
             </div>
         </div>

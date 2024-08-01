@@ -5,6 +5,7 @@
 @using System.Runtime.Versioning;
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.AspNetCore.Http.Features
 @using NewLife
 @using NewLife.Caching
 @using NewLife.Common;
@@ -221,7 +222,7 @@
                                 Session：
                             </td>
                             <td class="value" style="max-width:400px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;">
-                                @httpContext.Session.Keys.Count() 个
+                                @(httpContext.Features.Get<ISessionFeature>()?.Session.Keys.Count() ?? 0) 个
                                 <a href="@Url.Action("Main", new{ id = "Session" })" target="_self" data-bs-toggle="tooltip" title="点击打开Session列表">Session列表</a>
                                 ，@gc
                             </td>

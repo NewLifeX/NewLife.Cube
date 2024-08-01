@@ -83,7 +83,7 @@ public static class CubeService
         //});
 
         // 添加Session会话支持
-        services.AddSession();
+        //services.AddSession();
 
         // 身份验证
         services.AddAuthentication(options =>
@@ -351,7 +351,7 @@ public static class CubeService
         // 注册中间件
         //app.UseStaticFiles();
         app.UseCookiePolicy();
-        app.UseSession();
+        //app.UseSession();
         app.UseAuthentication();
 
         // 如果已引入追踪中间件，则这里不再引入

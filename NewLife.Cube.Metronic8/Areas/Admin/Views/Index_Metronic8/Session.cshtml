@@ -3,45 +3,49 @@
 @using System.Reflection;
 @using System.Runtime.Versioning;
 @using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http.Features
 @using NewLife.Common;
 @using NewLife.Serialization
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
 
-    var session = HttpContextAccessor.HttpContext.Session;
+    var session = HttpContextAccessor.HttpContext.Features.Get<ISessionFeature>()?.Session;
     var session2 = HttpContextAccessor.HttpContext.Items["Session"] as IDictionary<String, Object>;
     ViewBag.Title = "Session列表";
 }
 
 <div class="row d-flex align-items-lg-stretch">
     <div class="col-lg-6">
-        <div class="card card-stretch gutter-b">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover table-row-bordered table-row-dashed gy-4">
-                        <tr>
-                            <th class="text-dark text-hover-primary text-uppercase fs-3" colspan="6">
-                                Session列表(@session.Keys.Count())
-                            </th>
-                        </tr>
-                        <tr class="fs-4">
-                            <th>名称</th>
-                            <th>类型</th>
-                            <th>数值</th>
-                        </tr>
-                        @foreach (String item in session.Keys)
-                        {
+        @if (session != null)
+        {
+            <div class="card card-stretch gutter-b">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-row-bordered table-row-dashed gy-4">
                             <tr>
-                                <td>@item</td>
-                                <td></td>
-                                <td>@session.GetString(item)</td>
+                                <th class="text-dark text-hover-primary text-uppercase fs-3" colspan="6">
+                                    Session列表(@session.Keys.Count())
+                                </th>
                             </tr>
-                        }
-                    </table>
+                            <tr class="fs-4">
+                                <th>名称</th>
+                                <th>类型</th>
+                                <th>数值</th>
+                            </tr>
+                            @foreach (String item in session.Keys)
+                            {
+                                <tr>
+                                    <td>@item</td>
+                                    <td></td>
+                                    <td>@session.GetString(item)</td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 
     <div class="col-lg-6">

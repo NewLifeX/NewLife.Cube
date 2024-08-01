@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Web;
+using Microsoft.AspNetCore.Http.Features;
 using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
@@ -53,7 +54,7 @@ public class RunTimeMiddleware
         if (MiddlewareHelper.CheckForceRedirect(ctx)) return;
 
         // 创建Session集合。后续 ManageProvider.User 需要用到Session
-        var (token, session) = CreateSession(ctx);
+        var session = CreateSession(ctx);
 
         var url = ctx.Request.GetRawUrl();
         var ip = ctx.GetUserHost();
@@ -183,29 +184,40 @@ public class RunTimeMiddleware
         return inf;
     }
 
-    private static (String, IDictionary<String, Object>) CreateSession(HttpContext ctx)
+    private static IDictionary<String, Object> CreateSession(HttpContext ctx)
     {
-        // 准备Session
-        var ss = ctx.Session;
-        if (ss != null)
+        // 准备Session，避免未启用Session时ctx.Session直接抛出异常
+        //var ss = ctx.Session;
+        var ss = ctx.Features.Get<ISessionFeature>()?.Session;
+        if (ss != null && !ss.IsAvailable) ss = null;
+
+        // 关键点在于确定一个唯一的SessionId，没有Session和Cookie时，使用令牌
+        var key = ".Cube.Session";
+        var sid = "";
+        if (sid.IsNullOrEmpty()) sid = ss?.GetString(key);
+        if (sid.IsNullOrEmpty()) sid = ctx.Request.Cookies[key];
+        if (sid.IsNullOrEmpty()) sid = ctx.Request.Cookies[".AspNetCore.Session"];
+        if (sid.IsNullOrEmpty()) sid = ctx.LoadToken();
+        if (sid.IsNullOrEmpty())
         {
-            //var token = Request.Cookies["Token"];
-            var token = ss.GetString("Cube_Token");
-            if (token.IsNullOrEmpty())
-            {
-                token = Rand.NextString(16);
-                //Response.Cookies.Append("Token", token, new CookieOptions { });
-                ss.SetString("Cube_Token", token);
-            }
+            sid = Rand.NextString(16);
+            if (ss != null)
+                ss.SetString(key, sid);
+            else
+                ctx.Response.Cookies.Append(key, sid);
+        }
+        else
+        {
+            // 避免过长
+            if (sid.Length > 32) sid = sid.MD5();
 
-            //Session = _sessionProvider.GetSession(ss.Id);
-            var session = _sessionProvider.GetSession(token);
-            ctx.Items["Session"] = session;
-
-            return (token, session);
+            ss?.SetString(key, sid);
         }
 
-        return (null, null);
+        var session = _sessionProvider.GetSession(sid);
+        ctx.Items["Session"] = session;
+
+        return session;
     }
 
     /// <summary>忽略的后缀</summary>

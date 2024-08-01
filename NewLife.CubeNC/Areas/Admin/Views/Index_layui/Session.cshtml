@@ -3,85 +3,89 @@
 @using System.Reflection;
 @using System.Runtime.Versioning;
 @using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http.Features
 @using NewLife.Common;
 @using NewLife.Serialization
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     //Layout = NewLife.Cube.Setting.Current.Layout;
-    var session = HttpContextAccessor.HttpContext.Session;
+    var session = HttpContextAccessor.HttpContext.Features.Get<ISessionFeature>()?.Session;
     var session2 = HttpContextAccessor.HttpContext.Items["Session"] as IDictionary<String, Object>;
     ViewBag.Title = "Session列表";
 }
 
 <div class="layui-fluid" id="mainpage">
     <div class="layui-row layui-col-space15">
-        <div class="layui-col-md12">
-            <div class="layui-card">
-                <div class="layui-card-header">
-                    Session列表(@session.Keys.Count())
-                </div>
-                <div class="layui-card-body">
-                    <div class="layui-form layui-border-box layui-table-view">
-                        <div class="layui-table-box">
-                            <div class="layui-table-header">
-                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
-                                                    <span>
-                                                        名称
-                                                    </span>
-                                                </div>
-                                            </th>
-                                            <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
-                                                    <span>
-                                                        类型
-                                                    </span>
-                                                </div>
-                                            </th>
-                                            <th>
-                                                <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
-                                                    <span>
-                                                        数值
-                                                    </span>
-                                                </div>
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                </table>
-                            </div>
-                            <div class="layui-table-body layui-table-main">
-                                <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
-                                    <tbody>
-                                        @foreach (String item in session.Keys)
-                                        {
+        @if (session != null)
+        {
+            <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header">
+                        Session列表(@session.Keys.Count())
+                    </div>
+                    <div class="layui-card-body">
+                        <div class="layui-form layui-border-box layui-table-view">
+                            <div class="layui-table-box">
+                                <div class="layui-table-header">
+                                    <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                        <thead>
                                             <tr>
-                                                <td>
+                                                <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
-                                                        @item
+                                                        <span>
+                                                            名称
+                                                        </span>
                                                     </div>
-                                                </td>
-                                                <td>
+                                                </th>
+                                                <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
+                                                        <span>
+                                                            类型
+                                                        </span>
                                                     </div>
-                                                </td>
-                                                <td>
+                                                </th>
+                                                <th>
                                                     <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
-                                                        @session.GetString(item)
+                                                        <span>
+                                                            数值
+                                                        </span>
                                                     </div>
-                                                </td>
+                                                </th>
                                             </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                    </table>
+                                </div>
+                                <div class="layui-table-body layui-table-main">
+                                    <table class="layui-table" cellspacing="0" cellpadding="0" border="0" lay-size="sm" style="width:100%">
+                                        <tbody>
+                                            @foreach (String item in session.Keys)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <div class="layui-table-cell laytable-cell-1-0-0" data-id="1-0-0">
+                                                            @item
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="layui-table-cell laytable-cell-1-0-1" data-id="1-0-1">
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="layui-table-cell laytable-cell-1-0-2" data-id="1-0-2">
+                                                            @session.GetString(item)
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        }
         @if (session2 != null)
         {
             <div class="layui-col-md12">
@@ -157,7 +161,7 @@
 </div>
 
 
-@section scripts{
+@section scripts {
     <script>
         layui.use(['jquery'], function () {
             var $ = layui.$;
