@@ -33,7 +33,7 @@ public abstract class BaseController : ControllerBase, IActionFilter
     {
         _args = context.ActionArguments;
 
-        var token = Token = ApiFilterAttribute.GetToken(context.HttpContext);
+        var token = Token = context.HttpContext.LoadToken();
 
         try
         {

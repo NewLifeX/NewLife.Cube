@@ -198,6 +198,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("令牌有效期。访问令牌AccessToken的有效期，默认7200秒")]
     [Category("用户登录")]
     public Int32 TokenExpire { get; set; } = 7200;
+
+    /// <summary>在Cookie中存储令牌。读取令牌时，如果请求头没有携带令牌，则从Cookie读取，默认true</summary>
+    [Description("在Cookie中存储令牌。读取令牌时，如果请求头没有携带令牌，则从Cookie读取，默认true")]
+    [Category("用户登录")]
+    public Boolean TokenCookie { get; set; } = true;
     #endregion
 
     #region 界面配置

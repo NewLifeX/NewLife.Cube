@@ -1,4 +1,5 @@
-﻿using System.Security.Principal;
+﻿using System;
+using System.Security.Principal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
@@ -56,8 +57,23 @@ public static class ManagerProviderHelper
                 span = DefaultTracer.Instance?.NewSpan(nameof(TryLogin));
 
                 // 尝试从Cookie登录
-                user = provider.LoadCookie(true, context);
-                if (user != null) provider.SetCurrent(user, serviceProvider);
+                var token = context.LoadToken();
+                var (u, jwt) = provider.LoadUser(token);
+                if ((user = u) != null)
+                {
+                    provider.SetCurrent(user, serviceProvider);
+
+#if MVC
+                    // 保存登录信息。如果是json请求，不用记录自动登录
+                    var req = context?.Request;
+                    if (user is IAuthUser mu && !req.IsAjaxRequest())
+                    {
+                        mu.SaveLogin(null);
+
+                        LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} IssuedAt={jwt.IssuedAt.ToFullString()} Expire={jwt.Expire.ToFullString()}", user.ID, user + "", ip: context.GetUserHost());
+                    }
+#endif
+                }
             }
 
             // 如果Null直接返回
@@ -75,6 +91,47 @@ public static class ManagerProviderHelper
         {
             span?.Dispose();
         }
+    }
+
+    /// <summary>从令牌加载用户</summary>
+    /// <param name="provider"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public static (IManageUser, JwtBuilder) LoadUser(this IManageProvider provider, String token)
+    {
+        if (token.IsNullOrEmpty()) return (null, null);
+
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(LoadUser), token);
+
+        //token = token.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
+        span?.AppendTag(token);
+
+        var jwt = GetJwt();
+        if (!jwt.TryDecode(token, out var msg))
+        {
+            span?.AppendTag($"令牌无效：{msg}");
+            XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
+
+            return (null, jwt);
+        }
+
+        var user = jwt.Subject;
+        if (user.IsNullOrEmpty()) return (null, jwt);
+        span?.AppendTag($"用户：{user}");
+
+        // 判断有效期
+        if (jwt.Expire < DateTime.Now)
+        {
+            span?.AppendTag($"令牌过期：{jwt.Expire.ToFullString()}");
+            XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
+
+            return (null, jwt);
+        }
+
+        var u = provider.FindByName(user);
+        if (u == null || !u.Enable) return (null, jwt);
+
+        return (u, jwt);
     }
 
     /// <summary>设置租户</summary>
@@ -167,67 +224,36 @@ public static class ManagerProviderHelper
     }
 
     #region 用户Cookie
-    /// <summary>从Cookie加载用户信息</summary>
-    /// <param name="provider">提供者</param>
-    /// <param name="autologin">是否自动登录</param>
+    /// <summary>从上下文加载令牌</summary>
     /// <param name="context">Http上下文，兼容NetCore</param>
     /// <returns></returns>
-    public static IManageUser LoadCookie(this IManageProvider provider, Boolean autologin, HttpContext context)
+    public static String LoadToken(this HttpContext context)
     {
-        using var span = DefaultTracer.Instance?.NewSpan(nameof(LoadCookie));
+        //using var span = DefaultTracer.Instance?.NewSpan(nameof(LoadToken));
 
-        var key = $"token-{SysConfig.Current.Name}";
         var req = context?.Request;
-        var token = req?.Cookies[key];
+        var token = "";
+
+        // 尝试从头部获取token
+        if (token.IsNullOrEmpty() || token.Split(".").Length != 3)
+            token = req?.Headers[HeaderNames.Authorization].ToString().TrimStart("Bearer ");
+        if (token.IsNullOrEmpty() || token.Split(".").Length != 3)
+            token = req?.Headers["X-Token"].ToString().TrimStart("Bearer ");
 
         // 尝试从url中获取token
         if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["token"];
         if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["jwtToken"];
 
-        // 尝试从头部获取token
-        if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Headers[HeaderNames.Authorization];
+        // 尝试从Cookie获取token
+        if (CubeSetting.Current.TokenCookie)
+        {
+            var key = $"token-{SysConfig.Current.Name}";
+            if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Cookies[key];
+        }
 
         if (token.IsNullOrEmpty() || token.Split(".").Length != 3) return null;
 
-        token = token.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
-        span?.AppendTag(token);
-
-        var jwt = GetJwt();
-        if (!jwt.TryDecode(token, out var msg))
-        {
-            span?.AppendTag($"令牌无效：{msg}");
-            XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
-
-            return null;
-        }
-
-        var user = jwt.Subject;
-        if (user.IsNullOrEmpty()) return null;
-        span?.AppendTag($"用户：{user}");
-
-        // 判断有效期
-        if (jwt.Expire < DateTime.Now)
-        {
-            span?.AppendTag($"令牌过期：{jwt.Expire.ToFullString()}");
-            XTrace.WriteLine("令牌过期：{0} {1}", jwt.Expire, token);
-
-            return null;
-        }
-
-        var u = provider.FindByName(user);
-        if (u == null || !u.Enable) return null;
-
-#if MVC
-        // 保存登录信息。如果是json请求，不用记录自动登录
-        if (autologin && u is IAuthUser mu && !req.IsAjaxRequest())
-        {
-            mu.SaveLogin(null);
-
-            LogProvider.Provider.WriteLog("用户", "自动登录", true, $"{user} IssuedAt={jwt.IssuedAt.ToFullString()} Expire={jwt.Expire.ToFullString()}", u.ID, u + "", ip: context.GetUserHost());
-        }
-#endif
-
-        return u;
+        return token;
     }
 
     /// <summary>保存用户信息到Cookie</summary>
@@ -237,6 +263,9 @@ public static class ManagerProviderHelper
     /// <param name="context">Http上下文，兼容NetCore</param>
     public static void SaveCookie(this IManageProvider provider, IManageUser user, TimeSpan expire, HttpContext context)
     {
+        var set = CubeSetting.Current;
+        if (!set.TokenCookie) return;
+
         using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveCookie), new { user?.Name, expire });
 
         var res = context?.Response;
