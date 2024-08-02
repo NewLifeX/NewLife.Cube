@@ -40,7 +40,7 @@ public static class ManagerProviderHelper
         Thread.CurrentPrincipal = up;
     }
 
-    /// <summary>尝试登录。如果Session未登录则借助Cookie</summary>
+    /// <summary>尝试登录。如果Session未登录则借助Token，分别从Header/Query/Cookie获取令牌</summary>
     /// <param name="provider">提供者</param>
     /// <param name="context">Http上下文，兼容NetCore</param>
     public static IManageUser TryLogin(this IManageProvider provider, HttpContext context)
@@ -56,7 +56,7 @@ public static class ManagerProviderHelper
             {
                 span = DefaultTracer.Instance?.NewSpan(nameof(TryLogin));
 
-                // 尝试从Cookie登录
+                // 尝试从Token登录
                 var token = context.LoadToken();
                 var (u, jwt) = provider.LoadUser(token);
                 if ((user = u) != null)
