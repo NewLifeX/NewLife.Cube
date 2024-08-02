@@ -21,6 +21,9 @@ public class CubeHomeController : ControllerBaseX
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
+        // 正式环境中，错误页避免返回500错误码
+        HttpContext.Response.StatusCode = 200;
+
         var model = HttpContext.Items["Exception"] as ErrorModel;
         if (IsJsonRequest)
         {
