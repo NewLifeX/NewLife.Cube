@@ -275,7 +275,7 @@ public class ListField : DataField
         if (!action.IsNullOrEmpty()) sb.AppendFormat(" data-action=\"{0}\"", action);
         if (!title.IsNullOrEmpty()) sb.AppendFormat(" title=\"{0}\"", HttpUtility.HtmlEncode(title));
         sb.Append('>');
-        sb.Append(linkName);
+        sb.Append(HttpUtility.HtmlEncode(linkName));
         sb.Append("</a>");
 
         var link = sb.Put(true);
