@@ -169,7 +169,7 @@
         <Column Name="SessionID" DataType="String" Description="会话。Web的SessionID或Server的会话编号" />
         <Column Name="OAuthProvider" DataType="String" Description="登录方。OAuth提供商，从哪个渠道登录" />
         <Column Name="Times" DataType="Int32" Description="次数" />
-        <Column Name="Page" DataType="String" Description="页面" />
+        <Column Name="Page" DataType="String" Length="200" Description="页面" />
         <Column Name="Platform" DataType="String" Description="平台。操作系统平台，Windows/Linux/Android等" />
         <Column Name="OS" DataType="String" Description="系统。操作系统，带版本" />
         <Column Name="Device" DataType="String" Description="设备。手机品牌型号" />
