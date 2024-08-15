@@ -11,6 +11,7 @@ using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Caching;
 using NewLife.Common;
+using NewLife.Configuration;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
@@ -40,14 +41,7 @@ public static class CubeService
     public static IServiceCollection AddCube(this IServiceCollection services)
     {
         // 引入星尘
-        if (!services.Any(e => e.ServiceType == typeof(StarFactory)))
-        {
-            var star = new StarFactory();
-            services.AddSingleton(star);
-            services.AddSingleton(P => star.Tracer);
-            services.AddSingleton(P => star.Config);
-            services.AddSingleton(p => star.Service);
-        }
+        TryAddStardust(services);
 
         // 检查是否延迟启动，可能是重启或更新
         var args = Environment.GetCommandLineArgs();
@@ -203,6 +197,35 @@ public static class CubeService
         XTrace.WriteLine("{0} End   配置魔方 {0}", new String('=', 32));
 
         return services;
+    }
+
+    private static void TryAddStardust(IServiceCollection services)
+    {
+        if (!services.Any(e => e.ServiceType == typeof(StarFactory)))
+        {
+            var star = new StarFactory();
+            //services.AddSingleton(star);
+            //services.AddSingleton(P => star.Tracer);
+            //services.AddSingleton(P => star.Config);
+            //services.AddSingleton(p => star.Service);
+
+            // 替换为混合配置提供者，优先本地配置
+            var old = JsonConfigProvider.LoadAppSettings();
+            star.SetLocalConfig(old);
+
+            services.TryAddSingleton(star);
+            services.TryAddSingleton(p => star.Tracer ?? DefaultTracer.Instance ?? (DefaultTracer.Instance ??= new DefaultTracer()));
+            //services.AddSingleton(p => star.Config);
+            services.TryAddSingleton(p => star.Service!);
+
+            // 替换为混合配置提供者，优先本地配置
+            services.TryAddSingleton(p => star.GetConfig()!);
+
+            // 分布式缓存
+            //services.TryAddSingleton<ICacheProvider, CacheProvider>();
+            services.TryAddSingleton(XTrace.Log);
+            services.TryAddSingleton(typeof(ICacheProvider), typeof(CacheProvider));
+        }
     }
 
     /// <summary>添加自定义应用部分，即添加外部引用的控制器、视图的Assembly，作为本应用的一部分</summary>
