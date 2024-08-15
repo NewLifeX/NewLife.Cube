@@ -76,7 +76,7 @@ public partial class UserOnline
     /// <summary>页面</summary>
     [DisplayName("页面")]
     [Description("页面")]
-    [DataObjectField(false, false, true, 50)]
+    [DataObjectField(false, false, true, 200)]
     [BindColumn("Page", "页面", "")]
     public String Page { get => _Page; set { if (OnPropertyChanging("Page", value)) { _Page = value; OnPropertyChanged("Page"); } } }
 

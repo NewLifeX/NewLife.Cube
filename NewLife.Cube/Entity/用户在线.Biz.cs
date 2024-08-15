@@ -33,28 +33,29 @@ public partial class UserOnline : Entity<UserOnline>
         if (!HasDirty) return;
 
         // 截取长度
-        CutField(_.Status, _.Page, _.Platform, _.OS, _.Device, _.Brower, _.NetType);
+        //CutField(_.Status, _.Page, _.Platform, _.OS, _.Device, _.Brower, _.NetType);
+        this.TrimExtraLong(__.Status, __.Page, __.Platform, __.OS, __.Device, __.Brower, __.NetType);
 
         // 建议先调用基类方法，基类方法会做一些统一处理
         base.Valid(isNew);
     }
 
-    void CutField(params FieldItem[] fields)
-    {
-        foreach (var field in fields)
-        {
-            var len = field.Length;
-            if (len > 0 && field.Type == typeof(String))
-            {
-                var str = this[field.Name] as String;
-                if (!str.IsNullOrEmpty() && str.Length > len)
-                {
-                    str = str[..len];
-                    SetItem(field.Name, str);
-                }
-            }
-        }
-    }
+    //void CutField(params FieldItem[] fields)
+    //{
+    //    foreach (var field in fields)
+    //    {
+    //        var len = field.Length;
+    //        if (len > 0 && field.Type == typeof(String))
+    //        {
+    //            var str = this[field.Name] as String;
+    //            if (!str.IsNullOrEmpty() && str.Length > len)
+    //            {
+    //                str = str[..len];
+    //                SetItem(field.Name, str);
+    //            }
+    //        }
+    //    }
+    //}
     #endregion
 
     #region 扩展属性

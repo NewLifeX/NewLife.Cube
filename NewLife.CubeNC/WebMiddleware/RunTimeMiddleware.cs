@@ -74,7 +74,7 @@ public class RunTimeMiddleware
             else if (rule.BlockCode > 0)
             {
                 ctx.Response.StatusCode = rule.BlockCode;
-                ctx.Response.ContentType = "text/html";
+                ctx.Response.ContentType = "text/html; charset=utf-8";
                 await ctx.Response.WriteAsync(rule.BlockContent);
                 await ctx.Response.CompleteAsync();
             }
