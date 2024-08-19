@@ -251,15 +251,15 @@ public class SsoController : ControllerBaseX
             if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
             // 子系统颁发token给前端
-            var user = ManageProvider.User;
+            var user = ManageProvider.Provider.Current;
             if (log.Source == "front-end")
             {
-                var jwt = ManagerProviderHelper.GetJwt();
-                jwt.Expire = DateTime.Now.Add(TimeSpan.FromHours(2));
-                jwt.Subject = user.Name;
-                var token = jwt.Encode(null);
+                var token = HttpContext.IssueToken(user, TimeSpan.FromSeconds(set.TokenExpire));
                 url += $"#token={token}";
             }
+
+            // 设置租户
+            HttpContext.ChooseTenant(user.ID);
 
             return Redirect(url);
         }

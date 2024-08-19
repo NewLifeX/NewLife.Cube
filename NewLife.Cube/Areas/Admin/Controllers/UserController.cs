@@ -272,7 +272,7 @@ public class UserController : EntityController<User, UserModel>
                 if (errors > 0) _cache.Remove(key);
                 if (ipErrors > 0) _cache.Remove(ipKey);
 
-                var token = HttpContext.Items["jwtToken"];
+                var token = HttpContext.IssueToken(provider.Current, TimeSpan.FromSeconds(set.TokenExpire));
                 return Json(0, "ok", new { /*provider.Current.ID,*/ Token = token });
             }
 

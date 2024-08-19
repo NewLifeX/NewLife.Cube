@@ -256,6 +256,32 @@ public static class ManagerProviderHelper
         return token;
     }
 
+    /// <summary>给用户颁发令牌</summary>
+    /// <param name="context"></param>
+    /// <param name="user"></param>
+    /// <param name="expire"></param>
+    /// <returns></returns>
+    public static String IssueToken(this HttpContext context, IManageUser user, TimeSpan expire)
+    {
+        var token = context.Items["jwtToken"] as String;
+        if (!token.IsNullOrEmpty()) return token;
+
+        if (user != null)
+        {
+            // 令牌有效期，默认2小时
+            var exp = DateTime.Now.Add(expire.TotalSeconds > 0 ? expire : TimeSpan.FromHours(2));
+            var jwt = GetJwt();
+            jwt.Subject = user.Name;
+            jwt.Expire = exp;
+
+            token = jwt.Encode(null);
+        }
+
+        context.Items["jwtToken"] = token;
+
+        return token;
+    }
+
     /// <summary>保存用户信息到Cookie</summary>
     /// <param name="provider">提供者</param>
     /// <param name="user">用户</param>
@@ -287,13 +313,7 @@ public static class ManagerProviderHelper
         var token = "";
         if (user != null)
         {
-            // 令牌有效期，默认2小时
-            var exp = DateTime.Now.Add(expire.TotalSeconds > 0 ? expire : TimeSpan.FromHours(2));
-            var jwt = GetJwt();
-            jwt.Subject = user.Name;
-            jwt.Expire = exp;
-
-            token = jwt.Encode(null);
+            token = context.IssueToken(user, expire);
             if (expire.TotalSeconds > 0) option.Expires = DateTimeOffset.Now.Add(expire);
         }
         else
@@ -303,8 +323,6 @@ public static class ManagerProviderHelper
 
         var key = $"token-{SysConfig.Current.Name}";
         res.Cookies.Append(key, token, option);
-
-        context.Items["jwtToken"] = token;
     }
     #endregion
 
