@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.ComponentModel;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +43,16 @@ using XCode.Membership;
 
 namespace NewLife.Cube.Controllers;
 
-/// <summary>单点登录控制器</summary>
+/// <summary>单点登录。OAuth2.0客户端与服务端</summary>
+/// <remarks>
+/// 魔方支持接入微信钉钉等多个第三方OAuth2.0服务。
+/// 魔方自身也可以作为OAuth2.0服务端，支持密码式、凭证式、刷新令牌等多种授权模式。
+/// </remarks>
+[DisplayName("单点登录")]
+[Description("""
+    魔方支持接入微信钉钉等多个第三方OAuth2.0服务。
+    魔方自身也可以作为OAuth2.0服务端，支持密码式、凭证式、刷新令牌等多种授权模式。
+    """)]
 [ApiExplorerSettings(GroupName = "Basic")]
 [Route("[controller]/[action]")]
 public class SsoController : ControllerBaseX

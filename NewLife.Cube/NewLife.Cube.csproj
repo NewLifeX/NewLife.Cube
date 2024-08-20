@@ -51,6 +51,7 @@
     <Compile Remove="Areas\Cube\Controllers\ModelColumnController.cs" />
     <Compile Remove="Areas\Cube\Controllers\ModelTableController.cs" />
     <Compile Remove="Common\FormatType.cs" />
+    <Compile Remove="Common\OAuthController.cs" />
     <Compile Remove="Entity\模型列.Biz.cs" />
     <Compile Remove="Entity\模型列.cs" />
     <Compile Remove="Entity\模型表.Biz.cs" />

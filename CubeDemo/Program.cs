@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using NewLife;
 using NewLife.Cube;
 using NewLife.Cube.WebMiddleware;
@@ -27,9 +28,11 @@ builder.Services.AddSwaggerGen(options =>
 {
     // 解决 NewLife.Setting 与 XCode.Setting 冲突的问题
     options.CustomSchemaIds(type => type.FullName);
-    options.IncludeXmlComments("NewLife.Cube.xml".GetFullPath());
 
-    //options.SwaggerDoc("v1", new OpenApiInfo { Version = "v1", Title = "第三代魔方", Description = "第三代魔方WebApi接口，用于前后端分离。" });
+    var xml = "NewLife.Cube.xml".GetFullPath();
+    if (File.Exists(xml)) options.IncludeXmlComments(xml, true);
+
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "第三代魔方", Description = "第三代魔方WebApi接口，用于前后端分离。" });
     //options.SwaggerDoc("Basic", new OpenApiInfo { Version = "basic", Title = "基础模块" });
     //options.SwaggerDoc("Admin", new OpenApiInfo { Version = "admin", Title = "系统管理" });
     //options.SwaggerDoc("Cube", new OpenApiInfo { Version = "cube", Title = "魔方管理" });
@@ -44,6 +47,23 @@ builder.Services.AddSwaggerGen(options =>
 
         return groups != null && groups.Any(e => e == docName);
     });
+
+    // 定义JwtBearer认证方式
+    options.AddSecurityDefinition("JwtBearer", new OpenApiSecurityScheme()
+    {
+        Description = "输入登录成功后取得的令牌",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer"
+    });
+    // 声明一个Scheme，注意下面的Id要和上面AddSecurityDefinition中的参数name一致
+    var scheme = new OpenApiSecurityScheme()
+    {
+        Reference = new OpenApiReference() { Type = ReferenceType.SecurityScheme, Id = "JwtBearer" }
+    };
+    // 注册全局认证（所有的接口都可以使用认证）
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement() { [scheme] = [] });
 });
 
 services.AddCube();
@@ -66,7 +86,7 @@ var app = builder.Build();
         foreach (var description in groups)
         {
             var group = description.GroupName;
-            if(group.IsNullOrEmpty()) continue;
+            if (group.IsNullOrEmpty()) group = "v1";
             options.SwaggerEndpoint($"/swagger/{group}/swagger.json", group);
         }
     });

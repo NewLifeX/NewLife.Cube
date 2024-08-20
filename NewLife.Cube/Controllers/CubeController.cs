@@ -17,7 +17,10 @@ using AreaX = XCode.Membership.Area;
 namespace NewLife.Cube.Controllers;
 
 /// <summary>魔方前端数据接口</summary>
-[DisplayName("数据接口")]
+[DisplayName("魔方数据接口")]
+[Description("""
+    魔方向前端控件提供的一些常用接口，例如用户查询与头像获取等。
+    """)]
 [ApiExplorerSettings(GroupName = "Basic")]
 [Route("[controller]/[action]")]
 public class CubeController : ControllerBaseX
