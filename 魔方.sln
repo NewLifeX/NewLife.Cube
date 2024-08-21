@@ -49,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApi版", "WebApi版", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "测试", "测试", "{12E138A8-D4DF-4CAD-8205-897D3A7AE95C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Swagger", "NewLife.Cube.Swagger\NewLife.Cube.Swagger.csproj", "{1C23DA32-4108-4E9F-BB6C-FA61378C7E38}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{D800A693-B55C-40F3-B80E-C0BE2EC3E79C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D800A693-B55C-40F3-B80E-C0BE2EC3E79C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D800A693-B55C-40F3-B80E-C0BE2EC3E79C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C23DA32-4108-4E9F-BB6C-FA61378C7E38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C23DA32-4108-4E9F-BB6C-FA61378C7E38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C23DA32-4108-4E9F-BB6C-FA61378C7E38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C23DA32-4108-4E9F-BB6C-FA61378C7E38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,6 +136,7 @@ Global
 		{0A1E77F0-7811-4188-A9B6-0F5FAFB76420} = {844550DD-07A5-44C9-A4E9-6FE64FA62CF9}
 		{6BE97641-E557-42BB-810A-6CBFE9CB28AD} = {88104F4C-A44C-493A-8DE7-A1A5A09C754F}
 		{D800A693-B55C-40F3-B80E-C0BE2EC3E79C} = {88104F4C-A44C-493A-8DE7-A1A5A09C754F}
+		{1C23DA32-4108-4E9F-BB6C-FA61378C7E38} = {88104F4C-A44C-493A-8DE7-A1A5A09C754F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AEA440B-0D90-4F6E-BA9A-D42B27A78D7B}

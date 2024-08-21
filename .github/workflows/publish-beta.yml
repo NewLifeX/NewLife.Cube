@@ -38,6 +38,7 @@ jobs:
       run: |
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube/NewLife.Cube.csproj
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.CubeNC/NewLife.CubeNC.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj
 
     - name: Publish
       run: |
