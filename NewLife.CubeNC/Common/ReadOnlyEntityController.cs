@@ -1417,13 +1417,14 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
 
     #region 图表
     /// <summary>快捷添加图表</summary>
-    /// <param name="data"></param>
-    /// <param name="xAxis"></param>
-    /// <param name="yAxis"></param>
-    /// <param name="yFields"></param>
-    /// <param name="seriesType"></param>
+    /// <param name="data">数据集</param>
+    /// <param name="xAxis">X轴。多X轴可独立设置</param>
+    /// <param name="yAxis">Y轴。多Y轴可独立设置</param>
+    /// <param name="yFields">数据字段。为每个数据字段绘制系列</param>
+    /// <param name="seriesType">系列类型</param>
+    /// <param name="position">位置。默认top，可选bottom</param>
     /// <returns></returns>
-    public ECharts AddChart(IList<TEntity> data, FieldItem xAxis, String yAxis = null, FieldItem[] yFields = null, SeriesTypes seriesType = SeriesTypes.Line)
+    public ECharts AddChart(IList<TEntity> data, FieldItem xAxis, String yAxis = null, FieldItem[] yFields = null, SeriesTypes seriesType = SeriesTypes.Line, String position = "top")
     {
         var chart = new ECharts
         {
@@ -1447,9 +1448,15 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             chart.Add(data, yFields, seriesType);
         }
 
-        chart.SetTooltip();
+        if (seriesType == SeriesTypes.Pie)
+            chart.SetTooltip("item", null, null);
+        else
+            chart.SetTooltip();
 
-        ViewBag.Charts = new[] { chart };
+        if (position.IsNullOrEmpty() || position == "top")
+            ViewBag.Charts = new[] { chart };
+        else
+            ViewBag.Charts2 = new[] { chart };
 
         return chart;
     }

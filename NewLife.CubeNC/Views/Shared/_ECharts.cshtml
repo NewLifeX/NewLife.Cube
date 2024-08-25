@@ -8,7 +8,8 @@
     var name = chart.Name;
     var chartName = "chart_" + name;
     var optionName = "option_" + name;
-    chart["grid"] = new { left = "3%", right = "3%" };
+    // 2024-08-25 这里不能设置grid，否则多Y轴时会有问题，看不到右边的Y轴
+    //chart["grid"] = new { left = "3%", right = "3%" };
 
     var style = chart.Style;
     if (chart.Width > 0)
