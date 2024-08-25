@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Common;
+using NewLife.Cube.Charts;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Results;
@@ -1412,5 +1413,45 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     //        yield return OnFilter(item, kind);
     //    }
     //}
+    #endregion
+
+    #region 图表
+    /// <summary>快捷添加图表</summary>
+    /// <param name="data"></param>
+    /// <param name="xAxis"></param>
+    /// <param name="yAxis"></param>
+    /// <param name="yFields"></param>
+    /// <param name="seriesType"></param>
+    /// <returns></returns>
+    public ECharts AddChart(IList<TEntity> data, FieldItem xAxis, String yAxis = null, FieldItem[] yFields = null, SeriesTypes seriesType = SeriesTypes.Line)
+    {
+        var chart = new ECharts
+        {
+            Height = 400,
+        };
+
+        // X轴
+        if (xAxis != null)
+        {
+            chart.SetX(data, xAxis);
+
+            if (xAxis.Type == typeof(DateTime)) chart.AddDataZoom();
+        }
+
+        // Y轴
+        if (!yAxis.IsNullOrEmpty()) chart.SetY(yAxis);
+
+        // 数据线
+        if (yFields != null && yFields.Length > 0)
+        {
+            chart.Add(data, yFields, seriesType);
+        }
+
+        chart.SetTooltip();
+
+        ViewBag.Charts = new[] { chart };
+
+        return chart;
+    }
     #endregion
 }
