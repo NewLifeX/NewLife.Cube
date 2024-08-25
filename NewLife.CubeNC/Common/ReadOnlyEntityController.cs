@@ -1424,7 +1424,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="seriesType">系列类型</param>
     /// <param name="position">位置。默认top，可选bottom</param>
     /// <returns></returns>
-    public ECharts AddChart(IList<TEntity> data, DataField xAxis, String yAxis = null, DataField[] yFields = null, SeriesTypes seriesType = SeriesTypes.Line, String position = "top")
+    public virtual ECharts AddChart(IList<TEntity> data, DataField xAxis, String yAxis = null, DataField[] yFields = null, SeriesTypes seriesType = SeriesTypes.Line, String position = "top")
     {
         var chart = new ECharts
         {
@@ -1464,9 +1464,17 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
             chart.SetTooltip();
 
         if (position.IsNullOrEmpty() || position == "top")
-            ViewBag.Charts = new[] { chart };
+        {
+            var charts = ViewBag.Charts as IList<ECharts> ?? [];
+            charts.Add(chart);
+            ViewBag.Charts = charts;
+        }
         else
-            ViewBag.Charts2 = new[] { chart };
+        {
+            var charts = ViewBag.Charts2 as IList<ECharts> ?? [];
+            charts.Add(chart);
+            ViewBag.Charts2 = charts;
+        }
 
         return chart;
     }

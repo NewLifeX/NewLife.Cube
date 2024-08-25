@@ -594,7 +594,11 @@ public class ECharts : IExtend
             dic[item.Key] = item.Value;
         }
 
+#if DEBUG
         return dic.ToJson(true, true, true);
+#else
+        return dic.ToJson(false, true, true);
+#endif
     }
     #endregion
 }

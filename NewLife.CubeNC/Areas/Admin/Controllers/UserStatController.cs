@@ -41,6 +41,8 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
             var line3 = chart.AddLine(list2, _.OnlineTime, null, true);
             line3.YAxisIndex = 2;
 
+            //AddChart(list2, _.Date, "用户数", [_.Logins, _.OAuths, _.MaxOnline, _.Actives, _.ActivesT7, _.ActivesT30, _.News, _.NewsT7, _.NewsT30], SeriesTypes.Line);
+
             //var chart = new ECharts
             //{
             //    Height = 400,

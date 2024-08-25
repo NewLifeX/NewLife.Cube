@@ -17,8 +17,8 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
-    var charts = ViewBag.Charts as ECharts[];
-    var charts2 = ViewBag.Charts2 as ECharts[];
+    var charts = ViewBag.Charts as IList<ECharts>;
+    var charts2 = ViewBag.Charts2 as IList<ECharts>;
 
     var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
 
@@ -66,7 +66,7 @@
 
     <!-- JQuery作为一等公民，页面内部随时可能使用 -->
     <script src="@res/js/jquery-3.6.0.min.js"></script>
-    @if (charts != null && charts.Length > 0 || charts2 != null && charts2.Length > 0)
+    @if (charts != null && charts.Count > 0 || charts2 != null && charts2.Count > 0)
     {
         <script src="@res/echarts/echarts.min.js"></script>
 
@@ -190,25 +190,25 @@
         @if (set != null && set.BootstrapSelect)
         {
             <text>
-                    $('.multiselect').each(function () {
-                        $(this).multiselect({
-                            // 下拉列表仅在列表项比较多时显示过滤框
-                            enableFiltering: $(this).children().length > 10,
-                            buttonClass: 'btn btn-white btn-primary',
-                            templates: {
-                                button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
-                                ul: '<ul class="multiselect-container dropdown-menu"></ul>',
-                                filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
-                                filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
-                                li: '<li><a href="javascript:void(0);"><label></label></a></li>',
-                                divider: '<li class="multiselect-item divider"></li>',
-                                liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
-                            },
-                            filterPlaceholder: '搜索',
-                            nonSelectedText: '无',
-                            allSelectedText: '全选'
-                        });
-                    });
+                        $('.multiselect').each(function () {
+                            $(this).multiselect({
+                                // 下拉列表仅在列表项比较多时显示过滤框
+                                enableFiltering: $(this).children().length > 10,
+                                buttonClass: 'btn btn-white btn-primary',
+                                templates: {
+                                    button: '<button type="button" class="multiselect dropdown-toggle" data-toggle="dropdown"></button>',
+                                    ul: '<ul class="multiselect-container dropdown-menu"></ul>',
+                                    filter: '<li class="multiselect-item filter"><div class="input-group"><span class="input-group-addon"><i class="fa fa-search"></i></span><input class="form-control multiselect-search" type="text"></div></li>',
+                                    filterClearBtn: '<span class="input-group-btn"><button class="btn btn-default btn-white btn-grey multiselect-clear-filter" type="button"><i class="fa fa-times-circle red2"></i></button></span>',
+                                    li: '<li><a href="javascript:void(0);"><label></label></a></li>',
+                                    divider: '<li class="multiselect-item divider"></li>',
+                                    liGroup: '<li class="multiselect-item group"><label class="multiselect-group"></label></li>'
+                                },
+                                filterPlaceholder: '搜索',
+                                nonSelectedText: '无',
+                                allSelectedText: '全选'
+                            });
+                                });
             </text>
         }
         @*双击跳转到form
@@ -217,16 +217,16 @@
         @if (dbclickEnable)
         {
             <text>
-                    $('tr').dblclick(function () {
-                        var $this = $(this);
+                        $('tr').dblclick(function () {
+                                    var $this = $(this);
                         var row = $this.closest("tr");
                         var findcell = row.find('.editcell');
-                        if (findcell.length > 0) window.location.href = findcell.attr("href");
-                    });
+                                    if (findcell.length > 0) window.location.href = findcell.attr("href");
+                                });
 
             </text>
         }
-                                                        });
+                                                                });
     </script>
 
     <!--开关插件-->

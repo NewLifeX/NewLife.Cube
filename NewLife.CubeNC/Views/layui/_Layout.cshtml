@@ -15,9 +15,6 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 
-    var charts = ViewBag.Charts as ECharts[];
-    var charts2 = ViewBag.Charts2 as ECharts[];
-
     var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
 }
 <!DOCTYPE html>

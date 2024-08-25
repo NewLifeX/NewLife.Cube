@@ -12,8 +12,8 @@
     var page = ViewBag.Page as Pager;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
-    var charts = ViewBag.Charts as ECharts[];
-    var charts2 = ViewBag.Charts2 as ECharts[];
+    var charts = ViewBag.Charts as IList<ECharts>;
+    var charts2 = ViewBag.Charts2 as IList<ECharts>;
 }
 @if (!set.NavView.IsNullOrEmpty())
 {
@@ -27,7 +27,7 @@
         @await Html.PartialAsync("_List_Toolbar")
     </div>
 }
-@if (charts != null && charts.Length > 0)
+@if (charts != null && charts.Count > 0)
 {
     <div class="clearfix">
         @foreach (var item in charts)
@@ -42,7 +42,7 @@
 <div class="panel-footer">
     @await Html.PartialAsync("_List_Pager")
 </div>
-@if (charts2 != null && charts2.Length > 0)
+@if (charts2 != null && charts2.Count > 0)
 {
     <div class="clearfix">
         @foreach (var item in charts2)
