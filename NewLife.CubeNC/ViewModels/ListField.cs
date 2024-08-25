@@ -2,12 +2,14 @@
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using NewLife.Collections;
 using NewLife.Data;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode.Configuration;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace NewLife.Cube.ViewModels;
 
@@ -236,7 +238,32 @@ public class ListField : DataField
         if (txt.IsNullOrEmpty())
         {
             // 在数据列中，实体对象取属性值优先于显示名
-            if (Field != null && DisplayName == Field.DisplayName) return data[Name] + "";
+            if (Field != null && DisplayName == Field.DisplayName)
+            {
+                var val = GetValue?.Invoke(data) ?? data[Name];
+                if (val is DateTime dt)
+                {
+                    if (ItemType.EqualIgnoreCase("time"))
+                    {
+                        val = dt.ToFullString("");
+                    }
+                    else if (ItemType.StartsWithIgnoreCase("time-"))
+                    {
+                        var format = ItemType.Substring("time-".Length);
+                        val = dt.ToString(format, "");
+                    }
+                    else if (ItemType.EqualIgnoreCase("Date") || ItemType.IsNullOrEmpty() && Name.EndsWith("Date"))
+                    {
+                        val = dt.ToString("yyyy-MM-dd", "");
+                    }
+                    else
+                    {
+                        val = dt.ToFullString("");
+                    }
+                }
+
+                return val + "";
+            }
 
             txt = DisplayName;
         }
