@@ -107,7 +107,7 @@ public partial class UserStat : Entity<UserStat>
     /// <returns></returns>
     public static UserStat GetOrAdd(DateTime date)
     {
-        var entity = GetOrAdd(date, FindByDate, k => new UserStat { Date = k, CreateTime = DateTime.Now });
+        var entity = GetOrAdd(date, (k, c) => FindByDate(k, c), k => new UserStat { Date = k, CreateTime = DateTime.Now });
 
         entity.SaveAsync(5_000);
 

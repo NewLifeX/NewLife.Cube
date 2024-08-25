@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
@@ -72,27 +73,27 @@ public class DataField
     /// <summary>
     /// 是否必填
     /// </summary>
-    public bool Required { get; set; }
+    public Boolean Required { get; set; }
 
     /// <summary>
     /// 权限相关。用户自由发挥
     /// </summary>
-    public string Authority { get; set; }
+    public String Authority { get; set; }
 
     /// <summary>
     /// 扩展字段。用户自由发挥
     /// </summary>
-    public string Extended1 { get; set; }
+    public String Extended1 { get; set; }
 
     /// <summary>
     /// 扩展字段。用户自由发挥
     /// </summary>
-    public string Extended2 { get; set; }
+    public String Extended2 { get; set; }
 
     /// <summary>
     /// 扩展字段。用户自由发挥
     /// </summary>
-    public string Extended3 { get; set; }
+    public String Extended3 { get; set; }
 
     /// <summary>原始字段</summary>
     [XmlIgnore, IgnoreDataMember, JsonIgnore]
@@ -283,5 +284,13 @@ public class DataField
     /// <typeparam name="TService"></typeparam>
     /// <returns></returns>
     public virtual TService GetService<TService>() => (TService)_services.FirstOrDefault(e => e is TService);
+    #endregion
+
+    #region 类型转换
+    /// <summary>类型转换</summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    [return: NotNullIfNotNull(nameof(obj))]
+    public static implicit operator DataField?(FieldItem obj) => !obj.Equals(null) ? new DataField(obj) : null;
     #endregion
 }

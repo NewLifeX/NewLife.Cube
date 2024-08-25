@@ -1,5 +1,6 @@
 ﻿using System.Web.Script.Serialization;
 using NewLife.Collections;
+using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Security;
 using NewLife.Serialization;
@@ -102,6 +103,21 @@ public class ECharts : IExtend
             _timeSelector = e => selector(e as T) + "";
 
         if (Symbol.IsNullOrEmpty() && list.Count > 100) Symbol = "none";
+    }
+
+    /// <summary>设置X轴</summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list">数据列表，从中选择数据构建X轴</param>
+    /// <param name="field">作为X轴的字段，支持time时间轴</param>
+    /// <param name="selector">构建X轴的委托</param>
+    public void SetX<T>(IList<T> list, DataField field, Func<T, String> selector = null) where T : class, IModel
+    {
+        if (field != null && field.Type == typeof(DateTime))
+            SetX4Time(list, field.Name, selector);
+        else
+            SetX(list, field.Name, selector);
+
+        _xField = field;
     }
 
     /// <summary>设置X轴</summary>
@@ -327,7 +343,7 @@ public class ECharts : IExtend
     /// <param name="type">图表类型，默认折线图line</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public IList<Series> Add<T>(IList<T> list, FieldItem[] fields, SeriesTypes type = SeriesTypes.Line, Func<T, Object> selector = null) where T : IModel
+    public IList<Series> Add<T>(IList<T> list, DataField[] fields, SeriesTypes type = SeriesTypes.Line, Func<T, Object> selector = null) where T : IModel
     {
         var rs = new List<Series>();
         foreach (var field in fields)
@@ -368,15 +384,24 @@ public class ECharts : IExtend
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <param name="smooth">折线光滑</param>
     /// <returns></returns>
-    public Series AddLine<T>(IList<T> list, String name, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
+    public Series AddLine<T>(IList<T> list, String name, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel => AddLine(list, new DataField { Name = name }, selector, smooth);
+
+    /// <summary>添加曲线系列数据</summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list">实体列表</param>
+    /// <param name="field">要使用数据的字段</param>
+    /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
+    /// <param name="smooth">折线光滑</param>
+    /// <returns></returns>
+    public Series AddLine<T>(IList<T> list, DataField field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
     {
         var data = _timeField != null ?
-            list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[name] : selector(e) }).ToArray() :
-            list.Select(e => selector == null ? e[name] : selector(e)).ToArray();
+            list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
+            list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
         var sr = new Series
         {
-            Name = name,
+            Name = field.DisplayName ?? field.Name,
             Type = "line",
             Data = data,
             Smooth = smooth,
@@ -394,24 +419,7 @@ public class ECharts : IExtend
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <param name="smooth">折线光滑</param>
     /// <returns></returns>
-    public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
-    {
-        var data = _timeField != null ?
-            list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
-            list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
-
-        var sr = new Series
-        {
-            Name = field?.DisplayName ?? field.Name,
-            Type = "line",
-            Data = data,
-            Smooth = smooth,
-        };
-        if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
-
-        Add(sr);
-        return sr;
-    }
+    public Series AddLine<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel => AddLine(list, new DataField(field), selector, smooth);
 
     /// <summary>添加柱状图</summary>
     /// <typeparam name="T"></typeparam>
@@ -419,13 +427,21 @@ public class ECharts : IExtend
     /// <param name="name">要使用数据的字段</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series AddBar<T>(IList<T> list, String name, Func<T, Object> selector = null) where T : IModel
+    public Series AddBar<T>(IList<T> list, String name, Func<T, Object> selector = null) where T : IModel => AddBar(list, new DataField { Name = name }, selector);
+
+    /// <summary>添加柱状图</summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list">实体列表</param>
+    /// <param name="field">要使用数据的字段</param>
+    /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
+    /// <returns></returns>
+    public Series AddBar<T>(IList<T> list, DataField field, Func<T, Object> selector = null) where T : IModel
     {
         var sr = new Series
         {
-            Name = name,
+            Name = field.DisplayName ?? field.Name,
             Type = "bar",
-            Data = list.Select(e => selector == null ? e[name] : selector(e)).ToArray(),
+            Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
         };
 
         Add(sr);
@@ -438,18 +454,7 @@ public class ECharts : IExtend
     /// <param name="field">要使用数据的字段</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
-    public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IModel
-    {
-        var sr = new Series
-        {
-            Name = field?.DisplayName ?? field.Name,
-            Type = "bar",
-            Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
-        };
-
-        Add(sr);
-        return sr;
-    }
+    public Series AddBar<T>(IList<T> list, FieldItem field, Func<T, Object> selector = null) where T : IModel => AddBar(list, new DataField(field), selector);
 
     /// <summary>添加饼图</summary>
     /// <typeparam name="T"></typeparam>
@@ -475,19 +480,43 @@ public class ECharts : IExtend
     /// <summary>添加饼图</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list">实体列表</param>
+    /// <param name="field">数据字段</param>
+    /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
+    /// <returns></returns>
+    public Series AddPie<T>(IList<T> list, DataField field, Func<T, NameValue> selector = null) where T : IModel
+    {
+        var keyName = field.Category;
+        keyName ??= _xField as String;
+        keyName ??= (_xField as DataField).Name;
+        keyName ??= (_xField as FieldItem).Name;
+        var sr = new Series
+        {
+            Name = field.DisplayName ?? field.Name,
+            Type = "pie",
+            Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray(),
+        };
+
+        Add(sr);
+        return sr;
+    }
+
+    /// <summary>添加饼图</summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list">实体列表</param>
     /// <param name="field">要使用数据的字段</param>
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <returns></returns>
     public Series AddPie<T>(IList<T> list, FieldItem field, Func<T, NameValue> selector = null) where T : IModel
     {
-        var nameKey = _xField as String;
-        nameKey ??= (_xField as FieldItem).Name;
-        nameKey ??= field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
+        var keyName = _xField as String;
+        keyName ??= (_xField as DataField).Name;
+        keyName ??= (_xField as FieldItem).Name;
+        keyName ??= field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
         var sr = new Series
         {
-            Name = field?.DisplayName ?? field.Name,
+            Name = field.DisplayName ?? field.Name,
             Type = "pie",
-            Data = list.Select(e => selector == null ? new NameValue(e[nameKey] + "", e[field.Name]) : selector(e)).ToArray(),
+            Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray(),
         };
 
         Add(sr);

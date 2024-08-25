@@ -195,7 +195,7 @@
     <Table Name="UserStat" Description="用户统计" ConnName="Membership">
       <Columns>
         <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-        <Column Name="Date" DataType="DateTime" Description="统计日期" />
+        <Column Name="Date" DataType="DateTime" ItemType="date" DataScale="time" Description="统计日期" />
         <Column Name="Total" DataType="Int32" Description="总数。总用户数" />
         <Column Name="Logins" DataType="Int32" Description="登录数。总登录数" />
         <Column Name="OAuths" DataType="Int32" Description="OAuth登录。OAuth总登录数" />

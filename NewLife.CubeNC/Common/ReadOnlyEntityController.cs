@@ -1424,7 +1424,7 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
     /// <param name="seriesType">系列类型</param>
     /// <param name="position">位置。默认top，可选bottom</param>
     /// <returns></returns>
-    public ECharts AddChart(IList<TEntity> data, FieldItem xAxis, String yAxis = null, FieldItem[] yFields = null, SeriesTypes seriesType = SeriesTypes.Line, String position = "top")
+    public ECharts AddChart(IList<TEntity> data, DataField xAxis, String yAxis = null, DataField[] yFields = null, SeriesTypes seriesType = SeriesTypes.Line, String position = "top")
     {
         var chart = new ECharts
         {
@@ -1442,9 +1442,19 @@ public class ReadOnlyEntityController<TEntity> : ControllerBaseX where TEntity :
         // Y轴
         if (!yAxis.IsNullOrEmpty()) chart.SetY(yAxis);
 
-        // 数据线
+        // 数据图例
         if (yFields != null && yFields.Length > 0)
         {
+            // 饼图需要分类，来自X轴
+            if (seriesType == SeriesTypes.Pie)
+            {
+                foreach (var field in yFields)
+                {
+                    field.DisplayName = xAxis.DisplayName;
+                    if (field.Category.IsNullOrEmpty()) field.Category = xAxis.Name;
+                }
+            }
+
             chart.Add(data, yFields, seriesType);
         }
 

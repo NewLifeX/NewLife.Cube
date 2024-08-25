@@ -35,7 +35,7 @@ public partial class UserStat
     [DisplayName("统计日期")]
     [Description("统计日期")]
     [DataObjectField(false, false, true, 0)]
-    [BindColumn("Date", "统计日期", "")]
+    [BindColumn("Date", "统计日期", "", ItemType = "date", DataScale = "time")]
     public DateTime Date { get => _Date; set { if (OnPropertyChanging("Date", value)) { _Date = value; OnPropertyChanged("Date"); } } }
 
     private Int32 _Total;
@@ -210,6 +210,38 @@ public partial class UserStat
     #endregion
 
     #region 扩展查询
+    /// <summary>根据统计日期查找</summary>
+    /// <param name="date">统计日期</param>
+    /// <returns>实体对象</returns>
+    public static UserStat FindByDate(DateTime date)
+    {
+        if (date.Year < 1000) return null;
+
+        return Find(_.Date == date);
+    }
+
+    /// <summary>根据统计日期查找</summary>
+    /// <param name="date">统计日期</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserStat> FindAllByDate(DateTime date)
+    {
+        if (date.Year < 1000) return [];
+
+        return FindAll(_.Date == date);
+    }
+    #endregion
+
+    #region 数据清理
+    /// <summary>清理指定时间段内的数据</summary>
+    /// <param name="start">开始时间。未指定时清理小于指定时间的所有数据</param>
+    /// <param name="end">结束时间</param>
+    /// <returns>清理行数</returns>
+    public static Int32 DeleteWith(DateTime start, DateTime end)
+    {
+        if (start == end) return Delete(_.Date == start);
+
+        return Delete(_.Date.Between(start, end));
+    }
     #endregion
 
     #region 字段名
