@@ -401,6 +401,10 @@ public class OAuthClient
 
         //// 头像
         //if (!Avatar.IsNullOrEmpty()) user.SetValue(nameof(Avatar), Avatar);
+
+        // 微信昵称可能包含通用名称。这里也添加，因为星尘等下游会从用户中心拿到昵称
+        if (!NickName.IsNullOrEmpty() && (user.NickName == "微信用户" || user.NickName == "欢乐马"))
+            user.NickName = NickName;
     }
     #endregion
 
