@@ -465,7 +465,8 @@ public class SsoProvider
             if (user == null && set.ForceBindNickName)
             {
                 mode = "NickName";
-                if (!client.NickName.IsNullOrEmpty()) user = User.FindByName(client.NickName);
+                if (!client.NickName.IsNullOrEmpty() && !client.NickName.EqualIgnoreCase("微信用户", "欢乐马"))
+                    user = User.FindByName(client.NickName);
             }
 
             // 准备注册用的用户名。不允许使用已经存在的用户名

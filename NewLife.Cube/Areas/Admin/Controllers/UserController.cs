@@ -498,6 +498,13 @@ public class UserController : EntityController<User, UserModel>
 
             if (!_passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
 
+            // 不得使用OAuth前缀
+            foreach (var item in OAuthConfig.GetValids())
+            {
+                if (username.StartsWithIgnoreCase($"{item.Name}_"))
+                    throw new ArgumentException(nameof(username), $"禁止使用[{item.Name}_]前缀！");
+            }
+
             // 去重判断
             var user = FindByName(username);
             if (user != null) throw new ArgumentException(nameof(username), $"用户[{username}]已存在！");

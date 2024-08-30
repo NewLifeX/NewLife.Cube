@@ -221,6 +221,10 @@ public partial class OAuthConfig : Entity<OAuthConfig>
     }
 
     /// <summary>获取全部有效设置</summary>
+    /// <returns></returns>
+    public static IList<OAuthConfig> GetValids() => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
+
+    /// <summary>获取指定授权类型有效设置</summary>
     /// <param name="grantType">授权类型</param>
     /// <returns></returns>
     public static IList<OAuthConfig> GetValids(GrantTypes grantType) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.GrantType == grantType).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
