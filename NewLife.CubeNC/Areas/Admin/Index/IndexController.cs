@@ -71,7 +71,10 @@ public class IndexController : ControllerBaseX
         if (startPage.IsNullOrEmpty()) startPage = CubeSetting.Current.StartPage;
 
         ViewBag.Main = startPage;
-        ViewBag.Menus = GetMenu();
+
+        var module = Request.GetRequestValue("module");
+        //var modules = (user as User)?.GetModules();
+        ViewBag.Menus = GetMenu(module);
 
         var uAgent = Request.Headers["User-Agent"] + "";
         var isMobile = uAgent.Contains("Android") || uAgent.Contains("iPhone") || uAgent.Contains("iPad");
@@ -216,9 +219,9 @@ public class IndexController : ControllerBaseX
     /// </summary>
     /// <returns></returns>
     [EntityAuthorize]
-    public ActionResult GetMenuTree() => Ok(data: GetMenu());
+    public ActionResult GetMenuTree(String module) => Ok(data: GetMenu(module));
 
-    private IList<MenuTree> GetMenu()
+    private IList<MenuTree> GetMenu(String module)
     {
         var user = _provider.Current as IUser;
 
@@ -227,6 +230,30 @@ public class IndexController : ControllerBaseX
         if (user?.Role != null)
         {
             menus = fact.GetMySubMenus(fact.Root.ID, user, true);
+        }
+
+        // 根据模块过滤菜单
+        if (module.EqualIgnoreCase("base"))
+        {
+            // 直接取base下级，以及所有仅有二级的菜单
+            var ms = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase("base"))?.Childs ?? [];
+            foreach (var item in menus)
+            {
+                if (!item.Name.EqualIgnoreCase("base") && item.Childs.All(e => e.Childs.Count == 0))
+                {
+                    ms.Add(item);
+                }
+            }
+            menus = ms;
+        }
+        else if (!module.IsNullOrEmpty())
+        {
+            menus = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase(module))?.Childs ?? [];
+        }
+        else
+        {
+            // 去掉三级菜单
+            menus = menus.Where(e => e.Childs.All(x => x.Childs.Count == 0)).ToList();
         }
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级

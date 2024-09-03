@@ -12,6 +12,10 @@
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
 
+    // 模块菜单
+    var module = Context.Request.Query["module"].ToString();
+    var ms = user.GetModules();
+
     var set = CubeSetting.Current;
 }
 <!-- #section:basics/navbar.layout -->
@@ -30,14 +34,27 @@
         </button>
 
         <!-- /section:basics/sidebar.mobile.toggle -->
-        <div class="pull-left">
+        <div class="navbar-header">
             <!-- #section:basics/navbar.layout.brand -->
-            <a href="@ViewBag.Main" class="navbar-brand" target="main">
+            <a href="/Admin" class="navbar-brand">
                 <small>
                     @name
                 </small>
             </a>
         </div>
+        <ul class="nav nav-pills navbar-nav">
+            @foreach (var item in ms)
+            {
+                if (item.Key.EqualIgnoreCase(module))
+                {
+                    <li class="active"><a class="nav-link" href="?module=@item.Key">@item.Value</a></li>
+                }
+                else
+                {
+                    <li><a class="nav-link" href="?module=@item.Key">@item.Value</a></li>
+                }
+            }
+        </ul>
 
         <!-- #section:basics/navbar.dropdown -->
         <div class="navbar-buttons navbar-header pull-right" role="navigation">

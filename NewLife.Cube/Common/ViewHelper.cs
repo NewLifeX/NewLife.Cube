@@ -889,6 +889,33 @@ public static class ViewHelper
         return menuTree;
     }
 
+    /// <summary>获取用户所拥有的模块。三级菜单</summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    public static IDictionary<String, String> GetModules(this IUser user)
+    {
+        var ms = new Dictionary<String, String>();
+        if (user == null) return ms;
+
+        var menus = Menu.Root.Childs;
+        menus = menus.Where(e => e.Visible).ToList();
+        //if (user != null) menus = menus.Where(e => user.Has(e)).ToList();
+
+        foreach (var item in menus)
+        {
+            // 授权判断
+            if (!user.Has(item)) continue;
+
+            // 三级菜单作为模块，否则统一归类到base
+            if (item.Childs.Any(e => e.Childs.Count > 0))
+                ms[item.Name] = item.DisplayName ?? item.Name;
+            else
+                ms["base"] = "基础";
+        }
+
+        return ms;
+    }
+
     /// <summary>获取附件Url</summary>
     /// <param name="attachment"></param>
     /// <returns></returns>

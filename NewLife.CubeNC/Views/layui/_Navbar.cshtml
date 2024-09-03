@@ -12,6 +12,10 @@
     var cfg = ViewBag.Config as SysConfig;
     var name = cfg == null ? "" : cfg.DisplayName;
 
+    // 模块菜单
+    var module = Context.Request.Query["module"].ToString();
+    var ms = user.GetModules();
+
     var set = CubeSetting.Current;
 }
 
@@ -24,6 +28,19 @@
         <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
             <i class="layui-icon layui-icon-spread-left"></i>
         </li>
+    </ul>
+    <ul class="layui-nav layui-layout-left">
+        @foreach (var item in ms)
+        {
+            if (item.Key.EqualIgnoreCase(module))
+            {
+                <li class="layui-nav-item active" lay-header-event="menuLeft"><a href="?module=@item.Key">@item.Value</a></li>
+            }
+            else
+            {
+                <li class="layui-nav-item" lay-header-event="menuLeft"><a href="?module=@item.Key">@item.Value</a></li>
+            }
+        }
     </ul>
 
     <ul class="layui-nav layui-layout-right">
