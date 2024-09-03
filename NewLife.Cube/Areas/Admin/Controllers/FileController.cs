@@ -89,8 +89,31 @@ public class FileController : ControllerBaseX
             else if (f.Length < 1024L * 1024 * 1024 * 1024)
                 fi.Size = $"{(Double)f.Length / 1024 / 1024 / 1024:n2}G";
         }
+        else if (inf is DirectoryInfo di)
+        {
+            fi.Size = GetSize(di, 3).ToGMK();
+        }
 
         return fi;
+    }
+
+    private Int64 GetSize(DirectoryInfo di, Int32 level)
+    {
+        var size = 0L;
+        foreach (var item in di.GetFiles())
+        {
+            size += item.Length;
+        }
+
+        if (level > 1)
+        {
+            foreach (var item in di.GetDirectories())
+            {
+                size += GetSize(item, level - 1);
+            }
+        }
+
+        return size;
     }
 
     private String GetFullName(String r) => r.TrimStart(Root).TrimStart(Root.TrimEnd(Path.DirectorySeparatorChar + ""));
