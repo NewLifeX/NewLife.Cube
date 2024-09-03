@@ -66,6 +66,14 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         // 一页显示全部菜单，取自缓存
         p.PageSize = 10000;
 
+        //var set = EntityTree<TEntity>.Setting;
+        var set = typeof(EntityTree<TEntity>).GetValue("Setting") as IEntityTreeSetting;
+        if (set != null && !set.Parent.IsNullOrEmpty())
+        {
+            var pkey = p[set.Parent].ToInt(-1);
+            return EntityTree<TEntity>.FindAllChildsNoParent(pkey);
+        }
+
         return EntityTree<TEntity>.Root.AllChilds;
     }
 

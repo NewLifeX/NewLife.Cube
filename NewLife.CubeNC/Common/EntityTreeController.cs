@@ -84,14 +84,30 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
     /// <returns></returns>
     protected override ActionResult IndexView(Pager p)
     {
-        // 一页显示全部菜单，取自缓存
-        p.PageSize = 10000;
-
-        var list = EntityTree<TEntity>.Root.AllChilds;
+        var list = SearchData(p);
 
         if (IsJsonRequest) return Json(0, null, list, new { page = p });
 
         return View("ListTree", list);
+    }
+
+    /// <summary>搜索数据集</summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    protected override IEnumerable<TEntity> Search(Pager p)
+    {
+        // 一页显示全部菜单，取自缓存
+        if (p.PageSize == 20) p.PageSize = 10000;
+
+        //var set = EntityTree<TEntity>.Setting;
+        var set = typeof(EntityTree<TEntity>).GetValue("Setting") as IEntityTreeSetting;
+        if (set != null && !set.Parent.IsNullOrEmpty())
+        {
+            var pkey = p[set.Parent].ToInt(-1);
+            return EntityTree<TEntity>.FindAllChildsNoParent(pkey);
+        }
+
+        return EntityTree<TEntity>.Root.AllChilds;
     }
 
     ///// <summary>要导出Xml的对象</summary>

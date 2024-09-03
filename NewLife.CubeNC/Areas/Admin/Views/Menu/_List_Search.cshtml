@@ -1,0 +1,13 @@
+﻿@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var ms = Menu.Root.Childs;
+}
+<div class="form-group">
+    <label for="parentId" class="control-label">父级：</label>
+    @Html.ForDropDownList("parentId", ms.ToDictionary(e => e.ID, e => e + ""), page["act"], "全部", true)
+</div>
