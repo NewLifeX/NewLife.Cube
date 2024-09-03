@@ -58,6 +58,15 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         //ListFields.AddRange(list);
     }
 
+    /// <summary>实体树配置</summary>
+    /// <returns></returns>
+    protected IEntityTreeSetting GetSetting()
+    {
+        //var set = EntityTree<TEntity>.Setting;
+        var set = typeof(EntityTree<TEntity>).GetValue("Setting") as IEntityTreeSetting;
+        return set;
+    }
+
     /// <summary>实体树的数据来自缓存</summary>
     /// <param name="p"></param>
     /// <returns></returns>
@@ -66,12 +75,12 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         // 一页显示全部菜单，取自缓存
         p.PageSize = 10000;
 
-        //var set = EntityTree<TEntity>.Setting;
-        var set = typeof(EntityTree<TEntity>).GetValue("Setting") as IEntityTreeSetting;
+        var set = GetSetting();
         if (set != null && !set.Parent.IsNullOrEmpty())
         {
             var pkey = p[set.Parent].ToInt(-1);
-            return EntityTree<TEntity>.FindAllChildsNoParent(pkey);
+            if (pkey >= 0)
+                return EntityTree<TEntity>.FindAllChildsNoParent(pkey);
         }
 
         return EntityTree<TEntity>.Root.AllChilds;

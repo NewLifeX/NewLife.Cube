@@ -6,6 +6,7 @@
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
+    var parentId = page["parentId"].ToInt(-1);
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 }
 <table class="table table-bordered table-hover table-striped table-condensed">
@@ -75,7 +76,7 @@
                     <td class="text-center">
                         @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
                         {
-                            <a href="@Url.Action("Up", new { id })">
+                            <a href="@Url.Action("Up", new { id, parentId })">
                                 @await Html.PartialAsync("_Icon_Arrow", true)
                             </a>
                         }
@@ -83,7 +84,7 @@
                     <td class="text-center">
                         @if (p != null && entity != p.Childs[p.Childs.Count - 1])
                         {
-                            <a href="@Url.Action("Down", new { id })">
+                            <a href="@Url.Action("Down", new { id, parentId })">
                                 @await Html.PartialAsync("_Icon_Arrow", false)
                             </a>
                         }

@@ -79,6 +79,15 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
         base.OnActionExecuting(filterContext);
     }
 
+    /// <summary>实体树配置</summary>
+    /// <returns></returns>
+    protected IEntityTreeSetting GetSetting()
+    {
+        //var set = EntityTree<TEntity>.Setting;
+        var set = typeof(EntityTree<TEntity>).GetValue("Setting") as IEntityTreeSetting;
+        return set;
+    }
+
     /// <summary>列表页视图。子控制器可重载，以传递更多信息给视图，比如修改要显示的列</summary>
     /// <param name="p"></param>
     /// <returns></returns>
@@ -99,12 +108,12 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
         // 一页显示全部菜单，取自缓存
         if (p.PageSize == 20) p.PageSize = 10000;
 
-        //var set = EntityTree<TEntity>.Setting;
-        var set = typeof(EntityTree<TEntity>).GetValue("Setting") as IEntityTreeSetting;
+        var set = GetSetting();
         if (set != null && !set.Parent.IsNullOrEmpty())
         {
             var pkey = p[set.Parent].ToInt(-1);
-            return EntityTree<TEntity>.FindAllChildsNoParent(pkey);
+            if (pkey >= 0)
+                return EntityTree<TEntity>.FindAllChildsNoParent(pkey);
         }
 
         return EntityTree<TEntity>.Root.AllChilds;
@@ -136,6 +145,21 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Up();
 
+        var set = GetSetting();
+        if (set != null && !set.Parent.IsNullOrEmpty())
+        {
+            var p = WebHelper.Params;
+            var pkey = p[set.Parent].ToInt(-1);
+            if (pkey >= 0)
+            {
+                var dic = new RouteValueDictionary
+                {
+                    [set.Parent] = pkey
+                };
+                return RedirectToAction("Index", dic);
+            }
+        }
+
         return RedirectToAction("Index");
     }
 
@@ -150,6 +174,21 @@ public class EntityTreeController<TEntity> : EntityController<TEntity> where TEn
 
         if (Valid(menu, DataObjectMethodType.Update, true))
             menu.Down();
+
+        var set = GetSetting();
+        if (set != null && !set.Parent.IsNullOrEmpty())
+        {
+            var p = WebHelper.Params;
+            var pkey = p[set.Parent].ToInt(-1);
+            if (pkey >= 0)
+            {
+                var dic = new RouteValueDictionary
+                {
+                    [set.Parent] = pkey
+                };
+                return RedirectToAction("Index", dic);
+            }
+        }
 
         return RedirectToAction("Index");
     }

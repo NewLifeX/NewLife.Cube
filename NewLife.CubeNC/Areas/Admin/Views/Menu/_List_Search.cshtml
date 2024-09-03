@@ -9,5 +9,5 @@
 }
 <div class="form-group">
     <label for="parentId" class="control-label">父级：</label>
-    @Html.ForDropDownList("parentId", ms.ToDictionary(e => e.ID, e => e + ""), page["act"], "全部", true)
+    @Html.ForDropDownList("parentId", ms.ToDictionary(e => e.ID, e => e + ""), page["parentId"], "全部", true)
 </div>
