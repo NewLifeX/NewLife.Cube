@@ -175,7 +175,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         }
 
         // 创建菜单
-        if (create)
+        if (create && menu == null)
         {
             if (CreateMenu(type)) menu = mf.FindByFullName(fullName);
         }

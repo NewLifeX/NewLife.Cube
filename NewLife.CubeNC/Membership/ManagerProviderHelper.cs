@@ -104,7 +104,7 @@ public static class ManagerProviderHelper
         using var span = DefaultTracer.Instance?.NewSpan(nameof(LoadUser), token);
 
         //token = token.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
-        span?.AppendTag(token);
+        //span?.AppendTag(token);
 
         var jwt = GetJwt();
         if (!jwt.TryDecode(token, out var msg))
@@ -117,7 +117,7 @@ public static class ManagerProviderHelper
 
         var user = jwt.Subject;
         if (user.IsNullOrEmpty()) return (null, jwt);
-        span?.AppendTag($"用户：{user}");
+        span?.AppendTag($"账号：{user}");
 
         // 判断有效期
         if (jwt.Expire < DateTime.Now)
@@ -130,6 +130,7 @@ public static class ManagerProviderHelper
 
         var u = provider.FindByName(user);
         if (u == null || !u.Enable) return (null, jwt);
+        span?.AppendTag($"用户：{u}");
 
         return (u, jwt);
     }
