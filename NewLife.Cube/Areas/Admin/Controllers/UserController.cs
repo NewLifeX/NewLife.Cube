@@ -383,6 +383,12 @@ public class UserController : EntityController<User, UserModel>
         var file = HttpContext.Request.Form.Files["avatar"];
         if (file != null)
         {
+            var ext = Path.GetExtension(file.FileName);
+            //if (ext.EqualIgnoreCase(".exe", ".bat", ".com", ".vbs", ".js", ".jar", ".msi", ".lnk"))
+            //    throw new Exception("禁止上传可执行文件！");
+            if (!ext.EqualIgnoreCase(".png", ".jpg", ".gif", ".bmp", ".tiff", ".svg"))
+                throw new Exception("仅支持上传图片文件！");
+
             //var set = CubeSetting.Current;
             //var fileName = user.ID + Path.GetExtension(file.FileName);
             var att = await SaveFile(user, file, null, null);
