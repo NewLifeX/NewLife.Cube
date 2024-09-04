@@ -269,11 +269,7 @@ public class IndexController : ControllerBaseX
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
-        var menuTree = MenuTree.GetMenuTree(pMenuTree =>
-        {
-            var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
-            return subMenus;
-        }, list =>
+        var menuTree = MenuTree.GetMenuTree(m => fact.GetMySubMenus(m.ID, user, true), list =>
         {
 
             var menuList = (from menu in list

@@ -49,7 +49,7 @@
                     <td class="text-center"><input type="checkbox" name="keys" value="@entity.ID" /></td>
                 }
                 <td class="text-center">@entity.ID</td>
-                <td>@entity.TreeNodeName</td>
+                <td><a href="?parentId=@entity.ID">@entity.TreeNodeName</a></td>
                 <td class="text-center">
                     @if (entity.Icon.StartsWithIgnoreCase("fa-"))
                     {

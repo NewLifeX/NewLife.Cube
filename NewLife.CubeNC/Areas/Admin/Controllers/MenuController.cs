@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel;
+using NewLife.Web;
+using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -14,5 +16,30 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
     {
         // 过滤要显示的字段
         ListFields.RemoveField("Remark");
+    }
+
+    /// <summary>实体树的数据来自缓存</summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    protected override IEnumerable<Menu> Search(Pager p)
+    {
+        // 一页显示全部菜单，取自缓存
+        p.PageSize = 10000;
+
+        var menus = EntityTree<Menu>.Root.AllChilds.Where(e => e.Deepth <= 2).ToList();
+
+        var set = GetSetting();
+        if (set != null && !set.Parent.IsNullOrEmpty())
+        {
+            var pkey = p[set.Parent].ToInt(-1);
+            if (pkey >= 0)
+            {
+                var m = XCode.Membership.Menu.FindByID(pkey);
+                var deepth = ((m?.Deepth - 1) ?? 0) + 2;
+                menus = EntityTree<Menu>.FindAllChildsByParent(pkey).Where(e => e.Deepth <= deepth).ToList();
+            }
+        }
+
+        return menus;
     }
 }
