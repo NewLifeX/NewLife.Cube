@@ -252,8 +252,18 @@ public class IndexController : ControllerBaseX
         }
         else
         {
-            // 去掉三级菜单
-            menus = menus.Where(e => e.Childs.All(x => x.Childs.Count == 0)).ToList();
+            // 去掉三级菜单，仅显示二级菜单。如果没有可用菜单，则取第一个有可访问子菜单的模块来显示
+            var ms = menus.Where(e => e.Childs.All(x => x.Childs.Count == 0)).ToList() as IList<IMenu>;
+            if (ms.Count == 0)
+            {
+                foreach (var item in menus)
+                {
+                    ms = fact.GetMySubMenus(item.ID, user, true);
+                    if (ms.Count > 0) break;
+                }
+            }
+
+            menus = ms;
         }
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级

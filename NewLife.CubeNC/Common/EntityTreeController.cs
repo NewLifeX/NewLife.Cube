@@ -12,7 +12,12 @@ namespace NewLife.Cube;
 
 /// <summary>实体树控制器基类</summary>
 /// <typeparam name="TEntity"></typeparam>
-public class EntityTreeController<TEntity> : EntityController<TEntity> where TEntity : EntityTree<TEntity>, new()
+public class EntityTreeController<TEntity> : EntityTreeController<TEntity, TEntity> where TEntity : EntityTree<TEntity>, new() { }
+
+/// <summary>实体树控制器基类</summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TModel"></typeparam>
+public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, TModel> where TEntity : EntityTree<TEntity>, new()
 {
     static EntityTreeController()
     {

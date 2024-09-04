@@ -101,8 +101,6 @@ public class IndexController : ControllerBaseX
         return Json(0,null,result);
     }
 
-
-
     /// <summary>服务器变量列表</summary>
     /// <returns></returns>
     [DisplayName("服务器变量列表")]
@@ -169,7 +167,6 @@ public class IndexController : ControllerBaseX
         return Json(0, null, result);
     }
 
-
     /// <summary>程序集列表</summary>
     /// <param name="model"></param>
     /// <returns></returns>
@@ -199,8 +196,6 @@ public class IndexController : ControllerBaseX
         }
         return Json(0,null, result);
     }
-
-
 
     /// <summary>重启</summary>
     /// <returns></returns>
@@ -259,19 +254,56 @@ public class IndexController : ControllerBaseX
     /// <returns></returns>
     [EntityAuthorize]
     [HttpGet]
-    public ActionResult GetMenuTree() => Json(0, null, GetMenu());
+    public ActionResult GetMenuTree(String module) => Json(0, null, GetMenu(module));
 
-    private IList<MenuTree> GetMenu()
+    private IList<MenuTree> GetMenu(String module)
     {
         var user = _provider.Current as IUser;
 
         var fact = ManageProvider.Menu;
         var menus = fact.Root.Childs;
         if (user?.Role != null)
+        {
             menus = fact.GetMySubMenus(fact.Root.ID, user, true);
+        }
+
+        // 根据模块过滤菜单
+        if (module.EqualIgnoreCase("base"))
+        {
+            // 直接取base下级，以及所有仅有二级的菜单
+            var ms = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase("base"))?.Childs ?? [];
+            foreach (var item in menus)
+            {
+                if (!item.Name.EqualIgnoreCase("base") && item.Childs.All(e => e.Childs.Count == 0))
+                {
+                    ms.Add(item);
+                }
+            }
+            menus = ms;
+        }
+        else if (!module.IsNullOrEmpty())
+        {
+            menus = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase(module))?.Childs ?? [];
+        }
+        else
+        {
+            // 去掉三级菜单，仅显示二级菜单。如果没有可用菜单，则取第一个有可访问子菜单的模块来显示
+            var ms = menus.Where(e => e.Childs.All(x => x.Childs.Count == 0)).ToList() as IList<IMenu>;
+            if (ms.Count == 0)
+            {
+                foreach (var item in menus)
+                {
+                    ms = fact.GetMySubMenus(item.ID, user, true);
+                    if (ms.Count > 0) break;
+                }
+            }
+
+            menus = ms;
+        }
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
-        if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) menus = menus[0].Childs; 
+        if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
+
         var menuTree = MenuTree.GetMenuTree(pMenuTree =>
         {
             var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
@@ -286,6 +318,7 @@ public class IndexController : ControllerBaseX
                                 ID = menu.ID,
                                 Name = menu.Name,
                                 DisplayName = menu.DisplayName ?? menu.Name,
+                                FullName = menu.FullName,
                                 Url = menu.Url,
                                 Icon = menu.Icon,
                                 Visible = menu.Visible,
