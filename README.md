@@ -26,7 +26,7 @@ XCode教程：<https://newlifex.com/xcode>
 计划启动第三代魔方的设计，主要方向是借助前后端分离技术重构现代化用户界面，在3月份完成第一个最小可用版（vue）。  
 后端接口源码已合并到魔方代码库的`master`分支，各前端代码库独立，欢迎大家积极参与！  
 
-Vue版：https://vue.newlifex.com  
+Vue版：https://vue.newlifex.com, https://quickvue.newlifex.com  
 Antd版：https://antd.newlifex.com  
 Swagger：https://cube3.newlifex.com/swagger/index.html  
 
@@ -65,6 +65,9 @@ Swagger：https://cube3.newlifex.com/swagger/index.html
 Vue版前端代码库：  
 https://github.com/NewLifeX/NewLife.CubeVue
 http://git.newlifex.com/NewLife/NewLife.CubeVue
+
+https://github.com/NewLifeX/NewLife.QuickVue
+https://git.newlifex.com/NewLife/NewLife.QuickVue
 
 ### 非主线任务
 
