@@ -80,7 +80,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         {
             var pkey = p[set.Parent].ToInt(-1);
             if (pkey >= 0)
-                return EntityTree<TEntity>.FindAllChildsNoParent(pkey);
+                return EntityTree<TEntity>.FindAllChildsByParent(pkey);
         }
 
         return EntityTree<TEntity>.Root.AllChilds;
