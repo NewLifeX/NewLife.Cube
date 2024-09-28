@@ -35,9 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.2" />
-    <PackageReference Include="NewLife.Redis.Extensions" Version="5.5.2024.402" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="2.9.2024.402" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.8" />
+    <PackageReference Include="NewLife.Redis.Extensions" Version="5.7.2024.801" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.0.2024.902" />
   </ItemGroup>
 
   <ItemGroup>
