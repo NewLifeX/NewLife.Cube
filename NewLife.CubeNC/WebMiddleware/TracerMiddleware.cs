@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using NewLife.Collections;
 using NewLife.Log;
 using NewLife.Web;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
@@ -46,10 +47,11 @@ public class TracerMiddleware
                     {
                         req.EnableBuffering();
 
-                        var buf = new Byte[1024];
+                        var buf = Pool.Shared.Rent(1024);
                         var count = await req.Body.ReadAsync(buf, 0, buf.Length);
                         span.AppendTag("\r\n<=\r\n" + buf.ToStr(null, 0, count));
                         req.Body.Position = 0;
+                        Pool.Shared.Return(buf);
                         flag = true;
                     }
 
@@ -95,11 +97,12 @@ public class TracerMiddleware
                             res.ContentType != null &&
                             res.ContentType.StartsWithIgnoreCase(TagTypes))
                         {
-                            var buf = new Byte[1024];
+                            var buf = Pool.Shared.Rent(1024);
                             var p = res.Body.Position;
                             var count = await res.Body.ReadAsync(buf, 0, buf.Length);
                             span.AppendTag("\r\n=>\r\n" + buf.ToStr(null, 0, count));
                             res.Body.Position = p;
+                            Pool.Shared.Return(buf);
                             flag = true;
                         }
 
@@ -116,6 +119,11 @@ public class TracerMiddleware
                             span.AppendTag($"ContentType: {res.ContentType}");
                         }
                     }
+                }
+                else if (code == 404)
+                {
+                    // 取消404找不到路径的埋点，避免TraceItem过多
+                    span?.Abandon();
                 }
             }
         }
