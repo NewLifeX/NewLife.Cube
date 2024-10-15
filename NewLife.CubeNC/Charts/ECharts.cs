@@ -1,9 +1,12 @@
 ﻿using System.Web.Script.Serialization;
+using System.Xml.Linq;
 using NewLife.Collections;
+using NewLife.Cube.Charts.Models;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Security;
 using NewLife.Serialization;
+using NewLife.Web;
 using XCode.Configuration;
 
 namespace NewLife.Cube.Charts;
@@ -521,6 +524,45 @@ public class ECharts : IExtend
 
         Add(sr);
         return sr;
+    }
+
+    /// <summary>添加图形。有向图/引力图</summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    public Series AddGraph(GraphViewModel model)
+    {
+        var graph = new Series
+        {
+            Name = model.Title,
+            Type = "graph",
+            //Data = nodes,
+        };
+        graph["Layout"] = model.Layout;
+        if (model.Layout == "force")
+        {
+            graph["Force"] = new
+            {
+                initLayout = "circular",
+                Repulsion = 300,
+                gravity = 0.1,
+                EdgeLength = new[] { 50, 300 },
+                layoutAnimation = true,
+                friction = 0.2,
+            };
+        }
+
+        graph["edgeSymbol"] = new[] { "circle", "arrow" };
+        graph["edgeSymbolSize"] = new[] { 4, 10 };
+        graph["roam"] = true;
+        graph["label"] = new { show = true, position = "right" };
+        graph["labelLayout"] = new { hideOverlap = true, moveOverlap = true };
+        graph["lineStyle"] = new { color = "target", curveness = 0.3, opacity = 0.8, width = 3 };
+
+        graph.Data = model.Nodes;
+        graph["links"] = model.Links;
+        graph["categories"] = model.Categories;
+
+        return graph;
     }
     #endregion
 
