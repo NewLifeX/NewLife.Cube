@@ -562,6 +562,8 @@ public class ECharts : IExtend
         graph["links"] = model.Links;
         graph["categories"] = model.Categories;
 
+        Legend = new { Data = model.Categories.Select(e => e.Name).ToArray() };
+
         return graph;
     }
     #endregion
