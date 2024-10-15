@@ -490,8 +490,8 @@ public class ECharts : IExtend
     {
         var keyName = field.Category;
         keyName ??= _xField as String;
-        keyName ??= (_xField as DataField).Name;
-        keyName ??= (_xField as FieldItem).Name;
+        keyName ??= (_xField as DataField)?.Name;
+        keyName ??= (_xField as FieldItem)?.Name;
         var sr = new Series
         {
             Name = field.DisplayName ?? field.Name,
@@ -512,8 +512,8 @@ public class ECharts : IExtend
     public Series AddPie<T>(IList<T> list, FieldItem field, Func<T, NameValue> selector = null) where T : IModel
     {
         var keyName = _xField as String;
-        keyName ??= (_xField as DataField).Name;
-        keyName ??= (_xField as FieldItem).Name;
+        keyName ??= (_xField as DataField)?.Name;
+        keyName ??= (_xField as FieldItem)?.Name;
         keyName ??= field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
         var sr = new Series
         {
