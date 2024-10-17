@@ -50,7 +50,7 @@
 
   <ItemGroup>
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.1.2024.1004" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net7.0'">
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.20" />
