@@ -268,25 +268,36 @@ internal class MyJob : IDisposable
 
     public void Wake(Int32 ms) => _timer?.SetNext(ms);
 
+    /// <summary>检查是否正在执行，如果执行则跳过本次处理</summary>
+    /// <param name="job"></param>
+    /// <returns></returns>
     private Boolean CheckRunning(CronJob job)
     {
-        // 检查分布式锁，避免多节点重复执行
-        var key = $"Job:{SysConfig.Current.Name}:{job.Id}";
-        if (CacheProvider != null && !CacheProvider.Cache.Add(key, job.Name, 5)) return false;
+        // 吃掉所有缓存和数据库异常，避免影响正常业务
+        try
+        {
+            // 检查分布式锁，避免多节点重复执行
+            var key = $"Job:{SysConfig.Current.Name}:{job.Id}";
+            if (CacheProvider != null && !CacheProvider.Cache.Add(key, job.Name, 5)) return true;
 
-        // 有时候可能并没有配置Redis，借助数据库事务实现去重，需要20230804版本的XCode
-        using var tran = CronJob.Meta.CreateTrans();
+            // 有时候可能并没有配置Redis，借助数据库事务实现去重，需要20230804版本的XCode
+            using var tran = CronJob.Meta.CreateTrans();
 
-        // 如果短时间内重复执行，跳过
-        var job2 = CronJob.FindByKey(job.Id);
-        if (job2 != null && job2.LastTime.AddSeconds(5) > DateTime.Now) return false;
+            // 如果短时间内重复执行，跳过
+            var job2 = CronJob.FindByKey(job.Id);
+            if (job2 != null && job2.LastTime.AddSeconds(5) > DateTime.Now) return true;
 
-        job2.LastTime = DateTime.Now;
-        job2.Update();
+            job2.LastTime = DateTime.Now;
+            job2.Update();
 
-        tran.Commit();
+            tran.Commit();
 
-        return true;
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private async void DoJobWork(Object state)
@@ -294,11 +305,11 @@ internal class MyJob : IDisposable
         var job = Job;
 
         // 检查分布式锁，避免多节点重复执行
-        if (!CheckRunning(job))
+        if (CheckRunning(job))
         {
             var set = CubeSetting.Current;
             if (set.Debug)
-                JobService.WriteLog(job.Name, false, "分布式锁检查失败，跳过执行", job);
+                JobService.WriteLog(job.Name, false, "分布式锁检查到任务正在处理中，本次跳过执行", job);
             return;
         }
 
