@@ -168,14 +168,6 @@ public partial class App
     [BindColumn("LastAuth", "最后请求", "")]
     public DateTime LastAuth { get => _LastAuth; set { if (OnPropertyChanging("LastAuth", value)) { _LastAuth = value; OnPropertyChanged("LastAuth"); } } }
 
-    private Boolean _IsDeleted;
-    /// <summary>删除。是否已删除，可恢复</summary>
-    [DisplayName("删除")]
-    [Description("删除。是否已删除，可恢复")]
-    [DataObjectField(false, false, false, 0)]
-    [BindColumn("IsDeleted", "删除。是否已删除，可恢复", "")]
-    public Boolean IsDeleted { get => _IsDeleted; set { if (OnPropertyChanging("IsDeleted", value)) { _IsDeleted = value; OnPropertyChanged("IsDeleted"); } } }
-
     private Int32 _CreateUserID;
     /// <summary>创建者</summary>
     [Category("扩展")]
@@ -266,7 +258,6 @@ public partial class App
             "Expired" => _Expired,
             "Auths" => _Auths,
             "LastAuth" => _LastAuth,
-            "IsDeleted" => _IsDeleted,
             "CreateUserID" => _CreateUserID,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
@@ -298,7 +289,6 @@ public partial class App
                 case "Expired": _Expired = value.ToDateTime(); break;
                 case "Auths": _Auths = value.ToInt(); break;
                 case "LastAuth": _LastAuth = value.ToDateTime(); break;
-                case "IsDeleted": _IsDeleted = value.ToBoolean(); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -375,9 +365,6 @@ public partial class App
 
         /// <summary>最后请求</summary>
         public static readonly Field LastAuth = FindByName("LastAuth");
-
-        /// <summary>删除。是否已删除，可恢复</summary>
-        public static readonly Field IsDeleted = FindByName("IsDeleted");
 
         /// <summary>创建者</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -459,9 +446,6 @@ public partial class App
 
         /// <summary>最后请求</summary>
         public const String LastAuth = "LastAuth";
-
-        /// <summary>删除。是否已删除，可恢复</summary>
-        public const String IsDeleted = "IsDeleted";
 
         /// <summary>创建者</summary>
         public const String CreateUserID = "CreateUserID";

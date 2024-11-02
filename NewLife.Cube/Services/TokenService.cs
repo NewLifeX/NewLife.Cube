@@ -15,7 +15,7 @@ public class TokenService
     public App FindByName(String name)
     {
         var app = App.FindByName(name);
-        if (app == null || app.IsDeleted) return null;
+        if (app == null) return null;
 
         return app;
     }
@@ -26,7 +26,7 @@ public class TokenService
     public App FindBySecret(String appKey)
     {
         var app = App.FindBySecret(appKey);
-        if (app == null || app.IsDeleted) return null;
+        if (app == null) return null;
 
         return app;
     }

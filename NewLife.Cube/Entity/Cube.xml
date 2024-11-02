@@ -235,7 +235,6 @@
         <Column Name="Expired" DataType="DateTime" Description="过期时间。空表示永不过期" />
         <Column Name="Auths" DataType="Int32" Description="次数" />
         <Column Name="LastAuth" DataType="DateTime" Description="最后请求" />
-        <Column Name="IsDeleted" DataType="Boolean" Description="删除。是否已删除，可恢复" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
