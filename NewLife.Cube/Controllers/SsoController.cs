@@ -53,7 +53,7 @@ namespace NewLife.Cube.Controllers;
     魔方支持接入微信钉钉等多个第三方OAuth2.0服务。
     魔方自身也可以作为OAuth2.0服务端，支持密码式、凭证式、刷新令牌等多种授权模式。
     """)]
-[ApiExplorerSettings(GroupName = "Basic")]
+//[ApiExplorerSettings(GroupName = "Cube")]
 [Route("[controller]/[action]")]
 public class SsoController : ControllerBaseX
 {
@@ -479,6 +479,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
+    [HttpPost]
     public virtual ActionResult Access_Token(String client_id, String client_secret, String code, String grant_type = null)
     {
         if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
@@ -534,6 +535,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
+    [HttpPost]
     public new virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
     {
         if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
@@ -600,6 +602,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
+    [HttpPost]
     public virtual ActionResult PasswordToken([FromBody] SsoTokenModel model)
     {
         if (model.client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(model.client_id));
@@ -689,6 +692,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
+    [HttpPost]
     public virtual ActionResult Refresh_Token(String client_id, String grant_type, String refresh_token)
     {
         if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
@@ -810,6 +814,7 @@ public class SsoController : ControllerBaseX
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
+    [HttpPost]
     public virtual ActionResult UserAuth([FromBody] SsoTokenModel model)
     {
         var client_id = model.client_id;

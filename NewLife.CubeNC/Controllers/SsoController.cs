@@ -476,6 +476,8 @@ public class SsoController : ControllerBaseX
     /// <param name="grant_type">授权类型</param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
+    [HttpPost]
     public virtual ActionResult Access_Token(String client_id, String client_secret, String code, String grant_type = null)
     {
         if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
@@ -530,6 +532,8 @@ public class SsoController : ControllerBaseX
     /// <param name="grant_type">授权类型</param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
+    [HttpPost]
     public virtual ActionResult Token(String client_id, String client_secret, String username, String password, String refresh_token, String grant_type = null)
     {
         if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
@@ -595,6 +599,8 @@ public class SsoController : ControllerBaseX
     /// <param name="model">请求模型</param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
+    [HttpPost]
     public virtual ActionResult PasswordToken([FromBody] SsoTokenModel model)
     {
         if (model.client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(model.client_id));
@@ -682,6 +688,8 @@ public class SsoController : ControllerBaseX
     /// <param name="refresh_token">刷新令牌</param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
+    [HttpPost]
     public virtual ActionResult Refresh_Token(String client_id, String grant_type, String refresh_token)
     {
         if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
@@ -799,6 +807,8 @@ public class SsoController : ControllerBaseX
     /// <param name="model">令牌模型</param>
     /// <returns></returns>
     [AllowAnonymous]
+    [HttpGet]
+    [HttpPost]
     public virtual ActionResult UserAuth([FromBody] SsoTokenModel model)
     {
         var client_id = model.client_id;

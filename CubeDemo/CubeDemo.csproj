@@ -5,8 +5,8 @@
     <AssemblyTitle>魔方WebApi</AssemblyTitle>
     <Description>魔方前后端分离版本的后端WebApi</Description>
     <Company>新生命开发团队</Company>
-    <Copyright>©2002-2023 NewLife</Copyright>
-    <VersionPrefix>5.5</VersionPrefix>
+    <Copyright>©2002-2024 NewLife</Copyright>
+    <VersionPrefix>6.1</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>

@@ -21,7 +21,7 @@ namespace NewLife.Cube.Controllers;
 [Description("""
     魔方向前端控件提供的一些常用接口，例如用户查询与头像获取等。
     """)]
-[ApiExplorerSettings(GroupName = "Basic")]
+//[ApiExplorerSettings(GroupName = "Cube")]
 [Route("[controller]/[action]")]
 public class CubeController : ControllerBaseX
 {

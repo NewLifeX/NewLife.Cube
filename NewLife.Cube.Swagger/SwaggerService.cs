@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using NewLife.Cube.Entity;
+using NewLife.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NewLife.Cube.Swagger;
@@ -26,7 +27,8 @@ public static class SwaggerService
             var xml = "NewLife.Cube.xml".GetFullPath();
             if (File.Exists(xml)) options.IncludeXmlComments(xml, true);
 
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "第三代魔方", Description = "第三代魔方WebApi接口，用于前后端分离。" });
+            var asm = AssemblyX.Entry;
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "第三代魔方", Description = "第三代魔方WebApi接口，用于前后端分离。", Version = asm.FileVersion });
             //options.SwaggerDoc("Basic", new OpenApiInfo { Version = "basic", Title = "基础模块" });
             //options.SwaggerDoc("Admin", new OpenApiInfo { Version = "admin", Title = "系统管理" });
             //options.SwaggerDoc("Cube", new OpenApiInfo { Version = "cube", Title = "魔方管理" });
@@ -48,8 +50,8 @@ public static class SwaggerService
                 var cfg = oauthConfigs[0];
                 var flow = new OpenApiOAuthFlow
                 {
-                    AuthorizationUrl = new Uri(cfg.Server),
-                    TokenUrl = new Uri(!cfg.AccessServer.IsNullOrEmpty() ? cfg.AccessServer : cfg.Server),
+                    AuthorizationUrl = new Uri(cfg.Server + "/authorize"),
+                    TokenUrl = new Uri((!cfg.AccessServer.IsNullOrEmpty() ? cfg.AccessServer : cfg.Server) + "/access_token"),
                     //Scopes = new Dictionary<String, String>
                     //{
                     //    { "api1", "Access to API #1" }
@@ -58,10 +60,17 @@ public static class SwaggerService
                 options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
                 {
                     Type = SecuritySchemeType.OAuth2,
+                    In = ParameterLocation.Query,
                     Flows = new OpenApiOAuthFlows { AuthorizationCode = flow }
                 });
 
-                //options.OperationFilter<AuthorizeCheckOperationFilter>();
+                // 声明一个Scheme，注意下面的Id要和上面AddSecurityDefinition中的参数name一致
+                var scheme = new OpenApiSecurityScheme()
+                {
+                    Reference = new OpenApiReference() { Type = ReferenceType.SecurityScheme, Id = "OAuth2" }
+                };
+                // 注册全局认证（所有的接口都可以使用认证）
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement() { [scheme] = [] });
             }
             else
             {
@@ -72,7 +81,7 @@ public static class SwaggerService
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
-                    Scheme = "bearer"
+                    Scheme = "Bearer"
                 });
                 // 声明一个Scheme，注意下面的Id要和上面AddSecurityDefinition中的参数name一致
                 var scheme = new OpenApiSecurityScheme()
@@ -96,6 +105,9 @@ public static class SwaggerService
         //app.UseSwaggerUI();
         app.UseSwaggerUI(options =>
         {
+            var asm = AssemblyX.Entry;
+            options.DocumentTitle = !asm.Title.IsNullOrEmpty() ? asm.Title : "魔方Web开发平台";
+
             //options.SwaggerEndpoint("/swagger/Basic/swagger.json", "Basic");
             //options.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin");
             //options.SwaggerEndpoint("/swagger/Cube/swagger.json", "Cube");

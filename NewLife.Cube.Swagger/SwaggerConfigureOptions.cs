@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using NewLife.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace NewLife.Cube.Swagger;
@@ -34,10 +35,13 @@ public class SwaggerConfigureOptions : IConfigureOptions<SwaggerGenOptions>
                 var area = controller.ControllerTypeInfo.GetCustomAttribute<AreaAttribute>();
                 if (area != null)
                 {
+                    var type = area.GetType();
+                    var asm = AssemblyX.Create(type.Assembly);
                     info = new OpenApiInfo
                     {
-                        Title = area.GetType().GetDisplayName(),
-                        Description = area.GetType().GetDescription()?.Replace("\n", "<br/>")
+                        Title = type.GetDisplayName(),
+                        Description = type.GetDescription()?.Replace("\n", "<br/>"),
+                        Version = asm.FileVersion,
                     };
                     break;
                 }
