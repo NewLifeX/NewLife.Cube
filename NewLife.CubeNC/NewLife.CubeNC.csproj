@@ -50,10 +50,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.0.2024.1013-beta0746" />
-    <PackageReference Include="NewLife.IP" Version="2.2.2024.1004-beta0930" />
-    <PackageReference Include="NewLife.Stardust" Version="3.1.2024.1023-beta0712" />
-    <PackageReference Include="NewLife.XCode" Version="11.16.2024.1020-beta0457" />
+    <PackageReference Include="NewLife.Core" Version="11.0.2024.1101" />
+    <PackageReference Include="NewLife.IP" Version="2.2.2024.1102" />
+    <PackageReference Include="NewLife.Stardust" Version="3.1.2024.1101" />
+    <PackageReference Include="NewLife.XCode" Version="11.16.2024.1101" />
   </ItemGroup>
 
   <ItemGroup>

@@ -300,7 +300,7 @@ internal class MyJob : IDisposable
         }
     }
 
-    private async void DoJobWork(Object state)
+    private async Task DoJobWork(Object state)
     {
         var job = Job;
 
