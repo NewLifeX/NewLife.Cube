@@ -15,7 +15,6 @@ using NewLife.Cube.Results;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Log;
-using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Serialization;
 using NewLife.Web;
@@ -23,7 +22,6 @@ using NewLife.Xml;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
-using XCode.Model;
 
 namespace NewLife.Cube;
 
@@ -103,7 +101,6 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         p ??= ViewBag.Page as Pager;
 
         // 缓存数据，用于后续导出
-        //SetSession(CacheKey, p);
         Session[CacheKey] = p;
 
         return IndexView(p);

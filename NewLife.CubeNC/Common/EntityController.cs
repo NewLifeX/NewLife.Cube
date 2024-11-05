@@ -19,22 +19,9 @@ namespace NewLife.Cube;
 
 /// <summary>实体控制器基类</summary>
 /// <typeparam name="TEntity"></typeparam>
-public class EntityController<TEntity> : EntityController<TEntity, TEntity> where TEntity : Entity<TEntity>, new() { }
-
-/// <summary>实体控制器基类</summary>
-/// <typeparam name="TEntity"></typeparam>
 /// <typeparam name="TModel"></typeparam>
-public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
+public partial class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
 {
-    #region 属性
-    private String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
-    #endregion
-
-    #region 构造
-    /// <summary>实例化</summary>
-    public EntityController() => PageSetting.IsReadOnly = false;
-    #endregion
-
     #region 默认Action
     /// <summary>删除</summary>
     /// <param name="id"></param>
@@ -43,42 +30,18 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
     [DisplayName("删除{type}")]
     public virtual ActionResult Delete(String id)
     {
-        var url = Request.GetReferer();
-
         var act = "删除";
         var entity = FindData(id);
-        var rs = false;
-        var err = "";
         try
         {
-            // 假删除与还原
-            var fi = GetDeleteField();
-            if (fi != null)
-            {
-                var restore = GetRequest("restore").ToBoolean();
-                entity.SetItem(fi.Name, !restore);
-                if (restore) act = "恢复";
+            act = ProcessDelete(entity);
 
-                if (Valid(entity, DataObjectMethodType.Update, true))
-                    OnUpdate(entity);
-                else
-                    err = "验证失败";
-            }
-            else
-            {
-                if (Valid(entity, DataObjectMethodType.Delete, true))
-                    OnDelete(entity);
-                else
-                    err = "验证失败";
-            }
-
-            rs = true;
+            if (Request.IsAjaxRequest()) return JsonRefresh($"{act}成功！");
         }
         catch (Exception ex)
         {
-            err = ex.GetTrue().Message;
+            var err = ex.GetTrue().Message;
             WriteLog("Delete", false, err);
-            //if (LogOnChange) LogProvider.Provider.WriteLog("Delete", entity, err);
 
             if (Request.IsAjaxRequest())
                 return JsonRefresh($"{act}失败！{err}");
@@ -86,15 +49,11 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
             throw;
         }
 
-        if (Request.IsAjaxRequest())
-            return JsonRefresh(rs ? $"{act}成功！" : $"{act}失败！{err}");
-        else if (!url.IsNullOrEmpty())
-            return Redirect(url);
-        else
-            return RedirectToAction("Index");
-    }
+        var url = Request.GetReferer();
+        if (!url.IsNullOrEmpty()) return Redirect(url);
 
-    private static FieldItem GetDeleteField() => Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted") && e.Type == typeof(Boolean));
+        return RedirectToAction("Index");
+    }
 
     /// <summary>表单，添加/修改</summary>
     /// <returns></returns>
@@ -106,7 +65,7 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
 
         // 填充QueryString参数
         var qs = Request.Query;
-        foreach (var item in Entity<TEntity>.Meta.Fields)
+        foreach (var item in Factory.Fields)
         {
             var v = qs[item.Name];
             if (v.Count > 0) entity[item.Name] = v[0];
@@ -157,42 +116,32 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0)
             throw new Exception("我们约定添加数据时路由id部分默认没有数据，以免模型绑定器错误识别！");
 
-        var rs = false;
-        var err = "";
         try
         {
-            if (Valid(entity, DataObjectMethodType.Insert, true))
-            {
-                //SaveFiles(entity);
+            if (!Valid(entity, DataObjectMethodType.Insert, true))
+                throw new Exception("验证失败");
 
-                OnInsert(entity);
+            OnInsert(entity);
 
-                var fs = await SaveFiles(entity);
-                if (fs.Count > 0) OnUpdate(entity);
+            var fs = await SaveFiles(entity);
+            if (fs.Count > 0) OnUpdate(entity);
 
-                if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
-
-                rs = true;
-            }
-            else
-                err = "验证失败";
+            if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
         }
         catch (Exception ex)
         {
-            err = ex.Message;
+            var code = ex is ApiException ae ? ae.Code : 500;
+            var err = ex.Message;
             ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);
-        }
 
-        if (!rs)
-        {
             WriteLog("Add", false, err);
 
             ViewBag.StatusMessage = SysConfig.Develop ? ("添加失败！" + err) : "添加失败！";
 
             // 添加失败，ID清零，否则会显示保存按钮
-            entity[Entity<TEntity>.Meta.Unique.Name] = 0;
+            entity[Factory.Unique.Name] = 0;
 
-            if (IsJsonRequest) return Json(500, ViewBag.StatusMessage);
+            if (IsJsonRequest) return Json(code, ViewBag.StatusMessage);
 
             ViewBag.Fields = OnGetFields(ViewKinds.AddForm, entity);
 
@@ -271,16 +220,14 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         var err = "";
         try
         {
-            if (Valid(entity, DataObjectMethodType.Update, true))
-            {
-                await SaveFiles(entity);
+            if (!Valid(entity, DataObjectMethodType.Update, true))
+                throw new Exception("验证失败");
 
-                OnUpdate(entity);
+            await SaveFiles(entity);
 
-                rs = true;
-            }
-            else
-                err = "验证失败";
+            OnUpdate(entity);
+
+            rs = true;
         }
         catch (Exception ex)
         {
@@ -319,153 +266,26 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         return View("EditForm", entity);
     }
 
-    /// <summary>保存所有上传文件</summary>
-    /// <param name="entity">实体对象</param>
-    /// <param name="uploadPath">上传目录。为空时默认UploadPath配置</param>
-    /// <returns></returns>
-    protected virtual async Task<IList<String>> SaveFiles(TEntity entity, String uploadPath = null)
-    {
-        var rs = new List<String>();
-        var list = new List<String>();
-
-        if (!Request.HasFormContentType) return list;
-
-        var files = Request.Form.Files;
-        var fields = Factory.Fields;
-        foreach (var fi in fields)
-        {
-            var dc = fi.Field;
-            if (dc.IsAttachment())
-            {
-                // 允许一次性上传多个文件到服务端
-                foreach (var file in files)
-                {
-                    if (file.Name.EqualIgnoreCase(fi.Name, fi.Name + "_attachment"))
-                    {
-                        var att = await SaveFile(entity, file, uploadPath, null);
-                        if (att != null)
-                        {
-                            var url = ViewHelper.GetAttachmentUrl(att);
-                            list.Add(url);
-                            rs.Add(url);
-                        }
-                    }
-                }
-
-                if (list.Count > 0)
-                {
-                    entity.SetItem(fi.Name, list.Join(";"));
-                    list.Clear();
-                }
-            }
-        }
-
-        return rs;
-    }
-
-    /// <summary>保存单个文件</summary>
-    /// <param name="entity">实体对象</param>
-    /// <param name="file">文件</param>
-    /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
-    /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
-    /// <returns></returns>
-    protected virtual async Task<Attachment> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName)
-    {
-        if (fileName.IsNullOrEmpty()) fileName = file.FileName;
-
-        using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveFile), new { name = file.Name, fileName, uploadPath });
-
-        var id = Factory.Unique != null ? entity[Factory.Unique] : null;
-        var att = new Attachment
-        {
-            Category = typeof(TEntity).Name,
-            Key = id + "",
-            Title = entity + "",
-            //FileName = fileName ?? file.FileName,
-            ContentType = file.ContentType,
-            Size = file.Length,
-            Enable = true,
-            UploadTime = DateTime.Now,
-        };
-
-        if (id != null)
-        {
-            var ss = GetControllerAction();
-            att.Url = $"/{ss[0]}/{ss[1]}/Detail/{id}";
-        }
-
-        var rs = false;
-        var msg = "";
-        try
-        {
-            rs = await att.SaveFile(file.OpenReadStream(), uploadPath, fileName);
-        }
-        catch (Exception ex)
-        {
-            rs = false;
-            msg = ex.Message;
-            span?.SetError(ex, att);
-
-            throw;
-        }
-        finally
-        {
-            // 写日志
-            var type = entity.GetType();
-            var log = LogProvider.Provider.CreateLog(type, "上传", rs, $"上传 {file.FileName} ，目录 {uploadPath} ，保存为 {att.FilePath} " + msg, 0, null, UserHost);
-            log.LinkID = id.ToLong();
-            log.SaveAsync();
-        }
-
-        return att;
-    }
-
     /// <summary>批量启用</summary>
     /// <param name="keys">主键集合</param>
     /// <param name="reason">操作原因</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
-    public virtual ActionResult EnableSelect(String keys, String reason) => EnableOrDisableSelect(true, reason);
+    public virtual ActionResult EnableSelect(String keys, String reason)
+    {
+        var count = EnableOrDisableSelect(true, reason);
+        return JsonRefresh($"共启用[{count}]个");
+    }
 
     /// <summary>批量禁用</summary>
     /// <param name="keys">主键集合</param>
     /// <param name="reason">操作原因</param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
-    public virtual ActionResult DisableSelect(String keys, String reason) => EnableOrDisableSelect(false, reason);
-
-    /// <summary>
-    /// 批量启用或禁用
-    /// </summary>
-    /// <param name="isEnable">启用/禁用</param>
-    /// <param name="reason">操作原因</param>
-    /// <returns></returns>
-    protected virtual ActionResult EnableOrDisableSelect(Boolean isEnable, String reason)
+    public virtual ActionResult DisableSelect(String keys, String reason)
     {
-        var count = 0;
-        var ids = GetRequest("keys").SplitAsInt();
-        var fields = Factory.AllFields;
-        if (ids.Length > 0 && fields.Any(f => f.Name.EqualIgnoreCase("enable")))
-        {
-            var log = LogProvider.Provider;
-            foreach (var id in ids)
-            {
-                var entity = Factory.Find("ID", id);
-                if (entity != null && entity["Enable"].ToBoolean() != isEnable)
-                {
-                    entity.SetItem("Enable", isEnable);
-
-                    log.WriteLog("Update", entity);
-                    log.WriteLog(entity.GetType(), isEnable ? "Enable" : "Disable", true, reason);
-
-                    entity.Update();
-
-                    Interlocked.Increment(ref count);
-                }
-            }
-        }
-
-        return JsonRefresh($"共{(isEnable ? "启用" : "禁用")}[{count}]个");
+        var count = EnableOrDisableSelect(false, reason);
+        return JsonRefresh($"共禁用[{count}]个");
     }
     #endregion
 
@@ -758,45 +578,6 @@ public class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntit
         else
             return RedirectToAction("Index");
     }
-    #endregion
-
-    #region 实体操作重载
-    /// <summary>添加实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    protected virtual Int32 OnInsert(TEntity entity) => entity.Insert();
-
-    /// <summary>更新实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    protected virtual Int32 OnUpdate(TEntity entity)
-    {
-        if (Request.HasFormContentType)
-        {
-            // 遍历表单字段，部分字段可能有扩展
-            foreach (var item in EditFormFields)
-            {
-                if (item is FormField ef && ef.GetExpand != null)
-                {
-                    // 获取参数对象，展开参数，从表单字段接收参数
-                    var p = ef.GetExpand(entity);
-                    if (p != null && p is not String && !(entity as IEntity).Dirtys[ef.Name])
-                    {
-                        // 保存参数对象
-                        if (FieldCollection.ReadForm(p, Request.Form, ef.Name + "_"))
-                            entity.SetItem(ef.Name, p.ToJson(true));
-                    }
-                }
-            }
-        }
-
-        return entity.Update();
-    }
-
-    /// <summary>删除实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    protected virtual Int32 OnDelete(TEntity entity) => entity.Delete();
     #endregion
 
     #region 同步/还原

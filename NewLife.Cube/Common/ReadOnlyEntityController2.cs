@@ -28,7 +28,7 @@ public partial class ReadOnlyEntityController<TEntity>
     public SysConfig SysConfig { get; set; }
 
     /// <summary>当前列表页的查询条件缓存Key</summary>
-    private static String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
+    protected static String CacheKey => $"CubeView_{typeof(TEntity).FullName}";
     #endregion
 
     #region 构造

@@ -1,0 +1,238 @@
+﻿using System.ComponentModel;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Common;
+using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
+using NewLife.Cube.ViewModels;
+using NewLife.Data;
+using NewLife.Log;
+using NewLife.Reflection;
+using NewLife.Remoting;
+using NewLife.Serialization;
+using NewLife.Web;
+using XCode;
+using XCode.Configuration;
+using XCode.Membership;
+
+namespace NewLife.Cube;
+
+/// <summary>实体控制器基类</summary>
+/// <typeparam name="TEntity"></typeparam>
+public class EntityController<TEntity> : EntityController<TEntity, TEntity> where TEntity : Entity<TEntity>, new() { }
+
+/// <summary>实体控制器基类</summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TModel"></typeparam>
+public partial class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
+{
+    #region 构造
+    /// <summary>实例化</summary>
+    public EntityController() => PageSetting.IsReadOnly = false;
+    #endregion
+
+    #region 默认Action
+    private String ProcessDelete(TEntity entity)
+    {
+        // 假删除与还原
+        var act = "删除";
+        var fi = GetDeleteField();
+        if (fi != null)
+        {
+            var restore = GetRequest("restore").ToBoolean();
+            entity.SetItem(fi.Name, !restore);
+            if (restore) act = "恢复";
+
+            if (!Valid(entity, DataObjectMethodType.Update, true))
+                throw new Exception("验证失败");
+
+            OnUpdate(entity);
+        }
+        else
+        {
+            if (!Valid(entity, DataObjectMethodType.Delete, true))
+                throw new Exception("验证失败");
+
+            OnDelete(entity);
+        }
+
+        return act;
+    }
+
+    private static FieldItem GetDeleteField() => Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted") && e.Type == typeof(Boolean));
+
+    /// <summary>保存所有上传文件</summary>
+    /// <param name="entity">实体对象</param>
+    /// <param name="uploadPath">上传目录。为空时默认UploadPath配置</param>
+    /// <returns></returns>
+    protected virtual async Task<IList<String>> SaveFiles(TEntity entity, String uploadPath = null)
+    {
+        var rs = new List<String>();
+        var list = new List<String>();
+
+        if (!Request.HasFormContentType) return list;
+
+        var files = Request.Form.Files;
+        var fields = Factory.Fields;
+        foreach (var fi in fields)
+        {
+            var dc = fi.Field;
+            if (dc.IsAttachment())
+            {
+                // 允许一次性上传多个文件到服务端
+                foreach (var file in files)
+                {
+                    if (file.Name.EqualIgnoreCase(fi.Name, fi.Name + "_attachment"))
+                    {
+                        var att = await SaveFile(entity, file, uploadPath, null);
+                        if (att != null)
+                        {
+                            var url = ViewHelper.GetAttachmentUrl(att);
+                            list.Add(url);
+                            rs.Add(url);
+                        }
+                    }
+                }
+
+                if (list.Count > 0)
+                {
+                    entity.SetItem(fi.Name, list.Join(";"));
+                    list.Clear();
+                }
+            }
+        }
+
+        return rs;
+    }
+
+    /// <summary>保存单个文件</summary>
+    /// <param name="entity">实体对象</param>
+    /// <param name="file">文件</param>
+    /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
+    /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
+    /// <returns></returns>
+    protected virtual async Task<Attachment> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName)
+    {
+        if (fileName.IsNullOrEmpty()) fileName = file.FileName;
+
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveFile), new { name = file.Name, fileName, uploadPath });
+
+        var id = Factory.Unique != null ? entity[Factory.Unique] : null;
+        var att = new Attachment
+        {
+            Category = typeof(TEntity).Name,
+            Key = id + "",
+            Title = entity + "",
+            //FileName = fileName ?? file.FileName,
+            ContentType = file.ContentType,
+            Size = file.Length,
+            Enable = true,
+            UploadTime = DateTime.Now,
+        };
+
+        if (id != null)
+        {
+            var ss = GetControllerAction();
+            att.Url = $"/{ss[0]}/{ss[1]}/Detail/{id}";
+        }
+
+        var rs = false;
+        var msg = "";
+        try
+        {
+            rs = await att.SaveFile(file.OpenReadStream(), uploadPath, fileName);
+        }
+        catch (Exception ex)
+        {
+            rs = false;
+            msg = ex.Message;
+            span?.SetError(ex, att);
+
+            throw;
+        }
+        finally
+        {
+            // 写日志
+            var type = entity.GetType();
+            var log = LogProvider.Provider.CreateLog(type, "上传", rs, $"上传 {file.FileName} ，目录 {uploadPath} ，保存为 {att.FilePath} " + msg, 0, null, UserHost);
+            log.LinkID = id.ToLong();
+            log.SaveAsync();
+        }
+
+        return att;
+    }
+
+    /// <summary>
+    /// 批量启用或禁用
+    /// </summary>
+    /// <param name="isEnable">启用/禁用</param>
+    /// <param name="reason">操作原因</param>
+    /// <returns></returns>
+    protected virtual Int32 EnableOrDisableSelect(Boolean isEnable, String reason)
+    {
+        var count = 0;
+        var ids = GetRequest("keys").SplitAsInt();
+        var fields = Factory.AllFields;
+        if (ids.Length > 0 && fields.Any(f => f.Name.EqualIgnoreCase("enable")))
+        {
+            var log = LogProvider.Provider;
+            foreach (var id in ids)
+            {
+                var entity = Factory.Find("ID", id);
+                if (entity != null && entity["Enable"].ToBoolean() != isEnable)
+                {
+                    entity.SetItem("Enable", isEnable);
+
+                    log.WriteLog("Update", entity);
+                    log.WriteLog(entity.GetType(), isEnable ? "Enable" : "Disable", true, reason);
+
+                    entity.Update();
+
+                    Interlocked.Increment(ref count);
+                }
+            }
+        }
+
+        return count;
+    }
+    #endregion
+
+    #region 实体操作重载
+    /// <summary>添加实体对象</summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    protected virtual Int32 OnInsert(TEntity entity) => entity.Insert();
+
+    /// <summary>更新实体对象</summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    protected virtual Int32 OnUpdate(TEntity entity)
+    {
+        if (Request.HasFormContentType)
+        {
+            // 遍历表单字段，部分字段可能有扩展
+            foreach (var item in EditFormFields)
+            {
+                if (item is FormField ef && ef.GetExpand != null)
+                {
+                    // 获取参数对象，展开参数，从表单字段接收参数
+                    var p = ef.GetExpand(entity);
+                    if (p != null && p is not String && !(entity as IEntity).Dirtys[ef.Name])
+                    {
+                        // 保存参数对象
+                        if (FieldCollection.ReadForm(p, Request.Form, ef.Name + "_"))
+                            entity.SetItem(ef.Name, p.ToJson(true));
+                    }
+                }
+            }
+        }
+
+        return entity.Update();
+    }
+
+    /// <summary>删除实体对象</summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    protected virtual Int32 OnDelete(TEntity entity) => entity.Delete();
+    #endregion
+}

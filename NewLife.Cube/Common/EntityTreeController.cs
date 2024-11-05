@@ -137,7 +137,7 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     /// <returns></returns>
     protected static TEntity FindByID(Int32 id)
     {
-        var key = EntityTree<TEntity>.Meta.Unique.Name;
+        var key = Factory.Unique.Name;
         return EntityTree<TEntity>.Meta.Cache.Find(e => (Int32)e[key] == id);
     }
 }
