@@ -31,10 +31,6 @@ class EntityModelBinder : ComplexTypeModelBinder
             // 如果提交数据里面刚好有名为model的字段，这是Add/Edit接口的入参，则需要清空modelName，否则无法绑定
             if (bindingContext.ModelName == "model") bindingContext.ModelName = String.Empty;
         }
-        if (!modelType.As<IEntity>()) return base.CreateModel(bindingContext);
-
-        var fact = EntityFactory.CreateFactory(modelType);
-        if (fact == null) return base.CreateModel(bindingContext);
 
         // 尝试从body读取json格式的参数
         var ctx = bindingContext.HttpContext;
@@ -50,6 +46,10 @@ class EntityModelBinder : ComplexTypeModelBinder
             // 强行绑定会出错记录在ModelState，在api中返回400错误，mvc不会
             bindingContext.ValueProvider = cubeBodyValueProvider;
         }
+        if (!modelType.As<IEntity>()) return base.CreateModel(bindingContext);
+
+        var fact = EntityFactory.CreateFactory(modelType);
+        if (fact == null) return base.CreateModel(bindingContext);
 
         var pks = fact.Table.PrimaryKeys;
         var uk = fact.Unique;
