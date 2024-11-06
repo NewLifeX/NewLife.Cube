@@ -1,20 +1,15 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Entity;
 using NewLife.Data;
-using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Remoting;
-using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube;
 
 /// <summary>实体控制器基类</summary>
-/// <typeparam name="TEntity">实体类型</typeparam>
-/// <typeparam name="TModel">数据模型，用于接口数据传输</typeparam>
-public partial class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
+public partial class EntityController<TEntity, TModel>
 {
     #region 默认Action
     /// <summary>删除数据</summary>
@@ -52,7 +47,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     public virtual async Task<ApiResponse<TEntity>> Insert(TModel model)
     {
         // 实例化实体对象，然后拷贝
-        if (model is TEntity entity) return await Insert(entity);
+        if (model is TEntity entity) return await ProcessInsert(entity);
 
         entity = Factory.Create(false) as TEntity;
 
@@ -61,14 +56,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         else
             entity.Copy(model);
 
-        return await Insert(entity);
+        return await ProcessInsert(entity);
     }
 
     /// <summary>添加数据</summary>
     /// <param name="entity"></param>
     /// <returns></returns>
     [NonAction]
-    public virtual async Task<ApiResponse<TEntity>> Insert(TEntity entity)
+    protected virtual async Task<ApiResponse<TEntity>> ProcessInsert(TEntity entity)
     {
         // 检测避免乱用Add/id
         if (Factory.Unique.IsIdentity && entity[Factory.Unique.Name].ToInt() != 0)
@@ -114,7 +109,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     public virtual async Task<ApiResponse<TEntity>> Update(TModel model)
     {
         // 实例化实体对象，然后拷贝
-        if (model is TEntity entity) return await Update(entity);
+        if (model is TEntity entity) return await ProcessUpdate(entity);
 
         var uk = Factory.Unique;
         var key = model is IModel ext ? ext[uk.Name] : model.GetValue(uk.Name);
@@ -127,14 +122,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         else
             entity.Copy(model, false, uk.Name);
 
-        return await Update(entity);
+        return await ProcessUpdate(entity);
     }
 
     /// <summary>更新数据</summary>
     /// <param name="entity"></param>
     /// <returns></returns>
     [NonAction]
-    public virtual async Task<ApiResponse<TEntity>> Update(TEntity entity)
+    protected virtual async Task<ApiResponse<TEntity>> ProcessUpdate(TEntity entity)
     {
         try
         {
@@ -160,22 +155,5 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             return new ApiResponse<TEntity>(code, err, null);
         }
     }
-    #endregion
-
-    #region 实体操作重载
-    /// <summary>添加实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    protected virtual Int32 OnInsert(TEntity entity) => entity.Insert();
-
-    /// <summary>更新实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    protected virtual Int32 OnUpdate(TEntity entity) => entity.Update();
-
-    /// <summary>删除实体对象</summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    protected virtual Int32 OnDelete(TEntity entity) => entity.Delete();
     #endregion
 }

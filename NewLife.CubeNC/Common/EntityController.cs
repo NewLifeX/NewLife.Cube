@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Common;
-using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
@@ -12,15 +11,12 @@ using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
-using XCode.Configuration;
 using XCode.Membership;
 
 namespace NewLife.Cube;
 
 /// <summary>实体控制器基类</summary>
-/// <typeparam name="TEntity"></typeparam>
-/// <typeparam name="TModel"></typeparam>
-public partial class EntityController<TEntity, TModel> : ReadOnlyEntityController<TEntity> where TEntity : Entity<TEntity>, new()
+public partial class EntityController<TEntity, TModel>
 {
     #region 默认Action
     /// <summary>删除</summary>
