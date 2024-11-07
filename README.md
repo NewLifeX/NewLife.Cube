@@ -9,9 +9,6 @@
 魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！  
 内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。  
 
-快速体验：  
-> docker run newlifex/cube
-
 演示站点：<https://cube.newlifex.com> `CentOS7 + CDN`  
 SSO中心：<https://sso.newlifex.com> `OAuth服务端`  
 
@@ -19,11 +16,52 @@ SSO中心：<https://sso.newlifex.com> `OAuth服务端`
 XCode教程：<https://newlifex.com/xcode>  
 核心库教程：<https://newlifex.com/core>  
 
+
+
+---
+
+### 快速部署用户中心
+
+1. 拉取[源码](https://github.com/NewLifeX/NewLife.Cube)并编译CubeSSO项目，切换到输出目录Bin/SSO，按需修改appsettings.json配置，打包exe/dll/appsettings.json/CubeSSO.runtimeconfig.json等文件，并发布到服务器。
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Urls": "http://*:8080;https://*:8081",
+  //"StarServer": "http://star.newlifex.com:6600",
+  "ConnectionStrings": {
+    "Membership": "Data Source=..\\Data\\Membership.db;provider=sqlite",
+    "Cube": "Data Source=..\\Data\\Cube.db;provider=sqlite",
+    "Log": "Data Source=..\\Data\\Log.db;provider=sqlite"
+
+    //"Membership": "Server=.;Port=3306;Database=Membership;Uid=root;Pwd=root;provider=mysql",
+    //"Cube": "Server=.;Port=3306;Database=Membership;Uid=root;Pwd=root;provider=mysql",
+    //"Log": "Server=.;Port=3306;Database=Membership;Uid=root;Pwd=root;provider=mysql"
+  }
+}
+```
+
+2. 启动并访问SSO系统，首次登录可以用admin/admin进去，也可以使用第三方登录（新生命用户中心），第一个用户将会作为系统管理员，同时禁用admin。
+
+3. 作为用户中心正式部署时，需要关闭SSO的第三方登录，魔方设置，OAuth设置，禁用所有。
+
+   ![OAuthConfig](Doc/OAuthConfig.png)
+
+4. 修改系统名称为新生命用户中心，魔方设置，系统设置，显示名称
+
+
+
 ---
 
 ### 第三代魔方
 
-计划启动第三代魔方的设计，主要方向是借助前后端分离技术重构现代化用户界面，在3月份完成第一个最小可用版（vue）。  
+启动第三代魔方的设计，主要方向是借助前后端分离技术重构现代化用户界面，在2023年3月份完成第一个最小可用版（vue）。  
 后端接口源码已合并到魔方代码库的`master`分支，各前端代码库独立，欢迎大家积极参与！  
 
 Vue版：https://vue.newlifex.com, https://quickvue.newlifex.com  
@@ -104,7 +142,7 @@ http://git.newlifex.com/NewLife/NewLife.CubeBlazor
 ### 魔方特性
 
 * 通用权限管理，用户、角色、菜单、权限，支持控制器Action权限控制
-* 多数据库，支持 `MySql / SQLite / Sql Server / Oracle / SqlCe / Access`
+* 多数据库，支持 `MySql / SQLite / Sql Server / Oracle / PostgreSql / SqlCe / Access`
 * 免部署，系统自动创建数据库表结构，以及初始化数据，无需人工干涉
 * 强大的视图引擎，支持子项目视图重写父项目相同位置视图，任意覆盖修改默认界面
 
@@ -188,4 +226,4 @@ http://git.newlifex.com/NewLife/NewLife.CubeBlazor
 开源：<https://github.com/newlifex>  
 QQ群：1600800/1600838  
 微信公众号：  
-![智能大石头](https://newlifex.com/stone.jpg)  
+![智能大石头](https://newlifex.com/Stone.jpg)  
