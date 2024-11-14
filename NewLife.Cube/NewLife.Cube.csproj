@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2024 NewLife</Copyright>
-    <VersionPrefix>6.1</VersionPrefix>
+    <VersionPrefix>6.2</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -101,8 +101,8 @@
   <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="11.0.2024.1113" />
     <PackageReference Include="NewLife.IP" Version="2.2.2024.1102" />
-    <PackageReference Include="NewLife.Stardust" Version="3.1.2024.1101" />
-    <PackageReference Include="NewLife.XCode" Version="11.16.2024.1101" />
+    <PackageReference Include="NewLife.Stardust" Version="3.2.2024.1113" />
+    <PackageReference Include="NewLife.XCode" Version="11.16.2024.1114" />
   </ItemGroup>
 
   <ItemGroup>
