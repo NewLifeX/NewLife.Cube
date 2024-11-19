@@ -212,10 +212,10 @@ public class TracerMiddleware
         if (!ss.Contains(baseAddress))
         {
             // 过滤掉本机地址
-            ss = ss.Where(e => !e.EqualIgnoreCase("127.0.0.1", "localhost", "[::1]")).ToList();
+            ss = ss.Where(e => !e.EqualIgnoreCase("127.0.0.1", "localhost", "[::1]") && !e.StartsWith("127.0.")).ToList();
 
             ss.Insert(0, baseAddress);
-            set.ServiceAddress = ss.Take(5).OrderBy(e => e).Join(",");
+            set.ServiceAddress = ss.Take(5).Join(",");
             set.Save();
         }
     }
