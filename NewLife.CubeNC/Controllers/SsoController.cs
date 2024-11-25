@@ -301,7 +301,8 @@ public class SsoController : ControllerBaseX
     {
         // 先读Session，待会会清空
         var prov = Provider;
-        var name = Session["Cube_Sso"] as String;
+        var name = GetRequest("name");
+        if (name.IsNullOrEmpty()) name = Session["Cube_Sso"] as String;
         var client = prov.GetClient(name);
         client.Init(GetUserAgent());
 
@@ -314,7 +315,8 @@ public class SsoController : ControllerBaseX
         var set = CubeSetting.Current;
         if (client != null && set.LogoutAll)
         {
-            if (client.LogoutUrl.IsNullOrEmpty() && name.EqualIgnoreCase("NewLife")) client.LogoutUrl = "logout?client_id={key}&redirect_uri={redirect}&state={state}";
+            if (client.LogoutUrl.IsNullOrEmpty() && name.EqualIgnoreCase("NewLife"))
+                client.LogoutUrl = "logout?client_id={key}&redirect_uri={redirect}&state={state}";
             if (!client.LogoutUrl.IsNullOrEmpty())
             {
                 // 准备返回地址
@@ -335,6 +337,22 @@ public class SsoController : ControllerBaseX
 
         url = Provider?.GetReturnUrl(Request, false);
         if (url.IsNullOrEmpty()) url = "~/";
+
+        // 严格校验回跳地址，区分SSO模式和本地模式
+        if (url.StartsWithIgnoreCase("http://", "https://"))
+        {
+            var clientId = GetRequest("client_id");
+            if (!clientId.IsNullOrEmpty())
+            {
+                var app = OAuth.Auth(clientId, null, UserHost);
+                if (!app.ValidCallback(url)) throw new XException("回调地址不合法 {0}", url);
+            }
+            else
+            {
+                // 本地模式，只允许回到本站点
+                url = "~/";
+            }
+        }
 
         return Redirect(url);
     }
