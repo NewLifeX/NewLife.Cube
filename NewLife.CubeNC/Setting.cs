@@ -284,6 +284,11 @@ public class CubeSetting : Config<CubeSetting>
     #endregion
 
     #region 系统功能
+    /// <summary>OAuth服务。是否启用OAuth2.0服务，为其它应用提供单点登录服务</summary>
+    [Description("OAuth服务。是否启用OAuth2.0服务，为其它应用提供单点登录服务")]
+    [Category("系统功能")]
+    public Boolean EnableOAuthServer { get; set; } = true;
+
     /// <summary>多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面</summary>
     [Description("多租户。是否支持多租户，租户模式禁止访问系统管理，平台管理模式禁止访问租户页面")]
     [Category("系统功能")]

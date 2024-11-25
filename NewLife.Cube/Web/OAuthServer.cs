@@ -1,4 +1,5 @@
 ﻿using System.Web;
+using NewLife.Cube;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
 using NewLife.Cube.Web.Models;
@@ -18,6 +19,9 @@ public class OAuthServer
     /// <summary>令牌提供者</summary>
     public TokenProvider TokenProvider { get; set; } = new TokenProvider();
 
+    /// <summary>魔方设置</summary>
+    public CubeSetting Setting { get; set; }
+
     ///// <summary>令牌有效期。默认24小时</summary>
     //public Int32 Expire { get; set; } = 24 * 3600;
     #endregion
@@ -31,6 +35,12 @@ public class OAuthServer
     #endregion
 
     #region 方法
+    private void Valid()
+    {
+        var set = Setting;
+        if (set != null && !set.EnableOAuthServer) throw new XException("未启用OAuth服务");
+    }
+
     /// <summary>验证应用</summary>
     /// <param name="client_id"></param>
     /// <param name="client_secret"></param>
@@ -38,6 +48,8 @@ public class OAuthServer
     /// <returns></returns>
     public virtual App Auth(String client_id, String client_secret, String ip)
     {
+        Valid();
+
         var app = App.FindByName(client_id);
         //if (app == null) throw new XException("未找到应用[{0}]", appid);
         // 找不到应用时自动创建，但处于禁用状态
@@ -74,6 +86,8 @@ public class OAuthServer
     /// <returns></returns>
     public virtual String Authorize(String client_id, String redirect_uri, String response_type, String scope, String state, String ip)
     {
+        Valid();
+
         var log = new AppLog
         {
             Action = nameof(Authorize),
@@ -131,6 +145,8 @@ public class OAuthServer
     /// <returns></returns>
     public virtual String GetResult(String key, IManageUser user)
     {
+        Valid();
+
         var log = AppLog.FindById(key.ToLong());
         if (log == null) throw new ArgumentOutOfRangeException(nameof(key), "操作超时，请重试！");
 
@@ -197,6 +213,8 @@ public class OAuthServer
     /// <returns></returns>
     public virtual TokenInfo CreateToken(App app, String name, Object payload, String refreshName)
     {
+        Valid();
+
         var prv = GetProvider();
 
         // 计算有效期，优先应用指定有效期，再使用全局有效期
@@ -239,6 +257,8 @@ public class OAuthServer
     /// <returns></returns>
     public virtual TokenInfo GetToken(String code)
     {
+        Valid();
+
         var log = AppLog.FindById(code.ToLong());
         if (log == null || log.CreateTime.AddMinutes(5) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
@@ -266,6 +286,8 @@ public class OAuthServer
     /// <returns></returns>
     public String Decode(String token)
     {
+        Valid();
+
         // 区分访问令牌和内部刷新令牌
         var ts = token.Split('.');
         if (ts.Length == 3)

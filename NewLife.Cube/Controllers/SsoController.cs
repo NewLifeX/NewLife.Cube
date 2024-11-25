@@ -65,6 +65,7 @@ public class SsoController : ControllerBaseX
 
     /// <summary>存储最近用过的code，避免用户刷新页面</summary>
     private readonly ICache _cache;
+    private readonly CubeSetting _setting;
 
     static SsoController()
     {
@@ -76,8 +77,16 @@ public class SsoController : ControllerBaseX
     }
 
     /// <summary>实例化单点登录控制器</summary>
+    /// <param name="setting"></param>
     /// <param name="cacheProvider"></param>
-    public SsoController(ICacheProvider cacheProvider) => _cache = cacheProvider.Cache;
+    public SsoController(CubeSetting setting, ICacheProvider cacheProvider)
+    {
+        _cache = cacheProvider.Cache;
+        _setting = setting;
+
+        OAuth.Setting = _setting;
+
+    }
 
     #region 单点登录客户端
     private String GetUserAgent() => Request.Headers.UserAgent + "";
