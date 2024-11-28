@@ -238,6 +238,7 @@ public static class CubeService
         manager ??= new ApplicationPartManager();
 
         var list = FindAllArea();
+        span?.AppendTag(null, list.Count);
 
         foreach (var asm in list)
         {

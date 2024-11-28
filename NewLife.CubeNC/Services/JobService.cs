@@ -23,15 +23,18 @@ public static class JobServiceExtersions
         //services.AddSingleton<SqlService>();
         //services.AddSingleton<HttpService>();
 
-        // 传统建议定时作业，可以不用注册
-        //services.AddSingleton<BackupDbService>();
-        BackupDbService.Init();
-
         // 定时作业调度服务
         services.AddHostedService<JobService>();
 
         // 扫描并添加ICubeJob作业
-        Task.Run(JobService.ScanJobs);
+        _ = Task.Run(() =>
+        {
+            // 传统定时作业，可以不用注册
+            //services.AddSingleton<BackupDbService>();
+            BackupDbService.Init();
+
+            JobService.ScanJobs();
+        });
 
         return services;
     }
@@ -77,7 +80,7 @@ public class JobService : IHostedService
         _timer.TryDispose();
 
         // 避免释放过程中集合被修改
-        _jobs?.ToArray().TryDispose();
+        _jobs.ToArray().TryDispose();
         _jobs.Clear();
 
         return Task.CompletedTask;
@@ -140,7 +143,10 @@ public class JobService : IHostedService
     /// <summary>扫描并添加ICubeJob作业</summary>
     public static void ScanJobs()
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanJobs));
+
         var jobs = CronJob.FindAll();
+        span?.AppendTag(null, jobs.Count);
 
         foreach (var type in typeof(ICubeJob).GetAllSubclasses())
         {
