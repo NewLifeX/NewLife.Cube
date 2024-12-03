@@ -50,6 +50,23 @@
     @if (dataSource != null)
     {
         var ds = dataSource(entity);
+
+        if (TenantContext.CurrentId > 0)
+        {
+            var roles = Tenant.FindById(TenantContext.CurrentId)?.RoleIds.SplitAsInt();
+            if (roles == null && roles.Length == 0)//强制把系统权限清空了
+            {
+                ds.Clear();
+            }
+            else//按照已有的角色组进行分配
+            {
+                if (ds is IDictionary<Int32, String> odic)
+                {
+                    ds = odic.Where(kvp => roles.Contains(kvp.Key)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                }
+            }
+        }
+
         if (ds is IDictionary<Int32, String> dic)
         {
             if (!ds.Contains(-1))
