@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Entity;
 using XCode.Membership;
 
@@ -13,5 +14,14 @@ public class AccessRuleController : EntityController<AccessRule>
     static AccessRuleController()
     {
         LogOnChange = true;
+    }
+
+    /// <summary>已重载。</summary>
+    /// <param name="filterContext"></param>
+    public override void OnActionExecuting(ActionExecutingContext filterContext)
+    {
+        base.OnActionExecuting(filterContext);
+
+        PageSetting.NavView = "_Object_Nav";
     }
 }
