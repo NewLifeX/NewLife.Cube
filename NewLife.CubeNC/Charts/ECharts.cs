@@ -191,7 +191,7 @@ public class ECharts : IExtend
 
         // 多Y轴时，右边偏移加大
         var n = names.Length - 1;
-        Grid.Right *= n;
+        if (n > 0) Grid.Right *= n;
 
         YAxis = list.ToArray();
     }
