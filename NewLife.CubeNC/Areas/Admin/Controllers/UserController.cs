@@ -26,7 +26,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [DisplayName("用户")]
 [Description("系统基于角色授权，每个角色对不同的功能模块具备添删改查以及自定义权限等多种权限设定。")]
 [AdminArea]
-[Menu(100, true, Icon = "fa-user", HelpUrl = "https://newlifex.com/cube/cube_security")]
+[Menu(100, true, Icon = "fa-user", HelpUrl = "https://newlifex.com/cube/cube_security", Mode = MenuModes.Admin | MenuModes.Tenant)]
 public class UserController : EntityController<User, UserModel>
 {
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
@@ -198,7 +198,41 @@ public class UserController : EntityController<User, UserModel>
 
         //if (roleId > 0) roleIds.Add(roleId);
         //if (departmentId > 0) departmentIds.Add(departmentId);
-        var list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
+        IList<User> list2 = new List<User>();
+
+        var tencentId = ManagerProviderHelper.GetTenantId(HttpContext);
+
+        if (tencentId > 0)//只读取租户相关的用户
+        {
+            var exp = TenantUser._.TenantId == tencentId;
+            if (roleIds != null && roleIds.Length > 0)
+            {
+                //exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
+                var exp2 = new WhereExpression();
+                exp2 |= _.RoleID.In(roleIds);
+                foreach (var rid in roleIds)
+                {
+                    exp2 |= _.RoleIds.Contains("," + rid + ",");
+                }
+                exp &= exp2;
+            }
+            if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
+            if (areaIds != null && areaIds.Length > 0) exp &= _.AreaId.In(areaIds);
+            if (enable != null) exp &= _.Enable == enable.Value;
+            exp &= _.LastLogin.Between(start, end);
+            if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
+
+            //var where= exp.ToString();
+            var sql = $"SELECT User.* FROM User INNER JOIN TenantUser ON User.ID= TenantUser.UserId where {exp.ToString()} ";
+
+            list2 = TenantUser.Meta.Session.Dal.Query<User>(sql, null, p)?.ToList();
+            //var sb = new SelectBuilder { Table = table.Name, Where = "Age>18" };
+        }
+        else
+        {
+            list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
+        }
+
 
         foreach (var user in list2)
         {
@@ -226,10 +260,13 @@ public class UserController : EntityController<User, UserModel>
         {
             // 非系统管理员，禁止修改任何人的角色
             var user = ManageProvider.User;
-            if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
+            if (TenantContext.CurrentId == 0)//非租户验证
             {
-                if (entity2.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
-                if (entity2.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
+                if (!user.Roles.Any(e => e.IsSystem) && entity is IEntity entity2)
+                {
+                    if (entity2.Dirtys["RoleID"]) throw new Exception("禁止修改角色！");
+                    if (entity2.Dirtys["RoleIds"]) throw new Exception("禁止修改角色！");
+                }
             }
         }
 
@@ -784,6 +821,26 @@ public class UserController : EntityController<User, UserModel>
         ViewData["TenantId"] = t?.Id ?? 0;
 
         return View(model);
+    }
+
+    protected override Int32 OnInsert(User entity)
+    {
+        var ef = base.OnInsert(entity);
+
+        if (TenantContext.CurrentId > 0)//默认插入当前租户下的用户
+        {
+            var tu = new TenantUser
+            {
+                TenantId = TenantContext.CurrentId,
+                UserId = entity.ID,
+                CreateIP = entity.RegisterIP,
+                Enable = entity.Enable,
+
+            };
+            tu.InsertAsync();
+        }
+
+        return ef;
     }
 
     /// <summary>租户设置</summary>
