@@ -53,6 +53,9 @@ public class ListField : DataField
     /// <summary>单元格样式</summary>
     public String Class { get; set; }
 
+    /// <summary>最大宽度。用于指定超长隐藏文本的长度</summary>
+    public Int32 MaxWidth { get; set; }
+
     ///// <summary>头部链接。一般是排序</summary>
     //public String HeaderUrl { get; set; }
 
@@ -350,28 +353,17 @@ public class ListField : DataField
         if (GetClass != null && data != null) return GetClass(data);
 
         // 文本对齐方式
-        var tdClass = "";
-        switch (TextAlign)
+        var maxWidth = MaxWidth > 0 ? MaxWidth : 600;
+        var tdClass = TextAlign switch
         {
-            case TextAligns.Default:
-                tdClass = "";
-                break;
-            case TextAligns.Left:
-                tdClass = "text-left";
-                break;
-            case TextAligns.Center:
-                tdClass = "text-center";
-                break;
-            case TextAligns.Right:
-                tdClass = "text-right";
-                break;
-            case TextAligns.Justify:
-                tdClass = "text-justify";
-                break;
-            case TextAligns.Nowrap:
-                tdClass = "text-nowrap;max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;";
-                break;
-        }
+            TextAligns.Default => "",
+            TextAligns.Left => "text-left",
+            TextAligns.Center => "text-center",
+            TextAligns.Right => "text-right",
+            TextAligns.Justify => "text-justify",
+            TextAligns.Nowrap => $"text-nowrap;max-width:{maxWidth}px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;",
+            _ => "",
+        };
         // 叠加样式
         if (!Class.IsNullOrEmpty())
         {
