@@ -213,9 +213,9 @@ internal class MyJob : IDisposable
         var cmd = job.Method;
         if (cmd.IsNullOrEmpty()) throw new ArgumentNullException(nameof(job.Method));
 
-        // 标识相同，不要处理。可能在运行过程中用户修改了作业参数
+        // 标识相同，不要处理。可能在运行过程中用户修改了作业参数  _timer.Id等于0表示定时器已销毁需要新启动。
         var id = $"{expession}@{cmd}@{job.Argument}";
-        if (id == _id && _timer != null) return;
+        if (id == _id && _timer?.Id > 0) return;
 
         foreach (var item in expession.Split(";"))
         {
