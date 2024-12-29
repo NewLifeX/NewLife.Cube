@@ -286,6 +286,24 @@ public partial class EntityController<TEntity, TModel>
     #endregion
 
     #region 高级Action
+    /// <summary>高级开发接口</summary>
+    /// <param name="act"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public override async Task<ActionResult> Develop(String act)
+    {
+        if (!NewLife.Common.SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+
+        var user = ManageProvider.User;
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+
+        return act switch
+        {
+            "Sync" => Backup(),
+            _ => await base.Develop(act),
+        };
+    }
+
     /// <summary>导入Xml</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
@@ -382,7 +400,6 @@ public partial class EntityController<TEntity, TModel>
             return Json(500, ex.GetMessage(), ex);
         }
     }
-
 
     /// <summary>修改bool值</summary>
     /// <param name="id"></param>
@@ -579,8 +596,7 @@ public partial class EntityController<TEntity, TModel>
     #region 同步/还原
     /// <summary>同步数据</summary>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("同步{type}")]
+    [NonAction]
     public async Task<ActionResult> Sync()
     {
         //if (id.IsNullOrEmpty()) return RedirectToAction(nameof(Index));

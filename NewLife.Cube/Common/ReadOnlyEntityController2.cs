@@ -1,8 +1,5 @@
 ﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;

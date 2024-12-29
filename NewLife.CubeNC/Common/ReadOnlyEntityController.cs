@@ -149,8 +149,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
 
     /// <summary>清空全表数据</summary>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("清空")]
+    [NonAction]
     public virtual ActionResult Clear()
     {
         var url = Request.GetReferer();
@@ -609,11 +608,39 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     }
     #endregion
 
+    #region 高级Action
+    /// <summary>高级开发接口</summary>
+    /// <param name="act"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [DisplayName("高级开发")]
+    public virtual async Task<ActionResult> Develop(String act)
+    {
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+
+        var user = ManageProvider.User;
+        if (user == null || !user.Roles.Any(e => e.IsSystem)) throw new InvalidOperationException("仅支持系统管理员使用！");
+
+        return act switch
+        {
+            "Backup" => Backup(),
+            "BackupAndExport" => await BackupAndExport(),
+            "Restore" => Restore(),
+            "Share" => Share(),
+            "Clear" => Clear(),
+            "MakeList" => MakeList(),
+            "MakeForm" => MakeForm(),
+            "MakeSearch" => MakeSearch(),
+            _ => throw new NotSupportedException($"未支持[{act}]"),
+        };
+    }
+    #endregion
+
     #region 备份/还原/导出/分享
     /// <summary>备份到服务器本地目录</summary>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("备份")]
+    [NonAction]
     public virtual ActionResult Backup()
     {
         try
@@ -650,8 +677,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     /// <summary>备份导出</summary>
     /// <remarks>备份并下载</remarks>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("导出")]
+    [NonAction]
     public virtual async Task<ActionResult> BackupAndExport()
     {
         var set = CubeSetting.Current;
@@ -691,8 +717,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
 
     /// <summary>从服务器本地目录还原</summary>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("还原")]
+    [NonAction]
     public virtual ActionResult Restore()
     {
         try
@@ -729,8 +754,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     /// 为当前url创建用户令牌
     /// </remarks>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("分享{type}")]
+    [NonAction]
     public virtual ActionResult Share()
     {
         // 当前用户所有令牌
@@ -769,8 +793,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     #region 模版Action
     /// <summary>生成列表</summary>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("生成列表")]
+    [NonAction]
     public ActionResult MakeList()
     {
         if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
@@ -792,8 +815,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
 
     /// <summary>生成表单</summary>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("生成表单")]
+    [NonAction]
     public ActionResult MakeForm()
     {
         if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
@@ -815,8 +837,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
 
     /// <summary>生成搜索</summary>
     /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Detail)]
-    [DisplayName("生成搜索")]
+    [NonAction]
     public ActionResult MakeSearch()
     {
         if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
@@ -886,6 +907,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     /// <param name="seriesType">系列类型</param>
     /// <param name="position">位置。默认top，可选bottom</param>
     /// <returns></returns>
+    [NonAction]
     public virtual ECharts AddChart(IList<TEntity> data, DataField xAxis, String yAxis = null, DataField[] yFields = null, SeriesTypes seriesType = SeriesTypes.Line, String position = "top")
     {
         var chart = new ECharts
