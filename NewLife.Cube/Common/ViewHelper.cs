@@ -718,14 +718,36 @@ public static class ViewHelper
             @*@await Html.PartialAsync("_DateRange")*@
             """;
 
-        //var sb = new StringBuilder();
-        //var fact = EntityFactory.CreateFactory(entityType);
-
         tmp = tmp.Replace("{EntityType}", entityType.Name);
         tmp = tmp.Replace("{Namespace}", entityType.Namespace);
 
-        //sb.Append(tmp.Substring(p));
-        //tmp = sb.ToString();
+        File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), tmp, Encoding.UTF8);
+
+        return true;
+    }
+
+    internal static Boolean MakeBatchView(Type entityType, String vpath, List<DataField> fields)
+    {
+        var tmp = """
+            @using NewLife.Common;
+            @using NewLife.Cube
+            @using XCode
+            @{
+                var user = ViewBag.User as IUser ?? User.Identity as IUser;
+                var fact = ViewBag.Factory as IEntityFactory;
+                var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+            }
+            @if (set.EnableSelect)
+            {
+                @*<button type="button" class="btn btn-purple btn-sm" data-action="action" data-url="@Url.Action("DeleteSelect")" data-method="post" data-fields="keys,keys2" data-confirm="该操作将删除选中数据并不可恢复！确认删除？" disabled>
+                    <span class="ace-icon fa fa-search icon-on-right bigger-110"></span>
+                    批量删除
+                </button>*@
+            }
+            """;
+
+        tmp = tmp.Replace("{EntityType}", entityType.Name);
+        tmp = tmp.Replace("{Namespace}", entityType.Namespace);
 
         File.WriteAllText(vpath.GetFullPath().EnsureDirectory(true), tmp, Encoding.UTF8);
 

@@ -632,6 +632,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             "MakeList" => MakeList(),
             "MakeForm" => MakeForm(),
             "MakeSearch" => MakeSearch(),
+            "MakeBatch" => MakeBatch(),
             _ => throw new NotSupportedException($"未支持[{act}]"),
         };
     }
@@ -853,6 +854,28 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         _ = ViewHelper.MakeSearchView(typeof(TEntity), vpath, OnGetFields(ViewKinds.List, null));
 
         WriteLog("生成搜索", true, vpath);
+
+        return RedirectToAction("Index");
+    }
+
+    /// <summary>生成批处理</summary>
+    /// <returns></returns>
+    [NonAction]
+    public ActionResult MakeBatch()
+    {
+        if (!SysConfig.Current.Develop) throw new InvalidOperationException("仅支持开发模式下使用！");
+
+        // 找到项目根目录
+        var root = GetProjectRoot();
+
+        // 视图路径，Areas/区域/Views/控制器/_List_Toolbar_Batch.cshtml
+        var cs = GetControllerAction();
+        var vpath = $"Areas/{cs[0]}/Views/{cs[1]}/_List_Toolbar_Batch.cshtml";
+        if (!root.IsNullOrEmpty()) vpath = root.EnsureEnd("/") + vpath;
+
+        _ = ViewHelper.MakeBatchView(typeof(TEntity), vpath, OnGetFields(ViewKinds.List, null));
+
+        WriteLog("生成批处理", true, vpath);
 
         return RedirectToAction("Index");
     }
