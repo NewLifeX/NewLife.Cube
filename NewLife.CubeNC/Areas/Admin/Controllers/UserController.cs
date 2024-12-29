@@ -786,7 +786,7 @@ public class UserController : EntityController<User, UserModel>
     [EntityAuthorize(PermissionFlags.Update)]
     public ActionResult ClearPassword(Int32 id)
     {
-        if (!ManageProvider.User.Role.IsSystem) throw new Exception("清除密码操作需要管理员权限，非法操作！");
+        if (!ManageProvider.User.Roles.Any(e => e.IsSystem)) throw new Exception("清除密码操作需要管理员权限，非法操作！");
 
         // 前面表单可能已经清空密码
         var user = FindByID(id);

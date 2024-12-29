@@ -22,7 +22,7 @@
             <el-dropdown-item><el-link href="@Url.Action("DeleteAll")">删除全部</el-link></el-dropdown-item>
         }
 
-        @if (SysConfig.Current.Develop && user != null && user.Role.IsSystem)
+        @if (SysConfig.Current.Develop && user != null && user.Roles.Any(e => e.IsSystem))
         {
             <el-divider></el-divider>
             <el-dropdown-item><el-link href="@Url.Action("Backup")">备份</el-link></el-dropdown-item>

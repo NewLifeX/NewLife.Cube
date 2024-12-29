@@ -65,7 +65,7 @@
                     </a>
                 </li>
             }
-            @if (SysConfig.Current.Develop && user != null && user.Role.IsSystem)
+            @if (SysConfig.Current.Develop && user != null && user.Roles.Any(e => e.IsSystem))
             {
                 <li class="navi-separator"></li>
                 <li class="navi-item">
