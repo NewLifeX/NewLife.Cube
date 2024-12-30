@@ -8,44 +8,62 @@
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var fi = fact.MasterTime;
+    var fields = ViewBag.SearchFields as FieldCollection;
 
-    var builder = new SearchBuilder(fact.Table.DataTable);
-    var columns = builder.GetColumns() as List<IDataColumn>;
-    if (columns.Any(e => e.Name.EqualIgnoreCase("DistrictId")))
-        columns.RemoveAll(e => e.Name.EqualIgnoreCase("ProvinceId", "CityId"));
-    if (columns.Any(e => e.Name.EqualIgnoreCase("CityId")))
-        columns.RemoveAll(e => e.Name.EqualIgnoreCase("ProvinceId"));
+    // var builder = new SearchBuilder(fact.Table.DataTable);
+    // var columns = builder.GetColumns() as List<IDataColumn>;
+    // if (columns.Any(e => e.Name.EqualIgnoreCase("DistrictId")))
+    //     columns.RemoveAll(e => e.Name.EqualIgnoreCase("ProvinceId", "CityId"));
+    // if (columns.Any(e => e.Name.EqualIgnoreCase("CityId")))
+    //     columns.RemoveAll(e => e.Name.EqualIgnoreCase("ProvinceId"));
+
+    var dic = new Dictionary<Int32, String>();
+    dic[1] = "是";
+    dic[0] = "否";
 }
-@foreach (var dc in columns)
+@foreach (SearchField field in fields)
 {
-    var name = dc.CamelName();
-    if (dc.Name.EqualIgnoreCase("Enable") && dc.DataType == typeof(Boolean))
+    var name = field.Name.ToLower();
+    if (field.Name.EqualIgnoreCase("Enable") && field.Type == typeof(Boolean))
     {
         @await Html.PartialAsync("_Enable")
     }
-    else if (dc.Name.EqualIgnoreCase("DistrictId"))
+    else if (field.Type == typeof(Boolean))
+    {
+        <div class="form-group">
+            <label for="@name" class="control-label">@field.DisplayName：</label>
+            @Html.ForDropDownList(name, dic, page[name], "全部", true)
+        </div>
+    }
+    else if (field.Name.EqualIgnoreCase("DistrictId"))
     {
         @await Html.PartialAsync("_Area3", "")
     }
-    else if (dc.Name.EqualIgnoreCase("CityId"))
+    else if (field.Name.EqualIgnoreCase("CityId"))
     {
         @await Html.PartialAsync("_Area2", "")
     }
-    else if (dc.Name.EqualIgnoreCase("ProvinceId"))
+    else if (field.Name.EqualIgnoreCase("ProvinceId"))
     {
         @await Html.PartialAsync("_Area1", "")
     }
-    else if (dc.DataType.IsInt())
+    else if (field.Type.IsInt())
     {
-        var type = dc.Properties["type"]?.GetTypeEx() ?? dc.DataType;
-
         // 枚举字段
-        if (type.IsEnum)
+        if (field.Type.IsEnum)
         {
-            <div class="form-group">
-                <label for="@name" class="control-label">@dc.DisplayName：</label>
-                @Html.ForDropDownList(name, EnumHelper.GetDescriptions(type), page[name], "全部", true)
-            </div>
+            if (field.Multiple)
+            {
+                <label for="@name" class="control-label">@field.DisplayName：</label>
+                @await Html.PartialAsync("_Form_ListBox", new ListBoxModel(name, EnumHelper.GetDescriptions(field.Type), page[name]))
+            }
+            else
+            {
+                <div class="form-group">
+                    <label for="@name" class="control-label">@field.DisplayName：</label>
+                    @Html.ForDropDownList(name, EnumHelper.GetDescriptions(field.Type), page[name], "全部", true)
+                </div>
+            }
         }
     }
 }

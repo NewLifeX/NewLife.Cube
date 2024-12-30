@@ -14,7 +14,9 @@ public class OAuthConfigController : EntityController<OAuthConfig>
     {
         LogOnChange = true;
 
-        ListFields.RemoveField("Secret", "Logo", "AuthUrl", "AccessUrl", "UserUrl", "SecurityKey", "FieldMap", "Remark");
+        ListFields.RemoveField("Secret", "Logo", "Server", "Scope", "AccessServer", "AuthUrl", "AccessUrl", "UserUrl", "AppUrl", "SecurityKey", "FieldMap", "AutoRole", "Remark");
+        ListFields.RemoveCreateField();
+        SearchFields.RemoveField("Debug", "AutoRegister", "FetchAvatar");
     }
 
     /// <summary>首页</summary>

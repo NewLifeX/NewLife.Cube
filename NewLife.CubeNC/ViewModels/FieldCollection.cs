@@ -8,6 +8,7 @@ using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Reflection;
 using XCode;
+using XCode.Code;
 using XCode.Configuration;
 using XCode.DataAccessLayer;
 
@@ -60,75 +61,54 @@ public class FieldCollection : List<DataField>
     {
         Kind = kind;
         Factory = factory;
-        //AddRange(Factory.Fields);
 
-        if (factory != null)
+        if (factory == null) return;
+
+        foreach (var item in factory.Fields)
         {
-            foreach (var item in factory.Fields)
-            {
-                Add(item);
-            }
+            Add(item);
+        }
 
-            switch (kind)
-            {
-                case ViewKinds.List:
-                    SetRelation(false);
-                    break;
-                case ViewKinds.Detail:
-                    SetRelation(true);
-                    break;
-                case ViewKinds.AddForm:
-                    SetRelation(true);
-                    //RemoveCreateField();
-                    RemoveUpdateField();
-                    break;
-                case ViewKinds.EditForm:
-                    SetRelation(true);
-                    break;
-                case ViewKinds.Search:
-                    // 有索引的字段
-                    var fs = new List<FieldItem>();
-                    var ds = new List<String>();
-                    foreach (var idx in factory.Table.DataTable.Indexes)
+        switch (kind)
+        {
+            case ViewKinds.List:
+                SetRelation(false);
+                break;
+            case ViewKinds.Detail:
+                SetRelation(true);
+                break;
+            case ViewKinds.AddForm:
+                SetRelation(true);
+                //RemoveCreateField();
+                RemoveUpdateField();
+                break;
+            case ViewKinds.EditForm:
+                SetRelation(true);
+                break;
+            case ViewKinds.Search:
+                // 有索引的字段
+                var builder = new SearchBuilder(factory.Table.DataTable);
+
+                Clear();
+                foreach (var dc in builder.GetColumns())
+                {
+                    var field = factory.Table.FindByName(dc.Name);
+                    if (field is null) return;
+
+                    var sf = Create(field) as SearchField;
+
+                    // Flags枚举，支持多选
+                    if (field.Type != null && field.Type.IsEnum && field.Type.GetCustomAttributes<FlagsAttribute>().Any())
                     {
-                        foreach (var elm in idx.Columns)
-                        {
-                            var dc = factory.Table.DataTable.GetColumn(elm);
-                            if (dc != null && !ds.Contains(dc.Name))
-                            {
-                                ds.Add(dc.Name);
-                                fs.Add(factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(dc.Name)));
-                            }
-                        }
+                        sf.Multiple = true;
                     }
 
-                    // 有映射的字段
-                    foreach (var item in factory.Fields)
-                    {
-                        if (item.Map != null && !ds.Contains(item.Name))
-                        {
-                            ds.Add(item.Name);
-                            fs.Add(item);
-                        }
-                    }
-
-                    Clear();
-                    foreach (var elm in fs)
-                    {
-                        var sf = Create(elm) as SearchField;
-                        // Flags枚举，支持多选
-                        if (elm.Type != null && elm.Type.IsEnum && elm.Type.GetCustomAttributes<FlagsAttribute>().Any())
-                        {
-                            sf.Multiple = true;
-                        }
-
-                        Add(sf);
-                    }
-                    break;
-                default:
-                    SetRelation(false);
-                    break;
-            }
+                    Add(sf);
+                }
+                break;
+            default:
+                SetRelation(false);
+                break;
         }
     }
     #endregion
