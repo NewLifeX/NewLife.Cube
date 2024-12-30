@@ -2,10 +2,54 @@
 @using NewLife.Web;
 @using NewLife.Cube;
 @using XCode;
+@using XCode.Code
+@using XCode.DataAccessLayer
 @{
     var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
     var fi = fact.MasterTime;
+
+    var builder = new SearchBuilder(fact.Table.DataTable);
+    var columns = builder.GetColumns() as List<IDataColumn>;
+    if (columns.Any(e => e.Name.EqualIgnoreCase("DistrictId")))
+        columns.RemoveAll(e => e.Name.EqualIgnoreCase("ProvinceId", "CityId"));
+    if (columns.Any(e => e.Name.EqualIgnoreCase("CityId")))
+        columns.RemoveAll(e => e.Name.EqualIgnoreCase("ProvinceId"));
 }
+@foreach (var dc in columns)
+{
+    var name = dc.CamelName();
+    if (dc.Name.EqualIgnoreCase("Enable") && dc.DataType == typeof(Boolean))
+    {
+        @await Html.PartialAsync("_Enable")
+    }
+    else if (dc.Name.EqualIgnoreCase("DistrictId"))
+    {
+        @await Html.PartialAsync("_Area3", "")
+    }
+    else if (dc.Name.EqualIgnoreCase("CityId"))
+    {
+        @await Html.PartialAsync("_Area2", "")
+    }
+    else if (dc.Name.EqualIgnoreCase("ProvinceId"))
+    {
+        @await Html.PartialAsync("_Area1", "")
+    }
+    else if (dc.DataType.IsInt())
+    {
+        var type = dc.Properties["type"]?.GetTypeEx() ?? dc.DataType;
+
+        // 枚举字段
+        if (type.IsEnum)
+        {
+            <div class="form-group">
+                <label for="@name" class="control-label">@dc.DisplayName：</label>
+                @Html.ForDropDownList(name, EnumHelper.GetDescriptions(type), page[name], "全部", true)
+            </div>
+        }
+    }
+}
+
 @if (fi != null)
 {
     @await Html.PartialAsync("_DateRange")

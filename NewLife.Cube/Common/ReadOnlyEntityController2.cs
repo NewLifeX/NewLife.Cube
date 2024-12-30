@@ -77,13 +77,13 @@ public partial class ReadOnlyEntityController<TEntity>
         //    whereExpression &= col.Field == val;
         //}
 
-        //添加映射字段查询
-        foreach (var item in Factory.Fields)
+        // 添加映射字段查询
+        foreach (var field in Factory.Fields)
         {
-            var val = p[item.Name];
+            var val = p[field.Name];
             if (!val.IsNullOrWhiteSpace())
             {
-                whereExpression &= item.Equal(val);
+                whereExpression &= field.Equal(val.ChangeType(field.Type));
             }
         }
 

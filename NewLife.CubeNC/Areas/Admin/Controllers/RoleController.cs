@@ -46,7 +46,8 @@ public class RoleController : EntityController<Role>
             return list;
         }
 
-        return Role.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
+        //return Role.Search(p["dtStart"].ToDateTime(), p["dtEnd"].ToDateTime(), p["Q"], p);
+        return base.Search(p);
     }
 
     /// <summary>验证实体对象</summary>

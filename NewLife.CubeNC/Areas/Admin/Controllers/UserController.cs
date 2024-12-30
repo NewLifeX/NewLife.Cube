@@ -147,30 +147,13 @@ public class UserController : EntityController<User, UserModel>
             return list;
         }
 
-        //var roleId = p["roleId"].ToInt(-1);
         var roleIds = p["roleIds"].SplitAsInt();
-        //var departmentId = p["departmentId"].ToInt(-1);
         var departmentIds = p["departmentId"].SplitAsInt();
         var areaIds = p["areaId"].SplitAsInt("/");
         var enable = p["enable"]?.ToBoolean();
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
         var key = p["q"];
-
-        //p.RetrieveState = true;
-
-        //return XCode.Membership.User.Search(roleId, departmentId, enable, start, end, key, p);
-
-        //var exp = new WhereExpression();
-        //if (roleId >= 0) exp &= _.RoleID == roleId | _.RoleIds.Contains("," + roleId + ",");
-        //if (roleIds != null && roleIds.Length > 0) exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
-        //if (departmentId >= 0) exp &= _.DepartmentID == departmentId;
-        //if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
-        //if (enable != null) exp &= _.Enable == enable.Value;
-        //exp &= _.LastLogin.Between(start, end);
-        //if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
-
-        //var list2 = XCode.Membership.User.FindAll(exp, p);
 
         if (areaIds.Length > 0)
         {
@@ -196,18 +179,15 @@ public class UserController : EntityController<User, UserModel>
             areaIds = rs.ToArray();
         }
 
-        //if (roleId > 0) roleIds.Add(roleId);
-        //if (departmentId > 0) departmentIds.Add(departmentId);
-        IList<User> list2 = new List<User>();
+        IList<User> list2 = [];
 
+        // 只读取租户相关的用户
         var tencentId = ManagerProviderHelper.GetTenantId(HttpContext);
-
-        if (tencentId > 0)//只读取租户相关的用户
+        if (tencentId > 0)
         {
             var exp = TenantUser._.TenantId == tencentId;
             if (roleIds != null && roleIds.Length > 0)
             {
-                //exp &= _.RoleID.In(roleIds) | _.RoleIds.Contains("," + roleIds.Join(",") + ",");
                 var exp2 = new WhereExpression();
                 exp2 |= _.RoleID.In(roleIds);
                 foreach (var rid in roleIds)
@@ -222,17 +202,14 @@ public class UserController : EntityController<User, UserModel>
             exp &= _.LastLogin.Between(start, end);
             if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
 
-            //var where= exp.ToString();
-            var sql = $"SELECT User.* FROM User INNER JOIN TenantUser ON User.ID= TenantUser.UserId where {exp.ToString()} ";
+            var sql = $"SELECT User.* FROM User INNER JOIN TenantUser ON User.ID= TenantUser.UserId where {exp} ";
 
             list2 = TenantUser.Meta.Session.Dal.Query<User>(sql, null, p)?.ToList();
-            //var sb = new SelectBuilder { Table = table.Name, Where = "Age>18" };
         }
         else
         {
             list2 = XCode.Membership.User.Search(roleIds, departmentIds, areaIds, enable, start, end, key, p);
         }
-
 
         foreach (var user in list2)
         {
@@ -310,10 +287,15 @@ public class UserController : EntityController<User, UserModel>
 
         // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
         var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
-        if (ms != null && !CubeSetting.Current.AllowLogin)
+        var set = CubeSetting.Current;
+        if (ms != null && !set.AllowLogin)
         {
-            if (ms.Count == 0) throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
             if (logId > 0) throw new Exception("已完成第三方登录，但无法绑定本地用户且没有开启自动注册，建议开启OAuth应用的自动注册");
+            if (ms.Count == 0)
+            {
+                //throw new Exception("禁用了本地密码登录，且没有配置第三方登录");
+                set.AllowLogin = true;
+            }
 
             // 只有一个，跳转
             if (ms.Count == 1)
