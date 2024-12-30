@@ -20,6 +20,10 @@
     var dic = new Dictionary<Int32, String>();
     dic[1] = "是";
     dic[0] = "否";
+
+    var atts = new Dictionary<String, Object>();
+    if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
+
 }
 @foreach (SearchField field in fields)
 {
@@ -66,6 +70,13 @@
             }
         }
     }
+    // else if (field.Type == typeof(String))
+    // {
+    //     <div class="form-group">
+    //         <label for="@name" class="control-label">@field.DisplayName：</label>
+    //         @Html.TextBox(name, page[name], null, atts)
+    //     </div>
+    // }
 }
 
 @if (fi != null)

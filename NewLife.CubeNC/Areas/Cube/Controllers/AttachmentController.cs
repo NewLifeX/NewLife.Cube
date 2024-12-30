@@ -63,6 +63,7 @@ public class AttachmentController : EntityController<Attachment>
 
         if (p.Sort.IsNullOrEmpty()) p.Sort = AppLog._.Id.Desc();
 
-        return Attachment.Search(category, key, ext, start, end, p["Q"], p);
+        //return Attachment.Search(category, key, ext, start, end, p["Q"], p);
+        return base.Search(p);
     }
 }

@@ -44,7 +44,8 @@ public class AppModuleController : EntityController<AppModule>
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
 
-        return AppModule.Search(start, end, p["Q"], p);
+        //return AppModule.Search(start, end, p["Q"], p);
+        return base.Search(p);
     }
 
     private static void ScanAppModule()
