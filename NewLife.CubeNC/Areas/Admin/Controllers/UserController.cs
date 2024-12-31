@@ -185,26 +185,7 @@ public class UserController : EntityController<User, UserModel>
         var tencentId = ManagerProviderHelper.GetTenantId(HttpContext);
         if (tencentId > 0)
         {
-            var exp = TenantUser._.TenantId == tencentId;
-            if (roleIds != null && roleIds.Length > 0)
-            {
-                var exp2 = new WhereExpression();
-                exp2 |= _.RoleID.In(roleIds);
-                foreach (var rid in roleIds)
-                {
-                    exp2 |= _.RoleIds.Contains("," + rid + ",");
-                }
-                exp &= exp2;
-            }
-            if (departmentIds != null && departmentIds.Length > 0) exp &= _.DepartmentID.In(departmentIds);
-            if (areaIds != null && areaIds.Length > 0) exp &= _.AreaId.In(areaIds);
-            if (enable != null) exp &= _.Enable == enable.Value;
-            exp &= _.LastLogin.Between(start, end);
-            if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key) | _.Mail.StartsWith(key);
-
-            var sql = $"SELECT User.* FROM User INNER JOIN TenantUser ON User.ID= TenantUser.UserId where {exp} ";
-
-            list2 = TenantUser.Meta.Session.Dal.Query<User>(sql, null, p)?.ToList();
+            list2 = XCode.Membership.User.SearchWithTenant(tencentId, roleIds, departmentIds, areaIds, enable, start, end, key, p);
         }
         else
         {
