@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Log;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -254,8 +255,10 @@ public class FileController : ControllerBaseX
     [EntityAuthorize(PermissionFlags.Insert)]
     public async Task<ActionResult> Upload(String r, IFormFile file)
     {
-        if (file != null)
+        try
         {
+            if (file == null) throw new Exception("未选择文件！");
+
             var di = GetDirectory(r) ?? Root.AsDirectory();
             if (di == null) throw new Exception("找不到目录！");
 
@@ -266,9 +269,20 @@ public class FileController : ControllerBaseX
             //System.IO.File.WriteAllBytes(dest, file.OpenReadStream().ReadBytes(-1));
             using var fs = new FileStream(dest, FileMode.OpenOrCreate, FileAccess.ReadWrite);
             await file.CopyToAsync(fs);
-        }
 
-        return RedirectToAction("Index", new { r });
+            var msg = $"上传[{file.FileName}]，共[{file.Length}]字节！";
+            base.WriteLog("Upload", true, msg);
+
+            return JsonRefresh(msg, 2);
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("Upload", false, ex.GetMessage());
+
+            return Json(500, ex.GetMessage(), ex);
+        }
     }
 
     /// <summary>上传文件</summary>

@@ -24,13 +24,7 @@
             <span class="input-group-addon">
                 <i class="glyphicon glyphicon-file"></i>
             </span>
-            <input name="file" type="file" id="file" placeholder="上传文件" />
-            <span class="input-group-btn">
-                <button type="submit" class="btn btn-success btn-sm" onclick="$('#tool').attr('action', '/Admin/File/Upload');$('#tool').attr('enctype', 'multipart/form-data'); return true;">
-                    <span class="glyphicon glyphicon-plus icon-on-right bigger-110"></span>
-                    上传
-                </button>
-            </span>
+            <input name="file" type="file" id="file" placeholder="上传文件" data-action="upload" data-url="/Admin/File/Upload" data-fields="r" />
         </div>
         @if (clips.Count > 0)
         {

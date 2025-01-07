@@ -1,5 +1,5 @@
 ﻿// 以下时间用于魔方判断是否需要更新脚本
-// 2020-02-04 00:00:00
+// 2025-01-07 00:00:00
 
 $(function () {
 
@@ -116,6 +116,18 @@ $(function () {
             return window.parent.cubeAddTab(url, title);
         }
     )
+
+    // 执行文件上传
+    $(document).on('change'
+        , 'input[type="file"][data-action="upload"]'
+        , function (data) {
+            var file = this.files[0];
+            $this = $(this);
+            if (file) {
+                doFileAction($this, this.name, file);
+            }
+        });
+
 });
 
 function doClickAction($this) {
@@ -173,34 +185,96 @@ function doAction(methodName, actionUrl, actionParamter) {
         success: function (s) {
             //console.log(s);
         },
-        complete: function (result) {
-            var rs = result.responseJSON;
+        complete: onActionComplete,
+    });
+}
 
-            if (rs.message || rs.data) {
-                tips(rs.message || rs.data, 0, 1000);
+function onActionComplete(result) {
+    var rs = result.responseJSON;
+
+    if (rs.message || rs.data) {
+        tips(rs.message || rs.data, 0, 1000);
+    }
+
+    if (rs.url && rs.url.length > 0) {
+        if (rs.url == '[refresh]') {
+            if (rs.time && +rs.time > 0) {
+                setTimeout(function () {
+                    location.reload(false)
+                }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
+            } else {
+                //刷新页面但不重新加载页面的所有静态资源
+                location.reload(false);
             }
-
-            if (rs.url && rs.url.length > 0) {
-                if (rs.url == '[refresh]') {
-                    if (rs.time && +rs.time > 0) {
-                        setTimeout(function () {
-                            location.reload(false)
-                        }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
-                    } else {
-                        //刷新页面但不重新加载页面的所有静态资源
-                        location.reload(false);
-                    }
-                } else {
-                    if (rs.time && +rs.time > 0) {
-                        setTimeout(function () {
-                            window.location.href = rs.url;
-                        }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
-                    } else {
-                        window.location.href = rs.url;
-                    }
-                }
+        } else {
+            if (rs.time && +rs.time > 0) {
+                setTimeout(function () {
+                    window.location.href = rs.url;
+                }, Math.min(+rs.time, 10) * 1000) //不能大于10秒，
+            } else {
+                window.location.href = rs.url;
             }
         }
+    }
+}
+
+function doFileAction($this, name, file) {
+    var formData = new FormData();
+    formData.append(name, file);
+
+    //参数
+    var fields = $this.data('fields');
+    if (fields && fields.length > 0) {
+        var fieldArr = fields.split(',');
+        for (var i = 0; i < fieldArr.length; i++) {
+            var elm = $('input[name="' + fieldArr[i] + '"]');
+            if (elm.length > 0) formData.append(fieldArr[i], elm.val());
+        }
+    }
+
+    //method
+    var cmethod = $this.data('method');
+    var method = 'POST';
+    if (cmethod && cmethod.length > 0) {
+        method = cmethod;
+    }
+
+    //url
+    var curl = $this.data('url') || $this.data('href');
+    if (!curl || curl.length <= 0) {
+        if ($this[0].tagName == 'A') {
+            curl = $this.attr('href');
+        }
+    }
+    doUploadFile(method, curl, formData);
+}
+
+//ajax请求 methodName 指定GET与POST
+function doUploadFile(methodName, actionUrl, data) {
+    if (!methodName || methodName.length <= 0 || !actionUrl || actionUrl.length <= 0) {
+        tips('请求参数异常，请保证请求的地址跟参数正确！', 0, 1000);
+        return;
+    }
+
+    $.ajax({
+        url: actionUrl,
+        type: methodName,
+        async: false,
+        dataType: 'json',
+        data: data,
+        processData: false,
+        contentType: false,
+        error: function (ex) {
+            tips('请求异常！', 0, 1000);
+            //console.log(ex);
+        },
+        beforeSend: function () {
+            //tips('正在操作中，请稍候...', 0, 2000);
+        },
+        success: function (s) {
+            //console.log(s);
+        },
+        complete: onActionComplete,
     });
 }
 
