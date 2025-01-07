@@ -1,16 +1,19 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
+using NewLife.IO;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Remoting;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
+using XCode.Configuration;
 using XCode.Membership;
 
 namespace NewLife.Cube;
@@ -312,18 +315,12 @@ public partial class EntityController<TEntity, TModel>
     public virtual ActionResult ImportXml() => throw new NotImplementedException();
 
     /// <summary>导入Json</summary>
+    /// <remarks>当前采用前端解析的excel，表头第一行数据无效，从第二行开始处理</remarks>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("导入")]
     [HttpPost]
-    public virtual ActionResult ImportJson() => throw new NotImplementedException();
-
-    /// <summary>导入Excel</summary>
-    /// 当前采用前端解析的excel，表头第一行数据无效，从第二行开始处理
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("导入Excel")]
-    public virtual ActionResult ImportExcel(String data)
+    public virtual ActionResult ImportJson(String data)
     {
         if (String.IsNullOrWhiteSpace(data)) return Json(500, null, $"“{nameof(data)}”不能为 null 或空白。");
         try
@@ -399,6 +396,116 @@ public partial class EntityController<TEntity, TModel>
 
             return Json(500, ex.GetMessage(), ex);
         }
+    }
+
+    /// <summary>导入Excel</summary>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Insert)]
+    [DisplayName("导入Excel")]
+    public virtual ActionResult ImportExcel(IFormFile file)
+    {
+        try
+        {
+            var fact = Factory;
+
+            using var reader = new ExcelReader(file.OpenReadStream(), Encoding.UTF8);
+            var rows = reader.ReadRows().ToList();
+
+            // 读取标题行，找到对应字段
+            var fields = new List<FieldItem>();
+            foreach (var item in rows[0])
+            {
+                // 找到对应字段，可能为空
+                var field = Factory.Fields.FirstOrDefault(e => (item + "").EqualIgnoreCase(e.Name, e.DisplayName));
+                fields.Add(field);
+            }
+
+            var list = new List<TEntity>();
+            foreach (var row in rows.Skip(1))
+            {
+                // 实例化实体对象，读取一行，逐个字段赋值
+                var entity = fact.Create() as TEntity;
+                for (var i = 0; i < row.Length; i++)
+                {
+                    var field = fields[i];
+                    if (field != null) entity.SetItem(field.Name, row[i].ChangeType(field.Type));
+                }
+
+                if ((entity as IEntity).HasDirty) list.Add(entity);
+            }
+
+            // 保存数据
+            var rs = OnImport(list, fields);
+
+            var msg = $"导入[{file.FileName}]，共[{rows.Count - 1}]行，成功[{rs}]行！";
+            base.WriteLog("导入Excel", true, msg);
+
+            return JsonRefresh(msg, 2);
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+
+            WriteLog("导入Excel", false, ex.GetMessage());
+
+            return Json(500, ex.GetMessage(), ex);
+        }
+    }
+
+    /// <summary>导入数据，保存落库</summary>
+    /// <remarks>
+    /// 此时得到的实体列表，都是全新创建，用于接收上传数据。
+    /// 业务上，还需要考虑跟旧数据进行合并，已存在更新，不存在则新增。
+    /// </remarks>
+    /// <param name="list">导入实体列表</param>
+    /// <param name="fields">导入字段</param>
+    /// <returns></returns>
+    protected virtual Int32 OnImport(IList<TEntity> list, IList<FieldItem> fields)
+    {
+        // 如果存在主键或者唯一索引，先查找是否存在，如果存在则更新，否则新增
+        var names = fields.Select(e => e.Name).ToList();
+        var uk = Factory.Unique;
+        if (fields.Any(e => e.Name == uk.Name))
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                var entity = list[i];
+                var old = Factory.FindByKey(entity[uk.Name]) as TEntity;
+                if (old != null) list[i] = CopyFrom(old, entity, fields);
+            }
+        }
+        else
+        {
+            // 唯一索引
+            var di = Factory.Table.DataTable.Indexes.FirstOrDefault(e => e.Unique && !e.Columns.Except(names).Any());
+            if (di != null)
+            {
+                var fs = fields.Where(e => di.Columns.Contains(e.Name)).ToList();
+                for (var i = 0; i < list.Count; i++)
+                {
+                    var entity = list[i];
+                    var exp = new WhereExpression();
+                    foreach (var fi in fs)
+                    {
+                        exp &= fi.Equal(entity[fi.Name]);
+                    }
+                    var old = Factory.Find(exp) as TEntity;
+                    if (old != null) list[i] = CopyFrom(old, entity, fields);
+                }
+            }
+        }
+
+        return list.Save();
+    }
+
+    TEntity CopyFrom(TEntity entity, IModel source, IList<FieldItem> fields)
+    {
+        foreach (var fi in fields)
+        {
+            entity.SetItem(fi.Name, source[fi.Name]);
+        }
+
+        return entity;
     }
 
     /// <summary>修改bool值</summary>

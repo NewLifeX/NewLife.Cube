@@ -1,0 +1,15 @@
+﻿@using NewLife.Common;
+@using NewLife.Cube
+@using XCode
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var fact = ViewBag.Factory as IEntityFactory;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+}
+@if (set.EnableSelect)
+{
+    <a class="btn btn-success btn-sm" href="/Admin/Department/ExportExcelTemplate">下载模版</a>
+    <div class="input-group">
+        <input name="file" type="file" accept=".xlsx" placeholder="上传Excel" data-action="upload" data-url="/Admin/Department/ImportExcel" />
+    </div>
+}
