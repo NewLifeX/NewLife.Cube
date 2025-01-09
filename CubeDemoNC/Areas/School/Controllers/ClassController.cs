@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
+using NewLife;
 using NewLife.Cube;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
