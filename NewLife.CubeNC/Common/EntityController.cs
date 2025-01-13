@@ -412,9 +412,12 @@ public partial class EntityController<TEntity, TModel>
             var rows = reader.ReadRows().ToList();
 
             // 读取标题行，找到对应字段
+            var headers = new List<String>();
             var fields = new List<FieldItem>();
             foreach (var item in rows[0])
             {
+                headers.Add(item + "");
+
                 // 找到对应字段，可能为空
                 var field = Factory.Fields.FirstOrDefault(e => (item + "").EqualIgnoreCase(e.Name, e.DisplayName));
                 fields.Add(field);
@@ -425,17 +428,20 @@ public partial class EntityController<TEntity, TModel>
             {
                 // 实例化实体对象，读取一行，逐个字段赋值
                 var entity = fact.Create() as TEntity;
-                for (var i = 0; i < row.Length; i++)
+                for (var i = 0; i < row.Length && i < fields.Count; i++)
                 {
                     var field = fields[i];
-                    if (field != null) entity.SetItem(field.Name, row[i].ChangeType(field.Type));
+                    if (field != null)
+                        entity.SetItem(field.Name, row[i].ChangeType(field.Type));
+                    else
+                        entity[headers[i]] = row[i];
                 }
 
                 if ((entity as IEntity).HasDirty) list.Add(entity);
             }
 
             // 保存数据
-            var rs = OnImport(list, fields);
+            var rs = OnImport(list, headers, fields);
 
             var msg = $"导入[{file.FileName}]，共[{rows.Count - 1}]行，成功[{rs}]行！";
             base.WriteLog("导入Excel", true, msg);
@@ -458,14 +464,16 @@ public partial class EntityController<TEntity, TModel>
     /// 业务上，还需要考虑跟旧数据进行合并，已存在更新，不存在则新增。
     /// </remarks>
     /// <param name="list">导入实体列表</param>
+    /// <param name="headers">表头</param>
     /// <param name="fields">导入字段</param>
     /// <returns></returns>
-    protected virtual Int32 OnImport(IList<TEntity> list, IList<FieldItem> fields)
+    protected virtual Int32 OnImport(IList<TEntity> list, IList<String> headers, IList<FieldItem> fields)
     {
         // 如果存在主键或者唯一索引，先查找是否存在，如果存在则更新，否则新增
+        fields = fields.Where(e => e != null).ToList();
         var names = fields.Select(e => e.Name).ToList();
         var uk = Factory.Unique;
-        if (fields.Any(e => e.Name == uk.Name))
+        if (uk != null && fields.Any(e => e.Name == uk.Name))
         {
             for (var i = 0; i < list.Count; i++)
             {
