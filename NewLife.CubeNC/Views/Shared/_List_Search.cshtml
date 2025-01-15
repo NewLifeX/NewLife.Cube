@@ -10,13 +10,6 @@
     var fi = fact.MasterTime;
     var fields = ViewBag.SearchFields as FieldCollection;
 
-    // var builder = new SearchBuilder(fact.Table.DataTable);
-    // var columns = builder.GetColumns() as List<IDataColumn>;
-    // if (columns.Any(e => e.Name.EqualIgnoreCase("DistrictId")))
-    //     columns.RemoveAll(e => e.Name.EqualIgnoreCase("ProvinceId", "CityId"));
-    // if (columns.Any(e => e.Name.EqualIgnoreCase("CityId")))
-    //     columns.RemoveAll(e => e.Name.EqualIgnoreCase("ProvinceId"));
-
     var dic = new Dictionary<Int32, String>();
     dic[1] = "是";
     dic[0] = "否";
@@ -28,7 +21,11 @@
 @foreach (SearchField field in fields)
 {
     var name = field.Name.ToLower();
-    if (field.Name.EqualIgnoreCase("Enable") && field.Type == typeof(Boolean))
+    if (!field.View.IsNullOrEmpty())
+    {
+        @await Html.PartialAsync(field.View, field)
+    }
+    else if (field.Name.EqualIgnoreCase("Enable") && field.Type == typeof(Boolean))
     {
         @await Html.PartialAsync("_Enable")
     }

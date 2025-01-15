@@ -508,9 +508,11 @@ public partial class EntityController<TEntity, TModel>
 
     TEntity CopyFrom(TEntity entity, IModel source, IList<FieldItem> fields)
     {
+        if (fields == null || fields.Count == 0) return entity;
+
         foreach (var fi in fields)
         {
-            entity.SetItem(fi.Name, source[fi.Name]);
+            if (fi != null) entity.SetItem(fi.Name, source[fi.Name]);
         }
 
         return entity;
