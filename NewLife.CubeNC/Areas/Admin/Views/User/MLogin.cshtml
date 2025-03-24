@@ -254,37 +254,37 @@
       <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <script src="@res/js/md5.js"></script>
+    <script src="@res/js/jsencrypt.min.js"></script>
 
-    <script type="text/javascript">
-        function md5_plain(p) {
-            var pass = p.val();
-            if (pass) {
-                pass = md5(pass);
-                p.val(pass);
-            }
-        }
+    <script>
+        $(function () {
+            $("#login-btn").click(function () {
+                var username = $("#username").val();
+                var password = $("#password").val();
 
-        function md5_salt(p) {
-            var pass = p.val();
-            if (pass) {
-                pass = md5(pass);
-                var salt = randomString(32);
-                //var salt = new Date().getTime() + '';
-                pass = md5(pass + salt) + ':' + salt;
-                p.val(pass);
-            }
-        }
+                if(username == ''){
+                    alert('请输入用户名');
+                    return;
+                }
+                if(password == ''){
+                    alert('请输入密码');
+                    return;
+                }
 
-        function randomString(length) {
-            var x = "0123456789qwertyuioplkjhgfdsazxcvbnm";
-            var str = "";
-            for (var i = 0; i < length; i++) {
-                str += x.charAt(Math.ceil(Math.random() * 100000000) % x.length);
+                var resultPWD=encryptPwd(password);
+
+                $('#pwd').val(resultPWD);
+                $("#cube-login").submit();
+            });
+
+            function encryptPwd(p) {
+                var rsa = new JSEncrypt();
+                rsa.setPublicKey($('#pkey_container').val());
+
+                return rsa.encrypt(p);
             }
-            return str;
-        }
+        });
     </script>
-
 </body>
 @await Html.PartialAsync("_Footer")
 </html>

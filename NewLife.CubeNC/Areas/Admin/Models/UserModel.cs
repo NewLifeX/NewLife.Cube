@@ -30,6 +30,11 @@ public class LoginModel : ICubeModel
     /// 记住登录状态
     /// </summary>
     public Boolean Remember { get; set; }
+
+    /// <summary>
+    /// 秘钥key
+    /// </summary>
+    public String Pkey { get; set; }
 }
 
 

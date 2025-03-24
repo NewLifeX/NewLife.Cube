@@ -6,6 +6,10 @@
 
     //var returnUrl = (String)ViewBag.ReturnUrl;
     //var url = Url.Action("Login", "User", new { r = returnUrl });
+
+    var pDic = ViewData["pKey"] == null ? new KeyValuePair<string, string>() : (KeyValuePair<String, String>)ViewData["pKey"];
+    var key = pDic.Key;
+    var value = pDic.Value;
 }
 <div class="tab-pane fade in active" id="Login">
     <!-- Logo-->
@@ -20,17 +24,23 @@
         }
     </div>
     <!-- 登录-->
-    <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login" method="post">
+    <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" id="cube-login">
+        <input id="pkey_container" style="display:none;" value="@value" />
         @Html.ValidationSummary()
         <span class="heading text-primary">@set.DisplayName 登录</span>
         @if (set.AllowLogin)
         {
             <div class="form-group">
+                <input type="text" class="form-control" name="pubKey" style="display:none" />
+            </div>
+            <div class="form-group">
                 <input type="text" class="form-control" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码">
                 <i class="glyphicon glyphicon-user"></i>
             </div>
             <div class="form-group">
-                <input type="password" class="form-control" id="password" name="password" placeholder="密码" autocomplete="off">
+                <input name="pkey" value="@key" style="display:none;" />
+                <input type="password" class="form-control" id="password" placeholder="密码" autocomplete="off">
+                <input id="pwd" style="display:none" name="password" />
                 <i class="glyphicon glyphicon-lock"></i>
                 @*<a href="#Forgot" data-toggle="tab" class="glyphicon glyphicon-question-sign"></a>*@
             </div>
@@ -65,7 +75,8 @@
                     @*</div>
                         </div>*@
                 }
-                <button type="submit" class="btn btn-default" style="margin: 5px 0 15px 0;width: 100%;">登录</button>
+                @* <button type="submit" class="btn btn-default" style="margin: 5px 0 15px 0;width: 100%;">登录</button> *@
+                <a id="login-btn" href="#" class="btn btn-default" style="margin: 5px 0 15px 0;width: 100%;position:relative;color:white;font-size:14px;">登录</a>
             </div>
 
             @if (!set.LoginTip.IsNullOrEmpty())
