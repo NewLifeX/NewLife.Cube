@@ -23,7 +23,13 @@
     var name = field.Name.ToLower();
     if (!field.View.IsNullOrEmpty())
     {
-        @await Html.PartialAsync(field.View, field)
+        <div class="form-group">
+            @if (!field.DisplayName.IsNullOrEmpty())
+            {
+                <label for="@name" class="control-label">@field.DisplayName：</label>
+            }
+            @await Html.PartialAsync(field.View, field)
+        </div>
     }
     else if (field.Name.EqualIgnoreCase("Enable") && field.Type == typeof(Boolean))
     {
