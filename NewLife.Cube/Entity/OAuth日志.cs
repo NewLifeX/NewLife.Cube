@@ -21,7 +21,7 @@ namespace NewLife.Cube.Entity;
 [BindIndex("IX_OAuthLog_ConnectId", false, "ConnectId")]
 [BindIndex("IX_OAuthLog_UserId", false, "UserId")]
 [BindTable("OAuthLog", Description = "OAuth日志。用于记录OAuth客户端请求，同时Id作为state，避免向OAuthServer泄漏本机Url", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class OAuthLog
+public partial class OAuthLog : IEntity<OAuthLogModel>
 {
     #region 属性
     private Int64 _Id;
@@ -171,6 +171,32 @@ public partial class OAuthLog
     [DataObjectField(false, false, true, 0)]
     [BindColumn("UpdateTime", "更新时间", "")]
     public DateTime UpdateTime { get => _UpdateTime; set { if (OnPropertyChanging("UpdateTime", value)) { _UpdateTime = value; OnPropertyChanged("UpdateTime"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(OAuthLogModel model)
+    {
+        Id = model.Id;
+        Provider = model.Provider;
+        ConnectId = model.ConnectId;
+        UserId = model.UserId;
+        Action = model.Action;
+        Success = model.Success;
+        RedirectUri = model.RedirectUri;
+        ResponseType = model.ResponseType;
+        Scope = model.Scope;
+        State = model.State;
+        Source = model.Source;
+        AccessToken = model.AccessToken;
+        RefreshToken = model.RefreshToken;
+        TraceId = model.TraceId;
+        Remark = model.Remark;
+        CreateIP = model.CreateIP;
+        CreateTime = model.CreateTime;
+        UpdateTime = model.UpdateTime;
+    }
     #endregion
 
     #region 获取/设置 字段值

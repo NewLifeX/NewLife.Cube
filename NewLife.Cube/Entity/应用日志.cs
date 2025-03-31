@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("应用日志。用于OAuthServer的子系统")]
 [BindIndex("IX_AppLog_AppId", false, "AppId")]
 [BindTable("AppLog", Description = "应用日志。用于OAuthServer的子系统", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class AppLog
+public partial class AppLog : IEntity<AppLogModel>
 {
     #region 属性
     private Int64 _Id;
@@ -171,6 +171,32 @@ public partial class AppLog
     [DataObjectField(false, false, true, 2000)]
     [BindColumn("Remark", "备注", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(AppLogModel model)
+    {
+        Id = model.Id;
+        AppId = model.AppId;
+        Action = model.Action;
+        Success = model.Success;
+        ClientId = model.ClientId;
+        RedirectUri = model.RedirectUri;
+        ResponseType = model.ResponseType;
+        Scope = model.Scope;
+        State = model.State;
+        AccessToken = model.AccessToken;
+        RefreshToken = model.RefreshToken;
+        TraceId = model.TraceId;
+        CreateUser = model.CreateUser;
+        CreateIP = model.CreateIP;
+        CreateTime = model.CreateTime;
+        UpdateIP = model.UpdateIP;
+        UpdateTime = model.UpdateTime;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

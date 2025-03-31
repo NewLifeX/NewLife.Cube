@@ -8,7 +8,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>OAuth配置</summary>
 [AdminArea]
 [Menu(0, false)]
-public class OAuthConfigController : EntityController<OAuthConfig>
+public class OAuthConfigController : EntityController<OAuthConfig, OAuthConfigModel>
 {
     static OAuthConfigController()
     {

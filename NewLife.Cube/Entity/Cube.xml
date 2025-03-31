@@ -22,7 +22,7 @@
     <!--数据库连接名-->
     <ConnName>Cube</ConnName>
     <!--模型类模版。设置后生成模型类，用于接口数据传输，例如{name}Model-->
-    <ModelClass />
+    <ModelClass>{name}Model</ModelClass>
     <!--模型类输出目录。默认当前目录的Models子目录-->
     <ModelsOutput>.\Models\</ModelsOutput>
     <!--模型接口模版。设置后生成模型接口，用于约束模型类和实体类，例如I{name}-->

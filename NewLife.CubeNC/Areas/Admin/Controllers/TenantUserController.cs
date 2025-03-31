@@ -10,7 +10,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 /// <summary>租户关系</summary>
 [AdminArea]
 [Menu(10, false, Icon = "fa-users", Mode = MenuModes.Admin | MenuModes.Tenant)]
-public class TenantUserController : EntityController<TenantUser>
+public class TenantUserController : EntityController<TenantUser, TenantUserModel>
 {
     static TenantUserController()
     {

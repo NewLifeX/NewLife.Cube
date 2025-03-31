@@ -1,13 +1,8 @@
-﻿using System.Collections;
-using System.ComponentModel;
-using System.Linq.Expressions;
-using System.Reflection;
+﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
-using NewLife.Reflection;
-using NewLife.Serialization;
 using NewLife.Threading;
 using XCode;
 using XCode.Membership;
@@ -17,7 +12,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 /// <summary>定时任务</summary>
 [CubeArea]
 [Menu(35, true, Icon = "fa-clock-o")]
-public class CronJobController : EntityController<CronJob>
+public class CronJobController : EntityController<CronJob, CronJobModel>
 {
     static CronJobController()
     {

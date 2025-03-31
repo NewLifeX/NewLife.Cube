@@ -21,7 +21,7 @@ namespace NewLife.Cube.Entity;
 [BindIndex("IX_Attachment_FilePath", false, "FilePath")]
 [BindIndex("IX_Attachment_Extension", false, "Extension")]
 [BindTable("Attachment", Description = "附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class Attachment
+public partial class Attachment : IEntity<AttachmentModel>
 {
     #region 属性
     private Int64 _Id;
@@ -225,6 +225,38 @@ public partial class Attachment
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "备注", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(AttachmentModel model)
+    {
+        Id = model.Id;
+        Category = model.Category;
+        Key = model.Key;
+        Title = model.Title;
+        FileName = model.FileName;
+        Extension = model.Extension;
+        Size = model.Size;
+        ContentType = model.ContentType;
+        FilePath = model.FilePath;
+        Hash = model.Hash;
+        Enable = model.Enable;
+        UploadTime = model.UploadTime;
+        Url = model.Url;
+        Source = model.Source;
+        TraceId = model.TraceId;
+        CreateUser = model.CreateUser;
+        CreateUserID = model.CreateUserID;
+        CreateIP = model.CreateIP;
+        CreateTime = model.CreateTime;
+        UpdateUser = model.UpdateUser;
+        UpdateUserID = model.UpdateUserID;
+        UpdateIP = model.UpdateIP;
+        UpdateTime = model.UpdateTime;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

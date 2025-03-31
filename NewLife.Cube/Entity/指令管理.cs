@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("指令管理")]
 [BindIndex("IU_OrderManager_Code", true, "Code")]
 [BindTable("OrderManager", Description = "指令管理", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class OrderManager
+public partial class OrderManager : IEntity<OrderManagerModel>
 {
     #region 属性
     private Int32 _Id;
@@ -172,6 +172,32 @@ public partial class OrderManager
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "内容", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(OrderManagerModel model)
+    {
+        Id = model.Id;
+        Name = model.Name;
+        Code = model.Code;
+        OptCategory = model.OptCategory;
+        Enable = model.Enable;
+        Data = model.Data;
+        DataType = model.DataType;
+        Url = model.Url;
+        Method = model.Method;
+        ValueField = model.ValueField;
+        LabelField = model.LabelField;
+        CreateUserId = model.CreateUserId;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserId = model.UpdateUserId;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

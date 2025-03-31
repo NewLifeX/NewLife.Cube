@@ -105,7 +105,9 @@ public partial class EntityController<TEntity, TModel>
         {
             entity = Factory.Create(true) as TEntity;
 
-            if (model is IModel src)
+            if (entity is IEntity<TModel> entity2)
+                entity2.Copy(model);
+            else if (model is IModel src)
                 entity.CopyFrom(src, true);
             else
                 entity.Copy(model);
@@ -209,7 +211,9 @@ public partial class EntityController<TEntity, TModel>
             // 先查出来，再拷贝。这里没有考虑脏数据的问题，有可能拷贝后并没有脏数据
             entity = FindData(key);
 
-            if (model is IModel src)
+            if (entity is IEntity<TModel> entity2)
+                entity2.Copy(model);
+            else if (model is IModel src)
                 entity.CopyFrom(src, true);
             else
                 entity.Copy(model, false, uk.Name);

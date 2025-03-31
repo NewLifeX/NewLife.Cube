@@ -9,7 +9,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 [DisplayName("应用系统")]
 [CubeArea]
 [Menu(38, true, Icon = "fa-star")]
-public class AppController : EntityController<App>
+public class AppController : EntityController<App, AppModel>
 {
     static AppController()
     {

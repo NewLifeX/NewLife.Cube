@@ -9,7 +9,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 /// <summary>应用插件管理</summary>
 [CubeArea]
 [Menu(36)]
-public class AppModuleController : EntityController<AppModule>
+public class AppModuleController : EntityController<AppModule, AppModuleModel>
 {
     static AppModuleController()
     {

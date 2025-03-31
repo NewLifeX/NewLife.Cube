@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("应用系统。用于OAuthServer的子系统")]
 [BindIndex("IU_OAuthApp_Name", true, "Name")]
 [BindTable("OAuthApp", Description = "应用系统。用于OAuthServer的子系统", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class App
+public partial class App : IEntity<AppModel>
 {
     #region 属性
     private Int32 _Id;
@@ -230,6 +230,39 @@ public partial class App
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "内容", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(AppModel model)
+    {
+        Id = model.Id;
+        Name = model.Name;
+        DisplayName = model.DisplayName;
+        Secret = model.Secret;
+        Category = model.Category;
+        Enable = model.Enable;
+        HomePage = model.HomePage;
+        Logo = model.Logo;
+        White = model.White;
+        Black = model.Black;
+        TokenExpire = model.TokenExpire;
+        Urls = model.Urls;
+        RoleIds = model.RoleIds;
+        Scopes = model.Scopes;
+        OAuths = model.OAuths;
+        Expired = model.Expired;
+        Auths = model.Auths;
+        LastAuth = model.LastAuth;
+        CreateUserID = model.CreateUserID;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserID = model.UpdateUserID;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

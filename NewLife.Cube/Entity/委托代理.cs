@@ -20,7 +20,7 @@ namespace NewLife.Cube.Entity;
 [BindIndex("IX_PrincipalAgent_PrincipalId", false, "PrincipalId")]
 [BindIndex("IX_PrincipalAgent_AgentId", false, "AgentId")]
 [BindTable("PrincipalAgent", Description = "委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class PrincipalAgent
+public partial class PrincipalAgent : IEntity<PrincipalAgentModel>
 {
     #region 属性
     private Int32 _Id;
@@ -133,6 +133,27 @@ public partial class PrincipalAgent
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "内容", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(PrincipalAgentModel model)
+    {
+        Id = model.Id;
+        PrincipalId = model.PrincipalId;
+        AgentId = model.AgentId;
+        Enable = model.Enable;
+        Times = model.Times;
+        Expire = model.Expire;
+        CreateUserId = model.CreateUserId;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserId = model.UpdateUserId;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
@@ -12,7 +11,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 [DisplayName("地区")]
 [CubeArea]
 [Menu(50, true, Icon = "fa-area-chart")]
-public class AreaController : EntityController<Area>
+public class AreaController : EntityController<Area, AreaModel>
 {
     static AreaController()
     {

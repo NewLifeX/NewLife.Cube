@@ -20,7 +20,7 @@ namespace NewLife.Cube.Entity;
 [BindIndex("IU_UserToken_Token", true, "Token")]
 [BindIndex("IX_UserToken_UserID", false, "UserID")]
 [BindTable("UserToken", Description = "用户令牌。授权指定用户访问接口数据，支持有效期", ConnName = "Membership", DbType = DatabaseType.None)]
-public partial class UserToken
+public partial class UserToken : IEntity<UserTokenModel>
 {
     #region 属性
     private Int32 _ID;
@@ -173,6 +173,32 @@ public partial class UserToken
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "备注", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(UserTokenModel model)
+    {
+        ID = model.ID;
+        Token = model.Token;
+        Url = model.Url;
+        UserID = model.UserID;
+        Expire = model.Expire;
+        Enable = model.Enable;
+        Times = model.Times;
+        FirstIP = model.FirstIP;
+        FirstTime = model.FirstTime;
+        LastIP = model.LastIP;
+        LastTime = model.LastTime;
+        CreateUserID = model.CreateUserID;
+        CreateIP = model.CreateIP;
+        CreateTime = model.CreateTime;
+        UpdateUserID = model.UpdateUserID;
+        UpdateIP = model.UpdateIP;
+        UpdateTime = model.UpdateTime;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

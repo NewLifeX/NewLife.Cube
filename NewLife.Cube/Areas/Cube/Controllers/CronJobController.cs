@@ -11,7 +11,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 /// <summary>定时任务</summary>
 [CubeArea]
 [Menu(35, true, Icon = "fa-clock-o")]
-public class CronJobController : EntityController<CronJob>
+public class CronJobController : EntityController<CronJob, CronJobModel>
 {
     static CronJobController()
     {

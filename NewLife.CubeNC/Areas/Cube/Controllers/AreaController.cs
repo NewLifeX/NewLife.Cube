@@ -4,7 +4,6 @@ using NewLife.Cube.Charts;
 using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
-using XCode.Configuration;
 using XCode.Membership;
 using static XCode.Membership.Area;
 
@@ -14,7 +13,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 [DisplayName("地区")]
 [CubeArea]
 [Menu(50, true, Icon = "fa-area-chart")]
-public class AreaController : EntityController<Area>
+public class AreaController : EntityController<Area, AreaModel>
 {
     static AreaController()
     {

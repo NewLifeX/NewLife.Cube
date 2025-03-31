@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("应用插件。基于魔方实现的应用功能插件")]
 [BindIndex("IU_AppModule_Type_Name", true, "Type,Name")]
 [BindTable("AppModule", Description = "应用插件。基于魔方实现的应用功能插件", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class AppModule
+public partial class AppModule : IEntity<AppModuleModel>
 {
     #region 属性
     private Int32 _Id;
@@ -158,6 +158,22 @@ public partial class AppModule
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "描述", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(AppModuleModel model)
+    {
+        Id = model.Id;
+        Name = model.Name;
+        DisplayName = model.DisplayName;
+        Type = model.Type;
+        ClassName = model.ClassName;
+        FilePath = model.FilePath;
+        Enable = model.Enable;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

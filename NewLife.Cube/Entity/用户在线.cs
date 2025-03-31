@@ -21,7 +21,7 @@ namespace NewLife.Cube.Entity;
 [BindIndex("IX_UserOnline_SessionID", false, "SessionID")]
 [BindIndex("IX_UserOnline_CreateTime", false, "CreateTime")]
 [BindTable("UserOnline", Description = "用户在线", ConnName = "Log", DbType = DatabaseType.None)]
-public partial class UserOnline
+public partial class UserOnline : IEntity<UserOnlineModel>
 {
     #region 属性
     private Int32 _ID;
@@ -204,6 +204,36 @@ public partial class UserOnline
     [DataObjectField(false, false, false, 0)]
     [BindColumn("UpdateTime", "修改时间", "")]
     public DateTime UpdateTime { get => _UpdateTime; set { if (OnPropertyChanging("UpdateTime", value)) { _UpdateTime = value; OnPropertyChanged("UpdateTime"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(UserOnlineModel model)
+    {
+        ID = model.ID;
+        UserID = model.UserID;
+        Name = model.Name;
+        SessionID = model.SessionID;
+        OAuthProvider = model.OAuthProvider;
+        Times = model.Times;
+        Page = model.Page;
+        Platform = model.Platform;
+        OS = model.OS;
+        Device = model.Device;
+        Brower = model.Brower;
+        NetType = model.NetType;
+        DeviceId = model.DeviceId;
+        Status = model.Status;
+        OnlineTime = model.OnlineTime;
+        LastError = model.LastError;
+        Address = model.Address;
+        TraceId = model.TraceId;
+        CreateIP = model.CreateIP;
+        CreateTime = model.CreateTime;
+        UpdateIP = model.UpdateIP;
+        UpdateTime = model.UpdateTime;
+    }
     #endregion
 
     #region 获取/设置 字段值

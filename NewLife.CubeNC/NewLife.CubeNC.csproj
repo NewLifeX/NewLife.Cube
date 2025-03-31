@@ -68,6 +68,22 @@
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController2.cs" Link="Common\ReadOnlyEntityController2.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\AppModel.cs" Link="Entity\Models\AppModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\AppModuleModel.cs" Link="Entity\Models\AppModuleModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\AttachmentModel.cs" Link="Entity\Models\AttachmentModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\CronJobModel.cs" Link="Entity\Models\CronJobModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\ModelColumnModel.cs" Link="Entity\Models\ModelColumnModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\ModelTableModel.cs" Link="Entity\Models\ModelTableModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\OAuthConfigModel.cs" Link="Entity\Models\OAuthConfigModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\OAuthLogModel.cs" Link="Entity\Models\OAuthLogModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\OrderManagerModel.cs" Link="Entity\Models\OrderManagerModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\PrincipalAgentModel.cs" Link="Entity\Models\PrincipalAgentModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\UserConnectModel.cs" Link="Entity\Models\UserConnectModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\UserOnlineModel.cs" Link="Entity\Models\UserOnlineModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\UserStatModel.cs" Link="Entity\Models\UserStatModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\UserTokenModel.cs" Link="Entity\Models\UserTokenModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />

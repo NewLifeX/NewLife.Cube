@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("模型列。实体表的数据列")]
 [BindIndex("IU_ModelColumn_TableId_Name", true, "TableId,Name")]
 [BindTable("ModelColumn", Description = "模型列。实体表的数据列", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class ModelColumn
+public partial class ModelColumn : IEntity<ModelColumnModel>
 {
     #region 属性
     private Int32 _Id;
@@ -299,6 +299,48 @@ public partial class ModelColumn
     [DataObjectField(false, false, true, 50)]
     [BindColumn("UpdateIP", "更新地址", "")]
     public String UpdateIP { get => _UpdateIP; set { if (OnPropertyChanging("UpdateIP", value)) { _UpdateIP = value; OnPropertyChanged("UpdateIP"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(ModelColumnModel model)
+    {
+        Id = model.Id;
+        TableId = model.TableId;
+        Name = model.Name;
+        DisplayName = model.DisplayName;
+        Enable = model.Enable;
+        DataType = model.DataType;
+        ItemType = model.ItemType;
+        PrimaryKey = model.PrimaryKey;
+        Master = model.Master;
+        Length = model.Length;
+        Nullable = model.Nullable;
+        IsDataObjectField = model.IsDataObjectField;
+        Description = model.Description;
+        ShowInList = model.ShowInList;
+        ShowInAddForm = model.ShowInAddForm;
+        ShowInEditForm = model.ShowInEditForm;
+        ShowInDetailForm = model.ShowInDetailForm;
+        ShowInSearch = model.ShowInSearch;
+        Sort = model.Sort;
+        Width = model.Width;
+        CellText = model.CellText;
+        CellTitle = model.CellTitle;
+        CellUrl = model.CellUrl;
+        HeaderText = model.HeaderText;
+        HeaderTitle = model.HeaderTitle;
+        HeaderUrl = model.HeaderUrl;
+        DataAction = model.DataAction;
+        DataSource = model.DataSource;
+        CreateUserId = model.CreateUserId;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserId = model.UpdateUserId;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+    }
     #endregion
 
     #region 获取/设置 字段值

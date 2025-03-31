@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("定时作业。定时执行任务")]
 [BindIndex("IU_CronJob_Name", true, "Name")]
 [BindTable("CronJob", Description = "定时作业。定时执行任务", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class CronJob
+public partial class CronJob : IEntity<CronJobModel>
 {
     #region 属性
     private Int32 _Id;
@@ -172,6 +172,32 @@ public partial class CronJob
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "内容", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(CronJobModel model)
+    {
+        Id = model.Id;
+        Name = model.Name;
+        DisplayName = model.DisplayName;
+        Cron = model.Cron;
+        Method = model.Method;
+        Argument = model.Argument;
+        Data = model.Data;
+        Enable = model.Enable;
+        EnableLog = model.EnableLog;
+        LastTime = model.LastTime;
+        NextTime = model.NextTime;
+        CreateUserID = model.CreateUserID;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserID = model.UpdateUserID;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("访问规则。控制系统访问的安全访问规则，放行或拦截或限流")]
 [BindIndex("IU_AccessRule_Name", true, "Name")]
 [BindTable("AccessRule", Description = "访问规则。控制系统访问的安全访问规则，放行或拦截或限流", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class AccessRule
+public partial class AccessRule : IEntity<AccessRuleModel>
 {
     #region 属性
     private Int32 _Id;
@@ -196,6 +196,35 @@ public partial class AccessRule
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "内容", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(AccessRuleModel model)
+    {
+        Id = model.Id;
+        Name = model.Name;
+        Enable = model.Enable;
+        Priority = model.Priority;
+        Url = model.Url;
+        UserAgent = model.UserAgent;
+        IP = model.IP;
+        LoginedUser = model.LoginedUser;
+        ActionKind = model.ActionKind;
+        BlockCode = model.BlockCode;
+        BlockContent = model.BlockContent;
+        LimitDimension = model.LimitDimension;
+        LimitCycle = model.LimitCycle;
+        LimitTimes = model.LimitTimes;
+        CreateUserID = model.CreateUserID;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserID = model.UpdateUserID;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

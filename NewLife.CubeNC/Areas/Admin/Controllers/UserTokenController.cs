@@ -13,7 +13,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Description("授权指定用户访问接口数据，支持有效期")]
 [AdminArea]
 [Menu(0, false)]
-public class UserTokenController : EntityController<UserToken>
+public class UserTokenController : EntityController<UserToken, UserTokenModel>
 {
     /// <summary>已重载。</summary>
     /// <param name="filterContext"></param>

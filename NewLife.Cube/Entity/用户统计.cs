@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("用户统计")]
 [BindIndex("IU_UserStat_Date", true, "Date")]
 [BindTable("UserStat", Description = "用户统计", ConnName = "Membership", DbType = DatabaseType.None)]
-public partial class UserStat
+public partial class UserStat : IEntity<UserStatModel>
 {
     #region 属性
     private Int32 _ID;
@@ -152,6 +152,30 @@ public partial class UserStat
     [DataObjectField(false, false, true, 1000)]
     [BindColumn("Remark", "详细信息", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(UserStatModel model)
+    {
+        ID = model.ID;
+        Date = model.Date;
+        Total = model.Total;
+        Logins = model.Logins;
+        OAuths = model.OAuths;
+        MaxOnline = model.MaxOnline;
+        Actives = model.Actives;
+        ActivesT7 = model.ActivesT7;
+        ActivesT30 = model.ActivesT30;
+        News = model.News;
+        NewsT7 = model.NewsT7;
+        NewsT30 = model.NewsT30;
+        OnlineTime = model.OnlineTime;
+        CreateTime = model.CreateTime;
+        UpdateTime = model.UpdateTime;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

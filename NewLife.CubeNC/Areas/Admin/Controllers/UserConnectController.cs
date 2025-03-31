@@ -14,7 +14,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Description("第三方登录信息")]
 [AdminArea]
 [Menu(0, false)]
-public class UserConnectController : EntityController<UserConnect>
+public class UserConnectController : EntityController<UserConnect, UserConnectModel>
 {
     static UserConnectController()
     {

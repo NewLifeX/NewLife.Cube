@@ -23,7 +23,7 @@ namespace NewLife.Cube.Entity;
 [BindIndex("IX_UserConnect_UnionID", false, "UnionID")]
 [BindIndex("IX_UserConnect_DeviceId", false, "DeviceId")]
 [BindTable("UserConnect", Description = "用户链接。第三方绑定", ConnName = "Membership", DbType = DatabaseType.None)]
-public partial class UserConnect
+public partial class UserConnect : IEntity<UserConnectModel>
 {
     #region 属性
     private Int32 _ID;
@@ -192,6 +192,34 @@ public partial class UserConnect
     [DataObjectField(false, false, true, 5000)]
     [BindColumn("Remark", "备注", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(UserConnectModel model)
+    {
+        ID = model.ID;
+        Provider = model.Provider;
+        UserID = model.UserID;
+        OpenID = model.OpenID;
+        UnionID = model.UnionID;
+        LinkID = model.LinkID;
+        NickName = model.NickName;
+        DeviceId = model.DeviceId;
+        Avatar = model.Avatar;
+        AccessToken = model.AccessToken;
+        RefreshToken = model.RefreshToken;
+        Expire = model.Expire;
+        Enable = model.Enable;
+        CreateUserID = model.CreateUserID;
+        CreateIP = model.CreateIP;
+        CreateTime = model.CreateTime;
+        UpdateUserID = model.UpdateUserID;
+        UpdateIP = model.UpdateIP;
+        UpdateTime = model.UpdateTime;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值

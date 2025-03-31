@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("模型表。实体表模型")]
 [BindIndex("IU_ModelTable_Category_Name", true, "Category,Name")]
 [BindTable("ModelTable", Description = "模型表。实体表模型", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class ModelTable
+public partial class ModelTable : IEntity<ModelTableModel>
 {
     #region 属性
     private Int32 _Id;
@@ -163,6 +163,31 @@ public partial class ModelTable
     [DataObjectField(false, false, true, 50)]
     [BindColumn("UpdateIP", "更新地址", "")]
     public String UpdateIP { get => _UpdateIP; set { if (OnPropertyChanging("UpdateIP", value)) { _UpdateIP = value; OnPropertyChanged("UpdateIP"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(ModelTableModel model)
+    {
+        Id = model.Id;
+        Category = model.Category;
+        Name = model.Name;
+        DisplayName = model.DisplayName;
+        Enable = model.Enable;
+        Url = model.Url;
+        Controller = model.Controller;
+        TableName = model.TableName;
+        ConnName = model.ConnName;
+        InsertOnly = model.InsertOnly;
+        Description = model.Description;
+        CreateUserId = model.CreateUserId;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserId = model.UpdateUserId;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+    }
     #endregion
 
     #region 获取/设置 字段值

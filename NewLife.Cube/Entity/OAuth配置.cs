@@ -19,7 +19,7 @@ namespace NewLife.Cube.Entity;
 [Description("OAuth配置。需要连接的OAuth认证方")]
 [BindIndex("IU_OAuthConfig_Name", true, "Name")]
 [BindTable("OAuthConfig", Description = "OAuth配置。需要连接的OAuth认证方", ConnName = "Cube", DbType = DatabaseType.None)]
-public partial class OAuthConfig
+public partial class OAuthConfig : IEntity<OAuthConfigModel>
 {
     #region 属性
     private Int32 _ID;
@@ -276,6 +276,45 @@ public partial class OAuthConfig
     [DataObjectField(false, false, true, 500)]
     [BindColumn("Remark", "内容", "")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
+    #endregion
+
+    #region 拷贝
+    /// <summary>拷贝模型对象</summary>
+    /// <param name="model">模型</param>
+    public void Copy(OAuthConfigModel model)
+    {
+        ID = model.ID;
+        Name = model.Name;
+        NickName = model.NickName;
+        Logo = model.Logo;
+        AppId = model.AppId;
+        Secret = model.Secret;
+        Server = model.Server;
+        AccessServer = model.AccessServer;
+        GrantType = model.GrantType;
+        Scope = model.Scope;
+        AuthUrl = model.AuthUrl;
+        AccessUrl = model.AccessUrl;
+        UserUrl = model.UserUrl;
+        AppUrl = model.AppUrl;
+        Enable = model.Enable;
+        Debug = model.Debug;
+        Visible = model.Visible;
+        AutoRegister = model.AutoRegister;
+        AutoRole = model.AutoRole;
+        Sort = model.Sort;
+        SecurityKey = model.SecurityKey;
+        FieldMap = model.FieldMap;
+        FetchAvatar = model.FetchAvatar;
+        IsDeleted = model.IsDeleted;
+        CreateUserID = model.CreateUserID;
+        CreateTime = model.CreateTime;
+        CreateIP = model.CreateIP;
+        UpdateUserID = model.UpdateUserID;
+        UpdateTime = model.UpdateTime;
+        UpdateIP = model.UpdateIP;
+        Remark = model.Remark;
+    }
     #endregion
 
     #region 获取/设置 字段值
