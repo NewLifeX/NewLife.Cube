@@ -205,7 +205,7 @@ public class CubeController : ControllerBaseX
             r.ParentID,
             r.Level,
             r.Path,
-            IdPath = r.AllParents.Where(e => e.ID > 0).Select(e => e.ID).Join("/"),
+            IdPath = r.GetAllParents().Where(e => e.ID > 0).Select(e => e.ID).Join("/"),
             r.ParentPath
         });
     }
@@ -238,7 +238,7 @@ public class CubeController : ControllerBaseX
         if (r == null) return Json(500, null, "找不到地区");
 
         var list = new List<Object>();
-        foreach (var e in r.AllParents)
+        foreach (var e in r.GetAllParents())
         {
             if (e.ID == 0) continue;
             if (r.ID == 0)
@@ -263,7 +263,7 @@ public class CubeController : ControllerBaseX
         if (r == null) return Json(500, null, "找不到地区");
 
         var rs = new List<AreaX>();
-        foreach (var item in r.AllParents)
+        foreach (var item in r.GetAllParents())
         {
             rs.AddRange(item.Parent.Childs.Where(e => e.Enable));
         }
