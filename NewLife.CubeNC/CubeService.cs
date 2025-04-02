@@ -125,6 +125,9 @@ public static class CubeService
             options.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
 
             options.MaxValidationDepth = 16;
+
+            // 添加实体验证元数据提供者，取消实体类的DataAnnotations验证
+            options.ModelMetadataDetailsProviders.Add(new EntityValidationMetadataProvider());
         });
 
         services.AddCustomApplicationParts();
