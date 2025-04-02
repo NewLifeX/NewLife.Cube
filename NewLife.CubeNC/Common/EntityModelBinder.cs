@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc.Controllers;
+﻿using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using NewLife.Collections;
 using NewLife.Cube.Common;
 using NewLife.Cube.Extensions;
@@ -8,22 +9,56 @@ using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
+using Expression = System.Linq.Expressions.Expression;
 
 namespace NewLife.Cube;
 
 /// <summary>实体模型绑定器</summary>
-class EntityModelBinder : ComplexTypeModelBinder
+/// <remarks>实例化实体模型绑定器</remarks>
+/// <param name="propertyBinders"></param>
+class EntityModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders) : IModelBinder
 {
-    /// <summary>实例化实体模型绑定器</summary>
-    /// <param name="propertyBinders"></param>
-    /// <param name="loggerFactory"></param>
-    public EntityModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders, ILoggerFactory loggerFactory)
-        : base(propertyBinders, loggerFactory) { }
+    private Func<Object> _modelCreator;
+
+    public async Task BindModelAsync(ModelBindingContext bindingContext)
+    {
+        bindingContext.Model ??= CreateModel(bindingContext);
+
+        var modelMetadata = bindingContext.ModelMetadata;
+        var attemptedPropertyBinding = false;
+        var propertyBindingSucceeded = false;
+        foreach (var property in modelMetadata.Properties)
+        {
+            if (!CanBindProperty(bindingContext, property)) continue;
+
+            var name = property.BinderModelName ?? property.PropertyName;
+            var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, name);
+            if ((await BindProperty(bindingContext, property, name, modelName)).IsModelSet)
+            {
+                attemptedPropertyBinding = true;
+                propertyBindingSucceeded = true;
+            }
+            else if (property.IsBindingRequired)
+            {
+                attemptedPropertyBinding = true;
+            }
+        }
+        if (!attemptedPropertyBinding && bindingContext.IsTopLevelObject && modelMetadata.IsBindingRequired)
+        {
+            var errorMessage = modelMetadata.ModelBindingMessageProvider.MissingBindRequiredValueAccessor(bindingContext.FieldName);
+            bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, errorMessage);
+        }
+
+        if (!bindingContext.IsTopLevelObject && !propertyBindingSucceeded)
+            bindingContext.Result = ModelBindingResult.Failed();
+        else
+            bindingContext.Result = ModelBindingResult.Success(bindingContext.Model);
+    }
 
     /// <summary>创建模型。对于有Key的请求，使用FindByKeyForEdit方法先查出来数据，而不是直接反射实例化实体对象</summary>
     /// <param name="bindingContext"></param>
     /// <returns></returns>
-    protected override Object CreateModel(ModelBindingContext bindingContext)
+    protected virtual Object CreateModel(ModelBindingContext bindingContext)
     {
         var modelType = bindingContext.ModelType;
         if (modelType.As<IEntity>() || modelType.As<IModel>())
@@ -46,10 +81,10 @@ class EntityModelBinder : ComplexTypeModelBinder
             // 强行绑定会出错记录在ModelState，在api中返回400错误，mvc不会
             bindingContext.ValueProvider = cubeBodyValueProvider;
         }
-        if (!modelType.As<IEntity>()) return base.CreateModel(bindingContext);
+        if (!modelType.As<IEntity>()) return CreateModel2(bindingContext);
 
         var fact = EntityFactory.CreateFactory(modelType);
-        if (fact == null) return base.CreateModel(bindingContext);
+        if (fact == null) return CreateModel2(bindingContext);
 
         var pks = fact.Table.PrimaryKeys;
         var uk = fact.Unique;
@@ -83,20 +118,77 @@ class EntityModelBinder : ComplexTypeModelBinder
         return entity ?? fact.Create(true);
     }
 
-    protected override Boolean CanBindProperty(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
+    private Object CreateModel2(ModelBindingContext bindingContext)
+    {
+        if (_modelCreator == null)
+        {
+            var modelType = bindingContext.ModelType;
+            if (modelType.IsAbstract || modelType.GetConstructor(Type.EmptyTypes) == null)
+            {
+                if (!bindingContext.IsTopLevelObject) throw new InvalidOperationException($"类型[{modelType.FullName}]缺少无参构造函数");
+            }
+            _modelCreator = Expression.Lambda<Func<Object>>(Expression.New(bindingContext.ModelType), Array.Empty<ParameterExpression>()).Compile();
+        }
+        return _modelCreator();
+    }
+
+    private async Task<ModelBindingResult> BindProperty(ModelBindingContext bindingContext, ModelMetadata property, String fieldName, String modelName)
+    {
+        Object model = null;
+        if (property.PropertyGetter != null && property.IsComplexType && !property.ModelType.IsArray)
+        {
+            model = property.PropertyGetter(bindingContext.Model);
+        }
+        ModelBindingResult result;
+        using (bindingContext.EnterNestedScope(property, fieldName, modelName, model))
+        {
+            await BindProperty(bindingContext);
+            result = bindingContext.Result;
+        }
+        if (result.IsModelSet)
+        {
+            SetProperty(bindingContext, modelName, property, result);
+        }
+        else if (property.IsBindingRequired)
+        {
+            var errorMessage = property.ModelBindingMessageProvider.MissingBindRequiredValueAccessor(fieldName);
+            bindingContext.ModelState.TryAddModelError(modelName, errorMessage);
+        }
+        return result;
+    }
+
+    protected virtual Boolean CanBindProperty(ModelBindingContext bindingContext, ModelMetadata propertyMetadata)
     {
         // 不要绑定复杂类型，那是扩展属性
         if (propertyMetadata.ModelType.GetTypeCode() == TypeCode.Object) return false;
 
-        return base.CanBindProperty(bindingContext, propertyMetadata);
+        var filter = bindingContext.ModelMetadata.PropertyFilterProvider?.PropertyFilter;
+        if (filter != null && !filter(propertyMetadata)) return false;
+
+        var propertyFilter = bindingContext.PropertyFilter;
+        if (propertyFilter != null && !propertyFilter(propertyMetadata)) return false;
+        if (!propertyMetadata.IsBindingAllowed) return false;
+
+        if (!CanUpdatePropertyInternal(propertyMetadata)) return false;
+
+        return true;
     }
+
+    internal static Boolean CanUpdatePropertyInternal(ModelMetadata propertyMetadata)
+    {
+        if (propertyMetadata.IsReadOnly) return CanUpdateReadOnlyProperty(propertyMetadata.ModelType);
+
+        return true;
+    }
+
+    private static Boolean CanUpdateReadOnlyProperty(Type propertyType) => !propertyType.IsValueType && !propertyType.IsArray && propertyType != typeof(String);
 
     /// <summary>
     /// 绑定属性，在这里赋值
     /// </summary>
     /// <param name="bindingContext"></param>
     /// <returns></returns>
-    protected override Task BindProperty(ModelBindingContext bindingContext)
+    protected virtual Task BindProperty(ModelBindingContext bindingContext)
     {
         var metadata = bindingContext.ModelMetadata;
 
@@ -111,7 +203,7 @@ class EntityModelBinder : ComplexTypeModelBinder
                 break;
         }
 
-        return base.BindProperty(bindingContext);
+        return propertyBinders[bindingContext.ModelMetadata].BindModelAsync(bindingContext);
     }
 
     /// <summary>
@@ -121,7 +213,7 @@ class EntityModelBinder : ComplexTypeModelBinder
     /// <param name="modelName"></param>
     /// <param name="propertyMetadata"></param>
     /// <param name="result"></param>
-    protected override void SetProperty(ModelBindingContext bindingContext, String modelName, ModelMetadata propertyMetadata, ModelBindingResult result)
+    protected virtual void SetProperty(ModelBindingContext bindingContext, String modelName, ModelMetadata propertyMetadata, ModelBindingResult result)
     {
         switch (propertyMetadata.ModelType.GetTypeCode())
         {
@@ -132,7 +224,29 @@ class EntityModelBinder : ComplexTypeModelBinder
                 break;
         }
 
-        base.SetProperty(bindingContext, modelName, propertyMetadata, result);
+        if (!result.IsModelSet || propertyMetadata.IsReadOnly) return;
+
+        var model = result.Model;
+        try
+        {
+            propertyMetadata.PropertySetter(bindingContext.Model, model);
+        }
+        catch (Exception exception)
+        {
+            AddModelError(exception, modelName, bindingContext);
+        }
+    }
+
+    private static void AddModelError(Exception exception, String modelName, ModelBindingContext bindingContext)
+    {
+        var ex = exception as TargetInvocationException;
+        if (ex?.InnerException != null) exception = ex.InnerException;
+
+        var modelState = bindingContext.ModelState;
+        if (modelState.GetFieldValidationState(modelName) == ModelValidationState.Unvalidated)
+        {
+            modelState.AddModelError(modelName, exception, bindingContext.ModelMetadata);
+        }
     }
 }
 
@@ -149,14 +263,13 @@ public class EntityModelBinderProvider : IModelBinderProvider
         if (!context.Metadata.ModelType.As<IEntity>() &&
             !context.Metadata.ModelType.As<IModel>()) return null;
 
-        var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
         var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
         foreach (var property in context.Metadata.Properties)
         {
             propertyBinders.Add(property, context.CreateBinder(property));
         }
 
-        return new EntityModelBinder(propertyBinders, loggerFactory);
+        return new EntityModelBinder(propertyBinders);
     }
 
     /// <summary>实例化</summary>

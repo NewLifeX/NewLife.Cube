@@ -114,15 +114,17 @@ public static class CubeService
             .AllowCredentials()
             .WithOrigins(set.CorsOrigins)));
 
-        services.Configure<MvcOptions>(opt =>
+        services.Configure<MvcOptions>(options =>
         {
-            opt.ModelBinderProviders.Insert(0, new JsonModelBinderProvider());
+            options.ModelBinderProviders.Insert(0, new JsonModelBinderProvider());
 
             // 分页器绑定
-            opt.ModelBinderProviders.Insert(0, new PagerModelBinderProvider());
+            options.ModelBinderProviders.Insert(0, new PagerModelBinderProvider());
 
             // 模型绑定
-            opt.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
+            options.ModelBinderProviders.Insert(0, new EntityModelBinderProvider());
+
+            options.MaxValidationDepth = 16;
         });
 
         services.AddCustomApplicationParts();
