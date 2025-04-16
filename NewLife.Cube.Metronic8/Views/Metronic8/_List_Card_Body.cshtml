@@ -70,7 +70,7 @@
 
                             case TypeCode.Single:
                             case TypeCode.Double:
-                                if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || fi.ItemType.EqualIgnoreCase("percent", "Percentage"))
+                                if (fi.ItemType.EqualIgnoreCase("percent", "Percentage"))
                                 {
                                     var dd = value.ToDouble();
                                     var des = fi.Description + "";
@@ -117,7 +117,7 @@
                                         <td>@value</td>
                                     }
                                 }
-                                else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio"))
+                                else if (fi.ItemType.EqualIgnoreCase("percent", "Percentage"))
                                 {
                                     var dd = Convert.ToDouble(value);
                                     var des = fi.Description + "";

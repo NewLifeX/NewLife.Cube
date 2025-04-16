@@ -102,7 +102,7 @@ else
                 var scale = item.Scale >= 2 ? item.Scale - 2 : 2;
                 <td class="@(tdClass ?? "text-center")">@dd.ToString("p" + scale)</td>
             }
-            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = value.ToDouble();
                 var scale = 0;
@@ -174,7 +174,7 @@ else
                     <td class="@(tdClass ?? "text-center")">@value</td>
                 }
             }
-            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = Convert.ToDouble(value);
                 var scale = 0;

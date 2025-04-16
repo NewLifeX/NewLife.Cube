@@ -84,7 +84,7 @@ else
                 var dd = value.ToDouble();
                 <td class="text-end">@dd.ToString("p2")</td>
             }
-            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = value.ToDouble();
                 var des = item.Description + "";
@@ -143,7 +143,7 @@ else
                     <td class="text-center">@value</td>
                 }
             }
-            else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+            else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = Convert.ToDouble(value);
                 var des = item.Description + "";

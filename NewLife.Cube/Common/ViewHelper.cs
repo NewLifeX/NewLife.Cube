@@ -246,7 +246,7 @@ public static class ViewHelper
                         break;
                     case TypeCode.Single:
                     case TypeCode.Double:
-                        if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+                        if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
                             var des = item.Description + "";
                             if (des.Contains("十分之一"))
@@ -277,7 +277,7 @@ public static class ViewHelper
                             sb.AppendFormat(@"<td class=""text-center"">@entity.{0}</td>", item.Name);
                         else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                             BuildUser(item, sb);
-                        else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+                        else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
                             var des = item.Description + "";
                             if (des.Contains("十分之一"))
@@ -364,7 +364,7 @@ public static class ViewHelper
                         break;
                     case TypeCode.Single:
                     case TypeCode.Double:
-                        if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+                        if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
                             var des = item.Description + "";
                             if (des.Contains("十分之一"))
@@ -396,7 +396,7 @@ public static class ViewHelper
                             sb.Append(@"<td></td>");
                         else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                             sb.Append(@"<td></td>");
-                        else if (name2.EndsWith("Rate") || name2.EndsWith("Ratio") || item.ItemType.EqualIgnoreCase("percent", "Percentage"))
+                        else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
                             var des = item.Description + "";
                             if (des.Contains("十分之一"))
