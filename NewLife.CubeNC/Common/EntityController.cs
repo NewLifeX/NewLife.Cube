@@ -616,34 +616,33 @@ public partial class EntityController<TEntity, TModel>
         var keys = SelectKeys;
         if (keys != null && keys.Length > 0)
         {
-            // 假删除
+            // 假删除与恢复。首次删除标记假删除，假删除后再删除则是真正删除
             var fi = GetDeleteField();
 
             using var tran = Entity<TEntity>.Meta.CreateTrans();
-            var list = new List<IEntity>();
+            var updates = new List<IEntity>();
+            var deletes = new List<IEntity>();
             foreach (var item in keys)
             {
                 var entity = Entity<TEntity>.FindByKey(item);
                 if (entity != null)
                 {
                     // 验证数据权限
-                    if (fi != null)
+                    if (fi != null && entity[fi.Name].ToBoolean())
                     {
                         entity.SetItem(fi.Name, true);
-                        if (Valid(entity, DataObjectMethodType.Update, true)) list.Add(entity);
+                        if (Valid(entity, DataObjectMethodType.Update, true)) updates.Add(entity);
                     }
                     else
                     {
-                        if (Valid(entity, DataObjectMethodType.Delete, true)) list.Add(entity);
+                        if (Valid(entity, DataObjectMethodType.Delete, true)) deletes.Add(entity);
                     }
                 }
             }
 
-            total = list.Count;
-            if (fi != null)
-                success = list.Update();
-            else
-                success = list.Delete();
+            total = updates.Count;
+            success += updates.Update();
+            success += deletes.Delete();
 
             tran.Commit();
         }
@@ -659,7 +658,7 @@ public partial class EntityController<TEntity, TModel>
     {
         var url = Request.GetReferer();
 
-        // 假删除
+        // 假删除与恢复。首次删除标记假删除，假删除后再删除则是真正删除
         var fi = GetDeleteField();
 
         var total = 0;
@@ -682,25 +681,24 @@ public partial class EntityController<TEntity, TModel>
                 total += data.Count;
 
                 using var tran = Entity<TEntity>.Meta.CreateTrans();
-                var list = new List<IEntity>();
+                var updates = new List<IEntity>();
+                var deletes = new List<IEntity>();
                 foreach (var entity in data)
                 {
                     // 验证数据权限
                     if (fi != null)
                     {
                         entity.SetItem(fi.Name, true);
-                        if (Valid(entity, DataObjectMethodType.Update, true)) list.Add(entity);
+                        if (Valid(entity, DataObjectMethodType.Update, true)) updates.Add(entity);
                     }
                     else
                     {
-                        if (Valid(entity, DataObjectMethodType.Delete, true)) list.Add(entity);
+                        if (Valid(entity, DataObjectMethodType.Delete, true)) deletes.Add(entity);
                     }
                 }
 
-                if (fi != null)
-                    success += list.Update();
-                else
-                    success += list.Delete();
+                success += updates.Update();
+                success += deletes.Delete();
                 tran.Commit();
             }
         }

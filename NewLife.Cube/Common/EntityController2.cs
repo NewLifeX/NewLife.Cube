@@ -26,10 +26,10 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     #region 默认Action
     private String ProcessDelete(TEntity entity)
     {
-        // 假删除与还原
+        // 假删除与恢复。首次删除标记假删除，假删除后再删除则是真正删除
         var act = "删除";
         var fi = GetDeleteField();
-        if (fi != null)
+        if (fi != null && entity[fi.Name].ToBoolean())
         {
             var restore = GetRequest("restore").ToBoolean();
             entity.SetItem(fi.Name, !restore);
