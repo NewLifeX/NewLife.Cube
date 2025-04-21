@@ -171,21 +171,34 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             foreach (var id in ids)
             {
                 var entity = Factory.Find("ID", id);
-                if (entity != null && entity["Enable"].ToBoolean() != isEnable)
+                if (OnSetField(entity as TEntity, "Enable", isEnable))
                 {
-                    entity.SetItem("Enable", isEnable);
-
                     log.WriteLog("Update", entity);
                     log.WriteLog(entity.GetType(), isEnable ? "Enable" : "Disable", true, reason);
 
-                    entity.Update();
-
-                    Interlocked.Increment(ref count);
+                    count += entity.Update();
                 }
             }
         }
 
         return count;
+    }
+
+    /// <summary>设置指定布尔型字段的值</summary>
+    /// <remarks>控制器可重载修改行为，例如设置启用禁用时，同步标记假删除</remarks>
+    /// <param name="entity">实体对象</param>
+    /// <param name="fieldName">字段名</param>
+    /// <param name="value">数值</param>
+    /// <returns></returns>
+    public virtual Boolean OnSetField(TEntity entity, String fieldName, Boolean value)
+    {
+        if (entity == null || entity[fieldName].ToBoolean() == value) return false;
+
+        if (!Valid(entity, DataObjectMethodType.Update, true)) return false;
+
+        entity.SetItem(fieldName, value);
+
+        return true;
     }
     #endregion
 

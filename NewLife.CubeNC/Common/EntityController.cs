@@ -576,12 +576,9 @@ public partial class EntityController<TEntity, TModel>
         var rs = 0;
         if (id > 0)
         {
-            var entity = FindData(id);
-            if (entity == null) throw new ArgumentNullException(nameof(id), "找不到任务 " + id);
+            var entity = FindData(id) ?? throw new ArgumentNullException(nameof(id), "找不到任务 " + id);
 
-            //entity.Enable = enable;
-            entity.SetItem(fi.Name, enable);
-            if (Valid(entity, DataObjectMethodType.Update, true))
+            if (OnSetField(entity, fi.Name, enable))
                 rs += OnUpdate(entity);
         }
         else
@@ -593,13 +590,12 @@ public partial class EntityController<TEntity, TModel>
                 var entity = FindData(item);
                 if (entity != null)
                 {
-                    //entity.Enable = enable;
-                    entity.SetItem(fi.Name, enable);
-                    if (Valid(entity, DataObjectMethodType.Update, true))
+                    if (OnSetField(entity, fi.Name, enable))
                         rs += OnUpdate(entity);
                 }
             }
         }
+
         return JsonRefresh($"操作成功！共更新[{rs}]行！");
     }
     #endregion
