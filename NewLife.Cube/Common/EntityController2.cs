@@ -29,16 +29,38 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         // 假删除与恢复。首次删除标记假删除，假删除后再删除则是真正删除
         var act = "删除";
         var fi = GetDeleteField();
-        if (fi != null && entity[fi.Name].ToBoolean())
+        if (fi != null)
         {
             var restore = GetRequest("restore").ToBoolean();
-            entity.SetItem(fi.Name, !restore);
-            if (restore) act = "恢复";
+            // 首次假删除
+            if (!entity[fi.Name].ToBoolean())
+            {
+                entity.SetItem(fi.Name, true);
 
-            if (!Valid(entity, DataObjectMethodType.Update, true))
-                throw new Exception("验证失败");
+                if (!Valid(entity, DataObjectMethodType.Update, true))
+                    throw new Exception("验证失败");
 
-            OnUpdate(entity);
+                OnUpdate(entity);
+            }
+            // 假删除时第二次提交，则执行恢复，或者没有启用二次删除
+            else if (restore || !PageSetting.DoubleDelete)
+            {
+                entity.SetItem(fi.Name, !restore);
+                if (restore) act = "恢复";
+
+                if (!Valid(entity, DataObjectMethodType.Update, true))
+                    throw new Exception("验证失败");
+
+                OnUpdate(entity);
+            }
+            // 假删除时第二次删除，则执行真正删除
+            else
+            {
+                if (!Valid(entity, DataObjectMethodType.Delete, true))
+                    throw new Exception("验证失败");
+
+                OnDelete(entity);
+            }
         }
         else
         {

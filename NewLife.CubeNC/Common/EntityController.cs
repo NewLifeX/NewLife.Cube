@@ -624,7 +624,7 @@ public partial class EntityController<TEntity, TModel>
                 if (entity != null)
                 {
                     // 验证数据权限
-                    if (fi != null && entity[fi.Name].ToBoolean())
+                    if (fi != null && (!PageSetting.DoubleDelete || !entity[fi.Name].ToBoolean()))
                     {
                         entity.SetItem(fi.Name, true);
                         if (Valid(entity, DataObjectMethodType.Update, true)) updates.Add(entity);
@@ -682,7 +682,7 @@ public partial class EntityController<TEntity, TModel>
                 foreach (var entity in data)
                 {
                     // 验证数据权限
-                    if (fi != null)
+                    if (fi != null && (!PageSetting.DoubleDelete || !entity[fi.Name].ToBoolean()))
                     {
                         entity.SetItem(fi.Name, true);
                         if (Valid(entity, DataObjectMethodType.Update, true)) updates.Add(entity);

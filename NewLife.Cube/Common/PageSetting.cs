@@ -38,6 +38,10 @@ public class PageSetting
 
     /// <summary>是否启用默认的数字主键降序。默认true</summary>
     public Boolean OrderByKey { get; set; } = true;
+
+    /// <summary>启用两次删除。默认true</summary>
+    /// <remarks>具有假删除的实体，第一次删除是假删除，还可以修改恢复，假删除时第二次删除则是真正的物理删除</remarks>
+    public Boolean DoubleDelete { get; set; } = true;
     #endregion
 
     #region 构造
