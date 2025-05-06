@@ -369,9 +369,10 @@ public class UserController : EntityController<User, UserModel>
         var username = loginModel.Username;
         var password = loginModel.Password;
         var remember = loginModel.Remember;
-        var pdic = _cache.Get<Tuple<String, String>>(loginModel.Pkey);
-        var ip = UserHost;
 
+        var pdic = loginModel.Pkey.IsNullOrEmpty() ? new Tuple<String, String>(null, null) : _cache.Get<Tuple<String, String>>(loginModel.Pkey);
+
+        var ip = UserHost;
         var dkey = DateTime.Now.Ticks.ToString();
         var dicKey = _cache.GetOrAdd(dkey, k => NCreateKeyPair(), 300);
         ViewData["pKey"] = new KeyValuePair<String, String>(dkey, dicKey.Item1);
@@ -382,10 +383,10 @@ public class UserController : EntityController<User, UserModel>
         var ipKey = $"Login:{ip}";
         var ipErrors = _cache.Get<Int32>(ipKey);
 
-        var peKey = $"Login:{loginModel.Pkey}";
-        var pErrors = _cache.Get<Int32>(peKey);
+        //var peKey = $"Login:{loginModel.Pkey}";
+        //var pErrors = _cache.Get<Int32>(peKey);
 
-        using var span = _tracer?.NewSpan(nameof(Login), new { username, ip, errors, ipErrors, pErrors });
+        using var span = _tracer?.NewSpan(nameof(Login), new { username, ip, errors });
 
         var set = CubeSetting.Current;
         var returnUrl = GetRequest("r");
@@ -394,7 +395,7 @@ public class UserController : EntityController<User, UserModel>
         {
             if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
             if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password), "密码不能为空！");
-            if (loginModel.Pkey.IsNullOrEmpty()) throw new ArgumentNullException("pkey", "加密令牌不能为空");
+            //if (loginModel.Pkey.IsNullOrEmpty()) throw new ArgumentNullException("pkey", "加密令牌不能为空");
 
             if (errors >= set.MaxLoginError && set.MaxLoginError > 0)
                 throw new InvalidOperationException($"[{username}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
@@ -402,8 +403,7 @@ public class UserController : EntityController<User, UserModel>
                 throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
             var rsaKey = pdic.Item2;
-
-            password = Decrypt(rsaKey, password);
+            password = rsaKey.IsNullOrEmpty() ? password : Decrypt(rsaKey, password);
 
             var provider = ManageProvider.Provider;
             if (ModelState.IsValid && provider.Login(username, password, remember) != null)
@@ -412,7 +412,7 @@ public class UserController : EntityController<User, UserModel>
                 if (errors > 0) _cache.Remove(key);
                 if (ipErrors > 0) _cache.Remove(ipKey);
                 // 移除秘钥私钥信息，避免重放
-                _cache.Remove(loginModel.Pkey);
+                if (!loginModel.Pkey.IsNullOrEmpty()) _cache.Remove(loginModel.Pkey);
 
                 if (IsJsonRequest)
                 {
