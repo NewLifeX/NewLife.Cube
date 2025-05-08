@@ -488,6 +488,56 @@ public class UserController : EntityController<User, UserModel>
         return _isMobile ? View("MLogin", model) : View(model);
     }
 
+    /// <summary>获取登录密钥</summary>
+    /// <returns>返回pKey和publicKey</returns>
+    [AllowAnonymous]
+    [HttpGet]
+    public ActionResult GetLoginKey(string token)
+    {
+        if (ManageProvider.User != null)
+        {
+            return Json(new
+            {
+                code = 500,
+                message = "已登录，无需获取密钥"
+            });
+        }
+        var validToken = "5tU3Xr6PkF6AHfdCu7Sr";
+
+        if (token != validToken)
+        {
+            return Json(new
+            {
+                code = 500,
+                message = "非法请求，token错误"
+            });
+        }
+        try
+        {
+            var key = DateTime.Now.Ticks.ToString();
+            var dicKey = _cache.GetOrAdd(key, k => NCreateKeyPair(), 300);
+
+            return Json(new
+            {
+                code = 0,
+                message = "ok",
+                data = new
+                {
+                    pKey = key,
+                    publicKey = dicKey.Item1
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(new
+            {
+                code = 500,
+                message = ex.Message
+            });
+        }
+    }
+
     /// <summary>注销</summary>
     /// <returns></returns>
     [AllowAnonymous]
