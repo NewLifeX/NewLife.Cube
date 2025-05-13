@@ -212,7 +212,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="fieldName">字段名</param>
     /// <param name="value">数值</param>
     /// <returns></returns>
-    public virtual Boolean OnSetField(TEntity entity, String fieldName, Boolean value)
+    protected virtual Boolean OnSetField(TEntity entity, String fieldName, Boolean value)
     {
         if (entity == null || entity[fieldName].ToBoolean() == value) return false;
 
