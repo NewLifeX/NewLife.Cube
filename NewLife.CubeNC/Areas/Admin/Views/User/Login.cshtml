@@ -271,9 +271,15 @@
                     return;
                 }
 
-                var resultPWD=encryptPwd(password);
+                var pkey=$('#pkey_container').val();
 
-                $('#pwd').val(resultPWD);
+                if(pkey&&pkey.length>0){
+                    var resultPWD=encryptPwd(password);
+                    $('#pwd').val(resultPWD);
+                }else{
+                    $('#pwd').val(password);
+                }
+
                 $("#cube-login").submit();
             });
 
