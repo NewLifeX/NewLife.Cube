@@ -31,7 +31,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>第三代魔方，前后端分离</PackageReleaseNotes>
+    <PackageReleaseNotes>加密登录密码；重构EntityModelBinder，规避Area接口无限递归验证；要求显式指定百分数字段；假删除后再删除即为真删除</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -99,10 +99,10 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TracerMiddleware.cs" Link="WebMiddleware\TracerMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.4.2025.401" />
+    <PackageReference Include="NewLife.Core" Version="11.5.2025.501" />
     <PackageReference Include="NewLife.IP" Version="2.3.2025.202" />
-    <PackageReference Include="NewLife.Stardust" Version="3.3.2025.401" />
-    <PackageReference Include="NewLife.XCode" Version="11.18.2025.401" />
+    <PackageReference Include="NewLife.Stardust" Version="3.3.2025.506" />
+    <PackageReference Include="NewLife.XCode" Version="11.19.2025.501" />
   </ItemGroup>
 
   <ItemGroup>
