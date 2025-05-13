@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using NewLife.Cube.ViewModels;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -16,6 +17,15 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
     {
         // 过滤要显示的字段
         ListFields.RemoveField("Remark");
+
+        {
+            var ff = AddFormFields.GetField("Ex4") as FormField;
+            ff.DisplayName = "帮助文档链接";
+        }
+        {
+            var ff = EditFormFields.GetField("Ex4") as FormField;
+            ff.DisplayName = "帮助文档链接";
+        }
     }
 
     /// <summary>实体树的数据来自缓存</summary>
