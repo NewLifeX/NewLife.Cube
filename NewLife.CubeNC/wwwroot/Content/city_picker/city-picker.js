@@ -28,7 +28,7 @@
         this.$dropdown = null;
         var strValue = 0;
         if ($(element).val() != undefined) {
-            strValue = $(element).val().split('/');
+            strValue = ($(element).data("path") ?? $(element).val()).split('/');
         }
 
         var cssOptions = { 'level': $(element).data("level"), 'autoPost': $(element).data("autopost") };
@@ -148,7 +148,7 @@
             var $select = this.$dropdown.find('.city-select');
             $select.data('item', null);
             // parse value from value of the target $element
-            var val = this.$element.val() || '';
+            var val = this.$element.data("path") || '';
             val = val.split('/');
             $.each(this.dems, $.proxy(function (i, type) {
                 if (val[i] && i < val.length) {
@@ -250,11 +250,12 @@
                 if ($target.is($)) $target.parents('.form-group').find('.cube_clear').css('display', 'block');
                 if ($target.is('.city-picker-span')) {
                     $span = $target;
-                    if ($this.getVal().split('/').length != 0) {
+                    var vs = $this.getPath().split('/');
+                    if (vs.length != 0) {
                         $this.$element.parent().children().find(".city-select").attr("style", "display:none");
-                        $this.$element.parent().children().find(".city-select").eq($this.getVal().split('/').length - 1).attr("style", "display:block");
+                        $this.$element.parent().children().find(".city-select").eq(vs.length - 1).attr("style", "display:block");
                         $this.$element.parent().children().find(".city-select-tab >a").removeClass("active");
-                        $this.$element.parent().children().find(".city-select-tab >a").eq($this.getVal().split('/').length - 1).addClass("active");
+                        $this.$element.parent().children().find(".city-select-tab >a").eq(vs.length - 1).addClass("active");
                     }
 
                 } else if ($target.is('.city-picker-span *')) {
@@ -443,7 +444,7 @@
             return count ? obj[count] : arr.join('/');
         },
 
-        getVal: function () {
+        getPath: function () {
             var text = '';
             this.$dropdown.find('.city-select')
                 .each(function () {
@@ -455,8 +456,14 @@
             return text;
         },
 
+        getVal: function () {
+            var item = this.$dropdown.find('.city-select').last().data('item');
+            return item ? item.code : '';
+        },
+
         feedVal: function (trigger) {
             this.$element.val(this.getVal());
+            this.$element.data('path', this.getPath());
             if (trigger) {
                 this.$element.trigger('cp:updated');
             }
@@ -607,6 +614,7 @@
         },
 
         reset: function () {
+            this.$element.data('path', '');
             this.$element.val(null).trigger('change');
         },
 

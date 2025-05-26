@@ -3,10 +3,24 @@
 @using XCode;
 @using System.Linq;
 @{
-    var prefix = (Object)Model + "";
     var page = ViewBag.Page as Pager;
+    var efield = Model as EntityField;
+    var id = Model as String;
+    if (id.IsNullOrEmpty() && efield != null && efield.Field != null) id = efield.Field.MapField ?? efield.Field.Name;
+    if (id.IsNullOrEmpty() && Model is DataField df) id = df.Name;
+    if (id.IsNullOrEmpty()) id = "AreaId";
 
-    var areaId = page[prefix + "AreaID"];
+    var areaId = 0;
+    if (efield != null) areaId = efield.Entity[id].ToInt();
+    if (areaId <= 0) areaId = page[id].ToInt();
+    var areaIds = "";
+    var area = Area.FindByID(areaId);
+    if (area != null && area.ID > 0)
+    {
+        var ps = area.GetAllParents();
+        ps.Add(area);
+        areaIds = ps.Select(e => e.ID).Join("/") ?? "";
+    }
 
     var set = NewLife.Cube.CubeSetting.Current;
     var res = set.ResourceUrl;
@@ -15,10 +29,7 @@
 }
 <link href="@res/city_picker/city-picker.css" rel="stylesheet">
 <div class="form-group" style="position:relative">
-    @*@Html.ForDropDownList(pkey, provs, provid, "全国", true)*@
-    <div>
-        <input readonly type="text" id="@(prefix)AreaID" value="@areaId" data-toggle="city-picker" placeholder="请选择省" data-level="province">
-    </div>
+    <input readonly type="text" id="@(id)" value="@areaId" data-path="@areaIds" data-toggle="city-picker" placeholder="请选择省" data-level="province">
 </div>
 <script src="@res/city_picker/city-picker.js"></script>
 <script>

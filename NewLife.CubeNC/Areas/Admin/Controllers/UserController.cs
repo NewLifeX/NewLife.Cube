@@ -91,6 +91,14 @@ public class UserController : EntityController<User, UserModel>
         {
             AddFormFields.GroupVisible = (entity, group) => (entity as User).ID == 0 && group != "扩展";
         }
+        {
+            var ff = AddFormFields.GetField("AreaId") as FormField;
+            ff.ItemView = "_Area3";
+        }
+        {
+            var ff = EditFormFields.GetField("AreaId") as FormField;
+            ff.ItemView = "_Area3";
+        }
     }
 
     class MyAvatar : ILinkExtend
