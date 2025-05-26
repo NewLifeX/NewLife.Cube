@@ -1,11 +1,11 @@
-﻿@model ValueTuple<IEntity, DataField>
+﻿@model EntityField
 @using NewLife;
 @using XCode;
 @using XCode.Configuration;
 @{
 	var pair = Model;
-	var entity = pair.Item1;
-	var field = pair.Item2;
+	var entity = pair.Entity;
+	var field = pair.Field;
 
 	//var set = NewLife.Cube.Setting.Current;
 	//var cls = set.FormGroupClass;
@@ -14,14 +14,14 @@
 @if (field.IsBigText())
 {
 	<div class="form-group col-md-12">
-		@await Html.PartialAsync("_Form_BigText", (Object)Model)
+		@await Html.PartialAsync("_Form_BigText", Model)
 	</div>
 }
 else
 {
 	<div class="col-xs-12 col-sm-6">
 		<div class="form-group mb-3 row">
-			@await Html.PartialAsync("_Form_Item", (Object)Model)
+			@await Html.PartialAsync("_Form_Item", Model)
 		</div>
 	</div>
 }

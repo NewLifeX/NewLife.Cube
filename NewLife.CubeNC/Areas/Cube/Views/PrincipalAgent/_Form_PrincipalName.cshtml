@@ -1,12 +1,12 @@
-﻿@model ValueTuple<IEntity, DataField>
+﻿@model EntityField
 @using NewLife;
 @using NewLife.Cube.Entity
 @using XCode;
 @using XCode.Configuration;
 @{
     var pair = Model;
-    var entity = pair.Item1 as PrincipalAgent;
-    var field = pair.Item2;
+    var entity = pair.Entity as PrincipalAgent;
+    var field = pair.Field;
 
     var set = NewLife.Cube.CubeSetting.Current;
     var cls = set.FormGroupClass;

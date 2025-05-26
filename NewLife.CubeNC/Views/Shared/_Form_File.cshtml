@@ -1,12 +1,12 @@
-﻿@model ValueTuple<IEntity, DataField>
+﻿@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using System.Text;
 @using XCode;
 @using XCode.Configuration;
 @{
-    var entity = Model.Item1;
-    var field = Model.Item2;
+    var entity = Model.Entity;
+    var field = Model.Field;
 
     var value = entity[field.Name] as String;
 

@@ -1,10 +1,10 @@
-﻿@using NewLife;
+﻿@model EntityField
+@using NewLife;
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, DataField>)Model;
-    var entity = pair.Item1;
-    var field = pair.Item2;
+    var entity = Model.Entity;
+    var field = Model.Field;
 
     var set = NewLife.Cube.CubeSetting.Current;
     var cls = set.FormGroupClass;
@@ -21,12 +21,12 @@
 {
     var isRow = cls.Contains("row") ? "row" : "";
     <div class="layui-form-item @(isRow) @isHide">
-        @await Html.PartialAsync("_Form_Type_BigText", (Object)Model)
+        @await Html.PartialAsync("_Form_Type_BigText", Model)
     </div>
 }
 else
 {
     <div class="layui-form-item @isHide">
-        @await Html.PartialAsync("_Form_Type_Item", (Object)Model)
+        @await Html.PartialAsync("_Form_Type_Item", Model)
     </div>
 }

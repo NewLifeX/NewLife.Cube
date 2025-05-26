@@ -1,12 +1,12 @@
-﻿@using NewLife;
+﻿@model EntityField
+@using NewLife;
 @using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
 
 @{
-    var pair = (ValueTuple<IEntity, DataField>)Model;
-    var entity = pair.Item1;
-    var item = pair.Item2;
+    var entity = Model.Entity;
+    var item = Model.Field;
 
     var type = item.Type;
 
@@ -38,7 +38,7 @@ else
     //映射字段
     if (!item.MapField.IsNullOrEmpty())
     {
-        @await Html.PartialAsync("_Form_Type_Map", pair)
+        @await Html.PartialAsync("_Form_Type_Map", Model)
     }
     //自读属性
     else if (item.Name.EqualIgnoreCase("ID"))

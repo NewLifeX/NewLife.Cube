@@ -1,16 +1,12 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-
+﻿@model EntityField
 @using NewLife;
 @using Microsoft.AspNetCore.Routing
 @using XCode;
 @using XCode.Configuration;
 @{
     var fact = ViewBag.Factory as IEntityFactory;
-    var pair = (ValueTuple<IEntity, DataField>)Model;
-    var entity = pair.Item1;
-    var item = pair.Item2;
+    var entity = Model.Entity;
+    var item = Model.Field;
     var factory = entity.GetType().AsFactory();
 
     var value = entity[item.Name];
@@ -41,7 +37,7 @@ else
                 {
                     var key = entity[factory.Unique.Name];
                     var df = item as ListField;
-                    <a lay-event="action" data-action="action" lay-data="@Url.Action("SetEnable",null,new { id=key, enable=!bval })">
+                    <a lay-event="action" data-action="action" lay-data="@Url.Action("SetEnable", null, new { id = key, enable = !bval })">
                         @await Html.PartialAsync("_Icon_Boolean", bval)
                     </a>
                 }
@@ -151,7 +147,7 @@ else
                 }
                 else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
                 {
-                    <td title="@((value+"").IPToAddress())">@value</td>
+                    <td title="@((value + "").IPToAddress())">@value</td>
                 }
                 else if (item.IsBigText())
                 {

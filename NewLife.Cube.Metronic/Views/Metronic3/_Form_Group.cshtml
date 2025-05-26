@@ -1,10 +1,10 @@
-﻿@using NewLife;
+﻿@model EntityField
+@using NewLife;
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, DataField>)Model;
-    var entity = pair.Item1;
-    var field = pair.Item2;
+    var entity = Model.Entity;
+    var field = Model.Field;
 
     var set = NewLife.Cube.CubeSetting.Current;
     var cls = set.FormGroupClass;
@@ -14,12 +14,12 @@
 {
     var isRow = cls.Contains("row") ? "row" : "";
     <div class="form-group @(isRow) col-xs-12 col-sm-11">
-        @await Html.PartialAsync("_Form_BigText", (Object)Model)
+        @await Html.PartialAsync("_Form_BigText", Model)
     </div>
 }
 else
 {
     <div class="@cls">
-        @await Html.PartialAsync("_Form_Item", (Object)Model)
+        @await Html.PartialAsync("_Form_Item", Model)
     </div>
 }

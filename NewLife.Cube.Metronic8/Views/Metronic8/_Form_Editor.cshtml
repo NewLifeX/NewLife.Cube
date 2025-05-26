@@ -2,11 +2,11 @@
 @using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
-@model ValueTuple<IEntity, DataField>
+@model EntityField
 
 @{
-    var entity = Model.Item1;
-    var item = Model.Item2;
+    var entity = Model.Entity;
+    var item = Model.Field;
 
     var type = item.Type;
 

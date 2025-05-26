@@ -24,7 +24,7 @@
 
                         if (!item.PrimaryKey && !item.Name.EqualIgnoreCase("Permission"))
                         {
-                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+                            @await Html.PartialAsync("_Form_Group", new EntityField(entity, item))
                         }
                     }
                 </div>

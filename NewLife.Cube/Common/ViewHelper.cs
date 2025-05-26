@@ -132,7 +132,7 @@ public static class ViewHelper
                             }
                             @foreach (var item in fields)
                             {
-                                @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                                @await Html.PartialAsync("_List_Data_Item", new EntityField(entity, item))
                             }
                             @if (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete))
                             {
@@ -463,9 +463,9 @@ public static class ViewHelper
                                     if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
                                     {
                                         if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
-                                            @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+                                            @await Html.PartialAsync(formField.GroupView, new EntityField(entity, item))
                                         else
-                                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+                                            @await Html.PartialAsync("_Form_Group", new EntityField(entity, item))
                                     }
                                 }
                             </div>
@@ -482,9 +482,9 @@ public static class ViewHelper
                     if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity, item)))
                     {
                         if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
-                            @await Html.PartialAsync(formField.GroupView, new ValueTuple<IEntity, DataField>(entity, item))
+                            @await Html.PartialAsync(formField.GroupView, new EntityField(entity, item))
                         else
-                            @await Html.PartialAsync("_Form_Group", new ValueTuple<IEntity, DataField>(entity, item))
+                            @await Html.PartialAsync("_Form_Group", new EntityField(entity, item))
                     }
                 }
             }

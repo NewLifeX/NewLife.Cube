@@ -122,7 +122,7 @@
                                         }
                                         else
                                         {
-                                            @await Html.PartialAsync("_List_Data_Item", new ValueTuple<IEntity, DataField>(entity, item))
+                                            @await Html.PartialAsync("_List_Data_Item", new EntityField(entity, item))
                                         }
                                     }
                                 </tr>

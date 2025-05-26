@@ -1,11 +1,11 @@
-﻿@using NewLife;
+﻿@model EntityField
+@using NewLife;
 @using NewLife.Cube
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, DataField>)Model;
-    var entity = pair.Item1;
-    var field = pair.Item2;
+    var entity = Model.Entity;
+    var field = Model.Field;
 
     var fields = ViewBag.Fields as FieldCollection;
     var dataField = fields.GetField(field.Name);

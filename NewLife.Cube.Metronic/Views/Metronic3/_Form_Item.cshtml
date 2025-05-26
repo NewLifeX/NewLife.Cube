@@ -1,12 +1,12 @@
-﻿@model ValueTuple<IEntity, DataField>
+﻿@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using NewLife.Cube.ViewModels;
 @using XCode;
 @using XCode.Configuration;
 @{
-	var entity = Model.Item1;
-	var item = Model.Item2;
+	var entity = Model.Entity;
+	var item = Model.Field;
 
 	var fields = ViewBag.Fields as FieldCollection;
 	var dataField = fields.GetField(item.Name) as ListField;

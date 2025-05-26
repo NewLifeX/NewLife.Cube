@@ -56,7 +56,7 @@
 
                                     <!-- 字段编辑框 -->
                                     <div class="flex-grow-1">
-                                        @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                        @await Html.PartialAsync("_Form_Editor", new EntityField(entity, item))
                                     </div>
                                     <span class="form-text text-muted d-sm-none"><span class="form-text text-muted">@des</span></span>
                                 </div>
@@ -78,7 +78,7 @@
 
                                     <!-- 字段编辑框 -->
                                     <div class="flex-grow-1">
-                                        @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                        @await Html.PartialAsync("_Form_Editor", new EntityField(entity, item))
                                     </div>
                                     <span class="form-text text-muted d-sm-none"><span class="form-text text-muted">@des</span></span>
                                 </div>
@@ -120,7 +120,7 @@
 
                         <!-- 字段编辑框 -->
                         <div class="flex-grow-1">
-                            @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                            @await Html.PartialAsync("_Form_Editor", new EntityField(entity, item))
                         </div>
                         <span class="form-text text-muted d-sm-none"><span class="form-text text-muted">@des</span></span>
                     </div>
@@ -142,7 +142,7 @@
 
                         <!-- 字段编辑框 -->
                         <div class="flex-grow-1">
-                            @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                            @await Html.PartialAsync("_Form_Editor", new EntityField(entity, item))
                         </div>
                         <span class="form-text text-muted d-sm-none"><span class="form-text text-muted">@des</span></span>
                     </div>

@@ -1,11 +1,11 @@
-﻿@using NewLife;
+﻿@model EntityField
+@using NewLife;
 @using Microsoft.AspNetCore.Routing
 @using XCode;
 @using XCode.Configuration;
 @{
-    var pair = (ValueTuple<IEntity, DataField>)Model;
-    var entity = pair.Item1;
-    var item = pair.Item2;
+    var entity = Model.Entity;
+    var item = Model.Field;
     var factory = entity.GetType().AsFactory();
 
     var value = entity[item.Name];

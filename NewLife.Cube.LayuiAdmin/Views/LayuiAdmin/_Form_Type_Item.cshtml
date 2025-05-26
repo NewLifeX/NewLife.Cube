@@ -1,12 +1,12 @@
-﻿@model ValueTuple<IEntity, DataField>
+﻿@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using NewLife.Cube.ViewModels;
 @using XCode;
 @using XCode.Configuration;
 @{
-    var entity = Model.Item1;
-    var item = Model.Item2;
+    var entity = Model.Entity;
+    var item = Model.Field;
 
     var fields = ViewBag.Fields as FieldCollection;
     var dataField = fields.GetField(item.Name) as ListField;
@@ -85,7 +85,7 @@
 					var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
 					if (set == null || set.Parent != item.Name)
 					{
-						@await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+						@await Html.PartialAsync("_Form_Editor", new EntityField(entity, item))
 					}
 					else
 					{
@@ -99,7 +99,7 @@
 				else
 				{
 					@*@Html.ForEditor(item.Name, entity[item.Name], item.Type)*@
-					@await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+					@await Html.PartialAsync("_Form_Editor", new EntityField(entity, item))
 				}
 			}
 		}

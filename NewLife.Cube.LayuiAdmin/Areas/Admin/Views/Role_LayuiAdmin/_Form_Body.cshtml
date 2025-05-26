@@ -40,7 +40,7 @@
                                         }
                                         else
                                         {
-                                            @await Html.PartialAsync("_Form_Editor", new ValueTuple<IEntity, DataField>(entity, item))
+                                            @await Html.PartialAsync("_Form_Editor", new EntityField(entity, item))
                                         }
                                     </div>
                                     <div class="layui-form-mid layui-word-aux">
