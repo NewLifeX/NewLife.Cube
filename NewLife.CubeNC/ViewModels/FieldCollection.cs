@@ -177,7 +177,31 @@ public class FieldCollection : List<DataField>
         {
             // 处理带有Map特性的扩展属性
             var map = pi.GetCustomAttribute<MapAttribute>();
-            if (map != null) Replace(map.Name, pi.Name);
+            if (map != null)
+            {
+                //Replace(map.Name, pi.Name);
+
+                var idx = FindIndex(e => e.Name.EqualIgnoreCase(map.Name));
+                if (idx >= 0)
+                {
+                    var fi = Factory.AllFields.FirstOrDefault(e => e.Name.EqualIgnoreCase(pi.Name));
+                    if (fi != null)
+                    {
+                        var newField = Create(fi);
+
+                        // Map扩展属性使用原来数据字段的Category和ItemType
+                        var oldField = this[idx];
+                        if (newField.Category.IsNullOrEmpty()) newField.Category = oldField.Category;
+                        if (newField.ItemType.IsNullOrEmpty()) newField.ItemType = oldField.ItemType;
+
+                        // 如果本身就存在目标项，则删除
+                        var idx2 = FindIndex(e => e.Name.EqualIgnoreCase(fi.Name));
+                        if (idx2 >= 0) RemoveAt(idx2);
+
+                        this[idx] = newField;
+                    }
+                }
+            }
         }
 
         if (!isForm)
