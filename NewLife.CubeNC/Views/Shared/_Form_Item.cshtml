@@ -104,7 +104,19 @@
     }
     else
     {
-        if (!item.MapField.IsNullOrEmpty())
+        if (item.ItemType.EqualIgnoreCase("area3", "area"))
+        {
+            @await Html.PartialAsync("_Area3", Model)
+        }
+        else if (item.ItemType.EqualIgnoreCase("area2"))
+        {
+            @await Html.PartialAsync("_Area2", Model)
+        }
+        else if (item.ItemType.EqualIgnoreCase("area1"))
+        {
+            @await Html.PartialAsync("_Area1", Model)
+        }
+        else if (!item.MapField.IsNullOrEmpty())
         {
             @await Html.PartialAsync(itemView ?? "_Form_Map", Model)
         }

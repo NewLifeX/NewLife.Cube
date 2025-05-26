@@ -42,15 +42,15 @@
             @Html.ForDropDownList(name, dic, page[name], "全部", true)
         </div>
     }
-    else if (field.Name.EqualIgnoreCase("DistrictId"))
+    else if (field.Name.EqualIgnoreCase("DistrictId") || field.ItemType.EqualIgnoreCase("area3", "area"))
     {
         @await Html.PartialAsync("_Area3", "")
     }
-    else if (field.Name.EqualIgnoreCase("CityId"))
+    else if (field.Name.EqualIgnoreCase("CityId") || field.ItemType.EqualIgnoreCase("area2"))
     {
         @await Html.PartialAsync("_Area2", "")
     }
-    else if (field.Name.EqualIgnoreCase("ProvinceId"))
+    else if (field.Name.EqualIgnoreCase("ProvinceId") || field.ItemType.EqualIgnoreCase("area1"))
     {
         @await Html.PartialAsync("_Area1", "")
     }

@@ -93,11 +93,12 @@ public class UserController : EntityController<User, UserModel>
         }
         {
             var ff = AddFormFields.GetField("AreaId") as FormField;
-            ff.ItemView = "_Area3";
+            ff.ItemView = "_Area3"; // 使用area3视图
         }
         {
             var ff = EditFormFields.GetField("AreaId") as FormField;
-            ff.ItemView = "_Area3";
+            //ff.ItemView = "_Area3";
+            ff.ItemType = "area3"; // 使用area3组件
         }
     }
 

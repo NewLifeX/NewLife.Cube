@@ -5,7 +5,7 @@
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
-    <VersionPrefix>6.2</VersionPrefix>
+    <VersionPrefix>6.5</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
