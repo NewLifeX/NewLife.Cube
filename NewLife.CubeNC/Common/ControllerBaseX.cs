@@ -160,7 +160,9 @@ public class ControllerBaseX : Controller
             data = null;
         }
 
-        Object rs = new { code, message, data };
+        var traceId = DefaultSpan.Current?.TraceId;
+
+        Object rs = new { code, message, data, traceId };
         if (extend != null)
         {
             var dic = rs.ToDictionary();

@@ -104,7 +104,11 @@
     }
     else
     {
-        if (item.ItemType.EqualIgnoreCase("area3", "area"))
+        if (item.ItemType.EqualIgnoreCase("area4"))
+        {
+            @await Html.PartialAsync("_Area4", Model)
+        }
+        else if (item.ItemType.EqualIgnoreCase("area3", "area"))
         {
             @await Html.PartialAsync("_Area3", Model)
         }

@@ -42,6 +42,10 @@
             @Html.ForDropDownList(name, dic, page[name], "全部", true)
         </div>
     }
+    else if (field.ItemType.EqualIgnoreCase("area4"))
+    {
+        @await Html.PartialAsync("_Area4", "")
+    }
     else if (field.Name.EqualIgnoreCase("DistrictId") || field.ItemType.EqualIgnoreCase("area3", "area"))
     {
         @await Html.PartialAsync("_Area3", "")

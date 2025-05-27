@@ -22,6 +22,7 @@
     var PROVINCE = 'province';
     var CITY = 'city';
     var DISTRICT = 'district';
+    var TOWN = 'town';
 
     function CityPicker(element, options) {
         this.$element = $(element);
@@ -43,6 +44,9 @@
                 }
                 if (i == 2) {
                     cssOptions.district = parseInt(n);
+                }
+                if (i == 3) {
+                    cssOptions.town = parseInt(n);
                 }
             });
         }
@@ -67,6 +71,9 @@
             if (this.options.district !== '') {
                 code = this.options.district;
             }
+            if (this.options.town !== '') {
+                code = this.options.town;
+            }
             var context = this;
             if (code && code !== 0) {
                 $.ajaxSettings.async = false;
@@ -80,6 +87,9 @@
                         }
                         if (n.level === 3) {
                             context.options.district = n.id;
+                        }
+                        if (n.level === 4) {
+                            context.options.town = n.id;
                         }
                     });
                     $.ajaxSettings.async = true;
@@ -116,11 +126,13 @@
                 '<div class="city-select-tab">' +
                 '<a class="active" data-count="province">省份</a>' +
                 (this.includeDem('city') ? '<a data-count="city">城市</a>' : '') +
-                (this.includeDem('district') ? '<a data-count="district">区县</a>' : '') + '</div>' +
+                (this.includeDem('district') ? '<a data-count="district">区县</a>' : '') +
+                (this.includeDem('town') ? '<a data-count="town">乡镇街道</a>' : '') + '</div>' +
                 '<div class="city-select-content">' +
                 '<div class="city-select province" data-count="province"></div>' +
                 (this.includeDem('city') ? '<div class="city-select city" data-count="city"></div>' : '') +
                 (this.includeDem('district') ? '<div class="city-select district" data-count="district"></div>' : '') +
+                (this.includeDem('town') ? '<div class="city-select town" data-count="town"></div>' : '') +
                 '</div></div>';
 
             this.$element.addClass('city-picker-input');
@@ -166,7 +178,7 @@
 
         defineDems: function () {
             var stop = false;
-            $.each([PROVINCE, CITY, DISTRICT], $.proxy(function (i, type) {
+            $.each([PROVINCE, CITY, DISTRICT, TOWN], $.proxy(function (i, type) {
                 if (!stop) {
                     this.dems.push(type);
                 }
@@ -348,6 +360,7 @@
                 this.$province.on(EVENT_CHANGE, (this._changeProvince = $.proxy(function () {
                     this.output(CITY);
                     this.output(DISTRICT);
+                    this.output(TOWN);
                     this.tab(CITY);
                 }, this)));
             }
@@ -355,7 +368,15 @@
             if (this.$city) {
                 this.$city.on(EVENT_CHANGE, (this._changeCity = $.proxy(function () {
                     this.output(DISTRICT);
+                    this.output(TOWN);
                     this.tab(DISTRICT);
+                }, this)));
+            }
+
+            if (this.$district) {
+                this.$district.on(EVENT_CHANGE, (this._changeDistrict = $.proxy(function () {
+                    this.output(TOWN);
+                    this.tab(TOWN);
                 }, this)));
             }
         },
@@ -501,7 +522,8 @@
             code = (
                 type === PROVINCE ? 86 :
                     type === CITY ? this.$province && this.$province.find('.active').data('code') :
-                        type === DISTRICT ? this.$city && this.$city.find('.active').data('code') : code
+                        type === DISTRICT ? this.$city && this.$city.find('.active').data('code') :
+                            type === TOWN ? this.$district && this.$district.find('.active').data('code') : code
             );
 
             //districts = $.isNumeric(code) ? ChineseDistricts[code] : null;
@@ -607,6 +629,8 @@
                     .replace('哈萨克', '').replace('自治州', '').replace(/自治县/, '');
             } else if (type === DISTRICT) {
                 return address.length > 2 ? address.replace(/[市,区,县,旗]/g, '') : address;
+            } else if (type === TOWN) {
+                return address.length > 3 ? address.replace(/[乡,镇,街道]/g, '') : address;
             }
         },
 
@@ -673,6 +697,7 @@
         province: '',
         city: '',
         district: '',
+        town: '',
         dataUrl: '/Cube/AreaChilds?id=',
         areaParents: '/Cube/AreaParents?id=',
         autoPost: false,
