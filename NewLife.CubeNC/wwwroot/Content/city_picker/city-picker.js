@@ -27,8 +27,9 @@
         this.$element = $(element);
         this.$dropdown = null;
         var strValue = 0;
-        if ($(element).val() != undefined) {
-            strValue = ($(element).data("path") ?? $(element).val()).split('/');
+        var val = $(element).data("path") || $(element).val();
+        if (val != undefined) {
+            strValue = (val + '').split('/');
         }
 
         var cssOptions = { 'level': $(element).data("level"), 'autoPost': $(element).data("autopost") };
@@ -148,7 +149,7 @@
             var $select = this.$dropdown.find('.city-select');
             $select.data('item', null);
             // parse value from value of the target $element
-            var val = this.$element.data("path") || '';
+            var val = this.$element.data("path") + '';
             val = val.split('/');
             $.each(this.dems, $.proxy(function (i, type) {
                 if (val[i] && i < val.length) {
@@ -445,6 +446,7 @@
         },
 
         getPath: function () {
+            // 遍历所有的城市选择器，组装路径
             var text = '';
             this.$dropdown.find('.city-select')
                 .each(function () {
@@ -457,8 +459,16 @@
         },
 
         getVal: function () {
-            var item = this.$dropdown.find('.city-select').last().data('item');
-            return item ? item.code : '';
+            // 遍历所有的城市选择器，只要最后一个的code
+            var text = '';
+            this.$dropdown.find('.city-select')
+                .each(function () {
+                    var item = $(this).data('item');
+                    if (item) {
+                        text = item.code;
+                    }
+                });
+            return text;
         },
 
         feedVal: function (trigger) {

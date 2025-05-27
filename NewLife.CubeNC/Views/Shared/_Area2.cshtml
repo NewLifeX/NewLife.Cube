@@ -8,7 +8,7 @@
     var id = Model as String;
     if (id.IsNullOrEmpty() && efield != null && efield.Field != null) id = efield.Field.MapField ?? efield.Field.Name;
     if (id.IsNullOrEmpty() && Model is DataField df) id = df.Name;
-    if (id.IsNullOrEmpty()) id = "AreaId";
+    if (id.IsNullOrEmpty()) id = "areaId";
 
     var areaId = 0;
     if (efield != null) areaId = efield.Entity[id].ToInt();
