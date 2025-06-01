@@ -34,7 +34,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>加密登录密码；重构EntityModelBinder，规避Area接口无限递归验证；要求显式指定百分数字段；假删除后再删除即为真删除</PackageReleaseNotes>
+    <PackageReleaseNotes>重构地区选择相关功能</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -50,10 +50,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.5.2025.523-beta0836" />
-    <PackageReference Include="NewLife.IP" Version="2.3.2025.202" />
-    <PackageReference Include="NewLife.Stardust" Version="3.3.2025.524-beta0042" />
-    <PackageReference Include="NewLife.XCode" Version="11.19.2025.527-beta1043" />
+    <PackageReference Include="NewLife.Core" Version="11.5.2025.601" />
+    <PackageReference Include="NewLife.IP" Version="2.3.2025.601" />
+    <PackageReference Include="NewLife.Stardust" Version="3.4.2025.601" />
+    <PackageReference Include="NewLife.XCode" Version="11.19.2025.601" />
   </ItemGroup>
 
   <ItemGroup>

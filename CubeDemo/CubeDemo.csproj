@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.3.2025.524-beta0042" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.4.2025.601" />
   </ItemGroup>
 
   <ItemGroup>
