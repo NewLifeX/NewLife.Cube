@@ -96,17 +96,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Views\Shared\_Form_Item.cshtml.old" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png">
       <PackagePath>\</PackagePath>
     </Content>
-    <Content Include="Views\Shared\_Form_Item.cshtml.old" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Areas\Admin\Views\Shared\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Areas\Cube\Views\PrincipalAgent_LayuiAdmin\_Form_Body.cshtml" />
