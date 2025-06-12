@@ -13,8 +13,8 @@ public partial class Attachment : Entity<Attachment>
     static Attachment()
     {
         // 累加字段，生成 Update xx Set Count=Count+1234 Where xxx
-        //var df = Meta.Factory.AdditionalFields;
-        //df.Add(nameof(Size));
+        var df = Meta.Factory.AdditionalFields;
+        df.Add(nameof(Downloads));
 
         // 过滤器 UserModule、TimeModule、IPModule
         Meta.Modules.Add<UserModule>();
