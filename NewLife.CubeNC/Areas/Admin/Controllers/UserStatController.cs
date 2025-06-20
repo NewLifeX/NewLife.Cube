@@ -35,42 +35,18 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
             var chart = AddChart(list2, _.Date, null, [_.Logins, _.OAuths, _.MaxOnline, _.Actives, _.ActivesT7, _.ActivesT30, _.News, _.NewsT7, _.NewsT30], SeriesTypes.Line);
             chart.SetY(["用户数", "总数", "时长"], "value", [null, null, "{value}秒"]);
 
+            // 绘制平均线和最大最小值
+            //var sr = chart.Series[0];
+            //sr.MarkLine(true);
+            //sr.MarkPoint(true, true);
+
             var line = chart.AddLine(list2, _.Total, null, true);
             line.YAxisIndex = 1;
 
             var line3 = chart.AddLine(list2, _.OnlineTime, null, true);
             line3.YAxisIndex = 2;
-
-            //AddChart(list2, _.Date, "用户数", [_.Logins, _.OAuths, _.MaxOnline, _.Actives, _.ActivesT7, _.ActivesT30, _.News, _.NewsT7, _.NewsT30], SeriesTypes.Line);
-
-            //var chart = new ECharts
-            //{
-            //    Height = 400,
-            //};
-            //chart.SetX(list2, _.Date);
-            ////chart.SetY("数值");
-            //chart.YAxis = new[] {
-            //    new { name = "数值", type = "value" },
-            //    new { name = "总数", type = "value" }
-            //};
-            //chart.AddDataZoom();
-
-            //var line = chart.AddLine(list2, _.Total, null, true);
-            //line["yAxisIndex"] = 1;
-
-            //chart.Add(list2, _.Logins);
-            //chart.Add(list2, _.OAuths);
-            //chart.Add(list2, _.MaxOnline);
-            //chart.Add(list2, _.Actives);
-            //chart.Add(list2, _.ActivesT7);
-            //chart.Add(list2, _.ActivesT30);
-            //chart.Add(list2, _.News);
-            //chart.Add(list2, _.NewsT7);
-            //chart.Add(list2, _.NewsT30);
-            ////chart.Add(list2, _.OnlineTime);
-            //chart.SetTooltip();
-
-            //ViewBag.Charts = new[] { chart };
+            line3.MarkLine(true);
+            line3.MarkPoint(true, true);
         }
 
         return list;

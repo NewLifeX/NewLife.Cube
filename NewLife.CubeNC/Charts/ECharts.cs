@@ -1,12 +1,12 @@
-﻿using System.Web.Script.Serialization;
-using System.Xml.Linq;
+﻿using System.Collections;
+using System.Web.Script.Serialization;
 using NewLife.Collections;
 using NewLife.Cube.Charts.Models;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
+using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Serialization;
-using NewLife.Web;
 using XCode.Configuration;
 
 namespace NewLife.Cube.Charts;
@@ -37,17 +37,20 @@ public class ECharts : IExtend
     public ChartTitle Title { get; set; }
 
     /// <summary>提示</summary>
-    public Object Tooltip { get; set; } = new Object();
+    public Tooltip Tooltip { get; set; }
 
     /// <summary>图例组件。</summary>
     /// <remarks>图例组件展现了不同系列的标记(symbol)，颜色和名字。可以通过点击图例控制哪些系列不显示。</remarks>
     public Object Legend { get; set; }
 
     /// <summary>X轴</summary>
-    public Object XAxis { get; set; }
+    public IList<XAxis> XAxis { get; set; } = [];
 
     /// <summary>Y轴</summary>
-    public Object YAxis { get; set; }
+    public IList<YAxis> YAxis { get; set; } = [];
+
+    /// <summary>工具箱</summary>
+    public Toolbox Toolbox { get; set; }
 
     /// <summary>数据缩放</summary>
     public DataZoom[] DataZoom { get; set; }
@@ -81,10 +84,10 @@ public class ECharts : IExtend
     /// <param name="selector">构建X轴的委托</param>
     public void SetX<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
     {
-        XAxis = new
+        XAxis.Add(new XAxis
         {
-            data = list.Select(e => selector == null ? e[name] + "" : selector(e)).ToArray()
-        };
+            Data = list.Select(e => selector == null ? e[name] + "" : selector(e)).ToArray()
+        });
         _xField = name;
     }
 
@@ -95,10 +98,12 @@ public class ECharts : IExtend
     /// <param name="selector">构建X轴的委托</param>
     public void SetX4Time<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
     {
-        XAxis = new
+        var axis = new XAxis
         {
-            type = "time",
+            Type = "time",
         };
+        //if (name.EndsWithIgnoreCase("Date")) axis.AxisLabel = new { formatter = "{yyyy}-{MM}-{dd}" };
+        XAxis.Add(axis);
         _timeField = name;
         _xField = name;
 
@@ -149,7 +154,7 @@ public class ECharts : IExtend
     /// time 时间轴，适用于连续的时序数据，与数值轴相比时间轴带有时间的格式化，在刻度计算上也有所不同，例如会根据跨度的范围来决定使用月，星期，日还是小时范围的刻度。
     /// log 对数轴。适用于对数数据。
     /// </param>
-    public void SetY(String name, String type = "value") => YAxis = new { name, type };
+    public void SetY(String name, String type = "value") => YAxis.Add(new YAxis { Name = name, Type = type });
 
     /// <summary>设置Y轴</summary>
     /// <param name="name"></param>
@@ -161,7 +166,7 @@ public class ECharts : IExtend
     /// log 对数轴。适用于对数数据。
     /// </param>
     /// <param name="formatter"></param>
-    public void SetY(String name, String type, String formatter) => YAxis = new { name, type, axisLabel = new { formatter } };
+    public void SetY(String name, String type, String formatter) => YAxis.Add(new YAxis { Name = name, Type = type, AxisLabel = new { formatter } });
 
     /// <summary>设置多个Y轴</summary>
     /// <param name="names"></param>
@@ -177,23 +182,23 @@ public class ECharts : IExtend
     {
         //YAxis = names.Select(e => new { name = e, type }).ToArray();
 
-        var list = new List<Object>();
+        var list = new List<YAxis>();
         for (var i = 0; i < names.Length; i++)
         {
             var formatter = formatters != null && formatters.Length > i ? formatters[i] : null;
             if (i == 0)
-                list.Add(new { name = names[i], type, axisLabel = new { formatter } });
+                list.Add(new YAxis { Name = names[i], Type = type, AxisLabel = new { formatter } });
             else if (i == 1)
-                list.Add(new { name = names[i], type, position = "right", axisLabel = new { formatter } });
+                list.Add(new YAxis { Name = names[i], Type = type, Position = "right", AxisLabel = new { formatter } });
             else
-                list.Add(new { name = names[i], type, position = "right", offset = 40 * (i - 1), axisLine = new { show = true }, axisLabel = new { formatter } });
+                list.Add(new YAxis { Name = names[i], Type = type, Position = "right", Offset = 40 * (i - 1), AxisLine = new { show = true }, AxisLabel = new { formatter } });
         }
 
         // 多Y轴时，右边偏移加大
         var n = names.Length - 1;
         if (n > 0) Grid.Right *= n;
 
-        YAxis = list.ToArray();
+        YAxis = list;
     }
 
     /// <summary>设置工具栏</summary>
@@ -207,10 +212,10 @@ public class ECharts : IExtend
     /// <param name="backgroundColor"></param>
     public void SetTooltip(String trigger = "axis", String axisPointerType = "cross", String backgroundColor = "#6a7985")
     {
-        Tooltip = new
+        Tooltip = new Tooltip
         {
-            trigger,
-            axisPointer = new
+            Trigger = trigger,
+            AxisPointer = new
             {
                 type = axisPointerType,
                 label = new
@@ -582,7 +587,7 @@ public class ECharts : IExtend
 
         // 提示
         var tooltip = Tooltip;
-        if (tooltip != null) dic[nameof(tooltip)] = tooltip;
+        if (tooltip != null) dic[nameof(tooltip)] = GetJsonObject(tooltip);
 
         // 提示
         var legend = Legend;
@@ -610,21 +615,25 @@ public class ECharts : IExtend
             dic[nameof(grid)] = grid;
         }
 
+        // 工具箱
+        var toolbox = Toolbox;
+        if (toolbox != null) dic[nameof(toolbox)] = GetJsonObject(toolbox);
+
         // X轴
         var xAxis = XAxis;
         if (xAxis != null)
         {
-            if (xAxis is String str)
-                xAxis = new { data = new[] { str } };
-            else if (xAxis is String[] ss)
-                xAxis = new { data = ss };
+            //if (xAxis is String str)
+            //    xAxis = new { data = new[] { str } };
+            //else if (xAxis is String[] ss)
+            //    xAxis = new { data = ss };
 
-            dic[nameof(xAxis)] = xAxis;
+            dic[nameof(xAxis)] = GetJsonObject(xAxis);
         }
 
         // Y轴
         var yAxis = YAxis;
-        if (yAxis != null) dic[nameof(yAxis)] = yAxis;
+        if (yAxis != null) dic[nameof(yAxis)] = GetJsonObject(yAxis);
 
         var dataZoom = DataZoom;
         if (dataZoom != null) dic[nameof(dataZoom)] = dataZoom;
@@ -643,6 +652,37 @@ public class ECharts : IExtend
 #else
         return dic.ToJson(false, true, true);
 #endif
+    }
+
+    /// <summary>获取Json对象，去掉空成员</summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    private Object GetJsonObject(Object obj)
+    {
+        if (obj == null) return obj;
+
+        var type = obj.GetType();
+        if (type.GetTypeCode() != TypeCode.Object) return obj;
+
+        if (obj is IList list)
+        {
+            var rs = new List<Object>();
+            foreach (var item in list)
+            {
+                var val = GetJsonObject(item);
+                if (val != null) rs.Add(val);
+            }
+            return rs;
+        }
+
+        var dic = new Dictionary<String, Object>();
+        foreach (var pi in type.GetProperties())
+        {
+            var val = pi.GetValue(obj);
+            if (val != null) dic[pi.Name] = val;
+        }
+
+        return dic;
     }
     #endregion
 }
