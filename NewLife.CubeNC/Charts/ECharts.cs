@@ -264,6 +264,23 @@ public class ECharts : IExtend
         Series.Add(series);
     }
 
+    private Series Create(String name, String type, Object[] data = null)
+    {
+        if (type.IsNullOrEmpty()) type = "line";
+        var sr = type switch
+        {
+            "line" => new SeriesLine { Type = type },
+            "bar" => new SeriesBar { Type = type },
+            "pie" => new SeriesPie { Type = type },
+            "graph" => new SeriesGraph { Type = type },
+            _ => new Series { Type = type },
+        };
+        sr.Name = name;
+        sr.Data = data;
+
+        return sr;
+    }
+
     /// <summary>添加系列数据</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list">实体列表</param>
@@ -279,12 +296,8 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[name] : selector(e)).ToArray();
 
-        var sr = new Series
-        {
-            Name = name,
-            Type = type,
-            Data = data,
-        };
+        var sr = Create(name, type, data);
+
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
         Add(sr);
@@ -307,12 +320,8 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = new Series
-        {
-            Name = field?.DisplayName ?? field.Name,
-            Type = type,
-            Data = data,
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, type, data);
+
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
         Add(sr);
@@ -332,12 +341,8 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = new Series
-        {
-            Name = field?.DisplayName ?? field.Name,
-            Type = type.ToString().ToLower(),
-            Data = data,
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, type.ToString().ToLower(), data);
+
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
         Add(sr);
@@ -369,12 +374,8 @@ public class ECharts : IExtend
                 list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
                 list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-                series = new Series
-                {
-                    Name = field?.DisplayName ?? field.Name,
-                    Type = type.ToString().ToLower(),
-                    Data = data,
-                };
+                series = Create(field?.DisplayName ?? field.Name, type.ToString().ToLower(), data);
+
                 if (!Symbol.IsNullOrEmpty()) series.Symbol = Symbol;
 
                 Add(series);
@@ -401,19 +402,15 @@ public class ECharts : IExtend
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <param name="smooth">折线光滑</param>
     /// <returns></returns>
-    public Series AddLine<T>(IList<T> list, DataField field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
+    public Series AddLine<T>(IList<T> list, DataField field, Func<T, Object> selector = null, Boolean? smooth = null) where T : IModel
     {
         var data = _timeField != null ?
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = new Series
-        {
-            Name = field.DisplayName ?? field.Name,
-            Type = "line",
-            Data = data,
-            Smooth = smooth,
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, "line", data);
+        sr.Smooth = smooth;
+
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
         Add(sr);
@@ -445,12 +442,8 @@ public class ECharts : IExtend
     /// <returns></returns>
     public Series AddBar<T>(IList<T> list, DataField field, Func<T, Object> selector = null) where T : IModel
     {
-        var sr = new Series
-        {
-            Name = field.DisplayName ?? field.Name,
-            Type = "bar",
-            Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, "bar");
+        sr.Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
         Add(sr);
         return sr;
@@ -474,12 +467,8 @@ public class ECharts : IExtend
     /// <returns></returns>
     public Series AddPie<T>(IList<T> list, String keyName, String valueName, String displayName, Func<T, NameValue> selector = null) where T : IModel
     {
-        var sr = new Series
-        {
-            Name = displayName ?? valueName,
-            Type = "pie",
-            Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[valueName]) : selector(e)).ToArray(),
-        };
+        var sr = Create(displayName ?? valueName, "pie");
+        sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[valueName]) : selector(e)).ToArray();
 
         Add(sr);
         return sr;
@@ -497,12 +486,8 @@ public class ECharts : IExtend
         keyName ??= _xField as String;
         keyName ??= (_xField as DataField)?.Name;
         keyName ??= (_xField as FieldItem)?.Name;
-        var sr = new Series
-        {
-            Name = field.DisplayName ?? field.Name,
-            Type = "pie",
-            Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray(),
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, "pie");
+        sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray();
 
         Add(sr);
         return sr;
@@ -520,12 +505,8 @@ public class ECharts : IExtend
         keyName ??= (_xField as DataField)?.Name;
         keyName ??= (_xField as FieldItem)?.Name;
         keyName ??= field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
-        var sr = new Series
-        {
-            Name = field.DisplayName ?? field.Name,
-            Type = "pie",
-            Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray(),
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, "pie");
+        sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray();
 
         Add(sr);
         return sr;
@@ -536,12 +517,7 @@ public class ECharts : IExtend
     /// <returns></returns>
     public Series AddGraph(GraphViewModel model)
     {
-        var graph = new Series
-        {
-            Name = model.Title,
-            Type = "graph",
-            //Data = nodes,
-        };
+        var graph = Create(model.Title, "graph");
         graph["Layout"] = model.Layout;
         if (model.Layout == "force")
         {
@@ -639,7 +615,7 @@ public class ECharts : IExtend
         if (dataZoom != null) dic[nameof(dataZoom)] = dataZoom;
 
         // 系列数据
-        if (series != null) dic[nameof(series)] = series;
+        if (series != null) dic[nameof(series)] = GetJsonObject(series);
 
         // 合并Items
         foreach (var item in Items)
@@ -657,7 +633,7 @@ public class ECharts : IExtend
     /// <summary>获取Json对象，去掉空成员</summary>
     /// <param name="obj"></param>
     /// <returns></returns>
-    private Object GetJsonObject(Object obj)
+    protected virtual Object GetJsonObject(Object obj)
     {
         if (obj == null) return obj;
 
@@ -678,7 +654,11 @@ public class ECharts : IExtend
         var dic = new Dictionary<String, Object>();
         foreach (var pi in type.GetProperties())
         {
-            var val = pi.GetValue(obj);
+            if (pi.GetIndexParameters().Length > 0) continue;
+
+            var val = pi.GetValue(obj, null);
+            if (val is ICollection collection && collection.Count == 0) continue;
+
             if (val != null) dic[pi.Name] = val;
         }
 

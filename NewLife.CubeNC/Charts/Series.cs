@@ -12,14 +12,27 @@ public class Series : IExtend
     public String Type { get; set; }
     //public SeriesTypes Type { get; set; }
 
+    /// <summary>组件 ID</summary>
+    /// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
+    public String Id { get; set; }
+
     /// <summary>名称</summary>
     public String Name { get; set; }
 
+    /// <summary></summary>
+    /// <remark>
+    /// 从 v5.2.0 开始支持
+    /// 从调色盘 option.color 中取色的策略，可取值为：
+    /// 'series'：按照系列分配调色盘中的颜色，同一系列中的所有数据都是用相同的颜色；
+    /// 'data'：按照数据项分配调色盘中的颜色，每个数据项都使用不同的颜色。
+    /// </remark>
+    public String ColorBy { get; set; }
+
     /// <summary>数据</summary>
-    public Object Data { get; set; }
+    public virtual Object[] Data { get; set; }
 
     /// <summary>折线光滑</summary>
-    public Boolean Smooth { get; set; }
+    public Boolean? Smooth { get; set; }
 
     /// <summary>标记的图形</summary>
     public String Symbol { get; set; }
@@ -30,8 +43,11 @@ public class Series : IExtend
     ///// <summary>标记线。例如平均线</summary>
     //public Object MarkLine { get; set; }
 
-    /// <summary>Y轴索引。设置1表示使用第二个Y轴</summary>
-    public Int32 YAxisIndex { get => Items["YAxisIndex"].ToInt(); set => Items["YAxisIndex"] = value; }
+    /// <summary>使用的 x 轴的 index，在单个图表实例中存在多个 x 轴的时候有用。</summary>
+    public Double? XAxisIndex { get; set; }
+
+    /// <summary>使用的 y 轴的 index，在单个图表实例中存在多个 y轴的时候有用。</summary>
+    public Double? YAxisIndex { get; set; }
 
     /// <summary>扩展字典</summary>
     [ScriptIgnore]
