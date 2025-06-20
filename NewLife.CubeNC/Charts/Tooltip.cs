@@ -113,7 +113,7 @@ public class Tooltip
     /// <remark>
     /// 从 v4.7.0 开始支持
     /// （自 v5.5.0 已废弃，请使用 appendTo。）
-    /// 是否将 tooltip 的 DOM 节点添加为 HTML 的 <body> 的子节点。只有当 renderMode 为 'html' 是有意义的。
+    /// 是否将 tooltip 的 DOM 节点添加为 HTML 的 &lt;body&gt; 的子节点。只有当 renderMode 为 'html' 是有意义的。
     /// 默认值是 false。false 表示，tooltip 的 DOM 节点会被添加为本图表的 DOM container 的一个子孙节点。但是这种方式导致，如果本图表的 DOM container 的祖先节点有设置 overflow: hidden，那么当 tooltip 超出 container 范围使可能被截断。这个问题一定程度上可以用 tooltip.confine 来解决，但是不一定能解决所有场景。
     /// 所以这里我们提供了 appendToBody: true 来解决这件事。这也是常见的解决此类问题的一种方式。但是 true 并不定为默认值，因为要避免 break change，尤其是一些对于 tooltip 深入定制的使用。并且也避免一些未知的 bad case。
     /// 注：CSS transform 的场景，这也可以使用。
@@ -156,7 +156,7 @@ public class Tooltip
     ///   position: ['50%', '50%']
     /// Function
     ///   回调函数，格式如下：
-    ///   (point: Array, params: Object|Array.<Object>, dom: HTMLDomElement, rect: Object, size: Object) => Array
+    ///   (point: Array, params: Object|Array.&lt;Object&gt;, dom: HTMLDomElement, rect: Object, size: Object) => Array
     ///   参数：
     ///   point: 鼠标位置，如 [20, 40]。
     ///   params: 同 formatter 的参数相同。
@@ -175,7 +175,7 @@ public class Tooltip
     ///   position: function (pos, params, dom, rect, size) {
     ///       // 鼠标在左侧时 tooltip 显示到右侧，鼠标在右侧时 tooltip 显示到左侧。
     ///       var obj = {top: 60};
-    ///       obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 5;
+    ///       obj[['left', 'right'][+(pos[0] &lt; size.viewSize[0] / 2)]] = 5;
     ///       return obj;
     ///   }
     /// 
@@ -205,7 +205,7 @@ public class Tooltip
     /// 饼图、仪表盘、漏斗图: {a}（系列名称），{b}（数据项名称），{c}（数值）, {d}（百分比）
     /// 更多其它图表模板变量的含义可以见相应的图表的 label.formatter 配置项。
     /// 示例：
-    /// formatter: '{b0}: {c0}<br />{b1}: {c1}'
+    /// formatter: '{b0}: {c0}&lt;br /&gt;{b1}: {c1}'
     /// 2. 回调函数
     /// 回调函数格式：
     /// (params: Object|Array, ticket: string, callback: (ticket: string, html: string)) => string | HTMLElement | HTMLElement[]
@@ -237,7 +237,7 @@ public class Tooltip
     ///     // }
     ///     encode: Object,
     ///     // 维度名列表
-    ///     dimensionNames: Array<String>,
+    ///     dimensionNames: Array&lt;String&gt;,
     ///     // 数据的维度 index，如 0 或 1 或 2 ...
     ///     // 仅在雷达图中使用。
     ///     dimensionIndex: number,
@@ -305,7 +305,7 @@ public class Tooltip
     ///     // }
     ///     encode: Object,
     ///     // 维度名列表
-    ///     dimensionNames: Array<String>,
+    ///     dimensionNames: Array&lt;String&gt;,
     ///     // 数据的维度 index，如 0 或 1 或 2 ...
     ///     // 仅在雷达图中使用。
     ///     dimensionIndex: number,

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Charts;
+﻿using NewLife.Cube.Charts;
 using NewLife.Cube.Entity;
 using NewLife.Web;
 using XCode.Membership;
@@ -35,18 +34,15 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
             var chart = AddChart(list2, _.Date, null, [_.Logins, _.OAuths, _.MaxOnline, _.Actives, _.ActivesT7, _.ActivesT30, _.News, _.NewsT7, _.NewsT30], SeriesTypes.Line);
             chart.SetY(["用户数", "总数", "时长"], "value", [null, null, "{value}秒"]);
 
-            // 绘制平均线和最大最小值
-            //var sr = chart.Series[0];
-            //sr.MarkLine(true);
-            //sr.MarkPoint(true, true);
-
             var line = chart.AddLine(list2, _.Total, null, true);
             line.YAxisIndex = 1;
 
             var line3 = chart.AddLine(list2, _.OnlineTime, null, true);
             line3.YAxisIndex = 2;
-            line3.MarkLine(true);
-            line3.MarkPoint(true, true);
+
+            // 绘制平均线和最大最小值
+            line3.SetMarkLine(true);
+            line3.SetMarkPoint(true, true);
         }
 
         return list;

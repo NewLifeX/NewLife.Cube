@@ -68,6 +68,7 @@ public class Toolbox
     /// <remark>由于 icon 的文本信息只在 icon hover 时候才显示，所以文字相关的配置项请在 emphasis 下设置。</remark>
     public Object IconStyle { get; set; }
 
+    /// <summary></summary>
     public Object Emphasis { get; set; }
 
     /// <summary>所有图形的 zlevel 值</summary>

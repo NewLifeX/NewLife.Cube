@@ -271,8 +271,11 @@ public class ECharts : IExtend
         {
             "line" => new SeriesLine { Type = type },
             "bar" => new SeriesBar { Type = type },
+            "bar3D" => new SeriesBar3D { Type = type },
             "pie" => new SeriesPie { Type = type },
             "graph" => new SeriesGraph { Type = type },
+            "effectScatter" => new SeriesEffectScatter { Type = type },
+            "boxplot" => new SeriesBoxplot { Type = type },
             _ => new Series { Type = type },
         };
         sr.Name = name;
@@ -408,7 +411,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, "line", data);
+        var sr = Create(field?.DisplayName ?? field.Name, "line", data) as SeriesLine;
         sr.Smooth = smooth;
 
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;

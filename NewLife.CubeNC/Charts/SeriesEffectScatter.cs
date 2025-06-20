@@ -1,16 +1,13 @@
 ﻿namespace NewLife.Cube.Charts;
 
-/// <summary>饼图</summary>
+/// <summary>带有涟漪特效动画的散点（气泡）图</summary>
 /// <remark>
-/// 饼图主要用于表现不同类目的数据在总和中的占比。每个的弧度表示数据数量的比例。
-/// 对于一个图表中有多个饼图的场景，可以使用 left、right、top、bottom、width、height 配置每个饼图系列的位置和视口大小。radius、label.edgeDistance 等支持百分比的配置项，是相对于该配置项决定的矩形的大小而言的。
-/// Tip: 饼图更适合表现数据相对于总数的百分比等关系。如果只是表示不同类目数据间的大小，建议使用 柱状图，人们对于微小的弧度差别相比于微小的长度差别更不敏感，或者也可以通过配置 roseType 显示成南丁格尔图，通过半径大小区分数据的大小。
-/// 下面是自定义南丁格尔图的示例：
-/// 从 ECharts v4.6.0 版本起，我们提供了 'labelLine' 与 'edge' 两种新的布局方式。详情参见 label.alignTo。
+/// 利用动画特效可以将某些想要突出的数据进行视觉突出。
+/// Tip: ECharts 2.x 中在地图上通过 markPoint 实现地图特效在 ECharts 3 中建议通过地理坐标系上的 effectScatter 实现。
 /// </remark>
-public class SeriesPie : Series
+public class SeriesEffectScatter : Series
 {
-    //public String Type { get; set; } = "pie";
+    //public String Type { get; set; } = "effectScatter";
 
     ///// <summary>组件 ID</summary>
     ///// <remark>默认不指定。指定则可用于在 option 或者 API 中引用组件。</remark>
@@ -32,167 +29,109 @@ public class SeriesPie : Series
     /// <summary>是否启用图例 hover 时的联动高亮</summary>
     public Boolean? LegendHoverLink { get; set; }
 
+    /// <summary>特效类型，目前只支持涟漪特效'ripple'</summary>
+    public String EffectType { get; set; }
+
+    /// <summary>配置何时显示特效</summary>
+    /// <remark>
+    /// 可选：
+    /// 'render' 绘制完成后显示特效。
+    /// 'emphasis' 高亮（hover）的时候显示特效。
+    /// </remark>
+    public String ShowEffectOn { get; set; }
+
+    /// <summary>涟漪特效相关配置</summary>
+    public Object RippleEffect { get; set; }
+
     /// <summary></summary>
     /// <remark>
-    /// 从 v5.4.0 开始支持
     /// 该系列使用的坐标系，可选：
-    /// null 或者 'none'
-    ///   无坐标系。
+    /// 'cartesian2d'
+    ///   使用二维的直角坐标系（也称笛卡尔坐标系），通过 xAxisIndex, yAxisIndex指定相应的坐标轴组件。
+    /// 'polar'
+    ///   使用极坐标系，通过 polarIndex 指定相应的极坐标组件
     /// 'geo'
     ///   使用地理坐标系，通过 geoIndex 指定相应的地理坐标系组件。
     /// 'calendar'
     ///   使用日历坐标系，通过 calendarIndex 指定相应的日历坐标系组件。
-    /// 'none'
-    ///   不使用坐标系。
     /// </remark>
     public String CoordinateSystem { get; set; }
 
-    /// <summary></summary>
-    /// <remark>
-    /// 从 v5.4.0 开始支持
-    /// 使用的地理坐标系的 index，在单个图表实例中存在多个地理坐标系的时候有用。
-    /// </remark>
+    ///// <summary>使用的 x 轴的 index，在单个图表实例中存在多个 x 轴的时候有用。</summary>
+    //public Double? XAxisIndex { get; set; }
+
+    ///// <summary>使用的 y 轴的 index，在单个图表实例中存在多个 y轴的时候有用。</summary>
+    //public Double? YAxisIndex { get; set; }
+
+    /// <summary>使用的极坐标系的 index，在单个图表实例中存在多个极坐标系的时候有用。</summary>
+    public Double? PolarIndex { get; set; }
+
+    /// <summary>使用的地理坐标系的 index，在单个图表实例中存在多个地理坐标系的时候有用。</summary>
     public Double? GeoIndex { get; set; }
 
-    /// <summary></summary>
-    /// <remark>
-    /// 从 v5.4.0 开始支持
-    /// 使用的日历坐标系的 index，在单个图表实例中存在多个日历坐标系的时候有用。
-    /// </remark>
+    /// <summary>使用的日历坐标系的 index，在单个图表实例中存在多个日历坐标系的时候有用。</summary>
     public Double? CalendarIndex { get; set; }
 
-    /// <summary></summary>
+    /// <summary>标记的图形</summary>
     /// <remark>
-    /// 选中模式的配置，表示是否支持多个选中，默认关闭，支持布尔值和字符串，字符串取值可选'single'，'multiple'，'series' 分别表示单选，多选以及选择整个系列。
-    /// 从 v5.3.0 开始支持 'series'。
+    /// ECharts 提供的标记类型包括
+    /// 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none'
+    /// 可以通过 'image://url' 设置为图片，其中 URL 为图片的链接，或者 dataURI。
+    /// URL 为图片链接例如：
+    /// 'image://http://example.website/a/b.png'
+    /// URL 为 dataURI 例如：
+    /// 'image://data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7'
+    /// 可以通过 'path://' 将图标设置为任意的矢量路径。这种方式相比于使用图片的方式，不用担心因为缩放而产生锯齿或模糊，而且可以设置为任意颜色。路径图形会自适应调整为合适的大小。路径的格式参见 SVG PathData。可以从 Adobe Illustrator 等工具编辑导出。
+    /// 例如：
+    /// 'path://M30.9,53.2C16.8,53.2,5.3,41.7,5.3,27.6S16.8,2,30.9,2C45,2,56.4,13.5,56.4,27.6S45,53.2,30.9,53.2z M30.9,3.5C17.6,3.5,6.8,14.4,6.8,27.6c0,13.3,10.8,24.1,24.101,24.1C44.2,51.7,55,40.9,55,27.6C54.9,14.4,44.1,3.5,30.9,3.5z M36.9,35.8c0,0.601-0.4,1-0.9,1h-1.3c-0.5,0-0.9-0.399-0.9-1V19.5c0-0.6,0.4-1,0.9-1H36c0.5,0,0.9,0.4,0.9,1V35.8z M27.8,35.8 c0,0.601-0.4,1-0.9,1h-1.3c-0.5,0-0.9-0.399-0.9-1V19.5c0-0.6,0.4-1,0.9-1H27c0.5,0,0.9,0.4,0.9,1L27.8,35.8L27.8,35.8z'
+    /// 如果需要每个数据的图形不一样，可以设置为如下格式的回调函数：
+    /// (value: Array|number, params: Object) => string
+    /// 其中第一个参数 value 为 data 中的数据值。第二个参数params 是其它的数据项参数。
     /// </remark>
-    public Object SelectedMode { get; set; }
-
-    /// <summary>选中扇区的偏移距离</summary>
-    public Double? SelectedOffset { get; set; }
-
-    /// <summary>饼图的扇区是否是顺时针排布</summary>
-    public Boolean? Clockwise { get; set; }
-
-    /// <summary>起始角度，支持范围[0, 360]</summary>
-    public Double? StartAngle { get; set; }
-
-    /// <summary></summary>
-    /// <remark>
-    /// 从 v5.5.0 开始支持
-    /// 结束角度，默认值是 'auto'。
-    /// 当值为 'auto' 时，根据 startAngle 自动计算结束角度，以确保是一个完整的圆。
-    /// </remark>
-    public Object EndAngle { get; set; }
-
-    /// <summary>最小的扇区角度（0 ~ 360），用于防止某个值过小导致扇区太小影响交互。</summary>
-    public Double? MinAngle { get; set; }
+    public override String Symbol { get; set; }
 
     /// <summary></summary>
     /// <remark>
-    /// 从 v5.5.0 开始支持
-    /// 饼图扇区之间的间隔角度（0 ~ 360）。
+    /// 标记的大小，可以设置成诸如 10 这样单一的数字，也可以用数组分开表示宽和高，例如 [20, 10] 表示标记宽为20，高为10。
+    /// 如果需要每个数据的图形大小不一样，可以设置为如下格式的回调函数：
+    /// (value: Array|number, params: Object) => number|Array
+    /// 其中第一个参数 value 为 data 中的数据值。第二个参数params 是其它的数据项参数。
     /// </remark>
-    public Double? PadAngle { get; set; }
+    public Object SymbolSize { get; set; }
+
+    /// <summary>标记的旋转角度（而非弧度）</summary>
+    /// <remark>
+    /// 正值表示逆时针旋转。注意在 markLine 中当 symbol 为 'arrow' 时会忽略 symbolRotate 强制设置为切线的角度。
+    /// 如果需要每个数据的旋转角度不一样，可以设置为如下格式的回调函数：
+    /// (value: Array|number, params: Object) => number
+    /// 其中第一个参数 value 为 data 中的数据值。第二个参数params 是其它的数据项参数。
+    /// 从 4.8.0 开始支持回调函数。
+    /// </remark>
+    public Object SymbolRotate { get; set; }
 
     /// <summary></summary>
-    /// <remark>小于这个角度（0 ~ 360）的扇区，不显示标签（label 和 labelLine）。</remark>
-    public Double? MinShowLabelAngle { get; set; }
+    /// <remark>如果 symbol 是 path:// 的形式，是否在缩放时保持该图形的长宽比。</remark>
+    public Boolean? SymbolKeepAspect { get; set; }
 
-    /// <summary>是否展示成南丁格尔图，通过半径区分数据大小</summary>
+    /// <summary>标记相对于原本位置的偏移</summary>
     /// <remark>
-    /// 可选择两种模式：
-    /// 'radius' 扇区圆心角展现数据的百分比，半径展现数据的大小。
-    /// 'area' 所有扇区圆心角相同，仅通过半径展现数据大小。
+    /// 默认情况下，标记会居中置放在数据对应的位置，但是如果 symbol 是自定义的矢量路径或者图片，就有可能不希望 symbol 居中。这时候可以使用该配置项配置 symbol 相对于原本居中的偏移，可以是绝对的像素值，也可以是相对的百分比。
+    /// 例如 [0, '-50%'] 就是把自己向上移动了一半的位置，在 symbol 图形是气泡的时候可以让图形下端的箭头对准数据点。
     /// </remark>
-    public Object RoseType { get; set; }
-
-    /// <summary></summary>
-    /// <remark>
-    /// 是否启用防止标签重叠策略，默认开启，在标签拥挤重叠的情况下会挪动各个标签的位置，防止标签间的重叠。
-    /// 如果不需要开启该策略，例如圆环图这个例子中需要强制所有标签放在中心位置，可以将该值设为 false。
-    /// </remark>
-    public Boolean? AvoidLabelOverlap { get; set; }
-
-    /// <summary>是否在数据和为0（一般情况下所有数据为0） 的时候仍显示扇区。</summary>
-    public Boolean? StillShowZeroSum { get; set; }
-
-    /// <summary>饼图百分比数值的精度，默认保留小数点后两位</summary>
-    public Double? PercentPrecision { get; set; }
+    public double[] SymbolOffset { get; set; }
 
     /// <summary>鼠标悬浮时在图形元素上时鼠标的样式是什么</summary>
     /// <remark>同 CSS 的 cursor。</remark>
     public String Cursor { get; set; }
 
-    /// <summary>所有图形的 zlevel 值</summary>
-    /// <remark>
-    /// zlevel用于 Canvas 分层，不同zlevel值的图形会放置在不同的 Canvas 中，Canvas 分层是一种常见的优化手段。我们可以把一些图形变化频繁（例如有动画）的组件设置成一个单独的zlevel。需要注意的是过多的 Canvas 会引起内存开销的增大，在手机端上需要谨慎使用以防崩溃。
-    /// zlevel 大的 Canvas 会放在 zlevel 小的 Canvas 的上面。
-    /// </remark>
-    public Double? Zlevel { get; set; }
-
-    /// <summary>组件的所有图形的z值</summary>
-    /// <remark>
-    /// 控制图形的前后顺序。z值小的图形会被z值大的图形覆盖。
-    /// z相比zlevel优先级更低，而且不会创建新的 Canvas。
-    /// </remark>
-    public Double? Z { get; set; }
-
-    /// <summary>pie chart组件离容器左侧的距离</summary>
-    /// <remark>
-    /// left 的值可以是像 20 这样的具体像素值，可以是像 '20%' 这样相对于容器高宽的百分比，也可以是 'left', 'center', 'right'。
-    /// 如果 left 的值为 'left', 'center', 'right'，组件会根据相应的位置自动对齐。
-    /// </remark>
-    public Object Left { get; set; }
-
-    /// <summary>pie chart组件离容器上侧的距离</summary>
-    /// <remark>
-    /// top 的值可以是像 20 这样的具体像素值，可以是像 '20%' 这样相对于容器高宽的百分比，也可以是 'top', 'middle', 'bottom'。
-    /// 如果 top 的值为 'top', 'middle', 'bottom'，组件会根据相应的位置自动对齐。
-    /// </remark>
-    public Object Top { get; set; }
-
-    /// <summary>pie chart组件离容器右侧的距离</summary>
-    /// <remark>
-    /// right 的值可以是像 20 这样的具体像素值，可以是像 '20%' 这样相对于容器高宽的百分比。
-    /// 默认自适应。
-    /// </remark>
-    public Object Right { get; set; }
-
-    /// <summary>pie chart组件离容器下侧的距离</summary>
-    /// <remark>
-    /// bottom 的值可以是像 20 这样的具体像素值，可以是像 '20%' 这样相对于容器高宽的百分比。
-    /// 默认自适应。
-    /// </remark>
-    public Object Bottom { get; set; }
-
-    /// <summary>pie chart组件的宽度</summary>
-    /// <remark>默认自适应。</remark>
-    public Object Width { get; set; }
-
-    /// <summary>pie chart组件的高度</summary>
-    /// <remark>默认自适应。</remark>
-    public Object Height { get; set; }
-
-    /// <summary></summary>
-    /// <remark>
-    /// 从 v5.2.0 开始支持
-    /// 是否在无数据的时候显示一个占位圆。
-    /// </remark>
-    public Boolean? ShowEmptyCircle { get; set; }
-
-    /// <summary></summary>
-    /// <remark>
-    /// 从 v5.2.0 开始支持
-    /// 占位圆样式。
-    /// </remark>
-    public Object EmptyCircleStyle { get; set; }
-
-    /// <summary>饼图图形上的文本标签，可用于说明图形的一些数据信息，比如值，名称等。</summary>
+    /// <summary>图形上的文本标签，可用于说明图形的一些数据信息，比如值，名称等。</summary>
     public Object Label { get; set; }
 
-    /// <summary>标签的视觉引导线配置</summary>
-    /// <remark>在 label 位置 设置为'outside'的时候会显示视觉引导线。</remark>
+    /// <summary></summary>
+    /// <remark>
+    /// 从 v5.0.0 开始支持
+    /// 标签的视觉引导线配置。
+    /// </remark>
     public Object LabelLine { get; set; }
 
     /// <summary></summary>
@@ -242,44 +181,30 @@ public class SeriesPie : Series
     /// <summary>图形样式</summary>
     public Object ItemStyle { get; set; }
 
-    /// <summary>高亮状态的扇区和标签样式</summary>
+    /// <summary>高亮的图形和标签样式</summary>
     public Object Emphasis { get; set; }
 
     /// <summary></summary>
     /// <remark>
     /// 从 v5.0.0 开始支持
-    /// 淡出状态的扇区和标签样式。开启 emphasis.focus 后有效。
+    /// 淡出状态的配置。开启 emphasis.focus 后有效。
     /// </remark>
     public Object Blur { get; set; }
 
     /// <summary></summary>
     /// <remark>
     /// 从 v5.0.0 开始支持
-    /// 选中状态的扇区和标签样式。开启 selectedMode 后有效。
+    /// 选中状态的配置。开启 selectedMode 后有效。
     /// </remark>
     public Object Select { get; set; }
 
     /// <summary></summary>
     /// <remark>
-    /// 饼图的中心（圆心）坐标，数组的第一项是横坐标，第二项是纵坐标。
-    /// 支持设置成百分比，设置成百分比时第一项是相对于容器宽度，第二项是相对于容器高度。
-    /// 使用示例：
-    /// // 设置成绝对的像素值
-    /// center: [400, 300]
-    /// // 设置成相对的百分比
-    /// center: ['50%', '50%']
+    /// 从 v5.0.0 开始支持
+    /// 选中模式的配置，表示是否支持多个选中，默认关闭，支持布尔值和字符串，字符串取值可选'single'，'multiple'，'series' 分别表示单选，多选以及选择整个系列。
+    /// 从 v5.3.0 开始支持 'series'。
     /// </remark>
-    public Double[] Center { get; set; }
-
-    /// <summary>饼图的半径</summary>
-    /// <remark>
-    /// 可以为如下类型：
-    /// number：直接指定外半径值。
-    /// string：例如，'20%'，表示外半径为可视区尺寸（容器高宽中较小一项）的 20% 长度。
-    /// Array.&lt;number|string&gt;：数组的第一项是内半径，第二项是外半径。每一项遵从上述 number string 的描述。
-    /// 可以将内半径设大显示成圆环图（Donut chart）。
-    /// </remark>
-    public Object Radius { get; set; }
+    public Object SelectedMode { get; set; }
 
     /// <summary></summary>
     /// <remark>
@@ -339,7 +264,7 @@ public class SeriesPie : Series
     /// displayName: 一般用于 tooltip 中维度名的展示。string 如果没有指定，默认使用 name 来展示。
     /// 值得一提的是，当定义了 dimensions 后，默认 tooltip 中对个维度的显示，会变为『竖排』，从而方便显示每个维度的名称。如果没有定义 dimensions，则默认 tooltip 会横排显示，且只显示数值没有维度名称可显示。
     /// </remark>
-    public Double[] Dimensions { get; set; }
+    public double[] Dimensions { get; set; }
 
     /// <summary>可以定义 data 的哪个维度被编码成什么</summary>
     /// <remark>
@@ -450,42 +375,104 @@ public class SeriesPie : Series
     ///     }
     /// };
     /// </remark>
-    public Object Encode { get; set; }
-
-    /// <summary>该系列所有数据项的组 ID，优先级低于groupId</summary>
-    /// <remark>详见series.data.groupId。</remark>
-    public String DataGroupId { get; set; }
+    public object Encode { get; set; }
 
     /// <summary>系列中的数据内容数组</summary>
     /// <remark>
-    /// 数组项可以为单个数值，如：
-    /// [12, 34, 56, 10, 23]
-    /// 如果需要在数据中加入其它维度给 visualMap 组件用来映射到颜色等其它图形属性。每个数据项也可以是数组，如：
-    /// [[12, 14], [34, 50], [56, 30], [10, 15], [23, 10]]
-    /// 这时候可以将每项数组中的第二个值指定给 visualMap 组件。
-    /// 更多时候我们需要指定每个数据项的名称，这时候需要每个项为一个对象：
-    /// [{
-    ///     // 数据项的名称
-    ///     name: '数据1',
-    ///     // 数据项值8
-    ///     value: 10
-    /// }, {
-    ///     name: '数据2',
-    ///     value: 20
+    /// 数组项通常为具体的数据项。
+    /// 注意，如果系列没有指定 data，并且 option 有 dataset，那么默认使用第一个 dataset。如果指定了 data，则不会再使用 dataset。
+    /// 可以使用 series.datasetIndex 指定其他的 dataset。
+    /// 通常来说，数据用一个二维数组表示。如下，每一列被称为一个『维度』。
+    /// series: [{
+    ///     data: [
+    ///         // 维度X   维度Y   其他维度 ...
+    ///         [  3.4,    4.5,   15,   43],
+    ///         [  4.2,    2.3,   20,   91],
+    ///         [  10.8,   9.5,   30,   18],
+    ///         [  7.2,    8.8,   18,   57]
+    ///     ]
     /// }]
-    /// 需要对个别内容指定进行个性化定义时：
-    /// [{
-    ///     name: '数据1',
-    ///     value: 10
-    /// }, {
-    ///     // 数据项名称
-    ///     name: '数据2',
-    ///     value : 56,
-    ///     //自定义特殊 tooltip，仅对该数据项有效
-    ///     tooltip:{},
-    ///     //自定义特殊itemStyle，仅对该item有效
-    ///     itemStyle:{}
+    /// 在 直角坐标系 (grid) 中『维度X』和『维度Y』会默认对应于 xAxis 和 yAxis。
+    /// 在 极坐标系 (polar) 中『维度X』和『维度Y』会默认对应于 radiusAxis 和 angleAxis。
+    /// 后面的其他维度是可选的，可以在别处被使用，例如：
+    /// 在 visualMap 中可以将一个或多个维度映射到颜色，大小等多个图形属性上。
+    /// 在 series.symbolSize 中可以使用回调函数，基于某个维度得到 symbolSize 值。
+    /// 使用 tooltip.formatter 或 series.label.formatter 可以把其他维度的值展示出来。
+    /// 特别地，当只有一个轴为类目轴（axis.type 为 'category'）的时候，数据可以简化用一个一维数组表示。例如：
+    /// xAxis: {
+    ///     data: ['a', 'b', 'm', 'n']
+    /// },
+    /// series: [{
+    ///     // 与 xAxis.data 一一对应。
+    ///     data: [23,  44,  55,  19]
+    ///     // 它其实是下面这种形式的简化：
+    ///     // data: [[0, 23], [1, 44], [2, 55], [3, 19]]
     /// }]
+    /// 『值』与 轴类型 的关系：
+    /// 当某维度对应于数值轴（axis.type 为 'value' 或者 'log'）的时候：
+    ///   其值可以为 number（例如 12）。（也可以兼容 string 形式的 number，例如 '12'）
+    /// 当某维度对应于类目轴（axis.type 为 'category'）的时候：
+    ///   其值须为类目的『序数』（从 0 开始）或者类目的『字符串值』。例如：
+    ///   xAxis: {
+    ///       type: 'category',
+    ///       data: ['星期一', '星期二', '星期三', '星期四']
+    ///   },
+    ///   yAxis: {
+    ///       type: 'category',
+    ///       data: ['a', 'b', 'm', 'n', 'p', 'q']
+    ///   },
+    ///   series: [{
+    ///       data: [
+    ///           // xAxis    yAxis
+    ///           [  0,        0,    2  ], // 意思是此点位于 xAxis: '星期一', yAxis: 'a'。
+    ///           [  '星期四',  2,    1  ], // 意思是此点位于 xAxis: '星期四', yAxis: 'm'。
+    ///           [  2,       'p',   2  ], // 意思是此点位于 xAxis: '星期三', yAxis: 'p'。
+    ///           [  3,        3,    5  ]
+    ///       ]
+    ///   }]
+    ///   双类目轴的示例可以参考 Github Punchcard 示例。
+    /// 当某维度对应于时间轴（type 为 'time'）的时候，值可以为：
+    /// 一个时间戳，如 1484141700832，表示 UTC 时间。
+    /// 或者字符串形式的时间描述：
+    /// ISO 8601 的子集，只包含这些形式（这几种格式，除非指明时区，否则均表示本地时间，与 moment 一致）：
+    /// 部分年月日时间: '2012-03', '2012-03-01', '2012-03-01 05', '2012-03-01 05:06'.
+    /// 使用 'T' 或空格分割: '2012-03-01T12:22:33.123', '2012-03-01 12:22:33.123'.
+    /// 时区设定: '2012-03-01T12:22:33Z', '2012-03-01T12:22:33+8000', '2012-03-01T12:22:33-05:00'.
+    /// 其他的时间字符串，包括（均表示本地时间）:
+    /// '2012', '2012-3-1', '2012/3/1', '2012/03/01',
+    /// '2009/6/12 2:00', '2009/6/12 2:05:08', '2009/6/12 2:05:08.123'
+    /// 或者用户自行初始化的 Date 实例：
+    /// 注意，用户自行初始化 Date 实例的时候，浏览器的行为有差异，不同字符串的表示也不同。
+    /// 例如：在 chrome 中，new Date('2012-01-01') 表示 UTC 时间的 2012 年 1 月 1 日，而 new Date('2012-1-1') 和 new Date('2012/01/01') 表示本地时间的 2012 年 1 月 1 日。在 safari 中，不支持 new Date('2012-1-1') 这种表示方法。
+    /// 所以，使用 new Date(dataString) 时，可使用第三方库解析（如 moment），或者使用 echarts.time.parse，或者参见 这里。
+    /// 当需要对个别数据进行个性化定义时：
+    /// 数组项可用对象，其中的 value 像表示具体的数值，如：
+    /// [
+    ///     12,
+    ///     34,
+    ///     {
+    ///         value : 56,
+    ///         //自定义标签样式，仅对该数据项有效
+    ///         label: {},
+    ///         //自定义特殊 itemStyle，仅对该数据项有效
+    ///         itemStyle:{}
+    ///     },
+    ///     10
+    /// ]
+    /// // 或
+    /// [
+    ///     [12, 33],
+    ///     [34, 313],
+    ///     {
+    ///         value: [56, 44],
+    ///         label: {},
+    ///         itemStyle:{}
+    ///     },
+    ///     [10, 33]
+    /// ]
+    /// 空值：
+    /// 当某数据不存在时（ps：不存在不代表值为 0），可以用 '-' 或者 null 或者 undefined 或者 NaN 表示。
+    /// 例如，无数据在折线图中可表现为该点是断开的，在其它图中可表示为图形不存在。
     /// </remark>
     public override Object[] Data { get; set; }
 
@@ -498,25 +485,37 @@ public class SeriesPie : Series
     /// <summary>图表标域，常用于标记图表中某个范围的数据，例如标出某段时间投放了广告。</summary>
     public Object MarkArea { get; set; }
 
+    /// <summary></summary>
+    /// <remark>
+    /// 从 v5.1.0 开始支持
+    /// 是否裁剪超出坐标系部分的图形，具体裁剪效果根据系列决定：
+    /// 散点图/带有涟漪特效动画的散点（气泡）图：忽略中心点超出坐标系的图形，但是不裁剪单个图形
+    /// 柱状图：裁掉完全超出的柱子，但是不会裁剪只超出部分的柱子
+    /// 折线图：裁掉所有超出坐标系的折线部分，拐点图形的逻辑按照散点图处理
+    /// 路径图：裁掉所有超出坐标系的部分
+    /// K 线图：忽略整体都超出坐标系的图形，但是不裁剪单个图形
+    /// 象形柱图：裁掉所有超出坐标系的部分（从 v5.5.0 开始支持）
+    /// 自定义系列：裁掉所有超出坐标系的部分
+    /// 除了象形柱图和自定义系列，其它系列的默认值都为 true，及开启裁剪，如果你觉得不想要裁剪的话，可以设置成 false 关闭。
+    /// </remark>
+    public Boolean? Clip { get; set; }
+
+    /// <summary>所有图形的 zlevel 值</summary>
+    /// <remark>
+    /// zlevel用于 Canvas 分层，不同zlevel值的图形会放置在不同的 Canvas 中，Canvas 分层是一种常见的优化手段。我们可以把一些图形变化频繁（例如有动画）的组件设置成一个单独的zlevel。需要注意的是过多的 Canvas 会引起内存开销的增大，在手机端上需要谨慎使用以防崩溃。
+    /// zlevel 大的 Canvas 会放在 zlevel 小的 Canvas 的上面。
+    /// </remark>
+    public Double? Zlevel { get; set; }
+
+    /// <summary>组件的所有图形的z值</summary>
+    /// <remark>
+    /// 控制图形的前后顺序。z值小的图形会被z值大的图形覆盖。
+    /// z相比zlevel优先级更低，而且不会创建新的 Canvas。
+    /// </remark>
+    public Double? Z { get; set; }
+
     /// <summary>图形是否不响应和触发鼠标事件，默认为 false，即响应和触发鼠标事件。</summary>
     public Boolean? Silent { get; set; }
-
-    /// <summary></summary>
-    /// <remark>
-    /// 初始动画效果，可选
-    /// 'expansion' 默认沿圆弧展开的效果。
-    /// 'scale' 缩放效果，配合设置 animationEasing='elasticOut' 可以做成 popup 的效果。
-    /// </remark>
-    public String AnimationType { get; set; }
-
-    /// <summary></summary>
-    /// <remark>
-    /// 从 v4.4.0 开始支持
-    /// 更新数据时的动画效果，可选：
-    /// 'transition' 通过改变起始和终止角度，从之前的数据过渡到新的数据。
-    /// 'expansion' 数据将整体重新沿圆弧展开。
-    /// </remark>
-    public String AnimationTypeUpdate { get; set; }
 
     /// <summary>是否开启动画</summary>
     public Boolean? Animation { get; set; }
@@ -574,16 +573,6 @@ public class SeriesPie : Series
     /// 也可以看该示例
     /// </remark>
     public Object AnimationDelayUpdate { get; set; }
-
-    /// <summary></summary>
-    /// <remark>
-    /// 从 v5.2.0 开始支持
-    /// 全局过渡动画相关的配置。
-    /// 全局过渡动画（Universal Transition）提供了任意系列之间进行变形动画的功能。开启该功能后，每次setOption，相同id的系列之间会自动关联进行动画的过渡，更细粒度的关联配置见universalTransition.seriesKey配置。
-    /// 通过配置数据项的groupId和childGroupId，还可以实现诸如下钻，聚合等一对多或者多对一的动画。
-    /// 可以直接在系列中配置 universalTransition: true 开启该功能。也可以提供一个对象进行更多属性的配置。
-    /// </remark>
-    public Object UniversalTransition { get; set; }
 
     /// <summary>本系列特定的 tooltip 设定</summary>
     public Object Tooltip { get; set; }

@@ -31,11 +31,11 @@ public class Series : IExtend
     /// <summary>数据</summary>
     public virtual Object[] Data { get; set; }
 
-    /// <summary>折线光滑</summary>
-    public Boolean? Smooth { get; set; }
+    ///// <summary>折线光滑</summary>
+    //public virtual Boolean? Smooth { get; set; }
 
     /// <summary>标记的图形</summary>
-    public String Symbol { get; set; }
+    public virtual String Symbol { get; set; }
 
     ///// <summary>标记点。例如最大最小值</summary>
     //public Object MarkPoint { get; set; }
@@ -48,6 +48,12 @@ public class Series : IExtend
 
     /// <summary>使用的 y 轴的 index，在单个图表实例中存在多个 y轴的时候有用。</summary>
     public Double? YAxisIndex { get; set; }
+
+    /// <summary>图表标注</summary>
+    public Object MarkPoint { get; set; }
+
+    /// <summary>图表标线</summary>
+    public Object MarkLine { get; set; }
 
     /// <summary>扩展字典</summary>
     [ScriptIgnore]
@@ -63,39 +69,41 @@ public class Series : IExtend
     /// <summary>标记最大最小值</summary>
     /// <param name="max"></param>
     /// <param name="min"></param>
-    public void MarkPoint(Boolean max, Boolean min)
+    public void SetMarkPoint(Boolean max, Boolean min)
     {
         var typeNames = new Dictionary<String, String>();
 
         if (max) typeNames["max"] = "Max";
         if (min) typeNames["min"] = "Min";
 
-        MarkPoint(typeNames);
+        //MarkPoint(typeNames);
+        MarkPoint = new { data = typeNames.Select(e => new { type = e.Key, name = e.Value }).ToArray() };
     }
 
-    /// <summary>标记点。例如最大最小值</summary>
-    /// <param name="typeNames"></param>
-    public void MarkPoint(IDictionary<String, String> typeNames)
-    {
-        Items["markPoint"] = new { data = typeNames.Select(e => new { type = e.Key, name = e.Value }).ToArray() };
-    }
+    ///// <summary>标记点。例如最大最小值</summary>
+    ///// <param name="typeNames"></param>
+    //public void MarkPoint(IDictionary<String, String> typeNames)
+    //{
+    //    Items["markPoint"] = new { data = typeNames.Select(e => new { type = e.Key, name = e.Value }).ToArray() };
+    //}
 
     /// <summary>标记平均线</summary>
     /// <param name="avg"></param>
-    public void MarkLine(Boolean avg)
+    public void SetMarkLine(Boolean avg)
     {
         var typeNames = new Dictionary<String, String>();
 
         if (avg) typeNames["average"] = "Avg";
 
-        MarkLine(typeNames);
+        //MarkLine(typeNames);
+        MarkPoint = new { data = typeNames.Select(e => new { type = e.Key, name = e.Value }).ToArray() };
     }
 
-    /// <summary>标记线</summary>
-    /// <param name="typeNames"></param>
-    public void MarkLine(IDictionary<String, String> typeNames)
-    {
-        Items["markLine"] = new { data = typeNames.Select(e => new { type = e.Key, name = e.Value }).ToArray() };
-    }
+    ///// <summary>标记线</summary>
+    ///// <param name="typeNames"></param>
+    //public void MarkLine(IDictionary<String, String> typeNames)
+    //{
+    //    Items["markLine"] = new { data = typeNames.Select(e => new { type = e.Key, name = e.Value }).ToArray() };
+    //}
     #endregion
 }

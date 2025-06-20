@@ -62,7 +62,7 @@ public class SeriesLine : Series
     /// (value: Array|number, params: Object) => string
     /// 其中第一个参数 value 为 data 中的数据值。第二个参数params 是其它的数据项参数。
     /// </remark>
-    public String Symbol { get; set; }
+    public override String Symbol { get; set; }
 
     /// <summary></summary>
     /// <remark>
