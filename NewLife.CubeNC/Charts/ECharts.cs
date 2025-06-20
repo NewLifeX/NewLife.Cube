@@ -270,12 +270,23 @@ public class ECharts : IExtend
         var sr = type switch
         {
             "line" => new SeriesLine { Type = type },
+            "line3D" => new SeriesLine3D { Type = type },
+            "lines" => new SeriesLines { Type = type },
+            "lines3D" => new SeriesLines3D { Type = type },
             "bar" => new SeriesBar { Type = type },
             "bar3D" => new SeriesBar3D { Type = type },
             "pie" => new SeriesPie { Type = type },
             "graph" => new SeriesGraph { Type = type },
             "effectScatter" => new SeriesEffectScatter { Type = type },
             "boxplot" => new SeriesBoxplot { Type = type },
+            "radar" => new SeriesRadar { Type = type },
+            "funnel" => new SeriesFunnel { Type = type },
+            "gauge" => new SeriesGauge { Type = type },
+            "heatmap" => new SeriesHeatmap { Type = type },
+            "sunburst" => new SeriesSunburst { Type = type },
+            "tree" => new SeriesTree { Type = type },
+            "treemap" => new SeriesTreemap { Type = type },
+            "sankey" => new SeriesSankey { Type = type },
             _ => new Series { Type = type },
         };
         sr.Name = name;
