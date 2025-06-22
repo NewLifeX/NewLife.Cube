@@ -136,6 +136,22 @@ public partial class Attachment : IEntity<AttachmentModel>
     [BindColumn("Source", "来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取", "")]
     public String Source { get => _Source; set { if (OnPropertyChanging("Source", value)) { _Source = value; OnPropertyChanged("Source"); } } }
 
+    private Int32 _Downloads;
+    /// <summary>下载次数</summary>
+    [DisplayName("下载次数")]
+    [Description("下载次数")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("Downloads", "下载次数", "")]
+    public Int32 Downloads { get => _Downloads; set { if (OnPropertyChanging("Downloads", value)) { _Downloads = value; OnPropertyChanged("Downloads"); } } }
+
+    private DateTime _LastDownload;
+    /// <summary>最后下载。最后一次下载的时间</summary>
+    [DisplayName("最后下载")]
+    [Description("最后下载。最后一次下载的时间")]
+    [DataObjectField(false, false, true, 0)]
+    [BindColumn("LastDownload", "最后下载。最后一次下载的时间", "")]
+    public DateTime LastDownload { get => _LastDownload; set { if (OnPropertyChanging("LastDownload", value)) { _LastDownload = value; OnPropertyChanged("LastDownload"); } } }
+
     private String _TraceId;
     /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
     [Category("扩展")]
@@ -246,6 +262,8 @@ public partial class Attachment : IEntity<AttachmentModel>
         UploadTime = model.UploadTime;
         Url = model.Url;
         Source = model.Source;
+        Downloads = model.Downloads;
+        LastDownload = model.LastDownload;
         TraceId = model.TraceId;
         CreateUser = model.CreateUser;
         CreateUserID = model.CreateUserID;
@@ -281,6 +299,8 @@ public partial class Attachment : IEntity<AttachmentModel>
             "UploadTime" => _UploadTime,
             "Url" => _Url,
             "Source" => _Source,
+            "Downloads" => _Downloads,
+            "LastDownload" => _LastDownload,
             "TraceId" => _TraceId,
             "CreateUser" => _CreateUser,
             "CreateUserID" => _CreateUserID,
@@ -311,6 +331,8 @@ public partial class Attachment : IEntity<AttachmentModel>
                 case "UploadTime": _UploadTime = value.ToDateTime(); break;
                 case "Url": _Url = Convert.ToString(value); break;
                 case "Source": _Source = Convert.ToString(value); break;
+                case "Downloads": _Downloads = value.ToInt(); break;
+                case "LastDownload": _LastDownload = value.ToDateTime(); break;
                 case "TraceId": _TraceId = Convert.ToString(value); break;
                 case "CreateUser": _CreateUser = Convert.ToString(value); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
@@ -390,6 +412,12 @@ public partial class Attachment : IEntity<AttachmentModel>
         /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
         public static readonly Field Source = FindByName("Source");
 
+        /// <summary>下载次数</summary>
+        public static readonly Field Downloads = FindByName("Downloads");
+
+        /// <summary>最后下载。最后一次下载的时间</summary>
+        public static readonly Field LastDownload = FindByName("LastDownload");
+
         /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
         public static readonly Field TraceId = FindByName("TraceId");
 
@@ -467,6 +495,12 @@ public partial class Attachment : IEntity<AttachmentModel>
 
         /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
         public const String Source = "Source";
+
+        /// <summary>下载次数</summary>
+        public const String Downloads = "Downloads";
+
+        /// <summary>最后下载。最后一次下载的时间</summary>
+        public const String LastDownload = "LastDownload";
 
         /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
         public const String TraceId = "TraceId";

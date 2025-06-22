@@ -50,7 +50,7 @@ public static class RSTool
             EncodeIntegerBigEndian(innerWriter, parameters.DP);
             EncodeIntegerBigEndian(innerWriter, parameters.DQ);
             EncodeIntegerBigEndian(innerWriter, parameters.InverseQ);
-            var length = (int)innerStream.Length;
+            var length = (Int32)innerStream.Length;
             EncodeLength(writer, length);
             writer.Write(innerStream.GetBuffer(), 0, length);
         }
@@ -131,7 +131,7 @@ public static class RSTool
         }
     }
 
-    private static void EncodeLength(BinaryWriter writer, int length)
+    private static void EncodeLength(BinaryWriter writer, Int32 length)
     {
         if (length < 0x80)
         {

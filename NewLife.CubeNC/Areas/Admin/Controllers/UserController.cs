@@ -503,7 +503,7 @@ public class UserController : EntityController<User, UserModel>
     /// <returns>返回pKey和publicKey</returns>
     [AllowAnonymous]
     [HttpGet]
-    public ActionResult GetLoginKey(string token)
+    public ActionResult GetLoginKey(String token)
     {
         if (ManageProvider.User != null)
         {

@@ -428,6 +428,10 @@ public class CubeController : ControllerBaseX
         var att = Attachment.FindById(id.ToLong());
         if (att == null) return NotFound("找不到附件信息");
 
+        att.Downloads++;
+        att.LastDownload = DateTime.Now;
+        att.SaveAsync(5_000);
+
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
@@ -465,6 +469,10 @@ public class CubeController : ControllerBaseX
 
         var att = Attachment.FindById(id.ToLong());
         if (att == null) return NotFound("找不到附件信息");
+
+        att.Downloads++;
+        att.LastDownload = DateTime.Now;
+        att.SaveAsync(5_000);
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();

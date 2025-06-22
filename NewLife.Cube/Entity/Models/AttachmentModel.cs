@@ -53,6 +53,12 @@ public partial class AttachmentModel
     /// <summary>来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取</summary>
     public String Source { get; set; }
 
+    /// <summary>下载次数</summary>
+    public Int32 Downloads { get; set; }
+
+    /// <summary>最后下载。最后一次下载的时间</summary>
+    public DateTime LastDownload { get; set; }
+
     /// <summary>追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链</summary>
     public String TraceId { get; set; }
 
@@ -103,6 +109,8 @@ public partial class AttachmentModel
         UploadTime = model.UploadTime;
         Url = model.Url;
         Source = model.Source;
+        Downloads = model.Downloads;
+        LastDownload = model.LastDownload;
         TraceId = model.TraceId;
         CreateUser = model.CreateUser;
         CreateUserID = model.CreateUserID;

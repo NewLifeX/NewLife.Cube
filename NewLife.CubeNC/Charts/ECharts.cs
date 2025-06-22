@@ -1,12 +1,12 @@
-﻿using System.Web.Script.Serialization;
-using System.Xml.Linq;
+﻿using System.Collections;
+using System.Web.Script.Serialization;
 using NewLife.Collections;
 using NewLife.Cube.Charts.Models;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
+using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Serialization;
-using NewLife.Web;
 using XCode.Configuration;
 
 namespace NewLife.Cube.Charts;
@@ -37,17 +37,20 @@ public class ECharts : IExtend
     public ChartTitle Title { get; set; }
 
     /// <summary>提示</summary>
-    public Object Tooltip { get; set; } = new Object();
+    public Tooltip Tooltip { get; set; }
 
     /// <summary>图例组件。</summary>
     /// <remarks>图例组件展现了不同系列的标记(symbol)，颜色和名字。可以通过点击图例控制哪些系列不显示。</remarks>
     public Object Legend { get; set; }
 
     /// <summary>X轴</summary>
-    public Object XAxis { get; set; }
+    public IList<XAxis> XAxis { get; set; } = [];
 
     /// <summary>Y轴</summary>
-    public Object YAxis { get; set; }
+    public IList<YAxis> YAxis { get; set; } = [];
+
+    /// <summary>工具箱</summary>
+    public Toolbox Toolbox { get; set; }
 
     /// <summary>数据缩放</summary>
     public DataZoom[] DataZoom { get; set; }
@@ -81,10 +84,10 @@ public class ECharts : IExtend
     /// <param name="selector">构建X轴的委托</param>
     public void SetX<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
     {
-        XAxis = new
+        XAxis.Add(new XAxis
         {
-            data = list.Select(e => selector == null ? e[name] + "" : selector(e)).ToArray()
-        };
+            Data = list.Select(e => selector == null ? e[name] + "" : selector(e)).ToArray()
+        });
         _xField = name;
     }
 
@@ -95,10 +98,12 @@ public class ECharts : IExtend
     /// <param name="selector">构建X轴的委托</param>
     public void SetX4Time<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
     {
-        XAxis = new
+        var axis = new XAxis
         {
-            type = "time",
+            Type = "time",
         };
+        //if (name.EndsWithIgnoreCase("Date")) axis.AxisLabel = new { formatter = "{yyyy}-{MM}-{dd}" };
+        XAxis.Add(axis);
         _timeField = name;
         _xField = name;
 
@@ -149,7 +154,7 @@ public class ECharts : IExtend
     /// time 时间轴，适用于连续的时序数据，与数值轴相比时间轴带有时间的格式化，在刻度计算上也有所不同，例如会根据跨度的范围来决定使用月，星期，日还是小时范围的刻度。
     /// log 对数轴。适用于对数数据。
     /// </param>
-    public void SetY(String name, String type = "value") => YAxis = new { name, type };
+    public void SetY(String name, String type = "value") => YAxis.Add(new YAxis { Name = name, Type = type });
 
     /// <summary>设置Y轴</summary>
     /// <param name="name"></param>
@@ -161,7 +166,7 @@ public class ECharts : IExtend
     /// log 对数轴。适用于对数数据。
     /// </param>
     /// <param name="formatter"></param>
-    public void SetY(String name, String type, String formatter) => YAxis = new { name, type, axisLabel = new { formatter } };
+    public void SetY(String name, String type, String formatter) => YAxis.Add(new YAxis { Name = name, Type = type, AxisLabel = new { formatter } });
 
     /// <summary>设置多个Y轴</summary>
     /// <param name="names"></param>
@@ -177,23 +182,23 @@ public class ECharts : IExtend
     {
         //YAxis = names.Select(e => new { name = e, type }).ToArray();
 
-        var list = new List<Object>();
+        var list = new List<YAxis>();
         for (var i = 0; i < names.Length; i++)
         {
             var formatter = formatters != null && formatters.Length > i ? formatters[i] : null;
             if (i == 0)
-                list.Add(new { name = names[i], type, axisLabel = new { formatter } });
+                list.Add(new YAxis { Name = names[i], Type = type, AxisLabel = new { formatter } });
             else if (i == 1)
-                list.Add(new { name = names[i], type, position = "right", axisLabel = new { formatter } });
+                list.Add(new YAxis { Name = names[i], Type = type, Position = "right", AxisLabel = new { formatter } });
             else
-                list.Add(new { name = names[i], type, position = "right", offset = 40 * (i - 1), axisLine = new { show = true }, axisLabel = new { formatter } });
+                list.Add(new YAxis { Name = names[i], Type = type, Position = "right", Offset = 40 * (i - 1), AxisLine = new { show = true }, AxisLabel = new { formatter } });
         }
 
         // 多Y轴时，右边偏移加大
         var n = names.Length - 1;
         if (n > 0) Grid.Right *= n;
 
-        YAxis = list.ToArray();
+        YAxis = list;
     }
 
     /// <summary>设置工具栏</summary>
@@ -207,10 +212,10 @@ public class ECharts : IExtend
     /// <param name="backgroundColor"></param>
     public void SetTooltip(String trigger = "axis", String axisPointerType = "cross", String backgroundColor = "#6a7985")
     {
-        Tooltip = new
+        Tooltip = new Tooltip
         {
-            trigger,
-            axisPointer = new
+            Trigger = trigger,
+            AxisPointer = new
             {
                 type = axisPointerType,
                 label = new
@@ -259,6 +264,37 @@ public class ECharts : IExtend
         Series.Add(series);
     }
 
+    private Series Create(String name, String type, Object[] data = null)
+    {
+        if (type.IsNullOrEmpty()) type = "line";
+        var sr = type switch
+        {
+            "line" => new SeriesLine { Type = type },
+            "line3D" => new SeriesLine3D { Type = type },
+            "lines" => new SeriesLines { Type = type },
+            "lines3D" => new SeriesLines3D { Type = type },
+            "bar" => new SeriesBar { Type = type },
+            "bar3D" => new SeriesBar3D { Type = type },
+            "pie" => new SeriesPie { Type = type },
+            "graph" => new SeriesGraph { Type = type },
+            "effectScatter" => new SeriesEffectScatter { Type = type },
+            "boxplot" => new SeriesBoxplot { Type = type },
+            "radar" => new SeriesRadar { Type = type },
+            "funnel" => new SeriesFunnel { Type = type },
+            "gauge" => new SeriesGauge { Type = type },
+            "heatmap" => new SeriesHeatmap { Type = type },
+            "sunburst" => new SeriesSunburst { Type = type },
+            "tree" => new SeriesTree { Type = type },
+            "treemap" => new SeriesTreemap { Type = type },
+            "sankey" => new SeriesSankey { Type = type },
+            _ => new Series { Type = type },
+        };
+        sr.Name = name;
+        sr.Data = data;
+
+        return sr;
+    }
+
     /// <summary>添加系列数据</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list">实体列表</param>
@@ -274,12 +310,8 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[name] : selector(e)).ToArray();
 
-        var sr = new Series
-        {
-            Name = name,
-            Type = type,
-            Data = data,
-        };
+        var sr = Create(name, type, data);
+
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
         Add(sr);
@@ -302,12 +334,8 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = new Series
-        {
-            Name = field?.DisplayName ?? field.Name,
-            Type = type,
-            Data = data,
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, type, data);
+
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
         Add(sr);
@@ -327,12 +355,8 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = new Series
-        {
-            Name = field?.DisplayName ?? field.Name,
-            Type = type.ToString().ToLower(),
-            Data = data,
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, type.ToString().ToLower(), data);
+
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
         Add(sr);
@@ -364,12 +388,8 @@ public class ECharts : IExtend
                 list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
                 list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-                series = new Series
-                {
-                    Name = field?.DisplayName ?? field.Name,
-                    Type = type.ToString().ToLower(),
-                    Data = data,
-                };
+                series = Create(field?.DisplayName ?? field.Name, type.ToString().ToLower(), data);
+
                 if (!Symbol.IsNullOrEmpty()) series.Symbol = Symbol;
 
                 Add(series);
@@ -396,19 +416,15 @@ public class ECharts : IExtend
     /// <param name="selector">数据选择器，默认null时直接使用字段数据</param>
     /// <param name="smooth">折线光滑</param>
     /// <returns></returns>
-    public Series AddLine<T>(IList<T> list, DataField field, Func<T, Object> selector = null, Boolean smooth = false) where T : IModel
+    public Series AddLine<T>(IList<T> list, DataField field, Func<T, Object> selector = null, Boolean? smooth = null) where T : IModel
     {
         var data = _timeField != null ?
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = new Series
-        {
-            Name = field.DisplayName ?? field.Name,
-            Type = "line",
-            Data = data,
-            Smooth = smooth,
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, "line", data) as SeriesLine;
+        sr.Smooth = smooth;
+
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
         Add(sr);
@@ -440,12 +456,8 @@ public class ECharts : IExtend
     /// <returns></returns>
     public Series AddBar<T>(IList<T> list, DataField field, Func<T, Object> selector = null) where T : IModel
     {
-        var sr = new Series
-        {
-            Name = field.DisplayName ?? field.Name,
-            Type = "bar",
-            Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray(),
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, "bar");
+        sr.Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
         Add(sr);
         return sr;
@@ -469,12 +481,8 @@ public class ECharts : IExtend
     /// <returns></returns>
     public Series AddPie<T>(IList<T> list, String keyName, String valueName, String displayName, Func<T, NameValue> selector = null) where T : IModel
     {
-        var sr = new Series
-        {
-            Name = displayName ?? valueName,
-            Type = "pie",
-            Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[valueName]) : selector(e)).ToArray(),
-        };
+        var sr = Create(displayName ?? valueName, "pie");
+        sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[valueName]) : selector(e)).ToArray();
 
         Add(sr);
         return sr;
@@ -492,12 +500,8 @@ public class ECharts : IExtend
         keyName ??= _xField as String;
         keyName ??= (_xField as DataField)?.Name;
         keyName ??= (_xField as FieldItem)?.Name;
-        var sr = new Series
-        {
-            Name = field.DisplayName ?? field.Name,
-            Type = "pie",
-            Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray(),
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, "pie");
+        sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray();
 
         Add(sr);
         return sr;
@@ -515,12 +519,8 @@ public class ECharts : IExtend
         keyName ??= (_xField as DataField)?.Name;
         keyName ??= (_xField as FieldItem)?.Name;
         keyName ??= field.Table.Master?.Name ?? field.Table.PrimaryKeys.FirstOrDefault()?.Name;
-        var sr = new Series
-        {
-            Name = field.DisplayName ?? field.Name,
-            Type = "pie",
-            Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray(),
-        };
+        var sr = Create(field?.DisplayName ?? field.Name, "pie");
+        sr.Data = list.Select(e => selector == null ? new NameValue(e[keyName] + "", e[field.Name]) : selector(e)).ToArray();
 
         Add(sr);
         return sr;
@@ -531,12 +531,7 @@ public class ECharts : IExtend
     /// <returns></returns>
     public Series AddGraph(GraphViewModel model)
     {
-        var graph = new Series
-        {
-            Name = model.Title,
-            Type = "graph",
-            //Data = nodes,
-        };
+        var graph = Create(model.Title, "graph");
         graph["Layout"] = model.Layout;
         if (model.Layout == "force")
         {
@@ -582,7 +577,7 @@ public class ECharts : IExtend
 
         // 提示
         var tooltip = Tooltip;
-        if (tooltip != null) dic[nameof(tooltip)] = tooltip;
+        if (tooltip != null) dic[nameof(tooltip)] = GetJsonObject(tooltip);
 
         // 提示
         var legend = Legend;
@@ -610,27 +605,31 @@ public class ECharts : IExtend
             dic[nameof(grid)] = grid;
         }
 
+        // 工具箱
+        var toolbox = Toolbox;
+        if (toolbox != null) dic[nameof(toolbox)] = GetJsonObject(toolbox);
+
         // X轴
         var xAxis = XAxis;
         if (xAxis != null)
         {
-            if (xAxis is String str)
-                xAxis = new { data = new[] { str } };
-            else if (xAxis is String[] ss)
-                xAxis = new { data = ss };
+            //if (xAxis is String str)
+            //    xAxis = new { data = new[] { str } };
+            //else if (xAxis is String[] ss)
+            //    xAxis = new { data = ss };
 
-            dic[nameof(xAxis)] = xAxis;
+            dic[nameof(xAxis)] = GetJsonObject(xAxis);
         }
 
         // Y轴
         var yAxis = YAxis;
-        if (yAxis != null) dic[nameof(yAxis)] = yAxis;
+        if (yAxis != null) dic[nameof(yAxis)] = GetJsonObject(yAxis);
 
         var dataZoom = DataZoom;
         if (dataZoom != null) dic[nameof(dataZoom)] = dataZoom;
 
         // 系列数据
-        if (series != null) dic[nameof(series)] = series;
+        if (series != null) dic[nameof(series)] = GetJsonObject(series);
 
         // 合并Items
         foreach (var item in Items)
@@ -643,6 +642,41 @@ public class ECharts : IExtend
 #else
         return dic.ToJson(false, true, true);
 #endif
+    }
+
+    /// <summary>获取Json对象，去掉空成员</summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    protected virtual Object GetJsonObject(Object obj)
+    {
+        if (obj == null) return obj;
+
+        var type = obj.GetType();
+        if (type.GetTypeCode() != TypeCode.Object) return obj;
+
+        if (obj is IList list)
+        {
+            var rs = new List<Object>();
+            foreach (var item in list)
+            {
+                var val = GetJsonObject(item);
+                if (val != null) rs.Add(val);
+            }
+            return rs;
+        }
+
+        var dic = new Dictionary<String, Object>();
+        foreach (var pi in type.GetProperties())
+        {
+            if (pi.GetIndexParameters().Length > 0) continue;
+
+            var val = pi.GetValue(obj, null);
+            if (val is ICollection collection && collection.Count == 0) continue;
+
+            if (val != null) dic[pi.Name] = val;
+        }
+
+        return dic;
     }
     #endregion
 }

@@ -411,43 +411,78 @@ public partial class EntityController<TEntity, TModel>
         try
         {
             var fact = Factory;
-
             using var reader = new ExcelReader(file.OpenReadStream(), Encoding.UTF8);
-            var rows = reader.ReadRows().ToList();
 
-            // 读取标题行，找到对应字段
             var headers = new List<String>();
             var fields = new List<FieldItem>();
-            foreach (var item in rows[0])
-            {
-                headers.Add(item + "");
-
-                // 找到对应字段，可能为空
-                var field = Factory.Fields.FirstOrDefault(e => (item + "").EqualIgnoreCase(e.Name, e.DisplayName));
-                fields.Add(field);
-            }
-
             var list = new List<TEntity>();
-            foreach (var row in rows.Skip(1))
-            {
-                // 实例化实体对象，读取一行，逐个字段赋值
-                var entity = fact.Create() as TEntity;
-                for (var i = 0; i < row.Length && i < fields.Count; i++)
-                {
-                    var field = fields[i];
-                    if (field != null)
-                        entity.SetItem(field.Name, row[i].ChangeType(field.Type));
-                    else
-                        entity[headers[i]] = row[i];
-                }
+            var total = 0;
+            var blank = 0;
+            var result = 0;
+            var batchSize = 10_000;
 
-                if ((entity as IEntity).HasDirty) list.Add(entity);
+            // 流式读取Excel数据，一边解析一边处理，避免一次性加载占用大量内存
+            foreach (var row in reader.ReadRows())
+            {
+                if (fields.Count == 0)
+                {
+                    // 读取标题行，找到对应字段
+                    foreach (var item in row)
+                    {
+                        headers.Add(item + "");
+
+                        // 找到对应字段，可能为空
+                        var field = Factory.Fields.FirstOrDefault(e => (item + "").EqualIgnoreCase(e.Name, e.DisplayName));
+                        fields.Add(field);
+                    }
+
+                    // 如果没有找到任何字段，说明该行不是标题行，需要检查下一行。该行可能是注释说明行
+                    if (!fields.Any(e => e != null))
+                    {
+                        blank++;
+                        headers.Clear();
+                        fields.Clear();
+                    }
+                }
+                else
+                {
+                    total++;
+                    // 如果该行所有列都为空，则直接跳过
+                    if (row.All(e => e == null || e.ToString().Trim().Length == 0))
+                    {
+                        blank++;
+                        continue;
+                    }
+
+                    // 实例化实体对象，读取一行，逐个字段赋值
+                    var entity = fact.Create() as TEntity;
+                    for (var i = 0; i < row.Length && i < fields.Count; i++)
+                    {
+                        var field = fields[i];
+                        if (field != null)
+                            entity.SetItem(field.Name, row[i].ChangeType(field.Type));
+                        else
+                            entity[headers[i]] = row[i];
+                    }
+
+                    if ((entity as IEntity).HasDirty) list.Add(entity);
+
+                    // 如果足够一批，先保存一批
+                    if (list.Count >= batchSize)
+                    {
+                        result += OnImport(list, headers, fields);
+                        list.Clear();
+                    }
+                }
             }
 
             // 保存数据
-            var rs = OnImport(list, headers, fields);
+            if (list.Count > 0)
+            {
+                result += OnImport(list, headers, fields);
+            }
 
-            var msg = $"导入[{file.FileName}]，共[{rows.Count - 1}]行，成功[{rs}]行！";
+            var msg = $"导入[{file.FileName}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
             base.WriteLog("导入Excel", true, msg);
 
             return JsonRefresh(msg, 2);
