@@ -666,7 +666,7 @@ public class ECharts : IExtend
         }
 
         var dic = new Dictionary<String, Object>();
-        foreach (var pi in type.GetProperties())
+        foreach (var pi in type.GetProperties(true))
         {
             if (pi.GetIndexParameters().Length > 0) continue;
 
@@ -674,6 +674,13 @@ public class ECharts : IExtend
             if (val is ICollection collection && collection.Count == 0) continue;
 
             if (val != null) dic[pi.Name] = val;
+        }
+        if (obj is IExtend ext)
+        {
+            foreach (var item in ext.Items)
+            {
+                if (item.Value != null) dic[item.Key] = item.Value;
+            }
         }
 
         return dic;
