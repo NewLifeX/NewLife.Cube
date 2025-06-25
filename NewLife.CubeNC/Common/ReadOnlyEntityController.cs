@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
 using System.Text;
@@ -660,9 +661,13 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             var bak = NewLife.Setting.Current.BackupPath.CombinePath(fileName).GetBasePath();
             bak.EnsureDirectory(true);
 
-            var rs = dal.Backup(fact.Table.DataTable, bak);
+            WriteLog("备份", true, $"开始备份[{name}]到[{fileName}]");
 
-            WriteLog("备份", true, $"备份[{fileName}]（{rs:n0}行）成功！");
+            var sw = Stopwatch.StartNew();
+            var rs = dal.Backup(fact.Table.DataTable, bak);
+            sw.Stop();
+
+            WriteLog("备份", true, $"备份[{name}]到[{fileName}]（{rs:n0}行）成功！耗时：{sw.Elapsed}");
 
             return Json(0, $"备份[{fileName}]（{rs:n0}行）成功！");
         }

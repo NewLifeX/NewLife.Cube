@@ -2,6 +2,7 @@
 @using NewLife;
 @using NewLife.Web;
 @using NewLife.Cube;
+@using System.Text.RegularExpressions
 @using XCode;
 @{
     var chart = Model;
@@ -10,6 +11,10 @@
     var optionName = "option_" + name;
     // 2024-08-25 这里不能设置grid，否则多Y轴时会有问题，看不到右边的Y轴
     //chart["grid"] = new { left = "3%", right = "3%" };
+
+    var json = chart.Build();
+    var pattern = "['|\"]\\{\\#([a-zA-Z_][\\w]*)\\}['|\"]";
+    json = Regex.Replace(json, pattern, "$1");
 
     var style = chart.Style;
     if (chart.Width > 0)
@@ -29,11 +34,16 @@
 <div id="@name" style="@style" class="@chart.Class"></div>
 <script type="text/javascript">
     var @chartName = echarts.init(document.getElementById('@name'), '@theme');
-    var @optionName = @Html.Raw(chart.Build());
+    var @optionName = @Html.Raw(json);
     @(chartName).setOption(@optionName);
 
     @* 为echart图表添加自适应大小能力 *@
     window.addEventListener("resize", ()=>{
-        @(chartName).resize();       
+        @(chartName).resize();
     });
+
+    @foreach (var item in chart.Scripts)
+    {
+        @Html.Raw(item)
+    }
 </script>

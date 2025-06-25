@@ -71,6 +71,11 @@ public class ECharts : IExtend
     /// <returns></returns>
     public Object this[String key] { get => Items[key]; set => Items[key] = value; }
 
+    /// <summary>附加JavaScript脚本</summary>
+    /// <remarks>在某些组件的formatter中，可以设置回调函数，例如{#lineFormatter}，然后把js函数lineFormatter写在这里</remarks>
+    [ScriptIgnore]
+    public IList<String> Scripts { get; set; } = [];
+
     Object _xField;
     String _timeField;
     Func<IModel, String> _timeSelector;
@@ -91,13 +96,17 @@ public class ECharts : IExtend
     /// <param name="list">数据列表，从中选择数据构建X轴</param>
     /// <param name="name">作为X轴的字段，支持time时间轴</param>
     /// <param name="selector">构建X轴的委托</param>
-    public void SetX<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
+    public XAxis SetX<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
     {
-        XAxis.Add(new XAxis
+        var axis = new XAxis
         {
             Data = list.Select(e => selector == null ? e[name] + "" : selector(e)).ToArray()
-        });
+        };
+        XAxis.Add(axis);
+
         _xField = name;
+
+        return axis;
     }
 
     /// <summary>设置X轴</summary>
@@ -105,7 +114,7 @@ public class ECharts : IExtend
     /// <param name="list">数据列表，从中选择数据构建X轴</param>
     /// <param name="name">作为X轴的字段，支持time时间轴</param>
     /// <param name="selector">构建X轴的委托</param>
-    public void SetX4Time<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
+    public XAxis SetX4Time<T>(IList<T> list, String name, Func<T, String> selector = null) where T : class, IModel
     {
         var axis = new XAxis
         {
@@ -120,6 +129,8 @@ public class ECharts : IExtend
             _timeSelector = e => selector(e as T) + "";
 
         if (Symbol.IsNullOrEmpty() && list.Count > 100) Symbol = "none";
+
+        return axis;
     }
 
     /// <summary>设置X轴</summary>
@@ -127,14 +138,14 @@ public class ECharts : IExtend
     /// <param name="list">数据列表，从中选择数据构建X轴</param>
     /// <param name="field">作为X轴的字段，支持time时间轴</param>
     /// <param name="selector">构建X轴的委托</param>
-    public void SetX<T>(IList<T> list, DataField field, Func<T, String> selector = null) where T : class, IModel
+    public XAxis SetX<T>(IList<T> list, DataField field, Func<T, String> selector = null) where T : class, IModel
     {
-        if (field != null && field.Type == typeof(DateTime))
-            SetX4Time(list, field.Name, selector);
-        else
-            SetX(list, field.Name, selector);
-
         _xField = field;
+
+        if (field != null && field.Type == typeof(DateTime))
+            return SetX4Time(list, field.Name, selector);
+        else
+            return SetX(list, field.Name, selector);
     }
 
     /// <summary>设置X轴</summary>
@@ -142,14 +153,14 @@ public class ECharts : IExtend
     /// <param name="list">数据列表，从中选择数据构建X轴</param>
     /// <param name="field">作为X轴的字段，支持time时间轴</param>
     /// <param name="selector">构建X轴的委托</param>
-    public void SetX<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : class, IModel
+    public XAxis SetX<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : class, IModel
     {
-        if (field != null && field.Type == typeof(DateTime))
-            SetX4Time(list, field.Name, selector);
-        else
-            SetX(list, field.Name, selector);
-
         _xField = field;
+
+        if (field != null && field.Type == typeof(DateTime))
+            return SetX4Time(list, field.Name, selector);
+        else
+            return SetX(list, field.Name, selector);
     }
 
     Object GetTimeValue(IModel entity) => _timeSelector != null ? _timeSelector(entity) : entity[_timeField];
@@ -163,7 +174,12 @@ public class ECharts : IExtend
     /// time 时间轴，适用于连续的时序数据，与数值轴相比时间轴带有时间的格式化，在刻度计算上也有所不同，例如会根据跨度的范围来决定使用月，星期，日还是小时范围的刻度。
     /// log 对数轴。适用于对数数据。
     /// </param>
-    public void SetY(String name, String type = "value") => YAxis.Add(new YAxis { Name = name, Type = type });
+    public YAxis SetY(String name, String type = "value")
+    {
+        var axis = new YAxis { Name = name, Type = type };
+        YAxis.Add(axis);
+        return axis;
+    }
 
     /// <summary>设置Y轴</summary>
     /// <param name="name"></param>
@@ -175,7 +191,12 @@ public class ECharts : IExtend
     /// log 对数轴。适用于对数数据。
     /// </param>
     /// <param name="formatter"></param>
-    public void SetY(String name, String type, String formatter) => YAxis.Add(new YAxis { Name = name, Type = type, AxisLabel = new { formatter } });
+    public YAxis SetY(String name, String type, String formatter)
+    {
+        var axis = new YAxis { Name = name, Type = type, AxisLabel = new { formatter } };
+        YAxis.Add(axis);
+        return axis;
+    }
 
     /// <summary>设置多个Y轴</summary>
     /// <param name="names"></param>
@@ -187,7 +208,7 @@ public class ECharts : IExtend
     /// log 对数轴。适用于对数数据。
     /// </param>
     /// <param name="formatters">Y轴格式化字符串。如：{value} °C</param>
-    public void SetY(String[] names, String type = "value", String[] formatters = null)
+    public YAxis[] SetY(String[] names, String type = "value", String[] formatters = null)
     {
         //YAxis = names.Select(e => new { name = e, type }).ToArray();
 
@@ -208,6 +229,8 @@ public class ECharts : IExtend
         if (n > 0) Grid.Right *= n;
 
         YAxis = list;
+
+        return list.ToArray();
     }
 
     /// <summary>设置工具栏</summary>
@@ -219,9 +242,9 @@ public class ECharts : IExtend
     /// </param>
     /// <param name="axisPointerType">坐标轴指示器配置项。cross，坐标系会自动选择显示哪个轴的 axisPointer</param>
     /// <param name="backgroundColor"></param>
-    public void SetTooltip(String trigger = "axis", String axisPointerType = "cross", String backgroundColor = "#6a7985")
+    public Tooltip SetTooltip(String trigger = "axis", String axisPointerType = "cross", String backgroundColor = "#6a7985")
     {
-        Tooltip = new Tooltip
+        return Tooltip = new Tooltip
         {
             Trigger = trigger,
             AxisPointer = new
@@ -233,6 +256,44 @@ public class ECharts : IExtend
                 }
             },
         };
+    }
+
+    /// <summary>设置工具栏</summary>
+    /// <param name="trigger">
+    /// 触发类型。
+    /// item, 数据项图形触发，主要在散点图，饼图等无类目轴的图表中使用。
+    /// axis, 坐标轴触发，主要在柱状图，折线图等会使用类目轴的图表中使用。
+    /// none, 什么都不触发。
+    /// </param>
+    /// <param name="formatterScript">
+    /// 格式化脚本。
+    /// function lineFormatter(params) {
+    ///     let res = `${params[0].name}&lt;br&gt;`;
+    ///     params.forEach(p =&gt; {
+    ///         if (p.value !== 0) {
+    ///             res += `${p.marker} ${p.seriesName}: ${Math.abs(p.value)}吨&lt;br&gt;`;
+    ///         }
+    ///     });
+    ///     return res;
+    /// }
+    /// </param>
+    public Tooltip SetTooltip(String trigger, String formatterScript)
+    {
+        if (trigger.IsNullOrEmpty()) trigger = "axis";
+
+        var p = formatterScript.IndexOf("function") + "function".Length;
+        var p2 = formatterScript.IndexOf('(', p);
+        var name = formatterScript.Substring(p, p2 - p).Trim();
+
+        var tooltip = new Tooltip
+        {
+            Trigger = trigger,
+            Formatter = $"{{#{name}}}"
+        };
+
+        Scripts.Add(formatterScript);
+
+        return Tooltip = tooltip;
     }
 
     /// <summary>设置提示</summary>

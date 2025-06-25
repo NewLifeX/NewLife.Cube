@@ -44,6 +44,19 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
             line3.SetMarkLine(true);
             line3.SetMarkPoint(true, true);
 
+            // 设置工具栏
+            chart.SetTooltip("axis", """
+                function tooltipFormatter(params) {
+                    let res = `${params[0].axisValueLabel.substr(0, 10)}<br>`;
+                    params.forEach(p => {
+                        if (p.value[1] !== 0) {
+                            res += `${p.marker} ${p.seriesName} <span style="float:right;margin-left:20px;"><b>${p.value[1]}</b></span><br>`;
+                        }
+                    });
+                    return res;
+                }
+                """);
+
             chart.SetToolbox();
         }
 
