@@ -243,6 +243,40 @@ public class ECharts : IExtend
     public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IModel
         => Legend = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();
 
+    /// <summary>设置工具栏</summary>
+    /// <param name="orient">布局朝向。纵向vertical，默认横向horizontal</param>
+    /// <param name="left">左边。默认靠右right</param>
+    /// <param name="top">顶部。默认top</param>
+    /// <param name="magicTypes">动态类型切换。默认line+bar+stack</param>
+    /// <param name="dataView">显示数据视图。默认true</param>
+    /// <returns></returns>
+    public Toolbox SetToolbox(String orient = "horizontal", String left = "right", String top = "auto", String[] magicTypes = null, Boolean dataView = true)
+    {
+        if (magicTypes == null || magicTypes.Length == 0) magicTypes = ["line", "bar", "stack"];
+
+        var toolbox = new Toolbox
+        {
+            Show = true,
+            Orient = orient,
+            Left = left,
+            Top = top,
+            Feature = new
+            {
+                mark = new { show = true },
+                dataView = new { show = dataView },
+                magicType = new
+                {
+                    show = true,
+                    type = magicTypes
+                },
+                restore = new { show = true },
+                saveAsImage = new { show = true },
+            }
+        };
+
+        return Toolbox = toolbox;
+    }
+
     /// <summary>添加缩放。默认X0轴，其它设置可直接修改返回对象</summary>
     /// <param name="start"></param>
     /// <param name="end"></param>

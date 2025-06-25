@@ -43,6 +43,8 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
             // 绘制平均线和最大最小值
             line3.SetMarkLine(true);
             line3.SetMarkPoint(true, true);
+
+            chart.SetToolbox();
         }
 
         return list;
