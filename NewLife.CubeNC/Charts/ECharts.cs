@@ -77,6 +77,15 @@ public class ECharts : IExtend
     #endregion
 
     #region 两轴设置
+    /// <summary>设置X轴。直接使用数据</summary>
+    /// <param name="data">数据列表，从中选择数据构建X轴</param>
+    public XAxis SetX(IEnumerable<Object> data)
+    {
+        var axis = new XAxis { Data = data.ToArray() };
+        XAxis.Add(axis);
+        return axis;
+    }
+
     /// <summary>设置X轴</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list">数据列表，从中选择数据构建X轴</param>
@@ -456,8 +465,11 @@ public class ECharts : IExtend
     /// <returns></returns>
     public Series AddBar<T>(IList<T> list, DataField field, Func<T, Object> selector = null) where T : IModel
     {
-        var sr = Create(field?.DisplayName ?? field.Name, "bar");
-        sr.Data = list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
+        var data = _timeField != null ?
+            list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
+            list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
+
+        var sr = Create(field?.DisplayName ?? field.Name, "bar", data);
 
         Add(sr);
         return sr;
