@@ -14,8 +14,14 @@ public class DbItem : ICubeModel
     /// <summary>连接字符串</summary>
     public String ConnStr { get; set; }
 
-    /// <summary>数据驱动版本</summary>
+    /// <summary>数据库版本</summary>
     public String Version { get; set; }
+
+    /// <summary>数据驱动</summary>
+    public String Driver { get; set; }
+
+    /// <summary>驱动版本</summary>
+    public String DriverVersion { get; set; }
 
     /// <summary>实体数</summary>
     public Int32 Entities { get; set; }

@@ -36,6 +36,14 @@ public class DbController : ControllerBaseX
             var dal = DAL.Create(item.Key);
             di.Type = dal.DbType;
 
+            var driver = dal.Db.Factory;
+            if (driver != null)
+            {
+                var ax = AssemblyX.Create(driver.GetType().Assembly);
+                di.Driver = ax.Name;
+                di.DriverVersion = ax.FileVersion;
+            }
+
             var t = Task.Run(() =>
             {
                 try
