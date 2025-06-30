@@ -96,7 +96,7 @@ public class Series : IExtend
         if (avg) typeNames["average"] = "Avg";
 
         //MarkLine(typeNames);
-        MarkPoint = new { data = typeNames.Select(e => new { type = e.Key, name = e.Value }).ToArray() };
+        MarkLine = new { data = typeNames.Select(e => new { type = e.Key, name = e.Value }).ToArray() };
     }
 
     ///// <summary>标记线</summary>
