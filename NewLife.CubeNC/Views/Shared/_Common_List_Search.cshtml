@@ -8,7 +8,7 @@
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
     var fi = fact.MasterTime;
-    var fields = ViewBag.SearchFields as FieldCollection;
+    var fields = ViewBag.SearchFields as FieldCollection ?? new(ViewKinds.Search);
 
     var dic = new Dictionary<Int32, String>();
     dic[1] = "是";
