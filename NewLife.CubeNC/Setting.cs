@@ -247,8 +247,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("界面配置")]
     public Int32 MaxDropDownList { get; set; } = 50;
 
-    /// <summary>版权。留空表示不显示版权信息</summary>
-    [Description("版权。留空表示不显示版权信息")]
+    /// <summary>版权。留空表示不显示版权信息，支持变量now/runtime/framework，其中now支持格式化字符串如{now:yyyy}</summary>
+    [Description("版权。留空表示不显示版权信息，支持变量now/runtime/framework，其中now支持格式化字符串如{now:yyyy}")]
     [Category("界面配置")]
     public String Copyright { get; set; }
 
@@ -355,7 +355,7 @@ public class CubeSetting : Config<CubeSetting>
                 var att = asm.GetCustomAttribute<AssemblyCopyrightAttribute>();
                 if (att != null)
                 {
-                    Copyright = att.Copyright;
+                    Copyright = att.Copyright + " {runtime}";
                 }
             }
         }
@@ -386,9 +386,13 @@ public class CubeSetting : Config<CubeSetting>
         if (cr.IsNullOrEmpty()) return null;
 
         // 处理运行时
+        if (cr.Contains("{runtime}"))
+        {
+            cr = cr.Replace("{runtime}", $"<a href=\"https://get.dot.net\" target=\"_blank\">.NET {Environment.Version}</a>");
+        }
         if (cr.Contains("{framework}"))
         {
-            cr = cr.Replace("{framework}", RuntimeInformation.FrameworkDescription);
+            cr = cr.Replace("{framework}", $"<a href=\"https://get.dot.net\" target=\"_blank\">{RuntimeInformation.FrameworkDescription}</a>");
         }
 
         // 处理今年时间

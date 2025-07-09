@@ -280,9 +280,14 @@ public class ECharts : IExtend
     public Tooltip SetTooltip(String trigger, String formatterScript)
     {
         if (trigger.IsNullOrEmpty()) trigger = "axis";
+        if (formatterScript.IsNullOrEmpty()) throw new ArgumentNullException(nameof(formatterScript));
 
         var p = formatterScript.IndexOf("function") + "function".Length;
+        if (p < 0) throw new ArgumentOutOfRangeException(nameof(formatterScript), "无效js函数");
+
         var p2 = formatterScript.IndexOf('(', p);
+        if (p2 < 0) throw new ArgumentOutOfRangeException(nameof(formatterScript), "无效js函数");
+
         var name = formatterScript.Substring(p, p2 - p).Trim();
 
         var tooltip = new Tooltip

@@ -100,6 +100,11 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
     {
         var list = SearchData(p);
 
+        // 用于显示的列
+        ViewBag.Fields = OnGetFields(ViewKinds.List, list);
+        ViewBag.SearchFields = OnGetFields(ViewKinds.Search, list);
+
+        // Json输出
         if (IsJsonRequest) return Json(0, null, list, new { page = p });
 
         return View("ListTree", list);

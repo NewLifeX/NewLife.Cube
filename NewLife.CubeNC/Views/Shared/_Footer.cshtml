@@ -7,7 +7,7 @@
     <div style="margin-top:20px;" class="text-center">
         @if (!copyright.IsNullOrEmpty())
         {
-            <span>@copyright</span>
+            <span>@Html.Raw(copyright)</span>
         }
         @if (!set.Registration.IsNullOrEmpty())
         {

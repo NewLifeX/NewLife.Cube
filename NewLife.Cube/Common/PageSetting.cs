@@ -36,7 +36,7 @@ public class PageSetting
     /// <summary>启用列表双击事件配置</summary>
     public Boolean EnableTableDoubleClick { get; set; } = true;
 
-    /// <summary>是否启用默认的数字主键降序。默认true</summary>
+    /// <summary>是否启用默认的数字主键降序。默认true，数据较多时默认false</summary>
     public Boolean OrderByKey { get; set; } = true;
 
     /// <summary>启用两次删除。默认true</summary>

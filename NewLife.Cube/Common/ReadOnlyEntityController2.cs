@@ -38,11 +38,16 @@ public partial class ReadOnlyEntityController<TEntity>
     /// <summary>构造函数</summary>
     public ReadOnlyEntityController()
     {
-        PageSetting.IsReadOnly = true;
+        var set = PageSetting;
+        set.IsReadOnly = true;
 
 #if MVC
-        PageSetting.EnableTableDoubleClick = CubeSetting.Current.EnableTableDoubleClick;
+        set.EnableTableDoubleClick = CubeSetting.Current.EnableTableDoubleClick;
 #endif
+
+        // 大于10万条数据时，默认不启用数字型主键降序，避免数据库选择主键索引导致复杂查询变慢
+        if (set.OrderByKey && Entity<TEntity>.Meta.Count > 100_000)
+            set.OrderByKey = false;
 
         SysConfig = SysConfig.Current;
     }

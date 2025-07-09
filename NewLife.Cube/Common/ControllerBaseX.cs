@@ -39,7 +39,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
     /// <summary>用户主机</summary>
     public String UserHost => HttpContext.GetUserHost();
 
-    /// <summary>页面设置</summary>
+    /// <summary>页面设置。这一轮请求专用，复制来自PageSetting.Global</summary>
     public PageSetting PageSetting { get; set; }
 
     private IDictionary<String, Object> _args;
