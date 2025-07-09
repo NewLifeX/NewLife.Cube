@@ -23,6 +23,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="SwaggerConfigureOptions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.4.2025.601" />
   </ItemGroup>
 

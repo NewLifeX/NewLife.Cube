@@ -518,16 +518,7 @@ public class UserController : EntityController<User, UserModel>
             user = FindByMail(email);
             if (user != null) throw new ArgumentException(nameof(email), $"邮箱[{email}]已存在！");
 
-            var r = Role.GetOrAdd(set.DefaultRole);
-            //user = new User()
-            //{
-            //    Name = username,
-            //    Password = password,
-            //    Mail = email,
-            //    RoleID = r.ID,
-            //    Enable = true
-            //};
-            //user.Register();
+            var r = Role.GetOrAdd(set.DefaultRole); 
             var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
 
             // 注册成功
@@ -535,6 +526,7 @@ public class UserController : EntityController<User, UserModel>
         catch (ArgumentException aex)
         {
             ModelState.AddModelError(aex.ParamName, aex.Message);
+            return Json(500, aex.Message, null);//api版本发生异常时应及时返回错误信息
         }
 
         var model = GetViewModel(null);
