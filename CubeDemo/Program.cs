@@ -1,15 +1,7 @@
-﻿using CubeDemo;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using NewLife;
-using NewLife.Cube;
-using NewLife.Cube.Entity;
+﻿using NewLife.Cube;
 using NewLife.Cube.Swagger;
 using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 XTrace.UseConsole();
 
@@ -22,7 +14,7 @@ TracerMiddleware.Tracer = star?.Tracer;
 
 //services.AddHttpContextAccessor();
 
-builder.Services.AddControllers();
+services.AddControllers();
 
 services.AddCubeSwagger();
 
