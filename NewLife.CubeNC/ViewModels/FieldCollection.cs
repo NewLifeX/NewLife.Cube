@@ -10,7 +10,6 @@ using NewLife.Reflection;
 using XCode;
 using XCode.Code;
 using XCode.Configuration;
-using XCode.DataAccessLayer;
 
 namespace NewLife.Cube;
 
@@ -387,79 +386,6 @@ public class FieldCollection : List<DataField>
     /// <param name="name"></param>
     /// <returns></returns>
     public DataField GetField(String name) => this.FirstOrDefault(e => name.EqualIgnoreCase(e.Name, e.MapField));
-    #endregion
-
-    #region 扩展参数
-    /// <summary>当前字段集合加入目标对象作为扩展字段，用于动态表单</summary>
-    /// <param name="entity"></param>
-    /// <param name="parameter"></param>
-    /// <param name="prefix"></param>
-    public void Expand(IEntity entity, Object parameter, String prefix)
-    {
-        var fields = this;
-        //fields.RemoveField("Argument");
-
-        foreach (var pi in parameter.GetType().GetProperties(true))
-        {
-            // 添加字段，加个前缀，避免与实体字段冲突
-            var ff = fields.Add(pi);
-            ff.Name = prefix + ff.Name;
-            ff.Category = pi.GetCustomAttribute<CategoryAttribute>()?.Category ?? "参数";
-
-            // 数组转为字符串
-            var v = pi.GetValue(parameter);
-            if (v is IList list)
-            {
-                v = list.Join(",");
-                ff.Type = v.GetType();
-            }
-
-            // 把参数值设置到实体对象的扩展属性里面
-            entity.SetItem(ff.Name, v);
-        }
-    }
-
-    /// <summary>从表单读取数据到扩展字段的目标对象，稍候序列化并写入扩展字段</summary>
-    /// <param name="parameter"></param>
-    /// <param name="form"></param>
-    /// <param name="prefix"></param>
-    /// <returns></returns>
-    public static Boolean ReadForm(Object parameter, IFormCollection form, String prefix)
-    {
-        var flag = false;
-        foreach (var pi in parameter.GetType().GetProperties(true))
-        {
-            // 从Request里面获取参数值
-            var name = prefix + pi.Name;
-            if (!form.ContainsKey(name)) continue;
-
-            var value = form[name].FirstOrDefault();
-            flag = true;
-
-            Object v = null;
-            if (pi.PropertyType.As<IList>())
-            {
-                var elmType = pi.PropertyType.GetElementTypeEx();
-                var ss = value.Split(",");
-                var arr = Array.CreateInstance(elmType, ss.Length);
-                for (var i = 0; i < arr.Length; i++)
-                {
-                    arr.SetValue(ss[i].ChangeType(elmType), i);
-                }
-
-                v = arr;
-            }
-            else
-            {
-                v = value.ChangeType(pi.PropertyType);
-            }
-
-            // 设置到参数对象里面
-            parameter.SetValue(pi, v);
-        }
-
-        return flag;
-    }
     #endregion
 
     #region 分组

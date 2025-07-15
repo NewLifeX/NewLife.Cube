@@ -481,19 +481,25 @@ public partial class ReadOnlyEntityController<TEntity>
         fields = fields.Clone();
 
         // 表单嵌入配置字段
-        if (kind == ViewKinds.EditForm && model is TEntity entity)
+        if ((kind == ViewKinds.EditForm || kind == ViewKinds.Detail) && model is TEntity entity)
         {
             // 获取参数对象，展开参数，作为表单字段
             foreach (var item in fields.ToArray())
             {
-                if (item is FormField ef && ef.GetExpand != null)
+                var field = (item as FormField)?.Expand;
+                var p = field?.Decode?.Invoke(entity);
+                if (p != null && p is not String)
                 {
-                    var p = ef.GetExpand(entity);
-                    if (p != null && p is not String)
-                    {
-                        if (!ef.RetainExpand) fields.Remove(ef);
+                    if (field.Name.IsNullOrEmpty()) field.Name = item.Name;
+                    if (field.Category.IsNullOrEmpty()) field.Category = item.Category;
+                    if (field.Prefix.IsNullOrEmpty()) field.Prefix = item.Name + "_";
 
-                        fields.Expand(entity, p, ef.Name + "_");
+                    var fs = OnExpandFields(field, entity, p);
+                    if (fs != null && fs.Count > 0)
+                    {
+                        fields.AddRange(fs);
+
+                        if (!field.Retain) fields.Remove(item);
                     }
                 }
             }
@@ -501,5 +507,8 @@ public partial class ReadOnlyEntityController<TEntity>
 
         return fields;
     }
+
+    /// <summary>展开字段</summary>
+    protected virtual FieldCollection OnExpandFields(ExpandField field, TEntity entity, Object parameter) => field.Expand(entity, parameter);
     #endregion
 }

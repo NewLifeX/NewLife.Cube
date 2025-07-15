@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 
+/// <summary>RSA工具类</summary>
 public static class RSTool
 {
     /// <summary>生成 PEM 格式的 RSA 密钥对</summary>

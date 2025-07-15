@@ -240,15 +240,16 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             // 遍历表单字段，部分字段可能有扩展
             foreach (var item in EditFormFields)
             {
-                if (item is FormField ef && ef.GetExpand != null)
+                var field = (item as FormField)?.Expand;
+                if (field?.Decode != null && !(entity as IEntity).Dirtys[item.Name])
                 {
                     // 获取参数对象，展开参数，从表单字段接收参数
-                    var p = ef.GetExpand(entity);
-                    if (p != null && p is not String && !(entity as IEntity).Dirtys[ef.Name])
+                    var p = field.Decode(entity);
+                    if (p != null && p is not String)
                     {
                         // 保存参数对象
-                        if (FieldCollection.ReadForm(p, Request.Form, ef.Name + "_"))
-                            entity.SetItem(ef.Name, p.ToJson(true));
+                        if (field.ReadForm(p, Request.Form))
+                            entity.SetItem(item.Name, field.Encode?.Invoke(p) ?? p.ToJson(true));
                     }
                 }
             }

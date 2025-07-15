@@ -46,8 +46,13 @@ public class CronJobController : EntityController<CronJob, CronJobModel>
         // 扩展Argument字段
         {
             var ef = EditFormFields.GetField("Argument") as FormField;
-            ef.GetExpand = e => (e as CronJob)?.GetArgument();
-            ef.RetainExpand = false;
+            //ef.GetExpand = e => (e as CronJob)?.GetArgument();
+            //ef.RetainExpand = false;
+            ef.Expand = new ExpandField
+            {
+                Decode = e => (e as CronJob)?.GetArgument(),
+                Retain = false,
+            };
         }
     }
 
