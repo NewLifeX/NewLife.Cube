@@ -8,6 +8,7 @@ namespace NewLife.Cube.Modules;
 [DisplayName("魔方适配器")]
 public class DefaultAdapter : IAdapter
 {
+    /// <summary>编码配置对象</summary>
     public Object Encode(Dictionary<String, Object> dic, Dictionary<ViewKinds, FieldCollection> fieldCollections) => dic;
 
     /// <summary>序列化配置对象</summary>

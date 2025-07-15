@@ -308,7 +308,7 @@ public class ListField : DataField
         sb.Append(HttpUtility.HtmlEncode(linkName));
         sb.Append("</a>");
 
-        var link = sb.Put(true);
+        var link = sb.Return(true);
 
         return Replace(link, data, EnumModes.String);
     }

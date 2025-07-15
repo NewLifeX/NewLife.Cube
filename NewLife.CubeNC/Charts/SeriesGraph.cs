@@ -158,6 +158,7 @@ public class SeriesGraph : Series
     /// <summary>图形上的文本标签，可用于说明图形的一些数据信息，比如值，名称等。</summary>
     public Object Label { get; set; }
 
+    /// <summary>边的标签</summary>
     public Object EdgeLabel { get; set; }
 
     /// <summary></summary>

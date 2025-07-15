@@ -26,6 +26,7 @@ public class AccessService
     /// <param name="ua"></param>
     /// <param name="ip"></param>
     /// <param name="user"></param>
+    /// <param name="session"></param>
     /// <returns></returns>
     public AccessRule Valid(String url, UserAgentParser ua, String ip, IUser user, IDictionary<String, Object> session)
     {

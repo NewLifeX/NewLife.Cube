@@ -69,7 +69,7 @@ public static class PagerHelper
         if (url.Length == 0) return action;
         if (action != null && !action.Contains('?')) action += '?';
 
-        return action + url.Put(true);
+        return action + url.Return(true);
     }
 
     /// <summary>过滤特殊字符，避免注入</summary>

@@ -64,7 +64,7 @@ public class DbXmlRepository : DisposeBase, IXmlRepository
 
     /// <summary>自动删除已过期的key</summary>
     /// <param name="state"></param>
-    private void TrimExpired(Object? state)
+    private void TrimExpired(Object state)
     {
         var list = Parameter.FindAllByUserID(0, _key);
         foreach (var item in list)

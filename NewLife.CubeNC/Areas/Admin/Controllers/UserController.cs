@@ -136,6 +136,7 @@ public class UserController : EntityController<User, UserModel>
     /// <param name="passwordService"></param>
     /// <param name="cacheProvider"></param>
     /// <param name="userService"></param>
+    /// <param name="tracer"></param>
     public UserController(PasswordService passwordService, ICacheProvider cacheProvider, UserService userService, ITracer tracer)
     {
         _passwordService = passwordService;
@@ -867,6 +868,7 @@ public class UserController : EntityController<User, UserModel>
         return View(model);
     }
 
+    /// <summary>插入实体</summary>
     protected override Int32 OnInsert(User entity)
     {
         var ef = base.OnInsert(entity);

@@ -291,6 +291,6 @@ public class DataField
     /// <param name="obj"></param>
     /// <returns></returns>
     [return: NotNullIfNotNull(nameof(obj))]
-    public static implicit operator DataField?(FieldItem obj) => !obj.Equals(null) ? new DataField(obj) : null;
+    public static implicit operator DataField(FieldItem obj) => !obj.Equals(null) ? new DataField(obj) : null;
     #endregion
 }
