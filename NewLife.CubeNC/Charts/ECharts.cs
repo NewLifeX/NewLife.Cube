@@ -177,6 +177,7 @@ public class ECharts : IExtend
     public YAxis SetY(String name, String type = "value")
     {
         var axis = new YAxis { Name = name, Type = type };
+        if (type == "value") axis.Min = "dataMin";
         YAxis.Add(axis);
         return axis;
     }
@@ -194,6 +195,7 @@ public class ECharts : IExtend
     public YAxis SetY(String name, String type, String formatter)
     {
         var axis = new YAxis { Name = name, Type = type, AxisLabel = new { formatter } };
+        if (type == "value") axis.Min = "dataMin";
         YAxis.Add(axis);
         return axis;
     }
