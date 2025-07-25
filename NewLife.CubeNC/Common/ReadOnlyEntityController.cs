@@ -968,11 +968,28 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
                 }
             }
 
-            chart.Add(data, yFields, seriesType);
+            var ss = chart.Add(data, yFields, seriesType);
+
+            // 第一条曲线，标记最大最小点和平均线
+            if (ss != null && ss.Count > 0 && seriesType == SeriesTypes.Line)
+            {
+                if (ss[0] is SeriesLine line)
+                {
+                    line.SetMarkLine(true);
+                    line.SetMarkPoint(true, true);
+                }
+            }
 
             // 如果没有Y轴，自动补上
             if (yFields.Length > 0 && (chart.YAxis == null || chart.YAxis.Count == 0))
                 chart.SetY(yFields[0].Name, "value");
+        }
+
+        // Y轴最小值自动使用数据最小值
+        var axis = chart.YAxis.FirstOrDefault();
+        if (axis != null)
+        {
+            if (axis.Type == "value") axis.Min = "dataMin";
         }
 
         if (seriesType == SeriesTypes.Pie)
