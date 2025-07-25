@@ -969,6 +969,10 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             }
 
             chart.Add(data, yFields, seriesType);
+
+            // 如果没有Y轴，自动补上
+            if (yFields.Length > 0 && (chart.YAxis == null || chart.YAxis.Count == 0))
+                chart.SetY(yFields[0].Name, "value");
         }
 
         if (seriesType == SeriesTypes.Pie)
