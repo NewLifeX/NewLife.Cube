@@ -28,6 +28,10 @@ public static class MiddlewareHelper
             (u.Host.IsNullOrEmpty() || uri.Host.EqualIgnoreCase(u.Host)) &&
             (u.Port == 0 || u.Port == uri.Port)) return false;
 
+        // 本地地址不允许跳转
+        if (uri.Host.EqualIgnoreCase("localhost", "127.0.0.1")) return false;
+        if (uri.Host.IsMatch("127.*")) return false;
+
         using var span = DefaultTracer.Instance?.NewSpan("ForceRedirect", uri + "");
         span?.AppendTag($"规则：{set.ForceRedirect}");
 
