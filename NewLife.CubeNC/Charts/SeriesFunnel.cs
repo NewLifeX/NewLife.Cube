@@ -3,6 +3,9 @@
 /// <summary>漏斗图</summary>
 public class SeriesFunnel : Series
 {
+    /// <summary>实例化漏斗图</summary>
+    public SeriesFunnel() => Type = "funnel";
+
     //public String Type { get; set; } = "funnel";
 
     ///// <summary>组件 ID</summary>

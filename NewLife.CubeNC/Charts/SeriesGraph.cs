@@ -1,13 +1,15 @@
 ﻿namespace NewLife.Cube.Charts;
 
-/// <summary></summary>
+/// <summary>关系图</summary>
 /// <remark>
-/// 关系图
 /// 用于展现节点以及节点之间的关系数据。
 /// 示例：
 /// </remark>
 public class SeriesGraph : Series
 {
+    /// <summary>实例化关系图</summary>
+    public SeriesGraph() => Type = "graph";
+
     //public String Type { get; set; } = "graph";
 
     ///// <summary>组件 ID</summary>

@@ -288,7 +288,7 @@ public class ECharts : IExtend
         var p2 = formatterScript.IndexOf('(', p);
         if (p2 < 0) throw new ArgumentOutOfRangeException(nameof(formatterScript), "无效js函数");
 
-        var name = formatterScript.Substring(p, p2 - p).Trim();
+        var name = formatterScript[p..p2].Trim();
 
         var tooltip = new Tooltip
         {
@@ -373,7 +373,8 @@ public class ECharts : IExtend
         Series.Add(series);
     }
 
-    private Series Create(String name, String type, Object[] data = null)
+    /// <summary>创建系列</summary>
+    public Series Create(String name, String type, Object[] data = null)
     {
         if (type.IsNullOrEmpty()) type = "line";
         var sr = type switch
@@ -397,6 +398,41 @@ public class ECharts : IExtend
             "treemap" => new SeriesTreemap { Type = type },
             "sankey" => new SeriesSankey { Type = type },
             _ => new Series { Type = type },
+        };
+        sr.Name = name;
+        sr.Data = data;
+
+        return sr;
+    }
+
+    /// <summary>创建系列图</summary>
+    /// <param name="name"></param>
+    /// <param name="type"></param>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public Series Create(String name, SeriesTypes type, Object[] data = null)
+    {
+        var sr = type switch
+        {
+            SeriesTypes.Line => new SeriesLine(),
+            SeriesTypes.Line3D => new SeriesLine3D(),
+            SeriesTypes.Lines => new SeriesLines(),
+            SeriesTypes.Lines3D => new SeriesLines3D(),
+            SeriesTypes.Bar => new SeriesBar(),
+            SeriesTypes.Bar3D => new SeriesBar3D(),
+            SeriesTypes.Pie => new SeriesPie(),
+            SeriesTypes.Graph => new SeriesGraph(),
+            SeriesTypes.Scatter or SeriesTypes.EffectScatter => new SeriesEffectScatter(),
+            SeriesTypes.Boxplot => new SeriesBoxplot(),
+            SeriesTypes.Radar => new SeriesRadar(),
+            SeriesTypes.Funnel => new SeriesFunnel(),
+            SeriesTypes.Gauge => new SeriesGauge(),
+            SeriesTypes.Tree => new SeriesTree(),
+            SeriesTypes.Treemap => new SeriesTreemap(),
+            SeriesTypes.Heatmap => new SeriesHeatmap(),
+            SeriesTypes.Sunburst => new SeriesSunburst(),
+            SeriesTypes.Sankey => new SeriesSankey(),
+            _ => new Series { Type = type.ToString().ToLower() },
         };
         sr.Name = name;
         sr.Data = data;
@@ -464,7 +500,7 @@ public class ECharts : IExtend
             list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
             list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-        var sr = Create(field?.DisplayName ?? field.Name, type.ToString().ToLower(), data);
+        var sr = Create(field?.DisplayName ?? field.Name, type, data);
 
         if (!Symbol.IsNullOrEmpty()) sr.Symbol = Symbol;
 
@@ -497,7 +533,7 @@ public class ECharts : IExtend
                 list.Select(e => new Object[] { GetTimeValue(e), selector == null ? e[field.Name] : selector(e) }).ToArray() :
                 list.Select(e => selector == null ? e[field.Name] : selector(e)).ToArray();
 
-                series = Create(field?.DisplayName ?? field.Name, type.ToString().ToLower(), data);
+                series = Create(field?.DisplayName ?? field.Name, type, data);
 
                 if (!Symbol.IsNullOrEmpty()) series.Symbol = Symbol;
 
@@ -638,16 +674,16 @@ public class ECharts : IExtend
         return sr;
     }
 
-    /// <summary>添加图形。有向图/引力图</summary>
+    /// <summary>添加关系图。有向图/引力图</summary>
     /// <param name="model"></param>
     /// <returns></returns>
     public Series AddGraph(GraphViewModel model)
     {
-        var graph = Create(model.Title, "graph");
-        graph["Layout"] = model.Layout;
+        var graph = Create(model.Title, SeriesTypes.Graph) as SeriesGraph;
+        graph.Layout = model.Layout;
         if (model.Layout == "force")
         {
-            graph["Force"] = new
+            graph.Force = new
             {
                 initLayout = "circular",
                 Repulsion = 300,
@@ -658,16 +694,16 @@ public class ECharts : IExtend
             };
         }
 
-        graph["edgeSymbol"] = new[] { "circle", "arrow" };
-        graph["edgeSymbolSize"] = new[] { 4, 10 };
-        graph["roam"] = true;
-        graph["label"] = new { show = true, position = "right" };
-        graph["labelLayout"] = new { hideOverlap = true, moveOverlap = true };
-        graph["lineStyle"] = new { color = "target", curveness = 0.3, opacity = 0.8, width = 3 };
+        graph.EdgeSymbol = new[] { "circle", "arrow" };
+        graph.EdgeSymbolSize = new[] { 4, 10 };
+        graph.Roam = true;
+        graph.Label = new { show = true, position = "right" };
+        graph.LabelLayout = new { hideOverlap = true, moveOverlap = true };
+        graph.LineStyle = new { color = "target", curveness = 0.3, opacity = 0.8, width = 3 };
 
         graph.Data = model.Nodes;
-        graph["links"] = model.Links;
-        graph["categories"] = model.Categories;
+        graph.Links = model.Links;
+        graph.Categories = model.Categories;
 
         Legend = new { Data = model.Categories.Select(e => e.Name).ToArray() };
 

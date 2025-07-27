@@ -7,6 +7,9 @@
 /// </remark>
 public class SeriesLines : Series
 {
+    /// <summary>实例化路径图</summary>
+    public SeriesLines() => Type = "lines";
+
     //public String Type { get; set; } = "lines";
 
     ///// <summary>组件 ID</summary>

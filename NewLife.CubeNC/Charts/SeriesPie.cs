@@ -10,6 +10,9 @@
 /// </remark>
 public class SeriesPie : Series
 {
+    /// <summary>实例化饼图</summary>
+    public SeriesPie() => Type = "pie";
+
     //public String Type { get; set; } = "pie";
 
     ///// <summary>组件 ID</summary>

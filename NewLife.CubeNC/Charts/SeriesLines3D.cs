@@ -7,6 +7,9 @@
 /// </remark>
 public class SeriesLines3D : Series
 {
+    /// <summary>实例化三维飞线图</summary>
+    public SeriesLines3D() => Type = "lines3D";
+
     //public String Type { get; set; } = "lines3D";
 
     ///// <summary></summary>

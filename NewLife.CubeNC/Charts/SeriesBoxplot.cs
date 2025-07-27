@@ -8,6 +8,9 @@
 /// </remark>
 public class SeriesBoxplot : Series
 {
+    /// <summary>实例化箱形图</summary>
+    public SeriesBoxplot() => Type = "boxplot";
+
     //public String Type { get; set; } = "boxplot";
 
     ///// <summary>组件 ID</summary>

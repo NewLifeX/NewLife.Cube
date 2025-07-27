@@ -10,6 +10,9 @@
 /// </remark>
 public class SeriesSunburst : Series
 {
+    /// <summary>实例化旭日图</summary>
+    public SeriesSunburst() => Type = "sunburst";
+
     //public String Type { get; set; } = "sunburst";
 
     ///// <summary>组件 ID</summary>

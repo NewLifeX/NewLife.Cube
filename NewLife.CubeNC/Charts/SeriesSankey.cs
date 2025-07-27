@@ -13,6 +13,9 @@
 /// </remark>
 public class SeriesSankey : Series
 {
+    /// <summary>实例化桑基图</summary>
+    public SeriesSankey() => Type = "sankey";
+
     //public String Type { get; set; } = "sankey";
 
     ///// <summary>组件 ID</summary>

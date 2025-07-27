@@ -4,6 +4,9 @@
 /// <remark>可以用于三维直角坐标系 grid3D。</remark>
 public class SeriesLine3D : Series
 {
+    /// <summary>实例化三维折线图</summary>
+    public SeriesLine3D() => Type = "line3D";
+
     //public String Type { get; set; } = "line3D";
 
     ///// <summary></summary>

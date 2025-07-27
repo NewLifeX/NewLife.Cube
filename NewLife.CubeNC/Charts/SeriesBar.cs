@@ -6,6 +6,9 @@
 /// </remark>
 public class SeriesBar : Series
 {
+    /// <summary>实例化柱状图</summary>
+    public SeriesBar() => Type = "bar";
+
     //public String Type { get; set; } = "bar";
 
     ///// <summary>组件 ID</summary>

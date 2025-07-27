@@ -9,6 +9,9 @@
 /// </remark>
 public class SeriesTree : Series
 {
+    /// <summary>实例化树图</summary>
+    public SeriesTree() => Type = "tree";
+
     //public String Type { get; set; } = "tree";
 
     ///// <summary>组件 ID</summary>

@@ -8,6 +8,9 @@
 /// </remark>
 public class SeriesLine : Series
 {
+    /// <summary>初始化</summary>
+    public SeriesLine() => Type = "line";
+
     //public String Type { get; set; } = "line";
 
     ///// <summary>组件 ID</summary>

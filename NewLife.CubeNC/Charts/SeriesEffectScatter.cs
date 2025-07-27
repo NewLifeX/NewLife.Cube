@@ -7,6 +7,9 @@
 /// </remark>
 public class SeriesEffectScatter : Series
 {
+    /// <summary>实例化散点图</summary>
+    public SeriesEffectScatter() => Type = "effectScatter";
+
     //public String Type { get; set; } = "effectScatter";
 
     ///// <summary>组件 ID</summary>

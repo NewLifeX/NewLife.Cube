@@ -9,6 +9,9 @@
 /// </remark>
 public class SeriesHeatmap : Series
 {
+    /// <summary>实例化热力图</summary>
+    public SeriesHeatmap() => Type = "heatmap";
+
     //public String Type { get; set; } = "heatmap";
 
     ///// <summary>组件 ID</summary>

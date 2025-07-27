@@ -7,6 +7,9 @@
 /// </remark>
 public class SeriesBar3D : Series
 {
+    /// <summary>实例化3D柱状图</summary>
+    public SeriesBar3D() => Type = "bar3D";
+
     //public String Type { get; set; } = "bar3D";
 
     ///// <summary></summary>

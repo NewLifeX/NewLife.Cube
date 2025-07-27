@@ -7,6 +7,9 @@
 /// </remark>
 public class SeriesGauge : Series
 {
+    /// <summary>实例化仪表盘</summary>
+    public SeriesGauge() => Type = "gauge";
+
     //public String Type { get; set; } = "gauge";
 
     ///// <summary>组件 ID</summary>

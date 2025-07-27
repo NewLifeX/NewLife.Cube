@@ -7,6 +7,9 @@
 /// </remark>
 public class SeriesRadar : Series
 {
+    /// <summary>实例化雷达图</summary>
+    public SeriesRadar() => Type = "radar";
+
     //public String Type { get; set; } = "radar";
 
     ///// <summary>组件 ID</summary>

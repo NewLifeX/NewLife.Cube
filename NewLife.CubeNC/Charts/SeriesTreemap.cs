@@ -23,6 +23,9 @@
 /// </remark>
 public class SeriesTreemap : Series
 {
+    /// <summary>实例化矩形树图</summary>
+    public SeriesTreemap() => Type = "treemap";
+
     //public String Type { get; set; } = "treemap";
 
     ///// <summary>组件 ID</summary>
