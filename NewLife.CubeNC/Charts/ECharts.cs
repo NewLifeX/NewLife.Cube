@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Web.Script.Serialization;
 using NewLife.Collections;
 using NewLife.Cube.Charts.Models;
@@ -87,7 +88,7 @@ public class ECharts : IExtend
     public XAxis SetX(IEnumerable<Object> data)
     {
         var axis = new XAxis { Data = data.ToArray() };
-        XAxis.Add(axis);
+        XAxis = [axis];
         return axis;
     }
 
@@ -102,7 +103,7 @@ public class ECharts : IExtend
         {
             Data = list.Select(e => selector == null ? e[name] + "" : selector(e)).ToArray()
         };
-        XAxis.Add(axis);
+        XAxis = [axis];
 
         _xField = name;
 
@@ -121,12 +122,14 @@ public class ECharts : IExtend
             Type = "time",
         };
         //if (name.EndsWithIgnoreCase("Date")) axis.AxisLabel = new { formatter = "{yyyy}-{MM}-{dd}" };
-        XAxis.Add(axis);
+        XAxis = [axis];
         _timeField = name;
         _xField = name;
 
         if (selector != null)
             _timeSelector = e => selector(e as T) + "";
+
+        axis.Data = list.Select(GetTimeValue).ToArray();
 
         if (Symbol.IsNullOrEmpty() && list.Count > 100) Symbol = "none";
 
@@ -177,7 +180,7 @@ public class ECharts : IExtend
     public YAxis SetY(String name, String type = "value")
     {
         var axis = new YAxis { Name = name, Type = type };
-        YAxis.Add(axis);
+        YAxis = [axis];
         return axis;
     }
 
@@ -194,7 +197,7 @@ public class ECharts : IExtend
     public YAxis SetY(String name, String type, String formatter)
     {
         var axis = new YAxis { Name = name, Type = type, AxisLabel = new { formatter } };
-        YAxis.Add(axis);
+        YAxis = [axis];
         return axis;
     }
 
@@ -708,6 +711,32 @@ public class ECharts : IExtend
         Legend = new { Data = model.Categories.Select(e => e.Name).ToArray() };
 
         return graph;
+    }
+
+    /// <summary>添加箱线图</summary>
+    /// <param name="items"></param>
+    /// <returns></returns>
+    public Series AddBoxplot(IEnumerable<BoxplotItem> items)
+    {
+        var box = Create("boxplot", SeriesTypes.Boxplot) as SeriesBoxplot;
+        box.Data = items.Select(e => new[] { e.Min, e.Q1, e.Median, e.Q3, e.Max }).ToArray();
+        Add(box);
+
+        SetTooltip("item", """
+                function boxplotFormatter(params) {
+                    return `${params.name}<br/>
+                    最小值: ${params.value[1]}<br/>
+                    下四分: ${params.value[2]}<br/>
+                    中位数: ${params.value[3]}<br/>
+                    上四分: ${params.value[4]}<br/>
+                    最大值: ${params.value[5]}`;
+                }
+                """);
+
+        // 添加Y轴
+        if (YAxis == null || YAxis.Count == 0) SetY("值", "value");
+
+        return box;
     }
     #endregion
 
