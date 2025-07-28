@@ -6,6 +6,18 @@ public enum SeriesTypes
     /// <summary>折线图</summary>
     Line = 1,
 
+    /// <summary>柱状图</summary>
+    Bar,
+
+    /// <summary>饼图</summary>
+    Pie,
+
+    /// <summary>散点图</summary>
+    Scatter,
+
+    /// <summary>地图</summary>
+    Map,
+
     /// <summary>三维折线图</summary>
     Line3D,
 
@@ -15,20 +27,11 @@ public enum SeriesTypes
     /// <summary>三维飞线图</summary>
     Lines3D,
 
-    /// <summary>柱状图</summary>
-    Bar,
-
     /// <summary>三维柱状图</summary>
     Bar3D,
 
-    /// <summary>饼图</summary>
-    Pie,
-
     /// <summary>关系图</summary>
     Graph,
-
-    /// <summary>散点图</summary>
-    Scatter,
 
     /// <summary>特效散点图</summary>
     EffectScatter,

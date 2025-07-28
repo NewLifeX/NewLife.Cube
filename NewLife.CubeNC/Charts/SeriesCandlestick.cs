@@ -299,21 +299,21 @@ public class SeriesCandlestick : Series
     /// <remark>详见series.data.groupId。</remark>
     public String DataGroupId { get; set; }
 
-    ///// <summary>数据格式是如下的二维数组</summary>
-    ///// <remark>
-    ///// [
-    /////     [2320.26, 2320.26, 2287.3,  2362.94],
-    /////     [2300,    2291.3,  2288.26, 2308.38],
-    /////     { // 数据项也可以是 Object，从而里面能含有对此数据项的特殊设置。
-    /////         value: [2300,    2291.3,  2288.26, 2308.38],
-    /////         itemStyle: {...}
-    /////     },
-    /////     ...
-    ///// ]
-    ///// 二维数组的每一数组项（上例中的每行）是渲染一个box，它含有四个量值，依次是：
-    ///// [open, close, lowest, highest] （即：[开盘值, 收盘值, 最低值, 最高值]）
-    ///// </remark>
-    //public Object[] Data { get; set; }
+    /// <summary>数据格式是如下的二维数组</summary>
+    /// <remark>
+    /// [
+    ///     [2320.26, 2320.26, 2287.3,  2362.94],
+    ///     [2300,    2291.3,  2288.26, 2308.38],
+    ///     { // 数据项也可以是 Object，从而里面能含有对此数据项的特殊设置。
+    ///         value: [2300,    2291.3,  2288.26, 2308.38],
+    ///         itemStyle: {...}
+    ///     },
+    ///     ...
+    /// ]
+    /// 二维数组的每一数组项（上例中的每行）是渲染一个box，它含有四个量值，依次是：
+    /// [open, close, lowest, highest] （即：[开盘值, 收盘值, 最低值, 最高值]）
+    /// </remark>
+    public override Object[] Data { get; set; }
 
     ///// <summary>图表标注</summary>
     //public Object MarkPoint { get; set; }
