@@ -731,15 +731,16 @@ public class ECharts : IExtend
     }
 
     /// <summary>添加箱线图</summary>
-    /// <param name="items"></param>
+    /// <param name="items">数据集</param>
+    /// <param name="names">五个名字。不一定是最小值最大值</param>
     /// <returns></returns>
-    public Series AddBoxplot(IEnumerable<BoxplotItem> items)
+    public Series AddBoxplot(IEnumerable<BoxplotItem> items, String[] names = null)
     {
         var box = Create("boxplot", SeriesTypes.Boxplot) as SeriesBoxplot;
         box.Data = items.Select(e => new[] { e.Min, e.Q1, e.Median, e.Q3, e.Max }).ToArray();
         Add(box);
 
-        SetTooltip("item", """
+        var script = """
                 function boxplotFormatter(params) {
                     return `${params.name}<br/>
                     最小值: ${params.value[1]}<br/>
@@ -748,7 +749,18 @@ public class ECharts : IExtend
                     上四分: ${params.value[4]}<br/>
                     最大值: ${params.value[5]}`;
                 }
-                """);
+                """;
+        if (names != null && names.Length >= 5)
+        {
+            // 名称为null时表示不替换
+            if (names[0] != null) script = script.Replace("最小值", names[0]);
+            if (names[1] != null) script = script.Replace("下四分", names[1]);
+            if (names[2] != null) script = script.Replace("中位数", names[2]);
+            if (names[3] != null) script = script.Replace("上四分", names[3]);
+            if (names[4] != null) script = script.Replace("最大值", names[4]);
+        }
+
+        SetTooltip("item", script);
 
         // 添加Y轴
         if (YAxis == null || YAxis.Count == 0) SetY("值", "value");
