@@ -60,6 +60,9 @@ public enum SeriesTypes
     /// <summary>象形柱图</summary>
     PictorialBar,
 
+    /// <summary>主题河流</summary>
+    ThemeRiver,
+
     /// <summary>三维折线图</summary>
     Line3D,
 
