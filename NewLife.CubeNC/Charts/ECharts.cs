@@ -133,7 +133,8 @@ public class ECharts : IExtend
         if (selector != null)
             _timeSelector = e => selector(e as T) + "";
 
-        axis.Data = list.Select(GetTimeValue).ToArray();
+        // time 类型的坐标轴是“连续型”坐标轴（基于时间戳），它不依赖 xAxis.data，而是从 series 数据中自动提取时间信息 来决定坐标轴的刻度和范围。
+        //axis.Data = list.Select(GetTimeValue).ToArray();
 
         if (Symbol.IsNullOrEmpty() && list.Count > 100) Symbol = "none";
 
