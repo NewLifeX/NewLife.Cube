@@ -63,6 +63,9 @@ public enum SeriesTypes
     /// <summary>主题河流</summary>
     ThemeRiver,
 
+    /// <summary>自定义系列</summary>
+    Custom,
+
     /// <summary>三维折线图</summary>
     Line3D,
 
