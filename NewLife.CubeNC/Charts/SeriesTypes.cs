@@ -59,4 +59,7 @@ public enum SeriesTypes
 
     /// <summary>桑基图</summary>
     Sankey,
+
+    /// <summary>K线图</summary>
+    Candlestick,
 }

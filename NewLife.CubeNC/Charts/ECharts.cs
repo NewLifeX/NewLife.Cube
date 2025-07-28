@@ -401,6 +401,7 @@ public class ECharts : IExtend
             "tree" => new SeriesTree { Type = type },
             "treemap" => new SeriesTreemap { Type = type },
             "sankey" => new SeriesSankey { Type = type },
+            "candlestick" => new SeriesCandlestick { Type = type },
             _ => new Series { Type = type },
         };
         sr.Name = name;
@@ -437,6 +438,7 @@ public class ECharts : IExtend
             SeriesTypes.Heatmap => new SeriesHeatmap(),
             SeriesTypes.Sunburst => new SeriesSunburst(),
             SeriesTypes.Sankey => new SeriesSankey(),
+            SeriesTypes.Candlestick => new SeriesCandlestick(),
             _ => new Series { Type = type.ToString().ToLower() },
         };
         sr.Name = name;

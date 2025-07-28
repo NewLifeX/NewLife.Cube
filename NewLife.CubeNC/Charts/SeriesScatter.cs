@@ -107,7 +107,7 @@ public class SeriesScatter : Series
     /// 默认情况下，标记会居中置放在数据对应的位置，但是如果 symbol 是自定义的矢量路径或者图片，就有可能不希望 symbol 居中。这时候可以使用该配置项配置 symbol 相对于原本居中的偏移，可以是绝对的像素值，也可以是相对的百分比。
     /// 例如 [0, '-50%'] 就是把自己向上移动了一半的位置，在 symbol 图形是气泡的时候可以让图形下端的箭头对准数据点。
     /// </remark>
-    public double[] SymbolOffset { get; set; }
+    public Double[] SymbolOffset { get; set; }
 
     /// <summary></summary>
     /// <remark>
@@ -262,7 +262,7 @@ public class SeriesScatter : Series
     /// displayName: 一般用于 tooltip 中维度名的展示。string 如果没有指定，默认使用 name 来展示。
     /// 值得一提的是，当定义了 dimensions 后，默认 tooltip 中对个维度的显示，会变为『竖排』，从而方便显示每个维度的名称。如果没有定义 dimensions，则默认 tooltip 会横排显示，且只显示数值没有维度名称可显示。
     /// </remark>
-    public double[] Dimensions { get; set; }
+    public Double[] Dimensions { get; set; }
 
     /// <summary>可以定义 data 的哪个维度被编码成什么</summary>
     /// <remark>
@@ -373,7 +373,7 @@ public class SeriesScatter : Series
     ///     }
     /// };
     /// </remark>
-    public object Encode { get; set; }
+    public Object Encode { get; set; }
 
     /// <summary></summary>
     /// <remark>
