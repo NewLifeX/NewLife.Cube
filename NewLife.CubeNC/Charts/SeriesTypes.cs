@@ -18,35 +18,23 @@ public enum SeriesTypes
     /// <summary>地图</summary>
     Map,
 
-    /// <summary>三维折线图</summary>
-    Line3D,
-
-    /// <summary>路径图</summary>
-    Lines,
-
-    /// <summary>三维飞线图</summary>
-    Lines3D,
-
-    /// <summary>三维柱状图</summary>
-    Bar3D,
-
-    /// <summary>关系图</summary>
-    Graph,
-
-    /// <summary>特效散点图</summary>
-    EffectScatter,
-
-    /// <summary>箱形图</summary>
-    Boxplot,
+    /// <summary>K线图</summary>
+    Candlestick,
 
     /// <summary>雷达图</summary>
     Radar,
 
-    /// <summary>漏斗图</summary>
-    Funnel,
+    /// <summary>箱形图</summary>
+    Boxplot,
 
-    /// <summary>仪表盘</summary>
-    Gauge,
+    /// <summary>热力图</summary>
+    Heatmap,
+
+    /// <summary>关系图</summary>
+    Graph,
+
+    /// <summary>路径图</summary>
+    Lines,
 
     /// <summary>树图</summary>
     Tree,
@@ -54,15 +42,30 @@ public enum SeriesTypes
     /// <summary>矩形树图</summary>
     Treemap,
 
-    /// <summary>热力图</summary>
-    Heatmap,
-
     /// <summary>旭日图</summary>
     Sunburst,
+
+    /// <summary>平行坐标系</summary>
+    Parallel,
 
     /// <summary>桑基图</summary>
     Sankey,
 
-    /// <summary>K线图</summary>
-    Candlestick,
+    /// <summary>漏斗图</summary>
+    Funnel,
+
+    /// <summary>仪表盘</summary>
+    Gauge,
+
+    /// <summary>三维折线图</summary>
+    Line3D,
+
+    /// <summary>三维飞线图</summary>
+    Lines3D,
+
+    /// <summary>三维柱状图</summary>
+    Bar3D,
+
+    /// <summary>特效散点图</summary>
+    EffectScatter,
 }
