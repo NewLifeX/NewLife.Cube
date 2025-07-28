@@ -62,13 +62,17 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
 
             var chart2 = new ECharts();
             chart2.SetX(list2, "Date", e => e.Date.ToString("MM-dd"));
-            //chart2.SetY("用户数", "value");
-
             chart2.AddBoxplot(
                 list2.Select(e => new BoxplotItem(e.News, e.Actives, e.NewsT7, e.ActivesT7, e.ActivesT30)),
                 ["新用户", "今日活跃", "7天注册", "7天活跃", "30天活跃"]);
 
-            ViewBag.Charts2 = new[] { chart2 };
+            var chart3 = new ECharts();
+            chart3.SetX(list2, "Date", e => e.Date.ToString("MM-dd"));
+            chart3.AddCandlestick(
+                list2.Select(e => new CandlestickItem(e.News, e.Actives, e.NewsT7, e.ActivesT7)),
+                ["新用户", "今日活跃", "7天注册", "7天活跃"]);
+
+            ViewBag.Charts2 = new[] { chart2, chart3 };
         }
 
         return list;

@@ -8,6 +8,7 @@ using NewLife.Data;
 using NewLife.Reflection;
 using NewLife.Security;
 using NewLife.Serialization;
+using NewLife.Web;
 using XCode.Configuration;
 
 namespace NewLife.Cube.Charts;
@@ -740,6 +741,10 @@ public class ECharts : IExtend
         box.Data = items.Select(e => new[] { e.Min, e.Q1, e.Median, e.Q3, e.Max }).ToArray();
         Add(box);
 
+        // 绘制平均线和最大最小值
+        box.SetMarkLine(true);
+        box.SetMarkPoint(true, true);
+
         var script = """
                 function boxplotFormatter(params) {
                     return `${params.name}<br/>
@@ -758,6 +763,46 @@ public class ECharts : IExtend
             if (names[2] != null) script = script.Replace("中位数", names[2]);
             if (names[3] != null) script = script.Replace("上四分", names[3]);
             if (names[4] != null) script = script.Replace("最大值", names[4]);
+        }
+
+        SetTooltip("item", script);
+
+        // 添加Y轴
+        if (YAxis == null || YAxis.Count == 0) SetY("值", "value");
+
+        return box;
+    }
+
+    /// <summary>添加K线图</summary>
+    /// <param name="items">数据集</param>
+    /// <param name="names">四个名字。不一定是最小值最大值</param>
+    /// <returns></returns>
+    public Series AddCandlestick(IEnumerable<CandlestickItem> items, String[] names = null)
+    {
+        var box = Create("candlestick", SeriesTypes.Candlestick) as SeriesCandlestick;
+        box.Data = items.Select(e => new[] { e.Open, e.Close, e.Lowest, e.Highest }).ToArray();
+        Add(box);
+
+        // 绘制平均线和最大最小值
+        box.SetMarkLine(true);
+        box.SetMarkPoint(true, true);
+
+        var script = """
+                function candlestickFormatter(params) {
+                    return `${params.name}<br/>
+                    开盘值: ${params.value[1]}<br/>
+                    收盘值: ${params.value[2]}<br/>
+                    最低值: ${params.value[3]}<br/>
+                    最高值: ${params.value[4]}`;
+                }
+                """;
+        if (names != null && names.Length >= 4)
+        {
+            // 名称为null时表示不替换
+            if (names[0] != null) script = script.Replace("开盘值", names[0]);
+            if (names[1] != null) script = script.Replace("收盘值", names[1]);
+            if (names[2] != null) script = script.Replace("最低值", names[2]);
+            if (names[3] != null) script = script.Replace("最高值", names[3]);
         }
 
         SetTooltip("item", script);
