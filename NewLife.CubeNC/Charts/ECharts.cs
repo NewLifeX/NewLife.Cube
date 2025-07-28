@@ -53,6 +53,9 @@ public class ECharts : IExtend
     /// <summary>工具箱</summary>
     public Toolbox Toolbox { get; set; }
 
+    /// <summary>日历坐标系</summary>
+    public Calendar Calendar { get; set; }
+
     /// <summary>数据缩放</summary>
     public DataZoom[] DataZoom { get; set; }
 
