@@ -57,6 +57,9 @@ public enum SeriesTypes
     /// <summary>仪表盘</summary>
     Gauge,
 
+    /// <summary>象形柱图</summary>
+    PictorialBar,
+
     /// <summary>三维折线图</summary>
     Line3D,
 
