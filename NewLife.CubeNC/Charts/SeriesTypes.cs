@@ -30,7 +30,7 @@ public enum SeriesTypes
     /// <summary>散点图</summary>
     Scatter,
 
-    /// <summary>气泡散点图</summary>
+    /// <summary>特效散点图</summary>
     EffectScatter,
 
     /// <summary>箱形图</summary>
