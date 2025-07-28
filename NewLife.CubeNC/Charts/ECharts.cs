@@ -43,7 +43,7 @@ public class ECharts : IExtend
 
     /// <summary>图例组件。</summary>
     /// <remarks>图例组件展现了不同系列的标记(symbol)，颜色和名字。可以通过点击图例控制哪些系列不显示。</remarks>
-    public Object Legend { get; set; }
+    public Legend Legend { get; set; }
 
     /// <summary>X轴</summary>
     public IList<XAxis> XAxis { get; set; } = [];
@@ -308,13 +308,17 @@ public class ECharts : IExtend
         return Tooltip = tooltip;
     }
 
-    /// <summary>设置提示</summary>
+    /// <summary>设置图例</summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="list"></param>
     /// <param name="field"></param>
     /// <param name="selector"></param>
     public void SetLegend<T>(IList<T> list, FieldItem field, Func<T, String> selector = null) where T : IModel
-        => Legend = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray();
+        => Legend = new Legend { Data = list.Select(e => selector == null ? e[field.Name] + "" : selector(e)).ToArray() };
+
+    /// <summary>设置图例</summary>
+    /// <param name="names"></param>
+    public void SetLegend(String[] names) => Legend = new Legend { Data = names };
 
     /// <summary>设置工具栏</summary>
     /// <param name="orient">布局朝向。纵向vertical，默认横向horizontal</param>
@@ -726,24 +730,27 @@ public class ECharts : IExtend
         graph.Links = model.Links;
         graph.Categories = model.Categories;
 
-        Legend = new { Data = model.Categories.Select(e => e.Name).ToArray() };
+        Legend = new Legend { Data = model.Categories.Select(e => new { e.Name, Icon = e.Symbol }).ToArray() };
 
         return graph;
     }
 
     /// <summary>添加箱线图</summary>
+    /// <param name="name">图例名称</param>
     /// <param name="items">数据集</param>
-    /// <param name="names">五个名字。不一定是最小值最大值</param>
+    /// <param name="itemNames">五个名字。不一定是最小值最大值</param>
     /// <returns></returns>
-    public Series AddBoxplot(IEnumerable<BoxplotItem> items, String[] names = null)
+    public Series AddBoxplot(String name, IEnumerable<BoxplotItem> items, String[] itemNames = null)
     {
-        var box = Create("boxplot", SeriesTypes.Boxplot) as SeriesBoxplot;
+        var box = Create(!name.IsNullOrEmpty() ? name : "boxplot", SeriesTypes.Boxplot) as SeriesBoxplot;
         box.Data = items.Select(e => new[] { e.Min, e.Q1, e.Median, e.Q3, e.Max }).ToArray();
         Add(box);
 
-        // 绘制平均线和最大最小值
-        box.SetMarkLine(true);
-        box.SetMarkPoint(true, true);
+        if (!name.IsNullOrEmpty()) SetLegend([name]);
+
+        //// 绘制平均线和最大最小值
+        //box.SetMarkLine(true);
+        //box.SetMarkPoint(true, true);
 
         var script = """
                 function boxplotFormatter(params) {
@@ -755,14 +762,14 @@ public class ECharts : IExtend
                     最大值: ${params.value[5]}`;
                 }
                 """;
-        if (names != null && names.Length >= 5)
+        if (itemNames != null && itemNames.Length >= 5)
         {
             // 名称为null时表示不替换
-            if (names[0] != null) script = script.Replace("最小值", names[0]);
-            if (names[1] != null) script = script.Replace("下四分", names[1]);
-            if (names[2] != null) script = script.Replace("中位数", names[2]);
-            if (names[3] != null) script = script.Replace("上四分", names[3]);
-            if (names[4] != null) script = script.Replace("最大值", names[4]);
+            if (itemNames[0] != null) script = script.Replace("最小值", itemNames[0]);
+            if (itemNames[1] != null) script = script.Replace("下四分", itemNames[1]);
+            if (itemNames[2] != null) script = script.Replace("中位数", itemNames[2]);
+            if (itemNames[3] != null) script = script.Replace("上四分", itemNames[3]);
+            if (itemNames[4] != null) script = script.Replace("最大值", itemNames[4]);
         }
 
         SetTooltip("item", script);
@@ -774,18 +781,21 @@ public class ECharts : IExtend
     }
 
     /// <summary>添加K线图</summary>
+    /// <param name="name">图例名称</param>
     /// <param name="items">数据集</param>
-    /// <param name="names">四个名字。不一定是最小值最大值</param>
+    /// <param name="itemNames">四个名字。不一定是最小值最大值</param>
     /// <returns></returns>
-    public Series AddCandlestick(IEnumerable<CandlestickItem> items, String[] names = null)
+    public Series AddCandlestick(String name, IEnumerable<CandlestickItem> items, String[] itemNames = null)
     {
-        var box = Create("candlestick", SeriesTypes.Candlestick) as SeriesCandlestick;
+        var box = Create(!name.IsNullOrEmpty() ? name : "candlestick", SeriesTypes.Candlestick) as SeriesCandlestick;
         box.Data = items.Select(e => new[] { e.Open, e.Close, e.Lowest, e.Highest }).ToArray();
         Add(box);
 
-        // 绘制平均线和最大最小值
-        box.SetMarkLine(true);
-        box.SetMarkPoint(true, true);
+        if (!name.IsNullOrEmpty()) SetLegend([name]);
+
+        //// 绘制平均线和最大最小值
+        //box.SetMarkLine(true);
+        //box.SetMarkPoint(true, true);
 
         var script = """
                 function candlestickFormatter(params) {
@@ -796,13 +806,13 @@ public class ECharts : IExtend
                     最高值: ${params.value[4]}`;
                 }
                 """;
-        if (names != null && names.Length >= 4)
+        if (itemNames != null && itemNames.Length >= 4)
         {
             // 名称为null时表示不替换
-            if (names[0] != null) script = script.Replace("开盘值", names[0]);
-            if (names[1] != null) script = script.Replace("收盘值", names[1]);
-            if (names[2] != null) script = script.Replace("最低值", names[2]);
-            if (names[3] != null) script = script.Replace("最高值", names[3]);
+            if (itemNames[0] != null) script = script.Replace("开盘值", itemNames[0]);
+            if (itemNames[1] != null) script = script.Replace("收盘值", itemNames[1]);
+            if (itemNames[2] != null) script = script.Replace("最低值", itemNames[2]);
+            if (itemNames[3] != null) script = script.Replace("最高值", itemNames[3]);
         }
 
         SetTooltip("item", script);
@@ -835,18 +845,18 @@ public class ECharts : IExtend
         if (legend == null && series != null && series.Count > 0)
         {
             if (series.Any(e => e.Type == "line" || e.Type == "bar"))
-                legend = series.Select(e => e.Name).ToArray();
+                legend = new Legend { Data = series.Select(e => e.Name).ToArray() };
             else if (series.Any(e => e.Type == "pie"))
-                legend = new { show = true, top = "5%", bottom = "5%", left = "center" };
+                legend = new Legend { Show = true, Top = "5%", Bottom = "5%", Left = "center" };
         }
         if (legend != null)
         {
-            if (legend is String str)
-                legend = new { data = new[] { str } };
-            else if (legend is String[] ss)
-                legend = new { data = ss };
+            //if (legend is String str)
+            //    legend = new { data = new[] { str } };
+            //else if (legend is String[] ss)
+            //    legend = new { data = ss };
 
-            dic[nameof(legend)] = legend;
+            dic[nameof(legend)] = GetJsonObject(legend);
         }
 
         // 网格

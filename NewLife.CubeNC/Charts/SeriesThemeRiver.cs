@@ -83,7 +83,7 @@ public class SeriesThemeRiver : Series
 
     /// <summary></summary>
     /// <remark>图中与坐标轴正交的方向的边界间隙，设置该值是为了调整图的位置，使其尽量处于屏幕的正中间，避免处于屏幕的上方或下方。</remark>
-    public double[] BoundaryGap { get; set; }
+    public Double[] BoundaryGap { get; set; }
 
     /// <summary>单个时间轴的index，默认值为0，因为只有单个轴</summary>
     public Double? SingleAxisIndex { get; set; }

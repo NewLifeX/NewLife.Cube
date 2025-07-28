@@ -309,7 +309,7 @@ public class SeriesPictorialBar : Series
     ///     }]
     /// }]
     /// </remark>
-    public double[] SymbolOffset { get; set; }
+    public Double[] SymbolOffset { get; set; }
 
     /// <summary>图形的旋转角度</summary>
     /// <remark>
@@ -625,7 +625,7 @@ public class SeriesPictorialBar : Series
     /// displayName: 一般用于 tooltip 中维度名的展示。string 如果没有指定，默认使用 name 来展示。
     /// 值得一提的是，当定义了 dimensions 后，默认 tooltip 中对个维度的显示，会变为『竖排』，从而方便显示每个维度的名称。如果没有定义 dimensions，则默认 tooltip 会横排显示，且只显示数值没有维度名称可显示。
     /// </remark>
-    public double[] Dimensions { get; set; }
+    public Double[] Dimensions { get; set; }
 
     /// <summary>可以定义 data 的哪个维度被编码成什么</summary>
     /// <remark>
@@ -736,7 +736,7 @@ public class SeriesPictorialBar : Series
     ///     }
     /// };
     /// </remark>
-    public object Encode { get; set; }
+    public Object Encode { get; set; }
 
     /// <summary>该系列所有数据项的组 ID，优先级低于groupId</summary>
     /// <remark>详见series.data.groupId。</remark>
