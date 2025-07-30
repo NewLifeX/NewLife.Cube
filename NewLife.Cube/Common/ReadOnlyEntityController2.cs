@@ -45,9 +45,12 @@ public partial class ReadOnlyEntityController<TEntity>
         set.EnableTableDoubleClick = CubeSetting.Current.EnableTableDoubleClick;
 #endif
 
-        // 大于100万条数据时，默认不启用数字型主键降序，避免数据库选择主键索引导致复杂查询变慢
-        if (set.OrderByKey && Entity<TEntity>.Meta.Count > 1_000_000)
-            set.OrderByKey = false;
+        if (set.OrderByKey)
+        {
+            // 大于100万条数据时，默认不启用数字型主键降序，避免数据库选择主键索引导致复杂查询变慢
+            if (Entity<TEntity>.Meta.ShardPolicy == null && Entity<TEntity>.Meta.Count > 1_000_000)
+                set.OrderByKey = false;
+        }
 
         SysConfig = SysConfig.Current;
     }
