@@ -34,7 +34,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>改进ECharts图表</PackageReleaseNotes>
+    <PackageReleaseNotes>升级ECharts增加大量系列图；增强可扩展字段功能，支持一行数据的Json/Xml字段在表单页展开为独立Tab页</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -50,10 +50,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.5.2025.701" />
+    <PackageReference Include="NewLife.Core" Version="11.6.2025.801" />
     <PackageReference Include="NewLife.IP" Version="2.3.2025.601" />
-    <PackageReference Include="NewLife.Stardust" Version="3.4.2025.701" />
-    <PackageReference Include="NewLife.XCode" Version="11.19.2025.701" />
+    <PackageReference Include="NewLife.Stardust" Version="3.4.2025.801" />
+    <PackageReference Include="NewLife.XCode" Version="11.20.2025.801" />
   </ItemGroup>
 
   <ItemGroup>
