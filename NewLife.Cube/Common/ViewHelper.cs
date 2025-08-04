@@ -944,9 +944,9 @@ public static class ViewHelper
     public static String GetAttachmentUrl(Attachment attachment)
     {
         if (!attachment.ContentType.IsNullOrEmpty() && attachment.ContentType.StartsWithIgnoreCase("image/"))
-            return $"/cube/image/{attachment.Id}{attachment.Extension}";
+            return $"/cube/image?id={attachment.Id}{attachment.Extension}";
 
-        return $"/cube/file/{attachment.Id}{attachment.Extension}";
+        return $"/cube/file?id={attachment.Id}{attachment.Extension}";
     }
 
     /// <summary>是否附件列</summary>

@@ -127,6 +127,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <returns></returns>
     protected virtual async Task<Attachment> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName)
     {
+        if (file == null) throw new ArgumentNullException(nameof(file));
         if (fileName.IsNullOrEmpty()) fileName = file.FileName;
 
         using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveFile), new { name = file.Name, fileName, uploadPath });
@@ -147,7 +148,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         if (id != null)
         {
             var ss = GetControllerAction();
-            att.Url = $"/{ss[0]}/{ss[1]}/Detail/{id}";
+            att.Url = $"/{ss[0]}/{ss[1]}?id={id}";
         }
 
         var rs = false;
