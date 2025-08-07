@@ -31,7 +31,7 @@ public class TestController : ControllerBaseX
         var p = new Pager(WebHelper.Params) { RetrieveTotalCount = true };
 
         var list = SearchData1(p);
-        return list.ToOkApiResponse().WithList(p);
+        return list.ToOkApiResponse().WithPager(p);
     }
 
     [HttpGet]
@@ -42,7 +42,7 @@ public class TestController : ControllerBaseX
         var p = new Pager(WebHelper.Params) { RetrieveTotalCount = true };
         var list = SearchData1(p);
         var ss = list.ToFailApiResponse("");
-        return ss.WithList(p);
+        return ss.WithPager(p);
     }
 
 

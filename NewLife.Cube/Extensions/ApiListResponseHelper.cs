@@ -15,7 +15,7 @@ public static partial class ApiListResponseHelper
     /// <param name="data">原始ApiResponse</param>
     /// <param name="pager">分页器</param>
     /// <returns></returns>
-    public static ApiListResponse<T> WithList<T, TSource>(this ApiResponse<TSource> data, Pager pager)
+    public static ApiListResponse<T> WithPager<T, TSource>(this ApiResponse<TSource> data, Pager pager)
     {
         IList<T> list;
 
@@ -64,9 +64,9 @@ public static partial class ApiListResponseHelper
     /// <param name="data">原始ApiResponse，Data必须是IEnumerable&lt;T&gt;类型</param>
     /// <param name="pager">分页器</param>
     /// <returns></returns>
-    public static ApiListResponse<T> WithList<T>(this ApiResponse<IEnumerable<T>> data, Pager pager)
+    public static ApiListResponse<T> WithPager<T>(this ApiResponse<IEnumerable<T>> data, Pager pager)
     {
-        return data.WithList<T, IEnumerable<T>>(pager);
+        return data.WithPager<T, IEnumerable<T>>(pager);
     }
 
     /// <summary>将ApiResponse转换为ApiListResponse，专门处理List类型</summary>
@@ -74,9 +74,9 @@ public static partial class ApiListResponseHelper
     /// <param name="data">原始ApiResponse，Data是List&lt;T&gt;类型</param>
     /// <param name="pager">分页器</param>
     /// <returns></returns>
-    public static ApiListResponse<T> WithList<T>(this ApiResponse<List<T>> data, Pager pager)
+    public static ApiListResponse<T> WithPager<T>(this ApiResponse<List<T>> data, Pager pager)
     {
-        return data.WithList<T, List<T>>(pager);
+        return data.WithPager<T, List<T>>(pager);
     }
 
     /// <summary>将ApiResponse转换为ApiListResponse，专门处理IList类型</summary>
@@ -84,9 +84,9 @@ public static partial class ApiListResponseHelper
     /// <param name="data">原始ApiResponse，Data是IList&lt;T&gt;类型</param>
     /// <param name="pager">分页器</param>
     /// <returns></returns>
-    public static ApiListResponse<T> WithList<T>(this ApiResponse<IList<T>> data, Pager pager)
+    public static ApiListResponse<T> WithPager<T>(this ApiResponse<IList<T>> data, Pager pager)
     {
-        return data.WithList<T, IList<T>>(pager);
+        return data.WithPager<T, IList<T>>(pager);
     }
 
     /// <summary>将ApiResponse转换为ApiListResponse，专门处理数组类型</summary>
@@ -94,9 +94,9 @@ public static partial class ApiListResponseHelper
     /// <param name="data">原始ApiResponse，Data是T[]类型</param>
     /// <param name="pager">分页器</param>
     /// <returns></returns>
-    public static ApiListResponse<T> WithList<T>(this ApiResponse<T[]> data, Pager pager)
+    public static ApiListResponse<T> WithPager<T>(this ApiResponse<T[]> data, Pager pager)
     {
-        return data.WithList<T, T[]>(pager);
+        return data.WithPager<T, T[]>(pager);
     }
 
     /// <summary>将ApiResponse转换为ApiListResponse，专门处理单个对象</summary>
@@ -104,9 +104,9 @@ public static partial class ApiListResponseHelper
     /// <param name="data">原始ApiResponse，Data是T类型</param>
     /// <param name="pager">分页器</param>
     /// <returns></returns>
-    public static ApiListResponse<T> WithList<T>(this ApiResponse<T> data, Pager pager)
+    public static ApiListResponse<T> WithPager<T>(this ApiResponse<T> data, Pager pager)
     {
-        return data.WithList<T, T>(pager);
+        return data.WithPager<T, T>(pager);
     }
 
     /// <summary>将ApiResponse转换为ApiListResponse，带自定义统计数据</summary>
@@ -116,7 +116,7 @@ public static partial class ApiListResponseHelper
     /// <param name="pager">分页器</param>
     /// <param name="stat">自定义统计数据</param>
     /// <returns></returns>
-    public static ApiListResponse<T> WithList<T, TSource>(this ApiResponse<TSource> data, Pager pager, T stat)
+    public static ApiListResponse<T> WithPager<T, TSource>(this ApiResponse<TSource> data, Pager pager, T stat)
     {
         IList<T> list;
 
