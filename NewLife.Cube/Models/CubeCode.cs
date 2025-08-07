@@ -4,7 +4,7 @@ namespace NewLife.Cube.Models;
 
 /// <!-- Yann -->
 /// <summary>通用业务返回码/响应码定义：根据业务情况返回</summary>
-/// <remarks> 大于0的返回码均为失败，可以由业务系统自定义 </remarks>
+/// <remarks> 大于0的返回码均为业务码，可以由业务系统自定义 </remarks>
 /// <returns> CODE : 0 表示成功；-1 表示通用错误，其他为特殊信息码；  </returns>
 public enum CubeCode
 {
@@ -16,7 +16,7 @@ public enum CubeCode
     /// <summary>-1：操作失败：请求(或处理)业务失败、不符合预期</summary>
     /// <remarks></remarks>
     [Description("操作失败")]
-    Failed = 500,// -1
+    Failed = -1,
 
     /// <summary>参数异常：请求参数不完整或不正确</summary>
     /// <remarks>请求参数不合理，

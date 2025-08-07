@@ -26,20 +26,25 @@ public partial class EntityController<TEntity, TModel>
         try
         {
             act = ProcessDelete(entity);
-            return entity.ToOkApiResponse($"{act}成功！");
-            //return new ApiResponse<TEntity>(0, $"{act}成功！", entity);
+            //return entity.ToOkApiResponse($"{act}成功！");
+            return new ApiResponse<TEntity> { Code = 0, Message = $"{act}成功！", Data = entity };
         }
         catch (Exception ex)
         {
-            //var code = ex is ApiException ae ? ae.Code : 500;
+            var code = ex is ApiException ae ? ae.Code : 500;
             var err = ex.GetTrue().Message;
             WriteLog("Delete", false, err);
 
+            return new ApiResponse<TEntity>()
+            {
+                Code = code,
+                Message = $"{act}失败！{err}",
+                Data = entity
+            };
 
-            if (ex is ApiException ae)//主动抛出的异常，用对应Code返回
-                return entity.ToFailApiResponse(ae.Code, $"{act}失败！{err}");
-            return entity.ToFailApiResponse($"{act}失败！{err}");// 兼容旧版 Yann
-
+            //if (ex is ApiException ae)//主动抛出的异常，用对应Code返回
+            //    return entity.ToFailApiResponse(ae.Code, $"{act}失败！{err}");
+            //return entity.ToFailApiResponse($"{act}失败！{err}");// 兼容旧版 Yann
         }
     }
 
@@ -87,8 +92,8 @@ public partial class EntityController<TEntity, TModel>
 
             if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
 
-            return entity.ToOkApiResponse("添加成功！");
-            //return new ApiResponse<TEntity>(0, "添加成功！", entity);
+            //return entity.ToOkApiResponse("添加成功！");
+            return new ApiResponse<TEntity> { Code = 0, Message = "添加成功！", Data = entity };
         }
         catch (Exception ex)
         {
@@ -102,10 +107,11 @@ public partial class EntityController<TEntity, TModel>
             // 添加失败，ID清零，否则会显示保存按钮
             entity[Factory.Unique.Name] = 0;
 
-            if (ex is ApiException ae)//主动抛出的异常，用对应Code返回
-                return entity.ToFailApiResponse(ae.Code, msg);
-            return entity.ToFailApiResponse(msg);// 兼容旧版 Yann
-            //return new ApiResponse<TEntity>(code, msg, entity);
+            //if (ex is ApiException ae)//主动抛出的异常，用对应Code返回
+            //    return entity.ToFailApiResponse(ae.Code, msg);
+            //return entity.ToFailApiResponse(msg);// 兼容旧版 Yann
+            var code = ex is ApiException ae ? ae.Code : 500;
+            return new ApiResponse<TEntity> { Code = code, Message = msg, Data = entity };
         }
     }
 
@@ -149,8 +155,8 @@ public partial class EntityController<TEntity, TModel>
 
             OnUpdate(entity);
 
-            return entity.ToOkApiResponse("保存成功！");
-            //return new ApiResponse<TEntity>(0, "保存成功！", entity);
+            //return entity.ToOkApiResponse("保存成功！");
+            return new ApiResponse<TEntity> { Code = 0, Message = "保存成功！", Data = entity };
         }
         catch (Exception ex)
         {
@@ -161,10 +167,11 @@ public partial class EntityController<TEntity, TModel>
             WriteLog("Edit", false, err);
 
             err = SysConfig.Develop ? ("保存失败！" + err) : "保存失败！";
-            if (ex is ApiException ae)//主动抛出的异常，用对应Code返回
-                return default(TEntity).ToFailApiResponse(ae.Code, err);
-            return default(TEntity).ToFailApiResponse(err);// 兼容旧版 Yann
-
+            //if (ex is ApiException ae)//主动抛出的异常，用对应Code返回
+            //    return default(TEntity).ToFailApiResponse(ae.Code, err);
+            //return default(TEntity).ToFailApiResponse(err);// 兼容旧版 Yann
+            var code = ex is ApiException ae ? ae.Code : 500;
+            return new ApiResponse<TEntity> { Code = code, Message = err, Data = null };
             //return new ApiResponse<TEntity>(code, err, null);
         }
     }
