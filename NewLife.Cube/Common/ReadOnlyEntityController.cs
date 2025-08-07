@@ -80,7 +80,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
 
-        return entity.ToOkApiResponse();
+        //return entity.ToOkApiResponse();
         return new ApiResponse<TEntity> { Data = entity };
     }
     #endregion

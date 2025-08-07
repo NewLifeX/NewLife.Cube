@@ -99,7 +99,7 @@ public class IndexController : ControllerBaseX
             gc = gc,
             //startTime = ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
         };
-        var res = result.ToOkApiResponse();
+        //var res = result.ToOkApiResponse();
         return Json(0, null, result);
     }
 
