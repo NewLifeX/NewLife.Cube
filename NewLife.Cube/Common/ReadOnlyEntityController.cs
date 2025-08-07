@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Web;
@@ -55,7 +56,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         };
 
         var list = SearchData(p);
-
+        //return list.ToOkApiResponse().WithList(p); 
         return new ApiListResponse<TEntity>
         {
             Data = list.ToList(),
@@ -79,6 +80,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         // 验证数据权限
         Valid(entity, DataObjectMethodType.Select, false);
 
+        return entity.ToOkApiResponse();
         return new ApiResponse<TEntity> { Data = entity };
     }
     #endregion

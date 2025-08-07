@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -29,7 +30,7 @@ public class IndexController : ControllerBaseX
     public IndexController(IManageProvider manageProvider, IWebHostEnvironment env)
     {
         _provider = manageProvider;
-        _env=env;
+        _env = env;
         PageSetting.EnableNavbar = false;
     }
 
@@ -98,7 +99,8 @@ public class IndexController : ControllerBaseX
             gc = gc,
             //startTime = ApplicationManager.Load().StartTime.ToLocalTime().ToFullString()
         };
-        return Json(0,null,result);
+        var res = result.ToOkApiResponse();
+        return Json(0, null, result);
     }
 
     /// <summary>服务器变量列表</summary>
@@ -109,12 +111,12 @@ public class IndexController : ControllerBaseX
     public ActionResult ServerVarList()
     {
         var req = HttpContext.Request;
-        var list=new List<dynamic>();
-        foreach(var kv in req.Headers)
+        var list = new List<dynamic>();
+        foreach (var kv in req.Headers)
         {
             var v = kv.Value.ToString();
             var key = kv.Key;
-            list.Add(new { name=key, value=v });
+            list.Add(new { name = key, value = v });
         }
         var rqlist = new List<dynamic>();
         foreach (var pi in req.GetType().GetProperties())
@@ -131,7 +133,7 @@ public class IndexController : ControllerBaseX
             }
             rqlist.Add(new { name = pi.Name, value = req.GetValue(pi) });
         }
-            return Json(0,null,new {server=list,requestName= req.GetType().FullName, request=rqlist});
+        return Json(0, null, new { server = list, requestName = req.GetType().FullName, request = rqlist });
     }
     /// <summary>进程模块列表</summary>
     /// <param name="model">All全部,OnlyUser用户</param>
@@ -176,10 +178,10 @@ public class IndexController : ControllerBaseX
     public ActionResult AssemblyList(String model)
     {
         var isAll = String.Equals("All", model, StringComparison.OrdinalIgnoreCase);
-        var result =new List<dynamic>();
+        var result = new List<dynamic>();
         AssemblyX[] asms = null;
-        if(isAll)
-           asms=AssemblyX.GetAssemblies(null).OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
+        if (isAll)
+            asms = AssemblyX.GetAssemblies(null).OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
         else
             asms = AssemblyX.GetMyAssemblies().OrderBy(e => e.Name).OrderByDescending(e => e.Compile).ToArray();
         foreach (var assembly in asms)
@@ -194,7 +196,7 @@ public class IndexController : ControllerBaseX
                 location = assembly.Asm.Location
             });
         }
-        return Json(0,null, result);
+        return Json(0, null, result);
     }
 
     /// <summary>重启</summary>

@@ -6,6 +6,7 @@ using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
 using NewLife.Cube.Services;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -424,7 +425,7 @@ public class UserController : EntityController<User, UserModel>
     [HttpPost]
     //[AllowAnonymous]
     [EntityAuthorize]
-    public ActionResult ChangePassword(ChangePasswordModel model)
+    public ActionResult<String> ChangePassword(ChangePasswordModel model)
     {
         if (model.NewPassword.IsNullOrWhiteSpace()) throw new ArgumentException($"新密码不能为 Null 或空白", nameof(model.NewPassword));
         if (model.NewPassword2.IsNullOrWhiteSpace()) throw new ArgumentException($"确认密码不能为 Null 或空白", nameof(model.NewPassword2));
@@ -447,10 +448,13 @@ public class UserController : EntityController<User, UserModel>
         var user = ManageProvider.Provider.ChangePassword(current.Name, model.NewPassword, requireOldPass ? model.OldPassword : null);
 
         //ViewBag.StatusMessage = "修改成功！";
-
         //return Ok(ViewBag.StatusMessage);
 
-        return Json(0, null, "修改成功！");
+
+        var res = "".ToOkApiResponse();
+        return Json(res.Code, res.Message, res.Data);
+        return this.Json(0, null, "修改成功！");
+
     }
 
     /// <summary>用户绑定</summary>
@@ -518,7 +522,7 @@ public class UserController : EntityController<User, UserModel>
             user = FindByMail(email);
             if (user != null) throw new ArgumentException(nameof(email), $"邮箱[{email}]已存在！");
 
-            var r = Role.GetOrAdd(set.DefaultRole); 
+            var r = Role.GetOrAdd(set.DefaultRole);
             var user2 = ManageProvider.Provider.Register(username, password, r.ID, true);
 
             // 注册成功

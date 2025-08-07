@@ -47,8 +47,8 @@ public abstract class BaseController : ControllerBase, IActionFilter
         {
             var traceId = DefaultSpan.Current?.TraceId;
             context.Result = ex is ApiException aex
-                ? new JsonResult(new { code = aex.Code, data = aex.Message, traceId })
-                : new JsonResult(new { code = 500, data = ex.Message, traceId });
+                ? new JsonResult(new { code = aex.Code, message = aex.Message, data = aex.Message, traceId })
+                : new JsonResult(new { code = 500, message = ex.Message, data = ex.Message, traceId });
 
             WriteError(ex, context);
         }

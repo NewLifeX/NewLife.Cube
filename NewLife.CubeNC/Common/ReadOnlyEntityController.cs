@@ -921,7 +921,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     {
         var fields = OnGetFields(kind, null);
 
-        Object data = new { code = 0, data = fields };
+        Object data = new { code = 0, message = "", data = fields };
 
         return new JsonResult(data);
     }

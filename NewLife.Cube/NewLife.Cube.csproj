@@ -57,6 +57,7 @@
     <Compile Remove="Entity\模型表.Biz.cs" />
     <Compile Remove="Entity\模型表.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
+    <Compile Remove="Extensions\MvcActionResultHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>

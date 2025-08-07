@@ -27,29 +27,6 @@ public class ApiResponse<T> : IApiResponse
 
     /// <summary>跟踪编号</summary>
     public String TraceId { get; set; }
-
-    /// <summary>实例化</summary>
-    public ApiResponse() { }
-
-    /// <summary>实例化</summary>
-    /// <param name="code"></param>
-    /// <param name="message"></param>
-    public ApiResponse(Int32 code, String message)
-    {
-        Code = code;
-        Message = message;
-    }
-
-    /// <summary>实例化</summary>
-    /// <param name="code"></param>
-    /// <param name="message"></param>
-    /// <param name="data"></param>
-    public ApiResponse(Int32 code, String message, T data)
-    {
-        Code = code;
-        Message = message;
-        Data = data;
-    }
 }
 
 /// <summary>列表响应模型</summary>

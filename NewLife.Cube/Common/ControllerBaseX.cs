@@ -155,9 +155,9 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         {
             //var ex = context.Exception.GetTrue();
             if (ex is ApiException aex)
-                context.Result = new JsonResult(new { code = aex.Code, data = aex.Message, traceId });
+                context.Result = new JsonResult(new { code = aex.Code, message = aex.Message, traceId });
             else
-                context.Result = new JsonResult(new { code = 500, data = ex.Message, traceId });
+                context.Result = new JsonResult(new { code = 500, message = ex.Message, traceId });
 
             context.ExceptionHandled = true;
 
