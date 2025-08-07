@@ -49,7 +49,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="BootstrapBlazor" Version="9.7.0" />
+    <PackageReference Include="BootstrapBlazor" Version="9.9.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 

@@ -55,6 +55,7 @@ public class UserController : EntityController<User, UserModel>
             df.DataVisible = entity => !(entity as User).Avatar.IsNullOrEmpty();
             // 使用ILinkExtend，高度定制头像超链接
             df.AddService(new MyAvatar());
+            df.Title = "{Remark}";
         }
         {
             var df = ListFields.GetField("Name") as ListField;
@@ -65,6 +66,7 @@ public class UserController : EntityController<User, UserModel>
             var df = ListFields.GetField("DisplayName") as ListField;
             df.Url = "/Admin/User/Edit?id={ID}";
             df.Target = "_blank";
+            df.Title = "{Remark}";
         }
 
         {
@@ -94,13 +96,13 @@ public class UserController : EntityController<User, UserModel>
         {
             var ff = AddFormFields.GetField("AreaId") as FormField;
             // 使用area4视图
-            ff.ItemView = "_Area4"; 
+            ff.ItemView = "_Area4";
         }
         {
             var ff = EditFormFields.GetField("AreaId") as FormField;
             //ff.ItemView = "_Area3";
             // 使用area4组件
-            ff.ItemType = "area4"; 
+            ff.ItemType = "area4";
         }
     }
 

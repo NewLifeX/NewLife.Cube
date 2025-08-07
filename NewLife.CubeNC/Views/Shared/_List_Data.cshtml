@@ -66,8 +66,9 @@
                     }
                     else if (df != null && (txt = df.GetText(entity, page)) != null)
                     {
+                        var title = df.GetTitle(entity, page);
                         var tdClass = df.GetTextClass(entity);
-                        <td class="@tdClass)">@Html.Raw(txt)</td>
+                        <td class="@tdClass)" title="@title">@Html.Raw(txt)</td>
                     }
                     else
                     {

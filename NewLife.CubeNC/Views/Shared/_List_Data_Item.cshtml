@@ -7,6 +7,7 @@
     var entity = Model.Entity;
     var item = Model.Field;
     var factory = entity.GetType().AsFactory();
+    var page = ViewBag.Page as Pager;
 
     var value = entity[item.Name];
     var provider = ManageProvider.Provider;
@@ -18,10 +19,11 @@
 
     // 文本对齐方式
     var tdClass = listField.GetTextClass(entity);
+    var title = listField.GetTitle(entity, page);
 }
 @if (item.PrimaryKey)
 {
-    <td class="@(tdClass ?? "text-center")">@value</td>
+    <td class="@(tdClass ?? "text-center")" title="@title">@value</td>
 }
 else
 {
@@ -29,11 +31,11 @@ else
     {
         case TypeCode.Boolean:
             var bval = (Boolean)value;
-            <td class="@(tdClass ?? "text-center")">
+            <td class="@(tdClass ?? "text-center")" title="@title">
                 @if (item.Name.EqualIgnoreCase("Enable") && factory.Unique != null)
                 {
                     var key = entity[factory.Unique.Name];
-                    <a href="@Url.Action("SetEnable",null,new { id=key, enable=!bval })" data-action="action">
+                    <a href="@Url.Action("SetEnable", null, new { id = key, enable = !bval })" data-action="action">
                         @await Html.PartialAsync("_Icon_Boolean", bval)
                     </a>
                 }
@@ -47,46 +49,46 @@ else
             var dt = (DateTime)value;
             if (listField.GetValue != null)
             {
-                <td class="@(tdClass ?? "text-center")">@listField.GetValue(entity)</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@listField.GetValue(entity)</td>
             }
             else if (item.ItemType.EqualIgnoreCase("time"))
             {
-                <td class="@(tdClass ?? "text-center")">@dt.ToFullString("")</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@dt.ToFullString("")</td>
             }
             else if (item.ItemType.StartsWithIgnoreCase("time-"))
             {
                 var format = item.ItemType.Substring("time-".Length);
-                <td class="@(tdClass ?? "text-center")">@dt.ToString(format, "")</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@dt.ToString(format, "")</td>
             }
             else if (item.ItemType.EqualIgnoreCase("Date") || item.ItemType.IsNullOrEmpty() && name2.EndsWith("Date"))
             {
-                <td class="@(tdClass ?? "text-center")">@dt.ToString("yyyy-MM-dd", "")</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@dt.ToString("yyyy-MM-dd", "")</td>
             }
             else
             {
-                <td class="@(tdClass ?? "text-center")">@dt.ToFullString("")</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@dt.ToFullString("")</td>
             }
             break;
         case TypeCode.Decimal:
             if (listField.GetValue != null)
             {
-                <td class="@(tdClass ?? "text-center")">@listField.GetValue(entity)</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@listField.GetValue(entity)</td>
             }
             else if (item.ItemType.EqualIgnoreCase("Money"))
             {
                 var dc = (Decimal)value;
-                <td class="@(tdClass ?? "text-right")">@dc.ToString("c")</td>
+                <td class="@(tdClass ?? "text-right")" title="@title">@dc.ToString("c")</td>
             }
             else
             {
                 var dc = (Decimal)value;
                 if (item.Scale > 0)
                 {
-                    <td class="@(tdClass ?? "text-right")">@dc.ToString("n" + item.Scale)</td>
+                    <td class="@(tdClass ?? "text-right")" title="@title">@dc.ToString("n" + item.Scale)</td>
                 }
                 else
                 {
-                    <td class="@(tdClass ?? "text-right")">@dc.ToString()</td>
+                    <td class="@(tdClass ?? "text-right")" title="@title">@dc.ToString()</td>
                 }
             }
             break;
@@ -94,13 +96,13 @@ else
         case TypeCode.Double:
             if (listField.GetValue != null)
             {
-                <td class="@(tdClass ?? "text-right")">@listField.GetValue(entity)</td>
+                <td class="@(tdClass ?? "text-right")" title="@title">@listField.GetValue(entity)</td>
             }
             else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
                 var dd = value.ToDouble();
                 var scale = item.Scale >= 2 ? item.Scale - 2 : 2;
-                <td class="@(tdClass ?? "text-center")">@dd.ToString("p" + scale)</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@dd.ToString("p" + scale)</td>
             }
             else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
             {
@@ -113,18 +115,18 @@ else
                 if (des.Contains("万分之一")) { dd /= 10000; scale += 4; }
                 scale = scale >= 2 ? scale - 2 : 2;
 
-                <td class="@(tdClass ?? "text-center")">@dd.ToString("p" + scale)</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@dd.ToString("p" + scale)</td>
             }
             else
             {
                 var dd = value.ToDouble();
                 if (item.Scale > 0)
                 {
-                    <td class="@(tdClass ?? "text-right")">@dd.ToString("n" + item.Scale)</td>
+                    <td class="@(tdClass ?? "text-right")" title="@title">@dd.ToString("n" + item.Scale)</td>
                 }
                 else
                 {
-                    <td class="@(tdClass ?? "text-right")">@dd.ToString()</td>
+                    <td class="@(tdClass ?? "text-right")" title="@title">@dd.ToString()</td>
                 }
             }
             break;
@@ -137,7 +139,7 @@ else
         case TypeCode.UInt64:
             if (listField.GetValue != null)
             {
-                <td class="@(tdClass ?? "text-right")">@listField.GetValue(entity)</td>
+                <td class="@(tdClass ?? "text-right")" title="@title">@listField.GetValue(entity)</td>
             }
             //特殊处理枚举
             else if (item.Type.IsEnum)
@@ -148,30 +150,30 @@ else
                     val = EnumHelper.GetDescription((Enum)value) ?? value + "";
                 }
                 catch { }
-                <td class="@(tdClass ?? "text-center")">@val</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@val</td>
             }
             else if (item.ItemType.StartsWithIgnoreCase("TimeSpan"))
             {
-                <td class="@(tdClass ?? "text-right")">@(item.FormatValue(value))</td>
+                <td class="@(tdClass ?? "text-right")" title="@title">@(item.FormatValue(value))</td>
             }
             else if (item.ItemType.StartsWithIgnoreCase("Time"))
             {
-                <td class="@(tdClass ?? "text-center")">@(item.FormatValue(value))</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@(item.FormatValue(value))</td>
             }
             else if (item.ItemType.EqualIgnoreCase("GMK"))
             {
-                <td class="@(tdClass ?? "text-right")">@(value.ToLong().ToGMK())</td>
+                <td class="@(tdClass ?? "text-right")" title="@title">@(value.ToLong().ToGMK())</td>
             }
             else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
             {
                 //var provider = ViewData["Provider"] as IManageProvider;
                 if (provider != null)
                 {
-                    <td class="@(tdClass ?? "text-center")">@provider?.FindByID(value)</td>
+                    <td class="@(tdClass ?? "text-center")" title="@title">@provider?.FindByID(value)</td>
                 }
                 else
                 {
-                    <td class="@(tdClass ?? "text-center")">@value</td>
+                    <td class="@(tdClass ?? "text-center")" title="@title">@value</td>
                 }
             }
             else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
@@ -184,18 +186,18 @@ else
                 if (des.Contains("千分之一")) { dd /= 1000; scale = 1; }
                 if (des.Contains("万分之一")) { dd /= 10000; scale = 2; }
 
-                <td class="@(tdClass ?? "text-center")">@dd.ToString("p" + scale)</td>
+                <td class="@(tdClass ?? "text-center")" title="@title">@dd.ToString("p" + scale)</td>
             }
             else
             {
-                <td class="@(tdClass ?? "text-right")">@Convert.ToInt64(value).ToString("n0")</td>
+                <td class="@(tdClass ?? "text-right")" title="@title">@Convert.ToInt64(value).ToString("n0")</td>
             }
             break;
         case TypeCode.String:
         default:
             if (listField.GetValue != null)
             {
-                <td class="@tdClass">@listField.GetValue(entity)</td>
+                <td class="@tdClass" title="@title">@listField.GetValue(entity)</td>
             }
             else
             {
@@ -207,16 +209,16 @@ else
                         var name = item.MapProvider.EntityType.Name;
                         var key = item.MapProvider.Key;
                         val = entity[item.MapField];
-                        <td class="@(tdClass ?? "text-center")"><a href="@name?@key=@val">@value</a></td>
+                        <td class="@(tdClass ?? "text-center")" title="@title"><a href="@name?@key=@val">@value</a></td>
                     }
                     else
                     {
-                        <td class="@(tdClass ?? "text-center")">@value</td>
+                        <td class="@(tdClass ?? "text-center")" title="@title">@value</td>
                     }
                 }
                 else if (item.Name.EqualIgnoreCase("CreateIP", "UpdateIP"))
                 {
-                    <td class="@(tdClass ?? "text-center")" title="@((value+"").IPToAddress())">@value</td>
+                    <td class="@(tdClass ?? "text-center")" title="@((value + "").IPToAddress())">@value</td>
                 }
                 else if (item.IsBigText())
                 {
@@ -232,7 +234,7 @@ else
                 }
                 else
                 {
-                    <td class="@tdClass">@value</td>
+                    <td class="@tdClass" title="@title">@value</td>
                 }
             }
             break;
