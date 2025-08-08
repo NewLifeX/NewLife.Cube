@@ -11,7 +11,7 @@ public enum CubeCode
     /// <summary> 0：操作成功 </summary>
     /// <remarks> 请求/操作成功：一般无Msg信息</remarks>
     [Description("操作成功")]
-    Success = 0,
+    Ok = 0,
 
     /// <summary>-1：操作失败：请求(或处理)业务失败、不符合预期</summary>
     /// <remarks></remarks>

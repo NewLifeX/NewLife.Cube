@@ -15,7 +15,7 @@ public static partial class ApiResponseHelper
     {
         return new ApiResponse<T>
         {
-            Code = CubeCode.Success.ToInt(),
+            Code = CubeCode.Ok.ToInt(),
             Message = successMessage,
             Data = data,
             TraceId = DefaultSpan.Current?.TraceId,
@@ -31,7 +31,7 @@ public static partial class ApiResponseHelper
     public static ApiResponse<T> ToFailApiResponse<T>(this T data, Int32 code, String failMessage)
     {
         //自定义的code不能是成功状态码
-        if (code == CubeCode.Success.ToInt()) code = CubeCode.Failed.ToInt();
+        if (code == CubeCode.Ok.ToInt()) code = CubeCode.Failed.ToInt();
         return new ApiResponse<T>
         {
             Code = code,
