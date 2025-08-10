@@ -63,8 +63,7 @@ public static partial class ApiResponseHelper
 
     /// <summary>操作失败</summary>
     public static ApiResponse<T> ToFailApiResponse<T>(this T data, String failMessage) => ToFailApiResponse(data, CubeCode.Failed, failMessage);
-    /// <summary>内部错误</summary>
-    public static ApiResponse<T> ToErrorApiResponse<T>(this T data, String errorMessage) => ToFailApiResponse(data, CubeCode.Exception, errorMessage);
+
     /// <summary>请求参数错误</summary>
     public static ApiResponse<T> ToParaApiResponse<T>(this T data, String paraName,
          String defaultTip = @"请求参数错误")
@@ -73,6 +72,10 @@ public static partial class ApiResponseHelper
         if (!String.IsNullOrWhiteSpace(paraName)) msg = $"{defaultTip}:{paraName}";
         return ToFailApiResponse(data, CubeCode.ParamError, msg);
     }
+    /// <summary>内部错误</summary>
+    public static ApiResponse<T> ToRemotingErrorApiResponse<T>(this T data, String errorMessage) => ToFailApiResponse(data, CubeCode.RemotingError, errorMessage);
     /// <returns>强制登出</returns>
     public static ApiResponse<T> ToLogOffApiResponse<T>(this T data, String message = "请重新登录") => ToFailApiResponse(data, CubeCode.LogOff, message);
+    /// <summary>内部错误</summary>
+    public static ApiResponse<T> ToErrorApiResponse<T>(this T data, String errorMessage) => ToFailApiResponse(data, CubeCode.Exception, errorMessage);
 }
