@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Entity;
@@ -47,7 +48,7 @@ public class JobService : IHostedService
 
     private static readonly IList<MyJob> _jobs = [];
     private readonly IServiceProvider _serviceProvider;
-    private readonly ICacheProvider _cacheProvider;
+    private ICacheProvider _cacheProvider;
     private readonly ITracer _tracer;
 
     /// <summary>实例化作业服务</summary>
@@ -57,7 +58,7 @@ public class JobService : IHostedService
     {
         _tracer = tracer;
         _serviceProvider = serviceProvider;
-        _cacheProvider = serviceProvider.GetService<ICacheProvider>();
+        //_cacheProvider = serviceProvider.GetService<ICacheProvider>();
     }
 
     private static TimerX _timer;
@@ -100,6 +101,7 @@ public class JobService : IHostedService
 
     private void DoJob(Object state)
     {
+        _cacheProvider ??= _serviceProvider.GetService<ICacheProvider>();
         var list = CronJob.FindAll();
         foreach (var item in list)
         {
