@@ -644,7 +644,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     /// <summary>备份到服务器本地目录</summary>
     /// <returns></returns>
     [NonAction]
-    public virtual ActionResult Backup()
+    public virtual async Task<ActionResult> Backup()
     {
         try
         {
@@ -664,7 +664,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             WriteLog("备份", true, $"开始备份[{name}]到[{fileName}]");
 
             var sw = Stopwatch.StartNew();
-            var rs = dal.Backup(fact.Table.DataTable, bak);
+            await using var fs = new FileStream(bak, FileMode.OpenOrCreate);
+            await using var gs = new GZipStream(fs, CompressionLevel.Optimal, true);
+            var rs = dal.Backup(fact.Table.DataTable, gs, HttpContext.RequestAborted);
             sw.Stop();
 
             WriteLog("备份", true, $"备份[{name}]到[{fileName}]（{rs:n0}行）成功！耗时：{sw.Elapsed}");
@@ -740,7 +742,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             var fi = di?.GetFiles(fileName)?.OrderByDescending(e => e.Name).FirstOrDefault();
             if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
 
-            var rs = dal.Restore(fi.FullName, fact.Table.DataTable);
+            using var fs = fi.OpenRead();
+            var rs = dal.Restore(fs, fact.Table.DataTable, HttpContext.RequestAborted);
 
             WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
 
