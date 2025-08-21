@@ -626,7 +626,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
 
         return act switch
         {
-            "Backup" => Backup(),
+            "Backup" => await Backup(),
             "BackupAndExport" => await BackupAndExport(),
             "Restore" => Restore(),
             "Share" => Share(),
