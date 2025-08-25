@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using NewLife.Cube.Controllers;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Membership;
 using NewLife.Log;
@@ -36,7 +37,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
     /// <param name="permission"></param>
     public EntityAuthorizeAttribute(PermissionFlags permission)
     {
-        if (permission <= PermissionFlags.None) throw new ArgumentNullException(nameof(permission));
+        if (permission < PermissionFlags.None) throw new ArgumentNullException(nameof(permission));
 
         Permission = permission;
     }
@@ -67,7 +68,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
 
         // 只验证管辖范围
         var create = false;
-        if (!AreaBase.Contains(ctrl))
+        if (!AreaBase.Contains(ctrl) && ctrl.ControllerTypeInfo.FullName != typeof(CubeController).FullName)
         {
             if (!hasAtt) return;
 
@@ -99,6 +100,9 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         // 判断当前登录用户
         user = ManagerProviderHelper.TryLogin(prv, httpContext);
         if (user == null) return false;
+
+        // 如果没有指定权限，则只要登录即可
+        if (Permission == PermissionFlags.None) return true;
 
         // 判断权限
         if (menu != null)

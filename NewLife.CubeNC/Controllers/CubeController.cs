@@ -18,17 +18,12 @@ using AreaX = XCode.Membership.Area;
 namespace NewLife.Cube.Controllers;
 
 /// <summary>魔方前端数据接口</summary>
+/// <param name="sources"></param>
 [DisplayName("数据接口")]
-public class CubeController : ControllerBaseX
+[EntityAuthorize]
+public class CubeController(IEnumerable<EndpointDataSource> sources) : ControllerBaseX
 {
-    private readonly IList<EndpointDataSource> _sources;
-
-    /// <summary>构造函数</summary>
-    /// <param name="sources"></param>
-    public CubeController(IEnumerable<EndpointDataSource> sources)
-    {
-        _sources = sources.ToList();
-    }
+    private readonly IList<EndpointDataSource> _sources = sources.ToList();
 
     #region 拦截
     /// <summary>执行后</summary>
@@ -61,6 +56,7 @@ public class CubeController : ControllerBaseX
     /// <summary>服务器信息，用户健康检测</summary>
     /// <param name="state">状态信息</param>
     /// <returns></returns>
+    [AllowAnonymous]
     public ActionResult Info(String state)
     {
         var asmx = AssemblyX.Entry;
@@ -91,6 +87,7 @@ public class CubeController : ControllerBaseX
     #region 接口信息
     /// <summary>获取所有接口信息</summary>
     /// <returns></returns>
+    [AllowAnonymous]
     public ActionResult Apis()
     {
         var set = new List<EndpointDataSource>();
@@ -202,8 +199,7 @@ public class CubeController : ControllerBaseX
     /// <summary>地区信息</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
-    public ActionResult Area(Int32 id = 0)
+    public ActionResult AreaInfo(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
         if (r == null) return Json(500, null, "找不到地区");
@@ -224,7 +220,6 @@ public class CubeController : ControllerBaseX
     /// <summary>获取地区子级</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     public ActionResult AreaChilds(Int32 id = 0)
     {
         AreaController.InitAreaData();
@@ -242,7 +237,6 @@ public class CubeController : ControllerBaseX
     /// <param name="id">查询地区编号</param>
     /// <param name="isContainSelf">是否包含查询的地区</param>
     /// <returns></returns>
-    [AllowAnonymous]
     public ActionResult AreaParents(Int32 id = 0, Boolean isContainSelf = false)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -266,7 +260,6 @@ public class CubeController : ControllerBaseX
     /// <summary>获取地区所有父级</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     public ActionResult AreaAllParents(Int32 id = 0)
     {
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
@@ -296,7 +289,6 @@ public class CubeController : ControllerBaseX
     /// <summary>获取用户头像</summary>
     /// <param name="id">用户编号</param>
     /// <returns></returns>
-    [AllowAnonymous]
     public virtual ActionResult Avatar(Int32 id)
     {
         if (id <= 0) throw new ArgumentNullException(nameof(id));
@@ -369,7 +361,6 @@ public class CubeController : ControllerBaseX
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     public async Task<ActionResult> Image(String id)
     {
         if (id.IsNullOrEmpty()) return NotFound("非法附件编号");
@@ -406,7 +397,6 @@ public class CubeController : ControllerBaseX
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     public async Task<ActionResult> File(String id)
     {
         if (id.IsNullOrEmpty()) return NotFound("非法附件编号");
