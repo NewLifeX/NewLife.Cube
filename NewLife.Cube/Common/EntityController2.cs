@@ -75,7 +75,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     private static FieldItem GetDeleteField() => Factory.Fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Deleted", "IsDelete", "IsDeleted") && e.Type == typeof(Boolean));
 
-    /// <summary>保存所有上传文件</summary>
+    /// <summary>保存所有上传文件，并保存附件访问路径到实体对象的对应属性</summary>
     /// <param name="entity">实体对象</param>
     /// <param name="uploadPath">上传目录。为空时默认UploadPath配置</param>
     /// <returns></returns>
@@ -119,8 +119,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         return rs;
     }
 
-    /// <summary>保存单个文件</summary>
-    /// <param name="entity">实体对象</param>
+    /// <summary>保存单个文件。新建附件</summary>
+    /// <param name="entity">实体对象。读取主键与标题，不修改实体对象</param>
     /// <param name="file">文件</param>
     /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
     /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
