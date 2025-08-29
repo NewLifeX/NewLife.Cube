@@ -2,30 +2,69 @@
 using System.ComponentModel;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Services;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Web;
 using XCode;
 using XCode.Membership;
 using static XCode.Membership.User;
 using AreaX = XCode.Membership.Area;
+using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.Controllers;
 
 /// <summary>魔方前端数据接口</summary>
+/// <param name="tokenService"></param>
 /// <param name="sources"></param>
 [DisplayName("数据接口")]
-[EntityAuthorize]
-public class CubeController(IEnumerable<EndpointDataSource> sources) : ControllerBaseX
+public class CubeController(TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources = sources.ToList();
 
     #region 拦截
+    /// <summary>执行前</summary>
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        // 仅对未标注 [AllowAnonymous] 的接口进行登录校验
+        var descriptor = context.ActionDescriptor as ControllerActionDescriptor;
+        var allowAnonymous = descriptor?.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute), true).FirstOrDefault();
+        if (allowAnonymous == null && !ValidateToken())
+        {
+            var req = context.HttpContext.Request;
+            var accept = (req.Headers["Accept"] + "").ToLowerInvariant();
+
+            // 按客户端期望返回：
+            // 1) 接受 json -> 返回 Json 封装的401
+            if (accept.Contains("json"))
+            {
+                context.Result = Json(401, "未授权");
+                return;
+            }
+            // 2) 接受二进制下载或HTML -> 返回HTTP 401状态码
+            if (accept.Contains("octet-stream"))
+            {
+                context.Result = new StatusCodeResult(401);
+                return;
+            }
+
+            // 3) 其它情况 -> 跳转登录页并携带returl
+            var retUrl = req.GetEncodedPathAndQuery();
+            var rurl = "~/Admin/User/Login".AppendReturn(retUrl);
+            context.Result = new RedirectResult(rurl);
+            return;
+        }
+
+        base.OnActionExecuting(context);
+    }
+
     /// <summary>执行后</summary>
     /// <param name="context"></param>
     public override void OnActionExecuted(ActionExecutedContext context)
@@ -42,6 +81,42 @@ public class CubeController(IEnumerable<EndpointDataSource> sources) : Controlle
         }
 
         base.OnActionExecuted(context);
+    }
+
+    private Boolean ValidateToken()
+    {
+        var logined = ManageProvider.User != null;
+        if (logined) return true;
+
+        var token = GetToken(HttpContext);
+        if (!token.IsNullOrEmpty())
+        {
+            var ap = tokenService.FindBySecret(token);
+            if (ap != null && ap.Enable)
+                logined = true;
+            else
+            {
+                var set = CubeSetting.Current;
+                var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
+                if (app != null && app.Enable && ex != null) logined = true;
+            }
+        }
+
+        return logined;
+    }
+
+    /// <summary>从请求头中获取令牌</summary>
+    /// <param name="httpContext"></param>
+    /// <returns></returns>
+    public static String GetToken(HttpContext httpContext)
+    {
+        var request = httpContext.Request;
+        var token = request.Query["Token"] + "";
+        if (token.IsNullOrEmpty()) token = (request.Headers["Authorization"] + "").TrimStart("Bearer ");
+        if (token.IsNullOrEmpty()) token = request.Headers["X-Token"] + "";
+        if (token.IsNullOrEmpty()) token = request.Cookies["Token"] + "";
+
+        return token;
     }
     #endregion
 
