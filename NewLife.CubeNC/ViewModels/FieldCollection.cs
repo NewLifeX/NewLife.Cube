@@ -65,6 +65,20 @@ public class FieldCollection : List<DataField>
 
         foreach (var item in factory.Fields)
         {
+            if (!item.Field.ShowIn.IsNullOrEmpty())
+            {
+                var showin = ShowInOption.Parse(item.Field.ShowIn);
+                var flag = kind switch
+                {
+                    ViewKinds.List => showin.List != TriState.Hide,
+                    ViewKinds.Detail => showin.Detail != TriState.Hide,
+                    ViewKinds.AddForm => showin.AddForm != TriState.Hide,
+                    ViewKinds.EditForm => showin.EditForm != TriState.Hide,
+                    ViewKinds.Search => showin.Search != TriState.Hide,
+                    _ => true,
+                };
+                if (!flag) continue;
+            }
             Add(item);
         }
 
