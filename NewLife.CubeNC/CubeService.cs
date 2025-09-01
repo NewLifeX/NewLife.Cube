@@ -596,6 +596,23 @@ public static class CubeService
                         set.Save();
                     }
                 }
+                registry.Bind("StarWeb", (k, ms) =>
+                {
+                    if (ms.Length == 0) return;
+
+                    var ss = ms[0].Address.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries);
+                    if (ss.Length == 0) return;
+
+                    // 保存到配置文件
+                    var set = CubeSetting.Current;
+                    if (set.StarWeb != ss[0])
+                    {
+                        XTrace.WriteLine("StarWeb: {0}", ms.Join());
+
+                        set.StarWeb = ss[0];
+                        set.Save();
+                    }
+                });
             }
             catch (Exception ex)
             {
