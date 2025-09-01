@@ -67,7 +67,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     [DisplayName("应用密钥")]
     [Description("应用密钥")]
     [DataObjectField(false, false, true, 200)]
-    [BindColumn("Secret", "应用密钥", "")]
+    [BindColumn("Secret", "应用密钥", "", ShowIn = "Auto,-List")]
     public String Secret { get => _Secret; set { if (OnPropertyChanging("Secret", value)) { _Secret = value; OnPropertyChanged("Secret"); } } }
 
     private String _Server;
@@ -83,7 +83,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     [DisplayName("令牌服务地址")]
     [Description("令牌服务地址。可以不同于验证地址的内网直达地址")]
     [DataObjectField(false, false, true, 200)]
-    [BindColumn("AccessServer", "令牌服务地址。可以不同于验证地址的内网直达地址", "")]
+    [BindColumn("AccessServer", "令牌服务地址。可以不同于验证地址的内网直达地址", "", ShowIn = "Auto,-List")]
     public String AccessServer { get => _AccessServer; set { if (OnPropertyChanging("AccessServer", value)) { _AccessServer = value; OnPropertyChanged("AccessServer"); } } }
 
     private GrantTypes _GrantType;
@@ -403,6 +403,38 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     #endregion
 
     #region 扩展查询
+    #endregion
+
+    #region 高级查询
+    /// <summary>高级查询</summary>
+    /// <param name="grantType">授权类型</param>
+    /// <param name="debug">调试。设置处于调试状态，输出详细日志</param>
+    /// <param name="visible">可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号</param>
+    /// <param name="autoRegister">自动注册。SSO登录后，如果本地没有匹配用户，自动注册新用户，否则跳到登录页，在登录后绑定</param>
+    /// <param name="fetchAvatar">抓取头像。是否抓取头像并保存到本地</param>
+    /// <param name="enable">启用</param>
+    /// <param name="isDeleted">删除。是否已删除，可恢复</param>
+    /// <param name="start">更新时间开始</param>
+    /// <param name="end">更新时间结束</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+    /// <returns>实体列表</returns>
+    public static IList<OAuthConfig> Search(GrantTypes grantType, Boolean? debug, Boolean? visible, Boolean? autoRegister, Boolean? fetchAvatar, Boolean? enable, Boolean? isDeleted, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (grantType >= 0) exp &= _.GrantType == grantType;
+        if (debug != null) exp &= _.Debug == debug;
+        if (visible != null) exp &= _.Visible == visible;
+        if (autoRegister != null) exp &= _.AutoRegister == autoRegister;
+        if (fetchAvatar != null) exp &= _.FetchAvatar == fetchAvatar;
+        if (enable != null) exp &= _.Enable == enable;
+        if (isDeleted != null) exp &= _.IsDeleted == isDeleted;
+        exp &= _.UpdateTime.Between(start, end);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        return FindAll(exp, page);
+    }
     #endregion
 
     #region 字段名

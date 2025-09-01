@@ -259,12 +259,13 @@ public partial class UserStat : IEntity<UserStatModel>
     /// <summary>清理指定时间段内的数据</summary>
     /// <param name="start">开始时间。未指定时清理小于指定时间的所有数据</param>
     /// <param name="end">结束时间</param>
+    /// <param name="maximumRows">最大删除行数。清理历史数据时，避免一次性删除过多导致数据库IO跟不上，0表示所有</param>
     /// <returns>清理行数</returns>
-    public static Int32 DeleteWith(DateTime start, DateTime end)
+    public static Int32 DeleteWith(DateTime start, DateTime end, Int32 maximumRows = 0)
     {
         if (start == end) return Delete(_.Date == start);
 
-        return Delete(_.Date.Between(start, end));
+        return Delete(_.Date.Between(start, end), maximumRows);
     }
     #endregion
 

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202407.xsd" Document="https://newlifex.com/xcode/model" xmlns="https://newlifex.com/Model202407.xsd">
+<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Document="https://newlifex.com/xcode/model" xmlns="https://newlifex.com/Model202509.xsd">
   <Option>
     <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
     <ClassNameTemplate />
@@ -49,9 +49,9 @@
         <Column Name="LinkID" DataType="Int64" Description="用户编号。第三方用户编号" />
         <Column Name="NickName" DataType="String" Description="昵称" />
         <Column Name="DeviceId" DataType="String" Description="设备标识。企业微信用于唯一标识设备，重装后改变" />
-        <Column Name="Avatar" DataType="String" Length="200" Description="头像" />
-        <Column Name="AccessToken" DataType="String" Length="500" Description="访问令牌" />
-        <Column Name="RefreshToken" DataType="String" Length="500" Description="刷新令牌" />
+        <Column Name="Avatar" DataType="String" ShowIn="Auto,-List,-Search" Length="200" Description="头像" />
+        <Column Name="AccessToken" DataType="String" ShowIn="Auto,-List,-Search" Length="500" Description="访问令牌" />
+        <Column Name="RefreshToken" DataType="String" ShowIn="Auto,-List,-Search" Length="500" Description="刷新令牌" />
         <Column Name="Expire" DataType="DateTime" Description="过期时间" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
@@ -104,9 +104,9 @@
         <Column Name="NickName" DataType="String" Description="昵称" />
         <Column Name="Logo" DataType="String" Description="图标" />
         <Column Name="AppId" DataType="String" Description="应用标识" />
-        <Column Name="Secret" DataType="String" Length="200" Description="应用密钥" />
+        <Column Name="Secret" DataType="String" ShowIn="Auto,-List" Length="200" Description="应用密钥" />
         <Column Name="Server" DataType="String" Length="200" Description="服务地址" />
-        <Column Name="AccessServer" DataType="String" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
+        <Column Name="AccessServer" DataType="String" ShowIn="Auto,-List" Length="200" Description="令牌服务地址。可以不同于验证地址的内网直达地址" />
         <Column Name="GrantType" DataType="Int32" Description="授权类型" Type="GrantTypes" />
         <Column Name="Scope" DataType="String" Description="授权范围" />
         <Column Name="AuthUrl" DataType="String" Length="200" Description="验证地址。跳转SSO的验证地址" />

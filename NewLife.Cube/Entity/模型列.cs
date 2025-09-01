@@ -437,6 +437,46 @@ public partial class ModelColumn : IEntity<ModelColumnModel>
     #region 扩展查询
     #endregion
 
+    #region 高级查询
+    /// <summary>高级查询</summary>
+    /// <param name="tableId">模型表</param>
+    /// <param name="primaryKey">主键</param>
+    /// <param name="master">主字段。主字段作为业务主要字段，代表当前数据行意义</param>
+    /// <param name="nullable">允许空</param>
+    /// <param name="isDataObjectField">数据字段</param>
+    /// <param name="showInList">列表页显示</param>
+    /// <param name="showInAddForm">添加表单页显示</param>
+    /// <param name="showInEditForm">编辑表单页显示</param>
+    /// <param name="showInDetailForm">详情表单页显示</param>
+    /// <param name="showInSearch">搜索显示</param>
+    /// <param name="enable">启用</param>
+    /// <param name="start">更新时间开始</param>
+    /// <param name="end">更新时间结束</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+    /// <returns>实体列表</returns>
+    public static IList<ModelColumn> Search(Int32 tableId, Boolean? primaryKey, Boolean? master, Boolean? nullable, Boolean? isDataObjectField, Boolean? showInList, Boolean? showInAddForm, Boolean? showInEditForm, Boolean? showInDetailForm, Boolean? showInSearch, Boolean? enable, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (tableId >= 0) exp &= _.TableId == tableId;
+        if (primaryKey != null) exp &= _.PrimaryKey == primaryKey;
+        if (master != null) exp &= _.Master == master;
+        if (nullable != null) exp &= _.Nullable == nullable;
+        if (isDataObjectField != null) exp &= _.IsDataObjectField == isDataObjectField;
+        if (showInList != null) exp &= _.ShowInList == showInList;
+        if (showInAddForm != null) exp &= _.ShowInAddForm == showInAddForm;
+        if (showInEditForm != null) exp &= _.ShowInEditForm == showInEditForm;
+        if (showInDetailForm != null) exp &= _.ShowInDetailForm == showInDetailForm;
+        if (showInSearch != null) exp &= _.ShowInSearch == showInSearch;
+        if (enable != null) exp &= _.Enable == enable;
+        exp &= _.UpdateTime.Between(start, end);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        return FindAll(exp, page);
+    }
+    #endregion
+
     #region 字段名
     /// <summary>取得模型列字段信息的快捷方式</summary>
     public partial class _

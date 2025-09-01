@@ -95,7 +95,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
     [DisplayName("头像")]
     [Description("头像")]
     [DataObjectField(false, false, true, 200)]
-    [BindColumn("Avatar", "头像", "")]
+    [BindColumn("Avatar", "头像", "", ShowIn = "Auto,-List,-Search")]
     public String Avatar { get => _Avatar; set { if (OnPropertyChanging("Avatar", value)) { _Avatar = value; OnPropertyChanged("Avatar"); } } }
 
     private String _AccessToken;
@@ -103,7 +103,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
     [DisplayName("访问令牌")]
     [Description("访问令牌")]
     [DataObjectField(false, false, true, 500)]
-    [BindColumn("AccessToken", "访问令牌", "")]
+    [BindColumn("AccessToken", "访问令牌", "", ShowIn = "Auto,-List,-Search")]
     public String AccessToken { get => _AccessToken; set { if (OnPropertyChanging("AccessToken", value)) { _AccessToken = value; OnPropertyChanged("AccessToken"); } } }
 
     private String _RefreshToken;
@@ -111,7 +111,7 @@ public partial class UserConnect : IEntity<UserConnectModel>
     [DisplayName("刷新令牌")]
     [Description("刷新令牌")]
     [DataObjectField(false, false, true, 500)]
-    [BindColumn("RefreshToken", "刷新令牌", "")]
+    [BindColumn("RefreshToken", "刷新令牌", "", ShowIn = "Auto,-List,-Search")]
     public String RefreshToken { get => _RefreshToken; set { if (OnPropertyChanging("RefreshToken", value)) { _RefreshToken = value; OnPropertyChanged("RefreshToken"); } } }
 
     private DateTime _Expire;
@@ -310,6 +310,36 @@ public partial class UserConnect : IEntity<UserConnectModel>
         if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.UnionID.EqualIgnoreCase(unionId));
 
         return FindAll(_.UnionID == unionId);
+    }
+    #endregion
+
+    #region 高级查询
+    /// <summary>高级查询</summary>
+    /// <param name="provider">提供商</param>
+    /// <param name="userId">用户。本地用户</param>
+    /// <param name="openId">身份标识。用户名、OpenID</param>
+    /// <param name="unionId">全局标识。跨应用统一</param>
+    /// <param name="deviceId">设备标识。企业微信用于唯一标识设备，重装后改变</param>
+    /// <param name="enable">启用</param>
+    /// <param name="start">更新时间开始</param>
+    /// <param name="end">更新时间结束</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+    /// <returns>实体列表</returns>
+    public static IList<UserConnect> Search(String provider, Int32 userId, String openId, String unionId, String deviceId, Boolean? enable, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (!provider.IsNullOrEmpty()) exp &= _.Provider == provider;
+        if (userId >= 0) exp &= _.UserID == userId;
+        if (!openId.IsNullOrEmpty()) exp &= _.OpenID == openId;
+        if (!unionId.IsNullOrEmpty()) exp &= _.UnionID == unionId;
+        if (!deviceId.IsNullOrEmpty()) exp &= _.DeviceId == deviceId;
+        if (enable != null) exp &= _.Enable == enable;
+        exp &= _.UpdateTime.Between(start, end);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        return FindAll(exp, page);
     }
     #endregion
 
