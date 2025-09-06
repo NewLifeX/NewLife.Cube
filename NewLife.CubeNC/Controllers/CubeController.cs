@@ -28,6 +28,7 @@ namespace NewLife.Cube.Controllers;
 public class CubeController(TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources = sources.ToList();
+    private static String[] _attachmentApis = [nameof(Avatar), nameof(Image), nameof(File)];
 
     #region 拦截
     /// <summary>执行前</summary>
@@ -36,7 +37,7 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
         // 仅对未标注 [AllowAnonymous] 的接口进行登录校验
         var descriptor = context.ActionDescriptor as ControllerActionDescriptor;
         var allowAnonymous = descriptor?.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute), true).FirstOrDefault();
-        if (allowAnonymous == null && !ValidateToken())
+        if (allowAnonymous == null && !ValidateToken(descriptor.ActionName))
         {
             var req = context.HttpContext.Request;
             var accept = (req.Headers["Accept"] + "").ToLowerInvariant();
@@ -83,8 +84,11 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
         base.OnActionExecuted(context);
     }
 
-    private Boolean ValidateToken()
+    private Boolean ValidateToken(String actionName)
     {
+        // 不验证附件权限，且访问附件接口时，直接通过
+        if (!CubeSetting.Current.ValidateAttachment && _attachmentApis.Contains(actionName)) return true;
+
         var logined = ManageProvider.User != null;
         if (logined) return true;
 
