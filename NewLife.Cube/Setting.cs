@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using NewLife.Configuration;
 using NewLife.Security;
 using XCode.Configuration;
@@ -16,6 +18,7 @@ public class Setting : CubeSetting { }
 public class CubeSetting : Config<CubeSetting>
 {
     #region 静态
+    /// <summary>指向数据库参数字典表</summary>
     static CubeSetting() => Provider = new DbConfigProvider { UserId = 0, Category = "Cube" };
     #endregion
 
@@ -115,8 +118,8 @@ public class CubeSetting : Config<CubeSetting>
     //[Category("用户登录")]
     //public Int32 MinPasswordLength { get; set; } = 6;
 
-    /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号</summary>
-    [Description("密码强度。*表示无限制，默认8位起，数字大小写字母和符号")]
+    /// <summary>密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$</summary>
+    [Description("密码强度。*表示无限制，默认8位起，数字大小写字母和符号。简易版^(?=.*\\d.*)(?=.*[a-zA-Z].*).{6,32}$")]
     [Category("用户登录")]
     public String PaswordStrength { get; set; } = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
 
@@ -199,6 +202,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("在Cookie中存储令牌。读取令牌时，如果请求头没有携带令牌，则从Cookie读取，默认false")]
     [Category("用户登录")]
     public Boolean TokenCookie { get; set; } = false;
+
+    /// <summary>验证附件访问。访问附件时，是否验证登录状态，默认true</summary>
+    [Description("验证附件访问。访问附件时，是否验证登录状态，默认true")]
+    [Category("用户登录")]
+    public Boolean ValidateAttachment { get; set; } = true;
     #endregion
 
     #region 界面配置
@@ -242,8 +250,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("界面配置")]
     public Int32 MaxDropDownList { get; set; } = 50;
 
-    /// <summary>版权。留空表示不显示版权信息</summary>
-    [Description("版权。留空表示不显示版权信息")]
+    /// <summary>版权。留空表示不显示版权信息，支持变量now/runtime/framework，其中now支持格式化字符串如{now:yyyy}</summary>
+    [Description("版权。留空表示不显示版权信息，支持变量now/runtime/framework，其中now支持格式化字符串如{now:yyyy}")]
     [Category("界面配置")]
     public String Copyright { get; set; }
 
@@ -267,8 +275,8 @@ public class CubeSetting : Config<CubeSetting>
     [Category("界面配置")]
     public Boolean TitlePrefix { get; set; } = true;
 
-    /// <summary>双击事件禁用。列表页表格行双击事件禁用，默认true(启用)</summary>
-    [Description("双击事件禁用。列表页表格行双击事件禁用，默认true(启用)")]
+    /// <summary>表格双击事件。列表页表格行双击事件禁用，默认true(启用)</summary>
+    [Description("表格双击事件。列表页表格行双击事件禁用，默认true(启用)")]
     [Category("界面配置")]
     public Boolean EnableTableDoubleClick { get; set; } = true;
 
@@ -350,9 +358,20 @@ public class CubeSetting : Config<CubeSetting>
                 var att = asm.GetCustomAttribute<AssemblyCopyrightAttribute>();
                 if (att != null)
                 {
-                    Copyright = att.Copyright;
+                    Copyright = att.Copyright + " {runtime}";
                 }
             }
+        }
+
+        // 版权信息中的年份替换为当前年份
+        if (!Copyright.IsNullOrEmpty() && Copyright.Contains('-'))
+        {
+            var reg = new Regex(@"(\d{4})-(\d{4})");
+            Copyright = reg.Replace(Copyright, math => $"{math.Groups[1]}-{{now:yyyy}}");
+            //for (var i = 2000; i <= DateTime.Today.Year; i++)
+            //{
+            //    Copyright = Copyright.Replace(i + "", "{now:yyyy}");
+            //}
         }
 
         if (PaswordStrength.IsNullOrEmpty()) PaswordStrength = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
@@ -360,6 +379,38 @@ public class CubeSetting : Config<CubeSetting>
         if (LoginForbiddenTime <= 0) LoginForbiddenTime = 300;
 
         base.OnLoaded();
+    }
+
+    /// <summary>获取版权信息。动态替换年份</summary>
+    /// <returns></returns>
+    public String GetCopyright()
+    {
+        var cr = Copyright;
+        if (cr.IsNullOrEmpty()) return null;
+
+        // 处理运行时
+        if (cr.Contains("{runtime}"))
+        {
+            cr = cr.Replace("{runtime}", $"<a href=\"https://get.dot.net\" target=\"_blank\">.NET {Environment.Version}</a>");
+        }
+        if (cr.Contains("{framework}"))
+        {
+            cr = cr.Replace("{framework}", $"<a href=\"https://get.dot.net\" target=\"_blank\">{RuntimeInformation.FrameworkDescription}</a>");
+        }
+
+        // 处理今年时间
+        var p1 = cr.IndexOf("{now");
+        if (p1 < 0) return cr;
+
+        var format = "";
+        var p2 = cr.IndexOf('}', p1);
+        if (p2 > 0) format = cr.Substring(p1 + 1, p2 - p1 - 1).TrimStart("now").TrimStart(":");
+
+        var now = DateTime.Now;
+        if (format.IsNullOrEmpty())
+            return cr[..p1] + now.Year + cr[(p2 + 1)..];
+        else
+            return cr[..p1] + now.ToString(format) + cr[(p2 + 1)..];
     }
     #endregion
 }
