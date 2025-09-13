@@ -29,6 +29,9 @@ namespace NewLife.Cube.Controllers;
 public class CubeController(TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources = sources.ToList();
+    
+    private static String[] _attachmentApis = [nameof(Avatar), nameof(Image), nameof(File)];
+
     #region 拦截
     /// <summary>执行前</summary>
     public override void OnActionExecuting(ActionExecutingContext context)
