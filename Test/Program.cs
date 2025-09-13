@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
@@ -97,6 +98,26 @@ namespace Test
                     if (line[i].Length >= 45) XTrace.WriteLine(line[i]);
                 }
             }
+        }
+
+        static async Task Test4()
+        {
+            var hc = new HttpClient();
+
+            hc.DefaultRequestHeaders.Add("Connection", "keep-alive");
+            hc.DefaultRequestHeaders.Range = new System.Net.Http.Headers.RangeHeaderValue(0, 100);
+
+
+            var r = await hc.GetAsync("http://localhost:1880/iot/Attachment/DownloadFile?filename=7372469584366874624.bin");
+
+            Console.WriteLine($"状态码: {r.StatusCode}");
+            Console.WriteLine($"内容长度: {r.Content.Headers.ContentLength}");
+            Console.WriteLine($"Accept-Ranges: {r.Headers.AcceptRanges}");
+            Console.WriteLine($"Content-Range: {r.Content.Headers.ContentRange}");
+
+            // 读取响应内容
+            var content = await r.Content.ReadAsByteArrayAsync();
+            Console.WriteLine($"实际接收字节数: {content.Length}");
         }
     }
 }
