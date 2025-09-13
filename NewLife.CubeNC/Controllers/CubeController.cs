@@ -36,7 +36,7 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
         // 仅对未标注 [AllowAnonymous] 的接口进行登录校验
         var descriptor = context.ActionDescriptor as ControllerActionDescriptor;
         var allowAnonymous = descriptor?.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute), true).FirstOrDefault();
-        if (allowAnonymous == null && !ValidateToken())
+        if (allowAnonymous == null && !ValidateToken(descriptor.ActionName))
         {
             var req = context.HttpContext.Request;
             var accept = (req.Headers["Accept"] + "").ToLowerInvariant();
@@ -83,8 +83,11 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
         base.OnActionExecuted(context);
     }
 
-    private Boolean ValidateToken()
+    private Boolean ValidateToken(String actionName)
     {
+        // 不验证附件权限，且访问附件接口时，直接通过
+        if (!CubeSetting.Current.ValidateAttachment && _attachmentApis.Contains(actionName)) return true;
+
         var logined = ManageProvider.User != null;
         if (logined) return true;
 
