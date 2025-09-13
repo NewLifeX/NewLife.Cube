@@ -100,6 +100,8 @@ namespace Test
             }
         }
 
+        /// <summary>分段下载</summary>
+        /// <returns></returns>
         static async Task Test4()
         {
             var hc = new HttpClient();
