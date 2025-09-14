@@ -29,7 +29,7 @@ namespace NewLife.Cube.Controllers;
 public class CubeController(TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources = sources.ToList();
-    
+
     private static String[] _attachmentApis = [nameof(Avatar), nameof(Image), nameof(File)];
 
     #region 拦截
@@ -512,6 +512,7 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
     /// <summary>分段下载</summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    [AllowAnonymous]
     public async Task<ActionResult> RangesFile(String id)
     {
         if (id.IsNullOrEmpty()) return NotFound("非法附件编号");
