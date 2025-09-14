@@ -3,39 +3,133 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Data;
+using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Remoting.Services;
+using NewLife.Web;
 using XCode;
 using XCode.Membership;
 using static XCode.Membership.User;
 using AreaX = XCode.Membership.Area;
+using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.Controllers;
 
 /// <summary>魔方前端数据接口</summary>
+/// <param name="pageService"></param>
+/// <param name="tokenService"></param>
+/// <param name="sources"></param>
 [DisplayName("魔方数据接口")]
 [Description("""
     魔方向前端控件提供的一些常用接口，例如用户查询与头像获取等。
     """)]
 //[ApiExplorerSettings(GroupName = "Cube")]
 [Route("[controller]/[action]")]
-public class CubeController : ControllerBaseX
+public class CubeController(PageService pageService, TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
 {
-    private readonly PageService _pageService;
-    private readonly IList<EndpointDataSource> _sources;
+    private readonly IList<EndpointDataSource> _sources = sources.ToList();
+    private static String[] _attachmentApis = [nameof(Avatar), nameof(Image), nameof(File)];
 
-    /// <summary>构造函数</summary>
-    /// <param name="pageService"></param>
-    /// <param name="sources"></param>
-    public CubeController(PageService pageService, IEnumerable<EndpointDataSource> sources)
+    #region 拦截
+    /// <summary>执行前</summary>
+    public override void OnActionExecuting(ActionExecutingContext context)
     {
-        _sources = sources.ToList();
-        _pageService = pageService;
+        // 仅对未标注 [AllowAnonymous] 的接口进行登录校验
+        var descriptor = context.ActionDescriptor as ControllerActionDescriptor;
+        var allowAnonymous = descriptor?.MethodInfo.GetCustomAttributes(typeof(AllowAnonymousAttribute), true).FirstOrDefault();
+        if (allowAnonymous == null && !ValidateToken(descriptor.ActionName))
+        {
+            var req = context.HttpContext.Request;
+            var accept = (req.Headers["Accept"] + "").ToLowerInvariant();
+
+            // 按客户端期望返回：
+            // 1) 接受 json -> 返回 Json 封装的401
+            if (accept.Contains("json"))
+            {
+                context.Result = Json(401, "未授权");
+                return;
+            }
+            // 2) 接受二进制下载或HTML -> 返回HTTP 401状态码
+            if (accept.Contains("octet-stream"))
+            {
+                context.Result = new StatusCodeResult(401);
+                return;
+            }
+
+            // 3) 其它情况 -> 跳转登录页并携带returl
+            var retUrl = req.GetEncodedPathAndQuery();
+            var rurl = "~/Admin/User/Login".AppendReturn(retUrl);
+            context.Result = new RedirectResult(rurl);
+            return;
+        }
+
+        base.OnActionExecuting(context);
     }
+
+    /// <summary>执行后</summary>
+    /// <param name="context"></param>
+    public override void OnActionExecuted(ActionExecutedContext context)
+    {
+        if (context.Exception != null && !context.ExceptionHandled)
+        {
+            var ex = context.Exception.GetTrue();
+            context.Result = Json(0, null, ex);
+            context.ExceptionHandled = true;
+
+            if (XTrace.Debug) XTrace.WriteException(ex);
+
+            return;
+        }
+
+        base.OnActionExecuted(context);
+    }
+
+    private Boolean ValidateToken(String actionName)
+    {
+        // 不验证附件权限，且访问附件接口时，直接通过
+        if (!CubeSetting.Current.ValidateAttachment && _attachmentApis.Contains(actionName)) return true;
+
+        var logined = ManageProvider.User != null;
+        if (logined) return true;
+
+        var token = GetToken(HttpContext);
+        if (!token.IsNullOrEmpty())
+        {
+            var ap = tokenService.FindBySecret(token);
+            if (ap != null && ap.Enable)
+                logined = true;
+            else
+            {
+                var set = CubeSetting.Current;
+                var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
+                if (app != null && app.Enable && ex != null) logined = true;
+            }
+        }
+
+        return logined;
+    }
+
+    /// <summary>从请求头中获取令牌</summary>
+    /// <param name="httpContext"></param>
+    /// <returns></returns>
+    public static String GetToken(HttpContext httpContext)
+    {
+        var request = httpContext.Request;
+        var token = request.Query["Token"] + "";
+        if (token.IsNullOrEmpty()) token = (request.Headers["Authorization"] + "").TrimStart("Bearer ");
+        if (token.IsNullOrEmpty()) token = request.Headers["X-Token"] + "";
+        if (token.IsNullOrEmpty()) token = request.Cookies["Token"] + "";
+
+        return token;
+    }
+    #endregion
 
     #region 服务器信息
     private static readonly String _OS = Environment.OSVersion + "";
@@ -190,7 +284,6 @@ public class CubeController : ControllerBaseX
     /// <summary>地区信息</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public ActionResult GetArea(Int32 id = 0)
     {
@@ -213,7 +306,6 @@ public class CubeController : ControllerBaseX
     /// <summary>获取地区子级</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public ActionResult AreaChilds(Int32 id = 0)
     {
@@ -230,7 +322,6 @@ public class CubeController : ControllerBaseX
     /// <param name="id">查询地区编号</param>
     /// <param name="isContainSelf">是否包含查询的地区</param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public ActionResult AreaParents(Int32 id = 0, Boolean isContainSelf = false)
     {
@@ -255,7 +346,6 @@ public class CubeController : ControllerBaseX
     /// <summary>获取地区所有父级</summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public ActionResult AreaAllParents(Int32 id = 0)
     {
@@ -286,7 +376,6 @@ public class CubeController : ControllerBaseX
     /// <summary>获取用户头像</summary>
     /// <param name="id">用户编号</param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public virtual ActionResult Avatar(Int32 id)
     {
@@ -321,7 +410,6 @@ public class CubeController : ControllerBaseX
     /// <summary>查询一批Code的数据源</summary>
     /// <param name="codes"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public ActionResult Lookup(String codes)
     {
@@ -392,7 +480,7 @@ public class CubeController : ControllerBaseX
     [HttpGet]
     public ActionResult GetPageConfig(String kind, String page)
     {
-        var rs = _pageService.GetPageConfig(kind, page, CurrentUser?.ID ?? 0);
+        var rs = pageService.GetPageConfig(kind, page, CurrentUser?.ID ?? 0);
         return Json(0, null, rs);
     }
 
@@ -404,7 +492,7 @@ public class CubeController : ControllerBaseX
     [HttpPost]
     public ActionResult SetPageConfig(String kind, String page, [FromBody] JsonElement value)
     {
-        var rs = _pageService.SetPageConfig(kind, page, value.ToDictionary());
+        var rs = pageService.SetPageConfig(kind, page, value.ToDictionary());
         return Json(0, null, rs);
     }
     #endregion
@@ -415,7 +503,6 @@ public class CubeController : ControllerBaseX
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult> Image(String id)
     {
@@ -457,7 +544,6 @@ public class CubeController : ControllerBaseX
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult> File(String id)
     {

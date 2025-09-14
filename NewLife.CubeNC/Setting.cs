@@ -204,6 +204,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("在Cookie中存储令牌。读取令牌时，如果请求头没有携带令牌，则从Cookie读取，默认true")]
     [Category("用户登录")]
     public Boolean TokenCookie { get; set; } = true;
+
+    /// <summary>验证附件访问。访问附件时，是否验证登录状态，默认true</summary>
+    [Description("验证附件访问。访问附件时，是否验证登录状态，默认true")]
+    [Category("用户登录")]
+    public Boolean ValidateAttachment { get; set; } = true;
     #endregion
 
     #region 界面配置
