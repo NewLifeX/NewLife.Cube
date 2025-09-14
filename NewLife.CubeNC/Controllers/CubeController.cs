@@ -478,42 +478,8 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public async Task<ActionResult> File(String id)
-    {
-        if (id.IsNullOrEmpty()) return NotFound("非法附件编号");
-
-        // 去掉仅用于装饰的后缀名
-        var p = id.IndexOf('.');
-        if (p > 0) id = id[..p];
-
-        var att = Attachment.FindById(id.ToLong());
-        if (att == null) return NotFound("找不到附件信息");
-
-        // 如果附件不存在，则抓取
-        var filePath = att.GetFilePath();
-        if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
-        {
-            var url = att.Source;
-            if (url.IsNullOrEmpty()) return NotFound("找不到附件文件");
-
-            var rs = await att.Fetch(url);
-            if (!rs) return NotFound("附件远程抓取失败");
-
-            filePath = att.GetFilePath();
-        }
-        if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath)) return NotFound("附件文件不存在");
-
-        if (!att.ContentType.IsNullOrEmpty() && !att.ContentType.EqualIgnoreCase("application/octet-stream"))
-            return PhysicalFile(filePath, att.ContentType, att.FileName);
-        else
-            return PhysicalFile(filePath, "application/octet-stream", att.FileName, true);
-    }
-
-    /// <summary>分段下载</summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
     [AllowAnonymous]
-    public async Task<ActionResult> RangesFile(String id)
+    public async Task<ActionResult> File(String id)
     {
         if (id.IsNullOrEmpty()) return NotFound("非法附件编号");
 
