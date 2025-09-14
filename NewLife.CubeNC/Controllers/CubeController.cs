@@ -478,7 +478,6 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [AllowAnonymous]
     public async Task<ActionResult> File(String id)
     {
         if (id.IsNullOrEmpty()) return NotFound("非法附件编号");
