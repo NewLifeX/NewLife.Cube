@@ -400,6 +400,18 @@ public class FieldCollection : List<DataField>
     /// <param name="name"></param>
     /// <returns></returns>
     public DataField GetField(String name) => this.FirstOrDefault(e => name.EqualIgnoreCase(e.Name, e.MapField));
+
+    /// <summary>设置列表字段的头部文字</summary>
+    /// <remarks>在数据型列表页可能需要频繁设置</remarks>
+    /// <param name="name"></param>
+    /// <param name="header"></param>
+    /// <returns></returns>
+    public ListField SetHeader(String name, String header)
+    {
+        var df = GetField(name) as ListField;
+        if (df != null) df.Header = header;
+        return df;
+    }
     #endregion
 
     #region 分组
