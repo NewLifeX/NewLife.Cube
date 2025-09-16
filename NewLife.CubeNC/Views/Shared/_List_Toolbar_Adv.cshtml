@@ -23,6 +23,9 @@
         <li>
             <a href="@Url.Action("ExportJson", new { _query = queryData })">导出Json</a>
         </li>
+        <li>
+            <a href="@Url.Action("ExportZip", new { _query = queryData })">导出Zip</a>
+        </li>
         <li class="divider"></li>
         <li>
             <a href="@Url.Action("Develop", new { act = "Share" })" title="把当前页数据分享给其他人">分享</a>
@@ -51,9 +54,6 @@
             </li>
             <li>
                 <a href="@Url.Action("Develop", new { act = "BackupAndExport" })" title="备份全表并下载">备份导出</a>
-            </li>
-            <li>
-                <a href="@Url.Action("Develop", new { act = "BackupAndExportCurrent", _query = queryData })" title="备份当前查询并下载">备份导出当前</a>
             </li>
             <li class="divider"></li>
             if (page == null || page.Params.Count == 0)
