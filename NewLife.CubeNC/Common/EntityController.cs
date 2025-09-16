@@ -694,8 +694,9 @@ public partial class EntityController<TEntity, TModel>
 
         var total = 0;
         var success = 0;
-        var p = Session[CacheKey] as Pager;
-        p = new Pager(p);
+        //var p = Session[CacheKey] as Pager;
+        //p = new Pager(p);
+        var p = GetCachePager();
         if (p != null)
         {
             // 循环多次删除

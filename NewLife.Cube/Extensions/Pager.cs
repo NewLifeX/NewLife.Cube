@@ -225,6 +225,19 @@ public class Pager : PageParameter, IExtend
         return name;
     }
 
+    /// <summary>从Url中解析参数</summary>
+    /// <param name="url"></param>
+    public virtual void Parse(String url)
+    {
+        if (url.IsNullOrEmpty()) return;
+
+        var dic = url.SplitAsDictionary("=", "&", true);
+        foreach (var item in dic)
+        {
+            this[item.Key] = item.Value;
+        }
+    }
+
     /// <summary>转为分页模型</summary>
     /// <returns></returns>
     public PageModel ToModel() => new() { PageIndex = PageIndex, PageSize = PageSize, TotalCount = TotalCount, LongTotalCount = TotalCount.ToString() };

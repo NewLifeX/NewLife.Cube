@@ -156,8 +156,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     {
         var url = Request.GetReferer();
 
-        var p = Session[CacheKey] as Pager;
-        p = new Pager(p);
+        //var p = Session[CacheKey] as Pager;
+        //p = new Pager(p);
+        var p = GetCachePager();
         if (p != null && p.Params.Count > 0) return Json(500, "当前带有查询参数，为免误解，禁止全表清空！");
 
         try
@@ -676,7 +677,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
                         sw.Stop();
                     }
 
-                    var fi = fileName.AsFile();
+                    var fi = bak.AsFile();
                     WriteLog("备份", true, $"备份[{name}]到[{fileName}]（{rs:n0}行）（{fi.Length.ToGMK()}字节）成功！耗时：{sw.Elapsed}");
                     return rs;
                 }
@@ -727,10 +728,12 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         {
             WriteLog("备份导出", true, $"开始备份导出[{name}]");
 
+            var sw = Stopwatch.StartNew();
             await using var gs = new GZipStream(ms, CompressionLevel.SmallestSize, true);
             var count = dal.Backup(fact.Table.DataTable, gs, HttpContext.RequestAborted);
+            sw.Stop();
 
-            WriteLog("备份导出", true, $"备份[{name}]（{count:n0}行）成功！");
+            WriteLog("备份导出", true, $"备份[{name}]（{count:n0}行）成功！耗时：{sw.Elapsed}");
 
             return new EmptyResult();
         }
@@ -810,11 +813,13 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         var userId = ManageProvider.User.ID;
         var list = UserToken.Search(null, userId, true, DateTime.Now, DateTime.MinValue, null);
 
-        var p = Session[CacheKey] as Pager;
-        p = new Pager(p)
-        {
-            RetrieveTotalCount = false,
-        };
+        //var p = Session[CacheKey] as Pager;
+        //p = new Pager(p)
+        //{
+        //    RetrieveTotalCount = false,
+        //};
+        var p = GetCachePager();
+        p.RetrieveTotalCount = false;
 
         // 构造url
         var cs = GetControllerAction();

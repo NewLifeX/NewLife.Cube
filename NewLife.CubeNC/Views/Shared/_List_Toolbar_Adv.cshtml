@@ -2,6 +2,7 @@
 @{
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var page = ViewBag.Page as Pager;
+    var queryData = page.GetBaseUrl(true, true, true).ToString().GetBytes().ToUrlBase64();
 }
 <div class="btn-group">
     <button data-toggle="dropdown" class="btn btn-info btn-sm btn-sm-force dropdown-toggle" aria-expanded="false">
@@ -11,23 +12,23 @@
 
     <ul class="dropdown-menu dropdown-info dropdown-menu-right">
         <li>
-            <a href="@Url.Action("ExportExcel")" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据">导出Excel</a>
+            <a href="@Url.Action("ExportExcel", new { _query = queryData })" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据">导出Excel</a>
         </li>
         <li>
-            <a href="@Url.Action("ExportCsv")" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输">导出Csv</a>
+            <a href="@Url.Action("ExportCsv", new { _query = queryData })" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输">导出Csv</a>
         </li>
         <li>
-            <a href="@Url.Action("ExportXml")">导出Xml</a>
+            <a href="@Url.Action("ExportXml", new { _query = queryData })">导出Xml</a>
         </li>
         <li>
-            <a href="@Url.Action("ExportJson")">导出Json</a>
+            <a href="@Url.Action("ExportJson", new { _query = queryData })">导出Json</a>
         </li>
         <li class="divider"></li>
         <li>
-            <a href="@Url.Action("Develop",new{act="Share"})" title="把当前页数据分享给其他人">分享</a>
+            <a href="@Url.Action("Develop", new { act = "Share" })" title="把当前页数据分享给其他人">分享</a>
         </li>
         <li>
-            <a href="@Url.Action("Develop",new{act="Sync"})" data-action="action" data-confirm="该操作将清空数据并不可恢复！确认同步？" title="清空并从主服务器同步数据">同步</a>
+            <a href="@Url.Action("Develop", new { act = "Sync" })" data-action="action" data-confirm="该操作将清空数据并不可恢复！确认同步？" title="清空并从主服务器同步数据">同步</a>
         </li>
         @if (this.Has(PermissionFlags.Delete))
         {
@@ -36,39 +37,42 @@
                 <a href="@Url.Action("DeleteSelect")" data-action="action" data-fields="keys" data-confirm="该操作将删除选中数据并不可恢复！确认删除？" title="删除选中数据">删除选中</a>
             </li>
             <li>
-                <a href="@Url.Action("DeleteAll")" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" title="删除当前查询的所有数据">删除全部</a>
+                <a href="@Url.Action("DeleteAll", new { _query = queryData })" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" title="删除当前查询的所有数据">删除全部</a>
             </li>
         }
         @if (SysConfig.Current.Develop && user != null && user.Roles.Any(e => e.IsSystem))
         {
             <li class="divider"></li>
             <li>
-                <a href="@Url.Action("Develop",new{act="Backup"})" data-action="action" title="备份到服务器本地目录">备份</a>
+                <a href="@Url.Action("Develop", new { act = "Backup" })" data-action="action" title="备份全表到服务器本地目录">备份</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop",new{act="Restore"})" data-action="action" title="从服务器本地目录还原">还原</a>
+                <a href="@Url.Action("Develop", new { act = "Restore" })" data-action="action" title="从服务器本地目录还原">还原</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop",new{act="BackupAndExport"})" title="备份并下载">备份导出</a>
+                <a href="@Url.Action("Develop", new { act = "BackupAndExport" })" title="备份全表并下载">备份导出</a>
+            </li>
+            <li>
+                <a href="@Url.Action("Develop", new { act = "BackupAndExportCurrent", _query = queryData })" title="备份当前查询并下载">备份导出当前</a>
             </li>
             <li class="divider"></li>
             if (page == null || page.Params.Count == 0)
             {
                 <li>
-                    <a href="@Url.Action("Develop",new{act="Clear"})" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" title="删除数据表所有数据">清空数据表</a>
+                    <a href="@Url.Action("Develop", new { act = "Clear" })" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" title="删除数据表所有数据">清空数据表</a>
                 </li>
             }
             <li>
-                <a href="@Url.Action("Develop",new{act="MakeList"})">生成列表</a>
+                <a href="@Url.Action("Develop", new { act = "MakeList" })">生成列表</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop",new{act="MakeForm"})">生成表单</a>
+                <a href="@Url.Action("Develop", new { act = "MakeForm" })">生成表单</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop",new{act="MakeSearch"})">生成搜索</a>
+                <a href="@Url.Action("Develop", new { act = "MakeSearch" })">生成搜索</a>
             </li>
             <li>
-                <a href="@Url.Action("Develop",new{act="MakeBatch"})">生成批处理</a>
+                <a href="@Url.Action("Develop", new { act = "MakeBatch" })">生成批处理</a>
             </li>
         }
     </ul>
