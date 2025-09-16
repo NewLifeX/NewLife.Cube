@@ -19,7 +19,7 @@ public class ControllerBaseX : Controller
     public IMenu Menu { get; set; }
 
     /// <summary>用户主机</summary>
-    public String UserHost => HttpContext.GetUserHost();
+    public String UserHost { get; set; }
 
     /// <summary>页面设置</summary>
     public PageSetting PageSetting { get; set; }
@@ -33,6 +33,8 @@ public class ControllerBaseX : Controller
     /// <param name="context"></param>
     public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
     {
+        UserHost = HttpContext.GetUserHost();
+
         // 页面设置
         ViewBag.PageSetting = PageSetting;
 
