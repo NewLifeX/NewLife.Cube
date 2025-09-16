@@ -28,6 +28,12 @@
             <a href="@Url.Action("ExportZip", new { _query = queryData })">导出Zip</a>
         </li>
         <li>
+            <a href="#" id="importExcelTrigger" title="从Excel文件导入数据">导入Excel</a>
+        </li>
+        <li>
+            <a href="#" id="importJsonTrigger" title="从Json文件导入数据">导入Json</a>
+        </li>
+        <li>
             <a href="#" id="importZipTrigger" title="从Zip文件导入数据">导入Zip</a>
         </li>
         <li class="divider"></li>
@@ -81,25 +87,25 @@
         }
     </ul>
 </div><!-- /.btn-group -->
-@* 隐藏的导入表单：触发文件选择并在选择后自动提交 *@
-<form id="importZipForm" action="@Url.Action("ImportZip")" method="post" enctype="multipart/form-data" style="display:none">
-    @Html.AntiForgeryToken()
-    <input id="importZipFile" type="file" name="file" accept=".zip" style="display:none" />
-</form>
 
 <script>
-    (function() {
-        var trigger = document.getElementById('importZipTrigger');
-        var input = document.getElementById('importZipFile');
-        var form = document.getElementById('importZipForm');
-        if (trigger && input && form) {
-            trigger.addEventListener('click', function (e) {
-                e.preventDefault();
-                input.click();
-            });
-            input.addEventListener('change', function () {
-                if (input.files && input.files.length > 0) form.submit();
-            });
+    $(function () {
+        function triggerImport(actionUrl, accept) {
+            var $form = $('<form method="post" enctype="multipart/form-data" style="display:none"></form>')
+                .attr('action', actionUrl)
+                .appendTo('body');
+            var $input = $('<input type="file" name="file" />')
+                .attr('accept', accept || '')
+                .appendTo($form);
+
+            $input.on('change.import', function () {
+                if (this.files && this.files.length > 0) $form[0].submit();
+                else $form.remove();
+            }).click();
         }
-    })();
+
+        $('#importExcelTrigger').on('click', function (e) { e.preventDefault(); triggerImport('@Url.Action("ImportExcel")', '.xlsx,.xls,.csv'); });
+        $('#importJsonTrigger').on('click', function (e) { e.preventDefault(); triggerImport('@Url.Action("ImportJson")', '.json'); });
+        $('#importZipTrigger').on('click', function (e) { e.preventDefault(); triggerImport('@Url.Action("ImportZip")', '.zip'); });
+    });
 </script>
