@@ -621,9 +621,9 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
 
         var list = ExportData();
 
-        var dic = new Dictionary<String, IEnumerable<IEntity>>
+        var dic = new Dictionary<Type, IEnumerable<IEntity>>
         {
-            { name, list }
+            { Factory.EntityType, list }
         };
 
         var p = GetCachePager();
@@ -635,9 +635,62 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     }
 
     /// <summary>导出Zip时，可以添加其它数据集</summary>
-    /// <param name="data"></param>
-    /// <param name="page"></param>
-    protected virtual void OnExportZip(IDictionary<String, IEnumerable<IEntity>> data, Pager page) { }
+    /// <param name="data">将要导出的数据集</param>
+    /// <param name="page">分页参数，含请求参数</param>
+    protected virtual void OnExportZip(IDictionary<Type, IEnumerable<IEntity>> data, Pager page) { }
+
+    /// <summary>导入Zip：接收zip文件，解压并读取主数据集，然后批量写入数据库</summary>
+    /// <param name="file">上传的zip文件</param>
+    /// <returns></returns>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [EntityAuthorize(PermissionFlags.Insert)]
+    [DisplayName("导入Zip")]
+    public virtual IActionResult ImportZip(IFormFile file)
+    {
+        if (file == null || file.Length <= 0) return RedirectToAction("Index");
+
+        var dic = new Dictionary<String, IEnumerable<IEntity>>(StringComparer.OrdinalIgnoreCase);
+        var mainName = GetType().Name.TrimEnd("Controller");
+
+        // 解压并读取数据集
+        using var zip = new ZipArchive(file.OpenReadStream(), ZipArchiveMode.Read, leaveOpen: false);
+
+        var rs = 0;
+        var p = GetCachePager();
+        foreach (var entry in zip.Entries)
+        {
+            if (entry.Length <= 0) continue;
+
+            // 仅解析当前控制器对应的数据集，其它数据交给 OnImportZip 重载处理
+            using var stream = entry.Open();
+            rs += OnImportZip(entry.Name, stream, p);
+        }
+
+        WriteLog("导入Zip", true, $"导入[{dic.Keys.Join()}] 共{rs}行");
+
+        return RedirectToAction("Index");
+    }
+
+    /// <summary>导入Zip时，处理附属数据集或自定义导入逻辑</summary>
+    /// <remarks>根据名称反射实体工厂，然后批量插入数据库</remarks>
+    /// <param name="name">Zip内名称</param>
+    /// <param name="stream">数据流</param>
+    /// <param name="page">分页/上下文参数</param>
+    protected virtual Int32 OnImportZip(String name, Stream stream, Pager page)
+    {
+        // 从名称定位实体工厂
+        var type = name.GetType();
+        var factory = type?.AsFactory();
+        if (factory == null && Factory.EntityType.Name.EqualIgnoreCase(name)) factory = Factory;
+        if (factory != null)
+        {
+            var list = factory.Read(stream);
+            if (list != null) return list.Upsert();
+        }
+
+        return 0;
+    }
     #endregion
 
     #region 高级Action

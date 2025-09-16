@@ -894,7 +894,7 @@ public class UserController : EntityController<User, UserModel>
     /// <summary>导出用户附加信息</summary>
     /// <param name="data"></param>
     /// <param name="page"></param>
-    protected override void OnExportZip(IDictionary<String, IEnumerable<IEntity>> data, Pager page)
+    protected override void OnExportZip(IDictionary<Type, IEnumerable<IEntity>> data, Pager page)
     {
         // 导出用户时，附带导出所属角色和部门等信息
         // （仅用于演示，不具备实际业务意义）
@@ -905,15 +905,15 @@ public class UserController : EntityController<User, UserModel>
 
         // 角色
         if (roleIds != null && roleIds.Length > 0)
-            data["Role"] = Role.FindAll(Role._.ID.In(roleIds));
+            data[typeof(Role)] = Role.FindAll(Role._.ID.In(roleIds));
         else
-            data["Role"] = Role.FindAllWithCache();
+            data[typeof(Role)] = Role.FindAllWithCache();
 
         // 部门
         if (departmentIds != null && departmentIds.Length > 0)
-            data["Department"] = Department.FindAll(Department._.ID.In(departmentIds));
+            data[typeof(Department)] = Department.FindAll(Department._.ID.In(departmentIds));
         else
-            data["Department"] = Department.FindAllWithCache();
+            data[typeof(Department)] = Department.FindAllWithCache();
 
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
@@ -921,8 +921,8 @@ public class UserController : EntityController<User, UserModel>
         if (start.Year > 2000 || end.Year > 2000)
         {
             // 连接
-            data["UserConnect"] = UserConnect.Search(start, end, null, null);
-            data["UserToken"] = UserToken.Search(start, end, null, null);
+            data[typeof(UserConnect)] = UserConnect.Search(start, end, null, null);
+            data[typeof(UserToken)] = UserToken.Search(start, end, null, null);
         }
     }
 
