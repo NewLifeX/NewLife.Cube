@@ -363,7 +363,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         var total = 0;
         var blank = 0;
         var result = 0;
-        var batchSize = 10_000;
+        var batchSize = XCodeSetting.Current.BatchSize;
+        if (batchSize <= 0) batchSize = 10_000;
 
         // 流式读取Excel数据，一边解析一边处理，避免一次性加载占用大量内存
         foreach (var row in reader.ReadRows())
@@ -392,7 +393,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             {
                 total++;
                 // 如果该行所有列都为空，则直接跳过
-                if (row.All(e => e == null || e.ToString().Trim().Length == 0))
+                if (row.All(e => e == null || e.ToString().IsNullOrWhiteSpace()))
                 {
                     blank++;
                     continue;
@@ -438,7 +439,85 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="factory">实体工厂。不一定是当前实体类</param>
     /// <param name="page">分页请求参数</param>
     /// <returns></returns>
-    protected virtual Int32 ImportCsv(String name, Stream stream, IEntityFactory factory, Pager page) => 0;
+    protected virtual Int32 ImportCsv(String name, Stream stream, IEntityFactory factory, Pager page)
+    {
+        using var csv = new CsvFile(stream, true);
+
+        var headers = new List<String>();
+        var fields = new List<FieldItem>();
+        var list = new List<TEntity>();
+        var total = 0;
+        var blank = 0;
+        var result = 0;
+        var batchSize = XCodeSetting.Current.BatchSize;
+        if (batchSize <= 0) batchSize = 10_000;
+
+        // 流式读取数据，一边解析一边处理，避免一次性加载占用大量内存
+        foreach (var row in csv.ReadAll())
+        {
+            if (fields.Count == 0)
+            {
+                // 读取标题行，找到对应字段
+                foreach (var item in row)
+                {
+                    headers.Add(item + "");
+
+                    // 找到对应字段，可能为空
+                    var field = factory.Fields.FirstOrDefault(e => (item + "").EqualIgnoreCase(e.Name, e.DisplayName));
+                    fields.Add(field);
+                }
+
+                // 如果没有找到任何字段，说明该行不是标题行，需要检查下一行。该行可能是注释说明行
+                if (!fields.Any(e => e != null))
+                {
+                    blank++;
+                    headers.Clear();
+                    fields.Clear();
+                }
+            }
+            else
+            {
+                total++;
+                // 如果该行所有列都为空，则直接跳过
+                if (row.All(e => e.IsNullOrWhiteSpace()))
+                {
+                    blank++;
+                    continue;
+                }
+
+                // 实例化实体对象，读取一行，逐个字段赋值
+                var entity = factory.Create() as TEntity;
+                for (var i = 0; i < row.Length && i < fields.Count; i++)
+                {
+                    var field = fields[i];
+                    if (field != null)
+                        entity.SetItem(field.Name, row[i].ChangeType(field.Type));
+                    else
+                        entity[headers[i]] = row[i];
+                }
+
+                if ((entity as IEntity).HasDirty) list.Add(entity);
+
+                // 如果足够一批，先保存一批
+                if (list.Count >= batchSize)
+                {
+                    result += OnImport(list, headers, fields);
+                    list.Clear();
+                }
+            }
+        }
+
+        // 保存数据
+        if (list.Count > 0)
+        {
+            result += OnImport(list, headers, fields);
+        }
+
+        var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
+        WriteLog("导入Csv", true, msg);
+
+        return result;
+    }
 
     /// <summary>导入Json</summary>
     /// <param name="name">文件名</param>
@@ -448,35 +527,52 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <returns></returns>
     protected virtual Int32 ImportJson(String name, Stream stream, IEntityFactory factory, Pager page)
     {
-        var type = Activator.CreateInstance(factory.EntityType);
         var json = new JsonParser(stream.ToStr());
-        var list = json.Decode() as IList<Object>;
+
+        var list = new List<TEntity>();
+        var total = 0;
+        var blank = 0;
+        var result = 0;
+        var batchSize = XCodeSetting.Current.BatchSize;
+        if (batchSize <= 0) batchSize = 10_000;
 
         // 解析json
-        var rs = 0;
-        foreach (var item in list)
+        foreach (var item in json.Decode() as IList<Object>)
         {
             var data = item as IDictionary<String, Object>;
-            //if (data[factory.Fields[1].Name].ToString() == factory.Fields[1].DisplayName) //判断首行是否为标体列
-            //    continue;
+            total++;
 
-            // 检查主字段是否重复
-            if (Entity<TEntity>.Find(factory.Master.Name, data[factory.Master.Name]) == null)
+            // 实例化实体对象，读取一行，逐个字段赋值
+            var entity = factory.Create() as TEntity;
+            foreach (var elm in data)
             {
-                var entity = factory.Create();
-                foreach (var field in factory.Fields)
-                {
-                    if (data.TryGetValue(field.Name, out var value))
-                        entity.SetItem(field.Name, value);
-                    else if (!field.IsNullable)
-                        entity.SetItem(field.Name, null);
-                }
+                var field = factory.Fields.FirstOrDefault(e => elm.Key.EqualIgnoreCase(e.Name, e.DisplayName));
+                if (field != null)
+                    entity.SetItem(field.Name, elm.Value.ChangeType(field.Type));
+                else
+                    entity[elm.Key] = elm.Value;
+            }
 
-                rs += factory.Session.Insert(entity);
+            if ((entity as IEntity).HasDirty) list.Add(entity);
+
+            // 如果足够一批，先保存一批
+            if (list.Count >= batchSize)
+            {
+                result += OnImport(list, null, null);
+                list.Clear();
             }
         }
 
-        return rs;
+        // 保存数据
+        if (list.Count > 0)
+        {
+            result += OnImport(list, null, null);
+        }
+
+        var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
+        WriteLog("导入Csv", true, msg);
+
+        return result;
     }
 
     /// <summary>从数据流导入Zip。内部文件</summary>
