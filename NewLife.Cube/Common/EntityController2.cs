@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel;
 using System.IO.Compression;
-using System.Numerics;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Models;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.IO;
@@ -321,7 +322,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         return list.Save();
     }
 
-    TEntity CopyFrom(TEntity entity, IModel source, IList<FieldItem> fields)
+    static TEntity CopyFrom(TEntity entity, IModel source, IList<FieldItem> fields)
     {
         if (fields == null || fields.Count == 0) return entity;
 
@@ -336,9 +337,15 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <summary>导入数据默认保存</summary>
     /// <param name="factory"></param>
     /// <param name="list"></param>
+    /// <param name="context"></param>
     /// <returns></returns>
-    protected virtual Int32 OnImport(IEntityFactory factory, IList<IEntity> list)
+    protected virtual Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
     {
+        if (list.Count == 0) return 0;
+
+        if (factory == Factory && list[0] is TEntity)
+            return OnImport(list.Cast<TEntity>().ToList(), context.Headers, context.Fields);
+
         // 判断已有数据，如果没有直接插入，如果较少则合并，否则Upsert
         if (factory.Session.Count == 0) return list.Insert();
 
@@ -360,12 +367,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
         var headers = new List<String>();
         var fields = new List<FieldItem>();
-        var list = new List<TEntity>();
+        var list = new List<IEntity>();
         var total = 0;
         var blank = 0;
         var result = 0;
         var batchSize = XCodeSetting.Current.BatchSize;
         if (batchSize <= 0) batchSize = 10_000;
+        var context = new ImportContext { Name = name, Stream = stream, Page = page };
+        context["_reader"] = reader;
 
         // 流式读取Excel数据，一边解析一边处理，避免一次性加载占用大量内存
         foreach (var row in reader.ReadRows())
@@ -389,6 +398,9 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                     headers.Clear();
                     fields.Clear();
                 }
+
+                context.Headers = headers.ToArray();
+                context.Fields = fields.ToArray();
             }
             else
             {
@@ -416,7 +428,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 // 如果足够一批，先保存一批
                 if (list.Count >= batchSize)
                 {
-                    result += OnImport(list, headers, fields);
+                    result += OnImport(factory, list, context);
                     list.Clear();
                 }
             }
@@ -425,7 +437,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         // 保存数据
         if (list.Count > 0)
         {
-            result += OnImport(list, headers, fields);
+            result += OnImport(factory, list, context);
         }
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
@@ -442,19 +454,21 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <returns></returns>
     protected virtual Int32 ImportCsv(String name, Stream stream, IEntityFactory factory, Pager page)
     {
-        using var csv = new CsvFile(stream, true);
+        using var reader = new CsvFile(stream, true);
 
         var headers = new List<String>();
         var fields = new List<FieldItem>();
-        var list = new List<TEntity>();
+        var list = new List<IEntity>();
         var total = 0;
         var blank = 0;
         var result = 0;
         var batchSize = XCodeSetting.Current.BatchSize;
         if (batchSize <= 0) batchSize = 10_000;
+        var context = new ImportContext { Name = name, Stream = stream, Page = page };
+        context["_reader"] = reader;
 
         // 流式读取数据，一边解析一边处理，避免一次性加载占用大量内存
-        foreach (var row in csv.ReadAll())
+        foreach (var row in reader.ReadAll())
         {
             if (fields.Count == 0)
             {
@@ -475,6 +489,9 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                     headers.Clear();
                     fields.Clear();
                 }
+
+                context.Headers = headers.ToArray();
+                context.Fields = fields.ToArray();
             }
             else
             {
@@ -502,7 +519,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 // 如果足够一批，先保存一批
                 if (list.Count >= batchSize)
                 {
-                    result += OnImport(list, headers, fields);
+                    result += OnImport(factory, list, context);
                     list.Clear();
                 }
             }
@@ -511,7 +528,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         // 保存数据
         if (list.Count > 0)
         {
-            result += OnImport(list, headers, fields);
+            result += OnImport(factory, list, context);
         }
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
@@ -530,12 +547,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     {
         var json = new JsonParser(stream.ToStr());
 
-        var list = new List<TEntity>();
+        var list = new List<IEntity>();
         var total = 0;
         var blank = 0;
         var result = 0;
         var batchSize = XCodeSetting.Current.BatchSize;
         if (batchSize <= 0) batchSize = 10_000;
+        var context = new ImportContext { Name = name, Stream = stream, Page = page };
+        context["_json"] = json;
 
         // 解析json
         foreach (var item in json.Decode() as IList<Object>)
@@ -559,7 +578,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             // 如果足够一批，先保存一批
             if (list.Count >= batchSize)
             {
-                result += OnImport(list, null, null);
+                result += OnImport(factory, list, context);
                 list.Clear();
             }
         }
@@ -567,7 +586,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         // 保存数据
         if (list.Count > 0)
         {
-            result += OnImport(list, null, null);
+            result += OnImport(factory, list, context);
         }
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
@@ -643,6 +662,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
         var total = 0;
         var result = 0;
+        var context = new ImportContext { Name = name, Stream = stream, Page = page };
         foreach (var entity in factory.Read(stream))
         {
             total++;
@@ -650,14 +670,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
             if (list.Count >= batchSize)
             {
-                result += OnImport(factory, list);
+                result += OnImport(factory, list, context);
                 list.Clear();
             }
         }
 
         if (list.Count > 0)
         {
-            result += OnImport(factory, list);
+            result += OnImport(factory, list, context);
         }
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行！";
