@@ -312,101 +312,11 @@ public partial class EntityController<TEntity, TModel>
         };
     }
 
-    /// <summary>导入Xml</summary>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("导入")]
-    [HttpPost]
-    public virtual ActionResult ImportXml() => throw new NotImplementedException();
-
-    /// <summary>导入Json</summary>
-    /// <remarks>当前采用前端解析的excel，表头第一行数据无效，从第二行开始处理</remarks>
-    /// <returns></returns>
-    [EntityAuthorize(PermissionFlags.Insert)]
-    [DisplayName("导入")]
-    [HttpPost]
-    public virtual ActionResult ImportJson(String data)
-    {
-        if (String.IsNullOrWhiteSpace(data)) return Json(500, null, $"“{nameof(data)}”不能为 null 或空白。");
-        try
-        {
-            var fact = Factory;
-            var dal = fact.Session.Dal;
-            var type = Activator.CreateInstance(fact.EntityType);
-            var json = new JsonParser(data);
-            var dataList = json.Decode() as IList<Object>;
-
-
-            //解析json
-            //var dataList = JArray.Parse(data);
-            var errorString = String.Empty;
-            Int32 okSum = 0, fiSum = 0;
-
-            //using var tran = Entity<TEntity>.Meta.CreateTrans();
-            foreach (var itemD in dataList)
-            {
-                var item = itemD.ToDictionary();
-                if (item[fact.Fields[1].Name].ToString() == fact.Fields[1].DisplayName) //判断首行是否为标体列
-                {
-                    continue;
-                }
-                else
-                {
-                    //检查主字段是否重复
-                    if (Entity<TEntity>.Find(fact.Master.Name, item[fact.Master.Name].ToString()) == null)
-                    {
-                        //var entity = item.ToJson().ToJsonEntity(fact.EntityType);
-                        var entity = fact.Create();
-
-                        foreach (var fieldsItem in fact.Fields)
-                        {
-                            if (!item.ContainsKey(fieldsItem.Name))
-                            {
-                                if (!fieldsItem.IsNullable)
-                                    fieldsItem.FromExcelToEntity(item, entity);
-
-                                continue;
-                            }
-
-                            fieldsItem.FromExcelToEntity(item, entity);
-                        }
-
-                        if (fact.FieldNames.Contains("CreateTime"))
-                            entity["CreateTime"] = DateTime.Now;
-
-                        if (fact.FieldNames.Contains("CreateIP"))
-                            entity["CreateIP"] = "--";
-
-                        okSum += fact.Session.Insert(entity);
-                    }
-                    else
-                    {
-                        errorString += $"<br>{item[fact.Master.Name]}重复";
-                        fiSum++;
-                    }
-                }
-            }
-
-            //tran.Commit();
-
-            WriteLog("导入Excel", true, $"导入Excel[{data}]（{dataList.Count()}行）成功！");
-
-            return Json(0, $"导入成功:({okSum}行)，失败({fiSum}行)！{errorString}");
-        }
-        catch (Exception ex)
-        {
-            XTrace.WriteException(ex);
-
-            WriteLog("导入Excel", false, ex.GetMessage());
-
-            return Json(500, ex.GetMessage(), ex);
-        }
-    }
-
     /// <summary>导入Excel</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [DisplayName("导入Excel")]
+    [Obsolete("=>ImportFile")]
     public virtual ActionResult ImportExcel(IFormFile file)
     {
         try
@@ -719,7 +629,7 @@ public partial class EntityController<TEntity, TModel>
         return JsonRefresh(msg, 3);
     }
 
-    /// <summary>导入Excel文件</summary>
+    /// <summary>导入Excel</summary>
     /// <param name="name">文件名</param>
     /// <param name="stream">数据流。可能来自上传文件，也可能来自解压缩文件</param>
     /// <param name="factory">实体工厂。不一定是当前实体类</param>
@@ -804,9 +714,64 @@ public partial class EntityController<TEntity, TModel>
         return result;
     }
 
+    /// <summary>导入Csv</summary>
+    /// <param name="name">文件名</param>
+    /// <param name="stream">数据流。可能来自上传文件，也可能来自解压缩文件</param>
+    /// <param name="factory">实体工厂。不一定是当前实体类</param>
+    /// <param name="page">分页请求参数</param>
+    /// <returns></returns>
     protected virtual Int32 ImportCsv(String name, Stream stream, IEntityFactory factory, Pager page) => 0;
 
-    protected virtual Int32 ImportJson(String name, Stream stream, IEntityFactory factory, Pager page) => 0;
+    /// <summary>导入Json</summary>
+    /// <param name="name">文件名</param>
+    /// <param name="stream">数据流。可能来自上传文件，也可能来自解压缩文件</param>
+    /// <param name="factory">实体工厂。不一定是当前实体类</param>
+    /// <param name="page">分页请求参数</param>
+    /// <returns></returns>
+    protected virtual Int32 ImportJson(String name, Stream stream, IEntityFactory factory, Pager page)
+    {
+        var type = Activator.CreateInstance(factory.EntityType);
+        var json = new JsonParser(stream.ToStr());
+        var list = json.Decode() as IList<Object>;
+
+        // 解析json
+        var errorString = String.Empty;
+        var rs = 0;
+        foreach (var itemD in list)
+        {
+            var item = itemD.ToDictionary();
+            if (item[factory.Fields[1].Name].ToString() == factory.Fields[1].DisplayName) //判断首行是否为标体列
+                continue;
+
+            //检查主字段是否重复
+            if (Entity<TEntity>.Find(factory.Master.Name, item[factory.Master.Name].ToString()) == null)
+            {
+                var entity = factory.Create();
+
+                foreach (var fieldsItem in factory.Fields)
+                {
+                    if (!item.ContainsKey(fieldsItem.Name))
+                    {
+                        if (!fieldsItem.IsNullable) fieldsItem.FromExcelToEntity(item, entity);
+
+                        continue;
+                    }
+
+                    fieldsItem.FromExcelToEntity(item, entity);
+                }
+
+                if (factory.FieldNames.Contains("CreateTime"))
+                    entity["CreateTime"] = DateTime.Now;
+
+                if (factory.FieldNames.Contains("CreateIP"))
+                    entity["CreateIP"] = "--";
+
+                rs += factory.Session.Insert(entity);
+            }
+        }
+
+        return rs;
+    }
 
     /// <summary>从数据流导入Zip。内部文件</summary>
     /// <param name="name">文件名</param>
