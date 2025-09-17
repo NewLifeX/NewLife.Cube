@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.IO.Compression;
+using System.Numerics;
 using System.Text;
 using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
@@ -336,7 +337,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="factory"></param>
     /// <param name="list"></param>
     /// <returns></returns>
-    protected virtual Int32 OnImport(IEntityFactory factory, IEnumerable<IEntity> list)
+    protected virtual Int32 OnImport(IEntityFactory factory, IList<IEntity> list)
     {
         // 判断已有数据，如果没有直接插入，如果较少则合并，否则Upsert
         if (factory.Session.Count == 0) return list.Insert();
@@ -620,6 +621,9 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             };
         }
 
+        var msg = $"导入[{name}]，成功[{rs}]行！";
+        WriteLog("导入Zip", true, msg);
+
         return rs;
     }
 
@@ -631,11 +635,33 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="page">分页请求参数</param>
     protected virtual Int32 ImportDb(String name, Stream stream, IEntityFactory factory, Pager page)
     {
-        if (factory != null)
+        if (factory == null) return 0;
+
+        var list = new List<IEntity>();
+        var batchSize = XCodeSetting.Current.BatchSize;
+        if (batchSize <= 0) batchSize = 10_000;
+
+        var total = 0;
+        var result = 0;
+        foreach (var entity in factory.Read(stream))
         {
-            var list = factory.Read(stream);
-            if (list != null) return OnImport(factory, list);
+            total++;
+            list.Add(entity);
+
+            if (list.Count >= batchSize)
+            {
+                result += OnImport(factory, list);
+                list.Clear();
+            }
         }
+
+        if (list.Count > 0)
+        {
+            result += OnImport(factory, list);
+        }
+
+        var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行！";
+        WriteLog("导入Db", true, msg);
 
         return 0;
     }

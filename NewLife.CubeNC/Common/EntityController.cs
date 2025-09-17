@@ -543,7 +543,7 @@ public partial class EntityController<TEntity, TModel>
             _ => throw new NotSupportedException($"不支持的导入文件类型[{ext}]"),
         };
         var msg = $"导入[{name}] 共{rs}行";
-        WriteLog("导入" + ext.TrimStart('.'), true, msg);
+        //WriteLog("导入" + ext.TrimStart('.'), true, msg);
 
         return JsonRefresh(msg, 3);
     }
