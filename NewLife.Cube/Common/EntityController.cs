@@ -62,7 +62,7 @@ public partial class EntityController<TEntity, TModel>
         entity = Factory.Create(false) as TEntity;
 
         if (model is IModel src)
-            entity.CopyFrom(src, true);
+            entity.CopyFrom(src, true, true);
         else
             entity.Copy(model);
 
@@ -133,7 +133,7 @@ public partial class EntityController<TEntity, TModel>
         entity = FindData(key);
 
         if (model is IModel src)
-            entity.CopyFrom(src, true);
+            entity.CopyFrom(src, true, true);
         else
             entity.Copy(model, false, uk.Name);
 

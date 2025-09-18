@@ -103,7 +103,7 @@ public partial class EntityController<TEntity, TModel>
             if (entity is IEntity<TModel> entity2)
                 entity2.Copy(model);
             else if (model is IModel src)
-                entity.CopyFrom(src, true);
+                entity.CopyFrom(src, true, true);
             else
                 entity.Copy(model);
         }
@@ -209,7 +209,7 @@ public partial class EntityController<TEntity, TModel>
             if (entity is IEntity<TModel> entity2)
                 entity2.Copy(model);
             else if (model is IModel src)
-                entity.CopyFrom(src, true);
+                entity.CopyFrom(src, true, true);
             else
                 entity.Copy(model, false, uk.Name);
         }
