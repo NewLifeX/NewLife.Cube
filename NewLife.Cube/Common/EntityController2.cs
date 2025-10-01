@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using NewLife.Office;
 using System.IO.Compression;
 using System.Reflection.PortableExecutable;
 using System.Text;
@@ -14,6 +15,7 @@ using NewLife.Web;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
+using ExcelReader = NewLife.Office.ExcelReader;
 
 namespace NewLife.Cube;
 

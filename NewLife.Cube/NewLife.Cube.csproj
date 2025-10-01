@@ -103,7 +103,8 @@
   <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="11.7.2025.1001" />
     <PackageReference Include="NewLife.IP" Version="2.3.2025.1001" />
-    <PackageReference Include="NewLife.Stardust" Version="3.4.2025.901" />
+    <PackageReference Include="NewLife.Office" Version="1.0.2025.1001" />
+    <PackageReference Include="NewLife.Stardust" Version="3.4.2025.1001" />
     <PackageReference Include="NewLife.XCode" Version="11.21.2025.1001" />
   </ItemGroup>
 

@@ -34,7 +34,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>增加Zip导入导出；增加标准Excel导出</PackageReleaseNotes>
+    <PackageReleaseNotes>增加Zip导入导出；增加标准Excel导出；删除和分享增加_query隐藏参数</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -52,7 +52,8 @@
   <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="11.7.2025.1001" />
     <PackageReference Include="NewLife.IP" Version="2.3.2025.1001" />
-    <PackageReference Include="NewLife.Stardust" Version="3.4.2025.901" />
+    <PackageReference Include="NewLife.Office" Version="1.0.2025.1001" />
+    <PackageReference Include="NewLife.Stardust" Version="3.4.2025.1001" />
     <PackageReference Include="NewLife.XCode" Version="11.21.2025.1001" />
   </ItemGroup>
 
