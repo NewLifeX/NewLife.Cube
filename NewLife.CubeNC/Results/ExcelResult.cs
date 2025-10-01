@@ -22,10 +22,13 @@ public class ExcelResult : IActionResult
     /// <summary>附件文件名。若指定，则作为文件下载输出</summary>
     public String AttachmentName { get; set; }
 
+    /// <summary>Http上下文</summary>
+    public HttpContext HttpContext { get; set; }
+
     /// <summary>执行并输出结果</summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    public async Task ExecuteResultAsync(ActionContext context)
+    public Task ExecuteResultAsync(ActionContext context)
     {
         var rs = context.HttpContext.Response;
         rs.Headers[HeaderNames.ContentEncoding] = "UTF8";
@@ -37,7 +40,12 @@ public class ExcelResult : IActionResult
             rs.Headers[HeaderNames.ContentDisposition] = "attachment; filename=" + HttpUtility.UrlEncode(AttachmentName);
         }
 
-        await using var csv = new CsvFile(rs.Body, true);
+        // 允许同步IO，便于刷数据Flush
+        var ft = HttpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature>();
+        if (ft != null) ft.AllowSynchronousIO = true;
+
+        //await using var csv = new CsvFile(rs.Body, true);
+        using var excel = new ExcelWriter(rs.Body);
 
         // 列头
         var headers = new List<String>();
@@ -51,12 +59,14 @@ public class ExcelResult : IActionResult
             if (name == "ID" && fi == Fields[0]) name = "Id";
             headers.Add(name);
         }
-        await csv.WriteLineAsync(headers);
+        //await csv.WriteLineAsync(headers);
+        excel.WriteHeader(null, headers);
 
         // 内容
-        foreach (var entity in Data)
-        {
-            await csv.WriteLineAsync(Fields.Select(e => entity[e.Name]));
-        }
+        excel.WriteRows(null, Data.Select(e => Fields.Select(f => e[f.Name]).ToArray()));
+
+        excel.Save();
+
+        return Task.CompletedTask;
     }
 }

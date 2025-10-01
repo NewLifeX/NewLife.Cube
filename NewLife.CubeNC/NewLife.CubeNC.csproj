@@ -9,7 +9,7 @@
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2025 NewLife</Copyright>
-    <VersionPrefix>6.5</VersionPrefix>
+    <VersionPrefix>6.6</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -34,7 +34,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>升级ECharts增加大量系列图；增强可扩展字段功能，支持一行数据的Json/Xml字段在表单页展开为独立Tab页</PackageReleaseNotes>
+    <PackageReleaseNotes>增加Zip导入导出；增加标准Excel导出</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -50,10 +50,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.6.2025.921-beta1554" />
-    <PackageReference Include="NewLife.IP" Version="2.3.2025.601" />
+    <PackageReference Include="NewLife.Core" Version="11.7.2025.1001" />
+    <PackageReference Include="NewLife.IP" Version="2.3.2025.1001" />
     <PackageReference Include="NewLife.Stardust" Version="3.4.2025.901" />
-    <PackageReference Include="NewLife.XCode" Version="11.20.2025.921-beta1555" />
+    <PackageReference Include="NewLife.XCode" Version="11.21.2025.1001" />
   </ItemGroup>
 
   <ItemGroup>

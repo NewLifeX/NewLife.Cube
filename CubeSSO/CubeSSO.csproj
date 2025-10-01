@@ -6,7 +6,7 @@
     <Description>SSO服务端，OAuth2.0服务端。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2025 NewLife</Copyright>
-    <VersionPrefix>6.5</VersionPrefix>
+    <VersionPrefix>6.6</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.6.2025.921-beta1554" />
+    <PackageReference Include="NewLife.Core" Version="11.7.2025.1001" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.4.2025.901" />
   </ItemGroup>
 
