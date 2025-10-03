@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using NewLife.Office;
 using System.IO.Compression;
 using System.Reflection.PortableExecutable;
 using System.Text;
@@ -9,12 +8,15 @@ using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
+using NewLife.Office;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Configuration;
+using XCode.DataAccessLayer;
 using XCode.Membership;
+using XCode.Model;
 using ExcelReader = NewLife.Office.ExcelReader;
 
 namespace NewLife.Cube;
@@ -288,8 +290,16 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     protected virtual Int32 OnImport(IList<TEntity> list, IList<String> headers, IList<FieldItem> fields)
     {
         // 如果存在主键或者唯一索引，先查找是否存在，如果存在则更新，否则新增
-        fields = fields.Where(e => e != null).ToList();
-        var names = fields.Select(e => e.Name).ToList();
+        if (fields == null || fields.Count == 0)
+            fields = Factory.Fields;
+        else
+            fields = fields.Where(e => e != null).ToList();
+
+        var inserts = new List<TEntity>();
+        var updates = new List<TEntity>();
+        var upserts = new List<TEntity>();
+
+        // 如果数据带有主键，则直接根据主键查找，更新或者插入。一般来自导出再导入
         var uk = Factory.Unique;
         if (uk != null && fields.Any(e => e.Name == uk.Name))
         {
@@ -297,12 +307,16 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             {
                 var entity = list[i];
                 var old = Factory.FindByKey(entity[uk.Name]) as TEntity;
-                if (old != null) list[i] = CopyFrom(old, entity, fields);
+                if (old != null)
+                    updates.Add(CopyFrom(old, entity, fields));
+                else
+                    inserts.Add(entity);
             }
         }
         else
         {
-            // 唯一索引
+            // 唯一索引。查找到则更新，否则执行Upsert
+            var names = fields.Select(e => e.Name).ToList();
             var di = Factory.Table.DataTable.Indexes.FirstOrDefault(e => e.Unique && !e.Columns.Except(names).Any());
             if (di != null)
             {
@@ -316,12 +330,21 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                         exp &= fi.Equal(entity[fi.Name]);
                     }
                     var old = Factory.Find(exp) as TEntity;
-                    if (old != null) list[i] = CopyFrom(old, entity, fields);
+                    if (old != null)
+                        updates.Add(CopyFrom(old, entity, fields));
+                    else
+                        upserts.Add(entity);
                 }
             }
         }
 
-        return list.Save();
+        var option = new BatchOption { FullInsert = true };
+        var rs = 0;
+        rs += inserts.BatchInsert(option);
+        rs += updates.Update();
+        rs += upserts.BatchUpsert(option);
+
+        return rs;
     }
 
     static TEntity CopyFrom(TEntity entity, IModel source, IList<FieldItem> fields)
@@ -337,6 +360,11 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     }
 
     /// <summary>导入数据默认保存</summary>
+    /// <remarks>
+    /// 导入的新数据合并到旧数据，已有更新，没有则插入。
+    /// 主要按主键来查找判断是否已存在。
+    /// 该方案并不全面，需要使用者自己重载来实现精细化的合并逻辑。
+    /// </remarks>
     /// <param name="factory"></param>
     /// <param name="list"></param>
     /// <param name="context"></param>
@@ -351,6 +379,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         // 判断已有数据，如果没有直接插入，如果较少则合并，否则Upsert
         if (factory.Session.Count == 0) return list.Insert();
 
+        // 其它数据，按照主键合并
         var uk = factory.Unique;
         if (factory.Session.Count < 10000 && uk != null)
             return factory.FindAll().Merge(list, (o, n) => Equals(o[uk.Name], n[uk.Name]), false, false).Count;
@@ -593,7 +622,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         }
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
-        WriteLog("导入Csv", true, msg);
+        WriteLog("导入Json", true, msg);
 
         return result;
     }
