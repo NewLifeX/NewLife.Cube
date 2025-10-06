@@ -1,11 +1,16 @@
 ﻿using System;
+using System.IO;
+using System.Net.NetworkInformation;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Model;
+using NewLife.Serialization;
 using NewLife.Web;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
@@ -281,6 +286,56 @@ public static class ManagerProviderHelper
         context.Items["jwtToken"] = token;
 
         return token;
+    }
+
+    /// <summary>验证令牌是否有效</summary>
+    /// <param name="access_token"></param>
+    /// <param name="manageProvider"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static IManageUser Auth(String access_token, IManageProvider manageProvider)
+    {
+        if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
+
+        var username = Decode(access_token);
+        // 设置登录用户
+        var user = manageProvider.FindByName(username);
+        if (user == null) XTrace.WriteLine($"未查询到相关用户{username}");
+
+        return user;
+    }
+
+    /// <summary>解码令牌</summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    private static String Decode(String token)
+    {
+        // 区分访问令牌和内部刷新令牌
+        var ts = token.Split('.');
+        if (ts.Length == 3)
+        {
+            // 从配置加载密钥
+            var set = CubeSetting.Current;
+            var ss = set.JwtSecret.Split(':');
+
+            var jwt = new JwtBuilder
+            {
+                Algorithm = ss[0],
+                Secret = ss[1],
+            };
+
+            if (!jwt.TryDecode(token, out var msg))
+            {
+                XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
+                throw new Exception(msg);
+            }
+
+            return jwt.Subject;
+        }
+
+        XTrace.WriteLine("令牌格式错误：{0}", token);
+        throw new Exception("非法访问令牌");
     }
 
     /// <summary>保存用户信息到Cookie</summary>

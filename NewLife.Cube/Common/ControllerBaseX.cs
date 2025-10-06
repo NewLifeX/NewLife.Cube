@@ -89,14 +89,15 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
         // 访问令牌
         Token = context.HttpContext.LoadToken();
-
         try
         {
             if (!Token.IsNullOrEmpty())
             {
+                CurrentUser = ManagerProviderHelper.Auth(Token, ManageProvider.Provider);
+                HttpContext.Items["userId"] = CurrentUser.ID;
             }
 
-            if (user == null && context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
+            if (CurrentUser == null && context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
             {
                 throw new ApiException(403, "认证失败");
             }
