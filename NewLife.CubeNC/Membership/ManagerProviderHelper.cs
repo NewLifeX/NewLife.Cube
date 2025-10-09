@@ -1,11 +1,16 @@
 ﻿using System;
+using System.IO;
+using System.Net.NetworkInformation;
 using System.Security.Principal;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Net.Http.Headers;
 using NewLife.Common;
 using NewLife.Cube.Extensions;
 using NewLife.Log;
 using NewLife.Model;
+using NewLife.Serialization;
 using NewLife.Web;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
@@ -281,6 +286,107 @@ public static class ManagerProviderHelper
         context.Items["jwtToken"] = token;
 
         return token;
+    }
+
+    /// <summary>带刷新令牌</summary>
+    /// <param name="context"></param>
+    /// <param name="user"></param>
+    /// <param name="expire">有效期（单位：秒）</param>
+    /// <returns></returns>
+    public static Tuple<String, String> IssueTokenAndRefreshToken(this HttpContext context, IManageUser user, TimeSpan expire)
+    {
+        var access_token = context.IssueToken(user, expire);
+        var refresh_token = CreateRefreshToken(user, DateTime.Now.AddDays(7));
+
+        return new Tuple<String, String>(access_token, refresh_token);
+    }
+
+    /// <summary>刷新令牌</summary>
+    /// <param name="context"></param>
+    /// <param name="user"></param>
+    /// <param name="refresh_token"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public static Tuple<String, String> RefreshToken(this HttpContext context, IManageUser user, String refresh_token)
+    {
+        var set = CubeSetting.Current;
+        var result = DecodeRefreshToken(refresh_token, out var username, out var expire);
+        if (!result) throw new Exception($"刷新令牌异常：{refresh_token}");
+
+        return context.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+    }
+
+    /// <summary>创建刷新令牌</summary>
+    /// <param name="user"></param>
+    /// <param name="expire"></param>
+    /// <returns></returns>
+    private static String CreateRefreshToken(IManageUser user, DateTime expire)
+    {
+        var tokenProverder = new TokenProvider();
+        var r = tokenProverder.ReadKey("refresh.prvkey", true);
+        return tokenProverder.Encode(user.Name, expire);
+    }
+
+    /// <summary></summary>
+    /// <param name="token"></param>
+    /// <param name="username"></param>
+    /// <param name="expire"></param>
+    /// <returns></returns>
+    private static Boolean DecodeRefreshToken(String token, out String username, out DateTime expire)
+    {
+        var tokenProverder = new TokenProvider();
+        _ = tokenProverder.ReadKey("refresh.pubkey");
+        return tokenProverder.TryDecode(token, out username, out expire);
+    }
+
+    /// <summary>验证令牌是否有效</summary>
+    /// <param name="access_token"></param>
+    /// <param name="manageProvider"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static IManageUser Auth(String access_token, IManageProvider manageProvider)
+    {
+        if (access_token.IsNullOrEmpty()) throw new ArgumentNullException(nameof(access_token));
+
+        var username = Decode(access_token);
+        // 设置登录用户
+        var user = manageProvider.FindByName(username);
+        if (user == null) XTrace.WriteLine($"未查询到相关用户{username}");
+
+        return user;
+    }
+
+    /// <summary>解码令牌</summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    private static String Decode(String token)
+    {
+        // 区分访问令牌和内部刷新令牌
+        var ts = token.Split('.');
+        if (ts.Length == 3)
+        {
+            // 从配置加载密钥
+            var set = CubeSetting.Current;
+            var ss = set.JwtSecret.Split(':');
+
+            var jwt = new JwtBuilder
+            {
+                Algorithm = ss[0],
+                Secret = ss[1],
+            };
+
+            if (!jwt.TryDecode(token, out var msg))
+            {
+                XTrace.WriteLine("令牌无效：{0}, token={1}", msg, token);
+                throw new Exception(msg);
+            }
+
+            return jwt.Subject;
+        }
+
+        XTrace.WriteLine("令牌格式错误：{0}", token);
+        throw new Exception("非法访问令牌");
     }
 
     /// <summary>保存用户信息到Cookie</summary>
