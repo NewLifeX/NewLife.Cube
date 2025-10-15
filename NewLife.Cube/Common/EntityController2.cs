@@ -254,7 +254,11 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             foreach (var item in EditFormFields)
             {
                 var field = (item as FormField)?.Expand;
-                if (field?.Decode != null && !(entity as IEntity).Dirtys[item.Name])
+                // 扩展字段处理：例如 Parameter 之类的大文本 Json 映射为参数类
+                // Retain == true 时前端允许直接编辑原始 Json；如果该字段已被整体提交(Dirty==true)，保留用户原始输入，不再用展开子字段覆盖，避免丢失手工结构/未展示键
+                // Retain == false 时前端不提供原始 Json 编辑，只能通过展开子字段提交，直接按子字段重编码，无需脏数据判断
+                // 因此仅在 (Retain && Dirty) 场景跳过；其它场景执行 Decode + ReadForm + Encode
+                if (field?.Decode != null && (!field.Retain || !(entity as IEntity).Dirtys[item.Name]))
                 {
                     // 获取参数对象，展开参数，从表单字段接收参数
                     var p = field.Decode(entity);
