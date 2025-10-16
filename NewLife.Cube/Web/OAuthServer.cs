@@ -260,7 +260,8 @@ public class OAuthServer
         Valid();
 
         var log = AppLog.FindById(code.ToLong());
-        if (log == null || log.CreateTime.AddMinutes(5) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
+        if (log == null) throw new ArgumentOutOfRangeException(nameof(code), "Code无效！");
+        if (log.CreateTime.AddMinutes(5) < DateTime.Now) throw new ArgumentOutOfRangeException(nameof(code), "Code已过期！");
 
         if (Log != null) WriteLog("Token appid={0} code={1} token={2} {3}", log.AppName, code, log.AccessToken, log.CreateUser);
 
