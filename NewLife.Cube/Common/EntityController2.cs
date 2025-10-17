@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.IO.Compression;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Models;
@@ -8,13 +7,11 @@ using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
-using NewLife.Office;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Configuration;
-using XCode.DataAccessLayer;
 using XCode.Membership;
 using XCode.Model;
 using ExcelReader = NewLife.Office.ExcelReader;
@@ -282,85 +279,154 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     #endregion
 
     #region 导入Excel/Csv/Json/Zip
-    /// <summary>导入数据，保存落库</summary>
+    /// <summary>合并导入。查出表中已有数据匹配，能匹配的更新，无法匹配的批量插入</summary>
     /// <remarks>
-    /// 此时得到的实体列表，都是全新创建，用于接收上传数据。
-    /// 业务上，还需要考虑跟旧数据进行合并，已存在更新，不存在则新增。
+    /// 小表（&lt;10_000 行）整表加载内存匹配；大表按主键或唯一索引查询匹配。
+    /// 匹配优先级：主键且新数据主键有值 → 唯一索引（所有列具备且非空） → 视为新增。
     /// </remarks>
-    /// <param name="list">导入实体列表</param>
-    /// <param name="headers">表头</param>
-    /// <param name="fields">导入字段</param>
-    /// <returns></returns>
-    protected virtual Int32 OnImport(IList<TEntity> list, IList<String> headers, IList<FieldItem> fields)
+    /// <param name="factory">实体工厂</param>
+    /// <param name="list">新数据列表</param>
+    /// <param name="context">导入上下文（含表头与字段）</param>
+    /// <returns>受影响行数</returns>
+    protected virtual Int32 OnMerge(IEntityFactory factory, IList<IEntity> list, ImportContext context)
     {
-        // 如果存在主键或者唯一索引，先查找是否存在，如果存在则更新，否则新增
-        if (fields == null || fields.Count == 0)
-            fields = Factory.Fields;
-        else
-            fields = fields.Where(e => e != null).ToList();
+        if (list == null || list.Count == 0) return 0;
 
-        var inserts = new List<TEntity>();
-        var updates = new List<TEntity>();
-        var upserts = new List<TEntity>();
+        // 参与拷贝的字段。为空则使用全部字段
+        var fields = context.Fields.Where(e => e != null).ToArray();
+        if (fields == null || fields.Length == 0) fields = factory.Fields;
+        var fieldNames = fields.Select(e => e.Name).ToList();
 
-        // 如果数据带有主键，则直接根据主键查找，更新或者插入。一般来自导出再导入
-        var uk = Factory.Unique;
-        if (uk != null && fields.Any(e => e.Name == uk.Name))
+        var inserts = new List<IEntity>();
+        var updates = new List<IEntity>();
+
+        var uk = factory.Unique;
+        var table = factory.Table.DataTable;
+        // 可用的唯一索引集合（列在导入字段中都存在）
+        var uniqueIndexes = table.Indexes.Where(e => e.Unique && e.Columns.All(c => fieldNames.Contains(c))).ToList();
+
+        // 估算总行数（尽量避免误判）
+        var totalRows = factory.Session.Count;
+        if (totalRows < 10000) totalRows = (Int32)factory.FindCount();
+
+        // 小表：整表加载，内存匹配
+        if (totalRows < 10000)
         {
-            for (var i = 0; i < list.Count; i++)
+            var olds = factory.FindAll();
+
+            // 主键字典
+            var pkDict = uk == null ? null : olds.ToDictionary(e => e[uk.Name]);
+
+            // 唯一索引字典集合
+            var idxDicts = new List<(String[] cols, Dictionary<String, IEntity> map)>();
+            foreach (var idx in uniqueIndexes)
             {
-                var entity = list[i];
-                var old = Factory.FindByKey(entity[uk.Name]) as TEntity;
-                if (old != null)
-                    updates.Add(CopyFrom(old, entity, fields));
+                var map = new Dictionary<String, IEntity>(StringComparer.Ordinal);
+                foreach (var o in olds)
+                {
+                    var k = idx.Columns.Join("|", e => o[e]);
+                    if (k != null && !map.ContainsKey(k)) map[k] = o;
+                }
+                idxDicts.Add((idx.Columns, map));
+            }
+
+            foreach (var ne in list)
+            {
+                IEntity old = null;
+
+                if (uk != null && !ne.IsNullKey)
+                {
+                    // 只按主键匹配，找不到则直接插入，不再尝试唯一索引
+                    pkDict?.TryGetValue(ne[uk.Name], out old);
+                    if (old == null)
+                    {
+                        inserts.Add(ne);
+                        continue;
+                    }
+                }
                 else
-                    inserts.Add(entity);
+                {
+                    // 仅当未指定主键时，才尝试唯一索引匹配
+                    foreach (var (cols, map) in idxDicts)
+                    {
+                        var k = cols.Join("|", e => ne[e]);
+                        if (k != null && map.TryGetValue(k, out old)) break;
+                    }
+                }
+
+                if (old != null)
+                {
+                    // 拷贝字段并加入更新队列
+                    foreach (var fi in fields)
+                    {
+                        old.SetItem(fi.Name, ne[fi.Name]);
+                    }
+                    updates.Add(old);
+                }
+                else
+                {
+                    inserts.Add(ne);
+                }
             }
         }
         else
         {
-            // 唯一索引。查找到则更新，否则执行Upsert
-            var names = fields.Select(e => e.Name).ToList();
-            var di = Factory.Table.DataTable.Indexes.FirstOrDefault(e => e.Unique && !e.Columns.Except(names).Any());
-            if (di != null)
+            // 大表：逐行按主键/唯一索引查询
+            foreach (var ne in list)
             {
-                var fs = fields.Where(e => di.Columns.Contains(e.Name)).ToList();
-                for (var i = 0; i < list.Count; i++)
+                IEntity old = null;
+
+                if (uk != null && !ne.IsNullKey)
                 {
-                    var entity = list[i];
-                    var exp = new WhereExpression();
-                    foreach (var fi in fs)
+                    var key = ne[uk.Name];
+                    old = factory.FindByKey(key);
+                    if (old == null)
                     {
-                        exp &= fi.Equal(entity[fi.Name]);
+                        // 主键已指定，但未找到旧数据，直接插入，不再尝试唯一索引
+                        inserts.Add(ne);
+                        continue;
                     }
-                    var old = Factory.Find(exp) as TEntity;
-                    if (old != null)
-                        updates.Add(CopyFrom(old, entity, fields));
-                    else
-                        upserts.Add(entity);
+                }
+                else
+                {
+                    // 未指定主键时，尝试唯一索引匹配
+                    foreach (var idx in uniqueIndexes)
+                    {
+                        // 所有列必须有值
+                        var exp = new WhereExpression();
+                        foreach (var col in idx.Columns)
+                        {
+                            var fi = factory.Fields.FirstOrDefault(e => e.Name == col);
+                            exp &= fi.Equal(ne[col]);
+                        }
+
+                        old = factory.Find(exp);
+                        if (old != null) break;
+                    }
+                }
+
+                if (old != null)
+                {
+                    // 拷贝字段并加入更新队列
+                    foreach (var fi in fields)
+                    {
+                        old.SetItem(fi.Name, ne[fi.Name]);
+                    }
+                    updates.Add(old);
+                }
+                else
+                {
+                    inserts.Add(ne);
                 }
             }
         }
 
         var option = new BatchOption { FullInsert = true };
         var rs = 0;
-        rs += inserts.BatchInsert(option);
-        rs += updates.Update();
-        rs += upserts.BatchUpsert(option);
+        if (inserts.Count > 0) rs += inserts.BatchInsert(option);
+        if (updates.Count > 0) rs += updates.Update();
 
         return rs;
-    }
-
-    static TEntity CopyFrom(TEntity entity, IModel source, IList<FieldItem> fields)
-    {
-        if (fields == null || fields.Count == 0) return entity;
-
-        foreach (var fi in fields)
-        {
-            if (fi != null) entity.SetItem(fi.Name, source[fi.Name]);
-        }
-
-        return entity;
     }
 
     /// <summary>导入数据默认保存</summary>
@@ -387,7 +453,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 ImportMode.InsertIgnore => typed.BatchInsertIgnore(),
                 ImportMode.Replace => typed.BatchReplace(),
                 ImportMode.Upsert => typed.Upsert(),
-                _ => OnImport(typed, context.Headers, context.Fields),
+                ImportMode.Merge => OnMerge(factory, list, context),
+                _ => OnMerge(factory, list, context),
             };
         }
 
@@ -411,28 +478,13 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 // 冲突时更新
                 return list.Upsert();
             case ImportMode.Merge:
-                {
-                    // 按主键进行合并，小表整表查询后内存合并；否则退化为 Upsert
-                    if (totalRows == 0) return list.Insert();
-
-                    var uk = factory.Unique;
-                    if (totalRows < 10000 && uk != null)
-                        return factory.FindAll().Merge(list, (o, n) => Equals(o[uk.Name], n[uk.Name]), false, false).Count;
-
-                    return list.Upsert();
-                }
             case ImportMode.Auto:
             default:
                 {
-                    // 判断已有数据，如果没有直接插入，如果较少则合并，否则Upsert
+                    // 判断已有数据，如果没有直接插入
                     if (totalRows == 0) return list.Insert();
 
-                    // 其它数据，按照主键合并
-                    var uk = factory.Unique;
-                    if (totalRows < 10000 && uk != null)
-                        return factory.FindAll().Merge(list, (o, n) => Equals(o[uk.Name], n[uk.Name]), false, false).Count;
-
-                    return list.Upsert();
+                    return OnMerge(factory, list, context);
                 }
         }
     }
