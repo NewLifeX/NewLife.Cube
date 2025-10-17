@@ -377,18 +377,64 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     {
         if (list.Count == 0) return 0;
 
+        // 如果是当前实体类型，直接转换为强类型列表，提高性能
         if (factory == Factory && list[0] is TEntity)
-            return OnImport(list.Cast<TEntity>().ToList(), context.Headers, context.Fields);
+        {
+            var typed = list.Cast<TEntity>().ToList();
+            return context.Mode switch
+            {
+                ImportMode.Insert => typed.Insert(),
+                ImportMode.InsertIgnore => typed.BatchInsertIgnore(),
+                ImportMode.Replace => typed.BatchReplace(),
+                ImportMode.Upsert => typed.Upsert(),
+                _ => OnImport(typed, context.Headers, context.Fields),
+            };
+        }
 
-        // 判断已有数据，如果没有直接插入，如果较少则合并，否则Upsert
-        if (factory.Session.Count == 0) return list.Insert();
+        // 总行数
+        var totalRows = factory.Session.Count;
+        if (totalRows < 10000) totalRows = (Int32)factory.FindCount();
 
-        // 其它数据，按照主键合并
-        var uk = factory.Unique;
-        if (factory.Session.Count < 10000 && uk != null)
-            return factory.FindAll().Merge(list, (o, n) => Equals(o[uk.Name], n[uk.Name]), false, false).Count;
+        // 根据导入模式进行处理
+        switch (context.Mode)
+        {
+            case ImportMode.Insert:
+                // 仅插入，冲突即异常
+                return list.Insert();
+            case ImportMode.InsertIgnore:
+                // 插入忽略冲突
+                return list.BatchInsertIgnore();
+            case ImportMode.Replace:
+                // 覆盖插入（替换）
+                return list.BatchReplace();
+            case ImportMode.Upsert:
+                // 冲突时更新
+                return list.Upsert();
+            case ImportMode.Merge:
+                {
+                    // 按主键进行合并，小表整表查询后内存合并；否则退化为 Upsert
+                    if (totalRows == 0) return list.Insert();
 
-        return list.Upsert();
+                    var uk = factory.Unique;
+                    if (totalRows < 10000 && uk != null)
+                        return factory.FindAll().Merge(list, (o, n) => Equals(o[uk.Name], n[uk.Name]), false, false).Count;
+
+                    return list.Upsert();
+                }
+            case ImportMode.Auto:
+            default:
+                {
+                    // 判断已有数据，如果没有直接插入，如果较少则合并，否则Upsert
+                    if (totalRows == 0) return list.Insert();
+
+                    // 其它数据，按照主键合并
+                    var uk = factory.Unique;
+                    if (totalRows < 10000 && uk != null)
+                        return factory.FindAll().Merge(list, (o, n) => Equals(o[uk.Name], n[uk.Name]), false, false).Count;
+
+                    return list.Upsert();
+                }
+        }
     }
 
     /// <summary>导入Excel</summary>
@@ -719,7 +765,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行！";
         WriteLog("导入Db", true, msg);
 
-        return 0;
+        return result;
     }
     #endregion
 }
