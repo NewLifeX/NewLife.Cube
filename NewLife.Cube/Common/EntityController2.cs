@@ -4,7 +4,6 @@ using System.Text;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Models;
 using NewLife.Cube.ViewModels;
-using NewLife.Data;
 using NewLife.IO;
 using NewLife.Log;
 using NewLife.Reflection;
@@ -13,7 +12,6 @@ using NewLife.Web;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
-using XCode.Model;
 using ExcelReader = NewLife.Office.ExcelReader;
 
 namespace NewLife.Cube;
@@ -292,141 +290,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     {
         if (list == null || list.Count == 0) return 0;
 
-        // 参与拷贝的字段。为空则使用全部字段
-        var fields = context.Fields.Where(e => e != null).ToArray();
-        if (fields == null || fields.Length == 0) fields = factory.Fields;
-        var fieldNames = fields.Select(e => e.Name).ToList();
-
-        var inserts = new List<IEntity>();
-        var updates = new List<IEntity>();
-
-        var uk = factory.Unique;
-        var table = factory.Table.DataTable;
-        // 可用的唯一索引集合（列在导入字段中都存在）
-        var uniqueIndexes = table.Indexes.Where(e => e.Unique && e.Columns.All(c => fieldNames.Contains(c))).ToList();
-
-        // 估算总行数（尽量避免误判）
-        var totalRows = factory.Session.Count;
-        if (totalRows < 10000) totalRows = (Int32)factory.FindCount();
-
-        // 小表：整表加载，内存匹配
-        if (totalRows < 10000)
-        {
-            var olds = factory.FindAll();
-
-            // 主键字典
-            var pkDict = uk == null ? null : olds.ToDictionary(e => e[uk.Name]);
-
-            // 唯一索引字典集合
-            var idxDicts = new List<(String[] cols, Dictionary<String, IEntity> map)>();
-            foreach (var idx in uniqueIndexes)
-            {
-                var map = new Dictionary<String, IEntity>(StringComparer.Ordinal);
-                foreach (var o in olds)
-                {
-                    var k = idx.Columns.Join("|", e => o[e]);
-                    if (k != null && !map.ContainsKey(k)) map[k] = o;
-                }
-                idxDicts.Add((idx.Columns, map));
-            }
-
-            foreach (var ne in list)
-            {
-                IEntity old = null;
-
-                if (uk != null && !ne.IsNullKey)
-                {
-                    // 只按主键匹配，找不到则直接插入，不再尝试唯一索引
-                    pkDict?.TryGetValue(ne[uk.Name], out old);
-                    if (old == null)
-                    {
-                        inserts.Add(ne);
-                        continue;
-                    }
-                }
-                else
-                {
-                    // 仅当未指定主键时，才尝试唯一索引匹配
-                    foreach (var (cols, map) in idxDicts)
-                    {
-                        var k = cols.Join("|", e => ne[e]);
-                        if (k != null && map.TryGetValue(k, out old)) break;
-                    }
-                }
-
-                if (old != null)
-                {
-                    // 拷贝字段并加入更新队列
-                    foreach (var fi in fields)
-                    {
-                        old.SetItem(fi.Name, ne[fi.Name]);
-                    }
-                    updates.Add(old);
-                }
-                else
-                {
-                    inserts.Add(ne);
-                }
-            }
-        }
-        else
-        {
-            // 大表：逐行按主键/唯一索引查询
-            foreach (var ne in list)
-            {
-                IEntity old = null;
-
-                if (uk != null && !ne.IsNullKey)
-                {
-                    var key = ne[uk.Name];
-                    old = factory.FindByKey(key);
-                    if (old == null)
-                    {
-                        // 主键已指定，但未找到旧数据，直接插入，不再尝试唯一索引
-                        inserts.Add(ne);
-                        continue;
-                    }
-                }
-                else
-                {
-                    // 未指定主键时，尝试唯一索引匹配
-                    foreach (var idx in uniqueIndexes)
-                    {
-                        // 所有列必须有值
-                        var exp = new WhereExpression();
-                        foreach (var col in idx.Columns)
-                        {
-                            var fi = factory.Fields.FirstOrDefault(e => e.Name == col);
-                            exp &= fi.Equal(ne[col]);
-                        }
-
-                        old = factory.Find(exp);
-                        if (old != null) break;
-                    }
-                }
-
-                if (old != null)
-                {
-                    // 拷贝字段并加入更新队列
-                    foreach (var fi in fields)
-                    {
-                        old.SetItem(fi.Name, ne[fi.Name]);
-                    }
-                    updates.Add(old);
-                }
-                else
-                {
-                    inserts.Add(ne);
-                }
-            }
-        }
-
-        var option = new BatchOption { FullInsert = true };
-        var rs = 0;
-        if (inserts.Count > 0) rs += inserts.BatchInsert(option);
-        if (updates.Count > 0) rs += updates.Update();
-
-        return rs;
+        return factory.Merge(list, context.Fields);
     }
 
     /// <summary>导入数据默认保存</summary>
