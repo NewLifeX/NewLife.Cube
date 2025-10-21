@@ -55,7 +55,7 @@ public enum ImportMode
     /// <summary>插入忽略。批量插入，遇到主键或唯一冲突时忽略该行</summary>
     InsertIgnore = 2,
 
-    /// <summary>覆盖插入。批量替换，遇到冲突时覆盖</summary>
+    /// <summary>覆盖插入。批量替换，遇到冲突时覆盖（删除后插入）</summary>
     Replace = 3,
 
     /// <summary>更新插入。Upsert，冲突时执行更新</summary>
