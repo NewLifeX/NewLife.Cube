@@ -803,7 +803,8 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
                 {
                     var sw = Stopwatch.StartNew();
                     using var fs = fi.OpenRead();
-                    var rs = dal.Restore(fs, fact.Table.DataTable, default);
+                    using var gs = new GZipStream(fs, CompressionMode.Decompress, true);
+                    var rs = dal.Restore(gs, fact.Table.DataTable, default);
                     sw.Stop();
 
                     WriteLog("恢复", true, $"恢复[{fileName}]（{rs:n0}行）成功！");
