@@ -538,18 +538,25 @@ public class OAuthClient
     }
 
     private HttpClient _Client;
+    private readonly Object _clientLock = new();
+
     /// <summary>获取客户端</summary>
     /// <returns></returns>
     protected virtual HttpClient GetClient()
     {
         if (_Client != null) return _Client;
 
-        //// 允许宽松头部
-        //WebClientX.SetAllowUnsafeHeaderParsing(true);
+        lock (_clientLock)
+        {
+            if (_Client != null) return _Client;
 
-        var client = CreateClient();
+            //// 允许宽松头部
+            //WebClientX.SetAllowUnsafeHeaderParsing(true);
 
-        return _Client = client;
+            var client = CreateClient();
+
+            return _Client = client;
+        }
     }
 
     /// <summary>创建客户端</summary>
