@@ -416,7 +416,17 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 {
                     var field = fields[i];
                     if (field != null)
-                        entity.SetItem(field.Name, row[i].ChangeType(field.Type));
+                    {
+                        // Excel导入的日期，可能是数字格式，例如 20251101
+                        var value = row[i];
+                        if (value is Int32 n && n > 19700101 && field.Type == typeof(DateTime))
+                        {
+                            var dt = n.ToString().ToDateTime();
+                            if (dt.Year > 1970) value = dt;
+                        }
+
+                        entity.SetItem(field.Name, value.ChangeType(field.Type));
+                    }
                     else
                         entity[headers[i]] = row[i];
                 }
