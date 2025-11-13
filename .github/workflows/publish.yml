@@ -19,6 +19,7 @@ jobs:
           7.x
           8.x
           9.x
+          10.x
     - name: Get Version
       run: echo "VERSION=$(date '+%Y.%m%d')" >> $GITHUB_ENV
     - name: Build
