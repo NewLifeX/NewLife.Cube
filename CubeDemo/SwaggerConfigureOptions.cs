@@ -3,9 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
 using NewLife;
 using Swashbuckle.AspNetCore.SwaggerGen;
+#if NET10_0_OR_GREATER
+using Microsoft.OpenApi;
+#else
+using Microsoft.OpenApi.Models;
+#endif
 
 namespace CubeDemo;
 

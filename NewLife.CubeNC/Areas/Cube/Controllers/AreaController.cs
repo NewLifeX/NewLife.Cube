@@ -48,12 +48,12 @@ public class AreaController : EntityController<Area, AreaModel>
             //if (Area.Meta.Count == 0) Area.FetchAndSave();
             if (Area.Meta.Count == 0)
             {
-                Task.Run(() =>
+                Task.Factory.StartNew(() =>
                 {
                     // 先加载民政部数据，然后导入旧版数据
                     FetchAndSave(null);
                     Import("http://x.newlifex.com/Area.csv.gz", true, 4, true);
-                });
+                }, TaskCreationOptions.LongRunning);
             }
         }
     }

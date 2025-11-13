@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyTitle>魔方用户中心</AssemblyTitle>
     <Description>SSO服务端，OAuth2.0服务端。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2025 NewLife</Copyright>
-    <VersionPrefix>6.6</VersionPrefix>
+    <VersionPrefix>6.7</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -23,8 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.7.2025.1019-beta0102" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.4.2025.1019-beta0603" />
+    <PackageReference Include="NewLife.Core" Version="11.9.2025.1112" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.5.2025.1113" />
   </ItemGroup>
 
   <ItemGroup>

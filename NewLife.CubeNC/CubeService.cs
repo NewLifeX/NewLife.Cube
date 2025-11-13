@@ -429,15 +429,17 @@ public static class CubeService
 
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
-        Task.Run(() => ResolveStarWeb(provider));
+        Task.Factory.StartNew(() => ResolveStarWeb(provider), TaskCreationOptions.LongRunning);
 
         // 注册退出事件
         if (app is IHost web)
+        {
             NewLife.Model.Host.RegisterExit(() =>
             {
                 XTrace.WriteLine("魔方优雅退出！");
-                web.StopAsync().Wait();
+                web.StopAsync().Wait(5_000);
             });
+        }
 
         return app;
     }

@@ -693,7 +693,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             bak.EnsureDirectory(true);
 
             // 异步执行备份，阻塞等待一点时间，避免前端超时。
-            var task = Task.Run(() =>
+            var task = Task.Factory.StartNew(() =>
             {
                 WriteLog("备份", true, $"开始备份[{name}]到[{fileName}]");
                 try
@@ -716,7 +716,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
                     WriteLog("备份", false, $"备份[{fileName}]失败！{ex.GetMessage()}");
                     return -1;
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
             if (task.Wait(5_000))
                 return Json(0, $"备份[{fileName}]（{task.Result:n0}行）成功！");
             else
@@ -796,7 +796,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             if (fi == null || !fi.Exists) throw new XException($"找不到[{fileName}]的备份文件");
 
             // 异步执行恢复，阻塞等待一点时间，避免前端超时。
-            var task = Task.Run(() =>
+            var task = Task.Factory.StartNew(() =>
             {
                 WriteLog("恢复", true, $"开始恢复[{fileName}]到[{name}]（{fi.Length.ToGMK()}字节）");
                 try
@@ -815,7 +815,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
                     WriteLog("恢复", false, $"恢复[{fileName}]失败！{ex.GetMessage()}");
                     return -1;
                 }
-            });
+            }, TaskCreationOptions.LongRunning);
 
             if (task.Wait(5_000))
                 return JsonRefresh($"恢复[{fileName}]（{task.Result:n0}行）成功！", 2);

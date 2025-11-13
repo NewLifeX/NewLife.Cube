@@ -188,13 +188,13 @@ public static class MenuHelper
         // 如果新增了菜单，需要检查权限
         if (rs > 0)
         {
-            var task = Task.Run(() =>
+            var task = Task.Factory.StartNew(() =>
             {
                 XTrace.WriteLine("新增了菜单，需要检查权限");
                 //var fact = typeof(Role).AsFactory();
                 //fact.EntityType.Invoke("CheckRole");
                 Role.CheckRole();
-            });
+            }, TaskCreationOptions.LongRunning);
             task.Wait(5_000);
         }
 

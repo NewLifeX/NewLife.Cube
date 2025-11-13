@@ -266,7 +266,7 @@ public static class CubeService
 
         XTrace.WriteLine("{0} End   初始化魔方 {0}", new String('=', 32));
 
-        Task.Run(() => ResolveStarWeb(provider));
+        Task.Factory.StartNew(() => ResolveStarWeb(provider), TaskCreationOptions.LongRunning);
 
         // 注册退出事件
         if (app is IHost web)

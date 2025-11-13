@@ -28,14 +28,14 @@ public static class JobServiceExtersions
         services.AddHostedService<JobService>();
 
         // 扫描并添加ICubeJob作业
-        _ = Task.Run(() =>
+        _ = Task.Factory.StartNew(() =>
         {
             // 传统定时作业，可以不用注册
             //services.AddSingleton<BackupDbService>();
             BackupDbService.Init();
 
             JobService.ScanJobs();
-        });
+        }, TaskCreationOptions.LongRunning);
 
         return services;
     }
