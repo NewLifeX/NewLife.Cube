@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -24,18 +24,6 @@
     <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
     <DefineConstants>$(DefineConstants);MVC</DefineConstants>
     <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035</NoWarn>
-    <!-- 在 Class Library 中启用 MVC 的 Razor 支持，编译到主程序集（net6+ 无需 *.Views.dll） -->
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-    <EnableRazorCompile>true</EnableRazorCompile>
-    <RazorCompileOnBuild>true</RazorCompileOnBuild>
-    <RazorCompileOnPublish>true</RazorCompileOnPublish>
-    <RazorLangVersion>Latest</RazorLangVersion>
-    <!-- 禁用静态资源打包/清单，防止 staticwebassets 进入 nupkg -->
-    <EnableDefaultStaticWebAssetsItems>false</EnableDefaultStaticWebAssetsItems>
-    <GenerateStaticWebAssetsManifest>false</GenerateStaticWebAssetsManifest>
-    <!-- 不将 .cshtml 作为内容打进 NuGet 包（仅使用预编译后的视图） -->
-    <IncludeRazorContentInPack>false</IncludeRazorContentInPack>
-    <RequiresAspNetWebAssets>false</RequiresAspNetWebAssets>
   </PropertyGroup>
   <PropertyGroup>
     <IsPackable>true</IsPackable>
@@ -60,22 +48,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <!-- 引用 ASP.NET Core 共享框架 (替代 Web SDK 隐式引用) -->
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="NewLife" />
-    <Using Include="Microsoft.AspNetCore.Builder" />
-    <Using Include="Microsoft.AspNetCore.Hosting" />
-    <Using Include="Microsoft.AspNetCore.Http" />
-    <Using Include="Microsoft.AspNetCore.Routing" />
-    <Using Include="Microsoft.Extensions.DependencyInjection" />
-    <Using Include="Microsoft.Extensions.Hosting" />
-    <Using Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 
   <ItemGroup>
@@ -185,12 +157,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Remove="wwwroot\**\*" />
-    <Content Update="wwwroot\**\*">
-      <Pack>false</Pack>
-    </Content>
-    <!-- 确保 Razor SDK 的静态资源机制不再把 wwwroot 当作 StaticWebAsset 参与打包 -->
-    <StaticWebAsset Remove="wwwroot\**\*" />
-    <None Remove="wwwroot\**\*" />
   </ItemGroup>
 
   <ItemGroup>
