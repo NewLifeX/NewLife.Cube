@@ -218,11 +218,12 @@ public class ControllerBaseX : ControllerBase, IActionFilter
             //Indented = false,
             //IgnoreNullValues = false,
             //CamelCase = true,
-            Int64AsString = true
+            //Int64AsString = true
         };
         writer.Options.WriteIndented = false;
         writer.Options.IgnoreNullValues = false;
         writer.Options.CamelCase = true;
+        writer.Options.Int64AsString = true;
 
         writer.Write(data);
 

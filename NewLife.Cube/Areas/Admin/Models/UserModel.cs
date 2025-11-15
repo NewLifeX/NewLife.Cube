@@ -204,7 +204,7 @@ public class UserInfo
             sb.AppendFormat("{0}#{1}", item.Key, item.Value);
         }
 
-        Permission = sb.Put(true);
+        Permission = sb.Return(true);
     }
 
     /// <summary>

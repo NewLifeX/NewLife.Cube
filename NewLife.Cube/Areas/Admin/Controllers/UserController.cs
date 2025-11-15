@@ -318,7 +318,7 @@ public class UserController : EntityController<User, UserModel>
         var refreshToken = refreshTokenModel.RefreshToken;
         var user = ManageProvider.Provider.FindByName(userName);
 
-        var tokens= HttpContext.RefreshToken(user, refreshToken);
+        var tokens = HttpContext.RefreshToken(user, refreshToken);
 
         return Json(0, "ok", new { Token = tokens.Item1, RefreshToken = tokens.Item2 });
     }
@@ -465,11 +465,9 @@ public class UserController : EntityController<User, UserModel>
         //ViewBag.StatusMessage = "修改成功！";
         //return Ok(ViewBag.StatusMessage);
 
-
         var res = "".ToOkApiResponse();
         return Json(res.Code, res.Message, res.Data);
-        return this.Json(0, null, "修改成功！");
-
+        //return this.Json(0, null, "修改成功！");
     }
 
     /// <summary>用户绑定</summary>
