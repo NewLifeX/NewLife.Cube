@@ -240,8 +240,14 @@ public static class CubeService
     {
         using var span = DefaultTracer.Instance?.NewSpan(nameof(AddCustomApplicationParts));
 
+        // 取已存在的 ApplicationPartManager；若不存在则创建并注册，避免丢失默认 MVC 配置
         var manager = services.LastOrDefault(e => e.ServiceType == typeof(ApplicationPartManager))?.ImplementationInstance as ApplicationPartManager;
-        manager ??= new ApplicationPartManager();
+        if (manager == null)
+        {
+            manager = new ApplicationPartManager();
+            // 注册到容器中，确保 MVC 能获取到我们追加的 Parts
+            services.AddSingleton(manager);
+        }
 
         var list = FindAllArea();
         span?.AppendTag(null, list.Count);
@@ -250,10 +256,11 @@ public static class CubeService
         {
             XTrace.WriteLine("注册区域视图程序集：{0}", asm.FullName);
 
+            // 主程序集 ApplicationParts
             var factory = ApplicationPartFactory.GetApplicationPartFactory(asm);
             foreach (var part in factory.GetApplicationParts(asm))
             {
-                if (!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
+                if (!manager.ApplicationParts.Any(p => p.Name == part.Name)) manager.ApplicationParts.Add(part);
             }
         }
     }

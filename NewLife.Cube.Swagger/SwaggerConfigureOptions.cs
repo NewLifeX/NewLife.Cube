@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Options;
 using NewLife.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.Extensions.DependencyInjection;
+
 #if NET10_0_OR_GREATER
 using Microsoft.OpenApi;
 #else

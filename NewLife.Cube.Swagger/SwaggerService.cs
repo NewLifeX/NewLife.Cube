@@ -4,6 +4,10 @@ using Microsoft.Extensions.Options;
 using NewLife.Cube.Entity;
 using NewLife.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
+
+
 #if NET10_0_OR_GREATER
 using Microsoft.OpenApi;
 #else
