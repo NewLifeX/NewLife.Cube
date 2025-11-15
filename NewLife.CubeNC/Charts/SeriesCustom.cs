@@ -29,7 +29,7 @@
 ///                 width: params.coordSys.width,
 ///                 height: params.coordSys.height
 ///             });
-///             return rectShape && {
+///             return rectShape &amp;&amp; {
 ///                 type: 'rect',
 ///                 shape: rectShape,
 ///                 style: api.style()
@@ -181,7 +181,7 @@ public class SeriesCustom : Series
     ///                 width: params.coordSys.width,
     ///                 height: params.coordSys.height
     ///             });
-    ///             return rectShape && {
+    ///             return rectShape &amp;&amp; {
     ///                 type: 'rect',
     ///                 shape: rectShape,
     ///                 style: api.style()

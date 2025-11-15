@@ -2,7 +2,7 @@
 @using NewLife.Cube
 @using NewLife.Cube.WebMiddleware
 @{
-    var set = NewLife.Cube.Setting.Current;
+    var set = CubeSetting.Current;
     var res = set.ResourceUrl;
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');

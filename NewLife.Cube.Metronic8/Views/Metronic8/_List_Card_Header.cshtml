@@ -15,7 +15,7 @@
     var fiEnable = fields.FirstOrDefault(f => f.Name == "Enable");
     String title = ViewBag.Title + "";
 
-    /// 卡片标题
+    // 卡片标题
     String GetTitle(IEntity entity, FieldCollection fields)
     {
         String caption = "";
@@ -38,7 +38,7 @@
         return caption;
     }
 
-    /// 卡片副标题
+    // 卡片副标题
     String GetDisplayName(IEntity entity, FieldCollection fields)
     {
         String display = "";
@@ -58,12 +58,13 @@
     @if (fiPK != null)
     {
         var enable = true;
-        if (fiEnable != null) 
+        if (fiEnable != null)
             enable = entity[fiEnable.Name].ToBoolean();
         var tip = @fiPK.DisplayName + $"[{entity[fiPK.Name].ToString()}]" + (enable ? "已" : "未") + fiEnable?.DisplayName;
         tip = tip.IndexOf("已") == tip.Length - 1 ? tip.Substring(0, tip.IndexOf("已")) : tip;
 
-        <div class="ribbon-label" data-bs-toggle="tooltip" title="@tip">@entity[fiPK.Name].ToString()
+        <div class="ribbon-label" data-bs-toggle="tooltip" title="@tip">
+            @entity[fiPK.Name].ToString()
             <span class="ribbon-inner @(enable ? "bg-primary" : "bg-gray-400")"></span>
         </div>
     }
@@ -79,8 +80,8 @@
                         var oauth = entity as OAuthConfig;
                         <img src="@(!oauth.Logo.IsNullOrEmpty() ? oauth.Logo : ViewHelper.GetLogo(oauth.Name))" class="h-40px align-self-center" />
                     }
-                    
-                    @if(title.EqualIgnoreCase("用户"))
+
+                    @if (title.EqualIgnoreCase("用户"))
                     {
                         var user = entity as User;
                         @if (!user.Avatar.IsNullOrEmpty())
@@ -114,7 +115,7 @@
                 var key = entity[factory.Unique.Name];
 
                 <li class="nav-item m-1">
-                    <a href="@Url.Action("SetEnable",null,new { id=key, enable=!chk })" data-action="action" data-bs-toggle="tooltip" title="@tip">
+                    <a href="@Url.Action("SetEnable", null, new { id = key, enable = !chk })" data-action="action" data-bs-toggle="tooltip" title="@tip">
                         <i class="@icon fs-2x @(chk == true ? "text-success" : "text-gray-600")"></i>
                     </a>
                 </li>
