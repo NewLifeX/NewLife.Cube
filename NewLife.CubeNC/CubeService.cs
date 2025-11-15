@@ -256,11 +256,12 @@ public static class CubeService
         {
             XTrace.WriteLine("注册区域视图程序集：{0}", asm.FullName);
 
-            // 主程序集 ApplicationParts
             var factory = ApplicationPartFactory.GetApplicationPartFactory(asm);
             foreach (var part in factory.GetApplicationParts(asm))
             {
-                if (!manager.ApplicationParts.Any(p => p.Name == part.Name)) manager.ApplicationParts.Add(part);
+                //if (!manager.ApplicationParts.Any(p => p.Name == part.Name)) manager.ApplicationParts.Add(part);
+                // 程序集 NewLife.Cube.dll 中有两个part，一个程序集自身，一个Razor预编译项，二者的Name相同，但两个都要添加
+                if (!manager.ApplicationParts.Contains(part)) manager.ApplicationParts.Add(part);
             }
         }
     }
