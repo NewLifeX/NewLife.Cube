@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Web;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Collections;
@@ -234,7 +235,7 @@ public class Pager : PageParameter, IExtend
         var dic = url.SplitAsDictionary("=", "&", true);
         foreach (var item in dic)
         {
-            this[item.Key] = item.Value;
+            this[item.Key] = HttpUtility.UrlDecode(item.Value);
         }
     }
 
