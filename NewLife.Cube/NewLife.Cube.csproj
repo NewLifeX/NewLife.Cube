@@ -121,7 +121,7 @@
     <PackageReference Include="NewLife.IP" Version="2.4.2025.1113" />
     <PackageReference Include="NewLife.Office" Version="1.0.2025.1113" />
     <PackageReference Include="NewLife.Stardust" Version="3.5.2025.1113" />
-    <PackageReference Include="NewLife.XCode" Version="11.22.2025.1112" />
+    <PackageReference Include="NewLife.XCode" Version="11.22.2025.1125-beta1648" />
   </ItemGroup>
 
   <ItemGroup>

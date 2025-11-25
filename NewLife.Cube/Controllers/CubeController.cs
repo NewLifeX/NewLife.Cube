@@ -223,18 +223,19 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpGet]
     public ActionResult UserSearch(Int32 roleId = 0, Int32 departmentId = 0, String key = null)
     {
-        var exp = new WhereExpression();
-        if (roleId > 0) exp &= _.RoleID == roleId;
-        if (departmentId > 0) exp &= _.DepartmentID == departmentId;
-        exp &= _.Enable == true;
-        if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key);
+        //var exp = new WhereExpression();
+        //if (roleId > 0) exp &= _.RoleID == roleId;
+        //if (departmentId > 0) exp &= _.DepartmentID == departmentId;
+        //exp &= _.Enable == true;
+        //if (!key.IsNullOrEmpty()) exp &= _.Code.StartsWith(key) | _.Name.StartsWith(key) | _.DisplayName.StartsWith(key) | _.Mobile.StartsWith(key);
 
-        var page = new PageParameter { PageSize = 20 };
+        var page = new PageParameter { PageSize = 20, Sort = _.Name };
 
-        // 默认排序
-        if (page.Sort.IsNullOrEmpty()) page.Sort = _.Name;
+        //// 默认排序
+        //if (page.Sort.IsNullOrEmpty()) page.Sort = _.Name;
 
-        var list = XCode.Membership.User.FindAll(exp, page);
+        //var list = XCode.Membership.User.FindAll(exp, page);
+        var list = XCode.Membership.User.Search(roleId, departmentId, true, DateTime.MinValue, DateTime.MinValue, key, page);
 
         return Json(0, null, list.Select(e => new
         {
@@ -256,17 +257,18 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpGet]
     public ActionResult DepartmentSearch(Int32 parentid = -1, String key = null)
     {
-        var exp = new WhereExpression();
-        if (parentid >= 0) exp &= Department._.ParentID == parentid;
-        exp &= Department._.Enable == true & Department._.Visible == true;
-        if (!key.IsNullOrEmpty()) exp &= Department._.Code.StartsWith(key) | Department._.Name.StartsWith(key) | Department._.FullName.StartsWith(key);
+        //var exp = new WhereExpression();
+        //if (parentid >= 0) exp &= Department._.ParentID == parentid;
+        //exp &= Department._.Enable == true & Department._.Visible == true;
+        //if (!key.IsNullOrEmpty()) exp &= Department._.Code.StartsWith(key) | Department._.Name.StartsWith(key) | Department._.FullName.StartsWith(key);
 
-        var page = new PageParameter { PageSize = 20 };
+        var page = new PageParameter { PageSize = 20, Sort = Department._.Name };
 
-        // 默认排序
-        if (page.Sort.IsNullOrEmpty()) page.Sort = Department._.Name;
+        //// 默认排序
+        //if (page.Sort.IsNullOrEmpty()) page.Sort = Department._.Name;
 
-        var list = Department.FindAll(exp, page);
+        //var list = Department.FindAll(exp, page);
+        var list = Department.Search(parentid, true, true, key, page);
 
         return Json(0, null, list.Select(e => new
         {

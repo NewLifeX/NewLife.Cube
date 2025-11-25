@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.Models;
+using NewLife.Data;
 using NewLife.Web;
+using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -115,5 +118,32 @@ public class RoleController : EntityController<Role, RoleModel>
         if (!v.EqualIgnoreCase("true", "false")) throw new XException("非法布尔值Request[{0}]={1}", name, v);
 
         return v.ToBoolean();
+    }
+
+    /// <summary>合并导入。查出表中已有数据匹配，能匹配的更新，无法匹配的批量插入</summary>
+    /// <param name="factory">实体工厂</param>
+    /// <param name="list">新数据列表</param>
+    /// <param name="context">导入上下文（含表头与字段）</param>
+    /// <returns>受影响行数</returns>
+    protected override Int32 OnMerge(IEntityFactory factory, IList<IEntity> list, ImportContext context)
+    {
+        if (list == null || list.Count == 0) return 0;
+
+        // 查询已有数据
+        var olds = Role.FindAll();
+        // 重置主键，避免重复
+        foreach (var item in list)
+        {
+            if (item is Role role) role.ID = 0;
+        }
+
+        static Boolean match(IEntity e, IModel m)
+        {
+            var de = (Role)e;
+            var dm = (Role)m;
+            return de.TenantId == dm.TenantId && de.Name.EqualIgnoreCase(dm.Name);
+        }
+
+        return factory.Merge(list, olds.Cast<IEntity>().ToList(), context.Fields, match);
     }
 }

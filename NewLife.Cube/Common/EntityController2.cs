@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.IO.Compression;
 using System.Text;
+using NewLife.Collections;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Models;
 using NewLife.Cube.ViewModels;
@@ -290,7 +291,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     {
         if (list == null || list.Count == 0) return 0;
 
-        return factory.Merge(list, context.Fields);
+        return factory.Merge(list, null, context.Fields);
     }
 
     /// <summary>导入数据默认保存</summary>
@@ -361,6 +362,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <returns></returns>
     protected virtual Int32 ImportExcel(String name, Stream stream, IEntityFactory factory, Pager page)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportExcel), new { name, entity = factory?.EntityType.FullName });
+
         using var reader = new ExcelReader(stream, Encoding.UTF8);
 
         var headers = new List<String>();
@@ -395,6 +398,19 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                     blank++;
                     headers.Clear();
                     fields.Clear();
+                }
+                else
+                {
+                    // 表头与字段映射信息写入到日志
+                    var sb = Pool.StringBuilder.Get();
+                    for (var i = 0; i < headers.Count && i < fields.Count; i++)
+                    {
+                        if (sb.Length > 0) sb.Append(",");
+                        sb.AppendFormat("{0}=>{1}", headers[i], fields[i]?.Name);
+                    }
+                    var map = sb.Return(true);
+                    WriteLog("导入Excel", true, $"表头与字段映射[{headers.Count}]：{map}");
+                    span?.AppendTag(map);
                 }
 
                 context.Headers = headers.ToArray();
@@ -438,6 +454,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 {
                     result += OnImport(factory, list, context);
                     list.Clear();
+                    span?.Value = result;
                 }
             }
         }
@@ -450,6 +467,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
         WriteLog("导入Excel", true, msg);
+        span?.Value = result;
 
         return result;
     }
@@ -462,6 +480,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <returns></returns>
     protected virtual Int32 ImportCsv(String name, Stream stream, IEntityFactory factory, Pager page)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportCsv), new { name, entity = factory?.EntityType.FullName });
+
         using var reader = new CsvFile(stream, true);
 
         var headers = new List<String>();
@@ -497,6 +517,19 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                     headers.Clear();
                     fields.Clear();
                 }
+                else
+                {
+                    // 表头与字段映射信息写入到日志
+                    var sb = Pool.StringBuilder.Get();
+                    for (var i = 0; i < headers.Count && i < fields.Count; i++)
+                    {
+                        if (sb.Length > 0) sb.Append(",");
+                        sb.AppendFormat("{0}=>{1}", headers[i], fields[i]?.Name);
+                    }
+                    var map = sb.Return(true);
+                    WriteLog("导入Csv", true, $"表头与字段映射[{headers.Count}]：{map}");
+                    span?.AppendTag(map);
+                }
 
                 context.Headers = headers.ToArray();
                 context.Fields = fields.ToArray();
@@ -529,6 +562,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 {
                     result += OnImport(factory, list, context);
                     list.Clear();
+                    span?.Value = result;
                 }
             }
         }
@@ -541,6 +575,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
         WriteLog("导入Csv", true, msg);
+        span?.Value = result;
 
         return result;
     }
@@ -553,6 +588,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <returns></returns>
     protected virtual Int32 ImportJson(String name, Stream stream, IEntityFactory factory, Pager page)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportJson), new { name, entity = factory?.EntityType.FullName });
+
         var json = new JsonParser(stream.ToStr());
 
         var list = new List<IEntity>();
@@ -588,6 +625,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             {
                 result += OnImport(factory, list, context);
                 list.Clear();
+                span?.Value = result;
             }
         }
 
@@ -599,6 +637,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行，{blank}行无效！";
         WriteLog("导入Json", true, msg);
+        span?.Value = result;
 
         return result;
     }
@@ -611,10 +650,12 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <returns></returns>
     protected virtual Int32 ImportZip(String name, Stream stream, IEntityFactory factory, Pager page)
     {
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportZip), new { name, entity = factory?.EntityType.FullName });
+
         // 解压并读取数据集
         using var zip = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false);
 
-        var rs = 0;
+        var result = 0;
         foreach (var entry in zip.Entries)
         {
             if (entry.Length <= 0) continue;
@@ -634,10 +675,11 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 if (entryName.EqualIgnoreCase(type.Name, type.FullName)) factory2 = Factory;
             }
             factory2 ??= factory;
+            span?.AppendTag($"{entry.Name}=>{factory2?.EntityType.FullName}");
 
             // 仅解析当前控制器对应的数据集，其它数据交给 OnImportZip 重载处理
             using var entryStream = entry.Open();
-            rs += ext switch
+            result += ext switch
             {
                 ".xls" or ".xlsx" => ImportExcel(entryName, entryStream, factory2, page),
                 ".csv" => ImportCsv(entryName, entryStream, factory2, page),
@@ -646,12 +688,14 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 ".db" => ImportDb(entryName, entryStream, factory2, page),
                 _ => 0,
             };
+            span?.Value = result;
         }
 
-        var msg = $"导入[{name}]，成功[{rs}]行！";
+        var msg = $"导入[{name}]，成功[{result}]行！";
         WriteLog("导入Zip", true, msg);
+        span?.Value = result;
 
-        return rs;
+        return result;
     }
 
     /// <summary>导入Zip时，处理附属数据集或自定义导入逻辑</summary>
@@ -664,6 +708,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     {
         if (factory == null) return 0;
 
+        using var span = DefaultTracer.Instance?.NewSpan(nameof(ImportDb), new { name, entity = factory?.EntityType.FullName });
         var list = new List<IEntity>();
         var batchSize = XCodeSetting.Current.BatchSize;
         if (batchSize <= 0) batchSize = 10_000;
@@ -678,18 +723,22 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
             if (list.Count >= batchSize)
             {
+                span?.Value += list.Count;
                 result += OnImport(factory, list, context);
                 list.Clear();
+                span?.Value = result;
             }
         }
 
         if (list.Count > 0)
         {
+            span?.Value += list.Count;
             result += OnImport(factory, list, context);
         }
 
         var msg = $"导入[{name}]，共[{total}]行，成功[{result}]行！";
         WriteLog("导入Db", true, msg);
+        span?.Value = result;
 
         return result;
     }

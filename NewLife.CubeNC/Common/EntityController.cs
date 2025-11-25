@@ -529,6 +529,8 @@ public partial class EntityController<TEntity, TModel>
     {
         if (file == null || file.Length <= 0) return RedirectToAction("Index");
 
+        WriteLog(nameof(ImportFile), true, $"开始导入文件[{file.FileName}]，大小[{file.Length:n0}]字节，类型[{file.ContentType}]");
+
         var factory = Factory;
         var page = GetCachePager();
         var stream = file.OpenReadStream();
