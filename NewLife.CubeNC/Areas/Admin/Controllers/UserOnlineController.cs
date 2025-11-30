@@ -29,7 +29,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
             var df = ListFields.GetField("Name") as ListField;
             df.Url = "/Admin/User/Edit?id={UserID}";
             df.Target = "_blank";
-            df.DataVisible = e => (e as UserOnline).UserID > 0;
+            //df.DataVisible = e => (e as UserOnline).UserID > 0;
         }
     }
 

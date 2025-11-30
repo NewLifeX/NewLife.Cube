@@ -349,6 +349,21 @@ public static class WebHelper
         if (id.IsNullOrEmpty()) id = ctx.Request.Cookies["CubeDeviceId0"];
         if (id.IsNullOrEmpty())
         {
+            var token = GetToken(ctx);
+            if (!token.IsNullOrEmpty())
+            {
+                var jwt = new JwtBuilder();
+                jwt.Parse(token);
+
+                // 使用Jwt的唯一Id作为设备Id，保证同一设备多应用一致
+                id = jwt.Id;
+
+                // 使用令牌的哈希作为设备Id，保证同一设备多应用一致
+                if (id.IsNullOrEmpty()) id = token.GetBytes().MD5().ToHex();
+            }
+        }
+        if (id.IsNullOrEmpty())
+        {
             id = Rand.NextString(16);
 
             var option = new CookieOptions
@@ -384,6 +399,34 @@ public static class WebHelper
         }
 
         return id;
+    }
+
+    /// <summary>从令牌中获取用户名</summary>
+    /// <param name="ctx"></param>
+    /// <returns></returns>
+    public static String GetUserByToken(Microsoft.AspNetCore.Http.HttpContext ctx)
+    {
+        var token = GetToken(ctx);
+        if (token.IsNullOrEmpty()) return null;
+
+        var jwt = new JwtBuilder();
+        jwt.Parse(token);
+
+        return jwt.Subject;
+    }
+
+    /// <summary>从请求头中获取令牌</summary>
+    /// <param name="httpContext"></param>
+    /// <returns></returns>
+    static String GetToken(Microsoft.AspNetCore.Http.HttpContext httpContext)
+    {
+        var request = httpContext.Request;
+        var token = request.Query["Token"] + "";
+        if (token.IsNullOrEmpty()) token = (request.Headers["Authorization"] + "").TrimStart("Bearer ");
+        if (token.IsNullOrEmpty()) token = request.Headers["X-Token"] + "";
+        if (token.IsNullOrEmpty()) token = request.Cookies["Token"] + "";
+
+        return token;
     }
     #endregion
 }

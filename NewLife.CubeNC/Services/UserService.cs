@@ -56,6 +56,9 @@ public class UserService
     /// <returns></returns>
     public UserOnline SetStatus(UserOnline online, String sessionId, String deviceId, String page, String status, UserAgentParser userAgent, Int32 userid = 0, String name = null, String ip = null)
     {
+        // 网页使用一个定时器来清理过期
+        StartTimer();
+
         if (online != null && online.SessionID != sessionId) online = null;
 
         // LastError 设计缺陷，非空设计导致无法在插入中忽略

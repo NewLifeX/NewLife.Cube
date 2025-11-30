@@ -119,7 +119,10 @@ public class RunTimeMiddleware
                 var deviceId = WebHelper.FillDeviceId(ctx);
                 //var sessionId = token?.MD5_16() ?? ip;
                 var sessionId = deviceId;
-                online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip);
+                if (user == null)
+                    online = _userService.SetStatus(online, sessionId, deviceId, p, userAgent, ua, 0, WebHelper.GetUserByToken(ctx), ip);
+                else
+                    online = _userService.SetWebStatus(online, sessionId, deviceId, p, userAgent, ua, user, ip);
                 //FillDeviceId(ctx, olt);
                 session["Online"] = online;
                 ctx.Items["Cube_Online"] = online;
