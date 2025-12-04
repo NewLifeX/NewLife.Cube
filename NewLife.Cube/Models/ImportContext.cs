@@ -33,6 +33,9 @@ public class ImportContext : IExtend
     /// <summary>字段列表</summary>
     public FieldItem[] Fields { get; set; }
 
+    /// <summary>数据表已有总行数。用于批判导入时使用哪一种策略</summary>
+    public Int64? TotalCount { get; set; }
+
     /// <summary>扩展字段</summary>
     [XmlIgnore, ScriptIgnore]
     [EditorBrowsable(EditorBrowsableState.Never)]

@@ -296,17 +296,31 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     /// <summary>导入数据默认保存</summary>
     /// <remarks>
-    /// 导入的新数据合并到旧数据，已有更新，没有则插入。
-    /// 主要按主键来查找判断是否已存在。
+    /// 默认导入模式Auto，如果TotalCount是0则直接插入，否则按Merge合并处理。
+    /// 默认合并逻辑：导入的新数据合并到旧数据，已有更新，没有则插入。主要按主键来查找判断是否已存在。
     /// 该方案并不全面，需要使用者自己重载来实现精细化的合并逻辑。
+    /// 
+    /// 因此，空表导入时，默认就是批量插入，拥有很好的性能；非空表时，合并会比较慢（一般是批量插入的10倍以上耗时）。
+    /// 业务分区的数据（例如按天ds分区），如果导入某个分区数据，开发者可以重载，查询该分区行数赋值给TotalCount，促使父类实现在空数据时执行批量插入。
     /// </remarks>
-    /// <param name="factory"></param>
-    /// <param name="list"></param>
-    /// <param name="context"></param>
+    /// <param name="factory">实体工厂</param>
+    /// <param name="list">新数据列表</param>
+    /// <param name="context">导入上下文（含表头与字段）</param>
     /// <returns></returns>
     protected virtual Int32 OnImport(IEntityFactory factory, IList<IEntity> list, ImportContext context)
     {
         if (list.Count == 0) return 0;
+
+        // 总行数
+        var totalRows = 0L;
+        if (context.TotalCount != null)
+            totalRows = context.TotalCount.Value;
+        else
+        {
+            totalRows = factory.Session.Count;
+            if (totalRows < 10000) totalRows = (Int32)factory.FindCount();
+            context.TotalCount = totalRows;
+        }
 
         // 如果是当前实体类型，直接转换为强类型列表，提高性能
         if (factory == Factory && list[0] is TEntity)
@@ -319,13 +333,9 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 ImportMode.Replace => typed.BatchReplace(),
                 ImportMode.Upsert => typed.Upsert(),
                 ImportMode.Merge => OnMerge(factory, list, context),
-                _ => OnMerge(factory, list, context),
+                _ => totalRows == 0 ? typed.Insert() : OnMerge(factory, list, context),
             };
         }
-
-        // 总行数
-        var totalRows = factory.Session.Count;
-        if (totalRows < 10000) totalRows = (Int32)factory.FindCount();
 
         // 根据导入模式进行处理
         switch (context.Mode)
@@ -343,6 +353,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
                 // 冲突时更新
                 return list.Upsert();
             case ImportMode.Merge:
+                return OnMerge(factory, list, context);
             case ImportMode.Auto:
             default:
                 {
