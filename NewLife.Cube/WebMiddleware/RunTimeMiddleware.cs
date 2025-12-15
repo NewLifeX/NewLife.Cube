@@ -10,6 +10,7 @@ using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Security;
 using NewLife.Web;
+using Stardust.Extensions;
 using XCode.DataAccessLayer;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
@@ -51,6 +52,9 @@ public class RunTimeMiddleware
 
         // 强制访问Https
         if (MiddlewareHelper.CheckForceRedirect(ctx)) return;
+
+        // 设置魔方区域
+        TracerMiddleware.AreaNames = CubeService.AreaNames;
 
         // 创建Session集合。后续 ManageProvider.User 需要用到Session
         var session = CreateSession(ctx);

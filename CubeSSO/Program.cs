@@ -1,5 +1,4 @@
 ﻿using NewLife.Cube;
-using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 
 XTrace.UseConsole();
@@ -9,7 +8,7 @@ var services = builder.Services;
 
 // 引入星尘，设置监控中间件
 var star = services.AddStardust(null);
-TracerMiddleware.Tracer = star?.Tracer;
+//TracerMiddleware.Tracer = star?.Tracer;
 
 // 启用接口响应压缩
 //services.AddResponseCompression();

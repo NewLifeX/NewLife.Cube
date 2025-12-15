@@ -16,6 +16,7 @@ using NewLife.Log;
 using NewLife.Serialization;
 using NewLife.Web;
 using Stardust;
+using Stardust.Extensions;
 using Stardust.Registry;
 using XCode;
 using XCode.DataAccessLayer;
@@ -224,13 +225,14 @@ public static class CubeService
         app.UseAuthentication();
 
         // 如果已引入追踪中间件，则这里不再引入
-        TracerMiddleware.Tracer ??= DefaultTracer.Instance;
-        if (TracerMiddleware.Tracer != null && !app.Properties.ContainsKey(nameof(TracerMiddleware)))
-        {
-            app.UseMiddleware<TracerMiddleware>();
+        //TracerMiddleware.Tracer ??= DefaultTracer.Instance;
+        //if (TracerMiddleware.Tracer != null && !app.Properties.ContainsKey(nameof(TracerMiddleware)))
+        //{
+        //    app.UseMiddleware<TracerMiddleware>();
 
-            app.Properties[nameof(TracerMiddleware)] = typeof(TracerMiddleware);
-        }
+        //    app.Properties[nameof(TracerMiddleware)] = typeof(TracerMiddleware);
+        //}
+        app.UseStardust();
 
         app.UseMiddleware<RunTimeMiddleware>();
         app.UseMiddleware<TenantMiddleware>();
