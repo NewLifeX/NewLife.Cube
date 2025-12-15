@@ -11,7 +11,6 @@ using NewLife.Cube.LayuiAdmin;
 using NewLife.Cube.Metronic;
 using NewLife.Cube.Metronic8;
 using NewLife.Cube.Tabler;
-using NewLife.Cube.WebMiddleware;
 using NewLife.Log;
 using NewLife.Redis.Extensions;
 using CubeSetting = NewLife.Cube.CubeSetting;
@@ -28,7 +27,7 @@ public class Startup
     {
         // 引入星尘，设置监控中间件
         var star = services.AddStardust(null);
-        TracerMiddleware.Tracer = star?.Tracer;
+        //TracerMiddleware.Tracer = star?.Tracer;
 
         // 分布式服务，使用配置中心RedisCache配置
         services.AddSingleton<ICacheProvider, RedisCacheProvider>();
