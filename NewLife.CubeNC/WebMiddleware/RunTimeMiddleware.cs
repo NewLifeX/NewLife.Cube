@@ -184,8 +184,9 @@ public class RunTimeMiddleware
         // 设计时收集执行的SQL语句
         if (SysConfig.Current.Develop)
         {
-            var list = rtinf.Sqls;
-            if (list != null && list.Count > 0) inf += "<br />" + list.Select(e => HttpUtility.HtmlEncode(e)).Join("<br />" + Environment.NewLine);
+            var list = rtinf.Sqls?.ToArray();
+            if (list != null && list.Length > 0)
+                inf += "<br />" + list.Select(e => HttpUtility.HtmlEncode(e)).Join("<br />" + Environment.NewLine);
         }
 
         return inf;
