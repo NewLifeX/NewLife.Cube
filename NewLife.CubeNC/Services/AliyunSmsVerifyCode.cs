@@ -1,6 +1,4 @@
-﻿using NewLife.Remoting;
-
-namespace NewLife.Cube.Services;
+﻿namespace NewLife.Cube.Services;
 
 /// <summary>阿里云短信验证码</summary>
 public class AliyunSmsVerifyCode
@@ -14,6 +12,9 @@ public class AliyunSmsVerifyCode
 
     /// <summary>验证码长度</summary>
     public Int32 CodeLength { get; set; } = 4;
+
+    /// <summary>阿里云客户端</summary>
+    public AliyunClient Client { get; set; } = new() { Endpoint = "dypnsapi.aliyuncs.com" };
     #endregion
 
     #region 方法
@@ -27,7 +28,7 @@ public class AliyunSmsVerifyCode
     /// <exception cref="NotImplementedException"></exception>
     protected virtual Task<String> SendAsync(String mobile, String templateCode, String? code, Int32 expireMinutes, SmsVerifyCodeOptions? options = null)
     {
-        var client = new ApiHttpClient();
+        var client = Client;
 
         if (!code.IsNullOrEmpty())
         {
@@ -70,7 +71,7 @@ public class AliyunSmsVerifyCode
     /// <param name="expireMinutes">有效期。分钟</param>
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
-    public Task<String> SendLogin(String mobile, String? code, Int32 expireMinutes, SmsVerifyCodeOptions? options = null) => SendAsync(mobile, "100001", code, expireMinutes, options);
+    public Task<String> SendLogin(String mobile, String? code = null, Int32 expireMinutes = 5, SmsVerifyCodeOptions? options = null) => SendAsync(mobile, "100001", code, expireMinutes, options);
 
     /// <summary>发送重置验证码</summary>
     /// <param name="mobile">手机号</param>
@@ -78,7 +79,7 @@ public class AliyunSmsVerifyCode
     /// <param name="expireMinutes">有效期。分钟</param>
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
-    public Task<String> SendReset(String mobile, String? code, Int32 expireMinutes, SmsVerifyCodeOptions? options = null) => SendAsync(mobile, "100003", code, expireMinutes, options);
+    public Task<String> SendReset(String mobile, String? code = null, Int32 expireMinutes = 5, SmsVerifyCodeOptions? options = null) => SendAsync(mobile, "100003", code, expireMinutes, options);
 
     /// <summary>发送绑定验证码</summary>
     /// <param name="mobile">手机号</param>
@@ -86,6 +87,6 @@ public class AliyunSmsVerifyCode
     /// <param name="expireMinutes">有效期。分钟</param>
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
-    public Task<String> SendBind(String mobile, String? code, Int32 expireMinutes, SmsVerifyCodeOptions? options = null) => SendAsync(mobile, "100004", code, expireMinutes, options);
+    public Task<String> SendBind(String mobile, String? code = null, Int32 expireMinutes = 5, SmsVerifyCodeOptions? options = null) => SendAsync(mobile, "100004", code, expireMinutes, options);
     #endregion
 }
