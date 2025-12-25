@@ -19,4 +19,7 @@
   <ItemGroup>
     <PackageReference Include="NewLife.XCode" Version="11.22.2025.1214-beta0602" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
+  </ItemGroup>
 </Project>
