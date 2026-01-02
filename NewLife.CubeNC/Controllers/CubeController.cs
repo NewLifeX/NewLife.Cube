@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.StaticFiles;
 using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
@@ -14,6 +13,7 @@ using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Web;
+using Stardust.Storages;
 using XCode;
 using XCode.Membership;
 using static XCode.Membership.User;
@@ -23,10 +23,11 @@ using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 namespace NewLife.Cube.Controllers;
 
 /// <summary>魔方前端数据接口</summary>
+/// <param name="fileStorage"></param>
 /// <param name="tokenService"></param>
 /// <param name="sources"></param>
 [DisplayName("数据接口")]
-public class CubeController(TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
+public class CubeController(IFileStorage fileStorage, TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources = sources.ToList();
 
@@ -455,6 +456,12 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
+        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath))
+        {
+            // 如果本地文件不存在，则从分布式文件存储获取
+            await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");
+            await Task.Delay(5_000);
+        }
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
         {
             var url = att.Source;
@@ -491,6 +498,12 @@ public class CubeController(TokenService tokenService, IEnumerable<EndpointDataS
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
+        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath))
+        {
+            // 如果本地文件不存在，则从分布式文件存储获取
+            await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");
+            await Task.Delay(5_000);
+        }
         if (filePath.IsNullOrEmpty() || !System.IO.File.Exists(filePath))
         {
             var url = att.Source;

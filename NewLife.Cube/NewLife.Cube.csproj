@@ -93,6 +93,7 @@
     <Compile Include="..\NewLife.CubeNC\Services\DataRetentionService.cs" Link="Services\DataRetentionService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbDataProtectionBuilderExtensions.cs" Link="Services\DbDataProtectionBuilderExtensions.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbXmlRepository.cs" Link="Services\DbXmlRepository.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\FileStorageService.cs" Link="Services\FileStorageService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
@@ -116,11 +117,11 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.9.2025.1215-beta0602" />
-    <PackageReference Include="NewLife.IP" Version="2.4.2025.1113" />
-    <PackageReference Include="NewLife.Office" Version="1.0.2025.1113" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.5.2025.1215-beta0605" />
-    <PackageReference Include="NewLife.XCode" Version="11.22.2025.1214-beta0602" />
+    <PackageReference Include="NewLife.Core" Version="11.10.2026.101" />
+    <PackageReference Include="NewLife.IP" Version="2.4.2026.102" />
+    <PackageReference Include="NewLife.Office" Version="1.0.2026.102" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.102" />
+    <PackageReference Include="NewLife.XCode" Version="11.23.2026.102" />
   </ItemGroup>
 
   <ItemGroup>

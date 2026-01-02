@@ -136,6 +136,9 @@ public static class CubeService
         // 添加定时作业
         services.AddCubeJob();
 
+        // 注册文件存储服务
+        services.AddCubeFileStorage();
+
         // 注册IP地址库
         IpResolver.Register();
 

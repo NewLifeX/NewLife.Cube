@@ -1,4 +1,5 @@
 ﻿using NewLife.Cube;
+using NewLife.Cube.Services;
 using NewLife.Cube.Swagger;
 using NewLife.Log;
 
@@ -12,6 +13,8 @@ var star = services.AddStardust(null);
 //TracerMiddleware.Tracer = star?.Tracer;
 
 //services.AddHttpContextAccessor();
+
+services.AddCubeFileStorage("Cube");
 
 services.AddControllers();
 

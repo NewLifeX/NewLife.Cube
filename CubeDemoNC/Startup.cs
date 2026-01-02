@@ -10,6 +10,7 @@ using NewLife.Cube.Extensions;
 using NewLife.Cube.LayuiAdmin;
 using NewLife.Cube.Metronic;
 using NewLife.Cube.Metronic8;
+using NewLife.Cube.Services;
 using NewLife.Cube.Tabler;
 using NewLife.Log;
 using NewLife.Redis.Extensions;
@@ -41,6 +42,8 @@ public class Startup
             redis.Init(cacheConn);
             services.AddSingleton(redis);
         }
+
+        services.AddCubeFileStorage("Cube");
 
         // 启用接口响应压缩
         services.AddResponseCompression();

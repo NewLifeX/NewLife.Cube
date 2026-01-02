@@ -10,6 +10,7 @@ using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
+using Stardust.Storages;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
@@ -164,6 +165,11 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         try
         {
             rs = await att.SaveFile(file.OpenReadStream(), uploadPath, fileName);
+
+            // 广播指定附件在当前节点可用
+            var fileStorage = HttpContext.RequestServices.GetService<IFileStorage>();
+            if (fileStorage != null)
+                await fileStorage.PublishNewFileAsync(att.Id, att.FilePath, HttpContext.RequestAborted);
         }
         catch (Exception ex)
         {

@@ -22,7 +22,6 @@ using NewLife.Reflection;
 using NewLife.Serialization;
 using NewLife.Web;
 using Stardust;
-using Stardust.Extensions;
 using Stardust.Registry;
 using XCode;
 using XCode.DataAccessLayer;
@@ -183,6 +182,9 @@ public static class CubeService
 
         // 添加定时作业
         services.AddCubeJob();
+
+        // 注册文件存储服务
+        services.AddCubeFileStorage();
 
         // 注册IP地址库
         IpResolver.Register();
