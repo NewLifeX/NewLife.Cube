@@ -9,7 +9,7 @@
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2025 NewLife</Copyright>
-    <VersionPrefix>6.7</VersionPrefix>
+    <VersionPrefix>6.8</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -34,7 +34,7 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>增加Zip导入导出；增加标准Excel导出；删除和分享增加_query隐藏参数</PackageReleaseNotes>
+    <PackageReleaseNotes>支持分布式文件存储</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -172,6 +172,7 @@
     <Compile Remove="Common\ApplicationManager.cs" />
     <Compile Remove="Common\ITenantController.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
+    <Compile Remove="Services\AliyunClient.cs" />
     <Compile Remove="ViewModels\FieldModel.cs" />
     <Compile Remove="WebMiddleware\TracerMiddleware.cs" />
   </ItemGroup>

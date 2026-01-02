@@ -5,7 +5,7 @@
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
     <AssemblyTitle>魔方演示平台</AssemblyTitle>
-    <VersionPrefix>6.7</VersionPrefix>
+    <VersionPrefix>6.8</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -37,9 +37,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="10.0.0" />
-    <PackageReference Include="NewLife.Redis.Extensions" Version="6.4.2025.1214-beta1244" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.5.2025.1215-beta0605" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="10.0.1" />
+    <PackageReference Include="NewLife.Redis.Extensions" Version="6.4.2026.102" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.102" />
   </ItemGroup>
 
   <ItemGroup>

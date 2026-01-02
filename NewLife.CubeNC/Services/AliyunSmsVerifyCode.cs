@@ -1,4 +1,6 @@
-﻿namespace NewLife.Cube.Services;
+﻿using NewLife.Remoting.CloudProviders;
+
+namespace NewLife.Cube.Services;
 
 /// <summary>阿里云短信验证码</summary>
 public class AliyunSmsVerifyCode
