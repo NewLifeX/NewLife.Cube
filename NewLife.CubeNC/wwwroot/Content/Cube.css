@@ -248,3 +248,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* 修正表单横向布局被-15px整体左移的问题 */
+.form-horizontal .form-group {
+     margin-right: 0; 
+     margin-left: 0; 
+}
