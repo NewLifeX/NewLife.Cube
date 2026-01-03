@@ -241,3 +241,10 @@
 .table-responsive > .table > thead > tr > th {
     white-space: nowrap
 }
+
+/* 表单标签/备注超长时省略号显示，避免撑爆布局 */
+.text-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

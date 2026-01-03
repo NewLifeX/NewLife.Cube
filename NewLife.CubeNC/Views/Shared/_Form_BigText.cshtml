@@ -12,28 +12,28 @@
 
     var des = field.Description.TrimStart(field.DisplayName).TrimStart(",", ".", "，", "。");
 }
-<label class="control-label col-xs-12 col-sm-3 col-md-2 col-lg-1">@field.DisplayName</label>
+<label class="control-label col-xs-12 col-sm-2 col-lg-1 text-ellipsis" title="@field.DisplayName">@field.DisplayName</label>
+
 @if (err > 0)
 {
-    <span class="col-sm-9 alert alert-danger">
+    <span class="col-xs-12 col-sm-10 col-lg-11 alert alert-danger">
         @Html.ValidationMessage(field.Name)
     </span>
 }
 else if (!des.IsNullOrEmpty())
 {
-    <span class="col-sm-9"><span class="middle">@des</span></span>
+    <span class="col-xs-12 col-sm-10 col-lg-11 text-ellipsis" title="@des"><span class="middle">@des</span></span>
 }
-<div class="input-group col-xs-12 col-sm-11 col-md-offset-1">
+
+<div class="input-group col-xs-12 col-sm-10 col-lg-11">
     @if (field.ReadOnly)
     {
         var row = (Int32)Math.Round(field.Length / 100d);
-        if (row < 3) row = 3;
-        @*<label class="form-control">@entity[field.Name]</label>*@
+        if (row < 3) { row = 3; }
         <textarea class="form-control" id="@field.Name" rows="@row" readonly>@entity[field.Name]</textarea>
     }
     else
     {
-        @*@Html.ForString(field.Name, (String)entity[field.Name], field.Length)*@
         @await Html.PartialAsync("_Form_String", new ItemModel(field.Name, entity[field.Name], field.Type) { Length = field.Length })
     }
 </div>
