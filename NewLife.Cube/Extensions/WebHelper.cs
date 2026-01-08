@@ -128,7 +128,9 @@ public static class WebHelper
 
         // 取请求头
         var url = request.GetEncodedUrl();
-        uri = new Uri(url);
+        //uri = new Uri(url);
+        if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
+            throw new UriFormatException($"无效Uri：{url}");
 
         uri = GetRawUrl(uri, k => request.Headers[k]);
         request.HttpContext.Items["_RawUrl"] = uri;
