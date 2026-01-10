@@ -31,6 +31,8 @@ public class AliyunSmsVerifyCode
     protected virtual Task<String> SendAsync(String mobile, String templateCode, String? code, Int32 expireMinutes, SmsVerifyCodeOptions? options = null)
     {
         var client = Client;
+        // Yann：手动设置服务器地址到 Services 列表，避免 InvokeAsync 中 Services.Count == 0 的问题
+        client.SetServer($"https://{client.Endpoint}");
 
         if (!code.IsNullOrEmpty())
         {
