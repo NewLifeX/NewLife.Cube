@@ -3,17 +3,10 @@ using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Models;
 
-/// <summary>
-/// 继承此接口，可通过json方式传值
-/// </summary>
-public interface ICubeModel
-{
+/// <summary> 继承此接口，可通过json方式传值 </summary>
+public interface ICubeModel { }
 
-}
-
-/// <summary>
-/// 登录模型
-/// </summary>
+/// <summary> 登录模型 </summary>
 public class LoginModel : ICubeModel
 {
     /// <summary>
@@ -57,14 +50,26 @@ public class RegisterModel : ICubeModel
     public String Password2 { get; set; }
 }
 
-/// <summary>
-/// 用户信息
-/// </summary>
+/// <summary>重置密码模型</summary>
+public class ResetPwdModel : ICubeModel
+{
+    /// <summary> 用户名 </summary>
+    public String Username { get; set; }
+
+    /// <summary> 验证码 </summary>
+    public String Code { get; set; }
+
+    /// <summary> 新密码 </summary>
+    public String NewPassword { get; set; }
+
+    /// <summary> 确认密码 </summary>
+    public String ConfirmPassword { get; set; }
+}
+
+/// <summary> 用户信息 </summary>
 public class UserInfo
 {
-    /// <summary>
-    /// 编号
-    /// </summary>
+    /// <summary> 编号 </summary>
     public Int32 ID { get; set; }
 
     /// <summary>名称。登录用户名</summary>
