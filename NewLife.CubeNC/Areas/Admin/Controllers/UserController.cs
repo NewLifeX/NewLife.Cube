@@ -601,7 +601,7 @@ public class UserController : EntityController<User, UserModel>
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
 
         // 校验手机号格式
-        if (!mobile.IsMatch(@"^1[3-9]\d{9}$")) return Json(500, "手机号格式不正确");
+        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
 
         // 检查短信服务是否启用
         var set = CubeSetting.Current;
@@ -637,8 +637,10 @@ public class UserController : EntityController<User, UserModel>
         {
             // 发送短信验证码
             var expireMinutes = set.SmsExpireMinutes;
-            var code = await _smsVerifyCode.SendLogin(mobile, null, expireMinutes);
-
+            var code = SmsVerifyCodeService.GenerateVerifyCode();
+            var rs = await _smsVerifyCode.SendLogin(mobile, code, expireMinutes);
+            if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
+                return Json(500, "短信发送失败");
             // 缓存验证码用于校验
             var codeKey = $"SmsLogin:Code:{mobile}";
             _cache.Set(codeKey, code, expireMinutes * 60);
@@ -673,6 +675,7 @@ public class UserController : EntityController<User, UserModel>
     public ActionResult SmsLogin(String mobile, String code, Boolean remember = false)
     {
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
+        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
         if (code.IsNullOrEmpty()) return Json(500, "验证码不能为空");
 
         var ip = UserHost;
@@ -798,11 +801,7 @@ public class UserController : EntityController<User, UserModel>
     #endregion
 
     #region 绑定手机号
-    /// <summary>验证手机号格式是否正确</summary>
-    /// <param name="phone">手机号</param>
-    /// <returns>格式正确返回true</returns>
-    private static Boolean IsValidPhone(String phone)
-        => !String.IsNullOrWhiteSpace(phone) && phone.Length >= 11 && phone.All(c => c >= '0' && c <= '9');
+
 
     /// <summary>发送绑定手机验证码</summary>
     /// <param name="mobile">手机号</param>
@@ -815,7 +814,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
 
         // 2. 检查当前用户是否已登录
         var currentUser = ManageProvider.User as User;
@@ -859,7 +858,10 @@ public class UserController : EntityController<User, UserModel>
         {
             // 发送短信验证码
             var expireMinutes = set.SmsExpireMinutes;
-            var code = await _smsVerifyCode.SendBind(mobile, null, expireMinutes);
+            var code = SmsVerifyCodeService.GenerateVerifyCode();
+            var rs = await _smsVerifyCode.SendBind(mobile, code, expireMinutes);
+            if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
+                return Json(500, "短信发送失败");
 
             // 缓存验证码用于校验
             var codeKey = $"SmsBind:Code:{mobile}";
@@ -898,7 +900,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return Json(500, "验证码不能为空");
@@ -931,10 +933,13 @@ public class UserController : EntityController<User, UserModel>
         var user = XCode.Membership.User.FindByID(currentUser.ID);
         if (user == null) return Json(500, "用户不存在");
 
-        user.Mobile = mobile;
-        user.MobileVerified = true;
-        var updated = user.Update();
-        if (updated <= 0) return Json(500, "绑定失败，请重试");
+        if (user.Mobile != mobile) // 手机号不相同才更新
+        {
+            user.Mobile = mobile;
+            user.MobileVerified = true;
+            var updated = user.Update();
+            if (updated <= 0) return Json(500, "绑定失败，请重试");
+        }
 
         // 8. 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
@@ -957,7 +962,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
 
         // 2. 检查手机号是否已注册
         var existingUser = XCode.Membership.User.FindByMobile(mobile);
@@ -997,7 +1002,10 @@ public class UserController : EntityController<User, UserModel>
         {
             // 发送短信验证码
             var expireMinutes = set.SmsExpireMinutes;
-            var code = await _smsVerifyCode.SendReset(mobile, null, expireMinutes);
+            var code = SmsVerifyCodeService.GenerateVerifyCode();
+            var rs = await _smsVerifyCode.SendReset(mobile, code, expireMinutes);
+            if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
+                return Json(500, "短信发送失败");
 
             // 缓存验证码用于校验
             var codeKey = $"SmsReset:Code:{mobile}";
@@ -1033,27 +1041,31 @@ public class UserController : EntityController<User, UserModel>
     [AllowAnonymous]
     public ActionResult ResetPasswordBySms(String mobile, String code, String newPassword, String confirmPassword)
     {
-        mobile = mobile?.Trim() ?? "";
-        code = code?.Trim() ?? "";
-        newPassword = newPassword?.Trim() ?? "";
-        confirmPassword = confirmPassword?.Trim() ?? "";
+        mobile = mobile?.Trim() ?? String.Empty;
+        code = code?.Trim() ?? String.Empty;
+        newPassword = newPassword?.Trim() ?? String.Empty;
+        confirmPassword = confirmPassword?.Trim() ?? String.Empty;
 
         // 1. 验证手机号格式
-        if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+        if (mobile.IsNullOrEmpty())
+            return Json(500, "手机号不能为空");
+        if (!SmsVerifyCodeService.IsValidPhone(mobile))
+            return Json(500, "手机号格式不正确");
 
         // 2. 验证验证码不能为空
-        if (code.IsNullOrEmpty()) return Json(500, "验证码不能为空");
+        if (code.IsNullOrEmpty())
+            return Json(500, "验证码不能为空");
 
         // 3. 验证新密码不能为空
-        if (newPassword.IsNullOrEmpty()) return Json(500, "新密码不能为空");
+        if (newPassword.IsNullOrEmpty())
+            return Json(500, "新密码不能为空");
 
         // 4. 验证确认密码
         if (!confirmPassword.IsNullOrEmpty() && newPassword != confirmPassword)
             return Json(500, "两次输入密码不一致");
 
         // 5. 验证密码强度
-        if (!_passwordService.Valid(newPassword)) return Json(500, "密码太弱，要求8位起且包含数字大小写字母和符号");
+        if (!_passwordService.Valid(newPassword)) return Json(500, "密码太弱");
 
         // 6. 检查短信服务是否启用
         var set = CubeSetting.Current;
@@ -1074,9 +1086,13 @@ public class UserController : EntityController<User, UserModel>
         var user = XCode.Membership.User.FindByMobile(mobile);
         if (user == null || user.ID <= 0) return Json(500, "该手机号未注册");
 
-        user.Password = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
-        var updated = user.Update();
-        if (updated <= 0) return Json(500, "密码重置失败，请重试");
+        var newPassHash = ManageProvider.Provider?.PasswordProvider.Hash(newPassword);
+        if (user.Password != newPassHash)
+        {
+            user.Password = newPassHash;
+            var updated = user.Update();
+            if (updated <= 0) return Json(500, "密码重置失败，请重试");
+        }
 
         // 9. 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
