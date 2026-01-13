@@ -6,7 +6,7 @@
     <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
     <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
     <Company>新生命开发团队</Company>
-    <Copyright>©2002-2025 NewLife</Copyright>
+    <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.8</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
@@ -90,12 +90,10 @@
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\AccessService.cs" Link="Services\AccessService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\AliyunSmsVerifyCode.cs" Link="Services\AliyunSmsVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DataRetentionService.cs" Link="Services\DataRetentionService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbDataProtectionBuilderExtensions.cs" Link="Services\DbDataProtectionBuilderExtensions.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbXmlRepository.cs" Link="Services\DbXmlRepository.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\FileStorageService.cs" Link="Services\FileStorageService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\ISmsVerifyCode.cs" Link="Services\ISmsVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
@@ -119,11 +117,11 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.10.2026.111-beta0915" />
+    <PackageReference Include="NewLife.Core" Version="11.10.2026.113-beta1337" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.102" />
     <PackageReference Include="NewLife.Office" Version="1.0.2026.102" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.113-beta0003" />
-    <PackageReference Include="NewLife.XCode" Version="11.23.2026.109-beta0820" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.113-beta1339" />
+    <PackageReference Include="NewLife.XCode" Version="11.23.2026.113-beta1334" />
   </ItemGroup>
 
   <ItemGroup>

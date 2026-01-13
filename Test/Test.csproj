@@ -17,7 +17,7 @@
     <None Remove="Entity\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.XCode" Version="11.23.2026.109-beta0820" />
+    <PackageReference Include="NewLife.XCode" Version="11.23.2026.113-beta1334" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
