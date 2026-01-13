@@ -53,7 +53,7 @@ public class RegisterModel : ICubeModel
 /// <summary>重置密码模型</summary>
 public class ResetPwdModel : ICubeModel
 {
-    /// <summary> 用户名 </summary>
+    /// <summary> 用户名/手机号 </summary>
     public String Username { get; set; }
 
     /// <summary> 验证码 </summary>

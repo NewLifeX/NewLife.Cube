@@ -90,6 +90,7 @@
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleAttribute.cs" Link="Modules\ModuleAttribute.cs" />
     <Compile Include="..\NewLife.CubeNC\Modules\ModuleManager.cs" Link="Modules\ModuleManager.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\AccessService.cs" Link="Services\AccessService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\AliyunClient.cs" Link="Services\AliyunClient.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\AliyunSmsVerifyCode.cs" Link="Services\AliyunSmsVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DataRetentionService.cs" Link="Services\DataRetentionService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbDataProtectionBuilderExtensions.cs" Link="Services\DbDataProtectionBuilderExtensions.cs" />
