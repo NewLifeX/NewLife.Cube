@@ -222,47 +222,53 @@ public static class ViewHelper
             sb.Append(ident);
             //sb.AppendLine(@"@Html.Partial(""_List_Data_Item"", new Pair(entity, item))");
             if (item.PrimaryKey)
-                sb.AppendFormat(@"<td class=""text-center"">@entity.{0}</td>", item.Name);
+                sb.AppendFormat("""<td class="text-center">@entity.{0}</td>""", item.Name);
             else
             {
                 switch (Type.GetTypeCode(item.Type))
                 {
                     case TypeCode.Boolean:
-                        sb.AppendLine(@"<td class=""text-center"">");
+                        sb.AppendLine("""<td class="text-center">""");
                         sb.Append(ident);
-                        sb.AppendFormat(@"    <i class=""glyphicon glyphicon-@(entity.{0} ? ""ok"" : ""remove"")"" style=""color: @(entity.{0} ? ""green"" : ""red"");""></i>", item.Name);
+                        sb.AppendFormat("""    <i class="glyphicon glyphicon-@(entity.{0} ? "ok" : "remove")" style="color: @(entity.{0} ? "green" : "red");"></i>""", item.Name);
                         sb.AppendLine();
                         sb.Append(ident);
                         sb.Append(@"</td>");
                         break;
                     case TypeCode.DateTime:
                         if (name2.EndsWith("Date"))
-                            sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""yyyy-MM-dd"")</td>", item.Name);
+                            sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("yyyy-MM-dd")</td>""", item.Name);
                         else
-                            sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToFullString("""")</td>", item.Name);
+                            sb.AppendFormat("""<td class="text-center">@entity.{0}.ToFullString("")</td>""", item.Name);
                         break;
                     case TypeCode.Decimal:
-                        sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n2"")</td>", item.Name);
+                        sb.AppendFormat("""<td class="text-right">@entity.{0}.ToString("n2")</td>""", item.Name);
                         break;
                     case TypeCode.Single:
                     case TypeCode.Double:
                         if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
+                            var scale = item.Scale;
                             var des = item.Description + "";
+                            if (des.Contains("十分之一")) scale += 1;
+                            if (des.Contains("百分之一")) scale += 2;
+                            if (des.Contains("千分之一")) scale += 3;
+                            if (des.Contains("万分之一")) scale += 4;
+                            scale = scale >= 2 ? scale - 2 : 0;
                             if (des.Contains("十分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("百分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 100).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("千分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 1000).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("万分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10000).ToString("p{1}"))</td>""", item.Name, scale);
                             else
-                                sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
                         }
                         else
                         {
-                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n2"")</td>", item.Name);
+                            sb.AppendFormat("""<td class="text-right">@entity.{0}.ToString("n2")</td>""", item.Name);
                         }
                         break;
                     case TypeCode.Byte:
@@ -274,25 +280,31 @@ public static class ViewHelper
                     case TypeCode.UInt64:
                         // 特殊处理枚举
                         if (item.Type.IsEnum)
-                            sb.AppendFormat(@"<td class=""text-center"">@entity.{0}</td>", item.Name);
+                            sb.AppendFormat("""<td class="text-center">@entity.{0}</td>""", item.Name);
                         else if (item.Name.EqualIgnoreCase("CreateUserID", "UpdateUserID"))
                             BuildUser(item, sb);
                         else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
+                            var scale = item.Scale;
                             var des = item.Description + "";
+                            if (des.Contains("十分之一")) scale += 1;
+                            if (des.Contains("百分之一")) scale += 2;
+                            if (des.Contains("千分之一")) scale += 3;
+                            if (des.Contains("万分之一")) scale += 4;
+                            scale = scale >= 2 ? scale - 2 : 0;
                             if (des.Contains("十分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10d).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10d).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("百分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 100d).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("千分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000d).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 1000d).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("万分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10000d).ToString("p{1}"))</td>""", item.Name, scale);
                             else
-                                sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
                         }
                         else
-                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n0"")</td>", item.Name);
+                            sb.AppendFormat("""<td class="text-right">@entity.{0}.ToString("n0")</td>""", item.Name);
                         break;
                     case TypeCode.String:
                         if (!item.MapField.IsNullOrEmpty())
@@ -366,21 +378,27 @@ public static class ViewHelper
                     case TypeCode.Double:
                         if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
+                            var scale = item.Scale;
                             var des = item.Description + "";
+                            if (des.Contains("十分之一")) scale += 1;
+                            if (des.Contains("百分之一")) scale += 2;
+                            if (des.Contains("千分之一")) scale += 3;
+                            if (des.Contains("万分之一")) scale += 4;
+                            scale = scale >= 2 ? scale - 2 : 0;
                             if (des.Contains("十分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("百分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 100).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("千分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 1000).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("万分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10000).ToString("p{1}"))</td>""", item.Name, scale);
                             else
-                                sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
                         }
                         else
                         {
-                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n2"")</td>", item.Name);
+                            sb.AppendFormat("""<td class="text-right">@entity.{0}.ToString("n2")</td>""", item.Name);
                         }
                         //sb.AppendFormat(@"<td class=""text-right"">@entity.{0:n2}</td>", item.Name);
                         break;
@@ -398,20 +416,26 @@ public static class ViewHelper
                             sb.Append(@"<td></td>");
                         else if (item.ItemType.EqualIgnoreCase("percent", "Percentage"))
                         {
+                            var scale = item.Scale;
                             var des = item.Description + "";
+                            if (des.Contains("十分之一")) scale += 1;
+                            if (des.Contains("百分之一")) scale += 2;
+                            if (des.Contains("千分之一")) scale += 3;
+                            if (des.Contains("万分之一")) scale += 4;
+                            scale = scale >= 2 ? scale - 2 : 0;
                             if (des.Contains("十分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10d).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10d).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("百分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 100d).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 100d).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("千分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 1000d).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 1000d).ToString("p{1}"))</td>""", item.Name, scale);
                             else if (des.Contains("万分之一"))
-                                sb.AppendFormat(@"<td class=""text-center"">@((entity.{0} / 10000d).ToString(""p2""))</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@((entity.{0} / 10000d).ToString("p{1}"))</td>""", item.Name, scale);
                             else
-                                sb.AppendFormat(@"<td class=""text-center"">@entity.{0}.ToString(""p2"")</td>", item.Name);
+                                sb.AppendFormat("""<td class="text-center">@entity.{0}.ToString("p{1}")</td>""", item.Name, scale);
                         }
                         else
-                            sb.AppendFormat(@"<td class=""text-right"">@entity.{0}.ToString(""n0"")</td>", item.Name);
+                            sb.AppendFormat("""<td class="text-right">@entity.{0}.ToString("n0")</td>""", item.Name);
                         break;
                     case TypeCode.String:
                     default:
