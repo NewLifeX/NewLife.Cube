@@ -73,13 +73,15 @@
                                 if (fi.ItemType.EqualIgnoreCase("percent", "Percentage"))
                                 {
                                     var dd = value.ToDouble();
+                                    var scale = fi.Scale;
                                     var des = fi.Description + "";
-                                    if (des.Contains("十分之一")) { dd /= 10; }
-                                    if (des.Contains("百分之一")) { dd /= 100; }
-                                    if (des.Contains("千分之一")) { dd /= 1000; }
-                                    if (des.Contains("万分之一")) { dd /= 10000; }
+                                    if (des.Contains("十分之一")) { dd /= 10; scale += 1; }
+                                    if (des.Contains("百分之一")) { dd /= 100; scale += 2; }
+                                    if (des.Contains("千分之一")) { dd /= 1000; scale += 3; }
+                                    if (des.Contains("万分之一")) { dd /= 10000; scale += 4; }
+                                    scale = scale >= 2 ? scale - 2 : 0;
 
-                                    <td>@dd.ToString("p2")</td>
+                                    <td>@dd.ToString("p" + scale)</td>
                                 }
                                 else
                                 {
@@ -120,13 +122,15 @@
                                 else if (fi.ItemType.EqualIgnoreCase("percent", "Percentage"))
                                 {
                                     var dd = Convert.ToDouble(value);
+                                    var scale = fi.Scale;
                                     var des = fi.Description + "";
-                                    if (des.Contains("十分之一")) { dd /= 10; }
-                                    if (des.Contains("百分之一")) { dd /= 100; }
-                                    if (des.Contains("千分之一")) { dd /= 1000; }
-                                    if (des.Contains("万分之一")) { dd /= 10000; }
+                                    if (des.Contains("十分之一")) { dd /= 10; scale += 1; }
+                                    if (des.Contains("百分之一")) { dd /= 100; scale += 2; }
+                                    if (des.Contains("千分之一")) { dd /= 1000; scale += 3; }
+                                    if (des.Contains("万分之一")) { dd /= 10000; scale += 4; }
+                                    scale = scale >= 2 ? scale - 2 : 0;
 
-                                    <td>@dd.ToString("p2")</td>
+                                    <td>@dd.ToString("p" + scale)</td>
                                 }
                                 else
                                 {

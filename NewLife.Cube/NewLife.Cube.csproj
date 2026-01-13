@@ -119,11 +119,11 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\TenantMiddleware.cs" Link="WebMiddleware\TenantMiddleware.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.10.2026.101" />
+    <PackageReference Include="NewLife.Core" Version="11.10.2026.111-beta0915" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.102" />
     <PackageReference Include="NewLife.Office" Version="1.0.2026.102" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.102" />
-    <PackageReference Include="NewLife.XCode" Version="11.23.2026.102" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.113-beta0003" />
+    <PackageReference Include="NewLife.XCode" Version="11.23.2026.109-beta0820" />
   </ItemGroup>
 
   <ItemGroup>
