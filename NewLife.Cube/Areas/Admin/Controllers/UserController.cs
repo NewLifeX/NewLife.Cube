@@ -673,8 +673,8 @@ public class UserController : EntityController<User, UserModel>
 
         var set = CubeSetting.Current;
 
-        // 检查短信服务是否启用
-        if (!set.EnableSms) return res.ToErrorApiResponse("短信验证码功能未启用");
+        //// 检查短信服务是否启用
+        //if (!set.EnableSms) return res.ToErrorApiResponse("短信验证码功能未启用");
 
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
@@ -706,6 +706,7 @@ public class UserController : EntityController<User, UserModel>
                 user = new XCode.Membership.User
                 {
                     Name = mobile,
+                    DisplayName = $"手机用户{mobile[^4..]}", // 默认用户名u后四位
                     Mobile = mobile,
                     Enable = true,
                     MobileVerified = true,
