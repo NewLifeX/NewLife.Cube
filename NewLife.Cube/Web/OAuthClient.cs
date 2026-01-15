@@ -107,9 +107,10 @@ public class OAuthClient
     #region 静态创建
     private static IDictionary<String, Type> _map;
     /// <summary>根据名称创建客户端</summary>
+    /// <param name="tenantId"></param>
     /// <param name="name"></param>
     /// <returns></returns>
-    public static OAuthClient Create(String name)
+    public static OAuthClient Create(Int32 tenantId, String name)
     {
         //if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name));
 
@@ -131,7 +132,7 @@ public class OAuthClient
 
         if (name.IsNullOrEmpty())
         {
-            var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
+            var ms = OAuthConfig.GetValids(tenantId, GrantTypes.AuthorizationCode);
             if (ms.Count > 0) name = ms[0].Name;
         }
         if (name.IsNullOrEmpty()) throw new ArgumentNullException(nameof(name), "未正确配置OAuth");
@@ -141,7 +142,7 @@ public class OAuthClient
         _map.TryGetValue(name, out var type);
 
         var client = type?.CreateInstance() as OAuthClient ?? new OAuthClient();
-        client.Apply(name);
+        client.Apply(tenantId, name);
 
         // NewLife支持注销
         if (name.EqualIgnoreCase("NewLife") && client.LogoutUrl.IsNullOrEmpty()) client.LogoutUrl = "logout?client_id={key}&redirect_uri={redirect}&state={state}";
@@ -152,10 +153,11 @@ public class OAuthClient
 
     #region 方法
     /// <summary>应用参数设置</summary>
+    /// <param name="tenantId"></param>
     /// <param name="name"></param>
-    public void Apply(String name)
+    public void Apply(Int32 tenantId, String name)
     {
-        var ms = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
+        var ms = OAuthConfig.GetValids(tenantId, GrantTypes.AuthorizationCode);
         if (ms.Count == 0) throw new InvalidOperationException("未设置OAuth服务端");
 
         var mi = ms.FirstOrDefault(e => e.Name.EqualIgnoreCase(name));

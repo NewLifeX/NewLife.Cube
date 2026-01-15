@@ -9,6 +9,8 @@
     <BaseClass>Entity</BaseClass>
     <!--命名空间-->
     <Namespace>NewLife.Cube.Entity</Namespace>
+    <!--引用命名空间-->
+    <ExtendNameSpace />
     <!--输出目录-->
     <Output>.\</Output>
     <!--是否使用中文文件名。默认false-->
@@ -100,6 +102,7 @@
     <Table Name="OAuthConfig" Description="OAuth配置。需要连接的OAuth认证方">
       <Columns>
         <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Map="XCode.Membership.Tenant@Id@$@TenantName" Description="租户" />
         <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。提供者名称" />
         <Column Name="NickName" DataType="String" Description="昵称" />
         <Column Name="Logo" DataType="String" Description="图标" />
@@ -132,7 +135,7 @@
         <Column Name="Remark" DataType="String" Length="500" Description="内容" Category="扩展" />
       </Columns>
       <Indexes>
-        <Index Columns="Name" Unique="True" />
+        <Index Columns="TenantId,Name" Unique="True" />
       </Indexes>
     </Table>
     <Table Name="UserToken" Description="用户令牌。授权指定用户访问接口数据，支持有效期" ConnName="Membership">

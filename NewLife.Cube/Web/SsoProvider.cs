@@ -62,9 +62,10 @@ public class SsoProvider
 
     #region 方法
     /// <summary>获取OAuth客户端</summary>
+    /// <param name="tenantId"></param>
     /// <param name="name"></param>
     /// <returns></returns>
-    public virtual OAuthClient GetClient(String name) => OAuthClient.Create(name);
+    public virtual OAuthClient GetClient(Int32 tenantId, String name) => OAuthClient.Create(tenantId, name);
 
     /// <summary>获取返回地址</summary>
     /// <param name="request">请求对象</param>

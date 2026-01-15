@@ -92,7 +92,7 @@ public class ManageProvider2 : ManageProvider
         IManageUser user = null;
 
         // OAuth密码模式登录
-        var oauths = OAuthConfig.GetValids(GrantTypes.Password);
+        var oauths = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.Password);
         if (oauths.Count > 0)
             user = LoginByOAuth(oauths[0], name, password);
         else

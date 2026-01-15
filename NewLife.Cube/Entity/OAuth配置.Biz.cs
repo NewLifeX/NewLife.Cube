@@ -5,6 +5,7 @@ using NewLife.Log;
 using NewLife.Security;
 using NewLife.Serialization;
 using XCode;
+using XCode.Membership;
 
 namespace NewLife.Cube.Entity;
 
@@ -33,7 +34,7 @@ public enum GrantTypes
 }
 
 /// <summary>OAuth配置。需要连接的OAuth认证方</summary>
-public partial class OAuthConfig : Entity<OAuthConfig>
+public partial class OAuthConfig : Entity<OAuthConfig>, ITenantSource
 {
     #region 对象操作
     static OAuthConfig()
@@ -221,16 +222,19 @@ public partial class OAuthConfig : Entity<OAuthConfig>
     }
 
     /// <summary>获取全部有效设置</summary>
+    /// <param name="tenantId">租户编号</param>
     /// <returns></returns>
-    public static IList<OAuthConfig> GetValids() => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
+    public static IList<OAuthConfig> GetValids(Int32 tenantId) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.TenantId == tenantId).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
 
     /// <summary>获取指定授权类型有效设置</summary>
+    /// <param name="tenantId">租户编号</param>
     /// <param name="grantType">授权类型</param>
     /// <returns></returns>
-    public static IList<OAuthConfig> GetValids(GrantTypes grantType) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.GrantType == grantType).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
+    public static IList<OAuthConfig> GetValids(Int32 tenantId, GrantTypes grantType) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.TenantId == tenantId && e.GrantType == grantType).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
 
     /// <summary>获取全部有效且可见设置</summary>
+    /// <param name="tenantId">租户编号</param>
     /// <returns></returns>
-    public static IList<OAuthConfig> GetVisibles() => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.Visible).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
+    public static IList<OAuthConfig> GetVisibles(Int32 tenantId) => FindAllWithCache().Where(e => e.Enable && !e.IsDeleted && e.Visible && e.TenantId == tenantId).OrderByDescending(e => e.Sort).ThenByDescending(e => e.ID).ToList();
     #endregion
 }

@@ -17,7 +17,7 @@ namespace NewLife.Cube.Entity;
 [Serializable]
 [DataObject]
 [Description("OAuth配置。需要连接的OAuth认证方")]
-[BindIndex("IU_OAuthConfig_Name", true, "Name")]
+[BindIndex("IU_OAuthConfig_TenantId_Name", true, "TenantId,Name")]
 [BindTable("OAuthConfig", Description = "OAuth配置。需要连接的OAuth认证方", ConnName = "Cube", DbType = DatabaseType.None)]
 public partial class OAuthConfig : IEntity<OAuthConfigModel>
 {
@@ -29,6 +29,14 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     [DataObjectField(true, true, false, 0)]
     [BindColumn("ID", "编号", "")]
     public Int32 ID { get => _ID; set { if (OnPropertyChanging("ID", value)) { _ID = value; OnPropertyChanged("ID"); } } }
+
+    private Int32 _TenantId;
+    /// <summary>租户</summary>
+    [DisplayName("租户")]
+    [Description("租户")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("TenantId", "租户", "")]
+    public Int32 TenantId { get => _TenantId; set { if (OnPropertyChanging("TenantId", value)) { _TenantId = value; OnPropertyChanged("TenantId"); } } }
 
     private String _Name;
     /// <summary>名称。提供者名称</summary>
@@ -284,6 +292,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     public void Copy(OAuthConfigModel model)
     {
         ID = model.ID;
+        TenantId = model.TenantId;
         Name = model.Name;
         NickName = model.NickName;
         Logo = model.Logo;
@@ -326,6 +335,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         get => name switch
         {
             "ID" => _ID,
+            "TenantId" => _TenantId,
             "Name" => _Name,
             "NickName" => _NickName,
             "Logo" => _Logo,
@@ -363,6 +373,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
             switch (name)
             {
                 case "ID": _ID = value.ToInt(); break;
+                case "TenantId": _TenantId = value.ToInt(); break;
                 case "Name": _Name = Convert.ToString(value); break;
                 case "NickName": _NickName = Convert.ToString(value); break;
                 case "Logo": _Logo = Convert.ToString(value); break;
@@ -400,13 +411,49 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     #endregion
 
     #region 关联映射
+    /// <summary>租户</summary>
+    [XmlIgnore, IgnoreDataMember, ScriptIgnore]
+    public XCode.Membership.Tenant Tenant => Extends.Get(nameof(Tenant), k => XCode.Membership.Tenant.FindById(TenantId));
+
+    /// <summary>租户</summary>
+    [Map(nameof(TenantId), typeof(XCode.Membership.Tenant), "Id")]
+    public String TenantName => Tenant?.ToString();
+
     #endregion
 
     #region 扩展查询
+    /// <summary>根据租户、名称查找</summary>
+    /// <param name="tenantId">租户</param>
+    /// <param name="name">名称</param>
+    /// <returns>实体对象</returns>
+    public static OAuthConfig FindByTenantIdAndName(Int32 tenantId, String name)
+    {
+        if (tenantId < 0) return null;
+        if (name.IsNullOrEmpty()) return null;
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.TenantId == tenantId && e.Name.EqualIgnoreCase(name));
+
+        return Find(_.TenantId == tenantId & _.Name == name);
+    }
+
+    /// <summary>根据租户查找</summary>
+    /// <param name="tenantId">租户</param>
+    /// <returns>实体列表</returns>
+    public static IList<OAuthConfig> FindAllByTenantId(Int32 tenantId)
+    {
+        if (tenantId < 0) return [];
+
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.FindAll(e => e.TenantId == tenantId);
+
+        return FindAll(_.TenantId == tenantId);
+    }
     #endregion
 
     #region 高级查询
     /// <summary>高级查询</summary>
+    /// <param name="tenantId">租户</param>
     /// <param name="grantType">授权类型</param>
     /// <param name="debug">调试。设置处于调试状态，输出详细日志</param>
     /// <param name="visible">可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号</param>
@@ -419,10 +466,11 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     /// <param name="key">关键字</param>
     /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
     /// <returns>实体列表</returns>
-    public static IList<OAuthConfig> Search(GrantTypes grantType, Boolean? debug, Boolean? visible, Boolean? autoRegister, Boolean? fetchAvatar, Boolean? enable, Boolean? isDeleted, DateTime start, DateTime end, String key, PageParameter page)
+    public static IList<OAuthConfig> Search(Int32 tenantId, GrantTypes grantType, Boolean? debug, Boolean? visible, Boolean? autoRegister, Boolean? fetchAvatar, Boolean? enable, Boolean? isDeleted, DateTime start, DateTime end, String key, PageParameter page)
     {
         var exp = new WhereExpression();
 
+        if (tenantId >= 0) exp &= _.TenantId == tenantId;
         if (grantType >= 0) exp &= _.GrantType == grantType;
         if (debug != null) exp &= _.Debug == debug;
         if (visible != null) exp &= _.Visible == visible;
@@ -443,6 +491,9 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     {
         /// <summary>编号</summary>
         public static readonly Field ID = FindByName("ID");
+
+        /// <summary>租户</summary>
+        public static readonly Field TenantId = FindByName("TenantId");
 
         /// <summary>名称。提供者名称</summary>
         public static readonly Field Name = FindByName("Name");
@@ -542,6 +593,9 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     {
         /// <summary>编号</summary>
         public const String ID = "ID";
+
+        /// <summary>租户</summary>
+        public const String TenantId = "TenantId";
 
         /// <summary>名称。提供者名称</summary>
         public const String Name = "Name";

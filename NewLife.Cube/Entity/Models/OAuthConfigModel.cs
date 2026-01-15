@@ -14,6 +14,9 @@ public partial class OAuthConfigModel
     /// <summary>编号</summary>
     public Int32 ID { get; set; }
 
+    /// <summary>租户</summary>
+    public Int32 TenantId { get; set; }
+
     /// <summary>名称。提供者名称</summary>
     public String Name { get; set; }
 
@@ -111,6 +114,7 @@ public partial class OAuthConfigModel
     public void Copy(OAuthConfigModel model)
     {
         ID = model.ID;
+        TenantId = model.TenantId;
         Name = model.Name;
         NickName = model.NickName;
         Logo = model.Logo;

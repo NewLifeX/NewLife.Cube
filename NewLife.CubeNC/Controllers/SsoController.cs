@@ -94,7 +94,7 @@ public class SsoController : ControllerBaseX
 
         try
         {
-            var client = prov.GetClient(name);
+            var client = prov.GetClient(TenantContext.CurrentId, name);
             client.Init(GetUserAgent());
 
             return base.Redirect(OnLogin(client, null, rurl, null));
@@ -152,7 +152,7 @@ public class SsoController : ControllerBaseX
 
         var name = id;
         var prov = Provider;
-        var client = prov.GetClient(name);
+        var client = prov.GetClient(TenantContext.CurrentId, name);
         client.Init(GetUserAgent());
 
         client.WriteLog("LoginInfo name={0} code={1} state={2} {3}", name, code, state, Request.GetRawUrl());
@@ -303,7 +303,7 @@ public class SsoController : ControllerBaseX
         var prov = Provider;
         var name = GetRequest("name");
         if (name.IsNullOrEmpty()) name = Session["Cube_Sso"] as String;
-        var client = prov.GetClient(name);
+        var client = prov.GetClient(TenantContext.CurrentId, name);
         client.Init(GetUserAgent());
 
         var prv = Provider;
@@ -373,7 +373,7 @@ public class SsoController : ControllerBaseX
         }
 
         var url = prov.GetReturnUrl(Request, true);
-        var client = prov.GetClient(id);
+        var client = prov.GetClient(TenantContext.CurrentId, id);
         client.Init(GetUserAgent());
 
         var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
