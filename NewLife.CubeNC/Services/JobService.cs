@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using NewLife.Caching;
@@ -290,12 +290,24 @@ internal class MyJob : IDisposable
 
             // 有时候可能并没有配置Redis，借助数据库事务实现去重，需要20230804版本的XCode
             using var tran = CronJob.Meta.CreateTrans();
+            var now = DateTime.Now;
 
             // 如果短时间内重复执行，跳过
             var job2 = CronJob.FindByKey(job.Id);
-            if (job2 != null && job2.LastTime.AddSeconds(5) > DateTime.Now) return true;
+            if (job2 != null)
+            {
+                // 检测并修正异常的LastTime（如果在将来超过5秒，则认为是异常数据，重置为当前时间）
+                if (job2.LastTime > now.AddSeconds(5))
+                {
+                    job2.LastTime = now;
+                }
+                else if (job2.LastTime.AddSeconds(5) > now)
+                {
+                    return true;
+                }
+            }
 
-            job2.LastTime = DateTime.Now;
+            job2.LastTime = now;
             job2.Update();
 
             tran.Commit();
