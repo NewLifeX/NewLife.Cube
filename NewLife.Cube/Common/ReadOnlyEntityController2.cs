@@ -216,7 +216,8 @@ public partial class ReadOnlyEntityController<TEntity>
             var ctxTenant = TenantContext.Current;
             if (ctxTenant != null && IsTenantSource)
             {
-                var tenant = Tenant.FindById(ctxTenant.TenantId);
+                var tenant = ManageProvider.Provider.Tenant;
+                tenant ??= Tenant.FindById(ctxTenant.TenantId);
                 if (tenant != null)
                 {
                     HttpContext.Items["TenantId"] = tenant.Id;

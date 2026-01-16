@@ -305,9 +305,8 @@ public class UserController : EntityController<User, UserModel>
         ////云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
         //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
 
-        var ctx = TenantContext.Current;
         var model = GetViewModel(returnUrl);
-        model.OAuthItems = OAuthConfig.GetVisibles(ctx?.TenantId ?? 0);
+        model.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
 
         return Json(0, null, model);
     }
@@ -488,9 +487,8 @@ public class UserController : EntityController<User, UserModel>
         if (user == null) throw new Exception("无效用户编号！");
 
         // 第三方绑定
-        var ctx = TenantContext.Current;
         var ucs = UserConnect.FindAllByUserID(user.ID);
-        var ms = OAuthConfig.GetValids(ctx?.TenantId ?? 0, GrantTypes.AuthorizationCode);
+        var ms = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
 
         var model = new BindsModel
         {
@@ -516,7 +514,7 @@ public class UserController : EntityController<User, UserModel>
         var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
-        var ctx = TenantContext.Current;
+        var tenantId = TenantContext.CurrentId;
         try
         {
             //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
@@ -528,7 +526,7 @@ public class UserController : EntityController<User, UserModel>
             if (!_passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
 
             // 不得使用OAuth前缀
-            foreach (var item in OAuthConfig.GetValids(ctx?.TenantId ?? 0))
+            foreach (var item in OAuthConfig.GetValids(tenantId))
             {
                 if (username.StartsWithIgnoreCase($"{item.Name}_"))
                     throw new ArgumentException(nameof(username), $"禁止使用[{item.Name}_]前缀！");
@@ -553,7 +551,7 @@ public class UserController : EntityController<User, UserModel>
         }
 
         var model = GetViewModel(null);
-        model.OAuthItems = OAuthConfig.GetVisibles(ctx?.TenantId ?? 0);
+        model.OAuthItems = OAuthConfig.GetVisibles(tenantId);
 
         return Json(0, null, model);
     }

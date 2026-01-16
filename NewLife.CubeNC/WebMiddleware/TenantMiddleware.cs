@@ -4,13 +4,10 @@ using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 namespace NewLife.Cube.WebMiddleware;
 
 /// <summary>租户中间件。设置租户上下文</summary>
-public class TenantMiddleware
+/// <param name="next"></param>
+public class TenantMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    /// <summary>实例化</summary>
-    /// <param name="next"></param>
-    public TenantMiddleware(RequestDelegate next) => _next = next ?? throw new ArgumentNullException(nameof(next));
+    private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
 
     /// <summary>调用</summary>
     /// <param name="ctx"></param>

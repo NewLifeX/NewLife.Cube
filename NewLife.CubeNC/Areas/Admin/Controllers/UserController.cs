@@ -198,7 +198,8 @@ public class UserController : EntityController<User, UserModel>
         IList<User> list2 = [];
 
         // 只读取租户相关的用户
-        var tencentId = ManagerProviderHelper.GetTenantId(HttpContext);
+        //var tencentId = ManagerProviderHelper.GetTenantId(HttpContext);
+        var tencentId = TenantContext.CurrentId;
         if (tencentId > 0)
         {
             list2 = XCode.Membership.User.SearchWithTenant(tencentId, roleIds, departmentIds, areaIds, enable, start, end, key, p);
@@ -283,8 +284,7 @@ public class UserController : EntityController<User, UserModel>
         var logId = Session["Cube_OAuthId"].ToLong();
 
         // 如果禁用本地登录，且只有一个第三方登录，直接跳转，构成单点登录
-        var ctx = TenantContext.Current;
-        var tenantId = ctx?.TenantId ?? 0;
+        var tenantId = TenantContext.CurrentId;
         var ms = OAuthConfig.GetValids(tenantId, GrantTypes.AuthorizationCode);
         var set = CubeSetting.Current;
         if (ms != null && !set.AllowLogin)
@@ -499,9 +499,8 @@ public class UserController : EntityController<User, UserModel>
         ////云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
         //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
 
-        var ctx = TenantContext.Current;
         var model = GetViewModel(returnUrl);
-        model.OAuthItems = OAuthConfig.GetVisibles(ctx?.TenantId ?? 0);
+        model.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
 
         return _isMobile ? View("MLogin", model) : View(model);
     }
@@ -1266,9 +1265,8 @@ public class UserController : EntityController<User, UserModel>
         if (user == null) throw new Exception("无效用户编号！");
 
         // 第三方绑定
-        var ctx = TenantContext.Current;
         var ucs = UserConnect.FindAllByUserID(user.ID);
-        var ms = OAuthConfig.GetValids(ctx?.TenantId ?? 0, GrantTypes.AuthorizationCode);
+        var ms = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
 
         var model = new BindsModel
         {
@@ -1296,7 +1294,7 @@ public class UserController : EntityController<User, UserModel>
         var set = CubeSetting.Current;
         if (!set.AllowRegister) throw new Exception("禁止注册！");
 
-        var ctx = TenantContext.Current;
+        var tenantId = TenantContext.CurrentId;
         try
         {
             //if (String.IsNullOrEmpty(email)) throw new ArgumentNullException("email", "邮箱地址不能为空！");
@@ -1308,7 +1306,7 @@ public class UserController : EntityController<User, UserModel>
             if (!_passwordService.Valid(password)) throw new ArgumentException($"密码太弱，要求8位起且包含数字大小写字母和符号", nameof(password));
 
             // 不得使用OAuth前缀
-            foreach (var item in OAuthConfig.GetValids(ctx?.TenantId ?? 0))
+            foreach (var item in OAuthConfig.GetValids(tenantId))
             {
                 if (username.StartsWithIgnoreCase($"{item.Name}_"))
                     throw new ArgumentException(nameof(username), $"禁止使用[{item.Name}_]前缀！");
@@ -1341,7 +1339,7 @@ public class UserController : EntityController<User, UserModel>
         }
 
         var model = GetViewModel(null);
-        model.OAuthItems = OAuthConfig.GetVisibles(ctx?.TenantId ?? 0);
+        model.OAuthItems = OAuthConfig.GetVisibles(tenantId);
 
         return View("Login", model);
     }
@@ -1381,10 +1379,10 @@ public class UserController : EntityController<User, UserModel>
 
         if (IsJsonRequest) return Ok(data: model);
 
-        var tid = HttpContext.GetTenantId();
-        var t = Tenant.FindById(tid);
+        //var tid = HttpContext.GetTenantId();
+        //var t = Tenant.FindById(tid);
 
-        ViewData["TenantId"] = t?.Id ?? 0;
+        ViewData["TenantId"] = TenantContext.CurrentId;
 
         return View(model);
     }
