@@ -21,8 +21,9 @@ public class TenantMiddleware(RequestDelegate next)
             var set = CubeSetting.Current;
             if (set.EnableTenant && TenantContext.Current == null)
             {
+                // 进入管理后台（TenantId=0）时，也要设置租户上下文
                 var tenantId = ctx.GetTenantId();
-                if (tenantId > 0)
+                if (tenantId >= 0)
                 {
                     ctx.SetTenant(tenantId);
 
@@ -38,7 +39,7 @@ public class TenantMiddleware(RequestDelegate next)
             {
                 TenantContext.Current = null;
 
-                ManageProvider.Provider.Tenant = null;
+                //ManageProvider.Provider.Tenant = null;
             }
         }
     }

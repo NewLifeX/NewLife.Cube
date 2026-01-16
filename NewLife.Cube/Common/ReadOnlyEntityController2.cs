@@ -216,10 +216,12 @@ public partial class ReadOnlyEntityController<TEntity>
             var ctxTenant = TenantContext.Current;
             if (ctxTenant != null && IsTenantSource)
             {
-                var tenant = ManageProvider.Provider.Tenant;
+                // 启用多租户且进入管理后台（TenantId=0）时，不限制租户数据，管理后台要能看到所有租户的数据
+                var tenant = ctxTenant.Tenant;
                 tenant ??= Tenant.FindById(ctxTenant.TenantId);
                 if (tenant != null)
                 {
+                    // WhereBuilder 内部会从 HttpContext.Items 读取 TenantId
                     HttpContext.Items["TenantId"] = tenant.Id;
 
                     if (typeof(TEntity) == typeof(Tenant))

@@ -167,15 +167,16 @@ public static class ManagerProviderHelper
 
         // 进入最后一次使用的租户
         if (tenantId > 0 && tlist.Any(e => e.TenantId == tenantId))
-            SetTenant(context, tenantId);
+            SetTenant(context, tenantId); // 有效租户
         else if (tenantId == 0)
-            SetTenant(context, 0);
+            SetTenant(context, 0); // 管理后台
         else
         {
+            // 如果 tenantId > 0 但无效，则重新选择租户
             if (tlist.Count > 0)
-                SaveTenant(context, tlist[0].TenantId);
+                SaveTenant(context, tlist[0].TenantId); // 进入第一个租户
             else
-                SaveTenant(context, 0);
+                SaveTenant(context, 0); // 进入管理后台
         }
 
         CheckTenantRole();
@@ -207,7 +208,7 @@ public static class ManagerProviderHelper
         DefaultSpan.Current?.AppendTag($"SetTenant: {tenantId}");
 
         TenantContext.Current = new TenantContext { TenantId = tenantId };
-        ManageProvider.Provider.Tenant = Tenant.FindById(tenantId);
+        //ManageProvider.Provider.Tenant = Tenant.FindById(tenantId);
     }
 
     /// <summary>生成令牌</summary>
@@ -468,11 +469,37 @@ public static class ManagerProviderHelper
     /// <returns></returns>
     public static Int32 GetTenantId(this HttpContext context)
     {
-        var key = $"TenantId-{SysConfig.Current.Name}";
         var req = context?.Request;
         if (req == null) return -1;
 
+        // Header优先，兼容前后端分离/小程序等不稳定Cookie场景
+        var tenant = req.Headers["X-Tenant-Id"].ToString();
+        //if (tenant.IsNullOrEmpty()) tenant = req.Headers["X-Tenant"].ToString();
+        var id = ResolveTenantId(tenant);
+        if (id >= 0) return id;
+
+        // QueryString兜底（一般用于调试/回调等），优先级低于Header/Cookie
+        tenant = req.Query["tenantId"].ToString();
+        //if (tenant.IsNullOrEmpty()) tenant = req.Query["tenant"].ToString();
+        id = ResolveTenantId(tenant);
+        if (id >= 0) return id;
+
+        // 最后从Cookie读取（兼容现有浏览器模式）
+        var key = $"TenantId-{SysConfig.Current.Name}";
         return req.Cookies[key].ToInt(-1);
+    }
+
+    private static Int32 ResolveTenantId(String tenant)
+    {
+        if (tenant.IsNullOrEmpty()) return -1;
+
+        // 允许传 0（管理后台）
+        var id = tenant.ToInt(-1);
+        if (id >= 0) return id;
+
+        // 允许传租户名称
+        var t = Tenant.FindByCode(tenant);
+        return t != null ? t.Id : -1;
     }
     #endregion
 

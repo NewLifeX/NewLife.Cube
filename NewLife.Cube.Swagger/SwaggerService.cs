@@ -6,6 +6,8 @@ using NewLife.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
+using XCode.Membership;
+
 
 
 #if NET10_0_OR_GREATER
@@ -52,7 +54,7 @@ public static class SwaggerService
                 return groups != null && groups.Any(e => e == docName);
             });
 
-            var oauthConfigs = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
+            var oauthConfigs = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
             if (oauthConfigs.Count > 0)
             {
                 var cfg = oauthConfigs[0];
@@ -143,7 +145,7 @@ public static class SwaggerService
             }
 
             // 设置OAuth2认证
-            var oauthConfigs = OAuthConfig.GetValids(GrantTypes.AuthorizationCode);
+            var oauthConfigs = OAuthConfig.GetValids(TenantContext.CurrentId, GrantTypes.AuthorizationCode);
             if (oauthConfigs.Count > 0)
             {
                 var cfg = oauthConfigs[0];
