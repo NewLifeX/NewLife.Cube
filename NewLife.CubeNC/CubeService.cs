@@ -406,7 +406,7 @@ public static class CubeService
         app.UseStardust();
 
         app.UseMiddleware<RunTimeMiddleware>();
-        app.UseMiddleware<TenantMiddleware>();
+        app.UseMiddleware<DataScopeMiddleware>();
 
         if (env != null) app.UseCubeDefaultUI(env);
 

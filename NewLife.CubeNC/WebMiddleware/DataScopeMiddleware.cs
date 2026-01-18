@@ -3,9 +3,9 @@ using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.WebMiddleware;
 
-/// <summary>租户中间件。设置租户上下文</summary>
+/// <summary>上下文中间件。设置租户上下文和数据权限上下文</summary>
 /// <param name="next"></param>
-public class TenantMiddleware(RequestDelegate next)
+public class DataScopeMiddleware(RequestDelegate next)
 {
     private readonly RequestDelegate _next = next ?? throw new ArgumentNullException(nameof(next));
 
@@ -15,32 +15,38 @@ public class TenantMiddleware(RequestDelegate next)
     public async Task Invoke(HttpContext ctx)
     {
         // 找到租户，并设置上下文。该上下文将全局影响魔方和XCode
-        var changed = false;
+        var tenantChanged = false;
+        var dataScopeChanged = false;
+
         try
         {
+            // 1. 设置租户上下文
             var set = CubeSetting.Current;
             if (set.EnableTenant && TenantContext.Current == null)
             {
-                // 进入管理后台（TenantId=0）时，也要设置租户上下文
                 var tenantId = ctx.GetTenantId();
                 if (tenantId >= 0)
                 {
                     ctx.SetTenant(tenantId);
-
-                    changed = true;
+                    tenantChanged = true;
                 }
+            }
+
+            // 2. 设置数据权限上下文
+            if (DataScopeContext.Current == null)
+            {
+                var user = ManageProvider.User;
+                var menuId = ctx.GetMenuId(); // 从路由或参数获取
+                DataScopeContext.Current = DataScopeContext.Create(user, menuId);
+                dataScopeChanged = true;
             }
 
             await _next.Invoke(ctx);
         }
         finally
         {
-            if (changed)
-            {
-                TenantContext.Current = null;
-
-                //ManageProvider.Provider.Tenant = null;
-            }
+            if (tenantChanged) TenantContext.Current = null;
+            if (dataScopeChanged) DataScopeContext.Current = null;
         }
     }
 }
