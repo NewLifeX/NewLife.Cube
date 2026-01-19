@@ -36,8 +36,13 @@ public class DataScopeMiddleware(RequestDelegate next)
             if (DataScopeContext.Current == null)
             {
                 var user = ManageProvider.User;
-                var menuId = ctx.GetMenuId(); // 从路由或参数获取
-                DataScopeContext.Current = DataScopeContext.Create(user, menuId);
+
+                // 从路由或参数获取菜单。专用于菜单级别数据权限作用域（很少用）
+                //var menuId = ctx.GetMenuId(); 
+                var url = ctx.Request.Path + "";
+                var menu = ManageProvider.Menu?.FindByUrl(url);
+
+                DataScopeContext.Current = DataScopeContext.Create(user, menu);
                 dataScopeChanged = true;
             }
 

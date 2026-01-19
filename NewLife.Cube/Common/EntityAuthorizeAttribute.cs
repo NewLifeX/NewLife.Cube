@@ -77,6 +77,10 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         var menu = ResolveMenu(filterContext, create);
         span?.AppendTag($"menu: {menu}");
 
+        // 为数据权限上下文，设置当前菜单，以便后续获取菜单级数据权限
+        if (menu != null)
+            DataScopeContext.Current?.SetMenu(menu);
+
         // 如果已经处理过，就不处理了
         if (filterContext.Result != null) return;
 
@@ -159,7 +163,9 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
 
         var ctx = filterContext.HttpContext;
         var mf = ManageProvider.Menu;
-        if (ctx.Items["CurrentMenu"] is not IMenu menu)
+        var menu = ManageProvider.CurrentMenu;
+        menu ??= ctx.Items["CurrentMenu"] as IMenu;
+        if (menu == null)
         {
             menu = mf.FindByFullName(fullName) ?? mf.FindByFullName(type.FullName) ?? mf.FindByUrl(url) ?? mf.FindByUrl("~" + url);
 
@@ -170,8 +176,13 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
                 menu = mf.FindByUrl(url2);
             }
 
-            // 兼容旧版本视图权限
-            ctx.Items["CurrentMenu"] = menu;
+            if (menu != null)
+            {
+                ManageProvider.CurrentMenu = menu;
+
+                // 兼容旧版本视图权限
+                ctx.Items["CurrentMenu"] = menu;
+            }
         }
 
         // 创建菜单

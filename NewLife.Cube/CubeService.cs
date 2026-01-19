@@ -238,7 +238,7 @@ public static class CubeService
         app.UseStardust();
 
         app.UseMiddleware<RunTimeMiddleware>();
-        app.UseMiddleware<TenantMiddleware>();
+        app.UseMiddleware<DataScopeMiddleware>();
 
         // 设置默认路由。如果外部已经执行 UseRouting，则直接注册
         app.UseRouter(endpoints =>
