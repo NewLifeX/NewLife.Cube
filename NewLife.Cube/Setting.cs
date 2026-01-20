@@ -369,21 +369,6 @@ public class CubeSetting : Config<CubeSetting>
     [Category("短信验证码")]
     public Int32 SmsExpireMinutes { get; set; } = 5;
 
-    /// <summary>登录模版代码。阿里云短信模版代码，默认100001</summary>
-    [Description("登录模版代码。阿里云短信模版代码，默认100001")]
-    [Category("短信验证码")]
-    public String SmsTemplateLogin { get; set; } = "100001";
-
-    /// <summary>重置模版代码。阿里云短信模版代码，默认100003</summary>
-    [Description("重置模版代码。阿里云短信模版代码，默认100003")]
-    [Category("短信验证码")]
-    public String SmsTemplateReset { get; set; } = "100003";
-
-    /// <summary>绑定模版代码。阿里云短信模版代码，默认100004</summary>
-    [Description("绑定模版代码。阿里云短信模版代码，默认100004")]
-    [Category("短信验证码")]
-    public String SmsTemplateBind { get; set; } = "100004";
-
     /// <summary>短信服务端点。默认 dypnsapi.aliyuncs.com</summary>
     [Description("短信服务端点。默认 dypnsapi.aliyuncs.com")]
     [Category("短信验证码")]
@@ -438,9 +423,6 @@ public class CubeSetting : Config<CubeSetting>
         // 短信验证码默认值
         if (SmsCodeLength <= 0) SmsCodeLength = 4;
         if (SmsExpireMinutes <= 0) SmsExpireMinutes = 5;
-        if (SmsTemplateLogin.IsNullOrEmpty()) SmsTemplateLogin = "100001";
-        if (SmsTemplateReset.IsNullOrEmpty()) SmsTemplateReset = "100003";
-        if (SmsTemplateBind.IsNullOrEmpty()) SmsTemplateBind = "100004";
         if (SmsEndpoint.IsNullOrEmpty()) SmsEndpoint = "dypnsapi.aliyuncs.com";
 
         base.OnLoaded();

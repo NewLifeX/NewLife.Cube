@@ -871,7 +871,7 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [EntityAuthorize]
-    public ApiResponse<Boolean> BindMobile(LoginModel model)
+    public ApiResponse<Boolean> SmsBindMobile(LoginModel model)
     {
         var mobile = model.Username?.Trim() ?? "";
         var code = model.Password?.Trim() ?? "";
@@ -1008,7 +1008,7 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
-    public ApiResponse<Boolean> ResetPasswordBySms(ResetPwdModel model)
+    public ApiResponse<Boolean> SmsResetPassword(ResetPwdModel model)
     {
         var mobile = model.Username?.Trim() ?? "";
         var code = model.Code?.Trim() ?? "";

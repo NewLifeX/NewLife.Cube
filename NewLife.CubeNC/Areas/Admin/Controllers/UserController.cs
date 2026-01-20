@@ -895,7 +895,7 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [EntityAuthorize]
-    public ActionResult BindMobile(String mobile, String code)
+    public ActionResult SmsBindMobile(String mobile, String code)
     {
         mobile = mobile?.Trim() ?? "";
         code = code?.Trim() ?? "";
@@ -1041,7 +1041,7 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
-    public ActionResult ResetPasswordBySms(String mobile, String code, String newPassword, String confirmPassword)
+    public ActionResult SmsResetPassword(String mobile, String code, String newPassword, String confirmPassword)
     {
         mobile = mobile?.Trim() ?? String.Empty;
         code = code?.Trim() ?? String.Empty;
