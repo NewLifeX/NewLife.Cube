@@ -103,6 +103,7 @@
       <Columns>
         <Column Name="ID" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
         <Column Name="TenantId" DataType="Int32" Map="XCode.Membership.Tenant@Id@$@TenantName" Description="租户" />
+        <Column Name="Provider" DataType="String" Description="提供者。对应具体实现类标识，用于区分同类型多渠道" />
         <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。提供者名称" />
         <Column Name="NickName" DataType="String" Description="昵称" />
         <Column Name="Logo" DataType="String" Description="图标" />
@@ -495,6 +496,133 @@
       </Columns>
       <Indexes>
         <Index Columns="Name" Unique="True" />
+      </Indexes>
+    </Table>
+    <Table Name="SmsConfig" Description="短信配置。短信渠道配置，支持多租户多渠道">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Map="XCode.Membership.Tenant@Id@$@TenantName" Description="租户" />
+        <Column Name="Provider" DataType="String" Description="提供者。对应具体实现类标识，用于区分同类型多渠道" />
+        <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。渠道名称，如Aliyun/Tencent" />
+        <Column Name="DisplayName" DataType="String" Description="显示名" />
+        <Column Name="Server" DataType="String" Length="200" Description="服务端点。短信服务地址，如dypnsapi.aliyuncs.com" />
+        <Column Name="AppKey" DataType="String" Description="应用标识。AccessKeyId" />
+        <Column Name="AppSecret" DataType="String" ShowIn="Auto,-List" Length="200" Description="应用密钥。AccessKeySecret" />
+        <Column Name="SignName" DataType="String" Description="签名。短信签名名称" />
+        <Column Name="SchemaName" DataType="String" Description="方案名称。短信方案名称，可选" />
+        <Column Name="CodeLength" DataType="Int32" Description="验证码长度。默认4位" />
+        <Column Name="Expire" DataType="Int32" Description="有效期。验证码有效期，单位秒，默认300秒(5分钟)" />
+        <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="EnableLogin" DataType="Boolean" Description="启用登录。用于登录/注册场景" />
+        <Column Name="EnableReset" DataType="Boolean" Description="启用重置。用于忘记密码场景" />
+        <Column Name="EnableBind" DataType="Boolean" Description="启用绑定。用于绑定手机场景" />
+        <Column Name="EnableNotify" DataType="Boolean" Description="启用通知。用于普通通知场景" />
+        <Column Name="Priority" DataType="Int32" Description="优先级。较大优先" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新者" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="TenantId,Name" Unique="True" />
+        <Index Columns="TenantId,Priority" />
+      </Indexes>
+    </Table>
+    <Table Name="MailConfig" Description="邮件配置。邮件渠道配置，支持多租户多渠道">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Map="XCode.Membership.Tenant@Id@$@TenantName" Description="租户" />
+        <Column Name="Provider" DataType="String" Description="提供者。对应具体实现类标识，用于区分同类型多渠道" />
+        <Column Name="Name" DataType="String" Master="True" Nullable="False" Description="名称。渠道名称" />
+        <Column Name="DisplayName" DataType="String" Description="显示名" />
+        <Column Name="Server" DataType="String" Length="200" Description="服务器。SMTP服务器地址" />
+        <Column Name="Port" DataType="Int32" Description="端口。SMTP端口，默认25，SSL465/587" />
+        <Column Name="EnableSsl" DataType="Boolean" Description="启用SSL。是否使用SSL加密连接" />
+        <Column Name="UserName" DataType="String" Description="用户名。SMTP登录账号" />
+        <Column Name="Password" DataType="String" ShowIn="Auto,-List" Length="200" Description="密码。SMTP登录密码或授权码" />
+        <Column Name="FromMail" DataType="String" Description="发件人邮箱。发送邮件时的发件人地址" />
+        <Column Name="FromName" DataType="String" Description="发件人名称。发送邮件时显示的发件人名称" />
+        <Column Name="CodeLength" DataType="Int32" Description="验证码长度。默认6位" />
+        <Column Name="Expire" DataType="Int32" Description="有效期。验证码有效期，单位秒，默认600秒(10分钟)" />
+        <Column Name="Enable" DataType="Boolean" Description="启用" />
+        <Column Name="Priority" DataType="Int32" Description="优先级。较大优先" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新者" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="TenantId,Name" Unique="True" />
+        <Index Columns="TenantId,Priority" />
+      </Indexes>
+    </Table>
+    <Table Name="NotificationRecord" Description="通知记录。站内信/短信通知/邮件通知/公众号通知/钉钉机器人/企业微信机器人等" ConnName="Log">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Description="租户" />
+        <Column Name="Action" DataType="String" Description="操作。Notify/Alert等" />
+        <Column Name="Channel" DataType="String" Description="渠道。InApp/Sms/Mail/WxMp/DingTalk/WeCom等" />
+        <Column Name="ConfigId" DataType="Int32" Description="渠道编号" />
+        <Column Name="ConfigName" DataType="String" Description="渠道配置" />
+        <Column Name="Provider" DataType="String" Description="提供者。渠道实现标识" />
+        <Column Name="UserId" DataType="Int32" Description="用户。站内信/已知用户" />
+        <Column Name="Target" DataType="String" Length="200" Description="目标。手机号/邮箱/openid/机器人地址等" />
+        <Column Name="Title" DataType="String" Master="True" Length="200" Description="标题。站内信/邮件主题" />
+        <Column Name="Content" DataType="String" Length="2000" Description="内容" />
+        <Column Name="Success" DataType="Boolean" Description="成功" />
+        <Column Name="Result" DataType="String" Length="500" Description="结果。包含错误信息" />
+        <Column Name="Read" DataType="Boolean" Description="已读。站内信/弹窗" />
+        <Column Name="ReadTime" DataType="DateTime" Description="已读时间" />
+        <Column Name="TraceId" DataType="String" Description="追踪。链路追踪" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="TenantId,Channel,UserId,Target,Id" />
+        <Index Columns="TenantId,Channel,Id" />
+        <Index Columns="Channel,Target,Id" />
+        <Index Columns="UserId,Read,Id" />
+      </Indexes>
+    </Table>
+    <Table Name="VerifyCodeRecord" Description="验证码记录。短信/邮件等验证码生命周期与验证结果" ConnName="Log">
+      <Columns>
+        <Column Name="Id" DataType="Int64" PrimaryKey="True" DataScale="time" Description="编号" />
+        <Column Name="TenantId" DataType="Int32" Description="租户" />
+        <Column Name="Action" DataType="String" Description="操作。Login/Reset/Bind等" />
+        <Column Name="Channel" DataType="String" Description="渠道。Sms/Mail等" />
+        <Column Name="ConfigId" DataType="Int32" Description="渠道编号" />
+        <Column Name="ConfigName" DataType="String" Description="渠道配置" />
+        <Column Name="Provider" DataType="String" Description="提供者。渠道实现标识" />
+        <Column Name="UserId" DataType="Int32" Description="用户。已知的用户编号" />
+        <Column Name="Target" DataType="String" Length="200" Description="目标。手机号/邮箱等" />
+        <Column Name="Code" DataType="String" Description="验证码" />
+        <Column Name="Content" DataType="String" Length="500" Description="内容。发送时的完整内容" />
+        <Column Name="Success" DataType="Boolean" Description="发送成功" />
+        <Column Name="Result" DataType="String" Length="500" Description="发送结果。包含错误信息" />
+        <Column Name="ExpireTime" DataType="DateTime" Description="过期时间。验证码过期时间" />
+        <Column Name="VerifyTimes" DataType="Int32" Description="验证次数。验证码被验证的次数，0表示未验证" />
+        <Column Name="LastVerifyTime" DataType="DateTime" Description="最后验证时间。最后一次验证的时间" />
+        <Column Name="LastVerifyResult" DataType="Boolean" Description="最后验证结果。最后一次验证码是否正确" />
+        <Column Name="TraceId" DataType="String" Length="200" Description="追踪。链路追踪" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="TenantId,Channel,UserId,Target,Id" />
+        <Index Columns="TenantId,Channel,Id" />
+        <Index Columns="Channel,Target,Id" />
       </Indexes>
     </Table>
   </Tables>

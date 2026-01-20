@@ -588,7 +588,7 @@ public class UserController : EntityController<User, UserModel>
         if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
 
         // 校验手机号格式
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
+        if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
 
         // 检查短信服务是否启用
         var set = CubeSetting.Current;
@@ -622,7 +622,7 @@ public class UserController : EntityController<User, UserModel>
         {
             // 发送短信验证码
             var expireMinutes = set.SmsExpireMinutes;
-            var code = SmsVerifyCodeService.GenerateVerifyCode();
+            var code = SmsService.GenerateVerifyCode();
             var rs = await _smsVerifyCode.SendLogin(mobile, code, expireMinutes);
             if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
                 return false.ToRemotingErrorApiResponse("短信发送失败");
@@ -663,7 +663,7 @@ public class UserController : EntityController<User, UserModel>
         var remember = model.Remember;
 
         if (mobile.IsNullOrEmpty()) return res.ToFailApiResponse("手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return res.ToFailApiResponse("手机号格式不正确");
+        if (!SmsService.IsValidPhone(mobile)) return res.ToFailApiResponse("手机号格式不正确");
         if (code.IsNullOrEmpty()) return res.ToFailApiResponse("验证码不能为空");
 
         var ip = UserHost;
@@ -794,7 +794,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
+        if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
 
         // 2. 检查当前用户是否已登录
         var currentUser = ManageProvider.User as User;
@@ -837,7 +837,7 @@ public class UserController : EntityController<User, UserModel>
         {
             // 发送短信验证码
             var expireMinutes = set.SmsExpireMinutes;
-            var code = SmsVerifyCodeService.GenerateVerifyCode();
+            var code = SmsService.GenerateVerifyCode();
             var rs = await _smsVerifyCode.SendBind(mobile, code, expireMinutes);
             if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
                 return false.ToRemotingErrorApiResponse("短信发送失败");
@@ -878,7 +878,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
+        if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return false.ToParaApiResponse("验证码不能为空");
@@ -937,7 +937,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
+        if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
 
         // 2. 检查手机号是否已注册
         var existingUser = XCode.Membership.User.FindByMobile(mobile);
@@ -976,7 +976,7 @@ public class UserController : EntityController<User, UserModel>
         {
             // 发送短信验证码
             var expireMinutes = set.SmsExpireMinutes;
-            var code = SmsVerifyCodeService.GenerateVerifyCode();
+            var code = SmsService.GenerateVerifyCode();
             var rs = await _smsVerifyCode.SendReset(mobile, code, expireMinutes);
             if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
                 return false.ToRemotingErrorApiResponse("短信发送失败");
@@ -1017,7 +1017,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
+        if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return false.ToParaApiResponse("验证码不能为空");

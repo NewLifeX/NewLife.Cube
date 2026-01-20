@@ -337,60 +337,10 @@ public class CubeSetting : Config<CubeSetting>
 
     #region 短信验证码
 
-    /// <summary>启用短信验证码。默认false</summary>
-    [Description("启用短信验证码。默认false")]
+    /// <summary>启用短信。启用短信验证码功能，具体渠道配置在SmsConfig表中管理</summary>
+    [Description("启用短信。启用短信验证码功能，具体渠道配置在SmsConfig表中管理")]
     [Category("短信验证码")]
-    public Boolean EnableSms { get; set; } = true;
-
-    /// <summary>短信AccessKeyId。阿里云 AccessKeyId</summary>
-    [Description("短信AccessKeyId。阿里云 AccessKeyId")]
-    [Category("短信验证码")]
-    public String SmsAccessKeyId { get; set; } = $"";
-
-    /// <summary>短信AccessKeySecret。阿里云 AccessKeySecret</summary>
-    [Description("短信AccessKeySecret。阿里云 AccessKeySecret")]
-    [Category("短信验证码")]
-    public String SmsAccessKeySecret { get; set; } = $"";
-
-    /// <summary>短信签名。阿里云短信签名名称</summary>
-    [Description("短信签名。阿里云短信签名名称")]
-    [Category("短信验证码")]
-    public String SmsSignName { get; set; }
-
-    /// <summary>短信方案名称。阿里云短信方案名称，可选</summary>
-    [Description("短信方案名称。阿里云短信方案名称，可选")]
-    [Category("短信验证码")]
-    public String SmsSchemaName { get; set; }
-
-    /// <summary>验证码长度。默认4位</summary>
-    [Description("验证码长度。默认4位")]
-    [Category("短信验证码")]
-    public Int32 SmsCodeLength { get; set; } = 4;
-
-    /// <summary>验证码有效期。分钟，默认5分钟</summary>
-    [Description("验证码有效期。分钟，默认5分钟")]
-    [Category("短信验证码")]
-    public Int32 SmsExpireMinutes { get; set; } = 5;
-
-    /// <summary>登录模版代码。阿里云短信模版代码，默认100001</summary>
-    [Description("登录模版代码。阿里云短信模版代码，默认100001")]
-    [Category("短信验证码")]
-    public String SmsTemplateLogin { get; set; } = "100001";
-
-    /// <summary>重置模版代码。阿里云短信模版代码，默认100003</summary>
-    [Description("重置模版代码。阿里云短信模版代码，默认100003")]
-    [Category("短信验证码")]
-    public String SmsTemplateReset { get; set; } = "100003";
-
-    /// <summary>绑定模版代码。阿里云短信模版代码，默认100004</summary>
-    [Description("绑定模版代码。阿里云短信模版代码，默认100004")]
-    [Category("短信验证码")]
-    public String SmsTemplateBind { get; set; } = "100004";
-
-    /// <summary>短信服务端点。默认 dypnsapi.aliyuncs.com</summary>
-    [Description("短信服务端点。默认 dypnsapi.aliyuncs.com")]
-    [Category("短信验证码")]
-    public String SmsEndpoint { get; set; } = "dypnsapi.aliyuncs.com";
+    public Boolean EnableSms { get; set; }
     #endregion
 
     #region 方法
@@ -437,14 +387,6 @@ public class CubeSetting : Config<CubeSetting>
         if (PaswordStrength.IsNullOrEmpty()) PaswordStrength = @"^(?=.*\d.*)(?=.*[a-z].*)(?=.*[A-Z].*)(?=.*[^(0-9a-zA-Z)].*).{8,32}$";
         if (MaxLoginError <= 0) MaxLoginError = 5;
         if (LoginForbiddenTime <= 0) LoginForbiddenTime = 300;
-
-        // 短信验证码默认值
-        if (SmsCodeLength <= 0) SmsCodeLength = 4;
-        if (SmsExpireMinutes <= 0) SmsExpireMinutes = 5;
-        if (SmsTemplateLogin.IsNullOrEmpty()) SmsTemplateLogin = "100001";
-        if (SmsTemplateReset.IsNullOrEmpty()) SmsTemplateReset = "100003";
-        if (SmsTemplateBind.IsNullOrEmpty()) SmsTemplateBind = "100004";
-        if (SmsEndpoint.IsNullOrEmpty()) SmsEndpoint = "dypnsapi.aliyuncs.com";
 
         base.OnLoaded();
     }

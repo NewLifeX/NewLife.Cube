@@ -99,7 +99,6 @@
     <Compile Include="..\NewLife.CubeNC\Services\ISmsVerifyCode.cs" Link="Services\ISmsVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\SmsVerifyCodeService.cs" Link="Services\SmsVerifyCodeService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\TokenService.cs" Link="Services\TokenService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
@@ -139,6 +138,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Entity\Models\" />
     <Folder Include="Session\" />
     <Folder Include="Modules\" />
     <Folder Include="ViewModels\" />
