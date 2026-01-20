@@ -27,6 +27,19 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(100, true, Icon = "fa-user")]
 public class UserController : EntityController<User, UserModel>
 {
+    #region 短信验证码缓存Key前缀常量
+    /// <summary>短信登录IP发送限制缓存前缀</summary>
+    private const String SmsLoginIpPrefix = "SmsLogin:IP:";
+    /// <summary>短信登录最后发送时间缓存前缀</summary>
+    private const String SmsLoginLastSendPrefix = "SmsLogin:LastSend:";
+    /// <summary>短信登录验证码缓存前缀</summary>
+    private const String SmsLoginCodePrefix = "SmsLogin:Code:";
+    /// <summary>短信登录手机号错误次数缓存前缀</summary>
+    private const String SmsLoginErrorPrefix = "SmsLogin:Error:";
+    /// <summary>短信登录IP错误次数缓存前缀</summary>
+    private const String SmsLoginErrorIpPrefix = "SmsLogin:Error:IP:";
+    #endregion
+
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private readonly ICache _cache;
     private readonly PasswordService _passwordService;
@@ -604,14 +617,14 @@ public class UserController : EntityController<User, UserModel>
             return false.ToErrorApiResponse("短信签名未配置，请在系统参数中配置SmsSignName");
 
         var ip = UserHost;
-        var ipKey = $"SmsLogin:IP:{ip}";
+        var ipKey = $"{SmsLoginIpPrefix}{ip}";
 
         // 防止频繁发送（IP限制）
         var ipCount = _cache.Get<Int32>(ipKey);
         if (ipCount >= 5) return false.ToFailApiResponse("发送频繁，请稍后再试");
 
         // 防止频繁发送（手机号限制，60秒内只能发一次）
-        var lastSend = _cache.Get<DateTime>($"SmsLogin:LastSend:{mobile}");
+        var lastSend = _cache.Get<DateTime>($"{SmsLoginLastSendPrefix}{mobile}");
         if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
         {
             var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
@@ -628,11 +641,11 @@ public class UserController : EntityController<User, UserModel>
                 return false.ToRemotingErrorApiResponse("短信发送失败");
 
             // 缓存验证码用于校验
-            var codeKey = $"SmsLogin:Code:{mobile}";
+            var codeKey = $"{SmsLoginCodePrefix}{mobile}";
             _cache.Set(codeKey, code, expireMinutes * 60);
 
             // 记录发送时间
-            _cache.Set($"SmsLogin:LastSend:{mobile}", DateTime.Now, 60);
+            _cache.Set($"{SmsLoginLastSendPrefix}{mobile}", DateTime.Now, 60);
 
             // 累计IP发送次数
             _cache.Increment(ipKey, 1);
@@ -667,9 +680,9 @@ public class UserController : EntityController<User, UserModel>
         if (code.IsNullOrEmpty()) return res.ToFailApiResponse("验证码不能为空");
 
         var ip = UserHost;
-        var key = $"SmsLogin:Error:{mobile}";
+        var key = $"{SmsLoginErrorPrefix}{mobile}";
         var errors = _cache.Get<Int32>(key);
-        var ipKey = $"SmsLogin:Error:IP:{ip}";
+        var ipKey = $"{SmsLoginErrorIpPrefix}{ip}";
         var ipErrors = _cache.Get<Int32>(ipKey);
 
         var set = CubeSetting.Current;
@@ -689,7 +702,7 @@ public class UserController : EntityController<User, UserModel>
                 throw new InvalidOperationException($"IP地址[{ip}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
             // 校验验证码
-            var codeKey = $"SmsLogin:Code:{mobile}";
+            var codeKey = $"{SmsLoginCodePrefix}{mobile}";
             var cachedCode = _cache.Get<String>(codeKey);
             if (cachedCode.IsNullOrEmpty()) throw new InvalidOperationException("验证码已过期，请重新获取");
             if (!cachedCode.EqualIgnoreCase(code)) throw new InvalidOperationException("验证码错误");
