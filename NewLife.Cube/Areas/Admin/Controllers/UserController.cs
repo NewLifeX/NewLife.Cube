@@ -27,6 +27,33 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(100, true, Icon = "fa-user")]
 public class UserController : EntityController<User, UserModel>
 {
+    #region 短信验证码缓存Key前缀常量
+    /// <summary>短信登录IP发送限制缓存前缀</summary>
+    private const String SmsLoginIpPrefix = "SmsLogin:IP:";
+    /// <summary>短信登录最后发送时间缓存前缀</summary>
+    private const String SmsLoginLastSendPrefix = "SmsLogin:LastSend:";
+    /// <summary>短信登录验证码缓存前缀</summary>
+    private const String SmsLoginCodePrefix = "SmsLogin:Code:";
+    /// <summary>短信登录手机号错误次数缓存前缀</summary>
+    private const String SmsLoginErrorPrefix = "SmsLogin:Error:";
+    /// <summary>短信登录IP错误次数缓存前缀</summary>
+    private const String SmsLoginErrorIpPrefix = "SmsLogin:Error:IP:";
+
+    /// <summary>短信绑定手机IP发送限制缓存前缀</summary>
+    private const String SmsBindIpPrefix = "SmsBind:IP:";
+    /// <summary>短信绑定手机最后发送时间缓存前缀</summary>
+    private const String SmsBindLastSendPrefix = "SmsBind:LastSend:";
+    /// <summary>短信绑定手机验证码缓存前缀</summary>
+    private const String SmsBindCodePrefix = "SmsBind:Code:";
+
+    /// <summary>短信重置密码IP发送限制缓存前缀</summary>
+    private const String SmsResetIpPrefix = "SmsReset:IP:";
+    /// <summary>短信重置密码最后发送时间缓存前缀</summary>
+    private const String SmsResetLastSendPrefix = "SmsReset:LastSend:";
+    /// <summary>短信重置密码验证码缓存前缀</summary>
+    private const String SmsResetCodePrefix = "SmsReset:Code:";
+    #endregion
+
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private readonly ICache _cache;
     private readonly UserService _userService;
@@ -577,9 +604,9 @@ public class UserController : EntityController<User, UserModel>
         if (code.IsNullOrEmpty()) return res.ToFailApiResponse("验证码不能为空");
 
         var ip = UserHost;
-        var key = $"SmsLogin:Error:{mobile}";
+        var key = $"{SmsLoginErrorPrefix}{mobile}";
         var errors = _cache.Get<Int32>(key);
-        var ipKey = $"SmsLogin:Error:IP:{ip}";
+        var ipKey = $"{SmsLoginErrorIpPrefix}{ip}";
         var ipErrors = _cache.Get<Int32>(ipKey);
 
         var set = CubeSetting.Current;
@@ -599,7 +626,7 @@ public class UserController : EntityController<User, UserModel>
                 throw new InvalidOperationException($"IP地址[{ip}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
             // 校验验证码
-            var codeKey = $"SmsLogin:Code:{mobile}";
+            var codeKey = $"{SmsLoginCodePrefix}{mobile}";
             var cachedCode = _cache.Get<String>(codeKey);
             if (cachedCode.IsNullOrEmpty()) throw new InvalidOperationException("验证码已过期，请重新获取");
             if (!cachedCode.EqualIgnoreCase(code)) throw new InvalidOperationException("验证码错误");
@@ -804,7 +831,7 @@ public class UserController : EntityController<User, UserModel>
         var ip = UserHost;
 
         // 5. 验证验证码
-        var codeKey = $"SmsBind:Code:{mobile}";
+        var codeKey = $"{SmsBindCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
 
         if (cachedCode.IsNullOrEmpty()) return false.ToParaApiResponse("验证码已过期或不存在，请重新获取");
@@ -949,7 +976,7 @@ public class UserController : EntityController<User, UserModel>
         var ip = UserHost;
 
         // 7. 验证验证码
-        var codeKey = $"SmsReset:Code:{mobile}";
+        var codeKey = $"{SmsResetCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
 
         if (cachedCode.IsNullOrEmpty()) return false.ToParaApiResponse("验证码已过期或不存在，请重新获取");
