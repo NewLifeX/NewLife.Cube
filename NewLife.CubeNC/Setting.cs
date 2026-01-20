@@ -309,6 +309,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableUserStat { get; set; } = true;
 
+    /// <summary>启用短信。包括短信验证码和系统通知，默认false</summary>
+    [Description("启用短信。包括短信验证码和系统通知，默认false")]
+    [Category("系统功能")]
+    public Boolean EnableSms { get; set; }
+
+    /// <summary>启用邮件。包括邮件验证码和系统通知，默认false</summary>
+    [Description("启用邮件。包括邮件验证码和系统通知，默认false")]
+    [Category("系统功能")]
+    public Boolean EnableMail { get; set; }
+
     /// <summary>数据保留时间。审计日志与OAuth日志，默认30天</summary>
     [Description("数据保留时间。审计日志与OAuth日志，默认30天")]
     [Category("系统功能")]
@@ -333,14 +343,6 @@ public class CubeSetting : Config<CubeSetting>
     [Description("最大备份行数。页面允许备份的最大行数，默认10_000_000")]
     [Category("系统功能")]
     public Int32 MaxBackup { get; set; } = 10_000_000;
-    #endregion
-
-    #region 短信验证码
-
-    /// <summary>启用短信。启用短信验证码功能，具体渠道配置在SmsConfig表中管理</summary>
-    [Description("启用短信。启用短信验证码功能，具体渠道配置在SmsConfig表中管理")]
-    [Category("短信验证码")]
-    public Boolean EnableSms { get; set; }
     #endregion
 
     #region 方法

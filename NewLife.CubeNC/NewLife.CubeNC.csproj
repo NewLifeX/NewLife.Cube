@@ -76,16 +76,20 @@
     <Compile Include="..\NewLife.Cube\Entity\Models\AppModuleModel.cs" Link="Entity\Models\AppModuleModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AttachmentModel.cs" Link="Entity\Models\AttachmentModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\CronJobModel.cs" Link="Entity\Models\CronJobModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\MailConfigModel.cs" Link="Entity\Models\MailConfigModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\ModelColumnModel.cs" Link="Entity\Models\ModelColumnModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\ModelTableModel.cs" Link="Entity\Models\ModelTableModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\NotificationRecordModel.cs" Link="Entity\Models\NotificationRecordModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\OAuthConfigModel.cs" Link="Entity\Models\OAuthConfigModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\OAuthLogModel.cs" Link="Entity\Models\OAuthLogModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\OrderManagerModel.cs" Link="Entity\Models\OrderManagerModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\PrincipalAgentModel.cs" Link="Entity\Models\PrincipalAgentModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\SmsConfigModel.cs" Link="Entity\Models\SmsConfigModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\UserConnectModel.cs" Link="Entity\Models\UserConnectModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\UserOnlineModel.cs" Link="Entity\Models\UserOnlineModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\UserStatModel.cs" Link="Entity\Models\UserStatModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\UserTokenModel.cs" Link="Entity\Models\UserTokenModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\VerifyCodeRecordModel.cs" Link="Entity\Models\VerifyCodeRecordModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
@@ -112,15 +116,27 @@
     <Compile Include="..\NewLife.Cube\Entity\用户链接.cs">
       <Link>Entity\用户链接.cs</Link>
     </Compile>
+    <Compile Include="..\NewLife.Cube\Entity\短信配置.Biz.cs" Link="Entity\短信配置.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\短信配置.cs" Link="Entity\短信配置.cs" />
     <Compile Include="..\NewLife.Cube\Entity\访问规则.Biz.cs" Link="Entity\访问规则.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\访问规则.cs" Link="Entity\访问规则.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\通知记录.Biz.cs" Link="Entity\通知记录.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\通知记录.cs" Link="Entity\通知记录.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\邮件配置.Biz.cs" Link="Entity\邮件配置.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\邮件配置.cs" Link="Entity\邮件配置.cs" />
     <Compile Include="..\NewLife.Cube\Entity\附件.Biz.cs" Link="Entity\附件.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\附件.cs" Link="Entity\附件.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\验证码记录.Biz.cs" Link="Entity\验证码记录.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\验证码记录.cs" Link="Entity\验证码记录.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
     <Compile Include="..\NewLife.Cube\Models\ImportContext.cs" Link="Models\ImportContext.cs" />
+    <Compile Include="..\NewLife.Cube\Models\LoginResult.cs" Link="Models\LoginResult.cs" />
     <Compile Include="..\NewLife.Cube\Models\TokenInModel.cs" Link="Models\TokenInModel.cs" />
+    <Compile Include="..\NewLife.Cube\Models\VerifyCodeModel.cs" Link="Models\VerifyCodeModel.cs" />
+    <Compile Include="..\NewLife.Cube\Services\MailService.cs" Link="Services\MailService.cs" />
+    <Compile Include="..\NewLife.Cube\Services\SmsService.cs" Link="Services\SmsService.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\CheckInData.cs" Link="Web\Models\CheckInData.cs" />
@@ -204,8 +220,5 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
 </Project>

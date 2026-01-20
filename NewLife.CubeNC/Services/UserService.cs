@@ -1,26 +1,267 @@
-﻿using NewLife.Cube.Entity;
+﻿using System.Diagnostics;
+using System.Text;
+using NewLife.Caching;
+using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
+using NewLife.Cube.Models;
 using NewLife.Cube.Web;
 using NewLife.Log;
+using NewLife.Security;
 using NewLife.Threading;
+using NewLife.Web;
 using XCode;
 using XCode.Membership;
+using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.Services;
 
-/// <summary>
-/// 用户服务
-/// </summary>
-public class UserService
+/// <summary>用户服务</summary>
+/// <param name="cacheProvider"></param>
+/// <param name="tracer"></param>
+public class UserService(SmsService smsService, MailService mailService, ICacheProvider cacheProvider, ITracer tracer)
 {
-    private readonly ITracer _tracer;
+    #region 属性
+    private readonly ICache _cache = cacheProvider.Cache;
+    #endregion
 
-    /// <summary>
-    /// 实例化用户服务
-    /// </summary>
-    /// <param name="provider"></param>
-    public UserService(IServiceProvider provider) => _tracer = provider?.GetService<ITracer>();
+    #region 登录
+    /// <summary>登录</summary>
+    /// <param name="loginModel"></param>
+    /// <param name="httpContext"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="XException"></exception>
+    public LoginResult Login(LoginModel loginModel, HttpContext httpContext)
+    {
+        var username = loginModel.Username;
+        var password = loginModel.Password;
+        var remember = loginModel.Remember;
+        var ip = httpContext.GetUserHost();
+        using var span = tracer?.NewSpan(nameof(Login), new { username, ip });
 
-    #region 核心控制
+        // 连续错误校验
+        var key = $"CubeLogin:{username}";
+        var errors = _cache.Get<Int32>(key);
+        var ipKey = $"CubeLogin:{ip}";
+        var ipErrors = _cache.Get<Int32>(ipKey);
+
+        var set = CubeSetting.Current;
+        var req = httpContext.Request;
+        var returnUrl = req.GetRequestValue("r");
+        if (returnUrl.IsNullOrEmpty()) returnUrl = req.GetRequestValue("ReturnUrl");
+        try
+        {
+            if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
+            if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password), "密码不能为空！");
+
+            if (errors >= set.MaxLoginError && set.MaxLoginError > 0)
+                throw new InvalidOperationException($"[{username}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
+                throw new InvalidOperationException($"IP地址[{ip}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+
+            var pdic = loginModel.Pkey.IsNullOrEmpty()
+              ? new Tuple<String, String>(null, null)
+              : _cache.Get<Tuple<String, String>>(loginModel.Pkey);
+            var rsaKey = pdic.Item2;
+            password = rsaKey.IsNullOrEmpty() ? password : Decrypt(rsaKey, password);
+
+            var provider = ManageProvider.Provider;
+            if (provider.Login(username, password, remember) == null)
+                return new LoginResult { Result = "提供的用户名或密码不正确。" };
+
+            // 登录成功，清空错误数
+            if (errors > 0) _cache.Remove(key);
+            if (ipErrors > 0) _cache.Remove(ipKey);
+
+            // 移除秘钥私钥信息，避免重放
+            if (!loginModel.Pkey.IsNullOrEmpty()) _cache.Remove(loginModel.Pkey);
+
+            // 记录在线统计
+            var stat = UserStat.GetOrAdd(DateTime.Today);
+            if (stat != null)
+            {
+                stat.Logins++;
+                stat.SaveAsync(5_000);
+            }
+
+            // 设置租户
+            httpContext.ChooseTenant(provider.Current.ID);
+
+            var tokens = httpContext.IssueTokenAndRefreshToken(provider.Current, TimeSpan.FromSeconds(set.TokenExpire));
+            return new LoginResult { AccessToken = tokens.Item1, RefreshToken = tokens.Item2 };
+        }
+        catch (Exception ex)
+        {
+            // 登录失败比较重要，记录一下
+            var action = ex is InvalidOperationException ? "风控" : "登录";
+            LogProvider.Provider.WriteLog(typeof(User), action, false, ex.Message, 0, username, ip);
+            XTrace.WriteLine("[{0}]登录失败！{1}", username, ex.Message);
+            XTrace.WriteException(ex);
+
+            // 累加错误数，首次出错时设置过期时间
+            _cache.Increment(key, 1);
+            _cache.Increment(ipKey, 1);
+            var time = 300;
+            if (set.LoginForbiddenTime > 0) time = set.LoginForbiddenTime;
+            if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(time));
+            if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(time));
+
+            throw;
+        }
+    }
+
+    private static String Decrypt(String privateKey, String decryptString)
+    {
+        var decryptedData = RSAHelper.Decrypt(Convert.FromBase64String(decryptString), privateKey, false);
+
+        return Encoding.UTF8.GetString(decryptedData);
+    }
+    #endregion
+
+    #region 验证码
+    /// <summary>发送登录验证码</summary>
+    public async Task<VerifyCodeRecord> SendVerifyCode(VerifyCodeModel model, String ip)
+    {
+        var user = model.Username?.Trim() ?? "";
+        if (user.IsNullOrEmpty()) throw new XException("账号不能为空");
+
+        if (model.Channel.EqualIgnoreCase("Mail") || user.Contains('@') && user.Contains('.'))
+            return await SendMailCode(model, ip);
+
+        if (model.Channel.EqualIgnoreCase("Sms") || SmsService.IsValidPhone(user))
+            return await SendSmsCode(model, ip);
+
+        throw new NotSupportedException();
+    }
+
+    private async Task<VerifyCodeRecord> SendSmsCode(VerifyCodeModel model, String ip)
+    {
+        var mobile = model.Username?.Trim() ?? "";
+        if (mobile.IsNullOrEmpty()) throw new XException("手机号不能为空");
+
+        // 校验手机号格式
+        if (!SmsService.IsValidPhone(mobile)) throw new XException("手机号格式不正确");
+
+        // 检查短信服务是否启用
+        var set = CubeSetting.Current;
+        if (!set.EnableSms) throw new XException("短信验证码功能未启用");
+
+        //if (_smsVerifyCode == null) throw new XException("短信服务未配置");
+        var config = smsService.GetConfig(TenantContext.CurrentId, model.Action);
+
+        // 检查短信配置是否完整
+        if (config.AppKey.IsNullOrEmpty() || config.AppSecret.IsNullOrEmpty())
+            throw new XException("短信AccessKey未配置，请在系统参数中配置AppKey和AppSecret");
+
+        if (config.SignName.IsNullOrEmpty())
+            throw new XException("短信签名未配置，请在系统参数中配置SignName");
+
+        //var ip = UserHost;
+        var ipKey = $"SmsLogin:IP:{ip}";
+
+        // 防止频繁发送（IP限制）
+        var ipCount = _cache.Get<Int32>(ipKey);
+        if (ipCount >= 5) throw new XException("发送频繁，请稍后再试");
+
+        // 防止频繁发送（手机号限制，60秒内只能发一次）
+        var lastSend = _cache.Get<DateTime>($"SmsLogin:LastSend:{mobile}");
+        if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
+        {
+            var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
+            throw new XException($"请{wait}秒后再试");
+        }
+
+        try
+        {
+            // 发送短信验证码
+            var code = SmsService.GenerateVerifyCode();
+            var rs = await smsService.SendVerifyCode(model.Action, mobile, code, config);
+            if (rs == null || !rs.Success)
+                throw new XException("短信发送失败");
+
+            // 缓存验证码用于校验
+            var codeKey = $"SmsLogin:Code:{mobile}";
+            _cache.Set(codeKey, code, config.Expire);
+
+            // 记录发送时间
+            _cache.Set($"SmsLogin:LastSend:{mobile}", DateTime.Now, 60);
+
+            // 累计IP发送次数
+            _cache.Increment(ipKey, 1);
+            if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
+
+            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", true, $"手机号：{mobile}", 0, mobile, ip);
+
+            return rs;
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", false, $"手机号：{mobile}，错误：{ex.Message}", 0, mobile, ip);
+            throw;
+        }
+    }
+
+    private async Task<VerifyCodeRecord> SendMailCode(VerifyCodeModel model, String ip)
+    {
+        var mail = model.Username?.Trim() ?? "";
+        if (mail.IsNullOrEmpty()) throw new XException("邮件地址不能为空");
+
+        // 检查短信服务是否启用
+        var set = CubeSetting.Current;
+        if (!set.EnableMail) throw new XException("邮件验证码功能未启用");
+
+        var config = mailService.GetConfig(TenantContext.CurrentId, model.Action);
+
+        var ipKey = $"MailLogin:IP:{ip}";
+
+        // 防止频繁发送（IP限制）
+        var ipCount = _cache.Get<Int32>(ipKey);
+        if (ipCount >= 5) throw new XException("发送频繁，请稍后再试");
+
+        // 防止频繁发送（手机号限制，60秒内只能发一次）
+        var lastSend = _cache.Get<DateTime>($"MailLogin:LastSend:{mail}");
+        if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
+        {
+            var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
+            throw new XException($"请{wait}秒后再试");
+        }
+
+        try
+        {
+            // 发送短信验证码
+            var code = SmsService.GenerateVerifyCode();
+            var rs = await mailService.SendVerifyCode(model.Action, mail, code, config);
+            if (rs == null || !rs.Success)
+                throw new XException("邮件发送失败");
+
+            // 缓存验证码用于校验
+            var codeKey = $"MailLogin:Code:{mail}";
+            _cache.Set(codeKey, code, config.Expire);
+
+            // 记录发送时间
+            _cache.Set($"MailLogin:LastSend:{mail}", DateTime.Now, 60);
+
+            // 累计IP发送次数
+            _cache.Increment(ipKey, 1);
+            if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
+
+            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", true, $"邮箱：{mail}", 0, mail, ip);
+
+            return rs;
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", false, $"邮箱：{mail}，错误：{ex.Message}", 0, mail, ip);
+            throw;
+        }
+    }
+    #endregion
+
+    #region 定时任务
     private TimerX _timer;
     private TimerX _timer2;
     private Int32 _onlines;
@@ -153,7 +394,7 @@ public class UserService
         // 无在线则不执行
         if (_onlines == 0) return [];
 
-        using var span = _tracer?.NewSpan("ClearExpireOnline");
+        using var span = tracer?.NewSpan("ClearExpireOnline");
 
         var set = CubeSetting.Current;
 
@@ -257,7 +498,7 @@ public class UserService
         var set = CubeSetting.Current;
         if (!set.EnableUserStat) return;
 
-        using var span = _tracer?.NewSpan("UserStat");
+        using var span = tracer?.NewSpan("UserStat");
 
         var t1 = DateTime.Today.AddDays(-0);
         var t7 = DateTime.Today.AddDays(-7);

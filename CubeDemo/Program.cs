@@ -23,8 +23,8 @@ services.AddCubeSwagger();
 services.AddCube();
 
 
-//注册短信服务（默认使用Cube的阿里云）
-services.AddSmsVerifyCode();
+////注册短信服务（默认使用Cube的阿里云）
+//services.AddSmsVerifyCode();
 
 var app = builder.Build();
 
