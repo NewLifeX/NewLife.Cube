@@ -687,7 +687,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!ValidFormatHelper.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+        if (!ValidFormatHelper.IsMobile(mobile)) return Json(500, "手机号格式不正确");
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return Json(500, "验证码不能为空");
@@ -836,7 +836,7 @@ public class UserController : EntityController<User, UserModel>
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty())
             return Json(500, "手机号不能为空");
-        if (!ValidFormatHelper.IsValidPhone(mobile))
+        if (!ValidFormatHelper.IsMobile(mobile))
             return Json(500, "手机号格式不正确");
 
         // 2. 验证验证码不能为空

@@ -17,7 +17,7 @@ namespace NewLife.Cube.Common
         /// <summary>验证手机号格式是否正确</summary>
         /// <param name="phone">手机号11位，且全为数字</param>
         /// <returns>格式正确返回true</returns>
-        public static Boolean IsValidPhone(String phone)
+        public static Boolean IsMobile(String phone)
             => !String.IsNullOrWhiteSpace(phone)
                && Regex.IsMatch(phone, @"^1[3-9]\d{9}$");
     }

@@ -80,7 +80,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <exception cref="XException"></exception>
     public LoginResult Login(LoginModel loginModel, HttpContext httpContext)
     {
-        if (ValidFormatHelper.IsValidPhone(loginModel.Username))
+        if (ValidFormatHelper.IsMobile(loginModel.Username))
             return LoginBySms(loginModel, httpContext);
         else if (ValidFormatHelper.IsEmail(loginModel.Username))
             return LoginByMail(loginModel, httpContext);
@@ -149,7 +149,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         using var span = tracer?.NewSpan(nameof(LoginBySms), new { mobile, ip });
 
         if (mobile.IsNullOrEmpty()) throw new ArgumentNullException(nameof(mobile), "手机号不能为空");
-        if (!Common.ValidFormatHelper.IsValidPhone(mobile)) throw new XException("手机号格式不正确");
+        if (!ValidFormatHelper.IsMobile(mobile)) throw new XException("手机号格式不正确");
         if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), "验证码不能为空");
 
         var key = $"{SmsLoginErrorPrefix}{mobile}";
@@ -329,6 +329,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             stat.SaveAsync(5_000);
         }
 
+        // 自动绑定用户到当前租户
+        if (set.EnableTenant) EnsureTenantUser(httpContext, user.ID, ip);
+
         // 设置租户
         httpContext.ChooseTenant(user.ID);
 
@@ -336,6 +339,36 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         var tokens = httpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
         return new LoginResult { AccessToken = tokens.Item1, RefreshToken = tokens.Item2 };
+    }
+
+    /// <summary>确保用户已绑定到当前租户。用户从哪个租户登录/注册，自动添加绑定关系</summary>
+    /// <param name="httpContext">HTTP上下文</param>
+    /// <param name="userId">用户编号</param>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>租户用户绑定记录，无需绑定时返回null</returns>
+    private TenantUser EnsureTenantUser(HttpContext httpContext, Int32 userId, String ip)
+    {
+        // 获取当前请求的租户ID（从Header、QueryString或Cookie）
+        var tenantId = httpContext.GetTenantId();
+        if (tenantId <= 0 || userId <= 0) return null;
+
+        // 检查是否已绑定
+        var tenantUser = TenantUser.FindByTenantIdAndUserId(tenantId, userId);
+        if (tenantUser != null) return tenantUser;
+
+        // 自动创建绑定关系
+        tenantUser = new TenantUser
+        {
+            TenantId = tenantId,
+            UserId = userId,
+            Enable = true,
+            CreateIP = ip,
+            CreateTime = DateTime.Now,
+        };
+        tenantUser.Insert();
+
+        XTrace.WriteLine($"[{userId}]用户自动绑定到租户[{tenantId}]");
+        return tenantUser;
     }
 
     /// <summary>处理登录错误，记录日志并累加错误次数</summary>
@@ -371,7 +404,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (model.Channel.EqualIgnoreCase("Mail") || Common.ValidFormatHelper.IsEmail(user))
             return await SendMailCode(model, ip);
 
-        if (model.Channel.EqualIgnoreCase("Sms") || Common.ValidFormatHelper.IsValidPhone(user))
+        if (model.Channel.EqualIgnoreCase("Sms") || Common.ValidFormatHelper.IsMobile(user))
             return await SendSmsCode(model, ip);
 
         throw new NotSupportedException();
@@ -387,7 +420,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (mobile.IsNullOrEmpty()) throw new XException("手机号不能为空");
 
         // 校验手机号格式
-        if (!Common.ValidFormatHelper.IsValidPhone(mobile)) throw new XException("手机号格式不正确");
+        if (!ValidFormatHelper.IsMobile(mobile)) throw new XException("手机号格式不正确");
 
         // 检查短信服务是否启用
         var set = CubeSetting.Current;
@@ -471,7 +504,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var ipCount = _cache.Get<Int32>(ipKey);
         if (ipCount >= 5) throw new XException("发送频繁，请稍后再试");
 
-        // 防止频繁发送（手机号限制，60秒内只能发一次）
+        // 防止频繁发送 
         var lastSend = _cache.Get<DateTime>($"{MailLoginLastSendPrefix}{mail}");
         if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
         {
@@ -816,7 +849,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return new BindResult { Success = false, Message = "手机号不能为空" };
-        if (!Common.ValidFormatHelper.IsValidPhone(mobile)) return new BindResult { Success = false, Message = "手机号格式不正确" };
+        if (!ValidFormatHelper.IsMobile(mobile)) return new BindResult { Success = false, Message = "手机号格式不正确" };
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return new BindResult { Success = false, Message = "验证码不能为空" };
@@ -875,7 +908,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "手机号不能为空" };
-        if (!Common.ValidFormatHelper.IsValidPhone(mobile)) return new ResetResult { Success = false, Message = "手机号格式不正确" };
+        if (!ValidFormatHelper.IsMobile(mobile)) return new ResetResult { Success = false, Message = "手机号格式不正确" };
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "验证码不能为空" };
