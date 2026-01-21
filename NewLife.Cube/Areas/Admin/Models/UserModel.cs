@@ -1,4 +1,5 @@
 ﻿using NewLife.Collections;
+using NewLife.Cube.Enums;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Models;
@@ -9,24 +10,19 @@ public interface ICubeModel { }
 /// <summary> 登录模型 </summary>
 public class LoginModel : ICubeModel
 {
-    /// <summary>
-    /// 登录用户名
-    /// </summary>
+    /// <summary>登录类型</summary>
+    public LoginType LoginType { get; set; } = LoginType.Password;
+
+    /// <summary> 登录用户名、手机号码、邮箱 </summary>
     public String Username { get; set; }
 
-    /// <summary>
-    /// 密码
-    /// </summary>
+    /// <summary> 密码 </summary>
     public String Password { get; set; }
 
-    /// <summary>
-    /// 记住登录状态
-    /// </summary>
+    /// <summary> 记住登录状态 </summary>
     public Boolean Remember { get; set; }
 
-    /// <summary>
-    /// 秘钥key
-    /// </summary>
+    /// <summary> 秘钥key </summary>
     public String Pkey { get; set; }
 }
 

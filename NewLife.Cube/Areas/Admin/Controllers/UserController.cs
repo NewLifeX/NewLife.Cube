@@ -6,12 +6,14 @@ using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Enums;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.Web.Models;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -28,30 +30,9 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 public class UserController : EntityController<User, UserModel>
 {
     #region 短信验证码缓存Key前缀常量
-    /// <summary>短信登录IP发送限制缓存前缀</summary>
-    private const String SmsLoginIpPrefix = "SmsLogin:IP:";
-    /// <summary>短信登录最后发送时间缓存前缀</summary>
-    private const String SmsLoginLastSendPrefix = "SmsLogin:LastSend:";
-    /// <summary>短信登录验证码缓存前缀</summary>
-    private const String SmsLoginCodePrefix = "SmsLogin:Code:";
-    /// <summary>短信登录手机号错误次数缓存前缀</summary>
-    private const String SmsLoginErrorPrefix = "SmsLogin:Error:";
-    /// <summary>短信登录IP错误次数缓存前缀</summary>
-    private const String SmsLoginErrorIpPrefix = "SmsLogin:Error:IP:";
+    // 登录相关的缓存Key已移至UserService中统一管理
 
-    /// <summary>短信绑定手机IP发送限制缓存前缀</summary>
-    private const String SmsBindIpPrefix = "SmsBind:IP:";
-    /// <summary>短信绑定手机最后发送时间缓存前缀</summary>
-    private const String SmsBindLastSendPrefix = "SmsBind:LastSend:";
-    /// <summary>短信绑定手机验证码缓存前缀</summary>
-    private const String SmsBindCodePrefix = "SmsBind:Code:";
-
-    /// <summary>短信重置密码IP发送限制缓存前缀</summary>
-    private const String SmsResetIpPrefix = "SmsReset:IP:";
-    /// <summary>短信重置密码最后发送时间缓存前缀</summary>
-    private const String SmsResetLastSendPrefix = "SmsReset:LastSend:";
-    /// <summary>短信重置密码验证码缓存前缀</summary>
-    private const String SmsResetCodePrefix = "SmsReset:Code:";
+    // 短信绑定/重置相关缓存Key前缀已移至UserService统一管理
     #endregion
 
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
@@ -272,34 +253,51 @@ public class UserController : EntityController<User, UserModel>
         return model;
     }
 
-    /// <summary>密码登录</summary>
+    /// <summary>登录验证：账号密码登录、手机登录、邮箱登录 </summary>
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
-    public ActionResult Login(LoginModel loginModel)
+    public ApiResponse<TokenInfo> Login(LoginModel model)
     {
-        LoginResult result = null;
+        var res = new TokenInfo();
+        if (string.IsNullOrWhiteSpace(model.Username))
+            return res.ToFailApiResponse("用户名不能为空");
+        if (string.IsNullOrWhiteSpace(model.Password))
+            return res.ToFailApiResponse("密码不能为空");
+
+        LoginResult loginResult = null;
         try
         {
-            if (ModelState.IsValid)
-            {
-                result = _userService.Login(loginModel, HttpContext);
-                if (result != null && !result.AccessToken.IsNullOrEmpty())
-                    return Json(0, "ok", new { Token = result.AccessToken, result.RefreshToken });
-            }
+            //if (ModelState.IsValid)
+            //{
+            loginResult = _userService.Login(model, HttpContext);
+            if (loginResult == null || loginResult.AccessToken.IsNullOrEmpty())
+                return res.ToFailApiResponse(loginResult?.Result); //登录失败
+
+            res.AccessToken = loginResult.AccessToken;
+            res.RefreshToken = loginResult.RefreshToken;
+            return res.ToOkApiResponse("登录成功");
+            //}
+            //else
+            //{
+            //    return res.ToFailApiResponse(ModelState.ToJson());//TODO 处理模型状态错误
+            //}
+
         }
         catch (Exception ex)
         {
-            return Json(500, ex.Message);
+            return res.ToErrorApiResponse(ex.Message);
         }
 
+        //TODO 地址跳转，应该直接操作Response，而不是返回一个视图。API暂时不需要跳转，由前端处理
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
-        var model = GetViewModel(returnUrl);
-        model.LoginTip = result?.Result;
-        model.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
-
-        return Json(0, null, model);
+        var viewModel = GetViewModel(returnUrl);
+        //viewModel.LoginTip = loginResult?.Result;
+        //viewModel.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
+        //return Json(0, null, viewModel);
+        return res.ToFailApiResponse("");
+        ////Response.Redirect(returnUrl,true); 
     }
 
     /// <summary>刷新令牌</summary>
@@ -566,8 +564,8 @@ public class UserController : EntityController<User, UserModel>
     }
 
     #region 验证码登录
-    /// <summary>发送登录短信验证码</summary>
-    /// <param name="model">登录模型:Username手机号</param>
+    /// <summary>发送登录验证码</summary>
+    /// <param name="model">登录模型:Username手机号/邮箱</param>
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
@@ -585,138 +583,7 @@ public class UserController : EntityController<User, UserModel>
             return false.ToRemotingErrorApiResponse("发送失败：" + ex.Message);
         }
     }
-
-    /// <summary>短信验证码登录</summary>
-    /// <param name="model">登录模型:Username手机号，Password验证码</param>
-    /// <returns></returns>
-    [HttpPost]
-    [AllowAnonymous]
-    [Obsolete("=>Login")]
-    public ApiResponse<TokenInfo> SmsLogin(LoginModel model)
-    {
-        var res = new TokenInfo();
-        var mobile = model.Username?.Trim() ?? "";
-        var code = model.Password?.Trim() ?? "";
-        var remember = model.Remember;
-
-        if (mobile.IsNullOrEmpty()) return res.ToFailApiResponse("手机号不能为空");
-        if (!SmsService.IsValidPhone(mobile)) return res.ToFailApiResponse("手机号格式不正确");
-        if (code.IsNullOrEmpty()) return res.ToFailApiResponse("验证码不能为空");
-
-        var ip = UserHost;
-        var key = $"{SmsLoginErrorPrefix}{mobile}";
-        var errors = _cache.Get<Int32>(key);
-        var ipKey = $"{SmsLoginErrorIpPrefix}{ip}";
-        var ipErrors = _cache.Get<Int32>(ipKey);
-
-        var set = CubeSetting.Current;
-
-        //// 检查短信服务是否启用
-        //if (!set.EnableSms) return res.ToErrorApiResponse("短信验证码功能未启用");
-
-        var returnUrl = GetRequest("r");
-        if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
-
-        try
-        {
-            // 错误次数检查
-            if (errors >= set.MaxLoginError && set.MaxLoginError > 0)
-                throw new InvalidOperationException($"[{mobile}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
-            if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
-                throw new InvalidOperationException($"IP地址[{ip}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
-
-            // 校验验证码
-            var codeKey = $"{SmsLoginCodePrefix}{mobile}";
-            var cachedCode = _cache.Get<String>(codeKey);
-            if (cachedCode.IsNullOrEmpty()) throw new InvalidOperationException("验证码已过期，请重新获取");
-            if (!cachedCode.EqualIgnoreCase(code)) throw new InvalidOperationException("验证码错误");
-
-            // 验证通过，移除缓存
-            _cache.Remove(codeKey);
-
-            // 查找用户（按手机号）
-            var user = XCode.Membership.User.FindByMobile(mobile);
-            if (user == null)
-            {
-                // 自动注册
-                if (!set.AutoRegister) throw new InvalidOperationException("用户不存在，且未开启自动注册");
-
-                user = new XCode.Membership.User
-                {
-                    Name = mobile,
-                    DisplayName = $"手机用户{mobile[^4..]}", // 默认用户名u后四位
-                    Mobile = mobile,
-                    Enable = true,
-                    MobileVerified = true,
-                };
-
-                // 设置默认角色
-                var defaultRole = set.DefaultRole;
-                if (!defaultRole.IsNullOrEmpty())
-                {
-                    var role = Role.FindByName(defaultRole);
-                    if (role != null) user.RoleID = role.ID;
-                }
-
-                user.RegisterIP = ip;
-                user.RegisterTime = DateTime.Now;
-                user.Insert();
-
-                LogProvider.Provider.WriteLog(typeof(User), "短信注册", true, $"手机号：{mobile} 自动注册", user.ID, user + "", ip);
-            }
-
-            if (!user.Enable) throw new InvalidOperationException("用户已禁用");
-
-            // 验证通过，执行登录
-            var provider = ManageProvider.Provider;
-            provider.Current = user;
-
-            // 保存Cookie
-            var expire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromMinutes(0);
-            if (set.SessionTimeout > 0 && !remember)
-                expire = TimeSpan.FromSeconds(set.SessionTimeout);
-            provider.SaveCookie(user, expire, HttpContext);
-
-            // 清空错误计数
-            if (errors > 0) _cache.Remove(key);
-            if (ipErrors > 0) _cache.Remove(ipKey);
-
-            // 记录在线统计
-            var stat = UserStat.GetOrAdd(DateTime.Today);
-            if (stat != null)
-            {
-                stat.Logins++;
-                stat.SaveAsync(5_000);
-            }
-
-            // 设置租户
-            HttpContext.ChooseTenant(user.ID);
-
-            LogProvider.Provider.WriteLog(typeof(User), "短信登录", true, $"手机号：{mobile}", user.ID, user + "", ip);
-
-            // 返回登录成功信息
-            var tokens = HttpContext.IssueTokenAndRefreshToken(provider.Current, expire);
-
-            res.AccessToken = tokens.Item1;
-            res.RefreshToken = tokens.Item2;
-            res.Expire = set.TokenExpire;
-            return res.ToOkApiResponse();
-        }
-        catch (Exception ex)
-        {
-            var action = ex is InvalidOperationException ? "风控" : "短信登录";
-            LogProvider.Provider.WriteLog(typeof(User), action, false, ex.Message, 0, mobile, ip);
-            XTrace.WriteLine("[{0}]短信登录失败！{1}", mobile, ex.Message);
-
-            // 累加错误数
-            _cache.Increment(key, 1);
-            _cache.Increment(ipKey, 1);
-            var time = set.LoginForbiddenTime > 0 ? set.LoginForbiddenTime : 300;
-            if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(time));
-            if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(time));
-            return res.ToFailApiResponse(ex.Message);
-        }
-    }
+     
     #endregion
 
     #region 绑定手机号
@@ -812,53 +679,11 @@ public class UserController : EntityController<User, UserModel>
     {
         var mobile = model.Username?.Trim() ?? "";
         var code = model.Password?.Trim() ?? "";
-
-        // 1. 验证手机号格式
-        if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
-        if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
-
-        // 2. 验证验证码不能为空
-        if (code.IsNullOrEmpty()) return false.ToParaApiResponse("验证码不能为空");
-
-        // 3. 检查当前用户是否已登录
-        var currentUser = ManageProvider.User as User;
-        if (currentUser == null || currentUser.ID <= 0) return false.ToFailApiResponse("用户未登录，请先登录");
-
-        // 4. 检查短信服务是否启用
-        var set = CubeSetting.Current;
-        if (!set.EnableSms) return false.ToErrorApiResponse("短信验证码功能未启用");
-
+        var currentUser = ManageProvider.User;
         var ip = UserHost;
 
-        // 5. 验证验证码
-        var codeKey = $"{SmsBindCodePrefix}{mobile}";
-        var cachedCode = _cache.Get<String>(codeKey);
-
-        if (cachedCode.IsNullOrEmpty()) return false.ToParaApiResponse("验证码已过期或不存在，请重新获取");
-        if (!cachedCode.EqualIgnoreCase(code)) return false.ToParaApiResponse("验证码错误");
-
-        // 6. 检查手机号是否已被其他用户绑定
-        var existingUser = XCode.Membership.User.FindByMobile(mobile);
-        if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
-            return false.ToFailApiResponse("该手机号已被其他账户绑定");
-
-        // 7. 绑定手机号到当前用户
-        var user = XCode.Membership.User.FindByID(currentUser.ID);
-        if (user == null) return false.ToFailApiResponse("用户不存在");
-
-        if (user.Mobile != mobile)//手机号不相同才更新
-        {
-            user.Mobile = mobile;
-            user.MobileVerified = true;
-            var updated = user.Update();
-            if (updated <= 0) return false.ToFailApiResponse("绑定失败，请重试");
-        }
-        // 8. 验证成功后删除缓存验证码，防止重复使用
-        _cache.Remove(codeKey);
-
-        LogProvider.Provider.WriteLog(typeof(User), "绑定手机", true, $"手机号：{mobile}", currentUser.ID, currentUser + "", ip);
-
-        return true.ToOkApiResponse("手机号绑定成功");
+        var result = _userService.BindMobile(mobile, code, currentUser, ip);
+        return result.Success ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion
 
@@ -951,54 +776,10 @@ public class UserController : EntityController<User, UserModel>
         var code = model.Code?.Trim() ?? "";
         var newPassword = model.NewPassword?.Trim() ?? "";
         var confirmPassword = model.ConfirmPassword?.Trim() ?? "";
-
-        // 1. 验证手机号格式
-        if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
-        if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
-
-        // 2. 验证验证码不能为空
-        if (code.IsNullOrEmpty()) return false.ToParaApiResponse("验证码不能为空");
-
-        // 3. 验证新密码不能为空
-        if (newPassword.IsNullOrEmpty()) return false.ToParaApiResponse("新密码不能为空");
-
-        // 4. 验证确认密码
-        if (!confirmPassword.IsNullOrEmpty() && newPassword != confirmPassword)
-            return false.ToParaApiResponse("两次输入密码不一致");
-
-        // 5. 验证密码强度
-        if (!_passwordService.Valid(newPassword)) return false.ToParaApiResponse("密码太弱，要求8位起且包含数字大小写字母和符号");
-
-        // 6. 检查短信服务是否启用
-        var set = CubeSetting.Current;
-        if (!set.EnableSms) return false.ToErrorApiResponse("短信验证码功能未启用");
-
         var ip = UserHost;
 
-        // 7. 验证验证码
-        var codeKey = $"{SmsResetCodePrefix}{mobile}";
-        var cachedCode = _cache.Get<String>(codeKey);
-
-        if (cachedCode.IsNullOrEmpty()) return false.ToParaApiResponse("验证码已过期或不存在，请重新获取");
-        if (!cachedCode.EqualIgnoreCase(code)) return false.ToParaApiResponse("验证码错误");
-
-        // 8. 查找用户并更新密码
-        var user = XCode.Membership.User.FindByMobile(mobile);
-        if (user == null || user.ID <= 0) return false.ToFailApiResponse("该手机号未注册");
-
-        var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
-        if (user.Password != newPassHash)
-        {
-            user.Password = newPassHash;
-            var updated = user.Update();
-            if (updated <= 0) return false.ToFailApiResponse("密码重置失败，请重试");
-        }
-        // 9. 验证成功后删除缓存验证码，防止重复使用
-        _cache.Remove(codeKey);
-
-        LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"手机号：{mobile}", user.ID, user + "", ip);
-
-        return true.ToOkApiResponse("密码重置成功");
+        var result = _userService.ResetPassword(mobile, code, newPassword, confirmPassword, ip);
+        return result.Success ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion
 }

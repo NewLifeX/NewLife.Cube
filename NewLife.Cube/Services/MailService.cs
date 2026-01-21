@@ -23,8 +23,7 @@ public class MailService(ICache cache)
 
         // 从数据库查询，待实体类生成后实现
         config = LoadFromDatabase(tenantId, action);
-        if (config != null)
-            cache.Set(cacheKey, config, 300);
+        if (config != null) cache.Set(cacheKey, config, 300);
 
         return config;
     }
@@ -80,7 +79,13 @@ public class MailService(ICache cache)
             }
         }
     }
-
+    /// <summary>发送邮件验证码</summary>
+    /// <param name="action"></param>
+    /// <param name="mail"></param>
+    /// <param name="code"></param>
+    /// <param name="config"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
     public async Task<VerifyCodeRecord> SendVerifyCode(String action, String mail, String code, MailConfigModel config)
     {
         throw new NotImplementedException();

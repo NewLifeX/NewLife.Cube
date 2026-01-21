@@ -71,7 +71,8 @@
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController2.cs" Link="Common\ReadOnlyEntityController2.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
-    <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />
+    <Compile Include="..\NewLife.Cube\Enums\LoginType.cs" Link="Enums\LoginType.cs" />
+     <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AppModel.cs" Link="Entity\Models\AppModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AppModuleModel.cs" Link="Entity\Models\AppModuleModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AttachmentModel.cs" Link="Entity\Models\AttachmentModel.cs" />
@@ -133,6 +134,7 @@
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
     <Compile Include="..\NewLife.Cube\Models\ImportContext.cs" Link="Models\ImportContext.cs" />
     <Compile Include="..\NewLife.Cube\Models\LoginResult.cs" Link="Models\LoginResult.cs" />
+    <Compile Include="..\NewLife.Cube\Models\OperationResult.cs" Link="Models\OperationResult.cs" />
     <Compile Include="..\NewLife.Cube\Models\TokenInModel.cs" Link="Models\TokenInModel.cs" />
     <Compile Include="..\NewLife.Cube\Models\VerifyCodeModel.cs" Link="Models\VerifyCodeModel.cs" />
     <Compile Include="..\NewLife.Cube\Services\MailService.cs" Link="Services\MailService.cs" />

@@ -12,7 +12,9 @@ public class Program
         XTrace.UseConsole();
 
         //CacheBase.Debug = true;
-        CreateHostBuilder(args).Build().Run();
+        var hb = CreateHostBuilder(args);
+        var host = hb.Build();
+        host.Run();
         //var app = ApplicationManager.Load();
 
         //do
@@ -28,12 +30,13 @@ public class Program
 
     public static IHostBuilder CreateHostBuilder(String[] args)
     {
-        return Host.CreateDefaultBuilder(args)
+        var hb = Host.CreateDefaultBuilder(args)
             .ConfigureLogging(logging => { logging.AddXLog(); })
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 //webBuilder.UseUrls("http://*:5000;https://*:5001");
                 webBuilder.UseStartup<Startup>();
             });
+        return hb;
     }
 }

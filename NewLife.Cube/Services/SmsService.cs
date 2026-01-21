@@ -96,7 +96,12 @@ public class SmsService(ICacheProvider cacheProvider)
             }
         }
     }
-
+    /// <summary>发送短信验证码</summary>
+    /// <param name="action"></param>
+    /// <param name="mobile"></param>
+    /// <param name="code"></param>
+    /// <param name="config"></param>
+    /// <returns></returns>
     public async Task<VerifyCodeRecord> SendVerifyCode(String action, String mobile, String code, SmsConfigModel config)
     {
         var key = $"SmsVerify:{config.Provider}:{config.Id}";
