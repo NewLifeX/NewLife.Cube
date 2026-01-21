@@ -6,14 +6,11 @@ using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Enums;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.Web.Models;
-using NewLife.Log;
 using NewLife.Reflection;
-using NewLife.Serialization;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -29,11 +26,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(100, true, Icon = "fa-user")]
 public class UserController : EntityController<User, UserModel>
 {
-    #region 短信验证码缓存Key前缀常量
-    // 登录相关的缓存Key已移至UserService中统一管理
-
-    // 短信绑定/重置相关缓存Key前缀已移至UserService统一管理
-    #endregion
+ 
 
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private readonly ICache _cache;
@@ -260,9 +253,9 @@ public class UserController : EntityController<User, UserModel>
     public ApiResponse<TokenInfo> Login(LoginModel model)
     {
         var res = new TokenInfo();
-        if (string.IsNullOrWhiteSpace(model.Username))
+        if (String.IsNullOrWhiteSpace(model.Username))
             return res.ToFailApiResponse("用户名不能为空");
-        if (string.IsNullOrWhiteSpace(model.Password))
+        if (String.IsNullOrWhiteSpace(model.Password))
             return res.ToFailApiResponse("密码不能为空");
 
         LoginResult loginResult = null;

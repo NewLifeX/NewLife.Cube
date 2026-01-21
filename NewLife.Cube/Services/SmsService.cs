@@ -172,13 +172,7 @@ public class SmsService(ICacheProvider cacheProvider)
     /// <summary>默认有效期（分钟）</summary>
     public const Int32 DefaultExpireMinutes = 5;
 
-    /// <summary>验证手机号格式是否正确</summary>
-    /// <param name="phone">手机号</param>
-    /// <returns>格式正确返回true</returns>
-    public static Boolean IsValidPhone(String phone)
-        => !String.IsNullOrWhiteSpace(phone)
-           && phone.Length >= 11
-           && phone.All(c => c >= '0' && c <= '9');
+
 
     /// <summary>生成验证码</summary>
     /// <param name="codeLength">验证码长度。默认4位</param>

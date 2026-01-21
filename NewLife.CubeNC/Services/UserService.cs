@@ -1,17 +1,14 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using System.Text;
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Enums;
-using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Security;
 using NewLife.Threading;
-using NewLife.Web;
 using XCode;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
@@ -83,13 +80,11 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <exception cref="XException"></exception>
     public LoginResult Login(LoginModel loginModel, HttpContext httpContext)
     {
-        // 根据登录类型分发到不同的登录处理逻辑
-        return loginModel.LoginType switch
-        {
-            LoginType.Tel => LoginBySms(loginModel, httpContext),
-            LoginType.Email => LoginByMail(loginModel, httpContext),
-            _ => LoginByPassword(loginModel, httpContext),
-        };
+        if (ValidFormatHelper.IsValidPhone(loginModel.Username))
+            return LoginBySms(loginModel, httpContext);
+        else if (ValidFormatHelper.IsEmail(loginModel.Username))
+            return LoginByMail(loginModel, httpContext);
+        else return LoginByPassword(loginModel, httpContext);
     }
 
     /// <summary>账号密码登录</summary>
@@ -154,7 +149,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         using var span = tracer?.NewSpan(nameof(LoginBySms), new { mobile, ip });
 
         if (mobile.IsNullOrEmpty()) throw new ArgumentNullException(nameof(mobile), "手机号不能为空");
-        if (!SmsService.IsValidPhone(mobile)) throw new XException("手机号格式不正确");
+        if (!Common.ValidFormatHelper.IsValidPhone(mobile)) throw new XException("手机号格式不正确");
         if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), "验证码不能为空");
 
         var key = $"{SmsLoginErrorPrefix}{mobile}";
@@ -373,10 +368,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var user = model.Username?.Trim() ?? "";
         if (user.IsNullOrEmpty()) throw new XException("账号不能为空");
 
-        if (model.Channel.EqualIgnoreCase("Mail") || user.Contains('@') && user.Contains('.'))
+        if (model.Channel.EqualIgnoreCase("Mail") || Common.ValidFormatHelper.IsEmail(user))
             return await SendMailCode(model, ip);
 
-        if (model.Channel.EqualIgnoreCase("Sms") || SmsService.IsValidPhone(user))
+        if (model.Channel.EqualIgnoreCase("Sms") || Common.ValidFormatHelper.IsValidPhone(user))
             return await SendSmsCode(model, ip);
 
         throw new NotSupportedException();
@@ -392,7 +387,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (mobile.IsNullOrEmpty()) throw new XException("手机号不能为空");
 
         // 校验手机号格式
-        if (!SmsService.IsValidPhone(mobile)) throw new XException("手机号格式不正确");
+        if (!Common.ValidFormatHelper.IsValidPhone(mobile)) throw new XException("手机号格式不正确");
 
         // 检查短信服务是否启用
         var set = CubeSetting.Current;
@@ -821,7 +816,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return new BindResult { Success = false, Message = "手机号不能为空" };
-        if (!SmsService.IsValidPhone(mobile)) return new BindResult { Success = false, Message = "手机号格式不正确" };
+        if (!Common.ValidFormatHelper.IsValidPhone(mobile)) return new BindResult { Success = false, Message = "手机号格式不正确" };
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return new BindResult { Success = false, Message = "验证码不能为空" };
@@ -880,7 +875,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "手机号不能为空" };
-        if (!SmsService.IsValidPhone(mobile)) return new ResetResult { Success = false, Message = "手机号格式不正确" };
+        if (!Common.ValidFormatHelper.IsValidPhone(mobile)) return new ResetResult { Success = false, Message = "手机号格式不正确" };
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "验证码不能为空" };

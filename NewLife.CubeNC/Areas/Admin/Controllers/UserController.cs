@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Reflection;
 using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
@@ -9,8 +8,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Enums;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
@@ -584,7 +583,6 @@ public class UserController : EntityController<User, UserModel>
             Username = mobile,
             Password = code,
             Remember = remember,
-            LoginType = LoginType.Tel,
         };
 
         return Login(loginModel);
@@ -689,7 +687,7 @@ public class UserController : EntityController<User, UserModel>
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!SmsService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+        if (!ValidFormatHelper.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return Json(500, "验证码不能为空");
@@ -838,7 +836,7 @@ public class UserController : EntityController<User, UserModel>
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty())
             return Json(500, "手机号不能为空");
-        if (!SmsService.IsValidPhone(mobile))
+        if (!ValidFormatHelper.IsValidPhone(mobile))
             return Json(500, "手机号格式不正确");
 
         // 2. 验证验证码不能为空
