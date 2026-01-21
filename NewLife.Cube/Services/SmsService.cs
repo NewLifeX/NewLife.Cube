@@ -8,7 +8,7 @@ namespace NewLife.Cube.Services;
 
 /// <summary>短信配置服务。管理多租户短信渠道配置</summary>
 /// <remarks>实例化短信配置服务</remarks>
-/// <param name="cache">缓存</param>
+/// <param name="cacheProvider">缓存提供者</param>
 public class SmsService(ICacheProvider cacheProvider)
 {
     /// <summary>获取短信配置。根据租户和操作类型获取可用的短信配置</summary>

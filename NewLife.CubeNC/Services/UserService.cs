@@ -893,7 +893,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             return new ResetResult { Success = false, Message = "两次输入密码不一致" };
 
         // 5. 验证密码强度
-        if (!passwordService.Valid(newPassword)) return new ResetResult { Success = false, Message = "密码太弱，要求8位起且包含数字大小写字母和符号" };
+        if (!passwordService.Valid(newPassword)) return new ResetResult { Success = false, Message = "密码太弱" };
 
         // 6. 检查短信服务是否启用
         var set = CubeSetting.Current;

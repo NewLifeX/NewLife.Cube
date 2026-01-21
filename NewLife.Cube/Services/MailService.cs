@@ -7,8 +7,8 @@ namespace NewLife.Cube.Services;
 
 /// <summary>邮件配置服务。管理多租户邮件渠道配置</summary>
 /// <remarks>实例化邮件配置服务</remarks>
-/// <param name="cache">缓存</param>
-public class MailService(ICache cache)
+/// <param name="cacheProvider">缓存提供者</param>
+public class MailService(ICacheProvider cacheProvider)
 {
     /// <summary>获取邮件配置。根据租户和操作类型获取可用的邮件配置</summary>
     /// <param name="tenantId">租户编号。0表示系统全局</param>
@@ -17,13 +17,15 @@ public class MailService(ICache cache)
     public MailConfigModel GetConfig(Int32 tenantId, String action)
     {
         // 优先从缓存获取
+        var cache = cacheProvider.InnerCache;
         var cacheKey = $"MailConfig:{tenantId}:{action}";
         var config = cache.Get<MailConfigModel>(cacheKey);
         if (config != null) return config;
 
         // 从数据库查询，待实体类生成后实现
         config = LoadFromDatabase(tenantId, action);
-        if (config != null) cache.Set(cacheKey, config, 300);
+        if (config != null)
+            cache.Set(cacheKey, config, 300);
 
         return config;
     }
@@ -65,6 +67,7 @@ public class MailService(ICache cache)
     /// <param name="tenantId">租户编号。-1表示清除所有</param>
     public void ClearCache(Int32 tenantId = -1)
     {
+        var cache = cacheProvider.InnerCache;
         if (tenantId < 0)
         {
             // 清除所有邮件配置缓存

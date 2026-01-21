@@ -564,7 +564,7 @@ public class UserController : EntityController<User, UserModel>
     }
 
     #region 验证码登录
-    /// <summary>发送登录验证码</summary>
+    /// <summary>发送登录验证码：手机、邮箱 </summary>
     /// <param name="model">登录模型:Username手机号/邮箱</param>
     /// <returns></returns>
     [HttpPost]
