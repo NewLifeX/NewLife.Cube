@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Reflection;
 using System.Text;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Models;
 using NewLife.Cube.Services;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
@@ -410,88 +412,39 @@ public class UserController : EntityController<User, UserModel>
     [AllowAnonymous]
     public ActionResult Login(LoginModel loginModel)
     {
-        var username = loginModel.Username;
-        var password = loginModel.Password;
-        var remember = loginModel.Remember;
-
-        var pdic = loginModel.Pkey.IsNullOrEmpty() ? new Tuple<String, String>(null, null) : _cache.Get<Tuple<String, String>>(loginModel.Pkey);
-
-        var ip = UserHost;
-        var dkey = DateTime.Now.Ticks.ToString();
-        var dicKey = _cache.GetOrAdd(dkey, k => NCreateKeyPair(), 300);
-        ViewData["pKey"] = new KeyValuePair<String, String>(dkey, dicKey.Item1);
-
-        // 连续错误校验
-        var key = $"Login:{username}";
-        var errors = _cache.Get<Int32>(key);
-        var ipKey = $"Login:{ip}";
-        var ipErrors = _cache.Get<Int32>(ipKey);
-
-        //var peKey = $"Login:{loginModel.Pkey}";
-        //var pErrors = _cache.Get<Int32>(peKey);
-
-        using var span = _tracer?.NewSpan(nameof(Login), new { username, ip, errors });
-
-        var set = CubeSetting.Current;
+        LoginResult result = null;
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         try
         {
-            if (username.IsNullOrEmpty()) throw new ArgumentNullException(nameof(username), "用户名不能为空！");
-            if (password.IsNullOrEmpty()) throw new ArgumentNullException(nameof(password), "密码不能为空！");
-            //if (loginModel.Pkey.IsNullOrEmpty()) throw new ArgumentNullException("pkey", "加密令牌不能为空");
-
-            if (errors >= set.MaxLoginError && set.MaxLoginError > 0)
-                throw new InvalidOperationException($"[{username}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
-            if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
-                throw new InvalidOperationException($"IP地址[{UserHost}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
-
-            var rsaKey = pdic.Item2;
-            password = rsaKey.IsNullOrEmpty() ? password : Decrypt(rsaKey, password);
-
-            var provider = ManageProvider.Provider;
-            if (ModelState.IsValid && provider.Login(username, password, remember) != null)
+            if (ModelState.IsValid)
             {
-                // 登录成功，清空错误数
-                if (errors > 0) _cache.Remove(key);
-                if (ipErrors > 0) _cache.Remove(ipKey);
-                // 移除秘钥私钥信息，避免重放
-                if (!loginModel.Pkey.IsNullOrEmpty()) _cache.Remove(loginModel.Pkey);
-
-                if (IsJsonRequest)
+                result = _userService.Login(loginModel, HttpContext);
+                if (result != null && !result.AccessToken.IsNullOrEmpty())
                 {
-                    var token = HttpContext.Items["jwtToken"];
-                    return Json(0, "ok", new { /*provider.Current.ID,*/ Token = token });
+                    if (IsJsonRequest)
+                    {
+                        var token = result.AccessToken;
+                        //var token = HttpContext.Items["jwtToken"];
+                        return Json(0, "ok", new { /*provider.Current.ID,*/ Token = token });
+                    }
+
+                    if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
+
+                    // 不要嵌入自己
+                    if (returnUrl.EndsWithIgnoreCase("/Admin", "/Admin/User/Login")) returnUrl = null;
+
+                    // 登录后自动绑定
+                    var logId = Session["Cube_OAuthId"].ToLong();
+                    if (logId > 0)
+                    {
+                        Session["Cube_OAuthId"] = null;
+                        var log = NewLife.Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
+                        if (log != null && log.Success && !log.RedirectUri.IsNullOrEmpty()) return Redirect(log.RedirectUri);
+                    }
+
+                    return RedirectToAction("Index", "Index", new { page = returnUrl });
                 }
-
-                //FormsAuthentication.SetAuthCookie(username, remember ?? false);
-
-                // 记录在线统计
-                var stat = UserStat.GetOrAdd(DateTime.Today);
-                if (stat != null)
-                {
-                    stat.Logins++;
-                    stat.SaveAsync(5_000);
-                }
-
-                // 设置租户
-                HttpContext.ChooseTenant(provider.Current.ID);
-
-                if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
-
-                // 不要嵌入自己
-                if (returnUrl.EndsWithIgnoreCase("/Admin", "/Admin/User/Login")) returnUrl = null;
-
-                // 登录后自动绑定
-                var logId = Session["Cube_OAuthId"].ToLong();
-                if (logId > 0)
-                {
-                    Session["Cube_OAuthId"] = null;
-                    var log = NewLife.Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
-                    if (log != null && log.Success && !log.RedirectUri.IsNullOrEmpty()) return Redirect(log.RedirectUri);
-                }
-
-                return RedirectToAction("Index", "Index", new { page = returnUrl });
             }
 
             // 如果我们进行到这一步时某个地方出错，则重新显示表单
@@ -499,34 +452,17 @@ public class UserController : EntityController<User, UserModel>
         }
         catch (Exception ex)
         {
-            // 登录失败比较重要，记录一下
-            var action = ex is InvalidOperationException ? "风控" : "登录";
-            LogProvider.Provider.WriteLog(typeof(User), action, false, ex.Message, 0, username, UserHost);
-            XTrace.WriteLine("[{0}]登录失败！{1}", username, ex.Message);
-            XTrace.WriteException(ex);
-
-            span?.SetError(ex, null);
-
-            // 累加错误数，首次出错时设置过期时间
-            _cache.Increment(key, 1);
-            _cache.Increment(ipKey, 1);
-            var time = 300;
-            if (set.LoginForbiddenTime > 0) time = set.LoginForbiddenTime;
-            if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(time));
-            if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(time));
-
-            if (IsJsonRequest)
-            {
-                return Json(500, ex.Message);
-            }
+            if (IsJsonRequest) return Json(500, ex.Message);
 
             ModelState.AddModelError("", ex.Message);
         }
 
-        ////云飞扬2019-02-15修改，密码错误后会走到这，需要给ViewBag.IsShowTip重赋值，否则抛异常
-        //ViewBag.IsShowTip = XCode.Membership.User.Meta.Count == 1;
+        var dkey = DateTime.Now.Ticks.ToString();
+        var dicKey = _cache.GetOrAdd(dkey, k => NCreateKeyPair(), 300);
+        ViewData["pKey"] = new KeyValuePair<String, String>(dkey, dicKey.Item1);
 
         var model = GetViewModel(returnUrl);
+        model.LoginTip = result?.Result;
         model.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
 
         return _isMobile ? View("MLogin", model) : View(model);
@@ -619,76 +555,23 @@ public class UserController : EntityController<User, UserModel>
     }
     #endregion
 
-    #region 短信验证码登录
+    #region 验证码登录
     /// <summary>发送登录短信验证码</summary>
-    /// <param name="mobile">手机号</param>
+    /// <param name="model"></param>
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult> SendLoginSms(String mobile)
+    public async Task<ActionResult> SendVerifyCode(VerifyCodeModel model)
     {
-        if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-
-        // 校验手机号格式
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
-
-        // 检查短信服务是否启用
-        var set = CubeSetting.Current;
-        if (!set.EnableSms) return Json(500, "短信验证码功能未启用");
-
-        if (_smsVerifyCode == null) return Json(500, "短信服务未配置");
-
-        // 检查短信配置是否完整
-        if (set.SmsAccessKeyId.IsNullOrEmpty() || set.SmsAccessKeySecret.IsNullOrEmpty())
-            return Json(500, "短信AccessKey未配置，请在系统参数中配置SmsAccessKeyId和SmsAccessKeySecret");
-
-        if (set.SmsSignName.IsNullOrEmpty())
-            return Json(500, "短信签名未配置，请在系统参数中配置SmsSignName");
-
         var ip = UserHost;
-        var ipKey = $"{SmsLoginIpPrefix}{ip}";
- 
-        // 防止频繁发送（IP限制）
-        var ipCount = _cache.Get<Int32>(ipKey);
-        if (ipCount >= 5) return Json(500, "发送频繁，请稍后再试");
-
-        // 防止频繁发送（手机号限制，60秒内只能发一次）
-        var lastSend = _cache.Get<DateTime>($"{SmsLoginLastSendPrefix}{mobile}");
-        if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
-        {
-            var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
-            return Json(500, $"请{wait}秒后再试");
-        }
-
-        using var span = _tracer?.NewSpan(nameof(SendLoginSms), new { mobile, ip });
         try
         {
-            // 发送短信验证码
-            var expireMinutes = set.SmsExpireMinutes;
-            var code = SmsVerifyCodeService.GenerateVerifyCode();
-            var rs = await _smsVerifyCode.SendLogin(mobile, code, expireMinutes);
-            if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
-                return Json(500, "短信发送失败");
-            // 缓存验证码用于校验
-            var codeKey = $"{SmsLoginCodePrefix}{mobile}";
-            _cache.Set(codeKey, code, expireMinutes * 60);
+            var result = await _userService.SendVerifyCode(model, ip);
 
-            // 记录发送时间
-            _cache.Set($"{SmsLoginLastSendPrefix}{mobile}", DateTime.Now, 60);
-
-            // 累计IP发送次数
-            _cache.Increment(ipKey, 1);
-            if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
-
-            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", true, $"手机号：{mobile}", 0, mobile, ip);
-
-            return Json(0, "验证码已发送", new { expireMinutes });
+            return Json(0, "验证码已发送");
         }
         catch (Exception ex)
         {
-            span?.SetError(ex, null);
-            XTrace.WriteException(ex);
-            LogProvider.Provider.WriteLog(typeof(User), "发送验证码", false, $"手机号：{mobile}，错误：{ex.Message}", 0, mobile, ip);
             return Json(500, "发送失败：" + ex.Message);
         }
     }
@@ -700,10 +583,11 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
+    [Obsolete("=>Login")]
     public ActionResult SmsLogin(String mobile, String code, Boolean remember = false)
     {
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+        if (!SmsService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
         if (code.IsNullOrEmpty()) return Json(500, "验证码不能为空");
 
         var ip = UserHost;
@@ -829,91 +713,89 @@ public class UserController : EntityController<User, UserModel>
     #endregion
 
     #region 绑定手机号
+    ///// <summary>发送绑定手机验证码</summary>
+    ///// <param name="mobile">手机号</param>
+    ///// <returns></returns>
+    //[HttpPost]
+    //[EntityAuthorize]
+    //public async Task<ActionResult> SendBindMobileSms(String mobile)
+    //{
+    //    mobile = mobile?.Trim() ?? "";
 
+    //    // 1. 验证手机号格式
+    //    if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
+    //    if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
 
-    /// <summary>发送绑定手机验证码</summary>
-    /// <param name="mobile">手机号</param>
-    /// <returns></returns>
-    [HttpPost]
-    [EntityAuthorize]
-    public async Task<ActionResult> SendBindMobileSms(String mobile)
-    {
-        mobile = mobile?.Trim() ?? "";
+    //    // 2. 检查当前用户是否已登录
+    //    var currentUser = ManageProvider.User as User;
+    //    if (currentUser == null || currentUser.ID <= 0) return Json(500, "用户未登录，请先登录");
 
-        // 1. 验证手机号格式
-        if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+    //    // 3. 检查手机号是否已被其他用户绑定
+    //    var existingUser = XCode.Membership.User.FindByMobile(mobile);
+    //    if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
+    //        return Json(500, "该手机号已被其他账户绑定");
 
-        // 2. 检查当前用户是否已登录
-        var currentUser = ManageProvider.User as User;
-        if (currentUser == null || currentUser.ID <= 0) return Json(500, "用户未登录，请先登录");
+    //    // 4. 检查短信服务是否启用
+    //    var set = CubeSetting.Current;
+    //    if (!set.EnableSms) return Json(500, "短信验证码功能未启用");
 
-        // 3. 检查手机号是否已被其他用户绑定
-        var existingUser = XCode.Membership.User.FindByMobile(mobile);
-        if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
-            return Json(500, "该手机号已被其他账户绑定");
+    //    if (_smsVerifyCode == null) return Json(500, "短信服务未配置");
 
-        // 4. 检查短信服务是否启用
-        var set = CubeSetting.Current;
-        if (!set.EnableSms) return Json(500, "短信验证码功能未启用");
+    //    // 检查短信配置是否完整
+    //    if (set.SmsAccessKeyId.IsNullOrEmpty() || set.SmsAccessKeySecret.IsNullOrEmpty())
+    //        return Json(500, "短信AccessKey未配置，请在系统参数中配置SmsAccessKeyId和SmsAccessKeySecret");
 
-        if (_smsVerifyCode == null) return Json(500, "短信服务未配置");
+    //    if (set.SmsSignName.IsNullOrEmpty())
+    //        return Json(500, "短信签名未配置，请在系统参数中配置SmsSignName");
 
-        // 检查短信配置是否完整
-        if (set.SmsAccessKeyId.IsNullOrEmpty() || set.SmsAccessKeySecret.IsNullOrEmpty())
-            return Json(500, "短信AccessKey未配置，请在系统参数中配置SmsAccessKeyId和SmsAccessKeySecret");
+    //    var ip = UserHost;
+    //    var ipKey = $"SmsBind:IP:{ip}";
 
-        if (set.SmsSignName.IsNullOrEmpty())
-            return Json(500, "短信签名未配置，请在系统参数中配置SmsSignName");
+    //    // 防止频繁发送（IP限制）
+    //    var ipCount = _cache.Get<Int32>(ipKey);
+    //    if (ipCount >= 5) return Json(500, "发送频繁，请稍后再试");
 
-        var ip = UserHost;
-        var ipKey = $"{SmsBindIpPrefix}{ip}";
+    //    // 防止频繁发送（手机号限制，60秒内只能发一次）
+    //    var lastSend = _cache.Get<DateTime>($"SmsBind:LastSend:{mobile}");
+    //    if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
+    //    {
+    //        var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
+    //        return Json(500, $"请{wait}秒后再试");
+    //    }
 
-        // 防止频繁发送（IP限制）
-        var ipCount = _cache.Get<Int32>(ipKey);
-        if (ipCount >= 5) return Json(500, "发送频繁，请稍后再试");
+    //    using var span = _tracer?.NewSpan(nameof(SendBindMobileSms), new { mobile, ip });
+    //    try
+    //    {
+    //        // 发送短信验证码
+    //        var expireMinutes = set.SmsExpireMinutes;
+    //        var code = SmsVerifyCodeService.GenerateVerifyCode();
+    //        var rs = await _smsVerifyCode.SendBind(mobile, code, expireMinutes);
+    //        if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
+    //            return Json(500, "短信发送失败");
 
-        // 防止频繁发送（手机号限制，60秒内只能发一次）
-        var lastSend = _cache.Get<DateTime>($"{SmsBindLastSendPrefix}{mobile}");
-        if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
-        {
-            var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
-            return Json(500, $"请{wait}秒后再试");
-        }
+    //        // 缓存验证码用于校验
+    //        var codeKey = $"SmsBind:Code:{mobile}";
+    //        _cache.Set(codeKey, code, expireMinutes * 60);
 
-        using var span = _tracer?.NewSpan(nameof(SendBindMobileSms), new { mobile, ip });
-        try
-        {
-            // 发送短信验证码
-            var expireMinutes = set.SmsExpireMinutes;
-            var code = SmsVerifyCodeService.GenerateVerifyCode();
-            var rs = await _smsVerifyCode.SendBind(mobile, code, expireMinutes);
-            if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
-                return Json(500, "短信发送失败");
+    //        // 记录发送时间
+    //        _cache.Set($"SmsBind:LastSend:{mobile}", DateTime.Now, 60);
 
-            // 缓存验证码用于校验
-            var codeKey = $"{SmsBindCodePrefix}{mobile}";
-            _cache.Set(codeKey, code, expireMinutes * 60);
+    //        // 累计IP发送次数
+    //        _cache.Increment(ipKey, 1);
+    //        if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
 
-            // 记录发送时间
-            _cache.Set($"{SmsBindLastSendPrefix}{mobile}", DateTime.Now, 60);
+    //        LogProvider.Provider.WriteLog(typeof(User), "发送绑定验证码", true, $"手机号：{mobile}", currentUser.ID, currentUser + "", ip);
 
-            // 累计IP发送次数
-            _cache.Increment(ipKey, 1);
-            if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
-
-            LogProvider.Provider.WriteLog(typeof(User), "发送绑定验证码", true, $"手机号：{mobile}", currentUser.ID, currentUser + "", ip);
-
-            return Json(0, "验证码已发送", new { expireMinutes });
-        }
-        catch (Exception ex)
-        {
-            span?.SetError(ex, null);
-            XTrace.WriteException(ex);
-            LogProvider.Provider.WriteLog(typeof(User), "发送绑定验证码", false, $"手机号：{mobile}，错误：{ex.Message}", currentUser.ID, currentUser + "", ip);
-            return Json(500, "发送失败：" + ex.Message);
-        }
-    }
+    //        return Json(0, "验证码已发送", new { expireMinutes });
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        span?.SetError(ex, null);
+    //        XTrace.WriteException(ex);
+    //        LogProvider.Provider.WriteLog(typeof(User), "发送绑定验证码", false, $"手机号：{mobile}，错误：{ex.Message}", currentUser.ID, currentUser + "", ip);
+    //        return Json(500, "发送失败：" + ex.Message);
+    //    }
+    //}
 
     /// <summary>绑定手机号到当前登录用户</summary>
     /// <param name="mobile">手机号</param>
@@ -921,14 +803,14 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [EntityAuthorize]
-    public ActionResult SmsBindMobile(String mobile, String code)
+    public ActionResult BindByVerifyCode(String mobile, String code)
     {
         mobile = mobile?.Trim() ?? "";
         code = code?.Trim() ?? "";
 
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+        if (!SmsService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
 
         // 2. 验证验证码不能为空
         if (code.IsNullOrEmpty()) return Json(500, "验证码不能为空");
@@ -943,7 +825,7 @@ public class UserController : EntityController<User, UserModel>
 
         var ip = UserHost;
 
-        using var span = _tracer?.NewSpan(nameof(SmsBindMobile), new { mobile, ip });
+        using var span = _tracer?.NewSpan(nameof(BindByVerifyCode), new { mobile, ip });
 
         // 5. 验证验证码
         var codeKey = $"{SmsBindCodePrefix}{mobile}";
@@ -979,85 +861,85 @@ public class UserController : EntityController<User, UserModel>
     #endregion
 
     #region 手机验证码重置密码
-    /// <summary>发送重置密码验证码</summary>
-    /// <param name="mobile">手机号</param>
-    /// <returns></returns>
-    [HttpPost]
-    [AllowAnonymous]
-    public async Task<ActionResult> SendResetPasswordSms(String mobile)
-    {
-        mobile = mobile?.Trim() ?? "";
+    ///// <summary>发送重置密码验证码</summary>
+    ///// <param name="mobile">手机号</param>
+    ///// <returns></returns>
+    //[HttpPost]
+    //[AllowAnonymous]
+    //public async Task<ActionResult> SendResetPasswordSms(String mobile)
+    //{
+    //    mobile = mobile?.Trim() ?? "";
 
-        // 1. 验证手机号格式
-        if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
+    //    // 1. 验证手机号格式
+    //    if (mobile.IsNullOrEmpty()) return Json(500, "手机号不能为空");
+    //    if (!SmsVerifyCodeService.IsValidPhone(mobile)) return Json(500, "手机号格式不正确");
 
-        // 2. 检查手机号是否已注册
-        var existingUser = XCode.Membership.User.FindByMobile(mobile);
-        if (existingUser == null || existingUser.ID <= 0)
-            return Json(500, "该手机号未注册");
+    //    // 2. 检查手机号是否已注册
+    //    var existingUser = XCode.Membership.User.FindByMobile(mobile);
+    //    if (existingUser == null || existingUser.ID <= 0)
+    //        return Json(500, "该手机号未注册");
 
-        // 3. 检查短信服务是否启用
-        var set = CubeSetting.Current;
-        if (!set.EnableSms) return Json(500, "短信验证码功能未启用");
+    //    // 3. 检查短信服务是否启用
+    //    var set = CubeSetting.Current;
+    //    if (!set.EnableSms) return Json(500, "短信验证码功能未启用");
 
-        if (_smsVerifyCode == null) return Json(500, "短信服务未配置");
+    //    if (_smsVerifyCode == null) return Json(500, "短信服务未配置");
 
-        // 检查短信配置是否完整
-        if (set.SmsAccessKeyId.IsNullOrEmpty() || set.SmsAccessKeySecret.IsNullOrEmpty())
-            return Json(500, "短信AccessKey未配置，请在系统参数中配置SmsAccessKeyId和SmsAccessKeySecret");
+    //    // 检查短信配置是否完整
+    //    if (set.SmsAccessKeyId.IsNullOrEmpty() || set.SmsAccessKeySecret.IsNullOrEmpty())
+    //        return Json(500, "短信AccessKey未配置，请在系统参数中配置SmsAccessKeyId和SmsAccessKeySecret");
 
-        if (set.SmsSignName.IsNullOrEmpty())
-            return Json(500, "短信签名未配置，请在系统参数中配置SmsSignName");
+    //    if (set.SmsSignName.IsNullOrEmpty())
+    //        return Json(500, "短信签名未配置，请在系统参数中配置SmsSignName");
 
-        var ip = UserHost;
-        var ipKey = $"{SmsResetIpPrefix}{ip}";
+    //    var ip = UserHost;
+    //    var ipKey = $"SmsReset:IP:{ip}";
 
-        // 防止频繁发送（IP限制）
-        var ipCount = _cache.Get<Int32>(ipKey);
-        if (ipCount >= 5) return Json(500, "发送频繁，请稍后再试");
+    //    // 防止频繁发送（IP限制）
+    //    var ipCount = _cache.Get<Int32>(ipKey);
+    //    if (ipCount >= 5) return Json(500, "发送频繁，请稍后再试");
 
-        // 防止频繁发送（手机号限制，60秒内只能发一次）
-        var lastSend = _cache.Get<DateTime>($"{SmsResetLastSendPrefix}{mobile}");
-        if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
-        {
-            var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
-            return Json(500, $"请{wait}秒后再试");
-        }
+    //    // 防止频繁发送（手机号限制，60秒内只能发一次）
+    //    var lastSend = _cache.Get<DateTime>($"SmsReset:LastSend:{mobile}");
+    //    if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
+    //    {
+    //        var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
+    //        return Json(500, $"请{wait}秒后再试");
+    //    }
 
-        using var span = _tracer?.NewSpan(nameof(SendResetPasswordSms), new { mobile, ip });
-        try
-        {
-            // 发送短信验证码
-            var expireMinutes = set.SmsExpireMinutes;
-            var code = SmsVerifyCodeService.GenerateVerifyCode();
-            var rs = await _smsVerifyCode.SendReset(mobile, code, expireMinutes);
-            if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
-                return Json(500, "短信发送失败");
+    //    using var span = _tracer?.NewSpan(nameof(SendResetPasswordSms), new { mobile, ip });
+    //    try
+    //    {
+    //        // 发送短信验证码
+    //        var expireMinutes = set.SmsExpireMinutes;
+    //        var code = SmsVerifyCodeService.GenerateVerifyCode();
+    //        var rs = await _smsVerifyCode.SendReset(mobile, code, expireMinutes);
+    //        if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
+    //            return Json(500, "短信发送失败");
 
-            // 缓存验证码用于校验
-            var codeKey = $"{SmsResetCodePrefix}{mobile}";
-            _cache.Set(codeKey, code, expireMinutes * 60);
+    //        // 缓存验证码用于校验
+    //        var codeKey = $"SmsReset:Code:{mobile}";
+    //        _cache.Set(codeKey, code, expireMinutes * 60);
 
-            // 记录发送时间
-            _cache.Set($"{SmsResetLastSendPrefix}{mobile}", DateTime.Now, 60);
+    //        // 记录发送时间
+    //        _cache.Set($"SmsReset:LastSend:{mobile}", DateTime.Now, 60);
 
-            // 累计IP发送次数
-            _cache.Increment(ipKey, 1);
-            if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
+    //        // 累计IP发送次数
+    //        _cache.Increment(ipKey, 1);
+    //        if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
 
-            LogProvider.Provider.WriteLog(typeof(User), "发送重置密码验证码", true, $"手机号：{mobile}", 0, mobile, ip);
+    //        LogProvider.Provider.WriteLog(typeof(User), "发送重置密码验证码", true, $"手机号：{mobile}", 0, mobile, ip);
 
-            return Json(0, "验证码已发送", new { expireMinutes });
-        }
-        catch (Exception ex)
-        {
-            span?.SetError(ex, null);
-            XTrace.WriteException(ex);
-            LogProvider.Provider.WriteLog(typeof(User), "发送重置密码验证码", false, $"手机号：{mobile}，错误：{ex.Message}", 0, mobile, ip);
-            return Json(500, "发送失败：" + ex.Message);
-        }
-    }
+    //        return Json(0, "验证码已发送", new { expireMinutes });
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        span?.SetError(ex, null);
+    //        XTrace.WriteException(ex);
+    //        LogProvider.Provider.WriteLog(typeof(User), "发送重置密码验证码", false, $"手机号：{mobile}，错误：{ex.Message}", 0, mobile, ip);
+    //        return Json(500, "发送失败：" + ex.Message);
+    //    }
+    //}
 
     /// <summary>通过手机验证码重置密码</summary>
     /// <param name="mobile">手机号</param>
@@ -1067,7 +949,7 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
-    public ActionResult SmsResetPassword(String mobile, String code, String newPassword, String confirmPassword)
+    public ActionResult ResetByVerifyCode(String mobile, String code, String newPassword, String confirmPassword)
     {
         mobile = mobile?.Trim() ?? String.Empty;
         code = code?.Trim() ?? String.Empty;
@@ -1077,7 +959,7 @@ public class UserController : EntityController<User, UserModel>
         // 1. 验证手机号格式
         if (mobile.IsNullOrEmpty())
             return Json(500, "手机号不能为空");
-        if (!SmsVerifyCodeService.IsValidPhone(mobile))
+        if (!SmsService.IsValidPhone(mobile))
             return Json(500, "手机号格式不正确");
 
         // 2. 验证验证码不能为空
@@ -1101,7 +983,7 @@ public class UserController : EntityController<User, UserModel>
 
         var ip = UserHost;
 
-        using var span = _tracer?.NewSpan(nameof(SmsResetPassword), new { mobile, ip });
+        using var span = _tracer?.NewSpan(nameof(ResetByVerifyCode), new { mobile, ip });
 
         // 7. 验证验证码
         var codeKey = $"{SmsResetCodePrefix}{mobile}";
@@ -1206,21 +1088,6 @@ public class UserController : EntityController<User, UserModel>
 
         return Info(user.ID);
     }
-
-    ///// <summary>保存文件</summary>
-    ///// <param name="entity">实体对象</param>
-    ///// <param name="file">文件</param>
-    ///// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
-    ///// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
-    ///// <returns></returns>
-    //protected override Task<Attachment> SaveFile(User entity, IFormFile file, String uploadPath, String fileName)
-    //{
-    //    // 修改保存目录和文件名
-    //    var set = CubeSetting.Current;
-    //    if (file.Name.EqualIgnoreCase("avatar")) fileName = entity.ID + Path.GetExtension(file.FileName);
-
-    //    return base.SaveFile(entity, file, set.AvatarPath, fileName);
-    //}
 
     /// <summary>修改密码</summary>
     /// <returns></returns>

@@ -29,12 +29,12 @@ public class AliyunSmsVerifyCode : ISmsVerifyCode
     /// <param name="mobile">手机号</param>
     /// <param name="templateCode">模版代码</param>
     /// <param name="code">验证码。未指定时内部生成</param>
-    /// <param name="expireMinutes">有效期。分钟</param>
+    /// <param name="expire">有效期。秒</param>
     /// <param name="options">可选项</param>
     /// <exception cref="ArgumentNullException"></exception>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    protected virtual Task<String> SendAsync(String mobile, String templateCode, String code, Int32 expireMinutes, SmsVerifyCodeOptions options = null)
+    protected virtual Task<String> SendAsync(String mobile, String templateCode, String code, Int32 expire, SmsVerifyCodeOptions options = null)
     {
         var client = Client;
         /* Yann：手动设置服务器地址到 Services 列表，避免 InvokeAsync 中 Services.Count == 0 的问题;
@@ -49,6 +49,8 @@ public class AliyunSmsVerifyCode : ISmsVerifyCode
             client.SetServer(url);
         }
         //client.SetServer($"https://{client.Endpoint}");
+
+        var expireMinutes = (expire + 59) / 60;
 
         if (!code.IsNullOrEmpty())
         {
@@ -74,7 +76,7 @@ public class AliyunSmsVerifyCode : ISmsVerifyCode
                 PhoneNumber = mobile,
                 TemplateParam = $"{{\"code\":\"##code##\",\"min\":\"{expireMinutes}\"}}",
                 CodeLength,
-                ValidTime = expireMinutes * 60,
+                ValidTime = expire,
                 DuplicatePolicy = 2,
                 Interval = 60,
                 ReturnVerifyCode = true,
@@ -88,25 +90,25 @@ public class AliyunSmsVerifyCode : ISmsVerifyCode
     /// <summary>发送登录验证码</summary>
     /// <param name="mobile">手机号</param>
     /// <param name="code">验证码。未指定时内部生成</param>
-    /// <param name="expireMinutes">有效期。分钟</param>
+    /// <param name="expire">有效期。秒</param>
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
-    public Task<String> SendLogin(String mobile, String code = null, Int32 expireMinutes = 5, SmsVerifyCodeOptions options = null) => SendAsync(mobile, "100001", code, expireMinutes, options);
+    public Task<String> SendLogin(String mobile, String code = null, Int32 expire = 300, SmsVerifyCodeOptions options = null) => SendAsync(mobile, "100001", code, expire, options);
 
     /// <summary>发送重置验证码</summary>
     /// <param name="mobile">手机号</param>
     /// <param name="code">验证码。未指定时内部生成</param>
-    /// <param name="expireMinutes">有效期。分钟</param>
+    /// <param name="expire">有效期。秒</param>
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
-    public Task<String> SendReset(String mobile, String code = null, Int32 expireMinutes = 5, SmsVerifyCodeOptions options = null) => SendAsync(mobile, "100003", code, expireMinutes, options);
+    public Task<String> SendReset(String mobile, String code = null, Int32 expire = 300, SmsVerifyCodeOptions options = null) => SendAsync(mobile, "100003", code, expire, options);
 
     /// <summary>发送绑定验证码</summary>
     /// <param name="mobile">手机号</param>
     /// <param name="code">验证码。未指定时内部生成</param>
-    /// <param name="expireMinutes">有效期。分钟</param>
+    /// <param name="expire">有效期。秒</param>
     /// <param name="options">可选项</param>
     /// <returns>内部生成的验证码</returns>
-    public Task<String> SendBind(String mobile, String code = null, Int32 expireMinutes = 5, SmsVerifyCodeOptions options = null) => SendAsync(mobile, "100004", code, expireMinutes, options);
+    public Task<String> SendBind(String mobile, String code = null, Int32 expire = 300, SmsVerifyCodeOptions options = null) => SendAsync(mobile, "100004", code, expire, options);
     #endregion
 }

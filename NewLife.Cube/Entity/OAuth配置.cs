@@ -38,6 +38,14 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     [BindColumn("TenantId", "租户", "")]
     public Int32 TenantId { get => _TenantId; set { if (OnPropertyChanging("TenantId", value)) { _TenantId = value; OnPropertyChanged("TenantId"); } } }
 
+    private String _Provider;
+    /// <summary>提供者。对应具体实现类标识，用于区分同类型多渠道</summary>
+    [DisplayName("提供者")]
+    [Description("提供者。对应具体实现类标识，用于区分同类型多渠道")]
+    [DataObjectField(false, false, true, 50)]
+    [BindColumn("Provider", "提供者。对应具体实现类标识，用于区分同类型多渠道", "")]
+    public String Provider { get => _Provider; set { if (OnPropertyChanging("Provider", value)) { _Provider = value; OnPropertyChanged("Provider"); } } }
+
     private String _Name;
     /// <summary>名称。提供者名称</summary>
     [DisplayName("名称")]
@@ -293,6 +301,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     {
         ID = model.ID;
         TenantId = model.TenantId;
+        Provider = model.Provider;
         Name = model.Name;
         NickName = model.NickName;
         Logo = model.Logo;
@@ -336,6 +345,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         {
             "ID" => _ID,
             "TenantId" => _TenantId,
+            "Provider" => _Provider,
             "Name" => _Name,
             "NickName" => _NickName,
             "Logo" => _Logo,
@@ -374,6 +384,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
             {
                 case "ID": _ID = value.ToInt(); break;
                 case "TenantId": _TenantId = value.ToInt(); break;
+                case "Provider": _Provider = Convert.ToString(value); break;
                 case "Name": _Name = Convert.ToString(value); break;
                 case "NickName": _NickName = Convert.ToString(value); break;
                 case "Logo": _Logo = Convert.ToString(value); break;
@@ -495,6 +506,9 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         /// <summary>租户</summary>
         public static readonly Field TenantId = FindByName("TenantId");
 
+        /// <summary>提供者。对应具体实现类标识，用于区分同类型多渠道</summary>
+        public static readonly Field Provider = FindByName("Provider");
+
         /// <summary>名称。提供者名称</summary>
         public static readonly Field Name = FindByName("Name");
 
@@ -596,6 +610,9 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
 
         /// <summary>租户</summary>
         public const String TenantId = "TenantId";
+
+        /// <summary>提供者。对应具体实现类标识，用于区分同类型多渠道</summary>
+        public const String Provider = "Provider";
 
         /// <summary>名称。提供者名称</summary>
         public const String Name = "Name";
