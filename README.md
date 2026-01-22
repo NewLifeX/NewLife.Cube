@@ -10,7 +10,7 @@
 
 演示站点：<https://cube.newlifex.com> `CentOS7 + CDN`  
 SSO中心：<https://sso.newlifex.com> `OAuth 服务端`  
-Swagger：<https://cube3.newlifex.com/swagger/index.html>
+Swagger：[https://cube3.newlifex.com](https://cube3.newlifex.com)
 
 魔方教程：<https://newlifex.com/cube>  
 XCode教程：<https://newlifex.com/xcode>  
