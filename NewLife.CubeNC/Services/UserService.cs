@@ -212,7 +212,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
                 user = new User
                 {
-                    Name = mobile,
+                    Name = $"P{mobile}",//添加一个P（phone）前缀，区分登录方式
                     DisplayName = $"手机用户{mobile[^4..]}",
                     Mobile = mobile,
                     Enable = true,

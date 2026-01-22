@@ -549,24 +549,26 @@ public class UserController : EntityController<User, UserModel>
         return Json(0, "ok");
     }
 
-    #region 验证码登录
-    /// <summary>发送登录验证码：手机、邮箱 </summary>
-    /// <param name="model">登录模型:Username手机号/邮箱</param>
-    /// <returns></returns>
+    #region 发送验证码
+    /// <summary>发送验证码：手机、邮箱 </summary>
+    /// <param name="model"> </param>
+    /// <remarks>登录模型:Username手机号/邮箱
+    /// <ui> case "login": case "bind": case "reset": case "notify": </ui>
+    /// </remarks>
+    ///  <returns></returns>
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ApiResponse<Boolean>> SendVerifyCode(VerifyCodeModel model)
+    public async Task<ApiResponse<Int64>> SendVerifyCode(VerifyCodeModel model)
     {
-        var ip = UserHost;
         try
         {
+            var ip = UserHost;
             var result = await _userService.SendVerifyCode(model, ip);
-
-            return true.ToOkApiResponse("验证码已发送");
+            return result.Id.ToOkApiResponse("验证码已发送");
         }
         catch (Exception ex)
         {
-            return false.ToRemotingErrorApiResponse("发送失败：" + ex.Message);
+            return 0L.ToRemotingErrorApiResponse("发送失败：" + ex.Message);
         }
     }
 
