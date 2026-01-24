@@ -1,8 +1,6 @@
 ﻿using System.Web;
 using NewLife.Cube;
 using NewLife.Cube.Entity;
-using NewLife.Cube.Web;
-using NewLife.Cube.Web.Models;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Security;
@@ -211,7 +209,7 @@ public class OAuthServer
     /// <param name="payload"></param>
     /// <param name="refreshName"></param>
     /// <returns></returns>
-    public virtual TokenInfo CreateToken(App app, String name, Object payload, String refreshName)
+    public virtual TokenModel CreateToken(App app, String name, Object payload, String refreshName)
     {
         Valid();
 
@@ -244,18 +242,18 @@ public class OAuthServer
         }
 
         // 建立令牌
-        return new TokenInfo
+        return new TokenModel
         {
             AccessToken = jwt.Encode(payload),
             RefreshToken = prv.Encode(refreshName, exp),
-            Expire = expire
+            ExpireIn = expire
         };
     }
 
     /// <summary>根据Code获取令牌</summary>
     /// <param name="code"></param>
     /// <returns></returns>
-    public virtual TokenInfo GetToken(String code)
+    public virtual TokenModel GetToken(String code)
     {
         Valid();
 
@@ -274,11 +272,11 @@ public class OAuthServer
         var set = Cube.CubeSetting.Current;
         if (expire <= 0) expire = set.TokenExpire;
 
-        return new TokenInfo
+        return new TokenModel
         {
             AccessToken = log.AccessToken,
             RefreshToken = log.RefreshToken,
-            Expire = expire
+            ExpireIn = expire
         };
     }
 

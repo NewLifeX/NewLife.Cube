@@ -9,7 +9,6 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
-using NewLife.Cube.Web.Models;
 using NewLife.Reflection;
 using NewLife.Web;
 using XCode;
@@ -250,9 +249,10 @@ public class UserController : EntityController<User, UserModel>
     /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
-    public ApiResponse<TokenInfo> Login(LoginModel model)
+    public ApiResponse<TokenModel> Login(LoginModel model)
     {
-        var res = new TokenInfo();
+
+        var res = new TokenModel();
         if (String.IsNullOrWhiteSpace(model.Username))
             return res.ToFailApiResponse("用户名不能为空");
         if (String.IsNullOrWhiteSpace(model.Password))
@@ -298,7 +298,7 @@ public class UserController : EntityController<User, UserModel>
 
         var tokens = HttpContext.RefreshToken(user, refreshToken);
 
-        return Json(0, "ok", new { Token = tokens.Item1, RefreshToken = tokens.Item2 });
+        return Json(0, "ok", new { Token = tokens.AccessToken, RefreshToken = tokens.RefreshToken, tokens.ExpireIn });
     }
 
     /// <summary>注销</summary>
@@ -552,10 +552,9 @@ public class UserController : EntityController<User, UserModel>
     #region 发送验证码
     /// <summary>发送验证码：手机、邮箱 </summary>
     /// <param name="model"> </param>
-    /// <remarks>登录模型:Username手机号/邮箱
-    /// <ui> case "login": case "bind": case "reset": case "notify": </ui>
+    /// <remarks>登录模型:Username手机号/邮箱; action:login/bind/reset/notify
     /// </remarks>
-    ///  <returns></returns>
+    /// <returns></returns>
     [HttpPost]
     [AllowAnonymous]
     public async Task<ApiResponse<Int64>> SendVerifyCode(VerifyCodeModel model)

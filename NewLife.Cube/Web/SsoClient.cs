@@ -1,8 +1,8 @@
-﻿using NewLife.Cube.Web.Models;
-using NewLife.Model;
+﻿using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Security;
 using NewLife.Serialization;
+using NewLife.Web;
 using XCode.Membership;
 
 namespace NewLife.Cube.Web;
@@ -45,7 +45,7 @@ public class SsoClient
     /// <param name="username">账号</param>
     /// <param name="password">密码</param>
     /// <returns></returns>
-    public async Task<TokenInfo> GetToken(String username, String password)
+    public async Task<TokenModel> GetToken(String username, String password)
     {
         var client = GetClient();
 
@@ -65,7 +65,7 @@ public class SsoClient
             password = $"$rsa${name}${pass}";
         }
 
-        return await client.GetAsync<TokenInfo>("sso/token", new
+        return await client.GetAsync<TokenModel>("sso/token", new
         {
             grant_type = "password",
             client_id = AppId,
@@ -78,11 +78,11 @@ public class SsoClient
     /// <summary>凭证式，为指定设备颁发令牌</summary>
     /// <param name="deviceId"></param>
     /// <returns></returns>
-    public async Task<TokenInfo> GetToken(String deviceId)
+    public async Task<TokenModel> GetToken(String deviceId)
     {
         var client = GetClient();
 
-        return await client.GetAsync<TokenInfo>("sso/token", new
+        return await client.GetAsync<TokenModel>("sso/token", new
         {
             grant_type = "client_credentials",
             client_id = AppId,

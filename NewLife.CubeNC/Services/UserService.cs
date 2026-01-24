@@ -108,6 +108,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <exception cref="XException"></exception>
     public LoginResult Login(LoginModel loginModel, HttpContext httpContext)
     {
+
+
+
         if (ValidFormatHelper.IsMobile(loginModel.Username))
             return LoginBySms(loginModel, httpContext);
         else if (ValidFormatHelper.IsEmail(loginModel.Username))
@@ -366,7 +369,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}", user.ID, user + "", ip);
 
         var tokens = httpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
-        return new LoginResult { AccessToken = tokens.Item1, RefreshToken = tokens.Item2 };
+
+        return new LoginResult { AccessToken = tokens.AccessToken, RefreshToken = tokens.RefreshToken, ExpireIn = tokens.ExpireIn };
     }
 
     /// <summary>确保用户已绑定到当前租户。用户从哪个租户登录/注册，自动添加绑定关系</summary>
@@ -528,7 +532,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         var config = mailService.GetConfig(TenantContext.CurrentId, model.Action);
         //if (config == null) throw new XException("邮件服务未配置");
-         
+
 
         // 根据 Action 类型选择缓存 key 前缀
         var (ipPrefix, lastSendPrefix, codePrefix) = GetMailCachePrefix(model.Action);

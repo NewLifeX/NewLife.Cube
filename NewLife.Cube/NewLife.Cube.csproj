@@ -75,6 +75,7 @@
     <Compile Remove="Extensions\ItemsExtend.cs" />
     <Compile Remove="Extensions\MvcActionResultHelper.cs" />
     <Compile Remove="Services\SmsServiceExtensions.cs" />
+    <Compile Remove="Web\Models\TokenInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -144,7 +144,6 @@
     <Compile Include="..\NewLife.Cube\Web\Models\DepartmentInfo.cs" Link="Web\Models\DepartmentInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\OAuthFieldMap.cs" Link="Web\Models\OAuthFieldMap.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\SsoTokenModel.cs" Link="Web\Models\SsoTokenModel.cs" />
-    <Compile Include="..\NewLife.Cube\Web\Models\TokenInfo.cs" Link="Web\Models\TokenInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\UserInfo.cs" Link="Web\Models\UserInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthClient.cs" Link="Web\OAuthClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />

@@ -9,6 +9,7 @@ public interface ICubeModel { }
 /// <summary> 登录模型 </summary>
 public class LoginModel : ICubeModel
 {  
+
     /// <summary> 登录用户名、手机号码、邮箱 </summary>
     public String Username { get; set; }
 

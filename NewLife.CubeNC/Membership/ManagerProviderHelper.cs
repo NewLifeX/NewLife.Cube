@@ -294,12 +294,19 @@ public static class ManagerProviderHelper
     /// <param name="user"></param>
     /// <param name="expire">有效期（单位：秒）</param>
     /// <returns></returns>
-    public static Tuple<String, String> IssueTokenAndRefreshToken(this HttpContext context, IManageUser user, TimeSpan expire)
+    public static TokenModel IssueTokenAndRefreshToken(this HttpContext context, IManageUser user, TimeSpan expire)
     {
-        var access_token = context.IssueToken(user, expire);
-        var refresh_token = CreateRefreshToken(user, DateTime.Now.AddDays(7));
+        var accessToken = context.IssueToken(user, expire);
+        var refreshToken = CreateRefreshToken(user, DateTime.Now.AddDays(7));
 
-        return new Tuple<String, String>(access_token, refresh_token);
+        return new TokenModel()
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpireIn = expire.TotalSeconds.ToInt()
+        };
+
+        //return new Tuple<String, String>(accessToken, refreshToken);
     }
 
     /// <summary>刷新令牌</summary>
@@ -308,7 +315,7 @@ public static class ManagerProviderHelper
     /// <param name="refresh_token"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static Tuple<String, String> RefreshToken(this HttpContext context, IManageUser user, String refresh_token)
+    public static TokenModel RefreshToken(this HttpContext context, IManageUser user, String refresh_token)
     {
         var set = CubeSetting.Current;
         var result = DecodeRefreshToken(refresh_token, out var username, out var expire);
