@@ -64,6 +64,34 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     private const String SmsResetLastSendPrefix = "SmsReset:LastSend:";
     /// <summary>短信重置密码验证码缓存前缀</summary>
     private const String SmsResetCodePrefix = "SmsReset:Code:";
+
+    /// <summary>邮件绑定IP发送限制缓存前缀</summary>
+    private const String MailBindIpPrefix = "MailBind:IP:";
+    /// <summary>邮件绑定最后发送时间缓存前缀</summary>
+    private const String MailBindLastSendPrefix = "MailBind:LastSend:";
+    /// <summary>邮件绑定验证码缓存前缀</summary>
+    private const String MailBindCodePrefix = "MailBind:Code:";
+
+    /// <summary>邮件重置密码IP发送限制缓存前缀</summary>
+    private const String MailResetIpPrefix = "MailReset:IP:";
+    /// <summary>邮件重置密码最后发送时间缓存前缀</summary>
+    private const String MailResetLastSendPrefix = "MailReset:LastSend:";
+    /// <summary>邮件重置密码验证码缓存前缀</summary>
+    private const String MailResetCodePrefix = "MailReset:Code:";
+
+    /// <summary>短信通知IP发送限制缓存前缀</summary>
+    private const String SmsNotifyIpPrefix = "SmsNotify:IP:";
+    /// <summary>短信通知最后发送时间缓存前缀</summary>
+    private const String SmsNotifyLastSendPrefix = "SmsNotify:LastSend:";
+    /// <summary>短信通知验证码缓存前缀</summary>
+    private const String SmsNotifyCodePrefix = "SmsNotify:Code:";
+
+    /// <summary>邮件通知IP发送限制缓存前缀</summary>
+    private const String MailNotifyIpPrefix = "MailNotify:IP:";
+    /// <summary>邮件通知最后发送时间缓存前缀</summary>
+    private const String MailNotifyLastSendPrefix = "MailNotify:LastSend:";
+    /// <summary>邮件通知验证码缓存前缀</summary>
+    private const String MailNotifyCodePrefix = "MailNotify:Code:";
     #endregion
 
     #region 属性
@@ -234,7 +262,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         using var span = tracer?.NewSpan(nameof(LoginByMail), new { mail, ip });
 
         if (mail.IsNullOrEmpty()) throw new ArgumentNullException(nameof(mail), "邮箱不能为空");
-        if (!mail.Contains('@') || !mail.Contains('.')) throw new XException("邮箱格式不正确");
+        if (!ValidFormatHelper.IsEmail(mail)) throw new XException("邮箱格式不正确");
         if (code.IsNullOrEmpty()) throw new ArgumentNullException(nameof(code), "验证码不能为空");
 
         var key = $"{MailLoginErrorPrefix}{mail}";
@@ -410,8 +438,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         throw new NotSupportedException();
     }
     /// <summary>短信验证码发送逻辑</summary>
-    /// <param name="model"></param>
-    /// <param name="ip"></param>
+    /// <param name="model">验证码模型</param>
+    /// <param name="ip">客户端IP</param>
     /// <returns></returns>
     /// <exception cref="XException"></exception>
     private async Task<VerifyCodeRecord> SendSmsCode(VerifyCodeModel model, String ip)
@@ -426,8 +454,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var set = CubeSetting.Current;
         if (!set.EnableSms) throw new XException("短信验证码功能未启用");
 
-        //if (_smsVerifyCode == null) throw new XException("短信服务未配置");
         var config = smsService.GetConfig(TenantContext.CurrentId, model.Action);
+        if (config == null) throw new XException("短信服务未配置");
 
         // 检查短信配置是否完整
         if (config.AppKey.IsNullOrEmpty() || config.AppSecret.IsNullOrEmpty())
@@ -436,15 +464,17 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (config.SignName.IsNullOrEmpty())
             throw new XException("短信签名未配置，请在系统参数中配置SignName");
 
-        //var ip = UserHost;
-        var ipKey = $"{SmsLoginIpPrefix}{ip}";
+        // 根据 Action 类型选择缓存 key 前缀
+        var (ipPrefix, lastSendPrefix, codePrefix) = GetSmsCachePrefix(model.Action);
+
+        var ipKey = $"{ipPrefix}{ip}";
 
         // 防止频繁发送（IP限制）
         var ipCount = _cache.Get<Int32>(ipKey);
         if (ipCount >= 5) throw new XException("发送频繁，请稍后再试");
 
         // 防止频繁发送（手机号限制，60秒内只能发一次）
-        var lastSend = _cache.Get<DateTime>($"{SmsLoginLastSendPrefix}{mobile}");
+        var lastSend = _cache.Get<DateTime>($"{lastSendPrefix}{mobile}");
         if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
         {
             var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
@@ -460,11 +490,11 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
                 throw new XException("短信发送失败");
 
             // 缓存验证码用于校验
-            var codeKey = $"{SmsLoginCodePrefix}{mobile}";
+            var codeKey = $"{codePrefix}{mobile}";
             _cache.Set(codeKey, code, config.Expire);
 
             // 记录发送时间
-            _cache.Set($"{SmsLoginLastSendPrefix}{mobile}", DateTime.Now, 60);
+            _cache.Set($"{lastSendPrefix}{mobile}", DateTime.Now, 60);
 
             // 累计IP发送次数
             _cache.Increment(ipKey, 1);
@@ -483,8 +513,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     }
 
     /// <summary>邮箱发送逻辑</summary>
-    /// <param name="model"></param>
-    /// <param name="ip"></param>
+    /// <param name="model">验证码模型</param>
+    /// <param name="ip">客户端IP</param>
     /// <returns></returns>
     /// <exception cref="XException"></exception>
     private async Task<VerifyCodeRecord> SendMailCode(VerifyCodeModel model, String ip)
@@ -492,20 +522,25 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var mail = model.Username?.Trim() ?? "";
         if (mail.IsNullOrEmpty()) throw new XException("邮件地址不能为空");
 
-        // 检查短信服务是否启用
+        // 检查邮件服务是否启用
         var set = CubeSetting.Current;
         if (!set.EnableMail) throw new XException("邮件验证码功能未启用");
 
         var config = mailService.GetConfig(TenantContext.CurrentId, model.Action);
+        //if (config == null) throw new XException("邮件服务未配置");
+         
 
-        var ipKey = $"{MailLoginIpPrefix}{ip}";
+        // 根据 Action 类型选择缓存 key 前缀
+        var (ipPrefix, lastSendPrefix, codePrefix) = GetMailCachePrefix(model.Action);
+
+        var ipKey = $"{ipPrefix}{ip}";
 
         // 防止频繁发送（IP限制）
         var ipCount = _cache.Get<Int32>(ipKey);
         if (ipCount >= 5) throw new XException("发送频繁，请稍后再试");
 
         // 防止频繁发送 
-        var lastSend = _cache.Get<DateTime>($"{MailLoginLastSendPrefix}{mail}");
+        var lastSend = _cache.Get<DateTime>($"{lastSendPrefix}{mail}");
         if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
         {
             var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
@@ -520,11 +555,11 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             if (rs == null || !rs.Success) throw new XException("邮件发送失败");
 
             // 缓存验证码用于校验
-            var codeKey = $"{MailLoginCodePrefix}{mail}";
+            var codeKey = $"{codePrefix}{mail}";
             _cache.Set(codeKey, code, config.Expire);
 
             // 记录发送时间
-            _cache.Set($"{MailLoginLastSendPrefix}{mail}", DateTime.Now, 60);
+            _cache.Set($"{lastSendPrefix}{mail}", DateTime.Now, 60);
 
             // 累计IP发送次数
             _cache.Increment(ipKey, 1);
@@ -540,6 +575,36 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             LogProvider.Provider.WriteLog(typeof(User), "发送验证码", false, $"邮箱：{mail}，错误：{ex.Message}", 0, mail, ip);
             throw;
         }
+    }
+
+    /// <summary>根据Action获取短信缓存前缀</summary>
+    /// <param name="action">操作类型：login/bind/reset</param>
+    /// <returns>IP前缀、最后发送前缀、验证码前缀</returns>
+    private (String ipPrefix, String lastSendPrefix, String codePrefix) GetSmsCachePrefix(String action)
+    {
+        return action?.ToLower() switch
+        {
+            "bind" => (SmsBindIpPrefix, SmsBindLastSendPrefix, SmsBindCodePrefix),
+            "reset" => (SmsResetIpPrefix, SmsResetLastSendPrefix, SmsResetCodePrefix),
+            "login" => (SmsLoginIpPrefix, SmsLoginLastSendPrefix, SmsLoginCodePrefix),
+            "notify" => (SmsNotifyIpPrefix, SmsNotifyLastSendPrefix, SmsNotifyCodePrefix),
+            _ => (SmsNotifyIpPrefix, SmsNotifyLastSendPrefix, SmsNotifyCodePrefix),
+        };
+    }
+
+    /// <summary>根据Action获取邮件缓存前缀</summary>
+    /// <param name="action">操作类型：login/bind/reset</param>
+    /// <returns>IP前缀、最后发送前缀、验证码前缀</returns>
+    private (String ipPrefix, String lastSendPrefix, String codePrefix) GetMailCachePrefix(String action)
+    {
+        return action?.ToLower() switch
+        {
+            "bind" => (MailBindIpPrefix, MailBindLastSendPrefix, MailBindCodePrefix),
+            "reset" => (MailResetIpPrefix, MailResetLastSendPrefix, MailResetCodePrefix),
+            "login" => (MailLoginIpPrefix, MailLoginLastSendPrefix, MailLoginCodePrefix),
+            "notify" => (MailNotifyIpPrefix, MailNotifyLastSendPrefix, MailNotifyCodePrefix),
+            _ => (MailNotifyIpPrefix, MailNotifyLastSendPrefix, MailNotifyCodePrefix),
+        };
     }
     #endregion
 
@@ -836,44 +901,60 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     }
     #endregion
 
-    #region 绑定手机号
-    /// <summary>绑定手机号到当前登录用户</summary>
+    #region 绑定账号
+    /// <summary>绑定手机号或邮箱到当前登录用户</summary>
+    /// <param name="account">手机号或邮箱</param>
+    /// <param name="code">验证码</param>
+    /// <param name="currentUser">当前用户</param>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>绑定结果</returns>
+    public BindResult BindMobile(String account, String code, IUser currentUser, String ip)
+    {
+        using var span = tracer?.NewSpan(nameof(BindMobile), new { account, ip });
+
+        // 1. 公共参数校验
+        if (account.IsNullOrEmpty())
+            return new BindResult { Success = false, Message = "手机号或邮箱不能为空" };
+
+        if (code.IsNullOrEmpty())
+            return new BindResult { Success = false, Message = "验证码不能为空" };
+
+        if (currentUser == null || currentUser.ID <= 0)
+            return new BindResult { Success = false, Message = "用户未登录，请先登录" };
+
+        // 2. 根据账号类型分发到具体处理方法
+        if (ValidFormatHelper.IsEmail(account))
+            return BindByMailCode(account, code, currentUser, ip);
+
+        if (ValidFormatHelper.IsMobile(account))
+            return BindBySmsCode(account, code, currentUser, ip);
+
+        return new BindResult { Success = false, Message = "请输入正确的手机号或邮箱" };
+    }
+
+    /// <summary>通过短信验证码绑定手机号</summary>
     /// <param name="mobile">手机号</param>
     /// <param name="code">验证码</param>
     /// <param name="currentUser">当前用户</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>绑定结果</returns>
-    public BindResult BindMobile(String mobile, String code, IUser currentUser, String ip)
+    private BindResult BindBySmsCode(String mobile, String code, IUser currentUser, String ip)
     {
-        using var span = tracer?.NewSpan(nameof(BindMobile), new { mobile, ip });
-
-        // 1. 验证手机号格式
-        if (mobile.IsNullOrEmpty()) return new BindResult { Success = false, Message = "手机号不能为空" };
-        if (!ValidFormatHelper.IsMobile(mobile)) return new BindResult { Success = false, Message = "手机号格式不正确" };
-
-        // 2. 验证验证码不能为空
-        if (code.IsNullOrEmpty()) return new BindResult { Success = false, Message = "验证码不能为空" };
-
-        // 3. 检查当前用户是否已登录
-        if (currentUser == null || currentUser.ID <= 0) return new BindResult { Success = false, Message = "用户未登录，请先登录" };
-
-        // 4. 检查短信服务是否启用
         var set = CubeSetting.Current;
         if (!set.EnableSms) return new BindResult { Success = false, Message = "短信验证码功能未启用" };
 
-        // 5. 验证验证码
+        // 验证验证码
         var codeKey = $"{SmsBindCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
-
         if (cachedCode.IsNullOrEmpty()) return new BindResult { Success = false, Message = "验证码已过期或不存在，请重新获取" };
         if (!cachedCode.EqualIgnoreCase(code)) return new BindResult { Success = false, Message = "验证码错误" };
 
-        // 6. 检查手机号是否已被其他用户绑定
+        // 检查手机号是否已被其他用户绑定
         var existingUser = User.FindByMobile(mobile);
         if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
             return new BindResult { Success = false, Message = "该手机号已被其他账户绑定" };
 
-        // 7. 绑定手机号到当前用户
+        // 绑定到当前用户
         var user = User.FindByID(currentUser.ID);
         if (user == null) return new BindResult { Success = false, Message = "用户不存在" };
 
@@ -885,58 +966,108 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             if (updated <= 0) return new BindResult { Success = false, Message = "绑定失败，请重试" };
         }
 
-        // 8. 验证成功后删除缓存验证码，防止重复使用
+        // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
         LogProvider.Provider.WriteLog(typeof(User), "绑定手机", true, $"手机号：{mobile}", currentUser.ID, currentUser + "", ip);
 
         return new BindResult { Success = true, Message = "手机号绑定成功" };
     }
+
+    /// <summary>通过邮件验证码绑定邮箱</summary>
+    /// <param name="mail">邮箱</param>
+    /// <param name="code">验证码</param>
+    /// <param name="currentUser">当前用户</param>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>绑定结果</returns>
+    private BindResult BindByMailCode(String mail, String code, IUser currentUser, String ip)
+    {
+        var set = CubeSetting.Current;
+        if (!set.EnableMail) return new BindResult { Success = false, Message = "邮件验证码功能未启用" };
+
+        // 验证验证码
+        var codeKey = $"{MailBindCodePrefix}{mail}";
+        var cachedCode = _cache.Get<String>(codeKey);
+        if (cachedCode.IsNullOrEmpty()) return new BindResult { Success = false, Message = "验证码已过期或不存在，请重新获取" };
+        if (!cachedCode.EqualIgnoreCase(code)) return new BindResult { Success = false, Message = "验证码错误" };
+
+        // 检查邮箱是否已被其他用户绑定
+        var existingUser = User.FindByMail(mail);
+        if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
+            return new BindResult { Success = false, Message = "该邮箱已被其他账户绑定" };
+
+        // 绑定到当前用户
+        var user = User.FindByID(currentUser.ID);
+        if (user == null) return new BindResult { Success = false, Message = "用户不存在" };
+
+        if (user.Mail != mail)
+        {
+            user.Mail = mail;
+            user.MailVerified = true;
+            var updated = user.Update();
+            if (updated <= 0) return new BindResult { Success = false, Message = "绑定失败，请重试" };
+        }
+
+        // 验证成功后删除缓存验证码，防止重复使用
+        _cache.Remove(codeKey);
+
+        LogProvider.Provider.WriteLog(typeof(User), "绑定邮箱", true, $"邮箱：{mail}", currentUser.ID, currentUser + "", ip);
+
+        return new BindResult { Success = true, Message = "邮箱绑定成功" };
+    }
     #endregion
 
     #region 重置密码
-    /// <summary>通过手机验证码重置密码</summary>
-    /// <param name="mobile">手机号</param>
+    /// <summary>通过手机或邮箱验证码重置密码</summary>
+    /// <param name="account">手机号或邮箱</param>
     /// <param name="code">验证码</param>
     /// <param name="newPassword">新密码</param>
     /// <param name="confirmPassword">确认密码</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>重置结果</returns>
-    public ResetResult ResetPassword(String mobile, String code, String newPassword, String confirmPassword, String ip)
+    public ResetResult ResetPassword(String account, String code, String newPassword, String confirmPassword, String ip)
     {
-        using var span = tracer?.NewSpan(nameof(ResetPassword), new { mobile, ip });
+        using var span = tracer?.NewSpan(nameof(ResetPassword), new { account, ip });
 
-        // 1. 验证手机号格式
-        if (mobile.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "手机号不能为空" };
-        if (!ValidFormatHelper.IsMobile(mobile)) return new ResetResult { Success = false, Message = "手机号格式不正确" };
-
-        // 2. 验证验证码不能为空
+        // 1. 公共参数校验
+        if (account.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "手机号或邮箱不能为空" };
         if (code.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "验证码不能为空" };
-
-        // 3. 验证新密码不能为空
         if (newPassword.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "新密码不能为空" };
-
-        // 4. 验证确认密码
         if (!confirmPassword.IsNullOrEmpty() && newPassword != confirmPassword)
             return new ResetResult { Success = false, Message = "两次输入密码不一致" };
-
-        // 5. 验证密码强度
         if (!passwordService.Valid(newPassword)) return new ResetResult { Success = false, Message = "密码太弱" };
 
-        // 6. 检查短信服务是否启用
+        // 2. 根据账号类型分发到具体处理方法
+        if (ValidFormatHelper.IsEmail(account))
+            return ResetByMailCode(account, code, newPassword, ip);
+
+        if (ValidFormatHelper.IsMobile(account))
+            return ResetBySmsCode(account, code, newPassword, ip);
+
+        return new ResetResult { Success = false, Message = "请输入正确的手机号或邮箱" };
+    }
+
+    /// <summary>通过短信验证码重置密码</summary>
+    /// <param name="mobile">手机号</param>
+    /// <param name="code">验证码</param>
+    /// <param name="newPassword">新密码</param>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>重置结果</returns>
+    private ResetResult ResetBySmsCode(String mobile, String code, String newPassword, String ip)
+    {
         var set = CubeSetting.Current;
         if (!set.EnableSms) return new ResetResult { Success = false, Message = "短信验证码功能未启用" };
 
-        // 7. 验证验证码
+        // 验证验证码
         var codeKey = $"{SmsResetCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
-
         if (cachedCode.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "验证码已过期或不存在，请重新获取" };
         if (!cachedCode.EqualIgnoreCase(code)) return new ResetResult { Success = false, Message = "验证码错误" };
 
-        // 8. 查找用户并更新密码
+        // 查找用户并更新密码
         var user = User.FindByMobile(mobile);
-        if (user == null || user.ID <= 0) return new ResetResult { Success = false, Message = "该手机号未注册" };
+        if (user == null || user.ID <= 0)
+            return new ResetResult { Success = false, Message = "该手机号未注册" };
 
         var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
         if (user.Password != newPassHash)
@@ -946,10 +1077,48 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             if (updated <= 0) return new ResetResult { Success = false, Message = "密码重置失败，请重试" };
         }
 
-        // 9. 验证成功后删除缓存验证码，防止重复使用
+        // 验证成功后删除缓存验证码，防止重复使用
         _cache.Remove(codeKey);
 
         LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"手机号：{mobile}", user.ID, user + "", ip);
+
+        return new ResetResult { Success = true, Message = "密码重置成功" };
+    }
+
+    /// <summary>通过邮件验证码重置密码</summary>
+    /// <param name="mail">邮箱</param>
+    /// <param name="code">验证码</param>
+    /// <param name="newPassword">新密码</param>
+    /// <param name="ip">客户端IP</param>
+    /// <returns>重置结果</returns>
+    private ResetResult ResetByMailCode(String mail, String code, String newPassword, String ip)
+    {
+        var set = CubeSetting.Current;
+        if (!set.EnableMail) return new ResetResult { Success = false, Message = "邮件验证码功能未启用" };
+
+        // 验证验证码
+        var codeKey = $"{MailResetCodePrefix}{mail}";
+        var cachedCode = _cache.Get<String>(codeKey);
+        if (cachedCode.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "验证码已过期或不存在，请重新获取" };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ResetResult { Success = false, Message = "验证码错误" };
+
+        // 查找用户并更新密码
+        var user = User.FindByMail(mail);
+        if (user == null || user.ID <= 0)
+            return new ResetResult { Success = false, Message = "该邮箱未注册" };
+
+        var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
+        if (user.Password != newPassHash)
+        {
+            user.Password = newPassHash;
+            var updated = user.Update();
+            if (updated <= 0) return new ResetResult { Success = false, Message = "密码重置失败，请重试" };
+        }
+
+        // 验证成功后删除缓存验证码，防止重复使用
+        _cache.Remove(codeKey);
+
+        LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"邮箱：{mail}", user.ID, user + "", ip);
 
         return new ResetResult { Success = true, Message = "密码重置成功" };
     }

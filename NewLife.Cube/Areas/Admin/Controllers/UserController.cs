@@ -26,7 +26,7 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(100, true, Icon = "fa-user")]
 public class UserController : EntityController<User, UserModel>
 {
- 
+
 
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private readonly ICache _cache;
@@ -261,8 +261,6 @@ public class UserController : EntityController<User, UserModel>
         LoginResult loginResult = null;
         try
         {
-            //if (ModelState.IsValid)
-            //{
             loginResult = _userService.Login(model, HttpContext);
             if (loginResult == null || loginResult.AccessToken.IsNullOrEmpty())
                 return res.ToFailApiResponse(loginResult?.Result); //登录失败
@@ -270,16 +268,11 @@ public class UserController : EntityController<User, UserModel>
             res.AccessToken = loginResult.AccessToken;
             res.RefreshToken = loginResult.RefreshToken;
             return res.ToOkApiResponse("登录成功");
-            //}
-            //else
-            //{
-            //    return res.ToFailApiResponse(ModelState.ToJson());//TODO 处理模型状态错误
-            //}
 
         }
         catch (Exception ex)
         {
-            return res.ToErrorApiResponse(ex.Message);
+            return res.ToFailApiResponse(ex.Message);
         }
 
         //TODO 地址跳转，应该直接操作Response，而不是返回一个视图。API暂时不需要跳转，由前端处理
@@ -576,93 +569,10 @@ public class UserController : EntityController<User, UserModel>
             return false.ToRemotingErrorApiResponse("发送失败：" + ex.Message);
         }
     }
-     
+
     #endregion
 
-    #region 绑定手机号
-    ///// <summary>发送绑定手机验证码</summary>
-    ///// <param name="model">登录模型:Username手机号</param>
-    ///// <returns></returns>
-    //[HttpPost]
-    //[EntityAuthorize]
-    //public async Task<ApiResponse<Boolean>> SendBindMobileSms(LoginModel model)
-    //{
-    //    var mobile = model.Username?.Trim() ?? "";
-
-    //    // 1. 验证手机号格式
-    //    if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
-    //    if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
-
-    //    // 2. 检查当前用户是否已登录
-    //    var currentUser = ManageProvider.User as User;
-    //    if (currentUser == null || currentUser.ID <= 0) return false.ToFailApiResponse("用户未登录，请先登录");
-
-    //    // 3. 检查手机号是否已被其他用户绑定
-    //    var existingUser = XCode.Membership.User.FindByMobile(mobile);
-    //    if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
-    //        return false.ToFailApiResponse("该手机号已被其他账户绑定");
-
-    //    // 4. 检查短信服务是否启用
-    //    var set = CubeSetting.Current;
-    //    if (!set.EnableSms) return false.ToErrorApiResponse("短信验证码功能未启用");
-
-    //    if (_smsVerifyCode == null) return false.ToErrorApiResponse("短信服务未配置");
-
-    //    // 检查短信配置是否完整
-    //    if (set.SmsAccessKeyId.IsNullOrEmpty() || set.SmsAccessKeySecret.IsNullOrEmpty())
-    //        return false.ToErrorApiResponse("短信AccessKey未配置，请在系统参数中配置SmsAccessKeyId和SmsAccessKeySecret");
-
-    //    if (set.SmsSignName.IsNullOrEmpty())
-    //        return false.ToErrorApiResponse("短信签名未配置，请在系统参数中配置SmsSignName");
-
-    //    var ip = UserHost;
-    //    var ipKey = $"SmsBind:IP:{ip}";
-
-    //    // 防止频繁发送（IP限制）
-    //    var ipCount = _cache.Get<Int32>(ipKey);
-    //    if (ipCount >= 5) return false.ToFailApiResponse("发送频繁，请稍后再试");
-
-    //    // 防止频繁发送（手机号限制，60秒内只能发一次）
-    //    var lastSend = _cache.Get<DateTime>($"SmsBind:LastSend:{mobile}");
-    //    if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
-    //    {
-    //        var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
-    //        return false.ToFailApiResponse($"请{wait}秒后再试");
-    //    }
-
-    //    try
-    //    {
-    //        // 发送短信验证码
-    //        var expireMinutes = set.SmsExpireMinutes;
-    //        var code = SmsService.GenerateVerifyCode();
-    //        var rs = await _smsVerifyCode.SendBind(mobile, code, expireMinutes);
-    //        if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
-    //            return false.ToRemotingErrorApiResponse("短信发送失败");
-
-
-    //        // 缓存验证码用于校验
-    //        var codeKey = $"SmsBind:Code:{mobile}";
-    //        _cache.Set(codeKey, code, expireMinutes * 60);
-
-    //        // 记录发送时间
-    //        _cache.Set($"SmsBind:LastSend:{mobile}", DateTime.Now, 60);
-
-    //        // 累计IP发送次数
-    //        _cache.Increment(ipKey, 1);
-    //        if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
-
-    //        LogProvider.Provider.WriteLog(typeof(User), "发送绑定验证码", true, $"手机号：{mobile}", currentUser.ID, currentUser + "", ip);
-
-    //        return true.ToOkApiResponse("验证码已发送");
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        XTrace.WriteException(ex);
-    //        LogProvider.Provider.WriteLog(typeof(User), "发送绑定验证码", false, $"手机号：{mobile}，错误：{ex.Message}", currentUser.ID, currentUser + "", ip);
-    //        return false.ToRemotingErrorApiResponse("发送失败：" + ex.Message);
-    //    }
-    //}
-
+    #region 绑定手机号 
     /// <summary>绑定手机号到当前登录用户</summary>
     /// <param name="model">Username为手机号，Password为验证码</param>
     /// <returns></returns>
@@ -680,84 +590,7 @@ public class UserController : EntityController<User, UserModel>
     }
     #endregion
 
-    #region 手机验证码重置密码
-    ///// <summary>发送重置密码验证码</summary>
-    ///// <param name="model">登录模型:Username手机号</param>
-    ///// <returns></returns>
-    //[HttpPost]
-    //[AllowAnonymous]
-    //public async Task<ApiResponse<Boolean>> SendResetPasswordSms(LoginModel model)
-    //{
-    //    var mobile = model.Username?.Trim() ?? "";
-
-    //    // 1. 验证手机号格式
-    //    if (mobile.IsNullOrEmpty()) return false.ToFailApiResponse("手机号不能为空");
-    //    if (!SmsService.IsValidPhone(mobile)) return false.ToFailApiResponse("手机号格式不正确");
-
-    //    // 2. 检查手机号是否已注册
-    //    var existingUser = XCode.Membership.User.FindByMobile(mobile);
-    //    if (existingUser == null || existingUser.ID <= 0)
-    //        return false.ToFailApiResponse("该手机号未注册");
-
-    //    // 3. 检查短信服务是否启用
-    //    var set = CubeSetting.Current;
-    //    if (!set.EnableSms) return false.ToErrorApiResponse("短信验证码功能未启用");
-
-    //    if (_smsVerifyCode == null) return false.ToErrorApiResponse("短信服务未配置");
-
-    //    // 检查短信配置是否完整
-    //    if (set.SmsAccessKeyId.IsNullOrEmpty() || set.SmsAccessKeySecret.IsNullOrEmpty())
-    //        return false.ToErrorApiResponse("短信AccessKey未配置，请在系统参数中配置SmsAccessKeyId和SmsAccessKeySecret");
-
-    //    if (set.SmsSignName.IsNullOrEmpty())
-    //        return false.ToErrorApiResponse("短信签名未配置，请在系统参数中配置SmsSignName");
-
-    //    var ip = UserHost;
-    //    var ipKey = $"SmsReset:IP:{ip}";
-
-    //    // 防止频繁发送（IP限制）
-    //    var ipCount = _cache.Get<Int32>(ipKey);
-    //    if (ipCount >= 5) return false.ToFailApiResponse("发送频繁，请稍后再试");
-
-    //    // 防止频繁发送（手机号限制，60秒内只能发一次）
-    //    var lastSend = _cache.Get<DateTime>($"SmsReset:LastSend:{mobile}");
-    //    if (lastSend > DateTime.MinValue && (DateTime.Now - lastSend).TotalSeconds < 60)
-    //    {
-    //        var wait = 60 - (Int32)(DateTime.Now - lastSend).TotalSeconds;
-    //        return false.ToFailApiResponse($"请{wait}秒后再试");
-    //    }
-
-    //    try
-    //    {
-    //        // 发送短信验证码
-    //        var expireMinutes = set.SmsExpireMinutes;
-    //        var code = SmsService.GenerateVerifyCode();
-    //        var rs = await _smsVerifyCode.SendReset(mobile, code, expireMinutes);
-    //        if (String.IsNullOrWhiteSpace(rs) || rs != "OK")
-    //            return false.ToRemotingErrorApiResponse("短信发送失败");
-    //        // 缓存验证码用于校验
-    //        var codeKey = $"SmsReset:Code:{mobile}";
-    //        _cache.Set(codeKey, code, expireMinutes * 60);
-
-    //        // 记录发送时间
-    //        _cache.Set($"SmsReset:LastSend:{mobile}", DateTime.Now, 60);
-
-    //        // 累计IP发送次数
-    //        _cache.Increment(ipKey, 1);
-    //        if (ipCount <= 0) _cache.SetExpire(ipKey, TimeSpan.FromMinutes(10));
-
-    //        LogProvider.Provider.WriteLog(typeof(User), "发送重置密码验证码", true, $"手机号：{mobile}", 0, mobile, ip);
-
-    //        return true.ToOkApiResponse("验证码已发送");
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        XTrace.WriteException(ex);
-    //        LogProvider.Provider.WriteLog(typeof(User), "发送重置密码验证码", false, $"手机号：{mobile}，错误：{ex.Message}", 0, mobile, ip);
-    //        return false.ToRemotingErrorApiResponse("发送失败：" + ex.Message);
-    //    }
-    //}
-
+    #region 手机验证码重置密码 
     /// <summary>通过手机验证码重置密码</summary>
     /// <param name="model">重置密码模型</param>
     /// <returns></returns>

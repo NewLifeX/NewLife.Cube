@@ -26,7 +26,7 @@ public class SmsService(ICacheProvider cacheProvider)
         // 从数据库查询，待实体类生成后实现
         config = LoadFromDatabase(tenantId, action);
         if (config != null)
-            cache.Set(cacheKey, config, 300);
+            cache.Set(cacheKey, config, config.Expire <= 0 ? 300 : config.Expire);
 
         return config;
     }
@@ -115,11 +115,18 @@ public class SmsService(ICacheProvider cacheProvider)
                 {
                     SignName = config.SignName,
                     SchemaName = config.SchemaName,
-                    CodeLength = config.CodeLength
+                    CodeLength = config.CodeLength,
+                    Client =
+                    {
+                        Endpoint = config.Server,
+                        AccessKeyId = config.AppKey,
+                        AccessKeySecret = config.AppSecret,
+                    }
                 };
 
                 cacheProvider.InnerCache.Set(key, provider, 600);
             }
+            provider = cacheProvider.InnerCache.Get<ISmsVerifyCode>(key);
         }
 
         var record = new VerifyCodeRecord
@@ -147,7 +154,9 @@ public class SmsService(ICacheProvider cacheProvider)
                 case "reset":
                     record.Result = await provider.SendReset(mobile, code, config.Expire);
                     break;
-                default:
+                case "notify":
+                default://TODO 通知
+                    //record.Result = await provider.SendNotify(mobile, code, config.Expire);
                     break;
             }
 

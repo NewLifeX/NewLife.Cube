@@ -2,6 +2,7 @@
 using NewLife.Caching;
 using NewLife.Cube.Entity;
 using NewLife.Security;
+using XCode.Membership;
 
 namespace NewLife.Cube.Services;
 
@@ -83,15 +84,81 @@ public class MailService(ICacheProvider cacheProvider)
         }
     }
     /// <summary>发送邮件验证码</summary>
-    /// <param name="action"></param>
-    /// <param name="mail"></param>
-    /// <param name="code"></param>
-    /// <param name="config"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <param name="action">操作类型：login/bind/reset</param>
+    /// <param name="mail">邮箱地址</param>
+    /// <param name="code">验证码</param>
+    /// <param name="config">邮件配置</param>
+    /// <returns>验证码记录</returns>
     public async Task<VerifyCodeRecord> SendVerifyCode(String action, String mail, String code, MailConfigModel config)
     {
-        throw new NotImplementedException();
+        var key = $"MailVerify:{config.Provider}:{config.Id}";
+        var provider = cacheProvider.InnerCache.Get<IMailVerifyCode>(key);
+        if (provider == null)
+        {
+            // 根据配置创建邮件验证码提供者
+            if (config.Provider == "Smtp" || config.Provider.IsNullOrEmpty())
+            {
+                provider = new SmtpMailVerifyCode
+                {
+                    Server = config.Server,
+                    Port = config.Port > 0 ? config.Port : 25,
+                    EnableSsl = config.EnableSsl,
+                    From = config.FromMail,
+                    DisplayName = config.FromName,
+                    Username = config.UserName,
+                    Password = config.Password,
+                };
+
+                cacheProvider.InnerCache.Set(key, provider, 600);
+            }
+            provider = cacheProvider.InnerCache.Get<IMailVerifyCode>(key);
+        }
+
+        var record = new VerifyCodeRecord
+        {
+            TenantId = config.TenantId,
+            Action = action,
+            Channel = "Mail",
+            ConfigId = config.Id,
+            ConfigName = config + "",
+            Provider = config.Provider,
+            UserId = ManageProvider.User?.ID ?? 0,
+            Target = mail,
+            ExpireTime = DateTime.Now.AddSeconds(config.Expire > 0 ? config.Expire : 300),
+        };
+
+        try
+        {
+            switch (action.ToLower())
+            {
+                case "login":
+                    record.Result = await provider.SendLogin(mail, code, config.Expire);
+                    break;
+                case "bind":
+                    record.Result = await provider.SendBind(mail, code, config.Expire);
+                    break;
+                case "reset":
+                    record.Result = await provider.SendReset(mail, code, config.Expire);
+                    break;
+                case "notify":
+                default://TODO 通知
+                    //record.Result = await provider.SendNotify(mail, code, config.Expire);
+                    break;
+            }
+
+            record.Success = true;
+        }
+        catch (Exception ex)
+        {
+            record.Success = false;
+            record.Result = ex.Message;
+        }
+        finally
+        {
+            record.Insert();
+        }
+
+        return record;
     }
 
     /// <summary>默认验证码长度</summary>

@@ -11,8 +11,8 @@ public class VerifyCodeModel : ICubeModel
     /// <summary>用户名</summary>
     public String Username { get; set; }
 
-    /// <summary>验证码</summary>
-    public String Code { get; set; }
+    ///// <summary>验证码</summary>
+    //public String Code { get; set; }
 
     /// <summary>动作</summary>
     public String Action { get; set; }
