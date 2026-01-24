@@ -129,11 +129,12 @@
     <Compile Include="..\NewLife.Cube\Entity\附件.cs" Link="Entity\附件.cs" />
     <Compile Include="..\NewLife.Cube\Entity\验证码记录.Biz.cs" Link="Entity\验证码记录.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\验证码记录.cs" Link="Entity\验证码记录.cs" />
+    <Compile Include="..\NewLife.Cube\Enums\LoginCategory.cs" Link="Enums\LoginCategory.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />
     <Compile Include="..\NewLife.Cube\Models\ImportContext.cs" Link="Models\ImportContext.cs" />
-    <Compile Include="..\NewLife.Cube\Models\OperationResult.cs" Link="Models\OperationResult.cs" />
+    <Compile Include="..\NewLife.Cube\Models\ServiceResult.cs" Link="Models\ServiceResult.cs" />
     <Compile Include="..\NewLife.Cube\Models\TokenInModel.cs" Link="Models\TokenInModel.cs" />
     <Compile Include="..\NewLife.Cube\Models\VerifyCodeModel.cs" Link="Models\VerifyCodeModel.cs" />
     <Compile Include="..\NewLife.Cube\Services\MailService.cs" Link="Services\MailService.cs" />
@@ -220,5 +221,8 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Enums\" />
   </ItemGroup>
 </Project>

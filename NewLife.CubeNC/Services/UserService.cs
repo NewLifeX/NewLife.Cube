@@ -3,12 +3,14 @@ using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Enums;
 using NewLife.Cube.Models;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Security;
 using NewLife.Threading;
+using NewLife.Web;
 using XCode;
 using XCode.Membership;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
@@ -106,20 +108,33 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="XException"></exception>
-    public LoginResult Login(LoginModel loginModel, HttpContext httpContext)
+    public ServiceResult<TokenModel> Login(LoginModel loginModel, HttpContext httpContext)
     {
+        switch (loginModel.LoginCategory)//登录方式
+        {
+            case LoginCategory.Phone://手机验证码登录
+                {
+                    return !ValidFormatHelper.IsMobile(loginModel.Username)
+                        ? new ServiceResult<TokenModel> { IsSuccess = false, Message = "手机号码格式不正确" }
+                        : LoginBySms(loginModel, httpContext);
+                }
+            case LoginCategory.Email://邮箱验证码登录
+                {
+                    return !ValidFormatHelper.IsEmail(loginModel.Username)
+                        ? new ServiceResult<TokenModel> { IsSuccess = false, Message = "邮箱格式不正确" }
+                        : LoginByMail(loginModel, httpContext);
+                }
+            case LoginCategory.OAuth:
+            case LoginCategory.Password:
+            default:
+                return LoginByPassword(loginModel, httpContext);
+        }
 
-
-
-        if (ValidFormatHelper.IsMobile(loginModel.Username))
-            return LoginBySms(loginModel, httpContext);
-        else if (ValidFormatHelper.IsEmail(loginModel.Username))
-            return LoginByMail(loginModel, httpContext);
-        else return LoginByPassword(loginModel, httpContext);
     }
 
     /// <summary>账号密码登录</summary>
-    private LoginResult LoginByPassword(LoginModel loginModel, HttpContext httpContext)
+    /// <remarks>验证并返回Token</remarks>
+    private ServiceResult<TokenModel> LoginByPassword(LoginModel loginModel, HttpContext httpContext)
     {
         var username = loginModel.Username;
         var password = loginModel.Password;
@@ -152,7 +167,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
             var provider = ManageProvider.Provider;
             if (provider.Login(username, password, remember) == null)
-                return new LoginResult { Result = "提供的用户名或密码不正确。" };
+                return new ServiceResult<TokenModel> { IsSuccess = false, Message = "提供的用户名或密码不正确。" };
 
             // 登录成功，清空错误数
             if (errors > 0) _cache.Remove(key);
@@ -171,7 +186,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     }
 
     /// <summary>手机验证码登录</summary>
-    private LoginResult LoginBySms(LoginModel loginModel, HttpContext httpContext)
+    /// <remarks>验证并返回Token</remarks>
+    private ServiceResult<TokenModel> LoginBySms(LoginModel loginModel, HttpContext httpContext)
     {
         var mobile = loginModel.Username?.Trim() ?? "";
         var code = loginModel.Password?.Trim() ?? "";
@@ -256,7 +272,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     }
 
     /// <summary>邮箱验证码登录</summary>
-    private LoginResult LoginByMail(LoginModel loginModel, HttpContext httpContext)
+    /// <remarks>验证并返回Token</remarks>
+    private ServiceResult<TokenModel> LoginByMail(LoginModel loginModel, HttpContext httpContext)
     {
         var mail = loginModel.Username?.Trim() ?? "";
         var code = loginModel.Password?.Trim() ?? "";
@@ -341,7 +358,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     }
 
     /// <summary>完成登录，记录统计并生成Token</summary>
-    private LoginResult CompleteLogin(IManageUser user, HttpContext httpContext, Boolean remember, String action, String username, String ip)
+    private ServiceResult<TokenModel> CompleteLogin(IManageUser user, HttpContext httpContext, Boolean remember, String action, String username, String ip)
     {
         var set = CubeSetting.Current;
 
@@ -370,7 +387,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         var tokens = httpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
 
-        return new LoginResult { AccessToken = tokens.AccessToken, RefreshToken = tokens.RefreshToken, ExpireIn = tokens.ExpireIn };
+        return new ServiceResult<TokenModel> { IsSuccess = true, Data = tokens, Message = "登录成功" };
     }
 
     /// <summary>确保用户已绑定到当前租户。用户从哪个租户登录/注册，自动添加绑定关系</summary>
@@ -912,19 +929,19 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <param name="currentUser">当前用户</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>绑定结果</returns>
-    public BindResult BindMobile(String account, String code, IUser currentUser, String ip)
+    public ServiceResult BindByVerifyCode(String account, String code, IUser currentUser, String ip)
     {
-        using var span = tracer?.NewSpan(nameof(BindMobile), new { account, ip });
+        using var span = tracer?.NewSpan(nameof(BindByVerifyCode), new { account, ip });
 
         // 1. 公共参数校验
         if (account.IsNullOrEmpty())
-            return new BindResult { Success = false, Message = "手机号或邮箱不能为空" };
+            return new ServiceResult { IsSuccess = false, Message = "手机号或邮箱不能为空" };
 
         if (code.IsNullOrEmpty())
-            return new BindResult { Success = false, Message = "验证码不能为空" };
+            return new ServiceResult { IsSuccess = false, Message = "验证码不能为空" };
 
         if (currentUser == null || currentUser.ID <= 0)
-            return new BindResult { Success = false, Message = "用户未登录，请先登录" };
+            return new ServiceResult { IsSuccess = false, Message = "用户未登录，请先登录" };
 
         // 2. 根据账号类型分发到具体处理方法
         if (ValidFormatHelper.IsEmail(account))
@@ -933,7 +950,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (ValidFormatHelper.IsMobile(account))
             return BindBySmsCode(account, code, currentUser, ip);
 
-        return new BindResult { Success = false, Message = "请输入正确的手机号或邮箱" };
+        // 暂未使用LoginCategory字段扩展
+        return new ServiceResult { IsSuccess = false, Message = "请输入正确的手机号或邮箱" };
     }
 
     /// <summary>通过短信验证码绑定手机号</summary>
@@ -942,32 +960,32 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <param name="currentUser">当前用户</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>绑定结果</returns>
-    private BindResult BindBySmsCode(String mobile, String code, IUser currentUser, String ip)
+    private ServiceResult BindBySmsCode(String mobile, String code, IUser currentUser, String ip)
     {
         var set = CubeSetting.Current;
-        if (!set.EnableSms) return new BindResult { Success = false, Message = "短信验证码功能未启用" };
+        if (!set.EnableSms) return new ServiceResult { IsSuccess = false, Message = "短信验证码功能未启用" };
 
         // 验证验证码
         var codeKey = $"{SmsBindCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new BindResult { Success = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(code)) return new BindResult { Success = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
 
         // 检查手机号是否已被其他用户绑定
         var existingUser = User.FindByMobile(mobile);
         if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
-            return new BindResult { Success = false, Message = "该手机号已被其他账户绑定" };
+            return new ServiceResult { IsSuccess = false, Message = "该手机号已被其他账户绑定" };
 
         // 绑定到当前用户
         var user = User.FindByID(currentUser.ID);
-        if (user == null) return new BindResult { Success = false, Message = "用户不存在" };
+        if (user == null) return new ServiceResult { IsSuccess = false, Message = "用户不存在" };
 
         if (user.Mobile != mobile)
         {
             user.Mobile = mobile;
             user.MobileVerified = true;
             var updated = user.Update();
-            if (updated <= 0) return new BindResult { Success = false, Message = "绑定失败，请重试" };
+            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = "绑定失败，请重试" };
         }
 
         // 验证成功后删除缓存验证码，防止重复使用
@@ -975,7 +993,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         LogProvider.Provider.WriteLog(typeof(User), "绑定手机", true, $"手机号：{mobile}", currentUser.ID, currentUser + "", ip);
 
-        return new BindResult { Success = true, Message = "手机号绑定成功" };
+        return new ServiceResult { IsSuccess = true, Message = "手机号绑定成功" };
     }
 
     /// <summary>通过邮件验证码绑定邮箱</summary>
@@ -984,32 +1002,32 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <param name="currentUser">当前用户</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>绑定结果</returns>
-    private BindResult BindByMailCode(String mail, String code, IUser currentUser, String ip)
+    private ServiceResult BindByMailCode(String mail, String code, IUser currentUser, String ip)
     {
         var set = CubeSetting.Current;
-        if (!set.EnableMail) return new BindResult { Success = false, Message = "邮件验证码功能未启用" };
+        if (!set.EnableMail) return new ServiceResult { IsSuccess = false, Message = "邮件验证码功能未启用" };
 
         // 验证验证码
         var codeKey = $"{MailBindCodePrefix}{mail}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new BindResult { Success = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(code)) return new BindResult { Success = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
 
         // 检查邮箱是否已被其他用户绑定
         var existingUser = User.FindByMail(mail);
         if (existingUser != null && existingUser.ID > 0 && existingUser.ID != currentUser.ID)
-            return new BindResult { Success = false, Message = "该邮箱已被其他账户绑定" };
+            return new ServiceResult { IsSuccess = false, Message = "该邮箱已被其他账户绑定" };
 
         // 绑定到当前用户
         var user = User.FindByID(currentUser.ID);
-        if (user == null) return new BindResult { Success = false, Message = "用户不存在" };
+        if (user == null) return new ServiceResult { IsSuccess = false, Message = "用户不存在" };
 
         if (user.Mail != mail)
         {
             user.Mail = mail;
             user.MailVerified = true;
             var updated = user.Update();
-            if (updated <= 0) return new BindResult { Success = false, Message = "绑定失败，请重试" };
+            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = "绑定失败，请重试" };
         }
 
         // 验证成功后删除缓存验证码，防止重复使用
@@ -1017,7 +1035,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         LogProvider.Provider.WriteLog(typeof(User), "绑定邮箱", true, $"邮箱：{mail}", currentUser.ID, currentUser + "", ip);
 
-        return new BindResult { Success = true, Message = "邮箱绑定成功" };
+        return new ServiceResult { IsSuccess = true, Message = "邮箱绑定成功" };
     }
     #endregion
 
@@ -1029,17 +1047,17 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <param name="confirmPassword">确认密码</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>重置结果</returns>
-    public ResetResult ResetPassword(String account, String code, String newPassword, String confirmPassword, String ip)
+    public ServiceResult ResetPassword(String account, String code, String newPassword, String confirmPassword, String ip)
     {
         using var span = tracer?.NewSpan(nameof(ResetPassword), new { account, ip });
 
         // 1. 公共参数校验
-        if (account.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "手机号或邮箱不能为空" };
-        if (code.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "验证码不能为空" };
-        if (newPassword.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "新密码不能为空" };
+        if (account.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "手机号或邮箱不能为空" };
+        if (code.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码不能为空" };
+        if (newPassword.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "新密码不能为空" };
         if (!confirmPassword.IsNullOrEmpty() && newPassword != confirmPassword)
-            return new ResetResult { Success = false, Message = "两次输入密码不一致" };
-        if (!passwordService.Valid(newPassword)) return new ResetResult { Success = false, Message = "密码太弱" };
+            return new ServiceResult { IsSuccess = false, Message = "两次输入密码不一致" };
+        if (!passwordService.Valid(newPassword)) return new ServiceResult { IsSuccess = false, Message = "密码太弱" };
 
         // 2. 根据账号类型分发到具体处理方法
         if (ValidFormatHelper.IsEmail(account))
@@ -1048,7 +1066,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (ValidFormatHelper.IsMobile(account))
             return ResetBySmsCode(account, code, newPassword, ip);
 
-        return new ResetResult { Success = false, Message = "请输入正确的手机号或邮箱" };
+        return new ServiceResult { IsSuccess = false, Message = "请输入正确的手机号或邮箱" };
     }
 
     /// <summary>通过短信验证码重置密码</summary>
@@ -1057,28 +1075,28 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <param name="newPassword">新密码</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>重置结果</returns>
-    private ResetResult ResetBySmsCode(String mobile, String code, String newPassword, String ip)
+    private ServiceResult ResetBySmsCode(String mobile, String code, String newPassword, String ip)
     {
         var set = CubeSetting.Current;
-        if (!set.EnableSms) return new ResetResult { Success = false, Message = "短信验证码功能未启用" };
+        if (!set.EnableSms) return new ServiceResult { IsSuccess = false, Message = "短信验证码功能未启用" };
 
         // 验证验证码
         var codeKey = $"{SmsResetCodePrefix}{mobile}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(code)) return new ResetResult { Success = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
 
         // 查找用户并更新密码
         var user = User.FindByMobile(mobile);
         if (user == null || user.ID <= 0)
-            return new ResetResult { Success = false, Message = "该手机号未注册" };
+            return new ServiceResult { IsSuccess = false, Message = "该手机号未注册" };
 
         var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
         if (user.Password != newPassHash)
         {
             user.Password = newPassHash;
             var updated = user.Update();
-            if (updated <= 0) return new ResetResult { Success = false, Message = "密码重置失败，请重试" };
+            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = "密码重置失败，请重试" };
         }
 
         // 验证成功后删除缓存验证码，防止重复使用
@@ -1086,7 +1104,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"手机号：{mobile}", user.ID, user + "", ip);
 
-        return new ResetResult { Success = true, Message = "密码重置成功" };
+        return new ServiceResult { IsSuccess = true, Message = "密码重置成功" };
     }
 
     /// <summary>通过邮件验证码重置密码</summary>
@@ -1095,28 +1113,28 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <param name="newPassword">新密码</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>重置结果</returns>
-    private ResetResult ResetByMailCode(String mail, String code, String newPassword, String ip)
+    private ServiceResult ResetByMailCode(String mail, String code, String newPassword, String ip)
     {
         var set = CubeSetting.Current;
-        if (!set.EnableMail) return new ResetResult { Success = false, Message = "邮件验证码功能未启用" };
+        if (!set.EnableMail) return new ServiceResult { IsSuccess = false, Message = "邮件验证码功能未启用" };
 
         // 验证验证码
         var codeKey = $"{MailResetCodePrefix}{mail}";
         var cachedCode = _cache.Get<String>(codeKey);
-        if (cachedCode.IsNullOrEmpty()) return new ResetResult { Success = false, Message = "验证码已过期或不存在，请重新获取" };
-        if (!cachedCode.EqualIgnoreCase(code)) return new ResetResult { Success = false, Message = "验证码错误" };
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
+        if (!cachedCode.EqualIgnoreCase(code)) return new ServiceResult { IsSuccess = false, Message = "验证码错误" };
 
         // 查找用户并更新密码
         var user = User.FindByMail(mail);
         if (user == null || user.ID <= 0)
-            return new ResetResult { Success = false, Message = "该邮箱未注册" };
+            return new ServiceResult { IsSuccess = false, Message = "该邮箱未注册" };
 
         var newPassHash = ManageProvider.Provider.PasswordProvider.Hash(newPassword);
         if (user.Password != newPassHash)
         {
             user.Password = newPassHash;
             var updated = user.Update();
-            if (updated <= 0) return new ResetResult { Success = false, Message = "密码重置失败，请重试" };
+            if (updated <= 0) return new ServiceResult { IsSuccess = false, Message = "密码重置失败，请重试" };
         }
 
         // 验证成功后删除缓存验证码，防止重复使用
@@ -1124,7 +1142,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         LogProvider.Provider.WriteLog(typeof(User), "重置密码", true, $"邮箱：{mail}", user.ID, user + "", ip);
 
-        return new ResetResult { Success = true, Message = "密码重置成功" };
+        return new ServiceResult { IsSuccess = true, Message = "密码重置成功" };
     }
     #endregion
 }

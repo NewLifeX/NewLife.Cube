@@ -258,15 +258,14 @@ public class UserController : EntityController<User, UserModel>
         if (String.IsNullOrWhiteSpace(model.Password))
             return res.ToFailApiResponse("密码不能为空");
 
-        LoginResult loginResult = null;
         try
         {
-            loginResult = _userService.Login(model, HttpContext);
-            if (loginResult == null || loginResult.AccessToken.IsNullOrEmpty())
-                return res.ToFailApiResponse(loginResult?.Result); //登录失败
+            ServiceResult<TokenModel> loginResult = _userService.Login(model, HttpContext);
+            if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
+                return res.ToFailApiResponse(loginResult?.Message); //登录失败
 
-            res.AccessToken = loginResult.AccessToken;
-            res.RefreshToken = loginResult.RefreshToken;
+            res.AccessToken = loginResult.Data.AccessToken;
+            res.RefreshToken = loginResult.Data.RefreshToken;
             return res.ToOkApiResponse("登录成功");
 
         }
@@ -549,7 +548,7 @@ public class UserController : EntityController<User, UserModel>
         return Json(0, "ok");
     }
 
-    #region 发送验证码
+    #region  验证码
     /// <summary>发送验证码：手机、邮箱 </summary>
     /// <param name="model"> </param>
     /// <remarks>登录模型:Username手机号/邮箱; action:login/bind/reset/notify
@@ -571,10 +570,8 @@ public class UserController : EntityController<User, UserModel>
         }
     }
 
-    #endregion
 
-    #region 绑定手机号 
-    /// <summary>绑定手机号到当前登录用户</summary>
+    /// <summary>验证码绑定（手机号/邮箱）</summary>
     /// <param name="model">Username为手机号，Password为验证码</param>
     /// <returns></returns>
     [HttpPost]
@@ -586,8 +583,8 @@ public class UserController : EntityController<User, UserModel>
         var currentUser = ManageProvider.User;
         var ip = UserHost;
 
-        var result = _userService.BindMobile(mobile, code, currentUser, ip);
-        return result.Success ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
+        var result = _userService.BindByVerifyCode(mobile, code, currentUser, ip);
+        return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion
 
@@ -606,7 +603,7 @@ public class UserController : EntityController<User, UserModel>
         var ip = UserHost;
 
         var result = _userService.ResetPassword(mobile, code, newPassword, confirmPassword, ip);
-        return result.Success ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
+        return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion
 }

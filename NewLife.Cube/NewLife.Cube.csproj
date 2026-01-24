@@ -143,7 +143,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entity\Models\" />
-    <Folder Include="Enums\" />
     <Folder Include="Session\" />
     <Folder Include="Modules\" />
     <Folder Include="ViewModels\" />

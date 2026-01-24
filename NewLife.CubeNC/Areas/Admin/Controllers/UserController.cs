@@ -403,7 +403,7 @@ public class UserController : EntityController<User, UserModel>
     [AllowAnonymous]
     public ActionResult Login(LoginModel loginModel)
     {
-        LoginResult result = null;
+        ServiceResult<TokenModel> result = null;
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         try
@@ -411,13 +411,11 @@ public class UserController : EntityController<User, UserModel>
             if (ModelState.IsValid)
             {
                 result = _userService.Login(loginModel, HttpContext);
-                if (result != null && !result.AccessToken.IsNullOrEmpty())
+                if (result != null && result.IsSuccess && result.Data != null && !result.Data.AccessToken.IsNullOrEmpty())
                 {
                     if (IsJsonRequest)
                     {
-                        var token = result.AccessToken;
-                        //var token = HttpContext.Items["jwtToken"];
-                        return Json(0, "ok", new { /*provider.Current.ID,*/ Token = token });
+                        return Json(0, "ok", new { Token = result.Data.AccessToken });//兼容旧API
                     }
 
                     if (Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
@@ -453,7 +451,7 @@ public class UserController : EntityController<User, UserModel>
         ViewData["pKey"] = new KeyValuePair<String, String>(dkey, dicKey.Item1);
 
         var model = GetViewModel(returnUrl);
-        model.LoginTip = result?.Result;
+        model.LoginTip = result?.Message;
         model.OAuthItems = OAuthConfig.GetVisibles(TenantContext.CurrentId);
 
         return _isMobile ? View("MLogin", model) : View(model);
