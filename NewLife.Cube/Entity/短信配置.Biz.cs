@@ -20,13 +20,13 @@ public partial class SmsConfig : Entity<SmsConfig>
         var entity = new SmsConfig
         {
             TenantId = 0,
-            Provider = "Aliyun",
+            Provider = "Aliyun",// 有硬编码
             Name = "Aliyun",
             DisplayName = "阿里云",
             Server = "dypnsapi.aliyuncs.com",
             AppKey = "",
             AppSecret = "",
-            SignName = "速通互联验证码",
+            SignName = "",
             SchemaName = null,
             CodeLength = 4,
             Expire = 300,
