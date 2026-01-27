@@ -125,11 +125,11 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\MiddlewareHelper.cs" Link="WebMiddleware\MiddlewareHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.10.2026.124-beta1112" />
+    <PackageReference Include="NewLife.Core" Version="11.10.2026.127-beta1203" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.102" />
     <PackageReference Include="NewLife.Office" Version="1.0.2026.102" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.116-beta0318" />
-    <PackageReference Include="NewLife.XCode" Version="11.23.2026.119-beta1332" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.125-beta0604" />
+    <PackageReference Include="NewLife.XCode" Version="11.23.2026.127-beta1342" />
   </ItemGroup>
 
   <ItemGroup>
