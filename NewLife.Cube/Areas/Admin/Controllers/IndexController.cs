@@ -79,7 +79,7 @@ public class IndexController : ControllerBaseX
         var userHost = HttpContext.GetUserHost();
         var result = new
         {
-            system = req.GetRawUrl().AbsoluteUri,
+            system = req.GetRawUrl()?.AbsolutePath,
             path = _env.ContentRootPath,
             host = req.Headers["Host"],
             local = addrLocal + ":" + conn.LocalPort,

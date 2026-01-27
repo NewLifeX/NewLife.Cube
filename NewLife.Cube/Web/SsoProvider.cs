@@ -84,7 +84,7 @@ public class SsoProvider
             var baseUri = request.GetRawUrl();
 
             var uri = new Uri(url);
-            if (uri != null && uri.Authority.EqualIgnoreCase(baseUri.Authority)) url = uri.PathAndQuery;
+            if (uri != null && uri.Authority.EqualIgnoreCase(baseUri?.Authority)) url = uri.PathAndQuery;
         }
 
         // 过滤环回重定向
@@ -114,7 +114,7 @@ public class SsoProvider
     /// <param name="request"></param>
     /// <param name="redirectUrl"></param>
     /// <returns></returns>
-    public virtual String GetRedirect(IHttpRequest request, String redirectUrl) => redirectUrl.AsUri(request.GetRawUrl()) + "";
+    public virtual String GetRedirect(IHttpRequest request, String redirectUrl) => redirectUrl.AsUri(request.GetRawUrl()?.ToUri()) + "";
 
     /// <summary>获取连接信息</summary>
     /// <param name="client"></param>

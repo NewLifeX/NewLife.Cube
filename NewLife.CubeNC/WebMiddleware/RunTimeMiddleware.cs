@@ -148,7 +148,7 @@ public class RunTimeMiddleware
             ctx.Items["Exception"] = new ErrorModel
             {
                 RequestId = DefaultSpan.Current?.TraceId ?? Activity.Current?.Id ?? ctx.TraceIdentifier,
-                Uri = uri,
+                Uri = uri?.ToUri(),
                 Exception = ex
             };
 

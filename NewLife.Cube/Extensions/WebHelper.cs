@@ -121,21 +121,36 @@ public static class WebHelper
     /// <summary>获取原始请求Url，支持反向代理</summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    public static Uri GetRawUrl(this HttpRequest request)
+    public static UriInfo GetRawUrl(this HttpRequest request)
     {
-        // 加速，避免重复计算
-        if (request.HttpContext.Items["_RawUrl"] is Uri uri) return uri;
+        UriInfo? uri = null;
 
         // 取请求头
         var url = request.GetEncodedUrl();
-        //uri = new Uri(url);
-        if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
-            throw new UriFormatException($"无效Uri：{url}");
+        try
+        {
+            uri = new UriInfo(url);
+        }
+        catch (Exception ex)
+        {
+            DefaultSpan.Current?.AppendTag($"GetRawUrl：{url} 失败：{ex.Message}");
+            var port = request.Scheme switch
+            {
+                "https" => 443,
+                "http" => 80,
+                _ => 0
+            };
+            uri = new UriInfo
+            {
+                Scheme = request.Scheme,
+                Host = request.Host.Host,
+                Port = request.Host.Port ?? port,
+                AbsolutePath = request.PathBase + request.Path,
+                Query = request.QueryString.ToUriComponent()
+            };
+        }
 
-        uri = GetRawUrl(uri, k => request.Headers[k]);
-        request.HttpContext.Items["_RawUrl"] = uri;
-
-        return uri;
+        return GetRawUrl(uri, k => request.Headers[k]);
     }
 
     /// <summary>保存上传文件</summary>
@@ -149,25 +164,25 @@ public static class WebHelper
         fs.SetLength(fs.Position);
     }
 
-    private static Uri GetRawUrl(Uri uri, Func<String, String> headers)
+    private static UriInfo GetRawUrl(UriInfo uri, Func<String, String> headers)
     {
         var str = headers("HTTP_X_REQUEST_URI");
         if (str.IsNullOrEmpty()) str = headers("X-Request-Uri");
 
-        if (str.IsNullOrEmpty())
-        {
-            // 阿里云CDN默认支持 X-Client-Scheme: https
-            var scheme = headers("HTTP_X_CLIENT_SCHEME");
-            if (scheme.IsNullOrEmpty()) scheme = headers("X-Client-Scheme");
+        if (!str.IsNullOrEmpty()) uri = new UriInfo(str);
 
-            // nginx
-            if (scheme.IsNullOrEmpty()) scheme = headers("HTTP_X_FORWARDED_PROTO");
-            if (scheme.IsNullOrEmpty()) scheme = headers("X-Forwarded-Proto");
+        // 阿里云CDN默认支持 X-Client-Scheme: https
+        var scheme = headers("HTTP_X_CLIENT_SCHEME");
+        if (scheme.IsNullOrEmpty()) scheme = headers("X-Client-Scheme");
 
-            if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
-        }
+        // nginx
+        if (scheme.IsNullOrEmpty()) scheme = headers("HTTP_X_FORWARDED_PROTO");
+        if (scheme.IsNullOrEmpty()) scheme = headers("X-Forwarded-Proto");
 
-        if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
+        //if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
+        if (!scheme.IsNullOrEmpty()) uri.Scheme = scheme;
+
+        //if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
 
         return uri;
     }
@@ -378,7 +393,8 @@ public static class WebHelper
             };
 
             // https时，SameSite使用None，此时可以让cookie写入有最好的兼容性，跨域也可以读取
-            if (ctx.Request.GetRawUrl().Scheme.EqualIgnoreCase("https"))
+            var uri = ctx.Request.GetRawUrl();
+            if (uri != null && uri.Scheme.EqualIgnoreCase("https"))
             {
                 //var domain = CubeSetting.Current.CookieDomain;
                 //if (!domain.IsNullOrEmpty())

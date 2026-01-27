@@ -326,7 +326,7 @@ public class SsoController : ControllerBaseX
 
                 var state = GetRequest("state");
 
-                url = url.AsUri(Request.GetRawUrl()) + "";
+                url = url.AsUri(Request.GetRawUrl()?.ToUri()) + "";
 
                 // 跳转到验证中心注销地址
                 url = client.Logout(url, state);
