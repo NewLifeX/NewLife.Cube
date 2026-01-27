@@ -1,5 +1,4 @@
 ﻿using NewLife.Cube.Entity;
-using NewLife.Cube.Web.Models;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
@@ -569,7 +568,7 @@ public class SsoProvider
     /// <param name="code"></param>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public virtual TokenInfo GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
+    public virtual TokenModel GetAccessToken(OAuthServer sso, String client_id, String client_secret, String code, String ip)
     {
         using var span = Tracer?.NewSpan(nameof(GetAccessToken), client_id);
         try
@@ -595,7 +594,7 @@ public class SsoProvider
     /// <param name="password">密码。支持md5密码，以md5#开头</param>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public virtual TokenInfo GetAccessTokenByPassword(OAuthServer sso, String client_id, String username, String password, String ip)
+    public virtual TokenModel GetAccessTokenByPassword(OAuthServer sso, String client_id, String username, String password, String ip)
     {
         var log = new AppLog
         {
@@ -685,7 +684,7 @@ public class SsoProvider
     /// <param name="username">用户名。可以是设备编码等唯一使用者标识</param>
     /// <param name="ip"></param>
     /// <returns></returns>
-    public virtual TokenInfo GetAccessTokenByClientCredentials(OAuthServer sso, String client_id, String client_secret, String username, String ip)
+    public virtual TokenModel GetAccessTokenByClientCredentials(OAuthServer sso, String client_id, String client_secret, String username, String ip)
     {
         var log = new AppLog
         {
@@ -746,7 +745,7 @@ public class SsoProvider
     /// <param name="refresh_token">刷新令牌</param>
     /// <param name="ip">IP地址</param>
     /// <returns></returns>
-    public virtual TokenInfo RefreshToken(OAuthServer sso, String client_id, String refresh_token, String ip)
+    public virtual TokenModel RefreshToken(OAuthServer sso, String client_id, String refresh_token, String ip)
     {
         var log = new AppLog
         {

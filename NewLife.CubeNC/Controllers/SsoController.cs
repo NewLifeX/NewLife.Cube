@@ -528,7 +528,7 @@ public class SsoController : ControllerBaseX
             {
                 access_token = token.AccessToken,
                 refresh_token = token.RefreshToken,
-                expires_in = token.Expire,
+                expires_in = token.ExpireIn,
                 scope = token.Scope,
             };
             return SsoJsonOK(rs);
@@ -573,7 +573,7 @@ public class SsoController : ControllerBaseX
 
         try
         {
-            TokenInfo token = null;
+            TokenModel token = null;
             switch (grant_type.ToLower())
             {
                 case "password":
@@ -601,7 +601,7 @@ public class SsoController : ControllerBaseX
             {
                 access_token = token.AccessToken,
                 refresh_token = token.RefreshToken,
-                expires_in = token.Expire,
+                expires_in = token.ExpireIn,
                 scope = token.Scope,
             };
             return SsoJsonOK(rs);
@@ -634,7 +634,7 @@ public class SsoController : ControllerBaseX
 
         try
         {
-            TokenInfo token = null;
+            TokenModel token = null;
             switch (model.grant_type.ToLower())
             {
                 case "password":
@@ -656,7 +656,7 @@ public class SsoController : ControllerBaseX
             {
                 access_token = token.AccessToken,
                 refresh_token = token.RefreshToken,
-                expires_in = token.Expire,
+                expires_in = token.ExpireIn,
                 scope = token.Scope,
             };
             return SsoJsonOK(rs);
@@ -733,7 +733,7 @@ public class SsoController : ControllerBaseX
             {
                 access_token = token.AccessToken,
                 refresh_token = token.RefreshToken,
-                expires_in = token.Expire,
+                expires_in = token.ExpireIn,
                 scope = token.Scope,
             };
 
@@ -852,7 +852,7 @@ public class SsoController : ControllerBaseX
             {
                 access_token = token.AccessToken,
                 refresh_token = token.RefreshToken,
-                expires_in = token.Expire,
+                expires_in = token.ExpireIn,
                 scope = token.Scope,
             };
             var dic = rs.ToDictionary();

@@ -28,7 +28,7 @@ public class SsoClientTests
         Assert.NotNull(token);
         Assert.NotEmpty(token.AccessToken);
         Assert.NotEmpty(token.RefreshToken);
-        Assert.Equal(7200, token.Expire);
+        Assert.Equal(7200, token.ExpireIn);
         Assert.Equal(3, token.AccessToken.Split('.').Length);
 
         var user = await client.GetUser(token.AccessToken) as User;
@@ -65,7 +65,7 @@ public class SsoClientTests
         Assert.NotNull(token);
         Assert.NotEmpty(token.AccessToken);
         Assert.NotEmpty(token.RefreshToken);
-        Assert.Equal(7200, token.Expire);
+        Assert.Equal(7200, token.ExpireIn);
         Assert.Equal(3, token.AccessToken.Split('.').Length);
 
         var ex = await Assert.ThrowsAsync<ApiException>(() => client.GetUser(token.AccessToken));

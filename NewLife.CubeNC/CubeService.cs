@@ -176,6 +176,8 @@ public static class CubeService
         services.AddSingleton<UserService>();
         services.AddSingleton<AccessService>();
         services.AddSingleton<TokenService>();
+        services.AddSingleton<SmsService>();
+        services.AddSingleton<MailService>();
 
         //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();

@@ -74,6 +74,8 @@
     <Compile Remove="Entity\模型表.cs" />
     <Compile Remove="Extensions\ItemsExtend.cs" />
     <Compile Remove="Extensions\MvcActionResultHelper.cs" />
+    <Compile Remove="Services\SmsServiceExtensions.cs" />
+    <Compile Remove="Web\Models\TokenInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -96,10 +98,11 @@
     <Compile Include="..\NewLife.CubeNC\Services\DbDataProtectionBuilderExtensions.cs" Link="Services\DbDataProtectionBuilderExtensions.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\DbXmlRepository.cs" Link="Services\DbXmlRepository.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\FileStorageService.cs" Link="Services\FileStorageService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\IMailVerifyCode.cs" Link="Services\IMailVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\ISmsVerifyCode.cs" Link="Services\ISmsVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
-    <Compile Include="..\NewLife.CubeNC\Services\SmsVerifyCodeService.cs" Link="Services\SmsVerifyCodeService.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\SmtpMailVerifyCode.cs" Link="Services\SmtpMailVerifyCode.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\TokenService.cs" Link="Services\TokenService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
@@ -122,7 +125,7 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\MiddlewareHelper.cs" Link="WebMiddleware\MiddlewareHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.10.2026.113-beta1337" />
+    <PackageReference Include="NewLife.Core" Version="11.10.2026.124-beta1112" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.102" />
     <PackageReference Include="NewLife.Office" Version="1.0.2026.102" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.116-beta0318" />
@@ -139,6 +142,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Entity\Models\" />
     <Folder Include="Session\" />
     <Folder Include="Modules\" />
     <Folder Include="ViewModels\" />

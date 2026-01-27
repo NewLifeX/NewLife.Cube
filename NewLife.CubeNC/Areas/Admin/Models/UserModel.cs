@@ -1,39 +1,28 @@
 ﻿using NewLife.Collections;
+using NewLife.Cube.Enums;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Models;
 
-/// <summary>
-/// 继承此接口，可通过json方式传值
-/// </summary>
-public interface ICubeModel
-{
+/// <summary> 继承此接口，可通过json方式传值 </summary>
+public interface ICubeModel { }
 
-}
-
-/// <summary>
-/// 登录模型
-/// </summary>
+/// <summary> 登录模型 </summary>
 public class LoginModel : ICubeModel
-{
-    /// <summary>
-    /// 登录用户名
-    /// </summary>
+{ 
+    /// <summary>登录类型</summary>
+    public LoginCategory LoginCategory { get; set; } = LoginCategory.Password;
+
+    /// <summary> 登录用户名、手机号码、邮箱 </summary>
     public String Username { get; set; }
 
-    /// <summary>
-    /// 密码
-    /// </summary>
+    /// <summary> 密码 </summary>
     public String Password { get; set; }
 
-    /// <summary>
-    /// 记住登录状态
-    /// </summary>
+    /// <summary> 记住登录状态 </summary>
     public Boolean Remember { get; set; }
 
-    /// <summary>
-    /// 秘钥key
-    /// </summary>
+    /// <summary> 秘钥key </summary>
     public String Pkey { get; set; }
 }
 
@@ -62,9 +51,23 @@ public class RegisterModel : ICubeModel
     public String Password2 { get; set; }
 }
 
-/// <summary>
-/// 用户信息
-/// </summary>
+/// <summary>重置密码模型</summary>
+public class ResetPwdModel : ICubeModel
+{
+    /// <summary> 用户名/手机号 </summary>
+    public String Username { get; set; }
+
+    /// <summary> 验证码 </summary>
+    public String Code { get; set; }
+
+    /// <summary> 新密码 </summary>
+    public String NewPassword { get; set; }
+
+    /// <summary> 确认密码 </summary>
+    public String ConfirmPassword { get; set; }
+}
+
+/// <summary> 用户信息 </summary>
 public class UserInfo
 {
     /// <summary>

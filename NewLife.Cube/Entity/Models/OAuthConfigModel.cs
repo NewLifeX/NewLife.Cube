@@ -17,6 +17,9 @@ public partial class OAuthConfigModel
     /// <summary>租户</summary>
     public Int32 TenantId { get; set; }
 
+    /// <summary>提供者。对应具体实现类标识，用于区分同类型多渠道</summary>
+    public String Provider { get; set; }
+
     /// <summary>名称。提供者名称</summary>
     public String Name { get; set; }
 
@@ -115,6 +118,7 @@ public partial class OAuthConfigModel
     {
         ID = model.ID;
         TenantId = model.TenantId;
+        Provider = model.Provider;
         Name = model.Name;
         NickName = model.NickName;
         Logo = model.Logo;
