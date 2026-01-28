@@ -55,7 +55,7 @@
     <PackageReference Include="NewLife.IP" Version="2.4.2026.102" />
     <PackageReference Include="NewLife.Office" Version="1.0.2026.102" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.6.2026.125-beta0604" />
-    <PackageReference Include="NewLife.XCode" Version="11.23.2026.127-beta1342" />
+    <PackageReference Include="NewLife.XCode" Version="11.23.2026.128-beta0809" />
   </ItemGroup>
 
   <ItemGroup>
