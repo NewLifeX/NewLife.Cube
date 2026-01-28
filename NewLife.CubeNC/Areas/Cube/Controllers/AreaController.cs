@@ -52,7 +52,9 @@ public class AreaController : EntityController<Area, AreaModel>
                 {
                     // 先加载民政部数据，然后导入旧版数据
                     FetchAndSave(null);
-                    Import("http://x.newlifex.com/Area.csv.gz", true, 4, true);
+
+                    var url = NewLife.Setting.Current.PluginServer.TrimEnd("/");
+                    Import(url + "/Area.csv.gz", true, 4, true);
                 }, TaskCreationOptions.LongRunning);
             }
         }

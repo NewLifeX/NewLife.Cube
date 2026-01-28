@@ -7,12 +7,12 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using NewLife.Cube.Areas.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Services;
 using NewLife.Data;
 using NewLife.Log;
 using NewLife.Reflection;
-using NewLife.Remoting.Services;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
@@ -311,6 +311,8 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     [HttpGet]
     public ActionResult AreaChilds(Int32 id = 0)
     {
+        AreaController.InitAreaData();
+
         var r = id <= 0 ? AreaX.Root : AreaX.FindByID(id);
         if (r == null) return Json(500, null, "找不到地区");
 
