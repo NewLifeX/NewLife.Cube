@@ -22,7 +22,7 @@ public class OAuthController : ControllerBase
     /// <returns></returns>
     /// <exception cref="NotSupportedException"></exception>
     [ApiFilter]
-    public TokenModel Token([FromBody] TokenInModel model)
+    public IToken Token([FromBody] TokenInModel model)
     {
         var set = CubeSetting.Current;
 

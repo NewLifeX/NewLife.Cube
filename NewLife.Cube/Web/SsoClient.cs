@@ -45,7 +45,7 @@ public class SsoClient
     /// <param name="username">账号</param>
     /// <param name="password">密码</param>
     /// <returns></returns>
-    public async Task<TokenModel> GetToken(String username, String password)
+    public async Task<IToken> GetToken(String username, String password)
     {
         var client = GetClient();
 
@@ -78,7 +78,7 @@ public class SsoClient
     /// <summary>凭证式，为指定设备颁发令牌</summary>
     /// <param name="deviceId"></param>
     /// <returns></returns>
-    public async Task<TokenModel> GetToken(String deviceId)
+    public async Task<IToken> GetToken(String deviceId)
     {
         var client = GetClient();
 

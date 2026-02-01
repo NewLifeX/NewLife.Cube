@@ -69,7 +69,7 @@ public class TokenService
     /// <param name="expire"></param>
     /// <param name="id"></param>
     /// <returns></returns>
-    public TokenModel IssueToken(String name, String secret, Int32 expire, String id = null)
+    public IToken IssueToken(String name, String secret, Int32 expire, String id = null)
     {
         if (id.IsNullOrEmpty()) id = Rand.NextString(8);
 
@@ -101,7 +101,7 @@ public class TokenService
     /// <param name="secret"></param>
     /// <param name="expire"></param>
     /// <returns></returns>
-    public TokenModel ValidAndIssueToken(String name, String token, String secret, Int32 expire)
+    public IToken ValidAndIssueToken(String name, String token, String secret, Int32 expire)
     {
         if (token.IsNullOrEmpty()) return null;
 

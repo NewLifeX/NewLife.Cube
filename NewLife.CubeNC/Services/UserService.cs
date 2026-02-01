@@ -108,20 +108,20 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="XException"></exception>
-    public ServiceResult<TokenModel> Login(LoginModel loginModel, HttpContext httpContext)
+    public ServiceResult<IToken> Login(LoginModel loginModel, HttpContext httpContext)
     {
         switch (loginModel.LoginCategory)//登录方式
         {
             case LoginCategory.Phone://手机验证码登录
                 {
                     return !ValidFormatHelper.IsMobile(loginModel.Username)
-                        ? new ServiceResult<TokenModel> { IsSuccess = false, Message = "手机号码格式不正确" }
+                        ? new ServiceResult<IToken> { IsSuccess = false, Message = "手机号码格式不正确" }
                         : LoginBySms(loginModel, httpContext);
                 }
             case LoginCategory.Email://邮箱验证码登录
                 {
                     return !ValidFormatHelper.IsEmail(loginModel.Username)
-                        ? new ServiceResult<TokenModel> { IsSuccess = false, Message = "邮箱格式不正确" }
+                        ? new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱格式不正确" }
                         : LoginByMail(loginModel, httpContext);
                 }
             case LoginCategory.OAuth:
@@ -134,7 +134,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
     /// <summary>账号密码登录</summary>
     /// <remarks>验证并返回Token</remarks>
-    private ServiceResult<TokenModel> LoginByPassword(LoginModel loginModel, HttpContext httpContext)
+    private ServiceResult<IToken> LoginByPassword(LoginModel loginModel, HttpContext httpContext)
     {
         var username = loginModel.Username;
         var password = loginModel.Password;
@@ -167,7 +167,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
             var provider = ManageProvider.Provider;
             if (provider.Login(username, password, remember) == null)
-                return new ServiceResult<TokenModel> { IsSuccess = false, Message = "提供的用户名或密码不正确。" };
+                return new ServiceResult<IToken> { IsSuccess = false, Message = "提供的用户名或密码不正确。" };
 
             // 登录成功，清空错误数
             if (errors > 0) _cache.Remove(key);
@@ -187,7 +187,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
     /// <summary>手机验证码登录</summary>
     /// <remarks>验证并返回Token</remarks>
-    private ServiceResult<TokenModel> LoginBySms(LoginModel loginModel, HttpContext httpContext)
+    private ServiceResult<IToken> LoginBySms(LoginModel loginModel, HttpContext httpContext)
     {
         var mobile = loginModel.Username?.Trim() ?? "";
         var code = loginModel.Password?.Trim() ?? "";
@@ -273,7 +273,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
     /// <summary>邮箱验证码登录</summary>
     /// <remarks>验证并返回Token</remarks>
-    private ServiceResult<TokenModel> LoginByMail(LoginModel loginModel, HttpContext httpContext)
+    private ServiceResult<IToken> LoginByMail(LoginModel loginModel, HttpContext httpContext)
     {
         var mail = loginModel.Username?.Trim() ?? "";
         var code = loginModel.Password?.Trim() ?? "";
@@ -358,7 +358,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     }
 
     /// <summary>完成登录，记录统计并生成Token</summary>
-    private ServiceResult<TokenModel> CompleteLogin(IManageUser user, HttpContext httpContext, Boolean remember, String action, String username, String ip)
+    private ServiceResult<IToken> CompleteLogin(IManageUser user, HttpContext httpContext, Boolean remember, String action, String username, String ip)
     {
         var set = CubeSetting.Current;
 
@@ -387,7 +387,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
         var tokens = httpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
 
-        return new ServiceResult<TokenModel> { IsSuccess = true, Data = tokens, Message = "登录成功" };
+        return new ServiceResult<IToken> { IsSuccess = true, Data = tokens, Message = "登录成功" };
     }
 
     /// <summary>确保用户已绑定到当前租户。用户从哪个租户登录/注册，自动添加绑定关系</summary>

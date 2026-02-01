@@ -251,7 +251,6 @@ public class UserController : EntityController<User, UserModel>
     [AllowAnonymous]
     public ApiResponse<TokenModel> Login(LoginModel model)
     {
-
         var res = new TokenModel();
         if (String.IsNullOrWhiteSpace(model.Username))
             return res.ToFailApiResponse("用户名不能为空");
@@ -260,7 +259,7 @@ public class UserController : EntityController<User, UserModel>
 
         try
         {
-            ServiceResult<TokenModel> loginResult = _userService.Login(model, HttpContext);
+            var loginResult = _userService.Login(model, HttpContext);
             if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
                 return res.ToFailApiResponse(loginResult?.Message); //登录失败
 

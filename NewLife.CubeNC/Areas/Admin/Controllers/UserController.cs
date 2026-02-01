@@ -403,7 +403,7 @@ public class UserController : EntityController<User, UserModel>
     [AllowAnonymous]
     public ActionResult Login(LoginModel loginModel)
     {
-        ServiceResult<TokenModel> result = null;
+        ServiceResult<IToken> result = null;
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         try
