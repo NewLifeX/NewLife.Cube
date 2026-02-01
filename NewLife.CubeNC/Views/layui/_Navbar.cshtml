@@ -1,4 +1,4 @@
-﻿@using NewLife.Common;
+@using NewLife.Common;
 @using XCode.Membership;
 @{
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
@@ -20,79 +20,350 @@
 }
 
 <div class="layui-header">
-    <div class="layui-logo layui-bg-black layui-hide-xs">@name</div>
-
-    <!-- 头部区域（可配合layui 已有的水平导航） -->
+    <!-- 左侧内容 -->
     <ul class="layui-nav layui-layout-left">
-        <!-- 移动端显示 -->
+        <!-- 系统菜单按钮（仅移动端显示） -->
         <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
             <i class="layui-icon layui-icon-spread-left"></i>
         </li>
+        
+        <!-- 模块菜单移动端切换按钮 -->
+        @if (ms.Count > 1)
+        {
+            <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm module-toggler-item">
+                <a href="javascript:void(0);" id="module-toggler">
+                    <i class="layui-icon layui-icon-app"></i>
+                </a>
+            </li>
+        }
     </ul>
+
+    <!-- 系统名称 -->
+    <div class="layui-logo layui-bg-black logo-pc">@name</div>
+    <div class="layui-logo-mobile logo-mobile">@name</div>
+
+    <!-- PC端模块菜单（横向显示） -->
     @if (ms.Count > 1)
     {
-        <ul class="layui-nav layui-layout-left">
+        <ul class="layui-nav layui-layout-left module-menu-horizontal layui-hide-xs">
             @foreach (var item in ms)
             {
                 if (item.Key.EqualIgnoreCase(module))
                 {
-                    <li class="layui-nav-item active" lay-header-event="menuLeft"><a href="?module=@item.Key">@item.Value</a></li>
+                    <li class="layui-nav-item layui-this"><a href="?module=@item.Key">@item.Value</a></li>
                 }
                 else
                 {
-                    <li class="layui-nav-item" lay-header-event="menuLeft"><a href="?module=@item.Key">@item.Value</a></li>
+                    <li class="layui-nav-item"><a href="?module=@item.Key">@item.Value</a></li>
+                }
+            }
+        </ul>
+
+        <!-- 移动端模块菜单（下拉显示） -->
+        <ul class="layui-nav module-menu-dropdown" id="module-menu-dropdown" style="display: none;">
+            @foreach (var item in ms)
+            {
+                if (item.Key.EqualIgnoreCase(module))
+                {
+                    <li class="layui-nav-item active"><a href="?module=@item.Key">@item.Value</a></li>
+                }
+                else
+                {
+                    <li class="layui-nav-item"><a href="?module=@item.Key">@item.Value</a></li>
                 }
             }
         </ul>
     }
 
+    <!-- 右侧菜单 -->
     <ul class="layui-nav layui-layout-right">
-        <li class="layui-nav-item layui-show-md-inline-block">
-            <a href="javascript:void(0);">
-                @if (user != null && !user.Avatar.IsNullOrEmpty())
-                {
-                    <img class="layui-nav-img" src="@user.GetAvatarUrl()" alt="@user">
-                }
-                @user
-            </a>
-            <dl class="layui-nav-child">
-                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="用户信息">用户信息</a></dd>
-                <hr>
-                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Logout' data-title="注销" data-loginout="true">注销</a></dd>
-            </dl>
-        </li>
-    </ul>
+        <!-- 租户菜单 -->
+        @if (set.EnableTenant && user != null)
+        {
+            var tList = TenantUser.FindAllByUserId(user.ID).Where(e => e.Tenant != null && e.Tenant.Enable);
+            var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
+            var tenantName = tenant == null ? null : tenant.Enable ? tenant.Name : null;
 
-    @if (set.EnableTenant && user != null)
-    {
-        var tList = TenantUser.FindAllByUserId(user.ID).Where(e => e.Tenant != null && e.Tenant.Enable);
-        var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
-        var tenantName = tenant == null ? null : tenant.Enable ? tenant.Name : null;
-
-        <ul class="layui-nav layui-layout-right" style="right:140px;">
-            <li class="layui-nav-item layui-show-md-inline-block">
+            <li class="layui-nav-item">
                 <a href="javascript:;">
-                    @(tenantName ?? "系统后台")
+                    <span class="tenant-name">@(tenantName ?? "系统后台")</span>
                 </a>
                 <dl class="layui-nav-child">
                     @if (user.Roles.Any(e => e.IsSystem))
                     {
                         <dd>
                             <a href="~/Admin/Index?tenantid=0">
-                                <span class="hidden-xs" title="系统管理后台，用于管理租户，但不能访问租户页面" style="line-height:45px;top:0px;">
-                                    系统管理后台
-                                </span>
+                                <i class="layui-icon layui-icon-home"></i>
+                                系统管理后台
                             </a>
                         </dd>
-                        <dd class="divider"></dd>
+                        <hr>
                     }
 
                     @foreach (var item in tList)
                     {
-                        <dd><a href="~/Admin/Index?tenantid=@item.TenantId" lay-header-event="menuSetting">@item.TenantName</a></dd>
+                        <dd><a href="~/Admin/Index?tenantid=@item.TenantId">@item.TenantName</a></dd>
                     }
                 </dl>
             </li>
-        </ul>
-    }
+        }
+
+        <!-- 用户菜单 -->
+        <li class="layui-nav-item">
+            <a href="javascript:void(0);">
+                @if (user != null && !user.Avatar.IsNullOrEmpty())
+                {
+                    <img class="layui-nav-img" src="@user.GetAvatarUrl()" alt="@user">
+                }
+                <span class="user-name">@user</span>
+            </a>
+            <dl class="layui-nav-child">
+                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Info/@uid' data-title="用户信息">
+                    <i class="layui-icon layui-icon-user"></i>
+                    用户信息
+                </a></dd>
+                <hr>
+                <dd><a href="javascript:void(0);" lay-header-event="menuSetting" data-url='/Admin/User/Logout' data-title="注销" data-loginout="true">
+                    <i class="layui-icon layui-icon-logout"></i>
+                    注销
+                </a></dd>
+            </dl>
+        </li>
+    </ul>
 </div>
+
+@if (ms.Count > 1)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggler = document.getElementById('module-toggler');
+            var dropdown = document.getElementById('module-menu-dropdown');
+            
+            if (toggler && dropdown) {
+                // 模块菜单下拉切换
+                toggler.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                });
+
+                // 点击下拉菜单项后关闭
+                var links = dropdown.querySelectorAll('a');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', function() {
+                        dropdown.style.display = 'none';
+                    });
+                }
+
+                // 点击页面其他地方关闭下拉菜单
+                document.addEventListener('click', function(e) {
+                    if (dropdown.style.display !== 'none' &&
+                        !toggler.contains(e.target) &&
+                        !dropdown.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+}
+
+<style type="text/css">
+    /* PC端布局 */
+    @@media (min-width: 992px) {
+        .layui-header {
+            position: relative;
+        }
+
+        .layui-layout-left {
+            position: absolute;
+            left: 0;
+        }
+
+        .logo-pc {
+            display: block;
+            width: 200px;
+            margin-left: 0;
+        }
+
+        .logo-mobile {
+            display: none !important;
+        }
+
+        .module-menu-horizontal {
+            margin-left: 220px;
+        }
+
+        .module-toggler-item {
+            display: none !important;
+        }
+
+        .layui-layout-right {
+            position: absolute;
+            right: 0;
+        }
+
+        .tenant-name,
+        .user-name {
+            display: inline-block;
+        }
+    }
+
+    /* 移动端布局 */
+    @@media (max-width: 991px) {
+        .layui-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5px;
+            position: relative;
+        }
+
+        /* 左侧按钮 - 固定位置，防止菜单展开时移动 */
+        .layui-layout-left {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            position: relative;
+            left: 0 !important;
+            margin-left: 0 !important;
+            transform: none !important;
+        }
+
+            .layui-layout-left .layui-nav-item {
+                margin: 0 2px;
+                height: 60px;
+                line-height: 60px;
+            }
+
+        /* 系统名称 - PC端隐藏，移动端居中 */
+        .logo-pc {
+            display: none !important;
+        }
+
+        .logo-mobile {
+            display: block !important;
+            flex: 1;
+            text-align: center;
+            font-size: 16px;
+            color: #fff;
+            line-height: 60px;
+            padding: 0 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 模块菜单横向隐藏 */
+        .module-menu-horizontal {
+            display: none !important;
+        }
+
+        /* 右侧菜单 - 固定位置 */
+        .layui-layout-right {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            position: relative;
+            right: 0 !important;
+            margin-right: 0 !important;
+            transform: none !important;
+        }
+
+            .layui-layout-right .layui-nav-item {
+                height: 60px;
+                line-height: 60px;
+            }
+
+                .layui-layout-right .layui-nav-item > a {
+                    height: 60px;
+                    line-height: 60px;
+                    display: flex;
+                    align-items: center;
+                    padding: 0 8px;
+                }
+
+        .tenant-name,
+        .user-name {
+            display: none;
+        }
+
+        .layui-nav-img {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* 下拉菜单靠右 */
+        .layui-layout-right .layui-nav-child {
+            right: 0;
+            left: auto;
+        }
+
+        /* 防止侧边栏展开时导航栏内容移动 */
+        .layui-layout-admin.layui-layout-body .layui-header {
+            left: 0 !important;
+        }
+
+        .layui-layout-admin.layui-layout-body .layui-header .layui-layout-left,
+        .layui-layout-admin.layui-layout-body .layui-header .layui-layout-right,
+        .layui-layout-admin.layui-layout-body .layui-header .logo-mobile {
+            transform: none !important;
+        }
+    }
+
+    /* 模块菜单下拉容器 */
+    #module-menu-dropdown {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        z-index: 9999;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+        #module-menu-dropdown .layui-nav-item {
+            display: block;
+            width: 100%;
+            height: auto;
+            line-height: normal;
+        }
+
+            #module-menu-dropdown .layui-nav-item a {
+                display: block;
+                padding: 15px 20px;
+                color: #333;
+                border-bottom: 1px solid #f0f0f0;
+                height: auto;
+                line-height: 1.5;
+            }
+
+            #module-menu-dropdown .layui-nav-item.active a,
+            #module-menu-dropdown .layui-nav-item a:hover {
+                background-color: #f5f5f5;
+                color: #009688;
+            }
+
+    /* 模块切换图标样式 */
+    .module-toggler-item {
+        height: 60px;
+        line-height: 60px;
+    }
+
+        .module-toggler-item a {
+            padding: 0 10px;
+            height: 60px;
+            line-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+            .module-toggler-item a i {
+                font-size: 20px;
+            }
+</style>
