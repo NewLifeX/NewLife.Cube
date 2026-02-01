@@ -235,100 +235,14 @@ public class SsoProvider
             if (client.Sex > 0) user2.Sex = (SexKinds)client.Sex;
             if (!client.Detail.IsNullOrEmpty()) user2.Remark = client.Detail;
 
-            var roleId = 0;
-            List<Int32> roleIds = null;
-
-            // 使用认证中心的角色
-            if (set.UseSsoRole)
-            {
-                // 跟本地系统角色合并
-                var sys = user2.Roles.Where(e => e.IsSystem).Select(e => e.ID).ToList();
-                if (sys.Count > 0)
-                {
-                    //roleId = user2.RoleID;
-                    roleIds ??= [];
-                    roleIds.AddRange(sys);
-                }
-                roleId = GetRole(dic, true);
-                if (roleId > 0)
-                {
-                    user2.RoleID = roleId;
-
-                    var ids = GetRoles(client.Items, true).ToList();
-                    roleIds ??= [];
-                    roleIds.AddRange(ids);
-                }
-            }
-            // 使用本地角色
-            if (user2.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
-                user2.RoleID = roleId = Role.GetOrAdd(set.DefaultRole).ID;
-
-            // OAuth提供者的自动角色
-            var cfg = OAuthConfig.FindAllWithCache().FirstOrDefault(e => e.Name.EqualIgnoreCase(client.Name));
-            if (cfg != null && !cfg.AutoRole.IsNullOrEmpty())
-            {
-                var ids = GetRoles(cfg.AutoRole, true).ToList();
-                roleIds ??= [];
-                roleIds.AddRange(ids);
-            }
-
-            if (roleIds != null)
-            {
-                roleIds = roleIds.Distinct().ToList();
-                if (roleIds.Contains(roleId)) roleIds.Remove(roleId);
-                if (roleIds.Count == 0)
-                    user2.RoleIds = null;
-                else
-                    user2.RoleIds = "," + roleIds.OrderBy(e => e).Join() + ",";
-            }
+            // 角色
+            FillRoles(client, user2, set);
 
             // 部门
-            if (set.UseSsoDepartment && !client.DepartmentCode.IsNullOrEmpty() && !client.DepartmentName.IsNullOrEmpty())
-            {
-                var dep = Department.FindByCode(client.DepartmentCode);
-                dep ??= new Department
-                {
-                    Code = client.DepartmentCode,
-                    Name = client.DepartmentName,
-                    Enable = true,
-                    Visible = true,
-                };
+            FillDepartment(client, user2, set);
 
-                // 父级部门
-                if (!client.ParentDepartmentCode.IsNullOrEmpty())
-                {
-                    var pdep = Department.FindByCode(client.ParentDepartmentCode);
-                    pdep ??= new Department
-                    {
-                        Code = client.ParentDepartmentCode,
-                        Name = client.ParentDepartmentName,
-                        Enable = true,
-                        Visible = true,
-                    };
-                    pdep.Save();
-
-                    dep.ParentID = pdep.ID;
-                }
-                else if (!client.ParentDepartmentName.IsNullOrEmpty())
-                {
-                    var pdep = Department.FindByCode(client.ParentDepartmentName);
-                    pdep ??= Department.FindByNameAndParentID(client.ParentDepartmentName, 0);
-                    pdep ??= new Department
-                    {
-                        Code = client.ParentDepartmentName,
-                        Name = client.ParentDepartmentName,
-                        Enable = true,
-                        Visible = true,
-                    };
-                    pdep.Save();
-
-                    dep.ParentID = pdep.ID;
-                }
-
-                dep.Save();
-
-                user2.DepartmentID = dep.ID;
-            }
+            // 租户
+            FillTenant(client, user2, user);
 
             // 地区
             if (client.AreaId > 10_00_00)
@@ -366,6 +280,187 @@ public class SsoProvider
                 // 如果Avatar还是保存远程头像地址，下载远程头像到本地
                 if (user2.Avatar.StartsWithIgnoreCase("http://", "https://") && !set.AvatarPath.IsNullOrEmpty())
                     Task.Factory.StartNew(() => FetchAvatar(user, av), TaskCreationOptions.LongRunning);
+            }
+        }
+    }
+
+    /// <summary>填充角色信息</summary>
+    /// <param name="client">OAuth客户端</param>
+    /// <param name="user">用户对象</param>
+    /// <param name="set">魔方设置</param>
+    protected virtual void FillRoles(OAuthClient client, User user, CubeSetting set)
+    {
+        var dic = client.Items;
+        var roleId = 0;
+        List<Int32> roleIds = null;
+
+        // 使用认证中心的角色
+        if (set.UseSsoRole)
+        {
+            // 跟本地系统角色合并
+            var sys = user.Roles.Where(e => e.IsSystem).Select(e => e.ID).ToList();
+            if (sys.Count > 0)
+            {
+                //roleId = user.RoleID;
+                roleIds ??= [];
+                roleIds.AddRange(sys);
+            }
+            roleId = GetRole(dic, true);
+            if (roleId > 0)
+            {
+                user.RoleID = roleId;
+
+                var ids = GetRoles(client.Items, true).ToList();
+                roleIds ??= [];
+                roleIds.AddRange(ids);
+            }
+        }
+        // 使用本地角色
+        if (user.RoleID <= 0 && !set.DefaultRole.IsNullOrEmpty())
+            user.RoleID = roleId = Role.GetOrAdd(set.DefaultRole).ID;
+
+        // OAuth提供者的自动角色
+        var cfg = OAuthConfig.FindAllWithCache().FirstOrDefault(e => e.Name.EqualIgnoreCase(client.Name));
+        if (cfg != null && !cfg.AutoRole.IsNullOrEmpty())
+        {
+            var ids = GetRoles(cfg.AutoRole, true).ToList();
+            roleIds ??= [];
+            roleIds.AddRange(ids);
+        }
+
+        if (roleIds != null)
+        {
+            roleIds = roleIds.Distinct().ToList();
+            roleIds.Remove(roleId);
+            if (roleIds.Count == 0)
+                user.RoleIds = null;
+            else
+                user.RoleIds = "," + roleIds.OrderBy(e => e).Join() + ",";
+        }
+    }
+
+    /// <summary>填充部门信息</summary>
+    /// <param name="client">OAuth客户端</param>
+    /// <param name="user">用户对象</param>
+    /// <param name="set">魔方设置</param>
+    protected virtual void FillDepartment(OAuthClient client, User user, CubeSetting set)
+    {
+        if (!set.UseSsoDepartment || client.DepartmentCode.IsNullOrEmpty() || client.DepartmentName.IsNullOrEmpty()) return;
+
+        var dep = Department.FindByCode(client.DepartmentCode);
+        dep ??= new Department
+        {
+            Code = client.DepartmentCode,
+            Name = client.DepartmentName,
+            Enable = true,
+            Visible = true,
+        };
+
+        // 父级部门
+        if (!client.ParentDepartmentCode.IsNullOrEmpty())
+        {
+            var pdep = Department.FindByCode(client.ParentDepartmentCode);
+            pdep ??= new Department
+            {
+                Code = client.ParentDepartmentCode,
+                Name = client.ParentDepartmentName,
+                Enable = true,
+                Visible = true,
+            };
+            pdep.Save();
+
+            dep.ParentID = pdep.ID;
+        }
+        else if (!client.ParentDepartmentName.IsNullOrEmpty())
+        {
+            var pdep = Department.FindByCode(client.ParentDepartmentName);
+            pdep ??= Department.FindByNameAndParentID(client.ParentDepartmentName, 0);
+            pdep ??= new Department
+            {
+                Code = client.ParentDepartmentName,
+                Name = client.ParentDepartmentName,
+                Enable = true,
+                Visible = true,
+            };
+            pdep.Save();
+
+            dep.ParentID = pdep.ID;
+        }
+
+        dep.Save();
+
+        user.DepartmentID = dep.ID;
+    }
+
+    /// <summary>填充租户信息</summary>
+    /// <param name="client">OAuth客户端</param>
+    /// <param name="user">用户对象</param>
+    /// <param name="manageUser">管理用户接口</param>
+    protected virtual void FillTenant(OAuthClient client, User user, IManageUser manageUser)
+    {
+        var log = LogProvider.Provider;
+
+        // 优先使用 TenantCode + TenantName
+        if (!client.TenantCode.IsNullOrEmpty() && !client.TenantName.IsNullOrEmpty())
+        {
+            var tenant = XCode.Membership.Tenant.FindByCode(client.TenantCode);
+            tenant ??= new XCode.Membership.Tenant
+            {
+                Code = client.TenantCode,
+                Name = client.TenantName,
+                Enable = true,
+            };
+            tenant.Save();
+
+            // 检查并创建用户租户关系
+            var tenantUser = XCode.Membership.TenantUser.FindByTenantIdAndUserId(tenant.Id, user.ID);
+            if (tenantUser == null)
+            {
+                tenantUser = new XCode.Membership.TenantUser
+                {
+                    TenantId = tenant.Id,
+                    UserId = user.ID,
+                    Enable = true,
+                };
+                tenantUser.Insert();
+
+                log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]自动创建租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
+            }
+            else if (!tenantUser.Enable)
+            {
+                tenantUser.Enable = true;
+                tenantUser.Update();
+
+                log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]启用租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
+            }
+        }
+        else if (client.TenantId > 0)
+        {
+            // 仅有 TenantId 时，直接查找现有租户
+            var tenant = XCode.Membership.Tenant.FindById(client.TenantId);
+            if (tenant != null)
+            {
+                // 检查并创建用户租户关系
+                var tenantUser = XCode.Membership.TenantUser.FindByTenantIdAndUserId(tenant.Id, user.ID);
+                if (tenantUser == null)
+                {
+                    tenantUser = new XCode.Membership.TenantUser
+                    {
+                        TenantId = tenant.Id,
+                        UserId = user.ID,
+                        Enable = true,
+                    };
+                    tenantUser.Insert();
+
+                    log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]自动创建租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
+                }
+                else if (!tenantUser.Enable)
+                {
+                    tenantUser.Enable = true;
+                    tenantUser.Update();
+
+                    log?.WriteLog(typeof(User), "SSO租户", true, $"[{manageUser}]启用租户关系[{tenant.Name}]", manageUser.ID, manageUser + "");
+                }
             }
         }
     }
@@ -829,7 +924,25 @@ public class SsoProvider
 
         var online = UserOnline.FindAllByUserID(user.ID).FirstOrDefault(e => !e.DeviceId.IsNullOrEmpty());
 
+        // 获取用户当前租户信息
+        Int32 tenantId = 0;
+        String tenantCode = null;
+        String tenantName = null;
         if (user is User user2)
+        {
+            // 从 TenantUser 查找用户的租户关系
+            var tenantUser = XCode.Membership.TenantUser.FindAllByUserId(user2.ID).FirstOrDefault(e => e.Enable);
+            if (tenantUser != null)
+            {
+                tenantId = tenantUser.TenantId;
+                var tenant = XCode.Membership.Tenant.FindById(tenantId);
+                if (tenant != null)
+                {
+                    tenantCode = tenant.Code;
+                    tenantName = tenant.Name;
+                }
+            }
+
             return new
             {
                 userid = user.ID,
@@ -845,6 +958,9 @@ public class SsoProvider
                 rolenames = user2.Roles.Skip(1).Join(",", e => e + ""),
                 departmentCode = user2.Department?.Code,
                 departmentName = user2.Department?.Name,
+                tenantid = tenantId,
+                tenantcode = tenantCode,
+                tenantname = tenantName,
                 areaid = user2.AreaId,
                 deviceid = online?.DeviceId,
                 avatar = "/Cube/Avatar?id=" + user2.ID,
@@ -852,7 +968,9 @@ public class SsoProvider
                 detail = user2.Remark,
                 resources = dic,
             };
+        }
         else
+        {
             return new
             {
                 userid = user.ID,
@@ -860,6 +978,7 @@ public class SsoProvider
                 nickname = user.NickName,
                 resources = dic,
             };
+        }
     }
     #endregion
 

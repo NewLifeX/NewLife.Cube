@@ -360,6 +360,15 @@ public class OAuthClient
     /// <summary>生日</summary>
     public DateTime Birthday { get; set; }
 
+    /// <summary>租户编号</summary>
+    public Int32 TenantId { get; set; }
+
+    /// <summary>租户代码</summary>
+    public String TenantCode { get; set; }
+
+    /// <summary>租户名称</summary>
+    public String TenantName { get; set; }
+
     /// <summary>获取用户信息</summary>
     /// <returns></returns>
     public virtual String GetUserInfo()
@@ -407,6 +416,9 @@ public class OAuthClient
         // 微信昵称可能包含通用名称。这里也添加，因为星尘等下游会从用户中心拿到昵称
         if (!NickName.IsNullOrEmpty() && (user.NickName == "微信用户" || user.NickName == "欢乐马"))
             user.NickName = NickName;
+
+        //// 租户信息（如果用户支持 TenantId）
+        //if (TenantId > 0) user.SetValue(nameof(TenantId), TenantId);
     }
     #endregion
 
@@ -640,6 +652,16 @@ public class OAuthClient
             var dt = str.ToDateTime();
             if (dt.Year > 1000) Birthday = dt;
         }
+
+        // 租户信息
+        if (dic.TryGetValue("tenantid", out str)) TenantId = str.ToInt();
+        if (dic.TryGetValue("tenant_id", out str)) TenantId = str.ToInt();
+
+        if (dic.TryGetValue("tenantcode", out str)) TenantCode = str.Trim();
+        if (dic.TryGetValue("tenant_code", out str)) TenantCode = str.Trim();
+
+        if (dic.TryGetValue("tenantname", out str)) TenantName = str.Trim();
+        if (dic.TryGetValue("tenant_name", out str)) TenantName = str.Trim();
 
         // 字段映射
         var maps = FieldMap;
