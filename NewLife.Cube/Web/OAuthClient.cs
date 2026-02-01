@@ -453,7 +453,7 @@ public class OAuthClient
     /// <param name="name"></param>
     /// <param name="url"></param>
     /// <returns></returns>
-    protected virtual String GetUrl(String name, String url)
+    public virtual String GetUrl(String name, String url)
     {
         if (!url.StartsWithIgnoreCase("http://", "https://", "#http://", "#https://"))
         {

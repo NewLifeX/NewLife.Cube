@@ -148,6 +148,6 @@ namespace NewLife.Web.OAuth
         /// <param name="name"></param>
         /// <param name="url"></param>
         /// <returns></returns>
-        protected override String GetUrl(String name, String url) => base.GetUrl(name, url).Replace("{tenant}", Tenant);
+        public override String GetUrl(String name, String url) => base.GetUrl(name, url).Replace("{tenant}", Tenant);
     }
 }

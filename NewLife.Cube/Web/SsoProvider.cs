@@ -1,4 +1,5 @@
 ﻿using NewLife.Cube.Entity;
+using NewLife.Http;
 using NewLife.Log;
 using NewLife.Model;
 using NewLife.Reflection;
@@ -257,31 +258,58 @@ public class SsoProvider
             // 生日
             if (client.Birthday.Year > 1000) user2.Birthday = client.Birthday;
 
-            // 头像。有可能是相对路径，需要转为绝对路径
-            var av = client.GetAvatarUrl();
-            if (user2.Avatar.IsNullOrEmpty())
-                user2.Avatar = av;
-            // 本地头像，如果不存在，也要更新
-            else if (user2.Avatar.StartsWithIgnoreCase("/Sso/Avatar/", "/Sso/Avatar?"))
-            {
-                // 在分布式系统中，可能存在多个节点，需要判断头像在当前节点是否存在
-                // 使用OSS存储头像成本比较高，还不如在各个节点都存一份
-                var av2 = CubeSetting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
-                if (!File.Exists(av2))
-                {
-                    LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"{user2.Avatar} => {av}", user.ID, user + "");
-
-                    user2.Avatar = av;
-                }
-            }
-
-            if (client.Config != null && client.Config.FetchAvatar)
-            {
-                // 如果Avatar还是保存远程头像地址，下载远程头像到本地
-                if (user2.Avatar.StartsWithIgnoreCase("http://", "https://") && !set.AvatarPath.IsNullOrEmpty())
-                    Task.Factory.StartNew(() => FetchAvatar(user, av), TaskCreationOptions.LongRunning);
-            }
+            // 头像
+            FillAvatar(client, user2, user, set);
         }
+    }
+
+    /// <summary>填充头像信息</summary>
+    /// <param name="client">OAuth客户端</param>
+    /// <param name="user2">用户对象</param>
+    /// <param name="user">管理用户接口</param>
+    /// <param name="set">魔方设置</param>
+    protected virtual void FillAvatar(OAuthClient client, User user2, IManageUser user, CubeSetting set)
+    {
+        // 头像处理：远端返回的头像覆盖本地，检查是否需要下载
+        var av = client.GetAvatarUrl();
+        if (av.IsNullOrEmpty()) return;
+
+        // 解析 URL 和哈希
+        var avatarUrl = av;
+        var remoteHash = "";
+        var idx = av.IndexOf('#');
+        if (idx >= 0)
+        {
+            avatarUrl = av[..idx];
+            remoteHash = av[(idx + 1)..]; // md5$hash
+        }
+
+        // 如果是相对路径，使用 OAuthClient 的 GetUrl 方法拼接
+        // 内部会根据 Server/AccessServer 自动选择合适的地址
+        if (!avatarUrl.StartsWithIgnoreCase("http://", "https://"))
+            avatarUrl = client.GetUrl("Avatar", avatarUrl);
+
+        // 检查本地文件是否需要下载
+        var needUpdate = false;
+        var localFile = set.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
+
+        if (!File.Exists(localFile))
+        {
+            needUpdate = true;
+            LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"本地文件不存在 {avatarUrl}", user.ID, user + "");
+        }
+        else if (!remoteHash.IsNullOrEmpty() && !localFile.AsFile().VerifyHash(remoteHash))
+        {
+            needUpdate = true;
+            LogProvider.Provider?.WriteLog(user.GetType(), "更新头像", true, $"哈希不匹配 {avatarUrl}", user.ID, user + "");
+        }
+
+        // 更新头像URL（远端覆盖本地）
+        user2.Avatar = avatarUrl;
+
+        // 触发下载任务
+        if (client.Config != null && client.Config.FetchAvatar && needUpdate)
+            Task.Factory.StartNew(() => FetchAvatar(user, av), TaskCreationOptions.LongRunning);
     }
 
     /// <summary>填充角色信息</summary>
@@ -943,6 +971,15 @@ public class SsoProvider
                 }
             }
 
+            // 头像URL附加哈希值，用于客户端验证本地文件是否需要更新
+            var avatarUrl = "/Cube/Avatar?id=" + user2.ID;
+            var avatarFile = CubeSetting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
+            if (File.Exists(avatarFile))
+            {
+                var hash = avatarFile.MD5();
+                avatarUrl += $"#md5${hash}";
+            }
+
             return new
             {
                 userid = user.ID,
@@ -963,7 +1000,7 @@ public class SsoProvider
                 tenantname = tenantName,
                 areaid = user2.AreaId,
                 deviceid = online?.DeviceId,
-                avatar = "/Cube/Avatar?id=" + user2.ID,
+                avatar = avatarUrl,
                 birthday = user2.Birthday.ToString("yyyy-MM-dd", ""),
                 detail = user2.Remark,
                 resources = dic,
@@ -985,11 +1022,11 @@ public class SsoProvider
     #region 辅助
     /// <summary>抓取远程头像</summary>
     /// <param name="user"></param>
-    /// <param name="url"></param>
+    /// <param name="url">头像URL，可以包含哈希值：http://xxx.com/avatar.jpg#md5#hash</param>
     /// <returns></returns>
     public virtual async Task<Boolean> FetchAvatar(IManageUser user, String url = null)
     {
-        using var span = Tracer?.NewSpan(nameof(FetchAvatar), user + "");
+        using var span = Tracer?.NewSpan(nameof(FetchAvatar), new { user.ID, user.Name, user.NickName, url });
 
         if (url.IsNullOrEmpty()) url = user.GetValue("Avatar") as String;
         //if (av.IsNullOrEmpty()) throw new Exception("用户头像不存在 " + user);
@@ -1006,23 +1043,34 @@ public class SsoProvider
         if (url.IsNullOrEmpty()) return false;
         if (!url.StartsWithIgnoreCase("http://", "https://")) return false;
 
+        // 解析URL中的哈希值（格式：url#md5$hash）
+        var downloadUrl = url;
+        var expectedHash = "";
+        var idx = url.IndexOf('#');
+        if (idx >= 0)
+        {
+            downloadUrl = url[..idx];
+            expectedHash = url[(idx + 1)..]; // md5$hash
+        }
+
         // 不要扩展名
         var set = CubeSetting.Current;
         var dest = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
 
-        //// 头像是否已存在
-        //if (File.Exists(dest)) return false;
+        // 如果本地文件存在且哈希匹配，则无需下载
+        if (dest.AsFile().VerifyHash(expectedHash)) return true;
 
-        LogProvider.Provider?.WriteLog(user.GetType(), "抓取头像", true, $"{url} => {dest}", user.ID, user + "");
+        LogProvider.Provider?.WriteLog(user.GetType(), "抓取头像", true, $"{downloadUrl} => {dest} (hash={expectedHash})", user.ID, user + "");
 
         dest.EnsureDirectory(true);
 
         try
         {
             var client = new HttpClient();
-            var rs = await client.GetAsync(url);
-            var buf = await rs.Content.ReadAsByteArrayAsync();
-            File.WriteAllBytes(dest, buf);
+
+            // 使用支持哈希校验的扩展方法下载文件
+            // 该方法会下载到临时目录，校验哈希通过后才复制到目标路径
+            await client.DownloadFileAsync(downloadUrl, dest, expectedHash, default);
 
             // 更新头像
             user.SetValue("Avatar", "/Sso/Avatar?id=" + user.ID);
@@ -1034,7 +1082,7 @@ public class SsoProvider
         {
             span?.SetError(ex, null);
 
-            XTrace.WriteLine("抓取头像失败，{0}, {1}", user, url);
+            XTrace.WriteLine("抓取头像失败，{0}, {1}", user, downloadUrl);
             XTrace.WriteException(ex);
         }
 

@@ -887,44 +887,46 @@ public class SsoController : ControllerBaseX
         var user = ManageProvider.Provider?.FindByID(id) as IUser ?? throw new Exception("用户不存在 " + id);
 
         var set = CubeSetting.Current;
-        var av = "";
+        FileInfo? av = null;
         if (!user.Avatar.IsNullOrEmpty() && !user.Avatar.StartsWith("/"))
         {
-            av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath();
-            if (!System.IO.File.Exists(av)) av = null;
+            av = set.AvatarPath.CombinePath(user.Avatar).GetBasePath().AsFile();
+            if (!av.Exists) av = null;
         }
 
         // 用于兼容旧代码
-        if (av.IsNullOrEmpty() && !set.AvatarPath.IsNullOrEmpty())
+        if (av == null && !set.AvatarPath.IsNullOrEmpty())
         {
-            av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
-            if (!System.IO.File.Exists(av)) av = null;
+            av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath().AsFile();
+            if (!av.Exists) av = null;
+        }
 
-            // 使用最后一个第三方头像
-            if (av.IsNullOrEmpty() && user is IManageUser muser)
+        // 使用最后一个第三方头像
+        if (av == null && user is IManageUser muser)
+        {
+            var list = UserConnect.FindAllByUserID(user.ID);
+            foreach (var item in list.OrderByDescending(e => e.UpdateTime))
             {
-                var list = UserConnect.FindAllByUserID(user.ID);
-                foreach (var item in list.OrderByDescending(e => e.UpdateTime))
+                var url = item.Avatar;
+                if (!url.IsNullOrEmpty() && url.StartsWithIgnoreCase("http://", "https://"))
                 {
-                    var url = item.Avatar;
-                    if (!url.IsNullOrEmpty() && url.StartsWithIgnoreCase("http://", "https://"))
-                    {
-                        //av = url;
+                    // 自动下载头像
+                    var cfg = OAuthConfig.FindByName(item.Provider);
+                    if (cfg != null && cfg.FetchAvatar)
+                        Task.Run(() => prv.FetchAvatar(muser, url));
 
-                        // 自动下载头像
-                        var cfg = OAuthConfig.FindByName(item.Provider);
-                        if (cfg != null && cfg.FetchAvatar)
-                            Task.Run(() => prv.FetchAvatar(muser, url));
-
-                        return Redirect(url);
-                    }
+                    return Redirect(url);
                 }
             }
         }
 
-        if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
+        if (av == null || !av.Exists) throw new Exception("用户头像不存在 " + id);
 
-        var vs = System.IO.File.ReadAllBytes(av);
+        var vs = av.ReadBytes();
+
+        // 设置文件哈希相关响应头
+        Response.SetFileHashHeaders(vs.MD5().ToHex());
+
         return File(vs, "image/png");
     }
 

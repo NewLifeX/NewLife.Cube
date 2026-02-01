@@ -102,7 +102,7 @@ public class Id4Client : OAuthClient
     /// <param name="name"></param>
     /// <param name="url"></param>
     /// <returns></returns>
-    protected override String GetUrl(String name, String url)
+    public override String GetUrl(String name, String url)
     {
         var baseUrl = base.GetUrl(name, url);
         var p = baseUrl.IndexOf('?');

@@ -10,7 +10,7 @@ namespace NewLife.Cube;
 /// <summary>Web助手</summary>
 public static class WebHelper2
 {
-    #region 兼容处理
+    #region Http请求
     /// <summary>获取请求值</summary>
     /// <param name="request"></param>
     /// <param name="key"></param>
@@ -143,6 +143,40 @@ public static class WebHelper2
     /// <param name="request"></param>
     /// <returns></returns>
     public static String GetReferer(this HttpRequest request) => request.Headers["Referer"].FirstOrDefault();
+    #endregion
+
+    #region Http响应
+    /// <summary>设置文件哈希相关的响应头</summary>
+    /// <param name="response">Http响应</param>
+    /// <param name="hash">文件哈希值，格式：[算法名$]哈希值，如MD5$abc123或abc123</param>
+    public static void SetFileHashHeaders(this HttpResponse response, String hash)
+    {
+        if (hash.IsNullOrEmpty()) return;
+
+        // 解析哈希算法名称和哈希值
+        var algorithm = "MD5";
+        var hashValue = hash;
+
+        var dollarIndex = hash.IndexOf('$');
+        if (dollarIndex > 0)
+        {
+            algorithm = hash[..dollarIndex];
+            hashValue = hash[(dollarIndex + 1)..];
+        }
+
+        // 1. RFC 3230 标准 Digest 头
+        response.Headers["Digest"] = $"{algorithm}={hashValue}";
+
+        // 2. X-Content-MD5（兼容某些客户端，总是用MD5）
+        if (algorithm.EqualIgnoreCase("MD5"))
+            response.Headers["X-Content-MD5"] = hashValue;
+
+        // 3. ETag（用于缓存验证）
+        response.Headers["ETag"] = $"\"{hashValue}\"";
+
+        // 4. 自定义头（易于识别）
+        response.Headers["X-File-Hash"] = $"{algorithm}:{hashValue}";
+    }
     #endregion
 
     /// <summary>修正多租户菜单</summary>

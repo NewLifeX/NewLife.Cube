@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.ViewModels;
@@ -335,7 +336,7 @@ public static class MenuHelper
         return list;
     }
 
-    static Dictionary<String, Boolean> _tenants = [];
+    static ConcurrentDictionary<String, Boolean> _tenants = [];
     static Boolean CheckVisibleInTenant(MenuTree menu)
     {
         var key = menu.FullName;
@@ -359,7 +360,7 @@ public static class MenuHelper
         return _tenants[key] = false;
     }
 
-    static Dictionary<String, Boolean> _admins = [];
+    static ConcurrentDictionary<String, Boolean> _admins = [];
     static Boolean CheckVisibleInAdmin(MenuTree menu)
     {
         var key = menu.FullName;
