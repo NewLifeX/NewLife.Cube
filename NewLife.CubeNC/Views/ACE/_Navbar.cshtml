@@ -1,4 +1,4 @@
-﻿@using NewLife.Common;
+@using NewLife.Common;
 @using XCode.Membership;
 @{
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
@@ -33,6 +33,15 @@
             <span class="icon-bar"></span>
         </button>
 
+        <!-- 模块菜单移动端切换按钮 -->
+        @if (ms.Count > 1)
+        {
+            <button type="button" class="navbar-toggle module-toggler pull-left" id="module-toggler" style="margin-left: 15px;">
+                <span class="sr-only">Toggle modules</span>
+                <i class="ace-icon fa fa-th-large"></i>
+            </button>
+        }
+
         <!-- /section:basics/sidebar.mobile.toggle -->
         <div class="navbar-header">
             <!-- #section:basics/navbar.layout.brand -->
@@ -44,7 +53,8 @@
         </div>
         @if (ms.Count > 1)
         {
-            <ul class="nav nav-pills navbar-nav">
+            <!-- PC端横向显示 -->
+            <ul class="nav nav-pills navbar-nav module-menu-horizontal">
                 @foreach (var item in ms)
                 {
                     if (item.Key.EqualIgnoreCase(module))
@@ -57,29 +67,88 @@
                     }
                 }
             </ul>
+
+            <!-- 移动端下拉显示 -->
+            <ul class="nav module-menu-dropdown" id="module-menu-dropdown" style="display: none;">
+                @foreach (var item in ms)
+                {
+                    if (item.Key.EqualIgnoreCase(module))
+                    {
+                        <li class="active"><a href="?module=@item.Key">@item.Value</a></li>
+                    }
+                    else
+                    {
+                        <li><a href="?module=@item.Key">@item.Value</a></li>
+                    }
+                }
+            </ul>
         }
 
         <!-- #section:basics/navbar.dropdown -->
         <div class="navbar-buttons navbar-header pull-right" role="navigation">
             <ul class="nav ace-nav">
+                <!--tenant-->
+                @if (set.EnableTenant && user != null)
+                {
+                    var tList = TenantUser.FindAllByUserId(user.ID);
+                    var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
+                    var tenantName = tenant?.Name;
+
+                    <li class="light-blue">
+                        <a data-toggle="dropdown" href="#" class="dropdown-toggle" target="main">
+                            <span class="tenant-name hidden-xs">
+                                @(tenantName ?? "系统后台")
+                            </span>
+                            <i class="ace-icon fa fa-caret-down"></i>
+                        </a>
+
+                        <ul class="dropdown-menu-right dropdown-menu dropdown-caret">
+                            @if (user.Roles.Any(e => e.IsSystem))
+                            {
+                                <li>
+                                    <a href="~/Admin/Index?tenantid=0">
+                                        <i class="ace-icon fa fa-building-o"></i>
+                                        系统管理后台
+                                    </a>
+                                </li>
+                                <li class="divider"></li>
+                            }
+
+                            @foreach (var item in tList)
+                            {
+                                <li>
+                                    <a href="~/Admin/Index?tenantid=@item.TenantId">
+                                        <i class="ace-icon fa fa-cog"></i>
+                                        @item.TenantName
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                }
+
                 <!-- #section:basics/navbar.user_menu -->
                 <li class="light-blue">
                     <a data-toggle="dropdown" href="~/Admin/User/Info" class="dropdown-toggle" target="main">
                         @if (user != null && !user.Avatar.IsNullOrEmpty())
                         {
-                            <img class="nav-user-photo hidden-xs" src="@user.GetAvatarUrl()" alt="@user" />
+                            <img class="nav-user-photo" src="@user.GetAvatarUrl()" alt="@user" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden-icon');" />
+                            <i class="ace-icon fa fa-user-circle nav-user-photo-icon hidden-icon"></i>
+                        }
+                        else
+                        {
+                            <i class="ace-icon fa fa-user-circle nav-user-photo-icon"></i>
                         }
                         <span class="user-info hidden-xs" style="line-height: 30px;">
                             @user<br />
                         </span>
-
                         <i class="ace-icon fa fa-caret-down"></i>
                     </a>
 
                     <ul class="user-menu dropdown-menu-right dropdown-menu dropdown-caret">
                         <li>
                             <a href="~/" target="_blank">
-                                <i class="ace-icon fa fa-cog"></i>
+                                <i class="ace-icon fa fa-home"></i>
                                 系统首页
                             </a>
                         </li>
@@ -102,54 +171,290 @@
                 <!-- /section:basics/navbar.user_menu -->
             </ul>
         </div>
-
-        <!--tenant-->
-        @if (set.EnableTenant && user != null)
-        {
-            var tList = TenantUser.FindAllByUserId(user.ID);
-
-            var tenant = XCode.Membership.Tenant.FindById(TenantContext.CurrentId);
-            var tenantName = tenant?.Name;
-
-            <div class="navbar-buttons navbar-header pull-right" role="navigation">
-                <ul class="nav ace-nav">
-                    <li class="light-blue">
-                        <a data-toggle="dropdown" href="#" class="dropdown-toggle" target="main">
-                            <span class="hidden-xs" title="租户模式禁止访问系统管理，平台管理模式禁止访问租户页面" style="line-height:45px;top:0px;">
-                                @(tenantName ?? "系统后台")
-                            </span>
-                            <i class="ace-icon fa fa-caret-down"></i>
-                        </a>
-
-                        <ul class="dropdown-menu-right dropdown-menu dropdown-caret">
-                            @if (user.Roles.Any(e => e.IsSystem))
-                            {
-                                <li>
-                                    <a href="~/Admin/Index?tenantid=0">
-                                        <span class="hidden-xs" title="系统管理后台，用于管理租户，但不能访问租户页面" style="line-height:45px;top:0px;">
-                                            系统管理后台
-                                        </span>
-                                    </a>
-                                </li>
-                                <li class="divider"></li>
-                            }
-
-                            @foreach (var item in tList)
-                            {
-                                <li>
-                                    <a href="~/Admin/Index?tenantid=@item.TenantId">
-                                        <i class="ace-icon fa fa-cog"></i>
-                                        @item.TenantName
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        }
         <!-- /section:basics/navbar.dropdown -->
     </div>
     <!-- /.navbar-container -->
 </div>
 <!-- /section:basics/navbar.layout -->
+@if (ms.Count > 1)
+{
+    <script type="text/javascript">
+        $(function() {
+            // 模块菜单下拉切换
+            $('#module-toggler').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $('#module-menu-dropdown').toggle();
+            });
+
+            // 点击下拉菜单项后关闭
+            $('#module-menu-dropdown a').on('click', function() {
+                $('#module-menu-dropdown').hide();
+            });
+
+            // 点击页面其他地方关闭下拉菜单
+            $(document).on('click', function(e) {
+                var $dropdown = $('#module-menu-dropdown');
+                if ($dropdown.is(':visible') &&
+                    !$(e.target).closest('#module-toggler').length &&
+                    !$(e.target).closest('#module-menu-dropdown').length) {
+                    $dropdown.hide();
+                }
+            });
+        });
+    </script>
+}
+
+<style type="text/css">
+    /* PC端模块菜单 */
+    @@media (min-width: 768px) {
+        .module-menu-horizontal {
+            margin-left: 15px;
+        }
+
+            .module-menu-horizontal li a {
+                padding: 8px 16px;
+                border-radius: 4px;
+                transition: all 0.3s;
+                color: #555;
+            }
+
+                .module-menu-horizontal li a:hover {
+                    background-color: #f0f0f0;
+                    color: #2283c5;
+                }
+
+            .module-menu-horizontal li.active a {
+                background-color: #2283c5;
+                color: #fff;
+            }
+        /* 租户和用户菜单在同一行 */
+        .navbar-buttons.pull-right .ace-nav {
+            display: flex;
+            align-items: center;
+        }
+            /* 租户和用户菜单项内部垂直居中对齐 */
+            .navbar-buttons.pull-right .ace-nav > li > a {
+                display: flex;
+                align-items: center;
+            }
+
+        .nav-user-photo {
+            width: 32px;
+            height: 32px;
+            margin-right: 5px;
+        }
+
+        .nav-user-photo-icon {
+            font-size: 32px;
+            color: #87b87f;
+            margin-right: 5px;
+            line-height: 1;
+        }
+
+            .nav-user-photo-icon.hidden-icon {
+                display: none;
+            }
+
+        .tenant-name,
+        .user-info {
+            line-height: 1;
+        }
+
+        .tenant-name {
+            margin-right: 10px;
+        }
+    }
+
+    /* 移动端布局 */
+    @@media (max-width: 767px) {
+        /* 导航容器使用flex布局：左按钮 | 中品牌 | 右菜单 */
+        #navbar-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5px;
+        }
+        /* 左侧按钮 */
+        .navbar-toggle {
+            margin: 0 3px;
+            float: none;
+        }
+        /* 品牌名称居中 */
+        .navbar-header:not(.pull-right) {
+            flex: 1;
+            text-align: center;
+            float: none;
+        }
+
+        .navbar-brand {
+            padding: 10px 5px;
+            font-size: 14px;
+        }
+        /* 模块菜单横向隐藏 */
+        .module-menu-horizontal {
+            display: none;
+        }
+        /* 模块下拉菜单 */
+        #module-menu-dropdown {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-top: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1040;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+            #module-menu-dropdown li {
+                display: block;
+            }
+
+                #module-menu-dropdown li a {
+                    display: block;
+                    padding: 12px 20px;
+                    color: #333;
+                    border-bottom: 1px solid #f0f0f0;
+                }
+
+                    #module-menu-dropdown li.active a,
+                    #module-menu-dropdown li a:hover {
+                        background-color: #f5f5f5;
+                        color: #2283c5;
+                    }
+        /* 右侧菜单 */
+        .navbar-buttons.pull-right {
+            float: none;
+            margin: 0;
+        }
+
+            .navbar-buttons.pull-right .ace-nav {
+                display: flex;
+                align-items: center;
+            }
+
+                .navbar-buttons.pull-right .ace-nav > li > a {
+                    padding: 0 4px;
+                    font-size: 11px;
+                    display: flex;
+                    align-items: center;
+                }
+
+        .tenant-name,
+        .user-info {
+            max-width: 45px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .nav-user-photo {
+            width: 28px;
+            height: 28px;
+            margin-right: 3px;
+        }
+
+        .nav-user-photo-icon {
+            font-size: 22px;
+            color: #87b87f;
+            margin-right: 3px;
+        }
+
+            .nav-user-photo-icon.hidden-icon {
+                display: none;
+            }
+
+        .fa-caret-down {
+            margin-left: 2px;
+        }
+        /* 下拉菜单靠右 */
+        .dropdown-menu-right {
+            right: 0;
+            left: auto;
+        }
+    }
+
+    /* 模块菜单响应式样式 */
+    .module-toggler {
+        background-color: transparent;
+        border: 1px solid transparent;
+        padding: 9px 10px;
+        margin-top: 8px;
+        margin-right: 5px;
+        border-radius: 4px;
+    }
+
+        .module-toggler:hover,
+        .module-toggler:focus {
+            background-color: #ddd;
+        }
+
+        .module-toggler .ace-icon {
+            font-size: 18px;
+            color: #fff;
+        }
+
+    /* 模块菜单下拉容器 */
+    #module-menu-dropdown {
+        position: absolute;
+        top: 50px;
+        left: 60px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.175);
+        z-index: 1050;
+        min-width: 200px;
+        padding: 5px 0;
+    }
+
+        #module-menu-dropdown li {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            #module-menu-dropdown li a {
+                display: block;
+                padding: 10px 20px;
+                color: #333;
+                text-decoration: none;
+                white-space: nowrap;
+            }
+
+                #module-menu-dropdown li a:hover {
+                    background-color: #f5f5f5;
+                    color: #262626;
+                }
+
+            #module-menu-dropdown li.active a {
+                background-color: #337ab7;
+                color: #fff;
+            }
+
+    /* PC端显示横向菜单，隐藏下拉按钮 */
+    @@media (min-width: 768px) {
+        .module-toggler {
+            display: none !important;
+        }
+
+        .module-menu-horizontal {
+            display: block !important;
+        }
+    }
+
+    /* 移动端隐藏横向菜单，显示下拉按钮 */
+    @@media (max-width: 767px) {
+        .module-menu-horizontal {
+            display: none !important;
+        }
+
+        .module-toggler {
+            display: block !important;
+        }
+    }
+</style>
