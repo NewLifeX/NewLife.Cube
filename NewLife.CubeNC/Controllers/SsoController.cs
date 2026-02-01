@@ -913,7 +913,7 @@ public class SsoController : ControllerBaseX
                     // 自动下载头像
                     var cfg = OAuthConfig.FindByName(item.Provider);
                     if (cfg != null && cfg.FetchAvatar)
-                        Task.Run(() => prv.FetchAvatar(muser, url));
+                        Task.Run(() => prv.FetchAvatar(muser, url, item.AccessToken));
 
                     return Redirect(url);
                 }
