@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Areas.Admin.Models;
@@ -130,10 +132,23 @@ public class DbController : ControllerBaseX
 
         var dal = DAL.Create(name);
 
+        var list = new List<DbTableModel>();
+        foreach (var item in dal.Tables)
+        {
+            var dm = new DbTableModel
+            {
+                Name = item.Name,
+                Table = item,
+                Count = dal.SelectCount(item.TableName, CommandType.Text),
+            };
+
+            list.Add(dm);
+        }
+
         var model = new DbTablesModel
         {
             Name = name,
-            Tables = dal.Tables.Take(100).ToList()
+            Tables = list.OrderBy(e => e.Name).ToList(),
         };
 
         return View("Tables", model);

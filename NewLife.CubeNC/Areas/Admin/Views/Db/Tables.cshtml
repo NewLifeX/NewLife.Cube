@@ -11,9 +11,10 @@
     ViewBag.Title = "数据表列表";
 }
 
-@foreach (var table in Model.Tables)
+@foreach (var item in Model.Tables)
 {
-    <h3>@table.DisplayName（@table.TableName）</h3>
+    var table = item.Table;
+    <h3>@table.DisplayName（@table.TableName）<span title="该表总行数">[@item.Count]</span></h3>
     <table class="table table-bordered table-hover table-striped table-condensed">
         <thead>
             <tr>
