@@ -169,7 +169,17 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             // 广播指定附件在当前节点可用
             var fileStorage = HttpContext.RequestServices.GetService<IFileStorage>();
             if (fileStorage != null)
-                await fileStorage.PublishNewFileAsync(att.Id, att.FilePath, HttpContext.RequestAborted);
+            {
+                // 忽略异常
+                try
+                {
+                    await fileStorage.PublishNewFileAsync(att.Id, att.FilePath, HttpContext.RequestAborted);
+                }
+                catch (Exception ex2)
+                {
+                    span?.SetError(ex2);
+                }
+            }
         }
         catch (Exception ex)
         {
