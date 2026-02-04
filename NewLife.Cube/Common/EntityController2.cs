@@ -14,6 +14,7 @@ using Stardust.Storages;
 using XCode;
 using XCode.Configuration;
 using XCode.Membership;
+using XCode.Model;
 using ExcelReader = NewLife.Office.ExcelReader;
 
 namespace NewLife.Cube;
@@ -338,18 +339,21 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
             context.TotalCount = totalRows;
         }
 
+        // 所有字段参与插入
+        var option = new BatchOption { FullInsert = true };
+
         // 如果是当前实体类型，直接转换为强类型列表，提高性能
         if (factory == Factory && list[0] is TEntity)
         {
             var typed = list.Cast<TEntity>().ToList();
             return context.Mode switch
             {
-                ImportMode.Insert => typed.Insert(),
-                ImportMode.InsertIgnore => typed.BatchInsertIgnore(),
-                ImportMode.Replace => typed.BatchReplace(),
-                ImportMode.Upsert => typed.Upsert(),
+                ImportMode.Insert => typed.BatchInsert(option),
+                ImportMode.InsertIgnore => typed.BatchInsertIgnore(option),
+                ImportMode.Replace => typed.BatchReplace(option),
+                ImportMode.Upsert => typed.BatchUpsert(option),
                 ImportMode.Merge => OnMerge(factory, list, context),
-                _ => totalRows == 0 ? typed.Insert() : OnMerge(factory, list, context),
+                _ => totalRows == 0 ? typed.BatchInsert(option) : OnMerge(factory, list, context),
             };
         }
 
@@ -358,23 +362,23 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         {
             case ImportMode.Insert:
                 // 仅插入，冲突即异常
-                return list.Insert();
+                return list.BatchInsert(option);
             case ImportMode.InsertIgnore:
                 // 插入忽略冲突
-                return list.BatchInsertIgnore();
+                return list.BatchInsertIgnore(option);
             case ImportMode.Replace:
                 // 覆盖插入（替换）
-                return list.BatchReplace();
+                return list.BatchReplace(option);
             case ImportMode.Upsert:
                 // 冲突时更新
-                return list.Upsert();
+                return list.BatchUpsert(option);
             case ImportMode.Merge:
                 return OnMerge(factory, list, context);
             case ImportMode.Auto:
             default:
                 {
                     // 判断已有数据，如果没有直接插入
-                    if (totalRows == 0) return list.Insert();
+                    if (totalRows == 0) return list.BatchInsert(option);
 
                     return OnMerge(factory, list, context);
                 }
