@@ -27,7 +27,7 @@ namespace NewLife.Cube.Controllers;
 /// <param name="tokenService"></param>
 /// <param name="sources"></param>
 [DisplayName("数据接口")]
-public class CubeController(IFileStorage fileStorage, TokenService tokenService, IEnumerable<EndpointDataSource> sources) : ControllerBaseX
+public class CubeController(IFileStorage fileStorage, TokenService tokenService, IEnumerable<EndpointDataSource> sources, CubeSetting setting) : ControllerBaseX
 {
     private readonly IList<EndpointDataSource> _sources = sources.ToList();
 
@@ -456,7 +456,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
-        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath))
+        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch)
         {
             // 如果本地文件不存在，则从分布式文件存储获取
             await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");
@@ -501,7 +501,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
-        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath))
+        if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch)
         {
             // 如果本地文件不存在，则从分布式文件存储获取
             await fileStorage.RequestFileAsync(att.Id, att.FilePath, "file not found");

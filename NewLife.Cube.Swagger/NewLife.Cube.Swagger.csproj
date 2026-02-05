@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.201" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.205-beta1215" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net8.0'">
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />

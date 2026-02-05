@@ -142,7 +142,7 @@ public class RunTimeMiddleware
         }
         catch (Exception ex)
         {
-            var uri = ctx.Request.GetRawUrl();
+            var uri = HttpExtensions.GetRawUrl(ctx.Request);
             online?.SetError(ex.Message);
 
             XTrace.Log.Error("[{0}]的错误[{1}] {2}", uri, ip, ctx.TraceIdentifier);

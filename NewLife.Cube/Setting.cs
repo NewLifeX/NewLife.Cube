@@ -317,6 +317,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableMail { get; set; }
 
+    /// <summary>文件存储提供服务。是否响应其他节点的文件下载请求，默认true</summary>
+    [Description("文件存储提供服务。是否响应其他节点的文件下载请求，默认true")]
+    [Category("系统功能")]
+    public Boolean FileStorageProvide { get; set; } = true;
+
+    /// <summary>文件存储拉取文件。是否主动拉取其他节点发布的新文件，默认false</summary>
+    [Description("文件存储拉取文件。是否主动拉取其他节点发布的新文件，默认false")]
+    [Category("系统功能")]
+    public Boolean FileStorageFetch { get; set; } = false;
+
     /// <summary>数据保留时间。审计日志与OAuth日志，默认30天</summary>
     [Description("数据保留时间。审计日志与OAuth日志，默认30天")]
     [Category("系统功能")]

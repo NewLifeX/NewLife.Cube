@@ -138,8 +138,9 @@ public static class CubeService
         // 添加定时作业
         services.AddCubeJob();
 
-        // 注册文件存储服务
-        services.AddCubeFileStorage();
+        // 注册文件存储服务。当文件提供或文件拉取任一功能开启时，启用文件存储
+        if (set.FileStorageProvide || set.FileStorageFetch)
+            services.AddCubeFileStorage();
 
         // 注册IP地址库
         IpResolver.Register();
