@@ -1,4 +1,4 @@
-﻿@*
+@*
     列表视图 - 表格模式
 *@
 @using NewLife;
@@ -42,7 +42,7 @@
                             {
                                 <th class="text-center" data-bs-toggle="tooltip" title="@title">@name</th>
                             }
-                            else if (item.Type == typeof(DateTime) && item.Services.Count == 0)
+                            else if (item.Type == typeof(DateTime) && item.Services.Count == 0 && df?.GetValue == null)
                             {
                                 var width = item.ItemType == "Date" ? 80 : 134;
                                 <th style="min-width:@(width)px;" data-bs-toggle="tooltip" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>

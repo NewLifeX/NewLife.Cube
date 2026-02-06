@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Cube
 @using NewLife.Reflection
 @using NewLife.Web;
@@ -30,7 +30,7 @@
                             var name = df?.Header ?? item.DisplayName ?? item.Name;
                             var title = df?.HeaderTitle ?? item.Description;
 
-                            if (item.Type == typeof(DateTime))
+                            if (item.Type == typeof(DateTime) && item.Services.Count == 0 && df?.GetValue == null)
                             {
                                 var width = item.Name.EndsWithIgnoreCase("Date") ? 80 : 134;
                                 <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
