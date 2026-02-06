@@ -114,7 +114,7 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantSource
         Add("Ding", "钉钉", "/Content/images/logo/Ding.png", "snsapi_qrlogin扫码登录，snsapi_auth钉钉内免登，snsapi_login密码登录");
         Add("QyWeiXin", "企业微信", "/Content/images/logo/QyWeiXin.png");
         //Add("Weixin", "微信公众号", "/Content/images/logo/Weixin.png", "snsapi_base静默登录，snsapi_userinfo需要用户关注后授权");
-        var cfg = new OAuthConfig
+        new OAuthConfig
         {
             Name = "Weixin",
             NickName = "微信公众号",
@@ -124,15 +124,35 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantSource
             Visible = false,
             AutoRegister = true,
             FetchAvatar = true,
-        };
-        cfg.Insert();
+        }.Insert();
 
         Add("OpenWeixin", "微信开放平台", "/Content/images/logo/Weixin.png", "snsapi_login用于扫码登录");
         Add("Microsoft", "微软", "/Content/images/logo/Microsoft.png");
         //Add("Weibo", "微博", "/Content/images/logo/Weibo.png");
         //Add("Taobao", "淘宝", "/Content/images/logo/Taobao.png");
         //Add("Alipay", "支付宝", "/Content/images/logo/Alipay.png");
+        new OAuthConfig
+        {
+            Name = "WxApp",
+            NickName = "微信移动应用APP登录",
+            Logo = "/Content/images/logo/Weixin.png",
+            Remark = "用于移动应用调用微信APP登陆",
 
+            Visible = false,
+            AutoRegister = true,
+            FetchAvatar = true,
+        }.Insert();
+        new OAuthConfig
+        {
+            Name = "WxOpen",
+            NickName = "微信小程序",
+            Logo = "/Content/images/logo/Weixin.png",
+            Remark = "用于微信小程序登录",
+
+            Visible = false,
+            AutoRegister = true,
+            FetchAvatar = true,
+        }.Insert();
         if (XTrace.Debug) XTrace.WriteLine("完成初始化OAuthConfig[OAuth配置]数据！");
     }
 
@@ -173,6 +193,20 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantSource
         //return Meta.SingleCache.GetItemWithSlaveKey(name) as OAuthConfig;
 
         return Find(_.Name == name);
+    }
+
+    /// <summary>根据名称查找</summary>
+    /// <param name="appid">名称</param>
+    /// <returns>实体对象</returns>
+    public static OAuthConfig FindByAppId(String appid)
+    {
+        // 实体缓存
+        if (Meta.Session.Count < 1000) return Meta.Cache.Find(e => e.AppId.EqualIgnoreCase(appid));
+
+        // 单对象缓存
+        //return Meta.SingleCache.GetItemWithSlaveKey(name) as OAuthConfig;
+
+        return Find(_.AppId == appid);
     }
     #endregion
 

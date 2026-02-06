@@ -161,6 +161,8 @@
     <Compile Include="..\NewLife.Cube\Web\OAuth\TaobaoClient.cs" Link="Web\OAuth\TaobaoClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\WeiboClient.cs" Link="Web\OAuth\WeiboClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\WeixinClient.cs" Link="Web\OAuth\WeixinClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\WxAppClient.cs" Link="Web\OAuth\WxAppClient.cs" />
+    <Compile Include="..\NewLife.Cube\Web\OAuth\WxOpenClient.cs" Link="Web\OAuth\WxOpenClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoClient.cs" Link="Web\SsoClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\UserAgentParser.cs" Link="Web\UserAgentParser.cs" />

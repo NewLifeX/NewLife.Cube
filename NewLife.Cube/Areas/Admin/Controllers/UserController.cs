@@ -31,7 +31,6 @@ public class UserController : EntityController<User, UserModel>
     private readonly ICache _cache;
     private readonly UserService _userService;
     private readonly PasswordService _passwordService;
-    private readonly ISmsVerifyCode _smsVerifyCode;
 
     static UserController()
     {
@@ -103,12 +102,11 @@ public class UserController : EntityController<User, UserModel>
     /// <param name="passwordService"></param>
     /// <param name="cacheProvider"></param>
     /// <param name="smsVerifyCode"></param>
-    public UserController(UserService userService, PasswordService passwordService, ICacheProvider cacheProvider, ISmsVerifyCode smsVerifyCode = null)
+    public UserController(UserService userService, PasswordService passwordService, ICacheProvider cacheProvider)
     {
         _userService = userService;
         _passwordService = passwordService;
         _cache = cacheProvider.Cache;
-        _smsVerifyCode = smsVerifyCode;
     }
 
     /// <summary>搜索数据集</summary>

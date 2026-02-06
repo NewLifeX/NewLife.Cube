@@ -1,10 +1,14 @@
 ﻿using System.ComponentModel;
+using System.Net;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
 using NewLife.Cube.Entity;
+using NewLife.Cube.Extensions;
+using NewLife.Cube.Models;
 using NewLife.Cube.Web;
 using NewLife.Cube.Web.Models;
 using NewLife.Log;
@@ -12,8 +16,8 @@ using NewLife.Model;
 using NewLife.Remoting;
 using NewLife.Security;
 using NewLife.Web;
+using NewLife.Web.OAuth;
 using XCode.Membership;
-//using TokenModel = NewLife.Cube.Web.Models.TokenModel;
 
 /*
  * 魔方OAuth在禁用本地登录，且只设置一个第三方登录时，形成单点登录。
@@ -107,6 +111,8 @@ public class SsoController : ControllerBaseX
 
         return base.Redirect(OnLogin(client, null, rurl, null));
     }
+
+    #region MyRegion
 
     private String OnLogin(OAuthClient client, String state, String returnUrl, OAuthLog log)
     {
@@ -424,6 +430,122 @@ public class SsoController : ControllerBaseX
         }
 
         return Json(0, "ok");
+    }
+
+    #endregion
+    #endregion
+
+    #region 微信登录
+    /// <summary>微信小程序登录</summary>
+    /// <remarks>
+    /// 小程序前端调用 wx.login() 获取 code，传给后端换取 session_key 和 openid。
+    /// 与标准 OAuth 不同，小程序登录不需要跳转授权页，而是前端主动调用。
+    /// 多租户场景下，通过 AppId 查找对应的 OAuthConfig 配置。
+    /// </remarks>
+    /// <param name="model">登录参数模型，包含 Code（登录凭证）和 AppId（应用标识）</param>
+    /// <returns>包含访问令牌和用户信息的响应</returns>
+    [AllowAnonymous]
+    [HttpPost]
+    public virtual ApiResponse<TokenModel> WxMiniLogin(WxLoginModel model) => WxLogin(model.Code, model.AppId, "WxOpen").ToOkApiResponse();
+
+
+    /// <summary>微信APP登录</summary>
+    /// <remarks>
+    /// 移动APP调用微信SDK获取 code，传给后端换取 access_token 和用户信息。
+    /// 与标准 OAuth 不同，APP登录不需要跳转授权页，而是APP端调用SDK。
+    /// 多租户场景下，通过 AppId 查找对应的 OAuthConfig 配置。
+    /// </remarks>
+    /// <param name="model">登录参数模型，包含 Code（授权码）和 AppId（应用标识）</param>
+    /// <returns>包含访问令牌和用户信息的响应</returns>
+    [AllowAnonymous]
+    [HttpPost]
+    public virtual ApiResponse<TokenModel> WxAppLogin(WxLoginModel model) => WxLogin(model.Code, model.AppId, "WxApp").ToOkApiResponse();
+
+    /// <summary>微信登录核心方法</summary>
+    /// <remarks>统一处理小程序和APP的微信登录逻辑，验证参数后调用底层方法完成登录。</remarks>
+    /// <param name="code">登录凭证或授权码</param>
+    /// <param name="appId">微信应用的 AppId</param>
+    /// <param name="wxLoginType">微信登录类型，WxOpen 表示小程序，WxApp 表示APP</param>
+    /// <returns>包含访问令牌、刷新令牌和过期时间的令牌模型</returns>
+    protected virtual TokenModel WxLogin(String code, String appId, String wxLoginType)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ApiException(CubeCode.ParamError.ToInt(), $"参数错误：{nameof(code)}");
+        if (string.IsNullOrWhiteSpace(appId))
+            throw new ApiException(CubeCode.ParamError.ToInt(), $"参数错误：{nameof(appId)}");
+        //Provider.GetClient(TenantContext.CurrentId, wxLoginType);//TODO ？？？？逻辑想不通，aaaaaaa
+        var client = CreateWxOpenClient(appId, wxLoginType);//创建
+        var tokenModel = ProcessWxLoginCore(client, code, $"{wxLoginType}", true);
+        return tokenModel;
+    }
+
+    /// <summary>创建微信OAuth客户端</summary>
+    /// <remarks>根据 AppId 从 OAuthConfig 中查找配置，创建对应的微信客户端实例。</remarks>
+    /// <param name="appId">微信应用的 AppId，用于查找 OAuthConfig 配置</param>
+    /// <param name="wxLoginType">微信类型，如 WxOpen（小程序）或 WxApp（APP）</param>
+    /// <returns>配置好的 OAuth 客户端实例</returns>
+    protected virtual OAuthClient CreateWxOpenClient(String appId, String wxLoginType)
+    {
+        OAuthConfig config = null;
+        if (!string.IsNullOrWhiteSpace(appId))
+            config = OAuthConfig.FindByAppId(appId);
+        if (config == null)
+            throw new ApiException(CubeCode.Exception.ToInt(),
+                "未配置微信小程序 AppId，请在 OAuthConfig 中添加 Name=WxOpen 或 WxOpen_{租户编码} 的配置");
+        OAuthClient client = null;
+        switch (wxLoginType)
+        {
+            case "WxOpen": client = new WxOpenClient(); break;
+            case "WxApp": client = new WxAppClient(); break;
+            default: throw new ApiException(CubeCode.Exception.ToInt(), $"内部异常{nameof(wxLoginType)}");
+        }
+
+        client.Key = config.AppId;//AppId
+        client.Secret = config.Secret;//Secret
+        client.TenantId = config.TenantId;  // 设置租户ID，用于后续用户租户关系绑定
+        return client;
+    }
+
+    /// <summary>处理微信登录的公共逻辑</summary>
+    /// <remarks>执行获取 access_token、获取用户信息、绑定用户连接、颁发令牌等完整登录流程。</remarks>
+    /// <param name="client">OAuth 客户端（WxOpenClient 或 WxAppClient）</param>
+    /// <param name="code">登录凭证或授权码</param>
+    /// <param name="action">操作名称，用于日志记录</param>
+    /// <param name="includeAvatar">返回结果是否包含头像</param>
+    /// <returns>包含访问令牌、刷新令牌和过期时间的令牌模型</returns>
+    protected virtual TokenModel ProcessWxLoginCore(OAuthClient client, String code, String action, Boolean includeAvatar)
+    {
+        var prov = Provider;
+        client.Log = XTrace.Log;
+
+        // 获取 access_token 和 openid
+        client.GetAccessToken(code);
+
+        if (client.OpenID.IsNullOrEmpty())
+            throw new ApiException(CubeCode.RemotingError.ToInt(), "获取 OpenID 失败");
+        //new InvalidOperationException("获取 OpenID 失败");
+
+        // 获取用户信息（如果客户端支持且配置了 UserUrl）
+        if (!client.UserUrl.IsNullOrEmpty()) client.GetUserInfo();
+
+        // 获取用户连接信息
+        var uc = prov.GetConnect(client);
+        uc.Fill(client);
+
+        // 执行登录逻辑
+        prov.OnLogin(client, HttpContext.RequestServices, uc, false, 0);
+
+        // 获取登录后的用户
+        var user = ManageProvider.Provider.Current;
+        if (user == null)
+            throw new ApiException(CubeCode.Failed.ToInt(), "登录失败，用户不存在");
+        //throw new InvalidOperationException("登录失败，用户不存在");
+
+        // 颁发令牌
+        var set = CubeSetting.Current;
+        var token = HttpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+
+        return token as TokenModel;
     }
     #endregion
 
