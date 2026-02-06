@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
 @using XCode.Configuration;
@@ -20,7 +20,7 @@
                 var header = df?.Header ?? item.DisplayName;
                 var title = df?.HeaderTitle ?? item.Description;
 
-                if (item.Type == typeof(DateTime) && item.Services.Count == 0)
+                if (item.Type == typeof(DateTime) && item.Services.Count == 0 && df?.GetValue == null)
                 {
                     var width = item.ItemType == "Date" ? 80 : 134;
                     <th class="text-center" style="min-width:@(width)px;" title="@title"><a href="@Html.Raw(sortUrl)">@header</a></th>

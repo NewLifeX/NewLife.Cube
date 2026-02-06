@@ -60,7 +60,7 @@ public class RunTimeMiddleware
         // 创建Session集合。后续 ManageProvider.User 需要用到Session
         var session = CreateSession(ctx);
 
-        var url = ctx.Request.GetRawUrl();
+        var url = HttpExtensions.GetRawUrl(ctx.Request);
         var ip = ctx.GetUserHost();
         ManageProvider.UserHost = ip;
 
@@ -135,7 +135,7 @@ public class RunTimeMiddleware
         }
         catch (Exception ex)
         {
-            var uri = ctx.Request.GetRawUrl();
+            var uri = HttpExtensions.GetRawUrl(ctx.Request);
             online?.SetError(ex.Message);
 
             XTrace.Log.Error("[{0}]的错误[{1}] {2}", uri, ip, ctx.TraceIdentifier);

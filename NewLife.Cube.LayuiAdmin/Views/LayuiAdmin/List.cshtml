@@ -1,4 +1,4 @@
-﻿@using NewLife.Cube.Entity
+@using NewLife.Cube.Entity
 @using NewLife.Cube.Extensions
 @using NewLife.Web;
 @using XCode;
@@ -61,7 +61,7 @@
                                     //高级筛选使用
                                     var isfilter = fields.Exists(a => a.Name == item.Name);
 
-                                    if (item.Type == typeof(DateTime) && item.Services.Count == 0)
+                                    if (item.Type == typeof(DateTime) && item.Services.Count == 0 && df?.GetValue == null)
                                     {
                                         var width = item.ItemType == "Date" ? 96 : 150;
                                         var filterDatetime = isfilter ? ",filter: {type: 'date[yyyy-MM-dd HH:mm:ss]'}" : "";

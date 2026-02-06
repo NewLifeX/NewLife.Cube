@@ -179,6 +179,7 @@ public static class ViewHelper
             // 缩进
             sb.Append(ident);
 
+            var df = item as ListField;
             var name = item.MapField ?? item.Name;
             var des = item.DisplayName ?? item.Name;
 
@@ -186,7 +187,7 @@ public static class ViewHelper
             sb.Append(@"<th class=""text-center""");
 
             // 固定宽度
-            if (item.Type == typeof(DateTime) && item.Services.Count == 0)
+            if (item.Type == typeof(DateTime) && item.Services.Count == 0 && df?.GetValue == null)
             {
                 var width = item.ItemType == "Date" ? 80 : 134;
                 sb.AppendFormat(@" style=""min-width:{0}px;""", width);

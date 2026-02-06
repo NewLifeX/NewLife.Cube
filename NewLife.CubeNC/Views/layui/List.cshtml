@@ -1,4 +1,4 @@
-﻿@using NewLife.Web;
+@using NewLife.Web;
 @using XCode;
 @using NewLife.Cube.Charts;
 @using NewLife;
@@ -14,7 +14,7 @@
     var ukey = fact.Unique;
 }
 
-@section css{
+@section css {
     <style>
         .layui-fluid {
             padding: 10px;
@@ -22,17 +22,18 @@
     </style>
 }
 
-    <div class="layui-fluid" id="mainpage">
-        <div class="layui-row layui-col-space15">
-            <div class="layui-col-md12">
-                <div class="layui-panel">
-                    <div class="layui-card-body">
-                        <table lay-filter="parse-table-demo">
-                            <thead>
-                                <tr>
-                                    @foreach (var item in fields)
+<div class="layui-fluid" id="mainpage">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-panel">
+                <div class="layui-card-body">
+                    <table lay-filter="parse-table-demo">
+                        <thead>
+                            <tr>
+                                @foreach (var item in fields)
                                 {
-                                    if (item.Type == typeof(DateTime) && item.Services.Count == 0)
+                                    var df = item as ListField;
+                                    if (item.Type == typeof(DateTime) && item.Services.Count == 0 && df?.GetValue == null)
                                     {
                                         var width = item.ItemType == "Date" ? 96 : 150;
                                         <th lay-data="{field:'@item.Name',minWidth:@width,title:'@item.Description'}">@item.DisplayName</th>
@@ -64,7 +65,7 @@
                                         else if (df != null && (txt = df.GetLink(entity, page)) != null)
                                         {
                                             var tdClass = df.GetTextClass(entity);
-                                            <td class="@(tdClass??"text-center")">@Html.Raw(txt)</td>
+                                            <td class="@(tdClass ?? "text-center")">@Html.Raw(txt)</td>
                                         }
                                         else if (df != null && (txt = df.GetText(entity, page)) != null)
                                         {
@@ -86,7 +87,7 @@
     </div>
 </div>
 
-@section scripts{
+@section scripts {
     <script>
         layui.use('table', function() {
             var table = layui.table

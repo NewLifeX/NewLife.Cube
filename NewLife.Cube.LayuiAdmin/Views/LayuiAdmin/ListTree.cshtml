@@ -1,4 +1,4 @@
-﻿@using NewLife.Cube.Extensions
+@using NewLife.Cube.Extensions
 @using NewLife.Web;
 @using XCode;
 @using NewLife.Serialization;
@@ -86,7 +86,7 @@
                 {
                     continue;
                 }
-                if (item.Type == typeof(DateTime) && item.Services.Count == 0)
+                if (item.Type == typeof(DateTime) && item.Services.Count == 0 && df?.GetValue == null)
                 {
                     var width = item.ItemType == "Date" ? 96 : 150;
                     @await Html.PartialAsync("_ListTree_Cols", new ValueTuple<DataField, string>(item, "Date"))
