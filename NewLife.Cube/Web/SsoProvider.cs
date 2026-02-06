@@ -308,12 +308,18 @@ public class SsoProvider
             needUpdate = true;
         }
 
-        // 更新头像URL（远端覆盖本地）
-        if (needUpdate) user2.Avatar = avatarUrl;
+        //// 更新头像URL（远端覆盖本地）
+        //if (needUpdate) user2.Avatar = avatarUrl;
 
         // 触发下载任务
-        if (client.Config != null && client.Config.FetchAvatar && needUpdate)
-            Task.Factory.StartNew(() => FetchAvatar(user, av, client.AccessToken), TaskCreationOptions.LongRunning);
+        if (needUpdate)
+        {
+            if (client.Config != null && client.Config.FetchAvatar)
+                Task.Factory.StartNew(() => FetchAvatar(user, av, client.AccessToken), TaskCreationOptions.LongRunning);
+            else
+                // 更新头像URL（远端覆盖本地）
+                user2.Avatar = avatarUrl;
+        }
     }
 
     /// <summary>填充角色信息</summary>
