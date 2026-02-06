@@ -3,6 +3,7 @@ using NewLife.Common;
 using NewLife.Cube.Entity;
 using NewLife.Data;
 using NewLife.Log;
+using NewLife.Reflection;
 using Stardust;
 using Stardust.Registry;
 using Stardust.Services;
@@ -102,11 +103,12 @@ public class CubeFileStorage : DefaultFileStorage
         // 优先Redis队列作为事件总线，其次使用星尘事件总线
         var cache = _cacheProvider.Cache;
         var type = cache.GetType();
-        if (type != typeof(MemoryCache) && type != typeof(Cache))
+        var rtype = Type.GetType("NewLife.Caching.FullRedis, NewLife.Redis");
+        if (rtype != null && rtype.IsAssignableFrom(type) && cache.GetValue("Version") is Version ver && ver >= new Version(5, 0))
             SetEventBus(_cacheProvider);
         else if (_registry is AppClient client)
             SetEventBus(client);
-        else
+        else if (type == typeof(MemoryCache))
             SetEventBus(_cacheProvider);
 
         return base.OnInitializedAsync(cancellationToken);
