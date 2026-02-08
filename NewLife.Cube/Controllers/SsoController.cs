@@ -448,7 +448,6 @@ public class SsoController : ControllerBaseX
     [HttpPost]
     public virtual ApiResponse<TokenModel> WxMiniLogin(WxLoginModel model) => WxLogin(model.Code, model.AppId, "WxOpen").ToOkApiResponse();
 
-
     /// <summary>微信APP登录</summary>
     /// <remarks>
     /// 移动APP调用微信SDK获取 code，传给后端换取 access_token 和用户信息。
@@ -469,12 +468,12 @@ public class SsoController : ControllerBaseX
     /// <returns>包含访问令牌、刷新令牌和过期时间的令牌模型</returns>
     protected virtual TokenModel WxLogin(String code, String appId, String wxLoginType)
     {
-        if (string.IsNullOrWhiteSpace(code))
+        if (String.IsNullOrWhiteSpace(code))
             throw new ApiException(CubeCode.ParamError.ToInt(), $"参数错误：{nameof(code)}");
-        if (string.IsNullOrWhiteSpace(appId))
+        if (String.IsNullOrWhiteSpace(appId))
             throw new ApiException(CubeCode.ParamError.ToInt(), $"参数错误：{nameof(appId)}");
-        //Provider.GetClient(TenantContext.CurrentId, wxLoginType);//TODO ？？？？逻辑想不通，aaaaaaa
-        var client = CreateWxOpenClient(appId, wxLoginType);//创建
+
+        var client = CreateWxOpenClient(appId, wxLoginType);//配置对应客户端
         var tokenModel = ProcessWxLoginCore(client, code, $"{wxLoginType}", true);
         return tokenModel;
     }
@@ -486,19 +485,19 @@ public class SsoController : ControllerBaseX
     /// <returns>配置好的 OAuth 客户端实例</returns>
     protected virtual OAuthClient CreateWxOpenClient(String appId, String wxLoginType)
     {
-        OAuthConfig config = null;
-        if (!string.IsNullOrWhiteSpace(appId))
-            config = OAuthConfig.FindByAppId(appId);
+        var prov = Provider;
+        var client = prov.GetClient(TenantContext.CurrentId, wxLoginType);
+        client.Init(GetUserAgent());
+
+        OAuthConfig config = null;//查找第三方登录配置
+        if (!String.IsNullOrWhiteSpace(appId))
+            config = OAuthConfig.FindByAppId(appId);//找密钥
         if (config == null)
             throw new ApiException(CubeCode.Exception.ToInt(),
-                "未配置微信小程序 AppId，请在 OAuthConfig 中添加 Name=WxOpen 或 WxOpen_{租户编码} 的配置");
-        OAuthClient client = null;
-        switch (wxLoginType)
-        {
-            case "WxOpen": client = new WxOpenClient(); break;
-            case "WxApp": client = new WxAppClient(); break;
-            default: throw new ApiException(CubeCode.Exception.ToInt(), $"内部异常{nameof(wxLoginType)}");
-        }
+                $"应用{nameof(OAuthConfig.AppId)}未配置");
+        if(String.IsNullOrWhiteSpace(config.Secret))
+            throw new ApiException(CubeCode.Exception.ToInt(),
+                $"应用{nameof(OAuthConfig.Secret)}未配置");
 
         client.Key = config.AppId;//AppId
         client.Secret = config.Secret;//Secret

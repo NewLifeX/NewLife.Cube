@@ -195,8 +195,8 @@ public partial class OAuthConfig : Entity<OAuthConfig>, ITenantSource
         return Find(_.Name == name);
     }
 
-    /// <summary>根据名称查找</summary>
-    /// <param name="appid">名称</param>
+    /// <summary>根据AppId查找</summary>
+    /// <param name="appid">AppId</param>
     /// <returns>实体对象</returns>
     public static OAuthConfig FindByAppId(String appid)
     {
