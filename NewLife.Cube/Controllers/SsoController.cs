@@ -495,7 +495,7 @@ public class SsoController : ControllerBaseX
         if (config == null)
             throw new ApiException(CubeCode.Exception.ToInt(),
                 $"应用{nameof(OAuthConfig.AppId)}未配置");
-        if(String.IsNullOrWhiteSpace(config.Secret))
+        if (String.IsNullOrWhiteSpace(config.Secret))
             throw new ApiException(CubeCode.Exception.ToInt(),
                 $"应用{nameof(OAuthConfig.Secret)}未配置");
 
@@ -517,34 +517,66 @@ public class SsoController : ControllerBaseX
         var prov = Provider;
         client.Log = XTrace.Log;
 
-        // 获取 access_token 和 openid
-        client.GetAccessToken(code);
+        // 创建登录日志
+        var log = new OAuthLog
+        {
+            Provider = client.Name,
+            Action = action,
+            Success = false,
+            ResponseType = client.ResponseType,
+            Scope = client.Scope,
+            TraceId = DefaultSpan.Current?.TraceId,
+            Remark = GetUserAgent(),
+        };
+        log.Insert();
 
-        if (client.OpenID.IsNullOrEmpty())
-            throw new ApiException(CubeCode.RemotingError.ToInt(), "获取 OpenID 失败");
-        //new InvalidOperationException("获取 OpenID 失败");
+        try
+        {
+            // 获取 access_token 和 openid
+            client.GetAccessToken(code);
 
-        // 获取用户信息（如果客户端支持且配置了 UserUrl）
-        if (!client.UserUrl.IsNullOrEmpty()) client.GetUserInfo();
+            if (client.OpenID.IsNullOrEmpty())
+                throw new ApiException(CubeCode.RemotingError.ToInt(), "获取 OpenID 失败");
 
-        // 获取用户连接信息
-        var uc = prov.GetConnect(client);
-        uc.Fill(client);
+            log.AccessToken = client.AccessToken;
+            log.RefreshToken = client.RefreshToken;
 
-        // 执行登录逻辑
-        prov.OnLogin(client, HttpContext.RequestServices, uc, false, 0);
+            // 获取用户信息（如果客户端支持且配置了 UserUrl）
+            if (!client.UserUrl.IsNullOrEmpty()) client.GetUserInfo();
 
-        // 获取登录后的用户
-        var user = ManageProvider.Provider.Current;
-        if (user == null)
-            throw new ApiException(CubeCode.Failed.ToInt(), "登录失败，用户不存在");
-        //throw new InvalidOperationException("登录失败，用户不存在");
+            // 获取用户连接信息
+            var uc = prov.GetConnect(client);
+            uc.Fill(client);
 
-        // 颁发令牌
-        var set = CubeSetting.Current;
-        var token = HttpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+            // 执行登录逻辑
+            prov.OnLogin(client, HttpContext.RequestServices, uc, false, 0);
 
-        return token as TokenModel;
+            // 获取登录后的用户
+            var user = ManageProvider.Provider.Current;
+            if (user == null)
+                throw new ApiException(CubeCode.Failed.ToInt(), "登录失败，用户不存在");
+
+            // 更新登录日志
+            log.ConnectId = uc.ID;
+            log.UserId = uc.UserID;
+            log.Success = true;
+            log.Update();
+
+            // 颁发令牌
+            var set = CubeSetting.Current;
+            var token = HttpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+
+            return token as TokenModel;
+        }
+        catch (Exception ex)
+        {
+            // 记录失败日志
+            if (log.Remark.IsNullOrEmpty()) log.Remark = ex.Message;
+            log.Success = false;
+            log.SaveAsync();
+
+            throw;
+        }
     }
     #endregion
 
