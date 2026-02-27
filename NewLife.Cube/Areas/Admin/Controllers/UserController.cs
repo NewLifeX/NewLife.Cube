@@ -271,7 +271,7 @@ public class UserController : EntityController<User, UserModel>
             return res.ToFailApiResponse(ex.Message);
         }
 
-        //TODO 地址跳转，应该直接操作Response，而不是返回一个视图。API暂时不需要跳转，由前端处理
+        // 地址跳转，应该直接操作Response，而不是返回一个视图。API暂时不需要跳转，由前端处理
         var returnUrl = GetRequest("r");
         if (returnUrl.IsNullOrEmpty()) returnUrl = GetRequest("ReturnUrl");
         var viewModel = GetViewModel(returnUrl);
