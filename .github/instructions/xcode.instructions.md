@@ -6,37 +6,24 @@
 
 ## 1. XCode 定位与边界
 
-### 1.1 技术栈定位
-
 ```
-NewLife.Core（基础库）
+NewLife.Core（基础库）→ copilot-instructions.md
        ↓
    NewLife.XCode（数据中间件）← 本指令
        ↓
    NewLife.Cube（Web 快速开发框架）→ cube.instructions.md
 ```
 
-### 1.2 职责边界
+**本指令覆盖**：数据模型设计（Model.xml）、实体类生成与使用、数据库 CRUD 操作、运行时配置、项目初始化与 XCode 接入。
+**不包含**（由 `cube.instructions.md` 负责）：Web 控制器、视图与前端、权限管理、魔方区域深度定制。
 
-| 层级 | 职责 | 指令文件 |
-|------|------|---------|
-| **NewLife.Core** | 基础扩展、日志、缓存、网络等 | `copilot-instructions.md` |
-| **NewLife.XCode** | 数据建模、ORM、实体增删改查、数据库操作 | 本指令 |
-| **NewLife.Cube** | Web 管理后台、控制器、视图、权限 | `cube.instructions.md` |
+### 1.1 支持的数据库
 
-### 1.3 本指令覆盖范围
+| 常用 | 国产/信创 | 时序/嵌入 |
+|------|----------|----------|
+| SqlServer、MySql、SQLite、PostgreSQL、Oracle | 达梦(DaMeng)、人大金仓(KingBase)、瀚高(HighGo)、VastBase | TDengine、InfluxDB、NovaDb |
 
-**包含**：
-- 数据模型设计（Model.xml）
-- 实体类生成与使用
-- 数据库 CRUD 操作
-- 项目初始化与 XCode 接入
-
-**不包含**（由 cube.instructions.md 负责）：
-- Web 控制器逻辑
-- 视图与前端交互
-- 权限管理配置
-- 魔方区域深度定制
+> 另支持 DB2、Hana、IRIS、Access 等，完整列表见 `DatabaseType` 枚举。
 
 ---
 
@@ -151,6 +138,11 @@ dotnet new install NewLife.Templates
 | `ModelsOutput` | 模型类输出目录 | `.\Models\` |
 | `ModelInterface` | 模型接口模板 | `I{name}` |
 | `InterfacesOutput` | 接口输出目录 | `.\Interfaces\` |
+| `ClassNameTemplate` | 类名模板 | `{name}Model`/`I{name}Dto` |
+| `DisplayNameTemplate` | 显示名模板 | `{displayName}` |
+| `ModelNameForCopy` | Copy 函数参数类型 | `{name}`/`I{name}` |
+| `ModelNameForToModel` | ToModel 转换目标类型 | `{name}`/`{name}DTO` |
+| `ExtendNameSpace` | 额外引用命名空间（逗号分隔） | `System.Xml.Serialization` |
 | `NameFormat` | 命名格式 | `Default`/`Upper`/`Lower`/`Underline` |
 | `DisplayName` | 魔方区域显示名 | `订单管理` |
 | `CubeOutput` | 魔方控制器输出目录 | `../../Web/Areas/Order` |
@@ -189,6 +181,10 @@ dotnet new install NewLife.Templates
 | `Identity` | 自增标识 | `True` |
 | `Master` | 主字段（业务主要字段） | `True` |
 
+**主键设计约定**：
+- 普通表：`Int32` 自增 → `PrimaryKey="True" Identity="True"`
+- 大数据表：`Int64` 雪花 ID → `PrimaryKey="True" DataScale="time"`（不设 Identity）
+
 #### 约束与默认值
 
 | 属性 | 说明 | 示例 |
@@ -208,31 +204,16 @@ dotnet new install NewLife.Templates
 
 #### 元素类型（ItemType）
 
-用于魔方前端渲染和数据验证：
-
-| ItemType | 说明 |
-|----------|------|
-| `image` | 图片上传 |
-| `file` | 文件上传 |
-| `mail` | 邮箱格式 |
-| `mobile` | 手机号格式 |
-| `url` | URL 链接 |
-| `TimeSpan` | 时间间隔（秒转可读格式） |
-| `GMK` | 字节数转 GB/MB/KB |
-| `html` | HTML 富文本 |
-| `code` | 代码编辑器 |
-| `json` | JSON 编辑器 |
+用于魔方前端渲染，常用值：`image`、`file`、`mail`、`mobile`、`url`、`TimeSpan`、`GMK`、`html`、`code`、`json`。详细用法见 `cube.instructions.md`。
 
 #### 显示选项（ShowIn）
 
-控制字段在魔方各区域的显示，支持三种语法：
+控制字段在魔方各区域（List/Detail/AddForm/EditForm/Search）的显示。推荐具名列表语法：
 
-**语法一：具名列表（推荐）**
 ```
-ShowIn="List,Search"          # List和Search显示
+ShowIn="List,Search"          # 仅 List 和 Search 显示
 ShowIn="-EditForm,-Detail"    # 编辑表单和详情隐藏
 ShowIn="All,-Detail"          # 全部显示，详情隐藏
-ShowIn="None,Search,Add"      # 全部隐藏，搜索和添加显示
 ```
 
 区域别名：`List(L)`、`Detail(D)`、`AddForm(Add/A)`、`EditForm(Edit/E)`、`Search(S)`、`Form(F)`（同时控制 Add 和 Edit）
@@ -322,13 +303,14 @@ ShowIn="11110"      # 1=显示, 0=隐藏, A/?/-=自动
 var entity = new User { Name = "test", Password = "123456" };
 entity.Insert();
 
-// 查询单个
+// 查询单个（按主键）
 var user = User.FindByKey(1);
-var user = User.Find(User._.Name == "test");
+// 查询单个（按条件）
+var user2 = User.Find(User._.Name == "test");
 
 // 查询列表
 var list = User.FindAll();
-var list = User.FindAll(User._.Status == 1, User._.Id.Desc(), null, 0, 10);
+var list2 = User.FindAll(User._.Status == 1, User._.Id.Desc(), null, 0, 10);
 
 // 更新
 user.Name = "newName";
@@ -353,7 +335,7 @@ var where = new WhereExpression();
 where &= User._.Status == 1;
 where &= User._.CreateTime >= DateTime.Today;
 if (!key.IsNullOrEmpty()) where &= User._.Name.Contains(key);
-var list = User.FindAll(where, page);
+var list2 = User.FindAll(where, page);
 
 // 统计
 var count = User.FindCount(User._.Status == 1);
@@ -367,9 +349,13 @@ var maxId = User.FindMax(User._.Id, null);
 ```csharp
 // 批量插入
 var list = new List<User>();
+for (var i = 0; i < 100; i++)
+{
+    list.Add(new User { Name = $"user{i}" });
+}
 list.Insert();
 
-// 批量更新
+// 批量更新（将 Status==1 的记录改为 Status=2）
 User.Update(User._.Status == 2, User._.Status == 1);
 
 // 批量删除
@@ -397,7 +383,83 @@ var user = User.FindByKeyWithCache(1);
 
 ---
 
-## 6. 多模块项目结构
+## 6. 运行时机制
+
+### 6.1 实体拦截器（自动填充字段）
+
+XCode 内置全局拦截器，实体包含特定命名字段时自动触发，**无需业务代码手动赋值**：
+
+| 拦截器 | 匹配字段名 | 字段类型 | 行为 |
+|--------|-----------|---------|------|
+| `TimeInterceptor` | `CreateTime` | `DateTime` | Insert 时自动填充当前时间 |
+| | `UpdateTime` | `DateTime` | Insert/Update 时自动填充当前时间 |
+| `UserInterceptor` | `CreateUserID` | `Int32`/`Int64` | Insert 时填充当前用户 ID |
+| | `CreateUser` | `String` | Insert 时填充当前用户名 |
+| | `UpdateUserID` | `Int32`/`Int64` | Insert/Update 时填充当前用户 ID |
+| | `UpdateUser` | `String` | Insert/Update 时填充当前用户名 |
+| `IPInterceptor` | `CreateIP` | `String` | Insert 时填充客户端 IP |
+| | `UpdateIP` | `String` | Insert/Update 时填充客户端 IP |
+| `TraceInterceptor` | `TraceId` | `String` | Insert/Update 时填充链路追踪 ID |
+
+**建模约定**：这些自动填充字段通常设置 `Category="扩展"` + `Model="False"`，不暴露到模型类中。
+
+示例（Model.xml 中的扩展字段标准写法）：
+```xml
+<Column Name="CreateUser" DataType="String" Description="创建者" Model="False" Category="扩展" />
+<Column Name="CreateUserID" DataType="Int32" Description="创建者" Model="False" Category="扩展" />
+<Column Name="CreateTime" DataType="DateTime" Description="创建时间" Model="False" Category="扩展" />
+<Column Name="CreateIP" DataType="String" Description="创建地址" Model="False" Category="扩展" />
+<Column Name="UpdateUser" DataType="String" Description="更新者" Model="False" Category="扩展" />
+<Column Name="UpdateUserID" DataType="Int32" Description="更新者" Model="False" Category="扩展" />
+<Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Model="False" Category="扩展" />
+<Column Name="UpdateIP" DataType="String" Description="更新地址" Model="False" Category="扩展" />
+<Column Name="TraceId" DataType="String" Description="链路追踪" Model="False" Category="扩展" />
+```
+
+### 6.2 反向工程（自动建表）
+
+XCode 启动时自动对比实体模型与数据库表结构，根据 `Migration` 配置决定行为：
+
+| 模式 | 说明 | 适用场景 |
+|------|------|---------|
+| `Off` | 关闭，不检查不执行 | 生产环境（表结构由 DBA 管理） |
+| `ReadOnly` | 只读，检查差异但不执行 DDL | 生产环境排查 |
+| `On` | 打开，仅新建表/列（默认值） | 开发/测试环境 |
+| `Full` | 完全，可修改列类型、删除列/索引 | 开发初期快速迭代 |
+
+### 6.3 XCodeSetting 配置
+
+通过配置文件 `XCode.json` 或 `appsettings.json` 的 `XCode` 节控制运行时行为：
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `Debug` | `true` | 是否启用调试日志 |
+| `ShowSQL` | `true` | 是否输出 SQL 语句 |
+| `SQLPath` | `""` | SQL 日志独立目录，生产环境建议设置 |
+| `TraceSQLTime` | `1000` | SQL 慢查询阈值（毫秒） |
+| `UseParameter` | `false` | 参数化添删改查 |
+| `CommandTimeout` | `0` | 命令超时（秒），0 不限制 |
+| `RetryOnFailure` | `0` | 失败重试次数 |
+| `Migration` | `On` | 反向工程模式（见 6.2） |
+| `BatchSize` | `5000` | 批量操作数据量 |
+| `EntityCacheExpire` | `10` | 实体缓存过期时间（秒） |
+| `SingleCacheExpire` | `10` | 单对象缓存过期时间（秒） |
+
+**生产环境建议**：
+```json
+{
+  "XCode": {
+    "Migration": "Off",
+    "ShowSQL": false,
+    "SQLPath": "../SqlLog",
+    "TraceSQLTime": 500
+  }
+}
+```
+
+---
+
+## 7. 多模块项目结构
 
 对于复杂业务系统，建议按模块组织：
 
@@ -420,7 +482,7 @@ Zero.Data/
 
 ---
 
-## 7. xcode 命令参考
+## 8. xcode 命令参考
 
 ```powershell
 # 在模型文件所在目录执行（自动查找所有 *.xml）
@@ -441,21 +503,21 @@ xcode Order.xml
 
 ---
 
-## 8. 常见问题
+## 9. 常见问题
 
-### 8.1 模型文件命名
+### 9.1 模型文件命名
 
 - 默认：`Model.xml`
 - 推荐：`{系统英文名}.xml` 或 `{模块名}.xml`
 - 复杂项目：每个模块目录一个模型文件
 
-### 8.2 实体类生成位置
+### 9.2 实体类生成位置
 
 - 实体类生成在 `xcode` 命令执行目录
 - 可通过 `Output` 配置项指定输出目录
 - 魔方控制器通过 `CubeOutput` 指定
 
-### 8.3 数据库连接
+### 9.3 数据库连接
 
 在应用配置文件中配置连接字符串：
 
@@ -467,18 +529,23 @@ xcode Order.xml
 }
 ```
 
-连接名对应 Model.xml 中的 `ConnName`。
+连接名对应 Model.xml 中的 `ConnName`。未配置连接字符串时，默认创建同名 SQLite 数据库。
 
----
+### 9.4 生成的代码能否手动修改
 
-## 9. 与 Cube 的协作
+实体类分为两个文件：
+- `实体名.cs`（如 `订单.cs`）：自动生成的数据映射代码，**每次 `xcode` 会覆盖，禁止手动修改**
+- `实体名.Biz.cs`（如 `订单.Biz.cs`）：业务扩展代码，仅首次生成，**可自由修改**
 
-当需要生成 Web 管理界面时：
+需要调整字段、类型、索引时，应修改 `Model.xml` 后重新执行 `xcode`。
 
-1. 在 Model.xml 中配置 `CubeOutput` 指向 Web 项目的 Areas 目录
-2. 配置 `DisplayName` 作为魔方区域名称
-3. 执行 `xcode` 自动生成控制器
-4. 深度定制请参考 `cube.instructions.md`
+### 9.5 如何调试 SQL
+
+配置 `XCodeSetting.ShowSQL = true`（默认开启），所有 SQL 输出到日志。设置 `SQLPath` 可将 SQL 日志独立存放。`TraceSQLTime` 控制慢查询阈值。
+
+### 9.6 与 Cube 的协作
+
+需要生成 Web 管理界面时：在 Model.xml 中配置 `CubeOutput` 指向 Web 项目的 Areas 目录，配置 `DisplayName` 作为区域名称，执行 `xcode` 自动生成控制器。深度定制见 `cube.instructions.md`。
 
 ---
 
@@ -488,16 +555,18 @@ xcode Order.xml
 
 1. **充分理解业务**：在设计表结构前，确保理解业务场景和数据关系
 2. **合理设计主键**：
-   - 普通表：`Int32` 自增主键
-   - 大数据表：`Int64` + `DataScale="time"`（雪花 ID）
+   - 普通表：`Int32` + `PrimaryKey="True" Identity="True"`
+   - 大数据表：`Int64` + `PrimaryKey="True" DataScale="time"`（雪花 ID）
 3. **必要的索引**：为查询条件字段添加索引
 4. **字段长度**：String 类型必须指定合理的 `Length`
+5. **扩展字段**：`CreateTime`/`UpdateTime`/`CreateUser`/`UpdateUser`/`CreateIP`/`UpdateIP` 等由拦截器自动填充（见 6.1），设置 `Model="False" Category="扩展"`
 
 ### 10.2 生成代码时
 
 1. 确保在正确目录执行 `xcode`
 2. 生成后检查编译是否通过
 3. 如需修改生成的代码，应修改 Model.xml 后重新生成
+4. 业务逻辑写在 `.Biz.cs` 文件中
 
 ### 10.3 边界意识
 
