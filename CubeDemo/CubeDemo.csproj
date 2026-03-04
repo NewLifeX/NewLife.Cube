@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <AssemblyTitle>魔方WebApi</AssemblyTitle>
-    <Description>魔方前后端分离版本的后端WebApi</Description>
+    <AssemblyTitle>魔方WebAPI示例</AssemblyTitle>
+    <Description>魔方前后端分离示例项目，展示如何使用NewLife.Cube核心库构建WebAPI后端，集成Swagger文档，对接Vue/Blazor等前端框架。演示实体控制器、权限管理、字段元数据等核心功能。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.8</VersionPrefix>

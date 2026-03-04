@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <AssemblyTitle>魔方快速开发平台LayuiAdmin版</AssemblyTitle>
-    <Description>魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。</Description>
+    <AssemblyTitle>魔方LayuiAdmin主题</AssemblyTitle>
+    <Description>魔方LayuiAdmin主题皮肤包，基于国产经典UI框架Layui，提供简洁友好的中文界面、丰富的表单和表格组件，特别适合中文后台系统。包含Razor视图、静态资源，支持视图覆写和深度定制。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.9</VersionPrefix>

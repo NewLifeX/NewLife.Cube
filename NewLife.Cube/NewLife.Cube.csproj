@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
-    <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
+    <AssemblyTitle>魔方快速开发平台Api版</AssemblyTitle>
+    <Description>魔方WebAPI核心库，提供实体控制器、权限管理、菜单管理、字段元数据、OAuth服务端、JWT认证等功能。支持前后端分离架构，对接Vue/Blazor/Antd等前端框架，单表100亿级数据验证。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.9</VersionPrefix>

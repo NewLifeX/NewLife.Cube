@@ -5,8 +5,8 @@
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <RootNamespace>NewLife.Cube</RootNamespace>
     <AssemblyName>NewLife.Cube</AssemblyName>
-    <AssemblyTitle>魔方快速开发平台</AssemblyTitle>
-    <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
+    <AssemblyTitle>魔方快速开发平台MVC版</AssemblyTitle>
+    <Description>魔方MVC/Razor兼容层，支持ASP.NET Core MVC传统开发模式。提供用户权限管理、Razor视图模板、SSO登录、OAuth服务端、数据导出等功能，单表100亿级数据验证。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.9</VersionPrefix>

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <AssemblyTitle>魔方用户中心</AssemblyTitle>
-    <Description>SSO服务端，OAuth2.0服务端。</Description>
+    <AssemblyTitle>魔方统一用户中心</AssemblyTitle>
+    <Description>魔方统一用户中心与OAuth服务端，提供SSO单点登录、OAuth 2.0授权、应用管理、用户认证等功能。支持多应用统一身份管理，可作为企业级身份认证中心独立部署。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.8</VersionPrefix>

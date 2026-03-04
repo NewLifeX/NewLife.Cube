@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <AssemblyTitle>魔方快速开发平台Metronic8版</AssemblyTitle>
-    <Description>魔方是一个快速Web开发平台，能够快速搭建系统原型，而又具有足够灵活的可扩展性！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，默认模板在真实项目中经历过单表100亿数据添删改查的考验。</Description>
+    <AssemblyTitle>魔方Metronic8主题</AssemblyTitle>
+    <Description>魔方Metronic8主题皮肤包，基于最新版Metronic 8框架，采用现代化设计语言和组件体系，提供更流畅的用户体验和更丰富的可视化功能。包含Razor视图、静态资源，支持视图覆写和深度定制。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.9</VersionPrefix>
@@ -144,12 +144,6 @@
     <Content Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.css" />
     <Content Remove="wwwroot\assets\plugins\custom\leaflet\leaflet.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.css" />
-    <Content Remove="wwwroot\assets\plugins\custom\prismjs\prismjs.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.css" />
-    <Content Remove="wwwroot\assets\plugins\custom\tiny-slider\tiny-slider.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\typedjs\typedjs.bundle.js" />
-    <Content Remove="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.css" />
-    <Content Remove="wwwroot\assets\plugins\custom\vis-timeline\vis-timeline.bundle.js" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.ttf" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-brands-400.woff2" />
     <Content Remove="wwwroot\assets\plugins\global\fonts\%40fortawesome\fa-duotone-900.ttf" />

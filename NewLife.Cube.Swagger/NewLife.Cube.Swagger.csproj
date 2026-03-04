@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-    <AssemblyTitle>魔方Swagger包</AssemblyTitle>
-    <Description>Web快速开发平台，搭建管理后台，灵活可扩展！内部集成了用户权限管理、模板继承、SSO登录、OAuth服务端、数据导出与分享等多个功能模块，在真实项目中经历过单表100亿数据添删改查的考验。</Description>
+    <AssemblyTitle>魔方Swagger接口文档</AssemblyTitle>
+    <Description>魔方Swagger接口文档扩展包，支持按区域(Area)自动分组生成API文档。提供标准化的接口描述、请求响应模型展示、在线调试功能，便于前后端对接和第三方集成。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.9</VersionPrefix>

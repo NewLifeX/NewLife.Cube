@@ -1,10 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>cube</AssemblyName>
     <RootNamespace>CubeDemo</RootNamespace>
-    <AssemblyTitle>魔方演示平台</AssemblyTitle>
+    <AssemblyTitle>魔方MVC示例</AssemblyTitle>
+    <Description>魔方MVC/Razor传统模式示例项目，展示如何使用NewLife.CubeNC(NewLife.Cube.Core)构建管理后台。演示用户权限、菜单管理、实体CRUD、主题皮肤、视图覆写等功能。</Description>
+    <Company>新生命开发团队</Company>
+    <Copyright>©2002-2026 NewLife</Copyright>
     <VersionPrefix>6.8</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>

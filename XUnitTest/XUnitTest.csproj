@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <AssemblyTitle>魔方单元测试</AssemblyTitle>
+    <Description>魔方xUnit单元测试项目，覆盖核心功能、控制器、权限、字段元数据等模块的自动化测试。</Description>
+    <Company>新生命开发团队</Company>
+    <Copyright>©2002-2026 NewLife</Copyright>
     <OutputPath>..\Bin\UnitTest</OutputPath>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
