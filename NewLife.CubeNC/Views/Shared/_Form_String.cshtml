@@ -1,4 +1,4 @@
-﻿@model ItemModel
+@model ItemModel
 @using NewLife;
 @using NewLife.Cube
 @using XCode;
@@ -13,7 +13,15 @@
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
     if (!atts.ContainsKey("class")) atts.Add("class", "form-control");
 }
-@if (name.EqualIgnoreCase("Pass", "Password") || Model.ItemType.EqualIgnoreCase("password"))
+@if (Model.ItemType.EqualIgnoreCase("html"))
+{
+    @await Html.PartialAsync("_HtmlEditor", Model)
+}
+else if (Model.ItemType.EqualIgnoreCase("markdown"))
+{
+    @await Html.PartialAsync("_MarkdownEditor", Model)
+}
+else if (name.EqualIgnoreCase("Pass", "Password") || Model.ItemType.EqualIgnoreCase("password"))
 {
     if (!atts.ContainsKey("autocomplete")) atts.Add("autocomplete", "off");
     @Html.Password(name, value, atts)

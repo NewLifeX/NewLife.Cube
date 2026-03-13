@@ -1,0 +1,61 @@
+@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var name = Model.Name;
+    var value = Model.Value + "";
+    var editorId = "md_" + name;
+
+    var easymdeJs = Url.Content("~/Content/easymde/easymde.min.js");
+    var easymdeCss = Url.Content("~/Content/easymde/easymde.min.css");
+}
+<textarea id="@editorId" name="@name">@value</textarea>
+<script>
+    (function () {
+        function initEasyMDE() {
+            if (typeof EasyMDE === 'undefined') return;
+            var ta = document.getElementById('@editorId');
+            if (!ta || ta._easymde) return;
+            ta._easymde = new EasyMDE({
+                element: ta,
+                spellChecker: false,
+                autoDownloadFontAwesome: false,
+                minHeight: '200px',
+                status: false,
+                toolbar: [
+                    'bold', 'italic', 'heading', '|',
+                    'quote', 'unordered-list', 'ordered-list', '|',
+                    'link', 'image', 'table', 'code', '|',
+                    'preview', 'side-by-side', 'fullscreen', '|',
+                    'guide'
+                ]
+            });
+        }
+
+        // 加载 EasyMDE（防重复加载，使用本地内嵌资源）
+        if (typeof EasyMDE !== 'undefined') {
+            initEasyMDE();
+        } else if (!document.querySelector('script[data-easymde]')) {
+            var css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = '@easymdeCss';
+            document.head.appendChild(css);
+
+            var js = document.createElement('script');
+            js.src = '@easymdeJs';
+            js.setAttribute('data-easymde', '1');
+            js.onload = function () { initEasyMDE(); };
+            document.head.appendChild(js);
+        } else {
+            // 脚本正在加载中，轮询等待
+            var timer = setInterval(function () {
+                if (typeof EasyMDE !== 'undefined') {
+                    clearInterval(timer);
+                    initEasyMDE();
+                }
+            }, 100);
+        }
+    })();
+</script>

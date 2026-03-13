@@ -170,7 +170,7 @@ public partial class CronJob : IEntity<CronJobModel>
     [DisplayName("内容")]
     [Description("内容")]
     [DataObjectField(false, false, true, 500)]
-    [BindColumn("Remark", "内容", "")]
+    [BindColumn("Remark", "内容", "", ItemType = "markdown")]
     public String Remark { get => _Remark; set { if (OnPropertyChanging("Remark", value)) { _Remark = value; OnPropertyChanged("Remark"); } } }
     #endregion
 

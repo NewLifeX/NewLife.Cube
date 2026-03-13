@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using NewLife.Data;
@@ -137,6 +137,14 @@
             else if (item.ItemType.EqualIgnoreCase("file") || item.ItemType.StartsWithIgnoreCase("file-"))
             {
                 @await Html.PartialAsync(itemView ?? "_Form_File", Model)
+            }
+            else if (item.ItemType.EqualIgnoreCase("html"))
+            {
+                @await Html.PartialAsync(itemView ?? "_Form_Html", Model)
+            }
+            else if (item.ItemType.EqualIgnoreCase("markdown"))
+            {
+                @await Html.PartialAsync(itemView ?? "_Form_Markdown", Model)
             }
             else
             {

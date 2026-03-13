@@ -1,0 +1,65 @@
+@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var name = Model.Name;
+    var value = Model.Value + "";
+    var editorId = "html_" + name;
+
+    var quillJs = Url.Content("~/Content/quill/quill.min.js");
+    var quillCss = Url.Content("~/Content/quill/quill.snow.css");
+}
+<div id="@editorId" style="min-height:250px;background:#fff"></div>
+<input type="hidden" id="@(name)_hidden" name="@name" value="@value" />
+<script>
+    (function () {
+        // 加载 Quill（防重复加载，使用本地内嵌资源）
+        function loadQuill(callback) {
+            if (typeof Quill !== 'undefined') { callback(); return; }
+            if (document.querySelector('script[data-quill]')) {
+                var timer = setInterval(function () {
+                    if (typeof Quill !== 'undefined') { clearInterval(timer); callback(); }
+                }, 100);
+                return;
+            }
+            var css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = '@quillCss';
+            document.head.appendChild(css);
+
+            var js = document.createElement('script');
+            js.src = '@quillJs';
+            js.setAttribute('data-quill', '1');
+            js.onload = callback;
+            document.head.appendChild(js);
+        }
+
+        function initQuill() {
+            var container = document.getElementById('@editorId');
+            if (!container || container._quill) return;
+            var q = new Quill(container, {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ color: [] }, { background: [] }],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        [{ indent: '-1' }, { indent: '+1' }],
+                        ['link', 'image', 'code-block'],
+                        ['clean']
+                    ]
+                }
+            });
+            var hidden = document.getElementById('@(name)_hidden');
+            if (hidden.value) q.clipboard.dangerouslyPasteHTML(hidden.value);
+            container._quill = q;
+            var form = container.closest('form');
+            if (form) form.addEventListener('submit', function () { hidden.value = q.root.innerHTML; });
+        }
+
+        loadQuill(initQuill);
+    })();
+</script>
