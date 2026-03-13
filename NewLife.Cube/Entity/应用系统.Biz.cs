@@ -1,4 +1,4 @@
-﻿using XCode;
+using XCode;
 using XCode.Membership;
 
 namespace NewLife.Cube.Entity;
@@ -13,10 +13,10 @@ public partial class App : Entity<App>
         var df = Meta.Factory.AdditionalFields;
         df.Add(__.Auths);
 
-        // 过滤器 UserModule、TimeModule、IPModule
-        Meta.Modules.Add<UserModule>();
-        Meta.Modules.Add<TimeModule>();
-        Meta.Modules.Add<IPModule>();
+        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
+        Meta.Interceptors.Add<UserInterceptor>();
+        Meta.Interceptors.Add<TimeInterceptor>();
+        Meta.Interceptors.Add<IPInterceptor>();
 
         // 单对象缓存
         var sc = Meta.SingleCache;

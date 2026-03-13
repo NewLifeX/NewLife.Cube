@@ -1,4 +1,4 @@
-﻿using NewLife.Data;
+using NewLife.Data;
 using XCode;
 
 namespace NewLife.Cube.Entity;
@@ -15,8 +15,8 @@ public partial class UserStat : Entity<UserStat>
         df.Add(nameof(Logins));
         df.Add(nameof(OAuths));
 
-        // 过滤器 UserModule、TimeModule、IPModule
-        Meta.Modules.Add<TimeModule>();
+        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
+        Meta.Interceptors.Add<TimeInterceptor>();
 
         var sc = Meta.SingleCache;
         if (sc.Expire < 20 * 60) sc.Expire = 20 * 60;

@@ -36,10 +36,10 @@ namespace NewLife.Cube.Entity
             //var df = Meta.Factory.AdditionalFields;
             //df.Add(nameof(CreateUserId));
 
-            // 过滤器 UserModule、TimeModule、IPModule
-            Meta.Modules.Add<UserModule>();
-            Meta.Modules.Add<TimeModule>();
-            Meta.Modules.Add<IPModule>();
+            // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
+            Meta.Interceptors.Add<UserInterceptor>();
+            Meta.Interceptors.Add<TimeInterceptor>();
+            Meta.Interceptors.Add<IPInterceptor>();
         }
 
         /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>

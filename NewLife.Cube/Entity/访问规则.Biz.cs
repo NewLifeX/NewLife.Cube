@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using NewLife.Data;
 using NewLife.Log;
 using XCode;
@@ -42,10 +42,10 @@ public partial class AccessRule : Entity<AccessRule>
         //var df = Meta.Factory.AdditionalFields;
         //df.Add(nameof(Priority));
 
-        // 过滤器 UserModule、TimeModule、IPModule
-        Meta.Modules.Add(new UserModule { AllowEmpty = false });
-        Meta.Modules.Add<TimeModule>();
-        Meta.Modules.Add(new IPModule { AllowEmpty = false });
+        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
+        Meta.Interceptors.Add(new UserInterceptor { AllowEmpty = false });
+        Meta.Interceptors.Add<TimeInterceptor>();
+        Meta.Interceptors.Add(new IPInterceptor { AllowEmpty = false });
 
         // 实体缓存
         // var ec = Meta.Cache;

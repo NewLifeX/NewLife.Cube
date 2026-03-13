@@ -1,4 +1,4 @@
-﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Data;
@@ -19,9 +19,9 @@ public partial class OAuthLog : Entity<OAuthLog>
         //var df = Meta.Factory.AdditionalFields;
         //df.Add(nameof(ConnectId));
 
-        // 过滤器 UserModule、TimeModule、IPModule
-        Meta.Modules.Add<TimeModule>();
-        Meta.Modules.Add<IPModule>();
+        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
+        Meta.Interceptors.Add<TimeInterceptor>();
+        Meta.Interceptors.Add<IPInterceptor>();
     }
 
     /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>

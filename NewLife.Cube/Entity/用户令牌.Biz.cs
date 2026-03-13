@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
@@ -18,10 +18,10 @@ namespace NewLife.Cube.Entity
             // 累加字段
             Meta.Factory.AdditionalFields.Add(__.Times);
 
-            // 过滤器 UserModule、TimeModule、IPModule
-            Meta.Modules.Add<UserModule>();
-            Meta.Modules.Add<TimeModule>();
-            Meta.Modules.Add<IPModule>();
+            // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
+            Meta.Interceptors.Add<UserInterceptor>();
+            Meta.Interceptors.Add<TimeInterceptor>();
+            Meta.Interceptors.Add<IPInterceptor>();
 
 
             var sc = Meta.SingleCache;

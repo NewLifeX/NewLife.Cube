@@ -1,4 +1,4 @@
-﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
 using NewLife.Data;
@@ -17,10 +17,10 @@ public partial class AppLog : Entity<AppLog>
         // 累加字段
         //Meta.Factory.AdditionalFields.Add(__.Logins);
 
-        // 过滤器 UserModule、TimeModule、IPModule
-        Meta.Modules.Add<UserModule>();
-        Meta.Modules.Add<TimeModule>();
-        Meta.Modules.Add<IPModule>();
+        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
+        Meta.Interceptors.Add<UserInterceptor>();
+        Meta.Interceptors.Add<TimeInterceptor>();
+        Meta.Interceptors.Add<IPInterceptor>();
 
         //Meta.Table.DataTable.InsertOnly = true;
     }

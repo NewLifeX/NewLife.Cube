@@ -1,4 +1,4 @@
-﻿using NewLife.Data;
+using NewLife.Data;
 using XCode;
 using XCode.Configuration;
 
@@ -20,9 +20,9 @@ public partial class UserOnline : Entity<UserOnline>
         sc.FindSlaveKeyMethod = k => Find(__.SessionID, k);
         sc.GetSlaveKeyMethod = e => e.SessionID;
 
-        // 过滤器 UserModule、TimeModule、IPModule
-        Meta.Modules.Add<TimeModule>();
-        Meta.Modules.Add<IPModule>();
+        // 过滤器 UserInterceptor、TimeInterceptor、IPInterceptor
+        Meta.Interceptors.Add<TimeInterceptor>();
+        Meta.Interceptors.Add<IPInterceptor>();
     }
 
     /// <summary>验证并修补数据，通过抛出异常的方式提示验证失败。</summary>
