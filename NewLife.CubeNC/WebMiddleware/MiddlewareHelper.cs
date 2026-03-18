@@ -40,7 +40,8 @@ public static class MiddlewareHelper
         if (u.Host.IsNullOrEmpty()) u.Host = uri.Host;
         if (u.Port == 0) u.Port = uri.Port;
 
-        var url = u.Scheme.EqualIgnoreCase("http", "ws") && u.Port == 80 ||
+        var url = u.Port == 0 ||
+            u.Scheme.EqualIgnoreCase("http", "ws") && u.Port == 80 ||
             u.Scheme.EqualIgnoreCase("https", "wss") && u.Port == 443 ?
             $"{u.Scheme}://{u.Host}{uri.PathAndQuery}" :
             $"{u.Scheme}://{u.Host}:{u.Port}{uri.PathAndQuery}";

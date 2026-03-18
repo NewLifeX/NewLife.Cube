@@ -31,4 +31,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NewLife.MySql" Version="1.0.2026.318-beta0335" />
+  </ItemGroup>
+
 </Project>
