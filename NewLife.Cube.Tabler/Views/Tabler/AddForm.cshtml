@@ -1,4 +1,4 @@
-﻿@using NewLife;
+@using NewLife;
 @using System.Reflection
 @using XCode
 @using XCode.Configuration
@@ -19,6 +19,10 @@
 	@await Html.PartialAsync("_Form_Header", entity)
 	@using (Html.BeginForm("Add", null, rv, FormMethod.Post, null, htmlAttributes))
 	{
+		@if (ViewBag.ReturnUrl is String returnUrl && !returnUrl.IsNullOrEmpty())
+		{
+			<input type="hidden" name="returnUrl" value="@returnUrl" />
+		}
 		<div class="card">
 			<ul>
 				@foreach (var item in ViewData.ModelState.Values)

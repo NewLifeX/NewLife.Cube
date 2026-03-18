@@ -1,4 +1,4 @@
-﻿@*
+@*
     表单脚
 *@
 
@@ -10,6 +10,10 @@
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
 
+}
+@if (ViewBag.ReturnUrl is String returnUrl && !returnUrl.IsNullOrEmpty())
+{
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
 }
 <div class="layui-form-item layui-layout-admin">
 <div class="layui-input-block">

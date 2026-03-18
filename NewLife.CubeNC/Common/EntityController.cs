@@ -70,17 +70,16 @@ public partial class EntityController<TEntity, TModel>
 
         // 记下添加前的来源页，待会添加成功以后跳转
         // 如果列表页有查询条件，优先使用
-        var key = $"Cube_Add_{typeof(TEntity).FullName}";
+        String returnUrl;
         if (Session[CacheKey] is Pager p)
         {
             var sb = p.GetBaseUrl(true, true, true);
-            if (sb.Length > 0)
-                Session[key] = "Index?" + sb;
-            else
-                Session[key] = Request.GetReferer();
+            returnUrl = sb.Length > 0 ? "Index?" + sb : Request.GetReferer();
         }
         else
-            Session[key] = Request.GetReferer();
+            returnUrl = Request.GetReferer();
+
+        ViewBag.ReturnUrl = returnUrl;
 
         // 用于显示的列
         ViewBag.Fields = OnGetFields(ViewKinds.AddForm, entity);
@@ -93,7 +92,7 @@ public partial class EntityController<TEntity, TModel>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
-    public virtual async Task<ActionResult> Add(TModel model)
+    public virtual async Task<ActionResult> Add(TModel model, String returnUrl = null)
     {
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
@@ -139,6 +138,7 @@ public partial class EntityController<TEntity, TModel>
 
             if (IsJsonRequest) return Json(code, ViewBag.StatusMessage);
 
+            ViewBag.ReturnUrl = returnUrl;
             ViewBag.Fields = OnGetFields(ViewKinds.AddForm, entity);
 
             return View("AddForm", entity);
@@ -148,9 +148,7 @@ public partial class EntityController<TEntity, TModel>
 
         if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
 
-        var key = $"Cube_Add_{typeof(TEntity).FullName}";
-        var url = Session[key] as String;
-        if (!url.IsNullOrEmpty()) return Redirect(url);
+        if (!returnUrl.IsNullOrEmpty()) return Redirect(returnUrl);
 
         // 新增完成跳到列表页，更新完成保持本页
         return RedirectToAction("Index");
@@ -170,17 +168,16 @@ public partial class EntityController<TEntity, TModel>
         Valid(entity, DataObjectMethodType.Update, false);
 
         // 如果列表页有查询条件，优先使用
-        var key = $"Cube_Edit_{typeof(TEntity).FullName}-{id}";
+        String returnUrl;
         if (Session[CacheKey] is Pager p)
         {
             var sb = p.GetBaseUrl(true, true, true);
-            if (sb.Length > 0)
-                Session[key] = "../Index?" + sb;
-            else
-                Session[key] = Request.GetReferer();
+            returnUrl = sb.Length > 0 ? "../Index?" + sb : Request.GetReferer();
         }
         else
-            Session[key] = Request.GetReferer();
+            returnUrl = Request.GetReferer();
+
+        ViewBag.ReturnUrl = returnUrl;
 
         // Json输出
         if (IsJsonRequest) return Json(0, null, entity);
@@ -195,7 +192,7 @@ public partial class EntityController<TEntity, TModel>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
-    public virtual async Task<ActionResult> Edit(TModel model)
+    public virtual async Task<ActionResult> Edit(TModel model, String returnUrl = null)
     {
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
@@ -251,14 +248,13 @@ public partial class EntityController<TEntity, TModel>
             if (IsJsonRequest) return Json(0, ViewBag.StatusMessage);
 
             // 实体对象保存成功后直接重定向到列表页，减少用户操作提高操作体验
-            var key = $"Cube_Edit_{typeof(TEntity).FullName}-{id}";
-            var url = Session[key] as String;
-            if (!url.IsNullOrEmpty()) return Redirect(url);
+            if (!returnUrl.IsNullOrEmpty()) return Redirect(returnUrl);
         }
 
         // 重新查找对象数据，以确保取得最新值
         if (id != null) entity = FindData(id);
 
+        ViewBag.ReturnUrl = returnUrl;
         ViewBag.Fields = OnGetFields(ViewKinds.EditForm, entity);
 
         return View("EditForm", entity);

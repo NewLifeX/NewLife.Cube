@@ -1,4 +1,4 @@
-﻿@*
+@*
     表单脚
 *@
 
@@ -10,7 +10,10 @@
     var entity = Model as IEntity;
     var isNew = entity.IsNullKey;
 }
-
+@if (ViewBag.ReturnUrl is String returnUrl && !returnUrl.IsNullOrEmpty())
+{
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
+}
 <div class="card-footer d-flex justify-content-end py-6">
     <button type="submit" class="btn btn-sm btn-outline btn-outline-primary align-self-center me-3">
         <i class="far fa-@(isNew ? "plus" : "check") fs-2" style="margin-top: -1px;"></i>

@@ -1,4 +1,8 @@
-﻿@using NewLife.Cube;
+@using NewLife.Cube;
 @using XCode.Configuration;
 @{
+}
+@if (ViewBag.ReturnUrl is String returnUrl && !returnUrl.IsNullOrEmpty())
+{
+    <input type="hidden" name="returnUrl" value="@returnUrl" />
 }
