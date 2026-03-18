@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Primitives;
 using NewLife.Collections;
 
 namespace NewLife.Cube.Common
@@ -45,7 +45,16 @@ namespace NewLife.Cube.Common
 
             var value = _body[key];
 
-            return value == null ? _valueProvider.GetValue(key) : new ValueProviderResult(value.ToString());
+            if (value == null) return _valueProvider.GetValue(key);
+
+            // 处理JSON数组类型的值（多选字段提交多个值时）
+            if (value is IEnumerable<Object> list)
+            {
+                var values = list.Select(e => e?.ToString() ?? String.Empty).ToArray();
+                return new ValueProviderResult(new StringValues(values));
+            }
+
+            return new ValueProviderResult(value.ToString());
         }
     }
 }

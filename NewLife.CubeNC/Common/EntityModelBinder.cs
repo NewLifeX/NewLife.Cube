@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -61,7 +62,7 @@ class EntityModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders
     protected virtual Object CreateModel(ModelBindingContext bindingContext)
     {
         var modelType = bindingContext.ModelType;
-        if (modelType.As<IEntity>() || modelType.As<IModel>())
+        if (modelType.As<IEntity>() || modelType.As<IModel>() || EntityModelBinderProvider.IsEntityModelType(modelType))
         {
             // 如果提交数据里面刚好有名为model的字段，这是Add/Edit接口的入参，则需要清空modelName，否则无法绑定
             if (bindingContext.ModelName == "model") bindingContext.ModelName = String.Empty;
@@ -260,8 +261,8 @@ public class EntityModelBinderProvider : IModelBinderProvider
     {
         if (context == null) throw new ArgumentNullException(nameof(context));
 
-        if (!context.Metadata.ModelType.As<IEntity>() &&
-            !context.Metadata.ModelType.As<IModel>()) return null;
+        var modelType = context.Metadata.ModelType;
+        if (!modelType.As<IEntity>() && !modelType.As<IModel>() && !IsEntityModelType(modelType)) return null;
 
         var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
         foreach (var property in context.Metadata.Properties)
@@ -274,4 +275,23 @@ public class EntityModelBinderProvider : IModelBinderProvider
 
     /// <summary>实例化</summary>
     public EntityModelBinderProvider() => XTrace.WriteLine("注册实体模型绑定器：{0}", typeof(EntityModelBinderProvider).FullName);
+
+    private static readonly ConcurrentDictionary<Type, Boolean> _entityModelTypes = new();
+
+    /// <summary>检测类型是否为某实体的DTO模型类型，即存在某实体类实现了IEntity&lt;T&gt;</summary>
+    /// <param name="modelType">待检测的模型类型</param>
+    /// <returns>是否为实体DTO模型</returns>
+    internal static Boolean IsEntityModelType(Type modelType)
+    {
+        if (!modelType.IsClass || modelType == typeof(String)) return false;
+        return _entityModelTypes.GetOrAdd(modelType, static t =>
+        {
+            var iEntityT = typeof(IEntity<>).MakeGenericType(t);
+            return AppDomain.CurrentDomain.GetAssemblies().Any(asm =>
+            {
+                try { return asm.GetTypes().Any(at => at != t && at.GetInterfaces().Any(i => i == iEntityT)); }
+                catch { return false; }
+            });
+        });
+    }
 }
