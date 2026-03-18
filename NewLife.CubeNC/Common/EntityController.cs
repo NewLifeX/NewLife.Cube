@@ -92,8 +92,9 @@ public partial class EntityController<TEntity, TModel>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
     [HttpPost]
-    public virtual async Task<ActionResult> Add(TModel model, String returnUrl = null)
+    public virtual async Task<ActionResult> Add(TModel model)
     {
+        var returnUrl = GetRequest("returnUrl");
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
         {
@@ -192,8 +193,10 @@ public partial class EntityController<TEntity, TModel>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Update)]
     [HttpPost]
-    public virtual async Task<ActionResult> Edit(TModel model, String returnUrl = null)
+    public virtual async Task<ActionResult> Edit(TModel model)
     {
+        var returnUrl = GetRequest("returnUrl");
+
         // 实例化实体对象，然后拷贝
         if (model is not TEntity entity)
         {
