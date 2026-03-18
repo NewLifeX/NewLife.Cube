@@ -12,6 +12,15 @@
     var easymdeCss = Url.Content("~/Content/easymde/easymde.min.css");
 }
 <textarea id="@editorId" name="@name">@value</textarea>
+<style>
+    /* 修复 Bootstrap .table{width:100%} 导致 EasyMDE table 按钮独占一行的问题 */
+    .editor-toolbar button.table {
+        width: auto;
+        max-width: none;
+        margin-bottom: 0;
+        border-collapse: initial;
+    }
+</style>
 <script>
     (function () {
         function initEasyMDE() {
