@@ -660,15 +660,45 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     #endregion
 
     #region 文件上传
-    /// <summary>上传 Markdown 编辑器图片，关联当前实体</summary>
-    /// <param name="image">图片文件</param>
+    // 禁止上传的危险文件扩展名（可执行文件、脚本、服务端解析文件等）
+    private static readonly HashSet<String> _dangerousExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".exe", ".dll", ".bat", ".cmd", ".ps1", ".sh", ".php", ".asp", ".aspx",
+        ".jsp", ".vbs", ".wsf", ".jar", ".msi", ".scr", ".pif", ".com", ".cpl",
+    };
+
+    /// <summary>校验上传文件合法性。子类可重载以实现自定义校验规则</summary>
+    /// <param name="file">上传文件</param>
+    /// <param name="error">校验失败时的错误信息</param>
+    /// <returns>是否合法</returns>
+    protected virtual Boolean ValidateUploadFile(IFormFile file, out String error)
+    {
+        if (file == null || file.Length == 0)
+        {
+            error = "未收到文件";
+            return false;
+        }
+
+        var ext = Path.GetExtension(file.FileName);
+        if (!ext.IsNullOrEmpty() && _dangerousExtensions.Contains(ext))
+        {
+            error = $"禁止上传该类型文件：{ext}";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
+
+    /// <summary>上传编辑器文件，关联当前实体</summary>
+    /// <param name="file">上传文件</param>
     /// <param name="id">实体主键。编辑时传入可关联到具体实体；为空时创建临时实体用于路径归类</param>
     /// <returns></returns>
     [HttpPost]
-    public virtual async Task<ActionResult> UploadImage(IFormFile image, String id = null)
+    public virtual async Task<ActionResult> UploadFile(IFormFile file, String id = null)
     {
-        if (image == null || image.Length == 0)
-            return new JsonResult(new { error = "未收到文件" });
+        if (!ValidateUploadFile(file, out var error))
+            return new JsonResult(new { error });
 
         TEntity entity;
         if (!id.IsNullOrEmpty())
@@ -679,7 +709,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         Attachment att;
         try
         {
-            att = await SaveFile(entity, image, null, null);
+            att = await SaveFile(entity, file, null, null);
         }
         catch (Exception ex)
         {
@@ -687,7 +717,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         }
 
         var url = ViewHelper.GetAttachmentUrl(att);
-        return Json(0, null, new { filePath = url });
+        return Json(0, null, new { filePath = url, contentType = att.ContentType });
     }
 
     /// <summary>保存所有上传文件，并保存附件访问路径到实体对象的对应属性</summary>

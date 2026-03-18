@@ -10,11 +10,34 @@
 
     var quillJs = Url.Content("~/Content/quill/quill.min.js");
     var quillCss = Url.Content("~/Content/quill/quill.snow.css");
+    var uploadUrl = Url.Action("UploadFile");
+    var entityId = (ViewContext.RouteData.Values["id"]?.ToString() ?? Context.Request.Query["id"].FirstOrDefault()) ?? "";
 }
 <div id="@editorId" style="min-height:250px;background:#fff"></div>
 <input type="hidden" id="@(name)_hidden" name="@name" value="@value" />
 <script>
     (function () {
+        // 共用上传函数
+        function uploadFileXhr(file, onSuccess, onError) {
+            var fd = new FormData();
+            fd.append('file', file);
+            var eid = '@entityId';
+            if (eid) fd.append('id', eid);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '@uploadUrl');
+            xhr.onload = function() {
+                try {
+                    var resp = JSON.parse(xhr.responseText);
+                    if (resp && resp.data && resp.data.filePath)
+                        onSuccess(resp.data.filePath, resp.data.contentType);
+                    else
+                        onError(resp && resp.error ? resp.error : '上传失败');
+                } catch(e) { onError('响应解析失败'); }
+            };
+            xhr.onerror = function() { onError('网络错误'); };
+            xhr.send(fd);
+        }
+
         // 加载 Quill（防重复加载，使用本地内嵌资源）
         function loadQuill(callback) {
             if (typeof Quill !== 'undefined') { callback(); return; }
@@ -42,15 +65,34 @@
             var q = new Quill(container, {
                 theme: 'snow',
                 modules: {
-                    toolbar: [
-                        [{ header: [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ color: [] }, { background: [] }],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        [{ indent: '-1' }, { indent: '+1' }],
-                        ['link', 'image', 'code-block'],
-                        ['clean']
-                    ]
+                    toolbar: {
+                        container: [
+                            [{ header: [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ color: [] }, { background: [] }],
+                            [{ list: 'ordered' }, { list: 'bullet' }],
+                            [{ indent: '-1' }, { indent: '+1' }],
+                            ['link', 'image', 'code-block'],
+                            ['clean']
+                        ],
+                        handlers: {
+                            image: function() {
+                                var input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = 'image/*';
+                                input.click();
+                                input.onchange = function() {
+                                    var file = input.files[0];
+                                    if (!file) return;
+                                    uploadFileXhr(file, function(url) {
+                                        var range = q.getSelection(true);
+                                        q.insertEmbed(range.index, 'image', url, 'user');
+                                        q.setSelection(range.index + 1, 'user');
+                                    }, function(err) { alert('图片上传失败: ' + err); });
+                                };
+                            }
+                        }
+                    }
                 }
             });
             var hidden = document.getElementById('@(name)_hidden');
@@ -58,6 +100,37 @@
             container._quill = q;
             var form = container.closest('form');
             if (form) form.addEventListener('submit', function () { hidden.value = q.root.innerHTML; });
+
+            // 在工具栏末尾追加附件上传按钮
+            var toolbar = container.parentElement.querySelector('.ql-toolbar');
+            if (toolbar) {
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.title = '上传附件';
+                btn.innerHTML = '&#128206;';
+                btn.className = 'ql-file';
+                btn.style.cssText = 'font-size:15px;line-height:1;padding:2px 6px;';
+                toolbar.appendChild(btn);
+                btn.addEventListener('click', function() {
+                    var input = document.createElement('input');
+                    input.type = 'file';
+                    input.click();
+                    input.onchange = function() {
+                        var file = input.files[0];
+                        if (!file) return;
+                        uploadFileXhr(file, function(url, contentType) {
+                            var range = q.getSelection(true);
+                            if (contentType && contentType.startsWith('image/')) {
+                                q.insertEmbed(range.index, 'image', url, 'user');
+                                q.setSelection(range.index + 1, 'user');
+                            } else {
+                                q.insertText(range.index, file.name, 'link', url, 'user');
+                                q.setSelection(range.index + file.name.length, 'user');
+                            }
+                        }, function(err) { alert('附件上传失败: ' + err); });
+                    };
+                });
+            }
         }
 
         loadQuill(initQuill);

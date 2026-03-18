@@ -10,7 +10,7 @@
 
     var easymdeJs = Url.Content("~/Content/easymde/easymde.min.js");
     var easymdeCss = Url.Content("~/Content/easymde/easymde.min.css");
-    var uploadUrl = Url.Action("UploadImage");
+    var uploadUrl = Url.Action("UploadFile");
     var entityId = (ViewContext.RouteData.Values["id"]?.ToString() ?? Context.Request.Query["id"].FirstOrDefault()) ?? "";
 }
 <textarea id="@editorId" name="@name">@value</textarea>
@@ -37,8 +37,9 @@
                 status: false,
                 uploadImage: true,
                 imageUploadFunction: function(file, onSuccess, onError) {
+                    if (!file.type.startsWith('image/')) { onError('只支持图片文件'); return; }
                     var fd = new FormData();
-                    fd.append('image', file);
+                    fd.append('file', file);
                     var eid = '@entityId';
                     if (eid) fd.append('id', eid);
                     var xhr = new XMLHttpRequest();

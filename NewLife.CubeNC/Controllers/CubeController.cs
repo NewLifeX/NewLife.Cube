@@ -89,7 +89,9 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
     private Boolean ValidateToken(String actionName)
     {
-        // 不验证附件权限，且访问附件接口时，直接通过
+        // Image/File 在方法内部做细粒度权限控制，直接放行
+        if (actionName.EqualIgnoreCase(nameof(Image), nameof(File))) return true;
+        // 其他附件接口（Avatar）使用全局附件验证开关
         if (!CubeSetting.Current.ValidateAttachment && _attachmentApis.Contains(actionName)) return true;
 
         var logined = ManageProvider.User != null;
@@ -454,6 +456,10 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         var att = Attachment.FindById(id.ToLong());
         if (att == null) return NotFound("找不到附件信息");
 
+        // 细粒度附件访问权限校验
+        var denied = CheckAttachmentAccess(att);
+        if (denied != null) return denied;
+
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
         if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch)
@@ -499,6 +505,10 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         var att = Attachment.FindById(id.ToLong());
         if (att == null) return NotFound("找不到附件信息");
 
+        // 细粒度附件访问权限校验
+        var denied = CheckAttachmentAccess(att);
+        if (denied != null) return denied;
+
         // 如果附件不存在，则抓取
         var filePath = att.GetFilePath();
         if (!filePath.IsNullOrEmpty() && !System.IO.File.Exists(filePath) && setting.FileStorageFetch)
@@ -534,6 +544,41 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         return result;
     }
+    #endregion
 
+    #region 权限辅助
+    /// <summary>检查附件访问权限</summary>
+    /// <param name="att">附件对象</param>
+    /// <returns>null=允许访问；StatusCode(401)=未登录；StatusCode(403)=无权限</returns>
+    private ActionResult CheckAttachmentAccess(Attachment att)
+    {
+        var set = CubeSetting.Current;
+
+        // 全局关闭验证 → 所有人公开访问所有附件
+        if (!set.ValidateAttachment) return null;
+
+        var category = att.Category + "";
+
+        // 检查公开分类：无需登录即可访问
+        if (!set.PublicAttachmentCategories.IsNullOrEmpty())
+        {
+            var publicCats = set.PublicAttachmentCategories.Split(',');
+            if (publicCats.Any(c => c.Trim().EqualIgnoreCase(category))) return null;
+        }
+
+        // 其余分类需要登录
+        var user = ManageProvider.User;
+        if (user == null) return StatusCode(401);
+
+        // 检查仅所有者可访问的分类：必须是上传人本人
+        if (!set.OwnerOnlyAttachmentCategories.IsNullOrEmpty())
+        {
+            var ownerCats = set.OwnerOnlyAttachmentCategories.Split(',');
+            if (ownerCats.Any(c => c.Trim().EqualIgnoreCase(category)) && att.CreateUserID != user.ID)
+                return StatusCode(403);
+        }
+
+        return null;
+    }
     #endregion
 }

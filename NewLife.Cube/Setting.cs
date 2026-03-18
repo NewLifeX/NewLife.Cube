@@ -207,6 +207,16 @@ public class CubeSetting : Config<CubeSetting>
     [Description("验证附件访问。访问附件时，是否验证登录状态，默认true")]
     [Category("用户登录")]
     public Boolean ValidateAttachment { get; set; } = true;
+
+    /// <summary>公开附件分类。无需登录即可访问的附件分类，多个用逗号分隔，如 markdown,avatar。ValidateAttachment=true时生效</summary>
+    [Description("公开附件分类。无需登录即可访问的附件分类，多个用逗号分隔，如 markdown,avatar。ValidateAttachment=true时生效")]
+    [Category("用户登录")]
+    public String PublicAttachmentCategories { get; set; }
+
+    /// <summary>私有附件分类。仅上传人本人可访问的附件分类，多个用逗号分隔。ValidateAttachment=true时生效</summary>
+    [Description("私有附件分类。仅上传人本人可访问的附件分类，多个用逗号分隔。ValidateAttachment=true时生效")]
+    [Category("用户登录")]
+    public String OwnerOnlyAttachmentCategories { get; set; }
     #endregion
 
     #region 界面配置
