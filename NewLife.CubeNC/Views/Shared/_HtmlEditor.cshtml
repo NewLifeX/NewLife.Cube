@@ -65,6 +65,19 @@
             var q = new Quill(container, {
                 theme: 'snow',
                 modules: {
+                    // 覆盖内置 uploader.handler，阻止默认 base64 转换，改为上传
+                    uploader: {
+                        mimetypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'],
+                        handler: function(range, files) {
+                            var quill = this.quill;
+                            var file = files[0];
+                            if (!file) return;
+                            uploadFileXhr(file, function(url) {
+                                quill.insertEmbed(range.index, 'image', url, 'user');
+                                quill.setSelection(range.index + 1, 'user');
+                            }, function(err) { alert('图片上传失败: ' + err); });
+                        }
+                    },
                     toolbar: {
                         container: [
                             [{ header: [1, 2, 3, false] }],
@@ -110,41 +123,20 @@
                 hidden.value = sourceMode ? sourceArea.value : q.root.innerHTML;
             });
 
-            // 工具栏自定义按钮
-            var toolbar = container.parentElement.querySelector('.ql-toolbar');
-            if (toolbar) {
-                // HTML 源码切换按钮
-                var sourceBtn = document.createElement('button');
-                sourceBtn.type = 'button';
-                sourceBtn.title = '切换 HTML 源码';
-                sourceBtn.textContent = '</>';
-                sourceBtn.className = 'ql-source';
-                sourceBtn.style.cssText = 'font-size:12px;font-weight:bold;line-height:1;padding:2px 5px;';
-                toolbar.appendChild(sourceBtn);
-                sourceBtn.addEventListener('click', function() {
-                    if (!sourceMode) {
-                        sourceArea.value = q.root.innerHTML;
-                        container.style.display = 'none';
-                        sourceArea.style.display = 'block';
-                        sourceBtn.style.color = '#1890ff';
-                        sourceMode = true;
-                    } else {
-                        q.clipboard.dangerouslyPasteHTML(sourceArea.value);
-                        sourceArea.style.display = 'none';
-                        container.style.display = '';
-                        sourceBtn.style.color = '';
-                        sourceMode = false;
-                    }
-                });
+            // 工具栏自定义按钮：通过 getModule('toolbar').container 获取工具栏，包裹在 ql-formats 内跟随 flex 布局
+            var toolbarContainer = q.getModule('toolbar').container;
+            if (toolbarContainer) {
+                var group = document.createElement('span');
+                group.className = 'ql-formats';
 
-                // 附件上传按钮（工具栏最后）
+                // 附件上传按钮（倒数第二）
                 var fileBtn = document.createElement('button');
                 fileBtn.type = 'button';
                 fileBtn.title = '上传附件';
                 fileBtn.innerHTML = '&#128206;';
                 fileBtn.className = 'ql-file';
                 fileBtn.style.cssText = 'font-size:15px;line-height:1;padding:2px 6px;';
-                toolbar.appendChild(fileBtn);
+                group.appendChild(fileBtn);
                 fileBtn.addEventListener('click', function() {
                     var input = document.createElement('input');
                     input.type = 'file';
@@ -164,6 +156,32 @@
                         }, function(err) { alert('附件上传失败: ' + err); });
                     };
                 });
+
+                // HTML 源码切换按钮（最后）
+                var sourceBtn = document.createElement('button');
+                sourceBtn.type = 'button';
+                sourceBtn.title = '切换 HTML 源码';
+                sourceBtn.textContent = '</>';
+                sourceBtn.className = 'ql-source';
+                sourceBtn.style.cssText = 'font-size:12px;font-weight:bold;line-height:1;padding:2px 5px;';
+                group.appendChild(sourceBtn);
+                sourceBtn.addEventListener('click', function() {
+                    if (!sourceMode) {
+                        sourceArea.value = q.root.innerHTML;
+                        container.style.display = 'none';
+                        sourceArea.style.display = 'block';
+                        sourceBtn.style.color = '#1890ff';
+                        sourceMode = true;
+                    } else {
+                        q.clipboard.dangerouslyPasteHTML(sourceArea.value);
+                        sourceArea.style.display = 'none';
+                        container.style.display = '';
+                        sourceBtn.style.color = '';
+                        sourceMode = false;
+                    }
+                });
+
+                toolbarContainer.appendChild(group);
             }
         }
 
