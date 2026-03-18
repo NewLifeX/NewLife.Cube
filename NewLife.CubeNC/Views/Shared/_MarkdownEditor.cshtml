@@ -10,6 +10,8 @@
 
     var easymdeJs = Url.Content("~/Content/easymde/easymde.min.js");
     var easymdeCss = Url.Content("~/Content/easymde/easymde.min.css");
+    var uploadUrl = Url.Action("UploadImage");
+    var entityId = (ViewContext.RouteData.Values["id"]?.ToString() ?? Context.Request.Query["id"].FirstOrDefault()) ?? "";
 }
 <textarea id="@editorId" name="@name">@value</textarea>
 <style>
@@ -33,6 +35,24 @@
                 autoDownloadFontAwesome: false,
                 minHeight: '200px',
                 status: false,
+                uploadImage: true,
+                imageUploadFunction: function(file, onSuccess, onError) {
+                    var fd = new FormData();
+                    fd.append('image', file);
+                    var eid = '@entityId';
+                    if (eid) fd.append('id', eid);
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', '@uploadUrl');
+                    xhr.onload = function() {
+                        try {
+                            var resp = JSON.parse(xhr.responseText);
+                            if (resp && resp.data && resp.data.filePath) onSuccess(resp.data.filePath);
+                            else onError(resp && resp.error ? resp.error : '上传失败');
+                        } catch(e) { onError('响应解析失败'); }
+                    };
+                    xhr.onerror = function() { onError('网络错误'); };
+                    xhr.send(fd);
+                },
                 toolbar: [
                     'bold', 'italic', 'heading', '|',
                     'quote', 'unordered-list', 'ordered-list', '|',
