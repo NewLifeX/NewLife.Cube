@@ -540,7 +540,6 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         // 开启分段下载
         result.EnableRangeProcessing = true;
-        result.FileDownloadName = !att.FileName.IsNullOrEmpty() ? att.FileName : Path.GetFileName(filePath);
 
         return result;
     }

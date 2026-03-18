@@ -98,20 +98,54 @@
             var hidden = document.getElementById('@(name)_hidden');
             if (hidden.value) q.clipboard.dangerouslyPasteHTML(hidden.value);
             container._quill = q;
-            var form = container.closest('form');
-            if (form) form.addEventListener('submit', function () { hidden.value = q.root.innerHTML; });
 
-            // 在工具栏末尾追加附件上传按钮
+            // HTML 源码模式：在编辑器下方插入隐藏 textarea
+            var sourceArea = document.createElement('textarea');
+            sourceArea.style.cssText = 'display:none;width:100%;min-height:250px;font-family:monospace;font-size:13px;box-sizing:border-box;padding:8px;border:1px solid #ccc;resize:vertical;';
+            container.parentElement.insertBefore(sourceArea, container.nextSibling);
+            var sourceMode = false;
+
+            var form = container.closest('form');
+            if (form) form.addEventListener('submit', function () {
+                hidden.value = sourceMode ? sourceArea.value : q.root.innerHTML;
+            });
+
+            // 工具栏自定义按钮
             var toolbar = container.parentElement.querySelector('.ql-toolbar');
             if (toolbar) {
-                var btn = document.createElement('button');
-                btn.type = 'button';
-                btn.title = '上传附件';
-                btn.innerHTML = '&#128206;';
-                btn.className = 'ql-file';
-                btn.style.cssText = 'font-size:15px;line-height:1;padding:2px 6px;';
-                toolbar.appendChild(btn);
-                btn.addEventListener('click', function() {
+                // HTML 源码切换按钮
+                var sourceBtn = document.createElement('button');
+                sourceBtn.type = 'button';
+                sourceBtn.title = '切换 HTML 源码';
+                sourceBtn.textContent = '</>';
+                sourceBtn.className = 'ql-source';
+                sourceBtn.style.cssText = 'font-size:12px;font-weight:bold;line-height:1;padding:2px 5px;';
+                toolbar.appendChild(sourceBtn);
+                sourceBtn.addEventListener('click', function() {
+                    if (!sourceMode) {
+                        sourceArea.value = q.root.innerHTML;
+                        container.style.display = 'none';
+                        sourceArea.style.display = 'block';
+                        sourceBtn.style.color = '#1890ff';
+                        sourceMode = true;
+                    } else {
+                        q.clipboard.dangerouslyPasteHTML(sourceArea.value);
+                        sourceArea.style.display = 'none';
+                        container.style.display = '';
+                        sourceBtn.style.color = '';
+                        sourceMode = false;
+                    }
+                });
+
+                // 附件上传按钮（工具栏最后）
+                var fileBtn = document.createElement('button');
+                fileBtn.type = 'button';
+                fileBtn.title = '上传附件';
+                fileBtn.innerHTML = '&#128206;';
+                fileBtn.className = 'ql-file';
+                fileBtn.style.cssText = 'font-size:15px;line-height:1;padding:2px 6px;';
+                toolbar.appendChild(fileBtn);
+                fileBtn.addEventListener('click', function() {
                     var input = document.createElement('input');
                     input.type = 'file';
                     input.click();
