@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -42,7 +42,7 @@ public partial class MailConfig : Entity<MailConfig>
         Meta.Interceptors.Add(new UserInterceptor { AllowEmpty = false });
         Meta.Interceptors.Add<TimeInterceptor>();
         Meta.Interceptors.Add(new IPInterceptor { AllowEmpty = false });
-        Meta.Interceptors.Add<TenantModule>();
+        Meta.Interceptors.Add<TenantInterceptor>();
 
         // 实体缓存
         // var ec = Meta.Cache;
@@ -83,35 +83,90 @@ public partial class MailConfig : Entity<MailConfig>
         return true;
     }
 
-    ///// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
-    //[EditorBrowsable(EditorBrowsableState.Never)]
-    //protected override void InitData()
-    //{
-    //    // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
-    //    if (Meta.Session.Count > 0) return;
+    /// <summary>首次连接数据库时初始化数据，仅用于实体类重载，用户不应该调用该方法</summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    protected override void InitData()
+    {
+        // InitData一般用于当数据表没有数据时添加一些默认数据，该实体类的任何第一次数据库操作都会触发该方法，默认异步调用
+        if (Meta.Session.Count > 0) return;
 
-    //    if (XTrace.Debug) XTrace.WriteLine("开始初始化MailConfig[邮件配置]数据……");
+        if (XTrace.Debug) XTrace.WriteLine($"开始初始化{nameof(MailConfig)}[邮件配置]数据……");
 
-    //    var entity = new MailConfig();
-    //    entity.TenantId = 0;
-    //    entity.Provider = "abc";
-    //    entity.Name = "abc";
-    //    entity.DisplayName = "abc";
-    //    entity.Server = "abc";
-    //    entity.Port = 0;
-    //    entity.EnableSsl = true;
-    //    entity.UserName = "abc";
-    //    entity.Password = "abc";
-    //    entity.FromMail = "abc";
-    //    entity.FromName = "abc";
-    //    entity.CodeLength = 0;
-    //    entity.Expire = 0;
-    //    entity.Enable = true;
-    //    entity.Priority = 0;
-    //    entity.Insert();
+        var list = new[]
+        {
+            new MailConfig
+            {
+                Provider = "QQ",
+                Name = "QQ",
+                DisplayName = "QQ邮箱",
+                Server = "smtp.qq.com",
+                Port = 465,
+                EnableSsl = true,
+                CodeLength = 6,
+                Expire = 300,
+                Enable = false,
+                Priority = 0,
+            },
+            new MailConfig
+            {
+                Provider = "163",
+                Name = "163",
+                DisplayName = "网易163邮箱",
+                Server = "smtp.163.com",
+                Port = 465,
+                EnableSsl = true,
+                CodeLength = 6,
+                Expire = 300,
+                Enable = false,
+                Priority = 1,
+            },
+            new MailConfig
+            {
+                Provider = "126",
+                Name = "126",
+                DisplayName = "网易126邮箱",
+                Server = "smtp.126.com",
+                Port = 465,
+                EnableSsl = true,
+                CodeLength = 6,
+                Expire = 300,
+                Enable = false,
+                Priority = 2,
+            },
+            new MailConfig
+            {
+                Provider = "Outlook",
+                Name = "Outlook",
+                DisplayName = "Outlook/Hotmail",
+                Server = "smtp.office365.com",
+                Port = 587,
+                EnableSsl = true,
+                CodeLength = 6,
+                Expire = 300,
+                Enable = false,
+                Priority = 3,
+            },
+            new MailConfig
+            {
+                Provider = "Gmail",
+                Name = "Gmail",
+                DisplayName = "Gmail",
+                Server = "smtp.gmail.com",
+                Port = 465,
+                EnableSsl = true,
+                CodeLength = 6,
+                Expire = 300,
+                Enable = false,
+                Priority = 4,
+            },
+        };
+        foreach (var entity in list)
+        {
+            entity.Insert();
+        }
 
-    //    if (XTrace.Debug) XTrace.WriteLine("完成初始化MailConfig[邮件配置]数据！");
-    //}
+        if (XTrace.Debug) XTrace.WriteLine($"完成初始化{nameof(MailConfig)}[邮件配置]数据！");
+    }
 
     ///// <summary>已重载。基类先调用Valid(true)验证数据，然后在事务保护内调用OnInsert</summary>
     ///// <returns></returns>

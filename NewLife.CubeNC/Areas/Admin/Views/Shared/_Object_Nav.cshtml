@@ -31,7 +31,8 @@
                         @foreach (var elm in childs)
                         {
                             var url = elm.Value + "";
-                            var v = url.Substring(null, "?");
+                            var p = url.IndexOf('?');
+                            var v = p > 0 ? url.Substring(0, p) : url;
                             <li role="presentation" class="@(path.EqualIgnoreCase(v) ? "active" : "")"><a href="@url">@elm.Key</a></li>
                         }
                     </ul>
@@ -40,7 +41,8 @@
             else
             {
                 var url = item.Value + "";
-                var v = url.Substring(null, "?");
+                var p = url.IndexOf('?');
+                var v = p > 0 ? url.Substring(0, p) : url;
                 <li role="presentation" class="@(path.EqualIgnoreCase(v) ? "active" : "")"><a href="@url">@item.Key</a></li>
             }
         }

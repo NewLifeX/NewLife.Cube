@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using NewLife.Log;
 using NewLife.Reflection;
 using XCode;
@@ -30,7 +30,7 @@ public partial class SmsConfig : Entity<SmsConfig>
             SchemaName = null,
             CodeLength = 4,
             Expire = 300,
-            Enable = true,
+            Enable = false,
             EnableLogin = true,
             EnableReset = true,
             EnableBind = true,
@@ -55,7 +55,7 @@ public partial class SmsConfig : Entity<SmsConfig>
         Meta.Interceptors.Add(new UserInterceptor { AllowEmpty = false });
         Meta.Interceptors.Add<TimeInterceptor>();
         Meta.Interceptors.Add(new IPInterceptor { AllowEmpty = false });
-        Meta.Interceptors.Add<TenantModule>();
+        Meta.Interceptors.Add<TenantInterceptor>();
 
         // 实体缓存
         // var ec = Meta.Cache;
