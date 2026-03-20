@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Document="https://newlifex.com/xcode/model" ModelVersion="2.0.2026.130" xmlns="https://newlifex.com/Model202509.xsd">
   <Option>
     <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
@@ -513,10 +513,10 @@
         <Column Name="CodeLength" DataType="Int32" Description="验证码长度。默认4位" />
         <Column Name="Expire" DataType="Int32" Description="有效期。验证码有效期，单位秒，默认300秒(5分钟)" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
-        <Column Name="EnableLogin" DataType="Boolean" Description="启用登录。用于登录/注册场景" />
-        <Column Name="EnableReset" DataType="Boolean" Description="启用重置。用于忘记密码场景" />
-        <Column Name="EnableBind" DataType="Boolean" Description="启用绑定。用于绑定手机场景" />
-        <Column Name="EnableNotify" DataType="Boolean" Description="启用通知。用于普通通知场景" />
+        <Column Name="EnableLogin" DataType="Boolean" Description="登录。用于登录/注册场景" />
+        <Column Name="EnableReset" DataType="Boolean" Description="重置。用于忘记密码场景" />
+        <Column Name="EnableBind" DataType="Boolean" Description="绑定。用于绑定手机场景" />
+        <Column Name="EnableNotify" DataType="Boolean" Description="通知。用于普通通知场景" />
         <Column Name="Priority" DataType="Int32" Description="优先级。较大优先" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建者" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />

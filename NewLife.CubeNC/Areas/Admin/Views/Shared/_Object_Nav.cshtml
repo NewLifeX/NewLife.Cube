@@ -1,15 +1,48 @@
-﻿@{
+@{
     var obj = Model as Object;
     var path = Context.Request.Path + "";
+
+    var dic = new Dictionary<String, Object>();
+    dic["基本设置"] = "/Admin/Core";
+    dic["系统设置"] = "/Admin/Sys";
+    dic["星尘设置"] = "/Admin/Star";
+    dic["数据中间件"] = "/Admin/XCode";
+    dic["魔方设置"] = "/Admin/Cube";
+
+    {
+        var dic2 = new Dictionary<String, Object>();
+        dic["更多设置"] = dic2;
+
+        dic2["短信设置"] = "/Admin/SmsConfig?nav=1";
+        dic2["邮件设置"] = "/Admin/MailConfig?nav=1";
+        dic2["OAuth设置"] = "/Admin/OAuthConfig?nav=1";
+        dic2["访问规则"] = "/Admin/AccessRule?nav=1";
+    }
 }
 <div class="navbar-collapse text-center">
     <ul class="nav nav-pills" style="margin-bottom: 10px; display: inline-block;float: none;">
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Core") ? "active" : "")"><a href="/Admin/Core">基本设置</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Sys") ? "active" : "")"><a href="/Admin/Sys">系统设置</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Star") ? "active" : "")"><a href="/Admin/Star">星尘设置</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/XCode") ? "active" : "")"><a href="/Admin/XCode">数据中间件</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Cube") ? "active" : "")"><a href="/Admin/Cube">魔方设置</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/OAuthConfig") ? "active" : "")"><a href="/Admin/OAuthConfig">OAuth设置</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/AccessRule") ? "active" : "")"><a href="/Admin/AccessRule">访问规则</a></li>
+        @foreach (var item in dic)
+        {
+            if (item.Value is IDictionary<String, Object> childs)
+            {
+                <li role="presentation" class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@item.Key <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        @foreach (var elm in childs)
+                        {
+                            var url = elm.Value + "";
+                            var v = url.Substring(null, "?");
+                            <li role="presentation" class="@(path.EqualIgnoreCase(v) ? "active" : "")"><a href="@url">@elm.Key</a></li>
+                        }
+                    </ul>
+                </li>
+            }
+            else
+            {
+                var url = item.Value + "";
+                var v = url.Substring(null, "?");
+                <li role="presentation" class="@(path.EqualIgnoreCase(v) ? "active" : "")"><a href="@url">@item.Key</a></li>
+            }
+        }
     </ul>
 </div>

@@ -22,7 +22,11 @@ public class OAuthConfigController : EntityController<OAuthConfig, OAuthConfigMo
     /// <summary>首页</summary>
     public override ActionResult Index(Pager p = null)
     {
-        PageSetting.NavView = "_Object_Nav";
+        if (p["nav"].ToInt() > 0)
+        {
+            PageSetting.NavView = "_Object_Nav";
+            PageSetting.EnableNavbar = false;
+        }
 
         return base.Index(p);
     }

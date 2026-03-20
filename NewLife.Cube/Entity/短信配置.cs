@@ -128,35 +128,35 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
     public Boolean Enable { get => _Enable; set { if (OnPropertyChanging("Enable", value)) { _Enable = value; OnPropertyChanged("Enable"); } } }
 
     private Boolean _EnableLogin;
-    /// <summary>启用登录。用于登录/注册场景</summary>
-    [DisplayName("启用登录")]
-    [Description("启用登录。用于登录/注册场景")]
+    /// <summary>登录。用于登录/注册场景</summary>
+    [DisplayName("登录")]
+    [Description("登录。用于登录/注册场景")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("EnableLogin", "启用登录。用于登录/注册场景", "")]
+    [BindColumn("EnableLogin", "登录。用于登录/注册场景", "")]
     public Boolean EnableLogin { get => _EnableLogin; set { if (OnPropertyChanging("EnableLogin", value)) { _EnableLogin = value; OnPropertyChanged("EnableLogin"); } } }
 
     private Boolean _EnableReset;
-    /// <summary>启用重置。用于忘记密码场景</summary>
-    [DisplayName("启用重置")]
-    [Description("启用重置。用于忘记密码场景")]
+    /// <summary>重置。用于忘记密码场景</summary>
+    [DisplayName("重置")]
+    [Description("重置。用于忘记密码场景")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("EnableReset", "启用重置。用于忘记密码场景", "")]
+    [BindColumn("EnableReset", "重置。用于忘记密码场景", "")]
     public Boolean EnableReset { get => _EnableReset; set { if (OnPropertyChanging("EnableReset", value)) { _EnableReset = value; OnPropertyChanged("EnableReset"); } } }
 
     private Boolean _EnableBind;
-    /// <summary>启用绑定。用于绑定手机场景</summary>
-    [DisplayName("启用绑定")]
-    [Description("启用绑定。用于绑定手机场景")]
+    /// <summary>绑定。用于绑定手机场景</summary>
+    [DisplayName("绑定")]
+    [Description("绑定。用于绑定手机场景")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("EnableBind", "启用绑定。用于绑定手机场景", "")]
+    [BindColumn("EnableBind", "绑定。用于绑定手机场景", "")]
     public Boolean EnableBind { get => _EnableBind; set { if (OnPropertyChanging("EnableBind", value)) { _EnableBind = value; OnPropertyChanged("EnableBind"); } } }
 
     private Boolean _EnableNotify;
-    /// <summary>启用通知。用于普通通知场景</summary>
-    [DisplayName("启用通知")]
-    [Description("启用通知。用于普通通知场景")]
+    /// <summary>通知。用于普通通知场景</summary>
+    [DisplayName("通知")]
+    [Description("通知。用于普通通知场景")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("EnableNotify", "启用通知。用于普通通知场景", "")]
+    [BindColumn("EnableNotify", "通知。用于普通通知场景", "")]
     public Boolean EnableNotify { get => _EnableNotify; set { if (OnPropertyChanging("EnableNotify", value)) { _EnableNotify = value; OnPropertyChanged("EnableNotify"); } } }
 
     private Int32 _Priority;
@@ -410,10 +410,10 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
     /// <summary>高级查询</summary>
     /// <param name="tenantId">租户</param>
     /// <param name="priority">优先级。较大优先</param>
-    /// <param name="enableLogin">启用登录。用于登录/注册场景</param>
-    /// <param name="enableReset">启用重置。用于忘记密码场景</param>
-    /// <param name="enableBind">启用绑定。用于绑定手机场景</param>
-    /// <param name="enableNotify">启用通知。用于普通通知场景</param>
+    /// <param name="enableLogin">登录。用于登录/注册场景</param>
+    /// <param name="enableReset">重置。用于忘记密码场景</param>
+    /// <param name="enableBind">绑定。用于绑定手机场景</param>
+    /// <param name="enableNotify">通知。用于普通通知场景</param>
     /// <param name="enable">启用</param>
     /// <param name="start">更新时间开始</param>
     /// <param name="end">更新时间结束</param>
@@ -481,16 +481,16 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
         /// <summary>启用</summary>
         public static readonly Field Enable = FindByName("Enable");
 
-        /// <summary>启用登录。用于登录/注册场景</summary>
+        /// <summary>登录。用于登录/注册场景</summary>
         public static readonly Field EnableLogin = FindByName("EnableLogin");
 
-        /// <summary>启用重置。用于忘记密码场景</summary>
+        /// <summary>重置。用于忘记密码场景</summary>
         public static readonly Field EnableReset = FindByName("EnableReset");
 
-        /// <summary>启用绑定。用于绑定手机场景</summary>
+        /// <summary>绑定。用于绑定手机场景</summary>
         public static readonly Field EnableBind = FindByName("EnableBind");
 
-        /// <summary>启用通知。用于普通通知场景</summary>
+        /// <summary>通知。用于普通通知场景</summary>
         public static readonly Field EnableNotify = FindByName("EnableNotify");
 
         /// <summary>优先级。较大优先</summary>
@@ -562,16 +562,16 @@ public partial class SmsConfig : IEntity<SmsConfigModel>
         /// <summary>启用</summary>
         public const String Enable = "Enable";
 
-        /// <summary>启用登录。用于登录/注册场景</summary>
+        /// <summary>登录。用于登录/注册场景</summary>
         public const String EnableLogin = "EnableLogin";
 
-        /// <summary>启用重置。用于忘记密码场景</summary>
+        /// <summary>重置。用于忘记密码场景</summary>
         public const String EnableReset = "EnableReset";
 
-        /// <summary>启用绑定。用于绑定手机场景</summary>
+        /// <summary>绑定。用于绑定手机场景</summary>
         public const String EnableBind = "EnableBind";
 
-        /// <summary>启用通知。用于普通通知场景</summary>
+        /// <summary>通知。用于普通通知场景</summary>
         public const String EnableNotify = "EnableNotify";
 
         /// <summary>优先级。较大优先</summary>

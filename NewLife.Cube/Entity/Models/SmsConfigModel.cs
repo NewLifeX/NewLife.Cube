@@ -50,16 +50,16 @@ public partial class SmsConfigModel
     /// <summary>启用</summary>
     public Boolean Enable { get; set; }
 
-    /// <summary>启用登录。用于登录/注册场景</summary>
+    /// <summary>登录。用于登录/注册场景</summary>
     public Boolean EnableLogin { get; set; }
 
-    /// <summary>启用重置。用于忘记密码场景</summary>
+    /// <summary>重置。用于忘记密码场景</summary>
     public Boolean EnableReset { get; set; }
 
-    /// <summary>启用绑定。用于绑定手机场景</summary>
+    /// <summary>绑定。用于绑定手机场景</summary>
     public Boolean EnableBind { get; set; }
 
-    /// <summary>启用通知。用于普通通知场景</summary>
+    /// <summary>通知。用于普通通知场景</summary>
     public Boolean EnableNotify { get; set; }
 
     /// <summary>优先级。较大优先</summary>
