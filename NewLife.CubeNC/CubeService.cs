@@ -158,7 +158,7 @@ public static class CubeService
         // 配置Json
         services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
         {
-            SystemJson.Apply(options.JsonSerializerOptions);
+            SystemJson.Apply(options.JsonSerializerOptions, true);
             //#if NET7_0_OR_GREATER
             //            // 支持模型类中的DataMember特性
             //            options.JsonSerializerOptions.TypeInfoResolver = DataMemberResolver.Default;
