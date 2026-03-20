@@ -1,27 +1,38 @@
-﻿@{
+@{
     var path = Context.Request.Path + "";
 
-    var currentId = ManageProvider.User?.ID ?? 0;
+    var user = ManageProvider.User;
+    var currentId = user?.ID ?? 0;
     var userId = Context.Request.Query["userId"].ToInt(0);
     if (userId == 0 && path.StartsWithIgnoreCase("/Admin/User/Detail", "/Admin/User/Edit"))
     {
         userId = Context.Request.Query["Id"].ToInt(0);
     }
     if (userId == 0) userId = currentId;
+
+    var dic = new Dictionary<String, Object>();
+    if (userId == currentId)
+    {
+        dic["基本信息"] = "/Admin/User/Info";
+        dic["修改密码"] = "/Admin/User/ChangePassword";
+        dic["第三方授权"] = "/Admin/User/Binds";
+        dic["租户信息"] = "/Admin/User/TenantSetting";
+    }
+    dic[user + ""] = $"/Admin/User/Edit?Id={userId}";
+    dic["三方链接"] = $"/Admin/UserConnect?userId={userId}";
+    dic["令牌"] = $"/Admin/UserToken?userId={userId}";
+    dic["OAuth日志"] = $"/Admin/OAuthLog?userId={userId}";
+    dic["日志"] = $"/Admin/Log?userId={userId}";
+    dic["通知记录"] = $"/Admin/NotificationRecord?userId={userId}";
 }
 <div class="navbar-collapse" style="text-align:center">
     <ul class="nav nav-pills" style="margin-bottom: 10px; display: inline-block;float: none;">
-        @if (userId == currentId)
+        @foreach (var item in dic)
         {
-            <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Info")?"active":"")"><a href="/Admin/User/Info">基本信息</a></li>
-            <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/ChangePassword")?"active":"")"><a href="/Admin/User/ChangePassword">修改密码</a></li>
-            <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Binds")?"active":"")"><a href="/Admin/User/Binds">第三方授权</a></li>
-            <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/TenantSetting")?"active":"")"><a href="/Admin/User/TenantSetting">租户信息</a></li>
+            var url = item.Value + "";
+            var p = url.IndexOf('?');
+            var v = p > 0 ? url.Substring(0, p) : url;
+            <li role="presentation" class="@(path.EqualIgnoreCase(v) ? "active" : "")"><a href="@url">@item.Key</a></li>
         }
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/User/Edit")?"active":"")"><a href="/Admin/User/Edit?Id=@userId">用户信息</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/UserConnect")?"active":"")"><a href="/Admin/UserConnect?userId=@userId">三方链接</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/UserToken")?"active":"")"><a href="/Admin/UserToken?userId=@userId">令牌</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/OAuthLog")?"active":"")"><a href="/Admin/OAuthLog?userId=@userId">OAuth日志</a></li>
-        <li role="presentation" class="@(path.StartsWithIgnoreCase("/Admin/Log")?"active":"")"><a href="/Admin/Log?userId=@userId">日志</a></li>
     </ul>
 </div>

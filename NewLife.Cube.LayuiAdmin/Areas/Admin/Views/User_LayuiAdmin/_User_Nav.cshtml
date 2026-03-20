@@ -1,5 +1,18 @@
-﻿<div class="layui-btn-container layui-icon-align-center" style="text-align:center;">
-    @Html.ActionLink("基本信息", "Info", "User", null, new { @class = "layui-btn" })
-    @Html.ActionLink("修改密码", "ChangePassword", "User", null, new { @class = "layui-btn" })
-    @Html.ActionLink("第三方授权", "Binds", "User", null, new { @class = "layui-btn" })
+@using NewLife
+@{
+    var path = Context.Request.Path + "";
+
+    var dic = new Dictionary<String, Object>();
+    dic["基本信息"] = "/Admin/User/Info";
+    dic["修改密码"] = "/Admin/User/ChangePassword";
+    dic["第三方授权"] = "/Admin/User/Binds";
+}
+<div class="layui-btn-container layui-icon-align-center" style="text-align:center;">
+    @foreach (var item in dic)
+    {
+        var url = item.Value + "";
+        var p = url.IndexOf('?');
+        var v = p > 0 ? url.Substring(0, p) : url;
+        <a href="@url" class="layui-btn layui-btn-sm @(path.EqualIgnoreCase(v) ? "layui-btn-normal" : "")">@item.Key</a>
+    }
 </div>
