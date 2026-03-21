@@ -1,10 +1,13 @@
-﻿@using NewLife.Common;
+@using NewLife.Common;
 @using NewLife.Cube
 @using XCode
 @{
     var user = ViewBag.User as IUser ?? User.Identity as IUser;
     var fact = ViewBag.Factory as IEntityFactory;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+
+    // 标记当前使用的是默认批量操作视图，子级重载时不会设置此标记
+    Context.Items["IsDefaultBatch"] = true;
 }
 @if (set.EnableSelect)
 {

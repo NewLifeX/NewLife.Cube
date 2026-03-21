@@ -1,6 +1,7 @@
-﻿@using NewLife;
+@using NewLife;
 @using NewLife.Web;
 @using XCode;
+@using XCode.Configuration
 @{
     var fact = ViewBag.Factory as IEntityFactory;
     var page = ViewBag.Page as Pager;
@@ -22,6 +23,21 @@
             {
                 <div class="form-group toolbar-batch">
                     @await Html.PartialAsync("_List_Toolbar_Batch")
+                    @{
+                        // 未被子级重载且实体含 Boolean 类型 Enable 字段时，自动注入批量启用/禁用
+                        var hasEnableField = Context.Items.ContainsKey("IsDefaultBatch")
+                            && fact?.Table?.FindByName("Enable") is FieldItem enableFi
+                            && enableFi.Type == typeof(Boolean);
+                    }
+                    @if (hasEnableField)
+                    {
+                        <button type="button" class="btn btn-purple btn-sm" data-action="action" data-url="@Url.Action("EnableSelect")" data-fields="keys" disabled>
+                            批量启用
+                        </button>
+                        <button type="button" class="btn btn-purple btn-sm" data-action="action" data-url="@Url.Action("DisableSelect")" data-fields="keys" disabled>
+                            批量禁用
+                        </button>
+                    }
                 </div>
             }
             @await Html.PartialAsync("_List_Toolbar_Custom")
