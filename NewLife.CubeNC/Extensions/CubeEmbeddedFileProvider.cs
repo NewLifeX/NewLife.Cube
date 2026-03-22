@@ -51,7 +51,7 @@ public class CubeEmbeddedFileProvider : IFileProvider
     /// <returns></returns>
     public IFileInfo GetFileInfo(String subpath)
     {
-        XTrace.WriteLine("GetFileInfo: {0}", subpath);
+        //XTrace.WriteLine("GetFileInfo: {0}", subpath);
         if (String.IsNullOrEmpty(subpath)) return new NotFoundFileInfo(subpath);
 
         var sb = new StringBuilder(_baseNamespace.Length + subpath.Length);
