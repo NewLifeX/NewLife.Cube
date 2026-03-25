@@ -447,7 +447,7 @@ public class SsoController : ControllerBaseX
         //if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
 
         //有些第三方客户端使用redirect_url作为回调地址参数名
-        if (redirect_uri.IsNullOrEmpty()) redirect_uri = GetRequest("redirect_uri");
+        if (redirect_uri.IsNullOrEmpty()) redirect_uri = GetRequest("redirect_url");
         if (redirect_uri.IsNullOrEmpty()) throw new ArgumentNullException(nameof(redirect_uri));
         if (response_type.IsNullOrEmpty()) response_type = "code";
 

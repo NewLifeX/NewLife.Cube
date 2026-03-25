@@ -600,6 +600,8 @@ public class SsoController : ControllerBaseX
         // 参数不完整时，跳转到登录页面，避免爬虫抓取而导致误报告警
         if (client_id.IsNullOrEmpty()) return Redirect(loginUrl ?? Provider.LoginUrl);
 
+        //有些第三方客户端使用redirect_url作为回调地址参数名
+        if (redirect_uri.IsNullOrEmpty()) redirect_uri = GetRequest("redirect_url");
         //if (client_id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(client_id));
         if (redirect_uri.IsNullOrEmpty()) throw new ArgumentNullException(nameof(redirect_uri));
         if (response_type.IsNullOrEmpty()) response_type = "code";
