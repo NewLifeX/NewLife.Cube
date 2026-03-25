@@ -179,10 +179,13 @@ public static class WebHelper
         if (scheme.IsNullOrEmpty()) scheme = headers("HTTP_X_FORWARDED_PROTO");
         if (scheme.IsNullOrEmpty()) scheme = headers("X-Forwarded-Proto");
 
-        //if (!scheme.IsNullOrEmpty()) str = scheme + "://" + uri.ToString().Substring("://");
-        if (!scheme.IsNullOrEmpty()) uri.Scheme = scheme;
-
-        //if (!str.IsNullOrEmpty()) uri = new Uri(uri, str);
+        // 多层反代时头部值可能为逗号分隔的多值，如 "https,https"，取第一个有效值
+        if (!scheme.IsNullOrEmpty())
+        {
+            var p = scheme.IndexOf(',');
+            if (p > 0) scheme = scheme[..p];
+            uri.Scheme = scheme.Trim();
+        }
 
         return uri;
     }

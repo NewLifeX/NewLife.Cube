@@ -74,6 +74,10 @@ public static class WebHelper2
             }
         }
 
+        // 多层反代时头部值可能为逗号分隔的多值，如 "10.1.1.1,10.1.1.1"，去重后重组
+        if (!str.IsNullOrEmpty() && str.Contains(','))
+            str = String.Join(",", str.Split(',').Select(s => s.Trim()).Where(s => !s.IsNullOrWhiteSpace()).Distinct());
+
         return str;
     }
 
