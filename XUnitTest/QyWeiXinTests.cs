@@ -93,7 +93,7 @@ public class QyWeiXinTests
             CorpSecret = ss[1]
         };
 
-        var users = await wx.GetUsers(17, true);
+        var users = await wx.GetUsers("17", true);
 
         Assert.NotNull(users);
         Assert.Contains(users, e => e.Alias == "大石头");

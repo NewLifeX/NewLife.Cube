@@ -17,7 +17,7 @@ namespace NewLife.Cube.Web.Models
         public String Mobile { get; set; }
 
         /// <summary>部门</summary>
-        public Int32[] Department { get; set; }
+        public String[] Department { get; set; }
 
         /// <summary>顺序</summary>
         public Int32[] Order { get; set; }

@@ -6,7 +6,7 @@ namespace NewLife.Cube.Web.Models
     public class DepartmentInfo
     {
         /// <summary>编号</summary>
-        public Int32 Id { get; set; }
+        public String Id { get; set; }
 
         /// <summary>名称</summary>
         public String Name { get; set; }
@@ -15,7 +15,7 @@ namespace NewLife.Cube.Web.Models
         public String EnglishName { get; set; }
 
         /// <summary>父级部门。根部门1</summary>
-        public Int32 ParentId { get; set; }
+        public String ParentId { get; set; }
 
         /// <summary>顺序</summary>
         public Int32 Order { get; set; }

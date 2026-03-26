@@ -132,7 +132,7 @@ public class QyWeiXin : OAuthClient
     /// <param name="departmentId"></param>
     /// <param name="fetchChild"></param>
     /// <returns></returns>
-    public async Task<UserInfo[]> GetUsers(Int32 departmentId, Boolean fetchChild = false)
+    public async Task<UserInfo[]> GetUsers(String departmentId, Boolean fetchChild = false)
     {
         var token = await GetAccessToken();
 
@@ -332,9 +332,8 @@ public class QyWeiXin : OAuthClient
             }
 
             // 根据部门编码，填充部门名称
-            var code = DepartmentCode.ToInt();
             //if (!DepartmentCode.IsNullOrEmpty() && DepartmentName.IsNullOrEmpty())
-            if (code > 0 && DepartmentName.IsNullOrEmpty())
+            if (DepartmentCode.ToLong() > 0 && DepartmentName.IsNullOrEmpty())
             {
                 var key = $"sso:dps:{CorpId}";
                 var dps = _cache.Get<DepartmentInfo[]>(key);
@@ -345,7 +344,7 @@ public class QyWeiXin : OAuthClient
                     _cache.Set(key, dps, 3600);
                 }
 
-                var dp = dps?.FirstOrDefault(e => e.Id == code);
+                var dp = dps?.FirstOrDefault(e => e.Id == DepartmentCode);
                 if (dp != null) DepartmentName = dp.Name;
             }
         }
