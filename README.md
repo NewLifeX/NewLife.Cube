@@ -297,6 +297,7 @@ A: 依靠字段元数据 + 标准 CRUD/JWT 登录。
 * 多数据库，支持 `MySql / SQLite / Sql Server / Oracle / PostgreSql / SqlCe / Access`
 * 免部署，系统自动创建数据库表结构，以及初始化数据，无需人工干涉
 * 强大的视图引擎，支持子项目视图重写父项目相同位置视图，任意覆盖修改默认界面
+* 内置富文本（Quill）与 Markdown（EasyMDE）双编辑器，支持图片上传与安全控制
 
 ---
 ## ASP.NET Core 安装

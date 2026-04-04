@@ -7,7 +7,7 @@
     <Description>魔方WebAPI核心库，提供实体控制器、权限管理、菜单管理、字段元数据、OAuth服务端、JWT认证等功能。支持前后端分离架构，对接Vue/Blazor/Antd等前端框架，单表100亿级数据验证。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.9</VersionPrefix>
+    <VersionPrefix>6.10</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -31,7 +31,15 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>多租户数据隔离与权限控制；验证码服务重构支持短信邮件多渠道；地区数据优化；TokenModel统一；表单布局优化</PackageReleaseNotes>
+    <PackageReleaseNotes>
+v6.10.2026.0404
+- 集成富文本（Quill）与Markdown（EasyMDE）双编辑器，支持HTML源码模式与图片上传
+- 表单支持returnUrl传递与回跳，增强多值字段绑定；批量操作自动注入启用/禁用按钮
+- OAuth模型部门ID统一为String，兼容redirect_uri与redirect_url参数名
+- SystemJson适配，支持统一配置System.Text.Json序列化选项
+- 富文本与附件上传安全增强，权限细粒度控制；优化多层反代IP识别
+详细日志：https://github.com/NewLifeX/NewLife.Cube/blob/master/ChangeLog.md
+    </PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -125,11 +133,11 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\MiddlewareHelper.cs" Link="WebMiddleware\MiddlewareHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.13.2026.320-beta1256" />
+    <PackageReference Include="NewLife.Core" Version="11.14.2026.402" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.102" />
-    <PackageReference Include="NewLife.Office" Version="1.0.2026.318-beta0333" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.307" />
-    <PackageReference Include="NewLife.XCode" Version="11.25.2026.302" />
+    <PackageReference Include="NewLife.Office" Version="1.0.2026.403" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.403" />
+    <PackageReference Include="NewLife.XCode" Version="11.25.2026.403" />
   </ItemGroup>
 
   <ItemGroup>

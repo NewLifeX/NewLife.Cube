@@ -344,6 +344,44 @@ var count = User.FindCount(User._.Status == 1);
 var maxId = User.FindMax(User._.Id, null);
 ```
 
+### 5.2.1 字段表达式方法参考
+
+`FieldItem`（`Entity._.FieldName`）提供丰富的表达式方法，可直接用于 `WhereExpression` 或 `FindAll` 条件：
+
+| 方法 | 说明 | 生成 SQL 示例 |
+|------|------|------|
+| `_.Name == value` | 等于 | `Name = 'test'` |
+| `_.Name != value` | 不等于 | `Name <> 'test'` |
+| `_.Id > value` | 大于 | `Id > 10` |
+| `_.Id >= value` | 大于等于 | `Id >= 10` |
+| `_.Id < value` | 小于 | `Id < 100` |
+| `_.Id <= value` | 小于等于 | `Id <= 100` |
+| `_.Name.Contains("x")` | 包含 | `Name Like '%x%'` |
+| `_.Name.NotContains("x")` | 不包含 | `Name Not Like '%x%'` |
+| `_.Name.StartsWith("x")` | 开头 | `Name Like 'x%'` |
+| `_.Name.EndsWith("x")` | 结尾 | `Name Like '%x'` |
+| `_.Id.In(list)` | In 操作 | `Id In(1,2,3)` |
+| `_.Id.NotIn(list)` | Not In | `Id Not In(1,2,3)` |
+| `_.Name.IsNull()` | 是否 NULL | `Name Is Null` |
+| `_.Name.NotIsNull()` | 不为 NULL | `Name Is Not Null` |
+| `_.Name.IsNullOrEmpty()` | NULL 或空串（仅 String） | `(Name Is Null Or Name='')` |
+| **`_.Name.NotIsNullOrEmpty()`** | **不为 NULL 且不为空串**（仅 String） | `(Name Is Not Null And Name<>'')` |
+| `_.Flag.IsTrue(true)` | 布尔真值 | `Flag=True` |
+| `_.Flag.IsTrue(false)` | 布尔假值/NULL | `Flag<>True Or Flag Is Null` |
+| `_.Id.Asc()` | 升序排序 | `Id Asc` |
+| `_.Id.Desc()` | 降序排序 | `Id Desc` |
+
+**空值判断常见写法**：
+```csharp
+// ✅ 推荐：使用内置方法
+exp &= _.DevName.NotIsNullOrEmpty();  // 字段不为空且不为空串
+
+// ❌ 不推荐：手写两个条件
+exp &= _.DevName != "" & _.DevName != null;
+```
+
+**注意**：`IsNullOrEmpty()` / `NotIsNullOrEmpty()` 仅支持 `String` 类型字段，非字符串字段请使用 `IsNull()` / `NotIsNull()`。
+
 ### 5.3 批量操作
 
 ```csharp
@@ -379,6 +417,82 @@ var list = User.FindAllWithCache();
 
 // 单对象缓存（按主键）
 var user = User.FindByKeyWithCache(1);
+```
+
+### 5.6 Biz 文件数据层逻辑规范
+
+**核心理念**：所有需要人工编写的数据层逻辑代码，一律放在实体类的 Biz 文件（`*.Biz.cs`）中，包括**高级查询**（`#region 高级查询`）与**添删改查重载**等。外部调用方只传语义化参数，不感知 `WhereExpression` 拼接细节。
+
+#### 高级查询封装选择
+
+| 场景 | 方法形式 | 说明 | 示例 |
+|------|---------|------|------|
+| 返回单个对象，参数 ≤2 个 | `FindByXxx` | 未查到时返回 `null` | `FindByUserId(userId)` |
+| 返回列表，参数 ≤2 个，无模糊查询、无分页 | `FindAllByXxx` / `FindAllByXxxAndYyy` | 未查到时返回空列表，**不返回 null** | `FindAllByUserId(userId)` |
+| 参数较多，或含模糊查询，或含分页 | `Search(...)` | 未查到时返回空列表，**不返回 null** | `Search(userId, key, page)` |
+| 实体缓存内过滤（`Meta.Cache.FindAll(...)`） | `FindAllCachedXxx` / `FindCachedXxx` | — | `FindAllCachedEnabled()` / `FindCachedByQuestion(q)` |
+
+**命名约定说明**：
+- `FindByXxx`：返回**单个对象**（`TEntity?`），语义为"按条件查找一条记录"，未找到返回 `null`
+- `FindAllByXxx`：返回**对象列表**（`IList<TEntity>`），语义为"按条件查找所有匹配记录"，结果为空时返回空列表而非 `null`
+- `Search`：同样返回**对象列表**，结果为空时返回空列表而非 `null`
+
+#### Search 方法签名约定
+
+参数顺序（由左到右，按重要程度）：
+
+```
+Search(业务过滤字段..., DateTime start, DateTime end, String? key, PageParameter page)
+```
+
+- 时间区间 `(DateTime start, DateTime end)` 放在 key / page 左边
+- 模糊查询关键词 `String? key` 放在 page 左边（倒数第二）
+- 分页参数 `PageParameter page` 始终最后
+
+#### 表达式简写
+
+在 Biz 文件的静态方法内部，可**省略类名前缀**：
+
+```csharp
+// ✅ 推荐（Biz 文件内部）
+var exp = _.UserId == userId;
+if (!keyword.IsNullOrEmpty()) exp &= _.Title.Contains(keyword.Trim());
+return FindAll(exp, page);
+
+// ❌ 避免（外部业务代码中拼接表达式）
+var exp = Conversation._.UserId == userId;
+if (!keyword.IsNullOrEmpty()) exp &= Conversation._.Title.Contains(keyword.Trim());
+var list = Conversation.FindAll(exp, p);
+```
+
+#### 示例
+
+```csharp
+// Biz 文件内 #region 高级查询
+
+/// <summary>根据用户编号查找最新一条会话</summary>
+/// <param name="userId">用户编号</param>
+/// <returns>会话对象，不存在时返回 null</returns>
+public static Conversation? FindByUserId(Int32 userId) => Find(_.UserId == userId);
+
+/// <summary>根据用户编号查找所有会话</summary>
+/// <param name="userId">用户编号</param>
+/// <returns>会话列表，不存在时返回空列表</returns>
+public static IList<Conversation> FindAllByUserId(Int32 userId) => FindAll(_.UserId == userId);
+
+/// <summary>分页搜索用户会话列表</summary>
+/// <param name="userId">用户编号</param>
+/// <param name="keyword">标题关键字，为空时不过滤</param>
+/// <param name="page">分页参数</param>
+/// <returns>会话列表，不存在时返回空列表</returns>
+public static IList<Conversation> Search(Int32 userId, String? keyword, PageParameter page)
+{
+    var exp = new WhereExpression();
+    exp &= _.UserId == userId;
+    if (!keyword.IsNullOrEmpty()) exp &= _.Title.Contains(keyword.Trim());
+
+    return FindAll(exp, page);
+}
 ```
 
 ---

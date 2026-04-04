@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using XCode;
@@ -15,8 +15,8 @@
     var accept = "";
     if (field.ItemType.EqualIgnoreCase("image") || field.ItemType.StartsWithIgnoreCase("image-")) accept = "image/*";
 }
-@Html.TextBox(field.Name, entity[field.Name], new{@class="form-control"})
-@Html.TextBox(field.Name+"_attachment", entity[field.Name], new { type = "file", accept })
+@Html.TextBox(field.Name, entity[field.Name], new { @class = "form-control" })
+@Html.TextBox(field.Name + "_attachment", entity[field.Name], new { type = "file", accept })
 @if (!value.IsNullOrEmpty())
 {
     <a href="@value">

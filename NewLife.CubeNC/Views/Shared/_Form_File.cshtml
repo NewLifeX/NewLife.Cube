@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using NewLife.Cube
 @using System.Text;
@@ -50,7 +50,7 @@
     //if (field.ItemType.EndsWithIgnoreCase("-ppt", "-pptx")) accept = "application/vnd.ms-powerpoint";
 }
 @Html.TextBox(field.Name, entity[field.Name], new { @class = "form-control" })
-@Html.TextBox(field.Name+"_attachment", entity[field.Name], new { type = "file", accept })
+@Html.TextBox(field.Name + "_attachment", entity[field.Name], new { type = "file", accept })
 @if (!value.IsNullOrEmpty())
 {
     <a href="@value">下载</a>

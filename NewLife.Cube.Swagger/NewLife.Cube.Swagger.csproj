@@ -7,7 +7,7 @@
     <Description>魔方Swagger接口文档扩展包，支持按区域(Area)自动分组生成API文档。提供标准化的接口描述、请求响应模型展示、在线调试功能，便于前后端对接和第三方集成。</Description>
     <Company>新生命开发团队</Company>
     <Copyright>©2002-2026 NewLife</Copyright>
-    <VersionPrefix>6.9</VersionPrefix>
+    <VersionPrefix>6.10</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
     <Version>$(VersionPrefix).$(VersionSuffix)</Version>
     <FileVersion>$(Version)</FileVersion>
@@ -32,7 +32,15 @@
     <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName)</PackageTags>
-    <PackageReleaseNotes>多租户数据隔离与权限控制；验证码服务重构支持短信邮件多渠道；地区数据优化；TokenModel统一；表单布局优化</PackageReleaseNotes>
+    <PackageReleaseNotes>
+v6.10.2026.0404
+- 集成富文本（Quill）与Markdown（EasyMDE）双编辑器，支持HTML源码模式与图片上传
+- 表单支持returnUrl传递与回跳，增强多值字段绑定；批量操作自动注入启用/禁用按钮
+- OAuth模型部门ID统一为String，兼容redirect_uri与redirect_url参数名
+- SystemJson适配，支持统一配置System.Text.Json序列化选项
+- 富文本与附件上传安全增强，权限细粒度控制；优化多层反代IP识别
+详细日志：https://github.com/NewLifeX/NewLife.Cube/blob/master/ChangeLog.md
+    </PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -49,7 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.307" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.403" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net8.0'">
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
