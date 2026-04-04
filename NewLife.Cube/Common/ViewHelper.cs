@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using NewLife.Cube.Entity;
 using NewLife.Cube.ViewModels;
 using NewLife.Reflection;
+using NewLife.Security;
 using NewLife.Web;
 using XCode;
 using XCode.Configuration;
@@ -972,6 +973,30 @@ public static class ViewHelper
             return $"/cube/image?id={attachment.Id}{attachment.Extension}";
 
         return $"/cube/file?id={attachment.Id}{attachment.Extension}";
+    }
+
+    /// <summary>获取附件分享Url。为指定附件创建临时分享令牌，返回可供未登录用户在有效期内访问的链接。有效期由 ShareExpire 配置控制（默认 7200 秒）</summary>
+    /// <param name="attachment">附件对象</param>
+    /// <param name="userId">分享者用户编号；若为 0 则退化为普通附件Url</param>
+    /// <returns>含 token 参数的分享链接，例如 /Cube/File?id=12345.pdf&amp;token=abcd1234</returns>
+    public static String GetAttachmentShareUrl(Attachment attachment, Int32 userId)
+    {
+        if (attachment == null) return null;
+        if (userId <= 0) return GetAttachmentUrl(attachment);
+
+        var url = $"attachment:{attachment.Id}";
+        var list = UserToken.FindAllByUserID(userId);
+        var ut = list.FirstOrDefault(e => e.Url.EqualIgnoreCase(url) && e.Enable && e.Expire > DateTime.Now);
+        ut ??= new UserToken { UserID = userId, Url = url };
+
+        if (ut.Token.IsNullOrEmpty()) ut.Token = Rand.NextString(8);
+        ut.Enable = true;
+        ut.Expire = DateTime.Now.AddSeconds(CubeSetting.Current.ShareExpire);
+        ut.Save();
+
+        var ext = attachment.Extension;
+        if (!ext.IsNullOrEmpty() && !ext.StartsWith(".")) ext = "." + ext;
+        return $"/Cube/File?id={attachment.Id}{ext}&token={ut.Token}";
     }
 
     /// <summary>是否附件列</summary>

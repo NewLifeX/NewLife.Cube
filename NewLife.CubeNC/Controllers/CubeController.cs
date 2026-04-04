@@ -109,6 +109,29 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
                 var (app, ex) = tokenService.TryDecodeToken(token, set.JwtSecret);
                 if (app != null && app.Enable && ex != null) logined = true;
             }
+
+            // 回退到 UserToken 验证，并校验 Url 防止水平越权
+            if (!logined)
+            {
+                var ut = UserToken.FindByToken(token);
+                if (ut != null && ut.Enable && ut.Expire > DateTime.Now)
+                {
+                    var utUrl = ut.Url + "";
+                    // attachment: 前缀令牌仅限附件访问（由 CheckAttachmentAccess 处理），此处不放行
+                    if (!utUrl.StartsWithIgnoreCase("attachment:"))
+                    {
+                        // 令牌未锁定 Url → 全局有效；锁定了 Url → 必须与当前请求路径匹配
+                        if (utUrl.IsNullOrEmpty())
+                            logined = true;
+                        else
+                        {
+                            var tokenPath = utUrl.Split('?')[0];
+                            var reqPath = HttpContext.Request.Path.Value + "";
+                            if (reqPath.EqualIgnoreCase(tokenPath)) logined = true;
+                        }
+                    }
+                }
+            }
         }
 
         return logined;
@@ -543,6 +566,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
 
         return result;
     }
+
     #endregion
 
     #region 权限辅助
@@ -563,6 +587,29 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
         {
             var publicCats = set.PublicAttachmentCategories.Split(',');
             if (publicCats.Any(c => c.Trim().EqualIgnoreCase(category))) return null;
+        }
+
+        // 检查分享令牌：未登录时凭有效 UserToken 也可访问该附件
+        var shareToken = GetToken(HttpContext);
+        if (!shareToken.IsNullOrEmpty())
+        {
+            var ut = UserToken.FindByToken(shareToken);
+            if (ut != null && ut.Enable && ut.Expire > DateTime.Now && ut.Url.EqualIgnoreCase($"attachment:{att.Id}"))
+            {
+                // 更新使用统计
+                var ip = HttpContext.GetUserHost() + "";
+                ut.Times++;
+                if (ut.FirstTime.Year < 2000)
+                {
+                    ut.FirstIP = ip;
+                    ut.FirstTime = DateTime.Now;
+                }
+                ut.LastIP = ip;
+                ut.LastTime = DateTime.Now;
+                ut.SaveAsync(5_000);
+
+                return null;
+            }
         }
 
         // 其余分类需要登录
