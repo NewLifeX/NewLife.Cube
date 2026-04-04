@@ -211,10 +211,21 @@ public partial class Attachment : Entity<Attachment>
         var contentType = rs.Content.Headers.ContentType + "";
         if (!contentType.IsNullOrEmpty()) ContentType = contentType;
 
+        // 先写临时文件，再原子性重命名，避免分布式存储同步期间并发写入同一路径引发文件占用冲突
+        var tmpFile = fullFile + ".tmp";
+        try
         {
-            using var fs = new FileStream(fullFile, FileMode.OpenOrCreate);
-            await rs.Content.CopyToAsync(fs);
-            fs.SetLength(fs.Position);
+            {
+                using var fs = new FileStream(tmpFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                await rs.Content.CopyToAsync(fs);
+            }
+            File.Move(tmpFile, fullFile, overwrite: true);
+        }
+        catch
+        {
+            if (File.Exists(tmpFile))
+                try { File.Delete(tmpFile); } catch { }
+            throw;
         }
 
         // 记录文件信息
@@ -256,10 +267,21 @@ public partial class Attachment : Entity<Attachment>
         fullFile.EnsureDirectory(true);
         DefaultSpan.Current?.AppendTag($"fullFile={fullFile}");
 
+        // 先写临时文件，再原子性重命名，避免分布式存储同步期间并发写入同一路径引发文件占用冲突
+        var tmpFile = fullFile + ".tmp";
+        try
         {
-            using var fs = new FileStream(fullFile, FileMode.OpenOrCreate);
-            await stream.CopyToAsync(fs);
-            fs.SetLength(fs.Position);
+            {
+                using var fs = new FileStream(tmpFile, FileMode.Create, FileAccess.Write, FileShare.None);
+                await stream.CopyToAsync(fs);
+            }
+            File.Move(tmpFile, fullFile, overwrite: true);
+        }
+        catch
+        {
+            if (File.Exists(tmpFile))
+                try { File.Delete(tmpFile); } catch { }
+            throw;
         }
 
         // 记录文件信息
