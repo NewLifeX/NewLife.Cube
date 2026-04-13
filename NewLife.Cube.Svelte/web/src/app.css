@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --bg: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-sidebar: #1e293b;
+  --text: #111827;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+}
+
+.dark {
+  --primary: #818cf8;
+  --primary-hover: #6366f1;
+  --bg: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-sidebar: #0f172a;
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border: #334155;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* 基础按钮 */
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50;
+}
+.btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+.btn-outline {
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: transparent;
+}
+.btn-outline:hover {
+  background-color: var(--bg-secondary);
+}
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700;
+}
+.btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+
+/* 输入框 */
+.input {
+  @apply w-full rounded-md border px-3 py-2 text-sm outline-none transition-colors;
+  border-color: var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* 卡片 */
+.card {
+  @apply rounded-lg border p-6;
+  border-color: var(--border);
+  background: var(--bg);
+}

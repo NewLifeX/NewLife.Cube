@@ -1,0 +1,27 @@
+{
+  "name": "cube-svelte",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev --port 5186",
+    "build": "vite build",
+    "preview": "vite preview --port 5186",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "@cube/api-core": "workspace:*",
+    "@cube/field-mapping": "workspace:*"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.8",
+    "@sveltejs/kit": "^2.21.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "@tailwindcss/vite": "^4.1.0",
+    "svelte": "^5.28.0",
+    "svelte-check": "^4.1.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.3.0"
+  }
+}
