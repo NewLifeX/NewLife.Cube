@@ -1,0 +1,41 @@
+import { Injectable, signal, computed } from '@angular/core';
+import type { UserInfo, MenuItem } from '@cube/api-core';
+import { ApiService } from './api.service';
+
+@Injectable({ providedIn: 'root' })
+export class UserService {
+  private _user = signal<UserInfo | null>(null);
+  private _menus = signal<MenuItem[]>([]);
+
+  readonly user = this._user.asReadonly();
+  readonly menus = this._menus.asReadonly();
+  readonly isLoggedIn = computed(() => !!this._user());
+  readonly displayName = computed(() => this._user()?.displayName || this._user()?.name || '');
+
+  constructor(private api: ApiService) {}
+
+  async login(username: string, password: string) {
+    const res = await this.api.user.login(username, password);
+    if (res.data) {
+      await this.fetchUserInfo();
+      await this.fetchMenus();
+    }
+    return res;
+  }
+
+  async logout() {
+    await this.api.user.logout();
+    this._user.set(null);
+    this._menus.set([]);
+  }
+
+  async fetchUserInfo() {
+    const res = await this.api.user.getInfo();
+    if (res.data) this._user.set(res.data);
+  }
+
+  async fetchMenus() {
+    const res = await this.api.menu.getMenuTree();
+    if (res.data) this._menus.set(res.data);
+  }
+}

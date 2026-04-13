@@ -1,0 +1,33 @@
+{
+  "name": "@cube/angular",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "ng": "ng",
+    "dev": "ng serve",
+    "build": "ng build --output-path ../wwwroot",
+    "watch": "ng build --watch --configuration development"
+  },
+  "dependencies": {
+    "@angular/animations": "^19.2.0",
+    "@angular/common": "^19.2.0",
+    "@angular/compiler": "^19.2.0",
+    "@angular/core": "^19.2.0",
+    "@angular/forms": "^19.2.0",
+    "@angular/platform-browser": "^19.2.0",
+    "@angular/platform-browser-dynamic": "^19.2.0",
+    "@angular/router": "^19.2.0",
+    "ng-zorro-antd": "^19.1.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.8.0",
+    "zone.js": "~0.15.0",
+    "@cube/api-core": "workspace:*",
+    "@cube/field-mapping": "workspace:*"
+  },
+  "devDependencies": {
+    "@angular/build": "^19.2.0",
+    "@angular/cli": "^19.2.0",
+    "@angular/compiler-cli": "^19.2.0",
+    "typescript": "~5.7.0"
+  }
+}

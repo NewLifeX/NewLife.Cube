@@ -1,0 +1,6 @@
+{
+  "/Admin": { "target": "http://localhost:5000", "secure": false, "changeOrigin": true },
+  "/Cube": { "target": "http://localhost:5000", "secure": false, "changeOrigin": true },
+  "/Sso": { "target": "http://localhost:5000", "secure": false, "changeOrigin": true },
+  "/api": { "target": "http://localhost:5000", "secure": false, "changeOrigin": true }
+}
