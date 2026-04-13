@@ -287,34 +287,27 @@ public class IndexController : ControllerBaseX
         {
             menus = menus.FirstOrDefault(e => e.Name.EqualIgnoreCase(module))?.Childs ?? [];
         }
-        else
-        {
-            // 去掉三级菜单，仅显示二级菜单。如果没有可用菜单，则取第一个有可访问子菜单的模块来显示
-            var ms = menus.Where(e => e.Childs.All(x => x.Childs.Count == 0)).ToList() as IList<IMenu>;
-            if (ms.Count == 0)
-            {
-                foreach (var item in menus)
-                {
-                    ms = fact.GetMySubMenus(item.ID, user, true);
-                    if (ms.Count > 0) break;
-                }
-            }
-
-            menus = ms;
-        }
+        // module 为空时不做过滤，直接返回用户可访问的全部根级菜单
 
         // 如果顶级只有一层，并且至少有三级目录，则提升一级
         if (menus.Count == 1 && menus[0].Childs.All(m => m.Childs.Count > 0)) { menus = menus[0].Childs; }
 
         var menuTree = MenuTree.GetMenuTree(pMenuTree =>
         {
+            // 优先通过角色权限资源列表获取子菜单
             var subMenus = fact.GetMySubMenus(pMenuTree.ID, user, true);
+            if (subMenus.Count == 0)
+            {
+                // GetMySubMenus 返回空：角色的 Resources 中可能只有父级模块 ID，
+                // 子控制器 ID 未显式授权，此时回退到菜单树结构获取可见子菜单
+                var parent = fact.FindByID(pMenuTree.ID);
+                subMenus = parent?.Childs?.Where(m => m.Visible).ToList() as IList<IMenu> ?? [];
+            }
             return subMenus;
         }, list =>
         {
-
+            if (list == null || list.Count == 0) return null;
             var menuList = (from menu in list
-                                // where m.Visible
                             select new MenuTree
                             {
                                 ID = menu.ID,
