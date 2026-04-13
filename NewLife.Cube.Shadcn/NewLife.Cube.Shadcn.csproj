@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <AssemblyTitle>魔方Shadcn前端皮肤</AssemblyTitle>
+    <Description>魔方Shadcn前端皮肤包，基于React+Shadcn UI+Tailwind CSS，提供开箱即用的管理后台前端。支持动态菜单、字段元数据驱动的列表和表单、CRUD操作、OAuth登录等功能。引用NuGet包即可获得完整前端，无需前端开发。</Description>
+    <Company>新生命开发团队</Company>
+    <Copyright>©2002-2026 NewLife</Copyright>
+    <VersionPrefix>1.0</VersionPrefix>
+    <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
+    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
+    <Deterministic>false</Deterministic>
+    <OutputPath>..\Bin3</OutputPath>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Doc\newlife.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>NewLife.Cube.Shadcn</PackageId>
+    <Authors>$(Company)</Authors>
+    <PackageProjectUrl>https://newlifex.com/cube</PackageProjectUrl>
+    <PackageIcon>leaf.png</PackageIcon>
+    <RepositoryUrl>https://github.com/NewLifeX/NewLife.Cube</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>新生命团队;X组件;NewLife;$(AssemblyName);React;ShadcnUI;Tailwind</PackageTags>
+    <PackageReleaseNotes>初始版本，提供React+Shadcn UI+Tailwind CSS内置前端，极简可定制风格</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <!-- 引用 ASP.NET Core 共享框架 -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NewLife" />
+    <Using Include="Microsoft.AspNetCore.Builder" />
+    <Using Include="Microsoft.AspNetCore.Hosting" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="Microsoft.Extensions.DependencyInjection" />
+    <Using Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NewLife.Cube\NewLife.Cube.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- 将 wwwroot 静态文件嵌入程序集 -->
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

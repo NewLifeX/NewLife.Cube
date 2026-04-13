@@ -30,4 +30,7 @@ NewLife.Cube.Vue/web/dist/
 NewLife.Cube.React/web/dist/
 NewLife.Cube.Vue/wwwroot/
 NewLife.Cube.React/wwwroot/
+NewLife.Cube.NaiveUI/wwwroot/
+NewLife.Cube.MUI/wwwroot/
+NewLife.Cube.Shadcn/wwwroot/
 pnpm-lock.yaml
