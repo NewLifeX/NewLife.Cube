@@ -23,3 +23,11 @@ bld/
 /BinTest/net7.0
 /packages
 *.log
+
+# 前端项目
+node_modules/
+NewLife.Cube.Vue/web/dist/
+NewLife.Cube.React/web/dist/
+NewLife.Cube.Vue/wwwroot/
+NewLife.Cube.React/wwwroot/
+pnpm-lock.yaml

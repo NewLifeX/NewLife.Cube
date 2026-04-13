@@ -23,7 +23,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NewLife.Cube.React\NewLife.Cube.React.csproj" />
     <ProjectReference Include="..\NewLife.Cube.Swagger\NewLife.Cube.Swagger.csproj" />
+    <ProjectReference Include="..\NewLife.Cube.Vue\NewLife.Cube.Vue.csproj" />
     <ProjectReference Include="..\NewLife.Cube\NewLife.Cube.csproj" />
   </ItemGroup>
 

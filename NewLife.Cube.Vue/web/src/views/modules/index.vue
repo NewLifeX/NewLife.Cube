@@ -1,0 +1,3 @@
+<template>
+	<Page></Page>
+</template>

@@ -114,6 +114,7 @@ v6.10.2026.0404
     <Compile Include="..\NewLife.CubeNC\Services\TokenService.cs" Link="Services\TokenService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />
+    <Compile Include="..\NewLife.CubeNC\Extensions\CubeEmbeddedFileProvider.cs" Link="Extensions\CubeEmbeddedFileProvider.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\DataField.cs" Link="ViewModels\DataField.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ErrorModel.cs" Link="ViewModels\ErrorModel.cs" />
     <Compile Include="..\NewLife.CubeNC\ViewModels\ExpandField.cs" Link="ViewModels\ExpandField.cs" />

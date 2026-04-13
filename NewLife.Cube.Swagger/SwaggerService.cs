@@ -120,8 +120,9 @@ public static class SwaggerService
 
     /// <summary>使用魔方Swagger服务</summary>
     /// <param name="app"></param>
+    /// <param name="routePrefix">SwaggerUI路由前缀。默认空字符串（根路径）。使用Vue/React前端时建议设为"swagger"</param>
     /// <returns></returns>
-    public static IApplicationBuilder UseCubeSwagger(this IApplicationBuilder app)
+    public static IApplicationBuilder UseCubeSwagger(this IApplicationBuilder app, String? routePrefix = null)
     {
         app.UseSwagger();
         //app.UseSwaggerUI();
@@ -134,8 +135,8 @@ public static class SwaggerService
             //options.SwaggerEndpoint("/swagger/Admin/swagger.json", "Admin");
             //options.SwaggerEndpoint("/swagger/Cube/swagger.json", "Cube");
             //options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-            // 设置路由前缀为空，直接访问站点根目录即可看到SwaggerUI
-            options.RoutePrefix = String.Empty;
+            // 设置路由前缀，默认空字符串直接访问站点根目录即可看到SwaggerUI
+            options.RoutePrefix = routePrefix ?? String.Empty;
             var groups = app.ApplicationServices.GetRequiredService<IApiDescriptionGroupCollectionProvider>().ApiDescriptionGroups.Items;
             foreach (var description in groups)
             {
