@@ -22,6 +22,20 @@ jobs:
           8.x
           9.x
           10.x
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+    - name: Install Workspace Dependencies
+      working-directory: packages
+      run: pnpm install
+    - name: Build Workspace Frontends
+      working-directory: packages
+      run: pnpm -r build
     - name: Build
       run: |
         dotnet build -c Release

@@ -38,6 +38,12 @@ jobs:
       run: |
         pnpm install
         npx max build
+    - name: Install Workspace Dependencies
+      working-directory: packages
+      run: pnpm install
+    - name: Build Workspace Frontends
+      working-directory: packages
+      run: pnpm -r build
     - name: Get Version
       run: echo "VERSION=$(date '+%Y.%m%d')" >> $GITHUB_ENV
     - name: Build
@@ -55,6 +61,14 @@ jobs:
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.LayuiAdmin/NewLife.Cube.LayuiAdmin.csproj
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Metronic/NewLife.Cube.Metronic.csproj
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Metronic8/NewLife.Cube.Metronic8.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.NaiveUI/NewLife.Cube.NaiveUI.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.MUI/NewLife.Cube.MUI.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Shadcn/NewLife.Cube.Shadcn.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.ArcoVue/NewLife.Cube.ArcoVue.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Angular/NewLife.Cube.Angular.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Vuetify/NewLife.Cube.Vuetify.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Svelte/NewLife.Cube.Svelte.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.TDesign/NewLife.Cube.TDesign.csproj
         #dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Tabler/NewLife.Cube.Tabler.csproj
 
     - name: Publish
