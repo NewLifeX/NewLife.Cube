@@ -14,12 +14,13 @@ import { ref, onMounted, h, type Component as VueComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { NIcon, type MenuOption } from 'naive-ui';
 import { useAppStore } from '@/stores/app';
-import api from '@/api';
+import { useUserStore } from '@/stores/user';
 import type { MenuItem } from '@cube/api-core';
 
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
+const userStore = useUserStore();
 
 const menuOptions = ref<MenuOption[]>([]);
 const activeKey = ref<string>('');
@@ -53,8 +54,8 @@ router.afterEach((to) => {
 
 onMounted(async () => {
   try {
-    const res = await api.menu.getMenuTree();
-    menuOptions.value = toMenuOptions(res.data ?? []);
+    const menus = userStore.menus.length ? userStore.menus : await userStore.fetchMenus();
+    menuOptions.value = toMenuOptions(menus);
     activeKey.value = route.path.replace(/^\//, '');
   } catch {
     /* 菜单加载失败静默处理 */

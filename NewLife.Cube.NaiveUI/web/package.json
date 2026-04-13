@@ -15,7 +15,8 @@
     "naive-ui": "^2.41.0",
     "@vicons/ionicons5": "^0.12.0",
     "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*"
+    "@cube/field-mapping": "workspace:*",
+    "echarts": "^5.6.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.0",

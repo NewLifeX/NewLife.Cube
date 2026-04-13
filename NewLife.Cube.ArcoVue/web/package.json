@@ -14,7 +14,8 @@
     "pinia": "^3.0.0",
     "@arco-design/web-vue": "^2.56.0",
     "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*"
+    "@cube/field-mapping": "workspace:*",
+    "echarts": "^5.6.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.0",

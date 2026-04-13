@@ -1,5 +1,15 @@
 <template>
   <div class="dynamic-page">
+    <!-- ECharts 图表区域 -->
+    <n-card v-if="chartList.length" size="small" style="margin-bottom: 16px">
+      <div
+        v-for="(_, idx) in chartList"
+        :key="idx"
+        :ref="(el: any) => setChartRef(el as HTMLElement, idx)"
+        style="width: 100%; height: 400px"
+      />
+    </n-card>
+
     <!-- 搜索栏 -->
     <n-card v-if="searchFields.length" size="small" style="margin-bottom: 16px">
       <n-form ref="searchFormRef" :model="searchForm" label-placement="left" inline>
@@ -18,13 +28,14 @@
     <!-- 工具栏 -->
     <div class="toolbar">
       <n-space>
-        <n-button type="primary" @click="showAdd">新增</n-button>
-        <n-button @click="handleExport('Csv')">导出 CSV</n-button>
-        <n-button @click="handleExport('Excel')">导出 Excel</n-button>
-        <n-upload :show-file-list="false" :custom-request="handleImport">
+        <n-button v-if="canAdd" type="primary" @click="showAdd">新增</n-button>
+        <n-dropdown v-if="canExport" trigger="click" :options="exportOptions" @select="handleExport">
+          <n-button>导出 <n-icon><arrow-down-icon /></n-icon></n-button>
+        </n-dropdown>
+        <n-upload v-if="canImport" :show-file-list="false" :custom-request="handleImport">
           <n-button>导入</n-button>
         </n-upload>
-        <n-popconfirm @positive-click="handleDeleteSelect">
+        <n-popconfirm v-if="canDelete" @positive-click="handleDeleteSelect">
           <template #trigger>
             <n-button :disabled="!checkedKeys.length" type="error">批量删除</n-button>
           </template>
@@ -42,6 +53,7 @@
       :checked-row-keys="checkedKeys"
       @update:checked-row-keys="(keys: any[]) => (checkedKeys = keys)"
       :pagination="pagination"
+      :summary="statSummary"
       remote
       @update:page="loadData"
       @update:page-size="handlePageSizeChange"
@@ -87,11 +99,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, h, type Ref } from 'vue';
-import { NButton, NSpace, NTag, useMessage, type DataTableColumn, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
-import { FieldKind, type DataField } from '@cube/api-core';
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, type Ref } from 'vue';
+import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type DataTableCreateSummary, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
+import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
+import { FieldKind, Auth, type DataField } from '@cube/api-core';
 import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
+import * as echarts from 'echarts';
 import api from '@/api';
+import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
 
 const props = defineProps<{
@@ -100,8 +115,27 @@ const props = defineProps<{
 }>();
 
 const message = useMessage();
+const userStore = useUserStore();
 const loading = ref(false);
 const formLoading = ref(false);
+
+// --- 权限控制 ---
+const menuPerms = computed(() => userStore.getMenuPermission(props.type));
+const canAdd = computed(() => String(Auth.ADD) in menuPerms.value);
+const canEdit = computed(() => String(Auth.EDIT) in menuPerms.value);
+const canDelete = computed(() => String(Auth.DELETE) in menuPerms.value);
+const canExport = computed(() => String(Auth.EXPORT) in menuPerms.value);
+const canImport = computed(() => String(Auth.IMPORT) in menuPerms.value);
+
+// --- 导出下拉选项 ---
+const exportOptions = [
+  { label: '导出 Excel', key: 'Excel' },
+  { label: '导出 CSV', key: 'Csv' },
+  { label: '导出 JSON', key: 'Json' },
+  { label: '导出 XML', key: 'Xml' },
+  { type: 'divider', key: 'd1' },
+  { label: '导出模板', key: 'ExcelTemplate' },
+];
 
 // --- 字段元数据 ---
 const listFields = ref<FieldMapping[]>([]);
@@ -114,6 +148,7 @@ const pkField = ref('id');
 // --- 表格数据 ---
 const tableData = ref<Record<string, any>[]>([]);
 const checkedKeys = ref<(string | number)[]>([]);
+const statData = ref<Record<string, unknown> | null>(null);
 
 // --- 搜索表单 ---
 const searchFormRef = ref<FormInst | null>(null);
@@ -139,6 +174,27 @@ const formFields = computed(() => (isEdit.value ? editFieldMappings.value : addF
 // --- 详情弹窗 ---
 const detailVisible = ref(false);
 const detailData = ref<Record<string, any>>({});
+
+// --- ECharts ---
+const chartList = ref<any[]>([]);
+const chartInstances = ref<any[]>([]);
+
+// --- 统计行 ---
+const statSummary: DataTableCreateSummary | undefined = computed(() => {
+  if (!statData.value) return undefined;
+  return () => {
+    const stat = statData.value!;
+    return {
+      [pkField.value]: { value: h('b', '合计') },
+      ...Object.fromEntries(
+        listFields.value.map((m) => [
+          m.field.name,
+          { value: stat[m.field.name] != null ? String(stat[m.field.name]) : '' },
+        ])
+      ),
+    };
+  };
+}).value;
 
 // --- 表格列构建 ---
 const tableColumns = computed<DataTableColumn[]>(() => {
@@ -179,21 +235,33 @@ const tableColumns = computed<DataTableColumn[]>(() => {
     cols.push(col);
   }
 
-  // 操作列
-  cols.push({
-    title: '操作',
-    key: '__actions',
-    width: 200,
-    fixed: 'right',
-    render: (row: Record<string, any>) =>
-      h(NSpace, null, {
-        default: () => [
-          h(NButton, { text: true, type: 'info', onClick: () => showDetail(row) }, { default: () => '查看' }),
-          h(NButton, { text: true, type: 'primary', onClick: () => showEdit(row) }, { default: () => '编辑' }),
-          h(NButton, { text: true, type: 'error', onClick: () => handleDelete(row) }, { default: () => '删除' }),
-        ],
-      }),
-  });
+  // 操作列（按权限控制按钮显隐）
+  if (canEdit.value || canDelete.value) {
+    cols.push({
+      title: '操作',
+      key: '__actions',
+      width: 200,
+      fixed: 'right',
+      render: (row: Record<string, any>) =>
+        h(NSpace, null, {
+          default: () => [
+            h(NButton, { text: true, type: 'info', onClick: () => showDetail(row) }, { default: () => '查看' }),
+            canEdit.value ? h(NButton, { text: true, type: 'primary', onClick: () => showEdit(row) }, { default: () => '编辑' }) : null,
+            canDelete.value ? h(NButton, { text: true, type: 'error', onClick: () => handleDelete(row) }, { default: () => '删除' }) : null,
+          ].filter(Boolean),
+        }),
+    });
+  } else {
+    // 至少保留查看按钮
+    cols.push({
+      title: '操作',
+      key: '__actions',
+      width: 80,
+      fixed: 'right',
+      render: (row: Record<string, any>) =>
+        h(NButton, { text: true, type: 'info', onClick: () => showDetail(row) }, { default: () => '查看' }),
+    });
+  }
 
   return cols;
 });
@@ -230,6 +298,7 @@ async function loadData(page?: number) {
     };
     const res = await api.page.getList(props.type, params);
     tableData.value = (res.data as any[]) ?? [];
+    statData.value = (res.stat as Record<string, unknown>) ?? null;
     if (res.page) {
       pagination.value.itemCount = res.page.totalCount;
       pagination.value.pageCount = Math.ceil(res.page.totalCount / (pagination.value.pageSize ?? 20));
@@ -338,10 +407,53 @@ async function handleImport({ file }: UploadCustomRequestOptions) {
   }
 }
 
+// --- ECharts ---
+async function loadChartData() {
+  try {
+    const res = await api.page.getChartData(props.type);
+    if (Array.isArray(res.data) && res.data.length > 0) {
+      chartList.value = res.data;
+    } else {
+      chartList.value = [];
+    }
+  } catch {
+    chartList.value = [];
+  }
+}
+
+function setChartRef(el: HTMLElement | null, idx: number) {
+  if (!el) return;
+  nextTick(() => {
+    if (chartInstances.value[idx]) {
+      chartInstances.value[idx].dispose();
+    }
+    const instance = markRaw(echarts.init(el));
+    const option = chartList.value[idx];
+    if (option) {
+      instance.setOption(option);
+    }
+    chartInstances.value[idx] = instance;
+  });
+}
+
+function onChartResize() {
+  for (const inst of chartInstances.value) {
+    inst?.resize();
+  }
+}
+
 // --- 初始化 ---
 onMounted(async () => {
   await loadFields();
-  await loadData(1);
+  await Promise.all([loadData(1), loadChartData()]);
+  window.addEventListener('resize', onChartResize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onChartResize);
+  for (const inst of chartInstances.value) {
+    inst?.dispose();
+  }
 });
 </script>
 
