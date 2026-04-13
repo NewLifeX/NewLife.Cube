@@ -93,4 +93,30 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     [HttpGet]
     public virtual List<DataField> GetFields(ViewKinds kind) => OnGetFields(kind, null);
     #endregion
+
+    #region 图表
+    /// <summary>获取图表数据。子控制器可重写OnGetChartData来提供图表配置</summary>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [DisplayName("图表{type}")]
+    [HttpGet]
+    public virtual Object[] GetChartData()
+    {
+        var p = new Pager(WebHelper.Params)
+        {
+            RetrieveTotalCount = false,
+            PageSize = 1000,
+        };
+
+        var list = SearchData(p);
+
+        return OnGetChartData(list);
+    }
+
+    /// <summary>构建图表数据。子控制器重写此方法以返回ECharts配置</summary>
+    /// <param name="data">搜索得到的数据列表</param>
+    /// <returns>ECharts配置数组，每个元素包含 title/option 等属性。无图表时返回空数组</returns>
+    [NonAction]
+    protected virtual Object[] OnGetChartData(IEnumerable<TEntity> data) => [];
+    #endregion
 }

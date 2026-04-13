@@ -9,7 +9,7 @@
         </el-tab-pane>
       </el-tabs>
       <div class="flex-1 overflow-auto p-4">
-        <el-form ref="formEl" :model="formValue" size="default" label-width="120px" class="table-form">
+        <el-form ref="formEl" :model="formValue" size="default" label-width="120px" class="table-form" :disabled="readonly">
           <el-row>
             <template v-for="(item, key) in config" :key="key">
               <template v-if="item.if === undefined || (typeof item.if === 'function' ? item.if(formValue) : item.if)">
@@ -32,7 +32,7 @@
           </el-row>
         </el-form>
       </div>
-      <div class="p-4 border-t text-right" v-if="handleVisible" :style="{textAlign: handlePosition || (wrapper === 'div' ? 'center' : 'right')}">
+      <div class="p-4 border-t text-right" v-if="handleVisible && !readonly" :style="{textAlign: handlePosition || (wrapper === 'div' ? 'center' : 'right')}">
         <!-- <el-button @click="back" v-if="tabs.length && activeName !== tabs[0]">上一步</el-button>
         <el-button @click="next" v-if="tabs.length && activeName !== tabs[tabs.length - 1]">下一步</el-button> -->
         <el-button v-if="cancelVisible && wrapper !== 'div'" @click="cancel">取消</el-button>
@@ -68,6 +68,7 @@ interface Props {
   handlePosition?: 'center' | 'left' | 'right';
   cancelVisible?: boolean;
   groups?: Array<string>;
+  readonly?: boolean;
 }
 interface Emits {
   (e: 'update:visible', val: boolean): void;

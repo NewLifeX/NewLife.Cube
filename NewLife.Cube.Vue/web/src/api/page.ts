@@ -100,6 +100,48 @@ export function usePageApi() {
 					r: 'user'
 				}
 			});
-		}
+		},
+		/** 获取导出下载 URL */
+		getExportUrl: (type: string, format: string): string => {
+			const baseUrl = import.meta.env.DEV ? '/base-api' : (import.meta.env.VITE_API_URL || '');
+			return `${baseUrl}/${type}/Export${format}`;
+		},
+		/** 导入文件 */
+		importFile: (type: string, file: File) => {
+			const formData = new FormData();
+			formData.append('file', file);
+			return request<any>({
+				url: `${type}/ImportFile`,
+				method: 'post',
+				headers: {
+					"Content-Type": 'multipart/form-data'
+				},
+				data: formData
+			});
+		},
+		/** 批量删除选中项 */
+		deleteSelect: (type: string, keys: string[]) => {
+			return request({
+				url: `${type}/DeleteSelect`,
+				method: 'post',
+				params: {
+					keys: keys.join(',')
+				}
+			});
+		},
+		/** 批量删除全部 */
+		deleteAll: (type: string) => {
+			return request({
+				url: `${type}/DeleteAll`,
+				method: 'post',
+			});
+		},
+		/** 获取图表数据 */
+		getChartData: (type: string) => {
+			return request<any[]>({
+				url: `${type}/GetChartData`,
+				method: 'get',
+			});
+		},
 	};
 }

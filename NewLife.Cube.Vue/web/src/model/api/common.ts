@@ -3,6 +3,8 @@ export interface ApiResult<T> {
   data: T,
   message: string;
   page: Page;
+  /** 统计行数据 */
+  stat: any;
 }
 
 // export interface ApiPagerResult<T> extends ApiResult<T> {

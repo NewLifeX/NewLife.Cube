@@ -1,5 +1,5 @@
 <template>
-  <Form :config="config" v-model="formData" v-model:visible="layoutVisible" :wrapper="wrapper" :title="myIsUpdate?'修改':'添加'" @submit="submit">
+  <Form :config="config" v-model="formData" v-model:visible="layoutVisible" :wrapper="wrapper" :title="myIsDetail ? '查看' : (myIsUpdate?'修改':'添加')" :readonly="myIsDetail" @submit="submit">
     <template v-for="item in config.filter(item => item.slot)" :key="item.prop.toString()" #[`${item.slot!}`]="data">
       <slot :name="item.slot" :model="data.model" :prop="data.prop"></slot>
     </template>
@@ -21,6 +21,7 @@ interface Props {
   modelValue?: EmptyObjectType;
   config: ColumnConfig[];
   isUpdate?: boolean;
+  isDetail?: boolean;
 }
 interface Emits {
   (e: 'update:visible', val: boolean): void;
@@ -51,6 +52,10 @@ const formData = computed({
 const myIsUpdate = ref(props.isUpdate);
 watch(() => props.isUpdate, (val) => {
   myIsUpdate.value = val
+})
+const myIsDetail = ref(props.isDetail);
+watch(() => props.isDetail, (val) => {
+  myIsDetail.value = val
 })
 const pageApi = usePageApi();
 const providePage = inject(providePageKey)

@@ -238,6 +238,11 @@ export function getSearchFields (fields: Column[] = []) {
 export function getTableFields (fields: Column[] = []) {
 	return fields.map(item => deepMerge(getComponentBaseField(item), {
 		prop: toCamelCase(item.name),
+		sort: true,
+		url: item.url,
+		target: item.target,
+		dataAction: item.dataAction,
+		width: item.maxWidth || undefined,
 	}))
 }
 

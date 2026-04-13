@@ -3,6 +3,26 @@
 		<Search :search="search" @search="onSearch" v-model="searchDataRef">
 			<template #handle-after>
 				<el-button v-auths="getBtnAuth(Auth.ADD)" size="default" type="primary" @click="onAdd">添加 </el-button>
+				<el-popconfirm v-if="state.selectlist.length > 0" title="确定删除选中项吗？" @confirm="onBatchDel">
+					<template #reference>
+						<el-button v-auths="getBtnAuth(Auth.DEL)" size="default" type="danger">删除选中({{ state.selectlist.length }})</el-button>
+					</template>
+				</el-popconfirm>
+				<el-dropdown v-if="auths(getBtnAuth(Auth.EXPORT))" trigger="click" @command="onExport" class="ml-2.5">
+					<el-button size="default">导出<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
+					<template #dropdown>
+						<el-dropdown-menu>
+							<el-dropdown-item command="Excel">导出 Excel</el-dropdown-item>
+							<el-dropdown-item command="Csv">导出 CSV</el-dropdown-item>
+							<el-dropdown-item command="Json">导出 JSON</el-dropdown-item>
+							<el-dropdown-item command="Xml">导出 XML</el-dropdown-item>
+							<el-dropdown-item command="ExcelTemplate" divided>导出模板</el-dropdown-item>
+						</el-dropdown-menu>
+					</template>
+				</el-dropdown>
+				<el-upload v-if="auths(getBtnAuth(Auth.IMPORT))" :show-file-list="false" :before-upload="onImportFile" accept=".xlsx,.xls,.csv,.json,.zip" class="ml-2.5 inline-block">
+					<el-button size="default">导入</el-button>
+				</el-upload>
 			</template>
 			<template v-for="item in search.filter(item => item.slot)" :key="item.prop" #[`${item.slot!}`]="data">
 				<slot :name="item.slot" :model="data.model" :prop="data.prop"></slot>
@@ -17,6 +37,8 @@
 			:border="setBorder"
 			v-bind="$attrs"
 			v-loading="loading"
+			:show-summary="!!stat"
+			:summary-method="getSummary"
 			@selection-change="onSelectionChange"
 			@sort-change="onChangeSort">
 			<el-table-column type="selection" :reserve-selection="true" width="40" fixed="left" v-if="isSelection && tableColumns.length" />
@@ -32,6 +54,17 @@
 				>
 					<template v-slot="scope">
 						<slot v-if="item.slot" :name="item.slot" :scope="scope" :model="scope.row" :prop="item.prop"></slot>
+						<template v-else-if="item.url">
+							<a v-if="item.dataAction" href="javascript:void(0)" class="el-link el-link--primary" @click="onCellAction(item, scope.row)">
+								{{ scope.row[item.prop] }}
+							</a>
+							<router-link v-else-if="!item.target || item.target === '_self'" :to="resolveUrl(item.url, scope.row)" class="el-link el-link--primary">
+								{{ scope.row[item.prop] }}
+							</router-link>
+							<a v-else :href="resolveUrl(item.url, scope.row)" :target="item.target" class="el-link el-link--primary">
+								{{ scope.row[item.prop] }}
+							</a>
+						</template>
 						<template v-else-if="item.component === 'upload'">
 							<!-- <img :src="scope.row[item.prop]" width="50px" height="50px" /> -->
 							<el-image :src="imgBaseUrl + scope.row[item.prop]" class="w-12 h-12 rounded" :preview-src-list="[imgBaseUrl + scope.row[item.prop]]" preview-teleported fit="fill"></el-image>
@@ -52,12 +85,13 @@
 				</el-table-column>
 			</template>
 			<el-table-column
-				v-if="isOperate && tableColumns.length && auths(getBtnAuth(Auth.SET, Auth.DEL))"
+				v-if="isOperate && tableColumns.length && auths(getBtnAuth(Auth.LOOK, Auth.SET, Auth.DEL))"
 				label="操作"
 				:width="operateWidth"
 				fixed="right">
 				<template v-slot="scope">
 					<slot name="table-handle-before" :scope="scope"></slot>
+					<el-button v-auths="getBtnAuth(Auth.LOOK)" text type="info" @click="onDetail(scope.row)">查看</el-button>
 					<el-button v-auths="getBtnAuth(Auth.SET)" text type="primary" @click="onEdit(scope.row)">修改</el-button>
 					<el-popconfirm title="确定删除吗？" @confirm="onDel(scope.row)">
 						<template #reference>
@@ -87,7 +121,6 @@
 			>
 			</el-pagination>
 			<div class="table-footer-tool">
-				<SvgIcon name="iconfont icon-yunxiazai_o" :size="22" title="导出" @click="onImportTable" />
 				<SvgIcon name="iconfont icon-shuaxin" :size="22" title="刷新" @click="onRefreshTable" />
 				<el-popover
 					placement="top-end"
@@ -145,9 +178,7 @@
 <script setup lang="ts" name="netxTable">
 import { reactive, computed, nextTick, watch, Ref } from 'vue';
 import { ColumnSortHandler, ColumnSortParams, ElMessage } from 'element-plus';
-import table2excel from 'js-table2excel';
-import { storeToRefs } from 'pinia';
-import { useThemeConfig } from '/@/stores/themeConfig';
+import { ArrowDown } from '@element-plus/icons-vue';
 import '/@/theme/tableTool.scss';
 import Search from './search.vue';
 import { ColumnConfig } from '../form/model/form';
@@ -173,6 +204,7 @@ export interface Props {
 	operateWidth?: number;
 	authId?: number;
 	data: EmptyObjectType[];
+	stat?: EmptyObjectType | null;
 	columns: TableColumn[];
 	search: ColumnConfig[];
 	param: Param;
@@ -189,6 +221,7 @@ const props = withDefaults(defineProps<Props>(), {
 	isSelection: true, // 是否显示表格多选
 	isOperate: true, // 是否显示表格操作栏
 	data: () => [],
+	stat: null,
 	columns: () => [],
 	search: () => [],
 	param: () => ({
@@ -203,19 +236,24 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { options } = useEnumOptions()
 
+// 解析单元格链接，将 {Id}/{Name} 等变量替换为行数据
+const resolveUrl = (url: string, row: EmptyObjectType): string => {
+	return url.replace(/\{(\w+)\}/g, (_, key) => {
+		const val = row[key] ?? row[key.charAt(0).toLowerCase() + key.slice(1)];
+		return val !== undefined ? encodeURIComponent(String(val)) : '';
+	});
+}
+
 const operateWidth = computed(() => {
 	if (props.operateWidth)
 		return props.operateWidth
-	return (auths(getBtnAuth(Auth.SET)) ? 55 : 0) + (auths(getBtnAuth(Auth.DEL)) ? 55 : 0)
+	return (auths(getBtnAuth(Auth.LOOK)) ? 55 : 0) + (auths(getBtnAuth(Auth.SET)) ? 55 : 0) + (auths(getBtnAuth(Auth.DEL)) ? 55 : 0)
 })
 
 // 定义子组件向父组件传值/事件
-const emit = defineEmits(['del', 'edit', 'add', 'search', 'sortHeader', 'update:searchData', 'update:columns']);
+const emit = defineEmits(['del', 'edit', 'add', 'detail', 'batchDel', 'export', 'import', 'cellAction', 'search', 'sortHeader', 'update:searchData', 'update:columns']);
 const tableColumns = useVModel(props, 'columns', emit) as Ref<TableColumn[]>;
 // 定义变量内容
-// const toolSetRef = ref();
-const storesThemeConfig = useThemeConfig();
-const { themeConfig } = storeToRefs(storesThemeConfig);
 const state = reactive({
 	page: props.param,
 	selectlist: [] as EmptyObjectType[],
@@ -277,12 +315,33 @@ const onSelectionChange = (val: EmptyObjectType[]) => {
 const onEdit = (row: EmptyObjectType) => {
 	emit('edit', row);
 }
+const onDetail = (row: EmptyObjectType) => {
+	emit('detail', row);
+}
 // 删除当前项
 const onDel = (row: EmptyObjectType) => {
 	emit('del', row);
 };
 const onAdd = () => {
 	emit('add');
+}
+// 批量删除
+const onBatchDel = () => {
+	emit('batchDel', state.selectlist);
+}
+// 导出
+const onExport = (format: string) => {
+	emit('export', format);
+}
+// 导入文件
+const onImportFile = (file: File) => {
+	emit('import', file);
+	return false; // 阻止 el-upload 默认上传
+}
+// 单元格 AJAX 动作
+const onCellAction = (item: TableColumn, row: EmptyObjectType) => {
+	const url = resolveUrl(item.url!, row);
+	emit('cellAction', url, row);
 }
 // 分页改变
 const onHandleSizeChange = (val: number) => {
@@ -299,11 +358,6 @@ const onHandleCurrentChange = (val: number) => {
 const pageReset = () => {
 	state.page.pageIndex = 1;
 	emit('search', state.page);
-};
-// 导出
-const onImportTable = () => {
-	if (state.selectlist.length <= 0) return ElMessage.warning('请先选择要导出的数据');
-	table2excel(props.columns, state.selectlist, `${themeConfig.value.globalTitle} ${new Date().toLocaleString()}`);
 };
 // 刷新
 const onRefreshTable = () => {
@@ -343,6 +397,18 @@ const getBtnAuth = (...auths: Auth[]) => {
 		return [props.authId + '#' + Auth.ALL, ...auths.map(val => props.authId + '#' + val)]
 	}
 	return []
+}
+
+// 统计行
+const getSummary = ({ columns: cols }: { columns: any[] }) => {
+	if (!props.stat) return cols.map(() => '');
+	return cols.map((col: any, index: number) => {
+		if (index === 0) return '合计';
+		const prop = col.property;
+		if (!prop) return '';
+		const val = props.stat?.[prop];
+		return val !== undefined && val !== null ? String(val) : '';
+	});
 }
 
 // 暴露变量

@@ -18,6 +18,7 @@ export default function useGetColumnsForm (props: Props, emits: Emits, providePa
   
   const editConfig = (providePage?.editColumns || ref([])) as Ref<ColumnConfig[]>;
   const addConfig = (providePage?.addColumns || ref([])) as Ref<ColumnConfig[]>;
+  const detailConfig = (providePage?.detailColumns || ref([])) as Ref<ColumnConfig[]>;
   const search = (providePage?.searchColumns || ref([])) as Ref<ColumnConfig[]>;
   const columns = (providePage?.tableColumns || ref([])) as Ref<TableColumn[]>;
   
@@ -87,12 +88,17 @@ export default function useGetColumnsForm (props: Props, emits: Emits, providePa
     addConfig.value = getInfoFields(res.data)
     setting({ type: ColumnKind.ADD, config: addConfig })
   })
+  pageApi.getColumns(props.type, ColumnKind.DETAIL).then(res => {
+    detailConfig.value = getInfoFields(res.data)
+    setting({ type: ColumnKind.DETAIL, config: detailConfig })
+  })
 
   return {
     searchForm,
     editForm,
     editConfig,
     addConfig,
+    detailConfig,
     search,
     columns
   }

@@ -1,6 +1,9 @@
 <template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto h-full">
+			<div v-if="chartList.length > 0" class="chart-area mb15">
+				<div v-for="(chart, idx) in chartList" :key="idx" class="chart-item" :ref="el => setChartRef(el as HTMLElement, idx)"></div>
+			</div>
 			<Table
 				v-if="wrapper !== 'div'"
 				class="table-demo"
@@ -10,12 +13,18 @@
 				v-model:search-data="searchForm"
 				:authId="authId"
 				:data="data"
+				:stat="stat"
 				:search="search"
 				:param="param"
 				:pager-visible="pagerVisible"
 				@del="onTableDelRow"
 				@add="onTableAdd"
 				@edit="onTableEdit"
+				@detail="onTableDetail"
+				@batchDel="onBatchDel"
+				@export="onExport"
+				@import="onImport"
+				@cellAction="onCellAction"
 				@search="onSearch"
 				@sortHeader="onSortHeader">
 				<template v-for="item in search.filter(v => v.slot)" :key="item.prop.toString()" #[`${item.slot!}`]="data">
@@ -39,10 +48,11 @@
 				v-model:visible="editVisible"
 				:type="type"
 				:wrapper="wrapper"
-				:config="isUpdate ? editConfig : addConfig"
+				:config="isDetail ? detailConfig : (isUpdate ? editConfig : addConfig)"
 				:key="type"
 				v-model="editForm"
 				:isUpdate="isUpdate"
+				:isDetail="isDetail"
 				@submit-success="getTableData"
 				@add-before="$attrs.onAddBefore"
 				@add-after="$attrs.onAddAfter"
@@ -57,9 +67,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, inject, ref } from 'vue';
+import { computed, defineAsyncComponent, inject, markRaw, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
+import * as echarts from 'echarts';
 import { ColumnKind, usePageApi } from '../../api/page';
+import request from '/@/utils/request';
 import Edit from './edit.vue';
 import { TableColumn } from '../table/type';
 import { EditWrapper } from './model';
@@ -91,7 +103,7 @@ const providePage = inject(providePageKey)
 const tableConfig = providePage?.pageProps.tableConfig || {}
 
 // 初始化配置项数据与表单数据
-const { searchForm, editForm, editConfig, addConfig, search, columns } = useGetColumnsForm(props, emits, providePage)
+const { searchForm, editForm, editConfig, addConfig, detailConfig, search, columns } = useGetColumnsForm(props, emits, providePage)
 const { onAddClick, onEditClick, onDelBefore, onDelAfter } = providePage?.pageProps || {};
 
 const slots = computed(() => {
@@ -112,8 +124,10 @@ const slots = computed(() => {
 // 定义变量内容
 const tableRef = ref<RefType>();
 const isUpdate = ref(false);
+const isDetail = ref(false);
 const pagerVisible = ref(false);
 const data = ref<EmptyObjectType[]>([]);
+const stat = ref<EmptyObjectType | null>(null);
 const editEl = ref<InstanceType<typeof Edit>>();
 const config = ref<TableConfigType>({
 	total: 0, // 列表总数
@@ -151,6 +165,7 @@ const getTableData = async () => {
 			editForm.value = res.data
 			isUpdate.value = true
 		}
+		stat.value = res.stat || null
 		if (res.page) {
 			pagerVisible.value = true
 			config.value.total = Number(res.page.totalCount)
@@ -160,6 +175,53 @@ const getTableData = async () => {
 		config.value.loading = false;
 	}
 };
+
+// 图表
+const chartList = ref<any[]>([]);
+const chartInstances = ref<any[]>([]);
+
+const setChartRef = (el: HTMLElement | null, idx: number) => {
+	if (!el) return;
+	nextTick(() => {
+		// 销毁旧实例
+		if (chartInstances.value[idx]) {
+			chartInstances.value[idx].dispose();
+		}
+		const instance = markRaw(echarts.init(el));
+		const option = chartList.value[idx];
+		if (option) {
+			instance.setOption(option);
+		}
+		chartInstances.value[idx] = instance;
+	});
+};
+
+const loadChartData = async () => {
+	try {
+		const res = await pageApi.getChartData(props.type!);
+		if (Array.isArray(res.data) && res.data.length > 0) {
+			chartList.value = res.data;
+		} else {
+			chartList.value = [];
+		}
+	} catch {
+		chartList.value = [];
+	}
+};
+
+// 窗口大小变化时自适应
+const onResize = () => {
+	for (const inst of chartInstances.value) {
+		inst?.resize();
+	}
+};
+window.addEventListener('resize', onResize);
+onBeforeUnmount(() => {
+	window.removeEventListener('resize', onResize);
+	for (const inst of chartInstances.value) {
+		inst?.dispose();
+	}
+});
 
 // 删除当前项回调
 const onTableDelRow = (item: EmptyObjectType) => {
@@ -176,13 +238,20 @@ const onTableDelRow = (item: EmptyObjectType) => {
 };
 const onTableAdd = () => {
 	isUpdate.value = false
+	isDetail.value = false
 	editEl.value?.handleAdd();
 	onAddClick && onAddClick()
 }
 const onTableEdit = (item: EmptyObjectType) => {
 	isUpdate.value = true
+	isDetail.value = false
 	editEl.value?.handleEdit(item);
 	onEditClick && onEditClick(item);
+}
+const onTableDetail = (item: EmptyObjectType) => {
+	isUpdate.value = true
+	isDetail.value = true
+	editEl.value?.handleEdit(item);
 }
 // 分页改变时回调
 const onSearch = (page: TableDemoPageType) => {
@@ -196,7 +265,45 @@ const onSearch = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableColumn[]) => {
 	columns.value = data;
 };
+// 导出
+const onExport = (format: string) => {
+	const url = pageApi.getExportUrl(props.type!, format);
+	window.open(url, '_blank');
+};
+// 导入
+const onImport = async (file: File) => {
+	try {
+		const res = await pageApi.importFile(props.type!, file);
+		ElMessage.success(res.message || '导入成功');
+		getTableData();
+	} catch (e) {
+		// 错误已由 request 拦截器处理
+	}
+};
+// 批量删除
+const onBatchDel = async (rows: EmptyObjectType[]) => {
+	const keys = rows.map(r => r.id).filter(Boolean);
+	if (keys.length === 0) return;
+	try {
+		const res = await pageApi.deleteSelect(props.type!, keys.map(String));
+		ElMessage.success(res.message || `删除成功`);
+		getTableData();
+	} catch (e) {
+		// 错误已由 request 拦截器处理
+	}
+};
+// 单元格 AJAX 动作
+const onCellAction = async (url: string) => {
+	try {
+		const res = await request({ url, method: 'post' });
+		ElMessage.success(res.message || '操作成功');
+		getTableData();
+	} catch {
+		// 错误已由 request 拦截器处理
+	}
+};
 getTableData();
+loadChartData();
 
 defineExpose({
 	getTableData
@@ -209,6 +316,19 @@ providePage && (providePage.handle.reload = getTableData)
 .table-demo-container {
 	.table-demo-padding {
 		padding: 15px;
+		.chart-area {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 15px;
+			.chart-item {
+				flex: 1;
+				min-width: 400px;
+				height: 400px;
+				background: var(--el-bg-color);
+				border-radius: 4px;
+				border: 1px solid var(--el-border-color-lighter);
+			}
+		}
 		.table-demo {
 			flex: 1;
 			overflow: hidden;

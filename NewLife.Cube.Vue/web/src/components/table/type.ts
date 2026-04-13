@@ -28,6 +28,12 @@ export interface TableColumn {
   if?: boolean;
   // 是否可排序
   sort?: boolean;
+  // 单元格链接，支持 {Id}/{Name} 变量替换
+  url?: string;
+  // 链接目标
+  target?: string;
+  // 数据动作
+  dataAction?: string;
 }
 
 export enum Auth {
@@ -35,6 +41,8 @@ export enum Auth {
   'ADD' = 2,
   'SET' = 4,
   'DEL' = 8,
+  'EXPORT' = 16,
+  'IMPORT' = 32,
   'ALL' = 255,
 }
 
@@ -53,6 +61,7 @@ export interface TableMoreProps {
 	operateWidth?: number;
 	authId?: number;
 	data: EmptyObjectType[];
+	stat?: EmptyObjectType | null;
 	columns: TableColumn[];
 	search: ColumnConfig[];
 	param: Param;
