@@ -33,7 +33,8 @@
     "tailwind-merge": "^3.0.0",
     "lucide-react": "^0.500.0",
     "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*"
+    "@cube/field-mapping": "workspace:*",
+    "echarts": "^5.6.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

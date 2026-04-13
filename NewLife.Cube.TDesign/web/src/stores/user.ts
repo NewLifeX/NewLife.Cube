@@ -3,6 +3,18 @@ import { ref, computed } from 'vue';
 import { api } from '@/api';
 import type { MenuItem } from '@cube/api-core';
 
+/** 递归查找菜单树中 URL 匹配的节点 */
+function findMenu(menus: MenuItem[], path: string): MenuItem | undefined {
+  for (const m of menus) {
+    if (m.url && path.toLowerCase().endsWith(m.url.toLowerCase())) return m;
+    if (m.children?.length) {
+      const found = findMenu(m.children, path);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
 export const useUserStore = defineStore('user', () => {
   const user = ref<any>(null);
   const menus = ref<MenuItem[]>([]);
@@ -36,5 +48,11 @@ export const useUserStore = defineStore('user', () => {
     } catch { /* ignore */ }
   }
 
-  return { user, menus, isLoggedIn, displayName, login, logout, fetchUserInfo, fetchMenus };
+  /** 获取指定路径的菜单权限 */
+  function getMenuPermission(path: string): Record<string, string> {
+    const item = findMenu(menus.value, path);
+    return item?.permissions ?? {};
+  }
+
+  return { user, menus, isLoggedIn, displayName, login, logout, fetchUserInfo, fetchMenus, getMenuPermission };
 });

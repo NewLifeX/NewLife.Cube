@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
 import type { DataField } from '@cube/api-core';
-import { inferWidgetType, WidgetType } from '@cube/field-mapping';
+import { resolveWidget, type WidgetType } from '@cube/field-mapping';
 import {
   Input as AInput,
   InputNumber as AInputNumber,
@@ -25,7 +25,7 @@ const emit = defineEmits<{
   (e: 'update:value', v: any): void;
 }>();
 
-const widgetType = computed(() => inferWidgetType(props.field));
+const widgetType = computed(() => resolveWidget(props.field).widget);
 
 const renderField = computed(() => {
   const val = props.value;

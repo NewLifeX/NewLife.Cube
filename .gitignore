@@ -34,3 +34,21 @@ NewLife.Cube.NaiveUI/wwwroot/
 NewLife.Cube.MUI/wwwroot/
 NewLife.Cube.Shadcn/wwwroot/
 pnpm-lock.yaml
+
+# Angular CLI 缓存与编译输出
+NewLife.Cube.Angular/web/.angular/
+NewLife.Cube.Angular/wwwroot/
+
+# SvelteKit 生成目录
+*/web/.svelte-kit/
+
+# Vite/TypeScript 自动生成文件
+**/auto-imports.d.ts
+**/components.d.ts
+**/*.tsbuildinfo
+
+# 前端编译输出（各皮肤 wwwroot 生成子目录）
+NewLife.Cube.ArcoVue/wwwroot/assets/
+NewLife.Cube.Svelte/wwwroot/_app/
+NewLife.Cube.TDesign/wwwroot/assets/
+NewLife.Cube.Vuetify/wwwroot/assets/

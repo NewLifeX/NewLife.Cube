@@ -10,7 +10,7 @@ import { NzPageHeaderModule } from 'ng-zorro-antd/page-header';
   standalone: true,
   imports: [CommonModule, NzCardModule, NzStatisticModule, NzGridModule, NzPageHeaderModule],
   template: `
-    <nz-page-header nzTitle="首页" nzSubtitle="系统概览" [nzBack]="null"></nz-page-header>
+    <nz-page-header nzTitle="首页"></nz-page-header>
     <div nz-row [nzGutter]="16">
       @for (card of stats; track card.title) {
         <div nz-col [nzXs]="24" [nzSm]="12" [nzMd]="6">

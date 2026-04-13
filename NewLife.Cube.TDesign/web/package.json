@@ -11,6 +11,7 @@
   "dependencies": {
     "@cube/api-core": "workspace:*",
     "@cube/field-mapping": "workspace:*",
+    "echarts": "^5.6.0",
     "pinia": "^3.0.0",
     "tdesign-icons-vue-next": "^0.3.0",
     "tdesign-vue-next": "^1.12.0",

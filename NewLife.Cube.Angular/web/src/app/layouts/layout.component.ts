@@ -24,9 +24,9 @@ import { UserService } from '../services/user.service';
   ],
   template: `
     <nz-layout style="min-height: 100vh">
-      <nz-sider nzCollapsible [nzCollapsed]="appService.collapsed()" [nzTrigger]="null" nzWidth="220" nzCollapsedWidth="48">
+      <nz-sider nzCollapsible [nzCollapsed]="appService.collapsed()" [nzTrigger]="null" [nzWidth]="220" [nzCollapsedWidth]="48">
         <div style="height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px;">
-          {{ appService.collapsed() ? '魔' : (appService.siteInfo()?.name || '魔方管理平台') }}
+          {{ appService.collapsed() ? '魔' : (appService.siteInfo()?.displayName || '魔方管理平台') }}
         </div>
         <ul nz-menu nzTheme="dark" nzMode="inline">
           @for (item of userService.menus(); track item.id) {

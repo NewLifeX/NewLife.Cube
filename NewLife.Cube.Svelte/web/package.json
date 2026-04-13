@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*"
+    "@cube/field-mapping": "workspace:*",
+    "echarts": "^5.6.0"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.8",

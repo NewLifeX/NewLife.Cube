@@ -1,12 +1,31 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { onMount, onDestroy } from 'svelte';
   import { getApi } from '$lib/api';
+  import { getMenuPermission } from '$lib/stores/user';
   import FieldInput from '$lib/components/FieldInput.svelte';
-  import { FieldKind, type DataField, type PageResult } from '@cube/api-core';
+  import { FieldKind, Auth, type DataField, type PageResult } from '@cube/api-core';
   import { toCamelCase } from '@cube/field-mapping';
+  import * as echarts from 'echarts';
+
+  const exportOptions = [
+    { label: '导出 Excel', value: 'Excel' },
+    { label: '导出 CSV', value: 'Csv' },
+    { label: '导出 JSON', value: 'Json' },
+    { label: '导出 XML', value: 'Xml' },
+    { label: '导出模板', value: 'ExcelTemplate' },
+  ];
 
   // 当前类型路径
   const typePath = $derived('/' + page.params.type);
+
+  // 权限
+  const perms = $derived(getMenuPermission(typePath));
+  const canAdd = $derived(String(Auth.ADD) in perms);
+  const canEdit = $derived(String(Auth.EDIT) in perms);
+  const canDelete = $derived(String(Auth.DELETE) in perms);
+  const canExport = $derived(String(Auth.EXPORT) in perms);
+  const canImport = $derived(String(Auth.IMPORT) in perms);
 
   // 字段
   let listFields: DataField[] = $state([]);
@@ -21,6 +40,13 @@
   let pageSize = $state(20);
   let keyword = $state('');
   let loading = $state(false);
+  let statData: Record<string, unknown> | null = $state(null);
+
+  // ECharts
+  let chartList: any[] = $state([]);
+  let chartEls: HTMLDivElement[] = [];
+  let chartInstances: any[] = [];
+  let showExportMenu = $state(false);
 
   // 选中
   let selectedIds: Set<number> = $state(new Set());
@@ -56,13 +82,44 @@
   async function loadData() {
     loading = true;
     try {
-      const params: Record<string, any> = { pageIndex, pageSize };
+      const params: Record<string, any> = { pageIndex: pageIndex - 1, pageSize };
       if (keyword) params.key = keyword;
-      const res = await getApi().page.getList(typePath, params) as { data: PageResult<any> };
-      data = res?.data?.data ?? [];
-      total = res?.data?.totalCount ?? 0;
+      const res = await getApi().page.getList(typePath, params);
+      data = (res?.data as any[]) ?? [];
+      statData = (res as any)?.stat ?? null;
+      if ((res as any)?.page) total = (res as any).page.totalCount ?? 0;
     } catch { /* ignore */ }
     loading = false;
+  }
+
+  // ECharts
+  async function loadChartData() {
+    try {
+      const res = await getApi().page.getChartData(typePath);
+      chartList = Array.isArray(res?.data) && res.data.length > 0 ? res.data : [];
+    } catch {
+      chartList = [];
+    }
+  }
+
+  function initCharts() {
+    disposeCharts();
+    chartList.forEach((opt, idx) => {
+      const el = chartEls[idx];
+      if (!el) return;
+      const instance = echarts.init(el);
+      instance.setOption(opt);
+      chartInstances.push(instance);
+    });
+  }
+
+  function disposeCharts() {
+    for (const inst of chartInstances) { inst?.dispose(); }
+    chartInstances = [];
+  }
+
+  function handleResize() {
+    for (const inst of chartInstances) { inst?.resize(); }
   }
 
   // 监听路由变化
@@ -73,7 +130,19 @@
     selectedIds = new Set();
     loadFields();
     loadData();
+    loadChartData();
   });
+
+  // 图表初始化（监听 chartList 变化）
+  $effect(() => {
+    if (chartList.length > 0) {
+      // 延迟一帧确保 DOM 已渲染
+      requestAnimationFrame(() => initCharts());
+    }
+  });
+
+  onMount(() => { window.addEventListener('resize', handleResize); });
+  onDestroy(() => { window.removeEventListener('resize', handleResize); disposeCharts(); });
 
   // 创建
   function handleAdd() {
@@ -163,10 +232,9 @@
   }
 
   // 导出
-  function handleExport() {
-    const params = new URLSearchParams({ pageIndex: String(pageIndex), pageSize: String(pageSize) });
-    if (keyword) params.set('key', keyword);
-    window.open(`${typePath}/ExportCsv?${params}`, '_blank');
+  function handleExport(fmt: string) {
+    window.open(getApi().page.getExportUrl(typePath, fmt), '_blank');
+    showExportMenu = false;
   }
 
   // 导入
@@ -187,16 +255,44 @@
   const totalPages = $derived(Math.ceil(total / pageSize) || 1);
 </script>
 
+<!-- ECharts 图表 -->
+{#if chartList.length > 0}
+  <div class="card p-4 mb-4">
+    {#each chartList as _, idx}
+      <div bind:this={chartEls[idx]} style="width: 100%; height: 400px;"></div>
+    {/each}
+  </div>
+{/if}
+
 <!-- Toolbar -->
 <div class="flex flex-wrap items-center gap-3 mb-4">
-  <button class="btn btn-primary btn-sm" onclick={handleAdd}>新增</button>
-  <button class="btn btn-danger btn-sm" disabled={selectedIds.size === 0} onclick={handleBatchDelete}>
-    批量删除({selectedIds.size})
-  </button>
-  <button class="btn btn-outline btn-sm" onclick={handleExport}>导出</button>
-  <label class="btn btn-outline btn-sm cursor-pointer">
-    导入 <input type="file" accept=".csv,.xls,.xlsx" class="hidden" onchange={handleImport} />
-  </label>
+  {#if canAdd}
+    <button class="btn btn-primary btn-sm" onclick={handleAdd}>新增</button>
+  {/if}
+  {#if canDelete}
+    <button class="btn btn-danger btn-sm" disabled={selectedIds.size === 0} onclick={handleBatchDelete}>
+      批量删除({selectedIds.size})
+    </button>
+  {/if}
+  {#if canExport}
+    <div class="relative">
+      <button class="btn btn-outline btn-sm" onclick={() => showExportMenu = !showExportMenu}>
+        导出 ▾
+      </button>
+      {#if showExportMenu}
+        <div class="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border rounded shadow-lg z-10 min-w-32">
+          {#each exportOptions as opt}
+            <button class="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700" onclick={() => handleExport(opt.value)}>{opt.label}</button>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  {/if}
+  {#if canImport}
+    <label class="btn btn-outline btn-sm cursor-pointer">
+      导入 <input type="file" accept=".csv,.xls,.xlsx" class="hidden" onchange={handleImport} />
+    </label>
+  {/if}
   <div class="flex-1"></div>
   <input class="input w-56" placeholder="搜索..." bind:value={keyword}
     onkeydown={(e) => { if (e.key === 'Enter') { pageIndex = 1; loadData(); } }} />
@@ -234,12 +330,26 @@
             <td class="px-3 py-2.5">
               <div class="flex gap-2">
                 <button class="text-indigo-600 hover:underline text-xs" onclick={() => handleDetail(row.id)}>查看</button>
-                <button class="text-indigo-600 hover:underline text-xs" onclick={() => handleEdit(row.id)}>编辑</button>
-                <button class="text-red-600 hover:underline text-xs" onclick={() => confirmDelete(row.id)}>删除</button>
+                {#if canEdit}
+                  <button class="text-indigo-600 hover:underline text-xs" onclick={() => handleEdit(row.id)}>编辑</button>
+                {/if}
+                {#if canDelete}
+                  <button class="text-red-600 hover:underline text-xs" onclick={() => confirmDelete(row.id)}>删除</button>
+                {/if}
               </div>
             </td>
           </tr>
         {/each}
+        <!-- 统计行 -->
+        {#if statData}
+          <tr class="border-t" style="border-color: var(--border); background: var(--bg-secondary); font-weight: bold;">
+            <td class="px-3 py-2.5"></td>
+            {#each listFields as f, idx}
+              <td class="px-3 py-2.5">{idx === 0 ? '合计' : (statData[f.name] != null ? String(statData[f.name]) : '')}</td>
+            {/each}
+            <td class="px-3 py-2.5"></td>
+          </tr>
+        {/if}
       {/if}
     </tbody>
   </table>
@@ -259,7 +369,7 @@
 
 <!-- Modal: Form -->
 {#if showForm}
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick|self={() => showForm = false}>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick={(e) => { if (e.target === e.currentTarget) showForm = false; }}>
     <div class="card w-full max-w-lg max-h-[80vh] overflow-auto m-4">
       <h3 class="text-lg font-bold mb-4">{isEdit ? '编辑' : '新增'}</h3>
       <div class="space-y-4">
@@ -280,7 +390,7 @@
 
 <!-- Modal: Detail -->
 {#if showDetail}
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick|self={() => showDetail = false}>
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onclick={(e) => { if (e.target === e.currentTarget) showDetail = false; }}>
     <div class="card w-full max-w-lg max-h-[80vh] overflow-auto m-4">
       <h3 class="text-lg font-bold mb-4">详情</h3>
       <div class="space-y-3">

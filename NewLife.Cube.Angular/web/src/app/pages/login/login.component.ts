@@ -39,7 +39,7 @@ import { UserService } from '../../services/user.service';
           <nz-divider nzText="第三方登录"></nz-divider>
           <div style="display: flex; gap: 8px; justify-content: center;">
             @for (p of oauthProviders; track p.name) {
-              <button nz-button (click)="oauthLogin(p.name)">{{ p.displayName || p.name }}</button>
+              <button nz-button (click)="oauthLogin(p.name)">{{ p.nickName || p.name }}</button>
             }
           </div>
         }
@@ -61,7 +61,7 @@ export class LoginComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    const res = await this.api.config.getLoginConfig();
+    const res = await this.api.user.getLoginConfig();
     if (res.data?.providers) this.oauthProviders = res.data.providers;
   }
 

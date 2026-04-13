@@ -22,7 +22,8 @@
     "tslib": "^2.8.0",
     "zone.js": "~0.15.0",
     "@cube/api-core": "workspace:*",
-    "@cube/field-mapping": "workspace:*"
+    "@cube/field-mapping": "workspace:*",
+    "echarts": "^5.6.0"
   },
   "devDependencies": {
     "@angular/build": "^19.2.0",

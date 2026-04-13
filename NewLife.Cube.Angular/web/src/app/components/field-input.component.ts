@@ -7,7 +7,7 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
 import type { DataField } from '@cube/api-core';
-import { inferWidgetType, WidgetType } from '@cube/field-mapping';
+import { resolveWidget } from '@cube/field-mapping';
 
 interface SelectOption {
   value: string;
@@ -24,10 +24,10 @@ interface SelectOption {
   ],
   template: `
     @switch (widgetType) {
-      @case (WidgetType.Switch) {
+      @case ('switch') {
         <nz-switch [ngModel]="!!value" (ngModelChange)="valueChange.emit($event)"></nz-switch>
       }
-      @case (WidgetType.Select) {
+      @case ('select') {
         <nz-select [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
           [nzPlaceHolder]="'请选择' + (field.displayName || field.name)" nzAllowClear style="width: 100%">
           @for (opt of options; track opt.value) {
@@ -35,44 +35,31 @@ interface SelectOption {
           }
         </nz-select>
       }
-      @case (WidgetType.TagList) {
-        <nz-select [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
-          [nzPlaceHolder]="'请选择' + (field.displayName || field.name)" nzAllowClear style="width: 100%">
-          @for (opt of options; track opt.value) {
-            <nz-option [nzValue]="opt.value" [nzLabel]="opt.label"></nz-option>
-          }
-        </nz-select>
-      }
-      @case (WidgetType.Number) {
+      @case ('number') {
         <nz-input-number [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
           [nzPlaceHolder]="'请输入' + (field.displayName || field.name)" style="width: 100%"></nz-input-number>
       }
-      @case (WidgetType.Decimal) {
-        <nz-input-number [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
-          [nzPrecision]="field.precision || 2"
-          [nzPlaceHolder]="'请输入' + (field.displayName || field.name)" style="width: 100%"></nz-input-number>
-      }
-      @case (WidgetType.DateTime) {
-        <nz-date-picker [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
-          nzShowTime [nzPlaceHolder]="'请选择' + (field.displayName || field.name)" style="width: 100%"></nz-date-picker>
-      }
-      @case (WidgetType.Date) {
+      @case ('date') {
         <nz-date-picker [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
           [nzPlaceHolder]="'请选择' + (field.displayName || field.name)" style="width: 100%"></nz-date-picker>
       }
-      @case (WidgetType.TextArea) {
+      @case ('datetime') {
+        <nz-date-picker [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
+          nzShowTime [nzPlaceHolder]="'请选择' + (field.displayName || field.name)" style="width: 100%"></nz-date-picker>
+      }
+      @case ('textarea') {
         <textarea nz-input [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
           [placeholder]="'请输入' + (field.displayName || field.name)" [nzAutosize]="{ minRows: 3 }"></textarea>
       }
-      @case (WidgetType.RichText) {
+      @case ('html') {
         <textarea nz-input [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
           [placeholder]="'请输入' + (field.displayName || field.name)" [nzAutosize]="{ minRows: 3 }"></textarea>
       }
-      @case (WidgetType.Password) {
+      @case ('password') {
         <input nz-input type="password" [ngModel]="value" (ngModelChange)="valueChange.emit($event)"
           [placeholder]="'请输入' + (field.displayName || field.name)" />
       }
-      @case (WidgetType.ReadOnly) {
+      @case ('readonly') {
         <span>{{ value ?? '-' }}</span>
       }
       @default {
@@ -87,16 +74,15 @@ export class FieldInputComponent {
   @Input() value: any;
   @Output() valueChange = new EventEmitter<any>();
 
-  WidgetType = WidgetType;
-
-  get widgetType(): WidgetType {
-    return inferWidgetType(this.field);
+  get widgetType(): string {
+    return resolveWidget(this.field).widget;
   }
 
   get options(): SelectOption[] {
     if (!this.field.dataSource) return [];
     try {
-      const map = JSON.parse(this.field.dataSource) as Record<string, string>;
+      const src = this.field.dataSource;
+      const map = (typeof src === 'string' ? JSON.parse(src) : src) as Record<string, string>;
       return Object.entries(map).map(([value, label]) => ({ value, label }));
     } catch {
       return [];

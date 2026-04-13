@@ -33,12 +33,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { DataField } from '@cube/api-core';
-import { inferWidgetType, WidgetType } from '@cube/field-mapping';
+import { resolveWidget, type WidgetType } from '@cube/field-mapping';
 
 const props = defineProps<{ field: DataField; modelValue: any }>();
 const emit = defineEmits<{ 'update:modelValue': [v: any] }>();
 
-const wt = computed(() => inferWidgetType(props.field));
+const wt = computed(() => resolveWidget(props.field).widget);
 
 const options = computed(() => {
   if (!props.field.dataSource) return [];

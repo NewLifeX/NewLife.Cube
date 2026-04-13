@@ -1,11 +1,21 @@
 <template>
   <div>
+    <!-- ECharts 图表区域 -->
+    <v-card v-if="chartList.length" class="mb-4 pa-4">
+      <div
+        v-for="(_, idx) in chartList"
+        :key="idx"
+        :ref="(el: any) => setChartRef(el as HTMLElement, idx)"
+        style="width: 100%; height: 400px"
+      />
+    </v-card>
+
     <!-- 搜索 -->
     <v-card v-if="searchFields.length" class="mb-4 pa-4">
       <v-form @submit.prevent="handleSearch">
         <v-row dense>
           <v-col v-for="field in searchFields" :key="field.name" cols="12" sm="6" md="3">
-            <FieldInput :field="field" :value="searchForm[field.name]" @update:value="(v) => (searchForm[field.name] = v)" />
+            <FieldInput :field="field" :value="searchForm[field.name]" @update:value="(v: any) => (searchForm[field.name] = v)" />
           </v-col>
           <v-col cols="12" sm="6" md="3" class="d-flex align-center ga-2">
             <v-btn type="submit" color="primary" prepend-icon="mdi-magnify">搜索</v-btn>
@@ -18,12 +28,21 @@
     <!-- 操作栏 -->
     <div class="d-flex justify-space-between mb-3">
       <div class="d-flex ga-2">
-        <v-btn color="primary" prepend-icon="mdi-plus" @click="handleAdd">新增</v-btn>
-        <v-btn color="error" :disabled="!selected.length" prepend-icon="mdi-delete" @click="handleBatchDelete">批量删除</v-btn>
+        <v-btn v-if="canAdd" color="primary" prepend-icon="mdi-plus" @click="handleAdd">新增</v-btn>
+        <v-btn v-if="canDelete" color="error" :disabled="!selected.length" prepend-icon="mdi-delete" @click="handleBatchDelete">批量删除</v-btn>
       </div>
       <div class="d-flex ga-2">
-        <v-btn variant="outlined" @click="handleExportCsv">导出CSV</v-btn>
-        <v-btn variant="outlined" @click="triggerImport">导入</v-btn>
+        <v-menu v-if="canExport">
+          <template #activator="{ props: menuProps }">
+            <v-btn variant="outlined" v-bind="menuProps" append-icon="mdi-chevron-down">导出</v-btn>
+          </template>
+          <v-list density="compact">
+            <v-list-item v-for="opt in exportOptions" :key="opt.value" @click="handleExport(opt.value)">
+              <v-list-item-title>{{ opt.label }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <v-btn v-if="canImport" variant="outlined" @click="triggerImport">导入</v-btn>
         <input ref="fileInput" type="file" style="display: none;" @change="handleImport" />
       </div>
     </div>
@@ -41,10 +60,17 @@
     >
       <template #item.actions="{ item }">
         <v-btn variant="text" size="small" @click="handleDetail(item)">详情</v-btn>
-        <v-btn variant="text" size="small" @click="handleEdit(item)">编辑</v-btn>
-        <v-btn variant="text" size="small" color="error" @click="confirmDelete(item)">删除</v-btn>
+        <v-btn v-if="canEdit" variant="text" size="small" @click="handleEdit(item)">编辑</v-btn>
+        <v-btn v-if="canDelete" variant="text" size="small" color="error" @click="confirmDelete(item)">删除</v-btn>
       </template>
       <template #bottom>
+        <!-- 统计行 -->
+        <div v-if="statData" class="d-flex ga-4 pa-2" style="background: #f5f5f5;">
+          <span class="font-weight-bold">合计</span>
+          <span v-for="f in listFields.filter(f => statData![f.name] != null)" :key="f.name">
+            {{ f.displayName || f.name }}：{{ statData[f.name] }}
+          </span>
+        </div>
         <div class="d-flex justify-end align-center pa-2 ga-4">
           <span class="text-body-2">共 {{ total }} 条</span>
           <v-pagination v-model="page" :length="totalPages" density="compact" :total-visible="5" @update:model-value="loadData" />
@@ -60,7 +86,7 @@
           <v-form>
             <v-row dense>
               <v-col v-for="field in formFields" :key="field.name" cols="12">
-                <FieldInput :field="field" :value="formData[field.name]" @update:value="(v) => (formData[field.name] = v)" />
+                <FieldInput :field="field" :value="formData[field.name]" @update:value="(v: any) => (formData[field.name] = v)" />
               </v-col>
             </v-row>
           </v-form>
@@ -110,14 +136,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue';
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, markRaw } from 'vue';
 import { useRoute } from 'vue-router';
-import { FieldKind, type DataField } from '@cube/api-core';
+import { FieldKind, Auth, type DataField } from '@cube/api-core';
+import * as echarts from 'echarts';
 import cubeApi from '@/api';
+import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
 
 const route = useRoute();
+const userStore = useUserStore();
 const typePath = computed(() => '/' + (route.params.type as string[] || []).join('/'));
+
+// --- 权限控制 ---
+const menuPerms = computed(() => userStore.getMenuPermission(typePath.value));
+const canAdd = computed(() => String(Auth.ADD) in menuPerms.value);
+const canEdit = computed(() => String(Auth.EDIT) in menuPerms.value);
+const canDelete = computed(() => String(Auth.DELETE) in menuPerms.value);
+const canExport = computed(() => String(Auth.EXPORT) in menuPerms.value);
+const canImport = computed(() => String(Auth.IMPORT) in menuPerms.value);
+
+const exportOptions = [
+  { label: '导出 Excel', value: 'Excel' },
+  { label: '导出 CSV', value: 'Csv' },
+  { label: '导出 JSON', value: 'Json' },
+  { label: '导出 XML', value: 'Xml' },
+  { label: '导出模板', value: 'ExcelTemplate' },
+];
 
 // 字段
 const listFields = ref<DataField[]>([]);
@@ -134,6 +179,7 @@ const page = ref(1);
 const pageSize = ref(20);
 const total = ref(0);
 const totalPages = computed(() => Math.ceil(total.value / pageSize.value) || 1);
+const statData = ref<Record<string, unknown> | null>(null);
 
 // 搜索
 const searchForm = reactive<Record<string, any>>({});
@@ -154,6 +200,10 @@ const deleteTarget = ref<Record<string, any> | null>(null);
 
 // 文件导入
 const fileInput = ref<HTMLInputElement | null>(null);
+
+// ECharts
+const chartList = ref<any[]>([]);
+const chartInstances = ref<any[]>([]);
 
 // 表头
 const headers = computed(() => {
@@ -190,108 +240,74 @@ async function loadData() {
   loading.value = true;
   try {
     const res = await cubeApi.page.getList(typePath.value, {
-      pageIndex: page.value,
+      pageIndex: page.value - 1,
       pageSize: pageSize.value,
       ...searchForm,
     });
     tableData.value = res.data || [];
-    if (res.pager) total.value = res.pager.totalCount || 0;
+    statData.value = (res.stat as Record<string, unknown>) ?? null;
+    if (res.page) total.value = res.page.totalCount || 0;
   } finally {
     loading.value = false;
   }
 }
 
-function handleSearch() {
-  page.value = 1;
-  loadData();
+async function loadChartData() {
+  try {
+    const res = await cubeApi.page.getChartData(typePath.value);
+    chartList.value = Array.isArray(res.data) && res.data.length > 0 ? res.data : [];
+  } catch {
+    chartList.value = [];
+  }
 }
 
-function handleReset() {
-  Object.keys(searchForm).forEach((k) => delete searchForm[k]);
-  page.value = 1;
-  loadData();
+function setChartRef(el: HTMLElement | null, idx: number) {
+  if (!el) return;
+  nextTick(() => {
+    if (chartInstances.value[idx]) chartInstances.value[idx].dispose();
+    const instance = markRaw(echarts.init(el));
+    if (chartList.value[idx]) instance.setOption(chartList.value[idx]);
+    chartInstances.value[idx] = instance;
+  });
 }
 
-function handleAdd() {
-  isEdit.value = false;
-  Object.keys(formData).forEach((k) => delete formData[k]);
-  formDialogVisible.value = true;
+function onChartResize() {
+  for (const inst of chartInstances.value) { inst?.resize(); }
 }
 
-function handleEdit(row: Record<string, any>) {
-  isEdit.value = true;
-  Object.keys(formData).forEach((k) => delete formData[k]);
-  Object.assign(formData, row);
-  formDialogVisible.value = true;
-}
+function handleSearch() { page.value = 1; loadData(); }
+function handleReset() { Object.keys(searchForm).forEach((k) => delete searchForm[k]); page.value = 1; loadData(); }
+
+function handleAdd() { isEdit.value = false; Object.keys(formData).forEach((k) => delete formData[k]); formDialogVisible.value = true; }
+function handleEdit(row: Record<string, any>) { isEdit.value = true; Object.keys(formData).forEach((k) => delete formData[k]); Object.assign(formData, row); formDialogVisible.value = true; }
 
 async function handleFormSubmit() {
   submitLoading.value = true;
   try {
-    if (isEdit.value) {
-      await cubeApi.page.update(typePath.value, formData);
-    } else {
-      await cubeApi.page.add(typePath.value, formData);
-    }
+    if (isEdit.value) await cubeApi.page.update(typePath.value, formData);
+    else await cubeApi.page.add(typePath.value, formData);
     formDialogVisible.value = false;
     loadData();
-  } finally {
-    submitLoading.value = false;
-  }
+  } finally { submitLoading.value = false; }
 }
 
-function handleDetail(row: Record<string, any>) {
-  Object.keys(detailData).forEach((k) => delete detailData[k]);
-  Object.assign(detailData, row);
-  detailDialogVisible.value = true;
-}
-
-function confirmDelete(row: Record<string, any>) {
-  deleteTarget.value = row;
-  deleteDialogVisible.value = true;
-}
-
-async function doDelete() {
-  if (deleteTarget.value) {
-    await cubeApi.page.remove(typePath.value, deleteTarget.value.id);
-    deleteDialogVisible.value = false;
-    deleteTarget.value = null;
-    loadData();
-  }
-}
-
-async function handleBatchDelete() {
-  if (!selected.value.length) return;
-  await cubeApi.page.deleteSelect(typePath.value, selected.value as number[]);
-  selected.value = [];
-  loadData();
-}
-
-function handleExportCsv() {
-  window.open(`${typePath.value}/ExportCsv`, '_blank');
-}
-
-function triggerImport() {
-  fileInput.value?.click();
-}
+function handleDetail(row: Record<string, any>) { Object.keys(detailData).forEach((k) => delete detailData[k]); Object.assign(detailData, row); detailDialogVisible.value = true; }
+function confirmDelete(row: Record<string, any>) { deleteTarget.value = row; deleteDialogVisible.value = true; }
+async function doDelete() { if (deleteTarget.value) { await cubeApi.page.remove(typePath.value, deleteTarget.value.id); deleteDialogVisible.value = false; deleteTarget.value = null; loadData(); } }
+async function handleBatchDelete() { if (!selected.value.length) return; await cubeApi.page.deleteSelect(typePath.value, selected.value as number[]); selected.value = []; loadData(); }
+function handleExport(format: string) { window.open(cubeApi.page.getExportUrl(typePath.value, format), '_blank'); }
+function triggerImport() { fileInput.value?.click(); }
 
 async function handleImport(e: Event) {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) return;
-  const formDataObj = new FormData();
-  formDataObj.append('file', file);
-  await cubeApi.page.importFile(typePath.value, formDataObj);
+  await cubeApi.page.importFile(typePath.value, file);
   input.value = '';
   loadData();
 }
 
-watch(typePath, () => {
-  page.value = 1;
-  loadFields().then(loadData);
-});
-
-onMounted(() => {
-  loadFields().then(loadData);
-});
+watch(typePath, () => { page.value = 1; loadFields().then(loadData); loadChartData(); });
+onMounted(() => { loadFields().then(loadData); loadChartData(); window.addEventListener('resize', onChartResize); });
+onBeforeUnmount(() => { window.removeEventListener('resize', onChartResize); for (const inst of chartInstances.value) { inst?.dispose(); } });
 </script>

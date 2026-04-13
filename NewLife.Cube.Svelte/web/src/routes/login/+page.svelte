@@ -52,7 +52,7 @@
         <div class="mb-4 p-3 rounded-md bg-red-50 text-red-600 text-sm dark:bg-red-900/30 dark:text-red-400">{error}</div>
       {/if}
 
-      <form onsubmit|preventDefault={handleLogin} class="space-y-4">
+      <form onsubmit={(e) => { e.preventDefault(); handleLogin(); }} class="space-y-4">
         <div>
           <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">用户名</label>
           <input class="input" type="text" bind:value={username} placeholder="请输入用户名" autocomplete="username" />

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChildren, QueryList, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,9 +15,12 @@ import { NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzSpaceModule } from 'ng-zorro-antd/space';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { FieldKind, type DataField } from '@cube/api-core';
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { FieldKind, Auth, type DataField } from '@cube/api-core';
 import { ApiService } from '../../services/api.service';
+import { UserService } from '../../services/user.service';
 import { FieldInputComponent } from '../../components/field-input.component';
+import * as echarts from 'echarts';
 
 @Component({
   selector: 'app-dynamic-page',
@@ -27,9 +30,18 @@ import { FieldInputComponent } from '../../components/field-input.component';
     NzTableModule, NzButtonModule, NzCardModule, NzFormModule,
     NzModalModule, NzDescriptionsModule, NzPopconfirmModule,
     NzUploadModule, NzSpaceModule, NzIconModule, NzDividerModule,
-    FieldInputComponent,
+    NzDropDownModule, FieldInputComponent,
   ],
   template: `
+    <!-- ECharts 图表 -->
+    @if (chartList.length) {
+      <nz-card style="margin-bottom: 16px;">
+        @for (opt of chartList; track $index) {
+          <div #chartContainer style="width: 100%; height: 400px;"></div>
+        }
+      </nz-card>
+    }
+
     <!-- 搜索 -->
     @if (searchFields.length) {
       <nz-card style="margin-bottom: 16px;">
@@ -58,18 +70,35 @@ import { FieldInputComponent } from '../../components/field-input.component';
     <!-- 操作栏 -->
     <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
       <nz-space>
-        <button *nzSpaceItem nz-button nzType="primary" (click)="handleAdd()">
-          <span nz-icon nzType="plus"></span>新增
-        </button>
-        <button *nzSpaceItem nz-button nzDanger [disabled]="!checkedIds.size" (click)="handleBatchDelete()">
-          <span nz-icon nzType="delete"></span>批量删除
-        </button>
+        @if (canAdd) {
+          <button *nzSpaceItem nz-button nzType="primary" (click)="handleAdd()">
+            <span nz-icon nzType="plus"></span>新增
+          </button>
+        }
+        @if (canDelete) {
+          <button *nzSpaceItem nz-button nzDanger [disabled]="!checkedIds.size" (click)="handleBatchDelete()">
+            <span nz-icon nzType="delete"></span>批量删除
+          </button>
+        }
       </nz-space>
       <nz-space>
-        <button *nzSpaceItem nz-button (click)="handleExportCsv()">导出CSV</button>
-        <nz-upload *nzSpaceItem [nzAction]="typePath + '/ImportFile'" [nzShowUploadList]="false" (nzChange)="onImportChange($event)">
-          <button nz-button>导入</button>
-        </nz-upload>
+        @if (canExport) {
+          <button *nzSpaceItem nz-button nz-dropdown [nzDropdownMenu]="exportMenu">
+            <span nz-icon nzType="download"></span>导出 <span nz-icon nzType="down"></span>
+          </button>
+          <nz-dropdown-menu #exportMenu="nzDropdownMenu">
+            <ul nz-menu>
+              @for (opt of exportOptions; track opt.value) {
+                <li nz-menu-item (click)="handleExport(opt.value)">{{ opt.label }}</li>
+              }
+            </ul>
+          </nz-dropdown-menu>
+        }
+        @if (canImport) {
+          <nz-upload *nzSpaceItem [nzAction]="typePath + '/ImportFile'" [nzShowUploadList]="false" (nzChange)="onImportChange($event)">
+            <button nz-button><span nz-icon nzType="upload"></span>导入</button>
+          </nz-upload>
+        }
       </nz-space>
     </div>
 
@@ -108,11 +137,27 @@ import { FieldInputComponent } from '../../components/field-input.component';
             }
             <td>
               <a (click)="handleDetail(row)">详情</a>
-              <nz-divider nzType="vertical"></nz-divider>
-              <a (click)="handleEdit(row)">编辑</a>
-              <nz-divider nzType="vertical"></nz-divider>
-              <a nz-popconfirm nzPopconfirmTitle="确认删除？" (nzOnConfirm)="handleDelete(row)" class="text-danger">删除</a>
+              @if (canEdit) {
+                <nz-divider nzType="vertical"></nz-divider>
+                <a (click)="handleEdit(row)">编辑</a>
+              }
+              @if (canDelete) {
+                <nz-divider nzType="vertical"></nz-divider>
+                <a nz-popconfirm nzPopconfirmTitle="确认删除？" (nzOnConfirm)="handleDelete(row)" class="text-danger">删除</a>
+              }
             </td>
+          </tr>
+        }
+        <!-- 统计行 -->
+        @if (statData) {
+          <tr style="background: #fafafa; font-weight: bold;">
+            <td></td>
+            @for (field of listFields; track field.name; let idx = $index) {
+              @if (field.visible !== false) {
+                <td>{{ idx === 0 ? '合计' : (statData[field.name] != null ? statData[field.name] : '') }}</td>
+              }
+            }
+            <td></td>
           </tr>
         }
       </tbody>
@@ -150,7 +195,9 @@ import { FieldInputComponent } from '../../components/field-input.component';
   `,
   styles: [`.text-danger { color: #ff4d4f; }`],
 })
-export class DynamicPageComponent implements OnInit, OnDestroy {
+export class DynamicPageComponent implements OnInit, OnDestroy, AfterViewChecked {
+  @ViewChildren('chartContainer') chartContainers!: QueryList<ElementRef<HTMLDivElement>>;
+
   typePath = '';
   listFields: DataField[] = [];
   searchFields: DataField[] = [];
@@ -163,6 +210,7 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
   pageIndex = 1;
   pageSize = 20;
   total = 0;
+  statData: Record<string, any> | null = null;
 
   searchForm: Record<string, any> = {};
   checkedIds = new Set<number>();
@@ -176,6 +224,27 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
   detailVisible = false;
   detailData: Record<string, any> = {};
 
+  // 权限
+  canAdd = false;
+  canEdit = false;
+  canDelete = false;
+  canExport = false;
+  canImport = false;
+
+  // ECharts
+  chartList: any[] = [];
+  private chartInstances: any[] = [];
+  private chartsInitialized = false;
+  private resizeHandler = () => { for (const inst of this.chartInstances) { inst?.resize(); } };
+
+  exportOptions = [
+    { label: '导出 Excel', value: 'Excel' },
+    { label: '导出 CSV', value: 'Csv' },
+    { label: '导出 JSON', value: 'Json' },
+    { label: '导出 XML', value: 'Xml' },
+    { label: '导出模板', value: 'ExcelTemplate' },
+  ];
+
   private routeSub?: Subscription;
 
   get formFields(): DataField[] {
@@ -186,6 +255,7 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private api: ApiService,
+    private userService: UserService,
     private message: NzMessageService,
   ) {}
 
@@ -193,12 +263,60 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
     this.routeSub = this.route.url.subscribe((segments) => {
       this.typePath = '/' + segments.map(s => s.path).join('/');
       this.pageIndex = 1;
+      this.updatePermissions();
       this.loadFields().then(() => this.loadData());
+      this.loadChartData();
     });
+    window.addEventListener('resize', this.resizeHandler);
   }
 
   ngOnDestroy() {
     this.routeSub?.unsubscribe();
+    window.removeEventListener('resize', this.resizeHandler);
+    this.disposeCharts();
+  }
+
+  ngAfterViewChecked() {
+    if (this.chartList.length && this.chartContainers?.length && !this.chartsInitialized) {
+      this.initCharts();
+      this.chartsInitialized = true;
+    }
+  }
+
+  private updatePermissions() {
+    const perms = this.userService.getMenuPermission(this.typePath);
+    this.canAdd = String(Auth.ADD) in perms;
+    this.canEdit = String(Auth.EDIT) in perms;
+    this.canDelete = String(Auth.DELETE) in perms;
+    this.canExport = String(Auth.EXPORT) in perms;
+    this.canImport = String(Auth.IMPORT) in perms;
+  }
+
+  private disposeCharts() {
+    for (const inst of this.chartInstances) { inst?.dispose(); }
+    this.chartInstances = [];
+    this.chartsInitialized = false;
+  }
+
+  private initCharts() {
+    this.disposeCharts();
+    this.chartContainers.forEach((ref, idx) => {
+      const opt = this.chartList[idx];
+      if (!opt) return;
+      const instance = echarts.init(ref.nativeElement);
+      instance.setOption(opt);
+      this.chartInstances.push(instance);
+    });
+  }
+
+  async loadChartData() {
+    try {
+      const res = await this.api.page.getChartData(this.typePath);
+      this.chartList = Array.isArray(res.data) && res.data.length > 0 ? res.data : [];
+      this.chartsInitialized = false;
+    } catch {
+      this.chartList = [];
+    }
   }
 
   async loadFields() {
@@ -221,12 +339,13 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
     this.loading = true;
     try {
       const res = await this.api.page.getList(this.typePath, {
-        pageIndex: this.pageIndex,
+        pageIndex: this.pageIndex - 1,
         pageSize: this.pageSize,
         ...this.searchForm,
       });
       this.tableData = res.data || [];
-      if (res.pager) this.total = res.pager.totalCount || 0;
+      this.statData = (res as any).stat ?? null;
+      if (res.page) this.total = res.page.totalCount || 0;
     } finally {
       this.loading = false;
     }
@@ -318,8 +437,8 @@ export class DynamicPageComponent implements OnInit, OnDestroy {
     this.loadData();
   }
 
-  handleExportCsv() {
-    window.open(`${this.typePath}/ExportCsv`, '_blank');
+  handleExport(fmt: string) {
+    window.open(this.api.page.getExportUrl(this.typePath, fmt), '_blank');
   }
 
   onImportChange(event: any) {

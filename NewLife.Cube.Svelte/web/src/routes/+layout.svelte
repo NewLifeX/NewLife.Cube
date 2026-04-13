@@ -64,16 +64,14 @@
               </button>
               {#if openKeys[item.name ?? ''] && !$collapsed}
                 {#each item.children as child}
-                  <a href={buildUrl(child)} class="flex items-center pl-10 pr-4 py-2 text-sm text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
-                    class:text-white={page.url.pathname === buildUrl(child)} class:bg-white/10={page.url.pathname === buildUrl(child)}>
+                  <a href={buildUrl(child)} class="flex items-center pl-10 pr-4 py-2 text-sm text-gray-400 hover:bg-white/10 hover:text-white transition-colors {page.url.pathname === buildUrl(child) ? 'text-white bg-white/10' : ''}">
                     {child.displayName || child.name}
                   </a>
                 {/each}
               {/if}
             </div>
           {:else}
-            <a href={buildUrl(item)} class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors"
-              class:text-white={page.url.pathname === buildUrl(item)} class:bg-white/10={page.url.pathname === buildUrl(item)}>
+            <a href={buildUrl(item)} class="flex items-center px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 transition-colors {page.url.pathname === buildUrl(item) ? 'text-white bg-white/10' : ''}">
               {$collapsed ? '' : (item.displayName || item.name)}
             </a>
           {/if}

@@ -1,25 +1,45 @@
-import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, type ChangeEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
-  Plus, Trash2, Download, Upload, Search, RefreshCw, Eye, Pencil,
+  Plus, Trash2, Download, Upload, Search, RefreshCw, Eye, Pencil, ChevronDown,
 } from 'lucide-react';
-import { FieldKind, type DataField } from '@cube/api-core';
+import { FieldKind, Auth, type DataField } from '@cube/api-core';
 import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
+import * as echarts from 'echarts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableFooter,
 } from '@/components/ui/table';
 import {
   Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import FieldInput from '@/components/FieldInput';
 import api from '@/api';
+import { useUserStore } from '@/stores/user';
+
+const exportOptions = [
+  { label: '导出 Excel', value: 'Excel' },
+  { label: '导出 CSV', value: 'Csv' },
+  { label: '导出 JSON', value: 'Json' },
+  { label: '导出 XML', value: 'Xml' },
+  { label: '导出模板', value: 'ExcelTemplate' },
+];
 
 export default function DynamicPage() {
   const location = useLocation();
   const type = location.pathname;
+  const getMenuPermission = useUserStore((s) => s.getMenuPermission);
+  const perms = getMenuPermission(type);
+  const canAdd = String(Auth.ADD) in perms;
+  const canEdit = String(Auth.EDIT) in perms;
+  const canDelete = String(Auth.DELETE) in perms;
+  const canExport = String(Auth.EXPORT) in perms;
+  const canImport = String(Auth.IMPORT) in perms;
 
   const [listFields, setListFields] = useState<FieldMapping[]>([]);
   const [searchFields, setSearchFields] = useState<FieldMapping[]>([]);
@@ -34,6 +54,12 @@ export default function DynamicPage() {
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState<Set<string | number>>(new Set());
   const [searchForm, setSearchForm] = useState<Record<string, any>>({});
+  const [statData, setStatData] = useState<Record<string, unknown> | null>(null);
+
+  // ECharts
+  const [chartList, setChartList] = useState<any[]>([]);
+  const chartRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const chartInstances = useRef<any[]>([]);
 
   const [formOpen, setFormOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -64,11 +90,45 @@ export default function DynamicPage() {
     const pageIndex = p ?? page;
     const res = await api.page.getList(type, { ...searchForm, pageIndex, pageSize });
     setData((res.data as any[]) ?? []);
+    setStatData((res as any).stat ?? null);
     if (res.page) setTotal(res.page.totalCount);
     if (p !== undefined) setPage(p);
   }, [type, searchForm, page, pageSize]);
 
   useEffect(() => { loadData(0); }, [type, pageSize]);
+
+  // ECharts
+  const loadChartData = useCallback(async () => {
+    try {
+      const res = await api.page.getChartData(type);
+      setChartList(Array.isArray(res.data) && res.data.length > 0 ? res.data : []);
+    } catch {
+      setChartList([]);
+    }
+  }, [type]);
+
+  useEffect(() => { loadChartData(); }, [type]);
+
+  useEffect(() => {
+    chartList.forEach((opt, idx) => {
+      const el = chartRefs.current[idx];
+      if (!el) return;
+      if (chartInstances.current[idx]) chartInstances.current[idx].dispose();
+      const instance = echarts.init(el);
+      instance.setOption(opt);
+      chartInstances.current[idx] = instance;
+    });
+
+    const handleResize = () => {
+      for (const inst of chartInstances.current) { inst?.resize(); }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      for (const inst of chartInstances.current) { inst?.dispose(); }
+      chartInstances.current = [];
+    };
+  }, [chartList]);
 
   // 选择
   const toggleSelect = (id: string | number) => {
@@ -79,11 +139,8 @@ export default function DynamicPage() {
     });
   };
   const toggleSelectAll = () => {
-    if (selected.size === data.length) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(data.map((r) => r[pkField])));
-    }
+    if (selected.size === data.length) setSelected(new Set());
+    else setSelected(new Set(data.map((r) => r[pkField])));
   };
 
   // CRUD
@@ -105,15 +162,8 @@ export default function DynamicPage() {
     setFormOpen(false);
     loadData();
   };
-  const handleDelete = async (id: string | number) => {
-    await api.page.remove(type, id);
-    loadData();
-  };
-  const handleDeleteSelect = async () => {
-    await api.page.deleteSelect(type, [...selected]);
-    setSelected(new Set());
-    loadData();
-  };
+  const handleDelete = async (id: string | number) => { await api.page.remove(type, id); loadData(); };
+  const handleDeleteSelect = async () => { await api.page.deleteSelect(type, [...selected]); setSelected(new Set()); loadData(); };
   const handleExport = (fmt: string) => { window.open(api.page.getExportUrl(type, fmt), '_blank'); };
   const handleImport = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -128,6 +178,15 @@ export default function DynamicPage() {
 
   return (
     <div className="space-y-4">
+      {/* ECharts 图表区域 */}
+      {chartList.length > 0 && (
+        <div className="rounded-lg border bg-card p-4">
+          {chartList.map((_, idx) => (
+            <div key={idx} ref={(el) => { chartRefs.current[idx] = el; }} style={{ width: '100%', height: 400 }} />
+          ))}
+        </div>
+      )}
+
       {/* 搜索栏 */}
       {searchFields.length > 0 && (
         <div className="flex flex-wrap items-end gap-3 rounded-lg border bg-card p-4">
@@ -147,16 +206,28 @@ export default function DynamicPage() {
 
       {/* 工具栏 */}
       <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" onClick={showAdd}><Plus className="mr-1 h-3 w-3" />新增</Button>
-        <Button variant="outline" size="sm" onClick={() => handleExport('Csv')}><Download className="mr-1 h-3 w-3" />CSV</Button>
-        <Button variant="outline" size="sm" onClick={() => handleExport('Excel')}><Download className="mr-1 h-3 w-3" />Excel</Button>
-        <Button variant="outline" size="sm" asChild>
-          <label>
-            <Upload className="mr-1 h-3 w-3" />导入
-            <input type="file" className="hidden" accept=".csv,.xlsx,.xls" onChange={handleImport} />
-          </label>
-        </Button>
-        {selected.size > 0 && (
+        {canAdd && <Button size="sm" onClick={showAdd}><Plus className="mr-1 h-3 w-3" />新增</Button>}
+        {canExport && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm"><Download className="mr-1 h-3 w-3" />导出 <ChevronDown className="ml-1 h-3 w-3" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {exportOptions.map((opt) => (
+                <DropdownMenuItem key={opt.value} onClick={() => handleExport(opt.value)}>{opt.label}</DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+        {canImport && (
+          <Button variant="outline" size="sm" asChild>
+            <label>
+              <Upload className="mr-1 h-3 w-3" />导入
+              <input type="file" className="hidden" accept=".csv,.xlsx,.xls" onChange={handleImport} />
+            </label>
+          </Button>
+        )}
+        {canDelete && selected.size > 0 && (
           <Button variant="destructive" size="sm" onClick={handleDeleteSelect}>
             <Trash2 className="mr-1 h-3 w-3" />删除 ({selected.size})
           </Button>
@@ -171,10 +242,7 @@ export default function DynamicPage() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
-                <Checkbox
-                  checked={data.length > 0 && selected.size === data.length}
-                  onCheckedChange={toggleSelectAll}
-                />
+                <Checkbox checked={data.length > 0 && selected.size === data.length} onCheckedChange={toggleSelectAll} />
               </TableHead>
               {listFields.map((f) => (
                 <TableHead key={f.field.name}>{f.field.displayName ?? f.field.name}</TableHead>
@@ -198,12 +266,16 @@ export default function DynamicPage() {
                       <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => showDetail(row)}>
                         <Eye className="h-3 w-3" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => showEdit(row)}>
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      {canEdit && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => showEdit(row)}>
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                      )}
+                      {canDelete && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(id)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -211,12 +283,24 @@ export default function DynamicPage() {
             })}
             {data.length === 0 && (
               <TableRow>
-                <TableCell colSpan={listFields.length + 2} className="h-24 text-center text-muted-foreground">
-                  暂无数据
-                </TableCell>
+                <TableCell colSpan={listFields.length + 2} className="h-24 text-center text-muted-foreground">暂无数据</TableCell>
               </TableRow>
             )}
           </TableBody>
+          {/* 统计行 */}
+          {statData && (
+            <TableFooter>
+              <TableRow>
+                <TableCell />
+                {listFields.map((f, idx) => (
+                  <TableCell key={f.field.name} className="font-bold">
+                    {idx === 0 ? '合计' : (statData[f.field.name] != null ? String(statData[f.field.name]) : '')}
+                  </TableCell>
+                ))}
+                <TableCell />
+              </TableRow>
+            </TableFooter>
+          )}
         </Table>
       </div>
 
@@ -239,12 +323,7 @@ export default function DynamicPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             {formFields.map((f) => (
-              <FieldInput
-                key={f.field.name}
-                mapping={f}
-                value={editForm[f.field.name] ?? ''}
-                onChange={(v) => setEditForm((prev) => ({ ...prev, [f.field.name]: v }))}
-              />
+              <FieldInput key={f.field.name} mapping={f} value={editForm[f.field.name] ?? ''} onChange={(v) => setEditForm((prev) => ({ ...prev, [f.field.name]: v }))} />
             ))}
           </div>
           <DialogFooter>

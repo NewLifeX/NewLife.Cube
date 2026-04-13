@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DataField } from '@cube/api-core';
-  import { inferWidgetType, WidgetType } from '@cube/field-mapping';
+  import { resolveWidget, type WidgetType } from '@cube/field-mapping';
 
   interface Props {
     field: DataField;
@@ -10,7 +10,7 @@
 
   let { field, value = $bindable(), onchange }: Props = $props();
 
-  const wt = $derived(inferWidgetType(field));
+  const wt = $derived(resolveWidget(field).widget);
 
   const options = $derived.by(() => {
     if (!field.dataSource) return [];

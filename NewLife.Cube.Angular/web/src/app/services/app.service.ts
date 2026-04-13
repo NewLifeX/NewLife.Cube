@@ -23,7 +23,7 @@ export class AppService {
   }
 
   async fetchSiteInfo() {
-    const res = await this.api.config.getSiteInfo();
+    const res = await this.api.user.getSiteInfo();
     if (res.data) this._siteInfo.set(res.data);
   }
 }

@@ -1,20 +1,37 @@
-import { useState, useEffect, useCallback, type ChangeEvent } from 'react';
+import { useState, useEffect, useCallback, useRef, type ChangeEvent, type MouseEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   Box, Button, Card, CardContent, Checkbox, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer,
+  IconButton, Menu, MenuItem as MuiMenuItem, Paper, Stack, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TablePagination, TextField, Toolbar, Tooltip, Typography,
 } from '@mui/material';
-import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon } from '@mui/icons-material';
-import { FieldKind, type DataField } from '@cube/api-core';
+import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
+import { FieldKind, Auth, type DataField } from '@cube/api-core';
 import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
+import * as echarts from 'echarts';
 import api from '@/api';
+import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput';
+
+const exportOptions = [
+  { label: '导出 Excel', value: 'Excel' },
+  { label: '导出 CSV', value: 'Csv' },
+  { label: '导出 JSON', value: 'Json' },
+  { label: '导出 XML', value: 'Xml' },
+  { label: '导出模板', value: 'ExcelTemplate' },
+];
 
 export default function DynamicPage() {
   const location = useLocation();
   const type = location.pathname;
+  const getMenuPermission = useUserStore((s) => s.getMenuPermission);
+  const perms = getMenuPermission(type);
+  const canAdd = String(Auth.ADD) in perms;
+  const canEdit = String(Auth.EDIT) in perms;
+  const canDelete = String(Auth.DELETE) in perms;
+  const canExport = String(Auth.EXPORT) in perms;
+  const canImport = String(Auth.IMPORT) in perms;
 
   const [listFields, setListFields] = useState<FieldMapping[]>([]);
   const [searchFields, setSearchFields] = useState<FieldMapping[]>([]);
@@ -30,6 +47,15 @@ export default function DynamicPage() {
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState<(string | number)[]>([]);
   const [searchForm, setSearchForm] = useState<Record<string, any>>({});
+  const [statData, setStatData] = useState<Record<string, unknown> | null>(null);
+
+  // ECharts
+  const [chartList, setChartList] = useState<any[]>([]);
+  const chartRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const chartInstances = useRef<any[]>([]);
+
+  // 导出下拉菜单
+  const [exportAnchor, setExportAnchor] = useState<null | HTMLElement>(null);
 
   // 弹窗
   const [formOpen, setFormOpen] = useState(false);
@@ -64,6 +90,7 @@ export default function DynamicPage() {
     try {
       const res = await api.page.getList(type, { ...searchForm, pageIndex, pageSize });
       setData((res.data as any[]) ?? []);
+      setStatData((res as any).stat ?? null);
       if (res.page) {
         setTotal(res.page.totalCount);
       }
@@ -74,6 +101,40 @@ export default function DynamicPage() {
   }, [type, searchForm, page, pageSize]);
 
   useEffect(() => { loadData(0); }, [type, pageSize]);
+
+  // ECharts
+  const loadChartData = useCallback(async () => {
+    try {
+      const res = await api.page.getChartData(type);
+      setChartList(Array.isArray(res.data) && res.data.length > 0 ? res.data : []);
+    } catch {
+      setChartList([]);
+    }
+  }, [type]);
+
+  useEffect(() => { loadChartData(); }, [type]);
+
+  // 初始化/更新图表
+  useEffect(() => {
+    chartList.forEach((opt, idx) => {
+      const el = chartRefs.current[idx];
+      if (!el) return;
+      if (chartInstances.current[idx]) chartInstances.current[idx].dispose();
+      const instance = echarts.init(el);
+      instance.setOption(opt);
+      chartInstances.current[idx] = instance;
+    });
+
+    const handleResize = () => {
+      for (const inst of chartInstances.current) { inst?.resize(); }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      for (const inst of chartInstances.current) { inst?.dispose(); }
+      chartInstances.current = [];
+    };
+  }, [chartList]);
 
   // 选择
   const isSelected = (id: string | number) => selected.includes(id);
@@ -117,6 +178,7 @@ export default function DynamicPage() {
   };
   const handleExport = (fmt: string) => {
     window.open(api.page.getExportUrl(type, fmt), '_blank');
+    setExportAnchor(null);
   };
   const handleImport = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -130,6 +192,21 @@ export default function DynamicPage() {
 
   return (
     <Box>
+      {/* ECharts 图表区域 */}
+      {chartList.length > 0 && (
+        <Card sx={{ mb: 2 }}>
+          <CardContent>
+            {chartList.map((_, idx) => (
+              <div
+                key={idx}
+                ref={(el) => { chartRefs.current[idx] = el; }}
+                style={{ width: '100%', height: 400 }}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* 搜索栏 */}
       {searchFields.length > 0 && (
         <Card sx={{ mb: 2 }}>
@@ -154,16 +231,28 @@ export default function DynamicPage() {
 
       {/* 工具栏 */}
       <Toolbar disableGutters sx={{ gap: 1, mb: 1 }}>
-        <Button variant="contained" startIcon={<Add />} onClick={showAdd}>新增</Button>
-        <Button startIcon={<Download />} onClick={() => handleExport('Csv')}>导出 CSV</Button>
-        <Button startIcon={<Download />} onClick={() => handleExport('Excel')}>导出 Excel</Button>
-        <Button component="label" startIcon={<Upload />}>
-          导入
-          <input type="file" hidden accept=".csv,.xlsx,.xls" onChange={handleImport} />
-        </Button>
-        <Button color="error" startIcon={<Delete />} disabled={!selected.length} onClick={handleDeleteSelect}>
-          批量删除 ({selected.length})
-        </Button>
+        {canAdd && <Button variant="contained" startIcon={<Add />} onClick={showAdd}>新增</Button>}
+        {canExport && (
+          <>
+            <Button startIcon={<Download />} endIcon={<ArrowDropDown />} onClick={(e) => setExportAnchor(e.currentTarget)}>导出</Button>
+            <Menu anchorEl={exportAnchor} open={Boolean(exportAnchor)} onClose={() => setExportAnchor(null)}>
+              {exportOptions.map((opt) => (
+                <MuiMenuItem key={opt.value} onClick={() => handleExport(opt.value)}>{opt.label}</MuiMenuItem>
+              ))}
+            </Menu>
+          </>
+        )}
+        {canImport && (
+          <Button component="label" startIcon={<Upload />}>
+            导入
+            <input type="file" hidden accept=".csv,.xlsx,.xls" onChange={handleImport} />
+          </Button>
+        )}
+        {canDelete && (
+          <Button color="error" startIcon={<Delete />} disabled={!selected.length} onClick={handleDeleteSelect}>
+            批量删除 ({selected.length})
+          </Button>
+        )}
         <Box flexGrow={1} />
         <IconButton onClick={() => loadData()}><Refresh /></IconButton>
       </Toolbar>
@@ -201,12 +290,24 @@ export default function DynamicPage() {
                   ))}
                   <TableCell align="right">
                     <Tooltip title="查看"><IconButton size="small" onClick={() => showDetail(row)}><Visibility fontSize="small" /></IconButton></Tooltip>
-                    <Tooltip title="编辑"><IconButton size="small" onClick={() => showEdit(row)}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                    <Tooltip title="删除"><IconButton size="small" color="error" onClick={() => handleDelete(id)}><Delete fontSize="small" /></IconButton></Tooltip>
+                    {canEdit && <Tooltip title="编辑"><IconButton size="small" onClick={() => showEdit(row)}><EditIcon fontSize="small" /></IconButton></Tooltip>}
+                    {canDelete && <Tooltip title="删除"><IconButton size="small" color="error" onClick={() => handleDelete(id)}><Delete fontSize="small" /></IconButton></Tooltip>}
                   </TableCell>
                 </TableRow>
               );
             })}
+            {/* 统计行 */}
+            {statData && (
+              <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                <TableCell padding="checkbox" />
+                {listFields.map((f, idx) => (
+                  <TableCell key={f.field.name} sx={{ fontWeight: 'bold' }}>
+                    {idx === 0 ? '合计' : (statData[f.field.name] != null ? String(statData[f.field.name]) : '')}
+                  </TableCell>
+                ))}
+                <TableCell />
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
