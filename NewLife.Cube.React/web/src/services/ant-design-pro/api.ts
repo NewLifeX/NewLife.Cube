@@ -2,25 +2,25 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 获取当前的用户 GET /api/currentUser */
+/** 获取当前的用户 GET /Auth/Info */
 export async function currentUser(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.UserInfo>>('/Admin/User/Info', {
+  return request<ResponseStructure<API.UserInfo>>('/Auth/Info', {
     method: 'GET',
     ...(options || {}),
   });
 }
 
-/** 退出登录接口 POST /api/login/outLogin */
+/** 退出登录接口 POST /Auth/Logout */
 export async function outLogin(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/login/outLogin', {
+  return request<Record<string, any>>('/Auth/Logout', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** 登录接口 POST /api/login/account */
+/** 登录接口 POST /Auth/Login */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/login/account', {
+  return request<API.LoginResult>('/Auth/Login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -98,9 +98,9 @@ export async function queryIndex(options?: { [key: string]: any }) {
   });
 }
 
-/** 获取登录配置 GET /Cube/GetLoginConfig */
+/** 获取登录配置 GET /Auth/Config */
 export async function getLoginConfig(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.LoginConfig>>('/Cube/GetLoginConfig', {
+  return request<ResponseStructure<API.LoginConfig>>('/Auth/Config', {
     method: 'GET',
     ...(options || {}),
   });

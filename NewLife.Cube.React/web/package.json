@@ -47,6 +47,11 @@
     "not ie <= 10"
   ],
   "dependencies": {
+    "@cube/api-core": "workspace:*",
+    "@cube/field-mapping": "workspace:*",
+    "@cube/page-utils": "workspace:*",
+    "@cube/auth-logic": "workspace:*",
+    "@cube/page-logic": "workspace:*",
     "@ant-design/icons": "^4.8.0",
     "@ant-design/pro-components": "^2.3.57",
     "@ant-design/use-emotion-css": "1.0.4",

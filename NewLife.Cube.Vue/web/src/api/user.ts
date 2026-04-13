@@ -15,33 +15,33 @@ export function useUserApi() {
 	return {
     signIn: (data: object) => {
 			return request<Login>({
-				url: '/admin/user/login',
+				url: '/Auth/Login',
 				method: 'post',
 				data,
 			});
 		},
 		signOut: (data: object) => {
 			return request({
-				url: '/user/signOut',
+				url: '/Auth/Logout',
 				method: 'post',
 				data,
 			});
 		},
 		info: () => {
 			return request<UserInfo>({
-				url: '/Admin/User/Info',
+				url: '/Auth/Info',
 				method: 'get'
 			});
 		},
 		getLoginConfig: () => {
 			return request<LoginConfig>({
-				url: '/Admin/Cube/GetLoginConfig',
+				url: '/Auth/Config',
 				method: 'get'
 			});
 		},
 		getSiteInfo: () => {
 			return request<SiteInfo>({
-				url: '/Admin/Cube/GetSiteInfo',
+				url: '/Auth/SiteInfo',
 				method: 'get'
 			});
 		},

@@ -23,6 +23,9 @@
     "zone.js": "~0.15.0",
     "@cube/api-core": "workspace:*",
     "@cube/field-mapping": "workspace:*",
+    "@cube/page-utils": "workspace:*",
+    "@cube/auth-logic": "workspace:*",
+    "@cube/page-logic": "workspace:*",
     "echarts": "^5.6.0"
   },
   "devDependencies": {

@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "cube-packages",
+  "version": "0.0.0",
+  "description": "魔方前端公共模块 monorepo",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:packages": "pnpm --filter './packages/*' build",
+    "dev": "pnpm -r dev"
+  },
+  "license": "MIT"
+}

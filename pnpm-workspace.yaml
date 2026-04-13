@@ -1,0 +1,12 @@
+packages:
+  - 'packages/*'
+  - 'NewLife.Cube.NaiveUI/web'
+  - 'NewLife.Cube.MUI/web'
+  - 'NewLife.Cube.Shadcn/web'
+  - 'NewLife.Cube.ArcoVue/web'
+  - 'NewLife.Cube.Angular/web'
+  - 'NewLife.Cube.Vuetify/web'
+  - 'NewLife.Cube.Svelte/web'
+  - 'NewLife.Cube.TDesign/web'
+  - 'NewLife.Cube.Vue/web'
+  - 'NewLife.Cube.React/web'

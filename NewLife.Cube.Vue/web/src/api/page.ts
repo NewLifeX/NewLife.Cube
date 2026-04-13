@@ -104,7 +104,7 @@ export function usePageApi() {
 		/** 获取导出下载 URL */
 		getExportUrl: (type: string, format: string): string => {
 			const baseUrl = import.meta.env.DEV ? '/base-api' : (import.meta.env.VITE_API_URL || '');
-			return `${baseUrl}/${type}/Export${format}`;
+			return `${baseUrl}/${type}/ExportFile?format=${encodeURIComponent(format)}`;
 		},
 		/** 导入文件 */
 		importFile: (type: string, file: File) => {

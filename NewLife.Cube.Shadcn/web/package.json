@@ -34,6 +34,9 @@
     "lucide-react": "^0.500.0",
     "@cube/api-core": "workspace:*",
     "@cube/field-mapping": "workspace:*",
+    "@cube/page-utils": "workspace:*",
+    "@cube/auth-logic": "workspace:*",
+    "@cube/page-logic": "workspace:*",
     "echarts": "^5.6.0"
   },
   "devDependencies": {
