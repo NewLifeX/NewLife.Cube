@@ -71,6 +71,24 @@ declare namespace API {
     currentAuthority?: string;
   };
 
+  type OAuthProvider = {
+    name: string;
+    nickName?: string;
+    logo?: string;
+    loginUrl?: string;
+  };
+
+  type LoginConfig = {
+    displayName?: string;
+    logo?: string;
+    allowLogin?: boolean;
+    allowRegister?: boolean;
+    enableSms?: boolean;
+    enableMail?: boolean;
+    loginTip?: string;
+    providers?: OAuthProvider[];
+  };
+
   type PageParams = {
     current?: number;
     pageSize?: number;

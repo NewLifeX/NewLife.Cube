@@ -97,3 +97,11 @@ export async function queryIndex(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 获取登录配置 GET /Cube/GetLoginConfig */
+export async function getLoginConfig(options?: { [key: string]: any }) {
+  return request<ResponseStructure<API.LoginConfig>>('/Cube/GetLoginConfig', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}

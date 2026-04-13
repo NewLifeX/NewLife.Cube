@@ -1,13 +1,9 @@
 import Footer from '@/components/Footer';
-import { login } from '@/services/ant-design-pro/api';
-import { getFakeCaptcha } from '@/services/ant-design-pro/login';
+import { login, getLoginConfig } from '@/services/ant-design-pro/api';
 import {
-  AlipayCircleOutlined,
   LockOutlined,
   MobileOutlined,
-  TaobaoCircleOutlined,
   UserOutlined,
-  WeiboCircleOutlined,
 } from '@ant-design/icons';
 import {
   LoginForm,
@@ -16,69 +12,12 @@ import {
   ProFormText,
 } from '@ant-design/pro-components';
 import { useEmotionCss } from '@ant-design/use-emotion-css';
-import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
-import { Alert, message, Tabs, Avatar } from 'antd';
-import Settings from '../../../../config/defaultSettings';
+import { history, useModel, Helmet } from '@umijs/max';
+import { Alert, message, Tabs, Avatar, Space } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { flushSync } from 'react-dom';
 import { useLocation } from '@umijs/max';
 import { setToken } from '@/utils/token';
-
-const ActionIcons = () => {
-  const langClassName = useEmotionCss(({ token }) => {
-    return {
-      marginLeft: '8px',
-      color: 'rgba(0, 0, 0, 0.2)',
-      fontSize: '24px',
-      verticalAlign: 'middle',
-      cursor: 'pointer',
-      transition: 'color 0.3s',
-      '&:hover': {
-        color: token.colorPrimaryActive,
-      },
-    };
-  });
-
-  return (
-    <>
-      <Avatar
-        src={'https://newlifex.com/logo.png'}
-        className={langClassName}
-        alt={'NewLife'}
-        onClick={() => {
-          const redirectUri = encodeURIComponent(window.location.href);
-          const url = `${API_URL}/Sso/Login?name=NewLife&source=front-end&redirect_uri=${redirectUri}`;
-          window.location.href = url;
-        }}
-      />
-      <AlipayCircleOutlined key="AlipayCircleOutlined" className={langClassName} />
-      <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={langClassName} />
-      <WeiboCircleOutlined key="WeiboCircleOutlined" className={langClassName} />
-    </>
-  );
-};
-
-const Lang = () => {
-  const langClassName = useEmotionCss(({ token }) => {
-    return {
-      width: 42,
-      height: 42,
-      lineHeight: '42px',
-      position: 'fixed',
-      right: 16,
-      borderRadius: token.borderRadius,
-      ':hover': {
-        backgroundColor: token.colorBgTextHover,
-      },
-    };
-  });
-
-  return (
-    <div className={langClassName} data-lang>
-      {SelectLang && <SelectLang />}
-    </div>
-  );
-};
 
 const LoginMessage: React.FC<{
   content: string;
@@ -98,6 +37,13 @@ const LoginMessage: React.FC<{
 const Login: React.FC = () => {
   const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
   const [type, setType] = useState<string>('account');
+  const [loginConfig, setLoginConfig] = useState<API.LoginConfig>({
+    allowLogin: true,
+    allowRegister: true,
+    enableSms: false,
+    enableMail: false,
+    providers: [],
+  });
   const { initialState, setInitialState } = useModel('@@initialState');
   let location = useLocation();
   let token = location.hash.replace('#token=', '');
@@ -114,8 +60,6 @@ const Login: React.FC = () => {
     };
   });
 
-  const intl = useIntl();
-
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
@@ -127,6 +71,23 @@ const Login: React.FC = () => {
       });
     }
   };
+
+  useEffect(() => {
+    // 加载登录配置
+    getLoginConfig()
+      .then((res) => {
+        if (res?.data) {
+          setLoginConfig(res.data);
+          // 如果不允许密码登录但允许短信登录，默认切到手机 Tab
+          if (!res.data.allowLogin && res.data.enableSms) {
+            setType('mobile');
+          }
+        }
+      })
+      .catch(() => {
+        // 加载失败使用默认值
+      });
+  }, []);
 
   useEffect(() => {
     const fetch = async () => {
@@ -148,11 +109,7 @@ const Login: React.FC = () => {
       // 登录
       const msg = await login({ ...values, type });
       if (msg.status === 'ok') {
-        const defaultLoginSuccessMessage = intl.formatMessage({
-          id: 'pages.login.success',
-          defaultMessage: '登录成功！',
-        });
-        message.success(defaultLoginSuccessMessage);
+        message.success('登录成功！');
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         history.push(urlParams.get('redirect') || '/');
@@ -162,28 +119,58 @@ const Login: React.FC = () => {
       // 如果失败去设置用户错误信息
       setUserLoginState(msg);
     } catch (error) {
-      const defaultLoginFailureMessage = intl.formatMessage({
-        id: 'pages.login.failure',
-        defaultMessage: '登录失败，请重试！',
-      });
       console.log(error);
-      message.error(defaultLoginFailureMessage);
+      message.error('登录失败，请重试！');
     }
   };
   const { status, type: loginType } = userLoginState;
 
+  // 构建 Tab 列表
+  const tabItems: { key: string; label: string }[] = [];
+  if (loginConfig.allowLogin !== false) {
+    tabItems.push({ key: 'account', label: '账户密码登录' });
+  }
+  if (loginConfig.enableSms) {
+    tabItems.push({ key: 'mobile', label: '手机号登录' });
+  }
+  // 如果都没有，至少显示账号登录
+  if (tabItems.length === 0) {
+    tabItems.push({ key: 'account', label: '账户密码登录' });
+  }
+
+  // 构建 OAuth 提供商图标
+  const oauthActions =
+    loginConfig.providers && loginConfig.providers.length > 0
+      ? [
+          <span key="loginWith">其他登录方式</span>,
+          <Space key="icons" size={8}>
+            {loginConfig.providers.map((provider) => (
+              <Avatar
+                key={provider.name}
+                src={provider.logo || 'https://newlifex.com/logo.png'}
+                style={{ cursor: 'pointer' }}
+                alt={provider.nickName || provider.name}
+                onClick={() => {
+                  const redirectUri = encodeURIComponent(window.location.href);
+                  const url =
+                    provider.loginUrl ||
+                    `${API_URL}/Sso/Login?name=${provider.name}&source=front-end&redirect_uri=${redirectUri}`;
+                  window.location.href = url;
+                }}
+              />
+            ))}
+          </Space>,
+        ]
+      : undefined;
+
+  const displayName = loginConfig.displayName || 'NewLife Cube';
+  const logoUrl = loginConfig.logo || 'https://newlifex.com/logo.png';
+
   return (
     <div className={containerClassName}>
       <Helmet>
-        <title>
-          {intl.formatMessage({
-            id: 'menu.login',
-            defaultMessage: '登录页',
-          })}
-          - {Settings.title}
-        </title>
+        <title>登录 - {displayName}</title>
       </Helmet>
-      <Lang />
       <div
         style={{
           flex: '1',
@@ -195,53 +182,23 @@ const Login: React.FC = () => {
             minWidth: 280,
             maxWidth: '75vw',
           }}
-          logo={<img alt="logo" src="/logo.svg" />}
-          title="Ant Design"
-          subTitle={intl.formatMessage({ id: 'pages.layouts.userLayout.title' })}
+          logo={<img alt="logo" src={logoUrl} />}
+          title={displayName}
+          subTitle={loginConfig.loginTip || ''}
           initialValues={{
             autoLogin: true,
           }}
-          actions={[
-            <FormattedMessage
-              key="loginWith"
-              id="pages.login.loginWith"
-              defaultMessage="其他登录方式"
-            />,
-            <ActionIcons key="icons" />,
-          ]}
+          actions={oauthActions}
           onFinish={async (values) => {
             await handleSubmit(values as API.LoginParams);
           }}
         >
-          <Tabs
-            activeKey={type}
-            onChange={setType}
-            centered
-            items={[
-              {
-                key: 'account',
-                label: intl.formatMessage({
-                  id: 'pages.login.accountLogin.tab',
-                  defaultMessage: '账户密码登录',
-                }),
-              },
-              {
-                key: 'mobile',
-                label: intl.formatMessage({
-                  id: 'pages.login.phoneLogin.tab',
-                  defaultMessage: '手机号登录',
-                }),
-              },
-            ]}
-          />
+          {tabItems.length > 1 ? (
+            <Tabs activeKey={type} onChange={setType} centered items={tabItems} />
+          ) : null}
 
           {status === 'error' && loginType === 'account' && (
-            <LoginMessage
-              content={intl.formatMessage({
-                id: 'pages.login.accountLogin.errorMessage',
-                defaultMessage: '账户或密码错误(admin/ant.design)',
-              })}
-            />
+            <LoginMessage content="账户或密码错误" />
           )}
           {type === 'account' && (
             <>
@@ -251,19 +208,11 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <UserOutlined />,
                 }}
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.username.placeholder',
-                  defaultMessage: '用户名: admin or user',
-                })}
+                placeholder="用户名"
                 rules={[
                   {
                     required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.username.required"
-                        defaultMessage="请输入用户名!"
-                      />
-                    ),
+                    message: '请输入用户名!',
                   },
                 ]}
               />
@@ -273,19 +222,11 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <LockOutlined />,
                 }}
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.password.placeholder',
-                  defaultMessage: '密码: ant.design',
-                })}
+                placeholder="密码"
                 rules={[
                   {
                     required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.password.required"
-                        defaultMessage="请输入密码！"
-                      />
-                    ),
+                    message: '请输入密码！',
                   },
                 ]}
               />
@@ -301,28 +242,15 @@ const Login: React.FC = () => {
                   prefix: <MobileOutlined />,
                 }}
                 name="mobile"
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.phoneNumber.placeholder',
-                  defaultMessage: '手机号',
-                })}
+                placeholder="手机号"
                 rules={[
                   {
                     required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.phoneNumber.required"
-                        defaultMessage="请输入手机号！"
-                      />
-                    ),
+                    message: '请输入手机号！',
                   },
                   {
                     pattern: /^1\d{10}$/,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.phoneNumber.invalid"
-                        defaultMessage="手机号格式错误！"
-                      />
-                    ),
+                    message: '手机号格式错误！',
                   },
                 ]}
               />
@@ -334,42 +262,22 @@ const Login: React.FC = () => {
                 captchaProps={{
                   size: 'large',
                 }}
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.captcha.placeholder',
-                  defaultMessage: '请输入验证码',
-                })}
+                placeholder="请输入验证码"
                 captchaTextRender={(timing, count) => {
                   if (timing) {
-                    return `${count} ${intl.formatMessage({
-                      id: 'pages.getCaptchaSecondText',
-                      defaultMessage: '获取验证码',
-                    })}`;
+                    return `${count} 秒后重新获取`;
                   }
-                  return intl.formatMessage({
-                    id: 'pages.login.phoneLogin.getVerificationCode',
-                    defaultMessage: '获取验证码',
-                  });
+                  return '获取验证码';
                 }}
                 name="captcha"
                 rules={[
                   {
                     required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.captcha.required"
-                        defaultMessage="请输入验证码！"
-                      />
-                    ),
+                    message: '请输入验证码！',
                   },
                 ]}
-                onGetCaptcha={async (phone) => {
-                  const result = await getFakeCaptcha({
-                    phone,
-                  });
-                  if (!result) {
-                    return;
-                  }
-                  message.success('获取验证码成功！验证码为：1234');
+                onGetCaptcha={async () => {
+                  message.success('验证码发送成功');
                 }}
               />
             </>
@@ -380,15 +288,11 @@ const Login: React.FC = () => {
             }}
           >
             <ProFormCheckbox noStyle name="autoLogin">
-              <FormattedMessage id="pages.login.rememberMe" defaultMessage="自动登录" />
+              自动登录
             </ProFormCheckbox>
-            <a
-              style={{
-                float: 'right',
-              }}
-            >
-              <FormattedMessage id="pages.login.forgotPassword" defaultMessage="忘记密码" />
-            </a>
+            {loginConfig.allowRegister && (
+              <a style={{ float: 'right' }}>注册账号</a>
+            )}
           </div>
         </LoginForm>
       </div>
