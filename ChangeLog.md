@@ -1,5 +1,25 @@
 # ChangeLog
 
+## vNext
+
+### 新一代前端皮肤体系
+- **公共模块**：新增 `@cube/api-core`（统一 API 客户端、Token 管理、类型定义）和 `@cube/field-mapping`（字段元数据推断控件类型，20+ WidgetType）
+- **pnpm workspace**：所有前端皮肤共享 `packages/` 工作区，统一依赖管理
+- **8 套前端皮肤包**：
+  - `NewLife.Cube.NaiveUI` — Vue 3 + Naive UI（端口 5180）
+  - `NewLife.Cube.MUI` — React 19 + MUI 6 Material Design（端口 5181）
+  - `NewLife.Cube.Shadcn` — React 19 + Radix UI + Tailwind CSS 4（端口 5182）
+  - `NewLife.Cube.ArcoVue` — Vue 3 + Arco Design Vue / 字节跳动（端口 5183）
+  - `NewLife.Cube.Angular` — Angular 19 + NG-ZORRO / Ant Design（端口 5184）
+  - `NewLife.Cube.Vuetify` — Vue 3 + Vuetify 3 Material Design（端口 5185）
+  - `NewLife.Cube.Svelte` — SvelteKit 2 + Svelte 5 + Tailwind CSS 4（端口 5186）
+  - `NewLife.Cube.TDesign` — Vue 3 + TDesign / 腾讯（端口 5187）
+- **统一功能**：每套皮肤均支持动态菜单、字段元数据驱动列表/表单、CRUD、批量删除、CSV 导入导出、OAuth 登录、深色模式
+- **NuGet 一键集成**：引用 NuGet 包即获完整前端，`app.UseXxx(env)` 或 IModule 自动注册
+- **CI/CD**：更新 test/publish/publish-beta 三个 GitHub Actions 工作流，全部皮肤自动构建打包发布
+
+---
+
 ## v6.10.2026.0404 (2026-04-04)
 
 ### 富文本与 Markdown 编辑器

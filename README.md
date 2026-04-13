@@ -76,6 +76,7 @@ XCode教程：<https://newlifex.com/xcode>
 - NewLife.Cube：核心（实体控制器、权限、菜单、字段元数据、API）。
 - NewLife.CubeNC：旧版 MVC / Razor 兼容层。
 - 皮肤主题：AdminLTE / Metronic / Metronic8 / Tabler / LayuiAdmin / ElementUI / Blazor（各独立包）。
+- 新一代前端皮肤（pnpm workspace）：NaiveUI / MUI / Shadcn / ArcoVue / Angular / Vuetify / Svelte / TDesign。
 - NewLife.Cube.Swagger：按区域自动分组的 Swagger 文档。 
 - CubeDemo / CubeDemoNC：示例。  
 - CubeSSO：统一用户中心 & OAuth 服务端。  
@@ -159,6 +160,32 @@ public class AppController : EntityController<App, AppModel>
 - 自定义：仿照 `MetronicModule` 实现 IModule 并在 Use 阶段挂载。  
 - 视图覆写：子项目同路径同名 `.cshtml` 覆盖父级。  
 
+### 新一代前端皮肤包
+基于 pnpm workspace + 公共模块 `@cube/api-core`（统一 API / Token / 类型）和 `@cube/field-mapping`（字段元数据 → 控件映射），8 套皮肤均开箱即用，NuGet 引包即得完整前端。
+
+| NuGet 包 | 框架 | UI 库 | 开发端口 |
+|---------|------|-------|---------|
+| `NewLife.Cube.NaiveUI` | Vue 3 | Naive UI | 5180 |
+| `NewLife.Cube.MUI` | React 19 | MUI 6 (Material) | 5181 |
+| `NewLife.Cube.Shadcn` | React 19 | Radix UI + Tailwind CSS 4 | 5182 |
+| `NewLife.Cube.ArcoVue` | Vue 3 | Arco Design Vue (字节) | 5183 |
+| `NewLife.Cube.Angular` | Angular 19 | NG-ZORRO (Ant Design) | 5184 |
+| `NewLife.Cube.Vuetify` | Vue 3 | Vuetify 3 (Material) | 5185 |
+| `NewLife.Cube.Svelte` | SvelteKit 2 + Svelte 5 | Tailwind CSS 4 | 5186 |
+| `NewLife.Cube.TDesign` | Vue 3 | TDesign (腾讯) | 5187 |
+
+```csharp
+// 使用示例（任选其一）
+app.UseNaiveUI(app.Environment);
+app.UseMUI(app.Environment);
+app.UseShadcn(app.Environment);
+app.UseArcoVue(app.Environment);
+app.UseAngular(app.Environment);
+app.UseVuetify(app.Environment);
+app.UseSvelte(app.Environment);
+app.UseTDesign(app.Environment);
+```
+
 ---
 ## 多数据库与大数据支持
 - XCode：实体同步建表、字段演进、自动分表、读写分离、二级缓存。  
@@ -233,7 +260,7 @@ Swagger：https://cube3.newlifex.com/swagger/index.html
 
 ### 目标蓝图
 1. 现代化 UI + 保留覆写机制。  
-2. 多框架前端：Vue/React/Angular/Blazor。  
+2. 多框架前端：Vue/React/Angular/Svelte + 8 套开箱即用皮肤包。  
 3. NuGet 引包即得默认皮肤。  
 4. 移动端 & 小程序 & 混合应用。  
 5. 数据大屏增强。  
