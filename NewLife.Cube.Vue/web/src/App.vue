@@ -16,6 +16,7 @@ import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
 import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
 import { useThemeConfig } from '/@/stores/themeConfig';
+import { useSiteInfo } from '/@/stores/siteInfo';
 import other from '/@/utils/other';
 import { Local, Session } from '/@/utils/storage';
 import mittBus from '/@/utils/mitt';
@@ -35,6 +36,7 @@ const route = useRoute();
 const stores = useTagsViewRoutes();
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
+const siteInfoStore = useSiteInfo();
 
 // 设置锁屏时组件显示隐藏
 const setLockScreen = computed(() => {
@@ -68,6 +70,8 @@ onBeforeMount(() => {
 });
 // 页面加载时
 onMounted(() => {
+	// 加载站点信息
+	siteInfoStore.loadSiteInfo();
 	nextTick(() => {
 		// 监听布局配'置弹窗点击打开
 		mittBus.on('openSetingsDrawer', () => {

@@ -1,10 +1,10 @@
 <template>
 	<div class="layout-logo" v-if="setShowLogo" @click="onThemeConfigChange">
-		<img :src="logoMini" class="layout-logo-medium-img" />
-		<span>{{ themeConfig.globalTitle }}</span>
+		<img :src="logoSrc" class="layout-logo-medium-img" />
+		<span>{{ siteStore.siteInfo.displayName || themeConfig.globalTitle }}</span>
 	</div>
 	<div class="layout-logo-size" v-else @click="onThemeConfigChange">
-		<img :src="logoMini" class="layout-logo-size-img" />
+		<img :src="logoSrc" class="layout-logo-size-img" />
 	</div>
 </template>
 
@@ -12,11 +12,16 @@
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
+import { useSiteInfo } from '/@/stores/siteInfo';
 import logoMini from '/@/assets/logo-mini.png';
 
 // 定义变量内容
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
+const siteStore = useSiteInfo();
+
+// Logo 图片地址，优先使用后端配置
+const logoSrc = computed(() => siteStore.siteInfo.logo || logoMini);
 
 // 设置 logo 的显示。classic 经典布局默认显示 logo
 const setShowLogo = computed(() => {

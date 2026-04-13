@@ -4,8 +4,8 @@
 			<div class="login-left-logo">
 				<img :src="logoMini" />
 				<div class="login-left-logo-text">
-					<span>{{ getThemeConfig.globalViceTitle }}</span>
-					<span class="login-left-logo-text-msg">{{ getThemeConfig.globalViceTitleMsg }}</span>
+					<span>{{ siteStore.loginConfig.displayName || getThemeConfig.globalViceTitle }}</span>
+					<span class="login-left-logo-text-msg">{{ siteStore.loginConfig.loginTip || getThemeConfig.globalViceTitleMsg }}</span>
 				</div>
 			</div>
 			<div class="login-left-img">
@@ -18,17 +18,37 @@
 				<span class="login-right-warp-one"></span>
 				<span class="login-right-warp-two"></span>
 				<div class="login-right-warp-mian">
-					<div class="login-right-warp-main-title">{{ getThemeConfig.globalTitle }} 欢迎您！</div>
+					<div class="login-right-warp-main-title">{{ siteStore.loginConfig.displayName || getThemeConfig.globalTitle }} 欢迎您！</div>
 					<div class="login-right-warp-main-form">
 						<div v-if="!state.isScan">
 							<el-tabs v-model="state.tabsActiveName">
-								<el-tab-pane :label="$t('message.label.one1')" name="account">
+								<el-tab-pane v-if="siteStore.loginConfig.allowLogin" :label="$t('message.label.one1')" name="account">
 									<Account />
 								</el-tab-pane>
-								<el-tab-pane :label="$t('message.label.two2')" name="mobile">
+								<el-tab-pane v-if="siteStore.loginConfig.enableSms" :label="$t('message.label.two2')" name="mobile">
 									<Mobile />
 								</el-tab-pane>
 							</el-tabs>
+							<!-- OAuth 提供者按钮 -->
+							<div v-if="siteStore.loginConfig.providers.length > 0" class="login-oauth-providers">
+								<el-divider>{{ $t('message.label.three3') || '第三方登录' }}</el-divider>
+								<div class="login-oauth-list">
+									<el-button
+										v-for="item in siteStore.loginConfig.providers"
+										:key="item.name"
+										class="login-oauth-btn"
+										@click="onOAuthLogin(item.name)"
+									>
+										<img v-if="item.logo" :src="item.logo" class="login-oauth-logo" />
+										<span>{{ item.nickName || item.name }}</span>
+									</el-button>
+								</div>
+							</div>
+							<!-- 注册链接 -->
+							<div v-if="siteStore.loginConfig.allowRegister" class="login-register-link mt10">
+								<span class="font12">还没有账号？</span>
+								<el-link type="primary" :underline="false">立即注册</el-link>
+							</div>
 						</div>
 						<Scan v-if="state.isScan" />
 						<div class="login-content-main-sacn" @click="state.isScan = !state.isScan">
@@ -46,6 +66,7 @@
 import { defineAsyncComponent, onMounted, reactive, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
+import { useSiteInfo } from '/@/stores/siteInfo';
 import { NextLoading } from '/@/utils/loading';
 import logoMini from '/@/assets/logo-mini.png';
 import loginMain from '/@/assets/login-main.svg';
@@ -59,6 +80,7 @@ const Scan = defineAsyncComponent(() => import('/@/views/login/component/scan.vu
 // 定义变量内容
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
+const siteStore = useSiteInfo();
 const state = reactive({
 	tabsActiveName: 'account',
 	isScan: false,
@@ -68,9 +90,21 @@ const state = reactive({
 const getThemeConfig = computed(() => {
 	return themeConfig.value;
 });
+
+// OAuth 第三方登录
+const onOAuthLogin = (name: string) => {
+	window.location.href = `/Sso/Login/${name}`;
+};
+
 // 页面加载时
-onMounted(() => {
+onMounted(async () => {
 	NextLoading.done();
+	// 加载登录配置
+	await siteStore.loadLoginConfig();
+	// 如果密码登录不可用但短信可用，切换到短信 Tab
+	if (!siteStore.loginConfig.allowLogin && siteStore.loginConfig.enableSms) {
+		state.tabsActiveName = 'mobile';
+	}
 });
 </script>
 

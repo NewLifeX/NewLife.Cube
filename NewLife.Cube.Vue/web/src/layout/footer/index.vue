@@ -1,14 +1,17 @@
 <template>
 	<div class="layout-footer pb15">
 		<div class="layout-footer-warp">
-			<div>vue-next-admin，Made by lyt with ❤️</div>
-			<div class="mt5">深圳市 xxx 公司版权所有</div>
+			<div v-if="siteStore.siteInfo.copyright">{{ siteStore.siteInfo.copyright }}</div>
+			<div v-else>{{ siteStore.siteInfo.displayName }}</div>
+			<div v-if="siteStore.siteInfo.registration" class="mt5">{{ siteStore.siteInfo.registration }}</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="layoutFooter">
-// 此处需有内容（注释也得），否则缓存将失败
+import { useSiteInfo } from '/@/stores/siteInfo';
+
+const siteStore = useSiteInfo();
 </script>
 
 <style scoped lang="scss">

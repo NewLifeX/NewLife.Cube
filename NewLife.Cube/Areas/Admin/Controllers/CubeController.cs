@@ -54,11 +54,15 @@ public class CubeController : ConfigController<CubeSetting>
     //    base.OnActionExecuting(filterContext);
     //}
 
-    /// <summary>
-    /// 获取登录设置
-    /// </summary>
+    /// <summary>获取登录设置</summary>
     /// <returns></returns>
     [AllowAnonymous]
     [HttpGet]
     public ActionResult GetLoginConfig() => Json(0, null, new LoginConfigModel());
+
+    /// <summary>获取站点信息</summary>
+    /// <returns></returns>
+    [AllowAnonymous]
+    [HttpGet]
+    public ActionResult GetSiteInfo() => Json(0, null, new SiteInfoModel());
 }
