@@ -9,6 +9,8 @@ on:
         - 'NewLife.Cube.Metronic/**'
         - 'NewLife.Cube.Metronic8/**'
         - 'NewLife.Cube.LayuiAdmin/**'
+        - 'NewLife.Cube.Vue/**'
+        - 'NewLife.Cube.React/**'
   pull_request:
     branches: [ master ]
     paths:
@@ -17,6 +19,8 @@ on:
         - 'NewLife.Cube.Metronic/**'
         - 'NewLife.Cube.Metronic8/**'
         - 'NewLife.Cube.LayuiAdmin/**'
+        - 'NewLife.Cube.Vue/**'
+        - 'NewLife.Cube.React/**'
   workflow_dispatch:
 
 jobs:
@@ -34,6 +38,24 @@ jobs:
           8.x
           9.x
           10.x
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+    - name: Build Vue Frontend
+      working-directory: NewLife.Cube.Vue/web
+      run: |
+        pnpm install
+        pnpm build
+    - name: Build React Frontend
+      working-directory: NewLife.Cube.React/web
+      run: |
+        pnpm install
+        npx max build
     - name: Get Version
       run: echo "VERSION=$(date '+%Y.%m%d-beta%H%M')" >> $GITHUB_ENV
     - name: Build
@@ -44,6 +66,8 @@ jobs:
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube/NewLife.Cube.csproj
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.CubeNC/NewLife.CubeNC.csproj
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Swagger/NewLife.Cube.Swagger.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.Vue/NewLife.Cube.Vue.csproj
+        dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube.React/NewLife.Cube.React.csproj
 
     - name: Publish
       run: |
