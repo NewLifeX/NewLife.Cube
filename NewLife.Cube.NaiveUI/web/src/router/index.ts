@@ -15,6 +15,12 @@ const staticRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/login/forgot-password.vue'),
     meta: { title: '忘记密码', requiresAuth: false },
   },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/login/register.vue'),
+    meta: { title: '注册', requiresAuth: false },
+  },
 ];
 
 /** 基础布局路由（子路由动态注入） */

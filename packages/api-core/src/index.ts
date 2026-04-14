@@ -28,8 +28,9 @@ export type {
   OAuthProvider,
   MenuItem,
   RegisterModel,
+  OAuthPendingInfo,
 } from './types';
-export { FieldKind, Auth } from './types';
+export { FieldKind, Auth, RegisterCategory } from './types';
 
 // 密码安全工具（RSA-OAEP 加密，配合 /Auth/Challenge 接口）
 export { encryptPassword } from './crypto';

@@ -12,6 +12,7 @@ import type {
   MenuItem,
   PageParams,
   RegisterModel,
+  OAuthPendingInfo,
 } from './types';
 
 type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
@@ -57,7 +58,11 @@ export function createUserApi(request: RequestFn) {
 
     /** 注册新用户 */
     register: (data: RegisterModel) =>
-      request<void>({ url: '/Admin/User/Register', method: 'post', data }),
+      request<LoginResult>({ url: '/Auth/Register', method: 'post', data }),
+
+    /** 获取OAuth回跳待注册预填信息 */
+    getOAuthPendingInfo: (token: string) =>
+      request<OAuthPendingInfo>({ url: '/Auth/OAuthPendingInfo', method: 'get', params: { token } }),
 
     /**
      * 获取 RSA 公钥挑战，用于加密密码防明文传输

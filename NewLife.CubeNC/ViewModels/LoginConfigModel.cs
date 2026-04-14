@@ -27,8 +27,14 @@ public class LoginConfigModel
     /// <summary>启用短信。包括短信验证码和系统通知</summary>
     public Boolean EnableSms => _set.EnableSms;
 
+    /// <summary>启用短信注册</summary>
+    public Boolean EnableSmsRegister => _set.EnableSms;
+
     /// <summary>启用邮件。包括邮件验证码和系统通知</summary>
     public Boolean EnableMail => _set.EnableMail;
+
+    /// <summary>启用邮件注册</summary>
+    public Boolean EnableMailRegister => _set.EnableMail;
 
     /// <summary>登录提示</summary>
     public String LoginTip => _set.LoginTip;

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Caching;
+using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Web;
 using NewLife.Cube.Web.Models;
@@ -45,6 +46,8 @@ namespace NewLife.Cube.Controllers;
 /// <summary>单点登录控制器</summary>
 public class SsoController : ControllerBaseX
 {
+    private const String OAuthPendingPrefix = "OAuthPending:";
+
     /// <summary>当前提供者</summary>
     public static SsoProvider Provider { get; set; }
 
@@ -252,7 +255,19 @@ public class SsoController : ControllerBaseX
             if (url.IsNullOrEmpty())
             {
                 Session["Cube_OAuthId"] = log.Id;
-                return Redirect("/Admin/User/Login?autologin=0".AppendReturn(returnUrl));
+
+                var oauthToken = Rand.NextString(32);
+                var oauthPending = new OAuthPendingInfoModel
+                {
+                    Provider = client.Name,
+                    Username = client.UserName,
+                    Email = client.Mail,
+                    Mobile = client.Mobile,
+                    Avatar = client.Avatar,
+                };
+                _cache.Set($"{OAuthPendingPrefix}{oauthToken}", oauthPending, 600);
+
+                return Redirect($"/register?oauthToken={oauthToken}".AppendReturn(returnUrl));
             }
 
             // 登录后自动绑定

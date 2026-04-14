@@ -5,7 +5,7 @@
  * 封装为框架无关的纯逻辑类，各框架通过适配器（Pinia/Zustand/Svelte）桥接。
  */
 
-import type { CubeApi, UserInfo, MenuItem, ResetPasswordModel } from '@cube/api-core';
+import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo } from '@cube/api-core';
 import { findMenu, getMenuPermission } from '@cube/page-utils';
 import { encryptPassword } from '@cube/api-core';
 
@@ -111,7 +111,7 @@ export class AuthLogic {
 }
 
 // 重新导出类型供适配器使用
-export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel } from '@cube/api-core';
+export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo } from '@cube/api-core';
 export { findMenu, getMenuPermission, checkAuth, Auth } from '@cube/page-utils';
 export type { AuthCode } from '@cube/page-utils';
 
@@ -224,6 +224,153 @@ export class ForgotPasswordLogic {
   reset() {
     this._clearCountdown();
     this.setState({ step: 'input', sending: false, submitting: false, countdown: 0, error: '' });
+  }
+
+  private _startCountdown(seconds = 60) {
+    this._clearCountdown();
+    this.setState({ countdown: seconds });
+    this._timer = setInterval(() => {
+      const next = this.state.countdown - 1;
+      this.setState({ countdown: next });
+      if (next <= 0) this._clearCountdown();
+    }, 1000);
+  }
+
+  private _clearCountdown() {
+    if (this._timer) {
+      clearInterval(this._timer);
+      this._timer = null;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+// 注册业务逻辑
+// ─────────────────────────────────────────────
+
+/** 注册状态 */
+export interface RegisterState {
+  sending: boolean;
+  submitting: boolean;
+  countdown: number;
+  error: string;
+  oauthPending: OAuthPendingInfo | null;
+}
+
+/** 注册状态变更回调 */
+export type RegisterStateUpdater = (partial: Partial<RegisterState>) => void;
+
+/** 注册逻辑（密码注册/验证码注册/OAuth回跳注册） */
+export class RegisterLogic {
+  private api: CubeApi;
+  private update: RegisterStateUpdater;
+  private _timer: ReturnType<typeof setInterval> | null = null;
+
+  state: RegisterState = {
+    sending: false,
+    submitting: false,
+    countdown: 0,
+    error: '',
+    oauthPending: null,
+  };
+
+  constructor(api: CubeApi, update: RegisterStateUpdater) {
+    this.api = api;
+    this.update = update;
+  }
+
+  private setState(partial: Partial<RegisterState>) {
+    Object.assign(this.state, partial);
+    this.update(partial);
+  }
+
+  async sendRegisterCode(username: string, channel: 'Sms' | 'Mail') {
+    if (!username) {
+      this.setState({ error: channel === 'Sms' ? '请输入手机号' : '请输入邮箱' });
+      return false;
+    }
+
+    this.setState({ sending: true, error: '' });
+    try {
+      await this.api.user.sendCode({ channel, username, action: 'register' });
+      this.setState({ sending: false });
+      this._startCountdown();
+      return true;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '发送失败，请稍后重试';
+      this.setState({ sending: false, error: msg });
+      return false;
+    }
+  }
+
+  async loadOAuthPendingInfo(token: string) {
+    if (!token) {
+      this.setState({ error: 'oauthToken不能为空' });
+      return null;
+    }
+
+    this.setState({ error: '' });
+    try {
+      const res = await this.api.user.getOAuthPendingInfo(token);
+      const data = res.data ?? null;
+      this.setState({ oauthPending: data });
+      return data;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '获取OAuth预填信息失败';
+      this.setState({ error: msg, oauthPending: null });
+      return null;
+    }
+  }
+
+  async register(model: RegisterModel) {
+    if (!model.password) {
+      this.setState({ error: '请输入密码' });
+      return false;
+    }
+
+    const confirmPassword = model.confirmPassword ?? model.password2;
+    if (!confirmPassword) {
+      this.setState({ error: '请输入确认密码' });
+      return false;
+    }
+    if (model.password !== confirmPassword) {
+      this.setState({ error: '两次密码输入不一致' });
+      return false;
+    }
+
+    if ((model.registerCategory ?? RegisterCategory.Password) === RegisterCategory.Phone && !model.code) {
+      this.setState({ error: '请输入手机验证码' });
+      return false;
+    }
+    if ((model.registerCategory ?? RegisterCategory.Password) === RegisterCategory.Email && !model.code) {
+      this.setState({ error: '请输入邮箱验证码' });
+      return false;
+    }
+    if ((model.registerCategory ?? RegisterCategory.Password) === RegisterCategory.OAuthBind && !model.oauthToken) {
+      this.setState({ error: 'oauthToken不能为空' });
+      return false;
+    }
+
+    this.setState({ submitting: true, error: '' });
+    try {
+      const payload: RegisterModel = {
+        ...model,
+        confirmPassword,
+      };
+      const res = await this.api.user.register(payload);
+      if (res.data?.accessToken) this.api.tokenManager.setToken(res.data.accessToken);
+      this.setState({ submitting: false });
+      return true;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '注册失败，请稍后重试';
+      this.setState({ submitting: false, error: msg });
+      return false;
+    }
+  }
+
+  reset() {
+    this._clearCountdown();
+    this.setState({ sending: false, submitting: false, countdown: 0, error: '', oauthPending: null });
   }
 
   private _startCountdown(seconds = 60) {

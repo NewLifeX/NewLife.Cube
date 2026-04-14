@@ -12,8 +12,8 @@
  */
 
 import { create, type StoreApi } from 'zustand';
-import type { CubeApi, UserInfo, MenuItem, ResetPasswordModel } from '@cube/api-core';
-import { AuthLogic, ForgotPasswordLogic, type AuthState, type ForgotPasswordState } from './index';
+import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo } from '@cube/api-core';
+import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 export interface ZustandAuthState extends AuthState {
   isLoggedIn: () => boolean;
@@ -99,6 +99,43 @@ export function createZustandForgotPasswordStore(api: CubeApi): StoreApi<Zustand
       sendCode: (username, channel) => logic.sendCode(username, channel),
       resendCode: (username, channel) => logic.resendCode(username, channel),
       confirmReset: (model) => logic.confirmReset(model),
+      reset: () => logic.reset(),
+    };
+  });
+}
+
+export interface ZustandRegisterState extends RegisterState {
+  sendSmsCode: (mobile: string) => Promise<boolean>;
+  sendMailCode: (email: string) => Promise<boolean>;
+  loadOAuthPendingInfo: (token: string) => Promise<OAuthPendingInfo | null>;
+  registerByPassword: (model: Omit<RegisterModel, 'registerCategory'>) => Promise<boolean>;
+  registerByPhone: (model: Omit<RegisterModel, 'registerCategory'>) => Promise<boolean>;
+  registerByEmail: (model: Omit<RegisterModel, 'registerCategory'>) => Promise<boolean>;
+  registerByOAuth: (model: Omit<RegisterModel, 'registerCategory'>) => Promise<boolean>;
+  reset: () => void;
+}
+
+/** 创建 Zustand 注册 Store */
+export function createZustandRegisterStore(api: CubeApi): StoreApi<ZustandRegisterState> {
+  let logic: RegisterLogic;
+
+  return create<ZustandRegisterState>((set) => {
+    logic = new RegisterLogic(api, (partial) => set(partial as Partial<ZustandRegisterState>));
+
+    return {
+      sending: false,
+      submitting: false,
+      countdown: 0,
+      error: '',
+      oauthPending: null,
+
+      sendSmsCode: (mobile) => logic.sendRegisterCode(mobile, 'Sms'),
+      sendMailCode: (email) => logic.sendRegisterCode(email, 'Mail'),
+      loadOAuthPendingInfo: (token) => logic.loadOAuthPendingInfo(token),
+      registerByPassword: (model) => logic.register({ ...model, registerCategory: RegisterCategory.Password }),
+      registerByPhone: (model) => logic.register({ ...model, registerCategory: RegisterCategory.Phone }),
+      registerByEmail: (model) => logic.register({ ...model, registerCategory: RegisterCategory.Email }),
+      registerByOAuth: (model) => logic.register({ ...model, registerCategory: RegisterCategory.OAuthBind }),
       reset: () => logic.reset(),
     };
   });

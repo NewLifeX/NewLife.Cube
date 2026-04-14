@@ -1,5 +1,5 @@
 import { Login, UserInfo } from '../model/api/user';
-import { LoginConfig, SiteInfo, SendCodeModel, LoginByCodeModel, RegisterModel, ResetPasswordModel, ChallengeResult } from '../model/api/login';
+import { LoginConfig, SiteInfo, SendCodeModel, LoginByCodeModel, RegisterModel, ResetPasswordModel, ChallengeResult, LoginResult, OAuthPendingInfo } from '../model/api/login';
 import request from '/@/utils/request';
 
 /**
@@ -54,10 +54,18 @@ export function useUserApi() {
 		},
 		/** 用户注册 */
 		register: (data: RegisterModel) => {
-			return request({
-				url: '/Admin/User/Register',
+			return request<LoginResult>({
+				url: '/Auth/Register',
 				method: 'post',
 				data,
+			});
+		},
+		/** 获取OAuth回跳待注册预填信息 */
+		getOAuthPendingInfo: (token: string) => {
+			return request<OAuthPendingInfo>({
+				url: '/Auth/OAuthPendingInfo',
+				method: 'get',
+				params: { token },
 			});
 		},
 		/** 获取 RSA 应战公鑰，用于密码加密登录 */

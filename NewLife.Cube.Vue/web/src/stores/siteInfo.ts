@@ -29,6 +29,8 @@ export const useSiteInfo = defineStore('siteInfo', {
 			allowRegister: true,
 			enableSms: false,
 			enableMail: false,
+			enableSmsRegister: false,
+			enableMailRegister: false,
 			loginTip: '',
 			providers: [],
 		} as LoginConfig,

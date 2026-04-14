@@ -13,6 +13,8 @@ export interface LoginConfig {
   allowRegister: boolean;
   enableSms: boolean;
   enableMail: boolean;
+  enableSmsRegister?: boolean;
+  enableMailRegister?: boolean;
   loginTip: string;
   providers: OAuthProvider[];
 }
@@ -50,11 +52,41 @@ export interface LoginByCodeModel {
 }
 
 /** 注册请求 */
+export enum RegisterCategory {
+  Password = 0,
+  Phone = 1,
+  Email = 2,
+  OAuthBind = 3,
+}
+
+/** OAuth 回跳待注册信息 */
+export interface OAuthPendingInfo {
+  provider?: string;
+  username?: string;
+  email?: string;
+  mobile?: string;
+  avatar?: string;
+}
+
+/** 登录/注册结果 */
+export interface LoginResult {
+  token?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expireIn?: number;
+}
+
+/** 注册请求 */
 export interface RegisterModel {
-  username: string;
-  email: string;
+  registerCategory?: RegisterCategory;
+  username?: string;
+  email?: string;
+  mobile?: string;
   password: string;
-  password2: string;
+  confirmPassword?: string;
+  password2?: string;
+  code?: string;
+  oauthToken?: string;
 }
 
 /** 忘记密码/重置密码请求 */

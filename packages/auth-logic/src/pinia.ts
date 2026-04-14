@@ -12,8 +12,8 @@
  */
 
 import { defineStore } from 'pinia';
-import type { CubeApi, UserInfo, MenuItem } from '@cube/api-core';
-import { AuthLogic, ForgotPasswordLogic, type AuthState, type ForgotPasswordState } from './index';
+import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type RegisterModel } from '@cube/api-core';
+import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 /**
  * 创建 Pinia 用户认证 Store
@@ -112,6 +112,60 @@ export function createPiniaForgotPasswordStore(api: CubeApi, storeId = 'forgotPa
       },
       async confirmReset(model: import('@cube/api-core').ResetPasswordModel) {
         return this._getLogic().confirmReset(model);
+      },
+      reset() {
+        this._getLogic().reset();
+      },
+    },
+  });
+}
+
+/**
+ * 创建 Pinia 注册 Store
+ *
+ * @param api - CubeApi 实例
+ * @param storeId - Store ID，默认 'register'
+ */
+export function createPiniaRegisterStore(api: CubeApi, storeId = 'register') {
+  let logic: RegisterLogic | null = null;
+
+  return defineStore(storeId, {
+    state: (): RegisterState => ({
+      sending: false,
+      submitting: false,
+      countdown: 0,
+      error: '',
+      oauthPending: null,
+    }),
+    actions: {
+      _getLogic(): RegisterLogic {
+        if (!logic) {
+          logic = new RegisterLogic(api, (partial) => {
+            Object.assign(this.$state, partial);
+          });
+        }
+        return logic;
+      },
+      async sendSmsCode(mobile: string) {
+        return this._getLogic().sendRegisterCode(mobile, 'Sms');
+      },
+      async sendMailCode(email: string) {
+        return this._getLogic().sendRegisterCode(email, 'Mail');
+      },
+      async loadOAuthPendingInfo(token: string) {
+        return this._getLogic().loadOAuthPendingInfo(token);
+      },
+      async registerByPassword(model: Omit<RegisterModel, 'registerCategory'>) {
+        return this._getLogic().register({ ...model, registerCategory: RegisterCategory.Password });
+      },
+      async registerByPhone(model: Omit<RegisterModel, 'registerCategory'>) {
+        return this._getLogic().register({ ...model, registerCategory: RegisterCategory.Phone });
+      },
+      async registerByEmail(model: Omit<RegisterModel, 'registerCategory'>) {
+        return this._getLogic().register({ ...model, registerCategory: RegisterCategory.Email });
+      },
+      async registerByOAuth(model: Omit<RegisterModel, 'registerCategory'>) {
+        return this._getLogic().register({ ...model, registerCategory: RegisterCategory.OAuthBind });
       },
       reset() {
         this._getLogic().reset();

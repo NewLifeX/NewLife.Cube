@@ -24,6 +24,8 @@ namespace NewLife.Cube.Controllers;
 [Route("[controller]/[action]")]
 public class AuthController : ControllerBaseX
 {
+    private const String OAuthPendingPrefix = "OAuthPending:";
+
     private readonly UserService _userService;
     private readonly ICache _cache;
 
@@ -197,5 +199,38 @@ public class AuthController : ControllerBaseX
         return result.IsSuccess
             ? true.ToOkApiResponse(result.Message)
             : false.ToFailApiResponse(result.Message);
+    }
+
+    /// <summary>查询OAuth回跳待注册预填信息</summary>
+    /// <param name="token">临时令牌</param>
+    /// <returns>预填信息</returns>
+    [HttpGet]
+    [AllowAnonymous]
+    public ApiResponse<OAuthPendingInfoModel> OAuthPendingInfo(String token)
+    {
+        var model = new OAuthPendingInfoModel();
+        if (token.IsNullOrEmpty()) return model.ToFailApiResponse("token不能为空");
+
+        var data = _cache.Get<OAuthPendingInfoModel>($"{OAuthPendingPrefix}{token}");
+        if (data == null) return model.ToFailApiResponse("OAuth预填信息不存在或已过期");
+
+        return data.ToOkApiResponse("ok");
+    }
+
+    /// <summary>统一注册（用户名密码/手机验证码/邮箱验证码/OAuth回跳绑定）</summary>
+    /// <param name="model">注册模型</param>
+    /// <returns>注册并登录后的令牌</returns>
+    [HttpPost]
+    [AllowAnonymous]
+    public ApiResponse<TokenModel> Register(AuthRegisterModel model)
+    {
+        var res = new TokenModel();
+        var registerResult = _userService.Register(model, HttpContext);
+        if (!registerResult.IsSuccess || registerResult.Data == null)
+            return res.ToFailApiResponse(registerResult.Message);
+
+        res.AccessToken = registerResult.Data.AccessToken;
+        res.RefreshToken = registerResult.Data.RefreshToken;
+        return res.ToOkApiResponse(registerResult.Message ?? "注册成功");
     }
 }

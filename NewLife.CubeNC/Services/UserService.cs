@@ -2,6 +2,7 @@
 using NewLife.Caching;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Cube.Common;
+using NewLife.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Enums;
 using NewLife.Cube.Models;
@@ -13,6 +14,7 @@ using NewLife.Threading;
 using NewLife.Web;
 using XCode;
 using XCode.Membership;
+using Microsoft.AspNetCore.Http;
 using HttpContext = Microsoft.AspNetCore.Http.HttpContext;
 
 namespace NewLife.Cube.Services;
@@ -30,6 +32,9 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     private const String PasswordLoginUserPrefix = "CubeLogin:";
     /// <summary>密码登录IP错误次数缓存前缀</summary>
     private const String PasswordLoginIpPrefix = "CubeLogin:";
+
+    /// <summary>OAuth回跳注册待处理缓存前缀</summary>
+    private const String OAuthPendingPrefix = "OAuthPending:";
 
     /// <summary>短信登录IP发送限制缓存前缀</summary>
     private const String SmsLoginIpPrefix = "SmsLogin:IP:";
@@ -67,6 +72,13 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <summary>短信重置密码验证码缓存前缀</summary>
     private const String SmsResetCodePrefix = "SmsReset:Code:";
 
+    /// <summary>短信注册IP发送限制缓存前缀</summary>
+    private const String SmsRegisterIpPrefix = "SmsRegister:IP:";
+    /// <summary>短信注册最后发送时间缓存前缀</summary>
+    private const String SmsRegisterLastSendPrefix = "SmsRegister:LastSend:";
+    /// <summary>短信注册验证码缓存前缀</summary>
+    private const String SmsRegisterCodePrefix = "SmsRegister:Code:";
+
     /// <summary>邮件绑定IP发送限制缓存前缀</summary>
     private const String MailBindIpPrefix = "MailBind:IP:";
     /// <summary>邮件绑定最后发送时间缓存前缀</summary>
@@ -80,6 +92,13 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     private const String MailResetLastSendPrefix = "MailReset:LastSend:";
     /// <summary>邮件重置密码验证码缓存前缀</summary>
     private const String MailResetCodePrefix = "MailReset:Code:";
+
+    /// <summary>邮件注册IP发送限制缓存前缀</summary>
+    private const String MailRegisterIpPrefix = "MailRegister:IP:";
+    /// <summary>邮件注册最后发送时间缓存前缀</summary>
+    private const String MailRegisterLastSendPrefix = "MailRegister:LastSend:";
+    /// <summary>邮件注册验证码缓存前缀</summary>
+    private const String MailRegisterCodePrefix = "MailRegister:Code:";
 
     /// <summary>短信通知IP发送限制缓存前缀</summary>
     private const String SmsNotifyIpPrefix = "SmsNotify:IP:";
@@ -652,6 +671,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         {
             "bind" => (SmsBindIpPrefix, SmsBindLastSendPrefix, SmsBindCodePrefix),
             "reset" => (SmsResetIpPrefix, SmsResetLastSendPrefix, SmsResetCodePrefix),
+            "register" => (SmsRegisterIpPrefix, SmsRegisterLastSendPrefix, SmsRegisterCodePrefix),
             "login" => (SmsLoginIpPrefix, SmsLoginLastSendPrefix, SmsLoginCodePrefix),
             "notify" => (SmsNotifyIpPrefix, SmsNotifyLastSendPrefix, SmsNotifyCodePrefix),
             _ => (SmsNotifyIpPrefix, SmsNotifyLastSendPrefix, SmsNotifyCodePrefix),
@@ -667,10 +687,251 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         {
             "bind" => (MailBindIpPrefix, MailBindLastSendPrefix, MailBindCodePrefix),
             "reset" => (MailResetIpPrefix, MailResetLastSendPrefix, MailResetCodePrefix),
+            "register" => (MailRegisterIpPrefix, MailRegisterLastSendPrefix, MailRegisterCodePrefix),
             "login" => (MailLoginIpPrefix, MailLoginLastSendPrefix, MailLoginCodePrefix),
             "notify" => (MailNotifyIpPrefix, MailNotifyLastSendPrefix, MailNotifyCodePrefix),
             _ => (MailNotifyIpPrefix, MailNotifyLastSendPrefix, MailNotifyCodePrefix),
         };
+    }
+    #endregion
+
+    #region 注册
+    /// <summary>统一注册入口，支持用户名密码、手机验证码、邮箱验证码注册</summary>
+    /// <param name="model">注册模型</param>
+    /// <param name="httpContext">HTTP上下文</param>
+    /// <returns>注册并登录结果</returns>
+    public ServiceResult<IToken> Register(AuthRegisterModel model, HttpContext httpContext)
+    {
+        var set = CubeSetting.Current;
+        if (!set.AllowRegister) return new ServiceResult<IToken> { IsSuccess = false, Message = "禁止注册" };
+
+        if (model == null) return new ServiceResult<IToken> { IsSuccess = false, Message = "注册参数不能为空" };
+
+        var ip = httpContext.GetUserHost();
+        using var span = tracer?.NewSpan(nameof(Register), new { model.RegisterCategory, model.Username, model.Mobile, model.Email, ip });
+
+        try
+        {
+            return model.RegisterCategory switch
+            {
+                RegisterCategory.Phone => RegisterByPhoneCode(model, httpContext, ip),
+                RegisterCategory.Email => RegisterByMailCode(model, httpContext, ip),
+                RegisterCategory.OAuthBind => RegisterByOAuthBind(model, httpContext, ip),
+                _ => RegisterByPassword(model, httpContext, ip),
+            };
+        }
+        catch (Exception ex)
+        {
+            span?.SetError(ex, null);
+            return new ServiceResult<IToken> { IsSuccess = false, Message = ex.Message };
+        }
+    }
+
+    private ServiceResult<IToken> RegisterByPassword(AuthRegisterModel model, HttpContext httpContext, String ip)
+    {
+        var username = model.Username?.Trim();
+        var email = model.Email?.Trim();
+        var mobile = model.Mobile?.Trim();
+
+        var check = ValidatePasswordAndConfirm(model.Password, model.ConfirmPassword);
+        if (!check.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = check.Message };
+
+        if (username.IsNullOrEmpty())
+            return new ServiceResult<IToken> { IsSuccess = false, Message = "用户名不能为空" };
+
+        var duplicate = CheckDuplicate(username, email, mobile);
+        if (!duplicate.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = duplicate.Message };
+
+        var user = CreateUserAndBindContact(username, model.Password, email, mobile, ip);
+        return CompleteLogin(user, httpContext, false, "注册", username, ip);
+    }
+
+    private ServiceResult<IToken> RegisterByPhoneCode(AuthRegisterModel model, HttpContext httpContext, String ip)
+    {
+        var mobile = (model.Mobile ?? model.Username)?.Trim();
+        if (mobile.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "手机号不能为空" };
+        if (!ValidFormatHelper.IsMobile(mobile)) return new ServiceResult<IToken> { IsSuccess = false, Message = "手机号格式不正确" };
+        if (model.Code.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码不能为空" };
+
+        var check = ValidatePasswordAndConfirm(model.Password, model.ConfirmPassword);
+        if (!check.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = check.Message };
+
+        var set = CubeSetting.Current;
+        if (!set.EnableSms) return new ServiceResult<IToken> { IsSuccess = false, Message = "短信验证码功能未启用" };
+
+        var codeKey = $"{SmsRegisterCodePrefix}{mobile}";
+        var cachedCode = _cache.Get<String>(codeKey);
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
+        if (!cachedCode.EqualIgnoreCase(model.Code)) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误" };
+
+        var username = model.Username?.Trim();
+        if (username.IsNullOrEmpty()) username = mobile;
+
+        var duplicate = CheckDuplicate(username, model.Email?.Trim(), mobile);
+        if (!duplicate.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = duplicate.Message };
+
+        var user = CreateUserAndBindContact(username, model.Password, model.Email?.Trim(), mobile, ip);
+
+        _cache.Remove(codeKey);
+        LogProvider.Provider.WriteLog(typeof(User), "手机注册", true, $"手机号：{mobile}", user.ID, user + "", ip);
+
+        return CompleteLogin(user, httpContext, false, "手机注册", username, ip);
+    }
+
+    private ServiceResult<IToken> RegisterByMailCode(AuthRegisterModel model, HttpContext httpContext, String ip)
+    {
+        var mail = (model.Email ?? model.Username)?.Trim();
+        if (mail.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱不能为空" };
+        if (!ValidFormatHelper.IsEmail(mail)) return new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱格式不正确" };
+        if (model.Code.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码不能为空" };
+
+        var check = ValidatePasswordAndConfirm(model.Password, model.ConfirmPassword);
+        if (!check.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = check.Message };
+
+        var set = CubeSetting.Current;
+        if (!set.EnableMail) return new ServiceResult<IToken> { IsSuccess = false, Message = "邮件验证码功能未启用" };
+
+        var codeKey = $"{MailRegisterCodePrefix}{mail}";
+        var cachedCode = _cache.Get<String>(codeKey);
+        if (cachedCode.IsNullOrEmpty()) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码已过期或不存在，请重新获取" };
+        if (!cachedCode.EqualIgnoreCase(model.Code)) return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误" };
+
+        var username = model.Username?.Trim();
+        if (username.IsNullOrEmpty()) username = mail;
+
+        var duplicate = CheckDuplicate(username, mail, model.Mobile?.Trim());
+        if (!duplicate.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = duplicate.Message };
+
+        var user = CreateUserAndBindContact(username, model.Password, mail, model.Mobile?.Trim(), ip);
+
+        _cache.Remove(codeKey);
+        LogProvider.Provider.WriteLog(typeof(User), "邮箱注册", true, $"邮箱：{mail}", user.ID, user + "", ip);
+
+        return CompleteLogin(user, httpContext, false, "邮箱注册", username, ip);
+    }
+
+    private ServiceResult<IToken> RegisterByOAuthBind(AuthRegisterModel model, HttpContext httpContext, String ip)
+    {
+        if (model.OAuthToken.IsNullOrEmpty())
+            return new ServiceResult<IToken> { IsSuccess = false, Message = "OAuth回跳令牌不能为空" };
+
+        var pendingKey = $"{OAuthPendingPrefix}{model.OAuthToken}";
+        var pending = _cache.Get<OAuthPendingInfoModel>(pendingKey);
+        if (pending == null)
+            return new ServiceResult<IToken> { IsSuccess = false, Message = "OAuth回跳信息已过期，请重新发起第三方登录" };
+
+        var check = ValidatePasswordAndConfirm(model.Password, model.ConfirmPassword);
+        if (!check.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = check.Message };
+
+        var username = model.Username?.Trim();
+        if (username.IsNullOrEmpty()) username = pending.Username?.Trim();
+
+        var email = model.Email?.Trim();
+        if (email.IsNullOrEmpty()) email = pending.Email?.Trim();
+
+        var mobile = model.Mobile?.Trim();
+        if (mobile.IsNullOrEmpty()) mobile = pending.Mobile?.Trim();
+
+        if (username.IsNullOrEmpty())
+        {
+            if (!email.IsNullOrEmpty())
+                username = email.Split('@')[0];
+            else if (!mobile.IsNullOrEmpty())
+                username = $"P{mobile}";
+            else
+                username = $"OAuth_{Rand.NextString(8)}";
+        }
+
+        var duplicate = CheckDuplicate(username, email, mobile);
+        if (!duplicate.IsSuccess) return new ServiceResult<IToken> { IsSuccess = false, Message = duplicate.Message };
+
+        var user = CreateUserAndBindContact(username, model.Password, email, mobile, ip);
+        var result = CompleteLogin(user, httpContext, false, "OAuth回跳注册", username, ip);
+
+        var oauthId = httpContext.Session?.GetString("Cube_OAuthId").ToLong() ?? 0;
+        if (oauthId <= 0)
+            return new ServiceResult<IToken> { IsSuccess = false, Message = "OAuth绑定会话已过期，请重新发起第三方登录" };
+
+        var log = SsoController.Provider?.BindAfterLogin(oauthId);
+        if (log == null)
+            return new ServiceResult<IToken> { IsSuccess = false, Message = "OAuth绑定失败，请重新发起第三方登录" };
+
+        httpContext.Session.Remove("Cube_OAuthId");
+        _cache.Remove(pendingKey);
+
+        LogProvider.Provider.WriteLog(typeof(User), "OAuth回跳注册", true, $"提供商：{pending.Provider}", user.ID, user + "", ip);
+
+        return result;
+    }
+
+    private ServiceResult ValidatePasswordAndConfirm(String password, String confirmPassword)
+    {
+        if (password.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "密码不能为空" };
+        if (confirmPassword.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "确认密码不能为空" };
+        if (password != confirmPassword) return new ServiceResult { IsSuccess = false, Message = "两次输入密码不一致" };
+        if (!passwordService.Valid(password)) return new ServiceResult { IsSuccess = false, Message = "密码太弱" };
+
+        return new ServiceResult { IsSuccess = true };
+    }
+
+    private ServiceResult CheckDuplicate(String username, String email, String mobile)
+    {
+        if (!username.IsNullOrEmpty() && User.FindByName(username) != null)
+            return new ServiceResult { IsSuccess = false, Message = $"用户[{username}]已存在" };
+
+        if (!email.IsNullOrEmpty() && User.FindByMail(email) != null)
+            return new ServiceResult { IsSuccess = false, Message = $"邮箱[{email}]已存在" };
+
+        if (!mobile.IsNullOrEmpty() && User.FindByMobile(mobile) != null)
+            return new ServiceResult { IsSuccess = false, Message = $"手机号[{mobile}]已存在" };
+
+        return new ServiceResult { IsSuccess = true };
+    }
+
+    private IManageUser CreateUserAndBindContact(String username, String password, String email, String mobile, String ip)
+    {
+        var set = CubeSetting.Current;
+
+        foreach (var item in OAuthConfig.GetValids(TenantContext.CurrentId))
+        {
+            if (username.StartsWithIgnoreCase($"{item.Name}_"))
+                throw new ArgumentException($"禁止使用[{item.Name}_]前缀！", nameof(username));
+        }
+
+        var role = Role.GetOrAdd(set.DefaultRole);
+        var provider = ManageProvider.Provider;
+        provider.Register(username, password, role?.ID ?? 0, true);
+
+        var user = provider.FindByName(username) as User ?? User.FindByName(username);
+        if (user == null) throw new InvalidOperationException("注册失败，请稍后重试");
+
+        var changed = false;
+        if (!email.IsNullOrEmpty() && !email.EqualIgnoreCase(user.Mail))
+        {
+            user.Mail = email;
+            user.MailVerified = true;
+            changed = true;
+        }
+        if (!mobile.IsNullOrEmpty() && !mobile.EqualIgnoreCase(user.Mobile))
+        {
+            user.Mobile = mobile;
+            user.MobileVerified = true;
+            changed = true;
+        }
+        if (user.RegisterIP.IsNullOrEmpty())
+        {
+            user.RegisterIP = ip;
+            changed = true;
+        }
+        if (user.RegisterTime.Year < 2000)
+        {
+            user.RegisterTime = DateTime.Now;
+            changed = true;
+        }
+
+        if (changed) user.Update();
+
+        return user;
     }
     #endregion
 
