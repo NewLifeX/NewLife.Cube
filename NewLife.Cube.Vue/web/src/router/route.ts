@@ -1231,6 +1231,14 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 			title: '注册',
 		},
 	},
+	{
+		path: '/forgot-password',
+		name: 'forgotPassword',
+		component: () => import('/@/views/login/forgot-password.vue'),
+		meta: {
+			title: '忘记密码',
+		},
+	},
 	/**
 	 * 提示：写在这里的为全屏界面，不建议写在这里
 	 * 请写在 `dynamicRoutes` 路由数组中

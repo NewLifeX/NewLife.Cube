@@ -81,8 +81,12 @@
                     <el-form-item>
                         <el-button type="primary" style="width:100%;" @@click="submitPassword" :loading="loading">登 录</el-button>
                     </el-form-item>
-                    <el-form-item v-if="allowRegister" style="text-align:right;">
+                    <el-form v-if="allowRegister" style="text-align:right;">
                         <a href="Register">注册账号</a>
+                        <a style="margin-left:12px;" @@click="activeTab='forgot'">忘记密码？</a>
+                    </el-form>
+                    <el-form-item v-else style="text-align:right;">
+                        <a @@click="activeTab='forgot'">忘记密码？</a>
                     </el-form-item>
                 </el-form>
 
@@ -118,11 +122,55 @@
                     </el-form-item>
                 </el-form>
 
+                <!-- 忘记密码步骤1 -->
+                <el-form v-if="activeTab === 'forgot' && forgotStep === 'input'" label-width="0px">
+                    <div style="font-size:18px;font-weight:700;margin-bottom:12px;">重置密码</div>
+                    <el-form-item>
+                        <el-input v-model="forgotUsername" placeholder="手机号或邮箱" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-radio-group v-model="forgotChannel">
+                            <el-radio-button label="Sms">短信</el-radio-button>
+                            <el-radio-button label="Mail">邮箱</el-radio-button>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" style="width:100%;" @@click="forgotSendCode" :loading="forgotSending">发送验证码</el-button>
+                    </el-form-item>
+                    <el-form-item style="text-align:center;">
+                        <a @@click="activeTab='password'">返回登录</a>
+                    </el-form-item>
+                </el-form>
+
+                <!-- 忘记密码步骤2 -->
+                <el-form v-if="activeTab === 'forgot' && forgotStep === 'verify'" label-width="0px">
+                    <div style="font-size:18px;font-weight:700;margin-bottom:12px;">设置新密码</div>
+                    <el-form-item>
+                        <el-row :gutter="8">
+                            <el-col :span="16"><el-input v-model="forgotCode" placeholder="验证码" /></el-col>
+                            <el-col :span="8"><el-button style="width:100%;" :disabled="forgotCountdown>0" @@click="forgotResend">{{forgotCountdown>0?forgotCountdown+'s':'重新发送'}}</el-button></el-col>
+                        </el-row>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-input type="password" v-model="forgotNewPwd" placeholder="新密码（≥6位）" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-input type="password" v-model="forgotConfirmPwd" placeholder="确认新密码" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" style="width:100%;" @@click="forgotConfirmReset" :loading="forgotSubmitting">确认重置</el-button>
+                    </el-form-item>
+                    <el-form-item style="text-align:center;">
+                        <a @@click="forgotStep='input'" style="margin-right:12px;">上一步</a>
+                        <a @@click="activeTab='password'">返回登录</a>
+                    </el-form-item>
+                </el-form>
+
                 <!-- OAuth 第三方登录 -->
                 <div class="oauth-area" v-if="providers && providers.length">
                     <div class="divider">其他登录方式</div>
                     <div class="oauth-icons">
-                        <a v-for="p in providers" :key="p.name" :href="'/Sso/Login/' + p.name" :title="p.nickName || p.name">
+                        <a v-for="p in providers" :key="p.name" :href="'/Sso/Login/' + p.name + (returnUrl ? '?r=' + encodeURIComponent(returnUrl) : '')" :title="p.nickName || p.name">
                             <img v-if="p.logo" :src="p.logo" :alt="p.nickName || p.name" />
                             <span v-else class="oauth-fallback">{{(p.nickName || p.name).charAt(0).toUpperCase()}}</span>
                             <span>{{p.nickName || p.name}}</span>
@@ -146,6 +194,18 @@
     <script src="@res/elementui/js/element.min.js"></script>
     <script>
         var elReturnUrl = '@Html.Raw(set.ReturnUrl)';
+
+        // RSA-OAEP 密码加密（浏览器 Web Crypto API）
+        async function elEncryptRSA(password, pemPublicKey) {
+            try {
+                var base64 = pemPublicKey.replace(/-----BEGIN [^-]+-----/, '').replace(/-----END [^-]+-----/, '').replace(/\s/g, '');
+                var binary = atob(base64); var bytes = new Uint8Array(binary.length);
+                for (var i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
+                var key = await crypto.subtle.importKey('spki', bytes.buffer, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+                var encrypted = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, new TextEncoder().encode(password));
+                return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+            } catch (e) { return null; }
+        }
 
         new Vue({
             el: '#app',
@@ -172,6 +232,7 @@
                 loginTip: '@config.LoginTip',
                 copyright: '',
                 registration: '@config.Registration',
+                returnUrl: new URLSearchParams(window.location.search).get('redirect') || '',
                 loginform: {
                     username: null,
                     password: null,
@@ -179,7 +240,18 @@
                 rules: {
                     username: [{ required: true, message: '请输入用户名' }],
                     password: [{ required: true, message: '请输入密码' }],
-                }
+                },
+                // 忘记密码
+                forgotStep: 'input',
+                forgotChannel: 'Sms',
+                forgotUsername: '',
+                forgotCode: '',
+                forgotNewPwd: '',
+                forgotConfirmPwd: '',
+                forgotSending: false,
+                forgotSubmitting: false,
+                forgotCountdown: 0,
+                _forgotTimer: null,
             },
             computed: {
                 hasTabs() { return (this.allowLogin !== false ? 1 : 0) + (this.enableSms ? 1 : 0) + (this.enableMail ? 1 : 0) > 1; }
@@ -211,11 +283,19 @@
             },
             methods: {
                 submitPassword() {
-                    this.$refs.loginform.validate((valid) => {
+                    this.$refs.loginform.validate(async (valid) => {
                         if (!valid) return;
                         this.loading = true;
                         this.error = '';
-                        axios.post('login', this.loginform)
+                        var payload = { ...this.loginform };
+                        try {
+                            var cr = await axios.get('/Auth/Challenge');
+                            if (cr.data && cr.data.code === 0 && cr.data.data && cr.data.data.publicKey) {
+                                var encrypted = await elEncryptRSA(payload.password, cr.data.data.publicKey);
+                                if (encrypted) { payload.password = encrypted; payload.pkey = cr.data.data.pkey; }
+                            }
+                        } catch (e) { /* 降级明文 */ }
+                        axios.post('login', payload)
                             .then((rsp) => {
                                 if (rsp.data.code == 0) location.href = elReturnUrl || '../';
                                 else this.error = rsp.data.message || '用户名或密码错误';
@@ -259,6 +339,45 @@
                             this.codeLoading = false;
                             this.mailLoading = false;
                         });
+                },
+                startForgotCountdown() {
+                    if (this._forgotTimer) clearInterval(this._forgotTimer);
+                    this.forgotCountdown = 60;
+                    this._forgotTimer = setInterval(() => {
+                        this.forgotCountdown--;
+                        if (this.forgotCountdown <= 0) { clearInterval(this._forgotTimer); this._forgotTimer = null; }
+                    }, 1000);
+                },
+                forgotSendCode() {
+                    if (!this.forgotUsername) { this.$message.error('请输入手机号或邮箱'); return; }
+                    this.forgotSending = true;
+                    axios.post('/Auth/SendCode', { channel: this.forgotChannel, username: this.forgotUsername, action: 'reset' })
+                        .then((res) => {
+                            if (res.data.code !== 0) { this.$message.error(res.data.message || '发送失败'); return; }
+                            this.$message.success('验证码已发送');
+                            this.forgotStep = 'verify';
+                            this.startForgotCountdown();
+                        }).catch(() => { this.$message.error('发送失败，请稍后重试'); })
+                        .finally(() => { this.forgotSending = false; });
+                },
+                forgotResend() {
+                    if (this.forgotCountdown > 0) return;
+                    axios.post('/Auth/SendCode', { channel: this.forgotChannel, username: this.forgotUsername, action: 'reset' })
+                        .then((res) => {
+                            if (res.data.code === 0) { this.$message.success('验证码已重新发送'); this.startForgotCountdown(); }
+                        }).catch(() => {});
+                },
+                forgotConfirmReset() {
+                    if (!this.forgotCode) { this.$message.error('请输入验证码'); return; }
+                    if (!this.forgotNewPwd) { this.$message.error('请输入新密码'); return; }
+                    if (this.forgotNewPwd !== this.forgotConfirmPwd) { this.$message.error('两次密码不一致'); return; }
+                    this.forgotSubmitting = true;
+                    axios.post('/Auth/ResetPassword', { username: this.forgotUsername, code: this.forgotCode, newPassword: this.forgotNewPwd, confirmPassword: this.forgotConfirmPwd })
+                        .then((res) => {
+                            if (res.data.code === 0) { this.$message.success('密码重置成功，请重新登录'); this.activeTab = 'password'; this.forgotStep = 'input'; }
+                            else { this.$message.error(res.data.message || '重置失败'); }
+                        }).catch(() => { this.$message.error('重置失败，请稍后重试'); })
+                        .finally(() => { this.forgotSubmitting = false; });
                 }
             }
         });

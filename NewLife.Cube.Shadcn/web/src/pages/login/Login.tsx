@@ -225,7 +225,7 @@ export default function Login() {
               {config.providers.map((p) => (
                 <div key={p.name} className="flex flex-col items-center gap-1 cursor-pointer"
                   title={p.nickName ?? p.name}
-                  onClick={() => { window.location.href = `/Sso/Login/${p.name}`; }}
+                  onClick={() => { const redirect = new URLSearchParams(window.location.search).get('redirect') || '/'; window.location.href = `/Sso/Login/${p.name}?r=${encodeURIComponent(redirect)}`; }}
                 >
                   {p.logo
                     ? <img src={p.logo} alt="" className="h-9 w-9 rounded-full object-contain" />
@@ -249,6 +249,11 @@ export default function Login() {
             <button className="text-primary underline-offset-4 hover:underline" onClick={() => navigate('/register')}>立即注册</button>
           </p>
         )}
+
+        {/* 忘记密码入口 */}
+        <p className="mt-2 text-center text-sm">
+          <button className="text-primary underline-offset-4 hover:underline" onClick={() => navigate('/forgot-password')}>忘记密码？</button>
+        </p>
 
         {/* 版权信息 */}
         {(siteInfo?.copyright || siteInfo?.registration) && (

@@ -32,6 +32,11 @@
 				<span>{{ $t('message.account.accountBtnText') }}</span>
 			</el-button>
 		</el-form-item>
+		<el-form-item class="login-animation4">
+			<div class="login-forgot-link">
+				<el-link type="primary" :underline="false" @click="router.push('/forgot-password')">{{ $t('message.account.forgotPassword') }}</el-link>
+			</div>
+		</el-form-item>
 	</el-form>
 </template>
 

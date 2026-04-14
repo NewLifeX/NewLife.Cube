@@ -43,7 +43,7 @@
         @if (set.AllowLogin)
         {
             <div class="tab-pane @(set.EnableSms || set.EnableMail ? "fade show active" : "") pl-1" id="tab-pwd" role="tabpanel">
-                <form class="form" action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" onsubmit="md5_salt($('#password'));">
+                <form class="form" action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" id="kt3_login_form" onsubmit="return kt3HandleLoginSubmit(event);">
                     @Html.ValidationSummary()
                     <div class="form-group">
                         <label class="font-size-h6 font-weight-bolder text-dark">用户名</label>
@@ -55,6 +55,7 @@
                             <a href="javascript:;" id="kt_login_forgot" class="text-primary font-size-h6 font-weight-bolder text-hover-primary pt-5">忘记密码 ?</a>
                         </div>
                         <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="password" name="password" id="password" autocomplete="off" />
+                        <input type="hidden" name="pkey" id="kt3_pkey_input" value="" />
                     </div>
                     <div class="pb-lg-0 pb-5">
                         <button type="submit" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">登录</button>
@@ -118,6 +119,7 @@
             {
                 var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
                 var oauthUrl = "/Sso/Login/" + mi.Name;
+                if (!set.ReturnUrl.IsNullOrEmpty()) { oauthUrl += "?r=" + System.Web.HttpUtility.UrlEncode(set.ReturnUrl); }
                 var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
                 <a href="@oauthUrl" class="d-flex flex-column align-items-center mx-2 text-decoration-none" title="@nickName">
                     @if (!logo.IsNullOrEmpty())
@@ -139,6 +141,40 @@
 
 <script>
     var returnUrl3 = '@Html.Raw(set.ReturnUrl)';
+
+    // RSA-OAEP 密码加密（浏览器 Web Crypto API）
+    async function kt3EncryptRSA(password, pemPublicKey) {
+        try {
+            var base64 = pemPublicKey.replace(/-----BEGIN [^-]+-----/, '').replace(/-----END [^-]+-----/, '').replace(/\s/g, '');
+            var binary = atob(base64);
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
+            var key = await crypto.subtle.importKey('spki', bytes.buffer, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+            var encrypted = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, new TextEncoder().encode(password));
+            return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+        } catch (e) { return null; }
+    }
+
+    async function kt3HandleLoginSubmit(e) {
+        e.preventDefault();
+        var pwdInput = document.getElementById('password');
+        var pkeyInput = document.getElementById('kt3_pkey_input');
+        var pwd = pwdInput.value;
+        if (!pwd) { document.getElementById('kt3_login_form').submit(); return false; }
+        try {
+            var res = await fetch('/Auth/Challenge');
+            var data = await res.json();
+            if (data.code === 0 && data.data && data.data.publicKey) {
+                var encrypted = await kt3EncryptRSA(pwd, data.data.publicKey);
+                if (encrypted) {
+                    pwdInput.value = encrypted;
+                    pkeyInput.value = data.data.pkey;
+                }
+            }
+        } catch (e) { /* 降级明文提交 */ }
+        document.getElementById('kt3_login_form').submit();
+        return false;
+    }
     async function sendCode3(channel, userId, btnId) {
         var username = document.getElementById(userId).value;
         if (!username) { alert(channel === 'Sms' ? '请输入手机号' : '请输入邮箱'); return; }

@@ -108,6 +108,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public Boolean AllowRegister { get; set; } = true;
 
+    /// <summary>允许明文密码。允许客户端直接提交明文密码（兼容旧版）。禁用后强制要求客户端通过 GET /Auth/Challenge 获取公钥加密密码后提交，防止明文传输，默认true</summary>
+    [Description("允许明文密码。允许客户端直接提交明文密码（兼容旧版）。禁用后要求通过 Challenge 接口加密登录，默认true")]
+    [Category("用户登录")]
+    public Boolean AllowPlainPassword { get; set; } = true;
+
     /// <summary>自动注册。默认true，SSO登录后，如果本地未登录，自动注册新用户。全局设置和OAuth应用设置只要有一个启用则表示使用</summary>
     [Description("自动注册。默认true，SSO登录后，如果本地未登录，自动注册新用户。全局设置和OAuth应用设置只要有一个启用则表示使用")]
     [Category("用户登录")]

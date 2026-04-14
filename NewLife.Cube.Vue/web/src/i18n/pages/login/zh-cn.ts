@@ -14,6 +14,7 @@ export default {
 		accountPlaceholder2: '密码',
 		accountPlaceholder3: '请输入验证码',
 		accountBtnText: '登 录',
+		forgotPassword: '忘记密码？',
 	},
 	mobile: {
 		placeholder1: '请输入手机号',

@@ -114,7 +114,8 @@ const loginBgSrc = computed(() => siteStore.siteInfo.loginBg || loginMainDefault
 
 // OAuth 第三方登录（全页跳转，由后端处理 OAuth 流程）
 const onOAuthLogin = (name: string) => {
-	window.location.href = `/Sso/Login/${name}`;
+	const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
+	window.location.href = `/Sso/Login/${name}?r=${encodeURIComponent(redirect)}`;
 };
 
 // 跳转到注册页

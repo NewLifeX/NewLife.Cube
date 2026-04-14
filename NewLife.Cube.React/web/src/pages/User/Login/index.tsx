@@ -118,7 +118,7 @@ const Login: React.FC = () => {
         <Space key="icons" size={8}>
           {loginConfig.providers.map((provider) => (
             <div key={provider.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}
-              onClick={() => { window.location.href = `/Sso/Login/${provider.name}`; }}
+              onClick={() => { const redirect = new URLSearchParams(window.location.search).get('redirect') || '/'; window.location.href = `/Sso/Login/${provider.name}?r=${encodeURIComponent(redirect)}`; }}
               title={provider.nickName || provider.name}
             >
               <Avatar
@@ -508,8 +508,14 @@ const Login: React.FC = () => {
             <ProFormCheckbox noStyle name="autoLogin">
               自动登录
             </ProFormCheckbox>
+            <a
+              style={{ float: 'right' }}
+              onClick={() => history.push('/user/forgot-password')}
+            >
+              忘记密码？
+            </a>
             {loginConfig.allowRegister && (
-              <a style={{ float: 'right' }}>注册账号</a>
+              <a style={{ marginLeft: 8 }}>注册账号</a>
             )}
           </div>
         </LoginForm>

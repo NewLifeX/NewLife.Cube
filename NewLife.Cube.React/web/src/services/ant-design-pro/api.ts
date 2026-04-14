@@ -140,3 +140,21 @@ export async function register(body: API.RegisterParams, options?: { [key: strin
     ...(options || {}),
   });
 }
+
+/** 重置密码 POST /Auth/ResetPassword */
+export async function resetPassword(body: API.ResetPasswordParams, options?: { [key: string]: any }) {
+  return request<ResponseStructure<boolean>>('/Auth/ResetPassword', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 重置密码 POST /Auth/ResetPassword */
+export async function resetPassword(body: API.ResetPasswordParams, options?: { [key: string]: any }) {
+  return request<ResponseStructure<boolean>>('/Auth/ResetPassword', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}

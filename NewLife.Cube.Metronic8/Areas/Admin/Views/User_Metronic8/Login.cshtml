@@ -137,7 +137,7 @@
                             <!-- 登录界面 -->
                             <div id="Pane_Login" class="tab-pane fade @(set.AllowLogin ? "show active" : "")">
                                 <!--begin::Form-->
-                                <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" id="kt_sign_in_form">
+                                <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" id="kt_sign_in_form" onsubmit="return handleLoginSubmit(event)">
                                     <!--begin::Heading-->
                                     <div class="fv-row mb-5">
                                         <label class="form-label fs-4 text-gray-700">用户名</label>
@@ -146,9 +146,10 @@
                                     <div class="fv-row mb-10">
                                         <div class="d-flex flex-stack mb-2">
                                             <label class="form-label fs-4 text-gray-700 mb-0">密码</label>
-                                            @*<a href="#Pane_Forgot" class="link-primary fs-4">忘记密码</a>*@
+                                            <a href="#" class="link-primary fs-4" id="btn_forgot" onclick="showForgot()">忘记密码</a>
                                         </div>
                                         <input class="form-control form-control-lg" type="password" name="password" id="password" autocomplete="off" placeholder="密码" />
+                                        <input type="hidden" name="pkey" id="pkey_input" value="" />
                                     </div>
 
                                     <!--begin::Actions-->
@@ -215,6 +216,47 @@
                             }
                             <!-- 找回密码 -->
                             <div id="Pane_Forgot" class="tab-pane fade">
+                                <!-- 步骤1：发送验证码 -->
+                                <div id="forgot_step1">
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label text-gray-700">手机号或邮箱</label>
+                                        <input class="form-control form-control-lg" type="text" id="forgot_username" placeholder="手机号或邮箱" />
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label text-gray-700">验证渠道</label>
+                                        <div class="d-flex gap-3">
+                                            <button type="button" class="btn btn-sm btn-light-info" id="forgot_ch_sms" onclick="setForgotChannel('Sms')" style="border:2px solid #009ef7;">短信</button>
+                                            <button type="button" class="btn btn-sm btn-light" id="forgot_ch_mail" onclick="setForgotChannel('Mail')">邮箱</button>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-lg btn-bg-info w-100 mb-3" id="forgot_send_btn" onclick="forgotSendCode()"><span class="text-white">发送验证码</span></button>
+                                        <a href="#" class="btn btn-lg btn-light w-100" onclick="hideForgot()">返回登录</a>
+                                    </div>
+                                </div>
+                                <!-- 步骤2：输入验证码 + 新密码 -->
+                                <div id="forgot_step2" style="display:none;">
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label text-gray-700">验证码</label>
+                                        <div class="input-group">
+                                            <input class="form-control form-control-lg" type="text" id="forgot_code" placeholder="验证码" />
+                                            <button type="button" class="btn btn-outline-secondary" id="forgot_resend_btn" onclick="forgotResend()">重新发送</button>
+                                        </div>
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label text-gray-700">新密码</label>
+                                        <input class="form-control form-control-lg" type="password" id="forgot_new_pwd" placeholder="新密码（≥6位）" />
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label text-gray-700">确认密码</label>
+                                        <input class="form-control form-control-lg" type="password" id="forgot_confirm_pwd" placeholder="再次输入新密码" />
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-lg btn-bg-info w-100 mb-3" id="forgot_submit_btn" onclick="forgotConfirmReset()"><span class="text-white">确认重置</span></button>
+                                        <a href="#" class="btn btn-lg btn-light w-100" onclick="showForgotStep1()">上一步</a>
+                                    </div>
+                                </div>
+                                <div id="forgot_error" class="text-danger mt-3" style="display:none;"></div>
                             </div>
                             <!-- 注册用户 -->
                             <div id="Pane_Register" class="tab-pane fade">
@@ -275,6 +317,41 @@
     <script>
         var returnUrl = '@Html.Raw(set.ReturnUrl)';
 
+        // RSA-OAEP 密码加密（浏览器 Web Crypto API）
+        async function encryptPasswordRSA(password, pemPublicKey) {
+            try {
+                var base64 = pemPublicKey.replace(/-----BEGIN [^-]+-----/, '').replace(/-----END [^-]+-----/, '').replace(/\s/g, '');
+                var binary = atob(base64);
+                var bytes = new Uint8Array(binary.length);
+                for (var i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
+                var key = await crypto.subtle.importKey('spki', bytes.buffer, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+                var enc = new TextEncoder();
+                var encrypted = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, enc.encode(password));
+                return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+            } catch (e) { return null; }
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            var pwdInput = document.getElementById('password');
+            var pkeyInput = document.getElementById('pkey_input');
+            var pwd = pwdInput.value;
+            if (!pwd) { document.getElementById('kt_sign_in_form').submit(); return false; }
+            try {
+                var res = await fetch('/Auth/Challenge');
+                var data = await res.json();
+                if (data.code === 0 && data.data && data.data.publicKey) {
+                    var encrypted = await encryptPasswordRSA(pwd, data.data.publicKey);
+                    if (encrypted) {
+                        pwdInput.value = encrypted;
+                        pkeyInput.value = data.data.pkey;
+                    }
+                }
+            } catch (e) { /* Challenge 失败则降级明文提交 */ }
+            document.getElementById('kt_sign_in_form').submit();
+            return false;
+        }
+
         async function sendCode(channel, usernameId, btnId) {
             var username = document.getElementById(usernameId).value;
             if (!username) { alert(channel === 'Sms' ? '请输入手机号' : '请输入邮箱'); return; }
@@ -328,6 +405,102 @@
 
             var paneLogin = document.querySelector("#Pane_Login");
             paneLogin.setAttribute("class", "tab-pane fade");
+        }
+
+        var _forgotChannel = 'Sms';
+        var _forgotCountdown = 0;
+        var _forgotTimer = null;
+
+        function setForgotChannel(ch) {
+            _forgotChannel = ch;
+            document.getElementById('forgot_ch_sms').style.border = ch === 'Sms' ? '2px solid #009ef7' : '';
+            document.getElementById('forgot_ch_mail').style.border = ch === 'Mail' ? '2px solid #009ef7' : '';
+            document.getElementById('forgot_ch_sms').className = 'btn btn-sm ' + (ch === 'Sms' ? 'btn-light-info' : 'btn-light');
+            document.getElementById('forgot_ch_mail').className = 'btn btn-sm ' + (ch === 'Mail' ? 'btn-light-info' : 'btn-light');
+        }
+
+        function showForgot() {
+            var all = document.querySelectorAll('#kt_sign_in_tab .tab-pane');
+            all.forEach(function(p) { p.setAttribute('class', 'tab-pane fade'); });
+            document.getElementById('Pane_Forgot').setAttribute('class', 'tab-pane fade show active');
+        }
+
+        function hideForgot() {
+            var all = document.querySelectorAll('#kt_sign_in_tab .tab-pane');
+            all.forEach(function(p) { p.setAttribute('class', 'tab-pane fade'); });
+            document.getElementById('Pane_Login').setAttribute('class', 'tab-pane fade show active');
+        }
+
+        function showForgotStep1() {
+            document.getElementById('forgot_step1').style.display = '';
+            document.getElementById('forgot_step2').style.display = 'none';
+            setForgotError('');
+        }
+
+        function setForgotError(msg) {
+            var el = document.getElementById('forgot_error');
+            el.style.display = msg ? '' : 'none';
+            el.textContent = msg;
+        }
+
+        function startForgotCountdown(btn, seconds) {
+            if (_forgotTimer) clearInterval(_forgotTimer);
+            _forgotCountdown = seconds || 60;
+            btn.disabled = true;
+            btn.textContent = _forgotCountdown + 's';
+            _forgotTimer = setInterval(function() {
+                _forgotCountdown--;
+                if (_forgotCountdown <= 0) {
+                    clearInterval(_forgotTimer); _forgotTimer = null;
+                    btn.disabled = false; btn.textContent = '重新发送';
+                } else { btn.textContent = _forgotCountdown + 's'; }
+            }, 1000);
+        }
+
+        async function forgotSendCode() {
+            var username = document.getElementById('forgot_username').value.trim();
+            if (!username) { setForgotError('请输入手机号或邮箱'); return; }
+            var btn = document.getElementById('forgot_send_btn');
+            btn.disabled = true;
+            setForgotError('');
+            try {
+                var res = await fetch('/Auth/SendCode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channel: _forgotChannel, username: username, action: 'reset' }) });
+                var data = await res.json();
+                if (data.code !== 0) { setForgotError(data.message || '发送失败'); btn.disabled = false; return; }
+                document.getElementById('forgot_step1').style.display = 'none';
+                document.getElementById('forgot_step2').style.display = '';
+                startForgotCountdown(document.getElementById('forgot_resend_btn'));
+            } catch (e) { setForgotError('发送失败，请稍后重试'); btn.disabled = false; }
+        }
+
+        async function forgotResend() {
+            if (_forgotCountdown > 0) return;
+            var username = document.getElementById('forgot_username').value.trim();
+            var btn = document.getElementById('forgot_resend_btn');
+            btn.disabled = true;
+            try {
+                await fetch('/Auth/SendCode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channel: _forgotChannel, username: username, action: 'reset' }) });
+                startForgotCountdown(btn);
+            } catch (e) { btn.disabled = false; }
+        }
+
+        async function forgotConfirmReset() {
+            var username = document.getElementById('forgot_username').value.trim();
+            var code = document.getElementById('forgot_code').value.trim();
+            var newPwd = document.getElementById('forgot_new_pwd').value;
+            var confirmPwd = document.getElementById('forgot_confirm_pwd').value;
+            if (!code) { setForgotError('请输入验证码'); return; }
+            if (!newPwd) { setForgotError('请输入新密码'); return; }
+            if (newPwd !== confirmPwd) { setForgotError('两次密码不一致'); return; }
+            var btn = document.getElementById('forgot_submit_btn');
+            btn.disabled = true;
+            setForgotError('');
+            try {
+                var res = await fetch('/Auth/ResetPassword', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, code: code, newPassword: newPwd, confirmPassword: confirmPwd }) });
+                var data = await res.json();
+                if (data.code === 0) { alert('密码重置成功，请重新登录'); hideForgot(); }
+                else { setForgotError(data.message || '重置失败'); btn.disabled = false; }
+            } catch (e) { setForgotError('重置失败，请稍后重试'); btn.disabled = false; }
         }
     </script>
 </body>

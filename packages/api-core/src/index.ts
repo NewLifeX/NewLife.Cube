@@ -22,9 +22,14 @@ export type {
   UserInfo,
   LoginResult,
   LoginConfig,
+  ChallengeResult,
+  ResetPasswordModel,
   SiteInfo,
   OAuthProvider,
   MenuItem,
   RegisterModel,
 } from './types';
 export { FieldKind, Auth } from './types';
+
+// 密码安全工具（RSA-OAEP 加密，配合 /Auth/Challenge 接口）
+export { encryptPassword } from './crypto';

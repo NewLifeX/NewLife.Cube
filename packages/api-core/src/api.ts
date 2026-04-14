@@ -6,6 +6,8 @@ import type {
   UserInfo,
   LoginResult,
   LoginConfig,
+  ChallengeResult,
+  ResetPasswordModel,
   SiteInfo,
   MenuItem,
   PageParams,
@@ -56,6 +58,24 @@ export function createUserApi(request: RequestFn) {
     /** 注册新用户 */
     register: (data: RegisterModel) =>
       request<void>({ url: '/Admin/User/Register', method: 'post', data }),
+
+    /**
+     * 获取 RSA 公钥挑战，用于加密密码防明文传输
+     *
+     * 流程：getChallenge() → 用 publicKey 加密密码 → login(username, encryptedPwd, pkey)
+     * 密钥有效期 300s，使用一次后服务端立即删除防重放。
+     */
+    getChallenge: () =>
+      request<ChallengeResult>({ url: '/Auth/Challenge', method: 'get' }),
+
+    /**
+     * 通过验证码重置密码（忘记密码流程）
+     *
+     * 先调用 sendCode({ channel, username, action: 'reset' }) 发送验证码，
+     * 再调用本接口提交验证码 + 新密码完成重置。
+     */
+    resetPassword: (data: ResetPasswordModel) =>
+      request<boolean>({ url: '/Auth/ResetPassword', method: 'post', data }),
   };
 }
 

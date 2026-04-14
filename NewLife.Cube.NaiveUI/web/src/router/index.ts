@@ -9,6 +9,12 @@ const staticRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/login/index.vue'),
     meta: { title: '登录', requiresAuth: false },
   },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/login/forgot-password.vue'),
+    meta: { title: '忘记密码', requiresAuth: false },
+  },
 ];
 
 /** 基础布局路由（子路由动态注入） */

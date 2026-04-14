@@ -105,6 +105,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public Boolean AllowLogin { get; set; } = true;
 
+    /// <summary>允许明文密码。默认true，兼容旧版客户端；设为false后强制要求前端通过 Challenge-Response 加密密码传输</summary>
+    [Description("允许明文密码。默认true，兼容旧版客户端；设为false后强制要求前端通过 Challenge-Response 加密密码传输")]
+    [Category("用户登录")]
+    public Boolean AllowPlainPassword { get; set; } = true;
+
     /// <summary>允许注册。允许输入用户名密码进行注册</summary>
     [Description("允许注册。允许输入用户名密码进行注册")]
     [Category("用户登录")]

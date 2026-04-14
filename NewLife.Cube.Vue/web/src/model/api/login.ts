@@ -56,3 +56,23 @@ export interface RegisterModel {
   password: string;
   password2: string;
 }
+
+/** 忘记密码/重置密码请求 */
+export interface ResetPasswordModel {
+  /** 手机号或邮符1 */
+  username: string;
+  /** 验证码 */
+  code: string;
+  /** 新密码 */
+  newPassword: string;
+  /** 确认密码 */
+  confirmPassword: string;
+}
+
+/** Challenge 响应（用于密码加密登录） */
+export interface ChallengeResult {
+  /** 挑战密钥ID，登录时传回 pkey 字段 */
+  pkey: string;
+  /** PEM SPKI 格式 RSA 公鑰 */
+  publicKey: string;
+}

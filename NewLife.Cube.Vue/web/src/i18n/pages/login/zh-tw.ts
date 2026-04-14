@@ -13,6 +13,7 @@ export default {
 		accountPlaceholder2: '密碼：123456',
 		accountPlaceholder3: '請輸入驗證碼',
 		accountBtnText: '登入',
+		forgotPassword: '忘記密碼？',
 	},
 	mobile: {
 		placeholder1: '請輸入手機號',

@@ -118,6 +118,13 @@ declare namespace API {
     password2: string;
   };
 
+  type ResetPasswordParams = {
+    username: string;
+    code: string;
+    newPassword: string;
+    confirmPassword: string;
+  };
+
   type PageParams = {
     current?: number;
     pageSize?: number;

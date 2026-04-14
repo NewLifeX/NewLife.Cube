@@ -88,6 +88,11 @@
         <a-link @click="router.push('/register')">立即注册</a-link>
       </div>
 
+      <!-- 忘记密码 -->
+      <div class="forgot-link">
+        <a-link @click="router.push('/forgot-password')">忘记密码？</a-link>
+      </div>
+
       <!-- 版权信息 -->
       <div v-if="siteInfo?.copyright || siteInfo?.registration" class="login-footer">
         <div v-if="siteInfo?.copyright" v-html="siteInfo.copyright" class="login-copyright"></div>
@@ -210,7 +215,7 @@ async function handleCodeLogin(loginCategory: 1 | 2, formData?: { username: stri
 }
 
 function oauthLogin(name: string) {
-  window.location.href = `/Sso/Login/${name}`;
+  window.location.href = `/Sso/Login/${name}?r=${encodeURIComponent(new URLSearchParams(window.location.search).get('redirect') || '/')}`;
 }
 </script>
 

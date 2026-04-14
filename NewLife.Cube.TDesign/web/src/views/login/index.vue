@@ -97,7 +97,10 @@
         <span>还没有账号？</span>
         <t-link theme="primary" @click="router.push('/register')">立即注册</t-link>
       </div>
-
+      <!-- 忘记密码 -->
+      <div class="forgot-link">
+        <t-link theme="primary" @click="router.push('/forgot-password')">...忘记密码？</t-link>
+      </div>
       <!-- 版权信息 -->
       <div v-if="appStore.siteInfo?.copyright || appStore.siteInfo?.registration" class="login-footer">
         <div v-if="appStore.siteInfo.copyright" v-html="appStore.siteInfo.copyright"></div>
@@ -216,7 +219,7 @@ async function handleCodeLogin(loginCategory: 1 | 2, uname?: string, code?: stri
 }
 
 function goOAuth(name: string) {
-  window.location.href = `/Sso/Login/${name}`;
+  window.location.href = `/Sso/Login/${name}?r=${encodeURIComponent(new URLSearchParams(window.location.search).get('redirect') || '/')}`;
 }
 </script>
 

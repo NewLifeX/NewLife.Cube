@@ -159,11 +159,15 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
                 throw new InvalidOperationException($"IP地址[{ip}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
+            // 安全登录检查：若禁止明文密码且未携带密钥，则拒绝
+            if (loginModel.Pkey.IsNullOrEmpty() && !set.AllowPlainPassword)
+                throw new InvalidOperationException("禁止明文传输密码，请先调用 GET /Auth/Challenge 获取公钥进行加密登录");
+
             var pdic = loginModel.Pkey.IsNullOrEmpty()
               ? new Tuple<String, String>(null, null)
               : _cache.Get<Tuple<String, String>>(loginModel.Pkey);
             var rsaKey = pdic?.Item2;
-            password = rsaKey.IsNullOrEmpty() ? password : Decrypt(rsaKey, password);
+            password = rsaKey.IsNullOrEmpty() ? password : DecryptOAEP(rsaKey, password);
 
             var provider = ManageProvider.Provider;
             if (provider.Login(username, password, remember) == null)
@@ -440,6 +444,47 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var decryptedData = RSAHelper.Decrypt(Convert.FromBase64String(decryptString), privateKey, false);
 
         return Encoding.UTF8.GetString(decryptedData);
+    }
+
+    /// <summary>使用 RSA-OAEP 解密（对应前端 Web Crypto API RSA-OAEP 加密）</summary>
+    /// <param name="xmlPrivateKey">XML格式RSA私钥</param>
+    /// <param name="base64Encrypted">前端用公钥加密后的Base64密文</param>
+    /// <returns>解密后的原始密码</returns>
+    private static String DecryptOAEP(String xmlPrivateKey, String base64Encrypted)
+    {
+        using var rsa = System.Security.Cryptography.RSA.Create();
+        rsa.FromXmlString(xmlPrivateKey);
+        var decrypted = rsa.Decrypt(
+            Convert.FromBase64String(base64Encrypted),
+            System.Security.Cryptography.RSAEncryptionPadding.OaepSHA256);
+        return Encoding.UTF8.GetString(decrypted);
+    }
+
+    /// <summary>生成RSA密钥对并缓存，返回挑战密钥ID和PEM格式公钥。客户端用公钥加密密码后携带pkey提交登录</summary>
+    /// <param name="ttl">密钥有效期（秒），默认300秒</param>
+    /// <returns>挑战密钥ID和PEM格式RSA公钥</returns>
+    public (String pkey, String publicKey) GetPublicKey(Int32 ttl = 300)
+    {
+        var ks = RSAHelper.GenerateKey(); // ks[0]=私钥XML, ks[1]=公钥XML
+        var pkey = Guid.NewGuid().ToString("N");
+        // Item1=公钥XML（备查），Item2=私钥XML（DecryptOAEP解密用）
+        _cache.Set(pkey, Tuple.Create(ks[1], ks[0]), ttl);
+        // 将 XML 公钥转换为标准 PEM(SPKI) 格式，供前端 Web Crypto API 使用
+        var pemPublicKey = ConvertXmlPublicKeyToPem(ks[1]);
+        return (pkey, pemPublicKey);
+    }
+
+    /// <summary>将 .NET XML 格式RSA公钥转换为标准 PEM(SPKI) 格式，供前端 Web Crypto API 导入使用</summary>
+    /// <param name="xmlPublicKey">XML格式RSA公钥</param>
+    /// <returns>PEM(SPKI)格式RSA公钥字符串</returns>
+    private static String ConvertXmlPublicKeyToPem(String xmlPublicKey)
+    {
+        using var rsa = System.Security.Cryptography.RSA.Create();
+        rsa.FromXmlString(xmlPublicKey);
+        var pkiBytes = rsa.ExportSubjectPublicKeyInfo();
+        return "-----BEGIN PUBLIC KEY-----\n"
+            + Convert.ToBase64String(pkiBytes, Base64FormattingOptions.InsertLineBreaks)
+            + "\n-----END PUBLIC KEY-----";
     }
     #endregion
 

@@ -170,6 +170,32 @@ export interface RegisterModel {
   password2: string;
 }
 
+/** 重置密码参数（忘记密码流程） */
+export interface ResetPasswordModel {
+  /** 手机号或邮箱 */
+  username: string;
+  /** 短信/邮件验证码 */
+  code: string;
+  /** 新密码 */
+  newPassword: string;
+  /** 确认密码 */
+  confirmPassword: string;
+}
+
+/**
+ * Challenge-Response 安全登录挑战响应
+ *
+ * 调用 GET /Auth/Challenge 返回此对象。
+ * 前端用 publicKey 以 RSA-OAEP/SHA-256 加密原始密码，
+ * 再携带 pkey + 加密密文提交 POST /Auth/Login。
+ */
+export interface ChallengeResult {
+  /** 挑战密钥 ID，登录时原样传回 LoginModel.pkey 字段 */
+  pkey: string;
+  /** PEM(SPKI) 格式 RSA 公钥，用于 Web Crypto importKey('spki', ...) */
+  publicKey: string;
+}
+
 /** 菜单树节点 */
 export interface MenuItem {
   id: number;

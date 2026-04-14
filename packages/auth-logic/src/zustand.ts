@@ -12,8 +12,8 @@
  */
 
 import { create, type StoreApi } from 'zustand';
-import type { CubeApi, UserInfo, MenuItem } from '@cube/api-core';
-import { AuthLogic, type AuthState } from './index';
+import type { CubeApi, UserInfo, MenuItem, ResetPasswordModel } from '@cube/api-core';
+import { AuthLogic, ForgotPasswordLogic, type AuthState, type ForgotPasswordState } from './index';
 
 export interface ZustandAuthState extends AuthState {
   isLoggedIn: () => boolean;
@@ -61,6 +61,45 @@ export function createZustandAuthStore(api: CubeApi): StoreApi<ZustandAuthState>
       getMenuPermission: (path: string) => {
         return logic.getMenuPermission(path);
       },
+    };
+  });
+}
+
+export interface ZustandForgotPasswordState extends ForgotPasswordState {
+  sendCode: (username: string, channel: string) => Promise<boolean>;
+  resendCode: (username: string, channel: string) => Promise<boolean>;
+  confirmReset: (model: ResetPasswordModel) => Promise<boolean>;
+  reset: () => void;
+}
+
+/**
+ * 创建 Zustand 忘记密码 Store
+ *
+ * @param api - CubeApi 实例
+ *
+ * @example
+ * ```ts
+ * import { createZustandForgotPasswordStore } from '@cube/auth-logic/zustand';
+ * export const useForgotPasswordStore = createZustandForgotPasswordStore(api);
+ * ```
+ */
+export function createZustandForgotPasswordStore(api: CubeApi): StoreApi<ZustandForgotPasswordState> {
+  let logic: ForgotPasswordLogic;
+
+  return create<ZustandForgotPasswordState>((set) => {
+    logic = new ForgotPasswordLogic(api, (partial) => set(partial as Partial<ZustandForgotPasswordState>));
+
+    return {
+      step: 'input',
+      sending: false,
+      submitting: false,
+      countdown: 0,
+      error: '',
+
+      sendCode: (username, channel) => logic.sendCode(username, channel),
+      resendCode: (username, channel) => logic.resendCode(username, channel),
+      confirmReset: (model) => logic.confirmReset(model),
+      reset: () => logic.reset(),
     };
   });
 }

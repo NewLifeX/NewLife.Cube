@@ -91,19 +91,23 @@
                         <div class="tab-content">
                             <!-- 密码登录 -->
                             <div id="la_pwd" class="tab-pane fade @(set.AllowLogin || !(set.EnableSms || set.EnableMail) ? "show active" : "")">
-                                <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post">
+                                <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" id="la_pwd_form" onsubmit="return laHandleLoginSubmit(event)">
                                     <div class="fv-row mb-10">
                                         <label class="form-label fs-6 fw-bolder text-dark">用户名</label>
                                         <input class="form-control form-control-lg" type="text" name="username" autocomplete="off" placeholder="用户名" />
                                     </div>
                                     <div class="fv-row mb-10">
                                         <label class="form-label fw-bolder text-dark fs-6 mb-0">密码</label>
-                                        <input class="form-control form-control-lg" type="password" name="password" autocomplete="off" placeholder="密码" />
+                                        <input class="form-control form-control-lg" type="password" name="password" autocomplete="off" placeholder="密码" id="la_pwd_input" />
+                                        <input type="hidden" name="pkey" id="la_pkey_input" value="" />
                                     </div>
                                     <div class="text-center">
                                         <button type="submit" class="btn btn-lg btn-bg-info w-100 mb-5">
                                             <span class="text-white">登 录</span>
                                         </button>
+                                    </div>
+                                    <div class="text-end fs-7">
+                                        <a href="#" class="text-primary" onclick="laShowForgot(); return false;">忘记密码？</a>
                                     </div>
                                     @if (set.AllowRegister)
                                     {
@@ -159,6 +163,54 @@
                             }
                         </div>
 
+                        <!-- 忘记密码面板 -->
+                        <div id="la_forgot_panel" style="display:none;">
+                            <!-- 步骤1 -->
+                            <div id="la_forgot_step1">
+                                <h3 class="fw-bolder text-dark fs-3 mb-6">重置密码</h3>
+                                <div class="fv-row mb-5">
+                                    <label class="form-label fs-6 fw-bolder text-dark">手机号或邮箱</label>
+                                    <input class="form-control form-control-lg" type="text" id="la_fp_user" placeholder="手机号或邮箱" />
+                                </div>
+                                <div class="fv-row mb-5">
+                                    <label class="form-label fs-6 fw-bolder text-dark">验证渠道</label>
+                                    <div class="d-flex gap-3">
+                                        <button type="button" class="btn btn-sm btn-light-info" id="la_fp_ch_sms" onclick="laSetFpCh('Sms')" style="border:2px solid #009ef7;">短信</button>
+                                        <button type="button" class="btn btn-sm btn-light" id="la_fp_ch_mail" onclick="laSetFpCh('Mail')">邮箱</button>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-lg btn-bg-info w-100 mb-3" id="la_fp_send_btn" onclick="laFpSendCode()"><span class="text-white">发送验证码</span></button>
+                                    <a href="#" class="btn btn-lg btn-light w-100" onclick="laHideForgot(); return false;">返回登录</a>
+                                </div>
+                                <div id="la_fp_error1" class="text-danger mt-2" style="display:none;"></div>
+                            </div>
+                            <!-- 步骤2 -->
+                            <div id="la_forgot_step2" style="display:none;">
+                                <h3 class="fw-bolder text-dark fs-3 mb-6">设置新密码</h3>
+                                <div class="fv-row mb-5">
+                                    <label class="form-label fs-6 fw-bolder text-dark">验证码</label>
+                                    <div class="input-group">
+                                        <input class="form-control form-control-lg" type="text" id="la_fp_code" placeholder="验证码" />
+                                        <button type="button" class="btn btn-outline-secondary" id="la_fp_resend" onclick="laFpResend()">重新发送</button>
+                                    </div>
+                                </div>
+                                <div class="fv-row mb-5">
+                                    <label class="form-label fs-6 fw-bolder text-dark">新密码</label>
+                                    <input class="form-control form-control-lg" type="password" id="la_fp_new" placeholder="新密码（≥6位）" />
+                                </div>
+                                <div class="fv-row mb-5">
+                                    <label class="form-label fs-6 fw-bolder text-dark">确认密码</label>
+                                    <input class="form-control form-control-lg" type="password" id="la_fp_confirm" placeholder="再次输入新密码" />
+                                </div>
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-lg btn-bg-info w-100 mb-3" id="la_fp_submit" onclick="laFpConfirm()"><span class="text-white">确认重置</span></button>
+                                    <a href="#" class="btn btn-lg btn-light w-100" onclick="laShowFpStep1(); return false;">上一步</a>
+                                </div>
+                                <div id="la_fp_error2" class="text-danger mt-2" style="display:none;"></div>
+                            </div>
+                        </div>
+
                         <!-- OAuth 第三方登录 -->
                         @if (set.OAuthItems != null && set.OAuthItems.Count > 0)
                         {
@@ -206,6 +258,114 @@
     <script src="~/assets/js/scripts.bundle.js"></script>
     <script>
         var laReturnUrl = '@Html.Raw(set.ReturnUrl)';
+        var _laFpCh = 'Sms', _laFpCd = 0, _laFpTimer = null;
+
+        // RSA-OAEP 密码加密（浏览器 Web Crypto API）
+        async function laEncryptRSA(password, pemPublicKey) {
+            try {
+                var base64 = pemPublicKey.replace(/-----BEGIN [^-]+-----/, '').replace(/-----END [^-]+-----/, '').replace(/\s/g, '');
+                var binary = atob(base64); var bytes = new Uint8Array(binary.length);
+                for (var i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
+                var key = await crypto.subtle.importKey('spki', bytes.buffer, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+                var encrypted = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, key, new TextEncoder().encode(password));
+                return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+            } catch (e) { return null; }
+        }
+
+        async function laHandleLoginSubmit(e) {
+            e.preventDefault();
+            var pwdInput = document.getElementById('la_pwd_input');
+            var pkeyInput = document.getElementById('la_pkey_input');
+            var pwd = pwdInput.value;
+            if (!pwd) { document.getElementById('la_pwd_form').submit(); return false; }
+            try {
+                var res = await fetch('/Auth/Challenge');
+                var data = await res.json();
+                if (data.code === 0 && data.data && data.data.publicKey) {
+                    var encrypted = await laEncryptRSA(pwd, data.data.publicKey);
+                    if (encrypted) { pwdInput.value = encrypted; pkeyInput.value = data.data.pkey; }
+                }
+            } catch (e) { /* 降级明文提交 */ }
+            document.getElementById('la_pwd_form').submit();
+            return false;
+        }
+
+        function laShowForgot() {
+            document.getElementById('loginTabs') && (document.getElementById('loginTabs').style.display = 'none');
+            document.querySelector('.tab-content') && (document.querySelector('.tab-content').style.display = 'none');
+            document.getElementById('la_forgot_panel').style.display = '';
+        }
+        function laHideForgot() {
+            document.getElementById('la_forgot_panel').style.display = 'none';
+            document.getElementById('loginTabs') && (document.getElementById('loginTabs').style.display = '');
+            document.querySelector('.tab-content') && (document.querySelector('.tab-content').style.display = '');
+        }
+        function laShowFpStep1() {
+            document.getElementById('la_forgot_step1').style.display = '';
+            document.getElementById('la_forgot_step2').style.display = 'none';
+        }
+        function laSetFpErr(id, msg) {
+            var el = document.getElementById(id);
+            el.style.display = msg ? '' : 'none';
+            el.textContent = msg;
+        }
+        function laSetFpCh(ch) {
+            _laFpCh = ch;
+            document.getElementById('la_fp_ch_sms').style.border = ch === 'Sms' ? '2px solid #009ef7' : '';
+            document.getElementById('la_fp_ch_sms').className = 'btn btn-sm ' + (ch === 'Sms' ? 'btn-light-info' : 'btn-light');
+            document.getElementById('la_fp_ch_mail').style.border = ch === 'Mail' ? '2px solid #009ef7' : '';
+            document.getElementById('la_fp_ch_mail').className = 'btn btn-sm ' + (ch === 'Mail' ? 'btn-light-info' : 'btn-light');
+        }
+        function laStartFpCd(btn) {
+            if (_laFpTimer) clearInterval(_laFpTimer);
+            _laFpCd = 60; btn.disabled = true; btn.textContent = _laFpCd + 's';
+            _laFpTimer = setInterval(function() {
+                _laFpCd--;
+                if (_laFpCd <= 0) { clearInterval(_laFpTimer); _laFpTimer = null; btn.disabled = false; btn.textContent = '重新发送'; }
+                else { btn.textContent = _laFpCd + 's'; }
+            }, 1000);
+        }
+        async function laFpSendCode() {
+            var username = document.getElementById('la_fp_user').value.trim();
+            if (!username) { laSetFpErr('la_fp_error1', '请输入手机号或邮箱'); return; }
+            var btn = document.getElementById('la_fp_send_btn');
+            btn.disabled = true; laSetFpErr('la_fp_error1', '');
+            try {
+                var res = await fetch('/Auth/SendCode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channel: _laFpCh, username: username, action: 'reset' }) });
+                var data = await res.json();
+                if (data.code !== 0) { laSetFpErr('la_fp_error1', data.message || '发送失败'); btn.disabled = false; return; }
+                document.getElementById('la_forgot_step1').style.display = 'none';
+                document.getElementById('la_forgot_step2').style.display = '';
+                laStartFpCd(document.getElementById('la_fp_resend'));
+            } catch (e) { laSetFpErr('la_fp_error1', '发送失败，请稍后重试'); btn.disabled = false; }
+        }
+        async function laFpResend() {
+            if (_laFpCd > 0) return;
+            var username = document.getElementById('la_fp_user').value.trim();
+            var btn = document.getElementById('la_fp_resend');
+            btn.disabled = true;
+            try {
+                await fetch('/Auth/SendCode', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channel: _laFpCh, username: username, action: 'reset' }) });
+                laStartFpCd(btn);
+            } catch(e) { btn.disabled = false; }
+        }
+        async function laFpConfirm() {
+            var username = document.getElementById('la_fp_user').value.trim();
+            var code = document.getElementById('la_fp_code').value.trim();
+            var newPwd = document.getElementById('la_fp_new').value;
+            var confirmPwd = document.getElementById('la_fp_confirm').value;
+            if (!code) { laSetFpErr('la_fp_error2', '请输入验证码'); return; }
+            if (!newPwd) { laSetFpErr('la_fp_error2', '请输入新密码'); return; }
+            if (newPwd !== confirmPwd) { laSetFpErr('la_fp_error2', '两次密码不一致'); return; }
+            var btn = document.getElementById('la_fp_submit');
+            btn.disabled = true; laSetFpErr('la_fp_error2', '');
+            try {
+                var res = await fetch('/Auth/ResetPassword', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: username, code: code, newPassword: newPwd, confirmPassword: confirmPwd }) });
+                var data = await res.json();
+                if (data.code === 0) { alert('密码重置成功，请重新登录'); laHideForgot(); }
+                else { laSetFpErr('la_fp_error2', data.message || '重置失败'); btn.disabled = false; }
+            } catch (e) { laSetFpErr('la_fp_error2', '重置失败，请稍后重试'); btn.disabled = false; }
+        }
         async function laSendCode(channel, userId, btnId) {
             var username = document.getElementById(userId).value;
             if (!username) { alert(channel === 'Sms' ? '请输入手机号' : '请输入邮箱'); return; }

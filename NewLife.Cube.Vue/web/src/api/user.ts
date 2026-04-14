@@ -1,5 +1,5 @@
 import { Login, UserInfo } from '../model/api/user';
-import { LoginConfig, SiteInfo, SendCodeModel, LoginByCodeModel, RegisterModel } from '../model/api/login';
+import { LoginConfig, SiteInfo, SendCodeModel, LoginByCodeModel, RegisterModel, ResetPasswordModel, ChallengeResult } from '../model/api/login';
 import request from '/@/utils/request';
 
 /**
@@ -56,6 +56,21 @@ export function useUserApi() {
 		register: (data: RegisterModel) => {
 			return request({
 				url: '/Admin/User/Register',
+				method: 'post',
+				data,
+			});
+		},
+		/** 获取 RSA 应战公鑰，用于密码加密登录 */
+		getChallenge: () => {
+			return request<ChallengeResult>({
+				url: '/Auth/Challenge',
+				method: 'get',
+			});
+		},
+		/** 忘记密码—重置密码 */
+		resetPassword: (data: ResetPasswordModel) => {
+			return request<boolean>({
+				url: '/Auth/ResetPassword',
 				method: 'post',
 				data,
 			});
