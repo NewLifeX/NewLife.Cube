@@ -18,7 +18,7 @@
       <a-divider v-if="oauthProviders.length">第三方登录</a-divider>
       <div v-if="oauthProviders.length" style="display: flex; gap: 8px; justify-content: center;">
         <a-button v-for="p in oauthProviders" :key="p.name" @click="oauthLogin(p.name)">
-          {{ p.displayName || p.name }}
+          {{ p.nickName || p.name }}
         </a-button>
       </div>
     </a-card>
@@ -41,7 +41,7 @@ const loading = ref(false);
 const oauthProviders = ref<OAuthProvider[]>([]);
 
 onMounted(async () => {
-  const res = await cubeApi.config.getLoginConfig();
+  const res = await cubeApi.user.getLoginConfig();
   if (res.data?.providers) oauthProviders.value = res.data.providers;
 });
 

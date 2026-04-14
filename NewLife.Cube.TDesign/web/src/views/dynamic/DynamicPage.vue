@@ -77,7 +77,7 @@ import { SearchIcon, ChevronDownIcon } from 'tdesign-icons-vue-next';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
-import { FieldKind, Auth, type DataField, type PageResult } from '@cube/api-core';
+import { FieldKind, Auth, type DataField } from '@cube/api-core';
 import { toCamelCase } from '@cube/field-mapping';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
@@ -254,7 +254,7 @@ async function handleDetail(id: number) {
 async function handleSave() {
   try {
     if (isEdit.value) await api.page.update(typePath.value, formData.value);
-    else await api.page.create(typePath.value, formData.value);
+    else await api.page.add(typePath.value, formData.value);
     showForm.value = false;
     await loadData();
   } catch { /* ignore */ }
@@ -265,7 +265,7 @@ function confirmDelete(id: number) { deleteTargetId.value = id; showDeleteConfir
 async function handleDeleteConfirm() {
   if (deleteTargetId.value == null) return;
   try {
-    await api.page.delete(typePath.value, deleteTargetId.value);
+    await api.page.remove(typePath.value, deleteTargetId.value);
     showDeleteConfirm.value = false;
     deleteTargetId.value = null;
     await loadData();

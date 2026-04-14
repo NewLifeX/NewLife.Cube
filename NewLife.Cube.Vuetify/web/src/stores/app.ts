@@ -16,7 +16,7 @@ export const useAppStore = defineStore('app', {
       this.darkMode = !this.darkMode;
     },
     async fetchSiteInfo() {
-      const res = await cubeApi.config.getSiteInfo();
+      const res = await cubeApi.user.getSiteInfo();
       if (res.data) this.siteInfo = res.data;
     },
   },

@@ -26,7 +26,7 @@ export const useUserStore = defineStore('user', {
   },
   actions: {
     async login(username: string, password: string) {
-      const res = await cubeApi.user.login(username, password);
+      const res = await cubeApi.user.login({ username, password });
       if (res.data) {
         await this.fetchUserInfo();
         await this.fetchMenus();
@@ -40,7 +40,7 @@ export const useUserStore = defineStore('user', {
       this.permissions = [];
     },
     async fetchUserInfo() {
-      const res = await cubeApi.user.getInfo();
+      const res = await cubeApi.user.info();
       if (res.data) this.user = res.data;
     },
     async fetchMenus() {

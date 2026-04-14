@@ -23,11 +23,11 @@
         </t-form-item>
       </t-form>
 
-      <template v-if="loginConfig?.oauthItems?.length">
+      <template v-if="loginConfig?.providers?.length">
         <t-divider>第三方登录</t-divider>
         <div style="display: flex; justify-content: center; gap: 12px">
-          <t-button v-for="item in loginConfig.oauthItems" :key="item.name" variant="outline" @click="window.location.href = item.url">
-            {{ item.name }}
+          <t-button v-for="item in loginConfig.providers" :key="item.name" variant="outline" @click="goOAuth(item.name)">
+            {{ item.nickName || item.name }}
           </t-button>
         </div>
       </template>
@@ -57,8 +57,8 @@ const loginConfig = ref<LoginConfig | null>(null);
 onMounted(async () => {
   try {
     const [siteRes, configRes] = await Promise.all([
-      api.config.getSiteInfo(),
-      api.config.getLoginConfig(),
+      api.user.getSiteInfo(),
+      api.user.getLoginConfig(),
     ]);
     if (siteRes?.data) appStore.siteInfo = siteRes.data;
     loginConfig.value = configRes?.data ?? null;
@@ -82,5 +82,9 @@ async function handleLogin() {
   } finally {
     loading.value = false;
   }
+}
+
+function goOAuth(name: string) {
+  window.location.href = `/Sso/Login?name=${encodeURIComponent(name)}`;
 }
 </script>

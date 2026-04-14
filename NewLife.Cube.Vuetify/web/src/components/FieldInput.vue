@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
 import type { DataField } from '@cube/api-core';
-import { resolveWidget, type WidgetType } from '@cube/field-mapping';
+import { resolveWidget } from '@cube/field-mapping';
 import {
   VTextField,
   VTextarea,
@@ -31,7 +31,7 @@ const renderField = computed(() => {
   const label = props.field.displayName || props.field.name;
 
   switch (widgetType.value) {
-    case WidgetType.Switch:
+    case 'switch':
       return h(VSwitch, {
         modelValue: !!val,
         'onUpdate:modelValue': onUpdate,
@@ -40,8 +40,7 @@ const renderField = computed(() => {
         hideDetails: 'auto',
       });
 
-    case WidgetType.Select:
-    case WidgetType.TagList: {
+    case 'select': {
       const items = parseOptions(props.field);
       return h(VSelect, {
         modelValue: val,
@@ -57,8 +56,7 @@ const renderField = computed(() => {
       });
     }
 
-    case WidgetType.Number:
-    case WidgetType.Decimal:
+    case 'number':
       return h(VTextField, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
@@ -69,22 +67,21 @@ const renderField = computed(() => {
         hideDetails: 'auto',
       });
 
-    case WidgetType.DateTime:
-    case WidgetType.Date:
+    case 'datetime':
+    case 'date':
       return h(VTextField, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
         label,
-        type: widgetType.value === WidgetType.DateTime ? 'datetime-local' : 'date',
+        type: widgetType.value === 'datetime' ? 'datetime-local' : 'date',
         variant: 'outlined',
         density: 'comfortable',
         hideDetails: 'auto',
       });
 
-    case WidgetType.TextArea:
-    case WidgetType.RichText:
-    case WidgetType.Html:
-    case WidgetType.Markdown:
+    case 'textarea':
+    case 'html':
+    case 'code':
       return h(VTextarea, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
@@ -96,7 +93,7 @@ const renderField = computed(() => {
         hideDetails: 'auto',
       });
 
-    case WidgetType.Password:
+    case 'password':
       return h(VTextField, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
@@ -107,7 +104,7 @@ const renderField = computed(() => {
         hideDetails: 'auto',
       });
 
-    case WidgetType.Checkbox:
+    case 'checkbox':
       return h(VCheckbox, {
         modelValue: !!val,
         'onUpdate:modelValue': onUpdate,
@@ -116,7 +113,7 @@ const renderField = computed(() => {
         hideDetails: 'auto',
       });
 
-    case WidgetType.ReadOnly:
+    case 'readonly':
       return h('span', { class: 'text-body-1' }, val ?? '-');
 
     default:
@@ -134,11 +131,6 @@ const renderField = computed(() => {
 
 function parseOptions(field: DataField) {
   if (!field.dataSource) return [];
-  try {
-    const map = JSON.parse(field.dataSource) as Record<string, string>;
-    return Object.entries(map).map(([value, label]) => ({ value, label }));
-  } catch {
-    return [];
-  }
+  return Object.entries(field.dataSource).map(([value, label]) => ({ value, label }));
 }
 </script>

@@ -32,8 +32,8 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   login: async (username, password) => {
     const res = await api.user.login({ username, password });
-    if (res.data?.token) {
-      api.tokenManager.setToken(res.data.token);
+    if (res.data?.accessToken) {
+      api.tokenManager.setToken(res.data.accessToken);
     }
   },
 

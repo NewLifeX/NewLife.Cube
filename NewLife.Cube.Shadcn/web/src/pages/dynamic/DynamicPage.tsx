@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import {
   Plus, Trash2, Download, Upload, Search, RefreshCw, Eye, Pencil, ChevronDown,
 } from 'lucide-react';
-import { FieldKind, Auth, type DataField } from '@cube/api-core';
+import { FieldKind, Auth } from '@cube/api-core';
 import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
 import * as echarts from 'echarts';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,7 @@ export default function DynamicPage() {
 
   const [data, setData] = useState<Record<string, any>[]>([]);
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, _setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState<Set<string | number>>(new Set());
   const [searchForm, setSearchForm] = useState<Record<string, any>>({});

@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue';
 import type { DataField } from '@cube/api-core';
-import { resolveWidget, type WidgetType } from '@cube/field-mapping';
+import { resolveWidget } from '@cube/field-mapping';
 import {
   Input as AInput,
   InputNumber as AInputNumber,
@@ -32,11 +32,10 @@ const renderField = computed(() => {
   const onUpdate = (v: any) => emit('update:value', v);
 
   switch (widgetType.value) {
-    case WidgetType.Switch:
+    case 'switch':
       return h(ASwitch, { modelValue: !!val, 'onUpdate:modelValue': onUpdate });
 
-    case WidgetType.Select:
-    case WidgetType.TagList: {
+    case 'select': {
       const options = parseOptions(props.field);
       return h(ASelect, {
         modelValue: val,
@@ -47,30 +46,28 @@ const renderField = computed(() => {
       });
     }
 
-    case WidgetType.Number:
-    case WidgetType.Decimal:
+    case 'number':
       return h(AInputNumber, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
         placeholder: `请输入${props.field.displayName || props.field.name}`,
-        precision: widgetType.value === WidgetType.Decimal ? (props.field.precision || 2) : 0,
+        precision: 0,
       });
 
-    case WidgetType.DateTime:
-    case WidgetType.Date:
+    case 'datetime':
+    case 'date':
       return h(ADatePicker, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
-        showTime: widgetType.value === WidgetType.DateTime,
+        showTime: widgetType.value === 'datetime',
         placeholder: `请选择${props.field.displayName || props.field.name}`,
         allowClear: true,
         style: 'width: 100%',
       });
 
-    case WidgetType.TextArea:
-    case WidgetType.RichText:
-    case WidgetType.Html:
-    case WidgetType.Markdown:
+    case 'textarea':
+    case 'html':
+    case 'code':
       return h(ATextarea, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
@@ -78,22 +75,22 @@ const renderField = computed(() => {
         autoSize: { minRows: 3 },
       });
 
-    case WidgetType.Password:
+    case 'password':
       return h(AInputPassword, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
         placeholder: `请输入${props.field.displayName || props.field.name}`,
       });
 
-    case WidgetType.File:
-    case WidgetType.Image:
+    case 'file':
+    case 'image':
       return h(AInput, {
         modelValue: val,
         'onUpdate:modelValue': onUpdate,
         placeholder: `请输入文件URL`,
       });
 
-    case WidgetType.ReadOnly:
+    case 'readonly':
       return h('span', {}, val ?? '-');
 
     default:
@@ -108,11 +105,6 @@ const renderField = computed(() => {
 
 function parseOptions(field: DataField) {
   if (!field.dataSource) return [];
-  try {
-    const map = JSON.parse(field.dataSource) as Record<string, string>;
-    return Object.entries(map).map(([value, label]) => ({ value, label }));
-  } catch {
-    return [];
-  }
+  return Object.entries(field.dataSource).map(([value, label]) => ({ value, label }));
 }
 </script>

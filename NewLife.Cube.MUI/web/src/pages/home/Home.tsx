@@ -14,7 +14,7 @@ export default function Home() {
       <Typography variant="body2" color="text.secondary" gutterBottom>欢迎使用魔方管理平台</Typography>
       <Grid container spacing={2} sx={{ mt: 1 }}>
         {statCards.map((c) => (
-          <Grid key={c.title} size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid key={c.title} xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>{c.title}</Typography>

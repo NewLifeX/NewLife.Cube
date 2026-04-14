@@ -30,7 +30,7 @@
           <div class="text-body-2 mb-2">第三方登录</div>
           <div class="d-flex justify-center ga-2">
             <v-btn v-for="p in oauthProviders" :key="p.name" variant="outlined" @click="oauthLogin(p.name)">
-              {{ p.displayName || p.name }}
+              {{ p.nickName || p.name }}
             </v-btn>
           </div>
         </v-card-text>
@@ -54,7 +54,7 @@ const loading = ref(false);
 const oauthProviders = ref<OAuthProvider[]>([]);
 
 onMounted(async () => {
-  const res = await cubeApi.config.getLoginConfig();
+  const res = await cubeApi.user.getLoginConfig();
   if (res.data?.providers) oauthProviders.value = res.data.providers;
 });
 

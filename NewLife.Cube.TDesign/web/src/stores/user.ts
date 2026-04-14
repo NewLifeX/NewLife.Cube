@@ -23,7 +23,7 @@ export const useUserStore = defineStore('user', () => {
   const displayName = computed(() => user.value?.displayName || user.value?.name || '');
 
   async function login(username: string, password: string) {
-    const res = await api.user.login(username, password);
+    const res = await api.user.login({ username, password });
     if (res?.data) { user.value = res.data; return true; }
     return false;
   }

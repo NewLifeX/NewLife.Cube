@@ -8,7 +8,7 @@
       :collapsed-width="48"
     >
       <div class="logo" style="height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px;">
-        {{ appStore.collapsed ? '魔' : (appStore.siteInfo?.name || '魔方管理平台') }}
+        {{ appStore.collapsed ? '魔' : (appStore.siteInfo?.displayName || '魔方管理平台') }}
       </div>
       <a-menu
         :selected-keys="selectedKeys"
