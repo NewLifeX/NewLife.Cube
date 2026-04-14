@@ -354,7 +354,7 @@ public class UserController : EntityController<User, UserModel>
 
         var key = DateTime.Now.Ticks.ToString();
         var dicKey = _cache.GetOrAdd(key, k => NCreateKeyPair(), 300);
-        ViewData["pKey"] = new KeyValuePair<String, String>(key, dicKey.Item1);
+        ViewData["ChallengeKey"] = new KeyValuePair<String, String>(key, dicKey.Item1);
 
         return _isMobile ? View("MLogin", model) : View(model);
     }
@@ -450,7 +450,7 @@ public class UserController : EntityController<User, UserModel>
 
         var dkey = DateTime.Now.Ticks.ToString();
         var dicKey = _cache.GetOrAdd(dkey, k => NCreateKeyPair(), 300);
-        ViewData["pKey"] = new KeyValuePair<String, String>(dkey, dicKey.Item1);
+        ViewData["ChallengeKey"] = new KeyValuePair<String, String>(dkey, dicKey.Item1);
 
         var model = GetViewModel(returnUrl);
         model.LoginTip = result?.Message;
@@ -460,7 +460,7 @@ public class UserController : EntityController<User, UserModel>
     }
 
     /// <summary>获取登录密钥</summary>
-    /// <returns>返回pKey和publicKey</returns>
+    /// <returns>返回 challengeId 和 publicKey</returns>
     [AllowAnonymous]
     [HttpGet]
     public ActionResult GetLoginKey(String token)
@@ -494,7 +494,7 @@ public class UserController : EntityController<User, UserModel>
                 message = "ok",
                 data = new
                 {
-                    pKey = key,
+                    challengeId = key,
                     publicKey = dicKey.Item1
                 }
             });

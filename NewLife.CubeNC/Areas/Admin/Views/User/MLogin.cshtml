@@ -279,7 +279,7 @@
 
             function encryptPwd(p) {
                 var rsa = new JSEncrypt();
-                rsa.setPublicKey($('#pkey_container').val());
+                rsa.setPublicKey($('#challenge_id_container').val());
 
                 return rsa.encrypt(p);
             }

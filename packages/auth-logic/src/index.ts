@@ -53,18 +53,18 @@ export class AuthLogic {
   /** 密码登录（自动尝试 RSA-OAEP Challenge 加密，服务端不支持时降级明文） */
   async login(username: string, password: string) {
     let finalPassword = password;
-    let pkey: string | undefined;
+    let challengeId: string | undefined;
     try {
       const challengeRes = await this.api.user.getChallenge();
       const challenge = challengeRes.data;
       if (challenge?.publicKey) {
         finalPassword = await encryptPassword(password, challenge.publicKey);
-        pkey = challenge.pkey;
+        challengeId = challenge.challengeId;
       }
     } catch {
       // Challenge 接口不可达或加密失败，降级为明文传输
     }
-    const res = await this.api.user.login({ username, password: finalPassword, ...(pkey ? { pkey } : {}) });
+    const res = await this.api.user.login({ username, password: finalPassword, ...(challengeId ? { challengeId } : {}) });
     if (res.data?.accessToken) {
       this.api.tokenManager.setToken(res.data.accessToken);
     }

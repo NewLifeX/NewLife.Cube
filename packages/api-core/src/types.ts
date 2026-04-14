@@ -187,11 +187,11 @@ export interface ResetPasswordModel {
  *
  * 调用 GET /Auth/Challenge 返回此对象。
  * 前端用 publicKey 以 RSA-OAEP/SHA-256 加密原始密码，
- * 再携带 pkey + 加密密文提交 POST /Auth/Login。
+ * 再携带 challengeId + 加密密文提交 POST /Auth/Login。
  */
 export interface ChallengeResult {
-  /** 挑战密钥 ID，登录时原样传回 LoginModel.pkey 字段 */
-  pkey: string;
+  /** 挑战标识，登录时原样传回 LoginModel.challengeId 字段 */
+  challengeId: string;
   /** PEM(SPKI) 格式 RSA 公钥，用于 Web Crypto importKey('spki', ...) */
   publicKey: string;
 }

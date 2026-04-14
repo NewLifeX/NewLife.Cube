@@ -159,13 +159,13 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
                 throw new InvalidOperationException($"IP地址[{ip}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
-            // 安全登录检查：若禁止明文密码且未携带密钥，则拒绝
-            if (loginModel.Pkey.IsNullOrEmpty() && !set.AllowPlainPassword)
+                        // 安全登录检查：若禁止明文密码且未携带挑战标识，则拒绝
+                        if (loginModel.ChallengeId.IsNullOrEmpty() && !set.AllowPlainPassword)
                 throw new InvalidOperationException("禁止明文传输密码，请先调用 GET /Auth/Challenge 获取公钥进行加密登录");
 
-            var pdic = loginModel.Pkey.IsNullOrEmpty()
+                        var pdic = loginModel.ChallengeId.IsNullOrEmpty()
               ? new Tuple<String, String>(null, null)
-              : _cache.Get<Tuple<String, String>>(loginModel.Pkey);
+                            : _cache.Get<Tuple<String, String>>(loginModel.ChallengeId);
             var rsaKey = pdic?.Item2;
             password = rsaKey.IsNullOrEmpty() ? password : DecryptOAEP(rsaKey, password);
 
@@ -177,8 +177,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
             if (errors > 0) _cache.Remove(key);
             if (ipErrors > 0) _cache.Remove(ipKey);
 
-            // 移除秘钥私钥信息，避免重放
-            if (!loginModel.Pkey.IsNullOrEmpty()) _cache.Remove(loginModel.Pkey);
+            // 移除挑战私钥信息，避免重放
+            if (!loginModel.ChallengeId.IsNullOrEmpty()) _cache.Remove(loginModel.ChallengeId);
 
             return CompleteLogin(provider.Current, httpContext, remember, "密码登录", username, ip);
         }
@@ -460,18 +460,18 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         return Encoding.UTF8.GetString(decrypted);
     }
 
-    /// <summary>生成RSA密钥对并缓存，返回挑战密钥ID和PEM格式公钥。客户端用公钥加密密码后携带pkey提交登录</summary>
+    /// <summary>生成RSA密钥对并缓存，返回挑战标识和PEM格式公钥。客户端用公钥加密密码后携带 challengeId 提交登录</summary>
     /// <param name="ttl">密钥有效期（秒），默认300秒</param>
-    /// <returns>挑战密钥ID和PEM格式RSA公钥</returns>
-    public (String pkey, String publicKey) GetPublicKey(Int32 ttl = 300)
+    /// <returns>挑战标识和PEM格式RSA公钥</returns>
+    public (String challengeId, String publicKey) GetPublicKey(Int32 ttl = 300)
     {
         var ks = RSAHelper.GenerateKey(); // ks[0]=私钥XML, ks[1]=公钥XML
-        var pkey = Guid.NewGuid().ToString("N");
+        var challengeId = Guid.NewGuid().ToString("N");
         // Item1=公钥XML（备查），Item2=私钥XML（DecryptOAEP解密用）
-        _cache.Set(pkey, Tuple.Create(ks[1], ks[0]), ttl);
+        _cache.Set(challengeId, Tuple.Create(ks[1], ks[0]), ttl);
         // 将 XML 公钥转换为标准 PEM(SPKI) 格式，供前端 Web Crypto API 使用
         var pemPublicKey = ConvertXmlPublicKeyToPem(ks[1]);
-        return (pkey, pemPublicKey);
+        return (challengeId, pemPublicKey);
     }
 
     /// <summary>将 .NET XML 格式RSA公钥转换为标准 PEM(SPKI) 格式，供前端 Web Crypto API 导入使用</summary>

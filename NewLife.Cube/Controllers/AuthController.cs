@@ -166,18 +166,18 @@ public class AuthController : ControllerBaseX
         return Json(0, "ok");
     }
 
-    /// <summary>获取RSA公钥挑战，用于客户端加密密码防明文传输。配合Login接口Pkey+加密密码实现安全登录</summary>
+    /// <summary>获取RSA公钥挑战，用于客户端加密密码防明文传输。配合Login接口 ChallengeId + 加密密码实现安全登录</summary>
     /// <remarks>
-    /// 流程：GET /Auth/Challenge 获取 pkey 和 publicKey → 前端用 publicKey 以 RSA-OAEP/SHA-256 加密密码
-    /// → POST /Auth/Login 携带 pkey 和加密后的 password。密钥有效期300秒，使用一次后立即失效防重放。
+    /// 流程：GET /Auth/Challenge 获取 challengeId 和 publicKey → 前端用 publicKey 以 RSA-OAEP/SHA-256 加密密码
+    /// → POST /Auth/Login 携带 challengeId 和加密后的 password。密钥有效期300秒，使用一次后立即失效防重放。
     /// </remarks>
-    /// <returns>挑战密钥ID(pkey)和PEM格式RSA公钥(publicKey)</returns>
+    /// <returns>挑战标识(challengeId)和PEM格式RSA公钥(publicKey)</returns>
     [HttpGet]
     [AllowAnonymous]
     public ActionResult Challenge()
     {
-        var (pkey, publicKey) = _userService.GetPublicKey();
-        return Json(0, null, new { pkey, publicKey });
+        var (challengeId, publicKey) = _userService.GetPublicKey();
+        return Json(0, null, new { challengeId, publicKey });
     }
 
     /// <summary>通过验证码重置密码（忘记密码流程）。先调用 SendCode 发送验证码，再调用本接口提交新密码</summary>

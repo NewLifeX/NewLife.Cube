@@ -24,7 +24,7 @@ type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
 export function createUserApi(request: RequestFn) {
   return {
     /** 密码登录 */
-    login: (data: { username: string; password: string }) =>
+    login: (data: { username: string; password: string; challengeId?: string }) =>
       request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
 
     /** 验证码登录（手机/邮箱） */
@@ -62,7 +62,7 @@ export function createUserApi(request: RequestFn) {
     /**
      * 获取 RSA 公钥挑战，用于加密密码防明文传输
      *
-     * 流程：getChallenge() → 用 publicKey 加密密码 → login(username, encryptedPwd, pkey)
+    * 流程：getChallenge() → 用 publicKey 加密密码 → login(username, encryptedPwd, challengeId)
      * 密钥有效期 300s，使用一次后服务端立即删除防重放。
      */
     getChallenge: () =>

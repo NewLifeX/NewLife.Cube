@@ -22,8 +22,12 @@ public class LoginModel : ICubeModel
     /// <summary> 记住登录状态 </summary>
     public Boolean Remember { get; set; }
 
-    /// <summary> 秘钥key </summary>
-    public String Pkey { get; set; }
+    /// <summary> 挑战标识。调用 /Auth/Challenge 获取，登录时原样回传 </summary>
+    public String ChallengeId { get; set; }
+
+    /// <summary> 兼容旧版字段，建议改用 ChallengeId </summary>
+    [Obsolete("Use ChallengeId instead")]
+    public String Pkey { get => ChallengeId; set => ChallengeId = value; }
 }
 
 

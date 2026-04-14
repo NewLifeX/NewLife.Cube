@@ -271,9 +271,9 @@
                     return;
                 }
 
-                var pkey=$('#pkey_container').val();
+                var challengeId=$('#challenge_id_container').val();
 
-                if(pkey&&pkey.length>0){
+                if(challengeId&&challengeId.length>0){
                     var resultPWD=encryptPwd(password);
                     $('#pwd').val(resultPWD);
                 }else{
@@ -285,7 +285,7 @@
 
             function encryptPwd(p) {
                 var rsa = new JSEncrypt();
-                rsa.setPublicKey($('#pkey_container').val());
+                rsa.setPublicKey($('#challenge_id_container').val());
 
                 return rsa.encrypt(p);
             }

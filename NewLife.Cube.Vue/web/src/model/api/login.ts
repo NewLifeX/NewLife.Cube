@@ -71,8 +71,8 @@ export interface ResetPasswordModel {
 
 /** Challenge 响应（用于密码加密登录） */
 export interface ChallengeResult {
-  /** 挑战密钥ID，登录时传回 pkey 字段 */
-  pkey: string;
+  /** 挑战标识，登录时传回 challengeId 字段 */
+  challengeId: string;
   /** PEM SPKI 格式 RSA 公鑰 */
   publicKey: string;
 }

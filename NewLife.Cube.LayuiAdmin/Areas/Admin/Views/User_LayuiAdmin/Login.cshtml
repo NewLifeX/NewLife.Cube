@@ -1,6 +1,7 @@
 ﻿@using NewLife;
 @using NewLife.Common;
 @using NewLife.Cube.Areas.Admin.Models;
+@using NewLife.Cube;
 @using NewLife.Cube.Web;
 @model LoginViewModel
 @{
@@ -99,7 +100,7 @@
                                     <div class="fv-row mb-10">
                                         <label class="form-label fw-bolder text-dark fs-6 mb-0">密码</label>
                                         <input class="form-control form-control-lg" type="password" name="password" autocomplete="off" placeholder="密码" id="la_pwd_input" />
-                                        <input type="hidden" name="pkey" id="la_pkey_input" value="" />
+                                        <input type="hidden" name="challengeId" id="la_challenge_id_input" value="" />
                                     </div>
                                     <div class="text-center">
                                         <button type="submit" class="btn btn-lg btn-bg-info w-100 mb-5">
@@ -275,7 +276,7 @@
         async function laHandleLoginSubmit(e) {
             e.preventDefault();
             var pwdInput = document.getElementById('la_pwd_input');
-            var pkeyInput = document.getElementById('la_pkey_input');
+            var challengeIdInput = document.getElementById('la_challenge_id_input');
             var pwd = pwdInput.value;
             if (!pwd) { document.getElementById('la_pwd_form').submit(); return false; }
             try {
@@ -283,7 +284,7 @@
                 var data = await res.json();
                 if (data.code === 0 && data.data && data.data.publicKey) {
                     var encrypted = await laEncryptRSA(pwd, data.data.publicKey);
-                    if (encrypted) { pwdInput.value = encrypted; pkeyInput.value = data.data.pkey; }
+                    if (encrypted) { pwdInput.value = encrypted; challengeIdInput.value = data.data.challengeId; }
                 }
             } catch (e) { /* 降级明文提交 */ }
             document.getElementById('la_pwd_form').submit();

@@ -292,7 +292,7 @@
                             var cr = await axios.get('/Auth/Challenge');
                             if (cr.data && cr.data.code === 0 && cr.data.data && cr.data.data.publicKey) {
                                 var encrypted = await elEncryptRSA(payload.password, cr.data.data.publicKey);
-                                if (encrypted) { payload.password = encrypted; payload.pkey = cr.data.data.pkey; }
+                                if (encrypted) { payload.password = encrypted; payload.challengeId = cr.data.data.challengeId; }
                             }
                         } catch (e) { /* 降级明文 */ }
                         axios.post('login', payload)

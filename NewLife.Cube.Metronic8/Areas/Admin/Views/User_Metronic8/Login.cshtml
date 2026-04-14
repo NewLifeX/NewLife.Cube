@@ -149,7 +149,7 @@
                                             <a href="#" class="link-primary fs-4" id="btn_forgot" onclick="showForgot()">忘记密码</a>
                                         </div>
                                         <input class="form-control form-control-lg" type="password" name="password" id="password" autocomplete="off" placeholder="密码" />
-                                        <input type="hidden" name="pkey" id="pkey_input" value="" />
+                                        <input type="hidden" name="challengeId" id="challenge_id_input" value="" />
                                     </div>
 
                                     <!--begin::Actions-->
@@ -334,7 +334,7 @@
         async function handleLoginSubmit(e) {
             e.preventDefault();
             var pwdInput = document.getElementById('password');
-            var pkeyInput = document.getElementById('pkey_input');
+            var challengeIdInput = document.getElementById('challenge_id_input');
             var pwd = pwdInput.value;
             if (!pwd) { document.getElementById('kt_sign_in_form').submit(); return false; }
             try {
@@ -344,7 +344,7 @@
                     var encrypted = await encryptPasswordRSA(pwd, data.data.publicKey);
                     if (encrypted) {
                         pwdInput.value = encrypted;
-                        pkeyInput.value = data.data.pkey;
+                        challengeIdInput.value = data.data.challengeId;
                     }
                 }
             } catch (e) { /* Challenge 失败则降级明文提交 */ }

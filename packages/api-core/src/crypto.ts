@@ -26,9 +26,9 @@ function pemToArrayBuffer(pem: string): ArrayBuffer {
  * 使用 RSA-OAEP/SHA-256 加密密码（浏览器原生 Web Crypto API）
  *
  * 配合后端 GET /Auth/Challenge 接口使用，防止密码明文传输：
- * 1. 调用 getChallenge() 获取 { pkey, publicKey }
+ * 1. 调用 getChallenge() 获取 { challengeId, publicKey }
  * 2. 调用本函数 encryptPassword(password, publicKey) 得到 encryptedBase64
- * 3. 提交 POST /Auth/Login 携带 { username, password: encryptedBase64, pkey }
+ * 3. 提交 POST /Auth/Login 携带 { username, password: encryptedBase64, challengeId }
  *
  * @param password 用户输入的原始密码
  * @param publicKey 后端返回的 PEM(SPKI) 格式 RSA 公钥

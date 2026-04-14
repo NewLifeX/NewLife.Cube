@@ -7,9 +7,9 @@
     //var returnUrl = (String)ViewBag.ReturnUrl;
     //var url = Url.Action("Login", "User", new { r = returnUrl });
 
-    var pDic = ViewData["pKey"] == null ? new KeyValuePair<string, string>() : (KeyValuePair<String, String>)ViewData["pKey"];
-    var key = pDic.Key;
-    var value = pDic.Value;
+    var challengeDic = ViewData["ChallengeKey"] == null ? new KeyValuePair<string, string>() : (KeyValuePair<String, String>)ViewData["ChallengeKey"];
+    var key = challengeDic.Key;
+    var value = challengeDic.Value;
 }
 <div class="tab-pane fade in active" id="Login">
     <!-- Logo-->
@@ -25,7 +25,7 @@
     </div>
     <!-- 登录-->
     <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login" method="post" id="cube-login">
-        <input id="pkey_container" style="display:none;" value="@value" />
+        <input id="challenge_id_container" style="display:none;" value="@value" />
         @Html.ValidationSummary()
         <span class="heading text-primary">@set.DisplayName 登录</span>
         @if (set.AllowLogin)
@@ -38,7 +38,7 @@
                 <i class="glyphicon glyphicon-user"></i>
             </div>
             <div class="form-group">
-                <input name="pkey" value="@key" style="display:none;" />
+                <input name="challengeId" value="@key" style="display:none;" />
                 <input type="password" class="form-control" id="password" placeholder="密码" autocomplete="off">
                 <input id="pwd" style="display:none" name="password" />
                 <i class="glyphicon glyphicon-lock"></i>
