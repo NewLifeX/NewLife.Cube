@@ -133,13 +133,7 @@ public class AuthController : ControllerBaseX
     /// <returns>登录配置信息</returns>
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult Config() => Json(0, null, new LoginConfigModel());
-
-    /// <summary>获取站点信息（名称/Logo/版权）</summary>
-    /// <returns>站点信息</returns>
-    [HttpGet]
-    [AllowAnonymous]
-    public ActionResult SiteInfo() => Json(0, null, new SiteInfoModel());
+    public ActionResult LoginConfig() => Json(0, null, new LoginConfigModel());
 
     /// <summary>获取当前登录用户信息</summary>
     /// <returns>用户信息，包含权限和角色</returns>
