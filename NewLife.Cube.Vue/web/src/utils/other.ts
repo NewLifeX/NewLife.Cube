@@ -194,26 +194,39 @@ export function toCamelCase(str = '') {
 }
 export function getComponentBaseField (item: Column) {
 	const { typeName, itemType } = item;
+	// 预定义的基础类型映射
 	const types = {
 		Int32: 'inputNumber',
 		Int64: 'inputNumber',
 		String: 'input',
 		Boolean: 'switch',
 		DateTime: 'datePicker',
+		// 系统数值类型，避免误作为枚举查询
+		Double: 'inputNumber',
+		Single: 'inputNumber',
+		Decimal: 'inputNumber',
+		Int16: 'inputNumber',
+		UInt32: 'inputNumber',
+		UInt64: 'inputNumber',
+		Byte: 'inputNumber',
+		SByte: 'inputNumber',
+		Short: 'inputNumber',
+		UShort: 'inputNumber',
 	}	
 	const contents = {
 		mail: 'input',
 		mobile: 'input',
 		image: 'upload'
 	}
-	if (typeName && !types[typeName]) {
+	// 仅对真实的枚举类型发起lookup请求（排除系统数值类型和已知内容类型）
+	if (typeName && !types[typeName] && !contents[itemType]) {
 		useEnumOptions().setOptions(typeName)
 	}
 	return {
 		component: contents[itemType] || types[typeName] || (typeName ? 'select' : 'input'),
 		label: item.displayName,
 		prop: toCamelCase(item.mapField || item.name),
-		props: typeName && !types[typeName] ? {
+		props: typeName && !types[typeName] && !contents[itemType] ? {
 			storeKey: typeName,
 			valueKey: 'value',
 			labelKey: 'label',
