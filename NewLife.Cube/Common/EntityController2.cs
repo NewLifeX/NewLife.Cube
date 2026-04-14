@@ -692,10 +692,11 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
 
     /// <summary>上传编辑器文件，关联当前实体</summary>
     /// <param name="file">上传文件</param>
-    /// <param name="id">实体主键。编辑时传入可关联到具体实体；为空时创建临时实体用于路径归类</param>
-    /// <returns></returns>
+    /// <param name="id">实体主键。大于零时关联已有实体；为零时属新增场景，以临时实体归类路径，表单保存后通过 attachmentIds 绑定主记录</param>
+    /// <param name="title">附件标题（主记录显示名）。为空时使用 entity.ToString()；新增场景下主记录尚未保存，可传入预期标题</param>
+    /// <returns>附件编号、文件路径、MIME 类型</returns>
     [HttpPost]
-    public virtual async Task<ActionResult> UploadFile(IFormFile file, String id = null)
+    public virtual async Task<ActionResult> UploadFile(IFormFile file, String id = null, String title = null)
     {
         if (!ValidateUploadFile(file, out var error))
             return new JsonResult(new { error });
@@ -709,7 +710,7 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         Attachment att;
         try
         {
-            att = await SaveFile(entity, file, null, null);
+            att = await SaveFile(entity, file, null, null, title);
         }
         catch (Exception ex)
         {
@@ -717,7 +718,48 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         }
 
         var url = ViewHelper.GetAttachmentUrl(att);
-        return Json(0, null, new { filePath = url, contentType = att.ContentType });
+        return Json(0, null, new { attId = att.Id, filePath = url, contentType = att.ContentType });
+    }
+
+    /// <summary>从请求 QueryString 或表单中读取 attachmentIds 参数</summary>
+    /// <returns>附件 ID 数组；无则返回空数组</returns>
+    protected virtual Int64[] GetAttachmentIds()
+    {
+        if (Request.Query.TryGetValue("attachmentIds", out var qv) && qv.Count > 0)
+            return qv.Select(s => s.ToLong()).Where(id => id > 0).ToArray();
+        if (Request.HasFormContentType && Request.Form.TryGetValue("attachmentIds", out var fv) && fv.Count > 0)
+            return fv.Select(s => s.ToLong()).Where(id => id > 0).ToArray();
+        return [];
+    }
+
+    /// <summary>将通过独立上传的临时附件绑定到已保存主记录。补写 Key/Title/Url 字段</summary>
+    /// <param name="entity">主记录实体，需已保存并持有主键</param>
+    /// <returns></returns>
+    protected virtual Task BindAttachments(TEntity entity)
+    {
+        var ids = GetAttachmentIds();
+        if (ids == null || ids.Length == 0) return Task.CompletedTask;
+
+        var uid = Factory.Unique != null ? entity[Factory.Unique] : null;
+        if (uid == null) return Task.CompletedTask;
+
+        var key = uid + "";
+        var title = entity + "";
+        var ss = GetControllerAction();
+        var url = $"/{ss[0]}/{ss[1]}?id={key}";
+
+        foreach (var attId in ids)
+        {
+            var att = Attachment.FindById(attId);
+            if (att == null) continue;
+
+            att.Key = key;
+            if (!title.IsNullOrEmpty()) att.Title = title;
+            if (att.Url.IsNullOrEmpty()) att.Url = url;
+            att.Update();
+        }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>保存所有上传文件，并保存附件访问路径到实体对象的对应属性</summary>
@@ -769,8 +811,9 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="file">文件</param>
     /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
     /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
-    /// <returns></returns>
-    protected virtual async Task<Attachment> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName)
+    /// <param name="titleOverride">附件标题覆盖值。非空时优先使用；为空时回退到 entity.ToString()</param>
+    /// <returns>已保存的附件实体</returns>
+    protected virtual async Task<Attachment> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName, String titleOverride = null)
     {
         if (file == null) throw new ArgumentNullException(nameof(file));
         if (fileName.IsNullOrEmpty()) fileName = file.FileName;
@@ -778,11 +821,12 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveFile), new { name = file.Name, fileName, uploadPath });
 
         var id = Factory.Unique != null ? entity[Factory.Unique] : null;
+        var entityTitle = entity + "";
         var att = new Attachment
         {
             Category = typeof(TEntity).Name,
             Key = id + "",
-            Title = entity + "",
+            Title = !titleOverride.IsNullOrEmpty() ? titleOverride : entityTitle,
             //FileName = fileName ?? file.FileName,
             ContentType = file.ContentType,
             Size = file.Length,

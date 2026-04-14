@@ -88,6 +88,8 @@ public partial class EntityController<TEntity, TModel>
 
             // 先插入再保存附件，主要是为了在附件表关联业务对象主键
             var fs = await SaveFiles(entity);
+            // 将通过独立上传得到的临时附件绑定到已新建主记录
+            await BindAttachments(entity);
             if (fs.Count > 0) OnUpdate(entity);
 
             if (LogOnChange) LogProvider.Provider.WriteLog("Insert", entity);
@@ -152,6 +154,8 @@ public partial class EntityController<TEntity, TModel>
                 throw new Exception("验证失败");
 
             await SaveFiles(entity);
+            // 将通过独立上传得到的新附件绑定到主记录
+            await BindAttachments(entity);
 
             OnUpdate(entity);
 
