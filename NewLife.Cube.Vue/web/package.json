@@ -34,7 +34,6 @@
 		"nprogress": "^0.2.0",
 		"pinia": "^2.0.32",
 		"print-js": "^1.6.0",
-		"qrcodejs2-fixes": "^0.0.2",
 		"qs": "^6.11.0",
 		"screenfull": "^6.0.2",
 		"sortablejs": "^1.15.0",

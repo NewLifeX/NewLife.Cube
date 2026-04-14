@@ -33,8 +33,12 @@
 			</el-button>
 		</el-form-item>
 		<el-form-item class="login-animation4">
-			<div class="login-forgot-link">
-				<el-link type="primary" :underline="false" @click="router.push('/forgot-password')">{{ $t('message.account.forgotPassword') }}</el-link>
+			<div class="login-action-links">
+				<el-link class="login-action-links-left" type="primary" :underline="false" @click="router.push('/forgot-password')">{{ $t('message.account.forgotPassword') }}</el-link>
+				<div v-if="siteStore.loginConfig.allowRegister" class="login-action-links-right">
+					<span class="font12 login-action-links-text">{{ $t('message.register.noAccount') }}</span>
+					<el-link type="primary" :underline="false" @click="router.push('/register')">{{ $t('message.register.linkText') }}</el-link>
+				</div>
 			</div>
 		</el-form-item>
 	</el-form>
@@ -48,6 +52,7 @@ import { useI18n } from 'vue-i18n';
 import Cookies from 'js-cookie';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
+import { useSiteInfo } from '/@/stores/siteInfo';
 import { initFrontEndControlRoutes } from '/@/router/frontEnd';
 import { initBackEndControlRoutes } from '/@/router/backEnd';
 import { Session } from '/@/utils/storage';
@@ -59,6 +64,7 @@ import { useUserApi } from '/@/api/user';
 const { t } = useI18n();
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
+const siteStore = useSiteInfo();
 const route = useRoute();
 const router = useRouter();
 const userApi = useUserApi();
@@ -132,7 +138,7 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 <style scoped lang="scss">
 .login-content-form {
 	margin-top: 20px;
-	@for $i from 1 through 3 {
+	@for $i from 1 through 4 {
 		.login-animation#{$i} {
 			opacity: 0;
 			animation-name: error-num;
@@ -160,6 +166,27 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 		letter-spacing: 2px;
 		font-weight: 300;
 		margin-top: 15px;
+	}
+	.login-action-links {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		&-left {
+			flex-shrink: 0;
+		}
+		&-right {
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			gap: 4px;
+			min-width: 0;
+		}
+		&-text {
+			color: var(--el-text-color-placeholder);
+			white-space: nowrap;
+		}
 	}
 }
 </style>

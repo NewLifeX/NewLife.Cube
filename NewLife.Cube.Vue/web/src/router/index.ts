@@ -95,7 +95,8 @@ router.beforeEach(async (to, from, next) => {
 	NProgress.configure({ showSpinner: false });
 	if (to.meta.title) NProgress.start();
 	const token = Session.get('token');
-	if (to.path === '/login' && !token) {
+	const anonymousWhiteList = ['/login', '/register', '/forgot-password'];
+	if (anonymousWhiteList.includes(to.path) && !token) {
 		next();
 		NProgress.done();
 	} else {
