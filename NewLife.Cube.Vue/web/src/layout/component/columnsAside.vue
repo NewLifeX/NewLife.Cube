@@ -84,7 +84,6 @@ const onColumnsAsideMenuClick = async (v: RouteItem) => {
 	if (redirect) router.push(redirect);
 	else router.push(path);
 	// 一个路由设置自动收起菜单
-	// https://gitee.com/lyt-top/vue-next-admin/issues/I6HW7H
 	if (!v.children) themeConfig.value.isCollapse = true;
 	else if (v.children.length > 1) themeConfig.value.isCollapse = false;
 };
@@ -121,7 +120,6 @@ const setFilterRoutes = () => {
 	if (Object.keys(resData).length <= 0) return false;
 	onColumnsAsideDown(resData.item?.k);
 	// 刷新时，初始化一个路由设置自动收起菜单
-	// https://gitee.com/lyt-top/vue-next-admin/issues/I6HW7H
 	resData.children.length <= 1 ? (themeConfig.value.isCollapse = true) : (themeConfig.value.isCollapse = false);
 	mittBus.emit('setSendColumnsChildren', resData);
 };

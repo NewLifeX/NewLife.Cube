@@ -76,7 +76,6 @@ onBeforeUnmount(() => {
 	editor.destroy();
 });
 // 监听是否禁用改变
-// https://gitee.com/lyt-top/vue-next-admin/issues/I4LM7I
 watch(
 	() => props.disable,
 	(bool) => {

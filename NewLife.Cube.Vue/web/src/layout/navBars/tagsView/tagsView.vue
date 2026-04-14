@@ -111,7 +111,6 @@ const isActive = (v: RouteItem) => {
 			return v.url ? v.url === state.routeActive : v.path === state.routeActive;
 		} else {
 			// 通过 name 传参，params 取值，刷新页面参数消失
-			// https://gitee.com/lyt-top/vue-next-admin/issues/I51RS9
 			return v.path === state.routePath;
 		}
 	}
@@ -190,7 +189,6 @@ const singleAddTagsView = (path: string, to?: RouteToFrom) => {
 const addTagsView = (path: string, to?: RouteToFrom) => {
 	// 防止拿取不到路由信息
 	nextTick(async () => {
-		// 修复：https://gitee.com/lyt-top/vue-next-admin/issues/I3YX6G
 		let item: RouteItem;
 		if (to?.meta?.isDynamic) {
 			// 动态路由（xxx/:id/:name"）：参数不同，开启多个 tagsview
@@ -316,7 +314,6 @@ const openCurrenFullscreen = async (path: string) => {
 };
 // 当前项右键菜单点击，拿 `当前点击的路由路径` 对比 `tagsView 路由数组`，取当前点击项的详细路由信息
 // 防止 tagsView 非当前页演示时，操作异常
-// https://gitee.com/lyt-top/vue-next-admin/issues/I61VS9
 const getCurrentRouteItem = (item: RouteItem): any => {
 	let resItem: RouteToFrom = {};
 	state.tagsViewList.forEach((v: RouteItem) => {
@@ -384,8 +381,6 @@ const onTagsClick = (v: RouteItem, k: number) => {
 	router.push(v);
 };
 // 处理 url，地址栏链接有参数时，tagsview 右键菜单刷新功能失效问题，感谢 @ZzZz-RIPPER、@dejavuuuuu
-// https://gitee.com/lyt-top/vue-next-admin/issues/I5K3YO
-// https://gitee.com/lyt-top/vue-next-admin/issues/I61VS9
 const transUrlParams = (v: RouteItem) => {
 	let params = v.query && Object.keys(v.query).length > 0 ? v.query : v.params;
 	if (!params) return '';
@@ -513,7 +508,7 @@ const initSortable = async () => {
 		},
 	});
 };
-// 拖动问题，https://gitee.com/lyt-top/vue-next-admin/issues/I3ZRRI
+// 拖动问题
 const onSortableResize = async () => {
 	await initSortable();
 	if (other.isMobile()) state.sortable.el && state.sortable.destroy();
@@ -522,7 +517,7 @@ const onSortableResize = async () => {
 onBeforeMount(() => {
 	// 初始化，防止手机端直接访问时还可以拖拽
 	onSortableResize();
-	// 拖动问题，https://gitee.com/lyt-top/vue-next-admin/issues/I3ZRRI
+	// 拖动问题
 	window.addEventListener('resize', onSortableResize);
 	// 监听非本页面调用 0 刷新当前，1 关闭当前，2 关闭其它，3 关闭全部 4 当前页全屏
 	mittBus.on('onCurrentContextmenuClick', (data: RouteItem) => {

@@ -60,7 +60,6 @@ export function setTagsViewNameI18n(item: any) {
 	let tagsViewName: string = '';
 	const { query, params, meta } = item;
 	// 修复tagsViewName匹配到其他含下列单词的路由
-	// https://gitee.com/lyt-top/vue-next-admin/pulls/44/files
 	const pattern = /^\{("(zh-cn|en|zh-tw)":"[^,]+",?){1,3}}$/;
 	if (query?.tagsViewName || params?.tagsViewName) {
 		if (pattern.test(query?.tagsViewName) || pattern.test(params?.tagsViewName)) {

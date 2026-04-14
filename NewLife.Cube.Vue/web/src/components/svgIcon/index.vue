@@ -29,7 +29,6 @@ const props = defineProps({
 });
 
 // 在线链接、本地引入地址前缀
-// https://gitee.com/lyt-top/vue-next-admin/issues/I62OVL
 const linesString = ['https', 'http', '/src', '/assets', 'data:image', import.meta.env.VITE_PUBLIC_PATH];
 
 // 获取 icon 图标名称
@@ -53,7 +52,6 @@ const setIconImgOutStyle = computed(() => {
 	return `width: ${props.size}px;height: ${props.size}px;display: inline-block;overflow: hidden;`;
 });
 // 设置图片样式
-// https://gitee.com/lyt-top/vue-next-admin/issues/I59ND0
 const setIconSvgInsStyle = computed(() => {
 	const filterStyle: string[] = [];
 	const compatibles: string[] = ['-webkit', '-ms', '-o', '-moz'];
