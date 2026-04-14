@@ -159,7 +159,7 @@ export interface SiteInfo {
   /** 登录页 Logo，空则使用皮肤内置默认 */
   loginLogo?: string;
   /** 登录页左侧背景图，空则使用皮肤内置默认 */
-  loginBg?: string;
+  loginBackground?: string;
 }
 
 /** 注册参数 */

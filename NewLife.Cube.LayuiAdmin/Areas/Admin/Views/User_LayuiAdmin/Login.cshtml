@@ -9,7 +9,7 @@
     ViewBag.Title = "登录";
     var set = Model;
     var config = NewLife.Cube.CubeSetting.Current;
-    var loginBg = config.LoginBg;
+    var loginBackground = config.LoginBackground;
     var loginLogo = config.LoginLogo;
 }
 <!DOCTYPE html>
@@ -27,7 +27,7 @@
 <body id="kt_body" class="bg-white">
     <div class="d-flex flex-column flex-root">
         <div class="d-flex flex-column flex-lg-row flex-column-fluid">
-            <div class="d-flex flex-column flex-lg-row-auto w-xl-1000px positon-xl-relative" style="background-image: url('@(loginBg.IsNullOrEmpty() ? "../../assets/media/bg-4.jpg" : loginBg)') ">
+            <div class="d-flex flex-column flex-lg-row-auto w-xl-1000px positon-xl-relative" style="background-image: url('@(loginBackground.IsNullOrEmpty() ? "../../assets/media/bg-4.jpg" : loginBackground)') ">
                 <div class="d-flex flex-column position-xl-fixed top-0 bottom-0 w-xl-1000px scroll-y">
                     <div class="d-flex flex-row-fluid flex-column text-center p-10 pt-lg-20">
                         <h1 class="fw-bolder fs-2qx pb-5 pb-md-10 text-white">@SysConfig.Current.DisplayName</h1>

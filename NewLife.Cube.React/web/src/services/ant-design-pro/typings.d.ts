@@ -96,7 +96,7 @@ declare namespace API {
     loginTip?: string;
     logo?: string;
     loginLogo?: string;
-    loginBg?: string;
+    loginBackground?: string;
   };
 
   type SendCodeParams = {

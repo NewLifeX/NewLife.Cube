@@ -260,7 +260,7 @@ public class CubeSetting : Config<CubeSetting>
     /// <summary>登录页背景图。留空时使用默认背景，可填写图片URL</summary>
     [Description("登录页背景图。留空时使用默认背景，可填写图片URL")]
     [Category("界面配置")]
-    public String LoginBg { get; set; }
+    public String LoginBackground { get; set; }
 
     /// <summary>表单组样式。大中小屏幕分别3/2/1列</summary>
     [Description("表单组样式。大中小屏幕分别3/2/1列，form-group col-xs-12 col-sm-6 col-lg-4")]

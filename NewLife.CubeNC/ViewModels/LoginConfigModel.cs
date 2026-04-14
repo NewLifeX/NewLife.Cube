@@ -65,7 +65,7 @@ public class SiteInfoModel
     public String LoginLogo => _set.LoginLogo;
 
     /// <summary>登录页背景图。留空时由前端皮肤使用内置默认</summary>
-    public String LoginBg => _set.LoginBg;
+    public String LoginBackground => _set.LoginBackground;
 
     /// <summary>Logo图标</summary>
     public String Logo => String.Empty;

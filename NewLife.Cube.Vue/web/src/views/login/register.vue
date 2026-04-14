@@ -8,9 +8,9 @@
 				</div>
 			</div>
 			<div class="register-left-img">
-				<img :src="loginBgSrc" />
+				<img :src="loginBackgroundSrc" />
 			</div>
-			<img :src="loginBgWaves" class="register-left-waves" />
+			<img :src="loginBackgroundWaves" class="register-left-waves" />
 		</div>
 		<div class="register-right flex">
 			<div class="register-right-warp flex-margin">
@@ -117,7 +117,7 @@ import { useUserApi } from '/@/api/user';
 import { NextLoading } from '/@/utils/loading';
 import logoMiniDefault from '/@/assets/logo-mini.png';
 import loginMainDefault from '/@/assets/login-main.svg';
-import loginBgWaves from '/@/assets/login-bg.svg';
+import loginBackgroundWaves from '/@/assets/login-bg.svg';
 
 const router = useRouter();
 const siteStore = useSiteInfo();
@@ -137,7 +137,7 @@ const state = reactive({
 });
 
 const logoSrc = computed(() => siteStore.siteInfo.loginLogo || logoMiniDefault);
-const loginBgSrc = computed(() => siteStore.siteInfo.loginBg || loginMainDefault);
+const loginBackgroundSrc = computed(() => siteStore.siteInfo.loginBackground || loginMainDefault);
 
 const rules: FormRules = {
 	username: [

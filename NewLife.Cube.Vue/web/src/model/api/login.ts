@@ -27,7 +27,7 @@ export interface SiteInfo {
   /** 登录页 Logo，留空时前端使用皮肤内置 */
   loginLogo: string;
   /** 登录页背景图，留空时前端使用皮肤内置 */
-  loginBg: string;
+  loginBackground: string;
 }
 
 /** 发送验证码请求 */

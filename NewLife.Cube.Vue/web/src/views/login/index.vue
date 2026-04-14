@@ -9,9 +9,9 @@
 				</div>
 			</div>
 			<div class="login-left-img">
-				<img :src="loginBgSrc" />
+				<img :src="loginBackgroundSrc" />
 			</div>
-			<img :src="loginBgWaves" class="login-left-waves" />
+			<img :src="loginBackgroundWaves" class="login-left-waves" />
 		</div>
 		<div class="login-right flex">
 			<div class="login-right-warp flex-margin">
@@ -83,7 +83,7 @@ import { useSiteInfo } from '/@/stores/siteInfo';
 import { NextLoading } from '/@/utils/loading';
 import logoMiniDefault from '/@/assets/logo-mini.png';
 import loginMainDefault from '/@/assets/login-main.svg';
-import loginBgWaves from '/@/assets/login-bg.svg';
+import loginBackgroundWaves from '/@/assets/login-bg.svg';
 
 // 引入组件
 const Account = defineAsyncComponent(() => import('/@/views/login/component/account.vue'));
@@ -110,7 +110,7 @@ const getThemeConfig = computed(() => {
 const logoSrc = computed(() => siteStore.siteInfo.loginLogo || logoMiniDefault);
 
 // 动态背景图：优先使用后端配置，降级到内置静态资源
-const loginBgSrc = computed(() => siteStore.siteInfo.loginBg || loginMainDefault);
+const loginBackgroundSrc = computed(() => siteStore.siteInfo.loginBackground || loginMainDefault);
 
 // OAuth 第三方登录（全页跳转，由后端处理 OAuth 流程）
 const onOAuthLogin = (name: string) => {
