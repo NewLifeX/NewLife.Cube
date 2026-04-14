@@ -1,0 +1,25 @@
+{
+  "name": "@cube/api-core",
+  "version": "0.1.0",
+  "description": "魔方前端公共 API 调用层，框架无关（axios 封装、Token 管理、错误处理）",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "qs": "^6.13.0"
+  },
+  "devDependencies": {
+    "@types/qs": "^6.9.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0"
+  },
+  "license": "MIT"
+}

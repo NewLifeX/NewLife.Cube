@@ -1,0 +1,20 @@
+{
+  "name": "@cube/page-utils",
+  "version": "0.1.0",
+  "description": "魔方前端页面工具函数集，零框架依赖",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0"
+  },
+  "license": "MIT"
+}

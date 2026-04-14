@@ -1,0 +1,53 @@
+{
+  "name": "@cube/page-logic",
+  "version": "0.1.0",
+  "description": "魔方前端列表页业务编排逻辑，框架无关核心 + Pinia/Zustand 适配器",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./pinia": {
+      "types": "./dist/pinia.d.ts",
+      "import": "./dist/pinia.js",
+      "require": "./dist/pinia.cjs"
+    },
+    "./zustand": {
+      "types": "./dist/zustand.d.ts",
+      "import": "./dist/zustand.js",
+      "require": "./dist/zustand.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/pinia.ts src/zustand.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts src/pinia.ts src/zustand.ts --format esm,cjs --dts --watch"
+  },
+  "dependencies": {
+    "@cube/api-core": "workspace:*",
+    "@cube/field-mapping": "workspace:*",
+    "@cube/page-utils": "workspace:*"
+  },
+  "peerDependencies": {
+    "pinia": ">=2.0.0",
+    "zustand": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "pinia": { "optional": true },
+    "zustand": { "optional": true }
+  },
+  "devDependencies": {
+    "pinia": "^3.0.0",
+    "vue": "^3.5.0",
+    "zustand": "^5.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0"
+  },
+  "license": "MIT"
+}

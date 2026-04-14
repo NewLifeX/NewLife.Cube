@@ -1,0 +1,23 @@
+{
+  "name": "@cube/field-mapping",
+  "version": "0.1.0",
+  "description": "魔方前端字段映射模块，DataField 元数据到 UI 组件的映射规则引擎",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch"
+  },
+  "dependencies": {
+    "@cube/api-core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0"
+  },
+  "license": "MIT"
+}
