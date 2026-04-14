@@ -141,6 +141,14 @@ v6.10.2026.0404
     <PackageReference Include="NewLife.XCode" Version="11.25.2026.403" />
   </ItemGroup>
 
+  <!-- 将 wwwroot 静态文件嵌入 DLL，同时不打包到 NuGet -->
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="wwwroot\**\*" />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="..\Doc\leaf.png" Link="leaf.png" PackagePath="\" />
   </ItemGroup>

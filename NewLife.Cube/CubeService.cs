@@ -8,6 +8,7 @@ using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 using NewLife.Caching;
 using NewLife.Common;
+using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
 using NewLife.Cube.WebMiddleware;
@@ -213,6 +214,22 @@ public static class CubeService
         app.UseStaticHttpContext();
 
         // 注册中间件
+
+        // 服务魔方内嵌静态资源（wwwroot），支持物理目录覆盖
+        {
+            var embeddedProvider = new CubeEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "NewLife.Cube.wwwroot");
+            var webRoot = set.WebRootPath;
+            var root = AppDomain.CurrentDomain.BaseDirectory.CombinePath(webRoot);
+            if (root.IsNullOrEmpty() || !Directory.Exists(root)) root = webRoot.GetFullPath();
+
+            IFileProvider fileProvider;
+            if (!root.IsNullOrEmpty() && Directory.Exists(root))
+                fileProvider = new CompositeFileProvider(new PhysicalFileProvider(root), embeddedProvider);
+            else
+                fileProvider = embeddedProvider;
+
+            app.UseStaticFiles(new StaticFileOptions { FileProvider = fileProvider });
+        }
 
         // 如果，头像目录设置不为空，开启静态文件中间件
         if (!set.AvatarPath.IsNullOrWhiteSpace())
