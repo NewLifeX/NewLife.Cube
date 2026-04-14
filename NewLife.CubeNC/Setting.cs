@@ -247,6 +247,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("界面配置")]
     public String LoginTip { get; set; }
 
+    /// <summary>登录页Logo。留空时使用默认Logo</summary>
+    [Description("登录页Logo。留空时使用默认Logo")]
+    [Category("界面配置")]
+    public String LoginLogo { get; set; }
+
+    /// <summary>登录页背景图。留空时使用默认背景，可填写图片URL</summary>
+    [Description("登录页背景图。留空时使用默认背景，可填写图片URL")]
+    [Category("界面配置")]
+    public String LoginBg { get; set; }
+
     /// <summary>表单组样式。大中小屏幕分别3/2/1列</summary>
     [Description("表单组样式。大中小屏幕分别3/2/1列，form-group col-xs-12 col-sm-6 col-lg-4")]
     [Category("界面配置")]

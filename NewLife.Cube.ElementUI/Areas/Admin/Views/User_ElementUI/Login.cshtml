@@ -1,11 +1,272 @@
 ﻿@model LoginViewModel
+@using NewLife;
 @using NewLife.Common;
+@using NewLife.Cube.Web;
 @{
     Layout = null;
     ViewBag.Title = "登录";
 
     var res = Model.ResourceUrl;
+    var set = Model;
+    var config = NewLife.Cube.CubeSetting.Current;
+    var loginLogo = config.LoginLogo;
 }
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - @SysConfig.Current.DisplayName</title>
+
+    <link href="@res/elementui/css/element.css" rel="stylesheet" />
+    <link href="@res/elementui/css/layout.css" rel="stylesheet" />
+    <style>
+        html { background-color: #f2f2f2; }
+        .login-page {
+            -webkit-border-radius: 5px;
+            border-radius: 5px;
+            margin: 80px auto;
+            width: 400px;
+            padding: 35px 35px 15px;
+            background: #fff;
+            border: 1px solid #eaeaea;
+            box-shadow: 0 0 25px #cac6c6;
+        }
+        .logo-area { text-align: center; margin-bottom: 20px; }
+        .logo-area img { height: 60px; }
+        .logo-area h3 { margin: 8px 0 0; font-size: 20px; }
+        .oauth-area { margin-top: 16px; text-align: center; }
+        .oauth-area .divider { color: #999; font-size: 12px; margin: 10px 0; }
+        .oauth-icons { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+        .oauth-icons a { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #666; font-size: 12px; }
+        .oauth-icons img { width: 36px; height: 36px; border-radius: 50%; }
+        .oauth-fallback { width: 36px; height: 36px; border-radius: 50%; background: #e0e7ff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
+        .footer { text-align: center; font-size: 12px; color: #bbb; margin-top: 12px; }
+        .footer a { color: #bbb; text-decoration: none; }
+    </style>
+</head>
+
+<body>
+    <template id="app">
+        <div>
+            <div class="login-page">
+                <!-- Logo -->
+                <div class="logo-area">
+                    <img v-if="logoSrc" :src="logoSrc" alt="logo" />
+                    <h3>{{displayName}}</h3>
+                    <p v-if="loginTip" style="color:#999;font-size:12px;">{{loginTip}}</p>
+                </div>
+
+                <!-- 错误信息 -->
+                <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon style="margin-bottom:12px;" />
+
+                <!-- Tab 切换 -->
+                <el-tabs v-model="activeTab" v-if="hasTabs">
+                    <el-tab-pane v-if="allowLogin !== false" label="密码登录" name="password" />
+                    <el-tab-pane v-if="enableSms" label="手机验证码" name="sms" />
+                    <el-tab-pane v-if="enableMail" label="邮箱验证码" name="email" />
+                </el-tabs>
+
+                <!-- 密码登录 -->
+                <el-form v-if="activeTab === 'password' && allowLogin !== false"
+                         :model="loginform" :rules="rules" ref="loginform" label-width="0px"
+                         @@submit.native.prevent="submitPassword">
+                    <el-form-item prop="username">
+                        <el-input v-model="loginform.username" placeholder="用户名" />
+                    </el-form-item>
+                    <el-form-item prop="password">
+                        <el-input type="password" v-model="loginform.password" placeholder="密码" @@keyup.enter.native="submitPassword" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" style="width:100%;" @@click="submitPassword" :loading="loading">登 录</el-button>
+                    </el-form-item>
+                    <el-form-item v-if="allowRegister" style="text-align:right;">
+                        <a href="Register">注册账号</a>
+                    </el-form-item>
+                </el-form>
+
+                <!-- 手机验证码 -->
+                <el-form v-if="activeTab === 'sms'" label-width="0px">
+                    <el-form-item>
+                        <el-input v-model="smsUser" placeholder="手机号" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-row :gutter="8">
+                            <el-col :span="16"><el-input v-model="smsCode" placeholder="验证码" /></el-col>
+                            <el-col :span="8"><el-button style="width:100%;" :disabled="smsCountdown>0" @@click="sendCode('Sms')">{{smsCountdown>0?smsCountdown+'s':'获取验证码'}}</el-button></el-col>
+                        </el-row>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" style="width:100%;" @@click="loginByCode(1)" :loading="codeLoading">登 录</el-button>
+                    </el-form-item>
+                </el-form>
+
+                <!-- 邮箱验证码 -->
+                <el-form v-if="activeTab === 'email'" label-width="0px">
+                    <el-form-item>
+                        <el-input v-model="mailUser" placeholder="邮箱地址" type="email" />
+                    </el-form-item>
+                    <el-form-item>
+                        <el-row :gutter="8">
+                            <el-col :span="16"><el-input v-model="mailCode" placeholder="验证码" /></el-col>
+                            <el-col :span="8"><el-button style="width:100%;" :disabled="mailCountdown>0" @@click="sendCode('Mail')">{{mailCountdown>0?mailCountdown+'s':'获取验证码'}}</el-button></el-col>
+                        </el-row>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" style="width:100%;" @@click="loginByCode(2)" :loading="mailLoading">登 录</el-button>
+                    </el-form-item>
+                </el-form>
+
+                <!-- OAuth 第三方登录 -->
+                <div class="oauth-area" v-if="providers && providers.length">
+                    <div class="divider">其他登录方式</div>
+                    <div class="oauth-icons">
+                        <a v-for="p in providers" :key="p.name" :href="'/Sso/Login/' + p.name" :title="p.nickName || p.name">
+                            <img v-if="p.logo" :src="p.logo" :alt="p.nickName || p.name" />
+                            <span v-else class="oauth-fallback">{{(p.nickName || p.name).charAt(0).toUpperCase()}}</span>
+                            <span>{{p.nickName || p.name}}</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 版权信息 -->
+            <div class="footer">
+                <div v-if="copyright" v-html="copyright"></div>
+                <div v-if="registration"><a href="https://www.beianx.cn/" target="_blank">{{registration}}</a></div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ElementUI -->
+    <script src="@res/elementui/js/moment.min.js"></script>
+    <script src="@res/elementui/js/axios.min.js"></script>
+    <script src="@res/elementui/js/vue.min.js"></script>
+    <script src="@res/elementui/js/element.min.js"></script>
+    <script>
+        var elReturnUrl = '@Html.Raw(set.ReturnUrl)';
+
+        new Vue({
+            el: '#app',
+            data: {
+                loading: false,
+                codeLoading: false,
+                mailLoading: false,
+                activeTab: 'password',
+                smsUser: '',
+                smsCode: '',
+                mailUser: '',
+                mailCode: '',
+                smsCountdown: 0,
+                mailCountdown: 0,
+                error: '',
+                // 配置（从接口加载）
+                allowLogin: true,
+                allowRegister: false,
+                enableSms: false,
+                enableMail: false,
+                providers: [],
+                logoSrc: '@(loginLogo.IsNullOrEmpty() ? "" : loginLogo)',
+                displayName: '@SysConfig.Current.DisplayName',
+                loginTip: '@config.LoginTip',
+                copyright: '',
+                registration: '@config.Registration',
+                loginform: {
+                    username: null,
+                    password: null,
+                },
+                rules: {
+                    username: [{ required: true, message: '请输入用户名' }],
+                    password: [{ required: true, message: '请输入密码' }],
+                }
+            },
+            computed: {
+                hasTabs() { return (this.allowLogin !== false ? 1 : 0) + (this.enableSms ? 1 : 0) + (this.enableMail ? 1 : 0) > 1; }
+            },
+            created() {
+                Promise.all([
+                    axios.get('/Auth/Config'),
+                    axios.get('/Auth/SiteInfo')
+                ]).then(([configRes, siteRes]) => {
+                    if (configRes.data && configRes.data.data) {
+                        var c = configRes.data.data;
+                        this.allowLogin = c.allowLogin !== false;
+                        this.allowRegister = !!c.allowRegister;
+                        this.enableSms = !!c.enableSms;
+                        this.enableMail = !!c.enableMail;
+                        this.providers = c.providers || [];
+                        if (!this.allowLogin) {
+                            if (this.enableSms) this.activeTab = 'sms';
+                            else if (this.enableMail) this.activeTab = 'email';
+                        }
+                    }
+                    if (siteRes.data && siteRes.data.data) {
+                        var s = siteRes.data.data;
+                        this.copyright = s.copyright || '';
+                        if (s.loginLogo) this.logoSrc = s.loginLogo;
+                        if (s.displayName) this.displayName = s.displayName;
+                    }
+                }).catch(() => {});
+            },
+            methods: {
+                submitPassword() {
+                    this.$refs.loginform.validate((valid) => {
+                        if (!valid) return;
+                        this.loading = true;
+                        this.error = '';
+                        axios.post('login', this.loginform)
+                            .then((rsp) => {
+                                if (rsp.data.code == 0) location.href = elReturnUrl || '../';
+                                else this.error = rsp.data.message || '用户名或密码错误';
+                                this.loading = false;
+                            }).catch(() => {
+                                this.error = '系统错误，请稍后重试';
+                                this.loading = false;
+                            });
+                    });
+                },
+                sendCode(channel) {
+                    var username = channel === 'Sms' ? this.smsUser : this.mailUser;
+                    if (!username) { this.$message.error(channel === 'Sms' ? '请输入手机号' : '请输入邮箱'); return; }
+                    axios.post('/Auth/SendCode', { channel: channel, username: username, action: 'login' })
+                        .then((res) => {
+                            if (res.data.code !== 0) { this.$message.error(res.data.message || '发送失败'); return; }
+                            this.$message.success('验证码已发送');
+                            var countdown = 60;
+                            if (channel === 'Sms') this.smsCountdown = countdown;
+                            else this.mailCountdown = countdown;
+                            var t = setInterval(() => {
+                                countdown--;
+                                if (channel === 'Sms') this.smsCountdown = countdown;
+                                else this.mailCountdown = countdown;
+                                if (countdown <= 0) clearInterval(t);
+                            }, 1000);
+                        }).catch(() => { this.$message.error('发送失败'); });
+                },
+                loginByCode(loginCategory) {
+                    var username = loginCategory === 1 ? this.smsUser : this.mailUser;
+                    var code = loginCategory === 1 ? this.smsCode : this.mailCode;
+                    if (!username || !code) { this.$message.error('请填写账号和验证码'); return; }
+                    if (loginCategory === 1) this.codeLoading = true;
+                    else this.mailLoading = true;
+                    axios.post('/Auth/LoginByCode', { username: username, password: code, loginCategory: loginCategory })
+                        .then((res) => {
+                            if (res.data.code === 0) location.href = elReturnUrl || '../';
+                            else this.error = res.data.message || '登录失败';
+                        }).catch(() => { this.error = '登录失败，请稍后重试'; })
+                        .finally(() => {
+                            this.codeLoading = false;
+                            this.mailLoading = false;
+                        });
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
+
 <!DOCTYPE html>
 <html lang="en">
 

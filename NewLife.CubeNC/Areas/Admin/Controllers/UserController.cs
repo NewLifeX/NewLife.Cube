@@ -369,6 +369,8 @@ public class UserController : EntityController<User, UserModel>
 
             AllowLogin = set.AllowLogin,
             AllowRegister = set.AllowRegister,
+            EnableSms = set.EnableSms,
+            EnableMail = set.EnableMail,
             //AutoRegister = set.AutoRegister,
 
             LoginTip = set.LoginTip,

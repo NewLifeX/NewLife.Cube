@@ -1,48 +1,179 @@
 ﻿@model LoginViewModel
+@using NewLife
 @using NewLife.Common
+@using NewLife.Cube.Web;
 @{
     var set = Model;
 }
 
 <div class="login-form login-signin">
-    <!--begin::Form-->
-    <form class="form" id="kt_login_signin_form" action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" onsubmit="md5_salt($('#password'));">
-        @Html.ValidationSummary()
-        <!--begin::Title-->
-        <div class="pb-13 pt-lg-0 pt-5">
-            <h3 class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg">@SysConfig.Current.DisplayName</h3>
-            @if (set.AllowRegister)
+    <!--begin::Title-->
+    <div class="pb-13 pt-lg-0 pt-5">
+        <h3 class="font-weight-bolder text-dark font-size-h4 font-size-h1-lg">@SysConfig.Current.DisplayName</h3>
+        @if (set.AllowRegister)
+        {
+            <span class="text-muted font-weight-bold font-size-h4">
+                没有帐号?
+                <a href="javascript:;" id="kt_login_signup" class="text-primary font-weight-bolder">注册</a>
+            </span>
+        }
+    </div>
+
+    <!-- Tab 导航 -->
+    @if (set.EnableSms || set.EnableMail)
+    {
+        <ul class="nav nav-pills nav-justified mb-5">
+            @if (set.AllowLogin)
             {
-                <span class="text-muted font-weight-bold font-size-h4">
-                    没有帐号?
-                    <a href="javascript:;" id="kt_login_signup" class="text-primary font-weight-bolder">注册</a>
-                </span>
+                <li class="nav-item"><a class="nav-link active" href="#tab-pwd" data-toggle="tab">密码登录</a></li>
             }
-        </div>
-        <!--begin::Title-->
+            @if (set.EnableSms)
+            {
+                <li class="nav-item"><a class="nav-link @(!set.AllowLogin ? "active" : "")" href="#tab-sms" data-toggle="tab">手机验证码</a></li>
+            }
+            @if (set.EnableMail)
+            {
+                <li class="nav-item"><a class="nav-link @(!set.AllowLogin && !set.EnableSms ? "active" : "")" href="#tab-mail" data-toggle="tab">邮箱验证码</a></li>
+            }
+        </ul>
+    }
+
+    <div class="tab-content">
+        <!-- 密码登录 -->
         @if (set.AllowLogin)
         {
-            <!--begin::Form group-->
-            <div class="form-group">
-                <label class="font-size-h6 font-weight-bolder text-dark">用户名</label>
-                <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="text" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码" autocomplete="off" />
+            <div class="tab-pane @(set.EnableSms || set.EnableMail ? "fade show active" : "") pl-1" id="tab-pwd" role="tabpanel">
+                <form class="form" action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post" onsubmit="md5_salt($('#password'));">
+                    @Html.ValidationSummary()
+                    <div class="form-group">
+                        <label class="font-size-h6 font-weight-bolder text-dark">用户名</label>
+                        <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="text" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码" autocomplete="off" />
+                    </div>
+                    <div class="form-group">
+                        <div class="d-flex justify-content-between mt-n5">
+                            <label class="font-size-h6 font-weight-bolder text-dark pt-5">密码</label>
+                            <a href="javascript:;" id="kt_login_forgot" class="text-primary font-size-h6 font-weight-bolder text-hover-primary pt-5">忘记密码 ?</a>
+                        </div>
+                        <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="password" name="password" id="password" autocomplete="off" />
+                    </div>
+                    <div class="pb-lg-0 pb-5">
+                        <button type="submit" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">登录</button>
+                    </div>
+                </form>
             </div>
-            <!--end::Form group-->
-            <!--begin::Form group-->
-            <div class="form-group">
-                <div class="d-flex justify-content-between mt-n5">
-                    <label class="font-size-h6 font-weight-bolder text-dark pt-5">密码</label>
-                    <a href="javascript:;" id="kt_login_forgot" class="text-primary font-size-h6 font-weight-bolder text-hover-primary pt-5">忘记密码 ?</a>
-                </div>
-                <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="password" name="password" autocomplete="off" />
-            </div>
-            <!--end::Form group-->
-            <!--begin::Action-->
-            <div class="pb-lg-0 pb-5">
-                <button type="submit" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3 mr-3">登录</button>
-            </div>
-            <!--end::Action-->
         }
-    </form>
-    <!--end::Form-->
+        <!-- 手机验证码 -->
+        @if (set.EnableSms)
+        {
+            <div class="tab-pane fade @(!set.AllowLogin ? "show active" : "") pl-1" id="tab-sms" role="tabpanel">
+                <div class="form-group">
+                    <label class="font-size-h6 font-weight-bolder text-dark">手机号</label>
+                    <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="text" id="sms_user" placeholder="手机号" />
+                </div>
+                <div class="form-group">
+                    <label class="font-size-h6 font-weight-bolder text-dark">验证码</label>
+                    <div class="input-group">
+                        <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="text" id="sms_code" placeholder="验证码" />
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary" id="sms_btn" onclick="sendCode3('Sms','sms_user','sms_btn')">获取验证码</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="pb-lg-0 pb-5">
+                    <button type="button" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3" onclick="loginByCode3('sms_user','sms_code',1)">登录</button>
+                </div>
+            </div>
+        }
+        <!-- 邮箱验证码 -->
+        @if (set.EnableMail)
+        {
+            <div class="tab-pane fade @(!set.AllowLogin && !set.EnableSms ? "show active" : "") pl-1" id="tab-mail" role="tabpanel">
+                <div class="form-group">
+                    <label class="font-size-h6 font-weight-bolder text-dark">邮箱地址</label>
+                    <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="email" id="mail_user" placeholder="邮箱地址" />
+                </div>
+                <div class="form-group">
+                    <label class="font-size-h6 font-weight-bolder text-dark">验证码</label>
+                    <div class="input-group">
+                        <input class="form-control form-control-solid h-auto py-6 px-6 rounded-lg" type="text" id="mail_code" placeholder="验证码" />
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary" id="mail_btn" onclick="sendCode3('Mail','mail_user','mail_btn')">获取验证码</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="pb-lg-0 pb-5">
+                    <button type="button" class="btn btn-primary font-weight-bolder font-size-h6 px-8 py-4 my-3" onclick="loginByCode3('mail_user','mail_code',2)">登录</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- OAuth 第三方登录 -->
+    @if (set.OAuthItems != null && set.OAuthItems.Count > 0)
+    {
+        <div class="separator separator-dashed my-6"></div>
+        <p class="text-muted font-weight-bold text-center">其他登录方式</p>
+        <div class="d-flex justify-content-center flex-wrap">
+            @foreach (var mi in set.OAuthItems)
+            {
+                var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
+                var oauthUrl = "/Sso/Login/" + mi.Name;
+                var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
+                <a href="@oauthUrl" class="d-flex flex-column align-items-center mx-2 text-decoration-none" title="@nickName">
+                    @if (!logo.IsNullOrEmpty())
+                    {
+                        <img src="@logo" style="width:36px;height:36px;border-radius:50%;" alt="@nickName" />
+                    }
+                    else
+                    {
+                        <span class="symbol symbol-35 symbol-light-primary" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#e1f0ff;font-weight:bold;">
+                            @nickName.Substring(0, 1).ToUpper()
+                        </span>
+                    }
+                    <span class="text-muted font-size-xs mt-1" style="max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@nickName</span>
+                </a>
+            }
+        </div>
+    }
 </div>
+
+<script>
+    var returnUrl3 = '@Html.Raw(set.ReturnUrl)';
+    async function sendCode3(channel, userId, btnId) {
+        var username = document.getElementById(userId).value;
+        if (!username) { alert(channel === 'Sms' ? '请输入手机号' : '请输入邮箱'); return; }
+        var btn = document.getElementById(btnId);
+        try {
+            var res = await fetch('/Auth/SendCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ channel: channel, username: username, action: 'login' })
+            });
+            var data = await res.json();
+            if (data.code !== 0) { alert(data.message || '发送失败'); return; }
+            var n = 60;
+            btn.disabled = true;
+            btn.textContent = n + 's';
+            var t = setInterval(function() {
+                n--;
+                if (n <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = '获取验证码'; }
+                else btn.textContent = n + 's';
+            }, 1000);
+        } catch (e) { alert('发送失败，请稍后重试'); }
+    }
+    async function loginByCode3(userId, codeId, cat) {
+        var username = document.getElementById(userId).value;
+        var code = document.getElementById(codeId).value;
+        if (!username || !code) { alert('请填写账号和验证码'); return; }
+        try {
+            var res = await fetch('/Auth/LoginByCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, password: code, loginCategory: cat })
+            });
+            var data = await res.json();
+            if (data.code === 0) window.location.href = returnUrl3 || '/Admin';
+            else alert(data.message || '登录失败');
+        } catch (e) { alert('登录失败，请稍后重试'); }
+    }
+</script>

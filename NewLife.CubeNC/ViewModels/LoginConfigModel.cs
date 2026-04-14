@@ -52,14 +52,20 @@ public class SiteInfoModel
     /// <summary>站点名称</summary>
     public String DisplayName => _sys.DisplayName;
 
-    /// <summary>版权</summary>
-    public String Copyright => _set.Copyright;
+    /// <summary>版权。动态替换 {now:yyyy} 等变量</summary>
+    public String Copyright => _set.GetCopyright();
 
     /// <summary>备案号</summary>
     public String Registration => _set.Registration;
 
     /// <summary>登录提示</summary>
     public String LoginTip => _set.LoginTip;
+
+    /// <summary>登录页Logo。留空时由前端皮肤使用内置默认</summary>
+    public String LoginLogo => _set.LoginLogo;
+
+    /// <summary>登录页背景图。留空时由前端皮肤使用内置默认</summary>
+    public String LoginBg => _set.LoginBg;
 
     /// <summary>Logo图标</summary>
     public String Logo => String.Empty;

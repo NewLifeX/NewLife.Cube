@@ -1223,6 +1223,14 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 			title: '登录',
 		},
 	},
+	{
+		path: '/register',
+		name: 'register',
+		component: () => import('/@/views/login/register.vue'),
+		meta: {
+			title: '注册',
+		},
+	},
 	/**
 	 * 提示：写在这里的为全屏界面，不建议写在这里
 	 * 请写在 `dynamicRoutes` 路由数组中

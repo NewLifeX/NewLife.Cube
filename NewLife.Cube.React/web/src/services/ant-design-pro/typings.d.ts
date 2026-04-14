@@ -89,6 +89,35 @@ declare namespace API {
     providers?: OAuthProvider[];
   };
 
+  type SiteInfo = {
+    displayName?: string;
+    copyright?: string;
+    registration?: string;
+    loginTip?: string;
+    logo?: string;
+    loginLogo?: string;
+    loginBg?: string;
+  };
+
+  type SendCodeParams = {
+    channel: 'Sms' | 'Mail';
+    username: string;
+    action?: string;
+  };
+
+  type LoginByCodeParams = {
+    username: string;
+    password: string;
+    loginCategory: 1 | 2;
+  };
+
+  type RegisterParams = {
+    username: string;
+    email: string;
+    password: string;
+    password2: string;
+  };
+
   type PageParams = {
     current?: number;
     pageSize?: number;

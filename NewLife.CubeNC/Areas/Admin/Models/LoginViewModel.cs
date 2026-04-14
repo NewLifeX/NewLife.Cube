@@ -20,6 +20,12 @@ public class LoginViewModel
     /// <summary>允许注册</summary>
     public Boolean AllowRegister { get; set; }
 
+    /// <summary>启用短信验证码登录</summary>
+    public Boolean EnableSms { get; set; }
+
+    /// <summary>启用邮箱验证码登录</summary>
+    public Boolean EnableMail { get; set; }
+
     ///// <summary>自动注册</summary>
     //public Boolean AutoRegister { get; set; }
 

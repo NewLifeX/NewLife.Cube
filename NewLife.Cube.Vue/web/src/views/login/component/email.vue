@@ -1,15 +1,15 @@
 <template>
 	<el-form size="large" class="login-content-form">
 		<el-form-item class="login-animation1">
-			<el-input text :placeholder="$t('message.mobile.placeholder1')" v-model="state.ruleForm.username" clearable autocomplete="off">
+			<el-input text :placeholder="$t('message.email.placeholder1')" v-model="state.ruleForm.username" clearable autocomplete="off">
 				<template #prefix>
-					<i class="iconfont icon-dianhua el-input__icon"></i>
+					<el-icon class="el-input__icon"><ele-Message /></el-icon>
 				</template>
 			</el-input>
 		</el-form-item>
 		<el-form-item class="login-animation2">
 			<el-col :span="15">
-				<el-input text maxlength="6" :placeholder="$t('message.mobile.placeholder2')" v-model="state.ruleForm.code" clearable autocomplete="off">
+				<el-input text maxlength="6" :placeholder="$t('message.email.placeholder2')" v-model="state.ruleForm.code" clearable autocomplete="off">
 					<template #prefix>
 						<el-icon class="el-input__icon"><ele-Position /></el-icon>
 					</template>
@@ -18,20 +18,19 @@
 			<el-col :span="1"></el-col>
 			<el-col :span="8">
 				<el-button v-waves class="login-content-code" :disabled="state.countdown > 0" @click="onSendCode">
-					{{ state.countdown > 0 ? $t('message.mobile.codeCountdown').replace('{s}', String(state.countdown)) : $t('message.mobile.codeText') }}
+					{{ state.countdown > 0 ? $t('message.email.codeCountdown').replace('{s}', String(state.countdown)) : $t('message.email.codeText') }}
 				</el-button>
 			</el-col>
 		</el-form-item>
 		<el-form-item class="login-animation3">
 			<el-button round type="primary" v-waves class="login-content-submit" @click="onSignIn" :loading="state.loading">
-				<span>{{ $t('message.mobile.btnText') }}</span>
+				<span>{{ $t('message.email.btnText') }}</span>
 			</el-button>
 		</el-form-item>
-		<div class="font12 mt30 login-animation4 login-msg">{{ $t('message.mobile.msgText') }}</div>
 	</el-form>
 </template>
 
-<script setup lang="ts" name="loginMobile">
+<script setup lang="ts" name="loginEmail">
 import { reactive } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -59,15 +58,15 @@ const state = reactive({
 
 let countdownTimer: ReturnType<typeof setInterval> | null = null;
 
-// 发送短信验证码
+// 发送邮箱验证码
 const onSendCode = async () => {
 	if (!state.ruleForm.username) {
-		ElMessage.warning('请输入手机号');
+		ElMessage.warning('请输入邮箱地址');
 		return;
 	}
 	try {
-		await userApi.sendCode({ channel: 'Sms', username: state.ruleForm.username, action: 'login' });
-		ElMessage.success('验证码已发送');
+		await userApi.sendCode({ channel: 'Mail', username: state.ruleForm.username, action: 'login' });
+		ElMessage.success('验证码已发送至您的邮箱');
 		state.countdown = 60;
 		countdownTimer = setInterval(() => {
 			state.countdown--;
@@ -81,10 +80,10 @@ const onSendCode = async () => {
 	}
 };
 
-// 手机验证码登录
+// 邮箱验证码登录
 const onSignIn = async () => {
 	if (!state.ruleForm.username) {
-		ElMessage.warning('请输入手机号');
+		ElMessage.warning('请输入邮箱地址');
 		return;
 	}
 	if (!state.ruleForm.code) {
@@ -96,7 +95,7 @@ const onSignIn = async () => {
 		const res = await userApi.loginByCode({
 			username: state.ruleForm.username,
 			password: state.ruleForm.code,
-			loginCategory: 1,
+			loginCategory: 2,
 		});
 		Session.set('token', res.data.token);
 		if (!themeConfig.value.isRequestRoutes) {
@@ -127,7 +126,7 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 <style scoped lang="scss">
 .login-content-form {
 	margin-top: 20px;
-	@for $i from 1 through 4 {
+	@for $i from 1 through 3 {
 		.login-animation#{$i} {
 			opacity: 0;
 			animation-name: error-num;
@@ -146,9 +145,5 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 		font-weight: 300;
 		margin-top: 15px;
 	}
-	.login-msg {
-		color: var(--el-text-color-placeholder);
-	}
 }
 </style>
-

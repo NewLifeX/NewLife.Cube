@@ -1,11 +1,252 @@
-﻿@using NewLife.Common;
+﻿@using NewLife;
+@using NewLife.Common;
 @using NewLife.Cube.Areas.Admin.Models;
+@using NewLife.Cube.Web;
 @model LoginViewModel
 @{
     Layout = null;
     ViewBag.Title = "登录";
     var set = Model;
+    var config = NewLife.Cube.CubeSetting.Current;
+    var loginBg = config.LoginBg;
+    var loginLogo = config.LoginLogo;
 }
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - @SysConfig.Current.DisplayName</title>
+    <meta name="description" content="@SysConfig.Current.Company">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon">
+    <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+</head>
+<body id="kt_body" class="bg-white">
+    <div class="d-flex flex-column flex-root">
+        <div class="d-flex flex-column flex-lg-row flex-column-fluid">
+            <div class="d-flex flex-column flex-lg-row-auto w-xl-1000px positon-xl-relative" style="background-image: url('@(loginBg.IsNullOrEmpty() ? "../../assets/media/bg-4.jpg" : loginBg)') ">
+                <div class="d-flex flex-column position-xl-fixed top-0 bottom-0 w-xl-1000px scroll-y">
+                    <div class="d-flex flex-row-fluid flex-column text-center p-10 pt-lg-20">
+                        <h1 class="fw-bolder fs-2qx pb-5 pb-md-10 text-white">@SysConfig.Current.DisplayName</h1>
+                        <p class="fw-bold fs-3 text-muted">@SysConfig.Current.Company</p>
+                    </div>
+                    <div class="d-flex flex-row-auto bgi-no-repeat bgi-position-x-center bgi-size-contain bgi-position-y-bottom min-h-100px min-h-lg-350px" style="background-image: url(../../assets/media/verification.png) "></div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column flex-lg-row-fluid py-10">
+
+                @if (Html.ValidationSummary(true).ToDictionary().Count() > 1)
+                {
+                    <div class="alert alert-dismissible bg-light-danger border border-danger border-dashed d-flex flex-column flex-sm-row m-10">
+                        <span class="svg-icon svg-icon-2hx svg-icon-danger me-4 mb-5 mb-sm-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M5.69477 2.48932C4.00472 2.74648 2.66565 3.98488 2.37546 5.66957C2.17321 6.84372 2 8.33525 2 10C2 11.6647 2.17321 13.1563 2.37546 14.3304C2.62456 15.7766 3.64656 16.8939 5 17.344V20.7476C5 21.5219 5.84211 22.0024 6.50873 21.6085L12.6241 17.9949C14.8384 17.9586 16.8238 17.7361 18.3052 17.5107C19.9953 17.2535 21.3344 16.0151 21.6245 14.3304C21.8268 13.1563 22 11.6647 22 10C22 8.33525 21.8268 6.84372 21.6245 5.66957C21.3344 3.98488 19.9953 2.74648 18.3052 2.48932C16.6859 2.24293 14.4644 2 12 2C9.53559 2 7.31411 2.24293 5.69477 2.48932Z" fill="#191213"></path>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7 7C6.44772 7 6 7.44772 6 8C6 8.55228 6.44772 9 7 9H17C17.5523 9 18 8.55228 18 8C18 7.44772 17.5523 7 17 7H7ZM7 11C6.44772 11 6 11.4477 6 12C6 12.5523 6.44772 13 7 13H11C11.5523 13 12 12.5523 12 12C12 11.4477 11.5523 11 11 11H7Z" fill="#121319"></path>
+                            </svg>
+                        </span>
+                        <div class="d-flex flex-column pe-0 pe-sm-10">
+                            <h5 class="mb-1 text-danger">信息</h5>
+                            <span class="text-danger">@Html.ValidationSummary()</span>
+                        </div>
+                        <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
+                            <i class="bi bi-x fs-1 text-danger"></i>
+                        </button>
+                    </div>
+                }
+
+                <div class="d-flex flex-center flex-column flex-column-fluid">
+                    <div class="w-lg-500px p-10 p-lg-15 mx-auto">
+
+                        <!-- Logo -->
+                        <div class="text-center mb-10">
+                            <h1 class="text-dark mb-3">
+                                <a href="#" class="py-9">
+                                    <img alt="Logo" src="@(loginLogo.IsNullOrEmpty() ? "~/assets/logo/logo.png" : loginLogo)" class="h-70px" />
+                                </a>
+                            </h1>
+                        </div>
+
+                        <!-- Tab 导航 -->
+                        @if (set.EnableSms || set.EnableMail)
+                        {
+                            <ul class="nav nav-pills nav-justified mb-5" id="loginTabs">
+                                @if (set.AllowLogin)
+                                {
+                                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#la_pwd" type="button">密码登录</button></li>
+                                }
+                                @if (set.EnableSms)
+                                {
+                                    <li class="nav-item"><button class="nav-link @(!set.AllowLogin ? "active" : "")" data-bs-toggle="pill" data-bs-target="#la_sms" type="button">手机验证码</button></li>
+                                }
+                                @if (set.EnableMail)
+                                {
+                                    <li class="nav-item"><button class="nav-link @(!set.AllowLogin && !set.EnableSms ? "active" : "")" data-bs-toggle="pill" data-bs-target="#la_mail" type="button">邮箱验证码</button></li>
+                                }
+                            </ul>
+                        }
+
+                        <div class="tab-content">
+                            <!-- 密码登录 -->
+                            <div id="la_pwd" class="tab-pane fade @(set.AllowLogin || !(set.EnableSms || set.EnableMail) ? "show active" : "")">
+                                <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" method="post">
+                                    <div class="fv-row mb-10">
+                                        <label class="form-label fs-6 fw-bolder text-dark">用户名</label>
+                                        <input class="form-control form-control-lg" type="text" name="username" autocomplete="off" placeholder="用户名" />
+                                    </div>
+                                    <div class="fv-row mb-10">
+                                        <label class="form-label fw-bolder text-dark fs-6 mb-0">密码</label>
+                                        <input class="form-control form-control-lg" type="password" name="password" autocomplete="off" placeholder="密码" />
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-lg btn-bg-info w-100 mb-5">
+                                            <span class="text-white">登 录</span>
+                                        </button>
+                                    </div>
+                                    @if (set.AllowRegister)
+                                    {
+                                        <div class="text-center">
+                                            <a href="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="btn btn-lg btn-bg-light btn-active-info w-100 mb-5">注册账号</a>
+                                        </div>
+                                    }
+                                </form>
+                            </div>
+                            <!-- 手机验证码 -->
+                            @if (set.EnableSms)
+                            {
+                                <div id="la_sms" class="tab-pane fade @(!set.AllowLogin ? "show active" : "")">
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label fs-6 fw-bolder text-dark">手机号</label>
+                                        <input class="form-control form-control-lg" type="text" id="la_sms_user" placeholder="手机号" />
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label fs-6 fw-bolder text-dark">验证码</label>
+                                        <div class="input-group">
+                                            <input class="form-control form-control-lg" type="text" id="la_sms_code" placeholder="验证码" />
+                                            <button type="button" class="btn btn-outline-secondary" id="la_sms_btn" onclick="laSendCode('Sms','la_sms_user','la_sms_btn')">获取验证码</button>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-lg btn-bg-info w-100 mb-5" onclick="laLoginByCode('la_sms_user','la_sms_code',1)">
+                                            <span class="text-white">登 录</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            <!-- 邮箱验证码 -->
+                            @if (set.EnableMail)
+                            {
+                                <div id="la_mail" class="tab-pane fade @(!set.AllowLogin && !set.EnableSms ? "show active" : "")">
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label fs-6 fw-bolder text-dark">邮箱地址</label>
+                                        <input class="form-control form-control-lg" type="email" id="la_mail_user" placeholder="邮箱地址" />
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <label class="form-label fs-6 fw-bolder text-dark">验证码</label>
+                                        <div class="input-group">
+                                            <input class="form-control form-control-lg" type="text" id="la_mail_code" placeholder="验证码" />
+                                            <button type="button" class="btn btn-outline-secondary" id="la_mail_btn" onclick="laSendCode('Mail','la_mail_user','la_mail_btn')">获取验证码</button>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="button" class="btn btn-lg btn-bg-info w-100 mb-5" onclick="laLoginByCode('la_mail_user','la_mail_code',2)">
+                                            <span class="text-white">登 录</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- OAuth 第三方登录 -->
+                        @if (set.OAuthItems != null && set.OAuthItems.Count > 0)
+                        {
+                            <div class="separator separator-content my-8">
+                                <span class="fs-7 text-gray-600">第三方登录</span>
+                            </div>
+                            <div class="d-flex justify-content-center flex-wrap gap-3">
+                                @foreach (var mi in set.OAuthItems)
+                                {
+                                    var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
+                                    var oauthUrl = "/Sso/Login/" + mi.Name;
+                                    if (!set.ReturnUrl.IsNullOrEmpty()) { oauthUrl += "?r=" + System.Web.HttpUtility.UrlEncode(set.ReturnUrl); }
+                                    var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
+                                    <a href="@oauthUrl" class="d-flex flex-column align-items-center text-decoration-none" title="@nickName">
+                                        @if (!logo.IsNullOrEmpty())
+                                        {
+                                            <img src="@logo" style="width:36px;height:36px;border-radius:50%;" alt="@nickName" />
+                                        }
+                                        else
+                                        {
+                                            <span class="d-flex align-items-center justify-content-center bg-secondary rounded-circle" style="width:36px;height:36px;font-weight:bold;">@nickName.Substring(0, 1).ToUpper()</span>
+                                        }
+                                        <span class="fs-8 text-muted mt-1" style="max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@nickName</span>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- 版权信息 -->
+                <div class="d-flex flex-center flex-column flex-wrap p-5 pb-3">
+                    <div class="d-flex flex-center fs-10 text-muted">
+                        @Html.Raw(config.GetCopyright())
+                        <a>&nbsp;&nbsp;VER: @SysConfig.Current.Version</a>
+                    </div>
+                    <div class="d-flex flex-center fw-bold fs-10">
+                        <a href="https://www.beianx.cn/" class="text-muted text-hover-primary">@config.Registration</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/js/scripts.bundle.js"></script>
+    <script>
+        var laReturnUrl = '@Html.Raw(set.ReturnUrl)';
+        async function laSendCode(channel, userId, btnId) {
+            var username = document.getElementById(userId).value;
+            if (!username) { alert(channel === 'Sms' ? '请输入手机号' : '请输入邮箱'); return; }
+            var btn = document.getElementById(btnId);
+            try {
+                var res = await fetch('/Auth/SendCode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channel: channel, username: username, action: 'login' })
+                });
+                var data = await res.json();
+                if (data.code !== 0) { alert(data.message || '发送失败'); return; }
+                var n = 60;
+                btn.disabled = true;
+                btn.textContent = n + 's';
+                var t = setInterval(function () {
+                    n--;
+                    if (n <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = '获取验证码'; }
+                    else btn.textContent = n + 's';
+                }, 1000);
+            } catch (e) { alert('发送失败，请稍后重试'); }
+        }
+        async function laLoginByCode(userId, codeId, cat) {
+            var username = document.getElementById(userId).value;
+            var code = document.getElementById(codeId).value;
+            if (!username || !code) { alert('请填写账号和验证码'); return; }
+            try {
+                var res = await fetch('/Auth/LoginByCode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username, password: code, loginCategory: cat })
+                });
+                var data = await res.json();
+                if (data.code === 0) window.location.href = laReturnUrl || '/Admin';
+                else alert(data.message || '登录失败');
+            } catch (e) { alert('登录失败，请稍后重试'); }
+        }
+    </script>
+</body>
+</html>
+
 <!DOCTYPE html>
 <html>
 

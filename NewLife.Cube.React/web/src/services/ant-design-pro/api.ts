@@ -105,3 +105,38 @@ export async function getLoginConfig(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
+/** 获取站点信息 GET /Auth/SiteInfo */
+export async function getSiteInfo(options?: { [key: string]: any }) {
+  return request<ResponseStructure<API.SiteInfo>>('/Auth/SiteInfo', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** 发送验证码 POST /Auth/SendCode */
+export async function sendCode(body: API.SendCodeParams, options?: { [key: string]: any }) {
+  return request<ResponseStructure<number>>('/Auth/SendCode', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 验证码登录 POST /Auth/LoginByCode */
+export async function loginByCode(body: API.LoginByCodeParams, options?: { [key: string]: any }) {
+  return request<ResponseStructure<API.LoginResult>>('/Auth/LoginByCode', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 注册新用户 POST /Admin/User/Register */
+export async function register(body: API.RegisterParams, options?: { [key: string]: any }) {
+  return request<ResponseStructure<void>>('/Admin/User/Register', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}

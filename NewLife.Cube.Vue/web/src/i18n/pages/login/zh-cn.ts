@@ -2,7 +2,8 @@
 export default {
 	label: {
 		one1: '用户名登录',
-		two2: '手机号登录',
+		two2: '手机验证码',
+		three3: '邮箱验证码',
 	},
 	link: {
 		one3: '第三方登录',
@@ -18,11 +19,26 @@ export default {
 		placeholder1: '请输入手机号',
 		placeholder2: '请输入验证码',
 		codeText: '获取验证码',
+		codeCountdown: '{s}秒后重新发送',
 		btnText: '登 录',
 		msgText: '* 温馨提示：建议使用谷歌、Microsoft Edge，版本 79.0.1072.62 及以上浏览器，360浏览器请使用极速模式',
 	},
+	email: {
+		placeholder1: '请输入邮箱地址',
+		placeholder2: '请输入验证码',
+		codeText: '获取验证码',
+		codeCountdown: '{s}秒后重新发送',
+		btnText: '登 录',
+	},
 	scan: {
 		text: '打开手机扫一扫，快速登录/注册',
+	},
+	oauth: {
+		dividerText: '第三方登录',
+	},
+	register: {
+		linkText: '立即注册',
+		noAccount: '还没有账号？',
 	},
 	signInText: '欢迎回来！',
 };

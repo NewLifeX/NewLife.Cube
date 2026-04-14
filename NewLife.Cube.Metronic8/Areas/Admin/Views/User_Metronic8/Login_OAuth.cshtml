@@ -16,29 +16,32 @@
         <span class="fs-6 w-125px text-gray-600">第三方登录</span>
     </div>
 
-    <div class="d-flex align-content-center justify-content-center">
+    <div class="d-flex align-content-center justify-content-center flex-wrap gap-2">
         @foreach (var mi in set.OAuthItems)
         {
             var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
-            var url = "Sso/Login?name=" + mi.Name;
+            var url = "/Sso/Login/" + mi.Name;
 
-            if (!set.ResourceUrl.IsNullOrEmpty())
+            if (!set.ReturnUrl.IsNullOrEmpty())
             {
-                url += "&r=" + HttpUtility.UrlEncode(set.ReturnUrl);
+                url += "?r=" + HttpUtility.UrlEncode(set.ReturnUrl);
             }
-            url = "/" + url;
             var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
 
-            <a href="@url" data-bs-toggle="tooltip" title="@nickName" class="mx-1">
+            <a href="@url" class="d-flex flex-column align-items-center mx-2 text-decoration-none" title="@nickName">
                 @if (!logo.IsNullOrEmpty())
                 {
-                    <img class="symbol-label" src="@logo" style="width:40px; height:40px;" />
+                    <img src="@logo" style="width:40px; height:40px; border-radius:50%;" alt="@nickName" />
                 }
                 else
                 {
-                    <i class="fas fa-dice-d6"></i>
+                    <span class="d-flex align-items-center justify-content-center bg-secondary rounded-circle" style="width:40px; height:40px; font-size:16px; font-weight:bold;">
+                        @nickName.Substring(0, 1).ToUpper()
+                    </span>
                 }
+                <span class="fs-8 text-muted mt-1" style="max-width:56px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">@nickName</span>
             </a>
         }
     </div>
 }
+

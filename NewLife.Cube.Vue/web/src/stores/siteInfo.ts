@@ -18,6 +18,8 @@ export const useSiteInfo = defineStore('siteInfo', {
 			registration: '',
 			loginTip: '',
 			logo: '',
+			loginLogo: '',
+			loginBg: '',
 		} as SiteInfo,
 		/** 登录配置 */
 		loginConfig: {
