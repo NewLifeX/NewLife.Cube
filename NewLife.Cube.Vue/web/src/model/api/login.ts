@@ -5,7 +5,7 @@ export interface OAuthProvider {
   nickName: string;
 }
 
-/** 登录配置（来自 /Admin/Cube/GetLoginConfig） */
+/** 登录配置（来自 /Auth/LoginConfig） */
 export interface LoginConfig {
   displayName: string;
   logo: string;
@@ -17,7 +17,7 @@ export interface LoginConfig {
   providers: OAuthProvider[];
 }
 
-/** 站点信息（来自 /Auth/SiteInfo） */
+/** 站点信息（来自 /Cube/SiteInfo） */
 export interface SiteInfo {
   displayName: string;
   copyright: string;

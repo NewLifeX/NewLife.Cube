@@ -62,13 +62,13 @@ export function useUserApi() {
 		},
 		getLoginConfig: () => {
 			return request<LoginConfig>({
-				url: '/Auth/Config',
+				url: '/Auth/LoginConfig',
 				method: 'get',
 			});
 		},
 		getSiteInfo: () => {
 			return request<SiteInfo>({
-				url: '/Auth/SiteInfo',
+				url: '/Cube/SiteInfo',
 				method: 'get',
 			});
 		},

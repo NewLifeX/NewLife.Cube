@@ -21,7 +21,10 @@ bld/
 /Bin3
 /BinSSO
 /BinTest/net7.0
-/packages
+# packages 公共包：源码提交，构建产物和依赖忽略
+packages/*/dist/
+packages/*/node_modules/
+packages/node_modules/
 *.log
 
 # 前端项目

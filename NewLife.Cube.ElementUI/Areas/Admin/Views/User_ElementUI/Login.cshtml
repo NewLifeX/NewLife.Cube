@@ -186,8 +186,8 @@
             },
             created() {
                 Promise.all([
-                    axios.get('/Auth/Config'),
-                    axios.get('/Auth/SiteInfo')
+                    axios.get('/Auth/LoginConfig'),
+                    axios.get('/Cube/SiteInfo')
                 ]).then(([configRes, siteRes]) => {
                     if (configRes.data && configRes.data.data) {
                         var c = configRes.data.data;

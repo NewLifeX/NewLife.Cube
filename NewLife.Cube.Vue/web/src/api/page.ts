@@ -86,19 +86,18 @@ export function usePageApi() {
 				}
 			});
 		},
-		upload: (data: { r: string, file: File }) => {
+		/** 上传文件，type 为实体路径前缀，options.id 为主记录主键（0=新增） */
+		upload: (type: string, file: File, options?: { id?: number; title?: string }) => {
 			const formData = new FormData();
-			formData.append('file', data.file);
+			formData.append('file', file);
 			return request<{ [k in string]: EmptyObjectType[] }>({
-				url: '/Admin/File/UploadLayui',
+				url: `${type}/UploadFile`,
 				method: 'post',
 				headers: {
 					"Content-Type": 'multipart/form-data'
 				},
 				data: formData,
-				params: {
-					r: 'user'
-				}
+				params: options,
 			});
 		},
 		/** 获取导出下载 URL */
@@ -119,21 +118,22 @@ export function usePageApi() {
 				data: formData
 			});
 		},
-		/** 批量删除选中项 */
+		/** 按 ID 批量删除，id 参数支持逗号分隔多个主键 */
 		deleteSelect: (type: string, keys: string[]) => {
 			return request({
-				url: `${type}/DeleteSelect`,
-				method: 'post',
+				url: type,
+				method: 'delete',
 				params: {
-					keys: keys.join(',')
+					id: keys.join(',')
 				}
 			});
 		},
-		/** 批量删除全部 */
-		deleteAll: (type: string) => {
+		/** 按条件删除，params 为搜索条件（至少需携带一个参数，否则后端拒绝） */
+		deleteAll: (type: string, params?: Record<string, unknown>) => {
 			return request({
-				url: `${type}/DeleteAll`,
-				method: 'post',
+				url: type,
+				method: 'delete',
+				params,
 			});
 		},
 		/** 获取图表数据 */

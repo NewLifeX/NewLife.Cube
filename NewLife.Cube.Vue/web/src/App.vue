@@ -27,7 +27,6 @@ const LockScreen = defineAsyncComponent(() => import('/@/layout/lockScreen/index
 const Setings = defineAsyncComponent(() => import('/@/layout/navBars/breadcrumb/setings.vue'));
 const CloseFull = defineAsyncComponent(() => import('/@/layout/navBars/breadcrumb/closeFull.vue'));
 const Upgrade = defineAsyncComponent(() => import('/@/layout/upgrade/index.vue'));
-const Sponsors = defineAsyncComponent(() => import('/@/layout/sponsors/index.vue'));
 
 // 定义变量内容
 const { messages, locale } = useI18n();

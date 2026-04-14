@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 import pinia from '/@/stores/index';
@@ -31,7 +31,7 @@ const { isRequestRoutes } = themeConfig.value;
  * @link 参考：https://next.router.vuejs.org/zh/api/#createrouter
  */
 export const router = createRouter({
-	history: createWebHashHistory(),
+	history: createWebHistory(),
 	/**
 	 * 说明：
 	 * 1、notFoundAndNoPower 默认添加 404、401 界面，防止一直提示 No match found for location with path 'xxx'

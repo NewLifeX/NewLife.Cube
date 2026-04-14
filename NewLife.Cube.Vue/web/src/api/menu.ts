@@ -1,6 +1,4 @@
 import { Menu } from '../model/api/menu';
-import { ApiResult } from '/@/model/api/common';
-import { GetMenuTree } from '/@/model/api/login';
 import request from '/@/utils/request';
 
 /**
@@ -16,22 +14,22 @@ import request from '/@/utils/request';
 export function useMenuApi() {
 	return {
 		getAdminMenu: (params?: object) => {
-			return request<GetMenuTree>({
-				url: '/admin/index/GetMenuTree',
+			return request<Menu[]>({
+				url: '/Cube/MenuTree',
 				method: 'get',
 				params,
 			});
 		},
 		getTestMenu: (params?: object) => {
-			return request<GetMenuTree>({
-				url: '/admin/index/GetMenuTree',
+			return request<Menu[]>({
+				url: '/Cube/MenuTree',
 				method: 'get',
 				params,
 			});
 		},
 		getMenu: (params?: object) => {
 			return request<Menu[]>({
-				url: '/Admin/Index/GetMenuTree',
+				url: '/Cube/MenuTree',
 				method: 'get',
 				params,
 			});

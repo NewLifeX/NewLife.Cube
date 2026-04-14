@@ -82,9 +82,9 @@ export async function removeRule(options?: { [key: string]: any }) {
   });
 }
 
-/** 查询菜单 GET /Admin/Index/GetMenuTree */
+/** 查询菜单 GET /Cube/MenuTree */
 export async function queryMenus(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.MenuInfo[]>>('/Admin/Index/GetMenuTree', {
+  return request<ResponseStructure<API.MenuInfo[]>>('/Cube/MenuTree', {
     method: 'GET',
     ...(options || {}),
   });
@@ -98,17 +98,17 @@ export async function queryIndex(options?: { [key: string]: any }) {
   });
 }
 
-/** 获取登录配置 GET /Auth/Config */
+/** 获取登录配置 GET /Auth/LoginConfig */
 export async function getLoginConfig(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.LoginConfig>>('/Auth/Config', {
+  return request<ResponseStructure<API.LoginConfig>>('/Auth/LoginConfig', {
     method: 'GET',
     ...(options || {}),
   });
 }
 
-/** 获取站点信息 GET /Auth/SiteInfo */
+/** 获取站点信息 GET /Cube/SiteInfo */
 export async function getSiteInfo(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.SiteInfo>>('/Auth/SiteInfo', {
+  return request<ResponseStructure<API.SiteInfo>>('/Cube/SiteInfo', {
     method: 'GET',
     ...(options || {}),
   });

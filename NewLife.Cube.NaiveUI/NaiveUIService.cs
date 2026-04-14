@@ -33,7 +33,7 @@ public static class NaiveUIService
 
         app.UseStaticFiles();
 
-        // SPA 回退路由：所有未匹配 endpoint 的请求回退到 index.html（Vue 使用 Hash 路由）
+        // SPA 回退路由：所有未匹配 endpoint 的请求回退到 index.html，支持 Vue History 路由模式
         app.MapFallbackToFile("index.html");
 
         return app;
