@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 	<div class="home-container layout-pd">
 		<el-row :gutter="15" class="home-card-one mb15">
 			<el-col
@@ -558,15 +558,20 @@ watch(
 			background: var(--el-color-white);
 			color: var(--el-text-color-primary);
 			border: 1px solid var(--next-border-color-light);
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 			&:hover {
-				box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
-				transition: all ease 0.3s;
+				box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+				transform: translateY(-2px);
+				.home-card-item-icon {
+					transform: scale(1.08) rotate(5deg);
+				}
 			}
 			&-icon {
 				width: 64px;
 				height: 64px;
 				border-radius: 100%;
 				flex-shrink: 1;
+				transition: transform 0.3s ease;
 				i {
 					color: var(--el-text-color-placeholder);
 				}
@@ -591,17 +596,13 @@ watch(
 					height: 111px;
 					display: flex;
 					.flex-warp-item-box {
-						margin: auto;
-						text-align: center;
-						color: var(--el-text-color-primary);
-						display: flex;
-						border-radius: 5px;
 						background: var(--next-bg-color);
 						cursor: pointer;
-						transition: all 0.3s ease;
+						transition: all 0.2s ease;
 						&:hover {
 							background: var(--el-color-primary-light-9);
-							transition: all 0.3s ease;
+							transform: translateY(-2px);
+							box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 						}
 					}
 				}

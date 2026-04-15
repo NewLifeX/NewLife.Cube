@@ -531,6 +531,36 @@ defineExpose({
 	:deep(.table-popconfirm .el-popconfirm__action .el-button:hover:not(.is-disabled)) {
 		transform: translateY(-1px);
 	}
+	// 分页控件：圆角、hover 高亮、当前页阴影
+	:deep(.el-pagination) {
+		.btn-prev,
+		.btn-next {
+			border-radius: 6px !important;
+			min-width: 32px;
+			transition: all .2s ease;
+			&:not(:disabled):hover {
+				background-color: var(--el-color-primary-light-9) !important;
+				color: var(--el-color-primary) !important;
+			}
+		}
+		.el-pager li {
+			border-radius: 6px !important;
+			transition: all .2s ease;
+			&:not(.is-disabled):not(.is-active):hover {
+				background-color: var(--el-color-primary-light-9) !important;
+				color: var(--el-color-primary) !important;
+			}
+			&.is-active {
+				border-radius: 6px !important;
+				font-weight: 600 !important;
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+			}
+		}
+		.el-select .el-input__wrapper,
+		.el-pagination__editor.el-input .el-input__wrapper {
+			border-radius: 6px;
+		}
+	}
 	.table-footer {
 		display: flex;
 		align-items: center;

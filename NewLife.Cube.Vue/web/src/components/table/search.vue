@@ -107,6 +107,12 @@ onMounted(() => {
 	border: 1px solid var(--el-border-color-lighter);
 	border-radius: 8px;
 	background: var(--el-fill-color-extra-light);
+	transition: box-shadow .2s ease;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	&:hover,
+	&:focus-within {
+		box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+	}
 	.table-form {
 		flex: 1;
 		:deep(.el-form) {
@@ -125,6 +131,18 @@ onMounted(() => {
 				flex-wrap: wrap;
 				gap: 10px;
 			}
+			:deep(.el-button) {
+				border-radius: 6px;
+				transition: all .2s ease;
+				&:hover:not(.is-disabled):not(.is-loading) {
+					transform: translateY(-1px);
+					box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+				}
+				&:focus-visible {
+					outline: 2px solid var(--el-color-primary);
+					outline-offset: 2px;
+				}
+			}
 		}
 		.table-form-btn-toggle {
 			white-space: nowrap;
@@ -132,6 +150,11 @@ onMounted(() => {
 			display: flex;
 			align-items: center;
 			color: var(--el-color-primary);
+			cursor: pointer;
+			transition: opacity .2s ease;
+			&:hover {
+				opacity: 0.8;
+			}
 		}
 	}
 	.table-search-empty {

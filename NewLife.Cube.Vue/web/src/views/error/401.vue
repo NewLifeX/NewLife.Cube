@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 	<div class="error layout-padding">
 		<div class="layout-padding-auto layout-padding-view">
 			<div class="error-flex">
@@ -54,23 +54,36 @@ const onSetAuth = () => {
 					animation-fill-mode: forwards;
 				}
 				.left-item-num {
-					color: var(--el-color-info);
-					font-size: 55px;
+					color: var(--el-color-primary);
+					font-size: 90px;
+					font-weight: 800;
+					letter-spacing: -3px;
+					line-height: 1;
 				}
 				.left-item-title {
-					font-size: 20px;
+					font-size: 22px;
+					font-weight: 600;
 					color: var(--el-text-color-primary);
 					margin: 15px 0 5px 0;
 					animation-delay: 0.1s;
 				}
 				.left-item-msg {
 					color: var(--el-text-color-secondary);
-					font-size: 12px;
+					font-size: 13px;
+					line-height: 1.5;
 					margin-bottom: 30px;
 					animation-delay: 0.2s;
 				}
 				.left-item-btn {
 					animation-delay: 0.2s;
+					margin-bottom: 30px;
+					:deep(.el-button) {
+						transition: all .2s ease;
+						&:hover:not(.is-disabled) {
+							transform: translateY(-2px);
+							box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+						}
+					}
 				}
 			}
 		}
@@ -80,9 +93,12 @@ const onSetAuth = () => {
 			animation-name: error-img;
 			animation-duration: 2s;
 			animation-fill-mode: forwards;
+			border-radius: 12px;
+			overflow: hidden;
 			img {
 				width: 100%;
 				height: 100%;
+				object-fit: cover;
 			}
 		}
 	}
