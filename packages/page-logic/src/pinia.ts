@@ -114,7 +114,7 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20): 
     getDetail: (id) => logic.getDetail(type, id),
     getExportUrl: (format) => logic.getExportUrl(type, format),
     importFile: (file) => logic.importFile(type, file),
-    uploadFile: (file, category) => logic.uploadFile(file, category),
+    uploadFile: (file, category) => logic.uploadFile(type, file, category ? { title: category } : undefined),
     loadChart: () => logic.loadChart(type),
   };
 }
