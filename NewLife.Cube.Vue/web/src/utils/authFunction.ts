@@ -8,7 +8,9 @@ import { judementSameArr } from '/@/utils/arrayOperation';
  */
 export function auth(value: string): boolean {
 	const stores = useUserInfo();
-	return stores.userInfos.authBtnList.some((v: string) => v === value);
+	const authBtnList = Array.isArray(stores.userInfos?.authBtnList) ? stores.userInfos.authBtnList : [];
+	if (authBtnList.some((v: string) => v.endsWith('#255'))) return true;
+	return authBtnList.some((v: string) => v === value);
 }
 
 /**
@@ -17,14 +19,11 @@ export function auth(value: string): boolean {
  * @returns 有权限，返回 `true`，反之则反
  */
 export function auths(value: Array<string>): boolean {
-	let flag = false;
 	const stores = useUserInfo();
-	stores.userInfos.authBtnList.map((val: string) => {
-		value.map((v: string) => {
-			if (val === v) flag = true;
-		});
-	});
-	return flag;
+	const authBtnList = Array.isArray(stores.userInfos?.authBtnList) ? stores.userInfos.authBtnList : [];
+	if (authBtnList.some((v: string) => v.endsWith('#255'))) return true;
+	if (!value || value.length === 0) return false;
+	return authBtnList.some((val: string) => value.some((v: string) => v === val));
 }
 
 /**
@@ -34,5 +33,7 @@ export function auths(value: Array<string>): boolean {
  */
 export function authAll(value: Array<string>): boolean {
 	const stores = useUserInfo();
-	return judementSameArr(value, stores.userInfos.authBtnList);
+	const authBtnList = Array.isArray(stores.userInfos?.authBtnList) ? stores.userInfos.authBtnList : [];
+	if (authBtnList.some((v: string) => v.endsWith('#255'))) return true;
+	return judementSameArr(value, authBtnList);
 }

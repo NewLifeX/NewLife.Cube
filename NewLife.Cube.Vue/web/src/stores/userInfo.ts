@@ -25,20 +25,30 @@ export const useUserInfo = defineStore('userInfo', {
 },
 	}),
 	actions: {
+		normalizeUserInfos(userInfos: any) {
+			const authBtnList = Array.isArray(userInfos?.authBtnList) ? userInfos.authBtnList.filter((item: any) => typeof item === 'string' && !!item) : [];
+			return {
+				...userInfos,
+				authBtnList,
+			};
+		},
 		async setUserInfos() {
 			// 存储用户信息到浏览器缓存
 			if (Session.get('userInfo')) {
-				this.userInfos = Session.get('userInfo');
+				this.userInfos = this.normalizeUserInfos(Session.get('userInfo'));
 			} else {
 				const userInfos: any = await this.getApiUserInfo();
-				this.userInfos = userInfos;
+				this.userInfos = this.normalizeUserInfos(userInfos);
 			}
 		},
 		// 模拟接口数据
 		async getApiUserInfo() {
 			return new Promise((resolve) => {
 				userApi.info().then(res => {		
-					let defaultBtnRoles: Array<string> = ['2#8', '2#255', ...res.data.permission.split(',')];
+					const permissionValue = (res as any)?.data?.permission;
+					const permissionText = typeof permissionValue === 'string' ? permissionValue : '';
+					const permissionList = permissionText ? permissionText.split(',').filter((item: string) => !!item) : [];
+					const defaultBtnRoles: Array<string> = Array.from(new Set(['2#8', '2#255', ...permissionList]));
 					// let defaultAuthBtnList: Array<string> = [];
 					const userInfos = {
 						userName: res.data.name,
@@ -53,7 +63,7 @@ export const useUserInfo = defineStore('userInfo', {
 						lastLoginIP: res.data.lastLoginIP,
 						lastLoginTime: res.data.lastLogin,
 					};
-					resolve(userInfos);
+					resolve(this.normalizeUserInfos(userInfos));
 				})
 			});
 		},

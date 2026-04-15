@@ -246,4 +246,30 @@
 	.el-loading-mask {
 		background-color: var(--next-bg-main) !important;
 	}
+
+	// table search
+	.table-search-container {
+		background: var(--el-color-white) !important;
+		border-color: var(--next-border-color-light) !important;
+		box-shadow: none !important;
+		&:hover,
+		&:focus-within {
+			box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22) !important;
+		}
+		:deep(.el-input__wrapper),
+		:deep(.el-select__wrapper),
+		:deep(.el-date-editor .el-input__wrapper),
+		:deep(.el-range-editor.el-input__wrapper) {
+			background: var(--next-bg-color) !important;
+			box-shadow: 0 0 0 1px var(--next-border-color-light) inset !important;
+		}
+		:deep(.el-input__inner),
+		:deep(.el-select__placeholder),
+		:deep(.el-range-input) {
+			color: var(--el-text-color-primary) !important;
+		}
+		:deep(.el-form-item__label) {
+			color: var(--el-text-color-primary) !important;
+		}
+	}
 }

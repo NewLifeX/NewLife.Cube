@@ -22,7 +22,8 @@ const { userInfos } = storeToRefs(stores);
 // 获取 pinia 中的用户权限
 const getUserAuthBtnList = computed(() => {
 	let flag = false;
-	userInfos.value.authBtnList.map((val: string) => {
+	const authBtnList = Array.isArray(userInfos.value?.authBtnList) ? userInfos.value.authBtnList : [];
+	authBtnList.map((val: string) => {
 		props.value.map((v) => {
 			if (val === v) flag = true;
 		});

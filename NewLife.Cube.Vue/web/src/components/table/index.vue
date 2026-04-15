@@ -2,25 +2,26 @@
 	<div class="table-container">
 		<Search :search="search" @search="onSearch" v-model="searchDataRef">
 			<template #handle-after>
-				<el-button v-auths="getBtnAuth(Auth.ADD)" size="default" type="primary" class="table-toolbar-btn" @click="onAdd">添加 </el-button>
-				<el-popconfirm v-if="state.selectlist.length > 0" title="确定删除选中项吗？" popper-class="table-popconfirm" @confirm="onBatchDel">
+				<el-button v-if="hasBtnAuth(Auth.ADD)" size="default" type="primary" class="table-toolbar-btn" @click="onAdd">添加 </el-button>
+				<el-popconfirm v-if="state.selectlist.length > 0 && hasBtnAuth(Auth.DEL)" title="确定删除选中项吗？" popper-class="table-popconfirm" @confirm="onBatchDel">
 					<template #reference>
-						<el-button v-auths="getBtnAuth(Auth.DEL)" size="default" type="danger" class="table-toolbar-btn">删除选中({{ state.selectlist.length }})</el-button>
+						<el-button size="default" type="danger" class="table-toolbar-btn">删除选中({{ state.selectlist.length }})</el-button>
 					</template>
 				</el-popconfirm>
-				<el-dropdown v-if="auths(getBtnAuth(Auth.EXPORT))" trigger="click" @command="onExport" class="table-toolbar-dropdown">
-					<el-button size="default" class="table-toolbar-btn">导出<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
+				<el-dropdown v-if="hasBtnAuth(Auth.EXPORT, Auth.IMPORT)" trigger="click" @command="onAdvancedCommand" class="table-toolbar-dropdown">
+					<el-button size="default" class="table-toolbar-btn">高级<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
 					<template #dropdown>
 						<el-dropdown-menu>
-							<el-dropdown-item command="Excel">导出 Excel</el-dropdown-item>
-							<el-dropdown-item command="Csv">导出 CSV</el-dropdown-item>
-							<el-dropdown-item command="Json">导出 JSON</el-dropdown-item>
-							<el-dropdown-item command="Xml">导出 XML</el-dropdown-item>
-							<el-dropdown-item command="ExcelTemplate" divided>导出模板</el-dropdown-item>
+							<el-dropdown-item v-if="hasBtnAuth(Auth.EXPORT)" command="ExportExcel">导出 Excel</el-dropdown-item>
+							<el-dropdown-item v-if="hasBtnAuth(Auth.EXPORT)" command="ExportCsv">导出 CSV</el-dropdown-item>
+							<el-dropdown-item v-if="hasBtnAuth(Auth.EXPORT)" command="ExportJson">导出 JSON</el-dropdown-item>
+							<el-dropdown-item v-if="hasBtnAuth(Auth.EXPORT)" command="ExportXml">导出 XML</el-dropdown-item>
+							<el-dropdown-item v-if="hasBtnAuth(Auth.EXPORT)" command="ExportTemplate" divided>导出模板</el-dropdown-item>
+							<el-dropdown-item v-if="hasBtnAuth(Auth.IMPORT)" command="Import" divided>导入</el-dropdown-item>
 						</el-dropdown-menu>
 					</template>
 				</el-dropdown>
-				<el-upload v-if="auths(getBtnAuth(Auth.IMPORT))" :show-file-list="false" :before-upload="onImportFile" accept=".xlsx,.xls,.csv,.json,.zip" class="table-toolbar-upload">
+				<el-upload ref="importUploadRef" v-if="hasBtnAuth(Auth.IMPORT)" :show-file-list="false" :before-upload="onImportFile" accept=".xlsx,.xls,.csv,.json,.zip" class="table-toolbar-upload !hidden">
 					<el-button size="default" class="table-toolbar-btn">导入</el-button>
 				</el-upload>
 			</template>
@@ -81,25 +82,26 @@
 						<template v-else-if="item.props?.storeKey">
 							{{ options[item.props.storeKey]?.find(option => option.value === scope.row[item.prop])?.label }}
 						</template>
-						<!-- <template v-else>
+						<template v-else>
 							{{ scope.row[item.prop] }}
-						</template> -->
+						</template>
 					</template>
 				</el-table-column>
 			</template>
 			<el-table-column
-				v-if="isOperate && tableColumns.length && auths(getBtnAuth(Auth.LOOK, Auth.SET, Auth.DEL))"
+				v-if="isOperate && tableColumns.length && hasBtnAuth(Auth.LOOK, Auth.SET, Auth.DEL)"
 				label="操作"
 				:width="operateWidth"
+				class-name="table-operate-column"
 				fixed="right">
 				<template v-slot="scope">
 					<div class="table-action-group">
 						<slot name="table-handle-before" :scope="scope"></slot>
-						<el-button v-auths="getBtnAuth(Auth.LOOK)" text type="info" class="table-action-btn is-info" @click="onDetail(scope.row)">查看</el-button>
-						<el-button v-auths="getBtnAuth(Auth.SET)" text type="primary" class="table-action-btn is-primary" @click="onEdit(scope.row)">修改</el-button>
-						<el-popconfirm title="确定删除吗？" popper-class="table-popconfirm" @confirm="onDel(scope.row)">
+						<el-button v-if="hasBtnAuth(Auth.LOOK)" text type="info" class="table-action-btn is-info" @click="onDetail(scope.row)">查看</el-button>
+						<el-button v-if="hasBtnAuth(Auth.SET)" text type="primary" class="table-action-btn is-primary" @click="onEdit(scope.row)">编辑</el-button>
+						<el-popconfirm v-if="hasBtnAuth(Auth.DEL)" title="确定删除吗？" popper-class="table-popconfirm" @confirm="onDel(scope.row)">
 							<template #reference>
-								<el-button v-auths="getBtnAuth(Auth.DEL)" text type="danger" class="table-action-btn is-danger">删除</el-button>
+								<el-button text type="danger" class="table-action-btn is-danger">删除</el-button>
 							</template>
 						</el-popconfirm>
 						<slot name="table-handle-after" :scope="scope"></slot>
@@ -181,7 +183,7 @@
 </template>
 
 <script setup lang="ts" name="netxTable">
-import { reactive, computed, nextTick, watch, Ref } from 'vue';
+import { reactive, computed, nextTick, watch, ref, Ref } from 'vue';
 import { ColumnSortHandler, ColumnSortParams, ElMessage } from 'element-plus';
 import { ArrowDown } from '@element-plus/icons-vue';
 import '/@/theme/tableTool.scss';
@@ -218,6 +220,7 @@ export interface Props {
 	searchData: EmptyObjectType;
 }
 const imgBaseUrl = import.meta.env.VITE_IMG_BASE_URL
+const importUploadRef = ref<any>();
 // 定义父组件传过来的值
 const props = withDefaults(defineProps<Props>(), {
 	total: 0, // 列表总数
@@ -254,7 +257,8 @@ const resolveUrl = (url: string, row: EmptyObjectType): string => {
 const operateWidth = computed(() => {
 	if (props.operateWidth)
 		return props.operateWidth
-	return (auths(getBtnAuth(Auth.LOOK)) ? 55 : 0) + (auths(getBtnAuth(Auth.SET)) ? 55 : 0) + (auths(getBtnAuth(Auth.DEL)) ? 55 : 0)
+	const btnCount = Number(hasBtnAuth(Auth.LOOK)) + Number(hasBtnAuth(Auth.SET)) + Number(hasBtnAuth(Auth.DEL));
+	return btnCount > 0 ? Math.max(btnCount * 68 + 8, 120) : 120
 })
 
 // 定义子组件向父组件传值/事件
@@ -345,6 +349,31 @@ const onImportFile = (file: File) => {
 	emit('import', file);
 	return false; // 阻止 el-upload 默认上传
 }
+
+const onAdvancedCommand = (command: string) => {
+	switch (command) {
+		case 'ExportExcel':
+			onExport('Excel');
+			break;
+		case 'ExportCsv':
+			onExport('Csv');
+			break;
+		case 'ExportJson':
+			onExport('Json');
+			break;
+		case 'ExportXml':
+			onExport('Xml');
+			break;
+		case 'ExportTemplate':
+			onExport('ExcelTemplate');
+			break;
+		case 'Import': {
+			const uploadEl = importUploadRef.value?.$el?.querySelector?.('input[type="file"]') as HTMLInputElement | null;
+			uploadEl?.click();
+			break;
+		}
+	}
+}
 // 单元格 AJAX 动作
 const onCellAction = (item: TableColumn, row: EmptyObjectType) => {
 	const url = resolveUrl(item.url!, row);
@@ -404,6 +433,12 @@ const getBtnAuth = (...auths: Auth[]) => {
 		return [props.authId + '#' + Auth.ALL, ...auths.map(val => props.authId + '#' + val)]
 	}
 	return []
+}
+
+const hasBtnAuth = (...btnAuths: Auth[]) => {
+	if (auths(getBtnAuth(...btnAuths))) return true;
+	if (props.authId) return false;
+	return auths(['2#255']);
 }
 
 // 统计行
@@ -509,6 +544,11 @@ defineExpose({
 	}
 	:deep(.table-action-btn.el-button.is-text.is-disabled) {
 		opacity: .65;
+	}
+	:deep(.table-operate-column .cell) {
+		overflow: visible;
+		text-overflow: clip;
+		white-space: nowrap;
 	}
 	:deep(.table-popconfirm) {
 		max-width: 260px;

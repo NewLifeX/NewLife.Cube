@@ -181,7 +181,7 @@ export function getBackEndControlRoutes() {
       this.component = component
     },
     render () {
-      return this.component ? h(this.component) : null
+			return this.component ? h(this.component, { ...this.$attrs }) : null
     },
   } as Component
 }
