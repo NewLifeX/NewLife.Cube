@@ -329,6 +329,7 @@ providePage && (providePage.handle.reload = getTableData)
 				border-radius: 8px;
 				border: 1px solid var(--el-border-color-lighter);
 			}
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 		}
 		.table-demo {
 			flex: 1;
@@ -337,6 +338,7 @@ providePage && (providePage.handle.reload = getTableData)
 			border: 1px solid var(--el-border-color-lighter);
 			border-radius: 8px;
 			padding: 12px;
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 		}
 	}
 }

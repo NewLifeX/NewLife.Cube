@@ -235,6 +235,11 @@ onMounted(() => {
 			width: 25px;
 			height: 25px;
 			border-radius: 100%;
+			box-shadow: 0 0 0 2px var(--el-color-primary-light-7);
+			transition: box-shadow 0.2s ease;
+			&:hover {
+				box-shadow: 0 0 0 3px var(--el-color-primary-light-5);
+			}
 		}
 	}
 	&-icon {
@@ -245,6 +250,7 @@ onMounted(() => {
 		line-height: 50px;
 		display: flex;
 		align-items: center;
+		transition: background 0.2s ease, color 0.2s ease;
 		&:hover {
 			background: var(--next-color-user-hover);
 			i {

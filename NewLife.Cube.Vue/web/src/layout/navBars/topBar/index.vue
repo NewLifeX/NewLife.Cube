@@ -103,5 +103,6 @@ onUnmounted(() => {
 	align-items: center;
 	background: var(--next-bg-topBar);
 	border-bottom: 1px solid var(--next-border-color-light);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 </style>

@@ -84,6 +84,7 @@
 .el-menu-item,
 .el-sub-menu__title {
 	color: var(--next-bg-menuBarColor);
+	transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
 }
 // 修复点击左侧菜单折叠再展开时，宽度不跟随问题
 .el-menu--collapse {
@@ -109,6 +110,10 @@
 .el-sub-menu.is-active .el-sub-menu__title,
 .el-sub-menu:not(.is-opened):hover .el-sub-menu__title {
 	@extend .el-menu-hover-bg-color;
+}
+// 激活的叶子菜单项 — 左侧指示线
+.el-menu-item.is-active {
+	box-shadow: inset 3px 0 0 0 var(--el-color-primary) !important;
 }
 .el-menu-item:hover {
 	@extend .el-menu-hover-bg-color;

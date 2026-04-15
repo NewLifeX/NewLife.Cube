@@ -1,4 +1,4 @@
-<template>
+﻿<template>
 	<div class="login-container">
 		<div class="login-card-wrap">
 			<el-card class="login-card" shadow="never">
@@ -110,11 +110,14 @@ onMounted(async () => {
 	align-items: center;
 	padding: 32px 16px 20px;
 	background: linear-gradient(135deg, #165dff 0%, #722ed1 100%);
+	background-size: 200% 200%;
+	animation: gradient-shift 10s ease infinite;
 
 	.login-card-wrap {
 		width: 100%;
 		display: flex;
 		justify-content: center;
+		animation: card-fade-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	.login-card {
@@ -269,6 +272,15 @@ onMounted(async () => {
 			}
 		}
 	}
+}
+
+@keyframes gradient-shift {
+	0%, 100% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+}
+@keyframes card-fade-in {
+	from { opacity: 0; transform: translateY(18px); }
+	to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 576px) {
