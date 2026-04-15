@@ -1,4 +1,5 @@
 ﻿using NewLife.Cube;
+using NewLife.Cube.ArcoVue;
 using NewLife.Cube.React;
 using NewLife.Cube.Services;
 using NewLife.Cube.Swagger;
@@ -44,8 +45,9 @@ app.MapControllerRoute(name: "default", pattern: "{controller=Index}/{action=Ind
 app.MapControllers();
 
 // UseVue 必须在 MapControllers 之后，确保 API endpoint 优先匹配，SPA 回退兜底
-app.UseVue(builder.Environment);
+//app.UseVue(builder.Environment);
 //app.UseReact(builder.Environment);
+app.UseArcoVue(builder.Environment);
 
 app.RegisterService("CubeDemo", null, builder.Environment.EnvironmentName, "/cube/info");
 

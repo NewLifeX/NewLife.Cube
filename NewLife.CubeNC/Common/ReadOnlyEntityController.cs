@@ -991,6 +991,47 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     #endregion
 
     #region 列表字段和表单字段
+    /// <summary>获取页面元数据。包含页面设置以及列表/表单/搜索字段</summary>
+    /// <returns></returns>
+    [AllowAnonymous]
+    public virtual ActionResult GetPage()
+    {
+        var setting = new
+        {
+            PageSetting.NavView,
+            PageSetting.EnableNavbar,
+            PageSetting.EnableToolbar,
+            PageSetting.EnableAdd,
+            PageSetting.EnableKey,
+            PageSetting.EnableSelect,
+            PageSetting.EnableFooter,
+            PageSetting.IsReadOnly,
+            PageSetting.EnableTableDoubleClick,
+            PageSetting.OrderByKey,
+            PageSetting.DoubleDelete,
+        };
+
+        var list = OnGetFields(ViewKinds.List, null);
+        var addForm = OnGetFields(ViewKinds.AddForm, null);
+        var editForm = OnGetFields(ViewKinds.EditForm, null);
+        var detail = OnGetFields(ViewKinds.Detail, null);
+        var search = OnGetFields(ViewKinds.Search, null);
+
+        var data = new
+        {
+            setting,
+            list,
+            addForm,
+            editForm,
+            detail,
+            search,
+        };
+
+        Object rs = new { code = 0, message = "", data };
+
+        return new JsonResult(rs);
+    }
+
     /// <summary>获取字段信息。支持用户重载并根据上下文定制界面</summary>
     /// <param name="kind">字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search</param>
     /// <returns></returns>

@@ -494,60 +494,50 @@ public ActionResult Edit(Student model)
 
 ---
 
-## 36.8 字段元数据接口
+## 36.8 页面元数据接口
 
-### GetFields 接口
+### GetPage 接口
 
+```http
+GET /api/student/getpage
 ```
-GET /api/student/getfields?kind=1
-```
 
-**kind 参数**
-| 值 | 说明 |
-|----|------|
-| 1 | List - 列表字段 |
-| 2 | Detail - 详情字段 |
-| 3 | AddForm - 添加表单字段 |
-| 4 | EditForm - 编辑表单字段 |
-| 5 | Search - 搜索字段 |
+`GetPage` 一次返回页面渲染所需的 `setting` 与字段集合（`list/addForm/editForm/detail/search`）聚合信息。
 
-**响应**
+#### 响应
+
 ```json
 {
     "code": 0,
-    "data": [
-        {
-            "name": "Id",
-            "displayName": "编号",
-            "type": "Int32",
-            "nullable": false,
-            "primaryKey": true
+    "data": {
+        "setting": {
+            "enableNavbar": true,
+            "enableToolbar": true,
+            "enableAdd": true,
+            "enableKey": true,
+            "enableSelect": true,
+            "enableFooter": true,
+            "isReadOnly": false,
+            "enableTableDoubleClick": true,
+            "orderByKey": true,
+            "doubleDelete": true,
+            "navView": ""
         },
-        {
-            "name": "Name",
-            "displayName": "姓名",
-            "type": "String",
-            "nullable": false,
-            "length": 50
-        },
-        {
-            "name": "ClassId",
-            "displayName": "班级",
-            "type": "Int32",
-            "dataSource": {
-                "1": "一年级1班",
-                "2": "一年级2班"
-            }
-        }
-    ]
+        "list": [],
+        "addForm": [],
+        "editForm": [],
+        "detail": [],
+        "search": []
+    }
 }
 ```
 
 ### 前端动态渲染
 
 ```javascript
-// 根据字段元数据动态生成表单
-const fields = await getFields('EditForm');
+// 根据页面元数据动态生成表单
+const page = await getPage();
+const fields = page.data.editForm;
 
 fields.forEach(field => {
     if (field.dataSource) {
