@@ -1,13 +1,13 @@
 <template>
 	<el-form size="large" class="login-content-form">
-		<el-form-item class="login-animation1">
+		<el-form-item>
 			<el-input text :placeholder="$t('message.account.accountPlaceholder1')" v-model="state.ruleForm.userName" clearable autocomplete="off">
 				<template #prefix>
 					<el-icon class="el-input__icon"><ele-User /></el-icon>
 				</template>
 			</el-input>
 		</el-form-item>
-		<el-form-item class="login-animation2">
+		<el-form-item>
 			<el-input
 				:type="state.isShowPassword ? 'text' : 'password'"
 				:placeholder="$t('message.account.accountPlaceholder2')"
@@ -27,12 +27,12 @@
 				</template>
 			</el-input>
 		</el-form-item>
-		<el-form-item class="login-animation3">
+		<el-form-item>
 			<el-button type="primary" class="login-content-submit" round v-waves @click="onSignIn" :loading="state.loading.signIn">
 				<span>{{ $t('message.account.accountBtnText') }}</span>
 			</el-button>
 		</el-form-item>
-		<el-form-item class="login-animation4">
+		<el-form-item>
 			<div class="login-action-links">
 				<el-link class="login-action-links-left" type="primary" :underline="false" @click="router.push('/forgot-password')">{{ $t('message.account.forgotPassword') }}</el-link>
 				<div v-if="siteStore.loginConfig.allowRegister" class="login-action-links-right">
@@ -138,15 +138,6 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 <style scoped lang="scss">
 .login-content-form {
 	margin-top: 20px;
-	@for $i from 1 through 4 {
-		.login-animation#{$i} {
-			opacity: 0;
-			animation-name: error-num;
-			animation-duration: 0.5s;
-			animation-fill-mode: forwards;
-			animation-delay: calc($i/10) + s;
-		}
-	}
 	.login-content-password {
 		display: inline-block;
 		width: 20px;
@@ -155,17 +146,8 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 			color: #909399;
 		}
 	}
-	.login-content-code {
-		width: 100%;
-		padding: 0;
-		font-weight: bold;
-		letter-spacing: 5px;
-	}
 	.login-content-submit {
 		width: 100%;
-		letter-spacing: 2px;
-		font-weight: 300;
-		margin-top: 15px;
 	}
 	.login-action-links {
 		width: 100%;

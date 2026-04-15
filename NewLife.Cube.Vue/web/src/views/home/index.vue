@@ -12,7 +12,7 @@
 				:class="{ 'home-media home-media-lg': k > 1, 'home-media-sm': k === 1 }"
 			>
 				<div class="home-card-item flex">
-					<div class="flex-margin flex w100" :class="` home-one-animation${k}`">
+					<div class="flex-margin flex w100">
 						<div class="flex-auto">
 							<span class="font30">{{ v.num1 }}</span>
 							<span class="ml5 font16" :style="{ color: v.color1 }">{{ v.num2 }}%</span>
@@ -44,7 +44,7 @@
 					<div class="home-monitor">
 						<div class="flex-warp">
 							<div class="flex-warp-item" v-for="(v, k) in state.homeThree" :key="k">
-								<div class="flex-warp-item-box" :class="`home-animation${k}`">
+								<div class="flex-warp-item-box">
 									<div class="flex-margin">
 										<i :class="v.icon" :style="{ color: v.iconColor }"></i>
 										<span class="pl5">{{ v.label }}</span>
@@ -543,7 +543,6 @@ watch(
 </script>
 
 <style scoped lang="scss">
-$homeNavLengh: 8;
 .home-container {
 	overflow: hidden;
 	.home-card-one,
@@ -552,7 +551,7 @@ $homeNavLengh: 8;
 		.home-card-item {
 			width: 100%;
 			height: 130px;
-			border-radius: 4px;
+			border-radius: 8px;
 			transition: all ease 0.3s;
 			padding: 20px;
 			overflow: hidden;
@@ -560,12 +559,12 @@ $homeNavLengh: 8;
 			color: var(--el-text-color-primary);
 			border: 1px solid var(--next-border-color-light);
 			&:hover {
-				box-shadow: 0 2px 12px var(--next-color-dark-hover);
+				box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
 				transition: all ease 0.3s;
 			}
 			&-icon {
-				width: 70px;
-				height: 70px;
+				width: 64px;
+				height: 64px;
 				border-radius: 100%;
 				flex-shrink: 1;
 				i {
@@ -576,17 +575,6 @@ $homeNavLengh: 8;
 				font-size: 15px;
 				font-weight: bold;
 				height: 30px;
-			}
-		}
-	}
-	.home-card-one {
-		@for $i from 0 through 3 {
-			.home-one-animation#{$i} {
-				opacity: 0;
-				animation-name: error-num;
-				animation-duration: 0.5s;
-				animation-fill-mode: forwards;
-				animation-delay: calc($i/4) + s;
 			}
 		}
 	}
@@ -614,15 +602,6 @@ $homeNavLengh: 8;
 						&:hover {
 							background: var(--el-color-primary-light-9);
 							transition: all 0.3s ease;
-						}
-					}
-					@for $i from 0 through $homeNavLengh {
-						.home-animation#{$i} {
-							opacity: 0;
-							animation-name: error-num;
-							animation-duration: 0.5s;
-							animation-fill-mode: forwards;
-							animation-delay: calc($i/10) + s;
 						}
 					}
 				}

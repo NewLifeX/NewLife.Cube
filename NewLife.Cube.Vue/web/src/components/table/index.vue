@@ -2,14 +2,14 @@
 	<div class="table-container">
 		<Search :search="search" @search="onSearch" v-model="searchDataRef">
 			<template #handle-after>
-				<el-button v-auths="getBtnAuth(Auth.ADD)" size="default" type="primary" @click="onAdd">添加 </el-button>
-				<el-popconfirm v-if="state.selectlist.length > 0" title="确定删除选中项吗？" @confirm="onBatchDel">
+				<el-button v-auths="getBtnAuth(Auth.ADD)" size="default" type="primary" class="table-toolbar-btn" @click="onAdd">添加 </el-button>
+				<el-popconfirm v-if="state.selectlist.length > 0" title="确定删除选中项吗？" popper-class="table-popconfirm" @confirm="onBatchDel">
 					<template #reference>
-						<el-button v-auths="getBtnAuth(Auth.DEL)" size="default" type="danger">删除选中({{ state.selectlist.length }})</el-button>
+						<el-button v-auths="getBtnAuth(Auth.DEL)" size="default" type="danger" class="table-toolbar-btn">删除选中({{ state.selectlist.length }})</el-button>
 					</template>
 				</el-popconfirm>
-				<el-dropdown v-if="auths(getBtnAuth(Auth.EXPORT))" trigger="click" @command="onExport" class="ml-2.5">
-					<el-button size="default">导出<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
+				<el-dropdown v-if="auths(getBtnAuth(Auth.EXPORT))" trigger="click" @command="onExport" class="table-toolbar-dropdown">
+					<el-button size="default" class="table-toolbar-btn">导出<el-icon class="el-icon--right"><ArrowDown /></el-icon></el-button>
 					<template #dropdown>
 						<el-dropdown-menu>
 							<el-dropdown-item command="Excel">导出 Excel</el-dropdown-item>
@@ -20,8 +20,8 @@
 						</el-dropdown-menu>
 					</template>
 				</el-dropdown>
-				<el-upload v-if="auths(getBtnAuth(Auth.IMPORT))" :show-file-list="false" :before-upload="onImportFile" accept=".xlsx,.xls,.csv,.json,.zip" class="ml-2.5 inline-block">
-					<el-button size="default">导入</el-button>
+				<el-upload v-if="auths(getBtnAuth(Auth.IMPORT))" :show-file-list="false" :before-upload="onImportFile" accept=".xlsx,.xls,.csv,.json,.zip" class="table-toolbar-upload">
+					<el-button size="default" class="table-toolbar-btn">导入</el-button>
 				</el-upload>
 			</template>
 			<template v-for="item in search.filter(item => item.slot)" :key="item.prop" #[`${item.slot!}`]="data">
@@ -33,6 +33,8 @@
 			style="width: 100%"
 			row-key="id"
 			stripe
+			:class="{ 'table-layout-auto': tableLayout === 'auto' }"
+			:table-layout="tableLayout"
 			:data="data"
 			:border="setBorder"
 			v-bind="$attrs"
@@ -48,6 +50,7 @@
 					show-overflow-tooltip
 					:prop="item.prop"
 					:width="item.width"
+					:min-width="item.minWidth || (tableLayout === 'auto' ? 80 : undefined)"
 					:label="item.label"
 					:sortable="item.sort ? 'custom' : false"
 					v-if="(item.if === undefined || item.if) && (item.isCheck === undefined || item.isCheck)"
@@ -90,15 +93,17 @@
 				:width="operateWidth"
 				fixed="right">
 				<template v-slot="scope">
-					<slot name="table-handle-before" :scope="scope"></slot>
-					<el-button v-auths="getBtnAuth(Auth.LOOK)" text type="info" @click="onDetail(scope.row)">查看</el-button>
-					<el-button v-auths="getBtnAuth(Auth.SET)" text type="primary" @click="onEdit(scope.row)">修改</el-button>
-					<el-popconfirm title="确定删除吗？" @confirm="onDel(scope.row)">
-						<template #reference>
-							<el-button v-auths="getBtnAuth(Auth.DEL)" text type="danger">删除</el-button>
-						</template>
-					</el-popconfirm>
-					<slot name="table-handle-after" :scope="scope"></slot>
+					<div class="table-action-group">
+						<slot name="table-handle-before" :scope="scope"></slot>
+						<el-button v-auths="getBtnAuth(Auth.LOOK)" text type="info" class="table-action-btn is-info" @click="onDetail(scope.row)">查看</el-button>
+						<el-button v-auths="getBtnAuth(Auth.SET)" text type="primary" class="table-action-btn is-primary" @click="onEdit(scope.row)">修改</el-button>
+						<el-popconfirm title="确定删除吗？" popper-class="table-popconfirm" @confirm="onDel(scope.row)">
+							<template #reference>
+								<el-button v-auths="getBtnAuth(Auth.DEL)" text type="danger" class="table-action-btn is-danger">删除</el-button>
+							</template>
+						</el-popconfirm>
+						<slot name="table-handle-after" :scope="scope"></slot>
+					</div>
 				</template>
 			</el-table-column>
 			<template #empty>
@@ -201,6 +206,7 @@ export interface Props {
   isSerialNo?: boolean;
   isSelection?: boolean;
   isOperate?: boolean;
+	tableLayout?: 'fixed' | 'auto';
 	operateWidth?: number;
 	authId?: number;
 	data: EmptyObjectType[];
@@ -220,6 +226,7 @@ const props = withDefaults(defineProps<Props>(), {
 	isSerialNo: false, // 是否显示表格序号
 	isSelection: true, // 是否显示表格多选
 	isOperate: true, // 是否显示表格操作栏
+	tableLayout: 'fixed', // fixed=稳定布局；auto=按内容自适应
 	data: () => [],
 	stat: null,
 	columns: () => [],
@@ -421,24 +428,167 @@ defineExpose({
 .table-container {
 	display: flex;
 	flex-direction: column;
+	gap: 12px;
 	.el-table {
 		flex: 1;
+		border-radius: 6px;
+		overflow: hidden;
+	}
+	:deep(.el-table .el-table__header-wrapper th.el-table__cell) {
+		background: var(--el-fill-color-light);
+		font-weight: 600;
+	}
+	:deep(.el-table th.el-table__cell > .cell) {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	:deep(.el-table .el-table__cell) {
+		padding: 10px 0;
+	}
+	:deep(.el-table td.el-table__cell > .cell) {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	:deep(.table-toolbar-btn.el-button) {
+		border-radius: 8px;
+		padding-left: 12px;
+		padding-right: 12px;
+		transition: all .2s ease;
+	}
+	:deep(.table-toolbar-btn.el-button:hover:not(.is-disabled)) {
+		transform: translateY(-1px);
+	}
+	:deep(.table-toolbar-btn.el-button.is-disabled) {
+		opacity: .65;
+	}
+	:deep(.table-toolbar-btn.el-button.is-loading) {
+		opacity: .9;
+	}
+	.table-toolbar-dropdown,
+	.table-toolbar-upload {
+		display: inline-flex;
+		margin-left: 10px;
+	}
+	.table-action-group {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+	}
+	:deep(.table-action-btn.el-button.is-text) {
+		margin-left: 0;
+		padding: 2px 8px;
+		line-height: 18px;
+		border-radius: 999px;
+		font-size: 12px;
+		font-weight: 500;
+		transition: all .2s ease;
+	}
+	:deep(.table-action-btn.is-info.el-button.is-text) {
+		background: var(--el-fill-color-light);
+	}
+	:deep(.table-action-btn.is-info.el-button.is-text:hover:not(.is-disabled)) {
+		background: var(--el-fill-color);
+	}
+	:deep(.table-action-btn.is-primary.el-button.is-text) {
+		background: var(--el-color-primary-light-9);
+	}
+	:deep(.table-action-btn.is-primary.el-button.is-text:hover:not(.is-disabled)) {
+		background: var(--el-color-primary-light-8);
+	}
+	:deep(.table-action-btn.is-danger.el-button.is-text) {
+		background: var(--el-color-danger-light-9);
+	}
+	:deep(.table-action-btn.is-danger.el-button.is-text:hover:not(.is-disabled)) {
+		background: var(--el-color-danger-light-8);
+	}
+	:deep(.table-action-btn.el-button.is-text:focus-visible) {
+		outline: none;
+		box-shadow: 0 0 0 2px var(--el-color-primary-light-9);
+	}
+	:deep(.table-action-btn.el-button.is-text.is-disabled) {
+		opacity: .65;
+	}
+	:deep(.table-popconfirm) {
+		max-width: 260px;
+	}
+	:deep(.table-popconfirm .el-popconfirm__main) {
+		line-height: 1.5;
+		color: var(--el-text-color-primary);
+	}
+	:deep(.table-popconfirm .el-popconfirm__action) {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+		margin-top: 10px;
+	}
+	:deep(.table-popconfirm .el-popconfirm__action .el-button) {
+		border-radius: 8px;
+		min-width: 66px;
+		transition: all .2s ease;
+	}
+	:deep(.table-popconfirm .el-popconfirm__action .el-button:hover:not(.is-disabled)) {
+		transform: translateY(-1px);
 	}
 	.table-footer {
 		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		min-height: 32px;
+		padding-bottom: 2px;
+		gap: 10px;
 		.table-footer-tool {
 			flex: 1;
 			display: flex;
 			align-items: center;
 			justify-content: flex-end;
+			flex-wrap: wrap;
 			i {
 				margin-right: 10px;
 				cursor: pointer;
 				color: var(--el-text-color-regular);
+				transition: color 0.2s ease;
+				&:hover {
+					color: var(--el-color-primary);
+				}
 				&:last-of-type {
 					margin-right: 0;
 				}
 			}
+		}
+	}
+}
+
+@media screen and (max-width: 992px) {
+	.table-container {
+		.table-footer {
+			flex-direction: column;
+			align-items: flex-start;
+			:deep(.el-pagination) {
+				width: 100%;
+				justify-content: flex-start;
+			}
+			.table-footer-tool {
+				width: 100%;
+				justify-content: flex-start;
+			}
+		}
+	}
+}
+
+@media screen and (max-width: 576px) {
+	.table-container {
+		:deep(.table-toolbar-btn.el-button) {
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+		.table-toolbar-dropdown,
+		.table-toolbar-upload {
+			margin-left: 0;
+		}
+		.table-action-group {
+			gap: 2px;
 		}
 	}
 }

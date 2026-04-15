@@ -32,7 +32,7 @@
           </el-row>
         </el-form>
       </div>
-      <div class="p-4 border-t text-right" v-if="handleVisible && !readonly" :style="{textAlign: handlePosition || (wrapper === 'div' ? 'center' : 'right')}">
+      <div class="p-4 border-t text-right form-handle" v-if="handleVisible && !readonly" :style="{textAlign: handlePosition || (wrapper === 'div' ? 'center' : 'right')}">
         <!-- <el-button @click="back" v-if="tabs.length && activeName !== tabs[0]">上一步</el-button>
         <el-button @click="next" v-if="tabs.length && activeName !== tabs[tabs.length - 1]">下一步</el-button> -->
         <el-button v-if="cancelVisible && wrapper !== 'div'" @click="cancel">取消</el-button>
@@ -167,15 +167,95 @@ defineExpose({
   :deep(.el-select) {
     width: 100%;
   }
+
+  :deep(.el-input__wrapper),
+  :deep(.el-textarea__inner),
+  :deep(.el-select .el-input__wrapper),
+  :deep(.el-date-editor .el-input__wrapper) {
+    border-radius: 6px;
+    transition: box-shadow .2s ease, border-color .2s ease;
+  }
+
+  :deep(.el-input.is-focus .el-input__wrapper),
+  :deep(.el-textarea .el-textarea__inner:focus),
+  :deep(.el-select .el-input.is-focus .el-input__wrapper),
+  :deep(.el-date-editor.is-active .el-input__wrapper) {
+    box-shadow: 0 0 0 1px var(--el-color-primary), 0 0 0 3px var(--el-color-primary-light-9);
+  }
+}
+
+:deep(.table-form .el-form-item) {
+  margin-bottom: 14px;
+}
+
+:deep(.table-form .el-form-item__label) {
+  color: var(--el-text-color-regular);
+  font-weight: 500;
+}
+
+:deep(.table-form .el-form-item__error) {
+  line-height: 1.2;
+  padding-top: 2px;
+  position: relative;
+  top: 1px;
+}
+
+:deep(.form-handle .el-button) {
+  min-width: 84px;
+  border-radius: 8px;
+  transition: all .2s ease;
+}
+
+:deep(.form-handle .el-button + .el-button) {
+  margin-left: 10px;
+}
+
+:deep(.form-handle .el-button:hover:not(.is-disabled)) {
+  transform: translateY(-1px);
+}
+
+:deep(.form-handle .el-button:focus-visible) {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--el-color-primary-light-9);
+}
+
+:deep(.form-handle .el-button.is-loading) {
+  opacity: .9;
+}
+
+:deep(.form-handle .el-button.is-disabled) {
+  opacity: .65;
 }
 </style>
 <style lang="scss">
 .form-wrapper {
+  .el-dialog {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .el-dialog__header {
+    margin-right: 0;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+  .el-dialog__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
   .el-dialog__body {
     padding: 0 !important;
     .form-body {
       max-height: calc(90vh - 111px) !important;
     }
+  }
+  .el-drawer__header {
+    margin-bottom: 0;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+  }
+  .el-drawer__body {
+    padding: 0;
   }
   .el-tabs__content {
     display: none;

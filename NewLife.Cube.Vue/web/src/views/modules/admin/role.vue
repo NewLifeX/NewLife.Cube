@@ -33,6 +33,9 @@ import { ColumnKind } from '/@/api/page';
 import usePage from '/@/hook/usePage';
 
 const { infoForm } = usePage({
+	tableConfig: {
+		tableLayout: 'auto',
+	},
 	columns: [
 		{
 			in: ColumnKind.ADD,

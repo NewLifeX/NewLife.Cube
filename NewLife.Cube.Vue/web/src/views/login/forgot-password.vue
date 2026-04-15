@@ -1,22 +1,15 @@
 <template>
-	<div class="forgot-container flex">
-		<div class="forgot-left">
-			<div class="forgot-left-logo">
-				<img :src="logoSrc" />
-				<div class="forgot-left-logo-text">
-					<span>{{ siteStore.loginConfig.displayName }}</span>
+	<div class="forgot-container">
+		<div class="forgot-card-wrap">
+			<el-card class="forgot-card" shadow="never">
+				<div class="forgot-header">
+					<img :src="logoSrc" class="forgot-logo" />
+					<div class="forgot-title">{{ siteStore.loginConfig.displayName || '重置密码' }}</div>
+					<div class="forgot-subtitle">通过验证码重置账号密码</div>
 				</div>
-			</div>
-		</div>
-		<div class="forgot-right flex">
-			<div class="forgot-right-warp flex-margin">
-				<span class="forgot-right-warp-one"></span>
-				<span class="forgot-right-warp-two"></span>
-				<div class="forgot-right-warp-main">
-					<div class="forgot-right-warp-main-title">重置密码</div>
-					<!-- 步骤一：输入账号并发送验证码 -->
-					<el-form v-if="state.step === 'input'" size="large" class="forgot-content-form" ref="step1FormRef" :model="state.form" :rules="step1Rules">
-						<el-form-item prop="username" class="forgot-animation1">
+
+				<el-form v-if="state.step === 'input'" size="large" class="forgot-content-form" ref="step1FormRef" :model="state.form" :rules="step1Rules">
+						<el-form-item prop="username">
 							<el-input
 								text
 								placeholder="请输入手机号或邮箱"
@@ -29,13 +22,13 @@
 								</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item prop="channel" class="forgot-animation2">
+						<el-form-item prop="channel">
 							<el-radio-group v-model="state.form.channel" class="forgot-channel-group">
 								<el-radio-button value="Sms">短信验证码</el-radio-button>
 								<el-radio-button value="Mail">邮箱验证码</el-radio-button>
 							</el-radio-group>
 						</el-form-item>
-						<el-form-item class="forgot-animation3">
+						<el-form-item>
 							<el-button
 								type="primary"
 								class="forgot-content-submit"
@@ -46,16 +39,15 @@
 								发送验证码
 							</el-button>
 						</el-form-item>
-						<el-form-item class="forgot-animation4">
+						<el-form-item>
 							<div class="forgot-back-link">
 								<el-link type="primary" :underline="false" @click="router.push('/login')">返回登录</el-link>
 							</div>
 						</el-form-item>
 					</el-form>
 
-					<!-- 步骤二：输入验证码和新密码 -->
 					<el-form v-else size="large" class="forgot-content-form" ref="step2FormRef" :model="state.form" :rules="step2Rules">
-						<el-form-item prop="code" class="forgot-animation1">
+						<el-form-item prop="code">
 							<el-input
 								text
 								placeholder="请输入验证码"
@@ -77,7 +69,7 @@
 								</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item prop="newPassword" class="forgot-animation2">
+						<el-form-item prop="newPassword">
 							<el-input
 								:type="state.showPwd ? 'text' : 'password'"
 								placeholder="请输入新密码"
@@ -96,7 +88,7 @@
 								</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item prop="confirmPassword" class="forgot-animation3">
+						<el-form-item prop="confirmPassword">
 							<el-input
 								:type="state.showPwd2 ? 'text' : 'password'"
 								placeholder="请再次输入新密码"
@@ -115,7 +107,7 @@
 								</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item class="forgot-animation4">
+						<el-form-item>
 							<el-button
 								type="primary"
 								class="forgot-content-submit"
@@ -126,7 +118,7 @@
 								确认重置
 							</el-button>
 						</el-form-item>
-						<el-form-item class="forgot-animation5">
+						<el-form-item>
 							<div class="forgot-back-link">
 								<el-link type="default" :underline="false" @click="state.step = 'input'">上一步</el-link>
 								<el-divider direction="vertical" />
@@ -134,19 +126,19 @@
 							</div>
 						</el-form-item>
 					</el-form>
-				</div>
-			</div>
+			</el-card>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="forgotPassword">
-import { reactive, ref, computed } from 'vue';
+import { reactive, ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { useSiteInfo } from '/@/stores/siteInfo';
 import { useUserApi } from '/@/api/user';
+import { NextLoading } from '/@/utils/loading';
 import logoMiniDefault from '/@/assets/logo-mini.png';
 
 const router = useRouter();
@@ -273,93 +265,109 @@ const onConfirmReset = async () => {
 		state.submitting = false;
 	}
 };
+
+onMounted(async () => {
+	NextLoading.done();
+	await Promise.all([siteStore.loadSiteInfo(), siteStore.loadLoginConfig()]);
+});
 </script>
 
 <style scoped lang="scss">
 .forgot-container {
-	width: 100%;
-	height: 100vh;
-	overflow: hidden;
-	background: var(--el-bg-color-page, #f0f2f5);
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 32px 16px;
+	background: linear-gradient(135deg, #165dff 0%, #722ed1 100%);
 
-	.forgot-left {
-		flex: 1;
+	.forgot-card-wrap {
+		width: 100%;
 		display: flex;
-		align-items: center;
 		justify-content: center;
-		background: linear-gradient(135deg, #26a59a 0%, #2c6e49 100%);
-		.forgot-left-logo {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			color: #fff;
-			img {
-				width: 80px;
-				height: 80px;
-				margin-bottom: 16px;
-			}
-			.forgot-left-logo-text span {
-				font-size: 24px;
-			}
+	}
+
+	.forgot-card {
+		width: 440px;
+		max-width: 100%;
+		border-radius: 12px;
+		border: none;
+		:deep(.el-card__body) {
+			padding: 28px 24px 20px;
 		}
 	}
 
-	.forgot-right {
-		width: 420px;
-		background: var(--el-bg-color, #fff);
-		.forgot-right-warp {
-			width: 320px;
-			.forgot-right-warp-one,
-			.forgot-right-warp-two {
-				position: absolute;
-				width: 8px;
-				height: 8px;
-				border-radius: 50%;
-				background: var(--el-color-primary);
-				opacity: 0.3;
-			}
-			.forgot-right-warp-two {
-				top: 10px;
-				left: 10px;
-			}
-			.forgot-right-warp-main {
-				.forgot-right-warp-main-title {
-					font-size: 22px;
-					font-weight: 700;
-					margin-bottom: 24px;
-					color: var(--el-text-color-primary);
+	.forgot-header {
+		text-align: center;
+		margin-bottom: 16px;
+		.forgot-logo {
+			width: 52px;
+			height: 52px;
+			object-fit: contain;
+			margin-bottom: 10px;
+		}
+		.forgot-title {
+			font-size: 22px;
+			font-weight: 600;
+			color: var(--el-text-color-primary);
+		}
+		.forgot-subtitle {
+			margin-top: 4px;
+			font-size: 13px;
+			color: var(--el-text-color-secondary);
+		}
+	}
+
+	.forgot-content-form {
+		:deep(.el-form-item) {
+			margin-bottom: 14px;
+		}
+		:deep(.el-input__wrapper),
+		:deep(.el-textarea__inner) {
+			border-radius: 6px;
+			transition: box-shadow .2s ease, border-color .2s ease;
+		}
+		:deep(.el-input.is-focus .el-input__wrapper),
+		:deep(.el-textarea .el-textarea__inner:focus) {
+			box-shadow: 0 0 0 1px var(--el-color-primary), 0 0 0 3px var(--el-color-primary-light-9);
+		}
+		:deep(.el-form-item__error) {
+			line-height: 1.2;
+			padding-top: 2px;
+			position: relative;
+			top: 1px;
+		}
+		.forgot-content-submit {
+			width: 100%;
+			font-weight: 500;
+		}
+		.forgot-channel-group {
+			width: 100%;
+			display: flex;
+			.el-radio-button {
+				flex: 1;
+				:deep(.el-radio-button__inner) {
+					width: 100%;
 				}
-				.forgot-content-form {
-					.forgot-content-submit {
-						width: 100%;
-					}
-					.forgot-channel-group {
-						width: 100%;
-						display: flex;
-						.el-radio-button {
-							flex: 1;
-							:deep(.el-radio-button__inner) {
-								width: 100%;
-							}
-						}
-					}
-					.forgot-back-link {
-						display: flex;
-						align-items: center;
-						gap: 8px;
-					}
-				}
 			}
+		}
+		.forgot-back-link {
+			display: flex;
+			align-items: center;
+			gap: 8px;
 		}
 	}
 }
 
-@media (max-width: 768px) {
-	.forgot-container .forgot-left {
-		display: none;
-	}
-	.forgot-container .forgot-right {
-		width: 100%;
+@media (max-width: 576px) {
+	.forgot-container {
+		padding: 16px 12px;
+		.forgot-card :deep(.el-card__body) {
+			padding: 18px 16px 16px;
+		}
+		.forgot-header .forgot-title {
+			font-size: 20px;
+		}
 	}
 }
 </style>

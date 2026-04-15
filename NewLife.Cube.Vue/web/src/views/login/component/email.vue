@@ -1,13 +1,13 @@
 <template>
 	<el-form size="large" class="login-content-form">
-		<el-form-item class="login-animation1">
+		<el-form-item>
 			<el-input text :placeholder="$t('message.email.placeholder1')" v-model="state.ruleForm.username" clearable autocomplete="off">
 				<template #prefix>
 					<el-icon class="el-input__icon"><ele-Message /></el-icon>
 				</template>
 			</el-input>
 		</el-form-item>
-		<el-form-item class="login-animation2">
+		<el-form-item>
 			<el-col :span="15">
 				<el-input text maxlength="6" :placeholder="$t('message.email.placeholder2')" v-model="state.ruleForm.code" clearable autocomplete="off">
 					<template #prefix>
@@ -22,7 +22,7 @@
 				</el-button>
 			</el-col>
 		</el-form-item>
-		<el-form-item class="login-animation3">
+		<el-form-item>
 			<el-button round type="primary" v-waves class="login-content-submit" @click="onSignIn" :loading="state.loading">
 				<span>{{ $t('message.email.btnText') }}</span>
 			</el-button>
@@ -126,24 +126,12 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 <style scoped lang="scss">
 .login-content-form {
 	margin-top: 20px;
-	@for $i from 1 through 3 {
-		.login-animation#{$i} {
-			opacity: 0;
-			animation-name: error-num;
-			animation-duration: 0.5s;
-			animation-fill-mode: forwards;
-			animation-delay: calc($i/10) + s;
-		}
-	}
 	.login-content-code {
 		width: 100%;
 		padding: 0;
 	}
 	.login-content-submit {
 		width: 100%;
-		letter-spacing: 2px;
-		font-weight: 300;
-		margin-top: 15px;
 	}
 }
 </style>

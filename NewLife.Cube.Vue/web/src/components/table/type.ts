@@ -10,6 +10,8 @@ export interface TableColumn {
 	component?: keyof FormType;
   // 宽度
   width?: string | number;
+  // 最小宽度（仅 auto 布局有效）
+  minWidth?: string | number;
   // 是否勾选显示
   isCheck?: boolean;
   // 自定义组件插槽
@@ -58,6 +60,7 @@ export interface TableMoreProps {
   isSerialNo?: boolean;
   isSelection?: boolean;
   isOperate?: boolean;
+	tableLayout?: 'fixed' | 'auto';
 	operateWidth?: number;
 	authId?: number;
 	data: EmptyObjectType[];

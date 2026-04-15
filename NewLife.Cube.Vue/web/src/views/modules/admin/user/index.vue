@@ -9,6 +9,9 @@
 import usePage from '/@/hook/usePage';
 import { ColumnKind, usePageApi } from '/@/api/page';
 const { columns, forms } = usePage({
+	tableConfig: {
+		tableLayout: 'auto',
+	},
 	columns: [
 		// {
 		//   in: ColumnKind.ADD,

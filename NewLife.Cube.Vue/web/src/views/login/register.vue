@@ -1,169 +1,157 @@
 <template>
-	<div class="register-container flex">
-		<div class="register-left">
-			<div class="register-left-logo">
-				<img :src="logoSrc" />
-				<div class="register-left-logo-text">
-					<span>{{ siteStore.loginConfig.displayName }}</span>
+	<div class="register-container">
+		<div class="register-card-wrap">
+			<el-card class="register-card" shadow="never">
+				<div class="register-header">
+					<img :src="logoSrc" class="register-logo" />
+					<div class="register-title">{{ siteStore.loginConfig.displayName || '注册账号' }}</div>
 				</div>
-			</div>
-			<div class="register-left-img">
-				<img :src="loginBackgroundSrc" />
-			</div>
-			<img :src="loginBackgroundWaves" class="register-left-waves" />
-		</div>
-		<div class="register-right flex">
-			<div class="register-right-warp flex-margin">
-				<span class="register-right-warp-one"></span>
-				<span class="register-right-warp-two"></span>
-				<div class="register-right-warp-mian">
-					<div class="register-right-warp-main-title">注册账号</div>
-					<div class="register-right-warp-main-form">
-						<el-tabs v-if="!state.oauthMode" v-model="state.registerTab">
-							<el-tab-pane label="账号注册" name="password" />
-							<el-tab-pane v-if="enableSmsRegister" label="手机注册" name="phone" />
-							<el-tab-pane v-if="enableMailRegister" label="邮箱注册" name="email" />
-						</el-tabs>
 
-						<div v-if="state.oauthMode" class="register-oauth-tip">
-							<el-alert
-								title="第三方账号首次登录，请补充密码完成本地账号创建"
-								type="info"
-								:closable="false"
-							/>
-						</div>
+				<div class="register-main">
+					<el-tabs v-if="!state.oauthMode" v-model="state.registerTab">
+						<el-tab-pane label="账号注册" name="password" />
+						<el-tab-pane v-if="enableSmsRegister" label="手机注册" name="phone" />
+						<el-tab-pane v-if="enableMailRegister" label="邮箱注册" name="email" />
+					</el-tabs>
 
-						<el-form size="large" class="register-content-form" ref="formRef" :model="state.ruleForm" :rules="rules">
-							<el-form-item v-if="state.registerTab === 'password' || state.oauthMode" prop="username" class="register-animation1">
-								<el-input
-									text
-									placeholder="请输入用户名"
-									v-model="state.ruleForm.username"
-									clearable
-									autocomplete="off"
-									:readonly="state.oauthMode"
-								>
-									<template #prefix>
-										<el-icon class="el-input__icon"><ele-User /></el-icon>
-									</template>
-								</el-input>
-							</el-form-item>
-							<el-form-item v-if="state.registerTab === 'password' || state.registerTab === 'email' || state.oauthMode" prop="email" class="register-animation2">
-								<el-input
-									text
-									:placeholder="state.registerTab === 'email' ? '请输入邮箱地址（用于接收验证码）' : '请输入邮箱地址'"
-									v-model="state.ruleForm.email"
-									clearable
-									autocomplete="off"
-									:readonly="state.oauthMode && !!state.ruleForm.email"
-								>
-									<template #prefix>
-										<el-icon class="el-input__icon"><ele-Message /></el-icon>
-									</template>
-								</el-input>
-							</el-form-item>
-							<el-form-item v-if="state.registerTab === 'phone'" prop="mobile" class="register-animation2">
-								<el-input
-									text
-									placeholder="请输入手机号"
-									v-model="state.ruleForm.mobile"
-									clearable
-									autocomplete="off"
-								>
-									<template #prefix>
-										<el-icon class="el-input__icon"><ele-Phone /></el-icon>
-									</template>
-									<template #append>
-										<el-button :disabled="state.countdown > 0" :loading="state.sending" @click="onSendCode('Sms')">
-											{{ state.countdown > 0 ? `${state.countdown}s` : '发送验证码' }}
-										</el-button>
-									</template>
-								</el-input>
-							</el-form-item>
-							<el-form-item v-if="state.registerTab === 'email'" prop="emailCodeTarget" class="register-animation2">
-								<el-input
-									text
-									placeholder="请输入邮箱"
-									v-model="state.ruleForm.emailCodeTarget"
-									clearable
-									autocomplete="off"
-								>
-									<template #prefix>
-										<el-icon class="el-input__icon"><ele-Message /></el-icon>
-									</template>
-									<template #append>
-										<el-button :disabled="state.countdown > 0" :loading="state.sending" @click="onSendCode('Mail')">
-											{{ state.countdown > 0 ? `${state.countdown}s` : '发送验证码' }}
-										</el-button>
-									</template>
-								</el-input>
-							</el-form-item>
-							<el-form-item v-if="state.registerTab === 'phone' || state.registerTab === 'email'" prop="code" class="register-animation3">
-								<el-input
-									text
-									placeholder="请输入验证码"
-									v-model="state.ruleForm.code"
-									clearable
-									autocomplete="off"
-								>
-									<template #prefix>
-										<el-icon class="el-input__icon"><ele-Key /></el-icon>
-									</template>
-								</el-input>
-							</el-form-item>
-							<el-form-item prop="password" class="register-animation3">
-								<el-input
-									:type="state.isShowPassword ? 'text' : 'password'"
-									placeholder="请输入密码"
-									v-model="state.ruleForm.password"
-									autocomplete="new-password"
-								>
-									<template #prefix>
-										<el-icon class="el-input__icon"><ele-Unlock /></el-icon>
-									</template>
-									<template #suffix>
-										<i
-											class="iconfont el-input__icon login-content-password"
-											:class="state.isShowPassword ? 'icon-yincangmima' : 'icon-xianshimima'"
-											@click="state.isShowPassword = !state.isShowPassword"
-										></i>
-									</template>
-								</el-input>
-							</el-form-item>
-							<el-form-item prop="password2" class="register-animation4">
-								<el-input
-									:type="state.isShowPassword2 ? 'text' : 'password'"
-									placeholder="请再次输入密码"
-									v-model="state.ruleForm.password2"
-									autocomplete="new-password"
-								>
-									<template #prefix>
-										<el-icon class="el-input__icon"><ele-Unlock /></el-icon>
-									</template>
-									<template #suffix>
-										<i
-											class="iconfont el-input__icon login-content-password"
-											:class="state.isShowPassword2 ? 'icon-yincangmima' : 'icon-xianshimima'"
-											@click="state.isShowPassword2 = !state.isShowPassword2"
-										></i>
-									</template>
-								</el-input>
-							</el-form-item>
-							<el-form-item class="register-animation5">
-								<el-button round type="primary" v-waves class="register-content-submit" @click="onRegister" :loading="state.loading">
-									<span>{{ state.oauthMode ? '完成绑定并登录' : '立即注册' }}</span>
-								</el-button>
-							</el-form-item>
-							<div class="register-go-login register-animation6">
-								<span class="font12">已有账号？</span>
-								<el-link type="primary" :underline="false" @click="router.push('/login')">立即登录</el-link>
-							</div>
-						</el-form>
+					<div v-if="state.oauthMode" class="register-oauth-tip">
+						<el-alert
+							title="第三方账号首次登录，请补充密码完成本地账号创建"
+							type="info"
+							:closable="false"
+						/>
 					</div>
+
+					<el-form size="large" class="register-content-form" ref="formRef" :model="state.ruleForm" :rules="rules">
+						<el-form-item v-if="state.registerTab === 'password' || state.oauthMode" prop="username">
+							<el-input
+								text
+								placeholder="请输入用户名"
+								v-model="state.ruleForm.username"
+								clearable
+								autocomplete="off"
+								:readonly="state.oauthMode"
+							>
+								<template #prefix>
+									<el-icon class="el-input__icon"><ele-User /></el-icon>
+								</template>
+							</el-input>
+						</el-form-item>
+						<el-form-item v-if="state.registerTab === 'password' || state.registerTab === 'email' || state.oauthMode" prop="email">
+							<el-input
+								text
+								:placeholder="state.registerTab === 'email' ? '请输入邮箱地址（用于接收验证码）' : '请输入邮箱地址'"
+								v-model="state.ruleForm.email"
+								clearable
+								autocomplete="off"
+								:readonly="state.oauthMode && !!state.ruleForm.email"
+							>
+								<template #prefix>
+									<el-icon class="el-input__icon"><ele-Message /></el-icon>
+								</template>
+							</el-input>
+						</el-form-item>
+						<el-form-item v-if="state.registerTab === 'phone'" prop="mobile">
+							<el-input
+								text
+								placeholder="请输入手机号"
+								v-model="state.ruleForm.mobile"
+								clearable
+								autocomplete="off"
+							>
+								<template #prefix>
+									<el-icon class="el-input__icon"><ele-Phone /></el-icon>
+								</template>
+								<template #append>
+									<el-button :disabled="state.countdown > 0" :loading="state.sending" @click="onSendCode('Sms')">
+										{{ state.countdown > 0 ? `${state.countdown}s` : '发送验证码' }}
+									</el-button>
+								</template>
+							</el-input>
+						</el-form-item>
+						<el-form-item v-if="state.registerTab === 'email'" prop="emailCodeTarget">
+							<el-input
+								text
+								placeholder="请输入邮箱"
+								v-model="state.ruleForm.emailCodeTarget"
+								clearable
+								autocomplete="off"
+							>
+								<template #prefix>
+									<el-icon class="el-input__icon"><ele-Message /></el-icon>
+								</template>
+								<template #append>
+									<el-button :disabled="state.countdown > 0" :loading="state.sending" @click="onSendCode('Mail')">
+										{{ state.countdown > 0 ? `${state.countdown}s` : '发送验证码' }}
+									</el-button>
+								</template>
+							</el-input>
+						</el-form-item>
+						<el-form-item v-if="state.registerTab === 'phone' || state.registerTab === 'email'" prop="code">
+							<el-input
+								text
+								placeholder="请输入验证码"
+								v-model="state.ruleForm.code"
+								clearable
+								autocomplete="off"
+							>
+								<template #prefix>
+									<el-icon class="el-input__icon"><ele-Key /></el-icon>
+								</template>
+							</el-input>
+						</el-form-item>
+						<el-form-item prop="password">
+							<el-input
+								:type="state.isShowPassword ? 'text' : 'password'"
+								placeholder="请输入密码"
+								v-model="state.ruleForm.password"
+								autocomplete="new-password"
+							>
+								<template #prefix>
+									<el-icon class="el-input__icon"><ele-Unlock /></el-icon>
+								</template>
+								<template #suffix>
+									<i
+										class="iconfont el-input__icon login-content-password"
+										:class="state.isShowPassword ? 'icon-yincangmima' : 'icon-xianshimima'"
+										@click="state.isShowPassword = !state.isShowPassword"
+									></i>
+								</template>
+							</el-input>
+						</el-form-item>
+						<el-form-item prop="password2">
+							<el-input
+								:type="state.isShowPassword2 ? 'text' : 'password'"
+								placeholder="请再次输入密码"
+								v-model="state.ruleForm.password2"
+								autocomplete="new-password"
+							>
+								<template #prefix>
+									<el-icon class="el-input__icon"><ele-Unlock /></el-icon>
+								</template>
+								<template #suffix>
+									<i
+										class="iconfont el-input__icon login-content-password"
+										:class="state.isShowPassword2 ? 'icon-yincangmima' : 'icon-xianshimima'"
+										@click="state.isShowPassword2 = !state.isShowPassword2"
+									></i>
+								</template>
+							</el-input>
+						</el-form-item>
+						<el-form-item>
+							<el-button round type="primary" v-waves class="register-content-submit" @click="onRegister" :loading="state.loading">
+								<span>{{ state.oauthMode ? '完成绑定并登录' : '立即注册' }}</span>
+							</el-button>
+						</el-form-item>
+						<div class="register-go-login">
+							<span class="font12">已有账号？</span>
+							<el-link type="primary" :underline="false" @click="router.push('/login')">立即登录</el-link>
+						</div>
+					</el-form>
 				</div>
-			</div>
+			</el-card>
 		</div>
-		<!-- 底部版权信息 -->
+
 		<div v-if="siteStore.siteInfo.copyright || siteStore.siteInfo.registration" class="register-footer">
 			<div v-if="siteStore.siteInfo.copyright" class="register-footer-copyright" v-html="siteStore.siteInfo.copyright"></div>
 			<div v-if="siteStore.siteInfo.registration" class="register-footer-registration">
@@ -183,8 +171,6 @@ import { NextLoading } from '/@/utils/loading';
 import { Session } from '/@/utils/storage';
 import { RegisterCategory } from '/@/model/api/login';
 import logoMiniDefault from '/@/assets/logo-mini.png';
-import loginMainDefault from '/@/assets/login-main.svg';
-import loginBackgroundWaves from '/@/assets/login-bg.svg';
 
 const router = useRouter();
 const route = useRoute();
@@ -215,7 +201,6 @@ const state = reactive({
 let _countdownTimer: ReturnType<typeof setInterval> | null = null;
 
 const logoSrc = computed(() => siteStore.siteInfo.loginLogo || logoMiniDefault);
-const loginBackgroundSrc = computed(() => siteStore.siteInfo.loginBackground || loginMainDefault);
 const enableSmsRegister = computed(() => !!(siteStore.loginConfig.enableSmsRegister ?? siteStore.loginConfig.enableSms));
 const enableMailRegister = computed(() => !!(siteStore.loginConfig.enableMailRegister ?? siteStore.loginConfig.enableMail));
 
@@ -385,195 +370,120 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .register-container {
-	height: 100%;
+	min-height: 100vh;
 	display: flex;
-	flex-direction: row;
-	background: var(--el-color-white);
-	position: relative;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 32px 16px 20px;
+	background: linear-gradient(135deg, #165dff 0%, #722ed1 100%);
 
-	.register-left {
-		flex: 1;
-		position: relative;
-		background-color: rgba(211, 239, 255, 1);
-		margin-right: 100px;
-		.register-left-logo {
-			display: flex;
-			align-items: center;
-			position: absolute;
-			top: 50px;
-			left: 80px;
-			z-index: 1;
-			animation: logoAnimation 0.3s ease;
-			img {
-				width: 52px;
-				height: 52px;
-			}
-			.register-left-logo-text {
-				span {
-					margin-left: 10px;
-					font-size: 28px;
-					color: #26a59a;
-				}
-			}
-		}
-		.register-left-img {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-			width: 100%;
-			height: 52%;
-			img {
-				width: 100%;
-				height: 100%;
-				animation: error-num 0.6s ease;
-			}
-		}
-		.register-left-waves {
-			position: absolute;
-			top: 0;
-			right: -100px;
+	.register-card-wrap {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+
+	.register-card {
+		width: 500px;
+		max-width: 100%;
+		border-radius: 12px;
+		border: none;
+		:deep(.el-card__body) {
+			padding: 28px 28px 22px;
 		}
 	}
 
-	.register-right {
-		width: 700px;
-		.register-right-warp {
-			border: 1px solid var(--el-color-primary-light-3);
-			border-radius: 3px;
-			width: 500px;
-			min-height: 500px;
+	.register-header {
+		text-align: center;
+		margin-bottom: 12px;
+		.register-logo {
+			width: 52px;
+			height: 52px;
+			object-fit: contain;
+			margin-bottom: 10px;
+		}
+		.register-title {
+			font-size: 22px;
+			font-weight: 600;
+			color: var(--el-text-color-primary);
+		}
+	}
+
+	.register-main {
+		:deep(.el-tabs__header) {
+			margin-bottom: 8px;
+		}
+	}
+
+	.register-content-form {
+		:deep(.el-form-item) {
+			margin-bottom: 14px;
+		}
+		:deep(.el-input__wrapper),
+		:deep(.el-textarea__inner) {
+			border-radius: 6px;
+			transition: box-shadow .2s ease, border-color .2s ease;
+		}
+		:deep(.el-input.is-focus .el-input__wrapper),
+		:deep(.el-textarea .el-textarea__inner:focus) {
+			box-shadow: 0 0 0 1px var(--el-color-primary), 0 0 0 3px var(--el-color-primary-light-9);
+		}
+		:deep(.el-form-item__error) {
+			line-height: 1.2;
+			padding-top: 2px;
 			position: relative;
-			overflow: hidden;
-			background-color: var(--el-color-white);
-			.register-right-warp-one,
-			.register-right-warp-two {
-				position: absolute;
-				display: block;
-				width: inherit;
-				height: inherit;
-				&::before,
-				&::after {
-					content: '';
-					position: absolute;
-					z-index: 1;
-				}
-			}
-			.register-right-warp-one {
-				&::before {
-					filter: hue-rotate(0deg);
-					top: 0px;
-					left: 0;
-					width: 100%;
-					height: 3px;
-					background: linear-gradient(90deg, transparent, var(--el-color-primary));
-					animation: loginLeft 3s linear infinite;
-				}
-				&::after {
-					filter: hue-rotate(60deg);
-					top: -100%;
-					right: 2px;
-					width: 3px;
-					height: 100%;
-					background: linear-gradient(180deg, transparent, var(--el-color-primary));
-					animation: loginTop 3s linear infinite;
-					animation-delay: 0.7s;
-				}
-			}
-			.register-right-warp-two {
-				&::before {
-					filter: hue-rotate(120deg);
-					bottom: 2px;
-					right: -100%;
-					width: 100%;
-					height: 3px;
-					background: linear-gradient(270deg, transparent, var(--el-color-primary));
-					animation: loginRight 3s linear infinite;
-					animation-delay: 1.4s;
-				}
-				&::after {
-					filter: hue-rotate(300deg);
-					bottom: -100%;
-					left: 0px;
-					width: 3px;
-					height: 100%;
-					background: linear-gradient(360deg, transparent, var(--el-color-primary));
-					animation: loginBottom 3s linear infinite;
-					animation-delay: 2.1s;
-				}
-			}
-			.register-right-warp-mian {
-				display: flex;
-				flex-direction: column;
-				height: 100%;
-				.register-right-warp-main-title {
-					height: 100px;
-					line-height: 100px;
-					font-size: 27px;
-					text-align: center;
-					letter-spacing: 3px;
-					animation: logoAnimation 0.3s ease;
-					color: var(--el-text-color-primary);
-				}
-				.register-right-warp-main-form {
-					flex: 1;
-					padding: 0 50px 30px;
-					.register-content-form {
-						@for $i from 1 through 6 {
-							.register-animation#{$i} {
-								opacity: 0;
-								animation-name: error-num;
-								animation-duration: 0.5s;
-								animation-fill-mode: forwards;
-								animation-delay: calc($i/10) + s;
-							}
-						}
-						.register-content-submit {
-							width: 100%;
-							letter-spacing: 2px;
-							font-weight: 300;
-							margin-top: 10px;
-						}
-						.register-go-login {
-							text-align: center;
-							margin-top: 12px;
-							color: var(--el-text-color-placeholder);
-						}
-					}
-				}
-			}
+			top: 1px;
+		}
+		.register-content-submit {
+			width: 100%;
+			font-weight: 500;
+		}
+		.register-go-login {
+			text-align: center;
+			margin-top: 12px;
+			color: var(--el-text-color-placeholder);
 		}
 	}
 
 	.register-footer {
-		position: absolute;
-		bottom: 16px;
-		left: 0;
-		right: 0;
+		margin-top: 16px;
 		text-align: center;
 		font-size: 12px;
-		color: var(--el-text-color-placeholder);
+		color: rgba(255, 255, 255, 0.75);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 4px;
 		.register-footer-copyright {
 			:deep(a) {
-				color: var(--el-text-color-placeholder);
+				color: rgba(255, 255, 255, 0.78);
 				&:hover {
-					color: var(--el-color-primary);
+					color: #ffffff;
 				}
 			}
 		}
 		.register-footer-registration {
 			a {
-				color: var(--el-text-color-placeholder);
+				color: rgba(255, 255, 255, 0.78);
 				text-decoration: none;
 				&:hover {
-					color: var(--el-color-primary);
+					color: #ffffff;
 					text-decoration: underline;
 				}
 			}
+		}
+	}
+}
+
+@media (max-width: 576px) {
+	.register-container {
+		padding: 16px 12px;
+		.register-card :deep(.el-card__body) {
+			padding: 18px 16px 16px;
+		}
+		.register-header .register-title {
+			font-size: 20px;
 		}
 	}
 }

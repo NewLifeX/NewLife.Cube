@@ -5,17 +5,17 @@
 }
 /* Button 按钮
 ------------------------------- */
-// 第三方字体图标大小
-.el-button:not(.is-circle) i.el-icon,
-.el-button i.iconfont,
-.el-button i.fa,
-.el-button--default i.iconfont,
-.el-button--default i.fa {
+// 第三方字体图标大小（限制在后台布局作用域，避免影响认证页原生风格）
+.layout-container .el-button:not(.is-circle) i.el-icon,
+.layout-container .el-button i.iconfont,
+.layout-container .el-button i.fa,
+.layout-container .el-button--default i.iconfont,
+.layout-container .el-button--default i.fa {
 	font-size: 14px !important;
 	margin-right: 5px;
 }
-.el-button--small i.iconfont,
-.el-button--small i.fa {
+.layout-container .el-button--small i.iconfont,
+.layout-container .el-button--small i.fa {
 	font-size: 12px !important;
 	margin-right: 5px;
 }
@@ -29,7 +29,7 @@
 
 /* Form 表单
 ------------------------------- */
-.el-form {
+.layout-container .el-form {
 	// 用于修改弹窗时表单内容间隔太大问题，如系统设置的新增菜单弹窗里的表单内容
 	// .el-form-item:last-of-type {
 	// 	margin-bottom: 0 !important;
@@ -51,16 +51,16 @@
 
 /* Alert 警告
 ------------------------------- */
-.el-alert {
+.layout-container .el-alert {
 	border: 1px solid;
 }
-.el-alert__title {
+.layout-container .el-alert__title {
 	word-break: break-all;
 }
 
 /* Message 消息提示
 ------------------------------- */
-.el-message {
+.layout-container .el-message {
 	min-width: unset !important;
 	padding: 15px !important;
 	box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.02);
@@ -224,11 +224,11 @@
 
 /* Steps 步骤条
 ------------------------------- */
-.el-step__icon-inner {
+.layout-container .el-step__icon-inner {
 	font-size: 30px !important;
 	font-weight: 400 !important;
 }
-.el-step__title {
+.layout-container .el-step__title {
 	font-size: 14px;
 }
 
@@ -260,16 +260,26 @@
 
 /* Card 卡片
 ------------------------------- */
-.el-card__header {
+.layout-container .el-card__header {
 	padding: 15px 20px;
 }
 
 /* Table 表格 element plus 2.2.0 版本
 ------------------------------- */
-.el-table {
+.layout-container .el-table {
 	.el-button.is-text {
 		padding: 0;
 	}
+}
+
+/* Tooltip 全局优化（溢出提示限宽、自动换行）
+------------------------------- */
+.el-popper.is-dark {
+	max-width: 400px;
+	white-space: normal !important;
+	word-break: break-word;
+	border-radius: 6px;
+	line-height: 1.5;
 }
 
 /* scrollbar

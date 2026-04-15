@@ -136,6 +136,7 @@ const config = ref<TableConfigType>({
 	isSerialNo: false, // 是否显示表格序号
 	isSelection: true, // 是否显示表格多选
 	isOperate: true, // 是否显示表格操作栏
+	tableLayout: 'fixed', // fixed 稳定；auto 按内容浮动
 	...providePage?.pageProps.tableConfig
 })
 const param = ref({
@@ -315,7 +316,7 @@ providePage && (providePage.handle.reload = getTableData)
 <style scoped lang="scss">
 .table-demo-container {
 	.table-demo-padding {
-		padding: 15px;
+		padding: 16px;
 		.chart-area {
 			display: flex;
 			flex-wrap: wrap;
@@ -325,13 +326,17 @@ providePage && (providePage.handle.reload = getTableData)
 				min-width: 400px;
 				height: 400px;
 				background: var(--el-bg-color);
-				border-radius: 4px;
+				border-radius: 8px;
 				border: 1px solid var(--el-border-color-lighter);
 			}
 		}
 		.table-demo {
 			flex: 1;
 			overflow: hidden;
+			background: var(--el-bg-color);
+			border: 1px solid var(--el-border-color-lighter);
+			border-radius: 8px;
+			padding: 12px;
 		}
 	}
 }

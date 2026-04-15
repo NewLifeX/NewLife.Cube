@@ -10,12 +10,12 @@
 								<SvgIcon :name="state.isToggle ? 'ele-ArrowUp' : 'ele-ArrowDown'" />
 							</div>
 						</template>
-						<div class="flex justify-between w-full ml-10">
-							<div>
+						<div class="table-form-actions">
+							<div class="table-form-actions-left">
 								<el-button size="default" type="primary" @click="onSearch">查询 </el-button>
 								<el-button size="default" type="info" class="ml10" @click="onReset"> 重置 </el-button>
 							</div>
-							<div class="ml-2.5">
+							<div class="table-form-actions-right">
 								<slot name="handle-after"></slot>
 							</div>
 						</div>
@@ -26,7 +26,7 @@
 				<slot :name="item.slot" :model="data.model" :prop="data.prop"></slot>
 			</template>
 		</Form>
-		<div v-else class="flex justify-end w-full mb-2">
+		<div v-else class="table-search-empty">
 			<slot name="handle-after"></slot>
 		</div>
 	</div>
@@ -102,8 +102,30 @@ onMounted(() => {
 <style scoped lang="scss">
 .table-search-container {
 	display: flex;
+	width: 100%;
+	padding: 12px 12px 4px;
+	border: 1px solid var(--el-border-color-lighter);
+	border-radius: 8px;
+	background: var(--el-fill-color-extra-light);
 	.table-form {
 		flex: 1;
+		:deep(.el-form) {
+			margin-bottom: 0;
+		}
+		.table-form-actions {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+			gap: 10px;
+			&-left,
+			&-right {
+				display: flex;
+				align-items: center;
+				flex-wrap: wrap;
+				gap: 10px;
+			}
+		}
 		.table-form-btn-toggle {
 			white-space: nowrap;
 			user-select: none;
@@ -111,6 +133,39 @@ onMounted(() => {
 			align-items: center;
 			color: var(--el-color-primary);
 		}
+	}
+	.table-search-empty {
+		width: 100%;
+		display: flex;
+		justify-content: flex-end;
+		padding-bottom: 8px;
+		gap: 10px;
+	}
+}
+
+@media screen and (max-width: 992px) {
+	.table-search-container {
+		padding-bottom: 8px;
+		.table-form {
+			.table-form-actions {
+				flex-direction: column;
+				align-items: flex-start;
+				&-right {
+					width: 100%;
+					justify-content: flex-start;
+				}
+			}
+		}
+		.table-search-empty {
+			justify-content: flex-start;
+			flex-wrap: wrap;
+		}
+	}
+}
+
+@media screen and (max-width: 576px) {
+	.table-search-container {
+		padding: 10px 10px 6px;
 	}
 }
 </style>
