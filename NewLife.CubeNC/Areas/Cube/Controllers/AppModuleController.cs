@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Entity;
+﻿using NewLife.Cube.Entity;
 using NewLife.Cube.Modules;
 using NewLife.Web;
 using XCode.Membership;
@@ -8,7 +7,7 @@ namespace NewLife.Cube.Areas.Cube.Controllers;
 
 /// <summary>应用插件管理</summary>
 [CubeArea]
-[Menu(36)]
+[Menu(36, true, Icon = "fa-star")]
 public class AppModuleController : EntityController<AppModule, AppModuleModel>
 {
     static AppModuleController()

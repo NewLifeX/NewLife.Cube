@@ -219,7 +219,7 @@ public class OAuthServer
         var expire = 0;
         if (app != null) expire = app.TokenExpire;
 
-        var set = Cube.CubeSetting.Current;
+        var set = CubeSetting.Current;
         if (expire <= 0) expire = set.TokenExpire;
         var exp = DateTime.Now.AddSeconds(expire);
 
@@ -269,7 +269,7 @@ public class OAuthServer
         var expire = 0;
         if (log.App != null) expire = log.App.TokenExpire;
 
-        var set = Cube.CubeSetting.Current;
+        var set = CubeSetting.Current;
         if (expire <= 0) expire = set.TokenExpire;
 
         return new TokenModel
@@ -302,7 +302,7 @@ public class OAuthServer
             }
 
             // 从配置加载密钥
-            var set = Cube.CubeSetting.Current;
+            var set = CubeSetting.Current;
             var ss = set.JwtSecret.Split(':');
 
             var jwt = new JwtBuilder

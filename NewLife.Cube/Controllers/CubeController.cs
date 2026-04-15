@@ -261,7 +261,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         //if (page.Sort.IsNullOrEmpty()) page.Sort = _.Name;
 
         //var list = XCode.Membership.User.FindAll(exp, page);
-        var list = XCode.Membership.User.Search(roleId, departmentId, true, DateTime.MinValue, DateTime.MinValue, key, page);
+        var list = Search(roleId, departmentId, true, DateTime.MinValue, DateTime.MinValue, key, page);
 
         return Json(0, null, list.Select(e => new
         {

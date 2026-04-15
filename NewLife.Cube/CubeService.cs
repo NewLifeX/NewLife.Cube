@@ -296,7 +296,7 @@ public static class CubeService
 
         // 注册退出事件
         if (app is IHost web)
-            NewLife.Model.Host.RegisterExit(() =>
+            Model.Host.RegisterExit(() =>
             {
                 XTrace.WriteLine("魔方优雅退出！");
                 web.StopAsync().Wait();

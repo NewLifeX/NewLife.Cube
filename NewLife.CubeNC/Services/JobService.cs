@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using NewLife.Caching;
@@ -349,7 +349,7 @@ internal class MyJob : IDisposable
             {
                 // 新功能IServiceProvider.CreateInstance可以在第二位创建对象，定时任务类就不需要注册到容器里面了
                 var instance = ServiceProvider?.GetService(_type);
-                instance ??= NewLife.Model.ModelExtension.CreateInstance(ServiceProvider, _type);
+                instance ??= Model.ModelExtension.CreateInstance(ServiceProvider, _type);
                 instance ??= _type?.CreateInstance();
                 if (instance is ICubeJob cubeJob)
                 {

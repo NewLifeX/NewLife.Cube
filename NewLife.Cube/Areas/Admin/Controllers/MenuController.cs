@@ -13,6 +13,7 @@ public class MenuController : EntityTreeController<Menu, MenuModel>
     static MenuController()
     {
         // 过滤要显示的字段
+        ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveField("Remark");
     }
 

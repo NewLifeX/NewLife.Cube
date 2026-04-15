@@ -441,7 +441,7 @@ public class SsoProvider
         // 优先使用 TenantCode + TenantName
         if (!client.TenantCode.IsNullOrEmpty() && !client.TenantName.IsNullOrEmpty())
         {
-            var tenant = XCode.Membership.Tenant.FindByCode(client.TenantCode);
+            var tenant = Tenant.FindByCode(client.TenantCode);
             tenant ??= new XCode.Membership.Tenant
             {
                 Code = client.TenantCode,
@@ -451,7 +451,7 @@ public class SsoProvider
             tenant.Save();
 
             // 检查并创建用户租户关系
-            var tenantUser = XCode.Membership.TenantUser.FindByTenantIdAndUserId(tenant.Id, user.ID);
+            var tenantUser = TenantUser.FindByTenantIdAndUserId(tenant.Id, user.ID);
             if (tenantUser == null)
             {
                 tenantUser = new XCode.Membership.TenantUser
@@ -475,11 +475,11 @@ public class SsoProvider
         else if (client.TenantId > 0)
         {
             // 仅有 TenantId 时，直接查找现有租户
-            var tenant = XCode.Membership.Tenant.FindById(client.TenantId);
+            var tenant = Tenant.FindById(client.TenantId);
             if (tenant != null)
             {
                 // 检查并创建用户租户关系
-                var tenantUser = XCode.Membership.TenantUser.FindByTenantIdAndUserId(tenant.Id, user.ID);
+                var tenantUser = TenantUser.FindByTenantIdAndUserId(tenant.Id, user.ID);
                 if (tenantUser == null)
                 {
                     tenantUser = new XCode.Membership.TenantUser
@@ -969,11 +969,11 @@ public class SsoProvider
         if (user is User user2)
         {
             // 从 TenantUser 查找用户的租户关系
-            var tenantUser = XCode.Membership.TenantUser.FindAllByUserId(user2.ID).FirstOrDefault(e => e.Enable);
+            var tenantUser = TenantUser.FindAllByUserId(user2.ID).FirstOrDefault(e => e.Enable);
             if (tenantUser != null)
             {
                 tenantId = tenantUser.TenantId;
-                var tenant = XCode.Membership.Tenant.FindById(tenantId);
+                var tenant = Tenant.FindById(tenantId);
                 if (tenant != null)
                 {
                     tenantCode = tenant.Code;

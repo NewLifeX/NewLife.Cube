@@ -514,10 +514,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var user = model.Username?.Trim() ?? "";
         if (user.IsNullOrEmpty()) throw new XException("账号不能为空");
 
-        if (model.Channel.EqualIgnoreCase("Mail") || Common.ValidFormatHelper.IsEmail(user))
+        if (model.Channel.EqualIgnoreCase("Mail") || ValidFormatHelper.IsEmail(user))
             return await SendMailCode(model, ip);
 
-        if (model.Channel.EqualIgnoreCase("Sms") || Common.ValidFormatHelper.IsMobile(user))
+        if (model.Channel.EqualIgnoreCase("Sms") || ValidFormatHelper.IsMobile(user))
             return await SendSmsCode(model, ip);
 
         throw new NotSupportedException();

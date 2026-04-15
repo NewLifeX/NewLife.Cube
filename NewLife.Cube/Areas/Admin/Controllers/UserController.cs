@@ -25,8 +25,6 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(100, true, Icon = "fa-user")]
 public class UserController : EntityController<User, UserModel>
 {
-
-
     /// <summary>用于防爆破登录。即使内存缓存，也有一定用处，最糟糕就是每分钟重试次数等于集群节点数的倍数</summary>
     private readonly ICache _cache;
     private readonly UserService _userService;
@@ -35,14 +33,14 @@ public class UserController : EntityController<User, UserModel>
     static UserController()
     {
         ListFields.RemoveField("Avatar", "RoleIds", "Online", "Age", "Birthday", "LastLoginIP", "RegisterIP", "RegisterTime");
-        ListFields.RemoveField("Phone", "Code", "Question", "Answer");
+        ListFields.RemoveField("Phone", "Code", "Question", "Answer", "MailVerified", "MobileVerified");
         ListFields.RemoveField("Ex1", "Ex2", "Ex3", "Ex4", "Ex5", "Ex6");
         ListFields.RemoveUpdateField();
         ListFields.RemoveField("Remark");
 
         {
             // 为RoleId搜索字段增加LovCode
-            var df = SearchFields.GetField(XCode.Membership.User._.RoleID);
+            var df = SearchFields.GetField(_.RoleID);
             df.LovCode = "Role";
         }
 
