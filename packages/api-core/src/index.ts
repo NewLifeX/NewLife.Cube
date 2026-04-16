@@ -19,6 +19,8 @@ export type {
   PageInfo,
   PageParams,
   DataField,
+  PageSetting,
+  PageMeta,
   UserInfo,
   LoginResult,
   LoginConfig,

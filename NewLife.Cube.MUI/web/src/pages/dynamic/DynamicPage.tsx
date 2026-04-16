@@ -7,7 +7,7 @@ import {
   TableHead, TableRow, TablePagination, TextField, Toolbar, Tooltip, Typography,
 } from '@mui/material';
 import { Add, Delete, Download, Upload, Search, Refresh, Visibility, Edit as EditIcon, ArrowDropDown } from '@mui/icons-material';
-import { FieldKind, Auth, type DataField } from '@cube/api-core';
+import { Auth, type DataField } from '@cube/api-core';
 import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
 import * as echarts from 'echarts';
 import api from '@/api';
@@ -66,19 +66,21 @@ export default function DynamicPage() {
 
   // 加载字段
   useEffect(() => {
-    Promise.all([
-      api.page.getFields(type, FieldKind.List),
-      api.page.getFields(type, FieldKind.Search),
-      api.page.getFields(type, FieldKind.Add),
-      api.page.getFields(type, FieldKind.Edit),
-      api.page.getFields(type, FieldKind.Detail),
-    ]).then(([listRes, searchRes, addRes, editRes, detailRes]) => {
-      setListFields(resolveWidgets(listRes.data ?? []));
-      setSearchFields(resolveWidgets(searchRes.data ?? []));
-      setAddFields(resolveWidgets(addRes.data ?? []));
-      setEditFields(resolveWidgets(editRes.data ?? []));
-      setDetailFields(resolveWidgets(detailRes.data ?? []));
-      const pk = (listRes.data ?? []).find((f) => f.primaryKey);
+    api.page.getPage(type).then((pageRes) => {
+      const pageMeta = pageRes.data ?? {};
+      const listData = pageMeta.list ?? pageMeta.fields?.list ?? [];
+      const searchData = pageMeta.search ?? pageMeta.fields?.search ?? [];
+      const addData = pageMeta.addForm ?? pageMeta.fields?.form?.addForm ?? [];
+      const editData = pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [];
+      const detailData = pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [];
+
+      setListFields(resolveWidgets(listData));
+      setSearchFields(resolveWidgets(searchData));
+      setAddFields(resolveWidgets(addData));
+      setEditFields(resolveWidgets(editData));
+      setDetailFields(resolveWidgets(detailData));
+
+      const pk = listData.find((f) => f.primaryKey);
       if (pk) setPkField(pk.name);
     });
   }, [type]);

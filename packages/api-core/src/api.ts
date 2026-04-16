@@ -3,6 +3,7 @@ import type {
   ApiResponse,
   DataField,
   FieldKind,
+  PageMeta,
   UserInfo,
   LoginResult,
   LoginConfig,
@@ -102,6 +103,10 @@ export function createMenuApi(request: RequestFn) {
  */
 export function createPageApi(request: RequestFn, baseApiUrl?: string) {
   return {
+    /** 获取页面元数据（setting + list/addForm/editForm/detail/search） */
+    getPage: (type: string) =>
+      request<PageMeta>({ url: `${type}/GetPage`, method: 'get' }),
+
     /** 获取字段元数据 */
     getFields: (type: string, kind: FieldKind) =>
       request<DataField[]>({ url: `${type}/GetFields`, method: 'get', params: { kind } }),

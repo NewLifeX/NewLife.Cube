@@ -86,6 +86,47 @@ export interface DataField {
   dataSource?: Record<string, string>;
 }
 
+/** 页面设置（GetPage.data.setting） */
+export interface PageSetting {
+  navView?: string;
+  enableNavbar?: boolean;
+  enableToolbar?: boolean;
+  enableAdd?: boolean;
+  enableKey?: boolean;
+  enableSelect?: boolean;
+  enableFooter?: boolean;
+  isReadOnly?: boolean;
+  enableTableDoubleClick?: boolean;
+  orderByKey?: boolean;
+  doubleDelete?: boolean;
+}
+
+/** GetPage 聚合元数据 */
+export interface PageMeta {
+  /** 新结构：页面设置 */
+  setting?: PageSetting;
+  /** 兼容旧结构 */
+  pageSetting?: PageSetting;
+
+  /** 新结构：扁平字段集合 */
+  list?: DataField[];
+  addForm?: DataField[];
+  editForm?: DataField[];
+  detail?: DataField[];
+  search?: DataField[];
+
+  /** 兼容旧结构：fields 嵌套 */
+  fields?: {
+    list?: DataField[];
+    form?: {
+      addForm?: DataField[];
+      editForm?: DataField[];
+      detail?: DataField[];
+    };
+    search?: DataField[];
+  };
+}
+
 /** GetFields 的 kind 参数枚举 */
 export enum FieldKind {
   /** 列表字段 */

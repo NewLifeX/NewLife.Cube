@@ -102,7 +102,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, markRaw, h, type Ref } from 'vue';
 import { NButton, NSpace, NTag, NIcon, useMessage, type DataTableColumn, type DataTableCreateSummary, type FormInst, type PaginationProps, type UploadCustomRequestOptions } from 'naive-ui';
 import { ArrowDown as ArrowDownIcon } from '@vicons/ionicons5';
-import { FieldKind, Auth, type DataField } from '@cube/api-core';
+import { Auth, type DataField } from '@cube/api-core';
 import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
 import * as echarts from 'echarts';
 import api from '@/api';
@@ -268,22 +268,23 @@ const tableColumns = computed<DataTableColumn[]>(() => {
 
 // --- 数据加载 ---
 async function loadFields() {
-  const [listRes, searchRes, addRes, editRes, detailRes] = await Promise.all([
-    api.page.getFields(props.type, FieldKind.List),
-    api.page.getFields(props.type, FieldKind.Search),
-    api.page.getFields(props.type, FieldKind.Add),
-    api.page.getFields(props.type, FieldKind.Edit),
-    api.page.getFields(props.type, FieldKind.Detail),
-  ]);
+  const pageRes = await api.page.getPage(props.type);
+  const pageMeta = pageRes.data ?? {};
 
-  listFields.value = resolveWidgets(listRes.data ?? []);
-  searchFields.value = resolveWidgets(searchRes.data ?? []);
-  addFieldMappings.value = resolveWidgets(addRes.data ?? []);
-  editFieldMappings.value = resolveWidgets(editRes.data ?? []);
-  detailFields.value = resolveWidgets(detailRes.data ?? []);
+  const listData = pageMeta.list ?? pageMeta.fields?.list ?? [];
+  const searchData = pageMeta.search ?? pageMeta.fields?.search ?? [];
+  const addData = pageMeta.addForm ?? pageMeta.fields?.form?.addForm ?? [];
+  const editData = pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [];
+  const detailData = pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [];
+
+  listFields.value = resolveWidgets(listData);
+  searchFields.value = resolveWidgets(searchData);
+  addFieldMappings.value = resolveWidgets(addData);
+  editFieldMappings.value = resolveWidgets(editData);
+  detailFields.value = resolveWidgets(detailData);
 
   // 寻找主键字段
-  const pk = (listRes.data ?? []).find((f) => f.primaryKey);
+  const pk = listData.find((f) => f.primaryKey);
   if (pk) pkField.value = pk.name;
 }
 

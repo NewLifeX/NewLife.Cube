@@ -6,7 +6,6 @@
  */
 
 import type { CubeApi, DataField, ApiResponse, PageParams } from '@cube/api-core';
-import { FieldKind } from '@cube/api-core';
 import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
 import { buildExportUrl } from '@cube/page-utils';
 
@@ -96,22 +95,23 @@ export class PageLogic {
 
   /** 并行加载 5 类字段元数据 */
   async loadFields(type: string): Promise<void> {
-    const [listRes, searchRes, addRes, editRes, detailRes] = await Promise.all([
-      this.api.page.getFields(type, FieldKind.List),
-      this.api.page.getFields(type, FieldKind.Search),
-      this.api.page.getFields(type, FieldKind.Add),
-      this.api.page.getFields(type, FieldKind.Edit),
-      this.api.page.getFields(type, FieldKind.Detail),
-    ]);
+    const pageRes = await this.api.page.getPage(type);
+    const pageMeta = pageRes.data ?? {};
 
-    const listFields = resolveWidgets(listRes.data ?? []);
-    const searchFields = resolveWidgets(searchRes.data ?? []);
-    const addFields = resolveWidgets(addRes.data ?? []);
-    const editFields = resolveWidgets(editRes.data ?? []);
-    const detailFields = resolveWidgets(detailRes.data ?? []);
+    const listData = pageMeta.list ?? pageMeta.fields?.list ?? [];
+    const addData = pageMeta.addForm ?? pageMeta.fields?.form?.addForm ?? [];
+    const editData = pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [];
+    const detailData = pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [];
+    const searchData = pageMeta.search ?? pageMeta.fields?.search ?? [];
+
+    const listFields = resolveWidgets(listData);
+    const searchFields = resolveWidgets(searchData);
+    const addFields = resolveWidgets(addData);
+    const editFields = resolveWidgets(editData);
+    const detailFields = resolveWidgets(detailData);
 
     // 推断主键字段
-    const pk = (listRes.data ?? []).find((f) => f.primaryKey);
+    const pk = listData.find((f) => f.primaryKey);
     const pkField = pk?.name ?? 'id';
 
     this.state.listFields = listFields;

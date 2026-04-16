@@ -4,7 +4,7 @@ import { SearchIcon, ChevronDownIcon } from 'tdesign-icons-vue-next';
 import { api } from '@/api';
 import { useUserStore } from '@/stores/user';
 import FieldInput from '@/components/FieldInput.vue';
-import { FieldKind, Auth } from '@cube/api-core';
+import { Auth } from '@cube/api-core';
 import { toCamelCase } from '@cube/field-mapping';
 import { Button as TButton } from 'tdesign-vue-next';
 import * as echarts from 'echarts';
@@ -100,14 +100,11 @@ function onPageChange(info) {
 }
 async function loadFields() {
     try {
-        const [listRes, editRes, detailRes] = await Promise.all([
-            api.page.getFields(typePath.value, FieldKind.List),
-            api.page.getFields(typePath.value, FieldKind.Edit),
-            api.page.getFields(typePath.value, FieldKind.Detail),
-        ]);
-        listFields.value = listRes?.data ?? [];
-        editFields.value = editRes?.data ?? [];
-        detailFields.value = detailRes?.data ?? [];
+        const pageRes = await api.page.getPage(typePath.value);
+        const pageMeta = pageRes?.data ?? {};
+        listFields.value = pageMeta.list ?? pageMeta.fields?.list ?? [];
+        editFields.value = pageMeta.editForm ?? pageMeta.fields?.form?.editForm ?? [];
+        detailFields.value = pageMeta.detail ?? pageMeta.fields?.form?.detail ?? [];
     }
     catch { /* ignore */ }
 }

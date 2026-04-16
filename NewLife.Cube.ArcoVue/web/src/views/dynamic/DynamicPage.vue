@@ -117,7 +117,7 @@ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick, m
 import { useRoute } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { IconSearch, IconPlus, IconDelete, IconDown } from '@arco-design/web-vue/es/icon';
-import { FieldKind, Auth, type DataField } from '@cube/api-core';
+import { Auth, type DataField } from '@cube/api-core';
 import * as echarts from 'echarts';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
@@ -192,18 +192,13 @@ const importUrl = computed(() => `${typePath.value}/ImportFile`);
 
 async function loadFields() {
   const path = typePath.value;
-  const [list, search, add, edit, detail] = await Promise.all([
-    cubeApi.page.getFields(path, FieldKind.List),
-    cubeApi.page.getFields(path, FieldKind.Search),
-    cubeApi.page.getFields(path, FieldKind.Add),
-    cubeApi.page.getFields(path, FieldKind.Edit),
-    cubeApi.page.getFields(path, FieldKind.Detail),
-  ]);
-  listFields.value = list.data || [];
-  searchFields.value = search.data || [];
-  addFields.value = add.data || [];
-  editFields.value = edit.data || [];
-  detailFields.value = detail.data || [];
+  const page = await cubeApi.page.getPage(path);
+  const meta = page.data || {};
+  listFields.value = meta.list || meta.fields?.list || [];
+  searchFields.value = meta.search || meta.fields?.search || [];
+  addFields.value = meta.addForm || meta.fields?.form?.addForm || [];
+  editFields.value = meta.editForm || meta.fields?.form?.editForm || [];
+  detailFields.value = meta.detail || meta.fields?.form?.detail || [];
 }
 
 async function loadData() {
