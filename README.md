@@ -163,6 +163,14 @@ public class AppController : EntityController<App, AppModel>
 ### 新一代前端皮肤包
 基于 pnpm workspace + 公共模块 `@cube/api-core`（统一 API / Token / 类型）和 `@cube/field-mapping`（字段元数据 → 控件映射），8 套皮肤均开箱即用，NuGet 引包即得完整前端。
 
+### 前端 workspace 构建约定
+
+- 仓库根目录 `pnpm build`：仅构建 `packages/` 下公共模块，不再默认递归编译所有皮肤。
+- 仓库根目录单皮肤构建：使用 `pnpm build:vue`、`pnpm build:react`、`pnpm build:naive`、`pnpm build:mui`、`pnpm build:shadcn`、`pnpm build:arco`、`pnpm build:angular`、`pnpm build:vuetify`、`pnpm build:svelte`、`pnpm build:tdesign`。
+- 仓库根目录单皮肤开发：使用对应的 `pnpm dev:xxx`。
+- 需要一次性构建或启动全部前端时，显式使用 `pnpm build:all` 或 `pnpm dev:all`。
+- 若已进入具体皮肤目录 `web/`，继续使用该目录下的 `pnpm build` / `pnpm dev` 即可，互不干扰。
+
 | NuGet 包 | 框架 | UI 库 | 开发端口 |
 |---------|------|-------|---------|
 | `NewLife.Cube.NaiveUI` | Vue 3 | Naive UI | 5180 |

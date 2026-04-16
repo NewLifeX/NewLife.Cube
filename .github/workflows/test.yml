@@ -31,11 +31,9 @@ jobs:
       with:
         version: 9
     - name: Install Workspace Dependencies
-      working-directory: packages
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
     - name: Build Workspace Frontends
-      working-directory: packages
-      run: pnpm -r build
+      run: pnpm build:all
     - name: Build
       run: |
         dotnet build -c Release

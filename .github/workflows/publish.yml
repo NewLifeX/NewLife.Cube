@@ -28,22 +28,10 @@ jobs:
       uses: pnpm/action-setup@v4
       with:
         version: 9
-    - name: Build Vue Frontend
-      working-directory: NewLife.Cube.Vue/web
-      run: |
-        pnpm install
-        pnpm build
-    - name: Build React Frontend
-      working-directory: NewLife.Cube.React/web
-      run: |
-        pnpm install
-        npx max build
     - name: Install Workspace Dependencies
-      working-directory: packages
-      run: pnpm install
+      run: pnpm install --frozen-lockfile
     - name: Build Workspace Frontends
-      working-directory: packages
-      run: pnpm -r build
+      run: pnpm build:all
     - name: Get Version
       run: echo "VERSION=$(date '+%Y.%m%d')" >> $GITHUB_ENV
     - name: Build
