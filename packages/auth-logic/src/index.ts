@@ -5,7 +5,7 @@
  * 封装为框架无关的纯逻辑类，各框架通过适配器（Pinia/Zustand/Svelte）桥接。
  */
 
-import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo } from '@cube/api-core';
+import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type LoginCategory } from '@cube/api-core';
 import { findMenu, getMenuPermission } from '@cube/page-utils';
 import { encryptPassword } from '@cube/api-core';
 
@@ -107,6 +107,31 @@ export class AuthLogic {
   /** 递归查找菜单 */
   findMenu(path: string): MenuItem | undefined {
     return findMenu(this.state.menus, path);
+  }
+
+  /** 发送验证码登录短信/邮件 */
+  async sendLoginCode(username: string, channel: LoginCategory extends string ? LoginCategory : 'mobile' | 'mail') {
+    return this.api.user.sendCode({ channel: channel as string, username });
+  }
+
+  /** 验证码登录（手机/邮箱） */
+  async loginByCode(username: string, code: string, loginCategory: LoginCategory) {
+    const res = await this.api.user.loginByCode({ username, password: code, loginCategory });
+    if (res.data?.accessToken) {
+      this.api.tokenManager.setToken(res.data.accessToken);
+    }
+    return res;
+  }
+
+  /**
+   * 生成 OAuth 第三方登录跳转 URL
+   * @param provider OAuth 提供商名，如 'github'、'wechat'
+   * @param returnUrl 登录成功后回跳的前端路由，默认为当前页面
+   */
+  buildOAuthUrl(provider: string, returnUrl?: string): string {
+    const base = (this.api.client.defaults.baseURL ?? '').replace(/\/$/, '');
+    const r = encodeURIComponent(returnUrl ?? window.location.href);
+    return `${base}/Sso/Login/${provider}?r=${r}`;
   }
 }
 

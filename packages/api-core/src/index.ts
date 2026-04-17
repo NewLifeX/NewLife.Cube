@@ -31,6 +31,8 @@ export type {
   MenuItem,
   RegisterModel,
   OAuthPendingInfo,
+  LoginCategory,
+  RegisterCategoryInput,
 } from './types';
 export { FieldKind, Auth, RegisterCategory } from './types';
 

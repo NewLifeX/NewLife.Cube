@@ -1,7 +1,22 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios';
 import { TokenManager } from './token';
-import type { ApiResponse } from './types';
+import type { ApiResponse, LoginResult } from './types';
 import qs from 'qs';
+
+/**
+ * 将后端可能返回的大写字段名（Token/RefreshToken/ExpireIn）归一化为小驼峰。
+ * 部分版本后端直接返回 C# 属性名，需在客户端兼容。
+ */
+function normalizeLoginResult(data: LoginResult): LoginResult {
+  return {
+    accessToken: data.accessToken ?? data.Token ?? '',
+    refreshToken: data.refreshToken ?? data.RefreshToken,
+    expireIn: data.expireIn ?? data.ExpireIn,
+  };
+}
+
+/** 需要归一化登录结果的 URL 路径后缀 */
+const LOGIN_RESULT_PATHS = ['/Auth/Login', '/Auth/LoginByCode', '/Auth/Register', '/Auth/Refresh'];
 
 export interface ApiClientOptions {
   /** API 基础路径，默认 '' （同源） */
@@ -47,7 +62,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
     return config;
   });
 
-  // 响应拦截：统一错误处理
+  // 响应拦截：统一错误处理 + 登录结果字段归一化
   client.interceptors.response.use(
     (response) => {
       const res = response.data as ApiResponse;
@@ -63,6 +78,11 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
           onBusinessError(res.code, res.message);
         }
         return Promise.reject(new Error(res.message ?? `API error: ${res.code}`));
+      }
+      // 归一化登录结果字段名（兼容后端大写 Token/RefreshToken/ExpireIn）
+      const url = response.config?.url ?? '';
+      if (LOGIN_RESULT_PATHS.some(p => url.endsWith(p)) && res.data && typeof res.data === 'object') {
+        res.data = normalizeLoginResult(res.data as LoginResult);
       }
       return response;
     },

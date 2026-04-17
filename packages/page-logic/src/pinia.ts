@@ -13,7 +13,7 @@
  */
 
 import { ref, reactive, type Ref } from 'vue';
-import type { CubeApi, ApiResponse } from '@cube/api-core';
+import type { CubeApi, ApiResponse, PageSetting } from '@cube/api-core';
 import { PageLogic, type FieldMapping, type Pagination } from './index';
 
 export interface PiniaPageLogic {
@@ -29,6 +29,12 @@ export interface PiniaPageLogic {
   chartList: Ref<unknown[]>;
   loading: Ref<boolean>;
   formLoading: Ref<boolean>;
+  pageSetting: Ref<PageSetting | null>;
+  canAdd: Ref<boolean>;
+  canEdit: Ref<boolean>;
+  canDelete: Ref<boolean>;
+  canExport: Ref<boolean>;
+  canImport: Ref<boolean>;
 
   loadFields: () => Promise<void>;
   loadData: (searchParams?: Record<string, unknown>) => Promise<void>;
@@ -51,8 +57,9 @@ export interface PiniaPageLogic {
  * @param api - CubeApi 实例
  * @param type - 路径前缀，如 `/Admin/User`
  * @param defaultPageSize - 默认每页大小
+ * @param menuPermissions - 来自 auth-logic 的菜单权限映射，用于推断 canAdd/canEdit 等
  */
-export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20): PiniaPageLogic {
+export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20, menuPermissions?: Record<string, string>): PiniaPageLogic {
   const listFields = ref<FieldMapping[]>([]);
   const searchFields = ref<FieldMapping[]>([]);
   const addFields = ref<FieldMapping[]>([]);
@@ -65,6 +72,12 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20): 
   const chartList = ref<unknown[]>([]);
   const loading = ref(false);
   const formLoading = ref(false);
+  const pageSetting = ref<PageSetting | null>(null);
+  const canAdd = ref(true);
+  const canEdit = ref(true);
+  const canDelete = ref(true);
+  const canExport = ref(true);
+  const canImport = ref(true);
 
   const logic = new PageLogic({
     api,
@@ -81,8 +94,15 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20): 
       if (partial.chartList !== undefined) chartList.value = partial.chartList;
       if (partial.loading !== undefined) loading.value = partial.loading;
       if (partial.formLoading !== undefined) formLoading.value = partial.formLoading;
+      if (partial.pageSetting !== undefined) pageSetting.value = partial.pageSetting;
+      if (partial.canAdd !== undefined) canAdd.value = partial.canAdd;
+      if (partial.canEdit !== undefined) canEdit.value = partial.canEdit;
+      if (partial.canDelete !== undefined) canDelete.value = partial.canDelete;
+      if (partial.canExport !== undefined) canExport.value = partial.canExport;
+      if (partial.canImport !== undefined) canImport.value = partial.canImport;
     },
     defaultPageSize,
+    menuPermissions,
   });
 
   return {
@@ -98,6 +118,12 @@ export function usePageLogic(api: CubeApi, type: string, defaultPageSize = 20): 
     chartList,
     loading,
     formLoading,
+    pageSetting,
+    canAdd,
+    canEdit,
+    canDelete,
+    canExport,
+    canImport,
 
     loadFields: () => logic.loadFields(type),
     loadData: (searchParams) => logic.loadData(type, searchParams),

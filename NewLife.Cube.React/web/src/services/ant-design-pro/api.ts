@@ -1,151 +1,72 @@
-// @ts-ignore
+﻿// @ts-ignore
 /* eslint-disable */
-import { request } from '@umijs/max';
+/**
+ * 认证及用户相关 API — 薄包装层（委托到 @cube/api-core cubeApi）
+ *
+ * 保持原有函数签名不变，方便存量页面零改动迁移。
+ */
+import cubeApi from '@/services/cubeApi';
 
-/** 获取当前的用户 GET /Auth/Info */
-export async function currentUser(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.UserInfo>>('/Auth/Info', {
-    method: 'GET',
-    ...(options || {}),
-  });
+export async function currentUser() {
+  return cubeApi.user.info();
 }
 
-/** 退出登录接口 POST /Auth/Logout */
-export async function outLogin(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/Auth/Logout', {
-    method: 'POST',
-    ...(options || {}),
-  });
+export async function outLogin() {
+  return cubeApi.user.logout();
 }
 
-/** 登录接口 POST /Auth/Login */
-export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/Auth/Login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  });
+export async function login(body: { username: string; password: string; challengeId?: string }) {
+  return cubeApi.user.login(body);
 }
 
-/** 此处后端没有提供注释 GET /api/notices */
-export async function getNotices(options?: { [key: string]: any }) {
-  return request<API.NoticeIconList>('/api/notices', {
-    method: 'GET',
-    ...(options || {}),
-  });
+export async function queryMenus() {
+  return cubeApi.menu.getMenuTree();
 }
 
-/** 获取规则列表 GET /api/rule */
-export async function rule(
-  params: {
-    // query
-    /** 当前的页码 */
-    current?: number;
-    /** 页面的容量 */
-    pageSize?: number;
-  },
-  options?: { [key: string]: any },
-) {
-  return request<API.RuleList>('/api/rule', {
-    method: 'GET',
-    params: {
-      ...params,
-    },
-    ...(options || {}),
-  });
+export async function getLoginConfig() {
+  return cubeApi.user.getLoginConfig();
 }
 
-/** 新建规则 PUT /api/rule */
-export async function updateRule(options?: { [key: string]: any }) {
-  return request<API.RuleListItem>('/api/rule', {
-    method: 'PUT',
-    ...(options || {}),
-  });
+export async function getSiteInfo() {
+  return cubeApi.user.getSiteInfo();
 }
 
-/** 新建规则 POST /api/rule */
-export async function addRule(options?: { [key: string]: any }) {
-  return request<API.RuleListItem>('/api/rule', {
-    method: 'POST',
-    ...(options || {}),
-  });
+export async function sendCode(body: { channel: string; username: string; action?: string }) {
+  return cubeApi.user.sendCode(body);
 }
 
-/** 删除规则 DELETE /api/rule */
-export async function removeRule(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/rule', {
-    method: 'DELETE',
-    ...(options || {}),
-  });
+export async function loginByCode(body: { username: string; password: string; loginCategory: any }) {
+  return cubeApi.user.loginByCode(body);
 }
 
-/** 查询菜单 GET /Cube/MenuTree */
-export async function queryMenus(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.MenuInfo[]>>('/Cube/MenuTree', {
-    method: 'GET',
-    ...(options || {}),
-  });
+export async function register(body: any) {
+  return cubeApi.user.register(body);
 }
 
-/** 查询菜单 GET /Admin/Index/GetMenuTree */
-export async function queryIndex(options?: { [key: string]: any }) {
-  return request<ResponseStructure<any>>('/Admin/Cube', {
-    method: 'GET',
-    ...(options || {}),
-  });
+export async function resetPassword(body: any) {
+  return cubeApi.user.resetPassword(body);
 }
 
-/** 获取登录配置 GET /Auth/LoginConfig */
-export async function getLoginConfig(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.LoginConfig>>('/Auth/LoginConfig', {
-    method: 'GET',
-    ...(options || {}),
-  });
+export async function getOAuthPendingInfo(token: string) {
+  return cubeApi.user.getOAuthPendingInfo(token);
 }
 
-/** 获取站点信息 GET /Cube/SiteInfo */
-export async function getSiteInfo(options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.SiteInfo>>('/Cube/SiteInfo', {
-    method: 'GET',
-    ...(options || {}),
-  });
+export async function getChallenge() {
+  return cubeApi.user.getChallenge();
 }
 
-/** 发送验证码 POST /Auth/SendCode */
-export async function sendCode(body: API.SendCodeParams, options?: { [key: string]: any }) {
-  return request<ResponseStructure<number>>('/Auth/SendCode', {
-    method: 'POST',
-    data: body,
-    ...(options || {}),
-  });
-}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function queryIndex(_options?: any) { return {}; }
 
-/** 验证码登录 POST /Auth/LoginByCode */
-export async function loginByCode(body: API.LoginByCodeParams, options?: { [key: string]: any }) {
-  return request<ResponseStructure<API.LoginResult>>('/Auth/LoginByCode', {
-    method: 'POST',
-    data: body,
-    ...(options || {}),
-  });
-}
+// ——— 以下为 Ant Design Pro 模板残留，保留签名避免编译报错 ———
 
-/** 注册新用户 POST /Admin/User/Register */
-export async function register(body: API.RegisterParams, options?: { [key: string]: any }) {
-  return request<ResponseStructure<void>>('/Admin/User/Register', {
-    method: 'POST',
-    data: body,
-    ...(options || {}),
-  });
-}
-
-/** 重置密码 POST /Auth/ResetPassword */
-export async function resetPassword(body: API.ResetPasswordParams, options?: { [key: string]: any }) {
-  return request<ResponseStructure<boolean>>('/Auth/ResetPassword', {
-    method: 'POST',
-    data: body,
-    ...(options || {}),
-  });
-}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function getNotices(_options?: any) { return { data: [] }; }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function rule(_params?: any, _options?: any) { return { data: { list: [] } }; }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function updateRule(_options?: any) { return {}; }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function addRule(_options?: any) { return {}; }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function removeRule(_options?: any) { return {}; }

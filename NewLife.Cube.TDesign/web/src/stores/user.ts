@@ -1,58 +1,9 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+﻿/**
+ * 用户认证 Store — 基于 @cube/auth-logic/pinia 统一适配器
+ *
+ * 消除本地 findMenu 重复函数，直接使用共享包提供的 createPiniaAuthStore。
+ */
+import { createPiniaAuthStore } from '@cube/auth-logic/pinia';
 import { api } from '@/api';
-import type { MenuItem } from '@cube/api-core';
 
-/** 递归查找菜单树中 URL 匹配的节点 */
-function findMenu(menus: MenuItem[], path: string): MenuItem | undefined {
-  for (const m of menus) {
-    if (m.url && path.toLowerCase().endsWith(m.url.toLowerCase())) return m;
-    if (m.children?.length) {
-      const found = findMenu(m.children, path);
-      if (found) return found;
-    }
-  }
-  return undefined;
-}
-
-export const useUserStore = defineStore('user', () => {
-  const user = ref<any>(null);
-  const menus = ref<MenuItem[]>([]);
-
-  const isLoggedIn = computed(() => !!user.value);
-  const displayName = computed(() => user.value?.displayName || user.value?.name || '');
-
-  async function login(username: string, password: string) {
-    const res = await api.user.login({ username, password });
-    if (res?.data) { user.value = res.data; return true; }
-    return false;
-  }
-
-  async function logout() {
-    try { await api.user.logout(); } catch { /* ignore */ }
-    user.value = null;
-    menus.value = [];
-  }
-
-  async function fetchUserInfo() {
-    try {
-      const res = await api.user.info();
-      if (res?.data) user.value = res.data;
-    } catch { /* ignore */ }
-  }
-
-  async function fetchMenus() {
-    try {
-      const res = await api.menu.getMenuTree();
-      if (res?.data) menus.value = res.data;
-    } catch { /* ignore */ }
-  }
-
-  /** 获取指定路径的菜单权限 */
-  function getMenuPermission(path: string): Record<string, string> {
-    const item = findMenu(menus.value, path);
-    return item?.permissions ?? {};
-  }
-
-  return { user, menus, isLoggedIn, displayName, login, logout, fetchUserInfo, fetchMenus, getMenuPermission };
-});
+export const useUserStore = createPiniaAuthStore(api, 'user');

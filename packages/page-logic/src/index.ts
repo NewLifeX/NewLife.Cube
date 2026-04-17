@@ -5,7 +5,7 @@
  * 封装为框架无关的编排类，各框架通过适配器桥接到具体状态管理。
  */
 
-import type { CubeApi, DataField, ApiResponse, PageParams } from '@cube/api-core';
+import type { CubeApi, DataField, ApiResponse, PageParams, PageSetting } from '@cube/api-core';
 import { resolveWidgets, type FieldMapping } from '@cube/field-mapping';
 import { buildExportUrl } from '@cube/page-utils';
 
@@ -44,6 +44,18 @@ export interface PageState {
   loading: boolean;
   /** 表单提交中 */
   formLoading: boolean;
+  /** 页面设置（由 GetPage 返回的 setting 字段） */
+  pageSetting: PageSetting | null;
+  /** 是否允许新增（来自 pageSetting 与菜单权限） */
+  canAdd: boolean;
+  /** 是否允许编辑（来自菜单权限） */
+  canEdit: boolean;
+  /** 是否允许删除（来自 pageSetting 与菜单权限） */
+  canDelete: boolean;
+  /** 是否允许导出（来自菜单权限） */
+  canExport: boolean;
+  /** 是否允许导入（来自菜单权限） */
+  canImport: boolean;
 }
 
 /** 状态变更回调 */
@@ -57,6 +69,8 @@ export interface PageLogicOptions {
   update: PageStateUpdater;
   /** 默认每页大小 */
   defaultPageSize?: number;
+  /** 初始菜单权限（来自 auth-logic getMenuPermission），用于推断 canAdd/canEdit/canDelete 等 */
+  menuPermissions?: Record<string, string>;
 }
 
 // ======================== 核心逻辑 ========================
@@ -68,10 +82,12 @@ export class PageLogic {
   private api: CubeApi;
   private update: PageStateUpdater;
   private state: PageState;
+  private menuPermissions: Record<string, string>;
 
   constructor(options: PageLogicOptions) {
     this.api = options.api;
     this.update = options.update;
+    this.menuPermissions = options.menuPermissions ?? {};
     this.state = {
       listFields: [],
       searchFields: [],
@@ -85,6 +101,12 @@ export class PageLogic {
       chartList: [],
       loading: false,
       formLoading: false,
+      pageSetting: null,
+      canAdd: true,
+      canEdit: true,
+      canDelete: true,
+      canExport: true,
+      canImport: true,
     };
   }
 
@@ -93,7 +115,7 @@ export class PageLogic {
     return this.state;
   }
 
-  /** 并行加载 5 类字段元数据 */
+  /** 并行加载 5 类字段元数据，同时提取页面设置与权限标志 */
   async loadFields(type: string): Promise<void> {
     const pageRes = await this.api.page.getPage(type);
     const pageMeta = pageRes.data ?? {};
@@ -114,14 +136,39 @@ export class PageLogic {
     const pk = listData.find((f) => f.primaryKey);
     const pkField = pk?.name ?? 'id';
 
+    // 提取页面设置
+    const pageSetting = pageMeta.setting ?? pageMeta.pageSetting ?? null;
+
+    // 计算权限标志（菜单权限 + 页面设置双重限制）
+    const perms = this.menuPermissions;
+    const hasAdd = perms['Add'] !== undefined || Object.values(perms).some(v => v === '新增' || v === 'Add');
+    const hasEdit = perms['Edit'] !== undefined || Object.values(perms).some(v => v === '编辑' || v === 'Edit');
+    const hasDel = perms['Delete'] !== undefined || Object.values(perms).some(v => v === '删除' || v === 'Delete');
+    const hasExport = perms['Export'] !== undefined || Object.values(perms).some(v => v === '导出' || v === 'Export');
+    const hasImport = perms['Import'] !== undefined || Object.values(perms).some(v => v === '导入' || v === 'Import');
+    // 无权限配置时（菜单未配 permissions）默认允许
+    const noPermConfig = Object.keys(perms).length === 0;
+
+    const canAdd = (noPermConfig || hasAdd) && (pageSetting?.enableAdd !== false) && (pageSetting?.isReadOnly !== true);
+    const canEdit = (noPermConfig || hasEdit) && (pageSetting?.isReadOnly !== true);
+    const canDelete = (noPermConfig || hasDel) && (pageSetting?.isReadOnly !== true);
+    const canExport = noPermConfig || hasExport;
+    const canImport = noPermConfig || hasImport;
+
     this.state.listFields = listFields;
     this.state.searchFields = searchFields;
     this.state.addFields = addFields;
     this.state.editFields = editFields;
     this.state.detailFields = detailFields;
     this.state.pkField = pkField;
+    this.state.pageSetting = pageSetting;
+    this.state.canAdd = canAdd;
+    this.state.canEdit = canEdit;
+    this.state.canDelete = canDelete;
+    this.state.canExport = canExport;
+    this.state.canImport = canImport;
 
-    this.update({ listFields, searchFields, addFields, editFields, detailFields, pkField });
+    this.update({ listFields, searchFields, addFields, editFields, detailFields, pkField, pageSetting, canAdd, canEdit, canDelete, canExport, canImport });
   }
 
   /** 加载列表数据（分页 + 搜索） */

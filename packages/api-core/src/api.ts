@@ -3,12 +3,14 @@ import type {
   ApiResponse,
   DataField,
   FieldKind,
+  LoginCategory,
   PageMeta,
   UserInfo,
   LoginResult,
   LoginConfig,
   ChallengeResult,
   ResetPasswordModel,
+  RegisterCategoryInput,
   SiteInfo,
   MenuItem,
   PageParams,
@@ -30,7 +32,7 @@ export function createUserApi(request: RequestFn) {
       request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
 
     /** 验证码登录（手机/邮箱） */
-    loginByCode: (data: { username: string; password: string; loginCategory: number }) =>
+    loginByCode: (data: { username: string; password: string; loginCategory: LoginCategory }) =>
       request<LoginResult>({ url: '/Auth/LoginByCode', method: 'post', data }),
 
     /** 发送验证码 */
@@ -58,7 +60,7 @@ export function createUserApi(request: RequestFn) {
       request<SiteInfo>({ url: '/Cube/SiteInfo', method: 'get' }),
 
     /** 注册新用户 */
-    register: (data: RegisterModel) =>
+    register: (data: Omit<RegisterModel, 'registerCategory'> & { registerCategory?: RegisterCategoryInput }) =>
       request<LoginResult>({ url: '/Auth/Register', method: 'post', data }),
 
     /** 获取OAuth回跳待注册预填信息 */
@@ -131,9 +133,21 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
     remove: (type: string, id: number | string) =>
       request<unknown>({ url: type, method: 'delete', params: { id } }),
 
-    /** 批量删除，id 参数支持逗号分隔多个主键 */
-    deleteSelect: (type: string, keys: (number | string)[]) =>
-      request<unknown>({ url: type, method: 'delete', params: { id: keys.join(',') } }),
+    /**
+     * 批量删除，默认使用重复参数 id=1&id=2 （文档标准）。
+     * 若后端仅支持逗号形式，可传入 compatCommaJoin: true 切换为兼容模式。
+     */
+    deleteSelect: (type: string, keys: (number | string)[], options?: { compatCommaJoin?: boolean }) => {
+      const ids = options?.compatCommaJoin
+        ? { id: keys.join(',') }
+        : keys.map(id => `id=${encodeURIComponent(id)}`).reduce<Record<string, (number | string)[]>>(
+            (acc) => { acc.id = keys as (number | string)[]; return acc; },
+            { id: [] }
+          );
+      // 使用 qs 逗号逗号逗号 重复参数：id=1&id=2&id=3
+      const idArr = options?.compatCommaJoin ? keys.join(',') : keys;
+      return request<unknown>({ url: type, method: 'delete', params: { id: idArr } });
+    },
 
     /** 按条件删除，params 为搜索条件（至少需携带一个参数，否则后端拒绝） */
     deleteAll: (type: string, params?: Record<string, unknown>) =>

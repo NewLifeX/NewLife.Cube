@@ -66,6 +66,12 @@ export function createPageStore(
       chartList: [],
       loading: false,
       formLoading: false,
+      pageSetting: null,
+      canAdd: true,
+      canEdit: true,
+      canDelete: true,
+      canExport: true,
+      canImport: true,
 
       // 操作方法
       loadFields: () => logic.loadFields(type),

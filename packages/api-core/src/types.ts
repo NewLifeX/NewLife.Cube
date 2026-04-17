@@ -169,6 +169,14 @@ export interface LoginResult {
   refreshToken?: string;
   /** 过期时间（秒） */
   expireIn?: number;
+
+  // ---- 后端字段别名（部分版本使用大写字段名，由 client.ts normalizeLoginResult 统一归一化） ----
+  /** @internal 后端兼容字段，请使用 accessToken */
+  Token?: string;
+  /** @internal 后端兼容字段，请使用 refreshToken */
+  RefreshToken?: string;
+  /** @internal 后端兼容字段，请使用 expireIn */
+  ExpireIn?: number;
 }
 
 /** OAuth 提供商 */
@@ -205,6 +213,19 @@ export interface SiteInfo {
   loginBackground?: string;
 }
 
+/**
+ * 验证码登录分类
+ *
+ * 字符串枚举与后端 Auth/LoginByCode 的 channel/loginCategory 参数一致。
+ * 数值别名保持向后兼容。
+ */
+export type LoginCategory = 'mobile' | 'mail' | 0 | 1 | 2;
+
+/** 手机验证码登录（等价于数值 1） */
+export const LOGIN_CATEGORY_MOBILE = 'mobile' as const;
+/** 邮箱验证码登录（等价于数值 2） */
+export const LOGIN_CATEGORY_MAIL = 'mail' as const;
+
 /** 注册参数 */
 export enum RegisterCategory {
   /** 用户名密码注册 */
@@ -216,6 +237,13 @@ export enum RegisterCategory {
   /** OAuth 回跳后绑定注册 */
   OAuthBind = 3,
 }
+
+/**
+ * 注册分类字符串枚举（与后端 registerCategory 参数一致）
+ *
+ * 字符串形式用于新代码；数值形式保持兼容。
+ */
+export type RegisterCategoryInput = RegisterCategory | '' | 'mobile' | 'mail' | 'oauthbind';
 
 /** 注册参数 */
 export interface RegisterModel {
