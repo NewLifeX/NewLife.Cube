@@ -21,45 +21,55 @@ public class DbController : ControllerBaseX
     /// <summary>数据库列表</summary>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Detail)]
-    public ActionResult Index()
+    public async Task<ActionResult> Index()
     {
         var list = new List<DbItem>();
         var dir = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();
+        var timeout = TimeSpan.FromMilliseconds(300);
 
-        // 读取配置文件
         foreach (var item in DAL.ConnStrs.ToArray())
         {
-            var di = new DbItem
-            {
-                Name = item.Key,
-                ConnStr = item.Value
-            };
+            var di = new DbItem { Name = item.Key, ConnStr = item.Value };
 
-            var dal = DAL.Create(item.Key);
-            di.Type = dal.DbType;
-
-            var driver = dal.Db.Factory;
-            if (driver != null)
+            try
             {
-                var ax = AssemblyX.Create(driver.GetType().Assembly);
-                di.Driver = ax.Name;
-                di.DriverVersion = ax.FileVersion;
-            }
+                var dal = DAL.Create(item.Key);
+                di.Type = dal.DbType;
 
-            var t = Task.Run(() =>
-            {
+                var driver = dal.Db.Factory;
+                if (driver != null)
+                {
+                    var ax = AssemblyX.Create(driver.GetType().Assembly);
+                    di.Driver = ax.Name;
+                    di.DriverVersion = ax.FileVersion;
+                }
+
+                using var cts = new CancellationTokenSource(timeout);
                 try
                 {
-                    return dal.Db.ServerVersion;
+                    di.Version = await Task.Run(() => dal.Db.ServerVersion, cts.Token);
                 }
-                catch { return null; }
-            });
-            if (t.Wait(300)) di.Version = t.Result;
+                catch (OperationCanceledException)
+                {
+                    di.Version = "获取数据库版本信息超时（300ms）";
+                }
+                catch (Exception ex)
+                {
+                    di.Version = $"获取版本失败: {ex.Message}";
+                }
 
-            di.Tables = dal.Tables.Count;
-            di.Entities = EntityFactory.LoadEntities(item.Key).Count();
+                di.Tables = dal.Tables.Count;
+                di.Entities = EntityFactory.LoadEntities(item.Key).Count();
 
-            if (dir.Exists) di.Backups = dir.GetFiles($"{dal.ConnName}_*", SearchOption.TopDirectoryOnly).Length;
+                if (dir.Exists)
+                {
+                    di.Backups = dir.GetFiles($"{dal.ConnName}_*", SearchOption.TopDirectoryOnly).Length;
+                }
+            }
+            catch (Exception ex)
+            {
+                di.Version = $"初始化失败: {ex.Message}";
+            }
 
             list.Add(di);
         }
@@ -71,7 +81,7 @@ public class DbController : ControllerBaseX
     /// <param name="name"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
-    public ActionResult Backup(String name)
+    public async Task<ActionResult> Backup(String name)
     {
         var sw = Stopwatch.StartNew();
 
@@ -82,14 +92,14 @@ public class DbController : ControllerBaseX
         sw.Stop();
         WriteLog("备份", true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
 
-        return Index();
+        return await Index();
     }
 
     /// <summary>备份并压缩数据库</summary>
     /// <param name="name"></param>
     /// <returns></returns>
     [EntityAuthorize(PermissionFlags.Insert)]
-    public ActionResult BackupAndCompress(String name)
+    public async Task<ActionResult> BackupAndCompress(String name)
     {
         var sw = Stopwatch.StartNew();
 
@@ -105,7 +115,7 @@ public class DbController : ControllerBaseX
         sw.Stop();
         WriteLog("备份", true, $"备份数据库 {name} 并压缩到 {bak}，耗时 {sw.Elapsed}");
 
-        return Index();
+        return await Index();
     }
 
     /// <summary>下载数据库备份</summary>
