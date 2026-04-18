@@ -10,6 +10,9 @@
     }
     if (userId == 0) userId = currentId;
 
+    // 该用户
+    user = XCode.Membership.User.FindByID(userId);
+
     var dic = new Dictionary<String, Object>();
     if (userId == currentId)
     {
