@@ -9,7 +9,7 @@ using XCode.Membership;
 namespace NewLife.Cube.Areas.Admin.Controllers;
 
 /// <summary>部门</summary>
-[DataPermission(null, "ManagerID={#userId}")]
+//[DataPermission(null, "ManagerID={#userId}")]
 [DisplayName("部门")]
 [AdminArea]
 [Menu(95, true, Icon = "fa-users", Mode = MenuModes.Admin | MenuModes.Tenant)]
