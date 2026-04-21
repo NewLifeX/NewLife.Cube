@@ -133,6 +133,8 @@ public static class CubeService
         services.AddSingleton<TokenService>();
         services.AddSingleton<SmsService>();
         services.AddSingleton<MailService>();
+        services.TryAddSingleton<ICaptchaService, SvgMathCaptchaService>();
+        services.TryAddSingleton<IMfaService, TotpMfaService>();
 
         //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();

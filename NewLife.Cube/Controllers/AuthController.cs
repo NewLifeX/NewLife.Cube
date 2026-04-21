@@ -28,14 +28,17 @@ public class AuthController : ControllerBaseX
 
     private readonly UserService _userService;
     private readonly ICache _cache;
+    private readonly ICaptchaService _captcha;
 
     /// <summary>实例化认证控制器</summary>
     /// <param name="userService">用户服务</param>
     /// <param name="cacheProvider">缓存提供者</param>
-    public AuthController(UserService userService, ICacheProvider cacheProvider)
+    /// <param name="captchaService">验证码服务</param>
+    public AuthController(UserService userService, ICacheProvider cacheProvider, ICaptchaService captchaService)
     {
         _userService = userService;
         _cache = cacheProvider.Cache;
+        _captcha = captchaService;
     }
 
     /// <summary>密码登录</summary>
@@ -54,6 +57,9 @@ public class AuthController : ControllerBaseX
         try
         {
             var loginResult = _userService.Login(model, HttpContext);
+            // MFA 拦截：账密通过但需要二步验证
+            if (loginResult != null && !loginResult.MfaToken.IsNullOrEmpty())
+                return res.ToFailApiResponse($"mfa_required:{loginResult.MfaToken}");
             if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
                 return res.ToFailApiResponse(loginResult?.Message);
 
@@ -102,6 +108,11 @@ public class AuthController : ControllerBaseX
         try
         {
             var loginResult = _userService.Login(model, HttpContext);
+
+            // MFA 拦截：验证码登录也需要二步验证
+            if (loginResult != null && !loginResult.MfaToken.IsNullOrEmpty())
+                return res.ToFailApiResponse($"mfa_required:{loginResult.MfaToken}");
+
             if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
                 return res.ToFailApiResponse(loginResult?.Message);
 
@@ -124,18 +135,54 @@ public class AuthController : ControllerBaseX
     {
         var userName = model.UserName;
         var refreshToken = model.RefreshToken;
-        var user = ManageProvider.Provider.FindByName(userName);
 
+        // 令牌轮换：旧令牌使用后加入黑名单，防止同一刷新令牌被重复使用（重放攻击/令牌泄漏检测）
+        var blacklistKey = $"RefreshBlacklist:{refreshToken?.GetHashCode()}";
+        if (!refreshToken.IsNullOrEmpty() && _cache.ContainsKey(blacklistKey))
+            return Json(-1, "refresh_token 已失效，请重新登录");
+
+        var user = ManageProvider.Provider.FindByName(userName);
         var tokens = HttpContext.RefreshToken(user, refreshToken);
+
+        // 旧刷新令牌加入黑名单，TTL 匹配刷新令牌有效期（7天）
+        if (!refreshToken.IsNullOrEmpty())
+            _cache.Set(blacklistKey, 1, 7 * 24 * 3600);
 
         return Json(0, "ok", new { Token = tokens.AccessToken, RefreshToken = tokens.RefreshToken, tokens.ExpireIn });
     }
 
+    /// <summary>获取图片验证码</summary>
+    /// <remarks>
+    /// 当 CubeSetting.CaptchaScene 中包含对应场景位时，前端须先调用本接口获取验证码，
+    /// 再将 captchaId 和用户填写的 captchaCode 随请求一并提交。
+    /// 验证码 TTL 为 300 秒，校验成功后立即失效（防重放）。
+    /// </remarks>
+    /// <returns>captchaId（校验时回传）和 image（SVG 文本）</returns>
+    [HttpGet]
+    [AllowAnonymous]
+    public ActionResult Captcha()
+    {
+        var result = _captcha.Generate();
+        return Json(0, null, result);
+    }
+
     /// <summary>获取登录页配置（OAuth 提供商列表、是否允许注册等）</summary>
+    /// <param name="tenant">可选租户标识：租户ID整数、tenantCode 或 tenantName；为空时按请求域名自动匹配</param>
     /// <returns>登录配置信息</returns>
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult LoginConfig() => Json(0, null, new LoginConfigModel());
+    public ActionResult LoginConfig(String tenant = null)
+    {
+        Tenant t = null;
+        if (!tenant.IsNullOrEmpty())
+        {
+            if (Int32.TryParse(tenant, out var id))
+                t = Tenant.FindById(id);
+            else
+                t = Tenant.FindByCode(tenant) ?? Tenant.Find(Tenant._.Name == tenant);
+        }
+        return Json(0, null, new LoginConfigModel(t));
+    }
 
     /// <summary>获取当前登录用户信息</summary>
     /// <returns>用户信息，包含权限和角色</returns>

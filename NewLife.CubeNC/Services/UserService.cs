@@ -6,6 +6,7 @@ using NewLife.Cube.Controllers;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Enums;
 using NewLife.Cube.Models;
+using NewLife.Cube.Services;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
@@ -24,8 +25,10 @@ namespace NewLife.Cube.Services;
 /// <param name="mailService">邮件服务</param>
 /// <param name="passwordService">密码服务</param>
 /// <param name="cacheProvider">缓存提供者</param>
+/// <param name="captchaService">图片验证码服务</param>
+/// <param name="mfaService">MFA 服务</param>
 /// <param name="tracer">追踪器</param>
-public class UserService(SmsService smsService, MailService mailService, PasswordService passwordService, ICacheProvider cacheProvider, ITracer tracer)
+public class UserService(SmsService smsService, MailService mailService, PasswordService passwordService, ICacheProvider cacheProvider, ICaptchaService captchaService, IMfaService mfaService, ITracer tracer)
 {
     #region 缓存Key前缀常量
     /// <summary>密码登录用户名错误次数缓存前缀</summary>
@@ -117,6 +120,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
     #region 属性
     private readonly ICache _cache = cacheProvider.Cache;
+    private readonly ICaptchaService _captcha = captchaService;
+    private readonly IMfaService _mfa = mfaService;
     #endregion
 
     #region 登录
@@ -129,6 +134,14 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <exception cref="XException"></exception>
     public ServiceResult<IToken> Login(LoginModel loginModel, HttpContext httpContext)
     {
+        // 图片验证码校验（场景位掩码 1 = 登录时需要验证码）
+        var captchaSet = CubeSetting.Current;
+        if ((captchaSet.CaptchaScene & 1) != 0)
+        {
+            if (!_captcha.Validate(loginModel.CaptchaId, loginModel.CaptchaCode))
+                return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
+        }
+
         switch (loginModel.LoginCategory)//登录方式
         {
             case LoginCategory.Phone://手机验证码登录
@@ -380,7 +393,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         }
     }
 
-    /// <summary>完成登录，记录统计并生成Token</summary>
+    /// <summary>完成登录，记录统计并生成Token。若用户已开启 MFA 则中断，返回挂起令牌要求二步验证</summary>
     private ServiceResult<IToken> CompleteLogin(IManageUser user, HttpContext httpContext, Boolean remember, String action, String username, String ip)
     {
         var set = CubeSetting.Current;
@@ -407,6 +420,18 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         httpContext.ChooseTenant(user.ID);
 
         LogProvider.Provider.WriteLog(typeof(User), action, true, $"用户：{username}", user.ID, user + "", ip);
+
+        // MFA 拦截：账密通过但用户已开启 MFA，不下发正式令牌，改为下发挂起令牌
+        if (set.EnableMfa && _mfa != null && user is IUser iuser && _mfa.IsEnabled(iuser))
+        {
+            var mfaToken = _mfa.IssuePendingToken(user.ID);
+            return new ServiceResult<IToken>
+            {
+                IsSuccess = true,
+                Message = "mfa_required",
+                MfaToken = mfaToken,
+            };
+        }
 
         var tokens = httpContext.IssueTokenAndRefreshToken(user, TimeSpan.FromSeconds(set.TokenExpire));
 
@@ -511,6 +536,14 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <summary>发送登录验证码</summary>
     public async Task<VerifyCodeRecord> SendVerifyCode(VerifyCodeModel model, String ip)
     {
+        // 图片验证码校验（场景位掩码 4 = 发送验证码时需要图片验证码，防短信轰炸）
+        var captchaSet = CubeSetting.Current;
+        if ((captchaSet.CaptchaScene & 4) != 0)
+        {
+            if (!_captcha.Validate(model.CaptchaId, model.CaptchaCode))
+                throw new XException("图片验证码错误或已过期，请刷新后重试");
+        }
+
         var user = model.Username?.Trim() ?? "";
         if (user.IsNullOrEmpty()) throw new XException("账号不能为空");
 
@@ -704,6 +737,13 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     {
         var set = CubeSetting.Current;
         if (!set.AllowRegister) return new ServiceResult<IToken> { IsSuccess = false, Message = "禁止注册" };
+
+        // 图片验证码校验（场景位掩码 2 = 注册时需要验证码）
+        if ((set.CaptchaScene & 2) != 0)
+        {
+            if (!_captcha.Validate(model.CaptchaId, model.CaptchaCode))
+                return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
+        }
 
         if (model == null) return new ServiceResult<IToken> { IsSuccess = false, Message = "注册参数不能为空" };
 

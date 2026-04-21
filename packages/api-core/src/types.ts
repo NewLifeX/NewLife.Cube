@@ -187,16 +187,82 @@ export interface OAuthProvider {
 }
 
 /** 登录配置 */
-export interface LoginConfig {
-  displayName?: string;
+/** 登录能力配置 */
+export interface LoginAbility {
+  /** 允许密码登录 */
+  password?: boolean;
+  /** 允许短信验证码登录 */
+  sms?: boolean;
+  /** 允许邮箱验证码登录 */
+  mail?: boolean;
+  /** 登录时需要图片验证码 */
+  captcha?: boolean;
+}
+
+/** 注册能力配置 */
+export interface RegisterAbility {
+  /** 是否允许注册 */
+  enabled?: boolean;
+  /** 允许用户名密码注册 */
+  password?: boolean;
+  /** 允许手机验证码注册 */
+  sms?: boolean;
+  /** 允许邮箱验证码注册 */
+  mail?: boolean;
+  /** 注册时需要图片验证码 */
+  captcha?: boolean;
+}
+
+/** 安全策略配置 */
+export interface SecurityConfig {
+  /** 是否要求 Challenge-Response 加密传输密码 */
+  challengeRequired?: boolean;
+  /** 是否开放 MFA 功能 */
+  mfaAvailable?: boolean;
+}
+
+/** OAuth 提供商 */
+export interface OAuthProvider {
+  name?: string;
   logo?: string;
-  allowLogin?: boolean;
-  allowRegister?: boolean;
-  enableSms?: boolean;
-  enableMail?: boolean;
-  enableSmsRegister?: boolean;
-  enableMailRegister?: boolean;
+  nickName?: string;
+}
+
+/** 登录配置（新版嵌套结构，v2 起） */
+export interface LoginConfig {
+  /** 系统名称（租户级优先） */
+  name?: string;
+  /** 登录提示 */
   loginTip?: string;
+  /** 登录页 Logo，空则使用皮肤内置默认 */
+  loginLogo?: string;
+  /** 登录页背景图，空则使用皮肤内置默认 */
+  loginBackground?: string;
+  /** 登录能力配置 */
+  login?: LoginAbility;
+  /** 注册能力配置 */
+  register?: RegisterAbility;
+  /** OAuth 提供商列表 */
+  oauth?: OAuthProvider[];
+  /** 安全策略 */
+  security?: SecurityConfig;
+
+  // === 兼容旧版平铺字段（v1），请勿在新代码中使用 ===
+  /** @deprecated 使用 name */
+  displayName?: string;
+  /** @deprecated 使用 login.password */
+  allowLogin?: boolean;
+  /** @deprecated 使用 register.enabled */
+  allowRegister?: boolean;
+  /** @deprecated 使用 login.sms */
+  enableSms?: boolean;
+  /** @deprecated 使用 login.mail */
+  enableMail?: boolean;
+  /** @deprecated 使用 login.sms */
+  enableSmsRegister?: boolean;
+  /** @deprecated 使用 login.mail */
+  enableMailRegister?: boolean;
+  /** @deprecated 使用 oauth */
   providers?: OAuthProvider[];
 }
 

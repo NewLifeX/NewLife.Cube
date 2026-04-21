@@ -28,6 +28,12 @@ public class LoginModel : ICubeModel
     /// <summary> 兼容旧版字段，建议改用 ChallengeId </summary>
     [Obsolete("Use ChallengeId instead")]
     public String Pkey { get => ChallengeId; set => ChallengeId = value; }
+
+    /// <summary>图片验证码ID。调用 /Auth/Captcha 获取</summary>
+    public String CaptchaId { get; set; }
+
+    /// <summary>图片验证码答案</summary>
+    public String CaptchaCode { get; set; }
 }
 
 
@@ -97,6 +103,12 @@ public class AuthRegisterModel : ICubeModel
 
     /// <summary>OAuth 临时令牌（OAuthBind 时必填）</summary>
     public String OAuthToken { get; set; }
+
+    /// <summary>图片验证码ID。调用 /Auth/Captcha 获取</summary>
+    public String CaptchaId { get; set; }
+
+    /// <summary>图片验证码答案</summary>
+    public String CaptchaCode { get; set; }
 
     /// <summary>兼容旧版字段，建议改用 ConfirmPassword</summary>
     [Obsolete("Use ConfirmPassword instead")]

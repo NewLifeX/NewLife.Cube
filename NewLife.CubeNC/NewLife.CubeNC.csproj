@@ -145,6 +145,8 @@ v6.10.2026.0404
     <Compile Include="..\NewLife.Cube\Models\ServiceResult.cs" Link="Models\ServiceResult.cs" />
     <Compile Include="..\NewLife.Cube\Models\TokenInModel.cs" Link="Models\TokenInModel.cs" />
     <Compile Include="..\NewLife.Cube\Models\VerifyCodeModel.cs" Link="Models\VerifyCodeModel.cs" />
+    <Compile Include="..\NewLife.Cube\Services\ICaptchaService.cs" Link="Services\ICaptchaService.cs" />
+    <Compile Include="..\NewLife.Cube\Services\IMfaService.cs" Link="Services\IMfaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\MailService.cs" Link="Services\MailService.cs" />
     <Compile Include="..\NewLife.Cube\Services\SmsService.cs" Link="Services\SmsService.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />

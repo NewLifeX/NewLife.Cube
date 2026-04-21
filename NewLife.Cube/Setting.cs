@@ -347,6 +347,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("系统功能")]
     public Boolean EnableMail { get; set; }
 
+    /// <summary>验证码场景。位掩码控制图片验证码出现的场景：0=不启用，1=登录时，2=注册时，4=发验证码时（防短信轰炸），可组合，如3=登录+注册均需验证码，默认0</summary>
+    [Description("验证码场景。位掩码：0=不启用，1=登录，2=注册，4=发验证码（防短信轰炸），可组合，如3=登录+注册均需验证码，默认0")]
+    [Category("系统功能")]
+    public Int32 CaptchaScene { get; set; }
+
+    /// <summary>启用MFA。是否允许用户开启多因素认证（TOTP），增强版功能，默认false</summary>
+    [Description("启用MFA。是否允许用户开启多因素认证（TOTP），增强版功能，默认false")]
+    [Category("系统功能")]
+    public Boolean EnableMfa { get; set; }
+
     /// <summary>文件存储提供服务。是否响应其他节点的文件下载请求，默认true</summary>
     [Description("文件存储提供服务。是否响应其他节点的文件下载请求，默认true")]
     [Category("系统功能")]

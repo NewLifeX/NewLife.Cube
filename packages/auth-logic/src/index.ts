@@ -5,7 +5,7 @@
  * 封装为框架无关的纯逻辑类，各框架通过适配器（Pinia/Zustand/Svelte）桥接。
  */
 
-import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type LoginCategory } from '@cube/api-core';
+import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type LoginCategory, type MfaVerifyResult } from '@cube/api-core';
 import { findMenu, getMenuPermission } from '@cube/page-utils';
 import { encryptPassword } from '@cube/api-core';
 
@@ -50,8 +50,14 @@ export class AuthLogic {
     return !!this.api.tokenManager.getToken();
   }
 
-  /** 密码登录（自动尝试 RSA-OAEP Challenge 加密，服务端不支持时降级明文） */
-  async login(username: string, password: string) {
+  /**
+   * 密码登录（自动尝试 RSA-OAEP Challenge 加密，服务端不支持时降级明文）
+   *
+   * @param captchaId  图片验证码 ID（当 LoginConfig.login.captcha=true 时需传入）
+   * @param captchaCode 图片验证码答案
+   * @returns 若服务端要求 MFA，返回值中 data 为 null，需从 message 提取 mfaToken 继续二步验证
+   */
+  async login(username: string, password: string, captchaId?: string, captchaCode?: string) {
     let finalPassword = password;
     let challengeId: string | undefined;
     try {
@@ -64,7 +70,13 @@ export class AuthLogic {
     } catch {
       // Challenge 接口不可达或加密失败，降级为明文传输
     }
-    const res = await this.api.user.login({ username, password: finalPassword, ...(challengeId ? { challengeId } : {}) });
+    const res = await this.api.user.login({
+      username,
+      password: finalPassword,
+      ...(challengeId ? { challengeId } : {}),
+      ...(captchaId ? { captchaId } : {}),
+      ...(captchaCode ? { captchaCode } : {}),
+    });
     if (res.data?.accessToken) {
       this.api.tokenManager.setToken(res.data.accessToken);
     }
@@ -110,13 +122,24 @@ export class AuthLogic {
   }
 
   /** 发送验证码登录短信/邮件 */
-  async sendLoginCode(username: string, channel: LoginCategory extends string ? LoginCategory : 'mobile' | 'mail') {
-    return this.api.user.sendCode({ channel: channel as string, username });
+  async sendLoginCode(username: string, channel: LoginCategory extends string ? LoginCategory : 'mobile' | 'mail', captchaId?: string, captchaCode?: string) {
+    return this.api.user.sendCode({
+      channel: channel as string,
+      username,
+      ...(captchaId ? { captchaId } : {}),
+      ...(captchaCode ? { captchaCode } : {}),
+    });
   }
 
   /** 验证码登录（手机/邮箱） */
-  async loginByCode(username: string, code: string, loginCategory: LoginCategory) {
-    const res = await this.api.user.loginByCode({ username, password: code, loginCategory });
+  async loginByCode(username: string, code: string, loginCategory: LoginCategory, captchaId?: string, captchaCode?: string) {
+    const res = await this.api.user.loginByCode({
+      username,
+      password: code,
+      loginCategory,
+      ...(captchaId ? { captchaId } : {}),
+      ...(captchaCode ? { captchaCode } : {}),
+    });
     if (res.data?.accessToken) {
       this.api.tokenManager.setToken(res.data.accessToken);
     }
@@ -136,9 +159,89 @@ export class AuthLogic {
 }
 
 // 重新导出类型供适配器使用
-export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo } from '@cube/api-core';
+export type { UserInfo, MenuItem, CubeApi, ResetPasswordModel, RegisterModel, OAuthPendingInfo, MfaVerifyResult } from '@cube/api-core';
 export { findMenu, getMenuPermission, checkAuth, Auth } from '@cube/page-utils';
 export type { AuthCode } from '@cube/page-utils';
+
+// ─────────────────────────────────────────────
+// MFA 二步验证业务逻辑
+// ─────────────────────────────────────────────
+
+/** MFA 二步验证流程状态 */
+export interface MfaState {
+  /** 正在验证 */
+  verifying: boolean;
+  /** 错误信息 */
+  error: string;
+}
+
+/** MFA 状态变更回调 */
+export type MfaStateUpdater = (partial: Partial<MfaState>) => void;
+
+/**
+ * MFA 二步验证逻辑
+ *
+ * 登录时服务端返回 mfa_required:xxx 时构造此类，持有 mfaToken，
+ * 用户输入 Authenticator App 验证码后调用 verify()，成功后持久化令牌。
+ *
+ * @example
+ * ```ts
+ * // 从 Login 响应消息提取 mfaToken
+ * const match = res.message?.match(/mfa_required:(\S+)/);
+ * if (match) {
+ *   const mfaLogic = new MfaLoginLogic(api, mfaToken, update);
+ *   await mfaLogic.verify(code);
+ * }
+ * ```
+ */
+export class MfaLoginLogic {
+  private api: CubeApi;
+  private mfaToken: string;
+  private update: MfaStateUpdater;
+
+  state: MfaState = { verifying: false, error: '' };
+
+  constructor(api: CubeApi, mfaToken: string, update: MfaStateUpdater) {
+    this.api = api;
+    this.mfaToken = mfaToken;
+    this.update = update;
+  }
+
+  private setState(partial: Partial<MfaState>) {
+    Object.assign(this.state, partial);
+    this.update(partial);
+  }
+
+  /**
+   * 提交 TOTP 验证码完成登录
+   * @param code 6 位 Authenticator App 验证码，或备用码
+   * @returns 成功返回 MfaVerifyResult（accessToken/refreshToken/expireIn），失败返回 null
+   */
+  async verify(code: string): Promise<MfaVerifyResult | null> {
+    if (!code) {
+      this.setState({ error: '请输入 6 位验证码' });
+      return null;
+    }
+    this.setState({ verifying: true, error: '' });
+    try {
+      const res = await this.api.user.mfaVerify({ mfaToken: this.mfaToken, code });
+      const result = res.data;
+      if (result?.accessToken) {
+        this.api.tokenManager.setToken(result.accessToken);
+      }
+      this.setState({ verifying: false });
+      return result ?? null;
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '验证码错误，请重试';
+      this.setState({ verifying: false, error: msg });
+      return null;
+    }
+  }
+
+  reset() {
+    this.setState({ verifying: false, error: '' });
+  }
+}
 
 // ─────────────────────────────────────────────
 // 忘记密码（重置密码）业务逻辑

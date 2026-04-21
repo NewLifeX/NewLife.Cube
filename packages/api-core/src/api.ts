@@ -1,9 +1,12 @@
 import type { AxiosRequestConfig } from 'axios';
 import type {
   ApiResponse,
+  CaptchaResult,
   DataField,
   FieldKind,
   LoginCategory,
+  MfaSetupResult,
+  MfaVerifyResult,
   PageMeta,
   UserInfo,
   LoginResult,
@@ -28,15 +31,15 @@ type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
 export function createUserApi(request: RequestFn) {
   return {
     /** 密码登录 */
-    login: (data: { username: string; password: string; challengeId?: string }) =>
+    login: (data: { username: string; password: string; challengeId?: string; captchaId?: string; captchaCode?: string }) =>
       request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
 
     /** 验证码登录（手机/邮箱） */
-    loginByCode: (data: { username: string; password: string; loginCategory: LoginCategory }) =>
+    loginByCode: (data: { username: string; password: string; loginCategory: LoginCategory; captchaId?: string; captchaCode?: string }) =>
       request<LoginResult>({ url: '/Auth/LoginByCode', method: 'post', data }),
 
     /** 发送验证码 */
-    sendCode: (data: { channel: string; username: string; action?: string }) =>
+    sendCode: (data: { channel: string; username: string; action?: string; captchaId?: string; captchaCode?: string }) =>
       request<number>({ url: '/Auth/SendCode', method: 'post', data }),
 
     /** 刷新令牌 */
@@ -51,16 +54,20 @@ export function createUserApi(request: RequestFn) {
     info: () =>
       request<UserInfo>({ url: '/Auth/Info', method: 'get' }),
 
-    /** 获取登录页配置（OAuth 提供商列表等） */
-    getLoginConfig: () =>
-      request<LoginConfig>({ url: '/Auth/LoginConfig', method: 'get' }),
+    /** 获取登录页配置（OAuth 提供商列表等），可传入租户标识（id/code/name/domain） */
+    getLoginConfig: (tenant?: string) =>
+      request<LoginConfig>({ url: '/Auth/LoginConfig', method: 'get', params: tenant ? { tenant } : undefined }),
+
+    /** 获取图片验证码（SVG 算数题），返回 captchaId 和 image */
+    getCaptcha: () =>
+      request<CaptchaResult>({ url: '/Auth/Captcha', method: 'get' }),
 
     /** 获取站点信息（名称/Logo/版权），由 CubeController 提供 */
     getSiteInfo: () =>
       request<SiteInfo>({ url: '/Cube/SiteInfo', method: 'get' }),
 
     /** 注册新用户 */
-    register: (data: Omit<RegisterModel, 'registerCategory'> & { registerCategory?: RegisterCategoryInput }) =>
+    register: (data: Omit<RegisterModel, 'registerCategory'> & { registerCategory?: RegisterCategoryInput; captchaId?: string; captchaCode?: string }) =>
       request<LoginResult>({ url: '/Auth/Register', method: 'post', data }),
 
     /** 获取OAuth回跳待注册预填信息 */
@@ -75,6 +82,31 @@ export function createUserApi(request: RequestFn) {
      */
     getChallenge: () =>
       request<ChallengeResult>({ url: '/Auth/Challenge', method: 'get' }),
+
+    /**
+     * 完成 MFA 二步验证登录
+     *
+     * 当 Login 返回消息中含有 mfa_required:xxx 时，提取 mfaToken 并让用户输入 Authenticator App 验证码
+     * 再调用此接口完成登录。
+     */
+    mfaVerify: (data: { mfaToken: string; code: string }) =>
+      request<MfaVerifyResult>({ url: '/Mfa/Verify', method: 'post', data }),
+
+    /** 初始化 MFA（返回二维码 URI 和密钥） */
+    mfaSetup: () =>
+      request<MfaSetupResult>({ url: '/Mfa/Setup', method: 'get' }),
+
+    /** 激活 MFA（输入扫码后第一个验证码），返回备用码 */
+    mfaActivate: (code: string) =>
+      request<{ backupCodes: string[] }>({ url: '/Mfa/Activate', method: 'post', data: { code } }),
+
+    /** 禁用 MFA */
+    mfaDisable: (code: string) =>
+      request<void>({ url: '/Mfa/Disable', method: 'post', data: { code } }),
+
+    /** 查询 MFA 开启状态 */
+    mfaStatus: () =>
+      request<{ enabled: boolean; available: boolean }>({ url: '/Mfa/Status', method: 'get' }),
 
     /**
      * 通过验证码重置密码（忘记密码流程）

@@ -25,6 +25,12 @@ public class LoginModel : ICubeModel
     /// <summary> 挑战标识。调用 /Auth/Challenge 获取，登录时原样回传 </summary>
     public String ChallengeId { get; set; }
 
+    /// <summary>验证码 ID。调用 /Auth/Captcha 获取，登录时原样回传；仅在登录场景需要验证码时必填 </summary>
+    public String CaptchaId { get; set; }
+
+    /// <summary>验证码用户输入。仅在登录场景需要验证码时必填 </summary>
+    public String CaptchaCode { get; set; }
+
     /// <summary> 兼容旧版字段，建议改用 ChallengeId </summary>
     [Obsolete("Use ChallengeId instead")]
     public String Pkey { get => ChallengeId; set => ChallengeId = value; }
@@ -97,6 +103,12 @@ public class AuthRegisterModel : ICubeModel
 
     /// <summary>OAuth 临时令牌（OAuthBind 时必填）</summary>
     public String OAuthToken { get; set; }
+
+    /// <summary>验证码 ID。调用 /Auth/Captcha 获取，注册时原样回传；仅在注册场景需要验证码时必填 </summary>
+    public String CaptchaId { get; set; }
+
+    /// <summary>验证码用户输入。仅在注册场景需要验证码时必填 </summary>
+    public String CaptchaCode { get; set; }
 
     /// <summary>兼容旧版字段，建议改用 ConfirmPassword</summary>
     [Obsolete("Use ConfirmPassword instead")]
