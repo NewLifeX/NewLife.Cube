@@ -281,12 +281,22 @@ public class SsoController : ControllerBaseX
 
             if (!returnUrl.IsNullOrEmpty()) url = returnUrl;
 
-            // 子系统颁发token给前端
+            // 子系统颁发token给前端（防御纵深：再次校验目标URL是否在安全域名白名单内）
             var user = ManageProvider.Provider.Current;
             if (log.Source == "front-end")
             {
-                var token = HttpContext.IssueToken(user, TimeSpan.FromSeconds(set.TokenExpire));
-                url += $"#token={token}";
+                var prov2 = Provider;
+                if (!prov2.IsSafeDomain(url, set.SsoSafeDomains))
+                {
+                    // 目标域名不在白名单：拒绝颁发Token，改跳本站首页，防止JWT凭据泄露
+                    XTrace.WriteLine("[安全] SSO Token 颁发被拦截，跨域目标不在 SsoSafeDomains 白名单: {0}", url);
+                    url = prov2.SuccessUrl;
+                }
+                else
+                {
+                    var token = HttpContext.IssueToken(user, TimeSpan.FromSeconds(set.TokenExpire));
+                    url += $"#token={token}";
+                }
             }
 
             // 设置租户

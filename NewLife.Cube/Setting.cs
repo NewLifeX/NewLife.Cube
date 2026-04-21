@@ -222,6 +222,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("私有附件分类。仅上传人本人可访问的附件分类，多个用逗号分隔。ValidateAttachment=true时生效")]
     [Category("用户登录")]
     public String OwnerOnlyAttachmentCategories { get; set; }
+
+    /// <summary>SSO跨域重定向白名单。登录后允许携带JWT Token重定向的目标域名，逗号分隔，支持通配符前缀*.company.com。留空=仅允许同站重定向，拒绝所有跨域跳转以防止凭据泄露</summary>
+    [Description("SSO跨域重定向白名单。登录后允许携带JWT Token重定向的目标域名，逗号分隔，支持通配符前缀*.company.com。留空=仅允许同站，跨域不在白名单则拒绝并跳回首页")]
+    [Category("用户登录")]
+    public String SsoSafeDomains { get; set; }
     #endregion
 
     #region 界面配置

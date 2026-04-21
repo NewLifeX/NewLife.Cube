@@ -67,7 +67,7 @@ public class SsoProvider
     /// <returns></returns>
     public virtual OAuthClient GetClient(Int32 tenantId, String name) => OAuthClient.Create(tenantId, name);
 
-    /// <summary>获取返回地址</summary>
+    /// <summary>获取返回地址。跨域URL需在SsoSafeDomains白名单内，否则置空以防止开放重定向攻击</summary>
     /// <param name="request">请求对象</param>
     /// <param name="referr">是否使用引用</param>
     /// <returns></returns>
@@ -84,13 +84,66 @@ public class SsoProvider
             var baseUri = request.GetRawUrl();
 
             var uri = new Uri(url);
-            if (uri != null && uri.Authority.EqualIgnoreCase(baseUri?.Authority)) url = uri.PathAndQuery;
+            if (uri != null && uri.Authority.EqualIgnoreCase(baseUri?.Authority))
+            {
+                // 同域：转为相对路径
+                url = uri.PathAndQuery;
+            }
+            else
+            {
+                // 跨域：校验白名单，不在白名单则拦截并记录安全日志
+                var safeDomains = CubeSetting.Current.SsoSafeDomains;
+                if (!IsSafeDomain(url, safeDomains))
+                {
+                    XTrace.WriteLine("[安全] SSO 重定向目标不在白名单，已拦截: {0} (来自 {1})", url, request.GetRawUrl());
+                    url = null;
+                }
+            }
         }
 
         // 过滤环回重定向
         if (!url.IsNullOrEmpty() && url.StartsWithIgnoreCase("/Sso/Login/")) url = null;
 
         return url;
+    }
+
+    /// <summary>判断URL目标域名是否在SSO安全域名白名单内</summary>
+    /// <param name="url">目标URL，相对路径视为同站始终安全</param>
+    /// <param name="safeDomains">白名单配置，逗号分隔，支持通配符前缀 *.company.com。留空=仅允许同站</param>
+    /// <returns>true=安全可信任；false=跨域且不在白名单</returns>
+    public virtual Boolean IsSafeDomain(String url, String safeDomains)
+    {
+        // 相对路径或空URL视为同站，始终安全
+        if (url.IsNullOrEmpty()) return true;
+        if (!url.StartsWithIgnoreCase("http://", "https://")) return true;
+
+        // 绝对URL：白名单为空时拒绝所有跨域（严格模式）
+        if (safeDomains.IsNullOrEmpty()) return false;
+
+        Uri uri;
+        try { uri = new Uri(url); }
+        catch { return false; }
+
+        var host = uri.Host.ToLower();
+        var domains = safeDomains.Split(',', ';');
+        foreach (var domain in domains)
+        {
+            var d = domain.Trim().ToLower();
+            if (d.IsNullOrEmpty()) continue;
+
+            if (d.StartsWith("*."))
+            {
+                // 通配符前缀：*.company.com 匹配 sub.company.com 及 company.com 本身
+                var suffix = d[1..]; // ".company.com"
+                if (host == suffix[1..] || host.EndsWith(suffix)) return true;
+            }
+            else
+            {
+                if (host == d) return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>获取登录回跳地址</summary>
