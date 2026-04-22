@@ -27,16 +27,8 @@ export async function getLoginConfig() {
   return cubeApi.user.getLoginConfig();
 }
 
-export async function getSiteInfo() {
-  return cubeApi.user.getSiteInfo();
-}
-
 export async function sendCode(body: { channel: string; username: string; action?: string }) {
   return cubeApi.user.sendCode(body);
-}
-
-export async function loginByCode(body: { username: string; password: string; loginCategory: any }) {
-  return cubeApi.user.loginByCode(body);
 }
 
 export async function register(body: any) {

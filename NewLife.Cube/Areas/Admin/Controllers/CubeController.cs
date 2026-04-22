@@ -59,10 +59,4 @@ public class CubeController : ConfigController<CubeSetting>
     [AllowAnonymous]
     [HttpGet]
     public ActionResult GetLoginConfig() => Json(0, null, new LoginConfigModel());
-
-    /// <summary>获取站点信息</summary>
-    /// <returns></returns>
-    [AllowAnonymous]
-    [HttpGet]
-    public ActionResult GetSiteInfo() => Json(0, null, new SiteInfoModel());
 }

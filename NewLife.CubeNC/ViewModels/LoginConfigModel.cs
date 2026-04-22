@@ -78,8 +78,20 @@ public class LoginConfigModel
         _tenant = tenant;
     }
 
+    /// <summary>租户Code。有租户时返回租户标识，无租户时为空</summary>
+    public String Code => _tenant?.Code;
+
     /// <summary>系统名称。租户级 Name 优先，回退到全局 DisplayName</summary>
     public String Name => !_tenant?.Name.IsNullOrEmpty() == true ? _tenant.Name : _sys.DisplayName;
+
+    /// <summary>版权信息。动态替换 {now:yyyy} 等变量，留空不显示</summary>
+    public String Copyright => _set.GetCopyright();
+
+    /// <summary>备案号。留空不显示</summary>
+    public String Registration => _set.Registration;
+
+    /// <summary>Logo图标地址。留空时由前端皮肤使用内置默认</summary>
+    public String Logo => String.Empty;
 
     /// <summary>登录提示。租户级 Remark 优先，回退到全局 LoginTip</summary>
     public String LoginTip => _set.LoginTip;
@@ -124,46 +136,4 @@ public class LoginConfigModel
         ChallengeRequired = !_set.AllowPlainPassword,
         MfaAvailable = _set.EnableMfa,
     };
-}
-
-/// <summary>站点信息模型</summary>
-public class SiteInfoModel
-{
-    private readonly CubeSetting _set = CubeSetting.Current;
-    private readonly SysConfig _sys = SysConfig.Current;
-
-    /// <summary>站点名称</summary>
-    public String DisplayName => _sys.DisplayName;
-
-    /// <summary>版权。动态替换 {now:yyyy} 等变量</summary>
-    public String Copyright => _set.GetCopyright();
-
-    /// <summary>备案号</summary>
-    public String Registration => _set.Registration;
-
-    /// <summary>登录提示</summary>
-    public String LoginTip => _set.LoginTip;
-
-    /// <summary>登录页Logo。留空时由前端皮肤使用内置默认</summary>
-    public String LoginLogo => _set.LoginLogo;
-
-    /// <summary>登录页背景图。留空时由前端皮肤使用内置默认</summary>
-    public String LoginBackground => _set.LoginBackground;
-
-    /// <summary>Logo图标</summary>
-    public String Logo => String.Empty;
-}
-
-/// <summary>OAuth配置模型（兼容旧版）</summary>
-[Obsolete("Use OAuthProviderModel instead")]
-public class OAuthConfigModel
-{
-    /// <summary>应用名</summary>
-    public String Name { get; set; }
-
-    /// <summary>图标</summary>
-    public String Logo { get; set; }
-
-    /// <summary>显示名</summary>
-    public String NickName { get; set; }
 }

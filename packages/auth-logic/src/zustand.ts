@@ -12,7 +12,7 @@
  */
 
 import { create, type StoreApi } from 'zustand';
-import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo } from '@cube/api-core';
+import { type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo } from '@cube/api-core';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 export interface ZustandAuthState extends AuthState {
@@ -108,10 +108,10 @@ export interface ZustandRegisterState extends RegisterState {
   sendSmsCode: (mobile: string) => Promise<boolean>;
   sendMailCode: (email: string) => Promise<boolean>;
   loadOAuthPendingInfo: (token: string) => Promise<OAuthPendingInfo | null>;
-  registerByPassword: (model: Omit<RegisterModel, 'registerCategory'>) => Promise<boolean>;
-  registerByPhone: (model: Omit<RegisterModel, 'registerCategory'>) => Promise<boolean>;
-  registerByEmail: (model: Omit<RegisterModel, 'registerCategory'>) => Promise<boolean>;
-  registerByOAuth: (model: Omit<RegisterModel, 'registerCategory'>) => Promise<boolean>;
+  registerByPassword: (model: Omit<RegisterModel, 'category'>) => Promise<boolean>;
+  registerByPhone: (model: Omit<RegisterModel, 'category'>) => Promise<boolean>;
+  registerByEmail: (model: Omit<RegisterModel, 'category'>) => Promise<boolean>;
+  registerByOAuth: (model: Omit<RegisterModel, 'category'>) => Promise<boolean>;
   reset: () => void;
 }
 
@@ -132,10 +132,10 @@ export function createZustandRegisterStore(api: CubeApi): StoreApi<ZustandRegist
       sendSmsCode: (mobile) => logic.sendRegisterCode(mobile, 'Sms'),
       sendMailCode: (email) => logic.sendRegisterCode(email, 'Mail'),
       loadOAuthPendingInfo: (token) => logic.loadOAuthPendingInfo(token),
-      registerByPassword: (model) => logic.register({ ...model, registerCategory: RegisterCategory.Password }),
-      registerByPhone: (model) => logic.register({ ...model, registerCategory: RegisterCategory.Phone }),
-      registerByEmail: (model) => logic.register({ ...model, registerCategory: RegisterCategory.Email }),
-      registerByOAuth: (model) => logic.register({ ...model, registerCategory: RegisterCategory.OAuthBind }),
+      registerByPassword: (model) => logic.register({ ...model, category: '' }),
+      registerByPhone: (model) => logic.register({ ...model, category: 'mobile' }),
+      registerByEmail: (model) => logic.register({ ...model, category: 'mail' }),
+      registerByOAuth: (model) => logic.register({ ...model, category: 'oauth' }),
       reset: () => logic.reset(),
     };
   });

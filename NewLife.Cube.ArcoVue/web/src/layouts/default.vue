@@ -8,7 +8,7 @@
       :collapsed-width="48"
     >
       <div class="logo" style="height: 48px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 16px;">
-        {{ appStore.collapsed ? '魔' : (appStore.siteInfo?.displayName || '魔方管理平台') }}
+        {{ appStore.collapsed ? '魔' : (appStore.loginConfig?.name || '魔方管理平台') }}
       </div>
       <a-menu
         :selected-keys="selectedKeys"
@@ -90,7 +90,7 @@ const appStore = useAppStore();
 const userStore = useUserStore();
 
 // 初始化
-appStore.fetchSiteInfo();
+appStore.fetchLoginConfig();
 if (!userStore.isLoggedIn) {
   userStore.fetchUserInfo().then(() => {
     if (userStore.isLoggedIn) userStore.fetchMenus();

@@ -221,17 +221,18 @@ export interface SecurityConfig {
   mfaAvailable?: boolean;
 }
 
-/** OAuth 提供商 */
-export interface OAuthProvider {
-  name?: string;
-  logo?: string;
-  nickName?: string;
-}
-
 /** 登录配置（新版嵌套结构，v2 起） */
 export interface LoginConfig {
+  /** 租户 Code，有租户时非空 */
+  code?: string;
   /** 系统名称（租户级优先） */
   name?: string;
+  /** 版权信息，服务端已替换 {now:yyyy} 等变量，前端直接渲染（支持 HTML） */
+  copyright?: string;
+  /** 备案号 */
+  registration?: string;
+  /** Logo图标地址，空则使用皮肤内置默认 */
+  logo?: string;
   /** 登录提示 */
   loginTip?: string;
   /** 登录页 Logo，空则使用皮肤内置默认 */
@@ -266,54 +267,16 @@ export interface LoginConfig {
   providers?: OAuthProvider[];
 }
 
-/** 站点信息 */
-export interface SiteInfo {
-  displayName?: string;
-  copyright?: string;
-  registration?: string;
-  loginTip?: string;
-  logo?: string;
-  /** 登录页 Logo，空则使用皮肤内置默认 */
-  loginLogo?: string;
-  /** 登录页左侧背景图，空则使用皮肤内置默认 */
-  loginBackground?: string;
-}
-
 /**
- * 验证码登录分类
+ * 统一认证分类，适用于登录与注册接口的 category 字段
  *
- * 字符串枚举与后端 Auth/LoginByCode 的 channel/loginCategory 参数一致。
- * 数值别名保持向后兼容。
+ * 与后端 AuthCategory 枚举对应：Password=0, Mobile=1, Mail=2, OAuth=3
  */
-export type LoginCategory = 'mobile' | 'mail' | 0 | 1 | 2;
-
-/** 手机验证码登录（等价于数值 1） */
-export const LOGIN_CATEGORY_MOBILE = 'mobile' as const;
-/** 邮箱验证码登录（等价于数值 2） */
-export const LOGIN_CATEGORY_MAIL = 'mail' as const;
-
-/** 注册参数 */
-export enum RegisterCategory {
-  /** 用户名密码注册 */
-  Password = 0,
-  /** 手机验证码注册 */
-  Phone = 1,
-  /** 邮箱验证码注册 */
-  Email = 2,
-  /** OAuth 回跳后绑定注册 */
-  OAuthBind = 3,
-}
-
-/**
- * 注册分类字符串枚举（与后端 registerCategory 参数一致）
- *
- * 字符串形式用于新代码；数值形式保持兼容。
- */
-export type RegisterCategoryInput = RegisterCategory | '' | 'mobile' | 'mail' | 'oauthbind';
+export type AuthCategory = '' | 'mobile' | 'mail' | 'oauth';
 
 /** 注册参数 */
 export interface RegisterModel {
-  registerCategory?: RegisterCategory;
+  category?: AuthCategory;
   username?: string;
   email?: string;
   mobile?: string;
@@ -357,6 +320,28 @@ export interface ChallengeResult {
   challengeId: string;
   /** PEM(SPKI) 格式 RSA 公钥，用于 Web Crypto importKey('spki', ...) */
   publicKey: string;
+}
+
+/** 图片验证码结果（GET /Auth/Captcha） */
+export interface CaptchaResult {
+  /** 验证码 ID，登录/注册时原样传回 captchaId 字段 */
+  captchaId: string;
+  /** SVG 图片内容（算数题） */
+  image: string;
+}
+
+/** MFA 二步验证结果 */
+export interface MfaVerifyResult {
+  accessToken: string;
+  refreshToken?: string;
+}
+
+/** MFA 初始化结果 */
+export interface MfaSetupResult {
+  /** Authenticator App 二维码 URI */
+  qrCodeUri: string;
+  /** 密钥（手动输入用） */
+  secret: string;
 }
 
 /** 菜单树节点 */

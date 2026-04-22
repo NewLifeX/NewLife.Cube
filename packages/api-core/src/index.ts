@@ -26,15 +26,14 @@ export type {
   LoginConfig,
   ChallengeResult,
   ResetPasswordModel,
-  SiteInfo,
   OAuthProvider,
   MenuItem,
   RegisterModel,
   OAuthPendingInfo,
-  LoginCategory,
-  RegisterCategoryInput,
+  AuthCategory,
+  MfaVerifyResult,
 } from './types';
-export { FieldKind, Auth, RegisterCategory } from './types';
+export { FieldKind, Auth } from './types';
 
 // 密码安全工具（RSA-OAEP 加密，配合 /Auth/Challenge 接口）
 export { encryptPassword } from './crypto';

@@ -142,22 +142,22 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
                 return new ServiceResult<IToken> { IsSuccess = false, Message = "验证码错误或已过期，请刷新后重试" };
         }
 
-        switch (loginModel.LoginCategory)//登录方式
+        switch (loginModel.Category)//登录方式
         {
-            case LoginCategory.Phone://手机验证码登录
+            case AuthCategory.Mobile://手机验证码登录
                 {
                     return !ValidFormatHelper.IsMobile(loginModel.Username)
                         ? new ServiceResult<IToken> { IsSuccess = false, Message = "手机号码格式不正确" }
                         : LoginBySms(loginModel, httpContext);
                 }
-            case LoginCategory.Email://邮箱验证码登录
+            case AuthCategory.Mail://邮箱验证码登录
                 {
                     return !ValidFormatHelper.IsEmail(loginModel.Username)
                         ? new ServiceResult<IToken> { IsSuccess = false, Message = "邮箱格式不正确" }
                         : LoginByMail(loginModel, httpContext);
                 }
-            case LoginCategory.OAuth:
-            case LoginCategory.Password:
+            case AuthCategory.OAuth:
+            case AuthCategory.Password:
             default:
                 return LoginByPassword(loginModel, httpContext);
         }
@@ -748,15 +748,15 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (model == null) return new ServiceResult<IToken> { IsSuccess = false, Message = "注册参数不能为空" };
 
         var ip = httpContext.GetUserHost();
-        using var span = tracer?.NewSpan(nameof(Register), new { model.RegisterCategory, model.Username, model.Mobile, model.Email, ip });
+        using var span = tracer?.NewSpan(nameof(Register), new { model.Category, model.Username, model.Mobile, model.Email, ip });
 
         try
         {
-            return model.RegisterCategory switch
+            return model.Category switch
             {
-                RegisterCategory.Phone => RegisterByPhoneCode(model, httpContext, ip),
-                RegisterCategory.Email => RegisterByMailCode(model, httpContext, ip),
-                RegisterCategory.OAuthBind => RegisterByOAuthBind(model, httpContext, ip),
+                AuthCategory.Mobile => RegisterByPhoneCode(model, httpContext, ip),
+                AuthCategory.Mail => RegisterByMailCode(model, httpContext, ip),
+                AuthCategory.OAuth => RegisterByOAuthBind(model, httpContext, ip),
                 _ => RegisterByPassword(model, httpContext, ip),
             };
         }

@@ -12,7 +12,7 @@
  */
 
 import { defineStore } from 'pinia';
-import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type RegisterModel } from '@cube/api-core';
+import { type CubeApi, type UserInfo, type MenuItem, type RegisterModel } from '@cube/api-core';
 import { AuthLogic, ForgotPasswordLogic, RegisterLogic, type AuthState, type ForgotPasswordState, type RegisterState } from './index';
 
 /**
@@ -155,17 +155,17 @@ export function createPiniaRegisterStore(api: CubeApi, storeId = 'register') {
       async loadOAuthPendingInfo(token: string) {
         return this._getLogic().loadOAuthPendingInfo(token);
       },
-      async registerByPassword(model: Omit<RegisterModel, 'registerCategory'>) {
-        return this._getLogic().register({ ...model, registerCategory: RegisterCategory.Password });
+      async registerByPassword(model: Omit<RegisterModel, 'category'>) {
+        return this._getLogic().register({ ...model, category: '' });
       },
-      async registerByPhone(model: Omit<RegisterModel, 'registerCategory'>) {
-        return this._getLogic().register({ ...model, registerCategory: RegisterCategory.Phone });
+      async registerByPhone(model: Omit<RegisterModel, 'category'>) {
+        return this._getLogic().register({ ...model, category: 'mobile' });
       },
-      async registerByEmail(model: Omit<RegisterModel, 'registerCategory'>) {
-        return this._getLogic().register({ ...model, registerCategory: RegisterCategory.Email });
+      async registerByEmail(model: Omit<RegisterModel, 'category'>) {
+        return this._getLogic().register({ ...model, category: 'mail' });
       },
-      async registerByOAuth(model: Omit<RegisterModel, 'registerCategory'>) {
-        return this._getLogic().register({ ...model, registerCategory: RegisterCategory.OAuthBind });
+      async registerByOAuth(model: Omit<RegisterModel, 'category'>) {
+        return this._getLogic().register({ ...model, category: 'oauth' });
       },
       reset() {
         this._getLogic().reset();

@@ -1,10 +1,10 @@
 import type { AxiosRequestConfig } from 'axios';
 import type {
   ApiResponse,
+  AuthCategory,
   CaptchaResult,
   DataField,
   FieldKind,
-  LoginCategory,
   MfaSetupResult,
   MfaVerifyResult,
   PageMeta,
@@ -13,8 +13,6 @@ import type {
   LoginConfig,
   ChallengeResult,
   ResetPasswordModel,
-  RegisterCategoryInput,
-  SiteInfo,
   MenuItem,
   PageParams,
   RegisterModel,
@@ -30,13 +28,9 @@ type RequestFn = <T>(config: AxiosRequestConfig) => Promise<ApiResponse<T>>;
  */
 export function createUserApi(request: RequestFn) {
   return {
-    /** 密码登录 */
-    login: (data: { username: string; password: string; challengeId?: string; captchaId?: string; captchaCode?: string }) =>
+    /** 密码登录（传入 category 可切换：手机验证码登录/邮箱验证码登录） */
+    login: (data: { username: string; password: string; category?: AuthCategory; challengeId?: string; captchaId?: string; captchaCode?: string }) =>
       request<LoginResult>({ url: '/Auth/Login', method: 'post', data }),
-
-    /** 验证码登录（手机/邮箱） */
-    loginByCode: (data: { username: string; password: string; loginCategory: LoginCategory; captchaId?: string; captchaCode?: string }) =>
-      request<LoginResult>({ url: '/Auth/LoginByCode', method: 'post', data }),
 
     /** 发送验证码 */
     sendCode: (data: { channel: string; username: string; action?: string; captchaId?: string; captchaCode?: string }) =>
@@ -62,12 +56,8 @@ export function createUserApi(request: RequestFn) {
     getCaptcha: () =>
       request<CaptchaResult>({ url: '/Auth/Captcha', method: 'get' }),
 
-    /** 获取站点信息（名称/Logo/版权），由 CubeController 提供 */
-    getSiteInfo: () =>
-      request<SiteInfo>({ url: '/Cube/SiteInfo', method: 'get' }),
-
     /** 注册新用户 */
-    register: (data: Omit<RegisterModel, 'registerCategory'> & { registerCategory?: RegisterCategoryInput; captchaId?: string; captchaCode?: string }) =>
+    register: (data: RegisterModel & { captchaId?: string; captchaCode?: string }) =>
       request<LoginResult>({ url: '/Auth/Register', method: 'post', data }),
 
     /** 获取OAuth回跳待注册预填信息 */
@@ -231,9 +221,9 @@ export function createPageApi(request: RequestFn, baseApiUrl?: string) {
  */
 export function createConfigApi(request: RequestFn) {
   return {
-    /** 获取站点信息（站点名称/Logo/版权等），与 user.getSiteInfo 等价 */
+    /** 获取登录页配置（系统名称/Logo/版权/OAuth 提供商等） */
     getPageConfig: () =>
-      request<SiteInfo>({ url: '/Cube/SiteInfo', method: 'get' }),
+      request<LoginConfig>({ url: '/Auth/LoginConfig', method: 'get' }),
 
     /** 获取系统配置 */
     getSetting: () =>

@@ -47,7 +47,7 @@
               </t-input>
             </t-form-item>
             <t-form-item>
-              <t-button theme="primary" block size="large" :loading="codeLoading" @click="handleCodeLogin(1)">登录</t-button>
+              <t-button theme="primary" block size="large" :loading="codeLoading" @click="handleCodeLogin('mobile')">登录</t-button>
             </t-form-item>
           </t-form>
         </t-tab-panel>
@@ -68,7 +68,7 @@
               </t-input>
             </t-form-item>
             <t-form-item>
-              <t-button theme="primary" block size="large" :loading="mailLoading" @click="handleCodeLogin(2, mailUsername, mailCodeVal)">登录</t-button>
+              <t-button theme="primary" block size="large" :loading="mailLoading" @click="handleCodeLogin('mail', mailUsername, mailCodeVal)">登录</t-button>
             </t-form-item>
           </t-form>
         </t-tab-panel>
@@ -102,10 +102,10 @@
         <t-link theme="primary" @click="router.push('/forgot-password')">...忘记密码？</t-link>
       </div>
       <!-- 版权信息 -->
-      <div v-if="appStore.siteInfo?.copyright || appStore.siteInfo?.registration" class="login-footer">
-        <div v-if="appStore.siteInfo.copyright" v-html="appStore.siteInfo.copyright"></div>
-        <div v-if="appStore.siteInfo.registration">
-          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ appStore.siteInfo.registration }}</a>
+      <div v-if="loginConfig?.copyright || loginConfig?.registration" class="login-footer">
+        <div v-if="loginConfig?.copyright" v-html="loginConfig.copyright"></div>
+        <div v-if="loginConfig?.registration">
+          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ loginConfig.registration }}</a>
         </div>
       </div>
     </t-card>
@@ -140,15 +140,12 @@ const error = ref('');
 const activeTab = ref('password');
 const loginConfig = ref<LoginConfig | null>(null);
 
-const logoSrc = computed(() => appStore.siteInfo?.loginLogo || loginConfig.value?.logo || '');
+const logoSrc = computed(() => appStore.loginConfig?.loginLogo || loginConfig.value?.logo || '');
 
 onMounted(async () => {
   try {
-    const [siteRes, configRes] = await Promise.all([
-      api.user.getSiteInfo(),
-      api.user.getLoginConfig(),
-    ]);
-    if (siteRes?.data) appStore.siteInfo = siteRes.data;
+    const configRes = await api.user.getLoginConfig();
+    if (configRes?.data) appStore.loginConfig = configRes.data;
     loginConfig.value = configRes?.data ?? null;
     if (configRes?.data?.allowLogin === false) {
       if (configRes.data.enableSms) activeTab.value = 'sms';
@@ -196,16 +193,16 @@ async function sendCode(channel: 'Sms' | 'Mail', uname?: string) {
   }
 }
 
-async function handleCodeLogin(loginCategory: 1 | 2, uname?: string, code?: string) {
+async function handleCodeLogin(loginCategory: 'mobile' | 'mail', uname?: string, code?: string) {
   const name = uname ?? codeUsername.value;
   const codeStr = code ?? codeVal.value;
-  const loadingRef = loginCategory === 1 ? codeLoading : mailLoading;
-  if (!name) { error.value = loginCategory === 1 ? '请输入手机号' : '请输入邮箱地址'; return; }
+  const loadingRef = loginCategory === 'mobile' ? codeLoading : mailLoading;
+  if (!name) { error.value = loginCategory === 'mobile' ? '请输入手机号' : '请输入邮箱地址'; return; }
   if (!codeStr) { error.value = '请输入验证码'; return; }
   loadingRef.value = true;
   error.value = '';
   try {
-    const res = await api.user.loginByCode({ username: name, password: codeStr, loginCategory });
+    const res = await api.user.login({ username: name, password: codeStr, category: loginCategory });
     if (res.data?.accessToken) {
       api.tokenManager.setToken(res.data.accessToken);
     }

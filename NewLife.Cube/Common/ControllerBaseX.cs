@@ -104,7 +104,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         }
         catch (Exception ex)
         {
-            // 匿名接口忽略令牌验证失败（如登录页调用 GetSiteInfo/GetLoginConfig 时携带了过期令牌），继续以匿名身份执行
+            // 匿名接口忽略令牌验证失败（如登录页调用 GetLoginConfig 时携带了过期令牌），继续以匿名身份执行
             if (context.ActionDescriptor is ControllerActionDescriptor actAnon && actAnon.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
                 return;
 

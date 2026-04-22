@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUserStore } from '@/stores/user';
 import api from '@/api';
-import type { LoginConfig, SiteInfo } from '@cube/api-core';
+import type { LoginConfig } from '@cube/api-core';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,14 +25,12 @@ export default function Login() {
   const [mailCountdown, setMailCountdown] = useState(0);
   const [error, setError] = useState('');
   const [config, setConfig] = useState<LoginConfig | null>(null);
-  const [siteInfo, setSiteInfo] = useState<SiteInfo | null>(null);
   const [activeTab, setActiveTab] = useState('password');
 
   useEffect(() => {
-    Promise.all([api.user.getLoginConfig(), api.user.getSiteInfo()])
-      .then(([configRes, siteRes]) => {
+    api.user.getLoginConfig()
+      .then((configRes) => {
         setConfig(configRes.data);
-        setSiteInfo(siteRes.data);
         if (configRes.data?.allowLogin === false) {
           if (configRes.data.enableSms) setActiveTab('sms');
           else if (configRes.data.enableMail) setActiveTab('email');
@@ -79,16 +77,16 @@ export default function Login() {
     }
   };
 
-  const handleCodeLogin = async (loginCategory: 1 | 2) => {
-    const name = loginCategory === 1 ? smsUsername : mailUsername;
-    const code = loginCategory === 1 ? smsCode : mailCode;
-    const setLoad = loginCategory === 1 ? setCodeLoading : setMailLoading;
-    if (!name) { setError(loginCategory === 1 ? '请输入手机号' : '请输入邮箱地址'); return; }
+  const handleCodeLogin = async (loginCategory: 'mobile' | 'mail') => {
+    const name = loginCategory === 'mobile' ? smsUsername : mailUsername;
+    const code = loginCategory === 'mobile' ? smsCode : mailCode;
+    const setLoad = loginCategory === 'mobile' ? setCodeLoading : setMailLoading;
+    if (!name) { setError(loginCategory === 'mobile' ? '请输入手机号' : '请输入邮箱地址'); return; }
     if (!code) { setError('请输入验证码'); return; }
     setLoad(true);
     setError('');
     try {
-      const res = await api.user.loginByCode({ username: name, password: code, loginCategory });
+      const res = await api.user.login({ username: name, password: code, category: loginCategory });
       if (res.data?.accessToken) api.tokenManager.setToken(res.data.accessToken);
       navigate(params.get('redirect') ?? '/', { replace: true });
     } catch (err: any) {
@@ -98,7 +96,7 @@ export default function Login() {
     }
   };
 
-  const logoSrc = siteInfo?.loginLogo || config?.logo || '';
+  const logoSrc = config?.loginLogo || config?.logo || '';
 
   const hasTabs = (config?.allowLogin !== false ? 1 : 0) + (config?.enableSms ? 1 : 0) + (config?.enableMail ? 1 : 0) > 1;
 
@@ -108,7 +106,7 @@ export default function Login() {
         {/* Logo + 标题 */}
         <div className="mb-6 text-center">
           {logoSrc && <img src={logoSrc} alt="logo" className="mx-auto mb-2 h-16 w-16 rounded-full object-contain" />}
-          <h1 className="text-2xl font-bold text-card-foreground">{siteInfo?.displayName ?? config?.displayName ?? '魔方管理平台'}</h1>
+          <h1 className="text-2xl font-bold text-card-foreground">{config?.name ?? '魔方管理平台'}</h1>
           {config?.loginTip && <p className="mt-1 text-sm text-muted-foreground">{config.loginTip}</p>}
         </div>
 
@@ -170,7 +168,7 @@ export default function Login() {
                     </Button>
                   </div>
                 </div>
-                <Button className="w-full" disabled={codeLoading} onClick={() => handleCodeLogin(1)}>
+                <Button className="w-full" disabled={codeLoading} onClick={() => handleCodeLogin('mobile')}>
                   {codeLoading ? '登录中...' : '登 录'}
                 </Button>
               </div>
@@ -192,7 +190,7 @@ export default function Login() {
                     </Button>
                   </div>
                 </div>
-                <Button className="w-full" disabled={mailLoading} onClick={() => handleCodeLogin(2)}>
+                <Button className="w-full" disabled={mailLoading} onClick={() => handleCodeLogin('mail')}>
                   {mailLoading ? '登录中...' : '登 录'}
                 </Button>
               </div>
@@ -256,12 +254,12 @@ export default function Login() {
         </p>
 
         {/* 版权信息 */}
-        {(siteInfo?.copyright || siteInfo?.registration) && (
+        {(config?.copyright || config?.registration) && (
           <div className="mt-4 text-center text-xs text-muted-foreground">
-            {siteInfo.copyright && <div dangerouslySetInnerHTML={{ __html: siteInfo.copyright }} />}
-            {siteInfo.registration && (
+            {config.copyright && <div dangerouslySetInnerHTML={{ __html: config.copyright }} />}
+            {config.registration && (
               <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer" className="hover:underline">
-                {siteInfo.registration}
+                {config.registration}
               </a>
             )}
           </div>

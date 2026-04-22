@@ -41,23 +41,8 @@ export interface SendCodeModel {
   action?: string;
 }
 
-/** 验证码登录请求 */
-export interface LoginByCodeModel {
-  /** 手机号或邮箱 */
-  username: string;
-  /** 验证码 */
-  password: string;
-  /** 登录类型：1=手机，2=邮箱 */
-  loginCategory: 1 | 2;
-}
-
-/** 注册请求 */
-export enum RegisterCategory {
-  Password = 0,
-  Phone = 1,
-  Email = 2,
-  OAuthBind = 3,
-}
+/** 统一认证分类，适用于登录与注册的 category 字段 */
+export type AuthCategory = '' | 'mobile' | 'mail' | 'oauth';
 
 /** OAuth 回跳待注册信息 */
 export interface OAuthPendingInfo {
@@ -78,7 +63,8 @@ export interface LoginResult {
 
 /** 注册请求 */
 export interface RegisterModel {
-  registerCategory?: RegisterCategory;
+  /** 注册分类：'' 密码注册、'mobile' 手机验证码、'mail' 邮箱验证码、'oauth' OAuth 绑定注册 */
+  category?: AuthCategory;
   username?: string;
   email?: string;
   mobile?: string;

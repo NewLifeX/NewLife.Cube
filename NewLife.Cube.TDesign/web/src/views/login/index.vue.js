@@ -21,15 +21,12 @@ const mailCountdown = ref(0);
 const error = ref('');
 const activeTab = ref('password');
 const loginConfig = ref(null);
-const logoSrc = computed(() => appStore.siteInfo?.loginLogo || loginConfig.value?.logo || '');
+const logoSrc = computed(() => appStore.loginConfig?.loginLogo || loginConfig.value?.logo || '');
 onMounted(async () => {
     try {
-        const [siteRes, configRes] = await Promise.all([
-            api.user.getSiteInfo(),
-            api.user.getLoginConfig(),
-        ]);
-        if (siteRes?.data)
-            appStore.siteInfo = siteRes.data;
+        const configRes = await api.user.getLoginConfig();
+        if (configRes?.data)
+            appStore.loginConfig = configRes.data;
         loginConfig.value = configRes?.data ?? null;
         if (configRes?.data?.allowLogin === false) {
             if (configRes.data.enableSms)
@@ -88,9 +85,9 @@ async function sendCode(channel, uname) {
 async function handleCodeLogin(loginCategory, uname, code) {
     const name = uname ?? codeUsername.value;
     const codeStr = code ?? codeVal.value;
-    const loadingRef = loginCategory === 1 ? codeLoading : mailLoading;
+    const loadingRef = loginCategory === 'mobile' ? codeLoading : mailLoading;
     if (!name) {
-        error.value = loginCategory === 1 ? '请输入手机号' : '请输入邮箱地址';
+        error.value = loginCategory === 'mobile' ? '请输入手机号' : '请输入邮箱地址';
         return;
     }
     if (!codeStr) {
@@ -100,7 +97,7 @@ async function handleCodeLogin(loginCategory, uname, code) {
     loadingRef.value = true;
     error.value = '';
     try {
-        const res = await api.user.loginByCode({ username: name, password: codeStr, loginCategory });
+        const res = await api.user.login({ username: name, password: codeStr, category: loginCategory });
         if (res.data?.accessToken) {
             api.tokenManager.setToken(res.data.accessToken);
         }
@@ -447,7 +444,7 @@ if (__VLS_ctx.loginConfig?.enableSms) {
         onClick: (...[$event]) => {
             if (!(__VLS_ctx.loginConfig?.enableSms))
                 return;
-            __VLS_ctx.handleCodeLogin(1);
+            __VLS_ctx.handleCodeLogin('mobile');
         }
     };
     __VLS_95.slots.default;
@@ -586,7 +583,7 @@ if (__VLS_ctx.loginConfig?.enableMail) {
         onClick: (...[$event]) => {
             if (!(__VLS_ctx.loginConfig?.enableMail))
                 return;
-            __VLS_ctx.handleCodeLogin(2, __VLS_ctx.mailUsername, __VLS_ctx.mailCodeVal);
+            __VLS_ctx.handleCodeLogin('mail', __VLS_ctx.mailUsername, __VLS_ctx.mailCodeVal);
         }
     };
     __VLS_139.slots.default;
@@ -690,22 +687,22 @@ const __VLS_163 = {
 };
 __VLS_159.slots.default;
 var __VLS_159;
-if (__VLS_ctx.appStore.siteInfo?.copyright || __VLS_ctx.appStore.siteInfo?.registration) {
+if (__VLS_ctx.loginConfig?.copyright || __VLS_ctx.loginConfig?.registration) {
     __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
         ...{ class: "login-footer" },
     });
-    if (__VLS_ctx.appStore.siteInfo.copyright) {
+    if (__VLS_ctx.loginConfig?.copyright) {
         __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({});
-        __VLS_asFunctionalDirective(__VLS_directives.vHtml)(null, { ...__VLS_directiveBindingRestFields, value: (__VLS_ctx.appStore.siteInfo.copyright) }, null, null);
+        __VLS_asFunctionalDirective(__VLS_directives.vHtml)(null, { ...__VLS_directiveBindingRestFields, value: (__VLS_ctx.loginConfig.copyright) }, null, null);
     }
-    if (__VLS_ctx.appStore.siteInfo.registration) {
+    if (__VLS_ctx.loginConfig?.registration) {
         __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({});
         __VLS_asFunctionalElement(__VLS_intrinsicElements.a, __VLS_intrinsicElements.a)({
             href: "https://www.beianx.cn/",
             target: "_blank",
             rel: "noopener noreferrer",
         });
-        (__VLS_ctx.appStore.siteInfo.registration);
+        (__VLS_ctx.loginConfig.registration);
     }
 }
 var __VLS_3;

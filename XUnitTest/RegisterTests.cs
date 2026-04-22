@@ -1,5 +1,6 @@
 using System;
 using NewLife.Cube.Areas.Admin.Models;
+using NewLife.Cube.Enums;
 using Xunit;
 
 namespace XUnitTest;
@@ -12,7 +13,7 @@ public class RegisterTests
     {
         var model = new AuthRegisterModel();
 
-        Assert.Equal(RegisterCategory.Password, model.RegisterCategory);
+        Assert.Equal(AuthCategory.Password, model.Category);
     }
 
     [Fact(DisplayName = "AuthRegisterModel Password2 与 ConfirmPassword 双向兼容")]

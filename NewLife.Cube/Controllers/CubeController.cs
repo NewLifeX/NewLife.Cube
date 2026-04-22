@@ -526,12 +526,6 @@ public class CubeController(PageService pageService, TokenService tokenService, 
         return Json(0, null, rs);
     }
 
-    /// <summary>获取站点信息（名称/Logo/版权）</summary>
-    /// <returns>站点信息</returns>
-    [HttpGet]
-    [AllowAnonymous]
-    public ActionResult SiteInfo() => Json(0, null, new SiteInfoModel());
-
     /// <summary>获取菜单树，按当前用户权限过滤</summary>
     /// <param name="module">模块名称，如 Admin；为空时返回全部可访问菜单</param>
     /// <returns>菜单树</returns>

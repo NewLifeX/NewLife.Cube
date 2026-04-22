@@ -3,7 +3,7 @@
     <a-card class="login-card" :bordered="false">
       <div class="login-header">
         <img v-if="logoSrc" :src="logoSrc" class="login-logo" alt="" />
-        <h2>{{ siteInfo?.displayName || '魔方管理平台' }}</h2>
+        <h2>{{ loginConfig?.name || '魔方管理平台' }}</h2>
         <p v-if="loginConfig?.loginTip" class="login-tip">{{ loginConfig.loginTip }}</p>
       </div>
 
@@ -38,7 +38,7 @@
               </a-input-group>
             </a-form-item>
             <a-form-item>
-              <a-button type="primary" long :loading="codeLoading" @click="handleCodeLogin(1)">登录</a-button>
+              <a-button type="primary" long :loading="codeLoading" @click="handleCodeLogin('mobile')">登录</a-button>
             </a-form-item>
           </a-form>
         </a-tab-pane>
@@ -58,7 +58,7 @@
               </a-input-group>
             </a-form-item>
             <a-form-item>
-              <a-button type="primary" long :loading="mailLoading" @click="handleCodeLogin(2, emailForm)">登录</a-button>
+              <a-button type="primary" long :loading="mailLoading" @click="handleCodeLogin('mail', emailForm)">登录</a-button>
             </a-form-item>
           </a-form>
         </a-tab-pane>
@@ -94,10 +94,10 @@
       </div>
 
       <!-- 版权信息 -->
-      <div v-if="siteInfo?.copyright || siteInfo?.registration" class="login-footer">
-        <div v-if="siteInfo?.copyright" v-html="siteInfo.copyright" class="login-copyright"></div>
-        <div v-if="siteInfo?.registration">
-          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ siteInfo.registration }}</a>
+      <div v-if="loginConfig?.copyright || loginConfig?.registration" class="login-footer">
+        <div v-if="loginConfig?.copyright" v-html="loginConfig.copyright" class="login-copyright"></div>
+        <div v-if="loginConfig?.registration">
+          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ loginConfig.registration }}</a>
         </div>
       </div>
     </a-card>
@@ -108,7 +108,7 @@
 import { reactive, ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
-import type { OAuthProvider, SiteInfo, LoginConfig } from '@cube/api-core';
+import type { OAuthProvider, LoginConfig } from '@cube/api-core';
 import cubeApi from '@/api';
 import { useUserStore } from '@/stores/user';
 
@@ -126,17 +126,12 @@ const mailCountdown = ref(0);
 const activeTab = ref('password');
 const oauthProviders = ref<OAuthProvider[]>([]);
 const loginConfig = ref<LoginConfig | null>(null);
-const siteInfo = ref<SiteInfo | null>(null);
 
-const logoSrc = computed(() => siteInfo.value?.loginLogo || loginConfig.value?.logo || '');
+const logoSrc = computed(() => loginConfig.value?.loginLogo || loginConfig.value?.logo || '');
 
 onMounted(async () => {
   try {
-    const [siteRes, configRes] = await Promise.all([
-      cubeApi.user.getSiteInfo(),
-      cubeApi.user.getLoginConfig(),
-    ]);
-    siteInfo.value = siteRes.data;
+    const configRes = await cubeApi.user.getLoginConfig();
     loginConfig.value = configRes.data;
     oauthProviders.value = configRes.data?.providers ?? [];
     // 自动切换到第一个可用 tab
@@ -186,11 +181,11 @@ async function sendCode(channel: 'Sms' | 'Mail', username?: string) {
   }
 }
 
-async function handleCodeLogin(loginCategory: 1 | 2, formData?: { username: string; code: string }) {
+async function handleCodeLogin(loginCategory: 'mobile' | 'mail', formData?: { username: string; code: string }) {
   const data = formData ?? codeForm;
-  const loadingRef = loginCategory === 1 ? codeLoading : mailLoading;
+  const loadingRef = loginCategory === 'mobile' ? codeLoading : mailLoading;
   if (!data.username) {
-    Message.warning(loginCategory === 1 ? '请输入手机号' : '请输入邮箱地址');
+    Message.warning(loginCategory === 'mobile' ? '请输入手机号' : '请输入邮箱地址');
     return;
   }
   if (!data.code) {
@@ -199,7 +194,7 @@ async function handleCodeLogin(loginCategory: 1 | 2, formData?: { username: stri
   }
   loadingRef.value = true;
   try {
-    const res = await cubeApi.user.loginByCode({ username: data.username, password: data.code, loginCategory });
+    const res = await cubeApi.user.login({ username: data.username, password: data.code, category: loginCategory });
     if (res.data?.accessToken) {
       cubeApi.tokenManager.setToken(res.data.accessToken);
       await userStore.fetchUserInfo();

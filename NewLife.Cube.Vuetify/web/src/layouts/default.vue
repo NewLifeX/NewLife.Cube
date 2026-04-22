@@ -3,7 +3,7 @@
     <!-- 侧边栏 -->
     <v-navigation-drawer :rail="appStore.collapsed" permanent>
       <v-list-item
-        :title="appStore.collapsed ? '魔' : (appStore.siteInfo?.displayName || '魔方管理平台')"
+        :title="appStore.collapsed ? '魔' : (appStore.loginConfig?.name || '魔方管理平台')"
         class="text-center font-weight-bold"
         nav
       />
@@ -76,7 +76,7 @@ const appStore = useAppStore();
 const userStore = useUserStore();
 
 // 初始化
-appStore.fetchSiteInfo();
+appStore.fetchLoginConfig();
 if (!userStore.isLoggedIn) {
   userStore.fetchUserInfo().then(() => {
     if (userStore.isLoggedIn) userStore.fetchMenus();

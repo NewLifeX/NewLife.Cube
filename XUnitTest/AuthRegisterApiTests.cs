@@ -52,7 +52,7 @@ public class AuthRegisterApiTests
         var username = $"reg_mismatch_{Guid.NewGuid():N}"[..20];
         var payload = new Dictionary<String, Object>
         {
-            ["registerCategory"] = 0,
+            ["category"] = 0,
             ["username"] = username,
             ["email"] = $"{username}@example.com",
             ["password"] = "Strong@2026",
@@ -84,7 +84,7 @@ public class AuthRegisterApiTests
 
         var payload = new Dictionary<String, Object>
         {
-            ["registerCategory"] = 3,
+            ["category"] = 3,
             ["username"] = "oauth_new_user",
             ["password"] = "Strong@2026",
             ["confirmPassword"] = "Strong@2026"
@@ -115,7 +115,7 @@ public class AuthRegisterApiTests
 
         var payload = new Dictionary<String, Object>
         {
-            ["registerCategory"] = 0,
+            ["category"] = 0,
             ["password"] = "Strong@2026",
             ["confirmPassword"] = "Strong@2026"
         };

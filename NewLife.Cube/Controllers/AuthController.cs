@@ -92,40 +92,6 @@ public class AuthController : ControllerBaseX
         }
     }
 
-    /// <summary>验证码登录</summary>
-    /// <param name="model">登录模型，Username 为手机号/邮箱，Password 为验证码，LoginCategory 设为 Phone/Email</param>
-    /// <returns>访问令牌和刷新令牌</returns>
-    [HttpPost]
-    [AllowAnonymous]
-    public ApiResponse<TokenModel> LoginByCode(LoginModel model)
-    {
-        var res = new TokenModel();
-        if (String.IsNullOrWhiteSpace(model.Username))
-            return res.ToFailApiResponse("手机号/邮箱不能为空");
-        if (String.IsNullOrWhiteSpace(model.Password))
-            return res.ToFailApiResponse("验证码不能为空");
-
-        try
-        {
-            var loginResult = _userService.Login(model, HttpContext);
-
-            // MFA 拦截：验证码登录也需要二步验证
-            if (loginResult != null && !loginResult.MfaToken.IsNullOrEmpty())
-                return res.ToFailApiResponse($"mfa_required:{loginResult.MfaToken}");
-
-            if (loginResult?.Data == null || loginResult.Data.AccessToken.IsNullOrEmpty())
-                return res.ToFailApiResponse(loginResult?.Message);
-
-            res.AccessToken = loginResult.Data.AccessToken;
-            res.RefreshToken = loginResult.Data.RefreshToken;
-            return res.ToOkApiResponse("登录成功");
-        }
-        catch (Exception ex)
-        {
-            return res.ToFailApiResponse(ex.Message);
-        }
-    }
-
     /// <summary>刷新令牌</summary>
     /// <param name="model">刷新令牌模型</param>
     /// <returns>新的访问令牌和刷新令牌</returns>

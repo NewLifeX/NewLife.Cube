@@ -379,11 +379,12 @@
             var username = document.getElementById(usernameId).value;
             var code = document.getElementById(codeId).value;
             if (!username || !code) { alert('请填写手机号/邮箱和验证码'); return; }
+            var category = loginCategory === 1 ? 'phone' : 'mail';
             try {
-                var res = await fetch('/Auth/LoginByCode', {
+                var res = await fetch('/Auth/Login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: username, password: code, loginCategory: loginCategory })
+                    body: JSON.stringify({ username: username, password: code, category: category })
                 });
                 var data = await res.json();
                 if (data.code === 0) { window.location.href = returnUrl || '/Admin'; }

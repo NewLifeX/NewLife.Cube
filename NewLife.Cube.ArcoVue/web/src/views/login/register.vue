@@ -7,8 +7,8 @@
 
       <a-tabs v-if="!oauthMode" v-model:active-key="activeTab">
         <a-tab-pane key="password" title="账号注册" />
-        <a-tab-pane v-if="enableSmsRegister" key="phone" title="手机注册" />
-        <a-tab-pane v-if="enableMailRegister" key="email" title="邮箱注册" />
+        <a-tab-pane v-if="enableSmsRegister" key="mobile" title="手机注册" />
+        <a-tab-pane v-if="enableMailRegister" key="mail" title="邮笱注册" />
       </a-tabs>
 
       <a-alert v-if="oauthMode" type="info" style="margin-bottom: 12px">第三方账号首次登录，请补全密码完成本地账号创建</a-alert>
@@ -18,25 +18,25 @@
           <a-input v-model="form.username" :readonly="oauthMode" allow-clear />
         </a-form-item>
 
-        <a-form-item v-if="activeTab==='password' || activeTab==='email' || oauthMode" field="email" label="邮箱">
+        <a-form-item v-if="activeTab==='password' || activeTab==='mail' || oauthMode" field="email" label="邮笱">
           <a-input v-model="form.email" allow-clear />
         </a-form-item>
 
-        <a-form-item v-if="activeTab==='phone'" field="mobile" label="手机号">
+        <a-form-item v-if="activeTab==='mobile'" field="mobile" label="手机号">
           <a-input-group>
             <a-input v-model="form.mobile" allow-clear style="flex:1" />
             <a-button :disabled="countdown>0" :loading="sending" @click="sendCode('Sms')">{{ countdown>0 ? `${countdown}s` : '发送验证码' }}</a-button>
           </a-input-group>
         </a-form-item>
 
-        <a-form-item v-if="activeTab==='email'" field="emailCodeTarget" label="邮箱地址">
+        <a-form-item v-if="activeTab==='mail'" field="emailCodeTarget" label="邮笱地址">
           <a-input-group>
             <a-input v-model="form.emailCodeTarget" allow-clear style="flex:1" />
             <a-button :disabled="countdown>0" :loading="sending" @click="sendCode('Mail')">{{ countdown>0 ? `${countdown}s` : '发送验证码' }}</a-button>
           </a-input-group>
         </a-form-item>
 
-        <a-form-item v-if="activeTab==='phone' || activeTab==='email'" field="code" label="验证码">
+        <a-form-item v-if="activeTab==='mobile' || activeTab==='mail'" field="code" label="验证码">
           <a-input v-model="form.code" allow-clear />
         </a-form-item>
 
@@ -65,13 +65,13 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
-import { RegisterCategory } from '@cube/api-core';
+import type { AuthCategory } from '@cube/api-core';
 import cubeApi from '@/api';
 
 const router = useRouter();
 const route = useRoute();
 
-const activeTab = ref<'password' | 'phone' | 'email'>('password');
+const activeTab = ref<'password' | 'mobile' | 'mail'>('password');
 const oauthMode = ref(false);
 const loading = ref(false);
 const sending = ref(false);
@@ -124,16 +124,16 @@ const sendCode = async (channel: 'Sms' | 'Mail') => {
 const onSubmit = async () => {
   if (!form.password || !form.confirmPassword) return Message.warning('请输入密码和确认密码');
   if (form.password !== form.confirmPassword) return Message.warning('两次密码不一致');
-  if (activeTab.value === 'phone' && (!form.mobile || !form.code)) return Message.warning('请填写手机号和验证码');
-  if (activeTab.value === 'email' && (!form.emailCodeTarget || !form.code)) return Message.warning('请填写邮箱和验证码');
+  if (activeTab.value === 'mobile' && (!form.mobile || !form.code)) return Message.warning('请填写手机号和验证码');
+  if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) return Message.warning('请填写邮笱和验证码');
 
   const payload = oauthMode.value
-    ? { registerCategory: RegisterCategory.OAuthBind, oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
-    : activeTab.value === 'phone'
-      ? { registerCategory: RegisterCategory.Phone, username: form.username || form.mobile, mobile: form.mobile, email: form.email, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
-      : activeTab.value === 'email'
-        ? { registerCategory: RegisterCategory.Email, username: form.username || form.emailCodeTarget, email: form.emailCodeTarget, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
-        : { registerCategory: RegisterCategory.Password, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword };
+    ? { category: 'oauth' as AuthCategory, oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
+    : activeTab.value === 'mobile'
+      ? { category: 'mobile' as AuthCategory, username: form.username || form.mobile, mobile: form.mobile, email: form.email, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
+      : activeTab.value === 'mail'
+        ? { category: 'mail' as AuthCategory, username: form.username || form.emailCodeTarget, email: form.emailCodeTarget, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
+        : { category: '' as AuthCategory, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword };
 
   loading.value = true;
   try {

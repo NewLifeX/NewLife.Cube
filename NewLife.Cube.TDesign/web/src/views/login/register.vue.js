@@ -1,6 +1,5 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { RegisterCategory } from '@cube/api-core';
 import { api } from '@/api';
 const router = useRouter();
 const route = useRoute();
@@ -64,21 +63,21 @@ const onSubmit = async () => {
         error.value = '两次密码不一致';
         return;
     }
-    if (activeTab.value === 'phone' && (!form.mobile || !form.code)) {
+    if (activeTab.value === 'mobile' && (!form.mobile || !form.code)) {
         error.value = '请填写手机号和验证码';
         return;
     }
-    if (activeTab.value === 'email' && (!form.emailCodeTarget || !form.code)) {
-        error.value = '请填写邮箱和验证码';
+    if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) {
+        error.value = '请填写邮笱和验证码';
         return;
     }
     const payload = oauthMode.value
-        ? { registerCategory: RegisterCategory.OAuthBind, oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
-        : activeTab.value === 'phone'
-            ? { registerCategory: RegisterCategory.Phone, username: form.username || form.mobile, mobile: form.mobile, email: form.email, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
-            : activeTab.value === 'email'
-                ? { registerCategory: RegisterCategory.Email, username: form.username || form.emailCodeTarget, email: form.emailCodeTarget, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
-                : { registerCategory: RegisterCategory.Password, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword };
+        ? { category: 'oauth', oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
+        : activeTab.value === 'mobile'
+            ? { category: 'mobile', username: form.username || form.mobile, mobile: form.mobile, email: form.email, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
+            : activeTab.value === 'mail'
+                ? { category: 'mail', username: form.username || form.emailCodeTarget, email: form.emailCodeTarget, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
+                : { category: '', username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword };
     loading.value = true;
     error.value = '';
     try {
@@ -174,11 +173,11 @@ if (!__VLS_ctx.oauthMode) {
         /** @type {[typeof __VLS_components.TTabPanel, typeof __VLS_components.tTabPanel, ]} */ ;
         // @ts-ignore
         const __VLS_13 = __VLS_asFunctionalComponent(__VLS_12, new __VLS_12({
-            value: "phone",
+            value: "mobile",
             label: "手机注册",
         }));
         const __VLS_14 = __VLS_13({
-            value: "phone",
+            value: "mobile",
             label: "手机注册",
         }, ...__VLS_functionalComponentArgsRest(__VLS_13));
     }
@@ -187,12 +186,12 @@ if (!__VLS_ctx.oauthMode) {
         /** @type {[typeof __VLS_components.TTabPanel, typeof __VLS_components.tTabPanel, ]} */ ;
         // @ts-ignore
         const __VLS_17 = __VLS_asFunctionalComponent(__VLS_16, new __VLS_16({
-            value: "email",
-            label: "邮箱注册",
+            value: "mail",
+            label: "邮笱注册",
         }));
         const __VLS_18 = __VLS_17({
-            value: "email",
-            label: "邮箱注册",
+            value: "mail",
+            label: "邮笱注册",
         }, ...__VLS_functionalComponentArgsRest(__VLS_17));
     }
     var __VLS_7;
@@ -244,7 +243,7 @@ if (__VLS_ctx.activeTab === 'password' || __VLS_ctx.oauthMode) {
     }, ...__VLS_functionalComponentArgsRest(__VLS_33));
     var __VLS_31;
 }
-if (__VLS_ctx.activeTab === 'password' || __VLS_ctx.activeTab === 'email' || __VLS_ctx.oauthMode) {
+if (__VLS_ctx.activeTab === 'password' || __VLS_ctx.activeTab === 'mail' || __VLS_ctx.oauthMode) {
     const __VLS_36 = {}.TFormItem;
     /** @type {[typeof __VLS_components.TFormItem, typeof __VLS_components.tFormItem, typeof __VLS_components.TFormItem, typeof __VLS_components.tFormItem, ]} */ ;
     // @ts-ignore
@@ -256,15 +255,15 @@ if (__VLS_ctx.activeTab === 'password' || __VLS_ctx.activeTab === 'email' || __V
     // @ts-ignore
     const __VLS_41 = __VLS_asFunctionalComponent(__VLS_40, new __VLS_40({
         modelValue: (__VLS_ctx.form.email),
-        placeholder: "邮箱",
+        placeholder: "邮笱",
     }));
     const __VLS_42 = __VLS_41({
         modelValue: (__VLS_ctx.form.email),
-        placeholder: "邮箱",
+        placeholder: "邮笱",
     }, ...__VLS_functionalComponentArgsRest(__VLS_41));
     var __VLS_39;
 }
-if (__VLS_ctx.activeTab === 'phone') {
+if (__VLS_ctx.activeTab === 'mobile') {
     const __VLS_44 = {}.TFormItem;
     /** @type {[typeof __VLS_components.TFormItem, typeof __VLS_components.tFormItem, typeof __VLS_components.TFormItem, typeof __VLS_components.tFormItem, ]} */ ;
     // @ts-ignore
@@ -305,7 +304,7 @@ if (__VLS_ctx.activeTab === 'phone') {
         let __VLS_58;
         const __VLS_59 = {
             onClick: (...[$event]) => {
-                if (!(__VLS_ctx.activeTab === 'phone'))
+                if (!(__VLS_ctx.activeTab === 'mobile'))
                     return;
                 __VLS_ctx.sendCode('Sms');
             }
@@ -317,7 +316,7 @@ if (__VLS_ctx.activeTab === 'phone') {
     var __VLS_51;
     var __VLS_47;
 }
-if (__VLS_ctx.activeTab === 'email') {
+if (__VLS_ctx.activeTab === 'mail') {
     const __VLS_60 = {}.TFormItem;
     /** @type {[typeof __VLS_components.TFormItem, typeof __VLS_components.tFormItem, typeof __VLS_components.TFormItem, typeof __VLS_components.tFormItem, ]} */ ;
     // @ts-ignore
@@ -358,7 +357,7 @@ if (__VLS_ctx.activeTab === 'email') {
         let __VLS_74;
         const __VLS_75 = {
             onClick: (...[$event]) => {
-                if (!(__VLS_ctx.activeTab === 'email'))
+                if (!(__VLS_ctx.activeTab === 'mail'))
                     return;
                 __VLS_ctx.sendCode('Mail');
             }
@@ -370,7 +369,7 @@ if (__VLS_ctx.activeTab === 'email') {
     var __VLS_67;
     var __VLS_63;
 }
-if (__VLS_ctx.activeTab === 'phone' || __VLS_ctx.activeTab === 'email') {
+if (__VLS_ctx.activeTab === 'mobile' || __VLS_ctx.activeTab === 'mail') {
     const __VLS_76 = {}.TFormItem;
     /** @type {[typeof __VLS_components.TFormItem, typeof __VLS_components.tFormItem, typeof __VLS_components.TFormItem, typeof __VLS_components.tFormItem, ]} */ ;
     // @ts-ignore

@@ -137,7 +137,7 @@ v6.10.2026.0404
     <Compile Include="..\NewLife.Cube\Entity\附件.cs" Link="Entity\附件.cs" />
     <Compile Include="..\NewLife.Cube\Entity\验证码记录.Biz.cs" Link="Entity\验证码记录.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\验证码记录.cs" Link="Entity\验证码记录.cs" />
-    <Compile Include="..\NewLife.Cube\Enums\LoginCategory.cs" Link="Enums\LoginCategory.cs" />
+    <Compile Include="..\NewLife.Cube\Enums\AuthCategory.cs" Link="Enums\AuthCategory.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\Pager.cs" Link="Extensions\Pager.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\PagerHelper.cs" Link="Extensions\PagerHelper.cs" />
     <Compile Include="..\NewLife.Cube\Extensions\WebHelper.cs" Link="Extensions\WebHelper.cs" />

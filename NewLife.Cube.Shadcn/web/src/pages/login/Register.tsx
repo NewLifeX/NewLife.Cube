@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import api from '@/api';
-import { RegisterCategory } from '@cube/api-core';
+import type { AuthCategory } from '@cube/api-core';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function Register() {
   const oauthToken = params.get('oauthToken') || '';
 
   const [config, setConfig] = useState<any>(null);
-  const [tab, setTab] = useState<'password' | 'phone' | 'email'>('password');
+  const [tab, setTab] = useState<'password' | 'mobile' | 'mail'>('password');
   const [sending, setSending] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -71,16 +71,16 @@ export default function Register() {
   const submit = async () => {
     if (!form.password || !form.confirmPassword) return setError('请输入密码和确认密码');
     if (form.password !== form.confirmPassword) return setError('两次密码不一致');
-    if (tab === 'phone' && (!form.mobile || !form.code)) return setError('请填写手机号和验证码');
-    if (tab === 'email' && (!form.emailCodeTarget || !form.code)) return setError('请填写邮箱和验证码');
+    if (tab === 'mobile' && (!form.mobile || !form.code)) return setError('请填写手机号和验证码');
+    if (tab === 'mail' && (!form.emailCodeTarget || !form.code)) return setError('请填写邮笱和验证码');
 
     const payload = oauthMode
-      ? { registerCategory: RegisterCategory.OAuthBind, oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
-      : tab === 'phone'
-        ? { registerCategory: RegisterCategory.Phone, username: form.username || form.mobile, mobile: form.mobile, email: form.email, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
-        : tab === 'email'
-          ? { registerCategory: RegisterCategory.Email, username: form.username || form.emailCodeTarget, email: form.emailCodeTarget, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
-          : { registerCategory: RegisterCategory.Password, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword };
+      ? { category: 'oauth' as AuthCategory, oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
+      : tab === 'mobile'
+        ? { category: 'mobile' as AuthCategory, username: form.username || form.mobile, mobile: form.mobile, email: form.email, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
+        : tab === 'mail'
+          ? { category: 'mail' as AuthCategory, username: form.username || form.emailCodeTarget, email: form.emailCodeTarget, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
+          : { category: '' as AuthCategory, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword };
 
     setLoading(true);
     setError('');
@@ -112,8 +112,8 @@ export default function Register() {
         {!oauthMode && (
           <div className="mb-4 flex rounded-lg bg-muted p-1">
             <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='password'?'bg-background shadow':''}`} onClick={() => setTab('password')}>账号</button>
-            {enableSmsRegister && <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='phone'?'bg-background shadow':''}`} onClick={() => setTab('phone')}>手机</button>}
-            {enableMailRegister && <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='email'?'bg-background shadow':''}`} onClick={() => setTab('email')}>邮箱</button>}
+            {enableSmsRegister && <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='mobile'?'bg-background shadow':''}`} onClick={() => setTab('mobile')}>手机</button>}
+            {enableMailRegister && <button type="button" className={`flex-1 rounded-md px-3 py-1.5 text-sm ${tab==='mail'?'bg-background shadow':''}`} onClick={() => setTab('mail')}>邮笱</button>}
           </div>
         )}
 
@@ -125,14 +125,14 @@ export default function Register() {
             </div>
           )}
 
-          {(tab==='password' || tab==='email' || oauthMode) && (
+          {(tab==='password' || tab==='mail' || oauthMode) && (
             <div className="space-y-2">
               <Label>邮箱</Label>
               <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
           )}
 
-          {tab==='phone' && (
+          {tab==='mobile' && (
             <div className="space-y-2">
               <Label>手机号</Label>
               <div className="flex gap-2">
@@ -142,7 +142,7 @@ export default function Register() {
             </div>
           )}
 
-          {tab==='email' && (
+          {tab==='mail' && (
             <div className="space-y-2">
               <Label>邮箱地址</Label>
               <div className="flex gap-2">
@@ -152,7 +152,7 @@ export default function Register() {
             </div>
           )}
 
-          {(tab==='phone' || tab==='email') && (
+          {(tab==='mobile' || tab==='mail') && (
             <div className="space-y-2">
               <Label>验证码</Label>
               <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />

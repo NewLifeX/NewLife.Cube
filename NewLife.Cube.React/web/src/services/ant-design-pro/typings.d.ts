@@ -79,24 +79,19 @@ declare namespace API {
   };
 
   type LoginConfig = {
-    displayName?: string;
+    code?: string;
+    name?: string;
+    copyright?: string;
+    registration?: string;
     logo?: string;
+    loginTip?: string;
+    loginLogo?: string;
+    loginBackground?: string;
     allowLogin?: boolean;
     allowRegister?: boolean;
     enableSms?: boolean;
     enableMail?: boolean;
-    loginTip?: string;
     providers?: OAuthProvider[];
-  };
-
-  type SiteInfo = {
-    displayName?: string;
-    copyright?: string;
-    registration?: string;
-    loginTip?: string;
-    logo?: string;
-    loginLogo?: string;
-    loginBackground?: string;
   };
 
   type SendCodeParams = {
@@ -108,7 +103,8 @@ declare namespace API {
   type LoginByCodeParams = {
     username: string;
     password: string;
-    loginCategory: 1 | 2;
+    /** 登录分类：'mobile' 手机验证码、'mail' 邮箱验证码 */
+    category: 'mobile' | 'mail';
   };
 
   type RegisterParams = {

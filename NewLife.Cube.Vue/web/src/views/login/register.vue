@@ -10,7 +10,7 @@
 				<div class="register-main">
 					<el-tabs v-if="!state.oauthMode" v-model="state.registerTab">
 						<el-tab-pane label="账号注册" name="password" />
-						<el-tab-pane v-if="enableSmsRegister" label="手机注册" name="phone" />
+						<el-tab-pane v-if="enableSmsRegister" label="手机注册" name="mobile" />
 						<el-tab-pane v-if="enableMailRegister" label="邮箱注册" name="email" />
 					</el-tabs>
 
@@ -37,10 +37,10 @@
 								</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item v-if="state.registerTab === 'password' || state.registerTab === 'email' || state.oauthMode" prop="email">
+						<el-form-item v-if="state.registerTab === 'password' || state.registerTab === 'mail' || state.oauthMode" prop="email">
 							<el-input
 								text
-								:placeholder="state.registerTab === 'email' ? '请输入邮箱地址（用于接收验证码）' : '请输入邮箱地址'"
+								:placeholder="state.registerTab === 'mail' ? '请输入邮箱地址（用于接收验证码）' : '请输入邮箱地址'"
 								v-model="state.ruleForm.email"
 								clearable
 								autocomplete="off"
@@ -51,7 +51,7 @@
 								</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item v-if="state.registerTab === 'phone'" prop="mobile">
+						<el-form-item v-if="state.registerTab === 'mobile'" prop="mobile">
 							<el-input
 								text
 								placeholder="请输入手机号"
@@ -69,7 +69,7 @@
 								</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item v-if="state.registerTab === 'email'" prop="emailCodeTarget">
+						<el-form-item v-if="state.registerTab === 'mail'" prop="emailCodeTarget">
 							<el-input
 								text
 								placeholder="请输入邮箱"
@@ -87,7 +87,7 @@
 								</template>
 							</el-input>
 						</el-form-item>
-						<el-form-item v-if="state.registerTab === 'phone' || state.registerTab === 'email'" prop="code">
+						<el-form-item v-if="state.registerTab === 'mobile' || state.registerTab === 'mail'" prop="code">
 							<el-input
 								text
 								placeholder="请输入验证码"
@@ -169,7 +169,7 @@ import { useSiteInfo } from '/@/stores/siteInfo';
 import { useUserApi } from '/@/api/user';
 import { NextLoading } from '/@/utils/loading';
 import { Session } from '/@/utils/storage';
-import { RegisterCategory } from '/@/model/api/login';
+import { AuthCategory } from '/@/model/api/login';
 import logoMiniDefault from '/@/assets/logo-mini.png';
 
 const router = useRouter();
@@ -179,7 +179,7 @@ const userApi = useUserApi();
 const formRef = ref<FormInstance>();
 
 const state = reactive({
-	registerTab: 'password' as 'password' | 'phone' | 'email',
+	registerTab: 'password' as 'password' | 'mobile' | 'mail',
 	oauthMode: false,
 	ruleForm: {
 		username: '',
@@ -273,11 +273,11 @@ const onSendCode = async (channel: 'Sms' | 'Mail') => {
 };
 
 const onRegister = async () => {
-	if (state.registerTab === 'phone') {
+	if (state.registerTab === 'mobile') {
 		if (!state.ruleForm.mobile) return ElMessage.warning('请输入手机号');
 		if (!state.ruleForm.code) return ElMessage.warning('请输入验证码');
 	}
-	if (state.registerTab === 'email') {
+	if (state.registerTab === 'mail') {
 		if (!state.ruleForm.emailCodeTarget) return ElMessage.warning('请输入邮箱地址');
 		if (!state.ruleForm.code) return ElMessage.warning('请输入验证码');
 	}
@@ -294,16 +294,16 @@ const onRegister = async () => {
 	try {
 		const registerPayload = state.oauthMode
 			? {
-				registerCategory: RegisterCategory.OAuthBind,
+				category: 'oauth' as AuthCategory,
 				oauthToken: state.ruleForm.oauthToken,
 				username: state.ruleForm.username,
 				email: state.ruleForm.email,
 				password: state.ruleForm.password,
 				confirmPassword: state.ruleForm.password2,
 			}
-			: state.registerTab === 'phone'
+			: state.registerTab === 'mobile'
 				? {
-					registerCategory: RegisterCategory.Phone,
+					category: 'mobile' as AuthCategory,
 					mobile: state.ruleForm.mobile,
 					username: state.ruleForm.username || state.ruleForm.mobile,
 					email: state.ruleForm.email,
@@ -311,9 +311,9 @@ const onRegister = async () => {
 					password: state.ruleForm.password,
 					confirmPassword: state.ruleForm.password2,
 				}
-				: state.registerTab === 'email'
+				: state.registerTab === 'mail'
 					? {
-						registerCategory: RegisterCategory.Email,
+						category: 'mail' as AuthCategory,
 						email: state.ruleForm.emailCodeTarget,
 						username: state.ruleForm.username || state.ruleForm.emailCodeTarget,
 						code: state.ruleForm.code,
@@ -321,7 +321,7 @@ const onRegister = async () => {
 						confirmPassword: state.ruleForm.password2,
 					}
 					: {
-						registerCategory: RegisterCategory.Password,
+						category: '' as AuthCategory,
 						username: state.ruleForm.username,
 						email: state.ruleForm.email,
 						password: state.ruleForm.password,

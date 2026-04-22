@@ -11,7 +11,7 @@ public interface ICubeModel { }
 public class LoginModel : ICubeModel
 {
     /// <summary>登录类型</summary>
-    public LoginCategory LoginCategory { get; set; } = LoginCategory.Password;
+    public AuthCategory Category { get; set; } = AuthCategory.Password;
 
     /// <summary> 登录用户名、手机号码、邮箱 </summary>
     public String Username { get; set; }
@@ -61,27 +61,11 @@ public class RegisterModel : ICubeModel
     public String Password2 { get; set; }
 }
 
-/// <summary>注册类型</summary>
-public enum RegisterCategory
-{
-    /// <summary>用户名密码注册</summary>
-    Password = 0,
-
-    /// <summary>手机号验证码注册</summary>
-    Phone = 1,
-
-    /// <summary>邮箱验证码注册</summary>
-    Email = 2,
-
-    /// <summary>第三方登录回跳后绑定注册</summary>
-    OAuthBind = 3,
-}
-
 /// <summary>统一认证注册模型</summary>
 public class AuthRegisterModel : ICubeModel
 {
     /// <summary>注册类型</summary>
-    public RegisterCategory RegisterCategory { get; set; } = RegisterCategory.Password;
+    public AuthCategory Category { get; set; } = AuthCategory.Password;
 
     /// <summary>用户名</summary>
     public String Username { get; set; }
@@ -101,7 +85,7 @@ public class AuthRegisterModel : ICubeModel
     /// <summary>验证码（手机/邮箱注册时必填）</summary>
     public String Code { get; set; }
 
-    /// <summary>OAuth 临时令牌（OAuthBind 时必填）</summary>
+    /// <summary>OAuth 临时令牌（category=oauth 时必填）</summary>
     public String OAuthToken { get; set; }
 
     /// <summary>验证码 ID。调用 /Auth/Captcha 获取，注册时原样回传；仅在注册场景需要验证码时必填 </summary>

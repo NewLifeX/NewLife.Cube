@@ -7,7 +7,7 @@ interface AppState {
   logo: string;
   toggleDark: () => void;
   toggleCollapse: () => void;
-  setSiteInfo: (info: { displayName?: string; logo?: string }) => void;
+  setSiteInfo: (info: { name?: string; logo?: string }) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -19,7 +19,7 @@ export const useAppStore = create<AppState>((set) => ({
   toggleCollapse: () => set((s) => ({ collapsed: !s.collapsed })),
   setSiteInfo: (info) =>
     set((s) => ({
-      siteName: info.displayName ?? s.siteName,
+      siteName: info.name ?? s.siteName,
       logo: info.logo ?? s.logo,
     })),
 }));

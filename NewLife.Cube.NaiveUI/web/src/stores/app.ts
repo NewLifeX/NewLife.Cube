@@ -18,8 +18,8 @@ export const useAppStore = defineStore('app', {
     toggleCollapse() {
       this.collapsed = !this.collapsed;
     },
-    setSiteInfo(info: { displayName?: string; logo?: string }) {
-      if (info.displayName) this.siteName = info.displayName;
+    setSiteInfo(info: { name?: string; logo?: string }) {
+      if (info.name) this.siteName = info.name;
       if (info.logo) this.logo = info.logo;
     },
   },

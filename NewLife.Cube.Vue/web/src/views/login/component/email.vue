@@ -92,10 +92,10 @@ const onSignIn = async () => {
 	}
 	state.loading = true;
 	try {
-		const res = await userApi.loginByCode({
+		const res = await userApi.login({
 			username: state.ruleForm.username,
 			password: state.ruleForm.code,
-			loginCategory: 2,
+			category: 'mail',
 		});
 		Session.set('token', res.data.token);
 		if (!themeConfig.value.isRequestRoutes) {

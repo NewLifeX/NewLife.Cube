@@ -1,5 +1,5 @@
 import Footer from '@/components/Footer';
-import { login, getLoginConfig, getSiteInfo, sendCode, loginByCode } from '@/services/ant-design-pro/api';
+import { login, getLoginConfig, sendCode } from '@/services/ant-design-pro/api';
 import {
   LockOutlined,
   MailOutlined,
@@ -33,7 +33,7 @@ const Login: React.FC = () => {
     enableMail: false,
     providers: [],
   });
-  const [siteInfo, setSiteInfo] = useState<API.SiteInfo>({});
+  const [siteInfo, setSiteInfo] = useState<API.LoginConfig>({});
   const { initialState, setInitialState } = useModel('@@initialState');
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,16 +58,16 @@ const Login: React.FC = () => {
   };
 
   useEffect(() => {
-    Promise.all([getLoginConfig(), getSiteInfo()])
-      .then(([configRes, siteRes]) => {
+    getLoginConfig()
+      .then((configRes) => {
         if (configRes?.data) {
           setLoginConfig(configRes.data);
+          setSiteInfo(configRes.data);
           if (!configRes.data.allowLogin) {
             if (configRes.data.enableSms) setType('mobile');
             else if (configRes.data.enableMail) setType('email');
           }
         }
-        if (siteRes?.data) setSiteInfo(siteRes.data);
       })
       .catch(() => {});
   }, []);
@@ -109,8 +109,8 @@ const Login: React.FC = () => {
   if (loginConfig.enableMail) tabItems.push({ key: 'email', label: '邮箱验证码' });
   if (tabItems.length === 0) tabItems.push({ key: 'account', label: '账户密码登录' });
 
-  const logoUrl = siteInfo.loginLogo || loginConfig.logo || '';
-  const displayName = siteInfo.displayName || loginConfig.displayName || 'NewLife Cube';
+  const logoUrl = loginConfig.loginLogo || loginConfig.logo || '';
+  const displayName = loginConfig.name || 'NewLife Cube';
 
   const oauthActions = loginConfig.providers?.length
     ? [

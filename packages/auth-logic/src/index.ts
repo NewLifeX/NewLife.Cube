@@ -5,7 +5,7 @@
  * 封装为框架无关的纯逻辑类，各框架通过适配器（Pinia/Zustand/Svelte）桥接。
  */
 
-import { RegisterCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type LoginCategory, type MfaVerifyResult } from '@cube/api-core';
+import { type AuthCategory, type CubeApi, type UserInfo, type MenuItem, type ResetPasswordModel, type RegisterModel, type OAuthPendingInfo, type MfaVerifyResult } from '@cube/api-core';
 import { findMenu, getMenuPermission } from '@cube/page-utils';
 import { encryptPassword } from '@cube/api-core';
 
@@ -122,7 +122,7 @@ export class AuthLogic {
   }
 
   /** 发送验证码登录短信/邮件 */
-  async sendLoginCode(username: string, channel: LoginCategory extends string ? LoginCategory : 'mobile' | 'mail', captchaId?: string, captchaCode?: string) {
+  async sendLoginCode(username: string, channel: 'mobile' | 'mail', captchaId?: string, captchaCode?: string) {
     return this.api.user.sendCode({
       channel: channel as string,
       username,
@@ -131,12 +131,12 @@ export class AuthLogic {
     });
   }
 
-  /** 验证码登录（手机/邮箱） */
-  async loginByCode(username: string, code: string, loginCategory: LoginCategory, captchaId?: string, captchaCode?: string) {
-    const res = await this.api.user.loginByCode({
+  /** 验证码登录（手机/邮箱），等同于 login 并传入 category='mobile'|'mail' */
+  async loginByCode(username: string, code: string, category: AuthCategory, captchaId?: string, captchaCode?: string) {
+    const res = await this.api.user.login({
       username,
       password: code,
-      loginCategory,
+      category,
       ...(captchaId ? { captchaId } : {}),
       ...(captchaCode ? { captchaCode } : {}),
     });
@@ -466,15 +466,15 @@ export class RegisterLogic {
       return false;
     }
 
-    if ((model.registerCategory ?? RegisterCategory.Password) === RegisterCategory.Phone && !model.code) {
+    if ((model.category ?? '') === 'mobile' && !model.code) {
       this.setState({ error: '请输入手机验证码' });
       return false;
     }
-    if ((model.registerCategory ?? RegisterCategory.Password) === RegisterCategory.Email && !model.code) {
+    if ((model.category ?? '') === 'mail' && !model.code) {
       this.setState({ error: '请输入邮箱验证码' });
       return false;
     }
-    if ((model.registerCategory ?? RegisterCategory.Password) === RegisterCategory.OAuthBind && !model.oauthToken) {
+    if ((model.category ?? '') === 'oauth' && !model.oauthToken) {
       this.setState({ error: 'oauthToken不能为空' });
       return false;
     }

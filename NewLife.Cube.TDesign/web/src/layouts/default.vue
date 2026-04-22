@@ -81,8 +81,8 @@ function handleUserAction(data: { value: string }) {
 
 onMounted(async () => {
   try {
-    const res = await api.user.getSiteInfo();
-    if (res?.data) appStore.siteInfo = res.data;
+    const res = await api.user.getLoginConfig();
+    if (res?.data) appStore.loginConfig = res.data;
   } catch { /* ignore */ }
 
   await userStore.fetchUserInfo();

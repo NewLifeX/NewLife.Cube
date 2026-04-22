@@ -16,7 +16,7 @@ function normalizeLoginResult(data: LoginResult): LoginResult {
 }
 
 /** 需要归一化登录结果的 URL 路径后缀 */
-const LOGIN_RESULT_PATHS = ['/Auth/Login', '/Auth/LoginByCode', '/Auth/Register', '/Auth/Refresh'];
+const LOGIN_RESULT_PATHS = ['/Auth/Login', '/Auth/Register', '/Auth/Refresh'];
 
 export interface ApiClientOptions {
   /** API 基础路径，默认 '' （同源） */

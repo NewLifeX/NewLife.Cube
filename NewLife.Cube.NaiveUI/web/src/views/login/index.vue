@@ -41,7 +41,7 @@
                 </n-button>
               </n-input-group>
             </n-form-item>
-            <n-button type="primary" block :loading="codeLoading" @click="handleCodeLogin(1)">登 录</n-button>
+            <n-button type="primary" block :loading="codeLoading" @click="handleCodeLogin('mobile')">登 录</n-button>
           </n-form>
         </n-tab-pane>
 
@@ -59,7 +59,7 @@
                 </n-button>
               </n-input-group>
             </n-form-item>
-            <n-button type="primary" block :loading="mailLoading" @click="handleCodeLogin(2, emailForm)">登 录</n-button>
+            <n-button type="primary" block :loading="mailLoading" @click="handleCodeLogin('mail', emailForm)">登 录</n-button>
           </n-form>
         </n-tab-pane>
       </n-tabs>
@@ -94,10 +94,10 @@
       </div>
 
       <!-- 版权信息 -->
-      <div v-if="siteInfoData?.copyright || siteInfoData?.registration" class="login-footer">
-        <div v-if="siteInfoData.copyright" v-html="siteInfoData.copyright"></div>
-        <div v-if="siteInfoData.registration">
-          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ siteInfoData.registration }}</a>
+      <div v-if="loginConfig?.copyright || loginConfig?.registration" class="login-footer">
+        <div v-if="loginConfig?.copyright" v-html="loginConfig.copyright"></div>
+        <div v-if="loginConfig?.registration">
+          <a href="https://www.beianx.cn/" target="_blank" rel="noopener noreferrer">{{ loginConfig.registration }}</a>
         </div>
       </div>
     </n-card>
@@ -110,7 +110,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useMessage, type FormInst, type FormRules } from 'naive-ui';
 import { useUserStore } from '@/stores/user';
 import api from '@/api';
-import type { LoginConfig, SiteInfo } from '@cube/api-core';
+import type { LoginConfig } from '@cube/api-core';
 
 const router = useRouter();
 const route = useRoute();
@@ -125,7 +125,6 @@ const smsCountdown = ref(0);
 const mailCountdown = ref(0);
 const activeTab = ref('password');
 const loginConfig = ref<LoginConfig | null>(null);
-const siteInfoData = ref<SiteInfo | null>(null);
 
 const form = ref({ username: '', password: '' });
 const codeForm = ref({ username: '', code: '' });
@@ -136,7 +135,7 @@ const rules: FormRules = {
   password: { required: true, message: '请输入密码', trigger: 'blur' },
 };
 
-const logoSrc = computed(() => siteInfoData.value?.loginLogo || loginConfig.value?.logo || '');
+const logoSrc = computed(() => loginConfig.value?.loginLogo || loginConfig.value?.logo || '');
 
 async function handleLogin() {
   try {
@@ -177,11 +176,11 @@ async function sendCode(channel: 'Sms' | 'Mail', username?: string) {
   }
 }
 
-async function handleCodeLogin(loginCategory: 1 | 2, formData?: { username: string; code: string }) {
+async function handleCodeLogin(loginCategory: 'mobile' | 'mail', formData?: { username: string; code: string }) {
   const data = formData ?? codeForm.value;
-  const loadingRef = loginCategory === 1 ? codeLoading : mailLoading;
+  const loadingRef = loginCategory === 'mobile' ? codeLoading : mailLoading;
   if (!data.username) {
-    message.warning(loginCategory === 1 ? '请输入手机号' : '请输入邮箱地址');
+    message.warning(loginCategory === 'mobile' ? '请输入手机号' : '请输入邮箱地址');
     return;
   }
   if (!data.code) {
@@ -190,7 +189,7 @@ async function handleCodeLogin(loginCategory: 1 | 2, formData?: { username: stri
   }
   loadingRef.value = true;
   try {
-    const res = await api.user.loginByCode({ username: data.username, password: data.code, loginCategory });
+    const res = await api.user.login({ username: data.username, password: data.code, category: loginCategory });
     if (res.data?.accessToken) {
       api.tokenManager.setToken(res.data.accessToken);
     }
@@ -210,11 +209,7 @@ function handleOAuth(provider: string) {
 
 onMounted(async () => {
   try {
-    const [siteRes, configRes] = await Promise.all([
-      api.user.getSiteInfo(),
-      api.user.getLoginConfig(),
-    ]);
-    siteInfoData.value = siteRes.data;
+    const configRes = await api.user.getLoginConfig();
     loginConfig.value = configRes.data;
     if (configRes.data?.allowLogin === false) {
       if (configRes.data.enableSms) activeTab.value = 'sms';

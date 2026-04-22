@@ -1,12 +1,12 @@
 import { defineStore } from 'pinia';
-import type { SiteInfo } from '@cube/api-core';
+import type { LoginConfig } from '@cube/api-core';
 import cubeApi from '@/api';
 
 export const useAppStore = defineStore('app', {
   state: () => ({
     collapsed: false,
     darkMode: false,
-    siteInfo: null as SiteInfo | null,
+    loginConfig: null as LoginConfig | null,
   }),
   actions: {
     toggleCollapsed() {
@@ -15,9 +15,9 @@ export const useAppStore = defineStore('app', {
     toggleDarkMode() {
       this.darkMode = !this.darkMode;
     },
-    async fetchSiteInfo() {
-      const res = await cubeApi.user.getSiteInfo();
-      if (res.data) this.siteInfo = res.data;
+    async fetchLoginConfig() {
+      const res = await cubeApi.user.getLoginConfig();
+      if (res.data) this.loginConfig = res.data;
     },
   },
 });

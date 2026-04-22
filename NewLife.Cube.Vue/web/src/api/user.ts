@@ -12,8 +12,8 @@ export function useUserApi() {
 		info: () => cubeApi.user.info(),
 		/** 发送验证码，channel: Sms（短信）或 Mail（邮箱） */
 		sendCode: (data: Parameters<typeof cubeApi.user.sendCode>[0]) => cubeApi.user.sendCode(data),
-		/** 验证码登录 */
-		loginByCode: (data: Parameters<typeof cubeApi.user.loginByCode>[0]) => cubeApi.user.loginByCode(data),
+		/** 登录（支持 category 字段区分密码/手机验证码/邮箱验证码） */
+		login: (data: Parameters<typeof cubeApi.user.login>[0]) => cubeApi.user.login(data),
 		/** 用户注册 */
 		register: (data: Parameters<typeof cubeApi.user.register>[0]) => cubeApi.user.register(data),
 		/** 获取OAuth回跳待注册预填信息 */
@@ -24,7 +24,5 @@ export function useUserApi() {
 		resetPassword: (data: Parameters<typeof cubeApi.user.resetPassword>[0]) => cubeApi.user.resetPassword(data),
 		/** 获取登录页配置 */
 		getLoginConfig: () => cubeApi.user.getLoginConfig(),
-		/** 获取站点信息 */
-		getSiteInfo: () => cubeApi.user.getSiteInfo(),
 	};
 }

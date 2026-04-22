@@ -22,7 +22,7 @@ export default function Layout() {
   useEffect(() => {
     if (!api.tokenManager.getToken()) { navigate('/login'); return; }
     api.menu.getMenuTree().then((res) => setMenus(res.data ?? [])).catch(() => {});
-    api.user.getSiteInfo().then((res) => { if (res.data) setSiteInfo(res.data); }).catch(() => {});
+    api.user.getLoginConfig().then((res) => { if (res.data) setSiteInfo(res.data); }).catch(() => {});
     if (!userInfo) fetchUserInfo().catch(() => {});
   }, []);
 

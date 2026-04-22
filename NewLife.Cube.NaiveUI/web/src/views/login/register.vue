@@ -5,31 +5,31 @@
 
       <n-tabs v-if="!oauthMode" v-model:value="activeTab">
         <n-tab-pane name="password" tab="账号注册" />
-        <n-tab-pane v-if="enableSmsRegister" name="phone" tab="手机注册" />
-        <n-tab-pane v-if="enableMailRegister" name="email" tab="邮箱注册" />
+        <n-tab-pane v-if="enableSmsRegister" name="mobile" tab="手机注册" />
+        <n-tab-pane v-if="enableMailRegister" name="mail" tab="邮笱注册" />
       </n-tabs>
 
       <n-alert v-if="oauthMode" type="info" style="margin-bottom:12px">第三方账号首次登录，请补全密码完成本地账号创建</n-alert>
 
       <n-form :model="form" label-placement="left">
         <n-form-item v-if="activeTab==='password' || oauthMode" label="用户名"><n-input v-model:value="form.username" :readonly="oauthMode" /></n-form-item>
-        <n-form-item v-if="activeTab==='password' || activeTab==='email' || oauthMode" label="邮箱"><n-input v-model:value="form.email" /></n-form-item>
+        <n-form-item v-if="activeTab==='password' || activeTab==='mail' || oauthMode" label="邮笱"><n-input v-model:value="form.email" /></n-form-item>
 
-        <n-form-item v-if="activeTab==='phone'" label="手机号">
+        <n-form-item v-if="activeTab==='mobile'" label="手机号">
           <n-input-group>
             <n-input v-model:value="form.mobile" style="flex:1" />
             <n-button :disabled="countdown>0" :loading="sending" @click="sendCode('Sms')">{{ countdown>0 ? `${countdown}s` : '发送验证码' }}</n-button>
           </n-input-group>
         </n-form-item>
 
-        <n-form-item v-if="activeTab==='email'" label="邮箱地址">
+        <n-form-item v-if="activeTab==='mail'" label="邮笱地址">
           <n-input-group>
             <n-input v-model:value="form.emailCodeTarget" style="flex:1" />
             <n-button :disabled="countdown>0" :loading="sending" @click="sendCode('Mail')">{{ countdown>0 ? `${countdown}s` : '发送验证码' }}</n-button>
           </n-input-group>
         </n-form-item>
 
-        <n-form-item v-if="activeTab==='phone' || activeTab==='email'" label="验证码"><n-input v-model:value="form.code" /></n-form-item>
+        <n-form-item v-if="activeTab==='mobile' || activeTab==='mail'" label="验证码"><n-input v-model:value="form.code" /></n-form-item>
         <n-form-item label="密码"><n-input v-model:value="form.password" type="password" show-password-on="click" /></n-form-item>
         <n-form-item label="确认密码"><n-input v-model:value="form.confirmPassword" type="password" show-password-on="click" /></n-form-item>
         <n-button type="primary" block :loading="loading" @click="onSubmit">{{ oauthMode ? '完成绑定并登录' : '立即注册' }}</n-button>
@@ -47,14 +47,14 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMessage } from 'naive-ui';
-import { RegisterCategory } from '@cube/api-core';
+import type { AuthCategory } from '@cube/api-core';
 import api from '@/api';
 
 const router = useRouter();
 const route = useRoute();
 const message = useMessage();
 
-const activeTab = ref<'password' | 'phone' | 'email'>('password');
+const activeTab = ref<'password' | 'mobile' | 'mail'>('password');
 const oauthMode = ref(false);
 const loading = ref(false);
 const sending = ref(false);
@@ -107,16 +107,16 @@ const sendCode = async (channel: 'Sms' | 'Mail') => {
 const onSubmit = async () => {
   if (!form.password || !form.confirmPassword) return message.warning('请输入密码和确认密码');
   if (form.password !== form.confirmPassword) return message.warning('两次密码不一致');
-  if (activeTab.value === 'phone' && (!form.mobile || !form.code)) return message.warning('请填写手机号和验证码');
-  if (activeTab.value === 'email' && (!form.emailCodeTarget || !form.code)) return message.warning('请填写邮箱和验证码');
+  if (activeTab.value === 'mobile' && (!form.mobile || !form.code)) return message.warning('请填写手机号和验证码');
+  if (activeTab.value === 'mail' && (!form.emailCodeTarget || !form.code)) return message.warning('请填写邮笱和验证码');
 
   const payload = oauthMode.value
-    ? { registerCategory: RegisterCategory.OAuthBind, oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
-    : activeTab.value === 'phone'
-      ? { registerCategory: RegisterCategory.Phone, username: form.username || form.mobile, mobile: form.mobile, email: form.email, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
-      : activeTab.value === 'email'
-        ? { registerCategory: RegisterCategory.Email, username: form.username || form.emailCodeTarget, email: form.emailCodeTarget, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
-        : { registerCategory: RegisterCategory.Password, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword };
+    ? { category: 'oauth' as AuthCategory, oauthToken: form.oauthToken, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword }
+    : activeTab.value === 'mobile'
+      ? { category: 'mobile' as AuthCategory, username: form.username || form.mobile, mobile: form.mobile, email: form.email, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
+      : activeTab.value === 'mail'
+        ? { category: 'mail' as AuthCategory, username: form.username || form.emailCodeTarget, email: form.emailCodeTarget, code: form.code, password: form.password, confirmPassword: form.confirmPassword }
+        : { category: '' as AuthCategory, username: form.username, email: form.email, password: form.password, confirmPassword: form.confirmPassword };
 
   loading.value = true;
   try {

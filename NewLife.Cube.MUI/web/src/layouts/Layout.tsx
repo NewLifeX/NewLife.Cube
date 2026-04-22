@@ -34,7 +34,7 @@ export default function Layout() {
     // 加载菜单
     api.menu.getMenuTree().then((res) => setMenus(res.data ?? [])).catch(() => {});
     // 加载站点信息
-    api.user.getSiteInfo().then((res) => { if (res.data) setSiteInfo(res.data); }).catch(() => {});
+    api.user.getLoginConfig().then((res) => { if (res.data) setSiteInfo(res.data); }).catch(() => {});
     // 加载用户信息
     if (!userInfo) fetchUserInfo().catch(() => {});
   }, []);

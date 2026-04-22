@@ -88,7 +88,7 @@ async function handleUserMenu(key: string) {
 onMounted(async () => {
   // 获取站点信息
   try {
-    const res = await api.user.getSiteInfo();
+    const res = await api.user.getLoginConfig();
     if (res.data) appStore.setSiteInfo(res.data);
   } catch { /* ignore */ }
 
