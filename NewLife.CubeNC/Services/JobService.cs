@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Cube.Entity;
@@ -42,26 +41,15 @@ public static class JobServiceExtersions
 }
 
 /// <summary>定时作业服务</summary>
-public class JobService : IHostedService
+/// <remarks>实例化作业服务</remarks>
+/// <param name="serviceProvider"></param>
+/// <param name="tracer"></param>
+public class JobService(IServiceProvider serviceProvider, ITracer tracer) : IHostedService
 {
     #region 核心控制
-
     private static readonly IList<MyJob> _jobs = [];
-    private readonly IServiceProvider _serviceProvider;
-    private ICacheProvider _cacheProvider;
-    private readonly ITracer _tracer;
-
-    /// <summary>实例化作业服务</summary>
-    /// <param name="serviceProvider"></param>
-    /// <param name="tracer"></param>
-    public JobService(IServiceProvider serviceProvider, ITracer tracer)
-    {
-        _tracer = tracer;
-        _serviceProvider = serviceProvider;
-        //_cacheProvider = serviceProvider.GetService<ICacheProvider>();
-    }
-
     private static TimerX _timer;
+
     /// <summary>启动</summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -101,7 +89,14 @@ public class JobService : IHostedService
 
     private void DoJob(Object state)
     {
-        _cacheProvider ??= _serviceProvider.GetService<ICacheProvider>();
+        // 应用结束时这里可能还在执行，要捕获特定异常
+        ICacheProvider cacheProvider = null;
+        try
+        {
+            cacheProvider = serviceProvider.GetService<ICacheProvider>();
+        }
+        catch (ObjectDisposedException) { return; }
+
         var list = CronJob.FindAll();
         foreach (var item in list)
         {
@@ -112,9 +107,9 @@ public class JobService : IHostedService
                 job = new MyJob
                 {
                     Job = item,
-                    CacheProvider = _cacheProvider,
-                    ServiceProvider = _serviceProvider,
-                    Tracer = _tracer
+                    CacheProvider = cacheProvider,
+                    ServiceProvider = serviceProvider,
+                    Tracer = tracer
                 };
                 _jobs.Add(job);
             }

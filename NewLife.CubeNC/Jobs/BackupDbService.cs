@@ -28,25 +28,23 @@ public class BackupDbService
         var ns = connNames.Split(",", ";");
         foreach (var name in ns)
         {
-            if (DAL.ConnStrs.ContainsKey(name))
-            {
-                // 仅支持备份SQLite
-                var dal = DAL.Create(name);
-                if (dal.DbType == DatabaseType.SQLite)
-                {
-                    XTrace.WriteLine("在[{0}]上备份数据库", name);
+            if (!DAL.ConnStrs.ContainsKey(name)) continue;
 
-                    var sw = Stopwatch.StartNew();
+            // 仅支持备份SQLite
+            var dal = DAL.Create(name);
+            if (dal.DbType != DatabaseType.SQLite) continue;
 
-                    //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, false);
-                    var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
+            XTrace.WriteLine("在[{0}]上备份数据库", name);
 
-                    sw.Stop();
+            var sw = Stopwatch.StartNew();
 
-                    var job = (TimerX.Current?.State as MyJob)?.Job;
-                    job.WriteLog(nameof(BackupDb), true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
-                }
-            }
+            //var bak = dal.Db.CreateMetaData().SetSchema(DDLSchema.BackupDatabase, dal.ConnName, null, false);
+            var bak = dal.Db.CreateMetaData().Invoke("Backup", dal.ConnName, null, false);
+
+            sw.Stop();
+
+            var job = (TimerX.Current?.State as MyJob)?.Job;
+            job?.WriteLog(nameof(BackupDb), true, $"备份数据库 {name} 到 {bak}，耗时 {sw.Elapsed}");
         }
     }
 }
