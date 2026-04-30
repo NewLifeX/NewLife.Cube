@@ -696,8 +696,13 @@ public class OAuthClient
     public String GetAvatarUrl()
     {
         var av = Avatar;
-        if (av != null && av.StartsWith("/") && Server.StartsWithIgnoreCase("http"))
-            return new Uri(new Uri(Server), av) + "";
+        if (av != null && av.StartsWith("/"))
+        {
+            // 优先使用内网令牌服务地址，避免外网地址在内网环境下不可达
+            var baseUrl = !AccessServer.IsNullOrEmpty() ? AccessServer : Server;
+            if (baseUrl.StartsWithIgnoreCase("http"))
+                return new Uri(new Uri(baseUrl), av) + "";
+        }
 
         return av;
     }
