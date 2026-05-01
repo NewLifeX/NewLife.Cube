@@ -36,7 +36,6 @@ NewLife.Cube.React/wwwroot/
 NewLife.Cube.NaiveUI/wwwroot/
 NewLife.Cube.MUI/wwwroot/
 NewLife.Cube.Shadcn/wwwroot/
-pnpm-lock.yaml
 
 # Angular CLI 缓存与编译输出
 NewLife.Cube.Angular/web/.angular/
