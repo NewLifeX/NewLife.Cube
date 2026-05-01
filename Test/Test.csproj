@@ -21,8 +21,8 @@
     <None Remove="Entity\**" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.MySql" Version="1.0.2026.402" />
-    <PackageReference Include="NewLife.XCode" Version="11.25.2026.403" />
+    <PackageReference Include="NewLife.MySql" Version="1.1.2026.501" />
+    <PackageReference Include="NewLife.XCode" Version="11.26.2026.501" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
