@@ -58,6 +58,7 @@ public static class ExternalAuthHelper
             var body = JsonSerializer.Serialize(new { username, password });
             var content = new StringContent(body, Encoding.UTF8, "application/json");
 
+            // ASP.NET Core 无 SynchronizationContext，GetAwaiter().GetResult() 安全
             var response = _httpClient.PostAsync(url, content).GetAwaiter().GetResult();
             var json = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
@@ -122,11 +123,31 @@ public static class ExternalAuthHelper
         {
             // 更新已有用户信息（仅更新有值的字段）
             var dirty = false;
-            if (!extUser.DisplayName.IsNullOrEmpty() && user.DisplayName != extUser.DisplayName) { user.DisplayName = extUser.DisplayName; dirty = true; }
-            if (!extUser.Mail.IsNullOrEmpty() && user.Mail != extUser.Mail) { user.Mail = extUser.Mail; dirty = true; }
-            if (!extUser.Mobile.IsNullOrEmpty() && user.Mobile != extUser.Mobile) { user.Mobile = extUser.Mobile; dirty = true; }
-            if (!extUser.Avatar.IsNullOrEmpty() && user.Avatar != extUser.Avatar) { user.Avatar = extUser.Avatar; dirty = true; }
-            if (!extUser.Code.IsNullOrEmpty() && user.Code != extUser.Code) { user.Code = extUser.Code; dirty = true; }
+            if (!extUser.DisplayName.IsNullOrEmpty() && user.DisplayName != extUser.DisplayName)
+            {
+                user.DisplayName = extUser.DisplayName;
+                dirty = true;
+            }
+            if (!extUser.Mail.IsNullOrEmpty() && user.Mail != extUser.Mail)
+            {
+                user.Mail = extUser.Mail;
+                dirty = true;
+            }
+            if (!extUser.Mobile.IsNullOrEmpty() && user.Mobile != extUser.Mobile)
+            {
+                user.Mobile = extUser.Mobile;
+                dirty = true;
+            }
+            if (!extUser.Avatar.IsNullOrEmpty() && user.Avatar != extUser.Avatar)
+            {
+                user.Avatar = extUser.Avatar;
+                dirty = true;
+            }
+            if (!extUser.Code.IsNullOrEmpty() && user.Code != extUser.Code)
+            {
+                user.Code = extUser.Code;
+                dirty = true;
+            }
             if (dirty) user.Update();
         }
 
@@ -145,9 +166,14 @@ public static class ExternalAuthHelper
             // 检查响应是否成功：code=0 或 success=true
             if (root.TryGetProperty("code", out var codeProp))
             {
-                var codeVal = codeProp.ValueKind == JsonValueKind.Number
-                    ? codeProp.GetInt32()
-                    : (Int32?)codeProp.GetString()?.ToInt();
+                // 严格解析 code：仅当 code 为整数 0 时视为成功，其他均失败
+                Int32? codeVal = null;
+                if (codeProp.ValueKind == JsonValueKind.Number)
+                    codeVal = codeProp.GetInt32();
+                else if (codeProp.ValueKind == JsonValueKind.String &&
+                         Int32.TryParse(codeProp.GetString(), out var parsed))
+                    codeVal = parsed;
+
                 if (codeVal != 0) return null;
             }
             else if (root.TryGetProperty("success", out var successProp))
@@ -167,6 +193,7 @@ public static class ExternalAuthHelper
                 ? dataProp
                 : root;
 
+            // username 字段缺失时回退使用登录时输入的用户名
             return new ExternalAuthModel
             {
                 UserName = GetStr(data, "username", "userName", "name") ?? username,
