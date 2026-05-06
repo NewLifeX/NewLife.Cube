@@ -1,4 +1,5 @@
 ﻿using NewLife.Cube.Entity;
+using NewLife.Cube.Services;
 using NewLife.Http;
 using NewLife.Log;
 using NewLife.Model;
@@ -836,7 +837,18 @@ public class SsoProvider
                 else
                     user = User.Login(username, password, false);
             }
-            if (user == null) throw new XException("用户{0}验证失败", username);
+            if (user == null)
+            {
+                // 本地验证失败，尝试外部验证服务
+                var extAuthUrl = CubeSetting.Current.ExternalAuthUrl;
+                if (!extAuthUrl.IsNullOrEmpty())
+                {
+                    var extUser = ExternalAuthHelper.Validate(username, password, extAuthUrl);
+                    if (extUser != null)
+                        user = ExternalAuthHelper.CreateOrUpdateUser(extUser, ip, CubeSetting.Current);
+                }
+                if (user == null) throw new XException("用户{0}验证失败", username);
+            }
 
             var token = sso.CreateToken(app, user.Name, null, $"{client_id}#{user.Name}");
 

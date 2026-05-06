@@ -237,6 +237,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("SSO跨域重定向白名单。登录后允许携带JWT Token重定向的目标域名，逗号分隔，支持通配符前缀*.company.com。留空=仅允许同站，跨域不在白名单则拒绝并跳回首页")]
     [Category("用户登录")]
     public String SsoSafeDomains { get; set; }
+
+    /// <summary>外部验证地址。配置后，本地验证失败时调用外部接口验证用户名密码，成功则自动创建/更新本地用户并登录。POST格式：{"username":"...","password":"..."}，响应：{"code":0,"data":{"username":"...","displayName":"...","mail":"...","mobile":"...","roleName":"...","avatar":"..."}}</summary>
+    [Description("外部验证地址。配置后，本地验证失败时调用外部接口验证用户名密码，成功则自动创建/更新本地用户并登录")]
+    [Category("用户登录")]
+    public String ExternalAuthUrl { get; set; }
     #endregion
 
     #region 界面配置
