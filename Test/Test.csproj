@@ -22,7 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NewLife.MySql" Version="1.1.2026.501" />
-    <PackageReference Include="NewLife.XCode" Version="11.26.2026.501" />
+    <PackageReference Include="NewLife.XCode" Version="11.26.2026.506-beta0829" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NewLife.CubeNC\NewLife.CubeNC.csproj" />
