@@ -20,6 +20,7 @@
             <th class="text-center">备份</th>
             <th class="text-center">备份并压缩</th>
             <th class="text-center">下载表结构</th>
+            <th class="text-center">模型差异</th>
         </tr>
     </thead>
     <tbody>
@@ -44,6 +45,7 @@
                 <td>@Html.ActionLink("备份", "Backup", new { Name = item.Name })，共 @item.Backups.ToString("n0")个</td>
                 <td>@Html.ActionLink("备份并压缩", "BackupAndCompress", new { Name = item.Name })</td>
                 <td class="text-center">@Html.ActionLink("下载", "Download", new { Name = item.Name })</td>
+                <td class="text-center">@Html.ActionLink("查看差异", "ModelDiff", new { Name = item.Name })</td>
             </tr>
         }
     </tbody>
