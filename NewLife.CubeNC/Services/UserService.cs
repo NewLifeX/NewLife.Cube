@@ -203,9 +203,27 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
             var provider = ManageProvider.Provider;
             if (provider.Login(username, password, remember) == null)
-                return new ServiceResult<IToken> { IsSuccess = false, Message = "提供的用户名或密码不正确。" };
+            {
+                // 本地验证失败，尝试外部验证服务
+                var extUser = ExternalAuthHelper.Validate(username, password, set.ExternalAuthUrl);
+                if (extUser == null)
+                    return new ServiceResult<IToken> { IsSuccess = false, Message = "提供的用户名或密码不正确。" };
 
-            // 登录成功，清空错误数
+                // 外部验证成功，创建或更新本地用户
+                var extLocalUser = ExternalAuthHelper.CreateOrUpdateUser(extUser, ip, set);
+                provider.Current = extLocalUser;
+
+                // 清空错误计数
+                if (errors > 0) _cache.Remove(key);
+                if (ipErrors > 0) _cache.Remove(ipKey);
+
+                // 移除挑战私钥信息，避免重放
+                if (!loginModel.ChallengeId.IsNullOrEmpty()) _cache.Remove(loginModel.ChallengeId);
+
+                return CompleteLogin(extLocalUser, httpContext, remember, "外部验证登录", username, ip);
+            }
+
+            // 本地登录成功，清空错误数
             if (errors > 0) _cache.Remove(key);
             if (ipErrors > 0) _cache.Remove(ipKey);
 
