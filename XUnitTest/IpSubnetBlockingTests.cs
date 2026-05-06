@@ -34,22 +34,31 @@ public class IpSubnetBlockingTests
         Assert.Equal(expected, result);
     }
 
-    [Theory(DisplayName = "GetSubnet24：段数不足时返回原值")]
+    [Theory(DisplayName = "GetSubnet24：段数不足时返回空字符串")]
     [InlineData("192.168")]
     [InlineData("192")]
-    public void GetSubnet24_ShortIp_ReturnsOriginal(String ip)
+    public void GetSubnet24_ShortIp_ReturnsEmpty(String ip)
     {
         var result = Subnet24(ip);
-        Assert.Equal(ip, result);
+        Assert.Equal("", result);
     }
 
-    [Theory(DisplayName = "GetSubnet24：空值或null时返回原值")]
+    [Theory(DisplayName = "GetSubnet24：空值或null时返回空字符串")]
     [InlineData("")]
     [InlineData(null)]
-    public void GetSubnet24_NullOrEmpty_ReturnsOriginal(String ip)
+    public void GetSubnet24_NullOrEmpty_ReturnsEmpty(String ip)
     {
         var result = Subnet24(ip);
-        Assert.Equal(ip, result);
+        Assert.Equal("", result);
+    }
+
+    [Theory(DisplayName = "GetSubnet24：IPv6地址返回空字符串")]
+    [InlineData("::1")]
+    [InlineData("2001:db8::1")]
+    public void GetSubnet24_Ipv6_ReturnsEmpty(String ip)
+    {
+        var result = Subnet24(ip);
+        Assert.Equal("", result);
     }
 
     #endregion
@@ -67,21 +76,30 @@ public class IpSubnetBlockingTests
         Assert.Equal(expected, result);
     }
 
-    [Theory(DisplayName = "GetSubnet16：段数不足时返回原值")]
+    [Theory(DisplayName = "GetSubnet16：段数不足时返回空字符串")]
     [InlineData("192")]
-    public void GetSubnet16_ShortIp_ReturnsOriginal(String ip)
+    public void GetSubnet16_ShortIp_ReturnsEmpty(String ip)
     {
         var result = Subnet16(ip);
-        Assert.Equal(ip, result);
+        Assert.Equal("", result);
     }
 
-    [Theory(DisplayName = "GetSubnet16：空值或null时返回原值")]
+    [Theory(DisplayName = "GetSubnet16：空值或null时返回空字符串")]
     [InlineData("")]
     [InlineData(null)]
-    public void GetSubnet16_NullOrEmpty_ReturnsOriginal(String ip)
+    public void GetSubnet16_NullOrEmpty_ReturnsEmpty(String ip)
     {
         var result = Subnet16(ip);
-        Assert.Equal(ip, result);
+        Assert.Equal("", result);
+    }
+
+    [Theory(DisplayName = "GetSubnet16：IPv6地址返回空字符串")]
+    [InlineData("::1")]
+    [InlineData("2001:db8::1")]
+    public void GetSubnet16_Ipv6_ReturnsEmpty(String ip)
+    {
+        var result = Subnet16(ip);
+        Assert.Equal("", result);
     }
 
     #endregion
