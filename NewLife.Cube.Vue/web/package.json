@@ -20,7 +20,7 @@
 		"@vueuse/core": "^14.2.1",
 		"@wangeditor/editor": "^5.1.23",
 		"@wangeditor/editor-for-vue": "^5.1.12",
-		"axios": "^1.6.8",
+		"axios": "^1.15.2",
 		"countup.js": "^2.8.0",
 		"cropperjs": "^1.6.1",
 		"echarts": "^5.5.0",

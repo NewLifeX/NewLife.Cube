@@ -67,7 +67,7 @@ importers:
     devDependencies:
       '@angular/build':
         specifier: ^19.2.0
-        version: 19.2.24(@angular/compiler-cli@19.2.20(@angular/compiler@19.2.20)(typescript@5.7.3))(@angular/compiler@19.2.20)(@types/node@20.19.39)(chokidar@4.0.3)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(postcss@8.5.13)(sass-embedded@1.99.0)(sugarss@2.0.0)(tailwindcss@4.2.2)(terser@5.46.2)(typescript@5.7.3)
+        version: 19.2.24(@angular/compiler-cli@19.2.20(@angular/compiler@19.2.20)(typescript@5.7.3))(@angular/compiler@19.2.20)(@types/node@20.19.39)(chokidar@4.0.3)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(postcss@8.5.14)(sass-embedded@1.99.0)(sugarss@2.0.0)(tailwindcss@4.2.2)(terser@5.46.2)(typescript@5.7.3)
       '@angular/cli':
         specifier: ^19.2.0
         version: 19.2.24(@types/node@20.19.39)(chokidar@4.0.3)
@@ -634,8 +634,8 @@ importers:
         specifier: ^5.1.12
         version: 5.1.12(@wangeditor/editor@5.1.23)(vue@3.5.32(typescript@5.7.3))
       axios:
-        specifier: ^1.6.8
-        version: 1.15.0
+        specifier: ^1.15.2
+        version: 1.15.2
       countup.js:
         specifier: ^2.8.0
         version: 2.10.0
@@ -840,8 +840,8 @@ importers:
   packages/api-core:
     dependencies:
       axios:
-        specifier: ^1.7.0
-        version: 1.15.0
+        specifier: ^1.15.2
+        version: 1.15.2
       qs:
         specifier: ^6.13.0
         version: 6.15.1
@@ -851,7 +851,7 @@ importers:
         version: 6.15.0
       tsup:
         specifier: ^8.0.0
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.13)(typescript@5.7.3)
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.14)(typescript@5.7.3)
       typescript:
         specifier: ^5.6.0
         version: 5.7.3
@@ -870,7 +870,7 @@ importers:
         version: 3.0.4(typescript@5.7.3)(vue@3.5.32(typescript@5.7.3))
       tsup:
         specifier: ^8.0.0
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.13)(typescript@5.7.3)
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.14)(typescript@5.7.3)
       typescript:
         specifier: ^5.6.0
         version: 5.7.3
@@ -889,7 +889,7 @@ importers:
     devDependencies:
       tsup:
         specifier: ^8.0.0
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.13)(typescript@5.7.3)
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.14)(typescript@5.7.3)
       typescript:
         specifier: ^5.6.0
         version: 5.7.3
@@ -911,7 +911,7 @@ importers:
         version: 3.0.4(typescript@5.7.3)(vue@3.5.32(typescript@5.7.3))
       tsup:
         specifier: ^8.0.0
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.13)(typescript@5.7.3)
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.14)(typescript@5.7.3)
       typescript:
         specifier: ^5.6.0
         version: 5.7.3
@@ -926,7 +926,7 @@ importers:
     devDependencies:
       tsup:
         specifier: ^8.0.0
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.13)(typescript@5.7.3)
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.14)(typescript@5.7.3)
       typescript:
         specifier: ^5.6.0
         version: 5.7.3
@@ -5697,6 +5697,7 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
+    deprecated: Potential CWE-502 - Update to 1.3.1 or higher
 
   '@uppy/companion-client@2.2.2':
     resolution: {integrity: sha512-5mTp2iq97/mYSisMaBtFRry6PTgZA6SIL7LePteOV5x0/DxKfrZW3DEiQERJmYpHzy7k8johpm2gHnEKto56Og==}
@@ -6367,8 +6368,8 @@ packages:
   axios@0.27.2:
     resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
 
-  axios@1.15.0:
-    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
+  axios@1.15.2:
+    resolution: {integrity: sha512-wLrXxPtcrPTsNlJmKjkPnNPK2Ihe0hn0wGSaTEiHRPxwjvJwT3hKmXF4dpqxmPO9SoNb2FsYXj/xEo0gHN+D5A==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -8082,6 +8083,9 @@ packages:
   fast-uri@3.1.0:
     resolution: {integrity: sha512-iPeeDKJSWf4IEOasVVrknXpaBV0IApz/gp7S2bb7Z4Lljbl2MGJRqInZiUrQwV16cpzw/D3S5j5Julj/gT52AA==}
 
+  fast-uri@3.1.2:
+    resolution: {integrity: sha512-rVjf7ArG3LTk+FS6Yw81V1DLuZl1bRbNrev6Tmd/9RaroeeRRJhAt7jg/6YFxbvAQXUCavSoZhPPj6oOx+5KjQ==}
+
   fastest-levenshtein@1.0.16:
     resolution: {integrity: sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg==}
     engines: {node: '>= 4.9.1'}
@@ -8505,6 +8509,10 @@ packages:
 
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
+    engines: {node: '>= 0.4'}
+
+  hasown@2.0.3:
+    resolution: {integrity: sha512-ej4AhfhfL2Q2zpMmLo7U1Uv9+PyhIZpgQLGT1F9miIGmiCJIoCgSmczFdrc97mWT4kVY72KA+WnnhJ5pghSvSg==}
     engines: {node: '>= 0.4'}
 
   he@1.2.0:
@@ -11021,6 +11029,10 @@ packages:
 
   postcss@8.5.13:
     resolution: {integrity: sha512-qif0+jGGZoLWdHey3UFHHWP0H7Gbmsk8T5VEqyYFbWqPr1XqvLGBbk/sl8V5exGmcYJklJOhOQq1pV9IcsiFag==}
+    engines: {node: ^10 || ^12 || >=14}
+
+  postcss@8.5.14:
+    resolution: {integrity: sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==}
     engines: {node: ^10 || ^12 || >=14}
 
   postcss@8.5.9:
@@ -14332,7 +14344,7 @@ snapshots:
       '@angular/core': 19.2.20(rxjs@7.8.2)(zone.js@0.15.1)
       tslib: 2.8.1
 
-  '@angular/build@19.2.24(@angular/compiler-cli@19.2.20(@angular/compiler@19.2.20)(typescript@5.7.3))(@angular/compiler@19.2.20)(@types/node@20.19.39)(chokidar@4.0.3)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(postcss@8.5.13)(sass-embedded@1.99.0)(sugarss@2.0.0)(tailwindcss@4.2.2)(terser@5.46.2)(typescript@5.7.3)':
+  '@angular/build@19.2.24(@angular/compiler-cli@19.2.20(@angular/compiler@19.2.20)(typescript@5.7.3))(@angular/compiler@19.2.20)(@types/node@20.19.39)(chokidar@4.0.3)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(postcss@8.5.14)(sass-embedded@1.99.0)(sugarss@2.0.0)(tailwindcss@4.2.2)(terser@5.46.2)(typescript@5.7.3)':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@angular-devkit/architect': 0.1902.24(chokidar@4.0.3)
@@ -14366,7 +14378,7 @@ snapshots:
     optionalDependencies:
       less: 4.6.4
       lmdb: 3.2.6
-      postcss: 8.5.13
+      postcss: 8.5.14
       tailwindcss: 4.2.2
     transitivePeerDependencies:
       - '@types/node'
@@ -20721,7 +20733,7 @@ snapshots:
   ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.1.0
+      fast-uri: 3.1.2
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -21074,7 +21086,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.15.0:
+  axios@1.15.2:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.5
@@ -22521,7 +22533,7 @@ snapshots:
       has-property-descriptors: 1.0.2
       has-proto: 1.2.0
       has-symbols: 1.1.0
-      hasown: 2.0.2
+      hasown: 2.0.3
       internal-slot: 1.1.0
       is-array-buffer: 3.0.5
       is-callable: 1.2.7
@@ -22600,11 +22612,11 @@ snapshots:
       es-errors: 1.3.0
       get-intrinsic: 1.3.0
       has-tostringtag: 1.0.2
-      hasown: 2.0.2
+      hasown: 2.0.3
 
   es-shim-unscopables@1.1.0:
     dependencies:
-      hasown: 2.0.2
+      hasown: 2.0.3
 
   es-to-primitive@1.3.0:
     dependencies:
@@ -23362,6 +23374,8 @@ snapshots:
 
   fast-uri@3.1.0: {}
 
+  fast-uri@3.1.2: {}
+
   fastest-levenshtein@1.0.16: {}
 
   fastq@1.20.1:
@@ -23526,7 +23540,7 @@ snapshots:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       es-set-tostringtag: 2.1.0
-      hasown: 2.0.2
+      hasown: 2.0.3
       mime-types: 2.1.35
 
   formdata-polyfill@4.0.10:
@@ -23581,7 +23595,7 @@ snapshots:
       call-bound: 1.0.4
       define-properties: 1.2.1
       functions-have-names: 1.2.3
-      hasown: 2.0.2
+      hasown: 2.0.3
       is-callable: 1.2.7
 
   functional-red-black-tree@1.0.1: {}
@@ -23606,7 +23620,7 @@ snapshots:
       get-proto: 1.0.1
       gopd: 1.2.0
       has-symbols: 1.1.0
-      hasown: 2.0.2
+      hasown: 2.0.3
       math-intrinsics: 1.1.0
 
   get-nonce@1.0.1: {}
@@ -23836,6 +23850,10 @@ snapshots:
       minimalistic-assert: 1.0.1
 
   hasown@2.0.2:
+    dependencies:
+      function-bind: 1.1.2
+
+  hasown@2.0.3:
     dependencies:
       function-bind: 1.1.2
 
@@ -24106,7 +24124,7 @@ snapshots:
   internal-slot@1.1.0:
     dependencies:
       es-errors: 1.3.0
-      hasown: 2.0.2
+      hasown: 2.0.3
       side-channel: 1.1.0
 
   intersection-observer@0.12.2: {}
@@ -24222,7 +24240,7 @@ snapshots:
       functions-have-names: 1.2.3
       has-bigints: 1.1.0
       has-symbols: 1.1.0
-      hasown: 2.0.2
+      hasown: 2.0.3
       is-arrow-function: 2.0.3
       is-bigint: 1.1.0
       is-boolean-object: 1.2.2
@@ -24322,7 +24340,7 @@ snapshots:
       call-bound: 1.0.4
       gopd: 1.2.0
       has-tostringtag: 1.0.2
-      hasown: 2.0.2
+      hasown: 2.0.3
 
   is-regexp@1.0.0: {}
 
@@ -26472,12 +26490,12 @@ snapshots:
       jiti: 1.21.7
       postcss: 8.5.13
 
-  postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.13):
+  postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.14):
     dependencies:
       lilconfig: 3.1.3
     optionalDependencies:
       jiti: 2.6.1
-      postcss: 8.5.13
+      postcss: 8.5.14
 
   postcss-loader@8.2.1(postcss@8.5.13)(typescript@4.9.5)(webpack@5.106.1):
     dependencies:
@@ -26675,6 +26693,12 @@ snapshots:
       source-map: 0.6.1
 
   postcss@8.5.13:
+    dependencies:
+      nanoid: 3.3.12
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
+  postcss@8.5.14:
     dependencies:
       nanoid: 3.3.12
       picocolors: 1.1.1
@@ -28115,7 +28139,7 @@ snapshots:
       adjust-sourcemap-loader: 4.0.0
       convert-source-map: 1.9.0
       loader-utils: 2.0.4
-      postcss: 8.5.13
+      postcss: 8.5.14
       source-map: 0.6.1
 
   resolve.exports@2.0.3: {}
@@ -29695,7 +29719,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.5.1(jiti@2.6.1)(postcss@8.5.13)(typescript@5.7.3):
+  tsup@8.5.1(jiti@2.6.1)(postcss@8.5.14)(typescript@5.7.3):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.27.7)
       cac: 6.7.14
@@ -29706,7 +29730,7 @@ snapshots:
       fix-dts-default-cjs-exports: 1.0.1
       joycon: 3.1.1
       picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.13)
+      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.14)
       resolve-from: 5.0.0
       rollup: 4.60.1
       source-map: 0.7.6
@@ -29715,7 +29739,7 @@ snapshots:
       tinyglobby: 0.2.16
       tree-kill: 1.2.2
     optionalDependencies:
-      postcss: 8.5.13
+      postcss: 8.5.14
       typescript: 5.7.3
     transitivePeerDependencies:
       - jiti
