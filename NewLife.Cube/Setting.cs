@@ -138,6 +138,16 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public Int32 LoginForbiddenTime { get; set; } = 300;
 
+    /// <summary>三段IP封禁阈值。三段IP（如103.125.146.*）连续登录失败次数达到该值后封禁该IP段，默认10，0表示不启用</summary>
+    [Description("三段IP封禁阈值。三段IP（如103.125.146.*）连续登录失败次数达到该值后封禁该IP段，默认10，0表示不启用")]
+    [Category("用户登录")]
+    public Int32 MaxLoginErrorBySubnet24 { get; set; } = 10;
+
+    /// <summary>两段IP封禁阈值。两段IP（如103.125.*.*）连续登录失败次数达到该值后封禁该IP段，默认20，0表示不启用</summary>
+    [Description("两段IP封禁阈值。两段IP（如103.125.*.*）连续登录失败次数达到该值后封禁该IP段，默认20，0表示不启用")]
+    [Category("用户登录")]
+    public Int32 MaxLoginErrorBySubnet16 { get; set; } = 20;
+
     /// <summary>强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
     [Description("强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
     [Category("用户登录")]
