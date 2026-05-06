@@ -243,12 +243,14 @@ public class DbController : ControllerBaseX
             else
             {
                 // 找出数据库有但实体模型没有的字段（按数据库列名匹配）
+                static String GetColName(IDataColumn c) => c.ColumnName.IsNullOrEmpty() ? c.Name : c.ColumnName;
+
                 var entityColumnNames = new HashSet<String>(
-                    entityInfo.DataTable.Columns.Select(c => c.ColumnName.IsNullOrEmpty() ? c.Name : c.ColumnName),
+                    entityInfo.DataTable.Columns.Select(c => GetColName(c)),
                     StringComparer.OrdinalIgnoreCase);
 
                 extraColumns = dbTable.Columns
-                    .Where(c => !entityColumnNames.Contains(c.ColumnName.IsNullOrEmpty() ? c.Name : c.ColumnName))
+                    .Where(c => !entityColumnNames.Contains(GetColName(c)))
                     .ToList();
             }
 
