@@ -1,0 +1,157 @@
+@model DbDiffModel
+@using NewLife.Cube.Areas.Admin.Models
+@using XCode.DataAccessLayer
+@{
+    ViewBag.Title = "模型差异 - " + Model.Name;
+}
+
+<h3>数据库 <strong>@Model.Name</strong> 的模型差异</h3>
+@if (Model.Tables == null || Model.Tables.Count == 0)
+{
+    <div class="alert alert-success">
+        <strong>太棒了！</strong>数据库与实体模型完全一致，没有发现差异。
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        共发现 <strong>@Model.Tables.Count</strong> 张表存在差异（数据库中多出的字段）。
+        可将下方 XML 片段粘贴到对应的 Model.xml 文件中，然后重新生成实体类。
+    </div>
+
+    @foreach (var item in Model.Tables)
+    {
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                @if (!item.HasEntityModel)
+                {
+                    <span class="label label-warning">无实体类</span>
+                }
+                else
+                {
+                    <span class="label label-primary">有实体类</span>
+                }
+                &nbsp;
+                @if (!item.DisplayName.IsNullOrEmpty() && !item.DisplayName.EqualIgnoreCase(item.TableName))
+                {
+                    <strong>@item.DisplayName</strong>
+                    <span class="text-muted">（@item.Name / @item.TableName）</span>
+                }
+                else
+                {
+                    <strong>@item.Name</strong>
+                    @if (!item.TableName.EqualIgnoreCase(item.Name))
+                    {
+                        <span class="text-muted">（@item.TableName）</span>
+                    }
+                }
+                <span class="badge">@item.ExtraColumns.Count 个字段</span>
+                @if (!item.HasEntityModel)
+                {
+                    <small class="text-warning"> — 此表在实体模型中不存在，以下为全部字段</small>
+                }
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered table-hover table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th class="text-center">列名</th>
+                            <th class="text-center">显示名</th>
+                            <th class="text-center">类型</th>
+                            <th class="text-center">长度</th>
+                            <th class="text-center">精度</th>
+                            <th class="text-center">主键</th>
+                            <th class="text-center">允许空</th>
+                            <th class="text-center">备注</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var col in item.ExtraColumns)
+                        {
+                            <tr>
+                                <td>@col.ColumnName</td>
+                                <td>@col.DisplayName</td>
+                                <td class="text-center">@(col.RawType ?? col.DataType?.FullName.TrimStart("System."))</td>
+
+                                @if (col.Length > 0)
+                                {
+                                    <td class="text-center">@col.Length</td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+
+                                @if (col.Precision > 0 || col.Scale > 0)
+                                {
+                                    <td class="text-center">(@col.Precision, @col.Scale)</td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+
+                                @if (col.Identity)
+                                {
+                                    <td title="自增" class="text-center">AI</td>
+                                }
+                                else if (col.PrimaryKey)
+                                {
+                                    <td title="主键" class="text-center">PK</td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+
+                                <td class="text-center">@(col.Nullable ? "" : "N")</td>
+                                <td>@(col.Description?.TrimStart(col.DisplayName).TrimStart("。", "，"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <h5>XML 片段（可粘贴到 Model.xml 的 &lt;Columns&gt; 节点中）：</h5>
+                <div class="input-group" style="margin-bottom:4px;">
+                    <button class="btn btn-sm btn-default copy-btn" data-target="#xml-@item.TableName"
+                            title="复制到剪贴板">
+                        <i class="fa fa-copy"></i> 复制
+                    </button>
+                </div>
+                <pre id="xml-@item.TableName" style="background:#f5f5f5;border:1px solid #ddd;padding:10px;border-radius:4px;white-space:pre-wrap;word-break:break-all;font-size:12px;">@item.XmlFragment</pre>
+            </div>
+        </div>
+    }
+}
+
+<div style="margin-top:10px;">
+    @Html.ActionLink("« 返回数据库列表", "Index")
+</div>
+
+@section scripts{
+<script>
+    document.querySelectorAll('.copy-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var targetId = btn.getAttribute('data-target');
+            var pre = document.querySelector(targetId);
+            if (!pre) return;
+            var text = pre.textContent || pre.innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function () {
+                    btn.textContent = '✓ 已复制';
+                    setTimeout(function () { btn.innerHTML = '<i class="fa fa-copy"></i> 复制'; }, 2000);
+                });
+            } else {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                btn.textContent = '✓ 已复制';
+                setTimeout(function () { btn.innerHTML = '<i class="fa fa-copy"></i> 复制'; }, 2000);
+            }
+        });
+    });
+</script>
+}
