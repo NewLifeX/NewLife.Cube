@@ -51,7 +51,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "测试", "测试", "{12E138A8-D4DF-4CAD-8205-897D3A7AE95C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewLife.Cube.Swagger", "NewLife.Cube.Swagger\NewLife.Cube.Swagger.csproj", "{1C23DA32-4108-4E9F-BB6C-FA61378C7E38}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
