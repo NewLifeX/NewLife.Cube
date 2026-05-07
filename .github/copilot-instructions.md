@@ -36,22 +36,21 @@
 
 ## 2.1 项目双版本架构（极重要）
 
-本仓库包含两个并行维护的项目：
+本仓库包含两个代际不同的项目，**定位与维护策略截然不同**：
 
-| 项目 | 定位 | 职责 |
-|------|------|------|
-| **`NewLife.CubeNC`** | **API 版本（主维护）** | 业务逻辑主体：Controller、Services、Jobs、Extensions、Setting.cs 等。**新增功能优先在此实现。** |
-| **`NewLife.Cube`** | MVC 版本 | 补充 MVC 专属视图、Area 控制器，以及 Common/Entity 等被 CubeNC 链接的共享代码。|
+| 项目 | 代际 | 定位 | 维护策略 |
+|------|------|------|---------|
+| **`NewLife.Cube`** | **第三代（主维护）** | API 前后端分离版本，前端皮肤独立 | **新增功能优先在此实现**，长期持续维护 |
+| **`NewLife.CubeNC`** | 第二代（历史遗留） | MVC 服务端渲染版本 | 逐步减少维护，通过文件链接复用第三代代码 |
 
-**文件链接方向：**
-- `NewLife.Cube.csproj` → 链接 `NewLife.CubeNC` 的 `Services/`、`Jobs/`、`Extensions/`、`Session/`、`ViewModels/` 等
-- `NewLife.CubeNC.csproj` → 链接 `NewLife.Cube` 的 `Common/`、`Entity/Models/` 等
+**文件链接方向（单向）：**
+- `NewLife.CubeNC.csproj` → 链接 `NewLife.Cube` 的 `Services/`、`Jobs/`、`Extensions/`、`Entity/`、`Common/` 等文件
 
 **开发原则：**
-1. 新功能（Services/Jobs/Controllers 逻辑）**先写在 `NewLife.CubeNC`**
-2. 需要 MVC 版同步时，在 `NewLife.Cube.csproj` 的 `<ItemGroup>` 中添加 `<Compile Include>` 文件链接
-3. MVC 版有独立的 `Controllers/CubeController.cs`、`Controllers/SsoController.cs`，**需同步更新**，不能仅改 CubeNC
-4. 两个项目均有独立的 `Setting.cs`，**需同步维护**（如新增配置项需两个文件都加）
+1. **新功能必须写在 `NewLife.Cube`**（第三代），不在 CubeNC 独立实现
+2. 需要让 MVC 版（CubeNC）同步获得新功能时，在 `NewLife.CubeNC.csproj` 的 `<ItemGroup>` 中添加 `<Compile Include>` 指向 `NewLife.Cube` 的文件链接
+3. CubeNC 有独立的 `Controllers/CubeController.cs`、`Controllers/SsoController.cs` 等，若需同步逻辑，应优先考虑链接而非复制
+4. 两个项目均有独立的 `Setting.cs`；**新配置项先加在 `NewLife.Cube/Setting.cs`**，再视需要在 CubeNC 侧通过文件链接或手动同步
 
 ---
 
