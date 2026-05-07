@@ -103,6 +103,7 @@
     <Compile Include="..\NewLife.CubeNC\Services\JobService.cs" Link="Services\JobService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\PasswordService.cs" Link="Services\PasswordService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\SmtpMailVerifyCode.cs" Link="Services\SmtpMailVerifyCode.cs" />
+    <Compile Include="..\NewLife.CubeNC\Services\SvgAvatarService.cs" Link="Services\SvgAvatarService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\TokenService.cs" Link="Services\TokenService.cs" />
     <Compile Include="..\NewLife.CubeNC\Services\UserService.cs" Link="Services\UserService.cs" />
     <Compile Include="..\NewLife.CubeNC\Session\SessionProvider.cs" Link="Session\SessionProvider.cs" />

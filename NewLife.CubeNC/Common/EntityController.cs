@@ -34,6 +34,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
+            DefaultSpan.Current?.SetError(ex);
             var err = ex.GetTrue().Message;
             WriteLog("Delete", false, err);
 
@@ -126,6 +127,8 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
+            DefaultSpan.Current?.SetError(ex);
+
             var code = ex is ApiException ae ? ae.Code : 500;
             var err = ex.Message;
             ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);
@@ -229,6 +232,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
+            DefaultSpan.Current?.SetError(ex);
             err = ex.Message;
             ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);
         }
@@ -322,6 +326,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
+            DefaultSpan.Current?.SetError(ex);
             XTrace.WriteException(ex);
 
             WriteLog("导入Excel", false, ex.GetMessage());
@@ -609,7 +614,11 @@ public partial class EntityController<TEntity, TModel>
             {
                 fact.Session.Truncate();
             }
-            catch (Exception ex) { XTrace.WriteException(ex); }
+            catch (Exception ex)
+            {
+                DefaultSpan.Current?.SetError(ex);
+                XTrace.WriteException(ex);
+            }
 
             // 插入
             //ms.All(e => { e.AllChilds = new List<Menu>(); return true; });

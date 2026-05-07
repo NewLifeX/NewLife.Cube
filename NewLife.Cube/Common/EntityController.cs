@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Extensions;
 using NewLife.Data;
+using NewLife.Log;
 using NewLife.Reflection;
 using NewLife.Remoting;
 using XCode.Membership;
@@ -31,6 +32,8 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
+            DefaultSpan.Current?.SetError(ex);
+
             var code = ex is ApiException ae ? ae.Code : 500;
             var err = ex.GetTrue().Message;
             WriteLog("Delete", false, err);
@@ -99,6 +102,7 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
+            DefaultSpan.Current?.SetError(ex);
 
             var msg = ex.Message;
 
@@ -164,6 +168,8 @@ public partial class EntityController<TEntity, TModel>
         }
         catch (Exception ex)
         {
+            DefaultSpan.Current?.SetError(ex);
+
             //var code = ex is ApiException ae ? ae.Code : 500;
             var err = ex.Message;
             ModelState.AddModelError((ex as ArgumentException)?.ParamName ?? "", ex.Message);

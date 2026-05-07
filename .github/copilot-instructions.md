@@ -34,6 +34,27 @@
 
 ---
 
+## 2.1 项目双版本架构（极重要）
+
+本仓库包含两个并行维护的项目：
+
+| 项目 | 定位 | 职责 |
+|------|------|------|
+| **`NewLife.CubeNC`** | **API 版本（主维护）** | 业务逻辑主体：Controller、Services、Jobs、Extensions、Setting.cs 等。**新增功能优先在此实现。** |
+| **`NewLife.Cube`** | MVC 版本 | 补充 MVC 专属视图、Area 控制器，以及 Common/Entity 等被 CubeNC 链接的共享代码。|
+
+**文件链接方向：**
+- `NewLife.Cube.csproj` → 链接 `NewLife.CubeNC` 的 `Services/`、`Jobs/`、`Extensions/`、`Session/`、`ViewModels/` 等
+- `NewLife.CubeNC.csproj` → 链接 `NewLife.Cube` 的 `Common/`、`Entity/Models/` 等
+
+**开发原则：**
+1. 新功能（Services/Jobs/Controllers 逻辑）**先写在 `NewLife.CubeNC`**
+2. 需要 MVC 版同步时，在 `NewLife.Cube.csproj` 的 `<ItemGroup>` 中添加 `<Compile Include>` 文件链接
+3. MVC 版有独立的 `Controllers/CubeController.cs`、`Controllers/SsoController.cs`，**需同步更新**，不能仅改 CubeNC
+4. 两个项目均有独立的 `Setting.cs`，**需同步维护**（如新增配置项需两个文件都加）
+
+---
+
 ## 3. 兼容性约束（极重要）
 
 - **语言版本**：当前为 **C# 14**（`<LangVersion>latest</LangVersion>`），最大化使用最新语法糖（switch 表达式、集合表达式 `[]`、`?.`/`??`/`??=`、模式匹配、目标类型 `new`、record 等）

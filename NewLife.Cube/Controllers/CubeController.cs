@@ -403,7 +403,7 @@ public class CubeController(PageService pageService, TokenService tokenService, 
     #endregion
 
     #region 头像
-    /// <summary>获取用户头像</summary>
+    /// <summary>获取用户头像。头像文件不存在时根据昵称和性别自动生成 SVG 文字头像</summary>
     /// <param name="id">用户编号</param>
     /// <returns></returns>
     [HttpGet]
@@ -429,7 +429,12 @@ public class CubeController(PageService pageService, TokenService tokenService, 
             if (!System.IO.File.Exists(av)) av = null;
         }
 
-        if (!System.IO.File.Exists(av)) throw new Exception("用户头像不存在 " + id);
+        // 头像文件不存在时，根据昵称和性别生成 SVG 文字头像
+        if (!System.IO.File.Exists(av))
+        {
+            var svg = SvgAvatarService.Generate(user, set.AvatarChars);
+            return Content(svg, "image/svg+xml");
+        }
 
         var vs = System.IO.File.ReadAllBytes(av);
         return File(vs, "image/png");
