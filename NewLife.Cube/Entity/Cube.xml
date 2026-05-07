@@ -477,6 +477,7 @@
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="Priority" DataType="Int32" Description="优先级。较大优先" />
         <Column Name="Url" DataType="String" Length="500" Description="URL路径。支持*模糊匹配，多个逗号隔开" />
+        <Column Name="ResponseCodes" DataType="String" Length="200" Description="触发响应码。检测HTTP响应码，多个逗号隔开，如404,403。设置后在响应完成后检测，超阈值封禁IP" />
         <Column Name="UserAgent" DataType="String" Length="500" Description="用户代理。支持*模糊匹配，多个逗号隔开" />
         <Column Name="IP" DataType="String" Length="500" Description="来源IP。支持*模糊匹配，多个逗号隔开" />
         <Column Name="LoginedUser" DataType="String" Length="500" Description="登录用户。支持*模糊匹配，多个逗号隔开" />

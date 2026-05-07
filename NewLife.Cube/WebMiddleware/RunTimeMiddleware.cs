@@ -139,6 +139,9 @@ public class RunTimeMiddleware
                 ctx.Items["Cube_Online"] = online;
             }
             await _next.Invoke(ctx);
+
+            // 响应完成后追踪HTTP状态码，检测爱虹虫或web扫描攻击
+            _accessService.TrackResponse(ctx.Response.StatusCode, ctx.Request.GetDisplayUrl(), ip, user, session);
         }
         catch (Exception ex)
         {

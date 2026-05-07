@@ -26,6 +26,9 @@ public partial class AccessRuleModel
     /// <summary>URL路径。支持*模糊匹配，多个逗号隔开</summary>
     public String Url { get; set; }
 
+    /// <summary>触发响应码。检测HTTP响应码，多个逗号隔开，如404,403。设置后在响应完成后检测，超阈值封禁IP</summary>
+    public String ResponseCodes { get; set; }
+
     /// <summary>用户代理。支持*模糊匹配，多个逗号隔开</summary>
     public String UserAgent { get; set; }
 
@@ -85,6 +88,7 @@ public partial class AccessRuleModel
         Enable = model.Enable;
         Priority = model.Priority;
         Url = model.Url;
+        ResponseCodes = model.ResponseCodes;
         UserAgent = model.UserAgent;
         IP = model.IP;
         LoginedUser = model.LoginedUser;

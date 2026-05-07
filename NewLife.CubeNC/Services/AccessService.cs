@@ -30,6 +30,22 @@ public class AccessService
     /// <returns></returns>
     public AccessRule Valid(String url, UserAgentParser ua, String ip, IUser user, IDictionary<String, Object> session)
     {
+        // 检查IP是否被响应码检测动态封禁
+        if (!ip.IsNullOrEmpty())
+        {
+            var blockKey = $"access:block:{ip}";
+            var blockedRuleId = _cacheProvider.Cache.Get<Int32>(blockKey);
+            if (blockedRuleId > 0)
+            {
+                var blockRule = AccessRule.FindById(blockedRuleId);
+                if (blockRule != null)
+                {
+                    using var span = _tracer?.NewSpan($"access:{blockRule.Name}", new { url, ip });
+                    return blockRule;
+                }
+            }
+        }
+
         var rules = AccessRule.FindAllWithCache()
             .Where(e => e.Enable)
             .OrderByDescending(e => e.Priority)
@@ -139,5 +155,69 @@ public class AccessService
     public void ResetLimit(IDictionary<String, Object> session)
     {
         session?.Remove("_access_limit");
+    }
+
+    /// <summary>追踪HTTP响应码，检测爬虫或web扫描攻击</summary>
+    /// <param name="statusCode">HTTP响应状态码</param>
+    /// <param name="url">请求URL</param>
+    /// <param name="ip">来源IP</param>
+    /// <param name="user">当前用户</param>
+    /// <param name="session">会话</param>
+    public void TrackResponse(Int32 statusCode, String url, String ip, IUser user, IDictionary<String, Object> session)
+    {
+        if (ip.IsNullOrEmpty()) return;
+
+        var rules = AccessRule.FindAllWithCache()
+            .Where(e => e.Enable && !e.ResponseCodes.IsNullOrEmpty())
+            .OrderByDescending(e => e.Priority)
+            .ThenByDescending(e => e.Id)
+            .ToList();
+        if (rules.Count == 0) return;
+
+        foreach (var rule in rules)
+        {
+            // 检查响应码是否匹配
+            var codes = rule.ResponseCodes.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            if (!codes.Any(c => c.Trim() == statusCode.ToString())) continue;
+
+            // 检查URL是否匹配（用于过滤静态资源等不需小心的请求）
+            if (!IsMatch(rule.Url, url)) continue;
+
+            // 匹配IP静态过滤（可限制部分IP段检测）
+            if (!rule.IP.IsNullOrEmpty() && !IsMatch(rule.IP, ip)) continue;
+
+            // 未设置限流周期和次数，跳过
+            if (rule.LimitCycle <= 0 || rule.LimitTimes <= 0) continue;
+
+            var key = rule.LimitDimension switch
+            {
+                LimitDimensions.User => user?.Name,
+                _ => ip,
+            };
+            if (key.IsNullOrEmpty()) continue;
+
+            // 时间因子，今天总秒数除以周期
+            var now = DateTime.Now;
+            var sec = (Int32)(now - now.Date).TotalSeconds;
+            var time = sec / rule.LimitCycle;
+
+            // 响应码计数缓存键
+            var cacheKey = $"access:resp:{rule.Id}:{key}:{time}";
+
+            var hits = _cacheProvider.Cache.Increment(cacheKey, 1);
+            if (hits <= 2)
+                _cacheProvider.Cache.SetExpire(cacheKey, TimeSpan.FromSeconds(rule.LimitCycle));
+
+            DefaultSpan.Current?.AppendTag($"responseTrack cacheKey={cacheKey} statusCode={statusCode} hits={hits}");
+
+            if (hits > rule.LimitTimes)
+            {
+                // 超过阈值，动态封禁IP，使用 LimitCycle 作为封禁时长
+                var blockKey = $"access:block:{ip}";
+                _cacheProvider.Cache.Set(blockKey, rule.Id, TimeSpan.FromSeconds(rule.LimitCycle));
+
+                using var span = _tracer?.NewSpan($"access:blocked:{rule.Name}", new { ip, statusCode, hits });
+            }
+        }
     }
 }

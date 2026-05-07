@@ -157,6 +157,22 @@ public partial class AccessRule : Entity<AccessRule>
         };
         entity.Insert();
 
+        entity = new AccessRule
+        {
+            Name = "404扫描检测",
+            Enable = false,
+            Url = "",
+            ResponseCodes = "404",
+            ActionKind = AccessActionKinds.Block,
+            BlockCode = 403,
+            BlockContent = "<h1>您的IP已因频繁触发404被暂时封禁，请稍后再试！</h1>",
+            LimitDimension = LimitDimensions.IP,
+            LimitCycle = 60,
+            LimitTimes = 20,
+            Remark = "60秒内触发404超过20次，视为爱虹虫或web扫描攻击，封禁IP一个限流周期（60秒）。可调高LimitCycle延长封禁时长。仅统计非静态资源的404响应。",
+        };
+        entity.Insert();
+
         if (XTrace.Debug) XTrace.WriteLine("完成初始化AccessRule[访问规则]数据！");
     }
     #endregion

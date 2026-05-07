@@ -62,6 +62,14 @@ public partial class AccessRule : IEntity<AccessRuleModel>
     [BindColumn("Url", "URL路径。支持*模糊匹配，多个逗号隔开", "")]
     public String Url { get => _Url; set { if (OnPropertyChanging("Url", value)) { _Url = value; OnPropertyChanged("Url"); } } }
 
+    private String _ResponseCodes;
+    /// <summary>触发响应码。检测HTTP响应码，多个逗号隔开，如404,403。设置后在响应完成后检测，超阈值封禁IP</summary>
+    [DisplayName("触发响应码")]
+    [Description("触发响应码。检测HTTP响应码，多个逗号隔开，如404,403。设置后在响应完成后检测，超阈值封禁IP")]
+    [DataObjectField(false, false, true, 200)]
+    [BindColumn("ResponseCodes", "触发响应码。检测HTTP响应码，多个逗号隔开，如404,403。设置后在响应完成后检测，超阈值封禁IP", "")]
+    public String ResponseCodes { get => _ResponseCodes; set { if (OnPropertyChanging("ResponseCodes", value)) { _ResponseCodes = value; OnPropertyChanged("ResponseCodes"); } } }
+
     private String _UserAgent;
     /// <summary>用户代理。支持*模糊匹配，多个逗号隔开</summary>
     [DisplayName("用户代理")]
@@ -208,6 +216,7 @@ public partial class AccessRule : IEntity<AccessRuleModel>
         Enable = model.Enable;
         Priority = model.Priority;
         Url = model.Url;
+        ResponseCodes = model.ResponseCodes;
         UserAgent = model.UserAgent;
         IP = model.IP;
         LoginedUser = model.LoginedUser;
@@ -240,6 +249,7 @@ public partial class AccessRule : IEntity<AccessRuleModel>
             "Enable" => _Enable,
             "Priority" => _Priority,
             "Url" => _Url,
+            "ResponseCodes" => _ResponseCodes,
             "UserAgent" => _UserAgent,
             "IP" => _IP,
             "LoginedUser" => _LoginedUser,
@@ -267,6 +277,7 @@ public partial class AccessRule : IEntity<AccessRuleModel>
                 case "Enable": _Enable = value.ToBoolean(); break;
                 case "Priority": _Priority = value.ToInt(); break;
                 case "Url": _Url = Convert.ToString(value); break;
+                case "ResponseCodes": _ResponseCodes = Convert.ToString(value); break;
                 case "UserAgent": _UserAgent = Convert.ToString(value); break;
                 case "IP": _IP = Convert.ToString(value); break;
                 case "LoginedUser": _LoginedUser = Convert.ToString(value); break;
@@ -338,6 +349,9 @@ public partial class AccessRule : IEntity<AccessRuleModel>
         /// <summary>URL路径。支持*模糊匹配，多个逗号隔开</summary>
         public static readonly Field Url = FindByName("Url");
 
+        /// <summary>触发响应码。检测HTTP响应码，多个逗号隔开，如404,403。设置后在响应完成后检测，超阈值封禁IP</summary>
+        public static readonly Field ResponseCodes = FindByName("ResponseCodes");
+
         /// <summary>用户代理。支持*模糊匹配，多个逗号隔开</summary>
         public static readonly Field UserAgent = FindByName("UserAgent");
 
@@ -406,6 +420,9 @@ public partial class AccessRule : IEntity<AccessRuleModel>
 
         /// <summary>URL路径。支持*模糊匹配，多个逗号隔开</summary>
         public const String Url = "Url";
+
+        /// <summary>触发响应码。检测HTTP响应码，多个逗号隔开，如404,403。设置后在响应完成后检测，超阈值封禁IP</summary>
+        public const String ResponseCodes = "ResponseCodes";
 
         /// <summary>用户代理。支持*模糊匹配，多个逗号隔开</summary>
         public const String UserAgent = "UserAgent";
