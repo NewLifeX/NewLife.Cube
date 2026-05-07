@@ -230,6 +230,10 @@ public class SsoProvider
         // 填充昵称等数据
         Fill(client, user);
 
+        // 头像为空时，自动设置基于用户ID的默认头像
+        if (user is User userAv && userAv.Avatar.IsNullOrEmpty())
+            userAv.Avatar = $"/Sso/Avatar?id={user.ID}";
+
         if (user is IAuthUser user3)
         {
             user3.Logins++;

@@ -398,6 +398,13 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     {
         var set = CubeSetting.Current;
 
+        // 头像为空时，自动设置基于用户ID的默认头像
+        if (user is User userAv && userAv.Avatar.IsNullOrEmpty())
+        {
+            userAv.Avatar = $"/Sso/Avatar?id={user.ID}";
+            (userAv as IEntity).Update();
+        }
+
         // 保存Cookie
         var provider = ManageProvider.Provider;
         var expire = remember ? TimeSpan.FromDays(365) : TimeSpan.FromMinutes(0);
