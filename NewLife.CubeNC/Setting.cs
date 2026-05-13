@@ -62,6 +62,9 @@ public class CubeSetting : Config<CubeSetting>
     [Description("跨域来源。允许其它源访问当前域，指定其它源http地址，*表示任意域")]
     [Category("通用")]
     public String CorsOrigins { get; set; }
+#if DEBUG
+        = "*";
+#endif
 
     /// <summary>在iframe中展示。SAMEORIGIN-允许相同域名，ALLOWALL-允许任何域名</summary>
     [Description("在iframe中展示。默认为空-只允许相同域名，SAMEORIGIN-允许相同域名和端口，ALLOWALL-允许任何域名")]
@@ -144,6 +147,16 @@ public class CubeSetting : Config<CubeSetting>
     [Description("登录封禁时间。触发风控禁止登录后的禁止时间，默认300秒")]
     [Category("用户登录")]
     public Int32 LoginForbiddenTime { get; set; } = 300;
+
+    /// <summary>三段IP封禁阈值。三段IP（如103.125.146.*）连续登录失败次数达到该值后封禁该IP段，默认10，0表示不启用</summary>
+    [Description("三段IP封禁阈值。三段IP（如103.125.146.*）连续登录失败次数达到该值后封禁该IP段，默认10，0表示不启用")]
+    [Category("用户登录")]
+    public Int32 MaxLoginErrorBySubnet24 { get; set; } = 10;
+
+    /// <summary>两段IP封禁阈值。两段IP（如103.125.*.*）连续登录失败次数达到该值后封禁该IP段，默认20，0表示不启用</summary>
+    [Description("两段IP封禁阈值。两段IP（如103.125.*.*）连续登录失败次数达到该值后封禁该IP段，默认20，0表示不启用")]
+    [Category("用户登录")]
+    public Int32 MaxLoginErrorBySubnet16 { get; set; } = 20;
 
     /// <summary>强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心</summary>
     [Description("强行绑定用户名。根据SSO用户名强制绑定本地同名用户，而不需要增加提供者前缀，一般用于用户中心")]
@@ -234,6 +247,11 @@ public class CubeSetting : Config<CubeSetting>
     [Description("SSO跨域重定向白名单。登录后允许携带JWT Token重定向的目标域名，逗号分隔，支持通配符前缀*.company.com。留空=仅允许同站，跨域不在白名单则拒绝并跳回首页")]
     [Category("用户登录")]
     public String SsoSafeDomains { get; set; }
+
+    /// <summary>外部验证地址。配置后，本地验证失败时调用外部接口验证用户名密码，成功则自动创建/更新本地用户并登录。POST格式：{"username":"...","password":"..."}，响应：{"code":0,"data":{"username":"...","displayName":"...","mail":"...","mobile":"...","roleName":"...","avatar":"..."}}</summary>
+    [Description("外部验证地址。配置后，本地验证失败时调用外部接口验证用户名密码，成功则自动创建/更新本地用户并登录")]
+    [Category("用户登录")]
+    public String ExternalAuthUrl { get; set; }
     #endregion
 
     #region 界面配置

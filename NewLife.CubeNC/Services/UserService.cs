@@ -35,6 +35,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     private const String PasswordLoginUserPrefix = "CubeLogin:";
     /// <summary>密码登录IP错误次数缓存前缀</summary>
     private const String PasswordLoginIpPrefix = "CubeLogin:";
+    /// <summary>登录IP三段子网错误次数缓存前缀（/24 段，如103.125.146.*）</summary>
+    private const String LoginIpSubnet24Prefix = "CubeLogin:subnet24:";
+    /// <summary>登录IP两段子网错误次数缓存前缀（/16 段，如103.125.*.*）</summary>
+    private const String LoginIpSubnet16Prefix = "CubeLogin:subnet16:";
 
     /// <summary>OAuth回跳注册待处理缓存前缀</summary>
     private const String OAuthPendingPrefix = "OAuthPending:";
@@ -179,6 +183,13 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var errors = _cache.Get<Int32>(key);
         var ipKey = $"{PasswordLoginIpPrefix}{ip}";
         var ipErrors = _cache.Get<Int32>(ipKey);
+        // 子网连续错误校验（仅IPv4）
+        var ip24 = GetSubnet24(ip);
+        var ip16 = GetSubnet16(ip);
+        var ip24Key = ip24.IsNullOrEmpty() ? "" : $"{LoginIpSubnet24Prefix}{ip24}";
+        var ip24Errors = ip24Key.IsNullOrEmpty() ? 0 : _cache.Get<Int32>(ip24Key);
+        var ip16Key = ip16.IsNullOrEmpty() ? "" : $"{LoginIpSubnet16Prefix}{ip16}";
+        var ip16Errors = ip16Key.IsNullOrEmpty() ? 0 : _cache.Get<Int32>(ip16Key);
 
         var set = CubeSetting.Current;
         try
@@ -190,6 +201,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
                 throw new InvalidOperationException($"[{username}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
             if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
                 throw new InvalidOperationException($"IP地址[{ip}]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (!ip24Key.IsNullOrEmpty() && ip24Errors >= set.MaxLoginErrorBySubnet24 && set.MaxLoginErrorBySubnet24 > 0)
+                throw new InvalidOperationException($"IP段[{ip24}.*]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (!ip16Key.IsNullOrEmpty() && ip16Errors >= set.MaxLoginErrorBySubnet16 && set.MaxLoginErrorBySubnet16 > 0)
+                throw new InvalidOperationException($"IP段[{ip16}.*.*]登录错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
                         // 安全登录检查：若禁止明文密码且未携带挑战标识，则拒绝
                         if (loginModel.ChallengeId.IsNullOrEmpty() && !set.AllowPlainPassword)
@@ -203,9 +218,27 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
 
             var provider = ManageProvider.Provider;
             if (provider.Login(username, password, remember) == null)
-                return new ServiceResult<IToken> { IsSuccess = false, Message = "提供的用户名或密码不正确。" };
+            {
+                // 本地验证失败，尝试外部验证服务
+                var extUser = ExternalAuthHelper.Validate(username, password, set.ExternalAuthUrl);
+                if (extUser == null)
+                    return new ServiceResult<IToken> { IsSuccess = false, Message = "提供的用户名或密码不正确。" };
 
-            // 登录成功，清空错误数
+                // 外部验证成功，创建或更新本地用户
+                var extLocalUser = ExternalAuthHelper.CreateOrUpdateUser(extUser, ip, set);
+                provider.Current = extLocalUser;
+
+                // 清空错误计数
+                if (errors > 0) _cache.Remove(key);
+                if (ipErrors > 0) _cache.Remove(ipKey);
+
+                // 移除挑战私钥信息，避免重放
+                if (!loginModel.ChallengeId.IsNullOrEmpty()) _cache.Remove(loginModel.ChallengeId);
+
+                return CompleteLogin(extLocalUser, httpContext, remember, "外部验证登录", username, ip);
+            }
+
+            // 本地登录成功，清空错误数
             if (errors > 0) _cache.Remove(key);
             if (ipErrors > 0) _cache.Remove(ipKey);
 
@@ -216,7 +249,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         }
         catch (Exception ex)
         {
-            HandleLoginError(ex, "登录", username, ip, key, ipKey, errors, ipErrors, set.LoginForbiddenTime);
+            HandleLoginError(ex, "登录", username, ip, key, ipKey, errors, ipErrors, ip24Key, ip24Errors, ip16Key, ip16Errors, set.LoginForbiddenTime);
             throw;
         }
     }
@@ -239,6 +272,13 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var errors = _cache.Get<Int32>(key);
         var ipKey = $"{SmsLoginErrorIpPrefix}{ip}";
         var ipErrors = _cache.Get<Int32>(ipKey);
+        // 子网连续错误校验（仅IPv4）
+        var ip24 = GetSubnet24(ip);
+        var ip16 = GetSubnet16(ip);
+        var ip24Key = ip24.IsNullOrEmpty() ? "" : $"{LoginIpSubnet24Prefix}{ip24}";
+        var ip24Errors = ip24Key.IsNullOrEmpty() ? 0 : _cache.Get<Int32>(ip24Key);
+        var ip16Key = ip16.IsNullOrEmpty() ? "" : $"{LoginIpSubnet16Prefix}{ip16}";
+        var ip16Errors = ip16Key.IsNullOrEmpty() ? 0 : _cache.Get<Int32>(ip16Key);
 
         var set = CubeSetting.Current;
         try
@@ -248,6 +288,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
                 throw new InvalidOperationException($"[{mobile}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
             if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
                 throw new InvalidOperationException($"IP地址[{ip}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (!ip24Key.IsNullOrEmpty() && ip24Errors >= set.MaxLoginErrorBySubnet24 && set.MaxLoginErrorBySubnet24 > 0)
+                throw new InvalidOperationException($"IP段[{ip24}.*]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (!ip16Key.IsNullOrEmpty() && ip16Errors >= set.MaxLoginErrorBySubnet16 && set.MaxLoginErrorBySubnet16 > 0)
+                throw new InvalidOperationException($"IP段[{ip16}.*.*]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
             // 校验验证码
             var codeKey = $"{SmsLoginCodePrefix}{mobile}";
@@ -302,7 +346,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         }
         catch (Exception ex)
         {
-            HandleLoginError(ex, "短信登录", mobile, ip, key, ipKey, errors, ipErrors, set.LoginForbiddenTime);
+            HandleLoginError(ex, "短信登录", mobile, ip, key, ipKey, errors, ipErrors, ip24Key, ip24Errors, ip16Key, ip16Errors, set.LoginForbiddenTime);
             throw;
         }
     }
@@ -325,6 +369,13 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var errors = _cache.Get<Int32>(key);
         var ipKey = $"{MailLoginErrorIpPrefix}{ip}";
         var ipErrors = _cache.Get<Int32>(ipKey);
+        // 子网连续错误校验（仅IPv4）
+        var ip24 = GetSubnet24(ip);
+        var ip16 = GetSubnet16(ip);
+        var ip24Key = ip24.IsNullOrEmpty() ? "" : $"{LoginIpSubnet24Prefix}{ip24}";
+        var ip24Errors = ip24Key.IsNullOrEmpty() ? 0 : _cache.Get<Int32>(ip24Key);
+        var ip16Key = ip16.IsNullOrEmpty() ? "" : $"{LoginIpSubnet16Prefix}{ip16}";
+        var ip16Errors = ip16Key.IsNullOrEmpty() ? 0 : _cache.Get<Int32>(ip16Key);
 
         var set = CubeSetting.Current;
         try
@@ -334,6 +385,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
                 throw new InvalidOperationException($"[{mail}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
             if (ipErrors >= set.MaxLoginError && set.MaxLoginError > 0)
                 throw new InvalidOperationException($"IP地址[{ip}]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (!ip24Key.IsNullOrEmpty() && ip24Errors >= set.MaxLoginErrorBySubnet24 && set.MaxLoginErrorBySubnet24 > 0)
+                throw new InvalidOperationException($"IP段[{ip24}.*]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
+            if (!ip16Key.IsNullOrEmpty() && ip16Errors >= set.MaxLoginErrorBySubnet16 && set.MaxLoginErrorBySubnet16 > 0)
+                throw new InvalidOperationException($"IP段[{ip16}.*.*]验证错误过多，请在{set.LoginForbiddenTime}秒后再试！");
 
             // 校验验证码
             var codeKey = $"{MailLoginCodePrefix}{mail}";
@@ -388,7 +443,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         }
         catch (Exception ex)
         {
-            HandleLoginError(ex, "邮箱登录", mail, ip, key, ipKey, errors, ipErrors, set.LoginForbiddenTime);
+            HandleLoginError(ex, "邮箱登录", mail, ip, key, ipKey, errors, ipErrors, ip24Key, ip24Errors, ip16Key, ip16Errors, set.LoginForbiddenTime);
             throw;
         }
     }
@@ -475,8 +530,8 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         return tenantUser;
     }
 
-    /// <summary>处理登录错误，记录日志并累加错误次数</summary>
-    private void HandleLoginError(Exception ex, String action, String username, String ip, String key, String ipKey, Int32 errors, Int32 ipErrors, Int32 forbiddenTime)
+    /// <summary>处理登录错误，记录日志并累加错误次数（含子网计数）</summary>
+    private void HandleLoginError(Exception ex, String action, String username, String ip, String key, String ipKey, Int32 errors, Int32 ipErrors, String ip24Key, Int32 ip24Errors, String ip16Key, Int32 ip16Errors, Int32 forbiddenTime)
     {
         var logAction = ex is InvalidOperationException ? "风控" : action;
         LogProvider.Provider.WriteLog(typeof(User), logAction, false, ex.Message, 0, username, ip);
@@ -488,6 +543,40 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var time = forbiddenTime > 0 ? forbiddenTime : 300;
         if (errors <= 0) _cache.SetExpire(key, TimeSpan.FromSeconds(time));
         if (ipErrors <= 0) _cache.SetExpire(ipKey, TimeSpan.FromSeconds(time));
+
+        // 累加子网错误数，首次出错时设置过期时间（ip24Key/ip16Key 为空则说明非IPv4，跳过）
+        if (!ip24Key.IsNullOrEmpty())
+        {
+            _cache.Increment(ip24Key, 1);
+            if (ip24Errors <= 0) _cache.SetExpire(ip24Key, TimeSpan.FromSeconds(time));
+        }
+        if (!ip16Key.IsNullOrEmpty())
+        {
+            _cache.Increment(ip16Key, 1);
+            if (ip16Errors <= 0) _cache.SetExpire(ip16Key, TimeSpan.FromSeconds(time));
+        }
+    }
+
+    /// <summary>从完整IPv4地址提取三段前缀（/24 子网，如103.125.146）。非IPv4地址返回空字符串</summary>
+    /// <param name="ip">完整IP地址</param>
+    /// <returns>三段IP前缀；非IPv4或格式不合法时返回空字符串</returns>
+    private static String GetSubnet24(String ip)
+    {
+        if (ip.IsNullOrEmpty()) return "";
+        if (!System.Net.IPAddress.TryParse(ip, out var addr) || addr.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork) return "";
+        var parts = ip.Split('.');
+        return parts.Length >= 3 ? $"{parts[0]}.{parts[1]}.{parts[2]}" : "";
+    }
+
+    /// <summary>从完整IPv4地址提取两段前缀（/16 子网，如103.125）。非IPv4地址返回空字符串</summary>
+    /// <param name="ip">完整IP地址</param>
+    /// <returns>两段IP前缀；非IPv4或格式不合法时返回空字符串</returns>
+    private static String GetSubnet16(String ip)
+    {
+        if (ip.IsNullOrEmpty()) return "";
+        if (!System.Net.IPAddress.TryParse(ip, out var addr) || addr.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork) return "";
+        var parts = ip.Split('.');
+        return parts.Length >= 2 ? $"{parts[0]}.{parts[1]}" : "";
     }
 
     private static String Decrypt(String privateKey, String decryptString)

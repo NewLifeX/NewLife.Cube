@@ -77,6 +77,13 @@
                                                 </span>
                                             </div>
                                         </th>
+                                        <th>
+                                            <div class="layui-table-cell laytable-cell-1-0-7" data-id="1-0-7">
+                                                <span>
+                                                    模型差异
+                                                </span>
+                                            </div>
+                                        </th>
                                     </tr>
                                 </thead>
                             </table>
@@ -127,6 +134,11 @@
                                             <td>
                                                 <div class="layui-table-cell laytable-cell-1-0-6" data-id="1-0-6">
                                                     @Html.ActionLink("下载", "Download", new { Name = item.Name })
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="layui-table-cell laytable-cell-1-0-7" data-id="1-0-7">
+                                                    @Html.ActionLink("查看差异", "ModelDiff", new { Name = item.Name })
                                                 </div>
                                             </td>
                                         </tr>

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Areas.Admin.Models;
 using NewLife.Reflection;
@@ -201,5 +202,129 @@ public class DbController : ControllerBaseX
         };
 
         return View("Entities", model);
+    }
+
+    /// <summary>模型差异。对比数据库和实体类的表架构，显示数据库多出来的字段</summary>
+    /// <param name="name">连接名</param>
+    /// <returns></returns>
+    [EntityAuthorize(PermissionFlags.Detail)]
+    public ActionResult ModelDiff(String name)
+    {
+        if (!name.EqualIgnoreCase(DAL.ConnStrs.Keys.ToArray())) throw new Exception("非法操作！");
+
+        var dal = DAL.Create(name);
+        var dbTables = dal.Tables;
+
+        // 构建实体表字典：DB表名 -> (实体类名, 实体DataTable)
+        var entityTypes = EntityFactory.LoadEntities(name);
+        var entityTables = new Dictionary<String, (String EntityName, IDataTable DataTable)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entityType in entityTypes)
+        {
+            var factory = entityType.AsFactory();
+            if (factory == null) continue;
+
+            var dt = factory.Table.DataTable;
+            if (dt != null && !dt.TableName.IsNullOrEmpty())
+                entityTables[dt.TableName] = (entityType.Name, dt);
+        }
+
+        var diffList = new List<DbTableDiffItem>();
+
+        foreach (var dbTable in dbTables.OrderBy(t => t.Name))
+        {
+            List<IDataColumn> extraColumns;
+            var hasEntityModel = entityTables.TryGetValue(dbTable.TableName, out var entityInfo);
+
+            if (!hasEntityModel)
+            {
+                // 数据库有该表但无对应实体类，所有字段均视为多出字段
+                extraColumns = dbTable.Columns.ToList();
+            }
+            else
+            {
+                // 找出数据库有但实体模型没有的字段（按数据库列名匹配）
+                static String GetColName(IDataColumn c) => c.ColumnName.IsNullOrEmpty() ? c.Name : c.ColumnName;
+
+                var entityColumnNames = new HashSet<String>(
+                    entityInfo.DataTable.Columns.Select(c => GetColName(c)),
+                    StringComparer.OrdinalIgnoreCase);
+
+                extraColumns = dbTable.Columns
+                    .Where(c => !entityColumnNames.Contains(GetColName(c)))
+                    .ToList();
+            }
+
+            if (extraColumns.Count == 0) continue;
+
+            diffList.Add(new DbTableDiffItem
+            {
+                Name = hasEntityModel ? entityInfo.EntityName : dbTable.Name,
+                TableName = dbTable.TableName,
+                DisplayName = dbTable.DisplayName,
+                HasEntityModel = hasEntityModel,
+                ExtraColumns = extraColumns,
+                XmlFragment = BuildColumnsXml(extraColumns),
+            });
+        }
+
+        WriteLog("模型差异", true, $"查看数据库 {name} 模型差异，共 {diffList.Count} 张表存在差异");
+
+        var model = new DbDiffModel
+        {
+            Name = name,
+            Tables = diffList,
+        };
+
+        return View("Diff", model);
+    }
+
+    /// <summary>将数据列集合序列化为 XCode Model.xml 格式的 Column XML 片段</summary>
+    /// <param name="columns">数据列集合</param>
+    /// <returns>XML 字符串片段</returns>
+    private static String BuildColumnsXml(IList<IDataColumn> columns)
+    {
+        var sb = new StringBuilder();
+        foreach (var col in columns)
+        {
+            sb.Append("        <Column");
+            sb.Append($" Name=\"{col.Name}\"");
+
+            if (!col.ColumnName.IsNullOrEmpty() && !col.ColumnName.EqualIgnoreCase(col.Name))
+                sb.Append($" ColumnName=\"{col.ColumnName}\"");
+
+            if (col.DataType != null)
+                sb.Append($" DataType=\"{col.DataType.Name}\"");
+
+            if (col.Length > 0)
+                sb.Append($" Length=\"{col.Length}\"");
+
+            if (col.Precision > 0)
+                sb.Append($" Precision=\"{col.Precision}\"");
+
+            if (col.Scale > 0)
+                sb.Append($" Scale=\"{col.Scale}\"");
+
+            if (col.Identity)
+                sb.Append(" Identity=\"True\"");
+
+            if (col.PrimaryKey)
+                sb.Append(" PrimaryKey=\"True\"");
+
+            if (!col.Nullable)
+                sb.Append(" Nullable=\"False\"");
+
+            if (!col.Description.IsNullOrEmpty())
+            {
+                var desc = col.Description
+                    .Replace("&", "&amp;")
+                    .Replace("\"", "&quot;")
+                    .Replace("<", "&lt;")
+                    .Replace(">", "&gt;");
+                sb.Append($" Description=\"{desc}\"");
+            }
+
+            sb.AppendLine(" />");
+        }
+        return sb.ToString();
     }
 }
