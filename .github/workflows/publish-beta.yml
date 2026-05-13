@@ -34,7 +34,7 @@ jobs:
       run: echo "VERSION=$(date '+%Y.%m%d-beta%H%M')" >> $GITHUB_ENV
     - name: Build
       run: |
-        dotnet build -c Release --version-suffix ${{ env.VERSION }}
+        dotnet build 魔方.sln -c Release --version-suffix ${{ env.VERSION }}
     - name: Pack
       run: |
         dotnet pack --no-build --version-suffix ${{ env.VERSION }} -c Release -o out NewLife.Cube/NewLife.Cube.csproj
