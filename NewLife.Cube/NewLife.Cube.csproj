@@ -132,7 +132,7 @@
     <PackageReference Include="NewLife.IP" Version="2.4.2026.501" />
     <PackageReference Include="NewLife.Office" Version="1.1.2026.501" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.501" />
-    <PackageReference Include="NewLife.XCode" Version="11.26.2026.506-beta0829" />
+    <PackageReference Include="NewLife.XCode" Version="11.26.2026.509" />
   </ItemGroup>
 
   <!-- 将 wwwroot 静态文件嵌入 DLL，同时不打包到 NuGet -->
