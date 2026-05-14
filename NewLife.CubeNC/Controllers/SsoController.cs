@@ -923,11 +923,11 @@ public class SsoController : ControllerBaseX
             if (!av.Exists) av = null;
         }
 
-        // 用于兼容旧代码
+        // 用于兼容旧代码：按扩展名优先级查找（.png/.svg/.jpg/.gif/.webp）
         if (av == null && !set.AvatarPath.IsNullOrEmpty())
         {
-            av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath().AsFile();
-            if (!av.Exists) av = null;
+            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
+            av = found != null ? found.AsFile() : null;
         }
 
         // 使用最后一个第三方头像
@@ -961,7 +961,8 @@ public class SsoController : ControllerBaseX
         // 设置文件哈希相关响应头
         Response.SetFileHashHeaders(vs.MD5().ToHex());
 
-        return File(vs, "image/png");
+        var ct = SvgAvatarService.GetContentType(av.Extension);
+        return File(vs, ct);
     }
 
     private ActionResult SsoJsonOK(Object data) => Json(data);

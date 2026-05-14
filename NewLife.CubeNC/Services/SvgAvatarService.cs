@@ -156,6 +156,47 @@ public static class SvgAvatarService
             || (cp >= 0xF900 && cp <= 0xFAFF);
     }
 
+    #endregion
+
+    #region 文件辅助
+
+    /// <summary>头像候选扩展名。按优先顺序尝试，找到第一个存在的文件即返回</summary>
+    private static readonly String[] _avatarExts = [".png", ".svg", ".jpg", ".gif", ".webp"];
+
+    /// <summary>根据扩展名返回对应的 MIME Content-Type</summary>
+    /// <param name="ext">文件扩展名，含点号，如 ".svg"</param>
+    /// <returns>MIME 类型字符串</returns>
+    public static String GetContentType(String ext) => ext?.ToLowerInvariant() switch
+    {
+        ".svg" => "image/svg+xml",
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".gif" => "image/gif",
+        ".webp" => "image/webp",
+        _ => "image/png",
+    };
+
+    /// <summary>在头像目录中按扩展名优先级查找指定用户的头像文件</summary>
+    /// <param name="avatarPath">头像根目录</param>
+    /// <param name="userId">用户编号</param>
+    /// <returns>找到时返回 (绝对路径, contentType)，未找到返回 (null, null)</returns>
+    public static (String Path, String ContentType) FindAvatarFile(String avatarPath, Int32 userId)
+    {
+        if (avatarPath.IsNullOrEmpty()) return (null, null);
+
+        foreach (var ext in _avatarExts)
+        {
+            var path = avatarPath.CombinePath(userId + ext).GetBasePath();
+            if (System.IO.File.Exists(path))
+                return (path, GetContentType(ext));
+        }
+
+        return (null, null);
+    }
+
+    #endregion
+
+    #region SVG 构建
+
     /// <summary>构建 SVG 内容字符串，根据字符数动态调整字号</summary>
     /// <param name="text">中心显示文字</param>
     /// <param name="background">背景色（十六进制）</param>

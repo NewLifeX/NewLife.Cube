@@ -1072,22 +1072,23 @@ public class SsoController : ControllerBaseX
             if (!System.IO.File.Exists(av)) av = null;
         }
 
-        // 用于兼容旧代码
+        // 用于兼容旧代码：按扩展名优先级查找（.png/.svg/.jpg/.gif/.webp）
         if (av.IsNullOrEmpty() && !set.AvatarPath.IsNullOrEmpty())
         {
-            av = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
-            if (!System.IO.File.Exists(av)) av = null;
+            var (found, _) = SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
+            av = found;
         }
 
         // 头像文件不存在时，根据昵称和性别生成 SVG 文字头像
-        if (!System.IO.File.Exists(av))
+        if (av.IsNullOrEmpty() || !System.IO.File.Exists(av))
         {
             var svg = SvgAvatarService.Generate(user, set.AvatarChars);
             return Content(svg, "image/svg+xml");
         }
 
         var vs = System.IO.File.ReadAllBytes(av);
-        return File(vs, "image/png");
+        var ct = SvgAvatarService.GetContentType(Path.GetExtension(av));
+        return File(vs, ct);
     }
 
     private ActionResult SsoJsonOK(Object data) => Json(0, null, data);

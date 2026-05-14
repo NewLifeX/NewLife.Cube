@@ -1135,9 +1135,10 @@ public class SsoProvider
             expectedHash = url[(idx + 1)..]; // md5$hash
         }
 
-        // 不要扩展名
         var set = CubeSetting.Current;
-        var dest = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
+        // 先检查是否已存在任意格式的合法本地头像（.png/.svg/.jpg 等），避免重复下载
+        var (existPath, _) = Services.SvgAvatarService.FindAvatarFile(set.AvatarPath, user.ID);
+        var dest = existPath ?? set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
 
         try
         {
@@ -1145,6 +1146,9 @@ public class SsoProvider
             var fi = dest.AsFile();
             if (!fi.Exists || !fi.VerifyHash(expectedHash))
             {
+                // 下载前统一使用 .png 作为临时落盘路径，后续检测类型后再重命名
+                dest = set.AvatarPath.CombinePath(user.ID + ".png").GetBasePath();
+
                 LogProvider.Provider?.WriteLog(user.GetType(), "抓取头像", true, $"{downloadUrl} => {dest} (hash={expectedHash})", user.ID, user + "");
 
                 var client = new HttpClient();
@@ -1156,6 +1160,27 @@ public class SsoProvider
                 // 使用支持哈希校验的扩展方法下载文件
                 // 该方法会下载到临时目录，校验哈希通过后才复制到目标路径
                 await client.DownloadFileAsync(downloadUrl, dest, expectedHash, default);
+
+                // 检测文件是否为 SVG（XML/SVG 内容首字节为 '<'）
+                // 认证中心开启虚拟头像后，下游抓取到的可能是 SVG 而非 PNG
+                var fi2 = dest.AsFile();
+                if (fi2.Exists && fi2.Length > 0)
+                {
+                    var firstByte = new Byte[1];
+                    using (var fs = fi2.OpenRead())
+                        fs.Read(firstByte, 0, 1);
+
+                    if (firstByte[0] == (Byte)'<')
+                    {
+                        // 内容为 SVG，重命名为 .svg 文件
+                        var svgDest = set.AvatarPath.CombinePath(user.ID + ".svg").GetBasePath();
+                        // 删除已存在的同名 .svg 旧文件（防止重命名失败）
+                        if (System.IO.File.Exists(svgDest))
+                            System.IO.File.Delete(svgDest);
+                        System.IO.File.Move(dest, svgDest);
+                        dest = svgDest;
+                    }
+                }
             }
 
             // 更新头像
