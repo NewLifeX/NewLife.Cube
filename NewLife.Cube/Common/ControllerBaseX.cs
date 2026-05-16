@@ -65,12 +65,12 @@ public class ControllerBaseX : ControllerBase, IActionFilter
 
         // 没有用户时无权
         var user = ManageProvider.User;
-        if (user != null)
+        if (user != null && CurrentUser == null)
         {
             CurrentUser = user as IManageUser;
 
-            // 设置变量，数据权限使用
-            HttpContext.Items["userId"] = user.ID;
+            // // 设置变量，数据权限使用，最后面统一设置
+            // HttpContext.Items["userId"] = user.ID;
 
             // 没有菜单时不做权限控制
             //if (Menu != null)
@@ -91,15 +91,20 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         Token = context.HttpContext.LoadToken();
         try
         {
-            if (!Token.IsNullOrEmpty())
+            if (CurrentUser == null && !Token.IsNullOrEmpty())
             {
                 CurrentUser = ManagerProviderHelper.Auth(Token, ManageProvider.Provider);
-                HttpContext.Items["userId"] = CurrentUser.ID;
             }
 
             if (CurrentUser == null && context.ActionDescriptor is ControllerActionDescriptor act && !act.MethodInfo.IsDefined(typeof(AllowAnonymousAttribute)))
             {
                 throw new ApiException(403, "认证失败");
+            }
+
+            if (CurrentUser != null)
+            {
+                // 设置变量，数据权限使用
+                HttpContext.Items["userId"] = CurrentUser.ID;
             }
         }
         catch (Exception ex)
