@@ -20,22 +20,32 @@ public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
 {
     private static readonly ConcurrentDictionary<Type, Type> _areas = new();
 
-    /// <summary>分组名称</summary>
-    public String GroupName => RouteValue;
+    /// <summary>分组名称，默认与区域名称相同</summary>
+    public String GroupName { get; set; }
 
     /// <summary>实例化区域注册</summary>
-    public AreaBase(String areaName) : base(areaName) => RegisterArea(GetType());
+    /// <param name="areaName">区域名称，默认为类名去掉 Area 后缀</param>
+    /// <param name="groupName">分组名称，默认为区域名称</param>
+    public AreaBase(String areaName, String groupName = null) : base(areaName)
+    {
+        GroupName = groupName ?? RouteValue;
+        RegisterArea(GetType(), areaName);
+    }
 
     /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>
-    public static void RegisterArea<T>() where T : AreaBase => RegisterArea(typeof(T));
+    /// <typeparam name="T">区域类型</typeparam>
+    /// <param name="areaName">区域名称，默认为类名去掉 Area 后缀</param>
+    public static void RegisterArea<T>(String areaName = null) where T : AreaBase => RegisterArea(typeof(T), areaName);
 
     /// <summary>注册区域，每个继承此区域特性的类的静态构造函数都调用此方法，以进行相关注册</summary>
-    public static void RegisterArea(Type areaType)
+    /// <param name="areaType">区域类型</param>
+    /// <param name="areaName">区域名称，默认为类名去掉 Area 后缀</param>
+    public static void RegisterArea(Type areaType, String areaName = null)
     {
         if (!_areas.TryAdd(areaType, areaType)) return;
 
         var ns = areaType.Namespace + ".Controllers";
-        var areaName = areaType.Name.TrimEnd("Area");
+        areaName = areaName ?? areaType.Name.TrimSuffix("Area");
         XTrace.WriteLine("开始注册权限管理区域[{0}]，控制器命名空间[{1}]", areaName, ns);
 
         // 更新区域名集合
@@ -52,7 +62,7 @@ public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
             using var span = DefaultTracer.Instance?.NewSpan(nameof(ScanController), areaType.FullName);
             try
             {
-                ScanController(areaType);
+                ScanController(areaType, areaName);
             }
             catch (Exception ex)
             {
@@ -64,10 +74,12 @@ public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
     }
 
     /// <summary>自动扫描控制器，并添加到菜单</summary>
+    /// <param name="areaType">区域类型</param>
+    /// <param name="areaName">区域名称</param>
     /// <remarks>默认操作当前注册区域的下一级Controllers命名空间</remarks>
-    protected static void ScanController(Type areaType)
+    protected static void ScanController(Type areaType, String areaName = null)
     {
-        var areaName = areaType.Name.TrimEnd("Area");
+        areaName = areaName ?? areaType.Name.TrimSuffix("Area");
         XTrace.WriteLine("start------初始化[{0}]的菜单体系------start", areaName);
 
         var mf = ManageProvider.Menu;
@@ -121,7 +133,7 @@ public class AreaBase : AreaAttribute, IApiDescriptionGroupNameProvider
         _namespaces ??= new HashSet<String>(_areas.Keys.Select(e => e.Namespace));
 
         // 该控制器父级命名空间必须有对应的区域注册类，才会拦截其异常
-        ns = ns.TrimEnd(".Controllers");
+        ns = ns.TrimSuffix(".Controllers");
         return _namespaces.Contains(ns);
     }
 

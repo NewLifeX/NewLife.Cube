@@ -15,5 +15,5 @@ namespace NewLife.Cube.Areas.Admin;
 public class AdminArea : AreaBase
 {
     /// <inheritdoc />
-    public AdminArea() : base(nameof(AdminArea).TrimEnd("Area")) { }
+    public AdminArea() : base(nameof(AdminArea).TrimSuffix("Area")) { }
 }
