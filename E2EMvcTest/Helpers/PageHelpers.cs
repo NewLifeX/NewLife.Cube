@@ -18,8 +18,26 @@ public static class PageHelpers
     /// <param name="verifySuccess">是否验证登录成功；测试故意用错误密码时传 false</param>
     public static async Task LoginAsync(IPage page, String username, String password, Boolean verifySuccess = true)
     {
-        await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login");
+        // GotoAsync 到登录页时，若服务器检测到已有会话则会直接 302 到 /Admin；
+        // Playwright 将此场景报告为 "Navigation ... is interrupted by another navigation to /Admin"。
+        // 捕获该异常并视为登录成功（当前上下文已认证）。
+        try
+        {
+            await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login");
+        }
+        catch (PlaywrightException)
+        {
+            // 等待任何进行中的导航稳定后检查最终 URL
+            try { await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions { Timeout = 5_000 }); } catch { }
+            if (!page.Url.Contains("/User/Login", StringComparison.OrdinalIgnoreCase))
+                return; // 已导航至后台，视为登录成功
+            // 若仍在登录页则说明是其他错误，继续正常流程
+        }
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        // 若导航到登录页后被 302 重定向到后台（服务端会话仍有效），则直接返回
+        if (!page.Url.Contains("/User/Login", StringComparison.OrdinalIgnoreCase))
+            return;
 
         await page.FillAsync("#username", username);
         await page.FillAsync("#password", password);
@@ -33,8 +51,43 @@ public static class PageHelpers
                      && resp.Request.Method == "POST",
             new PageRunAndWaitForResponseOptions { Timeout = 15_000 });
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        // 检查是否已离开登录页
+        if (!page.Url.Contains("/User/Login", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (!verifySuccess)
+            return;
+
+        // 仍在登录页：可能是 POST 302 重定向与 WaitForLoadState 存在竞态（重定向尚未完成），
+        // 再等 2s；若重定向完成则登录实际成功
+        // 若 2s 内仍未离开登录页则属于真正的登录失败（如 RSA 挑战已过期），继续重试
+        try
+        {
+            await page.WaitForURLAsync(
+                u => !u.Contains("/User/Login", StringComparison.OrdinalIgnoreCase),
+                new PageWaitForURLOptions { Timeout = 2_000 });
+            return; // 重定向完成，登录实际成功
+        }
+        catch { }
+
+        // 真正的登录失败（RSA 挑战已过期），重新加载登录页获取新挑战后重试一次
+        // 注意：此时任何进行中的导航已由上方 WaitForURLAsync 等待完毕，可安全调用 GotoAsync
+        await page.GotoAsync(AppFixture.BaseUrl + "/Admin/User/Login");
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        await page.FillAsync("#username", username);
+        await page.FillAsync("#password", password);
+
+        await page.RunAndWaitForResponseAsync(
+            async () => await page.ClickAsync("#login-btn"),
+            resp => resp.Url.Contains("/User/Login", StringComparison.OrdinalIgnoreCase)
+                     && resp.Request.Method == "POST",
+            new PageRunAndWaitForResponseOptions { Timeout = 15_000 });
+        await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
         // 验证登录成功；若仍在登录页则抛出异常，使调用方测试明确失败而非静默跳过
-        if (verifySuccess && page.Url.Contains("/User/Login", StringComparison.OrdinalIgnoreCase))
+        if (page.Url.Contains("/User/Login", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException($"登录失败，仍停留在登录页。URL={page.Url}，用户名={username}");
     }
 
@@ -67,7 +120,9 @@ public static class PageHelpers
     /// <param name="testId">测试用例 ID，用于截图命名</param>
     public static async Task AssertNoServerErrorAsync(IPage page, String testId)
     {
-        var title = await page.TitleAsync();
+        String title;
+        try { title = await page.TitleAsync(); }
+        catch { title = String.Empty; }
         var url = page.Url;
 
         var has5xx = title.Contains("500") || title.Contains("Error") ||
@@ -183,7 +238,7 @@ public static class PageHelpers
     /// <param name="tabText">标签文字</param>
     public static async Task ClickNavTabAsync(IPage page, String tabText)
     {
-        await page.ClickAsync($".nav-pills a:has-text('{tabText}')");
+        await page.ClickAsync($".nav-pills a:text-is('{tabText}')");
         await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 

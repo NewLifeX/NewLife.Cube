@@ -27,6 +27,10 @@ public sealed class MenuNavigationTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
+        if (_page != null)
+        {
+            try { await PageHelpers.LogoutAsync(_page); } catch { }
+        }
         await _context.DisposeAsync();
     }
 
