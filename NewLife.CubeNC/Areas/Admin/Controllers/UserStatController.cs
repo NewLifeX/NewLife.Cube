@@ -17,6 +17,12 @@ public class UserStatController : ReadOnlyEntityController<UserStat>
         ListFields.RemoveField("CreateTime", "UpdateTime", "Remark");
     }
 
+    /// <summary>实例化</summary>
+    public UserStatController()
+    {
+        PageSetting.NavView = "_User_Nav";
+    }
+
     /// <summary>搜索数据集</summary>
     /// <param name="p"></param>
     /// <returns></returns>

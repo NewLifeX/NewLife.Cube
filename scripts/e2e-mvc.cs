@@ -1,6 +1,6 @@
 #!/usr/bin/env dotnet-script
 // e2e-mvc.cs — .NET 10 E2E 测试编排入口
-// 用法：dotnet run Test/e2e-mvc.cs [--ci] [--headless false] [--filter Category=Auth]
+// 用法：dotnet run scripts/e2e-mvc.cs [--ci] [--headless false] [--filter Category=Auth]
 //
 // 功能：
 //   1. 创建本次运行目录 Bin/E2ETest/Run-{yyyyMMdd-HHmmss}/
@@ -60,7 +60,7 @@ var repoRoot = Directory.GetCurrentDirectory();
 var runTag   = DateTime.Now.ToString("yyyyMMdd-HHmmss");
 var runDir   = Path.Combine(repoRoot, "Bin", "E2ETest", $"Run-{runTag}");
 var appDir   = Path.Combine(runDir, "app");
-var dataDir  = Path.Combine(appDir, "Data");
+var dataDir  = Path.Combine(runDir, "Data");   // 与 AppFixture.DataDir 对齐（AppDir/../Data）
 var ssDir    = Path.Combine(runDir, "screenshots");
 var trxPath  = Path.Combine(runDir, $"results-{runTag}.trx");
 var htmlPath = Path.Combine(runDir, $"report-{runTag}.html");
@@ -166,7 +166,7 @@ var env = new Dictionary<String, String>
     ["E2E_APP_DIR"]      = appDir,
     ["E2E_BASE_URL"]     = "http://localhost:8080",
     ["E2E_ADMIN_USER"]   = "admin",
-    ["E2E_ADMIN_PASS"]   = "Admin@2025",
+    ["E2E_ADMIN_PASS"]   = "admin",
     ["E2E_OAUTH_USER"]   = "test",
     ["E2E_OAUTH_PASS"]   = "test",
     ["E2E_HEADLESS"]     = headlessValue,
@@ -181,8 +181,12 @@ testArgs.Append($" --logger \"trx;LogFileName={trxPath}\"");
 testArgs.Append($" --logger \"console;verbosity=normal\"");
 if (!String.IsNullOrEmpty(filterValue))
     testArgs.Append($" --filter \"{filterValue}\"");
-if (isCi)
-    testArgs.Append(" --no-progress");
+// --no-progress 在 MSBuild runner 下无效，改用 verbosity 控制输出量
+
+// 清理端口 8080 的残留进程，避免复用含旧 DB 状态（如已被测试改密）的进程
+Console.WriteLine("[E2E] 清理端口 8080 的残留进程...");
+KillProcessOnPort(8080);
+Thread.Sleep(1500); // 等待端口完全释放
 
 Console.WriteLine($"[E2E] 运行测试：dotnet {testArgs}");
 
@@ -211,6 +215,38 @@ return testResult;
 // ============================================================
 // 辅助函数
 // ============================================================
+
+/// <summary>终止正在监听指定端口的进程（仅 Windows netstat）</summary>
+static void KillProcessOnPort(Int32 port)
+{
+    try
+    {
+        var psi = new ProcessStartInfo("cmd.exe", "/c netstat -ano")
+        {
+            UseShellExecute      = false,
+            RedirectStandardOutput = true,
+            CreateNoWindow       = true,
+        };
+        using var proc   = Process.Start(psi)!;
+        var output       = proc.StandardOutput.ReadToEnd();
+        proc.WaitForExit();
+
+        foreach (var line in output.Split('\n'))
+        {
+            if (!line.Contains($":{port}") || !line.Contains("LISTENING")) continue;
+            var parts = line.Trim().Split([' '], StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 0 && Int32.TryParse(parts[^1], out var pid) && pid > 4)
+            {
+                Console.WriteLine($"[E2E] 终止端口 {port} 残留进程 PID={pid}");
+                RunProcess("taskkill", $"/F /PID {pid}");
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[E2E] 端口 {port} 清理出错（可忽略）: {ex.Message}");
+    }
+}
 
 static Int32 RunProcess(String fileName, String arguments,
     Dictionary<String, String>? env = null)

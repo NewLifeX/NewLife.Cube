@@ -214,7 +214,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
               ? new Tuple<String, String>(null, null)
                             : _cache.Get<Tuple<String, String>>(loginModel.ChallengeId);
             var rsaKey = pdic?.Item2;
-            password = rsaKey.IsNullOrEmpty() ? password : DecryptOAEP(rsaKey, password);
+            password = rsaKey.IsNullOrEmpty() ? password : DecryptPkcs1v15(rsaKey, password);
 
             var provider = ManageProvider.Provider;
             if (provider.Login(username, password, remember) == null)
@@ -584,6 +584,20 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         var decryptedData = RSAHelper.Decrypt(Convert.FromBase64String(decryptString), privateKey, false);
 
         return Encoding.UTF8.GetString(decryptedData);
+    }
+
+    /// <summary>使用 RSA-PKCS1v15 解密（对应前端 JSEncrypt 默认加密）</summary>
+    /// <param name="pemPrivateKey">PEM 格式 RSA 私钥（-----BEGIN RSA PRIVATE KEY-----）</param>
+    /// <param name="base64Encrypted">前端 JSEncrypt 用公钥加密后的 Base64 密文</param>
+    /// <returns>解密后的原始密码</returns>
+    private static String DecryptPkcs1v15(String pemPrivateKey, String base64Encrypted)
+    {
+        using var rsa = System.Security.Cryptography.RSA.Create();
+        rsa.ImportFromPem(pemPrivateKey);
+        var decrypted = rsa.Decrypt(
+            Convert.FromBase64String(base64Encrypted),
+            System.Security.Cryptography.RSAEncryptionPadding.Pkcs1);
+        return Encoding.UTF8.GetString(decrypted);
     }
 
     /// <summary>使用 RSA-OAEP 解密（对应前端 Web Crypto API RSA-OAEP 加密）</summary>

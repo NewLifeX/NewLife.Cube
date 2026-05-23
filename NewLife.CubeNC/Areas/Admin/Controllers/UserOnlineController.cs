@@ -20,6 +20,7 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
     public UserOnlineController()
     {
         PageSetting.EnableAdd = false;
+        PageSetting.NavView = "_User_Nav";
 
         ListFields.RemoveField("ID", "UserID", "SessionID", "Status", "LastError", "CreateIP", "CreateTime");
 

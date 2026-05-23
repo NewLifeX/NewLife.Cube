@@ -25,7 +25,8 @@ public sealed class AppFixture : IAsyncLifetime
         ?? System.IO.Path.Combine(RunDir, "app");
 
     /// <summary>数据目录（SQLite 文件位于此处）</summary>
-    public static String DataDir => System.IO.Path.Combine(AppDir, "Data");
+    /// <remarks>CubeSSO appsettings.json 使用 ..\\Data\\ 相对路径，DB 实际在 RunDir\Data 而非 AppDir\Data</remarks>
+    public static String DataDir => System.IO.Path.GetFullPath(System.IO.Path.Combine(AppDir, "..", "Data"));
 
     /// <summary>截图输出目录</summary>
     public static String ScreenshotDir => System.IO.Path.Combine(RunDir, "screenshots");
@@ -38,9 +39,9 @@ public sealed class AppFixture : IAsyncLifetime
     public static String AdminUser { get; } =
         Environment.GetEnvironmentVariable("E2E_ADMIN_USER") ?? "admin";
 
-    /// <summary>管理员密码</summary>
+    /// <summary>管理员密码（CubeSSO 默认初始密码为 admin，见登录页提示"默认用户admin/admin"）</summary>
     public static String AdminPass { get; } =
-        Environment.GetEnvironmentVariable("E2E_ADMIN_PASS") ?? "Admin@2025";
+        Environment.GetEnvironmentVariable("E2E_ADMIN_PASS") ?? "admin";
 
     /// <summary>OAuth 测试账号用户名</summary>
     public static String OAuthUser { get; } =
