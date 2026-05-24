@@ -14,14 +14,8 @@ namespace NewLife.Cube.Areas.Admin.Controllers;
 [Menu(0, false)]
 public class UserOnlineController : EntityController<UserOnline, UserOnlineModel>
 {
-    /// <summary>
-    /// 实例化
-    /// </summary>
-    public UserOnlineController()
+    static UserOnlineController()
     {
-        PageSetting.EnableAdd = false;
-        PageSetting.NavView = "_User_Nav";
-
         ListFields.RemoveField("ID", "UserID", "SessionID", "Status", "LastError", "CreateIP", "CreateTime");
 
         ListFields.TraceUrl("TraceId");
@@ -42,6 +36,8 @@ public class UserOnlineController : EntityController<UserOnline, UserOnlineModel
         var userid = p["UserID"].ToInt(-1);
         var start = p["dtStart"].ToDateTime();
         var end = p["dtEnd"].ToDateTime();
+
+        PageSetting.EnableAdd = false;
 
         // 强制当前用户
         if (userid < 0)

@@ -258,6 +258,13 @@
 
     <script>
         $(function () {
+            // 在用户名和密码框按回车时触发登录
+            $("#username, #password").keydown(function (e) {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    $("#login-btn").click();
+                }
+            });
+
             $("#login-btn").click(function () {
                 var username = $("#username").val();
                 var password = $("#password").val();
