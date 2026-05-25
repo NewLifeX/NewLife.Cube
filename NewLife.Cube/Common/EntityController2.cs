@@ -710,7 +710,12 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         Attachment att;
         try
         {
-            att = await SaveFile(entity, file, null, null, title);
+            att = await SaveFile(entity, file, null, null);
+            if (!title.IsNullOrEmpty())
+            {
+                att.Title = title;
+                att.Update();
+            }
         }
         catch (Exception ex)
         {
@@ -811,9 +816,8 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
     /// <param name="file">文件</param>
     /// <param name="uploadPath">上传目录，默认使用UploadPath配置</param>
     /// <param name="fileName">文件名，如若指定则忽略前面的目录</param>
-    /// <param name="titleOverride">附件标题覆盖值。非空时优先使用；为空时回退到 entity.ToString()</param>
     /// <returns>已保存的附件实体</returns>
-    protected virtual async Task<Attachment> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName, String titleOverride = null)
+    protected virtual async Task<Attachment> SaveFile(TEntity entity, IFormFile file, String uploadPath, String fileName)
     {
         if (file == null) throw new ArgumentNullException(nameof(file));
         if (fileName.IsNullOrEmpty()) fileName = file.FileName;
@@ -821,12 +825,11 @@ public partial class EntityController<TEntity, TModel> : ReadOnlyEntityControlle
         using var span = DefaultTracer.Instance?.NewSpan(nameof(SaveFile), new { name = file.Name, fileName, uploadPath });
 
         var id = Factory.Unique != null ? entity[Factory.Unique] : null;
-        var entityTitle = entity + "";
         var att = new Attachment
         {
             Category = typeof(TEntity).Name,
             Key = id + "",
-            Title = !titleOverride.IsNullOrEmpty() ? titleOverride : entityTitle,
+            Title = entity + "",
             //FileName = fileName ?? file.FileName,
             ContentType = file.ContentType,
             Size = file.Length,
