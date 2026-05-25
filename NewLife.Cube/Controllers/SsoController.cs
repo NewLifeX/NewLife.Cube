@@ -201,14 +201,16 @@ public class SsoController : ControllerBaseX
                 // 如果拿不到访问令牌或用户信息，则重新跳转
                 if (client.AccessToken.IsNullOrEmpty() && client.OpenID.IsNullOrEmpty() && client.UserID == 0 && client.UserName.IsNullOrEmpty())
                 {
-                    XTrace.WriteLine("[{2}]拿不到访问令牌 code={0} state={1}", code, state, id);
+                    XTrace.WriteLine("[{2}]拿不到访问令牌，自动重跳SSO重新授权 code={0} state={1}", code, state, id);
                     XTrace.WriteLine(Request.GetRawUrl() + "");
                     if (!html.IsNullOrEmpty()) XTrace.WriteLine(html);
 
                     log.Success = false;
-                    log.Remark = html;
+                    log.Remark = $"无法获取令牌，自动重新授权: {html}";
+                    log.Update();
 
-                    throw new InvalidOperationException($"内部错误，无法获取令牌 code={code}");
+                    // code已失效（超时/已用过），重跳SSO获取新code，用户无感知
+                    return Redirect(OnLogin(client, null, returnUrl, null));
                 }
 
                 log.AccessToken = client.AccessToken;
