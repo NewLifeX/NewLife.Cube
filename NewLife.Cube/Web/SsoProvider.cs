@@ -1050,15 +1050,24 @@ public class SsoProvider
                 }
             }
 
-            // 头像URL附加哈希值，用于客户端验证本地文件是否需要更新
+            // 头像URL构建优先级：
+            // 1. 本地有头像文件 → /Sso/Avatar?id=xxx#md5$hash（附哈希供下游增量校验）
+            // 2. 本地无文件 + user.Avatar 是外部 HTTP URL（如 FetchAvatar=false 场景）→ 透传原始 URL，让下游 appB 可直接访问或自行下载
+            // 3. 其他（本地无文件且 Avatar 非 HTTP）→ /Sso/Avatar?id=xxx（SVG 虚拟头像降级）
             var avatarUrl = "/Sso/Avatar?id=" + user2.ID;
-            var avatarFile = CubeSetting.Current.AvatarPath.CombinePath(user2.ID + ".png").GetBasePath();
-            var av = avatarFile.AsFile();
-            if (av.Exists)
+            var (localAvatarFile, _) = Services.SvgAvatarService.FindAvatarFile(CubeSetting.Current.AvatarPath, user2.ID);
+            if (!localAvatarFile.IsNullOrEmpty())
             {
-                var hash = av.MD5().ToHex();
-                DefaultSpan.Current?.AppendTag($"avatarFile={avatarFile} md5={hash}");
+                // 本地有任意格式头像文件，附加 MD5 哈希供下游增量校验
+                var hash = localAvatarFile.AsFile().MD5().ToHex();
+                DefaultSpan.Current?.AppendTag($"avatarFile={localAvatarFile} md5={hash}");
                 avatarUrl += $"#md5${hash}";
+            }
+            else if (!user2.Avatar.IsNullOrEmpty() && user2.Avatar.StartsWithIgnoreCase("http://", "https://"))
+            {
+                // 本地无文件，但用户记录了可访问的原始外部 URL
+                // 直接透传，避免下游 appB 只拿到 SVG 虚拟头像而无法获取真实图片
+                avatarUrl = user2.Avatar;
             }
 
             return new
