@@ -76,7 +76,7 @@ public partial class OAuthLog : IEntity<OAuthLogModel>
     /// <summary>回调地址</summary>
     [DisplayName("回调地址")]
     [Description("回调地址")]
-    [DataObjectField(false, false, true, 500)]
+    [DataObjectField(false, false, true, 2000)]
     [BindColumn("RedirectUri", "回调地址", "")]
     public String RedirectUri { get => _RedirectUri; set { if (OnPropertyChanging("RedirectUri", value)) { _RedirectUri = value; OnPropertyChanged("RedirectUri"); } } }
 
