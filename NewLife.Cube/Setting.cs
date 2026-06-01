@@ -193,6 +193,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public Boolean UseSsoDepartment { get; set; } = true;
 
+    /// <summary>SSO角色规则。SSO登录后按规则自动升级用户主角色，多条规则用逗号（半角或全角）分隔。格式：原角色+部门通配符=目标角色，部门通配符支持前缀(路由*)、后缀(*专员)、精确匹配。例如：游客+路由*=路由专员,普通用户+*车队=调度员</summary>
+    [Description("SSO角色规则。SSO登录后按规则自动升级用户主角色，多条规则用逗号（半角或全角）分隔。格式：原角色+部门通配符=目标角色，例如：游客+路由*=路由专员,普通用户+*车队=调度员")]
+    [Category("用户登录")]
+    public String RoleRules { get; set; }
+
     /// <summary>注销所有系统。false仅注销本系统，默认true时注销SsoServer</summary>
     [Description("注销所有系统。false仅注销本系统，默认true时注销SsoServer")]
     [Category("用户登录")]

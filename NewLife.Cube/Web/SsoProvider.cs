@@ -433,6 +433,38 @@ public class SsoProvider
             else
                 user.RoleIds = "," + roleIds.OrderBy(e => e).Join() + ",";
         }
+
+        // 应用角色规则：多条规则用逗号（半角/全角）分隔，格式：原角色+部门通配符=目标角色，取第一条命中规则替换主角色
+        if (!set.RoleRules.IsNullOrEmpty())
+        {
+            var currentRoleName = Role.FindByID(user.RoleID)?.Name;
+            var departmentName = client.DepartmentName;
+            foreach (var token in set.RoleRules.Split([',', '\uff0c'], StringSplitOptions.RemoveEmptyEntries))
+            {
+                var rule = token.Trim();
+                if (rule.IsNullOrEmpty()) continue;
+
+                // 格式：原角色+部门通配符=目标角色
+                var eqIdx = rule.IndexOf('=');
+                if (eqIdx <= 0) continue;
+
+                var left = rule[..eqIdx].Trim();
+                var targetRole = rule[(eqIdx + 1)..].Trim();
+                if (targetRole.IsNullOrEmpty()) continue;
+
+                // + 分隔原角色和部门通配符
+                var plusIdx = left.IndexOf('+');
+                var srcRole = plusIdx > 0 ? left[..plusIdx].Trim() : left.Trim();
+                var deptPattern = plusIdx > 0 ? left[(plusIdx + 1)..].Trim() : null;
+
+                if (!srcRole.EqualIgnoreCase(currentRoleName)) continue;
+                if (!deptPattern.IsNullOrEmpty() && !MatchPattern(departmentName, deptPattern)) continue;
+
+                // 命中：替换主角色
+                user.RoleID = Role.GetOrAdd(targetRole).ID;
+                break;
+            }
+        }
     }
 
     /// <summary>填充部门信息</summary>
@@ -1110,6 +1142,34 @@ public class SsoProvider
     #endregion
 
     #region 辅助
+    /// <summary>通配符模式匹配。支持前缀（路由*）、后缀（*专员）、中间（路由*专员）及精确匹配，忽略大小写</summary>
+    /// <param name="value">待匹配的字符串</param>
+    /// <param name="pattern">通配符模式，* 表示任意字符</param>
+    /// <returns>匹配返回true，否则false</returns>
+    protected static Boolean MatchPattern(String value, String pattern)
+    {
+        if (pattern.IsNullOrEmpty() || pattern == "*") return true;
+        if (value.IsNullOrEmpty()) return false;
+
+        var starIdx = pattern.IndexOf('*');
+        if (starIdx < 0) return value.EqualIgnoreCase(pattern);
+
+        // 前缀：路由*
+        if (starIdx == pattern.Length - 1)
+            return value.StartsWith(pattern[..starIdx], StringComparison.OrdinalIgnoreCase);
+
+        // 后缀：*专员
+        if (starIdx == 0)
+            return value.EndsWith(pattern[1..], StringComparison.OrdinalIgnoreCase);
+
+        // 中间：路由*专员
+        var prefix = pattern[..starIdx];
+        var suffix = pattern[(starIdx + 1)..];
+        return value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            && value.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
+            && value.Length >= prefix.Length + suffix.Length;
+    }
+
     /// <summary>抓取远程头像</summary>
     /// <param name="user">用户对象</param>
     /// <param name="url">头像URL，可以包含哈希值：http://xxx.com/avatar.jpg#md5#hash</param>
