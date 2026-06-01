@@ -13,8 +13,8 @@
     "dev": "tsup src/index.ts --format esm,cjs --dts --watch"
   },
   "dependencies": {
-    "axios": "^1.15.2",
-    "qs": "^6.13.0"
+    "axios": "^1.16.0",
+    "qs": "^6.15.2"
   },
   "devDependencies": {
     "@types/qs": "^6.9.0",
