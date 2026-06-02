@@ -164,11 +164,26 @@ public class SsoProvider
         return url.AppendReturn("/Sso/Auth2?id=" + logId);
     }
 
-    /// <summary>获取回调地址</summary>
+    /// <summary>获取回调地址，默认使用传入的重定向URL，如果配置了OAuth客户端则使用客户端的AppUrl</summary>
     /// <param name="request"></param>
-    /// <param name="redirectUrl"></param>
-    /// <returns></returns>
-    public virtual String GetRedirect(IHttpRequest request, String redirectUrl) => redirectUrl.AsUri(request.GetRawUrl()?.ToUri()) + "";
+    /// <param name="redirectUrl">默认的重定向URL</param>
+    /// <param name="providerName">提供者名称，默认为空</param>
+    /// <returns>重定向的URL</returns>
+    public virtual String GetRedirect(IHttpRequest request, String redirectUrl, String providerName = null)
+    {
+        var config = providerName != null ? OAuthConfig.FindByName(providerName) : null;
+
+        if (config != null && !config.AppUrl.IsNullOrEmpty())
+        {
+            if (Uri.TryCreate(config.AppUrl, UriKind.Absolute, out var appUri))
+            {
+                return appUri.ToString();
+            }
+            return config.AppUrl.AsUri(request.GetRawUrl()?.ToUri()).ToString().Replace("{name}", providerName ?? "");
+        }
+
+        return redirectUrl.AsUri(request.GetRawUrl()?.ToUri()).ToString();
+    }
 
     /// <summary>获取连接信息</summary>
     /// <param name="client"></param>

@@ -118,7 +118,7 @@ public class SsoController : ControllerBaseX
     private String OnLogin(OAuthClient client, String state, String returnUrl, OAuthLog log)
     {
         var prov = Provider;
-        var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
+        var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name, client.Name);
         // 请求来源，前后端分离时传front-end，重定向会带上token放到锚点
         var source = GetRequest("source");
         //if (state.IsNullOrEmpty() && !returnUrl.IsNullOrEmpty()) state = $"r={returnUrl}";
@@ -184,7 +184,7 @@ public class SsoController : ControllerBaseX
             return Redirect(OnLogin(client, null, null, log));
 
         // 构造redirect_uri，部分提供商（百度）要求获取AccessToken的时候也要传递
-        var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
+        var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name, client.Name);
         client.Authorize(redirect);
 
         //var returnUrl = prov.GetReturnUrl(Request, false);
@@ -401,7 +401,7 @@ public class SsoController : ControllerBaseX
         var client = prov.GetClient(TenantContext.CurrentId, id);
         client.Init(GetUserAgent());
 
-        var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name);
+        var redirect = prov.GetRedirect(Request, "~/Sso/LoginInfo/" + client.Name, client.Name);
 
         var log = new OAuthLog
         {
