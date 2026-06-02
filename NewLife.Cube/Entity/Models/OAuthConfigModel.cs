@@ -56,7 +56,7 @@ public partial class OAuthConfigModel
     /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
     public String UserUrl { get; set; }
 
-    /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+    /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址，格式：/Sso/LoginInfo/{name}</summary>
     public String AppUrl { get; set; }
 
     /// <summary>启用</summary>

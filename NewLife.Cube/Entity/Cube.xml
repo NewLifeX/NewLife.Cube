@@ -116,7 +116,7 @@
         <Column Name="AuthUrl" DataType="String" Length="200" Description="验证地址。跳转SSO的验证地址" />
         <Column Name="AccessUrl" DataType="String" Length="200" Description="令牌地址。根据code换取令牌的地址" />
         <Column Name="UserUrl" DataType="String" Length="200" Description="用户地址。根据令牌获取用户信息的地址" />
-        <Column Name="AppUrl" DataType="String" Length="200" Description="应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址" />
+        <Column Name="AppUrl" DataType="String" Length="200" Description="应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址，格式：/Sso/LoginInfo/{name}" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="Debug" DataType="Boolean" Description="调试。设置处于调试状态，输出详细日志" />
         <Column Name="Visible" DataType="Boolean" Description="可见。是否在登录页面可见，不可见的提供者只能使用应用内自动登录，例如微信公众号" />

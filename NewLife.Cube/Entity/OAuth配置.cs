@@ -143,11 +143,11 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
     public String UserUrl { get => _UserUrl; set { if (OnPropertyChanging("UserUrl", value)) { _UserUrl = value; OnPropertyChanged("UserUrl"); } } }
 
     private String _AppUrl;
-    /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+    /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址，格式：/Sso/LoginInfo/{name}</summary>
     [DisplayName("应用地址")]
-    [Description("应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址")]
+    [Description("应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址，格式：/Sso/LoginInfo/{name}")]
     [DataObjectField(false, false, true, 200)]
-    [BindColumn("AppUrl", "应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址", "")]
+    [BindColumn("AppUrl", "应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址，格式：/Sso/LoginInfo/{name}", "")]
     public String AppUrl { get => _AppUrl; set { if (OnPropertyChanging("AppUrl", value)) { _AppUrl = value; OnPropertyChanged("AppUrl"); } } }
 
     private Boolean _Enable;
@@ -545,7 +545,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
         public static readonly Field UserUrl = FindByName("UserUrl");
 
-        /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+        /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址，格式：/Sso/LoginInfo/{name}</summary>
         public static readonly Field AppUrl = FindByName("AppUrl");
 
         /// <summary>启用</summary>
@@ -650,7 +650,7 @@ public partial class OAuthConfig : IEntity<OAuthConfigModel>
         /// <summary>用户地址。根据令牌获取用户信息的地址</summary>
         public const String UserUrl = "UserUrl";
 
-        /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址</summary>
+        /// <summary>应用地址。域名和端口，应用系统经过反向代理重定向时指定外部地址，格式：/Sso/LoginInfo/{name}</summary>
         public const String AppUrl = "AppUrl";
 
         /// <summary>启用</summary>
