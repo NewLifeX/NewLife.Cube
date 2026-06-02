@@ -116,7 +116,7 @@ public partial class Student : IStudent, IEntity<IStudent>
     [DisplayName("体重")]
     [Description("体重。小数")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("Weight", "体重。小数", "", Precision = 0, Scale = 2)]
+    [BindColumn("Weight", "体重。小数", "", Scale = 2)]
     public Double Weight { get => _Weight; set { if (OnPropertyChanging("Weight", value)) { _Weight = value; OnPropertyChanged("Weight"); } } }
 
     private Decimal _Amount;
@@ -124,7 +124,7 @@ public partial class Student : IStudent, IEntity<IStudent>
     [DisplayName("存款")]
     [Description("存款。小数")]
     [DataObjectField(false, false, false, 0)]
-    [BindColumn("Amount", "存款。小数", "", Precision = 0, Scale = 3)]
+    [BindColumn("Amount", "存款。小数", "", Scale = 3)]
     public Decimal Amount { get => _Amount; set { if (OnPropertyChanging("Amount", value)) { _Amount = value; OnPropertyChanged("Amount"); } } }
 
     private Int32 _CreateUserID;
@@ -294,6 +294,35 @@ public partial class Student : IStudent, IEntity<IStudent>
     [Category("基本信息")]
     public String ClassName => Class?.ToString();
 
+    #endregion
+
+    #region 扩展查询
+    #endregion
+
+    #region 高级查询
+    /// <summary>高级查询</summary>
+    /// <param name="tenantId">租户</param>
+    /// <param name="classId">班级</param>
+    /// <param name="sex">性别</param>
+    /// <param name="enable">启用</param>
+    /// <param name="start">更新时间开始</param>
+    /// <param name="end">更新时间结束</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+    /// <returns>实体列表</returns>
+    public static IList<Student> Search(Int32 tenantId, Int32 classId, XCode.Membership.SexKinds sex, Boolean? enable, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (tenantId >= 0) exp &= _.TenantId == tenantId;
+        if (classId >= 0) exp &= _.ClassId == classId;
+        if (sex >= 0) exp &= _.Sex == sex;
+        if (enable != null) exp &= _.Enable == enable;
+        exp &= _.UpdateTime.Between(start, end);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        return FindAll(exp, page);
+    }
     #endregion
 
     #region 字段名

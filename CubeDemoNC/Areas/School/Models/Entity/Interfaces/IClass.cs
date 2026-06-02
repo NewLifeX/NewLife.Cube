@@ -26,8 +26,8 @@ public partial interface IClass
     /// <summary>毕业时间</summary>
     DateTime GraduationDate { get; set; }
 
-    /// <summary>设备型号</summary>
-    String Model { get; set; }
+    /// <summary>班主任</summary>
+    Int32 HeadTeacherId { get; set; }
 
     /// <summary>创建者</summary>
     Int32 CreateUserID { get; set; }

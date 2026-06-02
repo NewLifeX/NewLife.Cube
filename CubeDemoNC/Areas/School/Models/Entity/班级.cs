@@ -61,13 +61,13 @@ public partial class Class : IClass, IEntity<IClass>
     [BindColumn("GraduationDate", "毕业时间", "")]
     public DateTime GraduationDate { get => _GraduationDate; set { if (OnPropertyChanging("GraduationDate", value)) { _GraduationDate = value; OnPropertyChanged("GraduationDate"); } } }
 
-    private String _Model;
-    /// <summary>设备型号</summary>
-    [DisplayName("设备型号")]
-    [Description("设备型号")]
-    [DataObjectField(false, false, true, 20)]
-    [BindColumn("Model", "设备型号", "")]
-    public String Model { get => _Model; set { if (OnPropertyChanging("Model", value)) { _Model = value; OnPropertyChanged("Model"); } } }
+    private Int32 _HeadTeacherId;
+    /// <summary>班主任</summary>
+    [DisplayName("班主任")]
+    [Description("班主任")]
+    [DataObjectField(false, false, false, 0)]
+    [BindColumn("HeadTeacherId", "班主任", "")]
+    public Int32 HeadTeacherId { get => _HeadTeacherId; set { if (OnPropertyChanging("HeadTeacherId", value)) { _HeadTeacherId = value; OnPropertyChanged("HeadTeacherId"); } } }
 
     private Int32 _CreateUserID;
     /// <summary>创建者</summary>
@@ -136,7 +136,7 @@ public partial class Class : IClass, IEntity<IClass>
         Name = model.Name;
         Enable = model.Enable;
         GraduationDate = model.GraduationDate;
-        Model = model.Model;
+        HeadTeacherId = model.HeadTeacherId;
         CreateUserID = model.CreateUserID;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
@@ -160,7 +160,7 @@ public partial class Class : IClass, IEntity<IClass>
             "Name" => _Name,
             "Enable" => _Enable,
             "GraduationDate" => _GraduationDate,
-            "Model" => _Model,
+            "HeadTeacherId" => _HeadTeacherId,
             "CreateUserID" => _CreateUserID,
             "CreateTime" => _CreateTime,
             "CreateIP" => _CreateIP,
@@ -179,7 +179,7 @@ public partial class Class : IClass, IEntity<IClass>
                 case "Name": _Name = Convert.ToString(value); break;
                 case "Enable": _Enable = value.ToBoolean(); break;
                 case "GraduationDate": _GraduationDate = value.ToDateTime(); break;
-                case "Model": _Model = Convert.ToString(value); break;
+                case "HeadTeacherId": _HeadTeacherId = value.ToInt(); break;
                 case "CreateUserID": _CreateUserID = value.ToInt(); break;
                 case "CreateTime": _CreateTime = value.ToDateTime(); break;
                 case "CreateIP": _CreateIP = Convert.ToString(value); break;
@@ -202,6 +202,41 @@ public partial class Class : IClass, IEntity<IClass>
     [Map(nameof(TenantId), typeof(XCode.Membership.Tenant), "Id")]
     public String TenantName => Tenant?.Name;
 
+    /// <summary>班主任</summary>
+    [XmlIgnore, IgnoreDataMember, ScriptIgnore]
+    public XCode.Membership.User HeadTeacher => Extends.Get(nameof(HeadTeacher), k => XCode.Membership.User.FindByID(HeadTeacherId));
+
+    /// <summary>班主任</summary>
+    [Map(nameof(HeadTeacherId), typeof(XCode.Membership.User), "ID")]
+    public String TeacherName => HeadTeacher?.ToString();
+
+    #endregion
+
+    #region 扩展查询
+    #endregion
+
+    #region 高级查询
+    /// <summary>高级查询</summary>
+    /// <param name="tenantId">租户</param>
+    /// <param name="headTeacherId">班主任</param>
+    /// <param name="enable">启用</param>
+    /// <param name="start">更新时间开始</param>
+    /// <param name="end">更新时间结束</param>
+    /// <param name="key">关键字</param>
+    /// <param name="page">分页参数信息。可携带统计和数据权限扩展查询等信息</param>
+    /// <returns>实体列表</returns>
+    public static IList<Class> Search(Int32 tenantId, Int32 headTeacherId, Boolean? enable, DateTime start, DateTime end, String key, PageParameter page)
+    {
+        var exp = new WhereExpression();
+
+        if (tenantId >= 0) exp &= _.TenantId == tenantId;
+        if (headTeacherId >= 0) exp &= _.HeadTeacherId == headTeacherId;
+        if (enable != null) exp &= _.Enable == enable;
+        exp &= _.UpdateTime.Between(start, end);
+        if (!key.IsNullOrEmpty()) exp &= SearchWhereByKeys(key);
+
+        return FindAll(exp, page);
+    }
     #endregion
 
     #region 字段名
@@ -223,8 +258,8 @@ public partial class Class : IClass, IEntity<IClass>
         /// <summary>毕业时间</summary>
         public static readonly Field GraduationDate = FindByName("GraduationDate");
 
-        /// <summary>设备型号</summary>
-        public static readonly Field Model = FindByName("Model");
+        /// <summary>班主任</summary>
+        public static readonly Field HeadTeacherId = FindByName("HeadTeacherId");
 
         /// <summary>创建者</summary>
         public static readonly Field CreateUserID = FindByName("CreateUserID");
@@ -268,8 +303,8 @@ public partial class Class : IClass, IEntity<IClass>
         /// <summary>毕业时间</summary>
         public const String GraduationDate = "GraduationDate";
 
-        /// <summary>设备型号</summary>
-        public const String Model = "Model";
+        /// <summary>班主任</summary>
+        public const String HeadTeacherId = "HeadTeacherId";
 
         /// <summary>创建者</summary>
         public const String CreateUserID = "CreateUserID";

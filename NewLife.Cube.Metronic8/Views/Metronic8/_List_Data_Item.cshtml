@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using NewLife.Cube;
 @using Microsoft.AspNetCore.Routing
@@ -9,10 +9,11 @@
     var entity = Model.Entity;
     var item = Model.Field;
     var factory = entity.GetType().AsFactory();
+    var page = ViewBag.Page as Pager;
+    var listField = item as ListField;
 
     var value = entity[item.Name];
     var provider = ManageProvider.Provider;
-    var listField = item as ListField;
 
     // 第二名称，去掉后面的数字，便于模式匹配
     var digits = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };

@@ -23,6 +23,15 @@ public class RoleController : EntityController<Role, RoleModel>
         {
             var df = ListFields.AddListField("Remark", "UpdateUser");
         }
+
+        {
+            var df = AddFormFields.GetField("DataDepartmentIds");
+            df.DataSource = entity => Department.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        }
+        {
+            var df = EditFormFields.GetField("DataDepartmentIds");
+            df.DataSource = entity => Department.FindAllWithCache().Where(x => x.Enable).OrderByDescending(e => e.Sort).ToDictionary(e => e.ID, e => e.Name);
+        }
     }
 
     /// <summary>动作执行前</summary>

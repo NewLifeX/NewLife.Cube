@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202309.xsd" Version="11.7.2023.0327" Document="https://newlifex.com/xcode/model" xmlns="https://newlifex.com/Model202309.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Version="11.7.2023.0327" Document="https://newlifex.com/xcode/model" ModelVersion="2.0.2026.130" xmlns="https://newlifex.com/Model202509.xsd">
   <Option>
     <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
     <ClassNameTemplate />
@@ -9,10 +9,12 @@
     <BaseClass>Entity</BaseClass>
     <!--命名空间-->
     <Namespace>NewLife.School.Entity</Namespace>
+    <!--引用命名空间-->
+    <ExtendNameSpace />
     <!--输出目录-->
     <Output>Entity</Output>
     <!--是否使用中文文件名。默认false-->
-    <ChineseFileName>False</ChineseFileName>
+    <ChineseFileName>True</ChineseFileName>
     <!--用于生成Copy函数的参数类型。例如{name}或I{name}-->
     <ModelNameForCopy />
     <!--带有索引器。实现IModel接口-->
@@ -46,7 +48,7 @@
         <Column Name="Name" DataType="String" Master="True" Description="名称" />
         <Column Name="Enable" DataType="Boolean" Description="启用" />
         <Column Name="GraduationDate" DataType="DateTime" Description="毕业时间" />
-        <Column Name="Model" DataType="String" Length="20" Description="设备型号" />
+        <Column Name="HeadTeacherId" DataType="Int32" Map="XCode.Membership.User@ID@$@TeacherName" Description="班主任" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建者" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" />

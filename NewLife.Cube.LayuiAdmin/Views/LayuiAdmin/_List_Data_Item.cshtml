@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using Microsoft.AspNetCore.Routing
 @using XCode;
@@ -8,6 +8,8 @@
     var entity = Model.Entity;
     var item = Model.Field;
     var factory = entity.GetType().AsFactory();
+    var page = ViewBag.Page as Pager;
+    var listField = item as ListField;
 
     var value = entity[item.Name];
     var provider = ManageProvider.Provider;

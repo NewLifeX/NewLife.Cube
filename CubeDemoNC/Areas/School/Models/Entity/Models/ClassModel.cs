@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.Web.Script.Serialization;
 using System.Xml.Serialization;
+using NewLife;
 using NewLife.Data;
 using NewLife.Reflection;
 
@@ -28,8 +29,8 @@ public partial class ClassModel : IModel
     /// <summary>毕业时间</summary>
     public DateTime GraduationDate { get; set; }
 
-    /// <summary>设备型号</summary>
-    public String Model { get; set; }
+    /// <summary>班主任</summary>
+    public Int32 HeadTeacherId { get; set; }
 
     /// <summary>创建者</summary>
     public Int32 CreateUserID { get; set; }
@@ -68,7 +69,7 @@ public partial class ClassModel : IModel
                 "Name" => Name,
                 "Enable" => Enable,
                 "GraduationDate" => GraduationDate,
-                "Model" => Model,
+                "HeadTeacherId" => HeadTeacherId,
                 "CreateUserID" => CreateUserID,
                 "CreateTime" => CreateTime,
                 "CreateIP" => CreateIP,
@@ -88,7 +89,7 @@ public partial class ClassModel : IModel
                 case "Name": Name = Convert.ToString(value); break;
                 case "Enable": Enable = value.ToBoolean(); break;
                 case "GraduationDate": GraduationDate = value.ToDateTime(); break;
-                case "Model": Model = Convert.ToString(value); break;
+                case "HeadTeacherId": HeadTeacherId = value.ToInt(); break;
                 case "CreateUserID": CreateUserID = value.ToInt(); break;
                 case "CreateTime": CreateTime = value.ToDateTime(); break;
                 case "CreateIP": CreateIP = Convert.ToString(value); break;
@@ -112,7 +113,7 @@ public partial class ClassModel : IModel
         Name = model.Name;
         Enable = model.Enable;
         GraduationDate = model.GraduationDate;
-        Model = model.Model;
+        HeadTeacherId = model.HeadTeacherId;
         CreateUserID = model.CreateUserID;
         CreateTime = model.CreateTime;
         CreateIP = model.CreateIP;
