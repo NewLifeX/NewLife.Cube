@@ -48,6 +48,19 @@ public static class MenuHelper
                 root.Visible = attArea.Visible;
                 root.Icon = attArea.Icon;
             }
+
+            var dis = areaType.GetDisplayName();
+            var des = areaType.GetDescription();
+
+            if (!dis.IsNullOrEmpty())
+            {
+                root.DisplayName = dis;
+            }
+
+            if (!des.IsNullOrEmpty())
+            {
+                root.Remark = des;
+            }
         }
         if (root.FullName != nameSpace) root.FullName = nameSpace;
         (root as IEntity).Save();
