@@ -85,6 +85,8 @@ export interface ResetPasswordModel {
   newPassword: string;
   /** 确认密码 */
   confirmPassword: string;
+  /** 挑战码标识 */
+  challengeId?: string;
 }
 
 /** Challenge 响应（用于密码加密登录） */

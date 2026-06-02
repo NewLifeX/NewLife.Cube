@@ -208,6 +208,7 @@ public class AuthController : ControllerBaseX
             model.Code?.Trim() ?? "",
             model.NewPassword?.Trim() ?? "",
             model.ConfirmPassword?.Trim() ?? "",
+            model.ChallengeId,
             ip);
         return result.IsSuccess
             ? true.ToOkApiResponse(result.Message)

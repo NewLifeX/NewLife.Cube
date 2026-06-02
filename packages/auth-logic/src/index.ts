@@ -335,9 +335,33 @@ export class ForgotPasswordLogic {
       this.setState({ error: '两次密码输入不一致' });
       return false;
     }
+
     this.setState({ submitting: true, error: '' });
+
+    let finalPwd = model.newPassword;
+    let finalConfirmPwd = model.confirmPassword;
+    let challengeId: string | undefined;
+
     try {
-      await this.api.user.resetPassword(model);
+      // 尝试获取挑战码加密
+      const challengeRes = await this.api.user.getChallenge();
+      const challenge = challengeRes.data;
+      if (challenge?.publicKey) {
+        finalPwd = await encryptPassword(model.newPassword, challenge.publicKey);
+        finalConfirmPwd = await encryptPassword(model.confirmPassword, challenge.publicKey);
+        challengeId = challenge.challengeId;
+      }
+    } catch {
+      // 失败则降级明文
+    }
+
+    try {
+      await this.api.user.resetPassword({
+        ...model,
+        newPassword: finalPwd,
+        confirmPassword: finalConfirmPwd,
+        challengeId
+      });
       this.setState({ submitting: false });
       this._clearCountdown();
       return true;

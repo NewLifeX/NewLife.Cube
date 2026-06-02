@@ -132,6 +132,9 @@ public class ResetPwdModel : ICubeModel
 
     /// <summary> 确认密码 </summary>
     public String ConfirmPassword { get; set; }
+
+    /// <summary>挑战标识</summary>
+    public String ChallengeId { get; set; }
 }
 
 /// <summary> 用户信息 </summary>

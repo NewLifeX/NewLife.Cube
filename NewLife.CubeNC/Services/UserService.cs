@@ -1501,9 +1501,10 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
     /// <param name="code">验证码</param>
     /// <param name="newPassword">新密码</param>
     /// <param name="confirmPassword">确认密码</param>
+    /// <param name="challengeId">挑战标识</param>
     /// <param name="ip">客户端IP</param>
     /// <returns>重置结果</returns>
-    public ServiceResult ResetPassword(String account, String code, String newPassword, String confirmPassword, String ip)
+    public ServiceResult ResetPassword(String account, String code, String newPassword, String confirmPassword, String challengeId, String ip)
     {
         using var span = tracer?.NewSpan(nameof(ResetPassword), new { account, ip });
 
@@ -1511,6 +1512,28 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (account.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "手机号或邮箱不能为空" };
         if (code.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "验证码不能为空" };
         if (newPassword.IsNullOrEmpty()) return new ServiceResult { IsSuccess = false, Message = "新密码不能为空" };
+
+        var set = CubeSetting.Current;
+        // 安全重置检查：若禁止明文密码且未携带挑战标识，则拒绝
+        if (challengeId.IsNullOrEmpty() && !set.AllowPlainPassword)
+            return new ServiceResult { IsSuccess = false, Message = "禁止明文传输密码，请先获取公钥加密" };
+
+        // 挑战解密
+        if (!challengeId.IsNullOrEmpty())
+        {
+            var pdic = _cache.Get<Tuple<String, String>>(challengeId);
+            var rsaKey = pdic?.Item2;
+            if (!rsaKey.IsNullOrEmpty())
+            {
+                newPassword = DecryptPkcs1v15(rsaKey, newPassword);
+                if (!confirmPassword.IsNullOrEmpty())
+                    confirmPassword = DecryptPkcs1v15(rsaKey, confirmPassword);
+
+                // 移除挑战私钥信息，避免重放
+                _cache.Remove(challengeId);
+            }
+        }
+
         if (!confirmPassword.IsNullOrEmpty() && newPassword != confirmPassword)
             return new ServiceResult { IsSuccess = false, Message = "两次输入密码不一致" };
         if (!passwordService.Valid(newPassword)) return new ServiceResult { IsSuccess = false, Message = "密码太弱" };
