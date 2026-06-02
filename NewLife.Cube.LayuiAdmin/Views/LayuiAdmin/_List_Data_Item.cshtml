@@ -139,10 +139,9 @@ else
                 {
                     if (item.MapProvider != null)
                     {
-                        var name = item.MapProvider.EntityType.Name;
-                        var key = item.MapProvider.Key;
+                        var href = listField?.GetUrl(entity, page);
                         val = entity[item.MapField];
-                        <td><a href="@name/Detail/@key=@val" class="layui-btn layui-btn-primary layui-btn-xs">@value</a></td>
+                        <td><a href="@href" class="layui-btn layui-btn-primary layui-btn-xs">@value</a></td>
                     }
                     else
                     {

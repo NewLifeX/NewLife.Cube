@@ -314,7 +314,11 @@ public static class ViewHelper
                             if (item.MapProvider != null)
                             {
                                 var prv = item.MapProvider;
-                                sb.AppendFormat(@"<td><a href=""{1}?{2}=@entity.{3}"">@entity.{0}</a></td>", item.Name, prv.EntityType.Name, prv.Key, item.MapField);
+                                // 从注册表获取含 Area 前缀的完整路径，避免 /User?ID=... 缺少 Area 前缀
+                                var pageInfo = EntityPageRegistry.Get(prv.EntityType);
+                                var linkUrl = pageInfo?.Url ?? ("/" + prv.EntityType.Name);
+                                var pkName = pageInfo?.PrimaryKey ?? prv.Key;
+                                sb.AppendFormat(@"<td><a href=""{1}?{2}=@entity.{3}"">@entity.{0}</a></td>", item.Name, linkUrl, pkName, item.MapField);
                             }
                             else
                             {

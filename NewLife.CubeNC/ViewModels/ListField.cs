@@ -311,7 +311,7 @@ public class ListField : DataField
         return Replace(link, data, EnumModes.String);
     }
 
-    /// <summary>针对指定实体对象计算url，替换其中变量</summary>
+    /// <summary>针对指定实体对象计算url，替换其中变量。当 Url 为空且存在 MapProvider 时，自动从 EntityPageRegistry 构造含 Area 前缀的跳转路径</summary>
     /// <param name="data"></param>
     /// <param name="page"></param>
     /// <returns></returns>
@@ -320,10 +320,26 @@ public class ListField : DataField
         var svc = GetService<IUrlExtend>();
         if (svc != null) return svc.Resolve(this, data);
 
-        if (Url.IsNullOrEmpty()) return null;
+        // 当 Url 为空但存在 MapProvider 时，尝试从注册表自动构造跳转 URL
+        var urlTemplate = Url;
+        if (urlTemplate.IsNullOrEmpty() && MapProvider != null && !MapField.IsNullOrEmpty())
+        {
+            var info = EntityPageRegistry.Get(MapProvider.EntityType);
+            if (info != null)
+            {
+                urlTemplate = info.GetUrlTemplate(MapField);
+            }
+            else
+            {
+                // 注册表中无记录时回退到不含 Area 前缀的路径（兼容旧行为）
+                urlTemplate = $"/{MapProvider.EntityType.Name}?{MapProvider.Key}={{{MapField}}}";
+            }
+        }
+
+        if (urlTemplate.IsNullOrEmpty()) return null;
 
         //return _reg.Replace(Url, m => data[m.Groups[1].Value + ""] + "");
-        var rs = Replace(Url, data, EnumModes.Int);
+        var rs = Replace(urlTemplate, data, EnumModes.Int);
         if (page != null && !rs.IsNullOrEmpty()) rs = Replace(rs, page, EnumModes.Int);
 
         return rs;
