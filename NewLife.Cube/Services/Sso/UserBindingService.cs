@@ -461,6 +461,9 @@ public class UserBindingService : IUserBindingService
     /// <summary>填充租户信息</summary>
     protected virtual void FillTenant(OAuthClient client, User user, IManageUser manageUser)
     {
+        // 未开启多租户时跳过，避免自动创建租户关系导致 ChooseTenant 切入租户模式
+        if (!CubeSetting.Current.EnableTenant) return;
+
         var log = LogProvider.Provider;
 
         if (!client.TenantCode.IsNullOrEmpty() && !client.TenantName.IsNullOrEmpty())
