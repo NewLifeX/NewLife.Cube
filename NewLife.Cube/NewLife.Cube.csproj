@@ -128,11 +128,11 @@
     <Compile Include="..\NewLife.CubeNC\WebMiddleware\MiddlewareHelper.cs" Link="WebMiddleware\MiddlewareHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.15.2026.501" />
+    <PackageReference Include="NewLife.Core" Version="11.16.2026.601" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.501" />
     <PackageReference Include="NewLife.Office" Version="1.1.2026.501" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.501" />
-    <PackageReference Include="NewLife.XCode" Version="11.26.2026.509" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.8.2026.601" />
+    <PackageReference Include="NewLife.XCode" Version="11.27.2026.601" />
   </ItemGroup>
 
   <!-- 将 wwwroot 静态文件嵌入 DLL，同时不打包到 NuGet -->

@@ -51,11 +51,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.Core" Version="11.15.2026.501" />
+    <PackageReference Include="NewLife.Core" Version="11.16.2026.601" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.501" />
     <PackageReference Include="NewLife.Office" Version="1.1.2026.501" />
-    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.7.2026.501" />
-    <PackageReference Include="NewLife.XCode" Version="11.26.2026.509" />
+    <PackageReference Include="NewLife.Stardust.Extensions" Version="3.8.2026.601" />
+    <PackageReference Include="NewLife.XCode" Version="11.27.2026.601" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +70,7 @@
     <Compile Include="..\NewLife.Cube\Common\PageSetting.cs" Link="Common\PageSetting.cs" />
     <Compile Include="..\NewLife.Cube\Common\ReadOnlyEntityController2.cs" Link="Common\ReadOnlyEntityController2.cs" />
     <Compile Include="..\NewLife.Cube\Common\ValidFormatHelper.cs" Link="Common\ValidFormatHelper.cs" />
+    <Compile Include="..\NewLife.Cube\Common\EntityPageRegistry.cs" Link="Common\EntityPageRegistry.cs" />
     <Compile Include="..\NewLife.Cube\Common\ViewHelper.cs" Link="Common\ViewHelper.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\AccessRuleModel.cs" Link="Entity\Models\AccessRuleModel.cs" />
      <Compile Include="..\NewLife.Cube\Entity\Models\AppLogModel.cs" Link="Entity\Models\AppLogModel.cs" />

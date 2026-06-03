@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NewLife.MySql" Version="1.0.2026.402" />
+    <PackageReference Include="NewLife.MySql" Version="1.2.2026.601" />
   </ItemGroup>
 
 </Project>
