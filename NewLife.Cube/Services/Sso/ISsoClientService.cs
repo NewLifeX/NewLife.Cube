@@ -10,15 +10,15 @@ namespace NewLife.Cube.Services.Sso;
 public interface ISsoClientService
 {
     /// <summary>获取第三方 OAuth 客户端</summary>
-    /// <param name="tenantId"></param>
-    /// <param name="name"></param>
-    /// <returns></returns>
+    /// <param name="tenantId">当前租户ID，0 表示默认租户</param>
+    /// <param name="name">OAuth 提供商名称，如 WeChat、DingDing</param>
+    /// <returns>封装好的 OAuthClient 实例</returns>
     OAuthClient GetClient(Int32 tenantId, String name);
 
     /// <summary>获取返回地址，跨域URL需在白名单内</summary>
-    /// <param name="request"></param>
-    /// <param name="referr"></param>
-    /// <returns></returns>
+    /// <param name="request">HTTP 请求对象</param>
+    /// <param name="referr">是否从 Referer 头取返回地址（常用于登录入口）</param>
+    /// <returns>安全的返回 URL；不在白名单内或属于 SSO 自身路径时返回 null</returns>
     String GetReturnUrl(IHttpRequest request, Boolean referr);
 
     /// <summary>判断URL目标域名是否在白名单内</summary>

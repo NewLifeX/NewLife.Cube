@@ -1,4 +1,4 @@
-using System.Web;
+﻿using System.Web;
 using NewLife.Cube.Entity;
 using NewLife.Log;
 using NewLife.Security;
@@ -11,6 +11,12 @@ using IManageUser = NewLife.Model.IManageUser;
 namespace NewLife.Cube.Services.Sso;
 
 /// <summary>令牌服务实现</summary>
+/// <remarks>
+/// 承载 OAuth 2.0 服务端的令牌全生命周期：颁发、解码、刷新、吊销。
+/// 支持三种令牌模式：JWT（三段式 xxx.yyy.zzz）、内部刷新令牌（TokenProvider 编码）、AppLog Code 换令牌。
+/// JWT 密钥优先级：应用独立密钥 app.Secret（HS256）> 全局配置 CubeSetting.JwtSecret。
+/// 外部可通过注册 <see cref="ITokenCustomizer"/> 向 JWT Payload 追加自定义字段。
+/// </remarks>
 public class TokenService : ITokenService
 {
     #region 属性
@@ -40,11 +46,11 @@ public class TokenService : ITokenService
 
     #region 令牌创建与解码
     /// <summary>创建令牌</summary>
-    /// <param name="app"></param>
-    /// <param name="name"></param>
-    /// <param name="payload"></param>
-    /// <param name="refreshName"></param>
-    /// <returns></returns>
+    /// <param name="app">目标应用。用于读取独立有效期和独立密钥；为 null 时退回全局配置</param>
+    /// <param name="name">令牌主体（Subject），通常是用户名</param>
+    /// <param name="payload">附加载荷对象，序列化后合并到 JWT Claims；可为 null</param>
+    /// <param name="refreshName">刷新令牌编码名称，通常为 "clientId#userName" 格式</param>
+    /// <returns>包含 AccessToken、RefreshToken 和有效秒数的令牌模型</returns>
     public virtual TokenModel CreateToken(App app, String name, Object payload, String refreshName)
     {
         var prv = AppService.GetProvider();
@@ -95,9 +101,10 @@ public class TokenService : ITokenService
         return token;
     }
 
-    /// <summary>根据Code获取令牌</summary>
-    /// <param name="code"></param>
-    /// <returns></returns>
+    /// <summary>根据授权码获取令牌</summary>
+    /// <remarks>授权码对应一条 AppLog 记录，5 分钟内有效，只可使用一次（Action 会更新为 GetToken）</remarks>
+    /// <param name="code">授权码，即 AppLog.Id 的字符串形式</param>
+    /// <returns>包含 AccessToken、RefreshToken 和有效秒数的令牌模型</returns>
     public virtual TokenModel GetToken(String code)
     {
         var log = AppLog.FindById(code.ToLong());
@@ -123,9 +130,14 @@ public class TokenService : ITokenService
         };
     }
 
-    /// <summary>解码令牌</summary>
-    /// <param name="token"></param>
-    /// <returns></returns>
+    /// <summary>解码令牌，返回令牌主体（用户名）</summary>
+    /// <remarks>
+    /// 按令牌格式自动选择解码路径：
+    /// - 三段式（xxx.yyy.zzz）：标准 JWT，优先用 aud 字段对应的应用密钥，回退到全局 JwtSecret
+    /// - 其他格式：内部刷新令牌，使用 TokenProvider.TryDecode 解码并校验过期时间
+    /// </remarks>
+    /// <param name="token">访问令牌或刷新令牌字符串</param>
+    /// <returns>令牌主体（Subject），通常为用户名</returns>
     public virtual String Decode(String token)
     {
         // 区分访问令牌和内部刷新令牌
@@ -248,7 +260,14 @@ public class TokenService : ITokenService
             else if (password.StartsWithIgnoreCase("$rsa$"))
             {
                 var ss = password.Split('$');
-                var key = ""; // RSA密钥将在SsoClientService中管理，这里从SecurityKey获取
+                // 从应用密钥中取 RSA 私钥；格式为 "keyName$keyValue"，此处取 keyValue 部分
+                var key = "";
+                var sk = app?.Secret + "";
+                var idx = sk.IndexOf('$');
+                if (idx >= 0)
+                    key = sk[(idx + 1)..];
+                else
+                    key = sk;
                 var pass = ss[ss.Length - 1];
                 pass = RSAHelper.Decrypt(pass.ToBase64(), key).ToStr();
 

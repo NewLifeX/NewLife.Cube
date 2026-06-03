@@ -11,6 +11,12 @@ using IManageUser = NewLife.Model.IManageUser;
 namespace NewLife.Cube.Services.Sso;
 
 /// <summary>用户绑定服务实现</summary>
+/// <remarks>
+/// 负责第三方 OAuth 登录过程中的用户身份匹配、绑定、自动注册全流程。
+/// 用户匹配级联策略（OnBind）：已登录 > 当前会话用户 > UnionID > 用户名 > Code > Mobile > Mail > NickName > OpenID-CRC 哈希 > 自动注册。
+/// 用户信息内容填充（Fill）：头像、角色、部门、租户和扩展字段，内置阶梯源选取策略。
+/// 外部可通过注册 <see cref="ILoginCallback"/> 实现拓展登录后行为。
+/// </remarks>
 public class UserBindingService : IUserBindingService
 {
     #region 属性
@@ -37,8 +43,8 @@ public class UserBindingService : IUserBindingService
 
     #region 连接与绑定
     /// <summary>获取连接信息</summary>
-    /// <param name="client"></param>
-    /// <returns></returns>
+    /// <param name="client">OAuth 客户端对象，包含 OpenID、UserName 等字段</param>
+    /// <returns>匹配到的现有 UserConnect 记录，找不到则返回新建未保存的对象</returns>
     public virtual UserConnect GetConnect(OAuthClient client)
     {
         using var span = Tracer?.NewSpan("SsoProviderConnect", $"openid={client.OpenID} username={client.UserName}");
@@ -53,9 +59,23 @@ public class UserBindingService : IUserBindingService
     }
 
     /// <summary>绑定用户，用户未有效绑定或需要强制绑定时</summary>
-    /// <param name="uc"></param>
-    /// <param name="client"></param>
-    /// <param name="userId"></param>
+    /// <remarks>
+    /// 用户匹配级联策略（按优先级依次尝试）：
+    /// 1. 当前会话已登录用户（登录后手动绑定流程）
+    /// 2. 传入的 userId 对应的本地用户记录
+    /// 3. UnionID 匹配（微信系列应用同一主体已登录）
+    /// 4. ForceBindUser 开关下按用户名匹配，优先准确名称，其次 "provider_name"
+    /// 5. ForceBindUserCode 开关下按 UserCode 匹配
+    /// 6. ForceBindUserMobile 开关下按手机号匹配
+    /// 7. ForceBindUserMail 开关下按邮箱匹配
+    /// 8. ForceBindNickName 开关下按昼称匹配（跳过微信通用卦位符）
+    /// 9. OpenID CRC32 生成统一用户名（QQ/微信等不返回用户名的场景）
+    /// 10. 全部匹配失败则自动注册（需 AutoRegister 开关，否则返回 null）
+    /// </remarks>
+    /// <param name="uc">用户连接记录，将被写入匹配到的 UserID</param>
+    /// <param name="client">OAuth 客户端，包含第三方返回的全部用户信息</param>
+    /// <param name="userId">前端传入的意向绑定用户ID，0 表示未指定</param>
+    /// <returns>匹配成功的本地用户；匹配失败且未开启自动注册时返回 null</returns>
     public virtual IManageUser OnBind(UserConnect uc, OAuthClient client, Int32 userId)
     {
         using var span = Tracer?.NewSpan("SsoProviderBind", $"connectid={uc.ID} openid={uc.OpenID} username={uc.UserName} userId={userId}");

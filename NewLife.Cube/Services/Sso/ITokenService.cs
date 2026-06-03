@@ -24,13 +24,13 @@ public interface ITokenService
     TokenModel CreateToken(App app, String name, Object payload, String refreshName);
 
     /// <summary>根据 Code 获取令牌</summary>
-    /// <param name="code"></param>
-    /// <returns></returns>
+    /// <param name="code">授权码，即 AppLog.Id 的字符串形式，5 分钟内有效</param>
+    /// <returns>包含 AccessToken、RefreshToken 和有效秒数的令牌模型</returns>
     TokenModel GetToken(String code);
 
     /// <summary>解码令牌</summary>
-    /// <param name="token"></param>
-    /// <returns></returns>
+    /// <param name="token">访问令牌或刷新令牌字符串</param>
+    /// <returns>令牌主体（Subject），通常为用户名</returns>
     String Decode(String token);
 
     /// <summary>授权码方式获取访问令牌</summary>

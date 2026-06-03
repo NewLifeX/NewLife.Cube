@@ -11,6 +11,11 @@ using IManageUser = NewLife.Model.IManageUser;
 namespace NewLife.Cube.Services.Sso;
 
 /// <summary>SSO 客户端服务实现</summary>
+/// <remarks>
+/// 负责 OAuth 客户端侧的全流程：获取 OAuth 客户端实例、返回地址安全校验、回调地址构建、登录成功后保存用户会话。
+/// SSO 安全域名白名单（SsoSafeDomains）控制跨域重定向目标地址，安全域名支持通配符 *.domain.com。
+/// 外部应用可配置 OAuthConfig.AppUrl 覆盖自动推断的回调地址（常用于前后端分离场景）。
+/// </remarks>
 public class SsoClientService : ISsoClientService
 {
     #region 属性
