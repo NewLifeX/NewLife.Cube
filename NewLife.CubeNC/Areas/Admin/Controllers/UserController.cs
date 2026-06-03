@@ -12,6 +12,7 @@ using NewLife.Cube.Common;
 using NewLife.Cube.Entity;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
+using NewLife.Cube.Services.Sso;
 using NewLife.Cube.ViewModels;
 using NewLife.Data;
 using NewLife.Log;
@@ -430,7 +431,8 @@ public class UserController : EntityController<User, UserModel>
                     if (logId > 0)
                     {
                         Session["Cube_OAuthId"] = null;
-                        var log = NewLife.Cube.Controllers.SsoController.Provider.BindAfterLogin(logId);
+                        var bindingService = HttpContext.RequestServices.GetRequiredService<IUserBindingService>();
+                        var log = bindingService.BindAfterLogin(logId);
                         if (log != null && log.Success && !log.RedirectUri.IsNullOrEmpty()) return Redirect(log.RedirectUri);
                     }
 
