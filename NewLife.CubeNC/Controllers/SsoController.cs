@@ -80,6 +80,16 @@ public class SsoController : ControllerBaseX
         _bindingService = bindingService;
 
         ((OAuthAppService)_appService).Setting = _setting;
+
+        // 设置SSO客户端服务的用户绑定服务（ASP.NET Core DI 不支持属性注入）
+        ((SsoClientService)_clientService).BindingService = bindingService;
+
+        // 设置SSO服务端服务的依赖属性
+        ((SsoServerService)_serverService).AppService = appService;
+        ((SsoServerService)_serverService).TokenService = tokenService;
+
+        // 设置令牌服务的依赖属性
+        ((Services.Sso.TokenService)_tokenService).AppService = appService;
     }
 
     /// <summary>首页</summary>
