@@ -136,6 +136,13 @@ public static class CubeService
         services.TryAddSingleton<ICaptchaService, DrawingCaptchaService>();
         services.TryAddSingleton<IMfaService, TotpMfaService>();
 
+        // SSO 服务
+        services.AddSingleton<Services.Sso.IOAuthAppService, Services.Sso.OAuthAppService>();
+        services.AddSingleton<Services.Sso.ITokenService, Services.Sso.TokenService>();
+        services.AddSingleton<Services.Sso.IUserBindingService, Services.Sso.UserBindingService>();
+        services.AddSingleton<Services.Sso.ISsoClientService, Services.Sso.SsoClientService>();
+        services.AddSingleton<Services.Sso.ISsoServerService, Services.Sso.SsoServerService>();
+
         //services.AddHostedService<JobService>();
         services.AddHostedService<DataRetentionService>();
 

@@ -599,7 +599,7 @@ public class UserController : EntityController<User, UserModel>
         var confirmPassword = model.ConfirmPassword?.Trim() ?? "";
         var ip = UserHost;
 
-        var result = _userService.ResetPassword(mobile, code, newPassword, confirmPassword, ip);
+        var result = _userService.ResetPassword(mobile, code, newPassword, confirmPassword, "", ip);
         return result.IsSuccess ? true.ToOkApiResponse(result.Message) : false.ToFailApiResponse(result.Message);
     }
     #endregion

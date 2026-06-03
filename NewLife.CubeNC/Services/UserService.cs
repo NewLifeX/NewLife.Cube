@@ -7,6 +7,7 @@ using NewLife.Cube.Entity;
 using NewLife.Cube.Enums;
 using NewLife.Cube.Models;
 using NewLife.Cube.Services;
+using NewLife.Cube.Services.Sso;
 using NewLife.Cube.Web;
 using NewLife.Log;
 using NewLife.Model;
@@ -28,7 +29,8 @@ namespace NewLife.Cube.Services;
 /// <param name="captchaService">图片验证码服务</param>
 /// <param name="mfaService">MFA 服务</param>
 /// <param name="tracer">追踪器</param>
-public class UserService(SmsService smsService, MailService mailService, PasswordService passwordService, ICacheProvider cacheProvider, ICaptchaService captchaService, IMfaService mfaService, ITracer tracer)
+/// <param name="bindingService">用户绑定服务</param>
+public class UserService(SmsService smsService, MailService mailService, PasswordService passwordService, ICacheProvider cacheProvider, ICaptchaService captchaService, IMfaService mfaService, ITracer tracer, IUserBindingService bindingService)
 {
     #region 缓存Key前缀常量
     /// <summary>密码登录用户名错误次数缓存前缀</summary>
@@ -1002,7 +1004,7 @@ public class UserService(SmsService smsService, MailService mailService, Passwor
         if (oauthId <= 0)
             return new ServiceResult<IToken> { IsSuccess = false, Message = "OAuth绑定会话已过期，请重新发起第三方登录" };
 
-        var log = SsoController.Provider?.BindAfterLogin(oauthId);
+        var log = bindingService.BindAfterLogin(oauthId);
         if (log == null)
             return new ServiceResult<IToken> { IsSuccess = false, Message = "OAuth绑定失败，请重新发起第三方登录" };
 

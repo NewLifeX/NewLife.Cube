@@ -153,7 +153,6 @@
     <Compile Include="..\NewLife.Cube\Web\Models\UserInfo.cs" Link="Web\Models\UserInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthClient.cs" Link="Web\OAuthClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuthHelper.cs" Link="Web\OAuthHelper.cs" />
-    <Compile Include="..\NewLife.Cube\Web\OAuthServer.cs" Link="Web\OAuthServer.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\AlipayClient.cs" Link="Web\OAuth\AlipayClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\BaiduClient.cs" Link="Web\OAuth\BaiduClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\DingTalkClient.cs" Link="Web\OAuth\DingTalkClient.cs" />
@@ -169,7 +168,7 @@
     <Compile Include="..\NewLife.Cube\Web\OAuth\WxAppClient.cs" Link="Web\OAuth\WxAppClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\OAuth\WxOpenClient.cs" Link="Web\OAuth\WxOpenClient.cs" />
     <Compile Include="..\NewLife.Cube\Web\SsoClient.cs" Link="Web\SsoClient.cs" />
-    <Compile Include="..\NewLife.Cube\Web\SsoProvider.cs" Link="Web\SsoProvider.cs" />
+    <Compile Include="..\NewLife.Cube\Services\Sso\*.cs" Link="Services\Sso\%(Filename)%(Extension)" />
     <Compile Include="..\NewLife.Cube\Web\UserAgentParser.cs" Link="Web\UserAgentParser.cs" />
     <Compile Include="..\NewLife.Cube\Web\WebHelper2.cs" Link="Web\WebHelper2.cs" />
   </ItemGroup>
