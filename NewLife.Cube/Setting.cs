@@ -341,6 +341,33 @@ public class CubeSetting : Config<CubeSetting>
     public String StarWeb { get; set; }
     #endregion
 
+    #region AI
+    /// <summary>AI 总开关。启用后可使用日志分析、通知润色等 AI 辅助功能，默认false</summary>
+    [Description("AI 总开关。启用后可使用日志分析、通知润色等 AI 辅助功能，默认false")]
+    [Category("AI")]
+    public Boolean AISwitch { get; set; }
+
+    /// <summary>AI 服务商。支持 Ollama / DeepSeek / DashScope / OpenAI 等，默认Ollama</summary>
+    [Description("AI 服务商。支持 Ollama / DeepSeek / DashScope / OpenAI 等，默认Ollama")]
+    [Category("AI")]
+    public String AIProvider { get; set; } = "Ollama";
+
+    /// <summary>AI 服务地址。Ollama 默认 http://localhost:11434/v1，其它服务商留空使用默认</summary>
+    [Description("AI 服务地址。Ollama 默认 http://localhost:11434/v1，其它服务商留空使用默认")]
+    [Category("AI")]
+    public String AIEndpoint { get; set; }
+
+    /// <summary>AI ApiKey。云服务商必需，Ollama 本地部署可留空</summary>
+    [Description("AI ApiKey。云服务商必需，Ollama 本地部署可留空")]
+    [Category("AI")]
+    public String AIApiKey { get; set; }
+
+    /// <summary>AI 默认模型。Ollama 默认 qwen2.5:7b，其它服务商留空使用内置默认</summary>
+    [Description("AI 默认模型。Ollama 默认 qwen2.5:7b，其它服务商留空使用内置默认")]
+    [Category("AI")]
+    public String AIModel { get; set; }
+    #endregion
+
     #region 系统功能
     /// <summary>OAuth服务。是否启用OAuth2.0服务，为其它应用提供单点登录服务</summary>
     [Description("OAuth服务。是否启用OAuth2.0服务，为其它应用提供单点登录服务")]

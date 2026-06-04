@@ -6,10 +6,11 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NewLife.Cube.Extensions;
+using NewLife.Cube.AI;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using NewLife.Web;
 using XCode.Membership;
 
@@ -23,14 +24,16 @@ public class IndexController : ControllerBaseX
 {
     private readonly IManageProvider _provider;
     private readonly IWebHostEnvironment _env;
+    private readonly IAIService _ai;
 
     static IndexController() => MachineInfo.RegisterAsync();
 
     /// <summary>实例化</summary>
-    public IndexController(IManageProvider manageProvider, IWebHostEnvironment env)
+    public IndexController(IManageProvider manageProvider, IWebHostEnvironment env, IAIService ai)
     {
         _provider = manageProvider;
         _env = env;
+        _ai = ai;
         PageSetting.EnableNavbar = false;
     }
 
@@ -102,6 +105,46 @@ public class IndexController : ControllerBaseX
         //var res = result.ToOkApiResponse();
         return Json(0, null, result);
     }
+
+    #region AI 诊断
+    /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告</summary>
+    /// <returns></returns>
+    [DisplayName("AI 系统诊断")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public async Task<ActionResult> AiDiagnose()
+    {
+        var set = CubeSetting.Current;
+        if (!set.AISwitch) return Json(500, null, "AI 未启用，请在系统设置中开启");
+
+        var mi = MachineInfo.Current ?? new MachineInfo();
+        var process = Process.GetCurrentProcess();
+
+        // 查询过去 24h 错误数
+        var now = DateTime.Now;
+        var start = now.AddHours(-24);
+        var errorCount = XCode.Membership.Log.FindCount(
+            XCode.Membership.Log._.CreateTime >= start & XCode.Membership.Log._.CreateTime <= now,
+            null, null, 0, 0);
+
+        var sysInfo = new
+        {
+            cpu = $"{mi.CpuRate:P0}",
+            temperature = mi.Temperature,
+            memoryAvailable = $"{mi.AvailableMemory / 1024 / 1024:N0}M",
+            memoryTotal = $"{mi.Memory / 1024 / 1024:N0}M",
+            workingSet = $"{process.WorkingSet64 / 1024 / 1024:N0}M",
+            openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
+            errorCount24h = errorCount,
+            os = mi.OSName,
+            machineName = Environment.MachineName,
+        }.ToJson();
+
+        var result = await _ai.DiagnoseSystemAsync(sysInfo);
+
+        return Json(0, null, result);
+    }
+    #endregion
 
     /// <summary>服务器变量列表</summary>
     /// <returns></returns>

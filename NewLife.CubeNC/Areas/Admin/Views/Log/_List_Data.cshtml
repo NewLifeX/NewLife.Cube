@@ -9,6 +9,10 @@
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
     var today = DateTime.Today.ToString("yyyy-MM-dd ");
 }
+<div class="form-inline" style="margin-bottom:8px;">
+    <button type="button" id="aiAnalyzeBtn" class="btn btn-info btn-sm" onclick="aiAnalyzeLogs()">AI 分析</button>
+    <span class="text-muted" style="margin-left:8px;">选中日志后点击 AI 分析</span>
+</div>
 <table class="table table-bordered table-hover table-striped table-condensed">
     <thead>
         <tr>
@@ -71,3 +75,48 @@
         }
     </tbody>
 </table>
+
+<!-- AI 结果弹窗 -->
+<div id="aiResultModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="aiResultTitle">AI 结果</h4>
+            </div>
+            <div class="modal-body" id="aiResultBody" style="max-height:70vh;overflow-y:auto;white-space:pre-wrap;line-height:1.6;font-family:Microsoft YaHei,sans-serif;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showAiResult(title, content) {
+        $('#aiResultTitle').text(title);
+        $('#aiResultBody').html(content.replace(/\n/g, '<br>'));
+        $('#aiResultModal').modal('show');
+    }
+
+    function aiAnalyzeLogs() {
+        var keys = $('input[name="keys"]:checked').map(function () { return this.value; }).get().join(',');
+        if (!keys) {
+            alert('请先选择要分析的日志');
+            return;
+        }
+        $('#aiAnalyzeBtn').text('分析中...').prop('disabled', true);
+        $.post('/Admin/Log/AiAnalyze', { ids: keys }, function (data) {
+            $('#aiAnalyzeBtn').text('AI 分析').prop('disabled', false);
+            if (data.code == 0) {
+                showAiResult('AI 分析结果', data.data);
+            } else {
+                alert(data.data || '分析失败');
+            }
+        }).fail(function () {
+            $('#aiAnalyzeBtn').text('AI 分析').prop('disabled', false);
+            alert('请求失败');
+        });
+    }
+</script>

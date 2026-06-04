@@ -39,6 +39,8 @@
             <tr>
                 <th colspan="4">
                     服务器信息
+                    <button type="button" class="btn btn-info btn-sm" style="margin-left:16px;" onclick="aiDiagnose()">AI 诊断</button>
+                    <span id="aiDiagnoseStatus" class="text-muted" style="margin-left:8px;"></span>
                 </th>
             </tr>
         </thead>
@@ -221,3 +223,44 @@
         </tbody>
     </table>
 </div>
+
+<!-- AI 结果弹窗 -->
+<div id="aiResultModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="aiResultTitle">AI 结果</h4>
+            </div>
+            <div class="modal-body" id="aiResultBody" style="max-height:70vh;overflow-y:auto;white-space:pre-wrap;line-height:1.6;font-family:Microsoft YaHei,sans-serif;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showAiResult(title, content) {
+        $('#aiResultTitle').text(title);
+        $('#aiResultBody').html(content.replace(/\n/g, '<br>'));
+        $('#aiResultModal').modal('show');
+    }
+
+    function aiDiagnose() {
+        $('#aiDiagnoseStatus').text('诊断中...');
+        $.get('/Admin/Index/AiDiagnose', function (data) {
+            if (data.code == 0) {
+                showAiResult('AI 诊断报告', data.data);
+                $('#aiDiagnoseStatus').text('诊断完成');
+            } else {
+                alert(data.data || '诊断失败');
+                $('#aiDiagnoseStatus').text('');
+            }
+        }).fail(function () {
+            alert('请求失败');
+            $('#aiDiagnoseStatus').text('');
+        });
+    }
+</script>

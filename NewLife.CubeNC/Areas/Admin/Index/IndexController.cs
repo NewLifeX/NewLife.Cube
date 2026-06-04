@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Common;
+using NewLife.Cube.AI;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.ViewModels;
 using NewLife.Log;
 using NewLife.Reflection;
+using NewLife.Serialization;
 using XCode.Membership;
 
 namespace NewLife.Cube.Areas.Admin.Controllers;
@@ -21,6 +23,7 @@ public class IndexController : ControllerBaseX
 {
     private readonly IManageProvider _provider;
     private readonly IHostApplicationLifetime _applicationLifetime;
+    private readonly IAIService _ai;
 
     static IndexController() => MachineInfo.RegisterAsync();
 
@@ -29,10 +32,12 @@ public class IndexController : ControllerBaseX
     /// <summary>实例化</summary>
     /// <param name="manageProvider"></param>
     /// <param name="appLifetime"></param>
-    public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime) : this()
+    /// <param name="ai"></param>
+    public IndexController(IManageProvider manageProvider, IHostApplicationLifetime appLifetime, IAIService ai) : this()
     {
         _provider = manageProvider;
         _applicationLifetime = appLifetime;
+        _ai = ai;
     }
 
     /// <summary>首页</summary>
@@ -108,6 +113,46 @@ public class IndexController : ControllerBaseX
             _ => View(),
         };
     }
+
+    #region AI 诊断
+    /// <summary>AI 系统诊断。根据服务器运行指标生成健康诊断报告</summary>
+    /// <returns></returns>
+    [DisplayName("AI 系统诊断")]
+    [EntityAuthorize(PermissionFlags.Detail)]
+    [HttpGet]
+    public async Task<ActionResult> AiDiagnose()
+    {
+        var set = CubeSetting.Current;
+        if (!set.AISwitch) return Json(500, null, "AI 未启用，请在系统设置中开启");
+
+        var mi = MachineInfo.Current ?? new MachineInfo();
+        var process = Process.GetCurrentProcess();
+
+        // 查询过去 24h 错误数
+        var now = DateTime.Now;
+        var start = now.AddHours(-24);
+        var errorCount = XCode.Membership.Log.FindCount(
+            XCode.Membership.Log._.CreateTime >= start & XCode.Membership.Log._.CreateTime <= now,
+            null, null, 0, 0);
+
+        var sysInfo = new
+        {
+            cpu = $"{mi.CpuRate:P0}",
+            temperature = mi.Temperature,
+            memoryAvailable = $"{mi.AvailableMemory / 1024 / 1024:N0}M",
+            memoryTotal = $"{mi.Memory / 1024 / 1024:N0}M",
+            workingSet = $"{process.WorkingSet64 / 1024 / 1024:N0}M",
+            openTime = TimeSpan.FromMilliseconds(Environment.TickCount64).ToString(@"dd\.hh\:mm\:ss"),
+            errorCount24h = errorCount,
+            os = mi.OSName,
+            machineName = Environment.MachineName,
+        }.ToJson();
+
+        var result = await _ai.DiagnoseSystemAsync(sysInfo);
+
+        return Json(0, null, result);
+    }
+    #endregion
 
     /// <summary>获取当前应用程序的所有程序集，不包括系统程序集，仅限本目录</summary>
     /// <returns></returns>

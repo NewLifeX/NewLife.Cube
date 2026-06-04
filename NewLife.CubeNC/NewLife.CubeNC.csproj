@@ -51,11 +51,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NewLife.AI" Version="1.2.2026.514-beta0653" />
     <PackageReference Include="NewLife.Core" Version="11.16.2026.601" />
     <PackageReference Include="NewLife.IP" Version="2.4.2026.501" />
     <PackageReference Include="NewLife.Office" Version="1.1.2026.501" />
     <PackageReference Include="NewLife.Stardust.Extensions" Version="3.8.2026.601" />
     <PackageReference Include="NewLife.XCode" Version="11.27.2026.601" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\NewLife.Cube\AI\IAIService.cs" Link="AI\IAIService.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AIService.cs" Link="AI\AIService.cs" />
+    <Compile Include="..\NewLife.Cube\AI\AIPlugin.cs" Link="AI\AIPlugin.cs" />
+    <Compile Include="..\NewLife.Cube\AI\Jobs\AILogSummaryJob.cs" Link="AI\Jobs\AILogSummaryJob.cs" />
+    <Compile Include="..\NewLife.Cube\AI\Jobs\AISecurityReportJob.cs" Link="AI\Jobs\AISecurityReportJob.cs" />
   </ItemGroup>
 
   <ItemGroup>

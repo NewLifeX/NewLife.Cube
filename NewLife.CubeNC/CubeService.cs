@@ -12,6 +12,7 @@ using Microsoft.Net.Http.Headers;
 using NewLife.Caching;
 using NewLife.Common;
 using NewLife.Configuration;
+using NewLife.Cube.AI;
 using NewLife.Cube.Extensions;
 using NewLife.Cube.Modules;
 using NewLife.Cube.Services;
@@ -195,6 +196,9 @@ public static class CubeService
 
         // 添加定时作业
         services.AddCubeJob();
+
+        // 注册 AI 服务
+        services.AddCubeAI();
 
         // 注册文件存储服务
         services.AddCubeFileStorage();
