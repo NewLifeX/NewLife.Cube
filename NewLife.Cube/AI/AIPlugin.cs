@@ -1,4 +1,4 @@
-using NewLife.Cube.Modules;
+﻿using NewLife.Cube.Modules;
 using NewLife.Log;
 
 namespace NewLife.Cube.AI;
@@ -12,12 +12,12 @@ public static class AIServiceExtensions
     public static IServiceCollection AddCubeAI(this IServiceCollection services)
     {
         var set = CubeSetting.Current;
-        if (!set.AISwitch)
-        {
-            XTrace.WriteLine("AI 未启用（AISwitch=false），注册空实现");
-            services.AddSingleton<IAIService, NoopAIService>();
-            return services;
-        }
+        //if (!set.AISwitch)
+        //{
+        //    XTrace.WriteLine("AI 未启用（AISwitch=false），注册空实现");
+        //    services.AddSingleton<IAIService, NoopAIService>();
+        //    return services;
+        //}
 
         XTrace.WriteLine("AI 已启用，Provider={0} Model={1}", set.AIProvider, set.AIModel);
         services.AddSingleton<IAIService, AIService>();
@@ -39,18 +39,18 @@ public class AIPlugin : IModule
     public void Use(IApplicationBuilder app, IWebHostEnvironment env) { }
 }
 
-/// <summary>AI 服务空实现，用于 AI 未启用时的占位</summary>
-file class NoopAIService : IAIService
-{
-    public Task<String> ChatAsync(String prompt, String data, CancellationToken cancellationToken = default)
-        => Task.FromResult("AI 未启用");
+///// <summary>AI 服务空实现，用于 AI 未启用时的占位</summary>
+//file class NoopAIService : IAIService
+//{
+//    public Task<String> ChatAsync(String prompt, String data, CancellationToken cancellationToken = default)
+//        => Task.FromResult("AI 未启用");
 
-    public Task<String> AnalyzeLogsAsync(String logsJson, CancellationToken cancellationToken = default)
-        => Task.FromResult("AI 未启用");
+//    public Task<String> AnalyzeLogsAsync(String logsJson, CancellationToken cancellationToken = default)
+//        => Task.FromResult("AI 未启用");
 
-    public Task<String> PolishNotificationAsync(String title, String content, String style, CancellationToken cancellationToken = default)
-        => Task.FromResult("AI 未启用");
+//    public Task<String> PolishNotificationAsync(String title, String content, String style, CancellationToken cancellationToken = default)
+//        => Task.FromResult("AI 未启用");
 
-    public Task<String> DiagnoseSystemAsync(String sysInfoJson, CancellationToken cancellationToken = default)
-        => Task.FromResult("AI 未启用");
-}
+//    public Task<String> DiagnoseSystemAsync(String sysInfoJson, CancellationToken cancellationToken = default)
+//        => Task.FromResult("AI 未启用");
+//}
