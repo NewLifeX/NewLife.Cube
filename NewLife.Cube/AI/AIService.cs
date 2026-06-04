@@ -1,7 +1,5 @@
 using NewLife.AI;
 using NewLife.AI.Clients;
-using NewLife.AI.Clients.DashScope;
-using NewLife.AI.Clients.Ollama;
 using NewLife.AI.Clients.OpenAI;
 using NewLife.AI.Models;
 using NewLife.Log;
@@ -55,18 +53,20 @@ public class AIService : IAIService
     }
 
     /// <summary>根据配置创建对应的 AI 客户端</summary>
+    /// <remarks>
+    /// 优先从 <see cref="AiClientRegistry"/> 查找已注册服务商（OpenAI / DeepSeek / DashScope 等），
+    /// 未注册的服务商（如 NewLife 自定义网关）作为 OpenAI 兼容协议处理。
+    /// </remarks>
     private static IChatClient CreateClient(String provider, String apiKey, String model, String endpoint)
     {
-        if (provider.IsNullOrEmpty()) provider = "Ollama";
+        if (provider.IsNullOrEmpty()) provider = "NewLifeAI";
 
-        return provider.ToLowerInvariant() switch
-        {
-            "ollama" => new OllamaChatClient(apiKey, model ?? "qwen2.5:7b", endpoint ?? "http://localhost:11434/v1") as IChatClient,
-            "deepseek" => new DeepSeekChatClient(apiKey, model ?? "deepseek-chat") as IChatClient,
-            "dashscope" => new DashScopeChatClient(apiKey, model ?? "qwen-plus") as IChatClient,
-            "openai" => new OpenAIChatClient(apiKey, model ?? "gpt-4o-mini", endpoint) as IChatClient,
-            _ => new OllamaChatClient(apiKey, model ?? "qwen2.5:7b", endpoint ?? "http://localhost:11434/v1") as IChatClient,
-        };
+        // 已注册的服务商走注册表工厂
+        if (AiClientRegistry.Default.GetDescriptor(provider) != null)
+            return AiClientRegistry.Default.CreateClient(provider, apiKey, model, endpoint);
+
+        // 未注册的服务商作为 OpenAI 兼容协议处理
+        return new OpenAIChatClient(apiKey, model, endpoint);
     }
 
     /// <summary>通用 AI 对话（后台任务），保留模型默认推理行为，适合 CronJob 等不赶时间的场景</summary>

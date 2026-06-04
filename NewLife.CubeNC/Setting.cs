@@ -352,25 +352,25 @@ public class CubeSetting : Config<CubeSetting>
     [Category("AI")]
     public Boolean AISwitch { get; set; }
 
-    /// <summary>AI 服务商。支持 Ollama / DeepSeek / DashScope / OpenAI 等，默认Ollama</summary>
-    [Description("AI 服务商。支持 Ollama / DeepSeek / DashScope / OpenAI 等，默认Ollama")]
+    /// <summary>AI 服务商。支持 NewLife / Ollama / DeepSeek / DashScope / OpenAI 等，默认NewLife</summary>
+    [Description("AI 服务商。支持 NewLife / Ollama / DeepSeek / DashScope / OpenAI 等，默认NewLife")]
     [Category("AI")]
-    public String AIProvider { get; set; } = "Ollama";
+    public String AIProvider { get; set; } = "NewLifeAI";
 
-    /// <summary>AI 服务地址。Ollama 默认 http://localhost:11434/v1，其它服务商留空使用默认</summary>
-    [Description("AI 服务地址。Ollama 默认 http://localhost:11434/v1，其它服务商留空使用默认")]
+    /// <summary>AI 服务地址。NewLife 默认 https://ai.newlifex.com</summary>
+    [Description("AI 服务地址。NewLife 默认 https://ai.newlifex.com")]
     [Category("AI")]
-    public String AIEndpoint { get; set; }
+    public String AIEndpoint { get; set; } = "https://ai.newlifex.com";
 
-    /// <summary>AI ApiKey。云服务商必需，Ollama 本地部署可留空</summary>
-    [Description("AI ApiKey。云服务商必需，Ollama 本地部署可留空")]
+    /// <summary>AI ApiKey。NewLife 默认 sk-CubeAI2026</summary>
+    [Description("AI ApiKey。NewLife 默认 sk-CubeAI2026")]
     [Category("AI")]
-    public String AIApiKey { get; set; }
+    public String AIApiKey { get; set; } = "sk-CubeAI2026";
 
-    /// <summary>AI 默认模型。Ollama 默认 qwen2.5:7b，其它服务商留空使用内置默认</summary>
-    [Description("AI 默认模型。Ollama 默认 qwen2.5:7b，其它服务商留空使用内置默认")]
+    /// <summary>AI 默认模型。NewLife 默认 newlife-flash</summary>
+    [Description("AI 默认模型。NewLife 默认 newlife-flash")]
     [Category("AI")]
-    public String AIModel { get; set; }
+    public String AIModel { get; set; } = "newlife-flash";
     #endregion
 
     #region 系统功能
