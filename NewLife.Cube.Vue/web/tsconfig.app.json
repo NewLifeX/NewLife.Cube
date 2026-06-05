@@ -1,0 +1,35 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts",
+    "./**/*.vue",
+    "./**/*.ts",
+    "./**/*.tsx",
+    "./**/*.d.ts",
+    "configs/microAppConfig.js",
+    "core/pages/Login.ts"
+  ],
+  "exclude": [
+    "src/**/__tests__/*"
+  ],
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "types": [
+      "element-plus/global"
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "cube-front": [
+        "./"
+      ],
+      "cube-front/*": [
+        "./*"
+      ],
+    }
+  }
+}

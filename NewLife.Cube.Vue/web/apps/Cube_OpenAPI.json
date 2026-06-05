@@ -1,0 +1,3575 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "魔方管理",
+    "description": "魔方提供一些常用的配套功能。\r<br/>配套功能：附件、地区、定时任务、应用系统管理等。",
+    "version": "6.5.2025.0712"
+  },
+  "paths": {
+    "/Cube/App": {
+      "delete": {
+        "tags": [
+          "App"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.App, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "313139d13bc2ddc6deae2366dbbeddb9"
+      },
+      "post": {
+        "tags": [
+          "App"
+        ],
+        "summary": "添加数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AppModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AppModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AppModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.App, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "54cd76f3c274fc699cca59b672de8713"
+      },
+      "put": {
+        "tags": [
+          "App"
+        ],
+        "summary": "更新数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AppModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AppModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AppModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.App, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "01a91463c88cc5c7d487ef26fa8c3b5d"
+      },
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.App, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "0a8d064b24c67e34dfcfe174056a3a74"
+      }
+    },
+    "/Cube/App/Detail": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "查看单行数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.App, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "681f6d1ada375fa4121f3010af8700aa"
+      }
+    },
+    "/Cube/App/GetFields": {
+      "get": {
+        "tags": [
+          "App"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "e20aecc77ab124865e01abd3b6eb06a1"
+      }
+    },
+    "/Cube/AppLog": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.AppLog, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "a6cd50798871f747ed1378e459575aa6"
+      }
+    },
+    "/Cube/AppLog/Detail": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "查看单行数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.AppLog, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "7aa3348943320f40f6cddea3506174e3"
+      }
+    },
+    "/Cube/AppLog/GetFields": {
+      "get": {
+        "tags": [
+          "AppLog"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "e9fcdc3cb35184f3121ab25d1b2af5a9"
+      }
+    },
+    "/Cube/Area": {
+      "delete": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[XCode.Membership.Area, XCode, Version=11.19.2025.601, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "fe008456e1306295e6ba0f1416e3cf61"
+      },
+      "post": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "添加数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XCode.Membership.AreaModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XCode.Membership.AreaModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/XCode.Membership.AreaModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[XCode.Membership.Area, XCode, Version=11.19.2025.601, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "9cd550d80870a42b2f5fce133c5d8239"
+      },
+      "put": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "更新数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XCode.Membership.AreaModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XCode.Membership.AreaModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/XCode.Membership.AreaModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[XCode.Membership.Area, XCode, Version=11.19.2025.601, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "5eeed1f80ce75b90b9d45e10eb9bd0a3"
+      },
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiListResponse`1[[XCode.Membership.Area, XCode, Version=11.19.2025.601, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "0e280cdfd79593eb7c6cdd94fb15fa17"
+      }
+    },
+    "/Cube/Area/Detail": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "查看单行数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[XCode.Membership.Area, XCode, Version=11.19.2025.601, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "4ec16af8b5e735f57fe2782fa1cb9976"
+      }
+    },
+    "/Cube/Area/GetFields": {
+      "get": {
+        "tags": [
+          "Area"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "79119516ae2aff3bc60b956471ab8fed"
+      }
+    },
+    "/Cube/Attachment": {
+      "delete": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.Attachment, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "50f068574837c723e3e1e78597bcf032"
+      },
+      "post": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "添加数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AttachmentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AttachmentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AttachmentModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.Attachment, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "81f4326df2a7ab8344a9363721fbb679"
+      },
+      "put": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "更新数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AttachmentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AttachmentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.AttachmentModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.Attachment, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "c0faaa038d4d2b5db1ef1a4557c700f0"
+      },
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.Attachment, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "a79e2760962cff3c049c15bb4c9fb349"
+      }
+    },
+    "/Cube/Attachment/Detail": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "查看单行数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.Attachment, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "a9e77f531c9fcbf4721e7b00f46e6402"
+      }
+    },
+    "/Cube/Attachment/GetFields": {
+      "get": {
+        "tags": [
+          "Attachment"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "cad395413d81d6d44b3d967b31693132"
+      }
+    },
+    "/Cube/CronJob/ExecuteNow": {
+      "post": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "马上执行",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "978607ea2c99b1945593e49a617da34f"
+      }
+    },
+    "/Cube/CronJob": {
+      "delete": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.CronJob, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "56e2f56e876fd5ffa8159f2264e4ff82"
+      },
+      "post": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "添加数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJobModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJobModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJobModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.CronJob, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "7723d655d87a46f5509426023c9344fe"
+      },
+      "put": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "更新数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJobModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJobModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJobModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.CronJob, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "d52737ca5b5322bf9ca9b6115b68c936"
+      },
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.CronJob, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "2259a5586f5f7da441be4a6357a6906b"
+      }
+    },
+    "/Cube/CronJob/Detail": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "查看单行数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.CronJob, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "3d8a172eab1694cf01e5ce37968ae116"
+      }
+    },
+    "/Cube/CronJob/GetFields": {
+      "get": {
+        "tags": [
+          "CronJob"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "0306f4db4ae7b3336df35712acb5f4c6"
+      }
+    },
+    "/Cube/OrderManager/GetInfo": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "根据code获取指令集合",
+        "parameters": [
+          {
+            "name": "codes",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "b7676434ab42de9614d3f4aa0dca07b7"
+      }
+    },
+    "/Cube/OrderManager": {
+      "delete": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.OrderManager, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "f16ddbd96b6b8a714a9a2f9ef852f242"
+      },
+      "post": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "添加数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManagerModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManagerModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManagerModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.OrderManager, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "5ee647ef2491795ddeefa61cb68bb2f4"
+      },
+      "put": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "更新数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManagerModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManagerModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManagerModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.OrderManager, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "3220c982dc8ba57ef01c7fc869608478"
+      },
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.OrderManager, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "c760d4914cbc853787d9d13035ecefb7"
+      }
+    },
+    "/Cube/OrderManager/Detail": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "查看单行数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.OrderManager, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "dc6e409ff9f12a40876c91416d3a747a"
+      }
+    },
+    "/Cube/OrderManager/GetFields": {
+      "get": {
+        "tags": [
+          "OrderManager"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "426ef2b097a186e15a5c14000cdf4a0d"
+      }
+    },
+    "/Cube/PrincipalAgent": {
+      "delete": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "删除数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.PrincipalAgent, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "3f1d5370961efa6e8d40276a5a5187bf"
+      },
+      "post": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "添加数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgentModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.PrincipalAgent, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "80557dfdf273b202e2c4bca6585242eb"
+      },
+      "put": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "更新数据",
+        "requestBody": {
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgentModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgentModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgentModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.PrincipalAgent, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "ead368a866a7d30f4905184a51458583"
+      },
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "多行数据列表",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.PrincipalAgent, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "c0ab55a73c88ddb2ad219e36ff5164cf"
+      }
+    },
+    "/Cube/PrincipalAgent/Detail": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "查看单行数据",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "主键。可能为空（表示添加），所以用字符串而不是整数",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.PrincipalAgent, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "47e2e0aac87b596d49db6cb44fff0945"
+      }
+    },
+    "/Cube/PrincipalAgent/GetFields": {
+      "get": {
+        "tags": [
+          "PrincipalAgent"
+        ],
+        "summary": "获取字段信息。支持用户重载并根据上下文定制界面",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "字段类型：1-列表List、2-详情Detail、3-添加AddForm、4-编辑EditForm、5-搜索Search",
+            "schema": {
+              "$ref": "#/components/schemas/NewLife.Cube.ViewModels.ViewKinds"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NewLife.Cube.ViewModels.DataField"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "ba90e8a5f82a2c2fccaaea8005ebd056"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.App, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewLife.Cube.Entity.App"
+            },
+            "description": "响应数据",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          },
+          "page": {
+            "$ref": "#/components/schemas/NewLife.Web.PageModel"
+          },
+          "stat": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.App"
+          }
+        },
+        "additionalProperties": false,
+        "description": "列表响应模型"
+      },
+      "NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.AppLog, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewLife.Cube.Entity.AppLog"
+            },
+            "description": "响应数据",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          },
+          "page": {
+            "$ref": "#/components/schemas/NewLife.Web.PageModel"
+          },
+          "stat": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.AppLog"
+          }
+        },
+        "additionalProperties": false,
+        "description": "列表响应模型"
+      },
+      "NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.Attachment, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewLife.Cube.Entity.Attachment"
+            },
+            "description": "响应数据",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          },
+          "page": {
+            "$ref": "#/components/schemas/NewLife.Web.PageModel"
+          },
+          "stat": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.Attachment"
+          }
+        },
+        "additionalProperties": false,
+        "description": "列表响应模型"
+      },
+      "NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.CronJob, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJob"
+            },
+            "description": "响应数据",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          },
+          "page": {
+            "$ref": "#/components/schemas/NewLife.Web.PageModel"
+          },
+          "stat": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJob"
+          }
+        },
+        "additionalProperties": false,
+        "description": "列表响应模型"
+      },
+      "NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.OrderManager, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManager"
+            },
+            "description": "响应数据",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          },
+          "page": {
+            "$ref": "#/components/schemas/NewLife.Web.PageModel"
+          },
+          "stat": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManager"
+          }
+        },
+        "additionalProperties": false,
+        "description": "列表响应模型"
+      },
+      "NewLife.Cube.ApiListResponse`1[[NewLife.Cube.Entity.PrincipalAgent, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgent"
+            },
+            "description": "响应数据",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          },
+          "page": {
+            "$ref": "#/components/schemas/NewLife.Web.PageModel"
+          },
+          "stat": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgent"
+          }
+        },
+        "additionalProperties": false,
+        "description": "列表响应模型"
+      },
+      "NewLife.Cube.ApiListResponse`1[[XCode.Membership.Area, XCode, Version=11.19.2025.601, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/XCode.Membership.Area"
+            },
+            "description": "响应数据",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          },
+          "page": {
+            "$ref": "#/components/schemas/NewLife.Web.PageModel"
+          },
+          "stat": {
+            "$ref": "#/components/schemas/XCode.Membership.Area"
+          }
+        },
+        "additionalProperties": false,
+        "description": "列表响应模型"
+      },
+      "NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.App, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.App"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "响应模型"
+      },
+      "NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.AppLog, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.AppLog"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "响应模型"
+      },
+      "NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.Attachment, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.Attachment"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "响应模型"
+      },
+      "NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.CronJob, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.CronJob"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "响应模型"
+      },
+      "NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.OrderManager, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.OrderManager"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "响应模型"
+      },
+      "NewLife.Cube.ApiResponse`1[[NewLife.Cube.Entity.PrincipalAgent, NewLife.Cube, Version=6.5.9324.37994, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.PrincipalAgent"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "响应模型"
+      },
+      "NewLife.Cube.ApiResponse`1[[XCode.Membership.Area, XCode, Version=11.19.2025.601, Culture=neutral, PublicKeyToken=8343210f0b524456]]": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "代码。0表示成功，其它为错误代码",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "消息内容。成功或错误时的提示文本",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/XCode.Membership.Area"
+          },
+          "traceId": {
+            "type": "string",
+            "description": "跟踪编号",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "响应模型"
+      },
+      "NewLife.Cube.Entity.App": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称。AppID",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名",
+            "nullable": true
+          },
+          "secret": {
+            "type": "string",
+            "description": "密钥。AppSecret",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "类别",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "homePage": {
+            "type": "string",
+            "description": "首页",
+            "nullable": true
+          },
+          "logo": {
+            "type": "string",
+            "description": "图标。附件路径",
+            "nullable": true
+          },
+          "white": {
+            "type": "string",
+            "description": "IP白名单。符合条件的来源IP才允许访问，支持*通配符，多个逗号隔开",
+            "nullable": true
+          },
+          "black": {
+            "type": "string",
+            "description": "IP黑名单。符合条件的来源IP禁止访问，支持*通配符，多个逗号隔开",
+            "nullable": true
+          },
+          "tokenExpire": {
+            "type": "integer",
+            "description": "有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置",
+            "format": "int32"
+          },
+          "urls": {
+            "type": "string",
+            "description": "回调地址。用于限制回调地址安全性，多个地址逗号隔开",
+            "nullable": true
+          },
+          "roleIds": {
+            "type": "string",
+            "description": "授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制",
+            "nullable": true
+          },
+          "scopes": {
+            "type": "string",
+            "description": "能力集合。逗号分隔，password，client_credentials",
+            "nullable": true
+          },
+          "oAuths": {
+            "type": "string",
+            "description": "三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开",
+            "nullable": true
+          },
+          "expired": {
+            "type": "string",
+            "description": "过期时间。空表示永不过期",
+            "format": "date-time"
+          },
+          "auths": {
+            "type": "integer",
+            "description": "次数",
+            "format": "int32"
+          },
+          "lastAuth": {
+            "type": "string",
+            "description": "最后请求",
+            "format": "date-time"
+          },
+          "createUserID": {
+            "type": "integer",
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "updateUserID": {
+            "type": "integer",
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "应用系统"
+      },
+      "NewLife.Cube.Entity.AppLog": {
+        "type": "object",
+        "properties": {
+          "app": {
+            "$ref": "#/components/schemas/NewLife.Cube.Entity.App"
+          },
+          "appName": {
+            "type": "string",
+            "description": "应用",
+            "nullable": true,
+            "readOnly": true
+          },
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int64"
+          },
+          "appId": {
+            "type": "integer",
+            "description": "应用",
+            "format": "int32"
+          },
+          "action": {
+            "type": "string",
+            "description": "操作",
+            "nullable": true
+          },
+          "success": {
+            "type": "boolean",
+            "description": "成功"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "应用标识",
+            "nullable": true
+          },
+          "redirectUri": {
+            "type": "string",
+            "description": "回调地址",
+            "nullable": true
+          },
+          "responseType": {
+            "type": "string",
+            "description": "响应类型。默认code",
+            "nullable": true
+          },
+          "scope": {
+            "type": "string",
+            "description": "授权域",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "description": "状态数据",
+            "nullable": true
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "访问令牌",
+            "nullable": true
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "刷新令牌",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链",
+            "nullable": true
+          },
+          "createUser": {
+            "type": "string",
+            "description": "创建者。可以是设备编码等唯一使用者标识",
+            "nullable": true
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "应用日志。用于OAuthServer的子系统"
+      },
+      "NewLife.Cube.Entity.AppModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称。AppID",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名",
+            "nullable": true
+          },
+          "secret": {
+            "type": "string",
+            "description": "密钥。AppSecret",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "类别",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "homePage": {
+            "type": "string",
+            "description": "首页",
+            "nullable": true
+          },
+          "logo": {
+            "type": "string",
+            "description": "图标。附件路径",
+            "nullable": true
+          },
+          "white": {
+            "type": "string",
+            "description": "IP白名单。符合条件的来源IP才允许访问，支持*通配符，多个逗号隔开",
+            "nullable": true
+          },
+          "black": {
+            "type": "string",
+            "description": "IP黑名单。符合条件的来源IP禁止访问，支持*通配符，多个逗号隔开",
+            "nullable": true
+          },
+          "tokenExpire": {
+            "type": "integer",
+            "description": "有效期。访问令牌AccessToken的有效期，单位秒，默认使用全局设置",
+            "format": "int32"
+          },
+          "urls": {
+            "type": "string",
+            "description": "回调地址。用于限制回调地址安全性，多个地址逗号隔开",
+            "nullable": true
+          },
+          "roleIds": {
+            "type": "string",
+            "description": "授权角色。只允许这些角色登录该系统，多个角色逗号隔开，未填写时表示不限制",
+            "nullable": true
+          },
+          "scopes": {
+            "type": "string",
+            "description": "能力集合。逗号分隔，password，client_credentials",
+            "nullable": true
+          },
+          "oAuths": {
+            "type": "string",
+            "description": "三方OAuth。本系统作为OAuthServer时，该应用前来验证时可用的第三方OAuth提供商，多个逗号隔开",
+            "nullable": true
+          },
+          "expired": {
+            "type": "string",
+            "description": "过期时间。空表示永不过期",
+            "format": "date-time"
+          },
+          "auths": {
+            "type": "integer",
+            "description": "次数",
+            "format": "int32"
+          },
+          "lastAuth": {
+            "type": "string",
+            "description": "最后请求",
+            "format": "date-time"
+          },
+          "createUserID": {
+            "type": "integer",
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "updateUserID": {
+            "type": "integer",
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "应用系统。用于OAuthServer的子系统"
+      },
+      "NewLife.Cube.Entity.Attachment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int64"
+          },
+          "category": {
+            "type": "string",
+            "description": "业务分类",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "description": "业务主键",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "标题。业务内容作为附件标题，便于查看管理",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "description": "文件名。原始文件名",
+            "nullable": true
+          },
+          "extension": {
+            "type": "string",
+            "description": "扩展名",
+            "nullable": true
+          },
+          "size": {
+            "type": "integer",
+            "description": "文件大小",
+            "format": "int64"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "内容类型。用于Http响应",
+            "nullable": true
+          },
+          "filePath": {
+            "type": "string",
+            "description": "路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "description": "哈希。MD5",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "uploadTime": {
+            "type": "string",
+            "description": "上传时间。附件上传时间，可用于构造文件存储路径",
+            "format": "date-time"
+          },
+          "url": {
+            "type": "string",
+            "description": "网址。链接到附件所在信息页的地址",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "description": "来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链",
+            "nullable": true
+          },
+          "createUser": {
+            "type": "string",
+            "description": "创建者",
+            "nullable": true
+          },
+          "createUserID": {
+            "type": "integer",
+            "description": "创建用户",
+            "format": "int32"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": "string",
+            "description": "更新者",
+            "nullable": true
+          },
+          "updateUserID": {
+            "type": "integer",
+            "description": "更新用户",
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "附件。用于记录各系统模块使用的文件"
+      },
+      "NewLife.Cube.Entity.AttachmentModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int64"
+          },
+          "category": {
+            "type": "string",
+            "description": "业务分类",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "description": "业务主键",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "标题。业务内容作为附件标题，便于查看管理",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "description": "文件名。原始文件名",
+            "nullable": true
+          },
+          "extension": {
+            "type": "string",
+            "description": "扩展名",
+            "nullable": true
+          },
+          "size": {
+            "type": "integer",
+            "description": "文件大小",
+            "format": "int64"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "内容类型。用于Http响应",
+            "nullable": true
+          },
+          "filePath": {
+            "type": "string",
+            "description": "路径。本地相对路径或OSS路径，本地相对路径加上附件目录的配置，方便整体转移附件",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "description": "哈希。MD5",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "uploadTime": {
+            "type": "string",
+            "description": "上传时间。附件上传时间，可用于构造文件存储路径",
+            "format": "date-time"
+          },
+          "url": {
+            "type": "string",
+            "description": "网址。链接到附件所在信息页的地址",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "description": "来源。用于远程抓取的附件来源地址，本地文件不存在时自动依次抓取",
+            "nullable": true
+          },
+          "traceId": {
+            "type": "string",
+            "description": "追踪。链路追踪，用于APM性能追踪定位，还原该事件的调用链",
+            "nullable": true
+          },
+          "createUser": {
+            "type": "string",
+            "description": "创建者",
+            "nullable": true
+          },
+          "createUserID": {
+            "type": "integer",
+            "description": "创建用户",
+            "format": "int32"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": "string",
+            "description": "更新者",
+            "nullable": true
+          },
+          "updateUserID": {
+            "type": "integer",
+            "description": "更新用户",
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "附件。用于记录各系统模块使用的文件，可以是Local/NAS/OSS等"
+      },
+      "NewLife.Cube.Entity.CronJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名",
+            "nullable": true
+          },
+          "cron": {
+            "type": "string",
+            "description": "Cron表达式。用于定时执行的Cron表达式",
+            "nullable": true
+          },
+          "method": {
+            "type": "string",
+            "description": "命令。ICubeJob类名或静态方法全名(包含一个String参数)",
+            "nullable": true
+          },
+          "argument": {
+            "type": "string",
+            "description": "参数。方法参数，时间日期、网址、SQL等",
+            "nullable": true
+          },
+          "data": {
+            "type": "string",
+            "description": "数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "enableLog": {
+            "type": "boolean",
+            "description": "启用日志"
+          },
+          "lastTime": {
+            "type": "string",
+            "description": "最后时间。最后一次执行作业的时间",
+            "format": "date-time"
+          },
+          "nextTime": {
+            "type": "string",
+            "description": "下一次时间。下一次执行作业的时间",
+            "format": "date-time"
+          },
+          "createUserID": {
+            "type": "integer",
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "updateUserID": {
+            "type": "integer",
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "定时作业。定时执行任务"
+      },
+      "NewLife.Cube.Entity.CronJobModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名",
+            "nullable": true
+          },
+          "cron": {
+            "type": "string",
+            "description": "Cron表达式。用于定时执行的Cron表达式",
+            "nullable": true
+          },
+          "method": {
+            "type": "string",
+            "description": "命令。ICubeJob类名或静态方法全名(包含一个String参数)",
+            "nullable": true
+          },
+          "argument": {
+            "type": "string",
+            "description": "参数。方法参数，时间日期、网址、SQL等",
+            "nullable": true
+          },
+          "data": {
+            "type": "string",
+            "description": "数据。作业运行中的小量数据，可传递给下一次作业执行，例如记录数据统计的时间点",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "enableLog": {
+            "type": "boolean",
+            "description": "启用日志"
+          },
+          "lastTime": {
+            "type": "string",
+            "description": "最后时间。最后一次执行作业的时间",
+            "format": "date-time"
+          },
+          "nextTime": {
+            "type": "string",
+            "description": "下一次时间。下一次执行作业的时间",
+            "format": "date-time"
+          },
+          "createUserID": {
+            "type": "integer",
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "updateUserID": {
+            "type": "integer",
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "定时作业。定时执行任务"
+      },
+      "NewLife.Cube.Entity.OrderManager": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "指令名称",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "指令编号",
+            "nullable": true
+          },
+          "optCategory": {
+            "type": "string",
+            "description": "操作类型",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "data": {
+            "type": "string",
+            "description": "数据,进行后续操作依赖值",
+            "nullable": true
+          },
+          "dataType": {
+            "type": "string",
+            "description": "数据类型,String、Int、Double、Decimal等",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "请求地址",
+            "nullable": true
+          },
+          "method": {
+            "type": "string",
+            "description": "请求方式,GET、POST、PUT、DELETE",
+            "nullable": true
+          },
+          "valueField": {
+            "type": "string",
+            "description": "值字段",
+            "nullable": true
+          },
+          "labelField": {
+            "type": "string",
+            "description": "文本字段",
+            "nullable": true
+          },
+          "createUserId": {
+            "type": "integer",
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "updateUserId": {
+            "type": "integer",
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "指令管理"
+      },
+      "NewLife.Cube.Entity.OrderManagerModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "指令名称",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "description": "指令编号",
+            "nullable": true
+          },
+          "optCategory": {
+            "type": "string",
+            "description": "操作类型",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "data": {
+            "type": "string",
+            "description": "数据,进行后续操作依赖值",
+            "nullable": true
+          },
+          "dataType": {
+            "type": "string",
+            "description": "数据类型,String、Int、Double、Decimal等",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "请求地址",
+            "nullable": true
+          },
+          "method": {
+            "type": "string",
+            "description": "请求方式,GET、POST、PUT、DELETE",
+            "nullable": true
+          },
+          "valueField": {
+            "type": "string",
+            "description": "值字段",
+            "nullable": true
+          },
+          "labelField": {
+            "type": "string",
+            "description": "文本字段",
+            "nullable": true
+          },
+          "createUserId": {
+            "type": "integer",
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "updateUserId": {
+            "type": "integer",
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "指令管理"
+      },
+      "NewLife.Cube.Entity.PrincipalAgent": {
+        "type": "object",
+        "properties": {
+          "principal": {
+            "$ref": "#/components/schemas/XCode.Membership.IUser"
+          },
+          "principalName": {
+            "type": "string",
+            "description": "委托人",
+            "nullable": true,
+            "readOnly": true
+          },
+          "agent": {
+            "$ref": "#/components/schemas/XCode.Membership.IUser"
+          },
+          "agentName": {
+            "type": "string",
+            "description": "代理人",
+            "nullable": true,
+            "readOnly": true
+          },
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int32"
+          },
+          "principalId": {
+            "type": "integer",
+            "description": "委托人。把自己的身份权限委托给别人",
+            "format": "int32"
+          },
+          "agentId": {
+            "type": "integer",
+            "description": "代理人。代理获得别人身份权限",
+            "format": "int32"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "times": {
+            "type": "integer",
+            "description": "次数。可用代理次数，0表示已用完，-1表示无限制",
+            "format": "int32"
+          },
+          "expire": {
+            "type": "string",
+            "description": "有效期。截止时间之前有效，不设置表示无限制",
+            "format": "date-time"
+          },
+          "createUserId": {
+            "type": "integer",
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "updateUserId": {
+            "type": "integer",
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份，一次有效"
+      },
+      "NewLife.Cube.Entity.PrincipalAgentModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "编号",
+            "format": "int32"
+          },
+          "principalId": {
+            "type": "integer",
+            "description": "委托人。把自己的身份权限委托给别人",
+            "format": "int32"
+          },
+          "agentId": {
+            "type": "integer",
+            "description": "代理人。代理获得别人身份权限",
+            "format": "int32"
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "times": {
+            "type": "integer",
+            "description": "次数。可用代理次数，0表示已用完，-1表示无限制",
+            "format": "int32"
+          },
+          "expire": {
+            "type": "string",
+            "description": "有效期。截止时间之前有效，不设置表示无限制",
+            "format": "date-time"
+          },
+          "createUserId": {
+            "type": "integer",
+            "description": "创建者",
+            "format": "int32"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "createIP": {
+            "type": "string",
+            "description": "创建地址",
+            "nullable": true
+          },
+          "updateUserId": {
+            "type": "integer",
+            "description": "更新者",
+            "format": "int32"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "updateIP": {
+            "type": "string",
+            "description": "更新地址",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "description": "内容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "委托代理。委托某人代理自己的用户权限，代理人下一次登录时将得到委托人的身份"
+      },
+      "NewLife.Cube.ViewModels.DataField": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "名称",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "显示名",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "描述",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "description": "类别",
+            "nullable": true
+          },
+          "typeName": {
+            "type": "string",
+            "description": "属性类型",
+            "nullable": true,
+            "readOnly": true
+          },
+          "itemType": {
+            "type": "string",
+            "description": "元素类型。image,file-zip,html,singleSelect,multipleSelect",
+            "nullable": true
+          },
+          "length": {
+            "type": "integer",
+            "description": "长度",
+            "format": "int32"
+          },
+          "precision": {
+            "type": "integer",
+            "description": "精度",
+            "format": "int32"
+          },
+          "scale": {
+            "type": "integer",
+            "description": "位数",
+            "format": "int32"
+          },
+          "nullable": {
+            "type": "boolean",
+            "description": "允许空"
+          },
+          "primaryKey": {
+            "type": "boolean",
+            "description": "主键"
+          },
+          "readOnly": {
+            "type": "boolean",
+            "description": "只读"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "是否可见"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "是否必填"
+          },
+          "authority": {
+            "type": "string",
+            "description": "权限相关。用户自由发挥",
+            "nullable": true
+          },
+          "extended1": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥",
+            "nullable": true
+          },
+          "extended2": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥",
+            "nullable": true
+          },
+          "extended3": {
+            "type": "string",
+            "description": "扩展字段。用户自由发挥",
+            "nullable": true
+          },
+          "mapField": {
+            "type": "string",
+            "description": "映射字段",
+            "nullable": true
+          },
+          "lovCode": {
+            "type": "string",
+            "description": "LOV 配置代码",
+            "nullable": true
+          },
+          "services": {
+            "type": "array",
+            "items": {},
+            "description": "扩展服务",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "数据字段"
+      },
+      "NewLife.Cube.ViewModels.ViewKinds": {
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "type": "integer",
+        "description": "视图类型。如List/Detail/AddForm/EditForm/Search等",
+        "format": "int32"
+      },
+      "NewLife.Web.PageModel": {
+        "type": "object",
+        "properties": {
+          "pageIndex": {
+            "type": "integer",
+            "description": "获取 或 设置 页面索引。从1开始，默认1",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "获取 或 设置 页面大小。默认20，若为0表示不分页",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "获取 或 设置 总记录数",
+            "format": "int64"
+          },
+          "longTotalCount": {
+            "type": "string",
+            "description": "获取 或 设置 总记录数，字符串类型",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "分页模型"
+      },
+      "XCode.Membership.Area": {
+        "type": "object",
+        "properties": {
+          "parent": {
+            "$ref": "#/components/schemas/XCode.Membership.Area"
+          },
+          "parentPath": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "path": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "childs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/XCode.Membership.Area"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "isVirtual": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "id": {
+            "type": "integer",
+            "description": "编码。行政区划编码",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "名称",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "description": "全名",
+            "nullable": true
+          },
+          "parentID": {
+            "type": "integer",
+            "description": "父级",
+            "format": "int32"
+          },
+          "level": {
+            "type": "integer",
+            "description": "层级",
+            "format": "int32"
+          },
+          "kind": {
+            "type": "string",
+            "description": "类型。省市县，自治州等",
+            "nullable": true
+          },
+          "english": {
+            "type": "string",
+            "description": "英文名",
+            "nullable": true
+          },
+          "pinYin": {
+            "type": "string",
+            "description": "拼音",
+            "nullable": true
+          },
+          "jianPin": {
+            "type": "string",
+            "description": "简拼",
+            "nullable": true
+          },
+          "telCode": {
+            "type": "string",
+            "description": "区号。电话区号",
+            "nullable": true
+          },
+          "zipCode": {
+            "type": "string",
+            "description": "邮编。邮政编码",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "description": "经度",
+            "format": "double"
+          },
+          "latitude": {
+            "type": "number",
+            "description": "纬度",
+            "format": "double"
+          },
+          "geoHash": {
+            "type": "string",
+            "description": "地址编码。字符串前缀相同越多，地理距离越近，8位精度19米，6位610米",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean",
+            "description": "启用"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "创建时间",
+            "format": "date-time"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "更新时间",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "description": "备注",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "XCode.Membership.AreaModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "fullName": {
+            "type": "string",
+            "nullable": true
+          },
+          "parentID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "kind": {
+            "type": "string",
+            "nullable": true
+          },
+          "english": {
+            "type": "string",
+            "nullable": true
+          },
+          "pinYin": {
+            "type": "string",
+            "nullable": true
+          },
+          "jianPin": {
+            "type": "string",
+            "nullable": true
+          },
+          "telCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "zipCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double"
+          },
+          "geoHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "XCode.Membership.IRole": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "isSystem": {
+            "type": "boolean"
+          },
+          "tenantId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "permission": {
+            "type": "string",
+            "nullable": true
+          },
+          "sort": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ex1": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ex2": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ex3": {
+            "type": "number",
+            "format": "double"
+          },
+          "ex4": {
+            "type": "string",
+            "nullable": true
+          },
+          "ex5": {
+            "type": "string",
+            "nullable": true
+          },
+          "ex6": {
+            "type": "string",
+            "nullable": true
+          },
+          "createUser": {
+            "type": "string",
+            "nullable": true
+          },
+          "createUserID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createIP": {
+            "type": "string",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updateUser": {
+            "type": "string",
+            "nullable": true
+          },
+          "updateUserID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updateIP": {
+            "type": "string",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "remark": {
+            "type": "string",
+            "nullable": true
+          },
+          "permissions": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/XCode.Membership.PermissionFlags"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "XCode.Membership.IUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "sex": {
+            "$ref": "#/components/schemas/XCode.Membership.SexKinds"
+          },
+          "mail": {
+            "type": "string",
+            "nullable": true
+          },
+          "mailVerified": {
+            "type": "boolean"
+          },
+          "mobile": {
+            "type": "string",
+            "nullable": true
+          },
+          "mobileVerified": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "areaId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          },
+          "roleID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "roleIds": {
+            "type": "string",
+            "nullable": true
+          },
+          "departmentID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "enable": {
+            "type": "boolean"
+          },
+          "age": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "birthday": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "logins": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastLogin": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastLoginIP": {
+            "type": "string",
+            "nullable": true
+          },
+          "registerTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registerIP": {
+            "type": "string",
+            "nullable": true
+          },
+          "onlineTime": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ex1": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ex2": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ex3": {
+            "type": "number",
+            "format": "double"
+          },
+          "ex4": {
+            "type": "string",
+            "nullable": true
+          },
+          "ex5": {
+            "type": "string",
+            "nullable": true
+          },
+          "ex6": {
+            "type": "string",
+            "nullable": true
+          },
+          "remark": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/XCode.Membership.IRole"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/XCode.Membership.IRole"
+            },
+            "nullable": true,
+            "readOnly": true
+          },
+          "roleName": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "XCode.Membership.PermissionFlags": {
+        "enum": [
+          0,
+          1,
+          2,
+          4,
+          8,
+          4294967295
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "XCode.Membership.SexKinds": {
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://sso.newlifex.com/sso/authorize",
+            "tokenUrl": "https://sso.newlifex.com/sso/access_token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "OAuth2": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "App",
+      "description": "应用系统"
+    },
+    {
+      "name": "AppLog",
+      "description": "应用日志"
+    },
+    {
+      "name": "Area",
+      "description": "地区"
+    },
+    {
+      "name": "Attachment",
+      "description": "附件管理"
+    },
+    {
+      "name": "CronJob",
+      "description": "定时任务"
+    },
+    {
+      "name": "OrderManager",
+      "description": ""
+    },
+    {
+      "name": "PrincipalAgent",
+      "description": "委托代理"
+    }
+  ]
+}

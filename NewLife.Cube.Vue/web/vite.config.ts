@@ -1,71 +1,97 @@
+import { join } from 'path';
+import { fileURLToPath, URL } from 'node:url';
+
+import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
-import { defineConfig, loadEnv, ConfigEnv } from 'vite';
-import vueSetupExtend from 'vite-plugin-vue-setup-extend-plus';
-import viteCompression from 'vite-plugin-compression';
-import { buildConfig } from './src/utils/build';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import vueDevTools from 'vite-plugin-vue-devtools';
+import AutoImport from 'unplugin-auto-import/vite';
+import Components from 'unplugin-vue-components/vite';
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
+import cubeFront from './core/plugin/index'; // This is the plugin we want to build as a library
+import { CodeInspectorPlugin } from 'code-inspector-plugin';
 
-const pathResolve = (dir: string) => {
-	return resolve(__dirname, '.', dir);
-};
-
-const alias: Record<string, string> = {
-	'/@': pathResolve('./src/'),
-	'vue-i18n': 'vue-i18n/dist/vue-i18n.cjs.js',
-};
-
-const viteConfig = defineConfig((mode: ConfigEnv) => {
-	const env = loadEnv(mode.mode, process.cwd());
-	return {
-		plugins: [vue(), vueSetupExtend(), viteCompression(), JSON.parse(env.VITE_OPEN_CDN) ? buildConfig.cdn() : null],
-		root: process.cwd(),
-		resolve: { alias },
-		base: mode.command === 'serve' ? './' : env.VITE_PUBLIC_PATH,
-		optimizeDeps: {
-			include: ['element-plus/es/locale/lang/zh-cn', 'element-plus/es/locale/lang/en', 'element-plus/es/locale/lang/zh-tw'],
-			exclude: ['vue-demi'],
-		},
-		server: {
-			host: '0.0.0.0',
-			port: env.VITE_PORT as unknown as number,
-			open: JSON.parse(env.VITE_OPEN),
-			hmr: true,
-			proxy: {
-				'/base-api': {
-					target: env.VITE_API_URL,
-					ws: true,
-					changeOrigin: true,
-					rewrite: (path) => path.replace(/^\/base-api/, ''),
-				},
-			},
-		},
-		build: {
-			outDir: '../wwwroot',
-			emptyOutDir: true,
-			chunkSizeWarningLimit: 1500,
-			rollupOptions: {
-				output: {
-					chunkFileNames: 'assets/js/[name]-[hash].js',
-					entryFileNames: 'assets/js/[name]-[hash].js',
-					assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
-					manualChunks(id) {
-						if (id.includes('node_modules')) {
-							return id.toString().match(/\/node_modules\/(?!.pnpm)(?<moduleName>[^\/]*)\//)?.groups!.moduleName ?? 'vender';
-						}
-					},
-				},
-				...(JSON.parse(env.VITE_OPEN_CDN) ? { external: buildConfig.external } : {}),
-			},
-		},
-		css: { preprocessorOptions: { css: { charset: false } } },
-		define: {
-			__VUE_I18N_LEGACY_API__: JSON.stringify(false),
-			__VUE_I18N_FULL_INSTALL__: JSON.stringify(false),
-			__INTLIFY_PROD_DEVTOOLS__: JSON.stringify(false),
-			__NEXT_VERSION__: JSON.stringify(process.env.npm_package_version),
-			__NEXT_NAME__: JSON.stringify(process.env.npm_package_name),
-		},
-	};
+// https://vite.dev/config/
+export default defineConfig(({ command, mode }) => {
+  // Check an environment variable to determine the build target
+  if (process.env.BUILD_TARGET === 'plugin') {
+    return {
+      // Configuration for building the plugin as a library
+      build: {
+        lib: {
+          entry: fileURLToPath(new URL('./core/plugin/index.ts', import.meta.url)),
+          name: 'CubeFrontPlugin', // Global variable name for UMD build (if UMD format is included)
+          formats: ['es'], // Output ES Module format
+          fileName: () => 'index.js', // Output to dist/plugin/index.js
+        },
+        rollupOptions: {
+          // Externalize dependencies that should not be bundled into the library
+          // e.g., external: ['vue'],
+          external: [], // Adjust if your plugin has peer dependencies
+          output: {
+            // globals: { // Define globals for externalized UMD dependencies
+            //   vue: 'Vue',
+            // },
+          },
+        },
+        outDir: 'dist/plugin', // Output directory for the plugin
+        sourcemap: true,
+        ssr: true, // Indicate that this library is intended for SSR/Node.js-like environments
+      },
+      // Plugins needed for building the library itself (if any)
+      // Typically, fewer plugins are needed for a library compared to an app.
+      // If core/plugin/index.ts is plain TS/JS, it might not need vue plugins.
+      plugins: [
+        // Add plugins required for your library build if necessary
+        // For example, if it uses Vue features:
+        // vue(),
+        // vueJsx(),
+      ],
+    };
+  } else {
+    // Default configuration for building the main application
+    return {
+      plugins: [
+        vue(),
+        vueJsx(),
+        vueDevTools(),
+        CodeInspectorPlugin({
+          bundler: 'vite',
+        }),
+        cubeFront(), // The plugin is used here in the main app build
+        AutoImport({
+          resolvers: [ElementPlusResolver()],
+          // Exclude ElMessage from auto-import since we use request interceptor for unified error handling
+          exclude: [/ElMessage/],
+          imports: [
+            'vue',
+            'vue-router',
+            // Add other imports you want to auto-import globally
+          ],
+        }),
+        Components({
+          resolvers: [ElementPlusResolver()],
+        }),
+      ],
+      resolve: {
+        alias: {
+          '@': fileURLToPath(new URL('./src', import.meta.url)),
+          'cube-front': join(__dirname, './'),
+        },
+      },
+      build: {
+        sourcemap: true, // Generates source maps for better debugging
+        outDir: '../wwwroot', emptyOutDir: true
+      },
+      server: {
+        port: 5187,
+        proxy: {
+          '/Admin': { target: 'http://localhost:5000', changeOrigin: true },
+          '/Cube': { target: 'http://localhost:5000', changeOrigin: true },
+          '/Sso': { target: 'http://localhost:5000', changeOrigin: true },
+          '/api': { target: 'http://localhost:5000', changeOrigin: true },
+        },
+      },
+    };
+  }
 });
-
-export default viteConfig;

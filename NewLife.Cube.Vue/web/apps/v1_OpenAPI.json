@@ -1,0 +1,1350 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "第三代魔方",
+    "description": "第三代魔方WebApi接口，用于前后端分离。",
+    "version": "6.5.2025.0712"
+  },
+  "paths": {
+    "/Cube/Info": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "服务器信息，用户健康检测",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "description": "状态信息",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "f70d9f069c14bd58ae864195764f01eb"
+      }
+    },
+    "/Cube/Apis": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取所有接口信息",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "5ebdf27f0f64dffd5bf6966633db55ad"
+      }
+    },
+    "/Cube/UserSearch": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "用户搜索",
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "departmentId",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "fb33d2f9d2dacf2d20186de9f64de04d"
+      }
+    },
+    "/Cube/DepartmentSearch": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "网点搜索",
+        "parameters": [
+          {
+            "name": "parentid",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": -1
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "13e3e53709d677430c03534e2a09994e"
+      }
+    },
+    "/Cube/GetArea": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "地区信息",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "102009c623b0f9b7b7f49d664e8092d6"
+      }
+    },
+    "/Cube/AreaChilds": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取地区子级",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "a2d35fdb1bbc106e9b99aac1f3157b55"
+      }
+    },
+    "/Cube/AreaParents": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取地区父级",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "查询地区编号",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "isContainSelf",
+            "in": "query",
+            "description": "是否包含查询的地区",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "735641858ea589cd187994d131f832bf"
+      }
+    },
+    "/Cube/AreaAllParents": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取地区所有父级",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "575d31e39f74c9fb7eb1e631e54a295c"
+      }
+    },
+    "/Cube/Avatar": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取用户头像",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "用户编号",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "4e090f206b4d61b828d143b9c382f687"
+      }
+    },
+    "/Cube/Lookup": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "查询一批Code的数据源",
+        "parameters": [
+          {
+            "name": "codes",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "84a9a334c69f6f30410735c0caca2171"
+      }
+    },
+    "/Cube/SaveLayout": {
+      "post": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "根据用户、类别及具体的名字保存字典参数到后台",
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "description": "The user identifier.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "The category.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "The name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "description": "The value.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "b9e9d0189eda835e38796673d7346e79"
+      }
+    },
+    "/Cube/GetPageConfig": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "获取页面配置信息。列表页、表单页所需显示字段，以及各字段显示方式",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "种类。用于区分不同的前端类型，如Vue/Antd/QuickVue",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页面路径。如/admin/user",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "c682bd0f1cc10edae67328f7b98577cc"
+      }
+    },
+    "/Cube/SetPageConfig": {
+      "post": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "保存页面配置信息。需要自定义部分字段，其它信息由字段列表和适配器动态生成",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "description": "种类。用于区分不同的前端类型，如Vue/Antd/QuickVue",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页面路径。如/admin/user",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "配置对象。作为Body直接Post的Json配置",
+          "content": {
+            "application/json": {
+              "schema": {}
+            },
+            "text/json": {
+              "schema": {}
+            },
+            "application/*+json": {
+              "schema": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "59e5d341d1da9c84310eb4047e9dca39"
+      }
+    },
+    "/Cube/Image": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "访问图片附件",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "d16c8cc8a26b8bfd524dd780ce09849b"
+      }
+    },
+    "/Cube/File": {
+      "get": {
+        "tags": [
+          "Cube"
+        ],
+        "summary": "访问附件",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "633dda5ee2bf14ebb5bf6216264e1701"
+      }
+    },
+    "/Sso/Login": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "第三方登录",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "7f6d78aeadea59d1dcfd7481ede6ce5f"
+      }
+    },
+    "/Sso/LoginInfo/{id}": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "第三方登录完成后跳转到此",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "提供者",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "2fd0bb604785e66093f53000d443e555"
+      }
+    },
+    "/Sso/LoginInfo": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "第三方登录完成后跳转到此",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "fad710855935bacf39aed6f0c7fe9333"
+      }
+    },
+    "/Sso/Logout": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "注销登录",
+        "description": "子系统引导用户跳转到这里注销登录。",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "9c5e71b4871a55f33bdf4c89af340a87"
+      }
+    },
+    "/Sso/Bind": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "绑定",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "ee27e23f7b5d53fe881f57e1ccbf4c4a"
+      }
+    },
+    "/Sso/UnBind": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "取消绑定",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "1cc07e88a9ff9f2e32121eba6643ffdb"
+      }
+    },
+    "/Sso/Authorize": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "1，验证用户身份",
+        "description": "子系统需要验证访问者身份时，引导用户跳转到这里。\r\n用户登录完成后，得到一个独一无二的code，并跳转回去子系统。",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "应用标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "description": "回调地址",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "response_type",
+            "in": "query",
+            "description": "响应类型。默认code",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "授权域",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "用户状态数据",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "loginUrl",
+            "in": "query",
+            "description": "登录页。子系统请求SSO时，如果在SSO未登录则直接跳转的地址，该地址有可能属于子系统自身，适用于password模式登录等场景",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "59d27138efbc354f03fe6615f88d6ceb"
+      }
+    },
+    "/Sso/Auth2": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "2，用户登录成功后返回这里",
+        "description": "构建身份验证结构，返回code给子系统",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "36b59b4b3ad98375fa9bdbfe786ebe5c"
+      }
+    },
+    "/Sso/Access_Token": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据code获取令牌",
+        "description": "子系统根据验证用户身份时得到的code，直接在服务器间请求本系统。\r\n传递应用标识和密钥，主要是为了向本系统表明其合法身份。",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "应用标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "description": "密钥",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "description": "代码",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "description": "授权类型",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "89201f930df13bd485c8268b9579a817"
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据code获取令牌",
+        "description": "子系统根据验证用户身份时得到的code，直接在服务器间请求本系统。\r\n传递应用标识和密钥，主要是为了向本系统表明其合法身份。",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "应用标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "description": "密钥",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "description": "代码",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "description": "授权类型",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "5059bccdc7074f7ee24cca2cbfc512ca"
+      }
+    },
+    "/Sso/Token": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据password/client_credentials获取令牌",
+        "description": "密码式：\r\n用户把用户名和密码，直接告诉该应用。该应用就使用你的密码，申请令牌，这种方式称为\"密码式\"（password）。\r\n为了避免密码暴露在Url中，需要用表单Post方式提交。\r\n凭证式：\r\n凭证式（client credentials），适用于没有前端的命令行应用，即在命令行下请求令牌。\r\n针对第三方应用，而不是针对用户的，即有可能多个用户共享同一个令牌。",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "应用标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "description": "密钥",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "description": "用户名。可以是设备编码等唯一使用者标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "description": "密码",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "description": "刷新令牌",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "description": "授权类型",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "d8c658e107962e358e1f8560825a6e34"
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据password/client_credentials获取令牌",
+        "description": "密码式：\r\n用户把用户名和密码，直接告诉该应用。该应用就使用你的密码，申请令牌，这种方式称为\"密码式\"（password）。\r\n为了避免密码暴露在Url中，需要用表单Post方式提交。\r\n凭证式：\r\n凭证式（client credentials），适用于没有前端的命令行应用，即在命令行下请求令牌。\r\n针对第三方应用，而不是针对用户的，即有可能多个用户共享同一个令牌。",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "应用标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "description": "密钥",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "description": "用户名。可以是设备编码等唯一使用者标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "description": "密码",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "description": "刷新令牌",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "description": "授权类型",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "d6c65957da00c4d54879765a45d37e8a"
+      }
+    },
+    "/Sso/PasswordToken": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据password/client_credentials获取令牌",
+        "description": "密码式：\r\n用户把用户名和密码，直接告诉该应用。该应用就使用你的密码，申请令牌，这种方式称为\"密码式\"（password）。\r\n凭证式：\r\n凭证式（client credentials），适用于没有前端的命令行应用，即在命令行下请求令牌。\r\n针对第三方应用，而不是针对用户的，即有可能多个用户共享同一个令牌。",
+        "requestBody": {
+          "description": "请求模型",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "12765eb96bdbbbae0043b21f478c873c"
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "3，根据password/client_credentials获取令牌",
+        "description": "密码式：\r\n用户把用户名和密码，直接告诉该应用。该应用就使用你的密码，申请令牌，这种方式称为\"密码式\"（password）。\r\n凭证式：\r\n凭证式（client credentials），适用于没有前端的命令行应用，即在命令行下请求令牌。\r\n针对第三方应用，而不是针对用户的，即有可能多个用户共享同一个令牌。",
+        "requestBody": {
+          "description": "请求模型",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "b0659a7197bb4a6cf5813fb969204acc"
+      }
+    },
+    "/Sso/UserInfo": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "4，根据token获取用户信息",
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "description": "访问令牌",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "c636b9cde1dab841d19b2f4ccdf42f67"
+      }
+    },
+    "/Sso/Refresh_Token": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "5，刷新令牌",
+        "description": "若access_token已超时，那么进行refresh_token会获取一个新的access_token，新的超时时间；\r\n若access_token未超时，那么进行refresh_token不会改变access_token，但超时时间会刷新，相当于续期access_token。",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "应用标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "description": "授权类型",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "description": "刷新令牌",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "dc1fd1551df61d9e3173ceff4cca8700"
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "5，刷新令牌",
+        "description": "若access_token已超时，那么进行refresh_token会获取一个新的access_token，新的超时时间；\r\n若access_token未超时，那么进行refresh_token不会改变access_token，但超时时间会刷新，相当于续期access_token。",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "应用标识",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "grant_type",
+            "in": "query",
+            "description": "授权类型",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "refresh_token",
+            "in": "query",
+            "description": "刷新令牌",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "61d8d3aa26c88ad896b5cf684f819f34"
+      }
+    },
+    "/Sso/Auth": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "验证令牌是否有效",
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "description": "应用",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "d6abb4373facbd52de3e5c1889b30088"
+      }
+    },
+    "/Sso/GetKey": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "获取应用公钥，用于验证令牌",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "应用",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_secret",
+            "in": "query",
+            "description": "密钥",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "dba1385d6087c892879a75371c3aedf4"
+      }
+    },
+    "/Sso/Verify": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "验证令牌，回写cookie",
+        "parameters": [
+          {
+            "name": "access_token",
+            "in": "query",
+            "description": "应用",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "description": "回调地址",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "07e9814e3a989d450046fccfeda3255f"
+      }
+    },
+    "/Sso/UserAuth": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "用户验证。借助OAuth密码式验证，并返回用户信息",
+        "requestBody": {
+          "description": "令牌模型",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "66a3d17ec1a70aff95aec69b0fbdf5cb"
+      },
+      "post": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "用户验证。借助OAuth密码式验证，并返回用户信息",
+        "requestBody": {
+          "description": "令牌模型",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewLife.Cube.Web.Models.SsoTokenModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "54a74ab491df8f4a595d409e797c5a9f"
+      }
+    },
+    "/Sso/Avatar": {
+      "get": {
+        "tags": [
+          "Sso"
+        ],
+        "summary": "获取用户头像",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "用户编号",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "operationId": "d5140f3b0bbc0dad49da6e1fa94682e1"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NewLife.Cube.Web.Models.SsoTokenModel": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "应用标识",
+            "nullable": true
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "应用密钥",
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "description": "用户名。可以是设备编码等唯一使用者标识",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "description": "密码",
+            "nullable": true
+          },
+          "grant_type": {
+            "type": "string",
+            "description": "授权类型",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Sso令牌模型"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://sso.newlifex.com/sso/authorize",
+            "tokenUrl": "https://sso.newlifex.com/sso/access_token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "OAuth2": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Cube",
+      "description": "魔方前端数据接口"
+    },
+    {
+      "name": "Sso",
+      "description": "单点登录。OAuth2.0客户端与服务端"
+    }
+  ]
+}

@@ -9,7 +9,7 @@ import other from '/@/utils/other';
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 import '/@/theme/index.scss';
-import '/@/theme/tailwind.scss';
+import '/@/theme/tailwind.css';
 import VueGridLayout from 'vue-grid-layout';
 import { Icon } from '@iconify/vue';
 import formCreate from '@form-create/element-ui';

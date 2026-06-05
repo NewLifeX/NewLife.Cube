@@ -1,0 +1,10 @@
+  [
+    {
+      "name": "cube-admin",
+      "packageName": "/apps/cube-admin"
+    },
+    {
+      "name": "cube-cube",
+      "packageName": "/apps/cube-cube"
+    }
+  ]
