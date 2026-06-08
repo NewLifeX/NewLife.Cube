@@ -9,6 +9,6 @@ export const config: EnvConfig = {
     title: '魔方系统',
   },
   request: {
-    baseUrl: import.meta.env.VITE_API_URL, //魔方后台API地址
+    baseUrl: import.meta.env.VITE_API_URL || '', //魔方后台API地址
   },
 };

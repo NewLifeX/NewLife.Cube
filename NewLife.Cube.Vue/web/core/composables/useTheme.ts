@@ -1,8 +1,8 @@
 import { ref, watchEffect } from 'vue';
 
 export type ThemeId =
-  | 'cyber-dark'    // Cyber 深色（默认）
-  | 'cyber-light'   // Cyber 浅色
+  | 'cyber-light'   // Cyber 浅色（默认）
+  | 'cyber-dark'    // Cyber 深色
   | 'forest-dark'   // 森林绿深色
   | 'forest-light'; // 森林绿浅色
 
@@ -100,7 +100,7 @@ const STORAGE_KEY = 'cube-theme';
 function getInitialTheme(): ThemeId {
   const stored = localStorage.getItem(STORAGE_KEY) as ThemeId | null;
   if (stored && THEMES.some((t) => t.id === stored)) return stored;
-  return 'cyber-dark';
+  return 'cyber-light';
 }
 
 const currentThemeId = ref<ThemeId>(getInitialTheme());

@@ -9,6 +9,6 @@ export const config: EnvConfig = {
     title: '魔方系统',
   },
   request: {
-    baseUrl: 'https://cube.newlifex.com',
+    baseUrl: import.meta.env.VITE_API_URL || '',
   },
 };
