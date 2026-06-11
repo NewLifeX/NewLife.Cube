@@ -152,6 +152,7 @@
 | `Token` | String | "token" | Token 在 Header/Cookie 中的名称 |
 | `JwtSecret` | String | "" | JWT 签名密钥 |
 | `TokenExpire` | Int32 | 7200 | Token 有效期（秒） |
+| `TokenRefreshThreshold` | Int32 | 900 | 令牌滑动刷新阈值（秒），JWT剩余有效期低于此值时自动刷新并写入Cookie，0=禁用 |
 | `RefreshTokenExpire` | Int32 | 604800 | 刷新 Token 有效期（秒） |
 
 ### SSO 设置

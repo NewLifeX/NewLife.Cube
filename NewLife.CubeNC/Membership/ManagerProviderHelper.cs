@@ -68,6 +68,37 @@ public static class ManagerProviderHelper
                 {
                     provider.SetCurrent(user, serviceProvider);
 
+                    // 滑动刷新：JWT 剩余有效期低于阈值时自动续期并写入 Cookie
+                    if (jwt != null)
+                    {
+                        var set = CubeSetting.Current;
+                        var threshold = set.TokenRefreshThreshold;
+                        if (threshold > 0)
+                        {
+                            var remaining = jwt.Expire - DateTime.Now;
+                            if (remaining.TotalSeconds < threshold)
+                            {
+                                // 仅当令牌来自 Cookie 时才刷新，避免 API 请求误写 Cookie
+                                var fromCookie = false;
+                                if (set.TokenCookie && context?.Request != null)
+                                {
+                                    var key = $"token-{SysConfig.Current.Name}";
+                                    fromCookie = context.Request.Cookies[key] == token;
+                                }
+                                if (fromCookie)
+                                {
+                                    // 与新令牌有效期一致：SessionTimeout > 0 用配置，否则用 IssueToken 兜底 2h
+                                    var expire = set.SessionTimeout > 0 ?
+                                        TimeSpan.FromSeconds(set.SessionTimeout) :
+                                        TimeSpan.FromHours(2);
+                                    provider.SaveCookie(user, expire, context);
+
+                                    XTrace.WriteLine("滑动刷新：用户[{0}]令牌有效期剩余[{1}]秒，已刷新续期至[{2}]秒", user, remaining.TotalSeconds.ToInt(), expire.TotalSeconds.ToInt());
+                                }
+                            }
+                        }
+                    }
+
 #if MVC
                     // 保存登录信息。如果是json请求，不用记录自动登录
                     var req = context?.Request;

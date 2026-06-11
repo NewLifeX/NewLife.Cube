@@ -213,6 +213,11 @@ public class CubeSetting : Config<CubeSetting>
     [Category("用户登录")]
     public Int32 SessionTimeout { get; set; } = 0;
 
+    /// <summary>令牌滑动刷新阈值。JWT剩余有效期低于该秒数时在TryLogin中自动刷新令牌并写入Cookie，0表示禁用滑动过期</summary>
+    [Description("令牌滑动刷新阈值。JWT剩余有效期低于该秒数时在TryLogin中自动刷新令牌并写入Cookie，0表示禁用滑动过期")]
+    [Category("用户登录")]
+    public Int32 TokenRefreshThreshold { get; set; } = 900;
+
     /// <summary>刷新用户周期。该周期内多次SSO登录只拉取一次用户信息，默认600秒</summary>
     [Description("刷新用户周期。该周期内多次SSO登录只拉取一次用户信息，默认600秒")]
     [Category("用户登录")]
