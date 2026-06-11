@@ -43,6 +43,7 @@ public interface IUserBindingService
     /// <param name="user"></param>
     /// <param name="url"></param>
     /// <param name="accessToken"></param>
+    /// <param name="fallbackUrl">降级下载地址。内网地址下载失败时使用此地址重试</param>
     /// <returns></returns>
-    Task<Boolean> FetchAvatar(IManageUser user, String url = null, String accessToken = null);
+    Task<Boolean> FetchAvatar(IManageUser user, String url = null, String accessToken = null, String fallbackUrl = null);
 }

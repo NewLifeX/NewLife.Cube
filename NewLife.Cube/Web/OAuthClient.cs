@@ -698,8 +698,8 @@ public class OAuthClient
         var av = Avatar;
         if (av != null && av.StartsWith("/"))
         {
-            // 优先使用内网令牌服务地址，避免外网地址在内网环境下不可达
-            var baseUrl = !AccessServer.IsNullOrEmpty() ? AccessServer : Server;
+            // 头像地址用于浏览器展示，优先使用外网地址
+            var baseUrl = !Server.IsNullOrEmpty() ? Server : AccessServer;
             if (baseUrl.StartsWithIgnoreCase("http"))
                 return new Uri(new Uri(baseUrl), av) + "";
         }

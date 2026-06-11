@@ -328,7 +328,19 @@ public class UserBindingService : IUserBindingService
         if (needUpdate)
         {
             if (client.Config != null && client.Config.FetchAvatar)
-                Task.Factory.StartNew(() => FetchAvatar(user, av, client.AccessToken), TaskCreationOptions.LongRunning);
+            {
+                // 优先使用内网地址下载，失败后降级外网重试
+                String downloadUrl, fallbackUrl = null;
+                if (!client.AccessServer.IsNullOrEmpty() && client.Avatar?.StartsWith("/") == true)
+                {
+                    downloadUrl = client.AccessServer.EnsureEnd("/") + client.Avatar.TrimStart('/');
+                    fallbackUrl = av;   // av 已由 GetAvatarUrl() 基于外网地址 Server 构建
+                }
+                else
+                    downloadUrl = av;
+
+                Task.Factory.StartNew(() => FetchAvatar(user, downloadUrl, client.AccessToken, fallbackUrl), TaskCreationOptions.LongRunning);
+            }
             else
                 user2.Avatar = avatarUrl;
         }
@@ -558,8 +570,9 @@ public class UserBindingService : IUserBindingService
     /// <param name="user">用户对象</param>
     /// <param name="url">头像URL</param>
     /// <param name="accessToken">访问令牌</param>
+    /// <param name="fallbackUrl">降级下载地址。内网地址下载失败时使用此地址重试</param>
     /// <returns></returns>
-    public virtual async Task<Boolean> FetchAvatar(IManageUser user, String url = null, String accessToken = null)
+    public virtual async Task<Boolean> FetchAvatar(IManageUser user, String url = null, String accessToken = null, String fallbackUrl = null)
     {
         using var span = Tracer?.NewSpan(nameof(FetchAvatar), new { user.ID, user.Name, user.NickName, url });
 
@@ -634,6 +647,13 @@ public class UserBindingService : IUserBindingService
 
             XTrace.WriteLine("抓取头像失败，{0}, {1}", user, downloadUrl);
             XTrace.WriteException(ex);
+        }
+
+        // 内网下载失败时，尝试外网地址降级
+        if (!fallbackUrl.IsNullOrEmpty() && !url.IsNullOrEmpty() && fallbackUrl != url)
+        {
+            XTrace.WriteLine("内网头像下载失败，降级使用外网地址 {0}", fallbackUrl);
+            return await FetchAvatar(user, fallbackUrl, accessToken);
         }
 
         return false;
