@@ -57,5 +57,18 @@ namespace NewLife.Cube.Web.Models
 
         /// <summary>地区</summary>
         public String AreaId { get; set; }
+
+        /// <summary>头像地址替换规则。下载头像时将公网地址替换为内网地址</summary>
+        public UrlReplaceItem[] UrlReplace { get; set; }
+    }
+
+    /// <summary>URL替换规则项</summary>
+    public class UrlReplaceItem
+    {
+        /// <summary>待匹配的旧地址</summary>
+        public String Old { get; set; }
+
+        /// <summary>替换后的新地址</summary>
+        public String New { get; set; }
     }
 }

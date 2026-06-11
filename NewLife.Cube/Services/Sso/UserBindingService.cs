@@ -295,6 +295,9 @@ public class UserBindingService : IUserBindingService
         var av = client.GetAvatarUrl();
         if (av.IsNullOrEmpty()) return;
 
+        // 应用字段映射中的 URL 替换规则（公网地址→内网地址），便于本地服务器下载
+        av = ApplyUrlReplace(av, client.FieldMap);
+
         var avatarUrl = av;
         var remoteHash = "";
         var idx = av.IndexOf('#');
@@ -343,6 +346,24 @@ public class UserBindingService : IUserBindingService
             }
             else
                 user2.Avatar = avatarUrl;
+        }
+
+        // 应用字段映射中的 URL 替换规则
+        static String ApplyUrlReplace(String url, IDictionary<String, Object> fieldMap)
+        {
+            if (fieldMap == null || !fieldMap.TryGetValue("UrlReplace", out var val) || val is not IList<Object> list || list.Count == 0)
+                return url;
+
+            foreach (var item in list)
+            {
+                if (item is IDictionary<String, Object> rule &&
+                    rule.TryGetValue("Old", out var old) && old is String oldStr && !oldStr.IsNullOrEmpty() &&
+                    rule.TryGetValue("New", out var n) && n is String newStr && !newStr.IsNullOrEmpty())
+                {
+                    url = url.Replace(oldStr, newStr);
+                }
+            }
+            return url;
         }
     }
 
