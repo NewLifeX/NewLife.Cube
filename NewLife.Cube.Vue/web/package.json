@@ -25,7 +25,7 @@
     "@vue/runtime-dom": "^3.5.13",
     "@vueuse/core": "^13.0.0",
     "@vueuse/integrations": "^13.0.0",
-    "axios": "^1.8.4",
+    "axios": "^1.16.1",
     "echarts": "^5.6.0",
     "element-plus": "^2.9.7",
     "lodash": "^4.17.21",
