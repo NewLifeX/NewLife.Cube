@@ -4,6 +4,13 @@ import { type AxiosRequestConfig } from 'axios';
 import request from '../utils/request';
 import { removeAccessToken } from '../utils/token';
 import { useMenuStore } from './menu';
+import { gotoPage } from '../utils/router';
+
+const {
+  auth: {
+    reLoginParams: { loginPageUrl },
+  },
+} = getConfig();
 
 /** 用户信息 */
 export interface UserInfo {
@@ -106,7 +113,7 @@ export const useUserStore = defineStore('user', {
         removeAccessToken();
 
         // 重定向到登录页
-        window.location.href = '/login';
+        gotoPage(loginPageUrl);
       }
     },
     async fetchUserInfoAsync() {

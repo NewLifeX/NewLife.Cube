@@ -19,6 +19,13 @@ import notification from '../components/Notification';
 
 import { intl } from '../i18n';
 
+const {
+  request: { baseUrl: API_HOST },
+  auth: { oauthUrl, reLoginParams: {
+    loginPageUrl,
+  } },
+} = getConfig();
+
 // 常量定义
 const BASE_PATH = '';
 const INDEX_ROUTE_PATH = '/';
@@ -28,16 +35,13 @@ const INDEX_ROUTE_PATH = '/';
  * @param {Object} options - 配置选项
  * @param {string} options.loginPageUrl - 可选的登录页URL
  */
-export function redirectToLogin({ loginPageUrl }: { loginPageUrl?: string } = {}) {
+export function redirectToLogin({ loginPageUrl: loginPageUrl2 }: { loginPageUrl?: string; } = {}) {
   removeAccessToken();
   removeAllCookie();
 
-  const {
-    request: { baseUrl: API_HOST },
-    auth: { oauthUrl },
-  } = getConfig();
-  console.log('redirectToLogin', API_HOST);
-  const LOGIN_URL = loginPageUrl || `${API_HOST}${oauthUrl}`;
+
+  const LOGIN_URL = loginPageUrl2 || loginPageUrl || `${API_HOST}${oauthUrl}`;
+  console.log('redirectToLogin', LOGIN_URL);
 
   const sessionData = getSession('redirectUrl');
   let cacheLocation = sessionData;
@@ -45,19 +49,17 @@ export function redirectToLogin({ loginPageUrl }: { loginPageUrl?: string } = {}
     cacheLocation = encodeURIComponent(`${window.location.origin}${BASE_PATH || '/'}`);
   }
 
-  // const modifyReloginLocation = getConfig().auth?.modifyReloginLocation;
-  // if (modifyReloginLocation) {
-  //   cacheLocation = modifyReloginLocation(cacheLocation, {
-  //     BASE_PATH: BASE_PATH || '/',
   //   });
   // }
 
+  const loginPath = LOGIN_URL;
+
   // 构建重定向URL
   const redirectParams = getSession('templateParams') || '';
-  if (LOGIN_URL.includes('?')) {
-    window.location.href = `${LOGIN_URL}&redirect_uri=${cacheLocation}${redirectParams}`;
+  if (loginPath.includes('?')) {
+    gotoPage(`${loginPath}&redirect_uri=${cacheLocation}${redirectParams}`);
   } else {
-    window.location.href = `${LOGIN_URL}?redirect_uri=${cacheLocation}${redirectParams}`;
+    gotoPage(`${loginPath}?redirect_uri=${cacheLocation}${redirectParams}`);
   }
 }
 
@@ -253,14 +255,15 @@ function handleResponseError(error: AxiosError) {
  * @returns {any} - 处理后的响应数据，直接返回data部分
  */
 function handleResponseSuccess(response: AxiosResponse) {
-  const { data, config } = response;
+  const { data, config, headers } = response;
+  const contentType = headers['content-type'] || '';
 
   // 处理文件下载等二进制数据响应
-  if (config.responseType === 'blob' || config.responseType === 'arraybuffer') {
+  if (contentType === 'application/octet-stream' || contentType === 'arraybuffer') {
     return data;
   }
 
-  if (config.responseType === 'text' && typeof data !== 'string') {
+  if (contentType === 'text' && typeof data !== 'string') {
     return JSON.stringify(data);
   }
 
@@ -283,17 +286,20 @@ function handleResponseSuccess(response: AxiosResponse) {
     const isSuccess = apiResponse.code === 0 || apiResponse.code === 200;
 
     if (isSuccess) {
-      // 如果有分页信息，返回包含data和page的对象
-      if (apiResponse.page) {
-        return {
-          data: apiResponse.data,
-          page: apiResponse.page,
-          stat: apiResponse.stat,
-        };
-      }
+      // 保持统一，返回原始数据，固定的响应结构，避免每个接口返回结构不一样
+      return apiResponse;
 
-      // 无分页信息，直接返回data部分
-      return apiResponse.data;
+      // // 如果有分页信息，返回包含data和page的对象
+      // if (apiResponse.page) {
+      //   return {
+      //     data: apiResponse.data,
+      //     page: apiResponse.page,
+      //     stat: apiResponse.stat,
+      //   };
+      // }
+
+      // // 无分页信息，直接返回data部分
+      // return apiResponse.data;
     } else {
       // 失败：自动显示错误提示
       let errorMessage: string;

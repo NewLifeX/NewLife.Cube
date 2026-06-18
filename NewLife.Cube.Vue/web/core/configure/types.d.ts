@@ -84,6 +84,7 @@ export interface RequestConfig {
 // 认证相关配置
 export interface AuthConfig {
   tokenKey: string;
+  refreshTokenKey: string;
   oauthUrl: string;
   redirectUrl?: string;
   pageTitle?: string;
@@ -92,7 +93,7 @@ export interface AuthConfig {
   | AxiosRequestConfig
   | (() => AxiosRequestConfig)
   | (() => Promise<AxiosRequestConfig>);
-  reLoginParams?: {
+  reLoginParams: {
     titleIntlCode?: string;
     titleIntlDefault?: string;
     messageIntlCode?: string;
@@ -101,7 +102,7 @@ export interface AuthConfig {
     okTextIntlDefault?: string;
     cancelTextIntlCode?: string;
     cancelTextIntlDefault?: string;
-    loginPageUrl?: string;
+    loginPageUrl: string;
     cancelText?: string;
     onModalShow?: () => void;
     onOk?: () => void;

@@ -8,6 +8,7 @@ import { useMenuStore } from '../stores/menu';
 import { getUrlHashToken } from '../utils/token';
 import { useLayout } from '../composables/useLayout';
 import TopMenuLayout from './TopMenu/index.vue'; // 兜底默认布局
+import { getConfig } from '../configure/index.ts';
 
 const router = useRouter();
 const route = useRoute();
@@ -21,6 +22,12 @@ const MainLayout = computed(() => currentComponent.value ?? TopMenuLayout);
 
 // 使用计算属性获取响应式的 meta 对象
 const meta = computed(() => route.meta);
+
+const {
+  auth: {
+    reLoginParams: { loginPageUrl },
+  },
+} = getConfig();
 
 function checkLogin() {
   const token = getUrlHashToken();
@@ -64,7 +71,7 @@ onMounted(async () => {
 
 <template>
   <!-- 如果是登录页面，直接返回 -->
-  <template v-if="route.path === '/login'">
+  <template v-if="route.path === loginPageUrl">
     <slot />
   </template>
 
