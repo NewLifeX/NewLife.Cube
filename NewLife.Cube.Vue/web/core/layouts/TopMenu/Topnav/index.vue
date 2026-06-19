@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useMenuStore, type TreeMenuItem } from 'cube-front/core/stores/menu';
 import { getConfig } from 'cube-front/core/configure';
@@ -14,7 +14,9 @@ import UserProfile from 'cube-front/core/components/UserProfile.vue';
 const menuStore = useMenuStore();
 const { treeMenus, topLevelActiveMenu } = storeToRefs(menuStore);
 
-const title = getConfig().base.title;
+const config = getConfig();
+const title = config.base.title;
+const logo = computed(() => config.base.logo);
 const openMenuId = ref<string | null>(null);
 
 const isMenuActive = (menu: TreeMenuItem) => topLevelActiveMenu.value?.id === menu.id;
@@ -65,7 +67,8 @@ const handleMegaMouseLeave = () => {
     <!-- Logo -->
     <div class="tn-logo">
       <div class="tn-mark">
-        <svg viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
+        <img v-if="logo" :src="logo" :alt="title" class="tn-logo-img" />
+        <svg v-else viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M2 1C1.45 1 1 1.45 1 2v5h3V4h3V1H2zm6 0v3h3v3h3V2c0-.55-.45-1-1-1H8zM1 8v6c0 .55.45 1 1 1h6v-3H5V8H1zm11 3v3H9v3h5c.55 0 1-.45 1-1v-5h-3z"
           />
@@ -212,6 +215,7 @@ $tn-h: 60px;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 
   svg {
     width: 17px;
@@ -220,10 +224,17 @@ $tn-h: 60px;
   }
 }
 
+.tn-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
 .tn-name {
   font-size: 17px;
   font-weight: 700;
-  color: #fff;
+  color: var(--navbar-text, #fff);
   letter-spacing: 0.01em;
   white-space: nowrap;
 }
