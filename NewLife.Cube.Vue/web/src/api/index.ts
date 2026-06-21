@@ -7,6 +7,7 @@
 
 import { createCubeApi, type TokenStorage } from '@cube/api-core';
 import { Session } from '/@/utils/storage';
+import { getConfig } from '../../core/configure';
 
 /** 桥接 Vue 皮肤 sessionStorage Token 存储 */
 const sessionTokenStorage: TokenStorage = {
@@ -22,8 +23,9 @@ const sessionTokenStorage: TokenStorage = {
 };
 
 /** 全局 CubeApi 实例（与皮肤 Session 共享 token） */
+const cfg = getConfig();
 const cubeApi = createCubeApi({
-  baseURL: import.meta.env.DEV ? '/base-api' : (import.meta.env.VITE_API_URL ?? ''),
+  baseURL: cfg.request.baseUrl,
   tokenStorage: sessionTokenStorage,
   onUnauthorized: () => {
     Session.clear();

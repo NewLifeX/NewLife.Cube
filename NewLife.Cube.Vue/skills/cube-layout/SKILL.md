@@ -584,117 +584,117 @@ import Navbar from './Navbar.vue';
 </style>
 ```
 
-#### 3. 侧边栏（Sidebar.vue）— 必须对接 menuStore
+#### 3. 侧边栏（Sidebar.vue）— 对接 menuStore + 使用 MenuItem + LogoBrand
 
 **必须功能**：
-- 从 `useMenuStore()` 获取 `treeMenus`（树形菜单）
-- 从 `useMenuStore()` 获取 `activeMenu`（当前活跃菜单）
-- 菜单项高亮（`activeMenu.id === item.id`）
-- 路由跳转（`<router-link>` 或 `router.push`）
-- 折叠/展开状态（可选）
+- Logo：`<LogoBrand />` 自动读取配置中的 logo 和 system title
+- 搜索框（可选）：`<SearchBar mode="box" />` 实时搜索菜单
+- 从 `menuStore.treeMenus` 获取树形菜单
+- 使用 `<MenuItem>` 组件渲染菜单（自动处理递归、图标、高亮、跳转）
+- 加载/空状态：显示"加载菜单中..."或"暂无菜单数据"
+- 底部用户区域（可选）：`<UserProfile variant="sidebar" dropup>` 含退出登录
 
-**错误示例**（静态数据 = 玩具）：
-```typescript
-// ❌ 静态数据，无法动态更新
-const menuGroups = [{ title: '系统', items: [{ path: '/', label: '首页' }] }];
-```
-
-**正确示例**（对接 store + Element Plus 图标）：
-```typescript
-// ✅ 动态数据 + Element Plus 图标
-import { computed, h } from 'vue';
-import { useMenuStore, type TreeMenuItem } from 'cube-front/core/stores/menu';
-import * as ElementPlusIcons from '@element-plus/icons-vue';
-
-const menuStore = useMenuStore();
-const treeMenus = computed(() => menuStore.treeMenus ?? []);
-const activeMenu = computed(() => menuStore.activeMenu);
-
-/** 将 icon 字段（如 "User" / "setting" / "menu-fold"）解析为 Element Plus 图标组件 */
-function resolveMenuIcon(iconName?: string) {
-  if (!iconName) return null;
-  // 精确匹配（PascalCase，如 "User"、"Setting"）
-  const key = iconName as keyof typeof ElementPlusIcons;
-  const comp = ElementPlusIcons[key];
-  if (comp) return comp;
-  // 兼容小写/横线/下划线格式（如 "user" / "setting" / "menu-fold"）
-  const pascal = iconName
-    .split(/[-_]/)
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join('');
-  return (ElementPlusIcons as Record<string, unknown>)[pascal] ?? null;
-}
-
-/** 渲染图标：优先 Element Plus 图标，降级显示 emoji 占位 */
-function renderMenuIcon(iconName?: string) {
-  const iconComp = resolveMenuIcon(iconName);
-  if (iconComp) return h(iconComp as any, { width: 16, height: 16 });
-  return iconName || '📄';
-}
-```
+**推荐实现**（使用 MenuItem 组件）：
 
 ```vue
+<script setup lang="ts">
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useMenuStore } from 'cube-front/core/stores/menu';
+import LogoBrand from 'cube-front/core/components/LogoBrand.vue';
+import SearchBar from 'cube-front/core/components/SearchBar.vue';
+import MenuItem from 'cube-front/core/components/MenuItem.vue';
+import UserProfile from 'cube-front/core/components/UserProfile.vue';
+
+const menuStore = useMenuStore();
+const { treeMenus, activeMenu, loading, hasMenus } = storeToRefs(menuStore);
+const menuGroups = computed(() => treeMenus.value ?? []);
+</script>
+
 <template>
-  <nav>
-    <template v-for="group in menuGroups" :key="group.id">
-      <div v-if="group.children?.length" class="menu-group">
-        <div class="menu-group-title">{{ group.title || group.name }}</div>
-        <router-link
-          v-for="item in group.children"
-          :key="item.id"
-          :to="item.path"
-          class="menu-item"
-          :class="{ active: isActive(item) }"
-        >
-          <!-- Element Plus 图标渲染 -->
-          <span class="menu-icon"><component :is="renderMenuIcon(item.icon)" /></span>
-          <span class="menu-label">{{ item.title || item.name }}</span>
-        </router-link>
-      </div>
-    </template>
-    <div v-if="!hasMenus" class="menu-empty">
-      {{ loading ? '加载菜单中...' : '暂无菜单数据' }}
+  <aside class="sidebar">
+    <!-- Logo（自动读取配置） -->
+    <div class="sidebar-logo"><LogoBrand /></div>
+
+    <!-- 搜索框 -->
+    <div class="sidebar-search"><SearchBar mode="box" placeholder="搜索菜单..." /></div>
+
+    <!-- 菜单（MenuItem 自动处理递归/图标/高亮/跳转） -->
+    <nav class="sidebar-menu">
+      <template v-for="group in menuGroups" :key="group.id">
+        <div v-if="group.children?.length" class="menu-group">
+          <div class="menu-group-title">{{ group.title || group.name }}</div>
+          <MenuItem v-for="item in group.children" :key="item.id" :menu="item" :activeMenu="activeMenu" />
+        </div>
+      </template>
+      <div v-if="!hasMenus" class="menu-empty">{{ loading ? '加载菜单中...' : '暂无菜单数据' }}</div>
+    </nav>
+
+    <!-- 底部用户区域 -->
+    <div class="sidebar-user">
+      <UserProfile variant="sidebar" dropup>
+        <template #extra-options>
+          <ModeSwitcher />
+          <ThemeSwitcher />
+          <LayoutSwitcher />
+          <NotificationBell />
+        </template>
+      </UserProfile>
     </div>
-  </nav>
+  </aside>
 </template>
 ```
 
-> **图标来源**：菜单数据中的 `icon` 字段由后端返回，通常为 Element Plus 图标名称（如 `"User"`、`"Setting"`、`"MenuFold"`）。
-> 框架通过 `elSvg()` 全局注册了所有图标（前缀 `ele-`），但动态渲染场景下直接 `import * as ElementPlusIcons` 更可靠。
-> 降级策略：找不到对应图标时显示原始 icon 值或 emoji 占位。
+`MenuItem` 自动处理了菜单的所有交互（展开/折叠、递归、图标、高亮、跳转），无需手写。
 
-**菜单渲染参考**（CyberLayout Sidebar 模式）：
-- 展开模式（220px）：完整菜单树 + 分组折叠
-- 折叠模式（64px）：每组一个图标 + 飞出面板
-- 飞出菜单：鼠标悬停触发，200ms 延迟关闭
+**仅当需要自定义交互时**才手写菜单（不推荐）：
 
-#### 4. 顶部导航（Navbar.vue）— 必须对接 userStore + menuStore
+#### 4. 顶部导航（Navbar.vue）— 对接 userStore + menuStore + 框架组件
 
 **必须功能**：
-- 用户信息：从 `useUserStore().userInfo` 获取（`displayName`、`avatar`）
-- 页面标题：从 `useMenuStore().activeMenu` 获取（`title` 或 `name`）
-- 搜索框：可先 UI 占位，后续对接搜索 API
-- 通知按钮：可先 UI 占位，后续对接通知系统
-- 布局切换器：`<LayoutSwitcher />` 组件
-- 主题切换器：`<ThemeSwitcher />` 组件
-- 模式切换器：`<ModeSwitcher />` 组件
+- 页面标题：从 `menuStore.activeMenu.title` 获取
+- 用户信息：`<UserProfile variant="navbar" />` 自动对接 `userStore.userInfo`
+- 布局切换器：`<LayoutSwitcher />`
+- 主题切换器：`<ThemeSwitcher />`
+- 模式切换器：`<ModeSwitcher />`
+- 通知按钮：`<NotificationBell />`
+- 搜索框（可选）：`<SearchBar mode="icon" />`
 
-**正确示例**：
-```typescript
-import { useUserStore } from 'cube-front/core/stores/user';
+**完整示例**：
+
+```vue
+<script setup lang="ts">
+import { computed } from 'vue';
 import { useMenuStore } from 'cube-front/core/stores/menu';
 import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
 import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
 import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
 import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
-import NavbarUserProfile from 'cube-front/core/components/NavbarUserProfile.vue';
+import UserProfile from 'cube-front/core/components/UserProfile.vue';
+import SearchBar from 'cube-front/core/components/SearchBar.vue';
 
-const userStore = useUserStore();
 const menuStore = useMenuStore();
+const pageTitle = computed(() => menuStore.activeMenu?.title || menuStore.activeMenu?.name || '仪表盘');
+</script>
 
-const currentUser = computed(() => userStore.userInfo);
-const userName = computed(() => currentUser.value?.displayName || '管理员');
-const pageTitle = computed(() => menuStore.activeMenu?.title || '仪表盘');
+<template>
+  <header class="navbar">
+    <!-- 左侧标题 -->
+    <div class="navbar-left">
+      <h2>{{ pageTitle }}</h2>
+    </div>
+
+    <!-- 右侧工具栏 -->
+    <div class="navbar-right">
+      <SearchBar mode="icon" />
+      <ModeSwitcher />
+      <ThemeSwitcher />
+      <LayoutSwitcher />
+      <NotificationBell />
+      <UserProfile variant="navbar" />
+    </div>
+  </header>
+</template>
 ```
 
 #### 5. 面包屑（可选，在 Navbar 或独立组件中实现）
@@ -760,32 +760,41 @@ const breadcrumbPath = computed(() => {
 
 ### 功能完整性检查清单
 
-| 功能           | 状态 | 说明                                     |
-| -------------- | ---- | ---------------------------------------- |
-| 布局注册       | ⬜    | `registerLayout` 在 `main.ts` 中调用     |
-| 菜单动态数据   | ⬜    | 对接 `menuStore.treeMenus`，非静态数据   |
-| 活跃菜单高亮   | ⬜    | 对接 `menuStore.activeMenu`              |
-| 用户信息显示   | ⬜    | 对接 `userStore.userInfo`                |
-| 页面标题       | ⬜    | 对接 `menuStore.activeMenu.title`        |
-| 布局切换器     | ⬜    | `<LayoutSwitcher />` 组件                |
-| 主题切换器     | ⬜    | `<ThemeSwitcher />` 组件                 |
-| 模式切换器     | ⬜    | `<ModeSwitcher />` 组件                  |
-| 通知按钮       | ⬜    | `<NotificationBell />` 组件              |
-| 用户头像下拉   | ⬜    | `<UserProfile variant="navbar" />` 组件  |
-| 面包屑导航     | ⬜    | 基于 `parentMenu` 链                     |
-| CSS Token 变量 | ⬜    | 所有颜色引用 `var(--xxx)`                |
-| 主题变量定义   | ⬜    | `--aurora-xxx` 在 `variables.css` 中定义 |
+| 功能           | 组件/方式                                  | 数据来源                     | 说明                      |
+| -------------- | ------------------------------------------ | ---------------------------- | ------------------------- |
+| 布局注册       | `registerLayout()`                         | `useLayout()`                | `main.ts` 中调用          |
+| Logo/标题      | `<LogoBrand />`                            | `config.base.logo` + `title` | 自动读取配置              |
+| 菜单动态数据   | `<MenuItem />`                             | `menuStore.treeMenus`        | 递归渲染，非静态数据      |
+| 菜单图标       | `MenuItem` 内置                            | `menu.icon` → Element Plus   | 支持 EP 图标 + 默认兜底   |
+| 活跃菜单高亮   | `MenuItem` 内置                            | `menuStore.activeMenu`       | 自动高亮当前项 + 祖先     |
+| 菜单搜索       | `<SearchBar mode="box" />`                 | `menuStore.flatMenus`        | 模糊搜索 + 面包屑 + 跳转  |
+| 用户信息       | `<UserProfile variant="navbar" />`         | `userStore.userInfo`         | 头像/用户名/退出登录      |
+| 页面标题       | `menuStore.activeMenu.title`               | `menuStore`                  | 面包屑或标题显示          |
+| 布局切换器     | `<LayoutSwitcher />`                       | `useLayout()`                | 多布局时自动显示          |
+| 主题切换器     | `<ThemeSwitcher />`                        | `useTheme()`                 | 主题选择下拉              |
+| 模式切换器     | `<ModeSwitcher />`                         | `useTheme().toggleMode()`    | 明/暗模式切换             |
+| 通知按钮       | `<NotificationBell />`                     | 无                           | UI 占位，可扩展           |
+| 用户头像下拉   | `<UserProfile variant="sidebar" dropup />` | `userStore`                  | 侧边栏底部 + 额外选项插槽 |
+| 面包屑导航     | 手动基于 `parentMenu` 链                   | `activeMenu.parentMenu`      | 沿反向指针递推            |
+| CSS Token 变量 | `variables.css`                            | Layer 1 派生                 | `--aurora-xxx` 命名前缀   |
+
+> **关键**：所有展示用户/菜单/Logo 的组件都已对接真实 Store 或配置，**无需手动获取数据**。
 
 ### 关键框架组件清单
 
-| 组件               | 路径                                              | 用途                                               |
-| ------------------ | ------------------------------------------------- | -------------------------------------------------- |
-| `LayoutSwitcher`   | `cube-front/core/components/LayoutSwitcher.vue`   | 布局切换下拉                                       |
-| `ThemeSwitcher`    | `cube-front/core/components/ThemeSwitcher.vue`    | 主题选择下拉                                       |
-| `ModeSwitcher`     | `cube-front/core/components/ModeSwitcher.vue`     | 明/暗模式切换                                      |
-| `NotificationBell` | `cube-front/core/components/NotificationBell.vue` | 通知铃铛                                           |
-| `UserProfile`      | `cube-front/core/components/UserProfile.vue`      | 用户头像下拉（支持 `navbar` / `sidebar` 两种变体） |
-| `SwitcherDropdown` | `cube-front/core/components/SwitcherDropdown.vue` | 通用下拉切换器                                     |
+| 组件               | 路径                                   | 对接数据                      | 用途                                    |
+| ------------------ | -------------------------------------- | ----------------------------- | --------------------------------------- |
+| `LogoBrand`        | `core/components/LogoBrand.vue`        | `config.base.logo` + `.title` | Logo 图片 + 系统标题                    |
+| `MenuItem`         | `core/components/MenuItem.vue`         | `menuStore`                   | 树形菜单（递归/图标/高亮/跳转）         |
+| `SearchBar`        | `core/components/SearchBar.vue`        | `menuStore.flatMenus`         | 菜单搜索（关键词→结果→跳转）            |
+| `LayoutSwitcher`   | `core/components/LayoutSwitcher.vue`   | `useLayout()`                 | 布局切换下拉                            |
+| `ThemeSwitcher`    | `core/components/ThemeSwitcher.vue`    | `useTheme()`                  | 主题选择下拉                            |
+| `ModeSwitcher`     | `core/components/ModeSwitcher.vue`     | `useTheme()`                  | 明/暗模式切换                           |
+| `NotificationBell` | `core/components/NotificationBell.vue` | 无                            | 通知铃铛                                |
+| `UserProfile`      | `core/components/UserProfile.vue`      | `userStore.userInfo`          | 用户头像下拉（navbar/sidebar 两种变体） |
+| `UserAvatar`       | `core/components/UserAvatar.vue`       | `userStore.userInfo`          | 用户头像首字母（轻量无下拉）            |
+| `ActionButton`     | `core/components/ActionButton.vue`     | 无                            | 通用图标按钮基类                        |
+| `SwitcherDropdown` | `core/components/SwitcherDropdown.vue` | 无                            | 通用下拉切换器                          |
 
 ### 关键框架 Store
 
@@ -837,7 +846,133 @@ const breadcrumbPath = computed(() => {
 
 以下组件均来自 `cube-front/core/components/`，**无需自行实现**，直接 import 使用即可。
 
-### 2.1 LayoutSwitcher — 布局切换下拉
+### 可复用的框架内置组件
+
+以下组件均来自 `cube-front/core/components/`，**无需自行实现**，直接 import 使用即可。
+所有组件都已对接真实数据（menuStore / userStore / config），不是静态 UI。
+
+| 组件               | 路径                                   | 对接数据                           | 用途                                                                    |
+| ------------------ | -------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------- |
+| `LogoBrand`        | `core/components/LogoBrand.vue`        | `getConfig().base.logo` + `.title` | Logo 图片 + 系统标题，props: `collapsed`                                |
+| `MenuItem`         | `core/components/MenuItem.vue`         | `menuStore` 递归渲染               | 树形菜单项，支持 Element Plus 图标，props: `menu` `depth` `activeMenu`  |
+| `SearchBar`        | `core/components/SearchBar.vue`        | `menuStore.flatMenus` 模糊搜索     | 菜单搜索框（`mode="box"`）/ 图标按钮（`mode="icon"`）                   |
+| `UserProfile`      | `core/components/UserProfile.vue`      | `userStore.userInfo`               | 用户头像 + 下拉菜单（个人资料/退出登录），variant: `navbar` / `sidebar` |
+| `UserAvatar`       | `core/components/UserAvatar.vue`       | `userStore.userInfo`               | 仅用户头像首字母 + 名称，props: `size` `showName`                       |
+| `LayoutSwitcher`   | `core/components/LayoutSwitcher.vue`   | `useLayout()`                      | 布局切换下拉（仅多布局时显示）                                          |
+| `ThemeSwitcher`    | `core/components/ThemeSwitcher.vue`    | `useTheme()`                       | 主题选择下拉                                                            |
+| `ModeSwitcher`     | `core/components/ModeSwitcher.vue`     | `useTheme().toggleMode()`          | 明/暗模式切换按钮                                                       |
+| `NotificationBell` | `core/components/NotificationBell.vue` | 无（UI 占位）                      | 通知铃铛按钮                                                            |
+| `ActionButton`     | `core/components/ActionButton.vue`     | 无                                 | 通用图标按钮基类                                                        |
+
+### 2.1 LogoBrand — Logo 和系统标题（自动读取配置）
+
+```vue
+<script setup lang="ts">
+import LogoBrand from 'cube-front/core/components/LogoBrand.vue';
+</script>
+
+<template>
+  <!-- 折叠时隐藏标题 -->
+  <LogoBrand :collapsed="false" />
+</template>
+```
+
+| 特性     | 说明                                                                      |
+| -------- | ------------------------------------------------------------------------- |
+| 数据来源 | `getConfig().base.logo` — logo 图片 URL/路径                              |
+|          | `getConfig().base.title` — 系统标题文字                                   |
+| 配置位置 | `configs/config.ts` → `base: { logo: '/favicon.svg', title: '系统名称' }` |
+| 图片处理 | 自动计算宽高比，正方形图片隐藏标题避免重复                                |
+| Props    | `collapsed?: boolean` — 折叠模式隐藏标题                                  |
+| 无需传参 | 不传 `collapsed` 时默认展开显示                                           |
+
+### 2.2 MenuItem — 树形菜单组件（动态数据 + 图标）
+
+```vue
+<script setup lang="ts">
+import MenuItem from 'cube-front/core/components/MenuItem.vue';
+import { useMenuStore } from 'cube-front/core/stores/menu';
+import { storeToRefs } from 'pinia';
+
+const menuStore = useMenuStore();
+const { activeMenu } = storeToRefs(menuStore);
+</script>
+
+<template>
+  <MenuItem v-for="item in topMenus" :key="item.id" :menu="item" :activeMenu="activeMenu" />
+</template>
+```
+
+| 特性      | 说明                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------ |
+| 数据来源  | `props.menu` — `TreeMenuItem` 对象                                                         |
+| 递归渲染  | 自动递归 `menu.children`，每层自动缩进                                                     |
+| 图标支持  | **Element Plus 图标**（优先）→ **内联 SVG**（fallback）→ **默认 Menu 图标**                |
+| 图标匹配  | icon 字段值（如 `"User"`）→ `@element-plus/icons-vue` 中查找 PascalCase 匹配               |
+| 展开/折叠 | 有子菜单时点击切换展开                                                                     |
+| 激活高亮  | 根据 `activeMenu` 自动判断当前项和祖先高亮                                                 |
+| 点击跳转  | 叶子节点调用 `openMenuTab()` + `menuStore.setActiveMenu()`                                 |
+| Props     | `menu: TreeMenuItem` — 菜单项数据                                                          |
+|           | `depth?: number` — 缩进层级（默认 0）                                                      |
+|           | `activeMenu?: TreeMenuItem` — 当前活跃菜单                                                 |
+| CSS 变量  | `--radius-sm` `--sidebar-item-hover` `--sidebar-item-active` `--accent` `--text-secondary` |
+
+### 2.3 SearchBar — 菜单搜索框（对接 menuStore 真实菜单）
+
+```vue
+<script setup lang="ts">
+import SearchBar from 'cube-front/core/components/SearchBar.vue';
+</script>
+
+<template>
+  <!-- 搜索框模式：输入文字弹出搜索结果下拉 -->
+  <SearchBar mode="box" placeholder="搜索菜单..." />
+
+  <!-- 图标模式：仅显示搜索图标按钮 -->
+  <SearchBar mode="icon" />
+</template>
+```
+
+| 特性     | 说明                                                                 |
+| -------- | -------------------------------------------------------------------- |
+| 数据来源 | `menuStore.flatMenus` — 所有平铺菜单（含无路径的父级）               |
+| 匹配规则 | 按 `name` 和 `title` 模糊匹配，取前 10 条                            |
+| 结果展示 | 显示匹配菜单名 + 面包屑路径（`父级 › 当前`）                         |
+| 高亮     | 匹配字符用 `<mark>` 标签高亮                                         |
+| 点击行为 | 调用 `openMenuTab()` 跳转 + `menuStore.setActiveMenu()` 更新活跃状态 |
+| Props    | `mode: 'icon' \| 'box'` — 显示模式                                   |
+|          | `placeholder?: string` — 输入框占位文字                              |
+
+### 2.4 UserProfile — 用户头像下拉（真实用户数据）
+
+```vue
+<script setup lang="ts">
+import UserProfile from 'cube-front/core/components/UserProfile.vue';
+</script>
+
+<template>
+  <!-- 顶部栏模式：下拉向下 -->
+  <UserProfile variant="navbar" />
+
+  <!-- 侧边栏底部模式：下拉向上 -->
+  <UserProfile variant="sidebar" dropup />
+</template>
+```
+
+| 特性         | 说明                                                                  |
+| ------------ | --------------------------------------------------------------------- |
+| **数据来源** | `userStore.userInfo.displayName` → 用户名                             |
+|              | `userStore.userInfo.id` → 头像 URL `${baseUrl}/Cube/Avatar/${userId}` |
+| **真实可用** | ✅ 登录后自动填充，无需手动获取                                        |
+| 头像降级     | 加载失败时显示用户名首字母大写                                        |
+| 内置操作     | 「个人资料」→ `/profile`；「退出登录」→ `userStore.logout()`          |
+| Slots        | `#extra-options` — 在用户信息卡之前插入自定义内容                     |
+| Props        | `variant: 'navbar' \| 'sidebar'` — 显示变体                           |
+|              | `dropup: boolean` — 是否向上弹出（sidebar 模式用）                    |
+
+> ⚠️ 注意：组件名为 `UserProfile`，**不是** `NavbarUserProfile`。CyberLayout 的 Navbar 中引用 `NavbarUserProfile` 是旧代码遗留问题，实际该文件不存在，新布局应直接使用 `UserProfile`。
+
+### 2.5 LayoutSwitcher — 布局切换下拉
 
 ```vue
 <script setup lang="ts">
@@ -857,7 +992,7 @@ import LayoutSwitcher from 'cube-front/core/components/LayoutSwitcher.vue';
 | Props    | `onChange?: (layoutId: string) => void` — 自定义切换回调 |
 | 无需传参 | 默认行为即可满足绝大多数场景                             |
 
-### 2.2 ThemeSwitcher — 主题选择下拉
+### 2.6 ThemeSwitcher — 主题选择下拉
 
 ```vue
 <script setup lang="ts">
@@ -871,11 +1006,11 @@ import ThemeSwitcher from 'cube-front/core/components/ThemeSwitcher.vue';
 
 | 特性     | 说明                                                                |
 | -------- | ------------------------------------------------------------------- |
-| 主题来源 | 读取框架已注册的主题列表（Cyber、Aurora 等）                        |
+| 主题来源 | 读取框架已注册的主题列表                                            |
 | 切换逻辑 | 修改 `document.documentElement.setAttribute('data-theme', themeId)` |
 | Props    | 无必填参数，开箱即用                                                |
 
-### 2.3 ModeSwitcher — 明暗模式切换
+### 2.7 ModeSwitcher — 明暗模式切换
 
 ```vue
 <script setup lang="ts">
@@ -893,7 +1028,7 @@ import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
 | 存储  | 写入 `localStorage`，刷新后保持 |
 | Props | 无必填参数                      |
 
-### 2.4 NotificationBell — 通知铃铛
+### 2.8 NotificationBell — 通知铃铛
 
 ```vue
 <script setup lang="ts">
@@ -901,7 +1036,7 @@ import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
 </script>
 
 <template>
-  <NotificationBell @click="handleNotificationClick" />
+  <NotificationBell show-label @click="handleClick" />
 </template>
 ```
 
@@ -912,33 +1047,26 @@ import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
 | 事件  | `@click` — 点击时触发                                 |
 | 扩展  | 后续可接入真实通知 API，当前仅 UI 占位                |
 
-### 2.5 UserProfile — 用户头像下拉（**注意：不是 NavbarUserProfile**）
+### 2.9 UserAvatar — 用户头像首字母（轻量级）
 
 ```vue
 <script setup lang="ts">
-import UserProfile from 'cube-front/core/components/UserProfile.vue';
+import UserAvatar from 'cube-front/core/components/UserAvatar.vue';
 </script>
 
 <template>
-  <!-- 顶部栏模式：下拉向下 -->
-  <UserProfile variant="navbar" />
-
-  <!-- 侧边栏底部模式：下拉向上 -->
-  <UserProfile variant="sidebar" :dropup="true" />
+  <UserAvatar size="small" :showName="true" variant="default" />
 </template>
 ```
 
-| 特性       | 说明                                                                                      |
-| ---------- | ----------------------------------------------------------------------------------------- |
-| **组件名** | `UserProfile.vue`（**不是** `NavbarUserProfile.vue`，后者不存在）                         |
-| variant    | `'navbar'`（顶部栏，下拉向下）\| `'sidebar'`（侧边栏底部，下拉向上）                      |
-| dropup     | `boolean`，sidebar 模式时传 `true`，下拉面板向上弹出                                      |
-| 头像 URL   | 自动拼接 `${baseUrl}/Cube/Avatar/${userId}`                                               |
-| 降级显示   | 头像加载失败时显示用户名首字母大写                                                        |
-| 内置操作   | 点击头像 → 下拉菜单 → 「个人资料」跳转 `/profile` + 「退出登录」调用 `userStore.logout()` |
-| Slots      | `#extra-options` — 可在用户信息卡之前插入自定义选项                                       |
-
-> ⚠️ **踩坑记录**：早期文档误写为 `NavbarUserProfile`，实际组件名为 `UserProfile`，通过 `variant` 区分使用场景。
+| 特性               | 说明                                                    |
+| ------------------ | ------------------------------------------------------- |
+| 数据来源           | `userStore.userInfo.displayName` 首字母 + 全名          |
+| Props              | `size: 'small' \| 'medium' \| 'large'`（28/32/40px）    |
+|                    | `showName?: boolean`                                    |
+|                    | `variant: 'default' \| 'green'`                         |
+|                    | `onClick?: () => void`                                  |
+| 对比 `UserProfile` | `UserAvatar` 轻量无下拉，`UserProfile` 包含完整下拉菜单 |
 
 ---
 
@@ -978,46 +1106,53 @@ interface TreeMenuItem {
 
 **数据来源**：`menuStore.treeMenus`（顶层节点作为分组，`children` 作为组内菜单项）
 
-```typescript
-// Sidebar.vue
-const menuStore = useMenuStore();
-const treeMenus = computed(() => menuStore.treeMenus ?? []);
-const activeMenu = computed(() => menuStore.activeMenu);
-const menuGroups = computed(() => treeMenus.value); // 顶层节点 = 分组
-
-function isActive(item: TreeMenuItem): boolean {
-  const active = activeMenu.value;
-  if (!active) return false;
-  // 精确匹配：当前菜单项本身，或其父分组
-  return active.id === item.id || active.parentId === item.id;
-}
-```
+**推荐使用 `MenuItem` 组件**（无需手写菜单逻辑）：
 
 ```vue
+<script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import { useMenuStore } from 'cube-front/core/stores/menu';
+import MenuItem from 'cube-front/core/components/MenuItem.vue';
+
+const menuStore = useMenuStore();
+const { treeMenus, activeMenu } = storeToRefs(menuStore);
+const menuGroups = computed(() => treeMenus.value ?? []);
+</script>
+
 <template>
   <nav>
     <template v-for="group in menuGroups" :key="group.id">
       <div v-if="group.children?.length" class="menu-group">
         <div class="menu-group-title">{{ group.title || group.name }}</div>
-        <router-link
+        <MenuItem
           v-for="item in group.children"
           :key="item.id"
-          :to="item.path"
-          class="menu-item"
-          :class="{ active: isActive(item) }"
-        >
-          <span class="menu-icon">{{ item.icon || '📄' }}</span>
-          <span class="menu-label">{{ item.title || item.name }}</span>
-        </router-link>
+          :menu="item"
+          :activeMenu="activeMenu"
+        />
       </div>
     </template>
-    <!-- 无数据时显示加载/空状态 -->
     <div v-if="!hasMenus" class="menu-empty">
       {{ loading ? '加载菜单中...' : '暂无菜单数据' }}
     </div>
   </nav>
 </template>
 ```
+
+`MenuItem` 自动处理：
+- **递归渲染**子菜单（含缩进）
+- **展开/折叠**切换
+- **激活高亮**（当前项 + 祖先链路）
+- **图标渲染**（Element Plus → SVG → 默认 Menu 图标）
+- **路由跳转**（调 `openMenuTab()` + `setActiveMenu()`）
+
+如果不需要分组标题或需要自定义交互（如分组折叠），可参考 CyberLayout 的直接使用 `MenuItem` 方式：
+
+```vue
+<MenuItem v-for="menu in menuList" :key="menu.id" :menu="menu" :activeMenu="activeMenu" />
+```
+
+**手写菜单（不推荐，仅当需要特殊交互时）**：
 
 ### 3.4 Navbar 面包屑（基于 parentMenu 链）
 
@@ -1217,12 +1352,13 @@ import Navbar from './Navbar.vue';
 
 ### 7.2 Sidebar.vue — 动态侧边栏
 
-**职责**：展示 Logo + 动态菜单树 + 活跃状态高亮。
+**职责**：展示 Logo + 搜索框 + 动态菜单树 + 活跃状态高亮。
 
 **关键逻辑**：
-- 从 `menuStore.treeMenus` 读取菜单分组
-- 从 `menuStore.activeMenu` 判断当前活跃项
-- 使用 `<router-link :to="item.path">` 实现路由跳转
+- Logo：使用 `<LogoBrand />`，自动从 `configs/config.ts` 的 `base.logo` 和 `base.title` 读取
+- 搜索框（可选）：使用 `<SearchBar mode="box" placeholder="搜索菜单..." />`，支持菜单模糊搜索
+- 菜单：使用 `<MenuItem>` 组件（`menuStore.treeMenus` 动态数据），自动处理递归渲染、图标、高亮、跳转
+- 底部用户区域（可选）：使用 `<UserProfile variant="sidebar" dropup>`，含头像/用户名/退出登录
 - 加载中/无数据时显示友好提示
 
 ### 7.3 Navbar.vue — 顶部导航栏
@@ -1238,14 +1374,17 @@ import Navbar from './Navbar.vue';
 
 ## 八、常见踩坑与解决方案
 
-| 坑                           | 表现                       | 原因                                | 解决方案                                             |
-| ---------------------------- | -------------------------- | ----------------------------------- | ---------------------------------------------------- |
-| `provide(LayoutKey)` 不生效  | 布局切换器显示但切换无反应 | `RootLayout.vue` 不读取 injected 值 | 使用 `registerLayout()` 函数                         |
-| `NavbarUserProfile` 导入失败 | 编译错误：模块不存在       | 组件实际名为 `UserProfile.vue`      | 改为 `import UserProfile from '.../UserProfile.vue'` |
-| 侧边栏菜单不更新             | 路由切换后高亮状态不变     | 使用了静态数据而非 store            | 改为 `computed(() => menuStore.treeMenus)`           |
-| CSS 变量不生效               | 样式无变化                 | `variables.css` 用了 `scoped` style | `@import` 必须在非 scoped 的 `<style>` 中            |
-| 布局切换器不显示             | 只看到一个布局选项         | 只注册了一个布局                    | 注册多个布局后自动显示                               |
-| 面包屑为空                   | 导航栏无面包屑             | `activeMenu` 为 null                | 确保路由跳转后 menuStore 已更新 activeMenu           |
+| 坑                           | 表现                       | 原因                                         | 解决方案                                                           |
+| ---------------------------- | -------------------------- | -------------------------------------------- | ------------------------------------------------------------------ |
+| `provide(LayoutKey)` 不生效  | 布局切换器显示但切换无反应 | `RootLayout.vue` 不读取 injected 值          | 使用 `registerLayout()` 函数                                       |
+| `NavbarUserProfile` 导入失败 | 编译错误：模块不存在       | 组件实际名为 `UserProfile.vue`               | 改为 `import UserProfile from '.../UserProfile.vue'`               |
+| 侧边栏菜单不更新             | 路由切换后高亮状态不变     | 使用了静态数据而非 store                     | 使用 `<MenuItem>` 组件或改为 `computed(() => menuStore.treeMenus)` |
+| CSS 变量不生效               | 样式无变化                 | `variables.css` 用了 `scoped` style          | `@import` 必须在非 scoped 的 `<style>` 中                          |
+| 布局切换器不显示             | 只看到一个布局选项         | 只注册了一个布局                             | 注册多个布局后自动显示                                             |
+| 面包屑为空                   | 导航栏无面包屑             | `activeMenu` 为 null                         | 确保路由跳转后 menuStore 已更新 activeMenu                         |
+| 手写图标/菜单/用户信息       | 需要自行处理各种边缘情况   | 未使用框架内置组件                           | 使用 `MenuItem`/`LogoBrand`/`UserProfile` 等现成组件               |
+| 用户头像不显示               | 头像图片 404 或加载失败    | `baseUrl` 未正确配置                         | `UserProfile` 自动拼接 `${baseUrl}/Cube/Avatar/${userId}`          |
+| 菜单图标不显示               | 只有文字无图标             | 未导入 Element Plus icons 或 icon 字段不匹配 | `MenuItem` 已内置 EP 图标解析，设置正确的 icon 字段值即可          |
 
 ---
 
@@ -1254,15 +1393,19 @@ import Navbar from './Navbar.vue';
 构建通过后，按以下步骤在浏览器中验证：
 
 - [ ] 布局正确渲染（侧边栏 + 顶部栏 + 内容区）
+- [ ] 侧边栏 Logo 显示配置中的 logo 图片和系统标题
+- [ ] 侧边栏搜索框可搜索菜单并跳转
 - [ ] 侧边栏显示动态菜单（从后端加载，非静态数据）
 - [ ] 点击菜单项后高亮状态正确切换
-- [ ] 路由跳转正常（`<router-link>` 生效）
+- [ ] 菜单图标正常显示（Element Plus 图标/默认 Menu 图标）
+- [ ] 路由跳转正常
 - [ ] 面包屑随路由变化正确更新
+- [ ] 右上角显示当前登录用户的头像/名称
+- [ ] 用户头像下拉菜单有「个人资料」和「退出登录」
 - [ ] 布局切换器显示（注册多个布局时）
 - [ ] 主题切换器可切换主题
 - [ ] 明暗模式切换正常
 - [ ] 通知铃铛可点击
-- [ ] 用户头像下拉正常显示，退出登录功能正常
 - [ ] 响应式：窗口缩小时侧边栏行为正常（如折叠）
 - [ ] 刷新页面后布局/主题/模式状态保持
 
@@ -1283,12 +1426,12 @@ import Navbar from './Navbar.vue';
 
 ## 十一、 AuroraLayout 实际文件参考
 
-| 文件                                                              | 行数    | 说明       |
-| ----------------------------------------------------------------- | ------- | ---------- |
-| `SmartMES.Frontend/src/layouts/AuroraLayout/index.vue`            | ~45 行  | 布局入口   |
-| `SmartMES.Frontend/src/layouts/AuroraLayout/Sidebar.vue`          | ~80 行  | 动态侧边栏 |
-| `SmartMES.Frontend/src/layouts/AuroraLayout/Navbar.vue`           | ~100 行 | 顶部导航   |
-| `SmartMES.Frontend/src/layouts/AuroraLayout/styles/variables.css` | ~60 行  | 主题变量   |
-| `SmartMES.Frontend/src/main.ts`                                   | +5 行   | 注册布局   |
+| 文件                                                              | 行数    | 使用组件                                                                                 | 说明                           |
+| ----------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- | ------------------------------ |
+| `SmartMES.Frontend/src/layouts/AuroraLayout/index.vue`            | ~45 行  | Sidebar + Navbar + slot                                                                  | 布局入口                       |
+| `SmartMES.Frontend/src/layouts/AuroraLayout/Sidebar.vue`          | ~80 行  | `LogoBrand` + `SearchBar` + `MenuItem`                                                   | 动态侧边栏（Logo+搜索+菜单）   |
+| `SmartMES.Frontend/src/layouts/AuroraLayout/Navbar.vue`           | ~100 行 | `UserProfile` + `LayoutSwitcher` + `ThemeSwitcher` + `ModeSwitcher` + `NotificationBell` | 顶部导航（用户/主题/布局切换） |
+| `SmartMES.Frontend/src/layouts/AuroraLayout/styles/variables.css` | ~60 行  | Layer 2 CSS Token                                                                        | 主题变量                       |
+| `SmartMES.Frontend/src/main.ts`                                   | +5 行   | `registerLayout()`                                                                       | 注册布局                       |
 
 > 以上文件均为实际可运行的生产代码，可直接作为新增布局的参考模板。

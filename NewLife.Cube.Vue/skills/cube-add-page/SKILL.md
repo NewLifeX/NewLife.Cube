@@ -153,6 +153,113 @@ apps/{app-name}/src/views/{area}/{controller}/index.vue
 
 根据原型直接实现为 Vue 组件即可。
 
+### 自定义页面对接后端 API
+
+自定义页面中可通过 `usePageApi(area, controller)` composable 快速对接后端 CRUD API，无需为每个模块手写请求逻辑。
+
+> **前提**：前端项目需在 `package.json` 中添加 `"@cube/api-core": "workspace:*"` 依赖，根目录 `pnpm-workspace.yaml` 包含 `- "Cube/packages/*"`。参考 SmartMES 项目的实现。
+
+#### 全局 API 实例
+
+框架提供全局 `cubeApi` 实例（位于 `src/cubeApi.ts`），基于 `@cube/api-core` 的 `createCubeApi()` 创建，自动处理 Token 注入、401 跳转、响应拦截、字段名归一化等。
+
+```ts
+import { createCubeApi } from '@cube/api-core';
+
+const cubeApi = createCubeApi({
+  baseURL: import.meta.env.DEV ? '/base-api' : (import.meta.env.VITE_API_URL ?? ''),
+  onUnauthorized: () => { window.location.href = '/'; },
+});
+```
+
+#### 通用 CRUD Composable
+
+通过 `usePageApi(area, controller)` 创建页面级 API 对象，内置路径拼接逻辑：
+
+| 方法                   | 功能                                 | 对应后端接口                            |
+| ---------------------- | ------------------------------------ | --------------------------------------- |
+| `getPage()`            | 获取页面元数据（字段配置、页面设置） | GET `/{area}/{controller}/GetPage`      |
+| `getFields(kind)`      | 获取指定类型的字段列表               | GET `/{area}/{controller}/GetFields`    |
+| `getList(params)`      | 分页列表查询                         | GET `/{area}/{controller}`              |
+| `getDetail(id)`        | 查看详情                             | GET `/{area}/{controller}/Detail`       |
+| `add(data)`            | 新增                                 | POST `/{area}/{controller}`             |
+| `update(data)`         | 编辑                                 | PUT `/{area}/{controller}`              |
+| `remove(id)`           | 删除单条                             | DELETE `/{area}/{controller}`           |
+| `deleteSelect(keys)`   | 批量删除                             | DELETE `/{area}/{controller}`           |
+| `uploadFile(file)`     | 上传文件                             | POST `/{area}/{controller}/UploadFile`  |
+| `importFile(file)`     | 导入文件                             | POST `/{area}/{controller}/ImportFile`  |
+| `getExportUrl(format)` | 获取导出下载 URL                     | 直接返回 URL                            |
+| `getChartData()`       | 获取图表数据                         | GET `/{area}/{controller}/GetChartData` |
+
+#### 在页面中使用
+
+```vue
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { usePageApi } from "@/composables/usePageApi";
+
+// 传入区域和控制器名，即得完整 CRUD（路径自动拼接为 /{Area}/{Controller}）
+const api = usePageApi("Demo", "Demo");
+
+const list = ref<Record<string, unknown>[]>([]);
+const loading = ref(false);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = ref(20);
+
+/** 获取分页列表 */
+async function fetchList() {
+  loading.value = true;
+  try {
+    const res = await api.getList({
+      pageIndex: currentPage.value - 1,
+      pageSize: pageSize.value,
+    });
+    list.value = res.data ?? [];
+    total.value = res.page?.totalCount ?? 0;
+  } finally {
+    loading.value = false;
+  }
+}
+
+/** 新增 */
+async function handleAdd(data: Record<string, unknown>) {
+  await api.add(data);
+  ElMessage.success("新增成功");
+  await fetchList();
+}
+
+/** 编辑 */
+async function handleEdit(data: Record<string, unknown>) {
+  await api.update(data);
+  ElMessage.success("更新成功");
+  await fetchList();
+}
+
+/** 删除（带确认弹窗） */
+async function handleDelete(row: Record<string, unknown>) {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除 "${row.name ?? row.Name}" 吗？`,
+      "确认删除",
+      { confirmButtonText: "删除", cancelButtonText: "取消", type: "warning" }
+    );
+    const id = (row.id ?? row.Id) as number;
+    await api.remove(id);
+    ElMessage.success("删除成功");
+    await fetchList();
+  } catch (err: any) {
+    if (err !== "cancel") ElMessage.error(err?.message || "删除失败");
+  }
+}
+
+onMounted(() => fetchList());
+</script>
+```
+
+> **关键设计**：`usePageApi` composable 是唯一的 API 入口，所有自定义页面都通过它调用后端。这样既不需要为每个模块创建 `api/xxx.ts` 文件，也保持了统一的错误处理和 Token 管理。
+
 ### 第五步：刷新验证
 
 - 确保后端项目（SmartMES.Web）正在运行
@@ -199,23 +306,63 @@ public class DemoController : EntityController<DemoEntity>
 ```vue
 <template>
   <div>
-    <!-- 你的自定义内容 -->
+    <el-table :data="list" v-loading="loading" stripe>
+      <el-table-column prop="name" label="名称" />
+      <el-table-column prop="code" label="编码" />
+      <el-table-column label="操作">
+        <template #default="{ row }">
+          <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
+          <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
   </div>
 </template>
 
 <script setup lang="ts">
-// 无需导入路由相关
+import { ref, onMounted } from "vue";
+import { ElMessage } from "element-plus";
+import { usePageApi } from "@/composables/usePageApi";
+
+const api = usePageApi("Demo", "Demo");
+const list = ref<Record<string, unknown>[]>([]);
+const loading = ref(false);
+
+async function fetchList() {
+  loading.value = true;
+  try {
+    const res = await api.getList({ pageIndex: 0, pageSize: 20 });
+    list.value = res.data ?? [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handleEdit(row: Record<string, unknown>) {
+  await api.update(row);
+  ElMessage.success("更新成功");
+  await fetchList();
+}
+
+async function handleDelete(row: Record<string, unknown>) {
+  await api.remove(row.id as number);
+  ElMessage.success("删除成功");
+  await fetchList();
+}
+
+onMounted(() => fetchList());
 </script>
 ```
 
 ### 操作说明
 
-| 项       | 位置                                                      | 说明                         |
-| -------- | --------------------------------------------------------- | ---------------------------- |
-| 菜单图标 | Controller `[Menu(Icon = "Files")]`                       | 使用 Element Plus 图标名     |
-| 列表字段 | Controller 静态构造函数 `ListFields`                      | 增删改字段及配置链接         |
-| 页面组件 | `apps/{app-name}/src/views/{area}/{controller}/index.vue` | 默认 CRUD 无需创建，自定义页面需提供原型 |
-| 路由     | **框架自动注册，不要手工配置**                              | 无需关心                     |
+| 项       | 位置                                                      | 说明                                         |
+| -------- | --------------------------------------------------------- | -------------------------------------------- |
+| 菜单图标 | Controller `[Menu(Icon = "Files")]`                       | 使用 Element Plus 图标名                     |
+| 列表字段 | Controller 静态构造函数 `ListFields`                      | 增删改字段及配置链接                         |
+| API 对接 | 页面内 `usePageApi(area, controller)`                     | 传入区域+控制器名即得完整 CRUD，无需手写请求 |
+| 页面组件 | `apps/{app-name}/src/views/{area}/{controller}/index.vue` | 默认 CRUD 无需创建，自定义页面需提供原型     |
+| 路由     | **框架自动注册，不要手工配置**                            | 无需关心                                     |
 
 ## 注意事项
 
@@ -226,6 +373,8 @@ public class DemoController : EntityController<DemoEntity>
 5. **页面自动加载**：框架扫描 `apps/*/src/views/{area}/{controller}/index.vue` 并自动匹配后端菜单路由
 6. **新增/编辑**默认通过弹窗（对话框）打开，无需注册独立前端路由
 7. **不需要手工注册任何东西**：只需创建 `index.vue` 文件，刷新浏览器即可看到效果
+8. **API 调用**：自定义页面通过 `usePageApi(area, controller)` 对接后端，该 composable 包装了 `@cube/api-core` 的通用 CRUD 方法，**不需要为每个模块建 `api/xxx.ts` 文件**
+9. **分页参数**：后端分页从 0 开始，`getList` 需传 `pageIndex: page - 1`；`totalCount` 在 `res.page.totalCount` 中
 
 ## 字段配置速查
 

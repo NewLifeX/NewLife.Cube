@@ -1,4 +1,4 @@
-import { ref, computed, type Component } from 'vue';
+import { ref, shallowRef, computed, markRaw, type Component } from 'vue';
 import TopMenuLayout from '../layouts/TopMenu/index.vue';
 import CyberLayout from '../layouts/CyberLayout/index.vue';
 
@@ -24,19 +24,19 @@ export const BUILT_IN_LAYOUTS: LayoutOption[] = [
     label: '顶部菜单',
     icon: '⊟',
     description: '顶部导航栏 + 内容区布局',
-    component: TopMenuLayout,
+    component: markRaw(TopMenuLayout),
   },
   {
     id: 'cyber',
     label: '赛博风格',
     icon: '◉',
     description: '深色科技风格 + 霓虹发光效果',
-    component: CyberLayout,
+    component: markRaw(CyberLayout),
   },
 ];
 
 // 模块级响应式状态
-export const registeredLayouts = ref<LayoutOption[]>(BUILT_IN_LAYOUTS);
+export const registeredLayouts = shallowRef<LayoutOption[]>(BUILT_IN_LAYOUTS);
 export const currentLayoutId = ref<string>('');
 
 // 计算当前布局组件
@@ -83,14 +83,13 @@ restoreLayoutSelection();
  */
 export function registerLayout(option: LayoutOption, setAsCurrent = false): void {
   // 避免重复注册
-  const exist = registeredLayouts.value.find((l) => l.id === option.id);
-  if (exist) {
-    exist.component = option.component;
-    exist.label = option.label;
-    exist.icon = option.icon;
-    exist.description = option.description;
+  const existIdx = registeredLayouts.value.findIndex((l) => l.id === option.id);
+  if (existIdx >= 0) {
+    const list = [...registeredLayouts.value];
+    list[existIdx] = { ...option, component: markRaw(option.component) };
+    registeredLayouts.value = list;
   } else {
-    registeredLayouts.value.push({ ...option });
+    registeredLayouts.value = [...registeredLayouts.value, { ...option, component: markRaw(option.component) }];
   }
 
   if (setAsCurrent) {
@@ -119,7 +118,7 @@ export function useLayout() {
 
   // 返回数组而非 ref，模板中 Vue 会自动处理
   return {
-    layouts: registeredLayouts.value,
+    layouts: registeredLayouts,
     currentLayoutId,
     currentLayout,
     currentComponent,

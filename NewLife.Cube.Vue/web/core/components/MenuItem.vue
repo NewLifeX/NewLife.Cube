@@ -7,11 +7,29 @@
  * - 激活状态高亮
  * - 点击跳转/展开
  */
-import { ref, computed, watch, inject } from 'vue';
+import { ref, computed, watch, inject, markRaw } from 'vue';
 import { type TreeMenuItem } from 'cube-front/core/stores/menu';
 import { isChildMenu, hasChildren, renderMenuTitle } from 'cube-front/core/utils/menuHelpers';
 import { openMenuTab } from 'cube-front/core/utils/menuTab';
 import { useMenuStore } from 'cube-front/core/stores/menu';
+import * as ElementPlusIcons from '@element-plus/icons-vue';
+const ElIconMenu = markRaw(ElementPlusIcons.Menu);
+
+/** 将 icon 字符串解析为 Element Plus 图标组件 */
+function resolveEpIcon(iconName?: string) {
+  if (!iconName || iconName.startsWith('fa')) return null;
+  // 直接匹配
+  const key = iconName as keyof typeof ElementPlusIcons;
+  if (ElementPlusIcons[key]) return markRaw(ElementPlusIcons[key]);
+  // 转 PascalCase 匹配
+  const pascal = iconName
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\s/g, '');
+  const key2 = pascal as keyof typeof ElementPlusIcons;
+  if (ElementPlusIcons[key2]) return markRaw(ElementPlusIcons[key2]);
+  return null;
+}
 
 const props = withDefaults(
   defineProps<{
@@ -108,122 +126,10 @@ const handleClick = () => {
         </span>
         <span v-else class="menu-arrow-placeholder" />
 
-        <!-- 图标 -->
-        <span v-if="menu.icon" class="menu-icon">
-          <svg
-            v-if="menu.icon === 'dashboard'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="3" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="14" width="7" height="7" rx="1" />
-            <rect x="3" y="14" width="7" height="7" rx="1" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'device'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="4" y="4" width="16" height="16" rx="2" />
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'layers'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'lock'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0110 0v4" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'bell'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 01-3.46 0" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'activity'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'settings'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="3" />
-            <path
-              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-            />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'users'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 00-3-3.87" />
-            <path d="M16 3.13a4 4 0 010 7.75" />
-          </svg>
-          <svg
-            v-else
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="10" />
-          </svg>
+        <!-- 图标：优先 Element Plus 图标库，无图标或匹配不上时显示默认菜单图标 -->
+        <span class="menu-icon">
+          <component :is="resolveEpIcon(menu.icon)" v-if="resolveEpIcon(menu.icon)" />
+          <ElIconMenu v-else style="width: 16px; height: 16px" />
         </span>
 
         <!-- 标题 -->
@@ -367,6 +273,11 @@ const handleClick = () => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  :deep(svg) {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .menu-title {

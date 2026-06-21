@@ -27,10 +27,10 @@ import { getConfig } from '../configure';
 
 const router = useRouter();
 const {
-  auth: {
-    reLoginParams: { loginPageUrl },
-  },
+  auth: { reLoginParams },
 } = getConfig();
+const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
+
 function goLogin() {
   router.replace({ path: loginPageUrl });
 }

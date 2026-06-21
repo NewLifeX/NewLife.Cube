@@ -6,17 +6,20 @@ import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
 import { useUserStore } from 'cube-front/core/stores/user';
 import { useMenuStore } from 'cube-front/core/stores/menu';
 import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
-import NavbarUserProfile from 'cube-front/core/components/NavbarUserProfile.vue';
 
 const userStore = useUserStore();
 const menuStore = useMenuStore();
 
 // 用户信息
 const currentUser = computed(() => userStore.userInfo);
-const userName = computed(() => currentUser.value?.displayName || currentUser.value?.name || '管理员');
+const userName = computed(
+  () => currentUser.value?.displayName || currentUser.value?.name || '管理员',
+);
 
 // 当前页面标题
-const pageTitle = computed(() => menuStore.activeMenu?.title || menuStore.activeMenu?.name || '仪表盘');
+const pageTitle = computed(
+  () => menuStore.activeMenu?.title || menuStore.activeMenu?.name || '仪表盘',
+);
 
 // 当前日期
 const currentDate = computed(() => {
@@ -59,9 +62,6 @@ const currentDate = computed(() => {
 
       <!-- 通知按钮 -->
       <NotificationBell show-label />
-
-      <!-- 用户头像资料（含退出登录） -->
-      <NavbarUserProfile />
     </div>
   </header>
 </template>
@@ -143,6 +143,4 @@ const currentDate = computed(() => {
     }
   }
 }
-
-
 </style>

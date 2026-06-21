@@ -18,6 +18,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@cube/api-core": "workspace:*",
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/core": "^13.0.0",
     "axios": "^1.8.4",

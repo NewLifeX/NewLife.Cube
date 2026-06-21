@@ -21,10 +21,10 @@ import { intl } from '../i18n';
 
 const {
   request: { baseUrl: API_HOST },
-  auth: { oauthUrl, reLoginParams: {
-    loginPageUrl,
-  } },
+  auth: { oauthUrl, reLoginParams },
 } = getConfig();
+
+const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
 
 // 常量定义
 const BASE_PATH = '';
@@ -217,7 +217,6 @@ function handleResponseError(error: AxiosError) {
   const errorObj = {
     type: undefined,
     message: error.message,
-    // @ts-expect-error 包含描述的可能的字段
     description: `${data?.description || data?.content || response?.requestMessage || ''}`,
   };
 

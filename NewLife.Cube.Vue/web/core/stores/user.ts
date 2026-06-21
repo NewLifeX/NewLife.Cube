@@ -8,9 +8,11 @@ import { gotoPage } from '../utils/router';
 
 const {
   auth: {
-    reLoginParams: { loginPageUrl },
+    reLoginParams,
   },
 } = getConfig();
+const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
+
 
 /** 用户信息 */
 export interface UserInfo {
@@ -139,7 +141,7 @@ export const useUserStore = defineStore('user', {
           }
 
           const response = await request(axiosConfig);
-          this.setUserInfo(response as Partial<UserInfo>);
+          this.setUserInfo(response as unknown as Partial<UserInfo>);
         } catch (error) {
           console.error('Failed to fetch user info:', error);
         } finally {
