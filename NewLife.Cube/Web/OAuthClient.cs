@@ -96,7 +96,7 @@ public class OAuthClient
     /// <summary>实例化</summary>
     public OAuthClient()
     {
-        Name = GetType().Name.TrimEnd("Client");
+        Name = GetType().Name.TrimSuffix("Client");
 
         // 标准地址格式
         AuthUrl = "authorize?response_type={response_type}&client_id={key}&redirect_uri={redirect}&state={state}&scope={scope}";
@@ -120,7 +120,7 @@ public class OAuthClient
             var dic = new Dictionary<String, Type>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in typeof(OAuthClient).GetAllSubclasses())
             {
-                var key = item.Name.TrimEnd("Client");
+                var key = item.Name.TrimSuffix("Client");
                 var ct = item.CreateInstance() as OAuthClient;
                 if (!ct.Name.IsNullOrEmpty()) key = ct.Name;
 
@@ -583,7 +583,7 @@ public class OAuthClient
         //if (asm != null)
         //{
         //    var aname = asm.GetName();
-        //    var os = Environment.OSVersion?.ToString().TrimStart("Microsoft ");
+        //    var os = Environment.OSVersion?.ToString().TrimPrefix("Microsoft ");
         //    userAgent = $"{aname.Name}/{aname.Version} ({os})";
         //}
 

@@ -144,7 +144,7 @@ public class CubeController(IFileStorage fileStorage, TokenService tokenService,
     {
         var request = httpContext.Request;
         var token = request.Query["Token"] + "";
-        if (token.IsNullOrEmpty()) token = (request.Headers["Authorization"] + "").TrimStart("Bearer ");
+        if (token.IsNullOrEmpty()) token = (request.Headers["Authorization"] + "").TrimPrefix("Bearer ");
         if (token.IsNullOrEmpty()) token = request.Headers["X-Token"] + "";
         if (token.IsNullOrEmpty()) token = request.Cookies["Token"] + "";
 

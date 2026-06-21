@@ -91,7 +91,7 @@ namespace NewLife.Cube.Cube.Controllers
                 {
                     foreach (var areaType in AreaBase.GetAreas())
                     {
-                        var areaName = areaType.Name.TrimEnd("Area");
+                        var areaName = areaType.Name.TrimSuffix("Area");
                         var menus = mf.FindByFullName(areaName);
 
                         var root = mf.FindByFullName(areaType.Namespace + ".Controllers");

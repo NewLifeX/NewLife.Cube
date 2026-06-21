@@ -31,7 +31,7 @@ public class AreaBase : AreaAttribute
         if (!_areas.TryAdd(areaType, areaType)) return;
 
         var ns = areaType.Namespace + ".Controllers";
-        var areaName = areaType.Name.TrimEnd("Area");
+        var areaName = areaType.Name.TrimSuffix("Area");
         XTrace.WriteLine("开始注册权限管理区域[{0}]，控制器命名空间[{1}]", areaName, ns);
 
         // 更新区域名集合
@@ -63,7 +63,7 @@ public class AreaBase : AreaAttribute
     /// <remarks>默认操作当前注册区域的下一级Controllers命名空间</remarks>
     protected static void ScanController(Type areaType)
     {
-        var areaName = areaType.Name.TrimEnd("Area");
+        var areaName = areaType.Name.TrimSuffix("Area");
         //XTrace.WriteLine("start------初始化[{0}]的菜单体系------start", areaName);
 
         var mf = ManageProvider.Menu;
@@ -115,7 +115,7 @@ public class AreaBase : AreaAttribute
         _namespaces ??= new HashSet<String>(_areas.Keys.Select(e => e.Namespace));
 
         // 该控制器父级命名空间必须有对应的区域注册类，才会拦截其异常
-        ns = ns.TrimEnd(".Controllers");
+        ns = ns.TrimSuffix(".Controllers");
         return _namespaces.Contains(ns);
     }
 

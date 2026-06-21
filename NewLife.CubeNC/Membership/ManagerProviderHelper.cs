@@ -274,9 +274,9 @@ public static class ManagerProviderHelper
 
         // 尝试从头部获取token
         if (token.IsNullOrEmpty() || token.Split(".").Length != 3)
-            token = req?.Headers[HeaderNames.Authorization].ToString().TrimStart("Bearer ");
+            token = req?.Headers[HeaderNames.Authorization].ToString().TrimPrefix("Bearer ");
         if (token.IsNullOrEmpty() || token.Split(".").Length != 3)
-            token = req?.Headers["X-Token"].ToString().TrimStart("Bearer ");
+            token = req?.Headers["X-Token"].ToString().TrimPrefix("Bearer ");
 
         // 尝试从url中获取token
         if (token.IsNullOrEmpty() || token.Split(".").Length != 3) token = req?.Query["token"];

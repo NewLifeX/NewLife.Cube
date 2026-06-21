@@ -311,7 +311,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         var name = GetType().GetDisplayName();
         if (name.IsNullOrEmpty()) name = Factory.EntityType.GetDisplayName();
         if (name.IsNullOrEmpty()) name = Factory.Table.DataTable.DisplayName;
-        if (name.IsNullOrEmpty()) name = GetType().Name.TrimEnd("Controller");
+        if (name.IsNullOrEmpty()) name = GetType().Name.TrimSuffix("Controller");
         if (!ext.IsNullOrEmpty()) ext = ext.EnsureStart(".");
 
         return $"{name}_{DateTime.Now:yyyyMMddHHmmss}{ext}";

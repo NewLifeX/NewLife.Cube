@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using NewLife.Cube.Web.Models;
 using NewLife.Data;
 using NewLife.Log;
@@ -34,7 +34,7 @@ public enum GrantTypes
 }
 
 /// <summary>OAuth配置。需要连接的OAuth认证方</summary>
-public partial class OAuthConfig : Entity<OAuthConfig>, ITenantSource
+public partial class OAuthConfig : Entity<OAuthConfig>, ITenantScope
 {
     #region 对象操作
     static OAuthConfig()

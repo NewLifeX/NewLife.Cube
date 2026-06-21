@@ -97,7 +97,7 @@ public class UserAgentParser
                 {
                     Platform = ss[0]?.Trim();
                     Encryption = ss[1]?.Trim();
-                    OSorCPU = ss[2]?.Trim().TrimStart("CPU ");
+                    OSorCPU = ss[2]?.Trim().TrimPrefix("CPU ");
                     //Device = ss[3]?.Trim();
 
                     // 有可能是设备和版本
@@ -118,7 +118,7 @@ public class UserAgentParser
                     else
                     {
                         Encryption = ss[1]?.Trim();
-                        OSorCPU = ss[2]?.Trim().TrimStart("CPU ");
+                        OSorCPU = ss[2]?.Trim().TrimPrefix("CPU ");
 
                         //// WebKit 特殊
                         //if (!infos.Any(e => e.Contains("WebKit"))) Device = ss[3]?.Trim();
@@ -135,7 +135,7 @@ public class UserAgentParser
                 else if (ss.Length >= 2)
                 {
                     Platform = ss[0]?.Trim();
-                    OSorCPU = ss[1]?.Trim().TrimStart("CPU ");
+                    OSorCPU = ss[1]?.Trim().TrimPrefix("CPU ");
                 }
                 else if (ss.Length >= 1)
                 {

@@ -66,7 +66,7 @@ public static class ViewHelper
         if (shardField != null)
         {
             var value = entity[shardField.Name];
-            if (value is DateTime dt) value = dt.ToFullString("").TrimEnd(" 00:00:00");
+            if (value is DateTime dt) value = dt.ToFullString("").TrimSuffix(" 00:00:00");
 
             rv[shardField.Name] = value;
         }
@@ -873,7 +873,7 @@ public static class ViewHelper
         var paths = new[] { "/Content/images/logo/", "/Content/Logo/" };
         foreach (var item in paths)
         {
-            var p = item.TrimStart("/");
+            var p = item.TrimPrefix("/");
             p = CubeSetting.Current.WebRootPath.CombinePath(p);
 
             var di = p.AsDirectory();

@@ -267,7 +267,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             {
                 var url = ut.Url;
                 if (url.Contains("?")) url = url.Substring(null, "?");
-                if (!url.StartsWithIgnoreCase(menu.Url.TrimStart("~"))) throw new Exception($"该令牌[{user}]无权访问[{menu}]，仅限于[{url}]");
+                if (!url.StartsWithIgnoreCase(menu.Url.TrimPrefix("~"))) throw new Exception($"该令牌[{user}]无权访问[{menu}]，仅限于[{url}]");
             }
 
             // 设置当前用户，用于数据权限控制
@@ -458,7 +458,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
         if (name.IsNullOrEmpty()) name = GetType().GetDisplayName();
         if (name.IsNullOrEmpty()) name = Factory.EntityType.GetDisplayName();
         if (name.IsNullOrEmpty()) name = Factory.Table.DataTable.DisplayName;
-        if (name.IsNullOrEmpty()) name = GetType().Name.TrimEnd("Controller");
+        if (name.IsNullOrEmpty()) name = GetType().Name.TrimSuffix("Controller");
         if (!ext.IsNullOrEmpty()) ext = ext.EnsureStart(".");
 
         if (includeTime) name += $"_{DateTime.Now:yyyyMMddHHmmss}";
@@ -582,7 +582,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     [DisplayName("导出Csv")]
     public virtual IActionResult ExportCsv()
     {
-        var name = GetType().Name.TrimEnd("Controller");
+        var name = GetType().Name.TrimSuffix("Controller");
         name = GetAttachment(name, ".csv", true);
 
         var list = ExportData();
@@ -617,7 +617,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
     [DisplayName("导出Zip")]
     public virtual IActionResult ExportZip()
     {
-        var name = GetType().Name.TrimEnd("Controller");
+        var name = GetType().Name.TrimSuffix("Controller");
         var fileName = GetAttachment(name, ".zip", true);
 
         var list = ExportData();
@@ -687,7 +687,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
 
             var dal = fact.Session.Dal;
 
-            var name = GetType().Name.TrimEnd("Controller");
+            var name = GetType().Name.TrimSuffix("Controller");
             var fileName = $"{name}_{DateTime.Now:yyyyMMddHHmmss}.gz";
             var bak = NewLife.Setting.Current.BackupPath.CombinePath(fileName).GetBasePath();
             bak.EnsureDirectory(true);
@@ -746,7 +746,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
 
         var dal = fact.Session.Dal;
 
-        var name = GetType().Name.TrimEnd("Controller");
+        var name = GetType().Name.TrimSuffix("Controller");
         SetAttachment(name, ".gz", true);
 
         // 允许同步IO，便于刷数据Flush
@@ -787,7 +787,7 @@ public partial class ReadOnlyEntityController<TEntity> : ControllerBaseX where T
             var fact = Factory;
             var dal = fact.Session.Dal;
 
-            var name = GetType().Name.TrimEnd("Controller");
+            var name = GetType().Name.TrimSuffix("Controller");
             var fileName = $"{name}_*.gz";
 
             var di = NewLife.Setting.Current.BackupPath.GetBasePath().AsDirectory();

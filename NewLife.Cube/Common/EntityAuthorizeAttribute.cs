@@ -204,8 +204,8 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
         using var span = DefaultTracer.Instance?.NewSpan(nameof(CreateMenu), type.FullName);
 
         var mf = ManageProvider.Menu;
-        //var ms = mf.ScanController(type.Namespace.TrimEnd(".Controllers"), type.Assembly, type.Namespace);
-        var ms = MenuHelper.ScanController(mf, type.Namespace.TrimEnd(".Controllers"), type);
+        //var ms = mf.ScanController(type.Namespace.TrimSuffix(".Controllers"), type.Assembly, type.Namespace);
+        var ms = MenuHelper.ScanController(mf, type.Namespace.TrimSuffix(".Controllers"), type);
 
         var root = mf.FindByFullName(type.Namespace);
         if (root != null)
@@ -241,7 +241,7 @@ public class EntityAuthorizeAttribute : Attribute, IAuthorizationFilter
                 }
             }
 
-            controller.Url = "~/" + ctype.Name.TrimEnd("Controller");
+            controller.Url = "~/" + ctype.Name.TrimSuffix("Controller");
 
             (controller as IEntity).Update();
         }

@@ -87,7 +87,7 @@ public static class MenuHelper
         // 遍历该程序集所有类型
         foreach (var type in controllerTypes)
         {
-            var name = type.Name.TrimEnd("Controller");
+            var name = type.Name.TrimSuffix("Controller");
             var url = root.Url + "/" + name;
             var node = root;
 

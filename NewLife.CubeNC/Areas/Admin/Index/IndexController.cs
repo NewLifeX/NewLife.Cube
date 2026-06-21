@@ -173,7 +173,7 @@ public class IndexController : ControllerBaseX
 
                 if (file.StartsWith("file:///"))
                 {
-                    file = file.TrimStart("file:///");
+                    file = file.TrimPrefix("file:///");
                     if (Path.DirectorySeparatorChar == '\\')
                         file = file.Replace('/', '\\');
                     else

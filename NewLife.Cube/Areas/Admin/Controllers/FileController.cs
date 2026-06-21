@@ -116,7 +116,7 @@ public class FileController : ControllerBaseX
         return size;
     }
 
-    private String GetFullName(String r) => r.TrimStart(Root).TrimStart(Root.TrimEnd(Path.DirectorySeparatorChar + ""));
+    private String GetFullName(String r) => r.TrimStart(Root).TrimStart(Root.TrimEnd(Path.DirectorySeparatorChar));
     #endregion
 
     #region 列表&删除
