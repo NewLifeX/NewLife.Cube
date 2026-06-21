@@ -114,6 +114,12 @@ export interface AuthConfig {
   };
 }
 
+// 路由相关配置
+export interface RouterConfig {
+  /** 路由命名风格：pascal（大驼峰，默认）| kebab（短横线） */
+  routeNamingStyle: 'pascal' | 'kebab';
+}
+
 // 总配置
 export interface CubeFrontConfig {
   base: BaseConfig;
@@ -122,6 +128,7 @@ export interface CubeFrontConfig {
   auth: AuthConfig;
   menu: MenuConfig;
   user: UserConfig;
+  router: RouterConfig;
 }
 
 // 环境配置类型 - 所有字段都是可选的深度部分类型
@@ -132,4 +139,5 @@ export type EnvConfig = {
   auth?: Partial<AuthConfig>;
   menu?: Partial<MenuConfig>;
   user?: Partial<UserConfig>;
+  router?: Partial<RouterConfig>;
 };

@@ -91,6 +91,9 @@ export const defaultConfig: CubeFrontConfig = {
       loginPageUrl: '/login'
     },
   },
+  router: {
+    routeNamingStyle: 'pascal',
+  },
 };
 
 export default defaultConfig;

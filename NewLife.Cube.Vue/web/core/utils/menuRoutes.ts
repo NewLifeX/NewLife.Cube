@@ -1,13 +1,17 @@
 import type { Router } from 'vue-router';
 import type { FlatMenuItem } from 'cube-front/core/stores/menu';
-import { normalizeMenuUrl, toKebabCase } from './url';
+import { normalizeMenuUrl, toKebabCase, type RouteNamingStyle } from './url';
+import { getConfig } from '../configure';
+
+/** 视图组件异步加载器 */
+type ComponentLoader = () => Promise<{ default: unknown; }>;
 
 /**
  * 视图组件缓存
  * key: 视图目录路径（如 '/apps/iot/src/views/device/product'）
  * value: 懒加载的 index.vue 组件
  */
-const viewComponentCache = new Map<string, () => Promise<any>>();
+const viewComponentCache = new Map<string, ComponentLoader>();
 
 /**
  * 预加载所有框架项目视图目录
@@ -30,84 +34,113 @@ const normalizedModulePaths = Object.keys(allViewModules).map((p) =>
   p.replace(/\\/g, '/').toLowerCase(),
 );
 
+/** 归一化路径 → 原始路径 映射（用于从 allViewModules 取组件） */
+const normalizedToOriginal = new Map<string, string>();
+for (const originalKey of Object.keys(allViewModules)) {
+  normalizedToOriginal.set(originalKey.replace(/\\/g, '/').toLowerCase(), originalKey);
+}
+
+/** 从模块路径中提取所有已知应用名（小写） */
+function extractKnownAppNames(): string[] {
+  const names = new Set<string>();
+  for (const p of normalizedModulePaths) {
+    // 匹配 /apps/{name}/ 或 /cube-front/core/apps/{name}/
+    const m = p.match(/\/(?:apps|cube-front\/core\/apps)\/([^/]+)\//);
+    if (m) names.add(m[1]);
+  }
+  return Array.from(names);
+}
+const knownAppNames = extractKnownAppNames();
+
+/** 生成缓存 key */
+function buildCacheKey(appName: string, viewSegments: string[]): string {
+  return `/apps/${appName.toLowerCase()}/src/views/${viewSegments.map((s) => toKebabCase(s)).join('/')}`;
+}
+
+/** 从缓存取或解析并缓存 */
+function fromCacheOrResolve(
+  cacheKey: string,
+  resolver: () => ComponentLoader,
+): ComponentLoader {
+  if (viewComponentCache.has(cacheKey)) return viewComponentCache.get(cacheKey)!;
+  const loader = resolver();
+  viewComponentCache.set(cacheKey, loader);
+  return loader;
+}
+
 /**
  * 根据路由路径解析对应的视图组件。
  *
  * 约定规则：
- *   - 路径第一层作为应用名，后面的部分映射到 views 文件夹结构
- *   - 匹配优先级：
+ *   - 3段及以上：第一段作为应用名，其余映射到 views 文件夹
+ *   - 1~2段：第一段未必是应用名，遍历所有已知应用匹配
+ *   - 匹配优先级（同级内）：
  *     1. 短横线风格: /apps/iot/src/views/my-device/my-logs/index.vue
  *     2. 原始风格:   /apps/IoT/src/views/MyDevice/MyLogs/index.vue
  *   - 路径优先级：
- *     1. /apps/&#42;/src/views/** （框架项目，如 IoT、EMS 等）
- *     2. /cube-front/core/apps/&#42;/src/views/** （cube-admin 等核心应用）
- *   - 逐级匹配：先匹配 apps/xxx，再匹配 src/views/xxx，逐级构建路径
+ *     1. /apps/&#42;/src/views/** （框架项目）
+ *     2. /cube-front/core/apps/&#42;/src/views/** （核心应用）
  *
- * @param path 路由路径，如 /IoT/Device/Product
+ * @param path 路由路径，如 /IoT/Device/Product 或 /ProcessCard/ProcessCard
  */
-function resolvePageComponent(path: string) {
+function resolvePageComponent(path: string): ComponentLoader {
   // 解析路径：去掉开头的 /，分割各层级
   const segments = path.replace(/^\/+/, '').split('/').filter(Boolean);
-  if (segments.length === 0) {
-    return getFallbackComponent('form');
+  if (segments.length === 0) return getFallbackComponent('form');
+
+  if (segments.length >= 3) {
+    // 3段以上：第一段是应用名，其余是视图路径
+    const [appName, ...viewPathSegments] = segments;
+    const cacheKey = buildCacheKey(appName, viewPathSegments);
+    return fromCacheOrResolve(cacheKey, () => findMatchingView(appName, viewPathSegments));
   }
 
-  const [appName, ...viewPathSegments] = segments;
-
-  // 缓存 key 使用短横线风格的路径
-  const cacheKey = `/apps/${appName.toLowerCase()}/src/views/${viewPathSegments
-    .map((s) => toKebabCase(s))
-    .join('/')}`;
-
-  // 检查缓存
-  if (viewComponentCache.has(cacheKey)) {
-    return viewComponentCache.get(cacheKey)!;
-  }
-
-  // 尝试匹配目标视图
-  const componentLoader = findMatchingView(appName, viewPathSegments);
-
-  // 缓存并返回
-  viewComponentCache.set(cacheKey, componentLoader);
-  return componentLoader;
+  // 1~2段：无应用名，遍历所有已知应用匹配
+  const cacheKey = buildCacheKey('_', segments);
+  return fromCacheOrResolve(cacheKey, () => resolveViewComponent(segments));
 }
 
 /**
  * 匹配结果
  */
 interface MatchResult {
-  loader: () => Promise<any>;
+  loader: ComponentLoader;
   priority: number; // 1=框架项目短横线, 2=框架项目原始, 3=核心应用短横线, 4=核心应用原始
 }
 
 /**
- * 逐级匹配视图路径
- *
- * @param appName           应用名，如 IoT
- * @param viewPathSegments  视图路径分段，如 ['Device', 'Product']
+ * 生成所有候选视图目录（多种段组合 × 多种命名风格）
  */
-function findMatchingView(
-  appName: string,
-  viewPathSegments: string[],
-): () => Promise<any> {
-  // 构建目标路径风格
-  const kebabViewDir = viewPathSegments.map((s) => toKebabCase(s)).join('/');
-  const originalViewDir = viewPathSegments.join('/');
+function buildViewDirCandidates(
+  combinations: string[][],
+): Set<string> {
+  const candidates = new Set<string>();
+  for (const segments of combinations) {
+    if (segments.length === 0) continue;
+    candidates.add(segments.join('/'));                            // 原始风格
+    candidates.add(segments.map((s) => toKebabCase(s)).join('/')); // 短横线风格
+    candidates.add(segments.map((s) => s.toLowerCase()).join('/'));// 全小写风格
+  }
+  return candidates;
+}
 
+/**
+ * 扫描模块路径，返回匹配结果列表
+ */
+function scanViewModules(
+  viewDirCandidates: Set<string>,
+): MatchResult[] {
   const matches: MatchResult[] = [];
 
-  // 遍历所有归一化的模块路径，寻找匹配
   for (const normalizedPath of normalizedModulePaths) {
     let isFrameworkProject = false;
 
-    // 检查路径类型
     if (normalizedPath.includes('/apps/')) {
       isFrameworkProject = true;
     } else if (!normalizedPath.includes('/cube-front/core/apps/')) {
-      continue; // 不匹配任何已知路径格式
+      continue;
     }
 
-    // 提取相对于 views/ 的路径
     const viewsIndex = normalizedPath.indexOf('/views/');
     if (viewsIndex === -1) continue;
 
@@ -115,43 +148,102 @@ function findMatchingView(
       .substring(viewsIndex + '/views/'.length)
       .replace('/index.vue', '');
 
-    // 检查是否匹配
-    let matched = false;
-    let priority = 0;
-
-    if (viewRelativeDir === kebabViewDir) {
-      matched = true;
-      priority = isFrameworkProject ? 1 : 3;
-    } else if (viewRelativeDir === originalViewDir) {
-      matched = true;
-      priority = isFrameworkProject ? 2 : 4;
-    }
-
-    if (matched) {
-      matches.push({
-        loader: allViewModules[normalizedPath] as () => Promise<any>,
-        priority,
-      });
+    if (viewDirCandidates.has(viewRelativeDir)) {
+      // 仅仅检查是否含有短横线来区分命名风格
+      const isKebab = viewRelativeDir.includes('-');
+      const priority = isFrameworkProject ? (isKebab ? 1 : 2) : (isKebab ? 3 : 4);
+      const originalKey = normalizedToOriginal.get(normalizedPath);
+      if (originalKey) {
+        matches.push({
+          loader: allViewModules[originalKey] as ComponentLoader,
+          priority,
+        });
+      }
     }
   }
 
-  // 按优先级排序，返回最高优先级匹配
+  return matches;
+}
+
+/**
+ * 从匹配结果中选最优（有应用名）
+ */
+function pickBestMatch(
+  matches: MatchResult[],
+  appName: string,
+  viewPathSegments: string[],
+): ComponentLoader {
   if (matches.length > 0) {
     matches.sort((a, b) => a.priority - b.priority);
     const best = matches[0];
-    console.log(`[ViewResolver] Matched (priority ${best.priority}): ${appName}/${viewPathSegments.join('/')}`);
+    console.log(`[ViewResolver] Matched: ${appName}/${viewPathSegments.join('/')}`);
     return best.loader;
   }
 
-  // 无匹配，使用后备组件
-  console.log(`[ViewResolver] No match for /${appName}/${viewPathSegments.join('/')}, using fallback`);
+  console.log(`[ViewResolver] No match for ${appName}/${viewPathSegments.join('/')}, using fallback`);
   return getFallbackComponent('index');
+}
+
+/**
+ * 从匹配结果中选最优（无应用名）
+ */
+function pickDirectMatch(
+  matches: MatchResult[],
+  segments: string[],
+): ComponentLoader {
+  if (matches.length > 0) {
+    matches.sort((a, b) => a.priority - b.priority);
+    const best = matches[0];
+    console.log(`[ViewResolver] Matched: ${segments.join('/')}`);
+    return best.loader;
+  }
+
+  console.log(`[ViewResolver] No match for ${segments.join('/')}, using fallback`);
+  return getFallbackComponent('index');
+}
+
+/**
+ * 在指定应用下匹配视图
+ *
+ * @param appName           应用名，如 ProcessCard
+ * @param viewPathSegments  视图路径分段，如 ['ProcessCard']
+ */
+function findMatchingView(
+  appName: string,
+  viewPathSegments: string[],
+): ComponentLoader {
+  const candidates = buildViewDirCandidates([
+    viewPathSegments,
+    [appName, ...viewPathSegments],
+  ]);
+  const matches = scanViewModules(candidates);
+  return pickBestMatch(matches, appName, viewPathSegments);
+}
+
+/**
+ * 1~2段路径：无应用名，遍历所有已知应用，找最佳匹配
+ */
+function resolveViewComponent(
+  segments: string[],
+): ComponentLoader {
+  // 先试 segments 本身作为视图目录
+  const directCandidates = buildViewDirCandidates([segments]);
+  let matches = scanViewModules(directCandidates);
+  if (matches.length > 0) return pickDirectMatch(matches, segments);
+
+  // 再试 {knownApp} + segments 组合
+  const allCombinations: string[][] = knownAppNames.map(
+    (app) => [app, ...segments],
+  );
+  const comboCandidates = buildViewDirCandidates(allCombinations);
+  matches = scanViewModules(comboCandidates);
+  return pickDirectMatch(matches, segments);
 }
 
 /**
  * 获取后备组件（无匹配视图时使用）
  */
-function getFallbackComponent(type: 'index' | 'form') {
+function getFallbackComponent(type: 'index' | 'form'): ComponentLoader {
   return () => import(`cube-front/core/views/${type}.vue`);
 }
 
@@ -182,6 +274,10 @@ export function registerMenuRoutes(
 ): RegisterMenuRoutesResult {
   console.log('Registering menu routes...');
 
+  // 读取路由命名风格配置
+  const { router: { routeNamingStyle } } = getConfig();
+  const toStyle: RouteNamingStyle = routeNamingStyle === 'kebab' ? 'kebab' : 'pascal';
+
   // 获取已注册路径，保护应用级预注册路由
   const existingPaths = new Set(router.getRoutes().map((r) => r.path));
 
@@ -193,8 +289,8 @@ export function registerMenuRoutes(
   const pendingNavigations: string[] = [];
 
   for (const menu of leafMenus) {
-    // 转换路径为短横线风格
-    const normalizedPath = normalizeMenuUrl(menu.path);
+    // 根据配置风格转换路径
+    const normalizedPath = normalizeMenuUrl(menu.path, toStyle);
     if (existingPaths.has(normalizedPath)) continue; // 应用级路由优先，跳过
 
     router.addRoute({
@@ -209,13 +305,13 @@ export function registerMenuRoutes(
       },
     });
 
-    // 记录刚添加的动态路由（用 normalizedPath，因为实际注册的路径已转换）
+    // 记录刚添加的动态路由
     pendingNavigations.push(normalizedPath);
   }
 
-  // 判断当前路径是否需要重新导航（需要将 currentPath 也转为 normalizedPath 格式）
+  // 判断当前路径是否需要重新导航（使用相同的命名风格转换）
   const currentPathNeedsRefresh = !!(
-    currentPath && pendingNavigations.includes(normalizeMenuUrl(currentPath))
+    currentPath && pendingNavigations.includes(normalizeMenuUrl(currentPath, toStyle))
   );
   if (currentPathNeedsRefresh) {
     console.log(`Current path needs refresh: ${currentPath}`);

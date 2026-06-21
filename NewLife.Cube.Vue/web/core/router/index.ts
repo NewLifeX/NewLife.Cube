@@ -6,7 +6,7 @@ import { useMenuStore } from '../stores/menu';
 import { getAccessToken } from '../utils/token';
 import { getUrlHashToken } from '../utils/token';
 import { registerMenuRoutes } from '../utils/menuRoutes';
-import { normalizeMenuUrl } from '../utils/url';
+import { normalizeMenuUrl, type RouteNamingStyle } from '../utils/url';
 import { getConfig } from '../configure';
 
 // 创建路由实例
@@ -17,9 +17,11 @@ const router: Router = createRouter({
 
 const {
   auth: {
-    reLoginParams: { loginPageUrl },
+    reLoginParams,
   },
 } = getConfig();
+
+const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
 
 // 先初始化微前端应用路由（异步操作）
 // 我们不会等待其完成再导出router，但会在导航守卫中检查初始化状态
@@ -122,8 +124,10 @@ router.beforeEach(async (to, from, next) => {
         menuStore.markRoutesRegistered();
         // 如果当前路径是刚注册的动态路由，需要重新导航
         if (registered?.currentPathNeedsRefresh) {
-          // 使用 normalizedPath 格式存储（与注册的路由路径一致）
-          pendingNavigationPath = normalizeMenuUrl(to.path);
+          // 使用与 registerMenuRoutes 一致的命名风格
+          const { router: { routeNamingStyle } } = getConfig();
+          const toStyle: RouteNamingStyle = routeNamingStyle === 'kebab' ? 'kebab' : 'pascal';
+          pendingNavigationPath = normalizeMenuUrl(to.path, toStyle);
           return next(false); // 取消当前导航，让 afterEach 触发重新导航
         }
       }

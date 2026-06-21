@@ -1,5 +1,6 @@
 import { gotoPage } from './router';
-import { normalizeMenuUrl } from './url';
+import { normalizeMenuUrl, type RouteNamingStyle } from './url';
+import { getConfig } from '../configure';
 
 /**
  * 打开菜单对应的标签页
@@ -10,8 +11,10 @@ import { normalizeMenuUrl } from './url';
 export function openMenuTab(options: { url: string; title?: string }): void {
   const { url, title } = options;
 
-  // 转换 URL 为短横线风格，确保与注册的路由匹配
-  const normalizedUrl = normalizeMenuUrl(url);
+  // 读取路由命名风格配置，确保与注册的路由匹配
+  const { router: { routeNamingStyle } } = getConfig();
+  const toStyle: RouteNamingStyle = routeNamingStyle === 'kebab' ? 'kebab' : 'pascal';
+  const normalizedUrl = normalizeMenuUrl(url, toStyle);
 
   // 使用路由跳转到指定的页面
   gotoPage(normalizedUrl);
