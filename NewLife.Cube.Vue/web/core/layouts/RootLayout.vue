@@ -24,10 +24,9 @@ const MainLayout = computed(() => currentComponent.value ?? TopMenuLayout);
 const meta = computed(() => route.meta);
 
 const {
-  auth: {
-    reLoginParams: { loginPageUrl },
-  },
+  auth: { reLoginParams },
 } = getConfig();
+const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
 
 function checkLogin() {
   const token = getUrlHashToken();
