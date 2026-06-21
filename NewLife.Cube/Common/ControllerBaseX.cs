@@ -231,7 +231,7 @@ public class ControllerBaseX : ControllerBase, IActionFilter
         };
         writer.Options.WriteIndented = false;
         writer.Options.IgnoreNullValues = false;
-        writer.Options.PropertyNaming = JsonPropertyNaming.CamelCase;
+        writer.Options.CamelCase = true;
         writer.Options.Int64AsString = true;
 
         writer.Write(data);
