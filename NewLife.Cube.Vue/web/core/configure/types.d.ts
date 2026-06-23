@@ -24,6 +24,7 @@ export interface MenuConfig {
   iconField: string;
   sortField: string;
   childrenField: string;
+  visibleField: string;
 }
 
 // 用户相关配置

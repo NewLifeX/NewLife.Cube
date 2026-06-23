@@ -12,6 +12,7 @@ export interface FlatMenuItem {
   icon?: string;
   sort?: number;
   parentId?: string | null;
+  visible?: boolean;
   active?: boolean;
 }
 
@@ -25,6 +26,7 @@ export interface TreeMenuItem {
   parentId?: string | null;
   parentMenu?: TreeMenuItem;
   children?: TreeMenuItem[];
+  visible?: boolean;
   active?: boolean;
 }
 
@@ -94,6 +96,7 @@ const covertMenu = (list: Record<string, unknown>[]): TreeMenuItem[] => {
       title: item[menuConfig.titleField] as string,
       icon: item[menuConfig.iconField] as string,
       sort: item[menuConfig.sortField] as number,
+      visible: item[menuConfig.visibleField] as boolean | undefined,
       children: children ? covertMenu(children) : undefined,
     };
   };
