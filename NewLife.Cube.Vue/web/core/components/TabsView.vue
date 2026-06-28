@@ -5,19 +5,75 @@
  * 显示已打开的页面标签，支持关闭、右键菜单。
  * 标签数据由 tabs store 管理，随路由自动增删。
  */
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTabsStore, type TabItem } from '../stores/tabs';
 import { useMenuStore } from '../stores/menu';
 import * as ElementPlusIcons from '@element-plus/icons-vue';
 
 const ElIconClose = ElementPlusIcons.Close;
+const ElIconArrowLeft = ElementPlusIcons.ArrowLeft;
+const ElIconArrowRight = ElementPlusIcons.ArrowRight;
 
 const router = useRouter();
 const tabsStore = useTabsStore();
 const menuStore = useMenuStore();
 
 const scrollContainer = ref<HTMLDivElement>();
+const hasOverflow = ref(false);
+const canScrollLeft = ref(false);
+const canScrollRight = ref(false);
+
+/** 更新溢出和滚动边界状态 */
+function updateScrollState() {
+  const el = scrollContainer.value;
+  if (!el) {
+    hasOverflow.value = false;
+    canScrollLeft.value = false;
+    canScrollRight.value = false;
+    return;
+  }
+  hasOverflow.value = el.scrollWidth > el.clientWidth;
+  canScrollLeft.value = el.scrollLeft > 0;
+  canScrollRight.value = el.scrollLeft < el.scrollWidth - el.clientWidth - 1;
+}
+
+/** 滚动步长：一个标签的大致宽度 */
+const scrollStep = 180;
+
+function scrollLeft() {
+  const el = scrollContainer.value;
+  if (!el) return;
+  el.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+}
+
+function scrollRight() {
+  const el = scrollContainer.value;
+  if (!el) return;
+  el.scrollBy({ left: scrollStep, behavior: 'smooth' });
+}
+
+let resizeObserver: ResizeObserver | null = null;
+
+onMounted(() => {
+  const el = scrollContainer.value;
+  if (!el) return;
+  // 监听滚动事件更新按钮状态
+  el.addEventListener('scroll', updateScrollState, { passive: true });
+  // 监听尺寸变化重新检测溢出
+  resizeObserver = new ResizeObserver(updateScrollState);
+  resizeObserver.observe(el);
+  updateScrollState();
+});
+
+onUnmounted(() => {
+  const el = scrollContainer.value;
+  if (el) {
+    el.removeEventListener('scroll', updateScrollState);
+  }
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+});
 
 /** 将 icon 字符串解析为 Element Plus 图标组件 */
 function resolveEpIcon(iconName?: string) {
@@ -43,6 +99,7 @@ const menuTitle = computed(() => {
 
 function handleTabClick(tab: TabItem) {
   tabsStore.setActive(tab.id);
+  router.push(tab.fullPath);
 }
 
 function handleCloseTab(tab: TabItem, e: Event) {
@@ -115,6 +172,15 @@ if (typeof document !== 'undefined') {
 
 <template>
   <div class="tabs-view" v-if="tabsStore.tabs.length > 0">
+    <!-- 左箭头 -->
+    <span
+      v-if="hasOverflow"
+      :class="['tabs-arrow', 'tabs-arrow-left', { disabled: !canScrollLeft }]"
+      @click="scrollLeft"
+    >
+      <ElIconArrowLeft />
+    </span>
+
     <div ref="scrollContainer" class="tabs-scroll">
       <div
         v-for="tab in tabsStore.tabs"
@@ -143,6 +209,15 @@ if (typeof document !== 'undefined') {
         </span>
       </div>
     </div>
+
+    <!-- 右箭头 -->
+    <span
+      v-if="hasOverflow"
+      :class="['tabs-arrow', 'tabs-arrow-right', { disabled: !canScrollRight }]"
+      @click="scrollRight"
+    >
+      <ElIconArrowRight />
+    </span>
 
     <!-- 右键菜单 -->
     <Teleport to="body">
@@ -178,12 +253,49 @@ if (typeof document !== 'undefined') {
   align-items: flex-end;
   height: 27px;
   background: var(--cube-layout-tabsview-bg, var(--el-bg-color-overlay));
-  padding: 0 12px;
   flex-shrink: 0;
   position: relative;
   margin-bottom: 4px;
   /* 标签栏底线 — 所有标签坐在这条线上 */
   border-bottom: 1px solid var(--cube-layout-tabsview-border-color, var(--el-border-color-light));
+}
+
+/* ── 左右箭头 ── */
+.tabs-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 28px;
+  flex-shrink: 0;
+  cursor: pointer;
+  color: var(--el-text-color-secondary);
+  transition: color 0.15s, background 0.15s;
+  user-select: none;
+
+  &:hover {
+    color: var(--el-color-primary);
+    background: var(--el-fill-color-light);
+  }
+
+  &.disabled {
+    color: var(--el-text-color-placeholder);
+    cursor: default;
+    pointer-events: none;
+  }
+
+  :deep(svg) {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.tabs-arrow-left {
+  border-right: 1px solid transparent;
+}
+
+.tabs-arrow-right {
+  border-left: 1px solid transparent;
 }
 
 .tabs-scroll {
