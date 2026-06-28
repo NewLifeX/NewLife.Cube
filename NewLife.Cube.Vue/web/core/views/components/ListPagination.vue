@@ -49,10 +49,10 @@ function handleSizeChange(size: number) {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  background: var(--card);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
   padding: 10px 16px;
 }
 
@@ -62,19 +62,19 @@ function handleSizeChange(size: number) {
     justify-content: flex-end;
     gap: 8px 12px;
     font-family: 'Fira Sans', system-ui, sans-serif;
-    color: var(--t3);
+    color: var(--el-text-color-secondary);
   }
 
   :deep(.el-pagination__total),
   :deep(.el-pagination__jump) {
     font-size: 13px;
-    color: var(--t3);
+    color: var(--el-text-color-secondary);
   }
 
   :deep(.el-select .el-input__wrapper),
   :deep(.el-pagination__editor.el-input .el-input__wrapper) {
     border-radius: 6px;
-    box-shadow: 0 0 0 1px var(--bd) inset;
+    box-shadow: 0 0 0 1px var(--el-border-color-light) inset;
     background: var(--el-fill-color-blank);
   }
 
@@ -84,9 +84,9 @@ function handleSizeChange(size: number) {
     min-width: 32px;
     height: 32px;
     border-radius: 6px;
-    border: 1px solid var(--bd);
+    border: 1px solid var(--el-border-color-light);
     background: var(--el-fill-color-blank);
-    color: var(--t2);
+    color: var(--el-text-color-regular);
     transition:
       background 0.13s var(--ease),
       border-color 0.13s var(--ease),
@@ -97,21 +97,21 @@ function handleSizeChange(size: number) {
   :deep(.btn-next:disabled) {
     opacity: 0.4;
     background: var(--el-disabled-bg-color);
-    border-color: var(--bd);
+    border-color: var(--el-border-color-light);
   }
 
   :deep(.btn-prev:not(:disabled):hover),
   :deep(.btn-next:not(:disabled):hover),
   :deep(.el-pager li:hover) {
-    background: var(--ac-l);
-    border-color: var(--ac-b);
-    color: var(--ac);
+    background: var(--el-color-primary-light-9);
+    border-color: var(--el-color-primary-light-8);
+    color: var(--el-color-primary);
   }
 
   :deep(.el-pager li.is-active) {
-    background: var(--ac);
-    border-color: var(--ac);
-    color: var(--text-inverse);
+    background: var(--el-color-primary);
+    border-color: var(--el-color-primary);
+    color: var(--el-color-white);
   }
 }
 

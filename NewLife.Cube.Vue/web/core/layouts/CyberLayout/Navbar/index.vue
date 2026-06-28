@@ -68,12 +68,12 @@ const currentDate = computed(() => {
 
 <style lang="scss" scoped>
 .cyber-navbar {
-  --navbar-bg: var(--bg-secondary);
-  --navbar-border: var(--border-subtle);
-  --navbar-text: var(--text-primary);
-  --navbar-text-hover: var(--accent);
-  --navbar-text-muted: var(--text-muted);
-  --navbar-hover-bg: var(--accent-muted);
+  --navbar-bg: var(--el-bg-color-overlay);
+  --navbar-border: var(--el-border-color-light);
+  --navbar-text: var(--el-text-color-primary);
+  --navbar-text-hover: var(--el-color-primary);
+  --navbar-text-muted: var(--el-text-color-secondary);
+  --navbar-hover-bg: var(--el-color-primary-light-9);
 
   display: flex;
   justify-content: space-between;
@@ -111,15 +111,15 @@ const currentDate = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-subtle);
+  background: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-sm);
   padding: 8px 12px;
   width: 220px;
   transition: border-color 0.2s;
 
   &:focus-within {
-    border-color: var(--accent);
+    border-color: var(--el-color-primary);
   }
 
   svg {

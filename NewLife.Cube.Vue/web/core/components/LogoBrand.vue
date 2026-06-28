@@ -84,7 +84,7 @@ const showLogoTitle = computed(() => {
   flex: 1;
   font-weight: 700;
   font-size: 14px;
-  color: var(--text-primary);
+  color: var(--el-text-color-primary);
   letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;

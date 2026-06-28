@@ -29,11 +29,11 @@ const emit = defineEmits<{
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: var(--card);
+  background: var(--el-bg-color-overlay);
   padding: 12px 16px;
-  border-radius: var(--r);
-  box-shadow: var(--sh);
-  border: 1px solid var(--bd);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
+  border: 1px solid var(--el-border-color-light);
 }
 
 .lt-left {
@@ -53,7 +53,7 @@ const emit = defineEmits<{
 .lt-meta {
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 12px;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
   white-space: nowrap;
 }
 
@@ -66,8 +66,8 @@ const emit = defineEmits<{
   font-weight: 500;
 
   &--primary {
-    --el-button-bg-color: var(--ac);
-    --el-button-border-color: var(--ac);
+    --el-button-bg-color: var(--el-color-primary);
+    --el-button-border-color: var(--el-color-primary);
     --el-button-hover-bg-color: var(--accent-hover);
     --el-button-hover-border-color: var(--accent-hover);
     --el-button-active-bg-color: var(--accent-hover);
@@ -76,27 +76,27 @@ const emit = defineEmits<{
 
   &--secondary {
     --el-button-bg-color: var(--el-fill-color-blank);
-    --el-button-border-color: var(--bd);
-    --el-button-text-color: var(--t2);
-    --el-button-hover-bg-color: var(--ac-l);
-    --el-button-hover-border-color: var(--ac-b);
-    --el-button-hover-text-color: var(--ac);
-    --el-button-active-bg-color: var(--ac-b);
-    --el-button-active-border-color: var(--ac-b);
-    --el-button-active-text-color: var(--ac);
+    --el-button-border-color: var(--el-border-color-light);
+    --el-button-text-color: var(--el-text-color-regular);
+    --el-button-hover-bg-color: var(--el-color-primary-light-9);
+    --el-button-hover-border-color: var(--el-color-primary-light-8);
+    --el-button-hover-text-color: var(--el-color-primary);
+    --el-button-active-bg-color: var(--el-color-primary-light-8);
+    --el-button-active-border-color: var(--el-color-primary-light-8);
+    --el-button-active-text-color: var(--el-color-primary);
     margin-left: 0;
   }
 
   &--refresh {
     --el-button-bg-color: var(--el-fill-color-blank);
-    --el-button-border-color: var(--bd);
-    --el-button-text-color: var(--t2);
-    --el-button-hover-bg-color: var(--ac-l);
-    --el-button-hover-border-color: var(--ac-b);
-    --el-button-hover-text-color: var(--ac);
-    --el-button-active-bg-color: var(--ac-b);
-    --el-button-active-border-color: var(--ac-b);
-    --el-button-active-text-color: var(--ac);
+    --el-button-border-color: var(--el-border-color-light);
+    --el-button-text-color: var(--el-text-color-regular);
+    --el-button-hover-bg-color: var(--el-color-primary-light-9);
+    --el-button-hover-border-color: var(--el-color-primary-light-8);
+    --el-button-hover-text-color: var(--el-color-primary);
+    --el-button-active-bg-color: var(--el-color-primary-light-8);
+    --el-button-active-border-color: var(--el-color-primary-light-8);
+    --el-button-active-text-color: var(--el-color-primary);
     margin-left: 0;
   }
 }

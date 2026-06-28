@@ -1,12 +1,14 @@
 import { ref, watchEffect } from 'vue';
 
 export type ThemeId =
-  | 'cyber-light'   // Cyber 浅色（默认）
-  | 'cyber-dark'    // Cyber 深色
-  | 'forest-dark'   // 森林绿深色
-  | 'forest-light'; // 森林绿浅色
+  | 'cyber-light'    // Cyber 浅色（默认）
+  | 'cyber-dark'     // Cyber 深色
+  | 'forest-dark'    // 森林绿深色
+  | 'forest-light'   // 森林绿浅色
+  | 'aurora-light'   // 极光蓝绿浅色
+  | 'aurora-dark';   // 极光蓝绿深色
 
-export type ThemeFamily = 'cyber' | 'forest';
+export type ThemeFamily = 'cyber' | 'forest' | 'aurora';
 export type ThemeMode = 'dark' | 'light';
 
 export interface ThemeOption {
@@ -73,6 +75,29 @@ export const THEME_GROUPS: ThemeGroup[] = [
       },
     ],
   },
+  {
+    id: 'aurora',
+    label: 'Aurora 极光蓝绿',
+    icon: '🌌',
+    variants: [
+      {
+        id: 'aurora-dark',
+        label: '极光深色',
+        icon: '🌙',
+        description: '极光蓝绿深色主题',
+        family: 'aurora',
+        mode: 'dark',
+      },
+      {
+        id: 'aurora-light',
+        label: '极光浅色',
+        icon: '☀️',
+        description: '极光蓝绿浅色主题',
+        family: 'aurora',
+        mode: 'light',
+      },
+    ],
+  },
 ];
 
 // 扁平化主题列表（完整，包含深色/浅色变体）
@@ -127,6 +152,9 @@ watchEffect(() => {
     if (themeId === 'cyber-dark') {
       // 默认值，移除属性
       document.documentElement.removeAttribute('data-theme');
+    } else if (themeId === 'aurora-light') {
+      // 极光浅色兼容已有 :root[data-theme="aurora"]
+      document.documentElement.setAttribute('data-theme', 'aurora');
     } else {
       document.documentElement.setAttribute('data-theme', themeId);
     }

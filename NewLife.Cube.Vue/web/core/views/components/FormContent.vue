@@ -123,23 +123,23 @@ function getValue(key: string): unknown {
 
 <style lang="scss" scoped>
 .form-content {
-  background: var(--card);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
   overflow: hidden;
 }
 
 .fmc-header {
   padding: 14px 18px;
-  border-bottom: 1px solid var(--bd);
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .fmc-title {
   font-family: 'Libre Baskerville', Georgia, serif;
   font-size: 14px;
   font-weight: 700;
-  color: var(--t1);
+  color: var(--el-text-color-primary);
   margin: 0;
 }
 
@@ -166,13 +166,13 @@ function getValue(key: string): unknown {
   display: block;
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 12px;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
   margin-bottom: 5px;
   font-weight: 500;
 }
 
 .fmc-required {
-  color: var(--er);
+  color: var(--el-color-danger);
   margin-left: 2px;
 }
 
@@ -180,12 +180,12 @@ function getValue(key: string): unknown {
   width: 100%;
   height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--bd);
+  border: 1px solid var(--el-border-color-light);
   border-radius: 6px;
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 13px;
-  color: var(--t1);
-  background: var(--bg);
+  color: var(--el-text-color-primary);
+  background: var(--el-bg-color);
   box-sizing: border-box;
   transition:
     border-color 0.15s var(--ease),
@@ -193,12 +193,12 @@ function getValue(key: string): unknown {
   outline: none;
 
   &:focus {
-    border-color: var(--ac);
+    border-color: var(--el-color-primary);
     box-shadow: 0 0 0 3px rgba(29, 112, 64, 0.1);
   }
 
   &--error {
-    border-color: var(--er);
+    border-color: var(--el-color-danger);
 
     &:focus {
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
@@ -226,13 +226,13 @@ function getValue(key: string): unknown {
   gap: 6px;
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 13px;
-  color: var(--t1);
+  color: var(--el-text-color-primary);
   cursor: pointer;
 }
 
 .fmc-error-msg {
   margin: 4px 0 0;
   font-size: 11.5px;
-  color: var(--er);
+  color: var(--el-color-danger);
 }
 </style>
