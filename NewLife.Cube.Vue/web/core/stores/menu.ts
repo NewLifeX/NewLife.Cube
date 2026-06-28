@@ -32,7 +32,7 @@ export interface TreeMenuItem {
 
 /** 平铺菜单转换成树形菜单 */
 export function convertFlatMenuToTreeMenu(flatMenu: FlatMenuItem[]): TreeMenuItem[] {
-  const menuMap: { [id: string]: TreeMenuItem } = {};
+  const menuMap: { [id: string]: TreeMenuItem; } = {};
 
   // Create a map of menu items using their IDs as keys
   flatMenu.forEach((item) => {
@@ -85,8 +85,12 @@ export function convertTreeMenuToFlatMenu(
 /** 将菜单数据按照配置的字段名称进行转换，支持平铺数据和树形数据 */
 const covertMenu = (list: Record<string, unknown>[]): TreeMenuItem[] => {
   const menuConfig = getConfig().menu;
+  const visibleField = menuConfig.visibleField;
 
-  const convertItem = (item: Record<string, unknown>): TreeMenuItem => {
+  const convertItem = (item: Record<string, unknown>): TreeMenuItem | null => {
+    // 可见性过滤：visible === false 时跳过该节点及其子树
+    if (visibleField && item[visibleField] === false) return null;
+
     const children = item[menuConfig.childrenField] as Record<string, unknown>[] | undefined;
     return {
       id: item[menuConfig.idField] as string,
@@ -97,11 +101,11 @@ const covertMenu = (list: Record<string, unknown>[]): TreeMenuItem[] => {
       icon: item[menuConfig.iconField] as string,
       sort: item[menuConfig.sortField] as number,
       visible: item[menuConfig.visibleField] as boolean | undefined,
-      children: children ? covertMenu(children) : undefined,
+      children: children ? covertMenu(children).filter(Boolean) as TreeMenuItem[] : undefined,
     };
   };
 
-  return list.map(convertItem);
+  return list.map(convertItem).filter(Boolean) as TreeMenuItem[];
 };
 
 const state: {
