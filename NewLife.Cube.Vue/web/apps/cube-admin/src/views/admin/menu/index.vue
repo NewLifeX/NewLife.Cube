@@ -1,6 +1,6 @@
-﻿<template>
+<template>
   <div class="menu-container">
-    <el-card class="box-card">
+    <el-card class="box-card" style="height: 100%; display: flex; flex-direction: column;">
       <template #header>
         <div class="card-header">
           <h3>菜单管理</h3>
@@ -40,22 +40,31 @@
         style="margin-bottom: 16px"
       />
 
-      <el-table
-        :data="tableData"
-        border
-        style="width: 100%"
-        v-loading="loading"
-        row-key="id"
-        default-expand-all
-        :tree-props="{ children: 'children' }"
-        @selection-change="handleSelectionChange"
-        :show-header="true"
-        :highlight-current-row="true"
-      >
+      <div class="table-wrapper">
+        <el-table
+          :data="tableData"
+          border
+          style="width: 100%"
+          v-loading="loading"
+          row-key="id"
+          default-expand-all
+          :tree-props="{ children: 'children' }"
+          @selection-change="handleSelectionChange"
+          :show-header="true"
+          :highlight-current-row="true"
+        >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="id" label="编号" width="80" />
-        <el-table-column prop="name" label="名称" min-width="150" />
-        <el-table-column prop="displayName" label="显示名" min-width="150" />
+        <el-table-column prop="id" label="编号" width="85" />
+        <el-table-column label="名称" min-width="150">
+          <template #default="scope">
+            <span>{{ getDepthPrefix((scope.row as any)._depth ?? 0) }}{{ scope.row.name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="显示名" min-width="150">
+          <template #default="scope">
+            <span>{{ getDepthPrefix((scope.row as any)._depth ?? 0) }}{{ scope.row.displayName }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="url" label="链接" min-width="150" />
         <el-table-column prop="sort" label="排序" width="80" />
         <el-table-column prop="icon" label="图标" width="100">
@@ -97,7 +106,8 @@
             <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
-      </el-table>
+        </el-table>
+      </div>
     </el-card>
 
     <!-- 菜单表单对话框 -->
@@ -295,23 +305,24 @@ const buildTreeData = (data: Menu[]): Menu[] => {
     }
   });
 
-  // 步骤3：清理空的children数组并排序
-  const processNode = (node: Menu) => {
+  // 步骤3：清理空的children数组、排序并标记层级深度
+  const processNode = (node: Menu, depth: number) => {
+    (node as any)._depth = depth;
     if (node.children && node.children.length === 0) {
       delete node.children;
     } else if (node.children && node.children.length > 0) {
       // 对子节点排序
       node.children.sort((a, b) => a.sort - b.sort);
-      // 递归处理子节点
-      node.children.forEach((child) => processNode(child));
+      // 递归处理子节点，深度+1
+      node.children.forEach((child) => processNode(child, depth + 1));
     }
   };
 
   // 对根节点排序
   roots.sort((a, b) => a.sort - b.sort);
 
-  // 处理所有节点
-  roots.forEach((root) => processNode(root));
+  // 处理所有节点（根节点深度为0）
+  roots.forEach((root) => processNode(root, 0));
 
   console.log('构建树状结构完成:', {
     原始数据数量: data.length,
@@ -340,6 +351,12 @@ const SearchData = (e?: Record<string, unknown>) => {
 const ResetData = (e?: Record<string, unknown>) => {
   Object.assign(queryParams, e || {});
   console.log('ResetData:', queryParams);
+};
+
+// 根据层级深度生成前缀标识
+const getDepthPrefix = (depth: number): string => {
+  if (depth <= 0) return '';
+  return '| - '.repeat(depth);
 };
 
 // 选择变化处理
@@ -461,6 +478,30 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.menu-container {
+  height: 100%;
+}
+
+.box-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.box-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
