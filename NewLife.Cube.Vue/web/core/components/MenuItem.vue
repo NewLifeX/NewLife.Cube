@@ -20,7 +20,6 @@
  *   import { MENU_ITEM_ICON_RESOLVER } from 'cube-front/core/components/MenuItem.vue';
  *   provide(MENU_ITEM_ICON_RESOLVER, (name) => name === 'x' ? MyIcon : null);
  */
-import { type Component } from 'vue';
 
 /** 注入自定义图标解析器的 Symbol Key */
 export const MENU_ITEM_ICON_RESOLVER: unique symbol = Symbol('menuItemIconResolver');
