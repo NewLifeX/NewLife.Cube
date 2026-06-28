@@ -137,7 +137,7 @@ const onIconBlur = () => {
 const fontIconSheetsFilterList = computed(() => {
 	const list = fontIconTabNameList();
 	if (!state.fontIconSearch) return list;
-	let search = state.fontIconSearch.trim().toLowerCase();
+	const search = state.fontIconSearch.trim().toLowerCase();
 	return list.filter((item: string) => {
 		if (item.toLowerCase().indexOf(search) !== -1) return item;
 	});
@@ -152,9 +152,9 @@ const fontIconTabNameList = () => {
 };
 // 处理 icon 双向绑定数值回显
 const initModeValueEcho = () => {
-	if (props.modelValue === '') return ((<string | undefined>state.fontIconPlaceholder) = props.placeholder);
-	(<string | undefined>state.fontIconPlaceholder) = props.modelValue;
-	(<string | undefined>state.fontIconPrefix) = props.modelValue;
+	if (props.modelValue === '') return ((state.fontIconPlaceholder as string | undefined) = props.placeholder);
+	(state.fontIconPlaceholder as string | undefined) = props.modelValue;
+	(state.fontIconPrefix as string | undefined) = props.modelValue;
 };
 // 处理 icon 类型，用于回显时，tab 高亮与初始化数据
 const initFontIconName = () => {

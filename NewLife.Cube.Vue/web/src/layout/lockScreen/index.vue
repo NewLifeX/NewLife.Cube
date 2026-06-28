@@ -36,7 +36,7 @@
 								placeholder="请输入密码"
 								ref="layoutLockScreenInputRef"
 								v-model="state.lockScreenPassword"
-								@keyup.enter.native.stop="onLockScreenSubmit()"
+								@keyup.enter.stop="onLockScreenSubmit()"
 							>
 								<template #append>
 									<el-button @click="onLockScreenSubmit">
@@ -112,7 +112,7 @@ const onMoveApp = (move: TouchEvent) => {
 // 鼠标移动事件
 const onMove = () => {
 	if (state.isFlags) {
-		const el = <HTMLElement>state.querySelectorEl;
+		const el = state.querySelectorEl as HTMLElement;
 		const opacitys = (state.transparency -= 1 / 200);
 		if (state.moveDifference >= 0) return false;
 		el.setAttribute('style', `top:${state.moveDifference}px;cursor:pointer;opacity:${opacitys};`);
@@ -134,7 +134,7 @@ const onEnd = () => {
 	state.isFlags = false;
 	state.transparency = 1;
 	if (state.moveDifference >= -400) {
-		(<HTMLElement>state.querySelectorEl).setAttribute('style', `top:0px;opacity:1;transition:all 0.3s ease;`);
+		(state.querySelectorEl as HTMLElement).setAttribute('style', `top:0px;opacity:1;transition:all 0.3s ease;`);
 	}
 };
 // 获取要拖拽的初始元素

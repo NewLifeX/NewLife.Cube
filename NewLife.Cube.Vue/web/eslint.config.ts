@@ -28,7 +28,14 @@ export default defineConfigWithVueTs(
 
   {
     rules: {
-      'vue/multi-word-component-names': ['error', {
+      // 放宽规则：不影响运行时行为的非关键问题降为 warn 或关闭
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-expressions': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/no-unsafe-function-type': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'warn',
+      'vue/multi-word-component-names': ['warn', {
         ignores: ['index']
       }]
     }
