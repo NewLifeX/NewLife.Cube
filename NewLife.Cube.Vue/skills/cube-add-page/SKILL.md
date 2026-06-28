@@ -395,3 +395,54 @@ onMounted(() => fetchList());
 | ------------ | ------------------------------------------------------- |
 | 移除审计字段 | `AddFormFields.RemoveCreateField().RemoveUpdateField()` |
 | 移除指定字段 | `EditFormFields.RemoveField("Remark", "CreatorId")`     |
+
+## 枚举字段处理
+
+### 自动渲染（推荐）
+
+Cube 框架的自动表格和下拉选择已内置枚举处理：
+
+- **表格显示**：枚举字段值为 0 且枚举定义中无对应成员时，自动显示 **"未设置"**
+- **下拉选择**：枚举选项缺少 0 值成员时，自动添加 **"未设置"** 选项（value=0）
+
+> 枚举类型通过 `/Cube/Lookup?codes=Type.FullName` 接口获取，返回 `[{ label, value }]` 格式。
+
+### 自定义页面中使用
+
+自定义页面中通过 `useEnumLabel` composable 统一处理枚举显示：
+
+```ts
+import { createEnumLabel, useEnumLookup } from "@/composables/useEnumLabel";
+import { usePageApi } from "@/composables/usePageApi";
+
+const api = usePageApi("Equipments", "Equipment");
+
+// 方式一：配合 useEnumLookup 自动获取枚举并生成标签函数
+const { labels, loading } = useEnumLookup(api, {
+  kind: 'SmartMES.Data.Equipments.EquipmentKinds',
+  status: 'SmartMES.Data.Equipments.EquipmentStatus',
+});
+
+// 模板中直接使用
+// <el-table-column label="设备类型">
+//   <template #default="{ row }">{{ labels.kind(row.kind) }}</template>
+// </el-table-column>
+```
+
+```ts
+// 方式二：已有选项数组时直接创建标签函数
+const typeOptions = ref([{ value: 1, label: '注塑机' }, { value: 2, label: '机械手' }]);
+const typeLabel = createEnumLabel(typeOptions);
+
+// 模板中：{{ typeLabel(row.kind) }}
+```
+
+**`createEnumLabel` 自动处理以下情况：**
+
+| 输入值 | 选项中有匹配 | 选项中无匹配 | 说明 |
+| ------ | ------------ | ------------ | ---- |
+| `null` / `undefined` / `''` | — | `"未设置"` | 空值统一显示 |
+| `0` | 匹配成员的 label | `"未设置"` | 0 且无对应成员 |
+| `1`/`2`/... | 匹配成员的 label | 原始值字符串 | 有匹配显示 label |
+
+> **不需要再手写** `if (v == null || v === '' || Number(v) === 0) return '未设置'` 这类重复代码。
