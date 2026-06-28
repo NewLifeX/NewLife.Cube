@@ -6,6 +6,7 @@ import pluginVitest from '@vitest/eslint-plugin'
 import pluginCypress from 'eslint-plugin-cypress/flat'
 import oxlint from 'eslint-plugin-oxlint'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
+import { fileURLToPath } from 'node:url'
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 import { configureVueProject } from '@vue/eslint-config-typescript'
@@ -27,14 +28,22 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
 
   {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: fileURLToPath(new URL('.', import.meta.url)),
+      },
+    },
+  },
+
+  {
     rules: {
       // 放宽规则：不影响运行时行为的非关键问题降为 warn 或关闭
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-unused-expressions': 'warn',
       '@typescript-eslint/ban-ts-comment': 'warn',
       '@typescript-eslint/no-unsafe-function-type': 'warn',
-      '@typescript-eslint/no-empty-object-type': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'off',
       'vue/multi-word-component-names': ['warn', {
         ignores: ['index']
       }]
