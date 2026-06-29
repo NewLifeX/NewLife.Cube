@@ -14,7 +14,7 @@ public partial class LovDefinitionModel
     /// <summary>编号</summary>
     public Int32 Id { get; set; }
 
-    /// <summary>值集编码。带前缀的完整编码，如 Enum.ProcessCard.EnableStatus / List.User</summary>
+    /// <summary>值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User</summary>
     public String LovCode { get; set; }
 
     /// <summary>显示名称</summary>

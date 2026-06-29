@@ -99,7 +99,7 @@ public partial class LovSearchField : IEntity<LovSearchFieldModel>
     /// <summary>关联值集。该搜索字段渲染为此值集的选择控件</summary>
     [DisplayName("关联值集")]
     [Description("关联值集。该搜索字段渲染为此值集的选择控件")]
-    [DataObjectField(false, false, true, 50)]
+    [DataObjectField(false, false, true, 200)]
     [BindColumn("RefLovCode", "关联值集。该搜索字段渲染为此值集的选择控件", "")]
     public String RefLovCode { get => _RefLovCode; set { if (OnPropertyChanging("RefLovCode", value)) { _RefLovCode = value; OnPropertyChanged("RefLovCode"); } } }
 

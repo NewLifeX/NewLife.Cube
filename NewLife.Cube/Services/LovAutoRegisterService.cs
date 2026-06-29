@@ -73,11 +73,9 @@ public class LovAutoRegisterService
     /// <summary>注册一个枚举类型到值集定义表</summary>
     private static Boolean RegisterEnum(Type enumType, String namespacePrefix)
     {
-        // 计算 LovCode: Enum.{相对命名空间路径}.{枚举名}
-        var relativeNs = enumType.Namespace!.Substring(namespacePrefix.Length).Trim('.');
-        var lovCode = String.IsNullOrEmpty(relativeNs)
-            ? $"Enum.{enumType.Name}"
-            : $"Enum.{relativeNs}.{enumType.Name}";
+        // 计算 LovCode: Enum.{完全限定类型名}，确保全局唯一且自解释
+        // 如 SmartMES.Data.ProcessCard.EnableStatus → Enum.SmartMES.Data.ProcessCard.EnableStatus
+        var lovCode = $"Enum.{enumType.FullName}";
 
         XTrace.WriteLine("Lov: 检测到枚举 {0} → LovCode={1}", enumType.FullName, lovCode);
 

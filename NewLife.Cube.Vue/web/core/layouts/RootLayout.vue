@@ -98,7 +98,11 @@ onMounted(async () => {
 
   <!-- 布局 -->
   <template v-else>
+    <!-- 布局组件，有内置的，也有外部传入的 -->
     <component :is="MainLayout">
+      <!-- 组件内预先实现自定义插槽，默认值，都在这里 -->
+      <!-- 比如标签组件，默认实现使用内置的TabsView
+       如果要用，那么布局实现就加上<slot name="tabs" />声明这个插槽，否则不会显示TabsView -->
       <template #tabs>
         <!-- 多标签页栏 -->
         <TabsView />
@@ -107,25 +111,25 @@ onMounted(async () => {
       <template #default>
         <!-- 组件缓存 -->
         <KeepAlive v-if="meta.keepAlive">
+          <Transition
+            v-if="meta.transition"
+            v-bind="typeof meta.transition === 'object' ? meta.transition : {}"
+          >
+            <slot />
+          </Transition>
+          <slot v-else />
+        </KeepAlive>
+
+        <!-- 无缓存但有过渡 -->
         <Transition
-          v-if="meta.transition"
+          v-else-if="meta.transition"
           v-bind="typeof meta.transition === 'object' ? meta.transition : {}"
         >
           <slot />
         </Transition>
+
+        <!-- 无缓存无过渡 -->
         <slot v-else />
-      </KeepAlive>
-
-      <!-- 无缓存但有过渡 -->
-      <Transition
-        v-else-if="meta.transition"
-        v-bind="typeof meta.transition === 'object' ? meta.transition : {}"
-      >
-        <slot />
-      </Transition>
-
-      <!-- 无缓存无过渡 -->
-      <slot v-else />
       </template>
     </component>
   </template>

@@ -95,29 +95,36 @@
 import { ref, watch } from 'vue';
 import { getConfig } from 'cube-front/core/configure';
 import LovSelect from './LovSelect.vue';
+import { fetchLovListData, fetchBatchLabel } from 'cube-front/core/utils/lov-api';
+import type {
+  LovEnumOption,
+  LovListMeta,
+  LovSearchField,
+  LovTableColumn,
+} from 'cube-front/core/types/lov';
 
 const props = defineProps<{
   dialogVisible: boolean;
   lovCode: string;
-  lovMeta: any;
-  inlineEnums: Record<string, any[]>;
+  lovMeta: LovListMeta | null;
+  inlineEnums: Record<string, LovEnumOption[]>;
   translateCache: Map<string, string>;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:dialogVisible', value: boolean): void;
-  (e: 'select', row: any): void;
+  (e: 'select', row: Record<string, unknown>): void;
 }>();
 
 // ── 从 meta 中读取配置 ──
 const listConfig = props.lovMeta?.listConfig || null;
-const searchFields = ref<any[]>(props.lovMeta?.searchFields || []);
-const tableColumns = ref<any[]>(props.lovMeta?.tableColumns || []);
+const searchFields = ref<LovSearchField[]>(props.lovMeta?.searchFields || []);
+const tableColumns = ref<LovTableColumn[]>(props.lovMeta?.tableColumns || []);
 
 // ── 状态 ──
 const tableLoading = ref(false);
-const searchParams = ref<Record<string, any>>({});
-const tableData = ref<any[]>([]);
+const searchParams = ref<Record<string, string | number | undefined>>({});
+const tableData = ref<Record<string, unknown>[]>([]);
 const currentPage = ref(1);
 const pageSize = ref(20);
 const total = ref(0);
@@ -152,21 +159,14 @@ function resetSearch() {
 async function fetchListData() {
   tableLoading.value = true;
   try {
-    const cfg = getConfig();
-    const baseUrl = cfg.request?.baseUrl || '';
-    const res = await fetch(`${baseUrl}/Admin/Lov/ListData`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        lovCode: props.lovCode,
-        params: searchParams.value,
-        pageNum: currentPage.value,
-        pageSize: pageSize.value,
-      }),
+    const result = await fetchLovListData({
+      lovCode: props.lovCode,
+      params: searchParams.value,
+      pageNum: currentPage.value,
+      pageSize: pageSize.value,
     });
-    const json = await res.json();
-    tableData.value = json.data || [];
-    total.value = json.total || 0;
+    tableData.value = result.data || [];
+    total.value = result.total || 0;
 
     // 批量翻译列表列中被引用的 List.xxx 值
     if (tableColumns.value.length > 0) {
@@ -176,8 +176,8 @@ async function fetchListData() {
         if (props.inlineEnums[col.refLovCode]) continue;
 
         const values = tableData.value
-          .map((r: any) => r[col.field])
-          .filter((v: any) => v != null && v !== '')
+          .map((r) => r[col.field])
+          .filter((v) => v != null && v !== '')
           .map(String);
         if (values.length > 0) {
           batchMap.set(col.refLovCode, [...new Set(values)]);
@@ -188,16 +188,9 @@ async function fetchListData() {
         const uncached = values.filter(v => !props.translateCache.has(`${batchLovCode}:${v}`));
         if (uncached.length === 0) continue;
         try {
-          const labelCfg = getConfig();
-          const labelBaseUrl = labelCfg.request?.baseUrl || '';
-          const labelRes = await fetch(`${labelBaseUrl}/Admin/Lov/BatchLabel`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lovCode: batchLovCode, values: uncached }),
-          });
-          const labelJson = await labelRes.json();
-          for (const [v, label] of Object.entries(labelJson)) {
-            props.translateCache.set(`${batchLovCode}:${v}`, label as string);
+          const labelResult = await fetchBatchLabel({ lovCode: batchLovCode, values: uncached });
+          for (const [v, label] of Object.entries(labelResult)) {
+            props.translateCache.set(`${batchLovCode}:${v}`, label);
           }
         } catch (e) {
           console.error('LovSelectTable: 批量翻译失败', e);
@@ -211,8 +204,8 @@ async function fetchListData() {
   }
 }
 
-function getTranslatedText(row: any, col: any): string {
-  if (!col.refLovCode) return row[col.field] ?? '-';
+function getTranslatedText(row: Record<string, unknown>, col: LovTableColumn): string {
+  if (!col.refLovCode) return String(row[col.field] ?? '-');
 
   const value = row[col.field];
   if (value == null) return '-';
@@ -224,7 +217,7 @@ function getTranslatedText(row: any, col: any): string {
 
   if (props.inlineEnums[col.refLovCode]) {
     const map = new Map(
-      props.inlineEnums[col.refLovCode].map((e: any) => [String(e.value), e.label])
+      props.inlineEnums[col.refLovCode].map((e) => [String(e.value), e.label])
     );
     return map.get(String(value)) ?? String(value);
   }
@@ -232,7 +225,7 @@ function getTranslatedText(row: any, col: any): string {
   return String(value);
 }
 
-function selectRow(row: any) {
+function selectRow(row: Record<string, unknown>) {
   emit('select', row);
 }
 </script>

@@ -629,7 +629,7 @@
     <Table Name="LovDefinition" Description="值集定义。值和列表的值集定义，支持枚举型和列表型">
       <Columns>
         <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
-        <Column Name="LovCode" DataType="String" Master="True" Nullable="False" Description="值集编码。带前缀的完整编码，如 Enum.ProcessCard.EnableStatus / List.User" />
+        <Column Name="LovCode" DataType="String" Master="True" Length="200" Nullable="False" Description="值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User" />
         <Column Name="Name" DataType="String" Description="显示名称" />
         <Column Name="Type" DataType="String" Description="值集类型。ENUM=枚举型/LIST=列表型，须与LovCode前缀一致" />
         <Column Name="ValueField" DataType="String" Description="值字段。列表型的值字段名" />
@@ -706,7 +706,7 @@
         <Column Name="Required" DataType="Boolean" Description="是否必填" />
         <Column Name="DefaultValue" DataType="String" Description="默认值" />
         <Column Name="Sort" DataType="Int32" Description="排序" />
-        <Column Name="RefLovCode" DataType="String" Description="关联值集。该搜索字段渲染为此值集的选择控件" />
+        <Column Name="RefLovCode" DataType="String" Length="200" Description="关联值集。该搜索字段渲染为此值集的选择控件" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
         <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
         <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
@@ -729,7 +729,7 @@
         <Column Name="Width" DataType="Int32" Description="列宽" />
         <Column Name="Align" DataType="String" Description="对齐方式。left/center/right" />
         <Column Name="Sortable" DataType="Boolean" Description="是否可排序" />
-        <Column Name="RefLovCode" DataType="String" Description="关联值集。该列原始值需翻译为此值集的显示文本" />
+        <Column Name="RefLovCode" DataType="String" Length="200" Description="关联值集。该列原始值需翻译为此值集的显示文本" />
         <Column Name="FormatType" DataType="String" Description="格式化类型。与RefLovCode互斥，如 date/amount" />
         <Column Name="Sort" DataType="Int32" Description="排序" />
         <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />

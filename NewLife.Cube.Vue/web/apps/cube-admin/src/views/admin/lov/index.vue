@@ -61,7 +61,9 @@
       </el-table-column>
     </el-table>
 
-    <CubeListPager :current-page="page" :page-size="size" :total="total" :on-change="loadData" />
+    <CubeListPager :current-page="page" :page-size="size" :total="total"
+      :on-current-change="(p: number) => { page = p; loadData(); }"
+      :on-size-change="(s: number) => { size = s; loadData(); }" />
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog v-model="dialogVisible" :title="editingId ? '编辑值集' : '新增值集'" width="600px">
@@ -115,6 +117,7 @@
 import { ref, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { usePageApi } from '@/composables/usePageApi';
+import CubeListPager from 'cube-front/core/components/CubeListPager.vue';
 import LovConfig from './config.vue';
 
 const api = usePageApi('Admin', 'Lov');

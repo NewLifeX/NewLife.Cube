@@ -32,11 +32,11 @@ public partial class LovDefinition : IEntity<LovDefinitionModel>
     public Int32 Id { get => _Id; set { if (OnPropertyChanging("Id", value)) { _Id = value; OnPropertyChanged("Id"); } } }
 
     private String _LovCode;
-    /// <summary>值集编码。带前缀的完整编码，如 Enum.ProcessCard.EnableStatus / List.User</summary>
+    /// <summary>值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User</summary>
     [DisplayName("值集编码")]
-    [Description("值集编码。带前缀的完整编码，如 Enum.ProcessCard.EnableStatus / List.User")]
-    [DataObjectField(false, false, false, 50)]
-    [BindColumn("LovCode", "值集编码。带前缀的完整编码，如 Enum.ProcessCard.EnableStatus / List.User", "", Master = true)]
+    [Description("值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User")]
+    [DataObjectField(false, false, false, 200)]
+    [BindColumn("LovCode", "值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User", "", Master = true)]
     public String LovCode { get => _LovCode; set { if (OnPropertyChanging("LovCode", value)) { _LovCode = value; OnPropertyChanged("LovCode"); } } }
 
     private String _Name;
@@ -290,7 +290,7 @@ public partial class LovDefinition : IEntity<LovDefinitionModel>
         /// <summary>编号</summary>
         public static readonly Field Id = FindByName("Id");
 
-        /// <summary>值集编码。带前缀的完整编码，如 Enum.ProcessCard.EnableStatus / List.User</summary>
+        /// <summary>值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User</summary>
         public static readonly Field LovCode = FindByName("LovCode");
 
         /// <summary>显示名称</summary>
@@ -341,7 +341,7 @@ public partial class LovDefinition : IEntity<LovDefinitionModel>
         /// <summary>编号</summary>
         public const String Id = "Id";
 
-        /// <summary>值集编码。带前缀的完整编码，如 Enum.ProcessCard.EnableStatus / List.User</summary>
+        /// <summary>值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User</summary>
         public const String LovCode = "LovCode";
 
         /// <summary>显示名称</summary>

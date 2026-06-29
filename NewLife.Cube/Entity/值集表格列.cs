@@ -83,7 +83,7 @@ public partial class LovTableColumn : IEntity<LovTableColumnModel>
     /// <summary>关联值集。该列原始值需翻译为此值集的显示文本</summary>
     [DisplayName("关联值集")]
     [Description("关联值集。该列原始值需翻译为此值集的显示文本")]
-    [DataObjectField(false, false, true, 50)]
+    [DataObjectField(false, false, true, 200)]
     [BindColumn("RefLovCode", "关联值集。该列原始值需翻译为此值集的显示文本", "")]
     public String RefLovCode { get => _RefLovCode; set { if (OnPropertyChanging("RefLovCode", value)) { _RefLovCode = value; OnPropertyChanged("RefLovCode"); } } }
 
