@@ -200,11 +200,7 @@ if (typeof document !== 'undefined') {
         </span>
 
         <!-- 关闭按钮 -->
-        <span
-          v-if="tab.closable"
-          class="tabs-item-close"
-          @click.stop="handleCloseTab(tab, $event)"
-        >
+        <span v-if="tab.closable" class="tabs-item-close" @click.stop="handleCloseTab(tab, $event)">
           <ElIconClose />
         </span>
       </div>
@@ -221,11 +217,7 @@ if (typeof document !== 'undefined') {
 
     <!-- 右键菜单 -->
     <Teleport to="body">
-      <div
-        v-if="contextMenuVisible"
-        class="tabs-context-menu"
-        :style="contextMenuStyle"
-      >
+      <div v-if="contextMenuVisible" class="tabs-context-menu" :style="contextMenuStyle">
         <div
           v-if="contextMenuTarget?.closable"
           class="tabs-context-item"
@@ -233,15 +225,9 @@ if (typeof document !== 'undefined') {
         >
           关闭
         </div>
-        <div class="tabs-context-item" @click="handleContextCloseOthers">
-          关闭其他
-        </div>
-        <div class="tabs-context-item" @click="handleContextCloseAll">
-          关闭全部
-        </div>
-        <div class="tabs-context-item" @click="handleContextRefresh">
-          刷新当前
-        </div>
+        <div class="tabs-context-item" @click="handleContextCloseOthers">关闭其他</div>
+        <div class="tabs-context-item" @click="handleContextCloseAll">关闭全部</div>
+        <div class="tabs-context-item" @click="handleContextRefresh">刷新当前</div>
       </div>
     </Teleport>
   </div>
@@ -251,10 +237,9 @@ if (typeof document !== 'undefined') {
 .tabs-view {
   display: flex;
   align-items: flex-end;
-  height: 27px;
+  height: 28px;
   background: var(--cube-layout-tabsview-bg, var(--el-bg-color-overlay));
   flex-shrink: 0;
-  position: relative;
   margin-bottom: 4px;
   /* 标签栏底线 — 所有标签坐在这条线上 */
   border-bottom: 1px solid var(--cube-layout-tabsview-border-color, var(--el-border-color-light));
@@ -270,7 +255,9 @@ if (typeof document !== 'undefined') {
   flex-shrink: 0;
   cursor: pointer;
   color: var(--el-text-color-secondary);
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
   user-select: none;
 
   &:hover {
@@ -306,6 +293,7 @@ if (typeof document !== 'undefined') {
   overflow-y: hidden;
   flex: 1;
   scrollbar-width: none;
+  padding: 0 1px;
 
   &::-webkit-scrollbar {
     display: none;
@@ -317,7 +305,7 @@ if (typeof document !== 'undefined') {
   align-items: center;
   gap: 6px;
   padding: 0 12px;
-  height: 28px;
+  height: 27.5px;
   font-size: var(--cube-layout-tabsview-item-font-size, 12px);
   color: var(--cube-layout-tabsview-item-color, var(--el-text-color-regular));
   background: var(--cube-layout-tabsview-item-bg, var(--el-fill-color-light));
@@ -330,14 +318,12 @@ if (typeof document !== 'undefined') {
   /* 标签形状：仅上方和两侧有边框，无底边以"坐"在底线上 */
   border: 1px solid var(--cube-layout-tabsview-item-border-color, var(--el-border-color-light));
   border-bottom: none;
-  border-radius: 4px 4px 0 0;
+  border-radius: 3px 3px 0 0;
   margin-bottom: -1px;
 
   &:hover {
     background: var(--cube-layout-tabsview-item-hover-bg, var(--el-bg-color-overlay));
     color: var(--el-text-color-primary);
-    z-index: 1;
-    position: relative;
   }
 
   &.active {
@@ -347,8 +333,6 @@ if (typeof document !== 'undefined') {
     /* 活跃标签用白色底边遮盖容器底线，产生"浮出"感 */
     border-bottom: 1px solid var(--cube-layout-tabsview-item-active-bg, var(--el-bg-color-overlay));
     margin-bottom: -1px;
-    z-index: 2;
-    position: relative;
 
     .tabs-item-close {
       opacity: 1;
@@ -388,7 +372,9 @@ if (typeof document !== 'undefined') {
   height: 16px;
   border-radius: 50%;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
   flex-shrink: 0;
 
   :deep(svg) {
