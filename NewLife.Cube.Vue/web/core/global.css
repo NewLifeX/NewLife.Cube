@@ -23,10 +23,9 @@
    覆盖 EP 内部 CSS 变量，实现主题一致性
    ============================================================ */
 
-/* Cyber Dark / Forest Dark（深色主题统一处理） */
+/* 深色模式统一处理（由 ModeSwitcher 的 html.dark class 控制） */
 :root,
-[data-theme='cyber-dark'],
-[data-theme='forest-dark'] {
+html.dark {
   --el-color-primary: var(--accent);
   --el-color-primary-light-3: color-mix(in srgb, var(--accent) 60%, white);
   --el-color-primary-light-5: color-mix(in srgb, var(--accent) 40%, white);
@@ -77,9 +76,8 @@
   --el-color-info: var(--color-info);
 }
 
-/* Cyber Light / Forest Light（浅色主题统一处理） */
-[data-theme='cyber-light'],
-[data-theme='forest-light'] {
+/* 浅色模式（默认，html.dark 不生效时使用） */
+:root {
   --el-color-primary: var(--accent);
   --el-color-primary-light-3: color-mix(in srgb, var(--accent) 70%, white);
   --el-color-primary-light-5: color-mix(in srgb, var(--accent) 50%, white);
