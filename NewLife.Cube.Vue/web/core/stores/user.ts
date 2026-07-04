@@ -140,8 +140,17 @@ export const useUserStore = defineStore('user', {
             axiosConfig = getUserInfoAxiosConfig;
           }
 
-          const response = await request(axiosConfig);
-          this.setUserInfo(response as unknown as Partial<UserInfo>);
+          const response = await request(axiosConfig) as unknown as Partial<UserInfo> & {
+            code?: number;
+            data?: unknown;
+          };
+          // 响应为标准 ApiResponse 结构 { code, data, message }，需取 data 字段作为用户信息；
+          // 兼容非标准响应（已解包或无 data 字段）时直接使用 response 本身
+          const userInfo =
+            response && typeof response === 'object' && 'data' in response && 'code' in response
+              ? (response.data as Partial<UserInfo>)
+              : response;
+          this.setUserInfo(userInfo);
         } catch (error) {
           console.error('Failed to fetch user info:', error);
         } finally {
