@@ -61,105 +61,111 @@ initApp();
 
 ## CSS Token 规范
 
-> **重要**：布局样式**必须**使用 CSS 自定义属性（Token 变量），**禁止硬编码色值**。
-> 框架 `global.css` 提供了完整的三层 Token 体系，布局组件直接引用即可。
+> **重要**：布局样式**必须**使用 Element Plus CSS token（`--el-*`）或 Cube Layout token（`--cube-layout-*`），**禁止硬编码色值、自定义 CSS 变量或第三方 token 体系**。
+> 框架 `global.css` 和 `core/cube-layout-vars.css` 提供了完整的 Token 体系，布局组件直接引用即可。
 
-### 三层 Token 架构
+### 双 Token 架构
 
 ```
-┌──────────────────────────────────────────┐
-│  Layer 0: Primitive Tokens（设计原语）    │
-│  --green-400, --blue-500, --amber-300... │  ← 不随主题变化
-├──────────────────────────────────────────┤
-│  Layer 1: Semantic Tokens（语义别名）     │
-│  --bg-primary, --text-primary, --accent  │  ← 随主题变化
-├──────────────────────────────────────────┤
-│  Layer 2: Component Tokens（组件级变量）  │
-│  --sidebar-bg, --navbar-text, --card-bg  │  ← 布局自己定义
-└──────────────────────────────────────────┘
+┌───────────────────────────────────────────────┐
+│  --el-* 体系（Element Plus 语义 Token）        │
+│  --el-bg-color, --el-text-color-primary        │  ← 页面背景/文字/边框/填充
+│  --el-color-primary, --el-border-color         │  ← 主色/边框
+├───────────────────────────────────────────────┤
+│  --cube-layout-* 体系（布局结构 Token）         │
+│  --cube-layout-sidebar-width                  │  ← 侧边栏宽度
+│  --cube-layout-menu-item-color                │  ← 菜单项颜色
+│  --cube-layout-nav-height                     │  ← 导航栏高度
+│  --cube-layout-tabsview-*                     │  ← 标签页颜色
+└───────────────────────────────────────────────┘
 ```
 
-### Layer 0：设计原语（不随主题变化）
+### Element Plus 语义 Token（`--el-*`）
 
-| 变量          | 值                  | 用途       |
-| ------------- | ------------------- | ---------- |
-| `--green-400` | `#4ade80`           | 绿色系主色 |
-| `--green-600` | `#16a34a`           | 绿色强调   |
-| `--blue-500`  | `#3b82f6`           | 蓝色       |
-| `--blue-600`  | `#2563eb`           | 蓝色强调   |
-| `--amber-400` | `#fbbf24`           | 警告色     |
-| `--rose-400`  | `#fb7185`           | 错误色     |
-| `--cyan-400`  | `#22d3ee`           | 青色信息色 |
-| `--radius-sm` | `8px`               | 小圆角     |
-| `--radius-md` | `12px`              | 中圆角     |
-| `--shadow-md` | `0 4px 6px...`      | 阴影       |
-| `--ease`      | `cubic-bezier(...)` | 动画曲线   |
+| 变量 | 用途 |
+|---|---|
+| `--el-bg-color` | 页面主体背景色 |
+| `--el-bg-color-overlay` | 弹窗/卡片/浮层面板背景 |
+| `--el-fill-color` | 填充色（输入框背景） |
+| `--el-fill-color-light` | 浅填充色（搜索栏背景） |
+| `--el-text-color-primary` | 一级文字色（标题/正文） |
+| `--el-text-color-regular` | 二级文字色（次要信息） |
+| `--el-text-color-secondary` | 三级文字色（提示文字） |
+| `--el-text-color-placeholder` | 占位符文字色 |
+| `--el-border-color` | 常规边框色 |
+| `--el-border-color-light` | 浅边框色（分割线） |
+| `--el-color-primary` | 主色（按钮/链接/激活态） |
+| `--el-color-success` | 成功色 |
+| `--el-color-warning` | 警告色 |
+| `--el-color-danger` | 危险色（错误/删除） |
+| `--el-border-radius-base` | 基础圆角（卡片/弹窗） |
+| `--el-border-radius-small` | 小圆角（按钮/输入框） |
+| `--el-box-shadow-light` | 浅阴影（卡片） |
+| `--el-box-shadow` | 常规阴影（下拉面板） |
 
-### Layer 1：语义别名（随主题变化）
+### Cube Layout 布局结构 Token（`--cube-layout-*`）
 
-| 类别 | 变量                                                                      | 用途          |
-| ---- | ------------------------------------------------------------------------- | ------------- |
-| 背景 | `--bg-primary` `--bg-secondary` `--bg-card` `--bg-elevated`               | 页面/卡片背景 |
-| 边框 | `--border-subtle` `--border-default` `--border-emphasis`                  | 边框色        |
-| 文字 | `--text-primary` `--text-secondary` `--text-muted` `--text-inverse`       | 文字色        |
-| 强调 | `--accent` `--accent-hover` `--accent-secondary` `--accent-muted`         | 品牌强调色    |
-| 语义 | `--color-success` `--color-warning` `--color-error` `--color-info`        | 状态色        |
-| 别名 | `--bg` `--bd` `--card` `--t1` `--t2` `--t3` `--ac` `--ac-l` `--ok` `--er` | 简写兼容      |
+| 变量 | 用途 | 默认值 |
+|---|---|---|
+| `--cube-layout-sidebar-width` | 侧边栏展开宽度 | `220px` |
+| `--cube-layout-sidebar-collapsed-width` | 侧边栏折叠宽度 | `64px` |
+| `--cube-layout-nav-height` | 导航栏高度 | `52px` |
+| `--cube-layout-content-padding` | 内容区内边距 | `24px` |
+| `--cube-layout-sidebar-bg` | 侧边栏背景 | `var(--el-bg-color-overlay)` |
+| `--cube-layout-sidebar-border-color` | 侧边栏边框色 | `var(--el-border-color)` |
+| `--cube-layout-menu-item-color` | 菜单项文字色 | `var(--el-text-color-regular)` |
+| `--cube-layout-menu-item-hover-bg` | 菜单项悬浮背景 | `var(--el-color-primary-light-9)` |
+| `--cube-layout-menu-item-active-color` | 菜单项激活色 | `var(--el-color-primary)` |
+| `--cube-layout-nav-bg` | 导航栏背景 | `var(--el-bg-color-overlay)` |
+| `--cube-layout-nav-border-color` | 导航栏边框色 | `var(--el-border-color)` |
+| `--cube-layout-breadcrumb-item-color` | 面包屑文字色 | `var(--el-text-color-secondary)` |
+| `--cube-layout-breadcrumb-current-color` | 面包屑当前色 | `var(--el-text-color-primary)` |
+| `--cube-layout-tabsview-bg` | 标签页栏背景 | `var(--el-bg-color-overlay)` |
 
-### Layer 1 导航栏专用变量（随主题变化）
-
-| 变量                  | 用途           |
-| --------------------- | -------------- |
-| `--navbar-bg`         | 导航栏背景     |
-| `--navbar-border`     | 导航栏边框     |
-| `--navbar-text`       | 导航栏文字     |
-| `--navbar-text-hover` | 导航栏悬停文字 |
-| `--navbar-text-muted` | 导航栏次要文字 |
-| `--navbar-hover-bg`   | 导航栏悬停背景 |
-| `--navbar-active-bg`  | 导航栏激活背景 |
+> 完整 `--cube-layout-*` 变量清单见 `cube-front/core/cube-layout-vars.css`
 
 ### 使用规则
 
-| 规则                                                | 说明                                                          |
-| --------------------------------------------------- | ------------------------------------------------------------- |
-| ✅ **必须**引用 Layer 1 语义变量                     | `background: var(--bg-primary)` 而非 `#1e1e1e`                |
-| ✅ **必须**使用 `var(--xxx)` 引用                    | `color: var(--text-primary)`                                  |
-| ✅ 布局专属变量（Layer 2）以 `--{布局名}-` 前缀命名  | `--aurora-sidebar-width`、`--aurora-logo-glow`                |
-| ✅ 带合理 fallback                                   | `var(--sidebar-bg, var(--bg-secondary))` 仅在旧布局兼容时使用 |
-| ❌ **禁止**在布局样式中硬编码色值                    | 除非是设计原语定义（Layer 0），且需加注释说明                 |
-| ❌ **禁止**在组件 `scoped style` 中覆盖 Layer 1 变量 | 全局变量在 `global.css` 中统一管理                            |
+| 规则 | 说明 |
+|---|---|
+| ✅ **必须**使用 `--el-*` 或 `--cube-layout-*` | `background: var(--el-bg-color-overlay)` |
+| ✅ **必须**使用 `var(--xxx)` 引用 | `color: var(--el-text-color-primary)` |
+| ✅ 布局专属尺寸变量以 `--cube-layout-` 前缀 | `--cube-layout-sidebar-width` |
+| ✅ 带合理 fallback | `var(--cube-layout-nav-height, 60px)` |
+| ❌ **禁止**使用旧版自定义 token（`--bg-*`、`--text-*`、`--accent-*`、`--sidebar-*`、`--navbar-*`） | 已废弃，不再支持 |
+| ❌ **禁止**硬编码色值 | 不得出现 `#fff`、`#1e293b`、`rgba(x,x,x,x)` 等 |
+| ❌ **禁止**在组件 `scoped style` 中覆盖 `--el-*` 变量 | 全局变量在各布局 `variables.css` 中统一管理 |
 
-### 布局专属变量（Layer 2）定义方式
+### 布局专属变量定义方式
 
-**推荐**：在布局的 `styles/variables.css` 中定义，基于 Layer 1 派生：
+**推荐**：在布局的 `styles/variables.css` 中使用两层覆盖：
 
 ```css
-/* styles/variables.css */
-:root {
-  /* 布局尺寸 */
-  --aurora-sidebar-width: 220px;
-  --aurora-nav-height: 60px;
+/* styles/variables.css — 同时覆盖 --el-* 和 --cube-layout-* */
+:root,
+[data-theme="aurora"] {
+  /* 1) 覆盖 Element Plus 通用 Token */
+  --el-color-primary: #2563eb;
+  --el-bg-color: #f8fafc;
+  --el-bg-color-overlay: #ffffff;
+  --el-text-color-primary: #1e293b;
+  --el-text-color-regular: #475569;
+  --el-border-color: #e2e8f0;
 
-  /* 布局颜色（基于 Layer 1 派生） */
-  --aurora-bg: var(--bg-primary);
-  --aurora-sidebar-bg: var(--bg-secondary);
-  --aurora-nav-bg: var(--bg-secondary);
-  --aurora-text-primary: var(--text-primary);
-  --aurora-text-secondary: var(--text-secondary);
-  --aurora-text-muted: var(--text-muted);
-  --aurora-border: var(--border-default);
-  --aurora-sidebar-border: var(--border-default);
+  /* 2) 覆盖 Cube Layout 布局 Token */
+  --cube-layout-sidebar-width: 220px;
+  --cube-layout-sidebar-collapsed-width: 64px;
+  --cube-layout-nav-height: 60px;
+  --cube-layout-sidebar-bg: var(--el-bg-color-overlay);
+  --cube-layout-menu-item-active-bg: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(16,185,129,0.1));
+}
 
-  /* 品牌渐变 */
-  --aurora-logo-gradient: linear-gradient(135deg, var(--blue-600), var(--green-500));
-  --aurora-primary-gradient: linear-gradient(135deg, var(--blue-600), var(--green-500));
-
-  /* 圆角 */
-  --aurora-radius-sm: 8px;
-  --aurora-radius-md: 12px;
-
-  /* 动画 */
-  --aurora-transition: all 0.2s ease;
+[data-theme="aurora-dark"] {
+  /* 深色模式只覆盖差异化值 */
+  --el-bg-color: #0f172a;
+  --el-bg-color-overlay: #1e293b;
+  --el-text-color-primary: #f1f5f9;
+  ...
 }
 ```
 
@@ -169,11 +175,14 @@ initApp();
 /* ❌ 错误：硬编码 */
 .sidebar { background: #1e1e1e; color: #e8eaed; }
 
-/* ✅ 正确：引用 token */
+/* ❌ 错误：使用已废弃的自定义 token */
 .sidebar { background: var(--bg-secondary); color: var(--text-primary); }
 
-/* ✅ 正确：布局专属变量 */
-.sidebar { background: var(--aurora-sidebar-bg, var(--bg-secondary)); }
+/* ✅ 正确：使用 Element Plus token */
+.sidebar { background: var(--el-bg-color-overlay); color: var(--el-text-color-primary); }
+
+/* ✅ 正确：使用 Cube Layout token */
+.sidebar { background: var(--cube-layout-sidebar-bg); }
 ```
 
 ---

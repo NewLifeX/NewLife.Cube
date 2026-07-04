@@ -179,14 +179,14 @@ const handleMegaMouseLeave = () => {
 $tn-h: 60px;
 
 .topnav {
-  --navbar-border: var(--tn-b, #224538);
-  --navbar-text: var(--tn-t, #74b898);
-  --navbar-text-hover: var(--tn-ac, #4ec685);
-  --navbar-text-muted: rgba(255, 255, 255, 0.5);
-  --navbar-hover-bg: rgba(255, 255, 255, 0.08);
+  --navbar-border: var(--cube-layout-nav-border-color, var(--el-border-color));
+  --navbar-text: var(--cube-layout-breadcrumb-item-color, var(--el-text-color-regular));
+  --navbar-text-hover: var(--el-color-primary);
+  --navbar-text-muted: var(--el-text-color-disabled);
+  --navbar-hover-bg: var(--el-color-primary-light-9);
 
   height: $tn-h;
-  background: var(--tn, #1a3328);
+  background: var(--cube-layout-nav-bg, var(--el-bg-color-overlay));
   display: flex;
   align-items: center;
   padding: 0 18px 0 14px;
@@ -201,7 +201,7 @@ $tn-h: 60px;
   align-items: center;
   gap: 10px;
   padding-right: 18px;
-  border-right: 1px solid var(--tn-b, #224538);
+  border-right: 1px solid var(--cube-layout-nav-border-color, var(--el-border-color));
   margin-right: 6px;
   flex-shrink: 0;
 }
@@ -209,7 +209,7 @@ $tn-h: 60px;
 .tn-mark {
   width: 32px;
   height: 32px;
-  background: var(--tn-ac, #4ec685);
+  background: var(--el-color-primary);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -220,7 +220,7 @@ $tn-h: 60px;
   svg {
     width: 17px;
     height: 17px;
-    fill: var(--tn, #1a3328);
+    fill: var(--cube-layout-nav-bg, var(--el-bg-color-overlay));
   }
 }
 
@@ -476,7 +476,7 @@ $tn-h: 60px;
 .tn-dvd {
   width: 1px;
   height: 20px;
-  background: var(--tn-b, #224538);
+  background: var(--cube-layout-nav-border-color, var(--el-border-color));
   margin: 0 3px;
 }
 </style>

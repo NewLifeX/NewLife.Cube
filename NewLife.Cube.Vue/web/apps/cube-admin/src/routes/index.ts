@@ -133,6 +133,12 @@ const routes: RouteRecordRaw[] = [
     name: 'admin-xcode',
     component: () => import('../views/admin/xcode/index.vue'),
   },
+  // 值集管理
+  {
+    path: '/Admin/Lov',
+    name: 'admin-lov',
+    component: () => import('../views/admin/lov/index.vue'),
+  },
 ];
 
 export default routes;

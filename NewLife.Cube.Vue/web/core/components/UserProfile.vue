@@ -209,7 +209,7 @@ onUnmounted(() => {
   background: transparent;
   cursor: pointer;
   font-family: inherit;
-  color: var(--navbar-text, var(--text-secondary));
+  color: var(--cube-layout-breadcrumb-item-color, var(--cube-layout-menu-item-color));
   transition:
     background 0.15s,
     color 0.15s;
@@ -217,8 +217,8 @@ onUnmounted(() => {
 
   &:hover,
   &.active {
-    background: var(--navbar-hover-bg, rgba(0, 0, 0, 0.06));
-    color: var(--navbar-text-hover, var(--text-primary));
+    background: var(--cube-layout-menu-item-hover-bg, var(--el-color-primary-light-9));
+    color: var(--cube-layout-menu-item-active-color, var(--el-color-primary));
   }
 }
 
@@ -233,7 +233,7 @@ onUnmounted(() => {
 .variant-sidebar .profile-trigger {
   width: 100%;
   padding: 12px 16px;
-  border-radius: var(--radius-sm, 8px);
+  border-radius: var(--el-border-radius-small, 8px);
 }
 
 /* ───────── 头像 ───────── */
@@ -259,7 +259,7 @@ onUnmounted(() => {
 .avatar-initial {
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: var(--el-color-white);
   line-height: 1;
 }
 
@@ -272,7 +272,7 @@ onUnmounted(() => {
 
 /* ───────── 箭头 ───────── */
 .profile-chevron {
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   transition: transform 0.2s;
   flex-shrink: 0;
   margin-left: auto;
@@ -369,7 +369,7 @@ onUnmounted(() => {
 .dropdown-avatar-initial {
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--el-color-white);
 }
 
 .dropdown-info {
@@ -380,7 +380,7 @@ onUnmounted(() => {
 .dropdown-name {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--el-text-color-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -388,13 +388,13 @@ onUnmounted(() => {
 
 .dropdown-role {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   margin-top: 2px;
 }
 
 .dropdown-divider {
   height: 1px;
-  background: var(--border-subtle);
+  background: var(--el-border-color-light);
 }
 
 /* ───────── 默认下拉选项 ───────── */
@@ -406,7 +406,7 @@ onUnmounted(() => {
   padding: 11px 16px;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--cube-layout-menu-item-color);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -416,8 +416,8 @@ onUnmounted(() => {
   text-align: left;
 
   &:hover {
-    background: var(--accent-muted);
-    color: var(--text-primary);
+    background: var(--el-color-primary-light-9);
+    color: var(--el-text-color-primary);
   }
 
   &.danger {

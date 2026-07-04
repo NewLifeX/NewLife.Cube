@@ -212,7 +212,7 @@ function handleResponseError(error: AxiosError) {
     responseIntercept(error);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const data = response?.data as any;
   const errorObj = {
     type: undefined,

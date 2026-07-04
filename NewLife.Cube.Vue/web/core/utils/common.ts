@@ -161,7 +161,7 @@ export function generateResponseData(item: unknown, dataKey?: string): object[] 
   return [];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export function isPromise(obj: any): boolean {
   return (
     !!obj &&

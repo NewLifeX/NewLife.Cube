@@ -5,8 +5,10 @@ import { useRouter, useRoute } from 'vue-router';
 // import Loading from '../pages/loading.vue'
 import { useUserStore } from '../stores/user';
 import { useMenuStore } from '../stores/menu';
+import { useTabsStore } from '../stores/tabs';
 import { getUrlHashToken } from '../utils/token';
 import { useLayout } from '../composables/useLayout';
+import TabsView from '../components/TabsView.vue';
 import TopMenuLayout from './TopMenu/index.vue'; // 兜底默认布局
 import { getConfig } from '../configure/index.ts';
 
@@ -14,6 +16,7 @@ const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
 const menuStore = useMenuStore();
+const tabsStore = useTabsStore();
 console.log('routes', router.getRoutes());
 
 // 通过 useLayout 获取当前注册的布局组件，无注册时回退到 TopMenuLayout
@@ -46,9 +49,23 @@ watch(
       newPath: newRoute.path,
       oldPath: oldRoute?.path,
       newMeta: newRoute.meta,
-      oldMeta: oldRoute?.meta,
+      oldMeta: oldRoute.meta,
     });
-    // 在这里可以添加路由变化时需要执行的逻辑
+    // 路由变化时自动将页面加入标签页
+    // 排除登录页和无布局页面
+    if (
+      newRoute.path !== loginPageUrl &&
+      newRoute.meta?.layout !== false &&
+      newRoute.path !== '/' // 根路径由首页标签单独处理
+    ) {
+      tabsStore.addTab(newRoute);
+    } else if (newRoute.path === '/' || newRoute.path === '/home') {
+      // 首页标签
+      tabsStore.addTab({
+        ...newRoute,
+        meta: { ...newRoute.meta, title: newRoute.meta?.title || '首页' },
+      });
+    }
   },
   { deep: true },
 );
@@ -81,28 +98,39 @@ onMounted(async () => {
 
   <!-- 布局 -->
   <template v-else>
+    <!-- 布局组件，有内置的，也有外部传入的 -->
     <component :is="MainLayout">
-      <!-- 组件缓存 -->
-      <KeepAlive v-if="meta.keepAlive">
+      <!-- 组件内预先实现自定义插槽，默认值，都在这里 -->
+      <!-- 比如标签组件，默认实现使用内置的TabsView
+       如果要用，那么布局实现就加上<slot name="tabs" />声明这个插槽，否则不会显示TabsView -->
+      <template #tabs>
+        <!-- 多标签页栏 -->
+        <TabsView />
+      </template>
+
+      <template #default>
+        <!-- 组件缓存 -->
+        <KeepAlive v-if="meta.keepAlive">
+          <Transition
+            v-if="meta.transition"
+            v-bind="typeof meta.transition === 'object' ? meta.transition : {}"
+          >
+            <slot />
+          </Transition>
+          <slot v-else />
+        </KeepAlive>
+
+        <!-- 无缓存但有过渡 -->
         <Transition
-          v-if="meta.transition"
+          v-else-if="meta.transition"
           v-bind="typeof meta.transition === 'object' ? meta.transition : {}"
         >
           <slot />
         </Transition>
+
+        <!-- 无缓存无过渡 -->
         <slot v-else />
-      </KeepAlive>
-
-      <!-- 无缓存但有过渡 -->
-      <Transition
-        v-else-if="meta.transition"
-        v-bind="typeof meta.transition === 'object' ? meta.transition : {}"
-      >
-        <slot />
-      </Transition>
-
-      <!-- 无缓存无过渡 -->
-      <slot v-else />
+      </template>
     </component>
   </template>
 </template>

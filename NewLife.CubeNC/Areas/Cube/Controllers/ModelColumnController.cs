@@ -10,7 +10,7 @@ namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>模型列</summary>
     [Area("Cube")]
-    [Menu(56, true, Icon = "fa-table")]
+    [Menu(56, true, Icon = "List")]
     public class ModelColumnController : EntityController<ModelColumn>
     {
         //static ModelColumnController() 

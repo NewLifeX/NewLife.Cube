@@ -154,12 +154,12 @@ onUnmounted(() => {
 .user-name {
   font-size: 13px;
   font-weight: 500;
-  color: var(--navbar-text, var(--text-secondary));
+  color: var(--navbar-text, var(--cube-layout-menu-item-color));
   white-space: nowrap;
 }
 
 .chevron {
-  color: var(--navbar-text-muted, var(--text-muted));
+  color: var(--navbar-text-muted, var(--el-text-color-secondary));
   transition: transform 0.2s;
 
   &.open {
@@ -191,8 +191,8 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
-  color: #fff;
+  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--accent-hover) 100%);
+  color: var(--el-color-white);
   font-size: 16px;
   font-weight: 700;
   display: flex;
@@ -207,18 +207,18 @@ onUnmounted(() => {
 .dropdown-name {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--el-text-color-primary);
 }
 
 .dropdown-role {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   margin-top: 2px;
 }
 
 .dropdown-divider {
   height: 1px;
-  background: var(--border-subtle);
+  background: var(--el-border-color-light);
 }
 
 .dropdown-item {
@@ -229,7 +229,7 @@ onUnmounted(() => {
   padding: 12px 16px;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--cube-layout-menu-item-color);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -237,8 +237,8 @@ onUnmounted(() => {
   text-align: left;
 
   &:hover {
-    background: var(--accent-muted);
-    color: var(--text-primary);
+    background: var(--el-color-primary-light-9);
+    color: var(--el-text-color-primary);
   }
 
   &.danger {

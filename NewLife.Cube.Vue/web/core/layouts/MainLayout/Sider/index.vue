@@ -77,10 +77,10 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.78);
+  background: var(--el-bg-color-overlay);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-right: 1px solid rgba(226, 224, 220, 0.5);
+  border-right: 1px solid var(--el-border-color-lighter);
   box-shadow: 1px 0 12px rgba(0, 0, 0, 0.02);
 }
 
@@ -100,15 +100,15 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-  color: #1e40af;
+  background: linear-gradient(135deg, var(--el-color-primary-light-9) 0%, var(--el-color-primary-light-8) 100%);
+  color: var(--el-color-primary);
   flex-shrink: 0;
 }
 
 .sider-header-title {
   font-size: 15px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--el-text-color-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -119,7 +119,7 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
 .sider-divider {
   height: 1px;
   margin: 0 16px;
-  background: linear-gradient(to right, transparent 0%, #e2e0dc 20%, #e2e0dc 80%, transparent 100%);
+  background: linear-gradient(to right, transparent 0%, var(--el-border-color-light) 20%, var(--el-border-color-light) 80%, transparent 100%);
   flex-shrink: 0;
 }
 
@@ -159,7 +159,7 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
   justify-content: center;
   padding: 8px 16px 12px;
   flex-shrink: 0;
-  border-top: 1px solid #f0ece6;
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .sider-collapse-btn {
@@ -168,17 +168,17 @@ const secondLevelMenus = computed(() => parentMenu.value?.children || []);
   justify-content: center;
   width: 32px;
   height: 32px;
-  border: 1px solid #e2e0dc;
+  border: 1px solid var(--el-border-color-light);
   border-radius: 10px;
   background: #ffffff;
-  color: #94a3b8;
+  color: var(--el-text-color-secondary);
   cursor: pointer;
   transition: all 0.18s ease;
 
   &:hover {
-    background: #f8fafc;
-    color: #64748b;
-    border-color: #cbd5e1;
+    background: var(--el-bg-color);
+    color: var(--el-text-color-placeholder);
+    border-color: var(--el-border-color);
   }
 
   &:active {

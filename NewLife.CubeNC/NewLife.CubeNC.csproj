@@ -101,6 +101,11 @@
     <Compile Include="..\NewLife.Cube\Entity\Models\UserStatModel.cs" Link="Entity\Models\UserStatModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\UserTokenModel.cs" Link="Entity\Models\UserTokenModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\Models\VerifyCodeRecordModel.cs" Link="Entity\Models\VerifyCodeRecordModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\LovDefinitionModel.cs" Link="Entity\Models\LovDefinitionModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\LovEnumItemModel.cs" Link="Entity\Models\LovEnumItemModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\LovListConfigModel.cs" Link="Entity\Models\LovListConfigModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\LovSearchFieldModel.cs" Link="Entity\Models\LovSearchFieldModel.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\Models\LovTableColumnModel.cs" Link="Entity\Models\LovTableColumnModel.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.Biz.cs" Link="Entity\OAuth日志.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth日志.cs" Link="Entity\OAuth日志.cs" />
     <Compile Include="..\NewLife.Cube\Entity\OAuth配置.Biz.cs" Link="Entity\OAuth配置.Biz.cs" />
@@ -153,6 +158,18 @@
     <Compile Include="..\NewLife.Cube\Services\SmsService.cs" Link="Services\SmsService.cs" />
     <Compile Include="..\NewLife.Cube\Services\DrawingCaptchaService.cs" Link="Services\DrawingCaptchaService.cs" />
     <Compile Include="..\NewLife.Cube\Services\TotpMfaService.cs" Link="Services\TotpMfaService.cs" />
+    <Compile Include="..\NewLife.Cube\Services\LovAutoRegisterService.cs" Link="Services\LovAutoRegisterService.cs" />
+    <Compile Include="..\NewLife.Cube\Services\LovServiceExtensions.cs" Link="Services\LovServiceExtensions.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集定义.cs" Link="Entity\值集定义.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集定义.Biz.cs" Link="Entity\值集定义.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集枚举值.cs" Link="Entity\值集枚举值.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集枚举值.Biz.cs" Link="Entity\值集枚举值.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集列表配置.cs" Link="Entity\值集列表配置.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集列表配置.Biz.cs" Link="Entity\值集列表配置.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集搜索字段.cs" Link="Entity\值集搜索字段.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集搜索字段.Biz.cs" Link="Entity\值集搜索字段.Biz.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集表格列.cs" Link="Entity\值集表格列.cs" />
+    <Compile Include="..\NewLife.Cube\Entity\值集表格列.Biz.cs" Link="Entity\值集表格列.Biz.cs" />
     <Compile Include="..\NewLife.Cube\Web\AttachmentProvider.cs" Link="Web\AttachmentProvider.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\ApprovalInfo.cs" Link="Web\Models\ApprovalInfo.cs" />
     <Compile Include="..\NewLife.Cube\Web\Models\CheckInData.cs" Link="Web\Models\CheckInData.cs" />

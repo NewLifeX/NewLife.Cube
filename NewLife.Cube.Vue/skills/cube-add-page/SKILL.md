@@ -153,6 +153,61 @@ apps/{app-name}/src/views/{area}/{controller}/index.vue
 
 根据原型直接实现为 Vue 组件即可。
 
+#### 自定义页面样式规范
+
+创建自定义页面时，所有样式**必须**使用 Element Plus CSS token（`--el-*`）或 Cube Layout token（`--cube-layout-*`），禁止硬编码色值、自定义 CSS 变量或第三方 token 体系。
+
+**✅ 正确写法（使用 --el-*）：**
+```scss
+.search-bar {
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-border-radius-base);
+  padding: 12px 16px;
+  color: var(--el-text-color-primary);
+}
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin: 0;
+}
+```
+
+**❌ 错误写法（硬编码/自定义 token）：**
+```scss
+.search-bar {
+  background: #ffffff;           /* 硬编码 */
+  border: 1px solid #ebeef5;     /* 硬编码 */
+  color: #303133;                /* 硬编码 */
+}
+.sidebar { background: var(--bg-primary); }   /* 已废弃的自定义 token */
+```
+
+**常用 token 速查：**
+
+| 语义 | token | 用途 |
+|------|-------|------|
+| 背景色 | `var(--el-bg-color)` | 页面主体背景 |
+| 卡片/浮层面板背景 | `var(--el-bg-color-overlay)` | 弹窗、卡片、下拉面板 |
+| 填充色 | `var(--el-fill-color-light)` | 输入框背景、搜索栏背景 |
+| 一级文字色 | `var(--el-text-color-primary)` | 标题、正文 |
+| 二级文字色 | `var(--el-text-color-regular)` | 次要信息 |
+| 三级文字色 | `var(--el-text-color-secondary)` | 提示文字、占位符 |
+| 边框色 | `var(--el-border-color)` | 表格、卡片边框 |
+| 浅边框色 | `var(--el-border-color-light)` | 分割线、搜索栏边框 |
+| 主色 | `var(--el-color-primary)` | 按钮、链接、激活态 |
+| 成功色 | `var(--el-color-success)` | 成功状态 |
+| 警告色 | `var(--el-color-warning)` | 警告状态 |
+| 危险色 | `var(--el-color-danger)` | 错误、删除 |
+| 圆角 | `var(--el-border-radius-base)` | 卡片、弹窗圆角 |
+| 小圆角 | `var(--el-border-radius-small)` | 按钮、输入框圆角 |
+| 浅阴影 | `var(--el-box-shadow-light)` | 卡片阴影 |
+| 深阴影 | `var(--el-box-shadow)` | 下拉面板、弹窗阴影 |
+| 侧边栏宽度 | `var(--cube-layout-sidebar-width)` | 布局结构 |
+| 导航栏高度 | `var(--cube-layout-nav-height)` | 布局结构 |
+| 内容区域内边距 | `var(--cube-layout-content-padding)` | 布局结构 |
+
 ### 自定义页面对接后端 API
 
 自定义页面中可通过 `usePageApi(area, controller)` composable 快速对接后端 CRUD API，无需为每个模块手写请求逻辑。
@@ -395,3 +450,54 @@ onMounted(() => fetchList());
 | ------------ | ------------------------------------------------------- |
 | 移除审计字段 | `AddFormFields.RemoveCreateField().RemoveUpdateField()` |
 | 移除指定字段 | `EditFormFields.RemoveField("Remark", "CreatorId")`     |
+
+## 枚举字段处理
+
+### 自动渲染（推荐）
+
+Cube 框架的自动表格和下拉选择已内置枚举处理：
+
+- **表格显示**：枚举字段值为 0 且枚举定义中无对应成员时，自动显示 **"未设置"**
+- **下拉选择**：枚举选项缺少 0 值成员时，自动添加 **"未设置"** 选项（value=0）
+
+> 枚举类型通过 `/Cube/Lookup?codes=Type.FullName` 接口获取，返回 `[{ label, value }]` 格式。
+
+### 自定义页面中使用
+
+自定义页面中通过 `useEnumLabel` composable 统一处理枚举显示：
+
+```ts
+import { createEnumLabel, useEnumLookup } from "@/composables/useEnumLabel";
+import { usePageApi } from "@/composables/usePageApi";
+
+const api = usePageApi("Equipments", "Equipment");
+
+// 方式一：配合 useEnumLookup 自动获取枚举并生成标签函数
+const { labels, loading } = useEnumLookup(api, {
+  kind: 'SmartMES.Data.Equipments.EquipmentKinds',
+  status: 'SmartMES.Data.Equipments.EquipmentStatus',
+});
+
+// 模板中直接使用
+// <el-table-column label="设备类型">
+//   <template #default="{ row }">{{ labels.kind(row.kind) }}</template>
+// </el-table-column>
+```
+
+```ts
+// 方式二：已有选项数组时直接创建标签函数
+const typeOptions = ref([{ value: 1, label: '注塑机' }, { value: 2, label: '机械手' }]);
+const typeLabel = createEnumLabel(typeOptions);
+
+// 模板中：{{ typeLabel(row.kind) }}
+```
+
+**`createEnumLabel` 自动处理以下情况：**
+
+| 输入值 | 选项中有匹配 | 选项中无匹配 | 说明 |
+| ------ | ------------ | ------------ | ---- |
+| `null` / `undefined` / `''` | — | `"未设置"` | 空值统一显示 |
+| `0` | 匹配成员的 label | `"未设置"` | 0 且无对应成员 |
+| `1`/`2`/... | 匹配成员的 label | 原始值字符串 | 有匹配显示 label |
+
+> **不需要再手写** `if (v == null || v === '' || Number(v) === 0) return '未设置'` 这类重复代码。

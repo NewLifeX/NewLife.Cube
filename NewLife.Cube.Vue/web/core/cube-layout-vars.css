@@ -1,0 +1,166 @@
+/* ============================================================
+   cube-layout-vars.css — 统一布局结构 & 皮肤变量
+   所有布局组件引用 --cube-layout-* 命名空间
+   每个 Layout 的 variables.css 可通过覆盖此文件的值实现主题化
+   ============================================================ */
+
+/* ── 全局布局尺寸 / 动画 ── */
+:root {
+  /* 结构尺寸 */
+  --cube-layout-sidebar-width: 220px;
+  --cube-layout-sidebar-collapsed-width: 64px;
+  --cube-layout-sidebar-logo-height: 60px;
+  --cube-layout-nav-height: 52px;
+  --cube-layout-content-padding: 24px;
+  --cube-layout-footer-height: 0px;              /* future */
+  --cube-layout-tabsview-height: 44px;            /* future */
+  --cube-layout-columns-menu-width: 70px;         /* future */
+
+  /* z-index 层级 */
+  --cube-layout-z-sidebar: 100;
+  --cube-layout-z-nav: 50;
+  --cube-layout-z-tabsview: 49;                   /* future */
+  --cube-layout-z-mask: 1000;                     /* future */
+
+  /* 动画过渡 */
+  --cube-layout-transition-duration: 0.25s;
+  --cube-layout-transition-timing: ease;
+
+  /* ============================================================
+     侧边栏容器
+     ============================================================ */
+  --cube-layout-sidebar-bg: var(--el-bg-color-overlay);
+  --cube-layout-sidebar-border-color: var(--el-border-color);
+  --cube-layout-sidebar-box-shadow: none;
+
+  /* ============================================================
+     Logo 区域
+     ============================================================ */
+  --cube-layout-sidebar-logo-bg: transparent;
+  --cube-layout-sidebar-logo-text-color: var(--el-text-color-primary);
+  --cube-layout-sidebar-logo-gradient: none;      /* 可选渐变 */
+
+  /* ============================================================
+     侧边栏搜索框
+     ============================================================ */
+  --cube-layout-sidebar-search-bg: var(--el-fill-color-light);
+  --cube-layout-sidebar-search-border-color: var(--el-border-color-light);
+
+  /* ============================================================
+     用户信息（侧边栏底部）
+     ============================================================ */
+  --cube-layout-sidebar-user-bg: transparent;
+  --cube-layout-sidebar-user-border-color: var(--el-border-color-light);
+  --cube-layout-sidebar-user-padding: 16px;
+  --cube-layout-sidebar-user-avatar-size: 32px;
+  --cube-layout-sidebar-user-name-color: var(--el-text-color-primary);
+  --cube-layout-sidebar-user-role-color: var(--el-text-color-secondary);
+
+  /* ============================================================
+     菜单组标题
+     ============================================================ */
+  --cube-layout-menu-group-title-color: var(--el-text-color-secondary);
+  --cube-layout-menu-group-title-font-size: 11px;
+  --cube-layout-menu-group-title-font-weight: 500;
+  --cube-layout-menu-group-title-letter-spacing: 0.5px;
+  --cube-layout-menu-group-gap: 8px;
+  --cube-layout-menu-group-padding: 8px 12px;
+  --cube-layout-menu-group-border-radius: 6px;
+
+  /* ============================================================
+     菜单项
+     ============================================================ */
+  --cube-layout-menu-item-font-size: 13px;
+  --cube-layout-menu-item-font-weight: 400;
+  --cube-layout-menu-item-padding: 8px 12px;
+  --cube-layout-menu-item-gap: 6px;               /* 图标与文字间距 */
+  --cube-layout-menu-item-border-radius: 6px;
+  --cube-layout-menu-child-indent: 16px;           /* 子菜单缩进 */
+  --cube-layout-menu-child-gap: 4px;               /* 子菜单项竖向间距 */
+
+  --cube-layout-menu-item-color: var(--el-text-color-regular);
+  --cube-layout-menu-item-hover-bg: var(--el-color-primary-light-9);
+  --cube-layout-menu-item-hover-color: var(--el-text-color-primary);
+  --cube-layout-menu-item-active-bg: var(--el-color-primary-light-9);
+  --cube-layout-menu-item-active-color: var(--el-color-primary);
+  --cube-layout-menu-item-active-border-color: var(--el-color-primary);
+  --cube-layout-menu-item-active-border-width: 3px;
+
+  --cube-layout-menu-icon-color: var(--el-text-color-secondary);
+  --cube-layout-menu-icon-active-color: var(--el-color-primary);
+  --cube-layout-menu-arrow-color: var(--el-text-color-secondary);
+
+  --cube-layout-menu-badge-bg: var(--el-color-primary-light-9);
+  --cube-layout-menu-badge-color: var(--el-color-primary);
+  --cube-layout-menu-badge-font-size: 10px;
+  --cube-layout-menu-badge-border-radius: 8px;
+
+  --cube-layout-menu-ancestor-color: var(--el-color-primary);
+  --cube-layout-menu-ancestor-font-weight: 500;
+
+  /* ============================================================
+     导航栏
+     ============================================================ */
+  --cube-layout-nav-bg: var(--el-bg-color-overlay);
+  --cube-layout-nav-border-color: var(--el-border-color);
+  --cube-layout-nav-box-shadow: none;
+  --cube-layout-nav-padding-x: 24px;
+
+  --cube-layout-nav-search-bg: var(--el-fill-color-light);
+  --cube-layout-nav-search-border-color: var(--el-border-color-light);
+  --cube-layout-nav-search-width: 260px;
+  --cube-layout-nav-search-border-radius: 4px;
+
+  --cube-layout-nav-icon-btn-bg: var(--el-fill-color-light);
+  --cube-layout-nav-icon-btn-border-color: var(--el-border-color-light);
+  --cube-layout-nav-icon-btn-size: 32px;
+  --cube-layout-nav-icon-btn-border-radius: 6px;
+  --cube-layout-nav-icon-btn-hover-bg: var(--el-color-primary-light-9);
+  --cube-layout-nav-icon-btn-hover-border-color: var(--el-color-primary-light-5);
+  --cube-layout-nav-icon-btn-hover-color: var(--el-color-primary);
+
+  /* ============================================================
+     面包屑
+     ============================================================ */
+  --cube-layout-breadcrumb-font-size: 14px;
+  --cube-layout-breadcrumb-item-color: var(--el-text-color-secondary);
+  --cube-layout-breadcrumb-current-color: var(--el-text-color-primary);
+  --cube-layout-breadcrumb-separator-color: var(--el-text-color-placeholder);
+
+  /* ============================================================
+     内容区
+     ============================================================ */
+  --cube-layout-content-bg: var(--el-bg-color);
+  --cube-layout-content-padding-x: 24px;
+  --cube-layout-content-padding-y: 24px;
+  --cube-layout-content-max-width: none;           /* future: 宽屏限制 */
+
+  /* ── 以下为 future 布局预留 ── */
+
+  /* 标签页 TabView (future) */
+  --cube-layout-tabsview-bg: var(--el-bg-color-overlay);
+  --cube-layout-tabsview-border-color: var(--el-border-color-light);
+  --cube-layout-tabsview-item-bg: transparent;
+  --cube-layout-tabsview-item-color: var(--el-text-color-regular);
+  --cube-layout-tabsview-item-hover-bg: var(--el-fill-color-light);
+  --cube-layout-tabsview-item-active-bg: var(--el-color-white);
+  --cube-layout-tabsview-item-active-color: var(--el-color-primary);
+  --cube-layout-tabsview-item-border-color: var(--el-border-color-light);
+  --cube-layout-tabsview-item-border-radius: 4px;
+  --cube-layout-tabsview-item-padding: 4px 12px;
+  --cube-layout-tabsview-item-font-size: 12px;
+
+  /* 页脚 Footer (future) */
+  --cube-layout-footer-bg: var(--el-bg-color-overlay);
+  --cube-layout-footer-border-color: var(--el-border-color-light);
+  --cube-layout-footer-text-color: var(--el-text-color-secondary);
+  --cube-layout-footer-font-size: 12px;
+
+  /* 分栏菜单 ColumnsMenu (future) */
+  --cube-layout-columns-menu-bg: var(--el-bg-color-overlay);
+  --cube-layout-columns-menu-color: var(--el-text-color-regular);
+  --cube-layout-columns-menu-active-bg: var(--el-color-primary);
+  --cube-layout-columns-menu-active-color: var(--el-color-white);
+  --cube-layout-columns-menu-hover-bg: var(--el-color-primary-light-9);
+  --cube-layout-columns-menu-border-color: var(--el-border-color-light);
+}

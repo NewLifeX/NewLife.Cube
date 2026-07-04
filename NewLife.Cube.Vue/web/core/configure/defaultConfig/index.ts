@@ -25,6 +25,7 @@ export const defaultConfig: CubeFrontConfig = {
     iconField: 'icon',
     sortField: 'sort',
     childrenField: 'children',
+    visibleField: 'visible',
   },
   user: {
     getUserInfoAxiosConfig: (): AxiosRequestConfig => {

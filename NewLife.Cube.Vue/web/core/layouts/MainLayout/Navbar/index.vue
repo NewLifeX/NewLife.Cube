@@ -37,20 +37,20 @@ $brand-width: 220px;
 
 .navbar {
   --navbar-bg: rgba(255, 255, 255, 0.82);
-  --navbar-border: rgba(226, 224, 220, 0.6);
-  --navbar-text: var(--text-secondary);
-  --navbar-text-hover: var(--text-primary);
-  --navbar-text-muted: var(--text-muted);
-  --navbar-hover-bg: var(--accent-muted);
+  --navbar-border: var(--el-border-color-lighter);
+  --navbar-text: var(--el-text-color-regular);
+  --navbar-text-hover: var(--el-text-color-primary);
+  --navbar-text-muted: var(--el-text-color-secondary);
+  --navbar-hover-bg: var(--el-color-primary-light-9);
 
   display: flex;
   align-items: center;
   height: 56px;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--navbar-bg);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(226, 224, 220, 0.6);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid var(--navbar-border);
+  box-shadow: 0 1px 6px var(--el-box-shadow-lighter);
 }
 
 .navbar-left {

@@ -85,19 +85,19 @@ function handleKeydown(e: KeyboardEvent) {
   align-items: center;
   gap: 8px;
   background: var(--bg-tertiary, rgba(0, 0, 0, 0.04));
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-sm, 8px);
   padding: 7px 12px;
   width: 220px;
   transition: border-color 0.2s;
 
   &:focus-within {
-    border-color: var(--accent);
+    border-color: var(--el-color-primary);
   }
 }
 
 .search-icon {
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   flex-shrink: 0;
 }
 
@@ -105,13 +105,13 @@ function handleKeydown(e: KeyboardEvent) {
   background: none;
   border: none;
   outline: none;
-  color: var(--text-primary);
+  color: var(--el-text-color-primary);
   font-family: inherit;
   font-size: 13px;
   width: 100%;
 
   &::placeholder {
-    color: var(--text-muted);
+    color: var(--el-text-color-secondary);
   }
 }
 </style>

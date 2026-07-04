@@ -34,19 +34,19 @@ const emit = defineEmits<{
 
 <style lang="scss" scoped>
 .form-actions {
-  border-top: 1px solid var(--bd);
+  border-top: 1px solid var(--el-border-color-light);
   padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--card);
-  border-radius: 0 0 var(--r) var(--r);
+  background: var(--el-bg-color-overlay);
+  border-radius: 0 0 var(--el-border-radius-base) var(--el-border-radius-base);
 }
 
 .fa-hint {
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 12px;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
 }
 
 .fa-buttons {
@@ -72,7 +72,7 @@ const emit = defineEmits<{
     color 0.15s var(--ease);
 
   &--primary {
-    background: var(--ac);
+    background: var(--el-color-primary);
     color: #fff;
     border: none;
 
@@ -82,9 +82,9 @@ const emit = defineEmits<{
   }
 
   &--continue {
-    background: var(--ac-l);
-    color: var(--ac);
-    border: 1px solid var(--ac-b);
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    border: 1px solid var(--el-color-primary-light-8);
 
     &:hover {
       background: #c8e8d5;
@@ -92,12 +92,12 @@ const emit = defineEmits<{
   }
 
   &--cancel {
-    background: var(--card);
-    border: 1px solid var(--bd);
-    color: var(--t2);
+    background: var(--el-bg-color-overlay);
+    border: 1px solid var(--el-border-color-light);
+    color: var(--el-text-color-regular);
 
     &:hover {
-      background: var(--bg);
+      background: var(--el-bg-color);
     }
   }
 }

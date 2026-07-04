@@ -141,3 +141,51 @@ public class EntityTreeController<TEntity, TModel> : EntityController<TEntity, T
         return EntityTree<TEntity>.Meta.Cache.Find(e => (Int32)e[key] == id);
     }
 }
+
+/// <summary>实体树控制器基类</summary>
+/// <typeparam name="TEntity"></typeparam>
+public class EntityTreeApiController<TEntity> : EntityTreeApiController<TEntity, TEntity> where TEntity : EntityTree<TEntity>, new() { }
+
+/// <summary>
+/// WebApi实体树控制器基类
+/// </summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TModel"></typeparam>
+public class EntityTreeApiController<TEntity, TModel> : EntityTreeController<TEntity, TModel> where TEntity : EntityTree<TEntity>, new()
+{
+    /// <summary>上升</summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [DisplayName("上升")]
+    [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
+    public new virtual IActionResult Up(Int32 id)
+    {
+        var menu = FindByID(id);
+        if (menu == null)
+            return Json(404, "数据不存在");
+
+        if (Valid(menu, DataObjectMethodType.Update, true))
+            menu.Up();
+
+        return Json(0, "上移成功", menu);
+    }
+
+    /// <summary>下降</summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [DisplayName("下降")]
+    [EntityAuthorize(PermissionFlags.Update)]
+    [HttpPost]
+    public new virtual IActionResult Down(Int32 id)
+    {
+        var menu = FindByID(id);
+        if (menu == null)
+            return Json(404, "数据不存在");
+
+        if (Valid(menu, DataObjectMethodType.Update, true))
+            menu.Down();
+
+        return Json(0, "下移成功", menu);
+    }
+}

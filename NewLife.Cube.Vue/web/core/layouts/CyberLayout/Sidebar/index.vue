@@ -378,8 +378,8 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   width: 220px;
   flex-shrink: 0;
   overflow: visible; // 不裁剪搜索结果下拉
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border);
+  background: var(--cube-layout-sidebar-bg);
+  border-right: 1px solid var(--cube-layout-sidebar-border-color);
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.collapsed {
@@ -394,7 +394,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   right: 0;
   width: 1px;
   height: 100%;
-  background: linear-gradient(180deg, var(--accent), transparent 50%, var(--accent-secondary));
+  background: linear-gradient(180deg, var(--el-color-primary), transparent 50%, var(--accent-secondary));
   opacity: 0.3;
   pointer-events: none;
 }
@@ -404,7 +404,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   display: flex;
   align-items: center;
   padding: 12px;
-  border-bottom: 1px solid var(--sidebar-border);
+  border-bottom: 1px solid var(--cube-layout-sidebar-border-color);
   height: var(--layout-nav-height, 64px);
   flex-shrink: 0;
   overflow: hidden;
@@ -413,18 +413,18 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
 /* —— 搜索框区域 —— */
 .sidebar-search {
   padding: 8px 10px;
-  border-bottom: 1px solid var(--sidebar-border);
+  border-bottom: 1px solid var(--cube-layout-sidebar-border-color);
   flex-shrink: 0;
   overflow: visible;
 
   // 覆盖 SearchBar 的输入框样式，适配侧边栏暗色主题
   :deep(.sb-box) {
     background: rgba(255, 255, 255, 0.04);
-    border-color: var(--sidebar-border);
+    border-color: var(--cube-layout-sidebar-border-color);
 
     &.focused,
     &:focus-within {
-      border-color: var(--accent);
+      border-color: var(--el-color-primary);
       background: rgba(255, 255, 255, 0.07);
     }
   }
@@ -443,7 +443,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
     overflow: visible;
     padding: 8px 0;
   }
-  scrollbar-color: var(--border-subtle) transparent;
+  scrollbar-color: var(--el-border-color-light) transparent;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -452,7 +452,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--border-subtle);
+    background: var(--el-border-color-light);
     border-radius: 4px;
   }
 }
@@ -468,7 +468,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.3px;
-  color: var(--text-secondary);
+  color: var(--el-text-color-regular);
   padding: 0 12px;
   margin-bottom: 6px;
   white-space: nowrap;
@@ -479,7 +479,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   transition: color 0.15s;
 
   &:hover {
-    color: var(--text-primary);
+    color: var(--el-text-color-primary);
   }
 }
 
@@ -491,7 +491,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
 
 .nav-label-arrow {
   flex-shrink: 0;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   transition: transform 0.2s;
   transform: rotate(0deg); // 默认展开（v 向下）
 
@@ -509,8 +509,8 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
 
   &.active .ci-btn,
   &.open .ci-btn {
-    background: var(--sidebar-item-active);
-    color: var(--accent);
+    background: var(--cube-layout-menu-item-active-bg);
+    color: var(--el-color-primary);
   }
 }
 
@@ -522,14 +522,14 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   justify-content: center;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--el-text-color-regular);
   transition:
     background 0.15s,
     color 0.15s;
 
   &:hover {
-    background: var(--sidebar-item-hover);
-    color: var(--text-primary);
+    background: var(--cube-layout-menu-item-hover-bg);
+    color: var(--el-text-color-primary);
   }
 }
 
@@ -548,14 +548,14 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   max-width: 240px;
   max-height: 70vh;
   overflow-y: auto;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   z-index: 500;
   padding: 4px;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-subtle) transparent;
+  scrollbar-color: var(--el-border-color-light) transparent;
 
   &::-webkit-scrollbar {
     width: 4px;
@@ -564,7 +564,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
     background: transparent;
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--border-subtle);
+    background: var(--el-border-color-light);
     border-radius: 4px;
   }
 }
@@ -574,7 +574,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   padding: 6px 10px 4px;
   white-space: nowrap;
 }
@@ -586,7 +586,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   padding: 7px 10px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--el-text-color-regular);
   font-size: 13px;
   font-weight: 500;
   transition:
@@ -595,12 +595,12 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   white-space: nowrap;
 
   &:hover {
-    background: var(--sidebar-item-hover);
-    color: var(--text-primary);
+    background: var(--cube-layout-menu-item-hover-bg);
+    color: var(--el-text-color-primary);
   }
 
   &.active {
-    color: var(--accent);
+    color: var(--el-color-primary);
     font-weight: 600;
   }
 }
@@ -614,7 +614,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
 .fi-arrow {
   flex-shrink: 0;
   transition: transform 0.2s;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   margin-left: 4px;
 }
 
@@ -626,29 +626,29 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
 .flyout-item--l2 {
   padding-left: 22px;
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   font-weight: 400;
   justify-content: flex-start;
 
   &:hover {
-    color: var(--text-primary);
+    color: var(--el-text-color-primary);
   }
 
   &.active {
-    color: var(--accent);
+    color: var(--el-color-primary);
     font-weight: 500;
   }
 }
 
 /* —— 用户信息区域 —— */
 .sidebar-user {
-  border-top: 1px solid var(--sidebar-border);
+  border-top: 1px solid var(--cube-layout-sidebar-border-color);
   flex-shrink: 0;
   overflow: visible;
 
   // UserProfile CSS 变量覆盖——适配侧边栏主题
-  --navbar-text: var(--text-primary);
-  --navbar-text-hover: var(--accent);
+  --navbar-text: var(--el-text-color-primary);
+  --navbar-text-hover: var(--el-color-primary);
   --navbar-hover-bg: rgba(255, 255, 255, 0.06);
 
   // 折叠时隐藏用户名和箭头
@@ -695,9 +695,9 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
   padding: 8px 16px;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--sidebar-border);
+  border-bottom: 1px solid var(--cube-layout-sidebar-border-color);
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   font-size: 12px;
   font-family: inherit;
   transition:
@@ -715,7 +715,7 @@ function isAncestorActive(menu: TreeMenuItem): boolean {
 
   &:hover {
     background: var(--navbar-hover-bg, rgba(255, 255, 255, 0.06));
-    color: var(--text-primary);
+    color: var(--el-text-color-primary);
   }
 
   .collapse-label {

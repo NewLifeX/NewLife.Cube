@@ -24,6 +24,8 @@ export interface MenuConfig {
   iconField: string;
   sortField: string;
   childrenField: string;
+  /** 可见性字段名，该字段值为 false 时菜单项及其子树不显示 */
+  visibleField?: string;
 }
 
 // 用户相关配置

@@ -206,10 +206,10 @@ function toggleCollapse() {
 
 <style lang="scss" scoped>
 .list-search-bar {
-  background: var(--card);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
   padding: 12px 16px;
 }
 
@@ -242,7 +242,7 @@ function toggleCollapse() {
   font-size: 12px;
   font-weight: 500;
   line-height: 1.2;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -256,8 +256,8 @@ function toggleCollapse() {
   :deep(.el-select__wrapper) {
     min-height: 34px;
     border-radius: 6px;
-    background: var(--bg);
-    box-shadow: 0 0 0 1px var(--bd) inset;
+    background: var(--el-bg-color);
+    box-shadow: 0 0 0 1px var(--el-border-color-light) inset;
     transition:
       box-shadow 0.15s ease,
       background 0.15s ease;
@@ -267,7 +267,7 @@ function toggleCollapse() {
   :deep(.el-select__wrapper.is-focused) {
     background: var(--el-fill-color-blank);
     box-shadow:
-      0 0 0 1px var(--ac) inset,
+      0 0 0 1px var(--el-color-primary) inset,
       0 0 0 3px rgba(29, 112, 64, 0.08);
   }
 
@@ -275,7 +275,7 @@ function toggleCollapse() {
   :deep(.el-select__selected-item) {
     font-family: 'Fira Sans', system-ui, sans-serif;
     font-size: 13px;
-    color: var(--t1);
+    color: var(--el-text-color-primary);
   }
 }
 
@@ -299,21 +299,21 @@ function toggleCollapse() {
   :deep(.el-input__wrapper) {
     min-height: 34px;
     border-radius: 6px;
-    background: var(--bg);
-    box-shadow: 0 0 0 1px var(--bd) inset;
+    background: var(--el-bg-color);
+    box-shadow: 0 0 0 1px var(--el-border-color-light) inset;
   }
 
   :deep(.el-input__wrapper.is-focus) {
     background: var(--el-fill-color-blank);
     box-shadow:
-      0 0 0 1px var(--ac) inset,
+      0 0 0 1px var(--el-color-primary) inset,
       0 0 0 3px rgba(29, 112, 64, 0.08);
   }
 
   :deep(.el-input__inner) {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 13px;
-    color: var(--t1);
+    color: var(--el-text-color-primary);
     text-align: center;
   }
 }
@@ -321,7 +321,7 @@ function toggleCollapse() {
 .lsb-range-sep {
   flex-shrink: 0;
   font-size: 13px;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
   line-height: 1;
 }
 
@@ -344,35 +344,35 @@ function toggleCollapse() {
   font-weight: 500;
 
   &--primary {
-    --el-button-bg-color: var(--ac);
-    --el-button-border-color: var(--ac);
-    --el-button-hover-bg-color: var(--ac-hover);
-    --el-button-hover-border-color: var(--ac-hover);
-    --el-button-active-bg-color: var(--ac);
-    --el-button-active-border-color: var(--ac);
-    --el-button-text-color: var(--text-inverse);
+    --el-button-bg-color: var(--el-color-primary);
+    --el-button-border-color: var(--el-color-primary);
+    --el-button-hover-bg-color: var(--el-color-primary-dark-2);
+    --el-button-hover-border-color: var(--el-color-primary-dark-2);
+    --el-button-active-bg-color: var(--el-color-primary);
+    --el-button-active-border-color: var(--el-color-primary);
+    --el-button-text-color: var(--el-color-white);
   }
 
   &--secondary {
     --el-button-bg-color: var(--el-fill-color-blank);
-    --el-button-border-color: var(--bd);
-    --el-button-text-color: var(--t2);
-    --el-button-hover-bg-color: var(--ac-l);
-    --el-button-hover-border-color: var(--ac-b);
-    --el-button-hover-text-color: var(--ac);
-    --el-button-active-bg-color: var(--ac-b);
-    --el-button-active-border-color: var(--ac-b);
-    --el-button-active-text-color: var(--ac);
+    --el-button-border-color: var(--el-border-color-light);
+    --el-button-text-color: var(--el-text-color-regular);
+    --el-button-hover-bg-color: var(--el-color-primary-light-9);
+    --el-button-hover-border-color: var(--el-color-primary-light-8);
+    --el-button-hover-text-color: var(--el-color-primary);
+    --el-button-active-bg-color: var(--el-color-primary-light-8);
+    --el-button-active-border-color: var(--el-color-primary-light-8);
+    --el-button-active-text-color: var(--el-color-primary);
     margin-left: 0;
   }
 
   &--ghost {
     --el-button-bg-color: transparent;
-    --el-button-border-color: var(--bd);
-    --el-button-text-color: var(--t2);
-    --el-button-hover-bg-color: var(--bg);
-    --el-button-hover-border-color: var(--ac-b);
-    --el-button-hover-text-color: var(--ac);
+    --el-button-border-color: var(--el-border-color-light);
+    --el-button-text-color: var(--el-text-color-regular);
+    --el-button-hover-bg-color: var(--el-bg-color);
+    --el-button-hover-border-color: var(--el-color-primary-light-8);
+    --el-button-hover-text-color: var(--el-color-primary);
     margin-left: 0;
   }
 }

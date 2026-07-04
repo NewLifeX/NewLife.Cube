@@ -208,7 +208,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   align-items: center;
   gap: 8px;
   background: var(--bg-tertiary, rgba(0, 0, 0, 0.04));
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-sm, 8px);
   padding: 7px 10px;
   width: 100%;
@@ -219,12 +219,12 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
 
   &.focused,
   &:focus-within {
-    border-color: var(--accent);
+    border-color: var(--el-color-primary);
   }
 }
 
 .sb-icon {
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   flex-shrink: 0;
 }
 
@@ -232,14 +232,14 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   background: none;
   border: none;
   outline: none;
-  color: var(--text-primary);
+  color: var(--el-text-color-primary);
   font-family: inherit;
   font-size: 13px;
   width: 100%;
   min-width: 0;
 
   &::placeholder {
-    color: var(--text-muted);
+    color: var(--el-text-color-secondary);
   }
 }
 
@@ -248,7 +248,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   border: none;
   padding: 2px;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   display: flex;
   align-items: center;
   flex-shrink: 0;
@@ -258,8 +258,8 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
     background 0.15s;
 
   &:hover {
-    color: var(--text-primary);
-    background: var(--bg-tertiary);
+    color: var(--el-text-color-primary);
+    background: var(--el-fill-color-light);
   }
 }
 
@@ -269,8 +269,8 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-md, 10px);
   box-shadow: var(--shadow-lg, 0 10px 40px rgba(0, 0, 0, 0.18));
   z-index: 600;
@@ -278,7 +278,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   max-height: 300px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-subtle) transparent;
+  scrollbar-color: var(--el-border-color-light) transparent;
 }
 
 /* 空状态 */
@@ -288,7 +288,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   align-items: center;
   gap: 8px;
   padding: 28px 16px;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   font-size: 13px;
 }
 
@@ -301,7 +301,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   padding: 9px 14px;
   background: none;
   border: none;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--el-border-color-light);
   cursor: pointer;
   text-align: left;
   transition: background 0.1s;
@@ -311,19 +311,19 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
   }
 
   &:hover {
-    background: var(--accent-muted);
+    background: var(--el-color-primary-light-9);
 
     .sb-item-dot {
-      background: var(--accent);
+      background: var(--el-color-primary);
       transform: scale(1.2);
     }
 
     .sb-item-name {
-      color: var(--text-primary);
+      color: var(--el-text-color-primary);
     }
 
     .sb-item-arrow {
-      color: var(--accent);
+      color: var(--el-color-primary);
       transform: translateX(2px);
     }
   }
@@ -351,7 +351,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
 .sb-item-name {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--cube-layout-menu-item-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -359,14 +359,14 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
 
   :deep(mark) {
     background: transparent;
-    color: var(--accent);
+    color: var(--el-color-primary);
     font-weight: 700;
   }
 }
 
 .sb-item-path {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -374,7 +374,7 @@ onUnmounted(() => document.removeEventListener('mousedown', onClickOutside, true
 
 .sb-item-arrow {
   flex-shrink: 0;
-  color: var(--text-muted);
+  color: var(--el-text-color-secondary);
   transition:
     color 0.15s,
     transform 0.15s;

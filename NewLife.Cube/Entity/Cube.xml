@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <EntityModel xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:schemaLocation="https://newlifex.com https://newlifex.com/Model202509.xsd" Document="https://newlifex.com/xcode/model" ModelVersion="2.0.2026.130" xmlns="https://newlifex.com/Model202509.xsd">
   <Option>
     <!--类名模板。其中{name}替换为Table.Name，如{name}Model/I{name}Dto等-->
@@ -624,6 +624,125 @@
         <Index Columns="TenantId,Channel,UserId,Target,Id" />
         <Index Columns="TenantId,Channel,Id" />
         <Index Columns="Channel,Target,Id" />
+      </Indexes>
+    </Table>
+    <Table Name="LovDefinition" Description="值集定义。值和列表的值集定义，支持枚举型和列表型">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="LovCode" DataType="String" Master="True" Length="200" Nullable="False" Description="值集编码。带前缀的完全限定编码，如 Enum.SmartMES.Data.ProcessCard.ProcessCardStatus / List.User" />
+        <Column Name="Name" DataType="String" Description="显示名称" />
+        <Column Name="Type" DataType="String" Description="值集类型。ENUM=枚举型/LIST=列表型，须与LovCode前缀一致" />
+        <Column Name="ValueField" DataType="String" Description="值字段。列表型的值字段名" />
+        <Column Name="LabelField" DataType="String" Description="标签字段。列表型的标签字段名" />
+        <Column Name="Source" DataType="String" Description="来源。AUTO=自动注册/MANUAL=手工管理" />
+        <Column Name="Enabled" DataType="Boolean" Description="启用" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="LovCode" Unique="True" />
+        <Index Columns="Type,Enabled" />
+      </Indexes>
+    </Table>
+    <Table Name="LovEnumItem" Description="值集枚举值。枚举型值集的可选值列表">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="LovDefId" DataType="Int32" Description="值集定义。关联LovDefinition" />
+        <Column Name="Value" DataType="String" Nullable="False" Description="枚举值。实际存储的值" />
+        <Column Name="Label" DataType="String" Description="显示文本。枚举值对应的显示名称" />
+        <Column Name="Sort" DataType="Int32" Description="排序" />
+        <Column Name="Enabled" DataType="Boolean" Description="启用" />
+        <Column Name="Extra" DataType="String" Length="500" Description="扩展数据。JSON格式" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="LovDefId,Value" Unique="True" />
+        <Index Columns="LovDefId,Sort" />
+      </Indexes>
+    </Table>
+    <Table Name="LovListConfig" Description="值集列表配置。列表型值集的数据源配置">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="LovDefId" DataType="Int32" Description="值集定义。关联LovDefinition" />
+        <Column Name="RequestUrl" DataType="String" Length="500" Description="请求地址。数据接口地址，仅后端可见" />
+        <Column Name="Method" DataType="String" Description="请求方式。GET/POST" />
+        <Column Name="Pageable" DataType="Boolean" Description="是否分页" />
+        <Column Name="PageNumField" DataType="String" Description="页码字段名。分页时页码参数名" />
+        <Column Name="PageSizeField" DataType="String" Description="页量字段名。分页时每页条数参数名" />
+        <Column Name="DataPath" DataType="String" Description="数据路径。从响应中提取数据列表的JSON路径" />
+        <Column Name="TotalPath" DataType="String" Description="总量路径。从响应中提取总数的JSON路径" />
+        <Column Name="FixedParams" DataType="String" Length="2000" Description="固定参数。每次请求附加的固定参数，JSON格式" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="LovDefId" Unique="True" />
+      </Indexes>
+    </Table>
+    <Table Name="LovSearchField" Description="值集搜索字段。列表型值集的搜索条件字段定义">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="LovDefId" DataType="Int32" Description="值集定义。关联LovDefinition" />
+        <Column Name="Field" DataType="String" Nullable="False" Description="字段名。搜索参数字段名" />
+        <Column Name="Title" DataType="String" Master="True" Description="显示标题" />
+        <Column Name="ComponentType" DataType="String" Description="控件类型。input/select/lov/datepicker等" />
+        <Column Name="ParamType" DataType="String" Description="传参方式。BODY=请求体/QUERY=查询参数" />
+        <Column Name="Required" DataType="Boolean" Description="是否必填" />
+        <Column Name="DefaultValue" DataType="String" Description="默认值" />
+        <Column Name="Sort" DataType="Int32" Description="排序" />
+        <Column Name="RefLovCode" DataType="String" Length="200" Description="关联值集。该搜索字段渲染为此值集的选择控件" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="LovDefId,Field" Unique="True" />
+        <Index Columns="LovDefId,Sort" />
+      </Indexes>
+    </Table>
+    <Table Name="LovTableColumn" Description="值集表格列。列表型值集的列字段定义">
+      <Columns>
+        <Column Name="Id" DataType="Int32" Identity="True" PrimaryKey="True" Description="编号" />
+        <Column Name="LovDefId" DataType="Int32" Description="值集定义。关联LovDefinition" />
+        <Column Name="Field" DataType="String" Nullable="False" Description="字段名。数据字段名" />
+        <Column Name="Title" DataType="String" Master="True" Description="显示标题" />
+        <Column Name="Width" DataType="Int32" Description="列宽" />
+        <Column Name="Align" DataType="String" Description="对齐方式。left/center/right" />
+        <Column Name="Sortable" DataType="Boolean" Description="是否可排序" />
+        <Column Name="RefLovCode" DataType="String" Length="200" Description="关联值集。该列原始值需翻译为此值集的显示文本" />
+        <Column Name="FormatType" DataType="String" Description="格式化类型。与RefLovCode互斥，如 date/amount" />
+        <Column Name="Sort" DataType="Int32" Description="排序" />
+        <Column Name="CreateUserID" DataType="Int32" Description="创建用户" Category="扩展" />
+        <Column Name="CreateIP" DataType="String" Description="创建地址" Category="扩展" />
+        <Column Name="CreateTime" DataType="DateTime" Description="创建时间" Category="扩展" />
+        <Column Name="UpdateUserID" DataType="Int32" Description="更新用户" Category="扩展" />
+        <Column Name="UpdateIP" DataType="String" Description="更新地址" Category="扩展" />
+        <Column Name="UpdateTime" DataType="DateTime" Description="更新时间" Category="扩展" />
+        <Column Name="Remark" DataType="String" Length="500" Description="备注" Category="扩展" />
+      </Columns>
+      <Indexes>
+        <Index Columns="LovDefId,Field" Unique="True" />
+        <Index Columns="LovDefId,Sort" />
       </Indexes>
     </Table>
   </Tables>

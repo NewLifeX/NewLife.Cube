@@ -11,7 +11,7 @@ namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>模型表</summary>
     [Area("Cube")]
-    [Menu(59, true, Icon = "fa-table")]
+    [Menu(59, true, Icon = "Grid")]
     public class ModelTableController : EntityController<ModelTable>
     {
         static ModelTableController()
