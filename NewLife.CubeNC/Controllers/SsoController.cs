@@ -286,6 +286,12 @@ public class SsoController : ControllerBaseX
 
             HttpContext.ChooseTenant(user.ID);
 
+            // 防御性加固：确保 .Cube.Session cookie 已发送，防止外部OAuth回调后 Session ID 漂移
+            var sessionKey = ".Cube.Session";
+            var sid = Request.Cookies[sessionKey];
+            if (!sid.IsNullOrEmpty())
+                Response.Cookies.Append(sessionKey, sid);
+
             return Redirect(url);
         }
         catch (Exception ex)
@@ -479,6 +485,8 @@ public class SsoController : ControllerBaseX
         if (id.IsNullOrEmpty()) throw new ArgumentNullException(nameof(id));
 
         var user = _clientService.Current;
+        // 如果Session未登录，尝试从Cookie/Token恢复，避免因Session丢失导致死循环重定向
+        user ??= ManageProvider.Provider.TryLogin(HttpContext);
         if (user == null) return Redirect(_clientService.GetLoginUrl(id));
 
         var url = _serverService.GetResult(id, user);

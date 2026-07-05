@@ -60,7 +60,7 @@ function handleClick() {
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: var(--navbar-text, var(--text-secondary));
+  color: var(--cube-layout-breadcrumb-item-color, var(--cube-layout-menu-item-color));
   cursor: pointer;
   transition:
     background 0.15s,
@@ -103,8 +103,8 @@ function handleClick() {
   }
 
   &:hover:not(.disabled) {
-    background: var(--navbar-hover-bg, rgba(0, 0, 0, 0.06));
-    color: var(--navbar-text-hover, var(--text-primary));
+    background: var(--cube-layout-menu-item-hover-bg, var(--el-color-primary-light-9));
+    color: var(--cube-layout-menu-item-active-color, var(--el-color-primary));
   }
 
   &.disabled {

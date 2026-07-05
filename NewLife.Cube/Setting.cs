@@ -532,7 +532,7 @@ public class CubeSetting : Config<CubeSetting>
 
         var format = "";
         var p2 = cr.IndexOf('}', p1);
-        if (p2 > 0) format = cr.Substring(p1 + 1, p2 - p1 - 1).TrimStart("now").TrimStart(":");
+        if (p2 > 0) format = cr.Substring(p1 + 1, p2 - p1 - 1).TrimPrefix("now").TrimPrefix(":");
 
         var now = DateTime.Now;
         if (format.IsNullOrEmpty())

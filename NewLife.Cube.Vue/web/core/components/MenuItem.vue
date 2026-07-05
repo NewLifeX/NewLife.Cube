@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts">
 /**
  * MenuItem - 可复用的菜单项组件
  *
@@ -6,12 +6,50 @@
  * - 递归渲染子菜单
  * - 激活状态高亮
  * - 点击跳转/展开
+ *
+ * == 扩展点 ==
+ * 1. 插槽（slot）：
+ *    - `#icon="{ menu, resolvedIcon }"` — 自定义图标渲染
+ *    - `#title="{ menu }"` — 自定义标题渲染
+ * 2. Provide/Inject：
+ *    - `MENU_ITEM_ICON_RESOLVER` — 注入自定义图标解析函数 `(iconName?: string) => Component | null`
+ *      优先于内置的 EP 图标解析，返回 null 回退到默认逻辑
+ *    - `sidebarCollapsed` — 侧边栏折叠状态（由 Layout 提供）
+ *
+ * == 外部导入 ==
+ *   import { MENU_ITEM_ICON_RESOLVER } from 'cube-front/core/components/MenuItem.vue';
+ *   provide(MENU_ITEM_ICON_RESOLVER, (name) => name === 'x' ? MyIcon : null);
  */
-import { ref, computed, watch, inject } from 'vue';
+
+/** 注入自定义图标解析器的 Symbol Key */
+export const MENU_ITEM_ICON_RESOLVER: unique symbol = Symbol('menuItemIconResolver');
+export type MenuIconResolver = (iconName?: string) => Component | null;
+</script>
+
+<script setup lang="ts">
+import { ref, computed, watch, inject, markRaw, type Component } from 'vue';
 import { type TreeMenuItem } from 'cube-front/core/stores/menu';
 import { isChildMenu, hasChildren, renderMenuTitle } from 'cube-front/core/utils/menuHelpers';
 import { openMenuTab } from 'cube-front/core/utils/menuTab';
 import { useMenuStore } from 'cube-front/core/stores/menu';
+import * as ElementPlusIcons from '@element-plus/icons-vue';
+const ElIconMenu = markRaw(ElementPlusIcons.Menu);
+
+/** 将 icon 字符串解析为 Element Plus 图标组件 */
+function resolveEpIcon(iconName?: string): Component | null {
+  if (!iconName || iconName.startsWith('fa')) return null;
+  // 直接匹配
+  const key = iconName as keyof typeof ElementPlusIcons;
+  if (ElementPlusIcons[key]) return markRaw(ElementPlusIcons[key]);
+  // 转 PascalCase 匹配
+  const pascal = iconName
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\s/g, '');
+  const key2 = pascal as keyof typeof ElementPlusIcons;
+  if (ElementPlusIcons[key2]) return markRaw(ElementPlusIcons[key2]);
+  return null;
+}
 
 const props = withDefaults(
   defineProps<{
@@ -40,6 +78,16 @@ const isAncestorOfActive = computed(() => {
     current = current.parentMenu;
   }
   return false;
+});
+
+// ── 图标解析扩展点：优先使用外部注入的解析器，回退到内置 EP 图标 ──
+const iconResolver = inject<MenuIconResolver | null>(MENU_ITEM_ICON_RESOLVER, null);
+const resolvedIcon = computed<Component | null>(() => {
+  if (iconResolver) {
+    const custom = iconResolver(props.menu.icon);
+    if (custom) return custom;
+  }
+  return resolveEpIcon(props.menu.icon);
 });
 
 // 自动展开 activeMenu 的祖先链路
@@ -108,126 +156,20 @@ const handleClick = () => {
         </span>
         <span v-else class="menu-arrow-placeholder" />
 
-        <!-- 图标 -->
-        <span v-if="menu.icon" class="menu-icon">
-          <svg
-            v-if="menu.icon === 'dashboard'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="3" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="14" width="7" height="7" rx="1" />
-            <rect x="3" y="14" width="7" height="7" rx="1" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'device'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="4" y="4" width="16" height="16" rx="2" />
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'layers'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'lock'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0110 0v4" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'bell'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 01-3.46 0" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'activity'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'settings'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="3" />
-            <path
-              d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-            />
-          </svg>
-          <svg
-            v-else-if="menu.icon === 'users'"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 00-3-3.87" />
-            <path d="M16 3.13a4 4 0 010 7.75" />
-          </svg>
-          <svg
-            v-else
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="10" />
-          </svg>
+        <!-- 图标（可插槽定制）：通过 inject 或 slot 自定义图标渲染 -->
+        <span class="menu-icon">
+          <slot name="icon" :menu="menu" :resolvedIcon="resolvedIcon">
+            <component :is="resolvedIcon" v-if="resolvedIcon" />
+            <ElIconMenu v-else style="width: 16px; height: 16px" />
+          </slot>
         </span>
 
-        <!-- 标题 -->
-        <span class="menu-title">{{ renderMenuTitle(menu) }}</span>
+        <!-- 标题（可插槽定制） -->
+        <span class="menu-title">
+          <slot name="title" :menu="menu">
+            {{ renderMenuTitle(menu) }}
+          </slot>
+        </span>
 
         <!-- 子菜单计数 -->
         <span v-if="hasChildrenMenu" class="menu-badge">{{ menu.children?.length }}</span>
@@ -260,20 +202,20 @@ const handleClick = () => {
   align-items: center;
   justify-content: center;
   padding: 6px 4px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--el-border-radius-small);
   cursor: pointer;
   transition: background 0.15s;
   position: relative;
 
   &:hover {
-    background: var(--sidebar-item-hover);
+    background: var(--cube-layout-menu-item-hover-bg);
   }
 
   &.active {
-    background: var(--sidebar-item-active);
+    background: var(--cube-layout-menu-item-active-bg);
 
     .menu-abbr {
-      color: var(--accent);
+      color: var(--el-color-primary);
     }
   }
 }
@@ -288,7 +230,7 @@ const handleClick = () => {
   border-radius: 8px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: var(--cube-layout-menu-item-color);
   background: rgba(255, 255, 255, 0.06);
   transition:
     background 0.15s,
@@ -300,22 +242,22 @@ const handleClick = () => {
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--el-border-radius-small);
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
-  color: var(--text-secondary);
+  color: var(--cube-layout-menu-item-color);
   font-size: 13px;
   font-weight: 500;
 
   &:hover {
-    background: var(--sidebar-item-hover);
-    color: var(--text-primary);
+    background: var(--cube-layout-menu-item-hover-bg);
+    color: var(--el-text-color-primary);
   }
 
   &.active {
-    background: var(--sidebar-item-active);
-    color: var(--accent);
+    background: var(--cube-layout-menu-item-active-bg);
+    color: var(--el-color-primary);
 
     &::before {
       content: '';
@@ -325,18 +267,18 @@ const handleClick = () => {
       transform: translateY(-50%);
       width: 3px;
       height: 24px;
-      background: var(--accent);
+      background: var(--el-color-primary);
       border-radius: 0 2px 2px 0;
     }
 
     .menu-icon {
-      color: var(--accent);
+      color: var(--el-color-primary);
     }
   }
 
   &.ancestor-active {
     .menu-title {
-      color: var(--accent);
+      color: var(--el-color-primary);
       font-weight: 600;
     }
   }
@@ -367,6 +309,11 @@ const handleClick = () => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  :deep(svg) {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .menu-title {
@@ -377,7 +324,7 @@ const handleClick = () => {
 }
 
 .menu-badge {
-  background: var(--accent-secondary);
+  background: var(--cube-layout-menu-icon-active-color);
   color: var(--text-inverse);
   font-size: 11px;
   font-weight: 600;

@@ -103,7 +103,7 @@ public class ModuleManager
         foreach (var item in AssemblyX.FindAllPlugins(typeof(IModule), true, true))
         {
             var att = item.GetCustomAttribute<ModuleAttribute>();
-            var name = att?.Name ?? item.Name.TrimEnd("Module", "Service");
+            var name = att?.Name ?? item.Name.TrimSuffix("Module").TrimSuffix("Service");
 
             dic[name] = item;
         }
@@ -118,7 +118,7 @@ public class ModuleManager
         foreach (var item in AssemblyX.FindAllPlugins(typeof(IAdapter), true, true))
         {
             var att = item.GetCustomAttribute<ModuleAttribute>();
-            var name = att?.Name ?? item.Name.TrimEnd("Adapter");
+            var name = att?.Name ?? item.Name.TrimSuffix("Adapter");
 
             dic[name] = item;
         }

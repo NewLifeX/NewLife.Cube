@@ -319,7 +319,7 @@ async function fetchPageMeta() {
     const url =  apiPrefix.value + '/GetPage';
     console.log('[DefaultList] GetPage:', url);
     const res = await request({ url, method: 'get' });
-    pageMeta.value = res as unknown as PageMeta;
+    pageMeta.value = (res as any).data ?? res as unknown as PageMeta;
   } catch (err) {
     console.error('[DefaultList] GetPage failed:', err);
   }

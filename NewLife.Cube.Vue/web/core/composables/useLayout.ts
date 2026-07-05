@@ -1,4 +1,4 @@
-import { ref, computed, type Component } from 'vue';
+import { ref, shallowRef, computed, markRaw, type Component } from 'vue';
 import TopMenuLayout from '../layouts/TopMenu/index.vue';
 import CyberLayout from '../layouts/CyberLayout/index.vue';
 
@@ -24,19 +24,19 @@ export const BUILT_IN_LAYOUTS: LayoutOption[] = [
     label: '顶部菜单',
     icon: '⊟',
     description: '顶部导航栏 + 内容区布局',
-    component: TopMenuLayout,
+    component: markRaw(TopMenuLayout),
   },
   {
     id: 'cyber',
     label: '赛博风格',
     icon: '◉',
     description: '深色科技风格 + 霓虹发光效果',
-    component: CyberLayout,
+    component: markRaw(CyberLayout),
   },
 ];
 
 // 模块级响应式状态
-export const registeredLayouts = ref<LayoutOption[]>(BUILT_IN_LAYOUTS);
+export const registeredLayouts = shallowRef<LayoutOption[]>(BUILT_IN_LAYOUTS);
 export const currentLayoutId = ref<string>('');
 
 // 计算当前布局组件
@@ -59,22 +59,69 @@ function restoreLayoutSelection() {
 restoreLayoutSelection();
 
 /**
+ * 注册自定义布局
+ *
+ * 将新布局添加到 registeredLayouts 中，
+ * 并支持设为当前布局。
+ *
+ * @param option - 布局选项
+ * @param setAsCurrent - 是否立即切换为该布局（默认 false）
+ *
+ * @example
+ * ```typescript
+ * import { registerLayout } from 'cube-front/core/composables/useLayout';
+ * import AuroraLayout from './layouts/AuroraLayout/index.vue';
+ *
+ * registerLayout({
+ *   id: 'aurora',
+ *   label: '极光蓝绿',
+ *   icon: '◉',
+ *   description: '极光蓝绿风格布局',
+ *   component: AuroraLayout,
+ * }, true);
+ * ```
+ */
+export function registerLayout(option: LayoutOption, setAsCurrent = false): void {
+  // 避免重复注册
+  const existIdx = registeredLayouts.value.findIndex((l) => l.id === option.id);
+  if (existIdx >= 0) {
+    const list = [...registeredLayouts.value];
+    list[existIdx] = { ...option, component: markRaw(option.component) };
+    registeredLayouts.value = list;
+  } else {
+    registeredLayouts.value = [...registeredLayouts.value, { ...option, component: markRaw(option.component) }];
+  }
+
+  if (setAsCurrent) {
+    currentLayoutId.value = option.id;
+    localStorage.setItem(STORAGE_KEY, option.id);
+  }
+}
+
+/**
+ * 模块级 setLayout，供外部在 setup 外使用
+ */
+export function setLayout(id: string): void {
+  if (!registeredLayouts.value.some((l) => l.id === id)) return;
+  currentLayoutId.value = id;
+  localStorage.setItem(STORAGE_KEY, id);
+}
+
+/**
  * 布局组合式函数
  * 在 Topnav / RootLayout 等组件中使用
  */
 export function useLayout() {
-  function setLayout(id: string): void {
-    if (!registeredLayouts.value.some((l) => l.id === id)) return;
-    currentLayoutId.value = id;
-    localStorage.setItem(STORAGE_KEY, id);
+  function setLayoutFromHook(id: string): void {
+    setLayout(id);
   }
 
   // 返回数组而非 ref，模板中 Vue 会自动处理
   return {
-    layouts: registeredLayouts.value,
+    layouts: registeredLayouts,
     currentLayoutId,
     currentLayout,
     currentComponent,
-    setLayout,
+    setLayout: setLayoutFromHook,
   };
 }

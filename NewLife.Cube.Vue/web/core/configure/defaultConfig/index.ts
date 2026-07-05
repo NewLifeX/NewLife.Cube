@@ -25,6 +25,7 @@ export const defaultConfig: CubeFrontConfig = {
     iconField: 'icon',
     sortField: 'sort',
     childrenField: 'children',
+    visibleField: 'visible',
   },
   user: {
     getUserInfoAxiosConfig: (): AxiosRequestConfig => {
@@ -74,6 +75,7 @@ export const defaultConfig: CubeFrontConfig = {
   },
   auth: {
     tokenKey: 'token',
+    refreshTokenKey: 'refresh_token',
     // 后面会自动拼接重定向地址即可，后台需要配置SsoSafeDomains，跳转地址允许白名单，否则不能正常重定向
     oauthUrl: '/Sso/Login?name=NewLife&source=front-end&redirect_uri=',
     redirectUrl: '/login',
@@ -85,9 +87,13 @@ export const defaultConfig: CubeFrontConfig = {
         url: '/Admin/User/Logout',
       };
     },
+    // 默认的重新登录参数
     reLoginParams: {
-      // 默认的重新登录参数
+      loginPageUrl: '/login'
     },
+  },
+  router: {
+    routeNamingStyle: 'pascal',
   },
 };
 

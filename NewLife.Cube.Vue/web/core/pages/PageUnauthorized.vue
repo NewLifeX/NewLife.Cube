@@ -21,12 +21,18 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElRow, ElCol } from 'element-plus'
-import { useRouter } from 'vue-router'
+import { ElButton, ElRow, ElCol } from 'element-plus';
+import { useRouter } from 'vue-router';
+import { getConfig } from '../configure';
 
-const router = useRouter()
+const router = useRouter();
+const {
+  auth: { reLoginParams },
+} = getConfig();
+const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
+
 function goLogin() {
-  router.replace({ path: '/login' })
+  router.replace({ path: loginPageUrl });
 }
 </script>
 

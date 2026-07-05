@@ -6,17 +6,20 @@ import ModeSwitcher from 'cube-front/core/components/ModeSwitcher.vue';
 import { useUserStore } from 'cube-front/core/stores/user';
 import { useMenuStore } from 'cube-front/core/stores/menu';
 import NotificationBell from 'cube-front/core/components/NotificationBell.vue';
-import NavbarUserProfile from 'cube-front/core/components/NavbarUserProfile.vue';
 
 const userStore = useUserStore();
 const menuStore = useMenuStore();
 
 // 用户信息
 const currentUser = computed(() => userStore.userInfo);
-const userName = computed(() => currentUser.value?.displayName || currentUser.value?.name || '管理员');
+const userName = computed(
+  () => currentUser.value?.displayName || currentUser.value?.name || '管理员',
+);
 
 // 当前页面标题
-const pageTitle = computed(() => menuStore.activeMenu?.title || menuStore.activeMenu?.name || '仪表盘');
+const pageTitle = computed(
+  () => menuStore.activeMenu?.title || menuStore.activeMenu?.name || '仪表盘',
+);
 
 // 当前日期
 const currentDate = computed(() => {
@@ -59,21 +62,18 @@ const currentDate = computed(() => {
 
       <!-- 通知按钮 -->
       <NotificationBell show-label />
-
-      <!-- 用户头像资料（含退出登录） -->
-      <NavbarUserProfile />
     </div>
   </header>
 </template>
 
 <style lang="scss" scoped>
 .cyber-navbar {
-  --navbar-bg: var(--bg-secondary);
-  --navbar-border: var(--border-subtle);
-  --navbar-text: var(--text-primary);
-  --navbar-text-hover: var(--accent);
-  --navbar-text-muted: var(--text-muted);
-  --navbar-hover-bg: var(--accent-muted);
+  --navbar-bg: var(--el-bg-color-overlay);
+  --navbar-border: var(--el-border-color-light);
+  --navbar-text: var(--el-text-color-primary);
+  --navbar-text-hover: var(--el-color-primary);
+  --navbar-text-muted: var(--el-text-color-secondary);
+  --navbar-hover-bg: var(--el-color-primary-light-9);
 
   display: flex;
   justify-content: space-between;
@@ -111,15 +111,15 @@ const currentDate = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-subtle);
+  background: var(--el-fill-color-light);
+  border: 1px solid var(--el-border-color-light);
   border-radius: var(--radius-sm);
   padding: 8px 12px;
   width: 220px;
   transition: border-color 0.2s;
 
   &:focus-within {
-    border-color: var(--accent);
+    border-color: var(--el-color-primary);
   }
 
   svg {
@@ -143,6 +143,4 @@ const currentDate = computed(() => {
     }
   }
 }
-
-
 </style>

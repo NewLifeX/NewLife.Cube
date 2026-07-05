@@ -114,13 +114,13 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 		Session.clear();
 	} else {
 		// 初始化登录成功时间问候语
-		let currentTimeInfo = currentTime.value;
+		const currentTimeInfo = currentTime.value;
 		// 登录成功，跳到转首页
 		// 如果是复制粘贴的路径，非首页/登录页，那么登录成功后重定向到对应的路径中
 		if (route.query?.redirect) {
 			router.push({
-				path: <string>route.query?.redirect,
-				query: Object.keys(<string>route.query?.params).length > 0 ? JSON.parse(<string>route.query?.params) : '',
+				path: route.query?.redirect as string,
+				 query: Object.keys(route.query?.params as string).length > 0 ? JSON.parse(route.query?.params as string) : '',
 			});
 		} else {
 			router.push('/');

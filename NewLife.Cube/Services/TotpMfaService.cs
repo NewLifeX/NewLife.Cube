@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using NewLife.Caching;
 using NewLife.Collections;
 using NewLife.Security;

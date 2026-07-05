@@ -256,7 +256,7 @@ public partial class ReadOnlyEntityController<TEntity>
     }
 
     /// <summary>是否租户实体类</summary>
-    protected virtual Boolean IsTenantSource => typeof(TEntity).GetInterfaces().Any(e => e == typeof(ITenantSource));
+    protected virtual Boolean IsTenantSource => typeof(TEntity).GetInterfaces().Any(e => e == typeof(ITenantScope));
 
     /// <summary>获取选中键</summary>
     /// <returns></returns>

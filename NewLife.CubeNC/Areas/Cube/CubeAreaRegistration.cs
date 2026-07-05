@@ -8,5 +8,5 @@ namespace NewLife.Cube.Areas.Cube;
 public class CubeArea : AreaBase
 {
     /// <inheritdoc />
-    public CubeArea() : base(nameof(CubeArea).TrimEnd("Area")) { }
+    public CubeArea() : base(nameof(CubeArea).TrimSuffix("Area")) { }
 }

@@ -66,7 +66,7 @@ const onSubmit = () => {
 };
 // 初始化cropperjs图片裁剪
 const initCropper = () => {
-	const letImg = <HTMLImageElement>document.querySelector('.cropper-warp-left-img');
+	const letImg = document.querySelector('.cropper-warp-left-img') as HTMLImageElement;
 	state.cropper = new Cropper(letImg, {
 		viewMode: 1,
 		dragMode: 'none',

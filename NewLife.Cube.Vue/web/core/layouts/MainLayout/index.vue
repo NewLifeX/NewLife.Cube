@@ -45,9 +45,9 @@ $layout-max-width: 1100px;
   height: 100%;
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 70% 50% at 15% 5%, rgba(219, 234, 254, 0.35) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 85% 95%, rgba(239, 246, 255, 0.25) 0%, transparent 55%),
-    linear-gradient(180deg, #faf8f5 0%, #f5f0eb 50%, #faf8f5 100%);
+    radial-gradient(ellipse 70% 50% at 15% 5%, var(--el-color-primary-light-9) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 85% 95%, var(--el-fill-color-light) 0%, transparent 55%),
+    linear-gradient(180deg, var(--el-bg-color-page) 0%, var(--el-fill-color-light) 50%, var(--el-bg-color-page) 100%);
 }
 
 .layoutNavbar {
@@ -86,12 +86,12 @@ $layout-max-width: 1100px;
     background: rgba(255, 255, 255, 0.78);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-radius: 16px;
+    border-radius: var(--el-border-radius-large, 16px);
     padding: 24px 16px 0 24px;
     box-sizing: border-box;
     border: 1px solid rgba(255, 255, 255, 0.55);
     box-shadow:
-      0 4px 24px rgba(0, 0, 0, 0.03),
+      0 4px 24px var(--el-box-shadow-light),
       0 1px 3px rgba(0, 0, 0, 0.02);
   }
 }

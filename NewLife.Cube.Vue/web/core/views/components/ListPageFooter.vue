@@ -7,7 +7,7 @@
 <style lang="scss" scoped>
 .list-page-footer {
   padding: 8px 0;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 12px;
 }

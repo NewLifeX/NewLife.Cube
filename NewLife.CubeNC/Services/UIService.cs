@@ -40,7 +40,7 @@ namespace NewLife.Cube.Services
             var names = asm.GetManifestResourceNames();
             names = names.Where(e => e.Contains(".echarts.theme.")).ToArray();
 
-            return names.Select(e => e.Substring(".echarts.theme.", null)?.TrimEnd(".js")).Where(e => !e.IsNullOrEmpty()).ToList();
+            return names.Select(e => e.Substring(".echarts.theme.", null)?.TrimSuffix(".js")).Where(e => !e.IsNullOrEmpty()).ToList();
         }
     }
 }

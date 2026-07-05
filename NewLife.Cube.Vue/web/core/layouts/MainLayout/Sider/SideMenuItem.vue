@@ -150,19 +150,19 @@ const handleClick = () => {
     transform: translateY(-50%);
     width: 3px;
     height: 0;
-    background: linear-gradient(180deg, #1e40af 0%, #2563eb 100%);
+    background: linear-gradient(180deg, var(--el-color-primary) 0%, #2563eb 100%);
     border-radius: 0 3px 3px 0;
     transition: height 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &:hover {
-    background: #f3f0ed;
+    background: var(--el-fill-color);
   }
 
   // 激活态（叶子节点）
   &--active {
-    background: linear-gradient(90deg, #eff6ff 0%, rgba(239, 246, 255, 0.4) 100%);
-    color: #1e40af;
+    background: linear-gradient(90deg, var(--el-color-primary-light-9) 0%, rgba(239, 246, 255, 0.4) 100%);
+    color: var(--el-color-primary);
     font-weight: 600;
 
     &::before {
@@ -170,17 +170,17 @@ const handleClick = () => {
     }
 
     .menu-row-title {
-      color: #1e40af;
+      color: var(--el-color-primary);
     }
     .menu-row-icon {
-      color: #1e40af;
+      color: var(--el-color-primary);
     }
   }
 
   // 展开的祖先节点
   &--ancestor {
     .menu-row-title {
-      color: #1e3a8a;
+      color: var(--el-color-primary-dark-2);
       font-weight: 600;
     }
   }
@@ -193,13 +193,13 @@ const handleClick = () => {
   width: 20px;
   height: 20px;
   margin-right: 2px;
-  color: #94a3b8;
+  color: var(--el-text-color-secondary);
   transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
 
   &--expanded {
     transform: rotate(90deg);
-    color: #64748b;
+    color: var(--el-text-color-placeholder);
   }
 
   .arrow-svg {
@@ -219,14 +219,14 @@ const handleClick = () => {
   align-items: center;
   margin-right: 8px;
   font-size: 16px;
-  color: #94a3b8;
+  color: var(--el-text-color-secondary);
   flex-shrink: 0;
   transition: color 0.15s ease;
 }
 
 .menu-row-title {
   font-size: 14px;
-  color: #475569;
+  color: var(--el-text-color-regular);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -237,8 +237,8 @@ const handleClick = () => {
 
 .menu-row-badge {
   font-size: 11px;
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--el-text-color-placeholder);
+  background: var(--el-fill-color-lighter);
   padding: 1px 7px;
   border-radius: 10px;
   margin-left: 8px;

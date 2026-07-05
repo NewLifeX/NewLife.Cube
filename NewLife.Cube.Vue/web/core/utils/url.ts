@@ -37,25 +37,34 @@ export function toKebabCase(str: string) {
 }
 
 /**
- * 将后端返回的菜单 URL 路径转换为短横线风格
- * 示例:
+ * 路由命名风格
+ */
+export type RouteNamingStyle = 'pascal' | 'kebab';
+
+/**
+ * 将后端返回的菜单 URL 路径转换为指定风格的路径
+ * 示例（kebab 风格）:
  *   /IoT/Device/Product → /iot/device/product
  *   /EMS/EnergyReport → /ems/energy-report
+ * 示例（pascal 风格）:
+ *   /IoT/Device/Product → /IoT/Device/Product
+ *   /EMS/EnergyReport → /EMS/EnergyReport
  *
  * @param url 后端返回的原始 URL
- * @returns 短横线风格的 URL
+ * @param style 路由命名风格，默认 pascal
+ * @returns 指定风格的 URL
  */
-export function normalizeMenuUrl(url: string): string {
+export function normalizeMenuUrl(url: string, style: RouteNamingStyle = 'pascal'): string {
   if (!url || typeof url !== 'string') return url;
 
   // 分离路径和查询参数
   const [path, query] = url.split('?');
 
-  // 转换路径段为短横线风格
+  // 转换路径段
   const normalizedPath = path
     .split('/')
     .filter(Boolean)
-    .map((segment) => toKebabCase(segment))
+    .map((segment) => style === 'kebab' ? toKebabCase(segment) : segment)
     .join('/');
 
   // 重新拼接路径（保留前导斜杠）

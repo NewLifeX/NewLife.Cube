@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -170,7 +170,7 @@ namespace NewLife.Cube.Entity
         /// <param name="areaName"></param>
         /// <param name="menu"></param>
         /// <param name="factory"></param>
-        public static ModelTable ScanModel(String areaName, IMenu menu, IEntityFactory factory) => ScanModel(areaName, menu.Name, menu.FullName, menu.Url.TrimStart("~"), factory);
+        public static ModelTable ScanModel(String areaName, IMenu menu, IEntityFactory factory) => ScanModel(areaName, menu.Name, menu.FullName, menu.Url.TrimPrefix("~"), factory);
 
         /// <summary> 
         /// 根据菜单和实体工厂创建模型表和模型列
@@ -186,7 +186,7 @@ namespace NewLife.Cube.Entity
 
             //var entityTypeName = menu.Name; // 菜单名从控制器名称里面取
             //var ctrlFullName = menu.FullName;
-            //var url = menu.Url.TrimStart("~");
+            //var url = menu.Url.TrimPrefix("~");
 
 
             //if (areaName.IsNullOrWhiteSpace()) areaName = menu.Parent.Name;

@@ -39,8 +39,8 @@ const handleClick = (menu: TreeMenuItem) => {
 <style lang="scss" scoped>
 .icon-rail {
   width: 52px;
-  background: #fff;
-  border-right: 1px solid #e0e6da;
+  background: var(--el-bg-color-overlay);
+  border-right: 1px solid var(--el-border-color-light);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -61,7 +61,7 @@ const handleClick = (menu: TreeMenuItem) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #87a080;
+  color: var(--el-text-color-placeholder);
   cursor: pointer;
   border: none;
   background: transparent;
@@ -72,8 +72,8 @@ const handleClick = (menu: TreeMenuItem) => {
   flex-shrink: 0;
 
   &:hover {
-    background: #e8f5ee;
-    color: #1d7040;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
 
     .ir-tip {
       opacity: 1;
@@ -81,8 +81,8 @@ const handleClick = (menu: TreeMenuItem) => {
   }
 
   &.on {
-    background: #e8f5ee;
-    color: #1d7040;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
   }
 }
 
@@ -91,8 +91,8 @@ const handleClick = (menu: TreeMenuItem) => {
   left: 44px;
   top: 50%;
   transform: translateY(-50%);
-  background: #111;
-  color: #fff;
+  background: var(--el-color-info);
+  color: var(--el-color-white);
   font-size: 11px;
   padding: 3px 8px;
   border-radius: 4px;

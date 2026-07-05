@@ -4,458 +4,28 @@
    ============================================================ */
 
 /* ============================================================
-   §0 — Layer 0: Primitive Tokens（设计原语）
-   不随主题变化，是所有主题的基础色彩
+   §0 — Layer 0: Primitive Tokens（设计原语 - 已迁移至 --el-*）
    ============================================================ */
-:root {
-  /* ── 绿色系 ── */
-  --green-300: #86efac;
-  --green-400: #4ade80;
-  --green-500: #22c55e;
-  --green-600: #16a34a;
-  --green-700: #15803d;
-
-  /* ── 青色系 ── */
-  --cyan-300: #67e8f9;
-  --cyan-400: #22d3ee;
-  --cyan-500: #06b6d4;
-  --cyan-600: #0891b2;
-
-  /* ── 琥珀/警告系 ── */
-  --amber-300: #fcd34d;
-  --amber-400: #fbbf24;
-  --amber-500: #f59e0b;
-  --amber-600: #d97706;
-
-  /* ── 玫瑰/错误系 ── */
-  --rose-300: #fda4af;
-  --rose-400: #fb7185;
-  --rose-500: #f43f5e;
-  --rose-600: #e11d48;
-
-  /* ── 紫罗兰系 ── */
-  --violet-300: #c4b5fd;
-  --violet-400: #a78bfa;
-  --violet-500: #8b5cf6;
-
-  /* ── 蓝色系 ── */
-  --blue-300: #93c5fd;
-  --blue-400: #60a5fa;
-  --blue-500: #3b82f6;
-  --blue-600: #2563eb;
-
-  /* ── 布局尺寸（无颜色） ── */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --r: 8px; /* 兼容别名 */
-
-  /* ── 动画曲线 ── */
-  --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* ── 毛玻璃模糊量 ── */
-  --glass-blur: blur(14px);
-  --glass-blur-sm: blur(8px);
-
-  /* ── 阴影（无颜色，使用 currentColor） ── */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-glow: 0 0 20px rgba(74, 222, 128, 0.2);
-}
+/* Layer 0 tokens have been removed. Use --el-* equivalents. */
 
 /* ============================================================
-   §1 — Layer 1: Semantic Tokens（语义别名）
-   主题通过覆盖这些变量来改变整体外观
+   §1 — Layer 1: Semantic Tokens（已迁移至 --el-* / --cube-layout-*）
    ============================================================ */
-
-/* ── Cyber Dark（默认深色主题） ── */
-:root,
-[data-theme='cyber-dark'] {
-  /* 背景色 */
-  --bg-primary: #0a0e14;
-  --bg-secondary: #111820;
-  --bg-tertiary: #1a222d;
-  --bg-card: #141b24;
-  --bg-elevated: #1e2836;
-
-  /* 边框 */
-  --border-subtle: rgba(74, 222, 128, 0.12);
-  --border-default: rgba(74, 222, 128, 0.2);
-  --border-emphasis: rgba(74, 222, 128, 0.3);
-
-  /* 文字色 */
-  --text-primary: #e8eaed;
-  --text-secondary: #8b949e;
-  --text-muted: #5c6370;
-  --text-inverse: #0a0e14;
-
-  /* 强调色 */
-  --accent: var(--green-400);
-  --accent-hover: var(--green-300);
-  --accent-secondary: var(--cyan-400);
-  --accent-muted: rgba(74, 222, 128, 0.1);
-  --accent-soft: rgba(74, 222, 128, 0.15);
-
-  /* 发光效果 */
-  --glow-green: 0 0 20px rgba(74, 222, 128, 0.2);
-  --glow-cyan: 0 0 20px rgba(34, 211, 238, 0.2);
-
-  /* 导航栏变量 */
-  --navbar-bg: #111820;
-  --navbar-border: rgba(74, 222, 128, 0.15);
-  --navbar-text: #8b949e;
-  --navbar-text-hover: #c8d4e3;
-  --navbar-text-muted: #5c6370;
-  --navbar-hover-bg: rgba(255, 255, 255, 0.08);
-  --navbar-active-bg: rgba(255, 255, 255, 0.12);
-
-  /* 语义色 */
-  --color-success: var(--green-400);
-  --color-success-bg: rgba(74, 222, 128, 0.1);
-  --color-warning: var(--amber-400);
-  --color-warning-bg: rgba(251, 191, 36, 0.1);
-  --color-error: var(--rose-400);
-  --color-error-bg: rgba(251, 113, 133, 0.1);
-  --color-info: var(--cyan-400);
-  --color-info-bg: rgba(34, 211, 238, 0.1);
-
-  /* 别名兼容 */
-  --ok: var(--color-success);
-  --okl: var(--color-success-bg);
-  --wn: var(--color-warning);
-  --wnl: var(--color-warning-bg);
-  --er: var(--color-error);
-  --erl: var(--color-error-bg);
-  --in: var(--color-info);
-  --inl: var(--color-info-bg);
-
-  /* 文字别名 */
-  --t1: var(--text-primary);
-  --t2: var(--text-secondary);
-  --t3: var(--text-muted);
-
-  /* 背景别名 */
-  --bg: var(--bg-primary);
-  --bd: var(--border-default);
-  --card: var(--bg-card);
-
-  /* 强调别名 */
-  --ac: var(--accent);
-  --ac-l: var(--accent-muted);
-  --ac-b: var(--accent-soft);
-
-  /* 滚动条 */
-  --scrollbar-thumb: rgba(74, 222, 128, 0.3);
-  --scrollbar-thumb-hover: rgba(74, 222, 128, 0.5);
-}
-
-/* ── Cyber Light（Cyber 浅色主题） ── */
-[data-theme='cyber-light'] {
-  /* 背景色 */
-  --bg-primary: #f5f7fa;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #e8ecf0;
-  --bg-card: #ffffff;
-  --bg-elevated: #ffffff;
-
-  /* 边框 */
-  --border-subtle: rgba(22, 163, 74, 0.25);
-  --border-default: rgba(22, 163, 74, 0.35);
-  --border-emphasis: rgba(22, 163, 74, 0.5);
-
-  /* 文字色 */
-  --text-primary: #1a222d;
-  --text-secondary: #5c6370;
-  --text-muted: #8b949e;
-  --text-inverse: #ffffff;
-
-  /* 强调色 */
-  --accent: var(--green-600);
-  --accent-hover: var(--green-500);
-  --accent-secondary: var(--cyan-600);
-  --accent-muted: rgba(22, 163, 74, 0.18);
-  --accent-soft: rgba(22, 163, 74, 0.25);
-
-  /* 发光效果 */
-  --glow-green: 0 4px 20px rgba(22, 163, 74, 0.15);
-  --glow-cyan: 0 4px 20px rgba(8, 145, 178, 0.15);
-
-  /* 导航栏变量 */
-  --navbar-bg: #ffffff;
-  --navbar-border: rgba(22, 163, 74, 0.2);
-  --navbar-text: #5c6370;
-  --navbar-text-hover: #1a222d;
-  --navbar-text-muted: #8b949e;
-  --navbar-hover-bg: rgba(0, 0, 0, 0.04);
-  --navbar-active-bg: rgba(0, 0, 0, 0.06);
-
-  /* 语义色 */
-  --color-success: var(--green-600);
-  --color-success-bg: rgba(22, 163, 74, 0.15);
-  --color-warning: var(--amber-600);
-  --color-warning-bg: rgba(217, 119, 6, 0.15);
-  --color-error: #dc2626;
-  --color-error-bg: rgba(220, 38, 38, 0.15);
-  --color-info: var(--cyan-600);
-  --color-info-bg: rgba(8, 145, 178, 0.15);
-
-  /* 别名 */
-  --ok: var(--color-success);
-  --okl: var(--color-success-bg);
-  --wn: var(--color-warning);
-  --wnl: var(--color-warning-bg);
-  --er: var(--color-error);
-  --erl: var(--color-error-bg);
-  --in: var(--color-info);
-  --inl: var(--color-info-bg);
-
-  /* 文字别名 */
-  --t1: var(--text-primary);
-  --t2: var(--text-secondary);
-  --t3: var(--text-muted);
-
-  /* 背景别名 */
-  --bg: var(--bg-primary);
-  --bd: var(--border-default);
-  --card: var(--bg-card);
-
-  /* 强调别名 */
-  --ac: var(--accent);
-  --ac-l: var(--accent-muted);
-  --ac-b: var(--accent-soft);
-
-  /* 滚动条 */
-  --scrollbar-thumb: rgba(22, 163, 74, 0.5);
-  --scrollbar-thumb-hover: rgba(22, 163, 74, 0.7);
-}
-
-/* ── Forest Dark（森林绿深色主题） ── */
-[data-theme='forest-dark'] {
-  /* 背景色 */
-  --bg-primary: #0f1f18;
-  --bg-secondary: #1a3328;
-  --bg-tertiary: #243d32;
-  --bg-card: #152a20;
-  --bg-elevated: #1e332a;
-
-  /* 边框 */
-  --border-subtle: rgba(29, 112, 64, 0.15);
-  --border-default: rgba(29, 112, 64, 0.25);
-  --border-emphasis: rgba(29, 112, 64, 0.4);
-
-  /* 文字色 */
-  --text-primary: #e8eaed;
-  --text-secondary: #8b949e;
-  --text-muted: #5c6370;
-  --text-inverse: #0f1f18;
-
-  /* 强调色 */
-  --accent: #1d7040;
-  --accent-hover: #2a9d57;
-  --accent-secondary: var(--blue-500);
-  --accent-muted: rgba(29, 112, 64, 0.12);
-  --accent-soft: rgba(29, 112, 64, 0.2);
-
-  /* 语义色 */
-  --color-success: #1d7040;
-  --color-success-bg: rgba(29, 112, 64, 0.12);
-  --color-warning: var(--amber-400);
-  --color-warning-bg: rgba(251, 191, 36, 0.1);
-
-  /* 导航栏变量 */
-  --navbar-bg: #1a3328;
-  --navbar-border: rgba(78, 198, 133, 0.2);
-  --navbar-text: #74b898;
-  --navbar-text-hover: #4ec685;
-  --navbar-text-muted: rgba(255, 255, 255, 0.5);
-  --navbar-hover-bg: rgba(255, 255, 255, 0.08);
-  --navbar-active-bg: rgba(255, 255, 255, 0.12);
-  --color-error: var(--rose-400);
-  --color-error-bg: rgba(251, 113, 133, 0.1);
-  --color-info: var(--blue-400);
-  --color-info-bg: rgba(96, 165, 250, 0.1);
-
-  /* 别名 */
-  --ok: var(--color-success);
-  --okl: var(--color-success-bg);
-  --wn: var(--color-warning);
-  --wnl: var(--color-warning-bg);
-  --er: var(--color-error);
-  --erl: var(--color-error-bg);
-  --in: var(--color-info);
-  --inl: var(--color-info-bg);
-
-  /* 文字别名 */
-  --t1: var(--text-primary);
-  --t2: var(--text-secondary);
-  --t3: var(--text-muted);
-
-  /* 背景别名 */
-  --bg: var(--bg-primary);
-  --bd: var(--border-default);
-  --card: var(--bg-card);
-
-  /* 强调别名 */
-  --ac: var(--accent);
-  --ac-l: var(--accent-muted);
-  --ac-b: var(--accent-soft);
-
-  /* 滚动条 */
-  --scrollbar-thumb: rgba(29, 112, 64, 0.35);
-  --scrollbar-thumb-hover: rgba(29, 112, 64, 0.55);
-}
-
-/* ── Forest Light（森林绿浅色主题） ── */
-[data-theme='forest-light'] {
-  /* 背景色 */
-  --bg-primary: #f4f5f1;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #e8ebe6;
-  --bg-card: #ffffff;
-  --bg-elevated: #ffffff;
-
-  /* 边框 */
-  --border-subtle: rgba(29, 112, 64, 0.2);
-  --border-default: rgba(29, 112, 64, 0.3);
-  --border-emphasis: rgba(29, 112, 64, 0.45);
-
-  /* 文字色 */
-  --text-primary: #1a222d;
-  --text-secondary: #5c6370;
-  --text-muted: #8b949e;
-  --text-inverse: #ffffff;
-
-  /* 强调色 */
-  --accent: #1d7040;
-  --accent-hover: #2a9d57;
-  --accent-secondary: var(--blue-600);
-  --accent-muted: rgba(29, 112, 64, 0.15);
-  --accent-soft: rgba(29, 112, 64, 0.22);
-
-  /* 语义色 */
-  --color-success: #1d7040;
-  --color-success-bg: rgba(29, 112, 64, 0.12);
-  --color-warning: var(--amber-600);
-  --color-warning-bg: rgba(217, 119, 6, 0.12);
-  --color-error: #dc2626;
-  --color-error-bg: rgba(220, 38, 38, 0.12);
-  --color-info: var(--blue-600);
-  --color-info-bg: rgba(37, 99, 235, 0.12);
-
-  /* 导航栏变量 */
-  --navbar-bg: #ffffff;
-  --navbar-border: rgba(29, 112, 64, 0.2);
-  --navbar-text: #5a7a5f;
-  --navbar-text-hover: #3d6b4a;
-  --navbar-text-muted: #8fa98e;
-  --navbar-hover-bg: rgba(0, 0, 0, 0.04);
-  --navbar-active-bg: rgba(0, 0, 0, 0.06);
-
-  /* 别名 */
-  --ok: var(--color-success);
-  --okl: var(--color-success-bg);
-  --wn: var(--color-warning);
-  --wnl: var(--color-warning-bg);
-  --er: var(--color-error);
-  --erl: var(--color-error-bg);
-  --in: var(--color-info);
-  --inl: var(--color-info-bg);
-
-  /* 文字别名 */
-  --t1: var(--text-primary);
-  --t2: var(--text-secondary);
-  --t3: var(--text-muted);
-
-  /* 背景别名 */
-  --bg: var(--bg-primary);
-  --bd: var(--border-default);
-  --card: var(--bg-card);
-
-  /* 强调别名 */
-  --ac: var(--accent);
-  --ac-l: var(--accent-muted);
-  --ac-b: var(--accent-soft);
-
-  /* 滚动条 */
-  --scrollbar-thumb: rgba(29, 112, 64, 0.3);
-  --scrollbar-thumb-hover: rgba(29, 112, 64, 0.5);
-}
+/* Layer 1 tokens have been removed. Use --el-* equivalents. */
 
 /* ============================================================
-   §2 — Layer 2: Component Tokens（组件变量）
-   基于语义变量的组件级封装
+   §2 — Layer 2: Component Tokens（已迁移至 --el-* / --cube-layout-*）
    ============================================================ */
-
-/* 按钮 */
-:root,
-[data-theme] {
-  --btn-primary-bg: var(--accent);
-  --btn-primary-color: var(--text-inverse);
-  --btn-primary-hover-bg: var(--accent-hover);
-  --btn-secondary-bg: transparent;
-  --btn-secondary-color: var(--accent);
-  --btn-secondary-border: var(--border-emphasis);
-  --btn-secondary-hover-bg: var(--accent-muted);
-}
-
-/* 卡片 */
-:root,
-[data-theme] {
-  --card-bg: var(--bg-card);
-  --card-border: var(--border-subtle);
-  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* 导航栏 */
-:root,
-[data-theme] {
-  --navbar-bg: var(--bg-secondary, #ffffff);
-  --navbar-border: var(--border-subtle);
-  --navbar-text: var(--text-secondary);
-  --navbar-text-hover: var(--text-primary);
-  --navbar-text-muted: var(--text-muted);
-  --navbar-active-bg: rgba(0, 0, 0, 0.06);
-}
-
-/* 侧边栏 */
-:root,
-[data-theme] {
-  --sidebar-bg: var(--bg-secondary);
-  --sidebar-border: var(--border-subtle);
-  --sidebar-item-hover: var(--accent-muted);
-  --sidebar-item-active: var(--accent-soft);
-  --sidebar-item-active-border: var(--accent);
-}
-
-/* 输入框 */
-:root,
-[data-theme] {
-  --input-bg: var(--bg-primary);
-  --input-border: var(--border-default);
-  --input-focus-border: var(--accent);
-  --input-placeholder: var(--text-muted);
-}
-
-/* 表格 */
-:root,
-[data-theme] {
-  --table-header-bg: var(--bg-secondary);
-  --table-row-hover: var(--accent-muted);
-  --table-border: var(--border-subtle);
-}
+/* Layer 2 tokens have been removed. Use --el-* equivalents. */
 
 /* ============================================================
    §3 — Layer 3: Element Plus 主题覆盖
    覆盖 EP 内部 CSS 变量，实现主题一致性
    ============================================================ */
 
-/* Cyber Dark / Forest Dark（深色主题统一处理） */
+/* 深色模式统一处理（由 ModeSwitcher 的 html.dark class 控制） */
 :root,
-[data-theme='cyber-dark'],
-[data-theme='forest-dark'] {
+html.dark {
   --el-color-primary: var(--accent);
   --el-color-primary-light-3: color-mix(in srgb, var(--accent) 60%, white);
   --el-color-primary-light-5: color-mix(in srgb, var(--accent) 40%, white);
@@ -506,9 +76,8 @@
   --el-color-info: var(--color-info);
 }
 
-/* Cyber Light / Forest Light（浅色主题统一处理） */
-[data-theme='cyber-light'],
-[data-theme='forest-light'] {
+/* 浅色模式（默认，html.dark 不生效时使用） */
+:root {
   --el-color-primary: var(--accent);
   --el-color-primary-light-3: color-mix(in srgb, var(--accent) 70%, white);
   --el-color-primary-light-5: color-mix(in srgb, var(--accent) 50%, white);
@@ -564,19 +133,9 @@
 }
 
 /* ============================================================
-   §4 — 布局级变量（Layout Tokens）
-   仅在特定布局组件中生效
+   §4 — 布局级变量（已迁移至 cube-layout-vars.css）
    ============================================================ */
-
-/* Cyber 布局变量 */
-.cyber-layout,
-.cyber-sidebar,
-.cyber-navbar {
-  --layout-nav-height: 64px;
-  --layout-sidebar-width: 260px;
-  --layout-content-min-width: 1200px;
-}
-
+/* Layout tokens moved to cube-layout-vars.css */
 /* ============================================================
    §5 — 全局基础样式
    ============================================================ */
@@ -597,8 +156,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--bg, #0a0e14);
-  color: var(--t1, #e8eaed);
+  background: var(--el-bg-color, #0a0e14);
+  color: var(--el-text-color-primary, #e8eaed);
 }
 
 /* ── 微噪点纹理（仅深色主题） ── */
@@ -623,11 +182,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb, #4a5568);
+  background: var(--el-border-color-light, #4a5568);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover, #718096);
+  background: var(--el-border-color, #718096);
 }
 
 /* ── 焦点样式 ── */
@@ -643,41 +202,7 @@ body {
 }
 
 /* ============================================================
-   §6 — 兼容性别名（deprecated，保留用于平滑迁移）
-   新代码应使用语义变量
+   §6 — 兼容性别名（已删除，使用直接 --el-* 引用）
    ============================================================ */
+/* Deprecated aliases removed. Use --el-* directly. */
 
-/* 导航栏别名 */
-:root,
-[data-theme] {
-  --tn: var(--navbar-bg);
-  --tn-b: var(--navbar-border);
-  --tn-t: var(--navbar-text);
-  --tn-ac: var(--accent);
-}
-
-/* 阴影别名 */
-:root,
-[data-theme] {
-  --sh: var(--shadow-md);
-  --shm: var(--shadow-lg);
-}
-
-/* 长名 Token 别名 */
-:root,
-[data-theme] {
-  --color-primary: var(--accent);
-  --color-primary-hover: var(--accent-hover);
-  --color-primary-light: var(--accent-muted);
-  --color-bg-page: var(--bg-primary);
-  --color-bg-warm: var(--bg-secondary);
-  --color-bg-hover: var(--accent-muted);
-  --color-bg-active: var(--accent-soft);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-muted);
-  --color-text-placeholder: var(--text-muted);
-  --color-border: var(--border-default);
-  --color-border-light: var(--border-subtle);
-  --color-border-hover: var(--border-emphasis);
-}

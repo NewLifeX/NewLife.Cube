@@ -11,7 +11,7 @@ namespace NewLife.Cube.Cube.Controllers
 {
     /// <summary>模型表</summary>
     [Area("Cube")]
-    [Menu(59, true, Icon = "fa-table")]
+    [Menu(59, true, Icon = "Grid")]
     public class ModelTableController : EntityController<ModelTable>
     {
         static ModelTableController()
@@ -91,7 +91,7 @@ namespace NewLife.Cube.Cube.Controllers
                 {
                     foreach (var areaType in AreaBase.GetAreas())
                     {
-                        var areaName = areaType.Name.TrimEnd("Area");
+                        var areaName = areaType.Name.TrimSuffix("Area");
                         var menus = mf.FindByFullName(areaName);
 
                         var root = mf.FindByFullName(areaType.Namespace + ".Controllers");

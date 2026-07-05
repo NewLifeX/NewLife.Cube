@@ -1,7 +1,8 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ElConfigProvider } from 'element-plus';
 import { RouterView } from 'vue-router';
 import RootLayout from './layouts/RootLayout.vue';
+import ModalContainer from './components/ModalContainer.vue';
 </script>
 
 <template>
@@ -11,5 +12,6 @@ import RootLayout from './layouts/RootLayout.vue';
         <component :is="Component" />
       </RootLayout>
     </RouterView>
+    <ModalContainer />
   </ElConfigProvider>
 </template>

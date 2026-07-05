@@ -6,13 +6,22 @@ import { useMenuStore } from '../stores/menu';
 import { getAccessToken } from '../utils/token';
 import { getUrlHashToken } from '../utils/token';
 import { registerMenuRoutes } from '../utils/menuRoutes';
-import { normalizeMenuUrl } from '../utils/url';
+import { normalizeMenuUrl, type RouteNamingStyle } from '../utils/url';
+import { getConfig } from '../configure';
 
 // 创建路由实例
 const router: Router = createRouter({
   history: createWebHistory(),
   routes,
 });
+
+const {
+  auth: {
+    reLoginParams,
+  },
+} = getConfig();
+
+const loginPageUrl = reLoginParams?.loginPageUrl || '/login';
 
 // 先初始化微前端应用路由（异步操作）
 // 我们不会等待其完成再导出router，但会在导航守卫中检查初始化状态
@@ -54,7 +63,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // 检查微应用路由是否已初始化完成
-  if (!isRoutesInitialized() && to.path !== '/login') {
+  if (!isRoutesInitialized()) {
     // 可以选择显示加载页面或重定向到特定页面
     console.log('等待微应用路由初始化完成...');
     // 可以添加一个加载中的页面
@@ -73,14 +82,14 @@ router.beforeEach(async (to, from, next) => {
   const requireAuth = to.meta?.auth ?? true;
 
   // 如果已经在登录页且要去的也是登录页，直接放行
-  if (from.path === '/login' && to.path === '/login') {
+  if (to.path === loginPageUrl) {
     return next();
   }
 
   // 如果有token
   if (hasToken) {
     // 如果去登录页，直接跳转到首页
-    if (to.path === '/login') {
+    if (to.path === loginPageUrl) {
       if (to.query.redirect) {
         next({ path: to.query.redirect as string });
       } else {
@@ -94,7 +103,7 @@ router.beforeEach(async (to, from, next) => {
         } catch (error) {
           // 获取用户信息失败，可能是token无效，跳转到登录页
           console.error('获取用户信息失败:', error);
-          next({ path: '/login' });
+          next({ path: loginPageUrl });
           return;
         }
       }
@@ -115,8 +124,10 @@ router.beforeEach(async (to, from, next) => {
         menuStore.markRoutesRegistered();
         // 如果当前路径是刚注册的动态路由，需要重新导航
         if (registered?.currentPathNeedsRefresh) {
-          // 使用 normalizedPath 格式存储（与注册的路由路径一致）
-          pendingNavigationPath = normalizeMenuUrl(to.path);
+          // 使用与 registerMenuRoutes 一致的命名风格
+          const { router: { routeNamingStyle } } = getConfig();
+          const toStyle: RouteNamingStyle = routeNamingStyle === 'kebab' ? 'kebab' : 'pascal';
+          pendingNavigationPath = normalizeMenuUrl(to.path, toStyle);
           return next(false); // 取消当前导航，让 afterEach 触发重新导航
         }
       }
@@ -137,7 +148,7 @@ router.beforeEach(async (to, from, next) => {
       next();
     } else {
       // 需要认证的路由，重定向到登录页
-      next({ path: '/login', query: { redirect: to.fullPath } });
+      next({ path: loginPageUrl, query: { redirect: to.fullPath } });
     }
   }
 });

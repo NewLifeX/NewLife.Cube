@@ -47,8 +47,8 @@ const pageTitle = computed(() => props.title ?? menuStore.activeMenu?.name ?? ''
 
 <style lang="scss" scoped>
 .form-page-header {
-  background: var(--card);
-  border-bottom: 1px solid var(--bd);
+  background: var(--el-bg-color-overlay);
+  border-bottom: 1px solid var(--el-border-color-light);
   padding: 20px 24px 16px;
   display: flex;
   align-items: flex-start;
@@ -66,7 +66,7 @@ const pageTitle = computed(() => props.title ?? menuStore.activeMenu?.name ?? ''
   font-family: 'Libre Baskerville', Georgia, serif;
   font-size: 27px;
   font-weight: 700;
-  color: var(--t1);
+  color: var(--el-text-color-primary);
   letter-spacing: -0.025em;
   margin: 0;
   line-height: 1.2;
@@ -75,7 +75,7 @@ const pageTitle = computed(() => props.title ?? menuStore.activeMenu?.name ?? ''
 .fph-subtitle {
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 13px;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
   margin: 0;
 }
 
@@ -92,16 +92,16 @@ const pageTitle = computed(() => props.title ?? menuStore.activeMenu?.name ?? ''
   align-items: center;
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 13px;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
 
   &--active {
-    color: var(--t1);
+    color: var(--el-text-color-primary);
     font-weight: 500;
   }
 }
 
 .bc-sep {
   margin: 0 4px;
-  color: var(--bd);
+  color: var(--el-border-color-light);
 }
 </style>

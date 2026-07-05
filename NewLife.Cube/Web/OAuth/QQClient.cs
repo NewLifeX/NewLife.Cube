@@ -36,7 +36,7 @@ namespace NewLife.Web.OAuth
             // 去掉js回调函数
             if (!html.IsNullOrEmpty() && html.StartsWithIgnoreCase("callback("))
             {
-                html = html.Substring("callback(").TrimEnd(");").Trim();
+                html = html.Substring("callback(").TrimSuffix(");").Trim();
             }
 
             return html;

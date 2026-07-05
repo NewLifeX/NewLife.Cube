@@ -53,6 +53,7 @@ export type {
   AuthConfig, // 替代 LoginConfig
   RequestConfig, // 替代 RequestConfig
   UIConfig, // 包含原 LayoutConfig 和 ThemeConfig
+  RouterConfig,
 } from './types';
 
 // 导出默认配置

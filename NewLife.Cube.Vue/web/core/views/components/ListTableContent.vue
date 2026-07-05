@@ -116,10 +116,10 @@ function getSelectionColumnWidth() {
 
 <style lang="scss" scoped>
 .list-table-content {
-  background: var(--card);
-  border: 1px solid var(--bd);
-  border-radius: var(--r);
-  box-shadow: var(--sh);
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow-light);
   overflow: hidden;
 }
 
@@ -130,7 +130,7 @@ function getSelectionColumnWidth() {
 
   :deep(.el-table__header-wrapper th.el-table__cell) {
     background: var(--el-bg-color);
-    border-bottom: 1px solid var(--bd);
+    border-bottom: 1px solid var(--el-border-color-light);
     padding: 0;
   }
 
@@ -141,16 +141,16 @@ function getSelectionColumnWidth() {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--t3);
+    color: var(--el-text-color-secondary);
   }
 
   :deep(.el-table__body-wrapper td.el-table__cell) {
     padding: 0;
-    border-bottom: 1px solid var(--bd);
+    border-bottom: 1px solid var(--el-border-color-light);
   }
 
   :deep(.el-table__body tr:hover > td.el-table__cell) {
-    background: var(--table-row-hover, var(--ac-l));
+    background: var(--table-row-hover, var(--el-color-primary-light-9));
   }
 
   :deep(.el-table__body .cell) {
@@ -160,19 +160,19 @@ function getSelectionColumnWidth() {
 
   :deep(.el-checkbox__input.is-checked .el-checkbox__inner),
   :deep(.el-checkbox__input.is-indeterminate .el-checkbox__inner) {
-    background-color: var(--ac);
-    border-color: var(--ac);
+    background-color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
   }
 
   :deep(.el-checkbox__inner:hover) {
-    border-color: var(--ac);
+    border-color: var(--el-color-primary);
   }
 }
 
 .ltc-cell-text {
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 13px;
-  color: var(--t1);
+  color: var(--el-text-color-primary);
 
   &--mono {
     font-family: 'JetBrains Mono', monospace;
@@ -183,7 +183,7 @@ function getSelectionColumnWidth() {
 .ltc-empty {
   padding: 48px 16px;
   text-align: center;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 13px;
 }
@@ -217,7 +217,7 @@ function getSelectionColumnWidth() {
   }
   &--er {
     background: var(--erl);
-    color: var(--er);
+    color: var(--el-color-danger);
   }
   &--in {
     background: var(--inl);

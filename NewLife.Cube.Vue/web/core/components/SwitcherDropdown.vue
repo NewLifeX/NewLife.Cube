@@ -140,7 +140,7 @@ defineExpose({ close });
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  color: var(--navbar-text, var(--text-secondary));
+  color: var(--navbar-text, var(--cube-layout-menu-item-color));
   transition:
     background 0.15s,
     color 0.15s;
@@ -150,7 +150,7 @@ defineExpose({ close });
 
   &:hover {
     background: var(--navbar-hover-bg, rgba(0, 0, 0, 0.06));
-    color: var(--navbar-text-hover, var(--text-primary));
+    color: var(--navbar-text-hover, var(--el-text-color-primary));
   }
 }
 
@@ -170,10 +170,10 @@ defineExpose({ close });
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  background: var(--el-bg-color-overlay);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: var(--el-border-radius-base);
+  box-shadow: var(--el-box-shadow);
   min-width: 180px;
   overflow: hidden;
   z-index: 300;
@@ -188,7 +188,7 @@ defineExpose({ close });
   padding: 8px 12px;
   border-radius: 7px;
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--cube-layout-menu-item-color);
   font-size: 13px;
   font-weight: 500;
   transition:
@@ -196,12 +196,12 @@ defineExpose({ close });
     color 0.12s;
 
   &:hover {
-    background: var(--accent-muted);
-    color: var(--text-primary);
+    background: var(--el-color-primary-light-9);
+    color: var(--el-text-color-primary);
   }
 
   &.active {
-    color: var(--accent);
+    color: var(--el-color-primary);
     font-weight: 600;
   }
 }
@@ -216,7 +216,7 @@ defineExpose({ close });
 }
 
 .sw-i-check {
-  color: var(--accent);
+  color: var(--el-color-primary);
   flex-shrink: 0;
 }
 

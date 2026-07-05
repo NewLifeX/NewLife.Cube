@@ -328,7 +328,7 @@ public class FieldCollection : List<DataField>
     /// <returns></returns>
     public FieldCollection RemoveCreateField()
     {
-        RemoveAll(e => e.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateTime", "CreateIP"));
+        RemoveAll(e => e.Name.EqualIgnoreCase("CreateUserID", "CreateUser", "CreateUserName", "CreateTime", "CreateIP"));
 
         return this;
     }
@@ -337,7 +337,7 @@ public class FieldCollection : List<DataField>
     /// <returns></returns>
     public FieldCollection RemoveUpdateField()
     {
-        RemoveAll(e => e.Name.EqualIgnoreCase("UpdateUserID", "UpdateUser", "UpdateTime", "UpdateIP"));
+        RemoveAll(e => e.Name.EqualIgnoreCase("UpdateUserID", "UpdateUser", "UpdateUserName", "UpdateTime", "UpdateIP"));
 
         return this;
     }

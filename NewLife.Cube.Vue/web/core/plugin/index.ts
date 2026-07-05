@@ -185,16 +185,21 @@ export default function vitePluginCubeFront() {
 
             if (app.packageName) {
               // 路径解析规则：
-              // 1. 以 apps 或 /apps 或 ./apps 开头 → 本项目路径，直接使用
-              // 2. 否则第一段视为包名，去 node_modules/{包名} 查找
+              // 1. 以 apps 或 /apps 或 ./apps 开头 → 本项目路径，自动拼接 /src/main.ts
+              // 2. 以 ./src/ 开头 → 本项目 src 目录下的模块，直接使用该路径（不追加 /src/main.ts）
+              // 3. 以 ./ 开头（其他）→ 本项目相对路径，直接使用
+              // 4. 否则第一段视为包名，去 node_modules/{包名} 查找
               const pkgName = app.packageName;
               if (
                 pkgName.startsWith('apps') ||
                 pkgName.startsWith('/apps') ||
                 pkgName.startsWith('./apps')
               ) {
-                // 本项目路径
+                // 本项目路径，追加 /src/main.ts
                 importPath = `./${pkgName.replace(/^\.\//, '')}/src/main.ts`;
+              } else if (pkgName.startsWith('./src/') || pkgName.startsWith('./')) {
+                // 本项目相对路径（如 ./src/routes），直接使用
+                importPath = pkgName;
               } else {
                 // 外部包路径，取第一段作为包名
                 const firstSlash = pkgName.indexOf('/');

@@ -40,7 +40,7 @@ const pageTitle = computed(
   font-family: 'Libre Baskerville', Georgia, serif;
   font-size: 27px;
   font-weight: 700;
-  color: var(--t1);
+  color: var(--el-text-color-primary);
   letter-spacing: -0.025em;
   margin: 0;
   line-height: 1.2;
@@ -49,7 +49,7 @@ const pageTitle = computed(
 .lph-subtitle {
   font-family: 'Fira Sans', system-ui, sans-serif;
   font-size: 13.5px;
-  color: var(--t3);
+  color: var(--el-text-color-secondary);
   margin: 0;
 }
 </style>

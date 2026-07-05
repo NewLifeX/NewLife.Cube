@@ -95,16 +95,16 @@ $tn-h: 60px;
 }
 
 .bc-s {
-  color: #87a080;
+  color: var(--el-text-color-placeholder);
 }
 
 .bc-cur {
-  color: #192418;
+  color: var(--el-text-color-primary);
   font-weight: 500;
 }
 
 .bc-sep {
-  color: #87a080;
+  color: var(--el-text-color-placeholder);
   font-size: 11px;
 }
 </style>
