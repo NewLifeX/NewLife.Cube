@@ -119,6 +119,8 @@
 				}
 			});
 		} else {
+			// 转换换行符为 <br/>，支持多行消息
+			msg = (msg + '').replace(/\n/g, '<br/>');
 			d.content(msg || '');
 		}
 		d.showModal();
@@ -163,6 +165,8 @@
 				}
 			});
 		} else {
+			// 转换换行符为 <br/>，支持多行消息
+			msg = (msg + '').replace(/\n/g, '<br/>');
 			d.content(msg || 'tips');
 		}
 
