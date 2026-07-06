@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios';
 import { TokenManager } from './token';
 import type { ApiResponse, LoginResult } from './types';
+import { ApiError } from './types';
 import qs from 'qs';
 
 /**
@@ -29,6 +30,8 @@ export interface ApiClientOptions {
   onUnauthorized?: () => void;
   /** 业务错误回调（code 非 0） */
   onBusinessError?: (code: number, message: string) => void;
+  /** 字段级验证错误回调（fieldErrors 非空时触发，用于统一 toast 提示） */
+  onFieldError?: (fieldErrors: { field: string; message: string }[]) => void;
 }
 
 /**
@@ -43,6 +46,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
     tokenManager,
     onUnauthorized,
     onBusinessError,
+    onFieldError,
   } = options;
   const tm = tokenManager ?? new TokenManager();
 
@@ -74,10 +78,17 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
           } else {
             window.dispatchEvent(new CustomEvent('cube:unauthorized'));
           }
-        } else if (res.message && onBusinessError) {
-          onBusinessError(res.code, res.message);
+        } else {
+          if (res.message && onBusinessError) {
+            onBusinessError(res.code, res.message);
+          }
+          // 字段级验证错误：通过 onFieldError 回调统一 toast 提示
+          if (res.fieldErrors && res.fieldErrors.length > 0 && onFieldError) {
+            onFieldError(res.fieldErrors);
+          }
         }
-        return Promise.reject(new Error(res.message ?? `API error: ${res.code}`));
+        // 使用 ApiError 保留完整响应（含 fieldErrors），以便页面进行额外处理
+        return Promise.reject(new ApiError(res as ApiResponse));
       }
       // 归一化登录结果字段名（兼容后端大写 Token/RefreshToken/ExpireIn）
       const url = response.config?.url ?? '';

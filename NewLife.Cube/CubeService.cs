@@ -122,6 +122,75 @@ public static class CubeService
             //            options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
         });
 
+        // 配置模型绑定验证失败的响应格式，返回字段级验证错误信息
+        // 自动查找实体元数据中的 DisplayName 来增强错误消息
+        services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                // 尝试从控制器泛型参数中解析实体类型，获取字段 DisplayName
+                var entityFields = ResolveEntityFields(context);
+
+                var fieldErrors = new List<FieldError>();
+                foreach (var kv in context.ModelState)
+                {
+                    foreach (var error in kv.Value.Errors)
+                    {
+                        var fieldName = kv.Key;
+                        var message = error.ErrorMessage;
+
+                        // JSON 根级别解析失败（如 body 是 123 但期望对象），字段名为 "$"
+                        // 错误消息类似 "The JSON value could not be converted to System.Int32..."
+                        if (fieldName == "$" || message.Contains("Path: $"))
+                        {
+                            // 从请求路径推断预期操作，给出有意义的提示
+                            var path = context.HttpContext.Request.Path + "";
+                            var method = context.HttpContext.Request.Method;
+                            var hint = method.ToUpperInvariant() switch
+                            {
+                                "POST" => "请求数据格式不正确，请检查是否传递了正确的JSON对象",
+                                "PUT" => "请求数据格式不正确，请检查是否传递了正确的JSON对象",
+                                "DELETE" => "请求参数格式不正确，请检查ID值是否有效",
+                                _ => "请求数据格式不正确"
+                            };
+                            fieldErrors.Add(new FieldError
+                            {
+                                Field = fieldName,
+                                Message = $"{hint}（{path}）"
+                            });
+                            continue;
+                        }
+
+                        // 如果错误消息中使用的是 C# 属性名，尝试替换为 DisplayName
+                        if (entityFields != null && entityFields.TryGetValue(fieldName, out var displayName)
+                            && displayName != fieldName && !message.Contains(displayName))
+                        {
+                            // ASP.NET Core 错误消息常以 "The field" 或字段名开头，尝试替换
+                            message = message.Replace($"The {fieldName} field", $"「{displayName}」")
+                                             .Replace(fieldName, displayName);
+                        }
+
+                        fieldErrors.Add(new FieldError
+                        {
+                            Field = fieldName,
+                            Message = message
+                        });
+                    }
+                }
+
+                var firstMsg = fieldErrors.Count > 0 ? fieldErrors[0].Message : "请求参数错误";
+                var response = new ApiResponse<Object>
+                {
+                    Code = Models.CubeCode.ParamError.ToInt(),
+                    Message = firstMsg,
+                    Data = null,
+                    FieldErrors = fieldErrors.Count > 0 ? fieldErrors : null
+                };
+
+                return new Microsoft.AspNetCore.Mvc.JsonResult(response) { StatusCode = 200 };
+            };
+        });
+
         //默认注入缓存实现
         services.TryAddSingleton<ICacheProvider, CacheProvider>();
 
@@ -363,6 +432,55 @@ public static class CubeService
                 }
             }
         }
+    }
+    #endregion
+
+    #region 辅助
+    /// <summary>从 ActionContext 中解析实体控制器对应的字段元数据，返回 字段名→DisplayName 映射</summary>
+    private static IDictionary<String, String> ResolveEntityFields(Microsoft.AspNetCore.Mvc.ActionContext context)
+    {
+        try
+        {
+            if (context.ActionDescriptor is Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor cad)
+            {
+                var controllerType = cad.ControllerTypeInfo.AsType();
+                // 沿继承链查找 EntityController<TEntity> 或 EntityController<TEntity, TModel>
+                var baseType = controllerType;
+                while (baseType != null && baseType != typeof(Object))
+                {
+                    if (baseType.IsGenericType)
+                    {
+                        var genericDef = baseType.GetGenericTypeDefinition();
+                        if (genericDef == typeof(EntityController<>) ||
+                            genericDef == typeof(EntityController<,>))
+                        {
+                            var entityType = baseType.GetGenericArguments()[0];
+                            // 通过静态 Factory 属性获取字段列表
+                            var factoryProp = entityType.GetProperty("Meta");
+                            if (factoryProp != null)
+                            {
+                                var meta = factoryProp.GetValue(null);
+                                var factory = meta?.GetType().GetProperty("Factory")?.GetValue(meta) as IEntityFactory;
+                                if (factory != null)
+                                {
+                                    var dict = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+                                    foreach (var fi in factory.AllFields)
+                                    {
+                                        if (!fi.DisplayName.IsNullOrEmpty() && fi.DisplayName != fi.Name)
+                                            dict[fi.Name] = fi.DisplayName;
+                                    }
+                                    return dict.Count > 0 ? dict : null;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    baseType = baseType.BaseType;
+                }
+            }
+        }
+        catch { /* 解析失败不影响正常响应 */ }
+        return null;
     }
     #endregion
 }

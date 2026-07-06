@@ -16,6 +16,7 @@ export { createUserApi, createMenuApi, createPageApi, createConfigApi } from './
 // 类型
 export type {
   ApiResponse,
+  FieldError,
   PageInfo,
   PageParams,
   DataField,
@@ -33,7 +34,7 @@ export type {
   AuthCategory,
   MfaVerifyResult,
 } from './types';
-export { FieldKind, Auth } from './types';
+export { FieldKind, Auth, ApiError } from './types';
 
 // 密码安全工具（RSA-OAEP 加密，配合 /Auth/Challenge 接口）
 export { encryptPassword } from './crypto';

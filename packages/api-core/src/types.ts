@@ -1,3 +1,11 @@
+/** 字段级验证错误 */
+export interface FieldError {
+  /** 字段名（与前端表单字段对应） */
+  field: string;
+  /** 错误消息，例如"XX字段不可以为空" */
+  message: string;
+}
+
 /** 魔方标准 API 响应结构 */
 export interface ApiResponse<T = unknown> {
   /** 状态码，0 表示成功 */
@@ -10,6 +18,28 @@ export interface ApiResponse<T = unknown> {
   page?: PageInfo;
   /** 统计行数据 */
   stat?: Record<string, unknown>;
+  /** 跟踪编号 */
+  traceId?: string;
+  /** 字段级验证错误列表（新增/编辑/删除时校验失败返回） */
+  fieldErrors?: FieldError[];
+}
+
+/** 包含完整 API 响应的业务错误，用于 try-catch 中提取字段级错误 */
+export class ApiError<T = unknown> extends Error {
+  /** API 响应码 */
+  code: number;
+  /** 字段级验证错误 */
+  fieldErrors?: FieldError[];
+  /** 完整响应数据 */
+  response: ApiResponse<T>;
+
+  constructor(response: ApiResponse<T>) {
+    super(response.message ?? `API error: ${response.code}`);
+    this.name = 'ApiError';
+    this.code = response.code ?? -1;
+    this.fieldErrors = response.fieldErrors;
+    this.response = response;
+  }
 }
 
 /** 分页信息 */

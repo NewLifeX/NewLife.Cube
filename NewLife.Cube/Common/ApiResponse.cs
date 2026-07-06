@@ -12,6 +12,16 @@ public interface IApiResponse
     String Message { get; set; }
 }
 
+/// <summary>字段级验证错误</summary>
+public class FieldError
+{
+    /// <summary>字段名（与前端表单字段名对应）</summary>
+    public String Field { get; set; }
+
+    /// <summary>错误消息。例如"XX字段不可以为空"</summary>
+    public String Message { get; set; }
+}
+
 /// <summary>响应模型</summary>
 /// <typeparam name="T"></typeparam>
 public class ApiResponse<T> : IApiResponse
@@ -27,6 +37,9 @@ public class ApiResponse<T> : IApiResponse
 
     /// <summary>跟踪编号</summary>
     public String TraceId { get; set; }
+
+    /// <summary>字段级验证错误列表。每个元素对应一个字段的验证错误</summary>
+    public List<FieldError> FieldErrors { get; set; }
 }
 
 /// <summary>列表响应模型</summary>
